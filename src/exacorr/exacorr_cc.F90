@@ -1687,6 +1687,7 @@ module exacorr_cc
          vvvo_root = (/vir_space_root, vir_space_root, vir_space_root, occ_space_root/)
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
+   print *,'aaa'
 
 
 !***************************************
@@ -1694,30 +1695,46 @@ module exacorr_cc
 !***************************************
 
          ierr=exatns_tensor_create(lambda_t%fbar_oo,"fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
+print *,'aab',ierr
          ierr=exatns_tensor_create(lambda_t%fbar_ov,"fbar_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
+print *,'aac',ierr
          ierr=exatns_tensor_create(lambda_t%fbar_vv,"fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
+print *,'aad',ierr
          ierr=exatns_tensor_create(lambda_t%w_oooo,"w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
+print *,'aae',ierr
          ierr=exatns_tensor_create(lambda_t%w_ovoo,"w_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
+print *,'aaf',ierr
          ierr=exatns_tensor_create(lambda_t%w_ooov,"w_ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
+print *,'aag',ierr
          ierr=exatns_tensor_create(lambda_t%w_vovo,"w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
+print *,'aah',ierr
          ierr=exatns_tensor_create(lambda_t%wbar_vovo,"wbar_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
+print *,'aai',ierr
          ierr=exatns_tensor_create(lambda_t%w_vvvo,"w_vvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
+print *,'aaj',ierr
          ierr=exatns_tensor_create(lambda_t%w_vovv,"w_vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
+print *,'aak',ierr
          ierr=exatns_tensor_create(lambda_t%w_vvvv,"w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
+print *,'aal',ierr
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 
 !***
 ! List of NEW INTERMEDIATES for the CC2 Method
 !***
-         ierr=exatns_tensor_create(lambda_t_CC2%fbar_oo,"fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)  
+         ierr=exatns_tensor_create(lambda_t_CC2%fbar_oo,"cc2_fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)  
+print *,'aba',ierr
 !         ierr=exatns_tensor_create(lambda_t_CC2%fbar_ov,"fbar_ov",oo_id,oo_root,EXA_DATA_KIND_C8) 
-         ierr=exatns_tensor_create(lambda_t_CC2%fbar_vv,"fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(lambda_t_CC2%w_oooo,"w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8) 
+         ierr=exatns_tensor_create(lambda_t_CC2%fbar_vv,"cc2_fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
+print *,'abb',ierr
+         ierr=exatns_tensor_create(lambda_t_CC2%w_oooo,"cc2_w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8) 
+print *,'abc',ierr
 !!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same
 !as in    CCSD and for \Lambda_1 either : 
-         ierr=exatns_tensor_create(lambda_t_CC2%w_vovo,"w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)! Usefull in CC2 - Same part as h_int
+         ierr=exatns_tensor_create(lambda_t_CC2%w_vovo,"cc2_w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)! Usefull in CC2 - Same part as h_int
+print *,'abd',ierr
 !!!!!!
-         ierr=exatns_tensor_create(lambda_t_CC2%w_vvvv,"w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(lambda_t_CC2%w_vvvv,"cc2_w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
+print *,'abe',ierr
 !*
 ! End of list
 !*
@@ -1761,7 +1778,7 @@ module exacorr_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD,one_tensor)
          call print_date('Finished calculating fixed intermediates')
 
-         if (print_level > 0) then
+!        if (print_level > 0) then
            if (.not.CCD) print*, "T1amp      = ", print_tensornorm2(comm_t%t1)
            print*, "T2amp      = ", print_tensornorm2(comm_t%t2)*0.25D0
            ! print*, "Tau        = ", print_tensornorm2(comm_t%tau)*0.25D0
@@ -1776,7 +1793,7 @@ module exacorr_cc
            print*, "w_ovoo     = ", print_tensornorm2(lambda_t%w_ovoo)*0.5D0
            print*, "w_ooov     = ", print_tensornorm2(lambda_t%w_ooov)*0.5D0
            print*, "w_oooo     = ", print_tensornorm2(lambda_t%w_oooo)*0.25D0
-         end if
+!        end if
 
 !****************************************
 !        get CC2 Specific Intermediates *
@@ -1789,10 +1806,15 @@ module exacorr_cc
 !ierr=exatns_tensor_create(lambda_t%fbar_ov,"fbar_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
 
          ! comm_t_CC2 t1 and t2 = comm_t  L! :maybe clean
-         ierr=exatns_tensor_create(comm_t_CC2%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(comm_t_CC2%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(comm_t_CC2%tau,"tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(comm_t_CC2%h_int,"h_int",vovo_id,vovo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(comm_t_CC2%t1,"cc2_t1",vo_id,vo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(comm_t_CC2%t2,"cc2_t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(comm_t_CC2%tau,"cc2_tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(comm_t_CC2%h_int,"cc2_h_int",vovo_id,vovo_root,EXA_DATA_KIND_C8)
+
+         ierr=exatns_tensor_init(comm_t_CC2%t1,ZERO)
+         ierr=exatns_tensor_init(comm_t_CC2%t2,ZERO)
+         ierr=exatns_tensor_init(comm_t_CC2%tau,ZERO)
+         ierr=exatns_tensor_init(comm_t_CC2%h_int,ZERO)
 
          ! Copy of t1, t2, foo, fov and fvv from comm_t to comm_t_CC2   L! :
          ! maybe clean
@@ -1900,12 +1922,12 @@ module exacorr_cc
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
 !         debug
-          if (print_level.gt.8) then
+!         if (print_level.gt.8) then
             if (.not.CCD) print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
             print*, "goo = ", print_tensornorm2(lambda_t%goo)
             print*, "gvv = ", print_tensornorm2(lambda_t%gvv)
-          end if
+!         end if
 
 !******************************
 !         calculate s1 tensor *
