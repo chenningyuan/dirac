@@ -2224,14 +2224,16 @@ module exacorr_cc
 
             call j_chol%reset(ind_max)
             ierr=exatns_tensor_create(Dlk,"Dlk",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(Dlk,'Chol_J')
+            ierr=exatns_tensor_init(Dlk,j_chol)
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init(j_chol) failed!')
             !ierr=exatns_tensor_traverse(Dlk,'Chol_J')
             if (print_level.gt.9) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
             if (print_level.gt.6) call print_date(" --- Off-Diagonal computed")
 
             ierr=exatns_tensor_init(Res,ZERO)
             call f_delta%reset(ind_max)
-            ierr=exatns_tensor_traverse(Delta,'Delta_F')
+            ierr=exatns_tensor_traverse(Delta,f_delta)
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_traverse(f_delta) failed!')
             do i=1,m
               ierr=exatns_tensor_init(Factor,ZERO)
               ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
