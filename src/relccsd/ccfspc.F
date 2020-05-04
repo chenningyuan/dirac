@@ -19,8 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,
-     &                   S1,S2)
+      SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,EPS,FVO,
+     &                   BUF1,BUF2,BUF3,S1,S2)
 C
       implicit none
 C
@@ -47,7 +47,7 @@ C     Author : Ephraim Eliav
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T1(*),T2(*),S1(*),S2(*)
+      REAL*8 T1(*),T2(*),S1(*),S2(*),EPS(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       INTEGER ICURFSS,IHEQ
 C
@@ -91,6 +91,12 @@ C     H1=S1(E,F) (a=1; i=3)
 C
 C     Extract the Hamiltonian
       CALL EXTRT1 (S1,BUF1,1,1,3,3,LFA)
+C     Extract and add first-order Fock matrix elements
+C     These are non-zero for non-canonical orbitals and when a finite field is added
+      CALL XCOPY (NDIMT1,FVO,1,BUF3,1)
+      CALL REMOVE_F0 (EPS,BUF3)
+      CALL EXTRT1 (BUF3,BUF2,1,1,3,3,LFA)
+      CALL XAXPY (IAVAV(NREP+1),A1,BUF2,1,BUF1,1)
 C     Extract the wave function
       CALL EXTRT1 (T1,BUF2,2,2,3,3,LFA)
 C     Calculate the diagram
@@ -122,6 +128,12 @@ C     H1=S1(M,N) (a=3; i=2)
 C
 C     Extract the Hamiltonian
       CALL EXTRT1 (S1,BUF1,3,3,2,2,LFA)
+C     Extract and add first-order Fock matrix elements
+C     These are non-zero for non-canonical orbitals and when a finite field is added
+      CALL XCOPY (NDIMT1,FVO,1,BUF3,1)
+      CALL REMOVE_F0 (EPS,BUF3)
+      CALL EXTRT1 (BUF3,BUF2,3,3,2,2,LFA)
+      CALL XAXPY (IAOAO(NREP+1),A1,BUF2,1,BUF1,1)
 C     Extract the wave function
       CALL EXTRT1 (T1,BUF2,3,3,1,1,LFA)
       CALL CNTRCT ('N','N',NAO,NIO,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
