@@ -2250,6 +2250,11 @@ module exacorr_cc
             
             m=m+1
 
+            if (m.ge.nao*nao) then
+              call print_date(" Cholesky decomposition failed")
+              exit
+            end if
+
             ierr=exatns_tensor_init(Res,ZERO)
             ierr=exatns_tensor_contract("L(p,q)=R(p,q)*O()",Res,CD(m),one_tensor)
             ierr=exatns_tensor_traverse(Res,'Square')            
@@ -2258,6 +2263,8 @@ module exacorr_cc
 
             !find new maximum
             ind_max=m
+
+
             
           end do
           
