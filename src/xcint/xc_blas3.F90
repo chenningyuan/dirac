@@ -117,6 +117,7 @@ contains
       real(8), allocatable   :: s(:, :)
       real(8), allocatable   :: v(:, :, :)
       real(8), allocatable   :: gnn(:, :, :)
+      logical :: density_is_not_tiny 
 !     --------------------------------------------------------------------------
 
       allocate(ao_compress_index(mat_dim))
@@ -128,6 +129,8 @@ contains
       allocate(s(block_length, maxval((/nr_dmat, 1/))))
       allocate(v(block_length, 3, maxval((/nr_dmat, 1/))))
       allocate(gnn(block_length, 0:1, 0:nr_dmat))
+
+      density_is_not_tiny = .false.
 
 !     zero out density and gradient
       do k = 1, block_length
@@ -273,6 +276,21 @@ contains
          end if
       end do
 
+      do k = 1, block_length
+         if ((n(k,0).ge.dft_cfg_tinydens)) density_is_not_tiny = .true.
+      end do
+
+      if (dft_cfg_grac_is_active .or. dft_cfg_saop_is_active) then
+         do k = 1, block_length
+            if ((n_saop_resp(k).ge.dft_cfg_tinydens)) density_is_not_tiny = .true.
+            if ((n_saop_outer(k).ge.dft_cfg_tinydens)) density_is_not_tiny = .true.
+         end do
+      end if
+
+! if the density isn't below the small density cutoff we proceed to all
+! evaluations below, otherwise we skip this block's contribution to the matrices
+
+   if (density_is_not_tiny) then 
       if (is_gga) then
          do k = 1, block_length
             gnn(k, 0, 0) = n_g(k, 1, 0)*n_g(k, 1, 0) &
@@ -524,6 +542,7 @@ contains
             end if
          end do
       end if
+  end if
 
       deallocate(ao_compress_index)
       deallocate(ao_compressed)
