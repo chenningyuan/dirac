@@ -39,10 +39,6 @@ module exacorr_global
         public get_shell_size
         public get_shell_offset
         public make_spinor_list
-        public set_chol_J_ind
-        public get_chol_J_ind
-        public set_delta
-        public get_delta
         public get_scf
 
        contains
@@ -758,78 +754,6 @@ module exacorr_global
         if (exa_input%print_level>1) call print_orbitals(exa_input)
 
       end subroutine make_spinor_list
-
-      subroutine set_chol_J_ind(ind)
-        !broadcast position of delta, only runs on exatensor master (n-1)
-
-        use interface_to_mpi
-
-        integer, dimension(2) :: ind
-        integer               :: i, IREQ, exa_MPI_rank
-
-        call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
-        exa_MPI_rank=exa_MPI_rank-1
-
-        chol_J_ind=ind
-       
-        do i=0,exa_MPI_rank
-          call interface_mpi_isend(chol_J_ind,2,i,chol_J_tag,global_communicator,IREQ)
-        end do 
-
-      end subroutine set_chol_J_ind
-      
-      subroutine get_chol_J_ind(ind)
-
-        use interface_to_mpi
-
-        integer, dimension(2) :: ind
-        integer               :: i, IREQ, exa_MPI_rank
-
-        call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
-        exa_MPI_rank=exa_MPI_rank-1
-        
-        call interface_mpi_irecv(chol_J_ind,2,exa_MPI_rank,chol_J_tag,global_communicator,IREQ)
-
-        ind=chol_J_ind
-
-      end subroutine get_chol_J_ind
-
-      subroutine set_delta(ind,n)
-        !broadcast position of delta, only runs on exatensor master (n-1)
-
-        use interface_to_mpi
-        
-        integer               :: n
-        integer               :: ind(1:n)
-        integer               :: i, IREQ, exa_MPI_rank
-
-        call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
-        exa_MPI_rank=exa_MPI_rank-1
-
-        delta=-88
-        delta(1:n)=ind(1:n)
-       
-        do i=0,exa_MPI_rank
-          call interface_mpi_isend(delta,2,i,delta_tag,global_communicator,IREQ)
-        end do 
-
-      end subroutine set_delta
-      
-      subroutine get_delta(ind)
-
-        use interface_to_mpi
-
-        integer, dimension(2) :: ind
-        integer               :: i, IREQ, exa_MPI_rank
-
-        call interface_mpi_comm_size(global_communicator,exa_MPI_rank)
-        exa_MPI_rank=exa_MPI_rank-1
-        
-        call interface_mpi_irecv(delta,2,exa_MPI_rank,delta_tag,global_communicator,IREQ)
-
-        ind=delta
-
-      end subroutine get_delta
 
       subroutine print_orbitals ( exa_input )
 

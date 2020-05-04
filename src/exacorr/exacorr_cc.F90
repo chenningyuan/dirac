@@ -12,6 +12,7 @@ module exacorr_cc
         use intermediates
 
         implicit none
+
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0),ONE_QUARTER=(0.25D0,0.D0), &
                                  MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)
@@ -93,6 +94,10 @@ module exacorr_cc
          !CC2
          logical :: CC2         !L
 
+         !Cholesky
+         type(chol_J)    :: j_chol  ! Cholesky: compute off-diagonal elements
+         type(delta_f)   :: f_delta  ! fill delta matrix
+
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
          if (my_MPI_rank == 0) call print_date(" Starting CC calculation with exatensor")
@@ -102,7 +107,7 @@ module exacorr_cc
          if (my_MPI_rank == 0) call print_date(" Registered AO and MO spaces")
 
 !        Register and initialize user defined methods needed in the CC calculation
-         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
+         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,j_chol,f_delta)
          if (my_MPI_rank == 0) call print_date(" Initialized and registered tensor methods")
 
 !        copy input variables to local ones for ease of reference
@@ -177,7 +182,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(int_t%vvvv,"vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme, &
-                exa_input%print_level,exa_input%t_cholesky)
+                exa_input%print_level,exa_input%t_cholesky,j_chol,f_delta)
             call print_date('initialized two electron integrals')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
@@ -466,7 +471,7 @@ module exacorr_cc
 
         end subroutine exacorr_cc_spaces
 
-        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id)
+        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,j_chol,f_delta)
 
 !        This subroutine initalizes and registers all user-defined methods for ExaTensor
 
@@ -478,10 +483,12 @@ module exacorr_cc
 
          implicit none
 
-         ! container with user input (we only need the indices of the occupied and virtual MOs here)
-         type(exacc_input), intent(in) :: exa_input
-         ! identifiers of the spaces that we will use in the methods
-         integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id
+         
+         type(exacc_input), intent(in) :: exa_input  ! container with user input (only indices of the occupied and virtual MOs used here)
+         integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id  ! identifiers of the spaces that we will use in the methods
+         !methods that need to be reset
+         type(chol_J), intent(inout)   :: j_chol  ! Cholesky: compute diagonal elements
+         type(delta_f), intent(inout)  :: f_delta  ! fill delta matrix
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -499,9 +506,7 @@ module exacorr_cc
          type(init_one_el_t)          :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
          type(chol_diag)              :: diag_chol            ! Cholesky: compute diagonal elements
-         type(chol_J)                 :: j_chol               ! Cholesky: compute diagonal elements
-         type(fill_delta)             :: fdelta               ! fill delta matrix
-         type(square_tensor)          :: tsquare              ! square matrix elements
+         type(square_tensor)          :: t_square             ! square matrix elements
 
          integer:: min_occ
 
@@ -598,15 +603,17 @@ module exacorr_cc
          ierr=exatns_method_register('CholDiag',diag_chol)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(CholDiag) failed!')
 
-         !Register computation of diagonals for cholesky
-         ierr=exatns_method_register('CholJ',j_chol)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(CholJ) failed!')
+         !Register computation of off-diagonals for cholesky
+         ierr=exatns_method_register('Chol_J',j_chol)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Chol_J) failed!')
 
-         ierr=exatns_method_register('FillDelta',fdelta)
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(FillDelta) failed!')
+         !Register method to extract an element
+         ierr=exatns_method_register('Delta_F',f_delta)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Delta_F) failed!')
 
-         ierr=exatns_method_register('Square',tsquare)
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square) failed!')
+         !Register method to square tensor
+         ierr=exatns_method_register('Square_T',t_square)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square_T) failed!')
 
         end subroutine exacorr_cc_methods
 
@@ -1580,7 +1587,7 @@ module exacorr_cc
         end subroutine solve_lambda_equations
 
         subroutine get_CC_integrals (ao_space_id,ao_space,int_t,moint_scheme, &
-                                     print_level,t_cholesky)
+                                     print_level,t_cholesky,j_chol,f_delta)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -1589,6 +1596,7 @@ module exacorr_cc
 
 !        Written by Lucas Visscher, summer 2017
 
+         use exacorr_tensor_methods
          use exacorr_ao_to_mo
          use exacorr_global
 
@@ -1601,6 +1609,8 @@ module exacorr_cc
                                                                !  3: n^5 with re-use of ints 4: as 3, but with sliced AO and HT)
          integer, intent(in)                   :: print_level
          real(8),intent(in)                    :: t_cholesky
+         type(chol_J), intent(inout)           :: j_chol  ! Cholesky: compute off-diagonal elements
+         type(delta_f), intent(inout)          :: f_delta  ! fill delta matrix
 
 
          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
@@ -1623,7 +1633,7 @@ module exacorr_cc
 !        get the root space, covers all ao's
          ao_space_root=ao_space%get_root_id(ierr)
 
-         call decompose_cholesky_exatensor (CD, m, ao_space, ao_space_id, t_cholesky, print_level)
+         call decompose_cholesky_exatensor (CD, m, ao_space, ao_space_id, t_cholesky,j_chol,f_delta,print_level)
 
 !        Determine space ids and root for auxilliary voov tensor from vovo tensor
          call int_t%vovo%get_space_ids(vovo_id,vovo_root,ierr)
@@ -2150,15 +2160,19 @@ module exacorr_cc
 
         end subroutine init_fock
 
-        subroutine decompose_cholesky_exatensor (CD, m, ao_space, ao_space_id, t_cholesky, print_level)
+        subroutine decompose_cholesky_exatensor (CD, m, ao_space, ao_space_id, t_cholesky, &
+                                                 j_chol, f_delta, print_level)
 
           use exacorr_global
+          use exacorr_tensor_methods
 
           type(tens_rcrsv_t), allocatable, intent(inout) :: CD(:)
           integer                                        :: m
           class(h_space_t), pointer, intent(in)          :: ao_space
           integer(INTD),intent(in)                       :: ao_space_id
           real(8),intent(in)                             :: t_cholesky
+          type(chol_J), intent(inout)                    :: j_chol  ! Cholesky: compute off-diagonal elements
+          type(delta_f), intent(inout)                   :: f_delta  ! fill delta matrix
           integer,intent(in)                             :: print_level
 
    
@@ -2168,7 +2182,7 @@ module exacorr_cc
           integer(INTD),dimension(2) :: ao2_id
 
           integer                    :: nao, i
-          type(tens_rcrsv_t)         :: D_tensor, R_tensor, O_tensor, delta
+          type(tens_rcrsv_t)         :: Diag, Res, Delta, Factor, Dlk
           integer, dimension(2)      :: ind_max
           complex(8)                 :: scal_fac, D_max
           character(len=9)           :: vs_str
@@ -2182,57 +2196,65 @@ module exacorr_cc
           allocate(CD(nao*nao))
 
           !Initialize
-          m=1
-          ierr=exatns_tensor_create(D_tensor,"DIAG",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(D_tensor,ZERO)
-          ierr=exatns_tensor_create(R_tensor,"Residual",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(R_tensor,ZERO)
-          ierr=exatns_tensor_create(delta,"Delta",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(delta,ZERO)
-          ierr=exatns_tensor_create(O_tensor,"OneElement",EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(O_tensor,ZERO)
+          ierr=exatns_tensor_create(Diag,"Diagonal",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(Diag,ZERO)
+          ierr=exatns_tensor_create(Res,"Residual",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(Res,ZERO)
+          ierr=exatns_tensor_create(Delta,"Delta",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(Delta,ZERO)
+          ierr=exatns_tensor_create(Factor,"Factor",EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(Factor,ZERO)
+          
+          ierr=exatns_tensor_traverse(Diag,'CholDiag')
+          if (print_level.gt.9) ierr=exatns_tensor_traverse(Diag,'PrintTensor')
+          if (print_level.gt.2) call print_date(" --- Diagonal computed")
 
-          print*, "get diagonal"
-          ierr=exatns_tensor_traverse(D_tensor,'CholDiag')
-          !ierr=exatns_tensor_traverse(D_tensor,'PrintTensor')
-
-          print*, "find maximum"
           ind_max=1
-          call set_delta(ind_max,2)
-          ierr=exatns_tensor_traverse(delta,'FillDelta')
-          ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",O_tensor,D_tensor,delta)
-          ierr=exatns_tensor_get_scalar(O_tensor,D_max)
+          D_max=1
+          if (print_level.gt.6) write(*,*) "--- maximum found: ", ind_max, D_max
 
-          do while (ind_max(1)<2) ! (abs(D_max)>t_cholesky)
+          m=0
 
-            print*, "compute off-diagonals with fixed index"
-            call set_chol_J_ind(ind_max)
-            ierr=exatns_tensor_traverse(R_tensor,'CholJ')
-            !ierr=exatns_tensor_traverse(R_tensor,'PrintTensor')
+          do while (abs(D_max)>t_cholesky)
 
-            print*,"add previous cholesky elements"
-            do i=1,m-1
-              call set_delta(ind_max,2)
-              ierr=exatns_tensor_traverse(delta,'FillDelta')
-              ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",O_tensor,CD(i),delta)
-              ierr=exatns_tensor_get_scalar(O_tensor,scal_fac)
-              scal_fac=-scal_fac
-              ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*O()",R_tensor,CD(i),one_tensor,scal_fac)
+            !create current elment of the cholesky vector
+            write (vs_str, '(I9)') m+1
+            ierr=exatns_tensor_create(CD(m+1),"CD_" // vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(CD(m+1),ZERO)
+
+            call j_chol%reset(ind_max)
+            ierr=exatns_tensor_create(Dlk,"Dlk",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(Dlk,'Chol_J')
+            !ierr=exatns_tensor_traverse(Dlk,'Chol_J')
+            if (print_level.gt.9) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
+            if (print_level.gt.6) call print_date(" --- Off-Diagonal computed")
+
+            ierr=exatns_tensor_init(Res,ZERO)
+            call f_delta%reset(ind_max)
+            ierr=exatns_tensor_traverse(Delta,'Delta_F')
+            do i=1,m
+              ierr=exatns_tensor_init(Factor,ZERO)
+              ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
+              ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*O()",Res,CD(i),Factor)
             end do
+            if (print_level.gt.10) ierr=exatns_tensor_traverse(Res,'PrintTensor')
+            if (print_level.gt.6) call print_date(" ---  previous Chol. vectors summed")
 
-            print*, "create new cholesky element"
-            ierr=exatns_tensor_create(CD(m),"CD_" // vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
-            scal_fac=ONE/ZSQRT(D_max)
-            !ierr=exatns_tensor_scale(R_tensor,scal_fac)
-            ierr=exatns_tensor_contract("L(p,q)=R(p,q)*O()",CD(m),R_tensor,one_tensor,scal_fac)
-
-            print*, "update Diagonal"
-            ierr=exatns_tensor_traverse(R_tensor,'Square')
-            scal_fac=-scal_fac**2
-            ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",D_tensor,R_tensor,one_tensor,scal_fac)
-
-            !set m
+            !sum and denominate
+            ierr=exatns_tensor_contract("T(p,q)+=V(p,q)",Dlk,Res,one_tensor,MINUS_ONE)
+            scal_fac=ONE / zsqrt(D_max)
+            ierr=exatns_tensor_contract("W(p,q)+=V(p,q)",CD(m+1),Dlk,one_tensor,scal_fac)
+            ierr=exatns_tensor_destroy(Dlk)
+            if (print_level.gt.9) ierr=exatns_tensor_traverse(CD(m+1),'PrintTensor')
+            if (print_level.gt.6) call print_date(" ---  new Chol. vectors computed")
+            
             m=m+1
+
+            ierr=exatns_tensor_init(Res,ZERO)
+            ierr=exatns_tensor_contract("L(p,q)=R(p,q)*O()",Res,CD(m),one_tensor)
+            ierr=exatns_tensor_traverse(Res,'Square')            
+            ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",Diag,Res,one_tensor,MINUS_ONE)
+            if (print_level.gt.6) call print_date(" ---  Diagonal updated")
 
             !find new maximum
             ind_max=m
@@ -2240,11 +2262,13 @@ module exacorr_cc
           end do
           
           !cleanup
-          ierr=exatns_tensor_destroy(D_tensor)
-          ierr=exatns_tensor_destroy(R_tensor)
-          ierr=exatns_tensor_destroy(O_tensor)
-          ierr=exatns_tensor_destroy(delta)
-          !cholesky tensor missing needs to be destroyed elsewhere
+          ierr=exatns_tensor_destroy(Diag)
+          ierr=exatns_tensor_destroy(Res)
+          ierr=exatns_tensor_destroy(Delta)
+          ierr=exatns_tensor_destroy(Factor)
+
+          !cholesky tensor needs to be destroyed elsewhere
+
         end subroutine decompose_cholesky_exatensor
 
 #else

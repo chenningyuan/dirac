@@ -91,15 +91,25 @@ module exacorr_tensor_methods
 
         !Cholesky: Offdiagonal tensor
         type, extends(tens_method_uni_t), public:: chol_J
+         integer, private :: ind(1:2)
          contains
-          procedure, public:: apply=>comp_chol_J
+          procedure, private:: chol_J_init
+          procedure, public:: reset=>chol_J_reset
+          procedure, public:: pack=>chol_J_pack
+          procedure, public:: unpack=>chol_J_unpack
+          procedure, public:: apply=>chol_J_comp
         end type chol_J
 
         ! fill delta tensor
-        type, extends(tens_method_uni_t), public:: fill_delta
-        contains
-          procedure, public:: apply=>comp_fill_delta
-        end type fill_delta
+        type, extends(tens_method_uni_t), public:: delta_f
+         integer, private :: ind(1:2)
+         contains
+          procedure, private:: delta_f_init
+          procedure, public:: reset=>delta_f_reset
+          procedure, public:: pack=>delta_f_pack
+          procedure, public:: unpack=>delta_f_unpack
+          procedure, public:: apply=>delta_f_comp
+        end type delta_f
 
         !square elements
         type, extends(tens_method_uni_t), public:: square_tensor
@@ -1240,7 +1250,47 @@ module exacorr_tensor_methods
 
         end function get_chol_diag
 
-        function comp_chol_J(this,tensor,scalar) result(ierr)
+        subroutine chol_J_init(this,val)
+         implicit none
+         class(chol_J), intent(out):: this
+         integer, intent(in):: val(1:2)
+
+         this%ind(1:2)=val(1:2)
+        end subroutine chol_J_init
+
+        subroutine chol_J_reset(this,val)
+         implicit none
+         class(chol_J), intent(inout):: this
+         integer, intent(in):: val(1:2)
+
+         this%ind(1:2)=val(1:2)
+        end subroutine chol_J_reset
+
+        subroutine chol_J_pack(this,packet,ierr)
+         implicit none
+         class(chol_J), intent(in):: this
+         class(obj_pack_t), intent(inout):: packet
+         integer(INTD), intent(out), optional:: ierr
+
+         call pack_builtin(packet,this%ind(1))
+         call pack_builtin(packet,this%ind(2))
+         if(present(ierr)) ierr=0
+         return
+        end subroutine chol_J_pack
+
+        subroutine chol_J_unpack(this,packet,ierr)
+         implicit none
+         class(chol_J), intent(inout):: this
+         class(obj_pack_t), intent(inout):: packet
+         integer(INTD), intent(out), optional:: ierr
+
+         call unpack_builtin(packet,this%ind(1))
+         call unpack_builtin(packet,this%ind(2))
+         if(present(ierr)) ierr=0
+         return
+        end subroutine chol_J_unpack
+
+        function chol_J_comp(this,tensor,scalar) result(ierr)
          implicit none
          integer(INTD):: ierr,n
          class(chol_J), intent(in):: this
@@ -1253,11 +1303,11 @@ module exacorr_tensor_methods
          if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_J: getting dense_adapter')
          n=tens%num_dims
          if (n.ne.2) call quit('Error in comp_chol_J: dimension not 2')
-         ierr=get_chol_J(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
+         ierr=get_chol_J(this%ind,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
          return
-        end function comp_chol_J
+        end function chol_J_comp
 
-        integer function get_chol_J(tens_body, data_kind, tens_dims, tens_bases, nind) result (ierr)
+        integer function get_chol_J(ind,tens_body, data_kind, tens_dims, tens_bases, nind) result (ierr)
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
@@ -1266,13 +1316,13 @@ module exacorr_tensor_methods
 
          implicit none
 
-         type(C_PTR), value:: tens_body           !in: C pointer to the tensor body (tensor elements)
-         integer(4), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(8), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
-         integer(8), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+         integer, intent(in)       :: ind(1:2)
+         type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+         integer(4), value         :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+         integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+         integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
          integer(INTD), intent(in) :: nind            ! number of independent indices
 
-         integer, dimension(2) :: ind
          integer:: nao(4)
          integer:: basis_angular ! 1=cartesian, 2=spherical
          complex(8),pointer :: ao_tens(:,:)
@@ -1295,9 +1345,6 @@ module exacorr_tensor_methods
            return
          endif
 
-!        get fixed indices 
-         call get_chol_J_ind(ind)
-
 !        Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
          call interest_initialize(.false.)
 
@@ -1305,7 +1352,7 @@ module exacorr_tensor_methods
          first_ao(1:nind) = tens_bases(1:nind)
          first_ao(3:4)=ind
          nao(1:nind) = tens_dims(1:nind)
-         nao(3:4)=1 ! fixed single element 
+         nao(3:4)=1 ! fixed single element (maybe use shell later)
          call c_f_pointer(tens_body,ao_tens,nao(1:nind)) !map C pointer to 4-dimensional array
 
 !        Allocate and get shell information for all shells that we will treat
@@ -1382,10 +1429,49 @@ module exacorr_tensor_methods
 
         end function get_chol_J
 
-        function comp_fill_delta(this,tensor,scalar) result(ierr)
+        subroutine delta_f_init(this)
+         implicit none
+         class(delta_f), intent(out):: this
+
+         this%ind(1:2)=-9
+        end subroutine delta_f_init
+
+        subroutine delta_f_reset(this,val)
+         implicit none
+         class(delta_f), intent(inout):: this
+         integer, intent(in):: val(1:2)
+
+         this%ind(1:2)=val(1:2)
+        end subroutine delta_f_reset
+
+        subroutine delta_f_pack(this,packet,ierr)
+         implicit none
+         class(delta_f), intent(in):: this
+         class(obj_pack_t), intent(inout):: packet
+         integer(INTD), intent(out), optional:: ierr
+
+         call pack_builtin(packet,this%ind(1))
+         call pack_builtin(packet,this%ind(2))
+         if(present(ierr)) ierr=0
+         return
+        end subroutine delta_f_pack
+
+        subroutine delta_f_unpack(this,packet,ierr)
+         implicit none
+         class(delta_f), intent(inout):: this
+         class(obj_pack_t), intent(inout):: packet
+         integer(INTD), intent(out), optional:: ierr
+
+         call unpack_builtin(packet,this%ind(1))
+         call unpack_builtin(packet,this%ind(2))
+         if(present(ierr)) ierr=0
+         return
+        end subroutine delta_f_unpack
+
+        function delta_f_comp(this,tensor,scalar) result(ierr)
 
           integer(INTD) :: ierr, rank
-          class(fill_delta), intent(in) :: this
+          class(delta_f), intent(in) :: this
           class(tens_rcrsv_t), intent(inout) :: tensor
           complex(8), intent(inout), optional :: scalar
 
@@ -1399,47 +1485,48 @@ module exacorr_tensor_methods
           rank=tens%num_dims
           if (rank.gt.2) call quit('Error: only up to 2 dim. implemented in fill_delta_tensor')
 
-          ierr=tensor_fill_delta(tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
+          ierr=fill_delta(this%ind,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
 
-        end function comp_fill_delta
+        end function delta_f_comp
 
-        integer function tensor_fill_delta(tens_body,tens_dims,tens_bases,rank) result (ierr)
+        integer function fill_delta(ind,tens_body,tens_dims,tens_bases,rank) result (ierr)
           !routine to make delta tensor
 
           use exacorr_global
 
           implicit none
 
+          integer, intent(in)    :: ind(1:2)
           type(C_PTR), value     :: tens_body       !in: C pointer to the tensor body (tensor elements)
           integer(8), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
           integer(8), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
           integer(INTD)          :: rank
 
-          integer, dimension(2)  :: delta = -99 ! value to extract slices
+          integer                :: hind(1:2)
           complex(8),pointer     :: tens1(:)
           complex(8),pointer     :: tens2(:,:)
 
-          call get_delta(delta)
-          if (delta(1).lt.1) call quit('Error: wrong delta index in tensor_fill_delta (r=1)')
+          if (ind(1).lt.1) call quit('Error: wrong index in fill_delta (1)<0')
 
           ierr=0
 
-          delta(1)=delta(1)-tens_bases(1)+1
+          hind(1)=ind(1)-tens_bases(1)+1
           if (rank.eq.1) then
+              if (ind(2).gt.0) call quit('Error: wrong index in fill_delta (2)>0')
               call c_f_pointer(tens_body,tens1,tens_dims(1:1)) !map C pointer to array
               tens1= ZERO
-              if (delta(1).gt.0 .and. delta(1).le.tens_dims(1)) tens1(delta(1))=ONE 
+              if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens1(hind(1))=ONE 
           else
+              if (ind(2).lt.1) call quit('Error: wrong index in fill_delta (2)<0')
               call c_f_pointer(tens_body,tens2,tens_dims(1:2)) !map C pointer to array
               tens2= ZERO
-              if (delta(2).lt.1) call quit('Error: wrong delta index in tensor_fill_delta (r=2)')
-              delta(2)=delta(2)-tens_bases(2)+1
-              if (delta(2).gt.0 .and. delta(2).le.tens_dims(2)) then
-                if (delta(1).gt.0 .and. delta(1).le.tens_dims(1)) tens2(delta(1),delta(2))=ONE 
+              hind(2)=ind(2)-tens_bases(2)+1
+              if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
+                if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens2(hind(1),hind(2))=ONE 
               end if
           end if
 
-        end function tensor_fill_delta
+        end function fill_delta
 
 
         function comp_square_tensor(this,tensor,scalar) result(ierr)
