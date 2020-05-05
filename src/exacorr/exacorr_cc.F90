@@ -2165,6 +2165,7 @@ module exacorr_cc
 
           use exacorr_global
           use exacorr_tensor_methods
+          use exacorr_ao_to_mo, only : print_tensornorm2
 
           type(tens_rcrsv_t), allocatable, intent(inout) :: CD(:)
           integer                                        :: m
@@ -2185,7 +2186,7 @@ module exacorr_cc
           type(tens_rcrsv_t)         :: Diag, Res, Delta, Factor, Dlk
           integer, dimension(2)      :: ind_max
           complex(8)                 :: scal_fac, D_max
-          character(len=9)           :: vs_str
+          character(len=12)           :: vs_str
 
 
           nao  = get_nao()   ! This is the total number of ao's
@@ -2206,54 +2207,56 @@ module exacorr_cc
           ierr=exatns_tensor_init(Factor,ZERO)
           
           ierr=exatns_tensor_traverse(Diag,'CholDiag')
-          if (print_level.gt.9) ierr=exatns_tensor_traverse(Diag,'PrintTensor')
-          if (print_level.gt.2) call print_date(" --- Diagonal computed")
+          if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
+          if (print_level.gt.4) call print_date(" --- Diagonal computed")
 
           ind_max=1
           D_max=1
-          if (print_level.gt.6) write(*,*) "--- maximum found: ", ind_max, D_max
+          if (print_level.gt.4) write(*,*) "--- maximum found: ", ind_max, D_max
 
           m=0
 
           do while (abs(D_max)>t_cholesky)
 
             !create current elment of the cholesky vector
-            write (vs_str, '(I9)') m+1
-            ierr=exatns_tensor_create(CD(m+1),"CD_" // vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
+            write (vs_str, '(A3,I9.9)') 'CD_',m+1
+            ierr=exatns_tensor_create(CD(m+1),vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(CD(m+1),ZERO)
 
             call j_chol%reset(ind_max)
             ierr=exatns_tensor_create(Dlk,"Dlk",ao2_id,ao2_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(Dlk,j_chol)
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init(j_chol) failed!')
-            !ierr=exatns_tensor_traverse(Dlk,'Chol_J')
-            if (print_level.gt.9) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
-            if (print_level.gt.6) call print_date(" --- Off-Diagonal computed")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
+            if (print_level.gt.4) call print_date(" --- Off-Diagonal computed")
 
             ierr=exatns_tensor_init(Res,ZERO)
             call f_delta%reset(ind_max)
             ierr=exatns_tensor_traverse(Delta,f_delta)
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_traverse(f_delta) failed!')
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
             do i=1,m
               ierr=exatns_tensor_init(Factor,ZERO)
-              ierr=exatns_tensor_contract("O()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
-              ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*O()",Res,CD(i),Factor)
+              ierr=exatns_tensor_contract("F()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
+              ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*F()",Res,CD(i),Factor)
             end do
-            if (print_level.gt.10) ierr=exatns_tensor_traverse(Res,'PrintTensor')
-            if (print_level.gt.6) call print_date(" ---  previous Chol. vectors summed")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Res   =",print_tensornorm2 (Res)
+            if (print_level.gt.4) call print_date(" ---  previous Chol. vectors summed")
 
             !sum and denominate
-            ierr=exatns_tensor_contract("T(p,q)+=V(p,q)",Dlk,Res,one_tensor,MINUS_ONE)
+            ierr=exatns_tensor_contract("T(p,q)+=R(p,q)*O()",Dlk,Res,one_tensor,MINUS_ONE)
+            write (*,*) 'ierr =', ierr
             scal_fac=ONE / zsqrt(D_max)
-            ierr=exatns_tensor_contract("W(p,q)+=V(p,q)",CD(m+1),Dlk,one_tensor,scal_fac)
+            ierr=exatns_tensor_contract("W(p,q)+=T(p,q)*O()",CD(m+1),Dlk,one_tensor,scal_fac)
+            write (*,*) 'ierr =', ierr
             ierr=exatns_tensor_destroy(Dlk)
-            if (print_level.gt.9) ierr=exatns_tensor_traverse(CD(m+1),'PrintTensor')
-            if (print_level.gt.6) call print_date(" ---  new Chol. vectors computed")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
+            if (print_level.gt.4) call print_date(" ---  new Chol. vectors computed")
             
             m=m+1
 
-            if (m.ge.nao*nao) then
-              call print_date(" Cholesky decomposition failed")
+            if (m.ge.5) then
+              call quit(" Cholesky decomposition failed")
               exit
             end if
 
@@ -2261,12 +2264,11 @@ module exacorr_cc
             ierr=exatns_tensor_contract("L(p,q)=R(p,q)*O()",Res,CD(m),one_tensor)
             ierr=exatns_tensor_traverse(Res,'Square')            
             ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",Diag,Res,one_tensor,MINUS_ONE)
-            if (print_level.gt.6) call print_date(" ---  Diagonal updated")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",print_tensornorm2(Diag)
+            if (print_level.gt.4) call print_date(" ---  Diagonal updated")
 
             !find new maximum
             ind_max=m
-
-
             
           end do
           
