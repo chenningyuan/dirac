@@ -3020,6 +3020,7 @@ module talsh_cc
 
         use exacorr_global
         use exacorr_cholesky
+        use talsh_ao_to_mo, only       : tensor_norm2
 
         implicit none
 
@@ -3062,17 +3063,16 @@ module talsh_cc
         !ierr=talsh_tensor_construct(CD_v,C8,hdims,init_val=ZERO)
 
         call talsh_get_diag(Diag)
-        if (print_level.gt.1) write(*,*) "--- diagonal computed "
+        if (print_level.gt.4) write(*,*) "--- diagonal computed "
 
         call talsh_find_shells(Diag, Mask, lshell, kshell, D_max)
-        if (print_level.gt.6) write(*,*) "--- shell found: ", lshell, kshell, lsize, ksize, D_max
 
         m=0
 
         do while (abs(D_max)>t_cholesky)
           lsize=get_shell_size(lshell)
           ksize=get_shell_size(kshell)
-          if (print_level.gt.0) then
+          if (print_level.gt.2) then
             write (*,'(a,i6,a,a,i6,i6,a,e12.2)') ' cholesky length =',m,' largest element:', &
             ' shell = ', lshell, kshell, ' value = ', abs(D_max)
           end if
@@ -3084,10 +3084,11 @@ module talsh_cc
 
           !get the values for the current shell
           call talsh_get_shell(Dlk, lshell, kshell)
-          if (print_level.gt.15) call print_tensor(Dlk, ACC, "Dlk")
+          if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",tensor_norm2(Dlk)
+          if (print_level.gt.4) write(*,*) "--- Dlk computed "
 
           call talsh_find_el(Diag, Mask, lshell, kshell, l, k, D_el)
-          if (print_level.gt.6) write(*,*) '--- largest value found: ', l, k, D_el
+          if (print_level.gt.4) write(*,*) '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
             call get_shell_offset(l,l0)
@@ -3108,10 +3109,11 @@ module talsh_cc
                 !ierr=talsh_tensor_contract("L(p,q)+=X(p,q)*Y()",Res,CD(i),CD_v)
                 !ierr=talsh_tensor_reshape(CD_v,hdims)
                 factor=get_element(CD(i),off2)
-                if (print_level.gt.10) write(*,*) 'factor=',factor
                 ierr=talsh_tensor_contract("L(p,q)+=X(p,q)*Y()",Res,CD(i),one_tensor,scale=factor)
-                if (print_level.gt.15) call print_tensor(Res, ACC, "Res")
+                if (print_level.gt.8) write(*,*) 'factor=',factor
+                if (print_level.gt.8) write(*,'(A7,E20.10)') "Res   =",tensor_norm2(Res)
             end do
+            if (print_level.gt.4) write(*,*) "--- previous values summed "
 
             !get Dlk for the current l and k
             ierr=talsh_tensor_init(Temp, ZERO)
@@ -3128,14 +3130,17 @@ module talsh_cc
             ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
             factor=ONE / zsqrt(D_el)
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",CD(m+1),Temp,one_tensor,scale=factor)
-            
+            if (print_level.gt.15) call print_tensor(CD(m+1), ACC, "CD_m")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "New   =",tensor_norm2(CD(m+1))
+            if (print_level.gt.4) write(*,*) "--- new Cholesky vector computed "
+
             !update diagonal
             ierr=talsh_tensor_init(Res, ZERO)
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Res,CD(m+1),one_tensor)
-            if (print_level.gt.15) call print_tensor(Res, ACC, "CD entry")
             call talsh_square_el(Res)
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
-            if (print_level.gt.15) call print_tensor(Diag, ACC, "Diag")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",tensor_norm2(Diag)
+            if (print_level.gt.4) write(*,*) "--- diagonal updated "
 
             !update mask
             call talsh_set_mask_done(Mask,l,k)
@@ -3150,7 +3155,7 @@ module talsh_cc
 
             !find next element in this shell
             call talsh_find_el(Diag, Mask, lshell, kshell, l, k, D_el)
-            if (print_level.gt.6) write(*,*)  '--- largest value found: ', l, k, D_el
+            if (print_level.gt.4) write(*,*)  '--- largest value found: ', l, k, D_el
 
           end do
 
@@ -3171,7 +3176,6 @@ module talsh_cc
         ierr=talsh_tensor_destruct(Diag)
         ierr=talsh_tensor_destruct(Res)
         ierr=talsh_tensor_destruct(Temp)
-        !ierr=talsh_tensor_destruct(CD_v)
 
         if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_talsh ========= "
 
@@ -3188,6 +3192,7 @@ module talsh_cc
 
         use exacorr_global
         use exacorr_cholesky
+        use talsh_ao_to_mo, only       : tensor_norm2
 
         implicit none
 
@@ -3228,10 +3233,9 @@ module talsh_cc
 
 
         call talsh_get_diag(Diag)
-        if (print_level.gt.2) write(*,*) "--- diagonal computed "
+        if (print_level.gt.4) write(*,*) "--- diagonal computed "
 
         call talsh_find_shells(Diag, Mask, lshell, kshell, D_max)
-        if (print_level.gt.6) write(*,*) "--- shell found: ", lshell, kshell, lsize, ksize, D_max
 
         m=0
         dims3(3)=1
@@ -3241,7 +3245,7 @@ module talsh_cc
         do while (abs(D_max)>t_cholesky)
           lsize=get_shell_size(lshell)
           ksize=get_shell_size(kshell)
-          if (print_level.gt.0) then 
+          if (print_level.gt.2) then 
             write (*,'(a,i6,a,a,i6,i6,a,e12.2)') 'cholesky length =',m,' largest element:', &
             ' shell = ', lshell, kshell, ' value = ', abs(D_max)
           end if
@@ -3262,10 +3266,11 @@ module talsh_cc
 
           !get the values for the current shell
           call talsh_get_shell(Dlk, lshell, kshell)
-          if (print_level.gt.15) call print_tensor(Dlk, ACC, "Dlk")
+          if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",tensor_norm2(Dlk)
+          if (print_level.gt.4) write(*,*) "--- Dlk computed "
 
           call talsh_find_el(Diag, Mask, lshell, kshell, l, k, D_el)
-          if (print_level.gt.6) write(*,*) '--- largest value found: ', l, k, D_el
+          if (print_level.gt.4) write(*,*) '--- largest value found: ', l, k, D_el
 
           do while(abs(D_el)>abs(D_max/1000))
             call get_shell_offset(l,l0)
@@ -3291,10 +3296,14 @@ module talsh_cc
               if (print_level.gt.15) call print_tensor(CD_m, ACC, "CD_m")
 
               ierr=talsh_tensor_contract("T(p,q)+=C(p,q,u)*D(u)",Res,CD_m,CD_v)
+              if (print_level.gt.8) write(*,'(A7,E20.10)') "CD_v  =",tensor_norm2(Res)
+              if (print_level.gt.8) write(*,'(A7,E20.10)') "Res   =",tensor_norm2(Res)
 
               ierr=talsh_tensor_destruct(CD_m)
               ierr=talsh_tensor_destruct(CD_v)
             end if
+            if (print_level.gt.4) write(*,*) "--- previous values summed "
+
 
             !get Dlk for the current l and k
             ierr=talsh_tensor_init(Temp, ZERO)
@@ -3313,6 +3322,8 @@ module talsh_cc
             denom_fac=ONE / zsqrt(D_el)
             ierr=talsh_tensor_contract("W(p,q)=V(p,q)",Res,Temp,one_tensor,scale=denom_fac)
             if (print_level.gt.15) call print_tensor(Res, ACC, "CD entry")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "New   =",tensor_norm2(Res)
+            if (print_level.gt.4) write(*,*) "--- New vector computed "
 
             !add Cholesky vector
             dims3(3)=1
@@ -3324,7 +3335,8 @@ module talsh_cc
             !update diagonal
             call talsh_square_el(Res)
             ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
-            if (print_level.gt.15) call print_tensor(Diag, ACC, "Diag")
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",tensor_norm2(Diag)
+            if (print_level.gt.4) write(*,*) "--- Diagonal updated "
 
             !update mask
             call talsh_set_mask_done(Mask,l,k)
@@ -3337,13 +3349,12 @@ module talsh_cc
             ierr=talsh_tensor_construct(CD,C8,dims3,init_val=ZERO)
             off3=0
             ierr=talsh_tensor_slice(CD,CD_int,off3,0,DEV_HOST)
-            if (print_level.gt.15) call print_tensor(CD, ACC, "CD")
 
             if (m>nao*nao) write(*,*) 'Cholesky decomposition did not work'
 
             !find next element in this shell
             call talsh_find_el(Diag, Mask, lshell, kshell, l, k, D_el)
-            if (print_level.gt.6) write(*,*)  '--- largest value found: ', l, k, D_el
+            if (print_level.gt.4) write(*,*)  '--- largest value found: ', l, k, D_el
 
           end do
 

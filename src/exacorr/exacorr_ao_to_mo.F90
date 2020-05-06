@@ -22,6 +22,8 @@ module exacorr_ao_to_mo
         public get_ht1_integral_tensor
         public get_ht2_integral_tensor
         public print_tensornorm2
+        public ao2mo_exat
+        public mulliken_to_dirac_sort
 
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
@@ -929,6 +931,216 @@ module exacorr_ao_to_mo
          initlabel = 'DensM' // vs_str(1) // vs_str(2)
 
         end function dm_initlabel
+
+      subroutine ao2mo_exat(ao_tensor,mo_tensor,print_level)
+
+!       Transform integral tensor from ao-basis to mo-basis
+
+        implicit none
+
+        type(tens_rcrsv_t), intent(inout) :: ao_tensor, mo_tensor 
+        integer,intent(in)                :: print_level
+
+        ! Auxilliary tensors that are created and destroyed inside this subroutine
+        type(tens_rcrsv_t):: coef_tensor
+        type(tens_rcrsv_t):: t_tensor
+
+        integer           :: i, ind_a, ind_b
+        integer(INTD)     :: ierr,spin, aorank, morank
+        integer(INTD)     :: ao4_id(4),ao3_id(3),ao2_id(2)
+        integer(INTD)     :: mo4_id(4),mo3_id(3),mo2_id(2)
+        integer(INTD)     :: t4_id(4),t3_id(3),t2_id(2)
+        integer(INTD)     :: coef_id(2)
+        integer(INTL)     :: ao4_root(4),ao3_root(3),ao2_root(2)
+        integer(INTL)     :: mo4_root(4),mo3_root(3),mo2_root(2)
+        integer(INTL)     :: t4_root(4),t3_root(3),t2_root(2)
+        integer(INTL)     :: coef_root(2)
+        character(len=9)  :: coef_name
+        character(len=38) :: info_str
+
+        if (print_level >5) call print_date('=== entered ao2mo_exat')
+
+!       Determine ranks
+        aorank = ao_tensor%get_rank(ierr)
+        if (ierr.ne.0) call quit('ao2mo_exat: ao tensor corrupted')
+        morank = mo_tensor%get_rank(ierr)
+        if (ierr.ne.0 .or. aorank.ne.morank) call quit('ao2mo_exat: mo tensor corrupted')
+
+        if (aorank.eq.2) then
+          call ao_tensor%get_space_ids(ao2_id,ao2_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: ao tensor corrupted')
+          call mo_tensor%get_space_ids(mo2_id,mo2_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: mo tensor corrupted')
+
+          !create temporary tensor
+          t2_id(1)   = mo2_id(1)
+          t2_id(2)   = ao2_id(2)
+          t2_root(1) = mo2_root(1)
+          t2_root(2) = ao2_root(2)
+
+          ierr=exatns_tensor_create(t_tensor,'temp',t2_id,t2_root,EXA_DATA_KIND_C8)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp2 tensor not created')
+
+          do spin = 1, 2
+            ierr=exatns_tensor_init(t_tensor,ZERO)
+
+            i=1 ! first index
+            coef_id(1)   = ao2_id(i)
+            coef_root(1) = ao2_root(i)
+            coef_id(2)   = mo2_id(i)
+            coef_root(2) = mo2_root(i)
+
+            write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
+            ierr=exatns_tensor_create(coef_tensor,coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not created')
+            ierr=exatns_tensor_init(coef_tensor,mocoef_initlabel(coef_id(1),coef_id(2),spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: coef_tensor not set')
+            if (print_level>10) write(*,*) "created and initialized coef_tensor ",i,spin, &
+              mocoef_initlabel(coef_id(1),coef_id(2),spin),print_tensornorm2(coef_tensor)
+
+            ierr=exatns_tensor_contract(t_tensor,ao_tensor,coef_tensor,"B(p,s)+=A(r,s)*M+(r,p)")
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: contraction 1 failed')
+
+            ierr=exatns_tensor_destroy(coef_tensor)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not removed')
+
+            if (print_level >5) then
+              write (info_str,'(A31,I2,A3,I2)') 'half(2) transformation done: s=',spin,',i=',i
+              call print_date(info_str)
+            end if
+
+            i=2  ! second index
+            coef_id(1)   = ao2_id(i)
+            coef_root(1) = ao2_root(i)
+            coef_id(2)   = mo2_id(i)
+            coef_root(2) = mo2_root(i)
+
+            write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
+            ierr=exatns_tensor_create(coef_tensor,coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not created')
+            ierr=exatns_tensor_init(coef_tensor,mocoef_initlabel(coef_id(1),coef_id(2),spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: coef_tensor not set')
+            if (print_level>10) write(*,*) "created and initialized coef_tensor ",i,spin, &
+              mocoef_initlabel(coef_id(1),coef_id(2),spin),print_tensornorm2(coef_tensor)
+
+            ierr=exatns_tensor_contract(mo_tensor,t_tensor,coef_tensor,"C(p,q)+=B(p,s)*M(s,q)")
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: contraction 2 failed')
+
+            ierr=exatns_tensor_destroy(coef_tensor)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not removed')
+
+            if (print_level >5) then
+              write (info_str,'(A31,I2,A3,I2)') 'quarter transformation done: s=',spin,',i=',i
+              call print_date(info_str)
+            end if
+
+          end do
+
+          ierr=exatns_tensor_destroy(t_tensor)
+
+        else if (aorank.eq.3) then
+          call quit('ao2mo_exat: for now rank 3 not implemented')
+
+        else if (aorank.eq.4) then
+          call ao_tensor%get_space_ids(ao4_id,ao4_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: ao tensor corrupted')
+          call mo_tensor%get_space_ids(mo4_id,mo4_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: mo tensor corrupted')
+
+          ! create temporary tensor
+          if (ao4_id(1).eq.ao4_id(3) .and. ao4_id(2).eq.ao4_id(4)) then
+            !first halftransformation
+            t4_id(1)     = mo4_id(1)
+            t4_id(2:4)   = ao4_id(2:4)
+            t4_root(1)   = mo4_root(1)
+            t4_root(2:4) = ao4_root(2:4)
+            ind_a=1
+            ind_b=2
+          else
+            t4_id(1:3)   = mo4_id(1:3)
+            t4_id(4)     = ao4_id(4)
+            t4_root(1:3) = mo4_root(1:3)
+            t4_root(4)   = ao4_root(4)
+            ind_a=3
+            ind_b=4
+          end if
+
+          ierr=exatns_tensor_create(t_tensor,'temp',t4_id,t4_root,EXA_DATA_KIND_C8)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp4 tensor not created')
+
+          do spin = 1, 2
+            ierr=exatns_tensor_init(t_tensor,ZERO)
+
+            i=ind_a ! first index
+            coef_id(1)   = ao4_id(i)
+            coef_root(1) = ao4_root(i)
+            coef_id(2)   = mo4_id(i)
+            coef_root(2) = mo4_root(i)
+          
+            write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
+            ierr=exatns_tensor_create(coef_tensor,coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not created')
+            ierr=exatns_tensor_init(coef_tensor,mocoef_initlabel(coef_id(1),coef_id(2),spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: coef_tensor not set')
+            if (print_level>10) write(*,*) "created and initialized coef_tensor ",i,spin, &
+              mocoef_initlabel(coef_id(1),coef_id(2),spin),print_tensornorm2(coef_tensor)
+
+            if (ind_a.eq.1) then
+              ierr=exatns_tensor_contract(t_tensor,coef_tensor,ao_tensor,"D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)")
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: contraction 1 failed')
+            else
+              ierr=exatns_tensor_contract(t_tensor,coef_tensor,ao_tensor,"D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)")
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: contraction 3 failed')
+            end if
+            
+            ierr=exatns_tensor_destroy(coef_tensor)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not removed')
+
+            if (print_level >5) then
+              write (info_str,'(A31,I2,A3,I2)') 'quarter transformation done: s=',spin,',i=',i
+              call print_date(info_str)
+            end if
+
+            i=ind_b  ! second index
+            coef_id(1)   = ao4_id(i)
+            coef_root(1) = ao4_root(i)
+            coef_id(2)   = mo4_id(i)
+            coef_root(2) = mo4_root(i)
+
+            write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
+            ierr=exatns_tensor_create(coef_tensor,coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not created')
+            ierr=exatns_tensor_init(coef_tensor,mocoef_initlabel(coef_id(1),coef_id(2),spin))
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: coef_tensor not set')
+            if (print_level>10) write(*,*) "created and initialized coef_tensor ",i,spin, &
+              mocoef_initlabel(coef_id(1),coef_id(2),spin),print_tensornorm2(coef_tensor)
+
+            if (ind_b.eq.2) then
+              ierr=exatns_tensor_contract(mo_tensor,t_tensor,coef_tensor,"D(i,j,r,s)+=L(i,q,r,s)*R(q,j)")
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: contraction 2 failed')
+            else
+              ierr=exatns_tensor_contract(mo_tensor,t_tensor,coef_tensor,"D(i,j,k,l)+=L(i,j,k,s)*R(s,l)")
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: contraction 4 failed')
+            end if
+
+            ierr=exatns_tensor_destroy(coef_tensor)
+            if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not removed')
+
+            if (print_level >5) then
+              write (info_str,'(A31,I2,A3,I2)') 'quarter transformation done: s=',spin,',i=',i
+              call print_date(info_str)
+            end if
+          end do
+          
+          ierr=exatns_tensor_destroy(t_tensor)
+
+        else
+          call quit('ao2mo_exat: wrong rank or mode')
+        end if
+
+        if (print_level >5) call print_date('=== leaving ao2mo_exat')
+
+        end subroutine ao2mo_exat
 
 ! stub non-MPI routine to satisfy references
 
