@@ -2239,9 +2239,11 @@ module exacorr_cc
             do i=1,m
               ierr=exatns_tensor_init(Factor,ZERO)
               ierr=exatns_tensor_contract("F()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
+              ierr=exatns_tensor_get_scalar(Factor,scal_fac)
+              if (print_level.gt.4) write(*,*) "--- Factor =", scal_fac
               ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*F()",Res,CD(i),Factor)
+              if (print_level.gt.6) write(*,'(A7,E20.10)') "Res   =",print_tensornorm2 (Res)
             end do
-            if (print_level.gt.6) write(*,'(A7,E20.10)') "Res   =",print_tensornorm2 (Res)
             if (print_level.gt.4) call print_date(" ---  previous Chol. vectors summed")
 
             !sum and denominate
@@ -2255,7 +2257,8 @@ module exacorr_cc
             m=m+1
 
             if (m.ge.10) then
-              call quit(" Cholesky decomposition failed")
+              !call quit(" Cholesky decomposition failed")
+              write (*,*) 'WARNING: Cholesky decomposition failed, error=',D_max
               exit
             end if
 

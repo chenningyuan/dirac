@@ -1548,8 +1548,6 @@ module exacorr_tensor_methods
 
         integer function square(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
 
-        !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
-
          implicit none
 
          integer(INTD),intent(in)    :: num_dims            !in: number of dimensions of the tensor
@@ -1572,7 +1570,7 @@ module exacorr_tensor_methods
             call c_f_pointer(tens_body,t2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
             do q = 1, tens_dims(2)
               do p = 1, tens_dims(1)
-                t2_tens(p,q) = t2_tens(p,q)**2
+                t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
               end do
             end do
          case (3)
@@ -1580,7 +1578,7 @@ module exacorr_tensor_methods
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t3_tens(p,q,r) = t3_tens(p,q,r)**2
+                  t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
                 end do
               end do
             end do
@@ -1590,7 +1588,7 @@ module exacorr_tensor_methods
               do r = 1, tens_dims(3)
                 do q = 1, tens_dims(2)
                   do p = 1, tens_dims(1)
-                    t4_tens(p,q,r,s) = t4_tens(p,q,r,s)**2
+                    t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
                   end do
                 end do
               end do
