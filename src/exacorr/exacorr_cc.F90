@@ -2617,19 +2617,6 @@ print *,'abe',ierr
         ierr=exatns_tensor_destroy(temp_tensor)
         if (print_level.gt.6) call print_date(' vvvv done ')
 
-!       Get vvvv tensor
-        hid=v_id
-        hroot=nvir
-        ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
-        do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
-        end do
-        if(ierr.ne.EXA_SUCCESS) call quit('decompose_cholesky_exatensor: vvvv')
-        call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
-        ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' vvvv done ')
-
 !       Get ooov tensor
         hid=o_id
         hid(4)=v_id
