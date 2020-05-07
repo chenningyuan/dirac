@@ -7404,8 +7404,8 @@ C***********************************************************************
       integer, parameter     :: lupot=91, iprint=0
 
       early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
-      call findel ('SCRPOT',n_charge,lupot)
-      call finpos (newel,n_exp,intorb,intisg,lupot,iprint)
+      call find_element ('SCRPOT',n_charge,lupot)
+      call find_pos (newel,n_exp,intorb,intisg,lupot,iprint)
       if (early_exit) then
          rewind (lupot)
          return
