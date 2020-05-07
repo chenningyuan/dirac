@@ -11,6 +11,7 @@ module birefring
 #ifdef PRG_DIRAC
    use dirac_interface   !provides lsquit
    use openrsp_cfg
+   use codata
 #endif
 
    implicit none
@@ -33,7 +34,7 @@ module birefring
    !wavenumber, velocity of light, and nanometer (in au), pi
    real(8), parameter :: cm1 = 1/219474.631371d0, &
                          cvl = 137.03599907d0, &
-                         nm  = 10/0.52917706d0, &
+                         nm  = 10/XTANG, &
                          pi  = 3.1415926535897931d0
 
    !field component lables for printing

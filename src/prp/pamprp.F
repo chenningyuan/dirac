@@ -8059,7 +8059,7 @@ C
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "molgfa.h"
+#include "rotg.h"
 #include "dgroup.h"
 C
       INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,
@@ -8322,7 +8322,7 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "molgfa.h"
+#include "rotg.h"
 #include "iratdef.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -8514,7 +8514,7 @@ C
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "molgfa.h"
+#include "rotg.h"
 #include "ibtfun.h"
 #include "priunit.h"
 C
@@ -8600,7 +8600,7 @@ C
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "molgfa.h"
+#include "rotg.h"
 #include "orgcom.h"
 #include "ibtfun.h"
 #include "dgroup.h"
