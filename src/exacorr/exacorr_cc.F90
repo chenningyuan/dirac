@@ -2299,7 +2299,7 @@ print *,'abe',ierr
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ') 
            ierr=exatns_tensor_init(a2int_tensor,ZERO)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: init. failed ')
-           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+           call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
            call print_date('vv halftransformation completed')
            call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12,print_level)
            if(print_level > 6) write(*,*) " N (vvvv) =",print_tensornorm2(int_t%vvvv)
@@ -2318,7 +2318,7 @@ print *,'abe',ierr
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
            ierr=exatns_tensor_init(a2int_tensor,ZERO)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: init. failed ')
-           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+           call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
            call print_date('ov halftransformation completed')
            ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
@@ -2342,7 +2342,7 @@ print *,'abe',ierr
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
            ierr=exatns_tensor_init(a2int_tensor,ZERO)
            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: init. failed ')
-           call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+           call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
            call print_date('oo halftransformation completed')
            call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12,print_level)
            if(print_level > 6) write(*,*) " N (ooov) =",print_tensornorm2(int_t%ooov)
@@ -2375,7 +2375,7 @@ print *,'abe',ierr
               ierr=exatns_tensor_create(a2int_tensor,"a2vv",a2int_id,a2int_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
               ierr=exatns_tensor_init(a2int_tensor,ZERO)
-              call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+              call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
               call get_ht2_integral_tensor (a2int_tensor,int_t%vvvv,12,print_level)
               call get_ht2_integral_tensor (a2int_tensor,int_t%vovv,34,print_level)
               call get_ht2_integral_tensor (a2int_tensor,int_t%vovo,0,print_level)
@@ -2387,7 +2387,7 @@ print *,'abe',ierr
               ierr=exatns_tensor_create(a2int_tensor,"a2ov",a2int_id,a2int_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
               ierr=exatns_tensor_init(a2int_tensor,ZERO)
-              call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+              call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
               ierr=exatns_tensor_create(ovvo_tensor,"ovvo",ovvo_id,ovvo_root,EXA_DATA_KIND_C8) ! auxilliary for get_CC_integrals
               ierr=exatns_tensor_init(ovvo_tensor,ZERO)
               call get_ht2_integral_tensor (a2int_tensor,ovvo_tensor,0,print_level)
@@ -2403,7 +2403,7 @@ print *,'abe',ierr
               ierr=exatns_tensor_create(a2int_tensor,"a2oo",a2int_id,a2int_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in get_CC_integrals: tensor too large ')
               ierr=exatns_tensor_init(a2int_tensor,ZERO)
-              call get_ht1_integral_tensor (aoint_tensor,a2int_tensor,print_level)
+              call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
               call get_ht2_integral_tensor (a2int_tensor,int_t%ooov,12,print_level)
               call get_ht2_integral_tensor (a2int_tensor,int_t%oooo,12,print_level)
               ierr=exatns_tensor_destroy(a2int_tensor)
@@ -2501,33 +2501,33 @@ print *,'abe',ierr
 
 !       perform ao to mo transformation for cholesky tensors
         do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uoo',m
-          ierr=exatns_tensor_create(uoo_tensor(m),vs_str,uoo_id,uoo_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uoo_tensor(m),ZERO)
+          write (vs_str, '(A3,I9.9)') 'uoo',i
+          ierr=exatns_tensor_create(uoo_tensor(i),vs_str,uoo_id,uoo_dims,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uoo_tensor(i),ZERO)
           call ao2mo_exat(CD(i),uoo_tensor(i),print_level)
         end do
         if (print_level.gt.6) call print_date(' uoo done ')
 
         do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uov',m
-          ierr=exatns_tensor_create(uov_tensor(m),vs_str,uov_id,uov_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uov_tensor(m),ZERO)
+          write (vs_str, '(A3,I9.9)') 'uov',i
+          ierr=exatns_tensor_create(uov_tensor(i),vs_str,uov_id,uov_dims,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uov_tensor(i),ZERO)
           call ao2mo_exat(CD(i),uov_tensor(i),print_level)
         end do
         if (print_level.gt.6) call print_date(' uov done ')
 
         do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uvo',m
-          ierr=exatns_tensor_create(uvo_tensor(m),vs_str,uvo_id,uvo_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uvo_tensor(m),ZERO)
+          write (vs_str, '(A3,I9.9)') 'uvo',i
+          ierr=exatns_tensor_create(uvo_tensor(i),vs_str,uvo_id,uvo_dims,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uvo_tensor(i),ZERO)
           call ao2mo_exat(CD(i),uvo_tensor(i),print_level)
         end do
         if (print_level.gt.6) call print_date(' uvv done ')
 
         do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uvv',m
-          ierr=exatns_tensor_create(uvv_tensor(m),vs_str,uvv_id,uvv_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uvv_tensor(m),ZERO)
+          write (vs_str, '(A3,I9.9)') 'uvv',i
+          ierr=exatns_tensor_create(uvv_tensor(i),vs_str,uvv_id,uvv_dims,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uvv_tensor(i),ZERO)
           call ao2mo_exat(CD(i),uvv_tensor(i),print_level)
         end do
         if (print_level.gt.6) call print_date(' uvv done ')
