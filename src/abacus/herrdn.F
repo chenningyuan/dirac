@@ -1638,12 +1638,13 @@ C              ===================================
 C
                ELSE IF ((BASIS .OR. (DOHUCKEL .AND. J .EQ. 2))) THEN
                   KAOVEC = KBLOCK + 1 - IBLOCK(2)
+                  BASNAM = 'HUCKEL'
                   CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,Q,DSM,
-     &                  UNCONT,'HUCKEL',BASREF(1,I,1),IPREAD)
+     &                  UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
 C
                ELSE
 C
