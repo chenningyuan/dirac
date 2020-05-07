@@ -255,7 +255,7 @@ module talsh_cc
                 call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
              else  
-                call solve_CC2_lambda_methode3_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
+                call solve_CC2_lambda_methode1_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
@@ -611,7 +611,7 @@ module talsh_cc
          integer :: ierr
 
 
-         logical :: MethodContract= .false.
+         logical :: MethodContract= .true.
 
          if (print_level.gt.8) debug_local = .true.
 
@@ -653,8 +653,10 @@ module talsh_cc
          ierr=talsh_tensor_construct(cint_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
 
          if (.not.MethodContract) then 
+                 print *, "Not Contracted Method -  CC2 t2"
                  ierr=talsh_tensor_construct(t1t1_tensor,C8,vvoo_dims,init_val=ZERO)
          else
+                 print *, "Contracted Method - CC2 t2"
                  ierr=talsh_tensor_construct(Wabej_tensor,C8,vvvo_dims,init_val=ZERO)
                  ierr=talsh_tensor_construct(Wmbij_tensor,C8,ovoo_dims,init_val=ZERO)
          end if       
@@ -701,9 +703,7 @@ module talsh_cc
 
 
 !!!!!!   Here we try a new intermediates
-          call print_date('DATE BEFORE CONTRACTION')
           if (.not.MethodContract) then
-                  print *, "METHODE CLASSIQUE"
         !         b. t1t12 =  t^a_i t^b_j
                   ierr=talsh_tensor_init(t1t1_tensor)
                   ierr=talsh_tensor_contract("T(e,a,i,m)+=T(e,i)*T(a,m)",t1t1_tensor,comm_t%t1,comm_t%t1)
@@ -725,9 +725,7 @@ module talsh_cc
                   ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,scale=MINUS_ONE)
                   ierr=talsh_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
                   if (debug_local) print*, "norm s2 tensor after diagram 20 ",tensor_norm2(s2_tensor)
-                  call print_date('DATE AFTER CLASSIC CONTRACTION')
          else
-                  print *, "METHODE CONTRACTEE"
                   ierr=talsh_tensor_init(Wabej_tensor,ZERO)
                   ierr=talsh_tensor_init(Wmbij_tensor,ZERO)           
 
@@ -746,10 +744,9 @@ module talsh_cc
        
                   ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE) 
                   ierr=talsh_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=ONE)
-                  call print_date('DATE AFTER Intermediates CONTRACTION')
          end if
 !         else
-!                  print *, "METHODE AMELIOREE SIMPLIFIEE 290420"
+!                  print *, "Contracted approximated methode 290420 for CC2"
 !                  ierr=talsh_tensor_init(Wabej_tensor,ZERO)
 !                  ierr=talsh_tensor_init(Wmbij_tensor,ZERO)           
 !
