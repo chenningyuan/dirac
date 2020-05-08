@@ -4378,4 +4378,35 @@ C***********************************************************************
          ENDIF
       ENDDO
       END
-      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Usym */
+      SUBROUTINE USYM(A,LDA,N)
+C***********************************************************************
+C
+C     Symmetrize an upper triangular matrix
+C
+C***********************************************************************
+       INTEGER LDA,N,I,J
+       REAL*8 A(LDA,N)
+       DO I=2,N
+          DO J=1,I
+            A(I,J) = A(J,I)
+          ENDDO
+       ENDDO
+       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Fdiag */
+      SUBROUTINE FDIAG(A,LDA,N)
+C***********************************************************************
+C
+C     Force diagonal form by zeroing out all non-diagonal elements
+C
+C***********************************************************************
+       INTEGER LDA,N,I,J
+       REAL*8 A(LDA,N)
+       DO I=1,N
+          DO J=1,N
+            IF(I.NE.J) A(I,J) = 0.0D0
+          ENDDO
+       ENDDO
+       END

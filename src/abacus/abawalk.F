@@ -868,7 +868,8 @@ C
 C        Generate normal coordinates for numerical differentiation
 C
          KAMASS = 1
-         KNATYP = KAMASS + NUCDEP
+         KNUMIS = KAMASS + NUCDEP
+         KNATYP = KNUMIS + NUCDEP
          KORIG  = KNATYP + (NUCDEP + 1)/IRAT
          KGEOM  = KORIG  + 3
          KDKIN  = KGEOM  + 3*NUCDEP
@@ -880,7 +881,7 @@ C
          IF (LWRK1 .LE. 0) CALL STOPIT('WLKVIB',' ',KWRK1,LWORK)
 C
          CALL CMMASS(WORK(KGEOM),WORK(KAMASS),WORK(KNATYP),
-     &               ISOTOP,IPRWLK)
+     &               WORK(KNUMIS),IPRWLK)
 C
 C     Project out translation and rotational motion from the Hessian
 C

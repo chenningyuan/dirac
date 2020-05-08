@@ -75,4 +75,4 @@ molecule18   Hs(CO)4;           D(2d)       D(2d)         D2
 
 The (!) symbol means that the (ADF's determined) symmetry does not correspond with the DIRAC's detected full group.
 
-More examples have to be be added here to demostrate (and test) the full variety of symmetry detections.
+More examples have to be be added here to demostrate (and test) the full variety of symmetry detections in DIRAC.
