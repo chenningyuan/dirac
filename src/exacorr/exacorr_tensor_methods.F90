@@ -91,7 +91,7 @@ module exacorr_tensor_methods
 
         !Cholesky: Offdiagonal tensor
         type, extends(tens_method_uni_t), public:: chol_J
-         integer, private :: ind(1:2)
+         integer(INTL), private :: ind(1:2)
          contains
           procedure, private:: chol_J_init
           procedure, public:: reset=>chol_J_reset
@@ -102,7 +102,7 @@ module exacorr_tensor_methods
 
         ! fill delta tensor
         type, extends(tens_method_uni_t), public:: delta_f
-         integer, private :: ind(1:2)
+         integer(INTL), private :: ind(1:2)
          contains
           procedure, private:: delta_f_init
           procedure, public:: reset=>delta_f_reset
@@ -1253,7 +1253,7 @@ module exacorr_tensor_methods
         subroutine chol_J_init(this,val)
          implicit none
          class(chol_J), intent(out):: this
-         integer, intent(in):: val(1:2)
+         integer(INTL), intent(in):: val(1:2)
 
          this%ind(1:2)=val(1:2)
         end subroutine chol_J_init
@@ -1261,7 +1261,7 @@ module exacorr_tensor_methods
         subroutine chol_J_reset(this,val)
          implicit none
          class(chol_J), intent(inout):: this
-         integer, intent(in):: val(1:2)
+         integer(INTL), intent(in):: val(1:2)
 
          this%ind(1:2)=val(1:2)
         end subroutine chol_J_reset
@@ -1316,7 +1316,7 @@ module exacorr_tensor_methods
 
          implicit none
 
-         integer, intent(in)       :: ind(1:2)
+         integer(INTL), intent(in) :: ind(1:2)
          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
          integer(4), value         :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
          integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
@@ -1439,7 +1439,7 @@ module exacorr_tensor_methods
         subroutine delta_f_reset(this,val)
          implicit none
          class(delta_f), intent(inout):: this
-         integer, intent(in):: val(1:2)
+         integer(INTL), intent(in):: val(1:2)
 
          this%ind(1:2)=val(1:2)
         end subroutine delta_f_reset
@@ -1496,11 +1496,11 @@ module exacorr_tensor_methods
 
           implicit none
 
-          integer, intent(in)    :: ind(1:2)
-          type(C_PTR), value     :: tens_body       !in: C pointer to the tensor body (tensor elements)
-          integer(8), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
-          integer(8), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
-          integer(INTD)          :: rank
+          integer(INTL), intent(in) :: ind(1:2)
+          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+          integer(INTD)             :: rank
 
           integer                :: hind(1:2)
           complex(8),pointer     :: tens1(:)
