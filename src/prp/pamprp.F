@@ -8605,6 +8605,7 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbprp.h"
+#include "dcbham.h"
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,KATOM,NUMIS,
      &        ICOOR,NATTYP
@@ -8701,6 +8702,10 @@ C
             WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
          END IF
       END IF
+C
+      IF(LEVYLE)  WRITE(LUPRI,'(A)') 'NOTE: Remember that in the ' //
+     & 'NR framework g^LR-S(e-e), g^LR-L(e-p) and g^LR-S(e-p) are '//
+     & 'identically zero.'
 C
       IF (IPRINT .GE. 0) THEN
         CALL HEADER('Molecular g-tensor',-1)
@@ -10238,7 +10243,6 @@ C
 #include "spinro.h"
 #include "iratdef.h"
 #include "dgroup.h"
-C#include "ibtfun.h"
 #include "dcbham.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -10804,6 +10808,7 @@ C
 #include "orgcom.h"
 #include "ibtfun.h"
 #include "dgroup.h"
+#include "dcbham.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -10903,6 +10908,10 @@ C
         END IF
        END IF
       END IF
+C
+      IF(LEVYLE)  WRITE(LUPRI,'(A)') 'NOTE: Remember that in the ' //
+     & 'NR framework M^LR-S(e-e), M^LR-L(e-p) and M^LR-S(e-p) are '// 
+     & 'identically zero.'
 C
 C    Print spin-rotation constants or tensors
 C
