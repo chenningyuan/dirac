@@ -29,6 +29,7 @@ C*************************************************************
 C* This is the procedures that controls the reading from     *
 C* file, and calls all the other subroutines.                *
 C* It returns a bunch of variables. It returns:              *
+C* - intent(out):
 C*     IQM - (Highest angular quantum number) + 1            *
 C*     JCO - Redundant variable that gives how many blocks   *
 C*           the primitives and contraction coefficients are *
@@ -47,15 +48,19 @@ C*              contraction coefficients (for a given        *
 C*              (quantum number + 1)).                       *
 C*     CPRIM - Like CPRIMU, but this time the contraction    *
 C*             coefficients are normalized.                  *
-C*     NBLOCK - total number of blocks; here always same as  *
-C*              IQM, but in GTOINP the user may divide any   *
-C*              IQM value in several blocks.                 *
-C*     KAOVEC - max blocks, here (angular quantum number + 1)*
-C*     KPRIM, Q, DSM are max number of primitives, nuclear   *
-C*             charge, highest number to be accepted as zero *
+C*     NBLOCK - total number of blocks; = sum(JCO(1:IQM).    *
+C*              The same as IQM if not DOSPLIT.              *
+C*     ISGEN  -
 C*     BASREF - documentation lines for basis set            *
+C* - intent(in):
+C*     KAOVEC - max NBLOCK, typically = MXSHEL.              *
+C*     KPRIM  - max number of primitives.                    *
+C*     Q    is nuclear charge, used to identify atom         *
 C*     QEFF is eff. nuclear charge which is .le. Q,          *
 C*             Q-QEFF will be described with ECP             *
+C*     DSM    - highest number to be accepted as zero.       *
+C*     BASNAM - name of basis set to find, or "HUCKEL"       *
+C*     IPRBAS - print level in BASLIB and sub procedures     *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
@@ -101,7 +106,7 @@ C     that generate 3 small component p-functions. The maximum for
 C     other types of functions is scaled down by KHK(IQM+1) that
 C     gives the number of functions in the small component for that type.
       PARAMETER (MAX_IN_BLOCK=3*15)
-      LOGICAL SPLIT, DO_UNCONT, DO_SPLITT
+      LOGICAL SPLIT, DO_UNCONT, DO_SPLIT
       integer :: jcount = 0
 #endif /* PRG_DIRAC */
       integer :: LU_NOT_USED
@@ -125,6 +130,7 @@ C     from calling routine
       BASTMP = ' '
       BASSAV = BASNAM
       LUBAS  = LU_NOT_USED(20)
+      IQM    = 0
       NBLOCK = 0
       IAUG   = 0
       ANO    = .FALSE.
@@ -136,8 +142,8 @@ C
 C     turn on splitting of primitive shells only for methods that
 C     perform an integral transformation to the spinor basis
 C
-      DO_SPLITT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
-      IF (PARCAL) DO_SPLITt = .true. ! if parallel, then also split for direct SCF
+      DO_SPLIT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
+      IF (PARCAL) DO_SPLIT = .true. ! if parallel, then also split for direct SCF
 
 CDIRAC:..allow contraction only for elements Z.LE.36
 C      except for 2c NR calculations
@@ -475,34 +481,34 @@ C
 
             READ_NU_CALLED=.FALSE.
 
+            IQM = IQM + 1 ! counting s, p, d, ... total shells
 C
-C    For DO_SPLITT:
+C    For DO_SPLIT:
 C           We should not make blocks of primitives too large in case of uncontracted sets
 C           Compute maximum size (should of course always be one, hence the MAX in the
 C           determination step).
 C
-            NBLOCK = NBLOCK + 1
-            IF (NBLOCK .GT. KAOVEC) THEN
-               CALL QUIT('Too many AO blocks'//
-     &            ' for this program version; increase WRKMEM')
-            END IF
-            KHK_SC = (NBLOCK+1)*(NBLOCK+2)/2 ! number of basis function components for small component l+1
+            KHK_SC = (IQM+1)*(IQM+2)/2 ! number of basis function components for small component l+1
             MAXPRIM_IN_BLOCK = MAX(1,MAX_IN_BLOCK/KHK_SC)
             N_SPLIT = (INTEXP-1)/MAXPRIM_IN_BLOCK + 1
             IF (N_SPLIT .GT. 1) MAXPRIM_IN_BLOCK = (INTEXP-1)/N_SPLIT+1 ! spread load evenly
 
-            JCO(NBLOCK) = 1
+            JCO(IQM) = 1
   11        CONTINUE
 CMI           ... to have INTORB fixed for repeating calls of READ_NU
+            NBLOCK = NBLOCK + 1
+            IF (NBLOCK .GT. KAOVEC) THEN
+               CALL QUIT('Too many AO shell blocks; increase MXSHEL')
+            END IF
 C
-            IF (DO_SPLITT .AND.
+            IF (DO_SPLIT .AND.
      &          (INTORB.LE.0.AND.INTEXP.GT.MAXPRIM_IN_BLOCK)) THEN
                IF (ANO .OR. SADLEJ) THEN
                   SPLIT = .FALSE.
                ELSE
                   INTEXP_2 = INTEXP - MAXPRIM_IN_BLOCK
                   INTEXP = MAXPRIM_IN_BLOCK
-                  JCO(NBLOCK) = JCO(NBLOCK) + 1
+                  JCO(IQM) = JCO(IQM) + 1
                   SPLIT = .TRUE.
                ENDIF
             ELSE
@@ -576,14 +582,14 @@ C
 
 !#define PRINT_GAUSSIAN_INP
 #ifdef PRINT_GAUSSIAN_INP
-            CALL print_gaussian_inp(jcount, NBLOCK, ALPHA(1,NBLOCK),
+            CALL print_gaussian_inp(jcount, IQM, ALPHA(1,NBLOCK),
      &                  CPRIMU(1,1,NBLOCK),NUC(NBLOCK),
      &                  NRC(NBLOCK),SEG(NBLOCK),KPRIM,DSM)
 #endif
 C
 C Normalizing CPRIMU for (angular quantum number + 1).
 C
-             CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK),
+             CALL NRMORB(IQM, NRC(NBLOCK), NUC(NBLOCK),
      +                   ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK),
      +                   CPRIMU(1,1, NBLOCK),  KPRIM, NBLOCK)
 C
@@ -615,7 +621,7 @@ C
          IF (len_BASNAM .GT. 0) THEN
             CALL FREFRM(BASNAM,ISTART,IQUANT,DUMMY,'INT')
             CALL FREFRM(BASNAM,ISTART,IDUMMY,EXPON,'REA')
-            IF (IQUANT .EQ. NBLOCK) THEN
+            IF (IQUANT .EQ. IQM) THEN
                FOUND  = .TRUE.
                INTEXP = INTEXP + 1
                INTORB = INTORB + 1
@@ -639,7 +645,7 @@ C
 C
 C Normalizing CPRIMU for (angular quantumnumber + 1).
 C
-            CALL NRMORB(NBLOCK, NRC(NBLOCK), NUC(NBLOCK),
+            CALL NRMORB(IQM, NRC(NBLOCK), NUC(NBLOCK),
      +                  ALPHA(1,NBLOCK),CPRIM(1, 1, NBLOCK),
      +                  CPRIMU(1,1, NBLOCK), KPRIM, NBLOCK)
             GOTO 32
@@ -657,8 +663,6 @@ C
      &   'ERROR     AOs in each shell (example: "basis=ano-1 3 2 1")'
          CALL QUIT('No basis functions found for this element')
       END IF
-C
-      IQM = NBLOCK
 C
 C Find reference information for the basis set.
 C
