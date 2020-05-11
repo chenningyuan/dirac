@@ -218,7 +218,8 @@ module exacorr_cc
             write(*,*) ""
 
             !compute perturpative triples for testing
-            call t3_energy(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,occ_space,vir_space)
+            call t3_energy(t_energy,comm_t,int_t,vir_space)
+            call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ)
             call quit('testing triples')
 
 !           Start CC(S)D iterations
@@ -252,7 +253,7 @@ module exacorr_cc
 
             if (.not.CCD) then
                !compute perturpative triples
-               call t3_energy(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,occ_space,vir_space)
+               call t3_energy(t_energy,comm_t,int_t,vir_space)
                ! calculate T1 diagnostic
                t1diag = print_tensornorm2(comm_t%t1)
                t1diag = t1diag/sqrt(dble(nocc))
@@ -2707,7 +2708,128 @@ print *,'abe',ierr
 
         end subroutine init_fock
 
-        subroutine t3_energy(t_energy,comm_t,int_t,f_delta,denom,mo_occ,occ_space,vir_space)
+        subroutine t3_energy(t_energy,comm_t,int_t,vir_space)
+            
+            use exacorr_ao_to_mo, only : print_tensornorm2
+
+            real(8), intent(out)                    :: t_energy(3)
+            type(exatns_comm_tens)                  :: comm_t
+            type(exatns_intg_tens)                  :: int_t
+            class(h_space_t), pointer               :: vir_space
+
+            integer(INTL),dimension(2) :: ov_root, vo_root
+            integer(INTD),dimension(2) :: ov_id, vo_id
+            integer(INTL),dimension(4) :: ooov_root, vovv_root, vvoo_root, oovv_root, g_sub, t_sub
+            integer(INTD),dimension(4) :: ooov_id,   vovv_id,   vvoo_id,   oovv_id
+            integer(INTL),dimension(4) :: w_sub
+            integer(INTD),dimension(4) :: w_id
+
+            integer(INTD)                :: ierr,rank
+            integer(INTD)                :: idocc, idvir
+            integer(INTL)                :: nocc, nvir
+            integer(INTL)                :: a, b, c, n_subspaces
+            integer(INTL),allocatable    :: vir_subspaces(:)
+            type(tens_rcrsv_t)           :: res_tensor
+            complex(8)                   :: result_val
+            type(tens_rcrsv_t)           :: w_tensor, w1_tensor, y_tensor, z_tensor
+            type(tens_rcrsv_t)           :: g_tensor, t_tensor
+            
+            call comm_t%fov%get_space_ids(ov_id,ov_root,ierr)
+            call comm_t%fov%get_dims(ov_root,rank,ierr)
+            vo_root=ov_root(1)
+            vo_id=ov_id(1)
+            vo_root(1)=ov_root(2)
+            vo_id(1)=ov_id(2)
+            
+            call int_t%ooov%get_space_ids(ooov_id,ooov_root,ierr)
+            call int_t%vovv%get_space_ids(vovv_id,vovv_root,ierr)
+            call int_t%oovv%get_space_ids(oovv_id,oovv_root,ierr)
+            call int_t%ooov%get_dims(oovv_root,rank,ierr)
+            vvoo_root(1:2)=oovv_root(3:4)
+            vvoo_root(3:4)=oovv_root(1:2)
+            vvoo_id(1:2)=oovv_id(3:4)
+            vvoo_id(3:4)=oovv_id(1:2)
+
+            t_energy = ZERO
+            nocc=oovv_root(1)
+            nvir=oovv_root(3)
+            idocc=oovv_id(1)
+            idvir=oovv_id(3)
+
+!           Initialize scalars that are to be used as tensors in contractions
+            ierr=exatns_tensor_create(res_tensor,"res_tensor",EXA_DATA_KIND_C8)
+
+!           get the level composition for the virtual orbitals
+            call vir_space%get_level_composition(int(1,INTD),vir_subspaces,n_subspaces,ierr)
+
+            w_id=idocc
+            w_sub=nocc
+            w_id(1:3)=idvir
+
+            do a = 1, n_subspaces
+              w_sub(1)=vir_subspaces(a)
+              do b = 1, n_subspaces
+                w_sub(2)=vir_subspaces(b)
+                do c = 1, n_subspaces
+                  w_sub(3)=vir_subspaces(a)
+                  ierr=exatns_tensor_create(w_tensor,'Wabcijk',w_id,w_sub,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: creation of w')
+                  ierr=exatns_tensor_init(w_tensor,ZERO)
+                  ierr=exatns_tensor_create(w1_tensor,'Wabcijk',w_id,w_sub,EXA_DATA_KIND_C8)
+                  ierr=exatns_tensor_init(w1_tensor,ZERO)
+
+                  ! term g^{abe}_i t^{ec}_jk
+                  g_sub(3)=vir_subspaces(a)
+                  g_sub(4)=vir_subspaces(b)
+                  g_sub(1:2)=vo_root
+                  call g_tensor%tens_rcrsv_ctor(int_t%vovv,g_sub,ierr)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: g_vovv')
+                  t_sub=vvoo_root
+                  t_sub(2)=vir_subspaces(c)
+                  call t_tensor%tens_rcrsv_ctor(comm_t%t2,t_sub,ierr)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: t2 (1)')
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,i,a,b)*T(e,c,j,k)",w_tensor,g_tensor,t_tensor)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 1')
+                  ierr=exatns_tensor_destroy(g_tensor)
+                  ierr=exatns_tensor_destroy(t_tensor)
+
+                  ! term g^{abe}_i t^{ec}_jk
+                  g_sub=nocc
+                  g_sub(4)=vir_subspaces(a)
+                  call g_tensor%tens_rcrsv_ctor(int_t%ooov,g_sub,ierr)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: g_ooov')
+                  t_sub=vvoo_root
+                  t_sub(1)=vir_subspaces(b)
+                  t_sub(2)=vir_subspaces(c)
+                  call t_tensor%tens_rcrsv_ctor(comm_t%t2,t_sub,ierr)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: t2 (2)')
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(i,j,l,a)*T(b,c,k,l)",w_tensor,g_tensor,t_tensor) 
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 2')
+                  ierr=exatns_tensor_destroy(g_tensor)
+                  ierr=exatns_tensor_destroy(t_tensor)
+
+                  ierr=exatns_tensor_contract("C(a,b,c,i,j,k)+=W(a,b,c,i,j,k)*O()",w1_tensor,w_tensor,one_tensor) 
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: copy')
+                  
+                  !Denominate
+                  ierr=exatns_tensor_transform(w_tensor,'Denominate')
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: denominate')
+
+                  !Contract
+                  ierr=exatns_tensor_contract("R()+=W(a,b,c,i,j,k)*C(a,b,c,i,j,k)",res_tensor,w_tensor,w1_tensor) 
+                  if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 3')
+
+                  ierr=exatns_tensor_destroy(w_tensor)
+                end do 
+              end do 
+            end do
+
+            !clean up
+            deallocate(vir_subspaces)
+
+        end subroutine t3_energy
+
+        subroutine t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,mo_occ)
             
             use exacorr_global
             use exacorr_tensor_methods
@@ -2719,7 +2841,6 @@ print *,'abe',ierr
             type(delta_t)                           :: f_delta  ! fill delta matrix
             type(denom_t)                           :: denom
             integer                                 :: mo_occ(:)
-            class(h_space_t), pointer,intent(inout) :: occ_space, vir_space
 
             integer(INTL),dimension(2) :: ov_root, vo_root, subspace_id2
             integer(INTD),dimension(2) :: ov_id, vo_id
@@ -2869,7 +2990,7 @@ print *,'abe',ierr
                   ! Copy w into y array and calculate 4th order +T energy contribution
                   ierr=exatns_tensor_init(y_tensor,ZERO)
                   ierr=exatns_tensor_contract("W(a,b,c)+=W(a,b,c)*K()",y_tensor,w_tensor,one_tensor)
-                  ierr=exatns_tensor_transform(y_tensor,'Denominate')
+                  ierr=exatns_tensor_transform(y_tensor,denom)
                   ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",res_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   ierr=exatns_tensor_get_scalar(res_tensor,result_val)
@@ -2903,7 +3024,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_destroy(y_tensor)
 
 
-        end subroutine t3_energy
+        end subroutine t3_energy_old
 
         subroutine get_subtensor (tensor,stensor,f_delta,mode,i,j)
 

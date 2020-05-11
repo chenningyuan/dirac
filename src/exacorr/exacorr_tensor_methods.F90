@@ -89,6 +89,12 @@ module exacorr_tensor_methods
           procedure, public:: apply=>delta_t_comp
         end type delta_t
 
+        !square tensor
+        type, extends(tens_method_uni_t), public:: square_t
+         contains
+          procedure, public:: apply=>comp_square_t
+        end type square_t
+
        contains
 
         function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
@@ -945,7 +951,7 @@ module exacorr_tensor_methods
           end do
         end if
 
-        this%eps_ijk=-1.0D0
+        this%eps_ijk=1.0D0
         this%occ_id=occ_id
 
       end subroutine denom_t_init
@@ -1007,7 +1013,8 @@ module exacorr_tensor_methods
         case (3)
           allocate (tens_id  (3))
           allocate (tens_root(3))
-          if (this%eps_ijk.le.0) call quit ('Error: eps_ijk not set in denom_t_comp')
+          write (*,*) 'eps_ijk',this%eps_ijk
+          if (this%eps_ijk.gt.0) call quit ('Error: eps_ijk not set in denom_t_comp')
         case (4)
           allocate (tens_id  (4))
           allocate (tens_root(4))
@@ -1285,5 +1292,99 @@ module exacorr_tensor_methods
         end select
       end function fill_delta
 
+      function comp_square_t(this,tensor,scalar) result(ierr)
+        implicit none
+        integer(INTD)                       :: ierr,n
+        class(square_t), intent(in)         :: this
+        class(tens_rcrsv_t), intent(inout)  :: tensor
+        complex(8), intent(inout), optional :: scalar
+        type(tens_dense_t)                  :: tens
+
+        ierr=0
+        tens=tensor%get_dense_adapter(ierr)
+        if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+
+        n=tens%num_dims
+        if (n.gt.6) call quit('ERROR in comp_square_t: rank too large')
+        ierr=square(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
+
+      end function comp_square_t
+
+      integer function square(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
+
+        implicit none
+
+        integer(INTD),intent(in)    :: num_dims        !in: number of dimensions of the tensor
+        type(C_PTR), value          :: tens_body       !in: C pointer to the tensor body (tensor elements)
+        integer(INTD), value        :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+        integer(INTL), intent(in)   :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+        integer(INTL), intent(in)   :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+        integer :: p,q,r,s,t,u
+        complex(8),pointer :: t1_tens(:)
+        complex(8),pointer :: t2_tens(:,:)
+        complex(8),pointer :: t3_tens(:,:,:)
+        complex(8),pointer :: t4_tens(:,:,:,:)
+        complex(8),pointer :: t6_tens(:,:,:,:,:,:)
+
+        ierr=0 !set error code to success
+        if(data_kind /= EXA_DATA_KIND_C8) then
+          ierr=-1 !invalid data kind requested
+          return
+        endif
+
+        select case (num_dims)
+        case (1)
+          call c_f_pointer(tens_body,t1_tens,tens_dims) !map C pointer to 2-dimensional array
+          do p = 1, tens_dims(1)
+            t1_tens(p) = t1_tens(p)*t1_tens(p)
+          end do
+        case (2)
+        call c_f_pointer(tens_body,t2_tens,tens_dims) !map C pointer to 2-dimensional array
+          do q = 1, tens_dims(2)
+            do p = 1, tens_dims(1)
+              t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
+            end do
+          end do
+        case (3)
+          call c_f_pointer(tens_body,t3_tens,tens_dims) !map C pointer to 2-dimensional array
+          do r = 1, tens_dims(3)
+            do q = 1, tens_dims(2)
+              do p = 1, tens_dims(1)
+                t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
+              end do
+            end do
+          end do
+        case (4)
+          call c_f_pointer(tens_body,t4_tens,tens_dims) !map C pointer to 2-dimensional array
+          do s = 1, tens_dims(4)
+            do r = 1, tens_dims(3)
+              do q = 1, tens_dims(2)
+                do p = 1, tens_dims(1)
+                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
+                end do
+              end do
+            end do
+          end do
+        case (6)
+          call c_f_pointer(tens_body,t6_tens,tens_dims) !map C pointer to 2-dimensional array
+          do u = 1, tens_dims(6)
+            do t = 1, tens_dims(5)
+              do s = 1, tens_dims(4)
+                do r = 1, tens_dims(3)
+                  do q = 1, tens_dims(2)
+                    do p = 1, tens_dims(1)
+                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          end do
+        case default
+          call quit ('Error in square: dimension not implemented')
+        end select
+
+      end function square
 
 end module exacorr_tensor_methods
