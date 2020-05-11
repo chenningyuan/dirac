@@ -170,3 +170,9 @@ Activates the :ref:`*KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
 
+keyword(LAPLCE)
+
+Activates the :ref:`*LAPLCE`
+module to compute weights for Laplace transformation of orbital
+energy denominators with the algorithm of Helmich-Paris.
+No subsequent calculations, only output of the Laplace points and weights.
