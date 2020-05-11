@@ -241,6 +241,7 @@
       NHTYP  = 0
       IQM = 0
       NBLOCK = 0
+      ISGEN(1:KAOVEC) = 0
 !
 !     Initialize reference strings for this atom type.
 !
@@ -445,7 +446,7 @@
 !
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
-     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,DSM,                        &
+     &         NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,                              &
      &         UNCONT,BASFIL,BASREF,IPREAD)
           NBLCK = NBLCK + NBLOCK
       CASE (4)
@@ -560,7 +561,6 @@
       DIMENSION ALPHAT(KPRM,KBLK)
       DIMENSION CPRIMT(KPRM,KPRM,KBLK)
       DIMENSION CPRIMUT(KPRM,KPRM,KBLK)
-      DIMENSION ISGENT(KBLK)
       CHARACTER*80 BASREFT(10,MAXBSFIL)
       LOGICAL SEGT
 !
@@ -593,7 +593,7 @@
      &                 ALPHAT(1,IBLOCK1),                               &
      &                 CPRIMT(1,1,IBLOCK1),                             &
      &                 CPRIMUT(1,1,IBLOCK1),                            &
-     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,Q,1,DSM,  &
+     &                 NBLOCK,KAOVEC1,KPRIM,Q,Q,1,DSM,                  &
      &                 BSFIL(M),BASREFT(1,M),IPREAD)
           BASREF(3*(M-1)+4) = BASREFT(1,M)
 !
@@ -634,17 +634,17 @@
             IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
               IF ( NUCT(IR) .GT. 0 ) THEN
 
-                   JCO(IQ)= JCO(IQ)+ 1
-                   NUC(KT)  = NUC(KT) + NUCT(IR)
-                   NRC(KT)  = NRC(KT) + NRCT(IR)
-                   SEG(KT)  = SEGT(IR)
-                   ISGEN(KT)  = ISGENT(IR)
+                   JCO(IQ)   = JCO(IQ)+ 1
+                   NUC(KT)   = NUC(KT) + NUCT(IR)
+                   NRC(KT)   = NRC(KT) + NRCT(IR)
+                   SEG(KT)   = SEGT(IR)
+                   ISGEN(KT) = 0
 
                    DO 468 IX=1, NUCT(IR)
                       ALPHA(IX,KT)      =  ALPHAT(IX,IR)
                       DO 468 JX=1, NRCT(IR) 
-                       CPRIM(IX,JX,KT) =  CPRIMT(IX,JX,IR)
-                       CPRIMU(IX,JX,KT)= CPRIMUT(IX,JX,IR)
+                       CPRIM(IX,JX,KT)  = CPRIMT(IX,JX,IR)
+                       CPRIMU(IX,JX,KT) = CPRIMUT(IX,JX,IR)
   468              CONTINUE
                    KT = KT + 1
                 END IF 

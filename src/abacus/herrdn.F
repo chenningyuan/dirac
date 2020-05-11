@@ -674,6 +674,7 @@ C        In 4-component mode Cartesian Gaussians are always used.
       ALLOCATE(NUC(KBLOCK,KSETS))
       ALLOCATE(NRC(KBLOCK,KSETS))
       ALLOCATE(ISGEN(KBLOCK))
+      ISGEN(:) = 0
       ALLOCATE(SEG(KBLOCK,KSETS))
       ALLOCATE(BASREF(10,MXCENT,MXBSETS))
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
@@ -940,7 +941,6 @@ C
       DIMENSION ALPHAT(KPRM,KBLK)
       DIMENSION CPRIMT(KPRM,KPRM,KBLK)
       DIMENSION CPRIMUT(KPRM,KPRM,KBLK)
-      DIMENSION ISGENT(KBLK)
       CHARACTER*80 BASNAM
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
@@ -1281,7 +1281,7 @@ C
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
-     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,QB,QB,DSM,
+     &                 NBLOCK,KAOVEC,KPRIM,QB,QB,DSM,
      &                 UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
                   NBLCK(I,1) = NBLOCK
 C
@@ -1335,7 +1335,7 @@ C Note that the Variables with T have dimension KPRM instead of KPRIM!
      &                   ALPHAT(1,IBLOCK1),
      &                   CPRIMT(1,1,IBLOCK1),
      &                   CPRIMUT(1,1,IBLOCK1),
-     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRM,Q,Q,DSM,
+     &                   NBLOCK,KAOVEC,KPRM,Q,Q,DSM,
      &                   UNCONT,BASNAM,BASREFT(1,I,M),IPREAD)
 
                      BASREF(3*(M-1)+4,I,1) = BASREFT(1,I,M)
@@ -1393,7 +1393,7 @@ CMI           ... filling up !!! the JCO must be INITIALIZED before !!!
                           NUC(KT,1)  = NUC(KT,1) + NUCT(IR)
                           NRC(KT,1)  = NRC(KT,1) + NRCT(IR)
                           SEG(KT,1)  = SEGT(IR)
-                          ISGEN(KT)  = ISGENT(IR)
+                          ISGEN(KT)  = 0
                           KT = KT + 1
                         ENDIF 
                       ENDIF
@@ -1643,7 +1643,7 @@ C
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,Q,DSM,
+     &                  NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
      &                  UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
 C
                ELSE
@@ -1839,7 +1839,7 @@ C
      &             ALPHA(1,IBLOCK(ISET),ISET),
      &             CPRIM(1,1,IBLOCK(ISET),ISET),
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
-     &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,Q,DSM,
+     &             NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
      &             UNCONT,BASNAM,BASREF(1,I,ISET),IPREAD)
 C
               NBLCK(I,ISET) = NBLOCK
@@ -6175,7 +6175,7 @@ C
      &               NRC(JBLOCK,1),SEG(JBLOCK,1),
      &               ALPHA(1,JBLOCK,1),
      &               CPRIM(1,1,JBLOCK,1),CPRIMU(1,1,JBLOCK,1),
-     &               NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,DSM,
+     &               NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
      &               UNCONT,BASNAM,BASREF(1,I),IPREAD)
          NBLCK(I,1) = NBLOCK
          JBLOCK = JBLOCK + NBLCK(I,1)

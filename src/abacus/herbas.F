@@ -21,7 +21,6 @@
 
 C
 C
-C
 C FILE : herbas.F
 C
 C
@@ -50,7 +49,6 @@ C*     CPRIM - Like CPRIMU, but this time the contraction    *
 C*             coefficients are normalized.                  *
 C*     NBLOCK - total number of blocks; = sum(JCO(1:IQM).    *
 C*              The same as IQM if not DOSPLIT.              *
-C*     ISGEN  -
 C*     BASREF - documentation lines for basis set            *
 C* - intent(in):
 C*     KAOVEC - max NBLOCK, typically = MXSHEL.              *
@@ -64,14 +62,14 @@ C*     IPRBAS - print level in BASLIB and sub procedures     *
 C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
-     &                   CPRIMU, NBLOCK, ISGEN, KAOVEC, KPRIM,
+     &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL   UNCONT, SEG, READ_NU_CALLED
       DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
      +          ALPHA(KPRIM, KAOVEC), CPRIMU(KPRIM, KPRIM, KAOVEC),
-     +          CPRIM(KPRIM,KPRIM, KAOVEC), ISGEN(KAOVEC)
+     +          CPRIM(KPRIM,KPRIM, KAOVEC)
 ! infpar.h : MYTID, MPARID
 #include "infpar.h"
 #include "dcbgen.h"
@@ -572,8 +570,6 @@ C
             NUC(NBLOCK) = INTEXP
             NRC(NBLOCK) = INTORB
             SEG(NBLOCK) = SEGEJ
-            ISGEN(NBLOCK) = INTISG
-
 C
 C           Reorder primitive orbitals
 C

@@ -1029,7 +1029,7 @@
      &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),                   &
      &             ALPHA(1,IBLOCK(1),1),                                &
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
-     &             NBLOCK,ISGEN(IBLOCK(1)),                             &
+     &             NBLOCK,                                              &
      &             KAOVEC,KPRIM,mol%bascharge,mol%bascharge,            &
      &             DSM,UNCONT,BASNAM,BASREF(1,basindex,1),IPREAD)
           NBLCK(basindex,1) = NBLOCK
