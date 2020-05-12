@@ -1,12 +1,13 @@
 :orphan:
 
 
-20.0 (2020-12-12)
------------------
+20.0 (planned for 2020-12-12)
+-----------------------------
 New features:
 
 - Improved start potential with far fewer functions and better accuracy. Contributors: Lucas Visscher.
   Definite reference will follow (see for now: arXiv:2002.02587)
+- Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
 
 19.0 (2019-12-12)
 -----------------
