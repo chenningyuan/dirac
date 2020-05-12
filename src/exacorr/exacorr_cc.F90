@@ -218,9 +218,8 @@ module exacorr_cc
             write(*,*) ""
 
             !compute perturpative triples for testing
-            call t3_energy(t_energy,comm_t,int_t,vir_space)
-            call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ)
-            call quit('testing triples')
+            !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
+            !call quit('testing triples')
 
 !           Start CC(S)D iterations
 
@@ -253,7 +252,8 @@ module exacorr_cc
 
             if (.not.CCD) then
                !compute perturpative triples
-               call t3_energy(t_energy,comm_t,int_t,vir_space)
+               !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
+               call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
                ! calculate T1 diagnostic
                t1diag = print_tensornorm2(comm_t%t1)
                t1diag = t1diag/sqrt(dble(nocc))
@@ -2708,7 +2708,7 @@ print *,'abe',ierr
 
         end subroutine init_fock
 
-        subroutine t3_energy(t_energy,comm_t,int_t,vir_space)
+        subroutine t3_energy(t_energy,comm_t,int_t,vir_space,print_level)
             
             use exacorr_ao_to_mo, only : print_tensornorm2
 
@@ -2716,13 +2716,14 @@ print *,'abe',ierr
             type(exatns_comm_tens)                  :: comm_t
             type(exatns_intg_tens)                  :: int_t
             class(h_space_t), pointer               :: vir_space
+            integer                                 :: print_level
 
             integer(INTL),dimension(2) :: ov_root, vo_root
             integer(INTD),dimension(2) :: ov_id, vo_id
             integer(INTL),dimension(4) :: ooov_root, vovv_root, vvoo_root, oovv_root, g_sub, t_sub
             integer(INTD),dimension(4) :: ooov_id,   vovv_id,   vvoo_id,   oovv_id
-            integer(INTL),dimension(4) :: w_sub
-            integer(INTD),dimension(4) :: w_id
+            integer(INTL),dimension(6) :: w_sub
+            integer(INTD),dimension(6) :: w_id
 
             integer(INTD)                :: ierr,rank
             integer(INTD)                :: idocc, idvir
@@ -2734,6 +2735,8 @@ print *,'abe',ierr
             type(tens_rcrsv_t)           :: w_tensor, w1_tensor, y_tensor, z_tensor
             type(tens_rcrsv_t)           :: g_tensor, t_tensor
             
+            if (print_level >0) call print_date('entering t3_energy')
+
             call comm_t%fov%get_space_ids(ov_id,ov_root,ierr)
             call comm_t%fov%get_dims(ov_root,rank,ierr)
             vo_root=ov_root(1)
@@ -2775,16 +2778,18 @@ print *,'abe',ierr
                   ierr=exatns_tensor_create(w_tensor,'Wabcijk',w_id,w_sub,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: creation of w')
                   ierr=exatns_tensor_init(w_tensor,ZERO)
-                  ierr=exatns_tensor_create(w1_tensor,'Wabcijk',w_id,w_sub,EXA_DATA_KIND_C8)
+                  ierr=exatns_tensor_create(w1_tensor,'W1abcijk',w_id,w_sub,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(w1_tensor,ZERO)
 
                   ! term g^{abe}_i t^{ec}_jk
+                  g_sub(1)=nvir
+                  g_sub(2)=nocc
                   g_sub(3)=vir_subspaces(a)
                   g_sub(4)=vir_subspaces(b)
-                  g_sub(1:2)=vo_root
                   call g_tensor%tens_rcrsv_ctor(int_t%vovv,g_sub,ierr)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: g_vovv')
-                  t_sub=vvoo_root
+                  t_sub=nocc
+                  t_sub(1)=nvir
                   t_sub(2)=vir_subspaces(c)
                   call t_tensor%tens_rcrsv_ctor(comm_t%t2,t_sub,ierr)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: t2 (1)')
@@ -2798,7 +2803,7 @@ print *,'abe',ierr
                   g_sub(4)=vir_subspaces(a)
                   call g_tensor%tens_rcrsv_ctor(int_t%ooov,g_sub,ierr)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: g_ooov')
-                  t_sub=vvoo_root
+                  t_sub=nocc
                   t_sub(1)=vir_subspaces(b)
                   t_sub(2)=vir_subspaces(c)
                   call t_tensor%tens_rcrsv_ctor(comm_t%t2,t_sub,ierr)
@@ -2821,15 +2826,18 @@ print *,'abe',ierr
 
                   ierr=exatns_tensor_destroy(w_tensor)
                 end do 
-              end do 
+              end do
+              if (print_level >0) write (*,*)  't3_energy:',a
             end do
 
             !clean up
             deallocate(vir_subspaces)
+            
+            if (print_level >0) call print_date('leaving t3_energy')
 
         end subroutine t3_energy
 
-        subroutine t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,mo_occ)
+        subroutine t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,mo_occ,print_level)
             
             use exacorr_global
             use exacorr_tensor_methods
@@ -2841,6 +2849,7 @@ print *,'abe',ierr
             type(delta_t)                           :: f_delta  ! fill delta matrix
             type(denom_t)                           :: denom
             integer                                 :: mo_occ(:)
+            integer                                 :: print_level
 
             integer(INTL),dimension(2) :: ov_root, vo_root, subspace_id2
             integer(INTD),dimension(2) :: ov_id, vo_id
@@ -2863,6 +2872,8 @@ print *,'abe',ierr
             real(8)                      :: eps_ijk
             complex(8), allocatable      :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
             integer                      :: i,j,k
+
+            if (print_level >0) call print_date('entering t3_energy_old')
 
             call comm_t%fov%get_dims(ov_root,rank,ierr)
             call comm_t%fov%get_space_ids(ov_id,subspace_id2,ierr)
@@ -3023,6 +3034,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_destroy(w_tensor)
             ierr=exatns_tensor_destroy(y_tensor)
 
+            if (print_level >0) call print_date('leaving t3_energy_old')
 
         end subroutine t3_energy_old
 

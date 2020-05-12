@@ -1013,7 +1013,6 @@ module exacorr_tensor_methods
         case (3)
           allocate (tens_id  (3))
           allocate (tens_root(3))
-          write (*,*) 'eps_ijk',this%eps_ijk
           if (this%eps_ijk.gt.0) call quit ('Error: eps_ijk not set in denom_t_comp')
         case (4)
           allocate (tens_id  (4))
@@ -1226,8 +1225,8 @@ module exacorr_tensor_methods
         tens=tensor%get_dense_adapter(ierr)
         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
         rank=tens%num_dims
-        if (rank.gt.2) call quit('Error: only up to 2 dim. implemented in fill_delta_tensor')
-
+        if (rank.gt.4) call quit('Error: only up to 4 dim. implemented in fill_delta_tensor')
+        
         ierr=fill_delta(this%ind,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
 
       end function delta_t_comp
