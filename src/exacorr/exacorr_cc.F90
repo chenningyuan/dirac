@@ -251,13 +251,18 @@ module exacorr_cc
             end if
 
             if (.not.CCD) then
-               !compute perturpative triples
-               !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
-               call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-               ! calculate T1 diagnostic
-               t1diag = print_tensornorm2(comm_t%t1)
-               t1diag = t1diag/sqrt(dble(nocc))
-               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+              ! calculate T1 diagnostic
+              t1diag = print_tensornorm2(comm_t%t1)
+              t1diag = t1diag/sqrt(dble(nocc))
+              if (exa_input%do_triples) then
+                !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
+                call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
+                call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
+                                    t1diag=t1diag, t_energy=t_energy)
+              else
+                call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
+                                    t1diag=t1diag)
+              end if
             else
                call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy)
             end if
@@ -294,7 +299,8 @@ module exacorr_cc
                 end if
                 call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,exa_input%print_level)
+               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision, &
+                                          ncycles,exa_input%print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
 
@@ -2731,11 +2737,13 @@ print *,'abe',ierr
             integer(INTL)                :: a, b, c, n_subspaces
             integer(INTL),allocatable    :: vir_subspaces(:)
             type(tens_rcrsv_t)           :: res_tensor
-            complex(8)                   :: result_val
+            complex(8)                   :: res_val
             type(tens_rcrsv_t)           :: w_tensor, w1_tensor, y_tensor, z_tensor
             type(tens_rcrsv_t)           :: g_tensor, t_tensor
             
             if (print_level >0) call print_date('entering t3_energy')
+
+            t_energy = ZERO
 
             call comm_t%fov%get_space_ids(ov_id,ov_root,ierr)
             call comm_t%fov%get_dims(ov_root,rank,ierr)
@@ -2753,7 +2761,6 @@ print *,'abe',ierr
             vvoo_id(1:2)=oovv_id(3:4)
             vvoo_id(3:4)=oovv_id(1:2)
 
-            t_energy = ZERO
             nocc=oovv_root(1)
             nvir=oovv_root(3)
             idocc=oovv_id(1)
@@ -2821,15 +2828,19 @@ print *,'abe',ierr
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: denominate')
 
                   !Contract
+                  ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("R()+=W(a,b,c,i,j,k)*C(a,b,c,i,j,k)",res_tensor,w_tensor,w1_tensor) 
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 3')
+                  ierr=exatns_tensor_get_scalar(res_tensor,res_val)
+                  t_energy(1)=t_energy(1)+res_val
 
                   ierr=exatns_tensor_destroy(w_tensor)
                 end do 
               end do
-              if (print_level >0) write (*,*)  't3_energy:',a
+              ierr=exatns_tensor_get_scalar(res_tensor,res_val)
+              if (print_level >0) write (*,*)  't3_energy:',t_energy(1)
             end do
-
+            
             !clean up
             deallocate(vir_subspaces)
             
@@ -3005,10 +3016,10 @@ print *,'abe',ierr
                   ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",res_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   ierr=exatns_tensor_get_scalar(res_tensor,result_val)
-                  print*, k, j, i, result_val
                   t_energy(1)=t_energy(1) + result_val
                 end do
               end do
+              if (print_level >0) write (*,*)  't3_energy:',t_energy(1)
             end do
 
 !           We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.

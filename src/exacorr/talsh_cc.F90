@@ -210,7 +210,7 @@ module talsh_cc
          if (.not.CC2) then
             call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 cc_energy,CCD,ncycles,exa_input%print_level)
-            if (.not.CCD) then
+            if (.not.CCD .and. exa_input%do_triples) then
 !              Calculate (T) energy correction
                call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
             end if

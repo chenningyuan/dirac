@@ -39,6 +39,7 @@
             logical                 :: noints = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
+            logical                 :: do_triples = .true.
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
