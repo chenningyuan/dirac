@@ -101,21 +101,21 @@ module exacorr_tensor_methods
         end type chol_J
 
         ! fill delta tensor
-        type, extends(tens_method_uni_t), public:: delta_f
-         integer(INTL), private :: ind(1:2)
+        type, extends(tens_method_uni_t), public:: delta_t
+         integer(INTL), private :: ind(4)
          contains
-          procedure, private:: delta_f_init
-          procedure, public:: reset=>delta_f_reset
-          procedure, public:: pack=>delta_f_pack
-          procedure, public:: unpack=>delta_f_unpack
-          procedure, public:: apply=>delta_f_comp
-        end type delta_f
+          procedure, private:: delta_t_init
+          procedure, public:: reset=>delta_t_reset
+          procedure, public:: pack=>delta_t_pack
+          procedure, public:: unpack=>delta_t_unpack
+          procedure, public:: apply=>delta_t_comp
+        end type delta_t
 
-        !square elements
-        type, extends(tens_method_uni_t), public:: square_tensor
+        !square tensor
+        type, extends(tens_method_uni_t), public:: square_t
          contains
-          procedure, public:: apply=>comp_square_tensor
-        end type square_tensor
+          procedure, public:: apply=>comp_square_t
+        end type square_t
 
        contains
 
@@ -345,10 +345,10 @@ module exacorr_tensor_methods
            lumo   = minloc(this%eps_vir,1)
 
            do while(e_lumo-e_homo < THRESHOLD)
-             print*, "e_homo, e_lumo", e_homo, e_lumo
+             write(*,*) "e_homo, e_lumo", e_homo, e_lumo
              if (e_lumo+level_shift-e_homo >THRESHOLD) then
                this%eps_vir(lumo)=e_lumo+level_shift
-               print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+               write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
              else
                call quit('Negative HOMO-LUMO gap')
              end if
@@ -1033,10 +1033,10 @@ module exacorr_tensor_methods
            lumo   = minloc(this%eps_vir,1)
 
            do while(e_lumo-e_homo < THRESHOLD)
-             print*, "e_homo, e_lumo", e_homo, e_lumo
+             write(*,*) "e_homo, e_lumo", e_homo, e_lumo
              if (e_lumo+level_shift-e_homo >THRESHOLD) then
                this%eps_vir(lumo)=e_lumo+level_shift
-               print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
+               write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
              else
                call quit('Negative HOMO-LUMO gap')
              end if
@@ -1429,174 +1429,230 @@ module exacorr_tensor_methods
 
         end function get_chol_J
 
-        subroutine delta_f_init(this)
-         implicit none
-         class(delta_f), intent(out):: this
+      subroutine delta_t_init(this)
+        implicit none
+        class(delta_t), intent(out):: this
 
-         this%ind(1:2)=-9
-        end subroutine delta_f_init
+        this%ind=-9
+      end subroutine delta_t_init
 
-        subroutine delta_f_reset(this,val)
-         implicit none
-         class(delta_f), intent(inout):: this
-         integer(INTL), intent(in):: val(1:2)
+      subroutine delta_t_reset(this,val,n)
+        implicit none
+        class(delta_t), intent(inout) :: this
+        integer, intent(in)           :: n
+        integer(INTL), intent(in)     :: val(n)
 
-         this%ind(1:2)=val(1:2)
-        end subroutine delta_f_reset
+        this%ind=-9
+        this%ind(1:n)=val(1:n)
 
-        subroutine delta_f_pack(this,packet,ierr)
-         implicit none
-         class(delta_f), intent(in):: this
-         class(obj_pack_t), intent(inout):: packet
-         integer(INTD), intent(out), optional:: ierr
+      end subroutine delta_t_reset
 
-         call pack_builtin(packet,this%ind(1))
-         call pack_builtin(packet,this%ind(2))
-         if(present(ierr)) ierr=0
-         return
-        end subroutine delta_f_pack
+      subroutine delta_t_pack(this,packet,ierr)
+        implicit none
+        class(delta_t), intent(in)           :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+        integer                              :: i
 
-        subroutine delta_f_unpack(this,packet,ierr)
-         implicit none
-         class(delta_f), intent(inout):: this
-         class(obj_pack_t), intent(inout):: packet
-         integer(INTD), intent(out), optional:: ierr
+        do i=1,4
+          call pack_builtin(packet,this%ind(i))
+        end do
 
-         call unpack_builtin(packet,this%ind(1))
-         call unpack_builtin(packet,this%ind(2))
-         if(present(ierr)) ierr=0
-         return
-        end subroutine delta_f_unpack
+        if(present(ierr)) ierr=0  
+        return
+      end subroutine delta_t_pack
 
-        function delta_f_comp(this,tensor,scalar) result(ierr)
+      subroutine delta_t_unpack(this,packet,ierr)
+        implicit none
+        class(delta_t), intent(inout)        :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+        integer                              :: i
 
-          integer(INTD) :: ierr, rank
-          class(delta_f), intent(in) :: this
-          class(tens_rcrsv_t), intent(inout) :: tensor
-          complex(8), intent(inout), optional :: scalar
+        do i=1,4
+          call unpack_builtin(packet,this%ind(i))
+        end do
 
-          type(tens_dense_t)      :: tens
-          integer(8), allocatable :: tens_root(:)
-          integer(4), allocatable :: tens_id(:)
+        if(present(ierr)) ierr=0
+        return
+      end subroutine delta_t_unpack
 
-          ierr=0
-          tens=tensor%get_dense_adapter(ierr)
-          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
-          rank=tens%num_dims
-          if (rank.gt.2) call quit('Error: only up to 2 dim. implemented in fill_delta_tensor')
+      function delta_t_comp(this,tensor,scalar) result(ierr)
+        implicit none
+        integer(INTD) :: ierr, rank
+        class(delta_t), intent(in) :: this
+        class(tens_rcrsv_t), intent(inout) :: tensor
+        complex(8), intent(inout), optional :: scalar
 
-          ierr=fill_delta(this%ind,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
+        type(tens_dense_t)      :: tens
+        integer(8), allocatable :: tens_root(:)
+        integer(4), allocatable :: tens_id(:)
 
-        end function delta_f_comp
+        ierr=0
+        tens=tensor%get_dense_adapter(ierr)
+        if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+        rank=tens%num_dims
+        if (rank.gt.4) call quit('Error: only up to 4 dim. implemented in fill_delta_tensor')
 
-        integer function fill_delta(ind,tens_body,tens_dims,tens_bases,rank) result (ierr)
-          !routine to make delta tensor
+        write(*,*) " ind =",this%ind
 
-          use exacorr_global
+        ierr=fill_delta(this%ind,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
 
-          implicit none
+      end function delta_t_comp
 
-          integer(INTL), intent(in) :: ind(1:2)
-          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
-          integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
-          integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
-          integer(INTD)             :: rank
+      integer function fill_delta(ind,tens_body,tens_dims,tens_bases,rank) result (ierr)
 
-          integer                :: hind(1:2)
-          complex(8),pointer     :: tens1(:)
-          complex(8),pointer     :: tens2(:,:)
+        use exacorr_global
 
-          if (ind(1).lt.1) call quit('Error: wrong index in fill_delta (1)<0')
+        implicit none
 
-          ierr=0
+        integer(INTL), intent(in) :: ind(4)
+        type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+        integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+        integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+        integer(INTD)             :: rank
 
-          hind(1)=ind(1)-tens_bases(1)+1
-          if (rank.eq.1) then
-              if (ind(2).gt.0) call quit('Error: wrong index in fill_delta (2)>0')
-              call c_f_pointer(tens_body,tens1,tens_dims(1:1)) !map C pointer to array
-              tens1= ZERO
-              if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens1(hind(1))=ONE 
-          else
-              if (ind(2).lt.1) call quit('Error: wrong index in fill_delta (2)<0')
-              call c_f_pointer(tens_body,tens2,tens_dims(1:2)) !map C pointer to array
-              tens2= ZERO
-              hind(2)=ind(2)-tens_bases(2)+1
-              if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
-                if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens2(hind(1),hind(2))=ONE 
-              end if
+        integer(INTL)          :: hind(1:4)
+        integer                :: i
+        complex(8),pointer     :: tens1(:)
+        complex(8),pointer     :: tens2(:,:)
+        complex(8),pointer     :: tens3(:,:,:)
+        complex(8),pointer     :: tens4(:,:,:,:)
+
+        ierr=0
+
+        do i=1,rank
+          if (ind(i).lt.1) call quit('fill_delta: missing index in fill_delta')
+          hind(i)=ind(i)-tens_bases(i)+1
+        end do 
+
+        select case (rank)
+        case (1)
+          call c_f_pointer(tens_body,tens1,tens_dims)
+          tens1= ZERO
+          if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens1(hind(1))=ONE 
+        case (2)
+          call c_f_pointer(tens_body,tens2,tens_dims)
+          tens2= ZERO
+          if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
+            if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens2(hind(1),hind(2))=ONE 
           end if
+        case (3)
+          call c_f_pointer(tens_body,tens3,tens_dims)
+          tens3= ZERO
+          if (hind(3).gt.0 .and. hind(3).le.tens_dims(3)) then
+            if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
+              if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens3(hind(1),hind(2),hind(3))=ONE
+            end if
+          end if
+        case (4)
+          call c_f_pointer(tens_body,tens4,tens_dims)
+          tens4= ZERO
+          if (hind(4).gt.0 .and. hind(4).le.tens_dims(4)) then
+            if (hind(3).gt.0 .and. hind(3).le.tens_dims(3)) then
+              if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
+                if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens4(hind(1),hind(2),hind(3),hind(4))=ONE
+              end if
+            end if
+          end if
+        case default
+          call quit('fill_delta: wrong rank')
+        end select
+      end function fill_delta
 
-        end function fill_delta
+      function comp_square_t(this,tensor,scalar) result(ierr)
+        implicit none
+        integer(INTD)                       :: ierr,n
+        class(square_t), intent(in)         :: this
+        class(tens_rcrsv_t), intent(inout)  :: tensor
+        complex(8), intent(inout), optional :: scalar
+        type(tens_dense_t)                  :: tens
 
+        ierr=0
+        tens=tensor%get_dense_adapter(ierr)
+        if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
 
-        function comp_square_tensor(this,tensor,scalar) result(ierr)
-         implicit none
-         integer(INTD):: ierr,n
-         class(square_tensor), intent(in):: this
-         class(tens_rcrsv_t), intent(inout):: tensor
-         complex(8), intent(inout), optional:: scalar
-         type(tens_dense_t):: tens
+        n=tens%num_dims
+        if (n.gt.6) call quit('ERROR in comp_square_t: rank too large')
+        ierr=square(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
 
-         ierr=0
-         tens=tensor%get_dense_adapter(ierr)
-         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+      end function comp_square_t
 
-         n=tens%num_dims
-         ierr=square(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
+      integer function square(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
 
-        end function comp_square_tensor
+        implicit none
 
-        integer function square(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
+        integer(INTD),intent(in)    :: num_dims        !in: number of dimensions of the tensor
+        type(C_PTR), value          :: tens_body       !in: C pointer to the tensor body (tensor elements)
+        integer(INTD), value        :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+        integer(INTL), intent(in)   :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+        integer(INTL), intent(in)   :: tens_bases(1:*) !in: base offsets for each tensor dimension)
 
-         implicit none
+        integer :: p,q,r,s,t,u
+        complex(8),pointer :: t1_tens(:)
+        complex(8),pointer :: t2_tens(:,:)
+        complex(8),pointer :: t3_tens(:,:,:)
+        complex(8),pointer :: t4_tens(:,:,:,:)
+        complex(8),pointer :: t6_tens(:,:,:,:,:,:)
 
-         integer(INTD),intent(in)    :: num_dims            !in: number of dimensions of the tensor
-         type(C_PTR), value          :: tens_body           !in: C pointer to the tensor body (tensor elements)
-         integer(4), value           :: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
-         integer(INTL), intent(in)   :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
-         integer(INTL), intent(in)   :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+        ierr=0 !set error code to success
+        if(data_kind /= EXA_DATA_KIND_C8) then
+          ierr=-1 !invalid data kind requested
+          return
+        endif
 
-         integer :: p,q,r,s
-         complex(8),pointer :: t2_tens(:,:),t3_tens(:,:,:),t4_tens(:,:,:,:)
-
-         ierr=0 !set error code to success
-         if(data_kind /= EXA_DATA_KIND_C8) then
-           ierr=-1 !invalid data kind requested
-           return
-         endif
-
-         select case (num_dims)
-         case (2)
-            call c_f_pointer(tens_body,t2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
+        select case (num_dims)
+        case (1)
+          call c_f_pointer(tens_body,t1_tens,tens_dims) !map C pointer to 2-dimensional array
+          do p = 1, tens_dims(1)
+            t1_tens(p) = t1_tens(p)*t1_tens(p)
+          end do
+        case (2)
+        call c_f_pointer(tens_body,t2_tens,tens_dims) !map C pointer to 2-dimensional array
+          do q = 1, tens_dims(2)
+            do p = 1, tens_dims(1)
+              t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
+            end do
+          end do
+        case (3)
+          call c_f_pointer(tens_body,t3_tens,tens_dims) !map C pointer to 2-dimensional array
+          do r = 1, tens_dims(3)
             do q = 1, tens_dims(2)
               do p = 1, tens_dims(1)
-                t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
+                t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
               end do
             end do
-         case (3)
-            call c_f_pointer(tens_body,t3_tens,tens_dims(1:3)) !map C pointer to 2-dimensional array
+          end do
+        case (4)
+          call c_f_pointer(tens_body,t4_tens,tens_dims) !map C pointer to 2-dimensional array
+          do s = 1, tens_dims(4)
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
+                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
                 end do
               end do
             end do
-         case (4)
-            call c_f_pointer(tens_body,t4_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
-            do s = 1, tens_dims(4)
-              do r = 1, tens_dims(3)
-                do q = 1, tens_dims(2)
-                  do p = 1, tens_dims(1)
-                    t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
+          end do
+        case (6)
+          call c_f_pointer(tens_body,t6_tens,tens_dims) !map C pointer to 2-dimensional array
+          do u = 1, tens_dims(6)
+            do t = 1, tens_dims(5)
+              do s = 1, tens_dims(4)
+                do r = 1, tens_dims(3)
+                  do q = 1, tens_dims(2)
+                    do p = 1, tens_dims(1)
+                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
+                    end do
                   end do
                 end do
               end do
             end do
-         case default
-            call quit ('Error in square: dimension not implemented')
-         end select
+          end do
+        case default
+          call quit ('Error in square: dimension not implemented')
+        end select
 
-        end function square
+      end function square
 
 end module exacorr_tensor_methods

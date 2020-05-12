@@ -975,7 +975,8 @@ module exacorr_ao_to_mo
 
         integer           :: i, ind_a, ind_b
         integer(INTD)     :: ierr,spin, aorank, morank
-        integer(INTD)     :: ao4_id(4),ao3_id(3),ao2_id(2)
+        integer(INTD)     :: ao4_id(4),ao3_id(3)
+        integer(INTD),allocatable :: ao_id(:)
         integer(INTD)     :: mo4_id(4),mo3_id(3),mo2_id(2)
         integer(INTD)     :: t4_id(4), t3_id(3), t2_id(2)
         integer(INTD)     :: coef_id(2)
@@ -995,14 +996,16 @@ module exacorr_ao_to_mo
         if (ierr.ne.0 .or. aorank.ne.morank) call quit('ao2mo_exat: mo tensor corrupted (rank) ')
 
         if (aorank.eq.2) then
-          call ao_tensor%get_space_ids(ao2_id,ao2_root,ierr)
+          allocate(ao_id(2))
+
+          call ao_tensor%get_space_ids(ao_id,ao2_root,ierr)
           if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: ao tensor corrupted (2) ')
           call mo_tensor%get_space_ids(mo2_id,mo2_root,ierr)
           if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: mo tensor corrupted (2)')
 
           !create temporary tensor
           t2_id(1)   = mo2_id(1)
-          t2_id(2)   = ao2_id(2)
+          t2_id(2)   = ao_id(2)
           t2_root(1) = mo2_root(1)
           t2_root(2) = ao2_root(2)
 
@@ -1013,7 +1016,7 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_init(t_tensor(2),ZERO)
           
           i=1 ! first index
-          coef_id(1)   = ao2_id(i)
+          coef_id(1)   = ao_id(i)
           coef_root(1) = ao2_root(i)
           coef_id(2)   = mo2_id(i)
           coef_root(2) = mo2_root(i)
@@ -1043,7 +1046,7 @@ module exacorr_ao_to_mo
           end if
 
           i=2  ! second index
-          coef_id(1)   = ao2_id(i)
+          coef_id(1)   = ao_id(i)
           coef_root(1) = ao2_root(i)
           coef_id(2)   = mo2_id(i)
           coef_root(2) = mo2_root(i)
@@ -1074,6 +1077,7 @@ module exacorr_ao_to_mo
 
           ierr=exatns_tensor_destroy(t_tensor(1))
           ierr=exatns_tensor_destroy(t_tensor(2))
+          deallocate(ao_id)
 
         else if (aorank.eq.3) then
           call quit('ao2mo_exat: for now rank 3 not implemented')

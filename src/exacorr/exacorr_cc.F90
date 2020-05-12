@@ -96,7 +96,7 @@ module exacorr_cc
 
          !Cholesky
          type(chol_J)    :: j_chol  ! Cholesky: compute off-diagonal elements
-         type(delta_f)   :: f_delta  ! fill delta matrix
+         type(delta_t)   :: f_delta  ! fill delta matrix
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -498,7 +498,7 @@ module exacorr_cc
          integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id  ! identifiers of the spaces that we will use in the methods
          !methods that need to be reset
          type(chol_J), intent(inout)   :: j_chol  ! Cholesky: compute diagonal elements
-         type(delta_f), intent(inout)  :: f_delta  ! fill delta matrix
+         type(delta_t), intent(inout)  :: f_delta  ! fill delta matrix
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -516,7 +516,7 @@ module exacorr_cc
          type(init_one_el_t)          :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
          type(chol_diag)              :: diag_chol            ! Cholesky: compute diagonal elements
-         type(square_tensor)          :: t_square             ! square matrix elements
+         type(square_t)               :: t_square             ! square matrix elements
 
          integer:: min_occ
 
@@ -2450,7 +2450,7 @@ print *,'abe',ierr
         integer, intent(in)                   :: print_level
         real(8),intent(in)                    :: t_cholesky
         type(chol_J), intent(inout)           :: j_chol  ! Cholesky: compute off-diagonal elements
-        type(delta_f), intent(inout)          :: f_delta  ! fill delta matrix
+        type(delta_t), intent(inout)          :: f_delta  ! fill delta matrix
 
 
         integer(INTD)                   :: ierr
@@ -2532,6 +2532,11 @@ print *,'abe',ierr
         end do
         if (print_level.gt.6) call print_date(' uvv done ')
 
+!       remove ao cholesky vectors
+        do i=1,m
+          ierr=exatns_tensor_destroy(CD(i))
+        end do
+        deallocate(CD)
 
 !       Determine space ids and root for auxilliary voov tensor from vovo tensor
         ovvo_id = o_id
@@ -2547,23 +2552,6 @@ print *,'abe',ierr
         ierr=exatns_tensor_init(int_t%vovv,ZERO)
         ierr=exatns_tensor_init(int_t%vvvv,ZERO)
 
-!       Get antisymmetric oovv tensor
-        hid=o_id
-        hid(2)=v_id
-        hid(4)=v_id
-        hroot=nocc
-        hroot(2)=nvir
-        hroot(4)=nvir
-        ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
-        do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
-        end do
-        if(ierr.ne.EXA_SUCCESS) call quit('decompose_cholesky_exatensor: oovv')
-        call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
-        ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' oovv done ')
-
 !       Get antisymmetric oooo tensor
         hid=o_id
         hroot=nocc
@@ -2577,7 +2565,7 @@ print *,'abe',ierr
         ierr=exatns_tensor_destroy(temp_tensor)
         if (print_level.gt.6) call print_date(' oooo done ')
 
-!        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
+!       Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
         hid=o_id
         hid(1:2)=v_id
         hroot=nocc
@@ -2604,19 +2592,6 @@ print *,'abe',ierr
         ierr=exatns_tensor_destroy(ovvo_tensor)
         if (print_level.gt.6) call print_date(' vovo done ')
 
-!       Get vvvv tensor
-        hid=v_id
-        hroot=nvir
-        ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
-        do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
-        end do
-        if(ierr.ne.EXA_SUCCESS) call quit('decompose_cholesky_exatensor: vvvv')
-        call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
-        ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' vvvv done ')
-
 !       Get ooov tensor
         hid=o_id
         hid(4)=v_id
@@ -2631,6 +2606,35 @@ print *,'abe',ierr
         call mulliken_to_dirac_sort(temp_tensor,int_t%ooov,12)
         ierr=exatns_tensor_destroy(temp_tensor)
         if (print_level.gt.6) call print_date(' ooov done ')
+
+!       uoo no longer needed
+        do i=1,m
+           ierr=exatns_tensor_destroy(uoo_tensor(i))
+        end do
+        deallocate(uoo_tensor)
+
+!       Get antisymmetric oovv tensor
+        hid=o_id
+        hid(2)=v_id
+        hid(4)=v_id
+        hroot=nocc
+        hroot(2)=nvir
+        hroot(4)=nvir
+        ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        do i=1,m
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
+        end do
+        if(ierr.ne.EXA_SUCCESS) call quit('decompose_cholesky_exatensor: oovv')
+        call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
+        ierr=exatns_tensor_destroy(temp_tensor)
+        if (print_level.gt.6) call print_date(' oovv done ')
+
+!       uvo no longer needed
+        do i=1,m
+          ierr=exatns_tensor_destroy(uvo_tensor(i))
+        end do
+        deallocate(uvo_tensor)
 
 !       Get vovv tensor
         hid=v_id
@@ -2648,19 +2652,30 @@ print *,'abe',ierr
         ierr=exatns_tensor_destroy(temp_tensor)
         if (print_level.gt.6) call print_date(' vovv done ')
 
-!        Clean-up
-         do i=1,m
-           ierr=exatns_tensor_destroy(CD(i))
-           ierr=exatns_tensor_destroy(uvv_tensor(i))
-           ierr=exatns_tensor_destroy(uvo_tensor(i))
-           ierr=exatns_tensor_destroy(uov_tensor(i))
-           ierr=exatns_tensor_destroy(uoo_tensor(i))
-         end do
-         deallocate(CD)
-         deallocate(uoo_tensor)
-         deallocate(uov_tensor)
-         deallocate(uvo_tensor)
-         deallocate(uvv_tensor)
+!       uov no longer needed
+        do i=1,m
+          ierr=exatns_tensor_destroy(uov_tensor(i))
+        end do
+        deallocate(uov_tensor)
+
+!       Get vvvv tensor
+        hid=v_id
+        hroot=nvir
+        ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
+        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        do i=1,m
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
+        end do
+        if(ierr.ne.EXA_SUCCESS) call quit('decompose_cholesky_exatensor: vvvv')
+        call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
+        ierr=exatns_tensor_destroy(temp_tensor)
+        if (print_level.gt.6) call print_date(' vvvv done ')
+
+!       uvv no longer needed
+        do i=1,m
+          ierr=exatns_tensor_destroy(uvv_tensor(i))
+        end do
+        deallocate(uvv_tensor)
 
       end subroutine get_CC_integrals_chol
 
@@ -2970,7 +2985,7 @@ print *,'abe',ierr
           integer(INTD),intent(in)                       :: ao_id
           real(8),intent(in)                             :: t_cholesky
           type(chol_J), intent(inout)                    :: j_chol  ! Cholesky: compute off-diagonal elements
-          type(delta_f), intent(inout)                   :: f_delta  ! fill delta matrix
+          type(delta_t), intent(inout)                   :: f_delta  ! fill delta matrix
           integer,intent(in)                             :: print_level
 
    
@@ -3009,7 +3024,7 @@ print *,'abe',ierr
           if (print_level.gt.4) call print_date(" --- Diagonal computed")
 
           ierr=exatns_tensor_max(Diag,D_max,ind_max)
-          call f_delta%reset(ind_max)
+          !call f_delta%reset(ind_max,2)
           !ierr=exatns_tensor_traverse(Delta,f_delta)
           !if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_traverse(f_delta) failed!')
           !if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
@@ -3071,7 +3086,7 @@ print *,'abe',ierr
             !find new maximum
             deallocate(ind_max)
             ierr=exatns_tensor_max(Diag,D_max,ind_max)
-            call f_delta%reset(ind_max)
+            call f_delta%reset(ind_max,2)
             ierr=exatns_tensor_traverse(Delta,f_delta)
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_traverse(f_delta) failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
