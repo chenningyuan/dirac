@@ -1088,7 +1088,7 @@ module exacorr_tensor_methods
               do a = 1, tens_dims(1)
                 denominator = eps_ijk - eps_vir(a+tens_bases(1)-1) &
                             - eps_vir(b+tens_bases(2)-1) - eps_vir(c+tens_bases(3)-1) 
-                th_tens(a,b,c) = th_tens(a,b,c) / denominator
+                th_tens(a,b,c) = ONE / denominator
               end do
             end do
           end do
@@ -1336,13 +1336,13 @@ module exacorr_tensor_methods
         case (1)
           call c_f_pointer(tens_body,t1_tens,tens_dims) !map C pointer to 2-dimensional array
           do p = 1, tens_dims(1)
-            t1_tens(p) = t1_tens(p)*t1_tens(p)
+            t1_tens(p) = conjg(t1_tens(p))*t1_tens(p)
           end do
         case (2)
         call c_f_pointer(tens_body,t2_tens,tens_dims) !map C pointer to 2-dimensional array
           do q = 1, tens_dims(2)
             do p = 1, tens_dims(1)
-              t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
+              t2_tens(p,q) = conjg(t2_tens(p,q))*t2_tens(p,q)
             end do
           end do
         case (3)
@@ -1350,7 +1350,7 @@ module exacorr_tensor_methods
           do r = 1, tens_dims(3)
             do q = 1, tens_dims(2)
               do p = 1, tens_dims(1)
-                t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
+                t3_tens(p,q,r) = conjg(t3_tens(p,q,r))*t3_tens(p,q,r)
               end do
             end do
           end do
@@ -1360,7 +1360,7 @@ module exacorr_tensor_methods
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
+                  t4_tens(p,q,r,s) = conjg(t4_tens(p,q,r,s))*t4_tens(p,q,r,s)
                 end do
               end do
             end do
@@ -1373,7 +1373,7 @@ module exacorr_tensor_methods
                 do r = 1, tens_dims(3)
                   do q = 1, tens_dims(2)
                     do p = 1, tens_dims(1)
-                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
+                      t6_tens(p,q,r,s,t,u) = conjg(t6_tens(p,q,r,s,t,u))*t6_tens(p,q,r,s,t,u)
                     end do
                   end do
                 end do

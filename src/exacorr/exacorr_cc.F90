@@ -522,7 +522,8 @@ module exacorr_cc
          type(set_diagonal_t)         :: one_diag             ! identity matrix
          type(init_one_el_t)          :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
-
+         type(square_t)               :: t_square             ! square matrix elements
+         
          integer:: min_occ
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
@@ -617,7 +618,11 @@ module exacorr_cc
          !Register method to set delta tensor (up to 4 dims)
          ierr=exatns_method_register('Delta_F',f_delta)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Delta_F) failed!')
-
+         
+         !Register method to square tensor
+         ierr=exatns_method_register('Square',t_square)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square) failed!')
+        
         end subroutine exacorr_cc_methods
 
         subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,print_level)
@@ -2975,22 +2980,22 @@ print *,'abe',ierr
                   call get_subtensor (int_t%ooov,ooov_ki_tensor,f_delta,12,k,i)
 
                   ! Form w-intermediate, first without symmetrization and minus sign in the auxilliary tensor array we
-                  ierr=exatns_tensor_init(w_tensor,ZERO)
+                  ierr=exatns_tensor_init(we_tensor,ZERO)
                   ! For this term we use the permutation symmetry <vv||ov> = - <vo||vv>*, with vvov(abe:i) = vovv*(eab:i)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_i_tensor,t2_jk_tensor) ! o(3)v(4)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_j_tensor,t2_ki_tensor) ! o(3)v(4)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_k_tensor,t2_ij_tensor) ! o(3)v(4)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_i_tensor,t2_jk_tensor) ! o(3)v(4)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_j_tensor,t2_ki_tensor) ! o(3)v(4)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_k_tensor,t2_ij_tensor) ! o(3)v(4)
                   ! For this term we use the permutation symmetry <vo||oo> = - <oo||ov>*, with vooo(al:ij) = ooov*(la:ij)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
 
                   ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
                   ierr=exatns_tensor_init(w_tensor,ZERO)
                   ! symmetrization via contraction as addition with permutation is not implemented
-                  ierr=exatns_tensor_contract("W(a,b,c)+=W(a,b,c)",w_tensor,we_tensor,one_tensor,MINUS_ONE)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=W(b,c,a)",w_tensor,we_tensor,one_tensor,MINUS_ONE)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=W(c,a,b)",w_tensor,we_tensor,one_tensor,MINUS_ONE)
+                  ierr=exatns_tensor_contract("W(a,b,c)+=E(a,b,c)*O()",w_tensor,we_tensor,one_tensor,MINUS_ONE)
+                  ierr=exatns_tensor_contract("W(a,b,c)+=E(b,c,a)*O()",w_tensor,we_tensor,one_tensor,MINUS_ONE)
+                  ierr=exatns_tensor_contract("W(a,b,c)+=E(c,a,b)*O()",w_tensor,we_tensor,one_tensor,MINUS_ONE)
 
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
                   call denom%reset(eps_ijk)
@@ -3010,11 +3015,10 @@ print *,'abe',ierr
                   ! t_energy(2)=t_energy(2) + result_val
 
                   ! Copy w into y array and calculate 4th order +T energy contribution
-                  ierr=exatns_tensor_init(y_tensor,ZERO)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=W(a,b,c)*K()",y_tensor,w_tensor,one_tensor)
-                  ierr=exatns_tensor_transform(y_tensor,denom)
+                  ierr=exatns_tensor_init(y_tensor,denom)
+                  ierr=exatns_tensor_transform(w_tensor,'Square')
                   ierr=exatns_tensor_init(res_tensor,ZERO)
-                  ierr=exatns_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",res_tensor,w_tensor,y_tensor) ! o(3)v(3)
+                  ierr=exatns_tensor_contract("E()+=W(a,b,c)*D(a,b,c)",res_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   ierr=exatns_tensor_get_scalar(res_tensor,result_val)
                   t_energy(1)=t_energy(1) + result_val
                 end do
@@ -3126,8 +3130,7 @@ print *,'abe',ierr
               call f_delta%reset(delta1,1)
             end if
 
-            ierr=exatns_tensor_init(Delta,ZERO) 
-            ierr=exatns_tensor_traverse(Delta,f_delta)
+            ierr=exatns_tensor_init(Delta,f_delta)
 
             !  extract element
             if (mode==3) then
