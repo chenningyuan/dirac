@@ -2643,6 +2643,7 @@ print *,'abe',ierr
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uov_tensor(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('decompose_cholesky_exatensor: vovv')
+        if (print_level.gt.6) call print_date(' now sorting ')
         call mulliken_to_dirac_sort(temp_tensor,int_t%vovv,12)
         ierr=exatns_tensor_destroy(temp_tensor)
         if (print_level.gt.6) call print_date(' vovv done ')

@@ -90,11 +90,6 @@ module exacorr_global
              if (tobe) then
                 scf_file = 0
                 call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
-                if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
-                  if (exa_input%level_shift.lt.1.0D-10) then
-                    call quit ('Open shell computations with DIRAC and EXACORR require level shift (LSHIFT)')
-                  end if
-               end if
              else
                 inquire (file='RSD_MOS',exist=tobe)
                 if (tobe) then
@@ -123,7 +118,7 @@ module exacorr_global
                 end if
              else
                one_el_exist = .FALSE.
-               if (exa_input%beta_occ) then
+               if (exa_input%beta_occ .and. exa_input%level_shift.lt.1.0D-10) then
                  if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA)')
                end if
              end if
