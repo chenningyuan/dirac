@@ -9,6 +9,10 @@ New features:
   Definite reference will follow (see for now: arXiv:2002.02587)
 - Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
 
+Revised features:
+
+- Gauge origin (.GAUGEO and .GO ANG) can now ONLY be set under \*\*INTEGRALS.
+
 19.0 (2019-12-12)
 -----------------
 
