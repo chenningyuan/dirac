@@ -257,10 +257,12 @@ C
 C     Print section
 C     =============
 C
-C ... header:
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
-      CALL PRSYMB(LUPRI,'=',75,0)
+C ... header: print out only if relevant (controlled by RESET)
+      IF (.NOT.RESET) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
+        CALL PRSYMB(LUPRI,'=',75,0)
+      ENDIF
 
       IF (USECM.AND.GORG) THEN
        WRITE(LUPRI,'(A)')
