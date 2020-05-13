@@ -1303,6 +1303,7 @@ module exacorr_tensor_methods
          if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_J: getting dense_adapter')
          n=tens%num_dims
          if (n.ne.2) call quit('Error in comp_chol_J: dimension not 2')
+
          ierr=get_chol_J(this%ind,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
          return
         end function chol_J_comp
@@ -1410,7 +1411,7 @@ module exacorr_tensor_methods
                         do k = 1, nk
                            do j = 1, nj
                               do i = 1, ni
-                                 ijkl = ijkl + 1
+                                 ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
                                  ao_tens(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
                               end do
                            end do
@@ -1574,11 +1575,11 @@ module exacorr_tensor_methods
 
         n=tens%num_dims
         if (n.gt.6) call quit('ERROR in comp_square_t: rank too large')
-        ierr=square(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
+        ierr=square_tensor(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
 
       end function comp_square_t
 
-      integer function square(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
+      integer function square_tensor(num_dims,tens_body,data_kind,tens_dims,tens_bases) result (ierr)
 
         implicit none
 
@@ -1603,46 +1604,46 @@ module exacorr_tensor_methods
 
         select case (num_dims)
         case (1)
-          call c_f_pointer(tens_body,t1_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t1_tens,tens_dims(1:1)) !map C pointer to 2-dimensional array
           do p = 1, tens_dims(1)
-            t1_tens(p) = t1_tens(p)*t1_tens(p)
+            t1_tens(p) = conjg(t1_tens(p))*t1_tens(p)
           end do
         case (2)
-        call c_f_pointer(tens_body,t2_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
           do q = 1, tens_dims(2)
             do p = 1, tens_dims(1)
-              t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
+              t2_tens(p,q) = conjg(t2_tens(p,q))*t2_tens(p,q)
             end do
           end do
         case (3)
-          call c_f_pointer(tens_body,t3_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t3_tens,tens_dims(1:3)) !map C pointer to 2-dimensional array
           do r = 1, tens_dims(3)
             do q = 1, tens_dims(2)
               do p = 1, tens_dims(1)
-                t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
+                t3_tens(p,q,r) = conjg(t3_tens(p,q,r))*t3_tens(p,q,r)
               end do
             end do
           end do
         case (4)
-          call c_f_pointer(tens_body,t4_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t4_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
           do s = 1, tens_dims(4)
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
+                  t4_tens(p,q,r,s) = conjg(t4_tens(p,q,r,s))*t4_tens(p,q,r,s)
                 end do
               end do
             end do
           end do
         case (6)
-          call c_f_pointer(tens_body,t6_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t6_tens,tens_dims(1:6)) !map C pointer to 2-dimensional array
           do u = 1, tens_dims(6)
             do t = 1, tens_dims(5)
               do s = 1, tens_dims(4)
                 do r = 1, tens_dims(3)
                   do q = 1, tens_dims(2)
                     do p = 1, tens_dims(1)
-                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
+                      t6_tens(p,q,r,s,t,u) = conjg(t6_tens(p,q,r,s,t,u))*t6_tens(p,q,r,s,t,u)
                     end do
                   end do
                 end do
@@ -1653,6 +1654,6 @@ module exacorr_tensor_methods
           call quit ('Error in square: dimension not implemented')
         end select
 
-      end function square
+      end function square_tensor
 
 end module exacorr_tensor_methods

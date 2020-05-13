@@ -3019,7 +3019,7 @@ print *,'abe',ierr
           ierr=exatns_tensor_init(Delta,ZERO)
           ierr=exatns_tensor_create(Factor,"Factor",EXA_DATA_KIND_C8)
           
-          ierr=exatns_tensor_traverse(Diag,'CholDiag')
+          ierr=exatns_tensor_transform(Diag,'CholDiag')
           if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
           if (print_level.gt.4) call print_date(" --- Diagonal computed")
 
@@ -3042,9 +3042,10 @@ print *,'abe',ierr
             ierr=exatns_tensor_create(CD(m+1),vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(CD(m+1),ZERO)
 
-            call j_chol%reset(ind_max)
             ierr=exatns_tensor_create(Dlk,"Dlk",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(Dlk,j_chol)
+            call j_chol%reset(ind_max)
+            ierr=exatns_tensor_init(Dlk,ZERO)
+            ierr=exatns_tensor_transform(Dlk,j_chol)
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init(j_chol) failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
             if (print_level.gt.4) call print_date(" --- Off-Diagonal computed")
@@ -3068,6 +3069,13 @@ print *,'abe',ierr
             if (print_level.gt.6) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
             if (print_level.gt.4) call print_date(" ---  new Chol. vectors computed")
             
+            ierr=exatns_tensor_init(Res,ZERO)
+            ierr=exatns_tensor_contract("L(p,q)+=R(p,q)*O()",Res,CD(m+1),one_tensor)
+            ierr=exatns_tensor_transform(Res,'Square')            
+            ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",Diag,Res,one_tensor,MINUS_ONE)
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",print_tensornorm2(Diag)
+            if (print_level.gt.4) call print_date(" ---  Diagonal updated")
+
             m=m+1
 
             if (m.ge.10) then
@@ -3076,19 +3084,13 @@ print *,'abe',ierr
               exit
             end if
 
-            ierr=exatns_tensor_init(Res,ZERO)
-            ierr=exatns_tensor_contract("L(p,q)=R(p,q)*O()",Res,CD(m),one_tensor)
-            ierr=exatns_tensor_traverse(Res,'Square')            
-            ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",Diag,Res,one_tensor,MINUS_ONE)
-            if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",print_tensornorm2(Diag)
-            if (print_level.gt.4) call print_date(" ---  Diagonal updated")
-
             !find new maximum
             deallocate(ind_max)
             ierr=exatns_tensor_max(Diag,D_max,ind_max)
             call f_delta%reset(ind_max,2)
-            ierr=exatns_tensor_traverse(Delta,f_delta)
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_traverse(f_delta) failed!')
+            ierr=exatns_tensor_init(Delta,ZERO)
+            ierr=exatns_tensor_transform(Delta,f_delta)
+            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_transform(f_delta) failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
             !ierr=exatns_tensor_init(Factor,ZERO)
             !ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
