@@ -49,7 +49,6 @@ C
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
-      LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
@@ -187,9 +186,6 @@ C
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       MGCOOR = .FALSE.
-      DIPORG_SET = .FALSE.
-      GAGORG_SET = .FALSE.
-      CAVORG_SET = .FALSE.
       CALL DZERO(ORIGIN,3)
       CALL DZERO(GAGORG,3)
       CALL DZERO(DIPORG,3)
@@ -590,14 +586,12 @@ C
             GO TO 100
  170     CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
-            GAGORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
             ENDIF
             GO TO 100
  171     CONTINUE
             READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
-            DIPORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
             ENDIF
