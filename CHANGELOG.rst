@@ -3,10 +3,19 @@
 
 20.0 (2020-12-12)
 -----------------
+
 New features:
 
 - Improved start potential with far fewer functions and better accuracy. Contributors: Lucas Visscher.
   Definite reference will follow (see for now: arXiv:2002.02587)
+- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
+   Theoretical study of the relativistic molecular rotational g-tensor.
+   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
+
+New defaults:
+
+- One-electron operator ANGMOM's origin was moved from gauge-origin to the molecular center of mass.
 
 19.0 (2019-12-12)
 -----------------
@@ -25,10 +34,6 @@ New features:
    T. Fleig, M. K. Nayak and M. G. Kozlov.
    TaN, a molecular system for probing P,T-violating hadron physics.
    Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
-- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
-   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
-   Theoretical study of the relativistic molecular rotational g-tensor.
-   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
 
 Revised features:
 
