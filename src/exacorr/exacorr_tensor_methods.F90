@@ -1260,17 +1260,17 @@ module exacorr_tensor_methods
         select case (rank)
         case (1)
           call c_f_pointer(tens_body,tens1,tens_dims)
-          tens1= ZERO
+          tens1=ZERO
           if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens1(hind(1))=ONE 
         case (2)
           call c_f_pointer(tens_body,tens2,tens_dims)
-          tens2= ZERO
+          tens2=ZERO
           if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
             if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens2(hind(1),hind(2))=ONE 
           end if
         case (3)
           call c_f_pointer(tens_body,tens3,tens_dims)
-          tens3= ZERO
+          tens3=ZERO
           if (hind(3).gt.0 .and. hind(3).le.tens_dims(3)) then
             if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
               if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens3(hind(1),hind(2),hind(3))=ONE
@@ -1278,7 +1278,7 @@ module exacorr_tensor_methods
           end if
         case (4)
           call c_f_pointer(tens_body,tens4,tens_dims)
-          tens4= ZERO
+          tens4=ZERO
           if (hind(4).gt.0 .and. hind(4).le.tens_dims(4)) then
             if (hind(3).gt.0 .and. hind(3).le.tens_dims(3)) then
               if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
@@ -1334,46 +1334,46 @@ module exacorr_tensor_methods
 
         select case (num_dims)
         case (1)
-          call c_f_pointer(tens_body,t1_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t1_tens,tens_dims(1:1)) !map C pointer to 2-dimensional array
           do p = 1, tens_dims(1)
-            t1_tens(p) = conjg(t1_tens(p))*t1_tens(p)
+            t1_tens(p) = t1_tens(p)*t1_tens(p)
           end do
         case (2)
-        call c_f_pointer(tens_body,t2_tens,tens_dims) !map C pointer to 2-dimensional array
+        call c_f_pointer(tens_body,t2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
           do q = 1, tens_dims(2)
             do p = 1, tens_dims(1)
-              t2_tens(p,q) = conjg(t2_tens(p,q))*t2_tens(p,q)
+              t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
             end do
           end do
         case (3)
-          call c_f_pointer(tens_body,t3_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t3_tens,tens_dims(1:3)) !map C pointer to 2-dimensional array
           do r = 1, tens_dims(3)
             do q = 1, tens_dims(2)
               do p = 1, tens_dims(1)
-                t3_tens(p,q,r) = conjg(t3_tens(p,q,r))*t3_tens(p,q,r)
+                t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
               end do
             end do
           end do
         case (4)
-          call c_f_pointer(tens_body,t4_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t4_tens,tens_dims(1:4)) !map C pointer to 2-dimensional array
           do s = 1, tens_dims(4)
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t4_tens(p,q,r,s) = conjg(t4_tens(p,q,r,s))*t4_tens(p,q,r,s)
+                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
                 end do
               end do
             end do
           end do
         case (6)
-          call c_f_pointer(tens_body,t6_tens,tens_dims) !map C pointer to 2-dimensional array
+          call c_f_pointer(tens_body,t6_tens,tens_dims(1:6)) !map C pointer to 2-dimensional array
           do u = 1, tens_dims(6)
             do t = 1, tens_dims(5)
               do s = 1, tens_dims(4)
                 do r = 1, tens_dims(3)
                   do q = 1, tens_dims(2)
                     do p = 1, tens_dims(1)
-                      t6_tens(p,q,r,s,t,u) = conjg(t6_tens(p,q,r,s,t,u))*t6_tens(p,q,r,s,t,u)
+                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
                     end do
                   end do
                 end do
