@@ -1227,6 +1227,8 @@ module exacorr_tensor_methods
         rank=tens%num_dims
         if (rank.gt.4) call quit('Error: only up to 4 dim. implemented in fill_delta_tensor')
         
+        write(*,*) 'ind in delta_t_comp', this%ind(1:rank)
+
         ierr=fill_delta(this%ind,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
 
       end function delta_t_comp
@@ -1249,6 +1251,8 @@ module exacorr_tensor_methods
         complex(8),pointer     :: tens2(:,:)
         complex(8),pointer     :: tens3(:,:,:)
         complex(8),pointer     :: tens4(:,:,:,:)
+
+        write(*,*) 'ind in fill_delta', ind(1:rank)
 
         ierr=0
 
