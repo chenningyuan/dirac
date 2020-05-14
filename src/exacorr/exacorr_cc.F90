@@ -3047,6 +3047,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_init(Dlk,ZERO)
             ierr=exatns_tensor_transform(Dlk,j_chol)
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init(j_chol) failed!')
+            if (print_level.gt.6) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
             if (print_level.gt.4) call print_date(" --- Off-Diagonal computed")
 
@@ -3064,7 +3065,7 @@ print *,'abe',ierr
             !sum and denominate
             ierr=exatns_tensor_contract("T(p,q)+=R(p,q)*O()",Dlk,Res,one_tensor,MINUS_ONE)
             scal_fac=ONE / zsqrt(D_max)
-            ierr=exatns_tensor_contract("W(p,q)+=T(p,q)*O()",CD(m+1),Dlk,one_tensor,scal_fac)
+            ierr=exatns_tensor_contract("W(p,q)+=T+(p,q)*O()",CD(m+1),Dlk,one_tensor,scal_fac)
             ierr=exatns_tensor_destroy(Dlk)
             if (print_level.gt.6) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
             if (print_level.gt.4) call print_date(" ---  new Chol. vectors computed")

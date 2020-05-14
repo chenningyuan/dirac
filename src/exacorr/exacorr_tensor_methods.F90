@@ -1303,7 +1303,9 @@ module exacorr_tensor_methods
          if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_J: getting dense_adapter')
          n=tens%num_dims
          if (n.ne.2) call quit('Error in comp_chol_J: dimension not 2')
-
+         
+         write(*,*) 'chol_J, ind:',this%ind
+         
          ierr=get_chol_J(this%ind,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
          return
         end function chol_J_comp
@@ -1494,8 +1496,6 @@ module exacorr_tensor_methods
         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
         rank=tens%num_dims
         if (rank.gt.4) call quit('Error: only up to 4 dim. implemented in fill_delta_tensor')
-
-        write(*,*) " ind =",this%ind
 
         ierr=fill_delta(this%ind,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
 
