@@ -251,8 +251,8 @@ module exacorr_cc
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
-                call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
-                !call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
+                !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
+                call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -3129,13 +3129,17 @@ print *,'abe',ierr
               delta2(1)=i
               delta2(2)=j
               call f_delta%reset(delta2,2)
+              write (*,*) 'Delta ',delta2
             else
               delta1(1)=i
               call f_delta%reset(delta1,1)
+              write (*,*) 'Delta ',delta1
             end if
 
             ierr=exatns_tensor_init(Delta,ZERO)
             ierr=exatns_tensor_transform(Delta,f_delta)
+            ierr=exatns_tensor_traverse(Delta,'PrintTensor')
+
 
             !  extract element
             if (mode==3) then
