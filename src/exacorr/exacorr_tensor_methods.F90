@@ -1085,7 +1085,7 @@ module exacorr_tensor_methods
               do a = 1, tens_dims(1)
                 denominator = eps_ijk - eps_vir(a+tens_bases(1)-1) &
                             - eps_vir(b+tens_bases(2)-1) - eps_vir(c+tens_bases(3)-1) 
-                th_tens(a,b,c) = ONE / denominator
+                th_tens(a,b,c) = th_tens(a,b,c) / denominator
               end do
             end do
           end do
