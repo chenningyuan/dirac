@@ -252,7 +252,7 @@ module exacorr_cc
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
                 call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-                call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
+                !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -501,8 +501,6 @@ module exacorr_cc
          integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id
          type(delta_t)                 :: f_delta  ! fill delta matrix
          type(denom_t)                 :: denom    ! method to scale CC amplitudes by the inverse of orbital energy differences
-         
-
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -516,7 +514,7 @@ module exacorr_cc
          type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2) ! methods to initialize MO coeffcient tensors
          type(init_dm_tensor_t)       :: dm_init(4)           ! array of initializers for MO transformation algorithm 2
          type(set_diagonal_t)         :: one_diag             ! identity matrix
-         type(init_one_el_t)          :: one_el(3)            ! one electron integrals
+         type(set_1el_t)              :: one_el(3)            ! one electron integrals
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
          type(square_t)               :: t_square             ! square matrix elements
          
@@ -588,25 +586,25 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(printer) failed!')
 
          !Register method to set diagonal to one
-         call one_diag%init_const_ctor(ONE)
+         call one_diag%set_diagonal_init(ONE)
          ierr=exatns_method_register('OneDiag',one_diag)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OneDiag) failed!')
 
          one_el_exist = exist_one_el(e_core)
          if (one_el_exist) then
             !Register methods to read one electron integrals
-            call one_el(1)%init_one_el_int(mo_occ,nocc,mo_occ,nocc,min_occ)
+            call one_el(1)%set_1el_init(mo_occ,nocc,mo_occ,nocc,min_occ)
             ierr=exatns_method_register('OE_oo',one_el(1))
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_oo) failed!')
-            call one_el(2)%init_one_el_int(mo_occ,nocc,mo_vir,nvir,min_occ)
+            call one_el(2)%set_1el_init(mo_occ,nocc,mo_vir,nvir,min_occ)
             ierr=exatns_method_register('OE_ov',one_el(2))
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_ov) failed!')
-            call one_el(3)%init_one_el_int(mo_vir,nvir,mo_vir,nvir,min_occ)
+            call one_el(3)%set_1el_init(mo_vir,nvir,mo_vir,nvir,min_occ)
             ierr=exatns_method_register('OE_vv',one_el(3))
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vv) failed!')
 
             !Register methods to make matrix with orbital energies on the diagonal
-            call orb_set%init_eps(mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,exa_input%level_shift)
+            call orb_set%set_energy_init(mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,exa_input%level_shift)
             ierr=exatns_method_register('OrbSet',orb_set)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet) failed!')
          end if
@@ -2930,9 +2928,10 @@ print *,'abe',ierr
             ierr=exatns_tensor_create(w_tensor,"w_tensor",abc_id,abc_root,EXA_DATA_KIND_C8) 
             ierr=exatns_tensor_create(y_tensor,"y_tensor",abc_id,abc_root,EXA_DATA_KIND_C8) 
             ierr=exatns_tensor_create(we_tensor,"we_tensor",abc_id,abc_root,EXA_DATA_KIND_C8) 
+            ierr=exatns_tensor_init(w_tensor,ZERO)
             ierr=exatns_tensor_init(y_tensor,ZERO)
             ierr=exatns_tensor_init(we_tensor,ZERO)
-            allocate(y(nvir,nvir,nvir))
+            !allocate(y(nvir,nvir,nvir))
 
 !           The following is a work-around, we need to implement contraction with restricted range for "inactive" indices
             ierr=exatns_tensor_create(vovv_i_tensor,"vovv_i_tensor",abc_id,abc_root,EXA_DATA_KIND_C8) 
@@ -3002,6 +3001,9 @@ print *,'abe',ierr
 
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
                   call denom%reset(eps_ijk)
+                  ierr=exatns_tensor_init(y_tensor,ZERO)
+                  ierr=exatns_tensor_transform(y_tensor,denom)
+                  if(print_level > 6) write(*,*) " Y  =",print_tensornorm2(y_tensor)
                   ! ! Form Y-intermediate and calculate 5th order -T energy contribution
                   ! call form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
                   ! ierr=exatns_tensor_init(result_tensor,ZERO)
@@ -3018,7 +3020,6 @@ print *,'abe',ierr
                   ! t_energy(2)=t_energy(2) + result_val
 
                   ! Copy w into y array and calculate 4th order +T energy contribution
-                  ierr=exatns_tensor_init(y_tensor,denom)
                   ierr=exatns_tensor_transform(w_tensor,'Square')
                   if(print_level > 6) write(*,*) " W =",print_tensornorm2(w_tensor)
                   ierr=exatns_tensor_init(res_tensor,ZERO)
@@ -3035,7 +3036,7 @@ print *,'abe',ierr
 
 !           Destruct intermediate tensors
             deallocate(eps_occ)
-            deallocate(y)
+            !deallocate(y)
             ierr=exatns_tensor_destroy(res_tensor)
             ierr=exatns_tensor_destroy(t2_i_tensor)
             ierr=exatns_tensor_destroy(t2_j_tensor)
@@ -3129,17 +3130,14 @@ print *,'abe',ierr
               delta2(1)=i
               delta2(2)=j
               call f_delta%reset(delta2,2)
-              write (*,*) 'Delta ',delta2
             else
               delta1(1)=i
               call f_delta%reset(delta1,1)
-              write (*,*) 'Delta ',delta1
             end if
 
             ierr=exatns_tensor_init(Delta,ZERO)
             ierr=exatns_tensor_transform(Delta,f_delta)
-            ierr=exatns_tensor_traverse(Delta,'PrintTensor')
-
+            !ierr=exatns_tensor_traverse(Delta,'PrintTensor')
 
             !  extract element
             if (mode==3) then
