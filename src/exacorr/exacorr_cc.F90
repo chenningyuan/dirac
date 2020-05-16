@@ -3023,15 +3023,18 @@ print *,'abe',ierr
           if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
           if (print_level.gt.4) call print_date(" --- Diagonal computed")
 
-          ierr=exatns_tensor_max(Diag,D_max,ind_max)
-          !call f_delta%reset(ind_max,2)
-          !ierr=exatns_tensor_traverse(Delta,f_delta)
-          !if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_traverse(f_delta) failed!')
-          !if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
-          !ierr=exatns_tensor_init(Factor,ZERO)
-          !ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
-          !ierr=exatns_tensor_get_scalar(Factor,D_max)
-
+          ! find maximum
+          allocate(ind_max(2))
+          ind_max=1
+          !ierr=exatns_tensor_max(Diag,D_max,ind_max)
+          call f_delta%reset(ind_max,2)
+          ierr=exatns_tensor_traverse(Delta,f_delta)
+          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_transform(f_delta) failed!')
+          if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
+          ierr=exatns_tensor_init(Factor,ZERO)
+          ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
+          ierr=exatns_tensor_get_scalar(Factor,D_max)
+          
           m=0
 
           do while (abs(D_max)>t_cholesky)
@@ -3086,17 +3089,16 @@ print *,'abe',ierr
             end if
 
             !find new maximum
-            deallocate(ind_max)
-            ierr=exatns_tensor_max(Diag,D_max,ind_max)
+            ind_max=m+1
+            !deallocate(ind_max)
+            !ierr=exatns_tensor_max(Diag,D_max,ind_max)
             call f_delta%reset(ind_max,2)
-            ierr=exatns_tensor_init(Delta,ZERO)
-            ierr=exatns_tensor_transform(Delta,f_delta)
+            ierr=exatns_tensor_traverse(Delta,f_delta)
             if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_transform(f_delta) failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
-            !ierr=exatns_tensor_init(Factor,ZERO)
-            !ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
-            !ierr=exatns_tensor_get_scalar(Factor,D_max)
-
+            ierr=exatns_tensor_init(Factor,ZERO)
+            ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
+            ierr=exatns_tensor_get_scalar(Factor,D_max)
           end do
 
           if (print_level.gt.-1) write(*,*) 'Cholesky decomposition done, used ',m,' elements'

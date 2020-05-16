@@ -1141,7 +1141,7 @@ module exacorr_tensor_methods
 
         function comp_chol_diag(this,tensor,scalar) result(ierr)
          implicit none
-         integer(INTD):: ierr,n
+         integer(INTD):: ierr,rank
          class(chol_diag), intent(in):: this
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
@@ -1150,13 +1150,13 @@ module exacorr_tensor_methods
          ierr=0
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_diag: getting dense_adapter')
-         n=tens%num_dims
-         if (n.ne.2) call quit('Error in comp_chol_diag: dimension not 2')
-         ierr=get_chol_diag(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
+         rank=tens%num_dims
+         if (rank.ne.2) call quit('Error in comp_chol_diag: dimension not 2')
+         ierr=get_chol_diag(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank),rank)
          return
         end function comp_chol_diag
 
-        integer function get_chol_diag(tens_body, data_kind, tens_dims, tens_bases,nind) result (ierr)
+        integer function get_chol_diag(tens_body, data_kind, tens_dims, tens_bases,rank) result (ierr)
           !Initialization routine that is used to fill a tensor with AO integrals
 
           use exacorr_datatypes
@@ -1169,14 +1169,14 @@ module exacorr_tensor_methods
           integer(4), value         :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
           integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
           integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
-          integer(INTD), intent(in) :: nind            ! number of independent indices
+          integer(INTD), intent(in) :: rank            ! number of independent indices
 
-          integer             :: nao(nind)
+          integer             :: nao(rank)
           integer             :: basis_angular ! 1=cartesian, 2=spherical
           complex(8),pointer  :: ao_tens(:,:)
-          integer             :: first_ao(1:nind)
+          integer             :: first_ao(1:rank)
 
-          integer                              :: nshells(nind)
+          integer                              :: nshells(rank)
           type(basis_func_info_t), allocatable :: gto1(:), gto2(:)  ! arrays with basis function information
 
           integer            :: i, j, ish, jsh, ioff, joff, ijij
@@ -1196,9 +1196,9 @@ module exacorr_tensor_methods
           call interest_initialize(.false.)
 
           ! map the arguments to names used in the context of integral evaluation
-          first_ao(1:nind) = tens_bases(1:nind)
-          nao(1:nind) = tens_dims(1:nind)
-          call c_f_pointer(tens_body,ao_tens,nao(1:nind)) !map C pointer to array
+          first_ao(1:rank) = tens_bases(1:rank)
+          nao(1:rank) = tens_dims(1:rank)
+          call c_f_pointer(tens_body,ao_tens,nao(1:rank)) !map C pointer to array
 
 !         Allocate and get shell information for all shells that we will treat
           call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
@@ -1292,7 +1292,7 @@ module exacorr_tensor_methods
 
         function chol_J_comp(this,tensor,scalar) result(ierr)
          implicit none
-         integer(INTD):: ierr,n
+         integer(INTD):: ierr,rank
          class(chol_J), intent(in):: this
          class(tens_rcrsv_t), intent(inout):: tensor
          complex(8), intent(inout), optional:: scalar
@@ -1301,16 +1301,16 @@ module exacorr_tensor_methods
          ierr=0
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error in comp_chol_J: getting dense_adapter')
-         n=tens%num_dims
-         if (n.ne.2) call quit('Error in comp_chol_J: dimension not 2')
+         rank=tens%num_dims
+         if (rank.ne.2) call quit('Error in comp_chol_J: dimension not 2')
          
          write(*,*) 'chol_J, ind:',this%ind
          
-         ierr=get_chol_J(this%ind,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n),n)
+         ierr=get_chol_J(this%ind,tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank),rank)
          return
         end function chol_J_comp
 
-        integer function get_chol_J(ind,tens_body, data_kind, tens_dims, tens_bases, nind) result (ierr)
+        integer function get_chol_J(ind,tens_body, data_kind, tens_dims, tens_bases, rank) result (ierr)
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
@@ -1324,7 +1324,7 @@ module exacorr_tensor_methods
          integer(4), value         :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
          integer(8), intent(in)    :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
          integer(8), intent(in)    :: tens_bases(1:*) !in: base offsets for each tensor dimension)
-         integer(INTD), intent(in) :: nind            ! number of independent indices
+         integer(INTD), intent(in) :: rank            ! number of independent indices
 
          integer:: nao(4)
          integer:: basis_angular ! 1=cartesian, 2=spherical
@@ -1352,11 +1352,13 @@ module exacorr_tensor_methods
          call interest_initialize(.false.)
 
          ! map the arguments to names used in the context of integral evaluation
-         first_ao(1:nind) = tens_bases(1:nind)
+         first_ao(1:rank) = tens_bases(1:rank)
          first_ao(3:4)=ind
-         nao(1:nind) = tens_dims(1:nind)
+         nao(1:rank) = tens_dims(1:rank)
          nao(3:4)=1 ! fixed single element (maybe use shell later)
-         call c_f_pointer(tens_body,ao_tens,nao(1:nind)) !map C pointer to 4-dimensional array
+         call c_f_pointer(tens_body,ao_tens,tens_dims(1:rank)) !map C pointer to 4-dimensional array
+
+         write(*,*) 'ind:',ind, ', dims:', tens_dims(1:rank), ', ao:',first_ao, nao
 
 !        Allocate and get shell information for all shells that we will treat
          call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
@@ -1423,7 +1425,14 @@ module exacorr_tensor_methods
                   end do
                   joff = joff + nj
                end do
-     
+
+         ej=0
+         do i = 1, tens_dims(2)
+            do j = 1, tens_dims(1)
+              ej = ej + abs(ao_tens(i,j))
+            end do
+         end do
+         write(*,*) 'norm=',ej
 
          deallocate(gto1)
          deallocate(gto2)
@@ -1529,17 +1538,17 @@ module exacorr_tensor_methods
 
         select case (rank)
         case (1)
-          call c_f_pointer(tens_body,tens1,tens_dims)
+          call c_f_pointer(tens_body,tens1,tens_dims(1:rank))
           tens1= ZERO
           if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens1(hind(1))=ONE 
         case (2)
-          call c_f_pointer(tens_body,tens2,tens_dims)
+          call c_f_pointer(tens_body,tens2,tens_dims(1:rank))
           tens2= ZERO
           if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
             if (hind(1).gt.0 .and. hind(1).le.tens_dims(1)) tens2(hind(1),hind(2))=ONE 
           end if
         case (3)
-          call c_f_pointer(tens_body,tens3,tens_dims)
+          call c_f_pointer(tens_body,tens3,tens_dims(1:rank))
           tens3= ZERO
           if (hind(3).gt.0 .and. hind(3).le.tens_dims(3)) then
             if (hind(2).gt.0 .and. hind(2).le.tens_dims(2)) then
@@ -1547,7 +1556,7 @@ module exacorr_tensor_methods
             end if
           end if
         case (4)
-          call c_f_pointer(tens_body,tens4,tens_dims)
+          call c_f_pointer(tens_body,tens4,tens_dims(1:rank))
           tens4= ZERO
           if (hind(4).gt.0 .and. hind(4).le.tens_dims(4)) then
             if (hind(3).gt.0 .and. hind(3).le.tens_dims(3)) then
