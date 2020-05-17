@@ -2935,7 +2935,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_create(w_tensor,"w_tensor",abc_id,abc_root,EXA_DATA_KIND_C8) 
             ierr=exatns_tensor_create(we_tensor,"we_tensor",abc_id,abc_root,EXA_DATA_KIND_C8) 
             ierr=exatns_tensor_create(y_tensor,"y_tensor",abc_id,abc_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(y_tensor,"temp",abc_id,abc_root,EXA_DATA_KIND_C8) 
+            ierr=exatns_tensor_create(temp,"temp",abc_id,abc_root,EXA_DATA_KIND_C8) 
             
 
             ierr=exatns_tensor_create(vovv_i,"vovv_i",abc_id,abc_root,EXA_DATA_KIND_C8) 
@@ -3135,10 +3135,10 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ij,t1_i,t1_j)
                   ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ij,t1_j,t1_i)
                   ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ij,t1_k,ONE_THIRD)
-                  ierr=exatns_tensor_init(t2_jk,ZERO)
-                  ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_jk,t1_j,t1_k)
-                  ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_jk,t1_k,t1_j)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_jk,t1_i,ONE_THIRD)
+                  ierr=exatns_tensor_init(t2_ij,ZERO)
+                  ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ij,t1_j,t1_k)
+                  ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ij,t1_k,t1_j)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ij,t1_i,ONE_THIRD)
                   ierr=exatns_tensor_init(t2_ki,ZERO)
                   ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ki,t1_k,t1_i)
                   ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ki,t1_i,t1_k)
