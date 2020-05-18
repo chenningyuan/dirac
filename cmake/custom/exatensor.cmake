@@ -10,7 +10,7 @@ endif()
 # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
 # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
 set(EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-set(EXATENSOR_GIT_HASH b3c476a2a189027a41bc7aeb76d8a7db0035cbab CACHE STRING "ExaTENSOR Git repository hash in use")
+set(EXATENSOR_GIT_HASH 36a6e4966f64acc83eb9519c7ebc1e2b66a4a3cf CACHE STRING "ExaTENSOR Git repository hash in use")
 
 if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
