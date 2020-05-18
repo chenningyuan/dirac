@@ -3085,9 +3085,9 @@ print *,'abe',ierr
                   ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
                   ierr=exatns_tensor_init(w_tensor,ZERO)
                   ! symmetrization via contraction as addition with permutation is not implemented
-                  ierr=exatns_tensor_contract("W(a,b,c)+=E(a,b,c)*O()",w_tensor,temp,one_tensor,MINUS_ONE)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=E(b,c,a)*O()",w_tensor,temp,one_tensor,MINUS_ONE)
-                  ierr=exatns_tensor_contract("W(a,b,c)+=E(c,a,b)*O()",w_tensor,temp,one_tensor,MINUS_ONE)
+                  ierr=exatns_tensor_contract("W(a,b,c)+=E(a,b,c)*O()",w_tensor,temp,one_tensor)
+                  ierr=exatns_tensor_contract("W(a,b,c)+=E(b,c,a)*O()",w_tensor,temp,one_tensor)
+                  ierr=exatns_tensor_contract("W(a,b,c)+=E(c,a,b)*O()",w_tensor,temp,one_tensor)
                   if(print_level > 8) write(*,*) " W =",print_tensornorm2(w_tensor)
 
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
@@ -3100,7 +3100,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("R()+=W(a,b,c)*E(a,b,c)",res_tensor,w_tensor,we_tensor)
                   ierr=exatns_tensor_get_scalar(res_tensor,result_val)
-                  t_energy(1)=t_energy(1) + result_val
+                  t_energy(1)=t_energy(1) - result_val
 
                   ! Form Y-intermediate and calculate 5th order (T) energy contribution
                   ierr=exatns_tensor_init(temp,ZERO)
