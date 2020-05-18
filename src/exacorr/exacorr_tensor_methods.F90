@@ -1304,8 +1304,6 @@ module exacorr_tensor_methods
          rank=tens%num_dims
          if (rank.ne.2) call quit('Error in comp_chol_J: dimension not 2')
          
-         write(*,*) 'chol_J, ind:',this%ind
-         
          ierr=get_chol_J(this%ind,tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank),rank)
          return
         end function chol_J_comp
@@ -1335,7 +1333,7 @@ module exacorr_tensor_methods
          integer :: nshells(4)
          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
 
-         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, ijkl
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
@@ -1357,8 +1355,6 @@ module exacorr_tensor_methods
          nao(1:rank) = tens_dims(1:rank)
          nao(3:4)=1 ! fixed single element (maybe use shell later)
          call c_f_pointer(tens_body,ao_tens,tens_dims(1:rank)) !map C pointer to 4-dimensional array
-
-         write(*,*) 'ind:',ind, ', dims:', tens_dims(1:rank), ', ao:',first_ao, nao
 
 !        Allocate and get shell information for all shells that we will treat
          call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
@@ -1410,29 +1406,21 @@ module exacorr_tensor_methods
                                   ll,el,xl,yl,zl,cl,&
                                   li,ei,xi,yi,zi,ci,&
                                   lj,ej,xj,yj,zj,cj )
-                     ijkl = 0
-                     do l = 1, nl
-                        do k = 1, nk
+                     
+                     call get_shell_offset(first_ao(4),loff)
+                     l = first_ao(4)-loff
+                        call get_shell_offset(first_ao(3),koff)
+                        k = first_ao(3)-koff
                            do j = 1, nj
                               do i = 1, ni
                                  ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
                                  ao_tens(i+ioff,j+joff) = dcmplx(gout(ijkl),0.D0)
                               end do
                            end do
-                        end do
-                     end do
                      ioff = ioff + ni
                   end do
                   joff = joff + nj
                end do
-
-         ej=0
-         do i = 1, tens_dims(2)
-            do j = 1, tens_dims(1)
-              ej = ej + abs(ao_tens(i,j))
-            end do
-         end do
-         write(*,*) 'norm=',ej
 
          deallocate(gto1)
          deallocate(gto2)
@@ -1615,13 +1603,13 @@ module exacorr_tensor_methods
         case (1)
           call c_f_pointer(tens_body,t1_tens,tens_dims(1:1)) !map C pointer to 2-dimensional array
           do p = 1, tens_dims(1)
-            t1_tens(p) = conjg(t1_tens(p))*t1_tens(p)
+            t1_tens(p) = t1_tens(p)*t1_tens(p)
           end do
         case (2)
           call c_f_pointer(tens_body,t2_tens,tens_dims(1:2)) !map C pointer to 2-dimensional array
           do q = 1, tens_dims(2)
             do p = 1, tens_dims(1)
-              t2_tens(p,q) = conjg(t2_tens(p,q))*t2_tens(p,q)
+              t2_tens(p,q) = t2_tens(p,q)*t2_tens(p,q)
             end do
           end do
         case (3)
@@ -1629,7 +1617,7 @@ module exacorr_tensor_methods
           do r = 1, tens_dims(3)
             do q = 1, tens_dims(2)
               do p = 1, tens_dims(1)
-                t3_tens(p,q,r) = conjg(t3_tens(p,q,r))*t3_tens(p,q,r)
+                t3_tens(p,q,r) = t3_tens(p,q,r)*t3_tens(p,q,r)
               end do
             end do
           end do
@@ -1639,7 +1627,7 @@ module exacorr_tensor_methods
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t4_tens(p,q,r,s) = conjg(t4_tens(p,q,r,s))*t4_tens(p,q,r,s)
+                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
                 end do
               end do
             end do
@@ -1652,7 +1640,7 @@ module exacorr_tensor_methods
                 do r = 1, tens_dims(3)
                   do q = 1, tens_dims(2)
                     do p = 1, tens_dims(1)
-                      t6_tens(p,q,r,s,t,u) = conjg(t6_tens(p,q,r,s,t,u))*t6_tens(p,q,r,s,t,u)
+                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
                     end do
                   end do
                 end do

@@ -622,8 +622,8 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Delta_F) failed!')
 
          !Register method to square tensor
-         ierr=exatns_method_register('Square_T',t_square)
-         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square_T) failed!')
+         ierr=exatns_method_register('Square',t_square)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square) failed!')
 
         end subroutine exacorr_cc_methods
 
@@ -3012,28 +3012,32 @@ print *,'abe',ierr
 
           !Initialize
           ierr=exatns_tensor_create(Diag,"Diagonal",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(Diag,ZERO)
+          ierr=exatns_tensor_create(Dlk,"Dlk",ao2_id,ao2_root,EXA_DATA_KIND_C8)          
           ierr=exatns_tensor_create(Res,"Residual",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(Res,ZERO)
           ierr=exatns_tensor_create(Delta,"Delta",ao2_id,ao2_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(Delta,ZERO)
           ierr=exatns_tensor_create(Factor,"Factor",EXA_DATA_KIND_C8)
-          
+          if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Tensor creation failed!')
+           
+          ierr=exatns_tensor_init(Diag,ZERO) 
           ierr=exatns_tensor_transform(Diag,'CholDiag')
+          if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computation od Diagonal failed!')
           if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
           if (print_level.gt.4) call print_date(" --- Diagonal computed")
 
           ! find maximum
-          allocate(ind_max(2))
-          ind_max=1
-          !ierr=exatns_tensor_max(Diag,D_max,ind_max)
+          !allocate(ind_max(2))
+          !ind_max=1
+          ierr=exatns_tensor_max(Diag,D_max,ind_max)
+          if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Finding Maximum failed!')
           call f_delta%reset(ind_max,2)
-          ierr=exatns_tensor_traverse(Delta,f_delta)
+          ierr=exatns_tensor_init(Delta,ZERO)
+          ierr=exatns_tensor_transform(Delta,f_delta)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_transform(f_delta) failed!')
           if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
-          ierr=exatns_tensor_init(Factor,ZERO)
-          ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
-          ierr=exatns_tensor_get_scalar(Factor,D_max)
+          !ierr=exatns_tensor_init(Factor,ZERO)
+          !ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
+          !if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Extracting Maximum failed!')
+          !ierr=exatns_tensor_get_scalar(Factor,D_max)
           
           m=0
 
@@ -3043,14 +3047,15 @@ print *,'abe',ierr
             !create current elment of the cholesky vector
             write (vs_str, '(A3,I9.9)') 'CD_',m+1
             ierr=exatns_tensor_create(CD(m+1),vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Creating Cholesky vector failed!')
             ierr=exatns_tensor_init(CD(m+1),ZERO)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Setting up Cholesky vector failed!')
 
-            ierr=exatns_tensor_create(Dlk,"Dlk",ao2_id,ao2_root,EXA_DATA_KIND_C8)
             call j_chol%reset(ind_max)
             ierr=exatns_tensor_init(Dlk,ZERO)
             ierr=exatns_tensor_transform(Dlk,j_chol)
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_init(j_chol) failed!')
-            if (print_level.gt.6) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computing Off-Diagonals failed!')
+            if (print_level.gt.15) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
             if (print_level.gt.4) call print_date(" --- Off-Diagonal computed")
 
@@ -3058,47 +3063,55 @@ print *,'abe',ierr
             do i=1,m
               ierr=exatns_tensor_init(Factor,ZERO)
               ierr=exatns_tensor_contract("F()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Extracting old value failed!')
               ierr=exatns_tensor_get_scalar(Factor,scal_fac)
-              if (print_level.gt.8) write(*,*) "--- Factor =", scal_fac
+              if (print_level.gt.12) write(*,*) "--- Factor =", scal_fac
               ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*F()",Res,CD(i),Factor)
-              if (print_level.gt.8) write(*,'(A7,E20.10)') "Res   =",print_tensornorm2 (Res)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Getting old contribution creation failed!')
+              if (print_level.gt.12) write(*,'(A7,E20.10)') "Res   =",print_tensornorm2 (Res)
             end do
             if (print_level.gt.4) call print_date(" ---  previous Chol. vectors summed")
 
             !sum and denominate
             ierr=exatns_tensor_contract("T(p,q)+=R(p,q)*O()",Dlk,Res,one_tensor,MINUS_ONE)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computing Residual failed!')
             scal_fac=ONE / zsqrt(D_max)
             ierr=exatns_tensor_contract("W(p,q)+=T+(p,q)*O()",CD(m+1),Dlk,one_tensor,scal_fac)
-            ierr=exatns_tensor_destroy(Dlk)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Scaling failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
             if (print_level.gt.4) call print_date(" ---  new Chol. vectors computed")
             
             ierr=exatns_tensor_init(Res,ZERO)
             ierr=exatns_tensor_contract("L(p,q)+=R(p,q)*O()",Res,CD(m+1),one_tensor)
-            ierr=exatns_tensor_transform(Res,'Square')            
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Copying failed!')
+            ierr=exatns_tensor_transform(Res,'Square')
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Squaring failed!')            
             ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",Diag,Res,one_tensor,MINUS_ONE)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Updating Diagonal failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",print_tensornorm2(Diag)
             if (print_level.gt.4) call print_date(" ---  Diagonal updated")
 
             m=m+1
 
-            if (m.ge.10) then
+            if (m.ge.nao*nao) then
               !call quit(" Cholesky decomposition failed")
               write (*,*) 'WARNING: Cholesky decomposition failed, error=',D_max
               exit
             end if
 
             !find new maximum
-            ind_max=m+1
-            !deallocate(ind_max)
-            !ierr=exatns_tensor_max(Diag,D_max,ind_max)
+            !ind_max=m+1
+            deallocate(ind_max)
+            ierr=exatns_tensor_max(Diag,D_max,ind_max)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Getting Maximum failed!')
             call f_delta%reset(ind_max,2)
-            ierr=exatns_tensor_traverse(Delta,f_delta)
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_transform(f_delta) failed!')
+            ierr=exatns_tensor_transform(Delta,f_delta)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Constructing Delta failed!')
             if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
-            ierr=exatns_tensor_init(Factor,ZERO)
-            ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
-            ierr=exatns_tensor_get_scalar(Factor,D_max)
+            !ierr=exatns_tensor_init(Factor,ZERO)
+            !ierr=exatns_tensor_contract("F()=V(i,j)*D(i,j)",Factor,Diag,Delta)
+            !if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Extracting Maximum failed!')
+            !ierr=exatns_tensor_get_scalar(Factor,D_max)
           end do
 
           if (print_level.gt.-1) write(*,*) 'Cholesky decomposition done, used ',m,' elements'
@@ -3106,6 +3119,7 @@ print *,'abe',ierr
           !cleanup
           deallocate(ind_max)
           ierr=exatns_tensor_destroy(Diag)
+          ierr=exatns_tensor_destroy(Dlk)
           ierr=exatns_tensor_destroy(Res)
           ierr=exatns_tensor_destroy(Delta)
           ierr=exatns_tensor_destroy(Factor)
