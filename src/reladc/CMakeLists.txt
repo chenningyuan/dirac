@@ -25,15 +25,18 @@ set(FIXED_RELADC_FORTRAN_SOURCES_noruntimecheck
     polprp_mainblk.F
 )
 
+#Miro: proper order  of these (mostly module) sources is important to enable faultless compilation
 set(FREE_RELADC_FORTRAN_SOURCES
+    adc_mat.F90
     adc_cfg.F90
     adc_fano_exchange.F90
-    adc_fano_real_routines.F90
-    adc_fano_complex_routines.F90
     adc_fano_diag.F90
-    adc_mat.F90
+    adc_fano_routines.F90
+    adc_fano_complex_routines.F90
+    adc_fano_real_routines.F90
     adc_fano_matmul.F90
     adcutil.F90
+    adc_fano.F90 
     polprp_cfg.F90
     polprp_qstackm.F90
     polprp_blockdav.F90
@@ -41,8 +44,6 @@ set(FREE_RELADC_FORTRAN_SOURCES
 )
 
 set(FREE_RELADC_FORTRAN_SOURCES_noruntimecheck
-    adc_fano_routines.F90
-    adc_fano.F90 # Attempt to fetch from allocatable variable ASSIGN_FIN_CHANNEL when it is not allocated
 )
 
 set(C_RELADC_SOURCES

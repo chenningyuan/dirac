@@ -7,6 +7,7 @@ module vib_prop
    use prop_contribs
    use openrsp_cfg
    use dirac_interface
+   use codata
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -30,7 +31,7 @@ module vib_prop
    !physical constants for conversion to non-atomic units
    real(8), parameter :: cm1 = 1/219474.631371d0, & !1 centimeter-to-minus-one in au
                          cvl = 137.03599907d0,    & !c-the-velocity-of-light in au
-                         nm  = 10/0.52917706d0,   & !1 nanometer in au
+                         nm  = 10/XTANG,          & !1 nanometer in au
                          pi  = 3.14159265358979323846D0 !acos(-1d0)
 
    !field component lables for printing

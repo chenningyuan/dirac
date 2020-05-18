@@ -1,0 +1,12 @@
+                                Molecular g-tensor
+                                ------------------
+
+  Total molecular g-factor                     :      0.76185057
+
+    Nuclear contribution to g-factor (g^nuc)   :      0.97314535
+    Electronic contribution to g-factor (g^LR) :     -0.21129477
+
+            g^LR-L(e-e) :     -0.21129087
+            g^LR-S(e-e) :     -0.00000616
+            g^LR-L(e-p) :      0.00009545
+            g^LR-S(e-p) :     -0.00009320

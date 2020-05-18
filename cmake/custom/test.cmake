@@ -164,6 +164,7 @@ dirac_test(import_mos "short;import;scf;mcscf" "")
 dirac_test(operators_mo_mtx_elements "short;operators" "")
 dirac_test(spinorbit-from-spinfree "short;scf;resolve" "")
 dirac_test(spinrot "short;response" "")
+dirac_test(rotg "short;response" "")
 # disabing eomcc expectation value test until the code is verified
 #dirac_test(eomcc_expval "short;cc" "")
 

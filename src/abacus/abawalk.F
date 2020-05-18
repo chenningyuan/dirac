@@ -3644,8 +3644,8 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
-      PARAMETER (FACTOR = 1.D6*ALPHA2, PRMASS = 1.007276470D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PRMASS*PRMASS)
+      PARAMETER (FACTOR = 1.D6*ALPHA2)
+      PARAMETER (AUTOHZ = ALPHA2*ALPHA2/(4*XFAMU*XFAMU*PMASS*PMASS)
      &                   *6.5796838999D15)
 C
       LOGICAL FINAL
@@ -3669,7 +3669,7 @@ C
 C
 #include "moldip.h"
 #include "suscpt.h"
-#include "molgfa.h"
+#include "rotg.h"
 #include "quadru.h"
 #include "sigma.h"
 #include "spinro.h"
@@ -3711,7 +3711,7 @@ C
          KLAST  = KGEOM2 + 3*MXCENT
          LWRK   = LWORK - KLAST + 1
          CALL ECKTRN(GRDCAR,HESCAR,DIP0,SUSTOT,GTRAN,QUADT,TMAT,GTRANT,
-     &               POLARS,POLDD,ELNQC,SPNTOT,MAGSUS,MOLGFA,QUADRU,
+     &               POLARS,POLDD,ELNQC,SPNTOT,MAGSUS,ROTG,QUADRU,
      &               SHIELD,SPINRO,POLAR,ALFA,NQCC,SPNSPN,
      &               NCART,NCRTOT,MXFR,NFRVAL,FRVAL,WORK(KGEOMI),
      &               WORK(KAMASS),WORK(KNATTY),WORK(KECKGE),
@@ -3726,7 +3726,7 @@ C
             CALL DCOPY(9,SUSTOT,1,SUSTO0,1)
             CALL DSCAL(9,DM1,SUSTO0,1)
          END IF
-         IF (MOLGFA) CALL DCOPY(9,GTRAN,1,GFAC0,1)
+         IF (ROTG) CALL DCOPY(9,GTRAN,1,GFAC0,1)
          IF (QUADRU) CALL DCOPY(9,QUADT,1,QUAD0,1)
          IF (SHIELD) CALL DCOPY(9*MXCENT,TMAT,1,SIGMA0,1)
          IF (SPINRO) CALL DCOPY(9*MXCENT,GTRANT,1,SRC0,1)
@@ -3752,7 +3752,7 @@ C
                   END DO
                END DO
             END IF
-            IF (MOLGFA) THEN
+            IF (ROTG) THEN
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
                      GFACF(ICOOR,JCOOR,I) = (GTRAN(ICOOR,JCOOR) -
@@ -3845,7 +3845,7 @@ C#endif
                   END DO
                END DO
             END IF
-            IF (MOLGFA) THEN
+            IF (ROTG) THEN
                DO ICOOR = 1, 3
                   DO JCOOR = 1, 3
                      GFACF(ICOOR,JCOOR,I) = GFACF(ICOOR,JCOOR,I) 
@@ -3950,7 +3950,7 @@ C
             CALL HEADER('Magnetizabilities at effective geometry',1)
             CALL POLPRI(SUSTO0,'   ',-2)
          END IF
-         IF (MOLGFA) THEN
+         IF (ROTG) THEN
             CALL HEADER('Rotational g tensor at effective geometry',1)
             CALL POLPRI(GFAC0,'   ',-2)
          END IF
@@ -4025,7 +4025,7 @@ C
                CALL HEADER('Magnetizabilities at displaced geometry',1)
                CALL POLPRI(SUSTOT,'   ',-2)            
             END IF
-            IF (MOLGFA) THEN
+            IF (ROTG) THEN
                CALL HEADER('Rotational g tensor at displaced '//
      &                     'geometry',1)
                CALL POLPRI(GTRAN,'   ',-2)            
@@ -4116,7 +4116,7 @@ C#endif
      &                                          JCOOR = 1, 3)
                END DO
             END IF
-            IF (MOLGFA) THEN
+            IF (ROTG) THEN
                WRITE (LUPRI,'(/A,/A)') 
      &              ' Rotational g tensor second derivatives:',
      &              ' ---------------------------------------'
