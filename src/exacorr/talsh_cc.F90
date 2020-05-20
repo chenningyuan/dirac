@@ -149,8 +149,8 @@ module talsh_cc
 !        ierr=talsh_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
 !        work-around because complex conjugation does not work in the above statement
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
-
 !        end of work-around
+
          if (.not.CCD) then
             call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
          else
@@ -210,22 +210,24 @@ module talsh_cc
          if (.not.CC2) then
             call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 cc_energy,CCD,ncycles,exa_input%print_level)
-            if (.not.CCD) then
-!              Calculate (T) energy correction
-               call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
-            end if
          else if (CC2) then
             call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 cc_energy,CCD,ncycles,exa_input%print_level)
          end if
-! calculate T1 diagnostic
 
          if (.not.CCD) then
+            ! calculate T1 diagnostic
             t1diag = tensor_norm2(comm_t%t1)
             t1diag = t1diag/sqrt(dble(nocc))
-            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
+            if (exa_input%do_triples .and. .not.CC2) then
+              !Calculate (T) energy correction
+              call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
+              call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
+            else
+              call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
+            end if
          else
-            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t_energy=t_energy)
+            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy)
          end if
 
          !Destruct diis tensors

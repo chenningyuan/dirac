@@ -875,7 +875,6 @@
          exa_input%cc2 = .true.
       end if
 
-
       if (kw_matches(word, '.TCONVERG')) then
          call kw_read(word, exa_input%t_econv)
       end if
@@ -890,6 +889,10 @@
 
       if (kw_matches(word, '.LAMBDA')) then
          exa_input%lambda = .true.
+      end if
+
+      if (kw_matches(word, '.NOTRIPLES')) then
+         exa_input%do_triples = .false.
       end if
 
       if (kw_matches(word, '.NOINTS')) then
