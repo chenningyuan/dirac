@@ -64,7 +64,7 @@ if(ENABLE_SRDFT)
 endif()
 cmake_dependent_option(ENABLE_LAPLACE "Laplace module" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_LAPLACE)
-    add_definitions(-DMOD_LAPLACE)
+    add_definitions(-DHAS_LAPLACE)
 endif()
 
 #--------------------------------------------------------------------------------------------------------------
