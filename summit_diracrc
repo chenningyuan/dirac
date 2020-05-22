@@ -11,9 +11,9 @@
 # ExaTENSOR environment
 --env='QF_PROCS_PER_NODE=2'             #number of MPI processes per node
 --env='QF_CORES_PER_PROCESS=21'         #number of physical CPU cores per MPI process (no less than 1)
---env='QF_MEM_PER_PROCESS=160000'       #host RAM memory limit per MPI process in MB
+--env='QF_MEM_PER_PROCESS=140000'       #host RAM memory limit per MPI process in MB
 --env='QF_NVMEM_PER_PROCESS=0'          #non-volatile memory limit per MPI process in MB
---env='QF_HOST_BUFFER_SIZE=200000'      #tensor storage memory limit per MPI process in MB
+--env='QF_HOST_BUFFER_SIZE=190000'      #tensor storage memory limit per MPI process in MB
 --env='QF_GPUS_PER_PROCESS=3'           #number of discrete NVIDIA GPUs per MPI process (optional)
 --env='QF_MICS_PER_PROCESS=0'           #number of discrete Intel Xeon Phis per MPI process (optional)
 --env='QF_AMDS_PER_PROCESS=0'           #number of discrete AMD GPUs per MPI process (optional)

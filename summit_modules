@@ -41,9 +41,9 @@ ulimit -s unlimited
 # ExaTENSOR environment
 export QF_PROCS_PER_NODE=2        #number of MPI processes per node
 export QF_CORES_PER_PROCESS=21    #number of physical CPU cores per MPI process (no less than 1)
-export QF_MEM_PER_PROCESS=160000  #host RAM memory limit per MPI process in MB
+export QF_MEM_PER_PROCESS=140000  #host RAM memory limit per MPI process in MB
 export QF_NVMEM_PER_PROCESS=0     #non-volatile memory limit per MPI process in MB
-export QF_HOST_BUFFER_SIZE=200000 #host buffer size per MPI process in MB (less than QF_MEM_PER_PROCESS!)
+export QF_HOST_BUFFER_SIZE=190000 #host buffer size per MPI process in MB (less than QF_MEM_PER_PROCESS!)
 export QF_GPUS_PER_PROCESS=3      #number of discrete NVIDIA GPUs per MPI process (optional)
 export QF_MICS_PER_PROCESS=0      #number of discrete Intel Xeon Phis per MPI process (optional)
 export QF_AMDS_PER_PROCESS=0      #number of discrete AMD GPUs per MPI process (optional)
