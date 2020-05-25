@@ -2832,7 +2832,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("R()+=W(a,b,c,i,j,k)*C(a,b,c,i,j,k)",res_tensor,w,wd) 
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 13')
                   ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-                  t_energy(1)=t_energy(1)+res_val
+                  t_energy(1)=t_energy(1) + res_val
 
                   ! Form Y-intermediate and calculate 5th order (T) energy contribution
                   ierr=exatns_tensor_init(temp,ZERO)
@@ -2859,7 +2859,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("R()+=Y(a,b,c,i,j,k)*W(a,b,c,i,j,k)",res_tensor,y,wd) 
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 23')
                   ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-                  t_energy(2)=t_energy(2) + res_val
+                  t_energy(2)=t_energy(2) - res_val
 
                   !Form Y-intermediate and calculate 5th order -T energy contribution
                   ierr=exatns_tensor_init(temp,ZERO)
@@ -2908,7 +2908,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("R()+=Y(a,b,c,i,j,k)*W(a,b,c,i,j,k)",res_tensor,y,w) 
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 35')
                   ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-                  t_energy(3)=t_energy(3) + res_val
+                  t_energy(3)=t_energy(3) - res_val
 
 
                   if (print_level >8) write(*,*) 't3 energy: ', t_energy
@@ -2920,11 +2920,11 @@ print *,'abe',ierr
                 end do 
               end do
               ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-              if (print_level >0) write (*,*)  't3_energy:',t_energy(1)
+              if (print_level >0) write (*,*)  't3_energy:',t_energy
             end do
 
             ! We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
-            t_energy = t_energy / SIX
+            t_energy = t_energy / (SIX*SIX)
             
             !clean up
             deallocate(vir_subspaces)
