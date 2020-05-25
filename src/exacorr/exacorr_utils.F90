@@ -125,6 +125,10 @@ module exacorr_utils
       end if
       write(*,*) ""
       write(*,'(A,I5)') " - Print Level :                    ", exa_input%print_level
+      write(*,*) ""
+      write(*,'(A)') " - Estimating memory requirements"
+      write(*,'(A,I9,A)') " -- nao  ( scheme 1-3  ) : ",3*16*((nao*nao)/1000)**2/1000," GB" 
+      write(*,'(A,I9,A)') " -- nvir ( scheme 4/42 ) : ",3*16*((exa_input%nvir*exa_input%nvir)/1000)**2/1000," GB"
       write(*,'(A)') "-----------------------------------------------"
       write(*,*) ""
 
