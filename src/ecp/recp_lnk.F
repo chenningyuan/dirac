@@ -28,12 +28,13 @@
 #include "molinp.h"
 #include "nuclei.h"
 #include "recpval.h"
+#include "inc_mxvalue.h"
 #include "argoscom.h"
 !     global variables
       INTEGER LUINFO,NUC1,NONT0,IPREAD
       REAL*8  Q,Q1
 !     local variables
-      INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART,ECPINDEX,msup
+      INTEGER I,J,K,IOS,RECPIN1,LUBAS,INTQ0,ISTART,ECPINDEX
       LOGICAL ECPLIB
       CHARACTER*3 ECPKEYWORD,SOREP_CHR
       CHARACTER*30 ECPNAM,ECPTMP
@@ -144,8 +145,7 @@
 !    &      RECP_CORE(NUC1),(AREP_ANG(NUC1)-1),SOREP_ANG(NUC1),NUC1
 
       IF (.NOT.ALLOCATED(RECP_MCRS)) THEN 
-         msup=203 ! maximum value is setted in inc_mxvalue.h
-         ALLOCATE(RECP_MCRS(msup))
+         ALLOCATE(RECP_MCRS(msup)) ! maximum value of msup is set in "inc_mxvalue.h"
          DO I = 1, msup
             RECP_MCRS(I) = 0
          ENDDO
@@ -320,8 +320,8 @@
 !     INTEGER      IQM(KATOM),JCO(KANG,KATOM)
       CHARACTER*1  KASYM(3,3)
       CHARACTER*11 SYMTXT
-      REAL*8       XYZ3(3,8,MXATOM,MXATOM)
-      INTEGER      MJ2(MXATOM,MXATOM),ISEND(8,MXATOM,8,MXATOM),NFUNC
+      REAL*8       XYZ3(3,8,MXATOM,MAX_REP)
+      INTEGER      MJ2(MXATOM,MAX_REP),ISEND(8,MXATOM,8,MXATOM),NFUNC
       INTEGER      I,J,K,N,ICENT,NSYMOP,IGENQ(3),NGENP,blk,JBLOCK,KBLOCK
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -422,8 +422,8 @@
       REAL*8    DISTSQ,NCLOSE,sqdif,tolsq
       INTEGER   I,J,K,J2,J3,NSYMOP,  MJ2(MXATOM,MXATOM),
      &          ISEND(8,MXATOM,8,MXATOM)
-      REAL*8    XYZ1(3,8,MXATOM), XYZ2(3,8,MXATOM,MXATOM),
-     &          XYZ3(3,8,MXATOM,MXATOM),XYZ4(3)
+      REAL*8    XYZ1(3,8,MXATOM), XYZ2(3,8,MXATOM,MAX_REP),
+     &          XYZ3(3,8,MXATOM,MAX_REP),XYZ4(3)
 
       tolsq=1.0d-12
 

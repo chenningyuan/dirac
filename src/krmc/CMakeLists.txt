@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/krmc
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,8 +9,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_KRMC_FORTRAN_SOURCES
-    dcbbos.h 
-    dcbnrt.h
     krmc_gradient.F
     krmccan.F
     krmcgascip.F
@@ -65,7 +64,6 @@ add_library(
 add_dependencies(krmc gp)
 add_dependencies(krmc dirac)
 add_dependencies(krmc main)
-add_dependencies(krmc luciarel)
 add_dependencies(krmc interface_mpi)
 if(ENABLE_QCORR)
 #   it's module qcorr_cfg
