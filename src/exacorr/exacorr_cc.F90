@@ -2715,6 +2715,7 @@ print *,'abe',ierr
         subroutine t3_energy(t_energy,comm_t,int_t,vir_space,exa_input)
             
             use exacorr_ao_to_mo, only : print_tensornorm2
+            use interface_to_mpi
 
             real(8), intent(out)                    :: t_energy(3)
             type(exatns_comm_tens)                  :: comm_t
@@ -2732,11 +2733,12 @@ print *,'abe',ierr
             integer(INTD)                :: ierr,rank
             integer(INTD)                :: idocc, idvir
             integer(INTL)                :: nocc, nvir
-            integer(INTL)                :: a, b, c, n_subspaces
-            integer(INTL),allocatable    :: vir_subspaces(:)
+            integer(INTL)                :: a, b, c, n_subspaces, na, nb, nc
+            integer(INTL),allocatable    :: vir_subspaces(:), subsp_a(:), subsp_b(:), subsp_c(:)
             type(tens_rcrsv_t)           :: res_tensor
             complex(8)                   :: res_val, ONE_THIRD
             type(tens_rcrsv_t)           :: w, wd, y, temp, temp2
+            integer                      :: nr_proc
 
             if (exa_input%print_level >-1) call print_date('entering t3_energy')
 
@@ -2780,12 +2782,56 @@ print *,'abe',ierr
             w_id(1:3)=idvir
             temp2_sub=nocc
 
-            outer: do a = 1, n_subspaces
-              w_sub(1)=vir_subspaces(a)
-              do b = 1, n_subspaces
-                w_sub(2)=vir_subspaces(b)
-                do c = 1, n_subspaces
-                  w_sub(3)=vir_subspaces(c)
+!           In order to get an efficient algorithm the number of indices that are split 
+!           has to be adjusted
+            call interface_mpi_comm_size(global_communicator, nr_proc)
+            c=nocc**3*nvir
+            b=c*nvir
+            a=b*nvir
+
+            if (exa_input%print_level >-1) then
+                write(*,*) 'Number of blocks in t3_energy: 4 ind. - ',c/exa_input%exa_blocksize
+                write(*,*) '                               5 ind. - ',b/exa_input%exa_blocksize
+                write(*,*) '                               6 ind. - ',a/exa_input%exa_blocksize
+                write(*,*) 'Number of processes :', nr_proc
+            end if
+            
+            if (c/exa_input%exa_blocksize>4*nr_proc) then
+                nc=n_subspaces
+                allocate(subsp_c(nc))
+                subsp_c=vir_subspaces
+            else
+                nc=1
+                allocate(subsp_c(nc))
+                subsp_c=nvir
+            end if
+
+            if (b/exa_input%exa_blocksize>4*nr_proc) then
+                nb=n_subspaces
+                allocate(subsp_b(nb))
+                subsp_b=vir_subspaces
+            else
+                nb=1
+                allocate(subsp_b(nb))
+                subsp_b=nvir
+            end if
+
+            if (a/exa_input%exa_blocksize>2*nr_proc) then
+                na=n_subspaces
+                allocate(subsp_a(na))
+                subsp_a=vir_subspaces
+            else
+                na=1
+                allocate(subsp_a(na))
+                subsp_a=nvir
+            end if
+
+            outer: do a = 1, na
+              w_sub(1)=subsp_a(a)
+              do b = 1, nb
+                w_sub(2)=subsp_b(b)
+                do c = 1, nc
+                  w_sub(3)=subsp_c(c)
                   ierr=exatns_tensor_create(w,'Wa',w_id,w_sub,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: creation of wa')
                   ierr=exatns_tensor_create(wd,'W1',w_id,w_sub,EXA_DATA_KIND_C8)
@@ -2929,6 +2975,9 @@ print *,'abe',ierr
             
             !clean up
             deallocate(vir_subspaces)
+            deallocate(subsp_a)
+            deallocate(subsp_b)
+            deallocate(subsp_c)
             
             if (exa_input%print_level >-1) call print_date('leaving t3_energy')
 
