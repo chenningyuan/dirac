@@ -895,10 +895,6 @@
          exa_input%do_triples = .false.
       end if
 
-      if (kw_matches(word, '.NOINTS')) then
-         exa_input%noints = .true.
-      end if
-
       if (kw_matches(word, '.EXA_BLOCKSIZE')) then
          call kw_read(word, exa_input%exa_blocksize)
       end if

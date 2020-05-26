@@ -36,7 +36,6 @@
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
             logical                 :: lambda = .false.
-            logical                 :: noints = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             logical                 :: do_triples = .true.

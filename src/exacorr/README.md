@@ -53,9 +53,6 @@ To Do:
   	<td>.LAMBDA</td><td>Solve Λ-equations, needs to be activated for properties</td>
   </tr>
   <tr>
-  	<td>.NOINTS</td><td>Debugging. Set intergrals to 0</td>
-  </tr>
-  <tr>
   	<td>.EXA_BLOCKSIZE</td><td>Number to branch the tensors, should be smaller than nocc</td>
   </tr>
   <tr>

@@ -90,7 +90,7 @@ module exacorr_cc
          integer :: ncycles
 
          !CCD
-         logical :: CCD, lambda, noints
+         logical :: CCD, lambda
 
          !CC2
          logical :: CC2         !L
@@ -118,7 +118,6 @@ module exacorr_cc
          CCD = exa_input%ccd
          CC2= exa_input%CC2     !L
          lambda = exa_input%lambda
-         noints = exa_input%noints
          ncycles = exa_input%ncycles
 
          if (my_MPI_rank == 0) then
@@ -252,7 +251,7 @@ module exacorr_cc
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
                 !call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-                call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input%print_level)
+                call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -2713,7 +2712,7 @@ print *,'abe',ierr
 
         end subroutine init_fock
 
-        subroutine t3_energy(t_energy,comm_t,int_t,vir_space,print_level)
+        subroutine t3_energy(t_energy,comm_t,int_t,vir_space,exa_input)
             
             use exacorr_ao_to_mo, only : print_tensornorm2
 
@@ -2721,7 +2720,7 @@ print *,'abe',ierr
             type(exatns_comm_tens)                  :: comm_t
             type(exatns_intg_tens)                  :: int_t
             class(h_space_t), pointer               :: vir_space
-            integer                                 :: print_level
+            type(exacc_input), intent(in)           :: exa_input
 
             integer(INTL),dimension(2) :: ov_root, vo_root
             integer(INTD),dimension(2) :: ov_id, vo_id
@@ -2739,7 +2738,7 @@ print *,'abe',ierr
             complex(8)                   :: res_val, ONE_THIRD
             type(tens_rcrsv_t)           :: w, wd, y, temp, temp2
 
-            if (print_level >0) call print_date('entering t3_energy')
+            if (exa_input%print_level >-1) call print_date('entering t3_energy')
 
             t_energy = ZERO
 
@@ -2781,7 +2780,7 @@ print *,'abe',ierr
             w_id(1:3)=idvir
             temp2_sub=nocc
 
-            do a = 1, n_subspaces
+            outer: do a = 1, n_subspaces
               w_sub(1)=vir_subspaces(a)
               do b = 1, n_subspaces
                 w_sub(2)=vir_subspaces(b)
@@ -2817,7 +2816,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("C(a,b,c,i,j,k)+=W(a,b,c,j,k,i)*O()",w,wd,one_tensor)
                   ierr=exatns_tensor_contract("C(a,b,c,i,j,k)+=W(a,b,c,k,i,j)*O()",w,wd,one_tensor)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: copy 1')
-                  if(print_level > 8) write(*,*) " W =",print_tensornorm2(w)
+                  if(exa_input%print_level > 8) write(*,*) " W =",print_tensornorm2(w)
 
                   ! copy
                   ierr=exatns_tensor_init(wd,ZERO)
@@ -2825,7 +2824,7 @@ print *,'abe',ierr
                   !Denominate
                   ierr=exatns_tensor_transform(wd,'Denominate')
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: denominate')
-                  if(print_level > 8) write(*,*) " WD =",print_tensornorm2(wd)
+                  if(exa_input%print_level > 8) write(*,*) " WD =",print_tensornorm2(wd)
 
                   ! add to energy
                   ierr=exatns_tensor_init(res_tensor,ZERO)
@@ -2852,7 +2851,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("Y(a,b,c,i,j,k)+=T(a,b,c,j,k,i)*O()",y,temp,one_tensor)
                   ierr=exatns_tensor_contract("Y(a,b,c,i,j,k)+=T(a,b,c,k,i,j)*O()",y,temp,one_tensor)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: copy 2')
-                  if(print_level > 8) write(*,*) " Y =",print_tensornorm2(y)
+                  if(exa_input%print_level > 8) write(*,*) " Y =",print_tensornorm2(y)
 
                   !write value
                   ierr=exatns_tensor_init(res_tensor,ZERO)
@@ -2901,7 +2900,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("Y(a,b,c,i,j,k)+=T(a,b,c,j,k,i)*O()",y,temp,one_tensor)
                   ierr=exatns_tensor_contract("Y(a,b,c,i,j,k)+=T(a,b,c,k,i,j)*O()",y,temp,one_tensor)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: copy 3')
-                  if(print_level > 8) write(*,*) " Y =",print_tensornorm2(y)
+                  if(exa_input%print_level > 8) write(*,*) " Y =",print_tensornorm2(y)
 
                   !write value
                   ierr=exatns_tensor_init(res_tensor,ZERO)
@@ -2911,17 +2910,19 @@ print *,'abe',ierr
                   t_energy(3)=t_energy(3) - res_val
 
 
-                  if (print_level >8) write(*,*) 't3 energy: ', t_energy
+                  if (exa_input%print_level >8) write(*,*) 't3 energy: ', t_energy
 
                   ierr=exatns_tensor_destroy(wd)
                   ierr=exatns_tensor_destroy(w)
                   ierr=exatns_tensor_destroy(y)
                   ierr=exatns_tensor_destroy(temp)
+                  
+                  if (exa_input%moint_scheme==0) exit outer
                 end do 
               end do
               ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-              if (print_level >0) write (*,*)  't3_energy:',t_energy
-            end do
+              if (exa_input%print_level >0) write (*,*)  't3_energy:',t_energy
+            end do outer
 
             ! We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
             t_energy = t_energy / (SIX*SIX)
@@ -2929,7 +2930,7 @@ print *,'abe',ierr
             !clean up
             deallocate(vir_subspaces)
             
-            if (print_level >0) call print_date('leaving t3_energy')
+            if (exa_input%print_level >-1) call print_date('leaving t3_energy')
 
         end subroutine t3_energy
 
