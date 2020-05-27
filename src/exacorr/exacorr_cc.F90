@@ -2785,18 +2785,14 @@ print *,'abe',ierr
 !           In order to get an efficient algorithm the number of indices that are split 
 !           has to be adjusted
             call interface_mpi_comm_size(global_communicator, nr_proc)
-            c=nocc**3*nvir
-            b=c*nvir
-            a=b*nvir
+            c=max(nocc/exa_input%exa_blocksize,1)**3*max(nvir/exa_input%exa_blocksize,1)
+            b=c*max(nvir/exa_input%exa_blocksize,1)
+            a=b*max(nvir/exa_input%exa_blocksize,1)
 
-            if (exa_input%print_level >-1) then
-                write(*,*) 'Number of blocks in t3_energy: 4 ind. - ',c/exa_input%exa_blocksize
-                write(*,*) '                               5 ind. - ',b/exa_input%exa_blocksize
-                write(*,*) '                               6 ind. - ',a/exa_input%exa_blocksize
-                write(*,*) 'Number of processes :', nr_proc
-            end if
+            if (exa_input%print_level >2) write(*,*) 'Number of processes :', nr_proc
             
-            if (c/exa_input%exa_blocksize>4*nr_proc) then
+            if (c>4*nr_proc) then
+                if (exa_input%print_level >0) write(*,*) 'splitting subblocks: 3 ind., blocksize =',c
                 nc=n_subspaces
                 allocate(subsp_c(nc))
                 subsp_c=vir_subspaces
@@ -2806,7 +2802,8 @@ print *,'abe',ierr
                 subsp_c=nvir
             end if
 
-            if (b/exa_input%exa_blocksize>4*nr_proc) then
+            if (b>4*nr_proc) then
+                if (exa_input%print_level >0) write(*,*) 'splitting subblocks: 2 ind., blocksize =',b
                 nb=n_subspaces
                 allocate(subsp_b(nb))
                 subsp_b=vir_subspaces
@@ -2816,7 +2813,8 @@ print *,'abe',ierr
                 subsp_b=nvir
             end if
 
-            if (a/exa_input%exa_blocksize>2*nr_proc) then
+            if (a>2*nr_proc) then
+                if (exa_input%print_level >0) write(*,*) 'splitting    blocks: 1 ind., blocksize =',a
                 na=n_subspaces
                 allocate(subsp_a(na))
                 subsp_a=vir_subspaces
@@ -2956,7 +2954,7 @@ print *,'abe',ierr
                   t_energy(3)=t_energy(3) - res_val
 
 
-                  if (exa_input%print_level >8) write(*,*) 't3 energy: ', t_energy
+                  if (exa_input%print_level >8) write(*,*) 't3 = ', t_energy
 
                   ierr=exatns_tensor_destroy(wd)
                   ierr=exatns_tensor_destroy(w)
@@ -2967,7 +2965,8 @@ print *,'abe',ierr
                 end do 
               end do
               ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-              if (exa_input%print_level >0) write (*,*)  't3_energy:',t_energy
+              if (exa_input%print_level >-1) write (*,*)  'block ',a,' of ',na,' done'
+              if (exa_input%print_level >0) write (*,*)  'after this block, t3 = ',t_energy
             end do outer
 
             ! We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
