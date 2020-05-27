@@ -2791,7 +2791,7 @@ print *,'abe',ierr
 
             if (exa_input%print_level >2) write(*,*) 'Number of processes :', nr_proc
             
-            if (c>4*nr_proc) then
+            if (c>nr_proc) then
                 if (exa_input%print_level >0) write(*,*) 'splitting subblocks: 3 ind., blocksize =',c
                 nc=n_subspaces
                 allocate(subsp_c(nc))
@@ -2802,7 +2802,7 @@ print *,'abe',ierr
                 subsp_c=nvir
             end if
 
-            if (b>4*nr_proc) then
+            if (b>nr_proc) then
                 if (exa_input%print_level >0) write(*,*) 'splitting subblocks: 2 ind., blocksize =',b
                 nb=n_subspaces
                 allocate(subsp_b(nb))
@@ -2813,7 +2813,7 @@ print *,'abe',ierr
                 subsp_b=nvir
             end if
 
-            if (a>2*nr_proc) then
+            if (a>nr_proc) then
                 if (exa_input%print_level >0) write(*,*) 'splitting    blocks: 1 ind., blocksize =',a
                 na=n_subspaces
                 allocate(subsp_a(na))
@@ -2973,6 +2973,7 @@ print *,'abe',ierr
             t_energy = t_energy / (SIX*SIX)
             
             !clean up
+            ierr=exatns_tensor_destroy(res_tensor)
             deallocate(vir_subspaces)
             deallocate(subsp_a)
             deallocate(subsp_b)
