@@ -1589,7 +1589,6 @@ C***********************************************************************
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
 C
-#include "propconst.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
