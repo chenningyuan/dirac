@@ -2739,6 +2739,7 @@ print *,'abe',ierr
             complex(8)                   :: res_val, ONE_THIRD
             type(tens_rcrsv_t)           :: w, wd, y, temp, temp2
             integer                      :: nr_proc
+            real(8)                      :: est
 
             if (exa_input%print_level >-1) call print_date('entering t3_energy')
 
@@ -2774,9 +2775,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_create(res_tensor,"res_tensor",EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: creation of res_tensor')
 
-!           get the level composition for the virtual orbitals
-            call vir_space%get_level_composition(int(1,INTD),vir_subspaces,n_subspaces,ierr)
-            if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
+            ! set fixed indices
             w_id=idocc
             w_sub=nocc
             w_id(1:3)=idvir
@@ -2789,36 +2788,78 @@ print *,'abe',ierr
             b=c*max(nvir/exa_input%exa_blocksize,1)
             a=b*max(nvir/exa_input%exa_blocksize,1)
 
-            if (exa_input%print_level >2) write(*,*) 'Number of processes :', nr_proc
-            
-            if (c>nr_proc) then
-                if (exa_input%print_level >0) write(*,*) 'splitting subblocks: 3 ind., blocksize =',c
+            if (c>nr_proc*4) then
+              call vir_space%get_level_composition(int(a,INTD),vir_subspaces,n_subspaces,ierr)
+              if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
+                if (exa_input%print_level >0) then
+                  write(*,*) ' --- splitting subblocks: 3 index, num. el. =',n_subspaces
+                  write(*,*) ' --- size=',nvir/n_subspaces ,', subsp.=',vir_subspaces(1:n_subspaces)
+                end if
                 nc=n_subspaces
                 allocate(subsp_c(nc))
                 subsp_c=vir_subspaces
+                deallocate(vir_subspaces)
             else
                 nc=1
                 allocate(subsp_c(nc))
                 subsp_c=nvir
+                if (exa_input%print_level >0) then
+                  write(*,*) ' --- use full space for index 3, subsp.=',subsp_c(1:nc)
+                end if
             end if
 
-            if (b>nr_proc) then
-                if (exa_input%print_level >0) write(*,*) 'splitting subblocks: 2 ind., blocksize =',b
-                nb=n_subspaces
-                allocate(subsp_b(nb))
-                subsp_b=vir_subspaces
+
+            !print memory information
+            if (exa_input%print_level >0) then
+              write(*,*) '=== Number of processes:          ',nr_proc
+              a=nr_proc*exa_input%talsh_buff
+              write(*,*) '=== resulting memory (TALSH_buff):',a
+              est=(real(nocc)**3*real(nvir)*16.0/1000.0**3+1.0)*6.0
+              write(*,*) '=== required memory (6*OOOV):     ',est
+              est=sqrt((real(a)/2.0)/est)
+              write(*,*) '=== number of possible segments:  ',est
+              write(*,*) '-------------- estmate for occ    '
+              est=(real(nvir)**3*16.0/1000.0**3+1.0)*6.0
+              write(*,*) '=== required memory (6*VVV):      ',est
+              est=((real(a)/2.0)/est)**(1.0/3.0)
+              write(*,*) '=== number of possible segments:  ',est
+            end if
+
+            ! the 1st and 2nd index are always split
+            if (.TRUE.) then
+              if (nvir/2<exa_input%exa_blocksize) then
+                c=nvir/2
+              else
+                c=exa_input%exa_blocksize
+              end if
+              do b=1,50
+                if (c/(2**b)<4) then
+                  a=b
+                  exit
+                end if
+              end do
+              call vir_space%get_level_composition(int(a,INTD),vir_subspaces,n_subspaces,ierr)
+              if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
+              if (exa_input%print_level >-1) then
+                write(*,*) ' --- using level =',a
+                write(*,*) ' --- splitting subblocks: 1+2 index, num. el. =',n_subspaces
+                write(*,*) ' --- size=',nvir/n_subspaces ,', subsp.=',vir_subspaces(1:n_subspaces)
+              end if
+              
+              nb=n_subspaces
+              allocate(subsp_b(nb))
+              subsp_b=vir_subspaces 
+             
+              na=n_subspaces
+              allocate(subsp_a(na))
+              subsp_a=vir_subspaces
+ 
+              deallocate(vir_subspaces) 
             else
                 nb=1
                 allocate(subsp_b(nb))
                 subsp_b=nvir
-            end if
-
-            if (a>nr_proc) then
-                if (exa_input%print_level >0) write(*,*) 'splitting    blocks: 1 ind., blocksize =',a
-                na=n_subspaces
-                allocate(subsp_a(na))
-                subsp_a=vir_subspaces
-            else
+                
                 na=1
                 allocate(subsp_a(na))
                 subsp_a=nvir
@@ -2966,7 +3007,7 @@ print *,'abe',ierr
               end do
               ierr=exatns_tensor_get_scalar(res_tensor,res_val)
               if (exa_input%print_level >-1) write (*,*)  'block ',a,' of ',na,' done'
-              if (exa_input%print_level >0) write (*,*)  'after this block, t3 = ',t_energy
+              if (exa_input%print_level >-1) write (*,*)  'after this block, t3 = ',t_energy
             end do outer
 
             ! We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
@@ -2974,7 +3015,6 @@ print *,'abe',ierr
             
             !clean up
             ierr=exatns_tensor_destroy(res_tensor)
-            deallocate(vir_subspaces)
             deallocate(subsp_a)
             deallocate(subsp_b)
             deallocate(subsp_c)
