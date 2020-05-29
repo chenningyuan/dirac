@@ -251,7 +251,8 @@ module exacorr_cc
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
                 !call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-                call t3_energy_occ(t_energy,comm_t,int_t,vir_space,exa_input)
+                !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input)
+                call t3_energy_occ(t_energy,comm_t,int_t,occ_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -2817,12 +2818,12 @@ print *,'abe',ierr
               est=(real(nocc)**3*real(nvir)*16.0/1000.0**3+1.0)*6.0
               write(*,*) '=== required memory (6*OOOV):     ',est
               est=sqrt((real(a)/2.0)/est)
-              write(*,*) '=== number of possible segments:  ',est
+              write(*,*) '=== size of possible segments:  ',est
               write(*,*) '-------------- estmate for occ    '
               est=(real(nvir)**3*16.0/1000.0**3+1.0)*6.0
               write(*,*) '=== required memory (6*VVV):      ',est
               est=((real(a)/2.0)/est)**(1.0/3.0)
-              write(*,*) '=== number of possible segments:  ',est
+              write(*,*) '=== size of possible segments:  ',est
             end if
 
             ! the 1st and 2nd index are always split
@@ -3023,7 +3024,7 @@ print *,'abe',ierr
 
         end subroutine t3_energy
 
-        subroutine t3_energy_occ(t_energy,comm_t,int_t,vir_space,exa_input)
+        subroutine t3_energy_occ(t_energy,comm_t,int_t,occ_space,exa_input)
             
             use exacorr_ao_to_mo, only : print_tensornorm2
             use interface_to_mpi
@@ -3031,7 +3032,7 @@ print *,'abe',ierr
             real(8), intent(out)                    :: t_energy(3)
             type(exatns_comm_tens)                  :: comm_t
             type(exatns_intg_tens)                  :: int_t
-            class(h_space_t), pointer               :: vir_space
+            class(h_space_t), pointer               :: occ_space
             type(exacc_input), intent(in)           :: exa_input
 
             integer(INTL),dimension(2) :: ov_root, vo_root
@@ -3105,7 +3106,7 @@ print *,'abe',ierr
               write(*,*) '=== Number of processes:          ',nr_proc
               write(*,*) '=== resulting memory (TALSH_buff):',i
               write(*,*) '=== required memory (6*VVV):      ',est
-              write(*,*) '=== number of possible segments:  ',nseg
+              write(*,*) '=== size of possible segments:  ',nseg
             end if
 
             ! the occupied index are always split
@@ -3121,7 +3122,7 @@ print *,'abe',ierr
                   exit
                 end if
               end do
-              call vir_space%get_level_composition(int(i,INTD),subsp,n_subsp,ierr)
+              call occ_space%get_level_composition(int(i,INTD),subsp,n_subsp,ierr)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
               if (exa_input%print_level >-1) then
                 write(*,*) ' --- using level =',i
@@ -3197,7 +3198,7 @@ print *,'abe',ierr
 
                   ! copy
                   ierr=exatns_tensor_init(wd,ZERO)
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=C(a,b,c,j,k,i)*O()",wd,w,one_tensor)
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=C(a,b,c,i,j,k)*O()",wd,w,one_tensor)
                   !Denominate
                   ierr=exatns_tensor_transform(wd,'Denominate')
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: denominate')
