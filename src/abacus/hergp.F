@@ -512,13 +512,11 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
-      USE CODATA, ONLY : XFAMU
+      USE CODATA
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
-      PARAMETER (DMP = 1.6726231D-27, ECHARGE = 2.60217733D-19)
       PARAMETER (THRESH = 1.0D-10)
 C
       CHARACTER*(*) TYPE
@@ -1701,7 +1699,7 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
          SPIN = DATNUC(3,ISOTOP,IATOM)
          IF (SPIN .GT. THRESH) THEN
             DISOTP = ABS(ECHARGE*DATNUC(4,ISOTOP,IATOM)
-     &                   /(D4*PI*SPIN*DMP))
+     &                   /(D4*PI*SPIN*UMASS*PMASS))
          ELSE
             DISOTP = D0
          END IF
