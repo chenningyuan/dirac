@@ -26,7 +26,7 @@ module codata
 !  revised 1999/04/29 and combined with units.h
 !  Radovan: converted to f90 2009--09--23
 !  Miro: towards extension by older and newer constant sets, separated with preprocessor command; 2009--11--11
-! Agustin: updated 2020/05/18
+!  Agustin: updated 2020/05/18
 
 ! -----------------  Index  -----------------
 
@@ -45,7 +45,7 @@ module codata
 !  "The 1986 adjustment of the fundamental physical constants"
 !                     E. Richard Cohen and Barry N. Taylor
 !  Reviews of Modern Physics, Vol. 59, No. 4, 1987
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.529177249d0
   real(8), parameter, public :: echarge  = 1.60217733d-19
@@ -62,7 +62,7 @@ module codata
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 1998"
 !                     Peter J. Mohr and Barry N. Taylor
 !  Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.5291772083d0
   real(8), parameter, public :: echarge  = 1.602176462d-19
@@ -79,7 +79,7 @@ module codata
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2002"
 !                     Peter J. Mohr and Barry N. Taylor
 !  Reviews of Modern Physics, Vol. 77, No. 1, 2005
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.5291772108d0
   real(8), parameter, public :: echarge  = 1.60217653d-19
@@ -96,7 +96,7 @@ module codata
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2006"
 !                     Peter J. Mohr, Barry N. Taylor and David B. Newell
 !  Journal of Physical and Chemical Reference Data, Vol. 37, No. 3, 2008
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.52917720859d0
   real(8), parameter, public :: echarge  = 1.602176487d-19
@@ -113,7 +113,7 @@ module codata
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2010"
 !                     Peter J. Mohr, Barry N. Taylor and David B. Newell
 !  Journal of Physical and Chemical Reference Data, Vol. 41, No. 4, 2012
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.52917721092d0
   real(8), parameter, public :: echarge  = 1.602176565d-19
@@ -130,7 +130,7 @@ module codata
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2014"
 !                     Peter J. Mohr, David B. Newell and Barry N. Taylor
 !  Journal of Physical and Chemical Reference Data, Vol. 45, No. 4, 2016
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.52917721067d0
   real(8), parameter, public :: echarge  = 1.6021766208d-19
@@ -148,7 +148,7 @@ module codata
 !                     Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor
 !                     Database developed by J. Baker, M. Douma, and S. Kotochigova
 !  Available at http://physics.nist.gov/constants, National Institute of Standards and Technology, Gaithersburg, MD 20899
-!
+
 ! ------------ pure numerical constants ---------------------
   real(8), parameter, public :: xtang    = 0.529177210903d0
   real(8), parameter, public :: echarge  = 1.602176634d-19
@@ -161,27 +161,27 @@ module codata
   real(8), parameter, public :: autk     = 3.1577502480407d5
 
 #else
-
-! miro: this is the "default" for the moment, needs to be adjusted accordingly...
+! Agustin: these are the default values
 
 !  From
-!  "CODATA Recommended Values of the Fundamental Physical Constants: 1998"
-!                     Peter J. Mohr and Barry N. Taylor
-!  Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999
-!
+!  "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
+!                     Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor
+!                     Database developed by J. Baker, M. Douma, and S. Kotochigova
+!  Available at http://physics.nist.gov/constants, National Institute of Standards and Technology, Gaithersburg, MD 20899
+
 ! ------------ pure numerical constants ---------------------
-  real(8), parameter, public :: xtang    = 0.5291772083d0
-  real(8), parameter, public :: echarge  = 1.602176462d-19
-  real(8), parameter, public :: hbar     = 1.054571596d-34
-  real(8), parameter, public :: xfmol    = 6.02214199d23
-  real(8), parameter, public :: umass    = 1.66053873d-27
-  real(8), parameter, public :: pmass    = 1.007276470d0
-  real(8), parameter, public :: emass    = 9.10938188d-31
-  real(8), parameter, public :: ccm      = 2.997924580d8
-  real(8), parameter, public :: autk     = 3.1577465d5
+  real(8), parameter, public :: xtang    = 0.529177210903d0
+  real(8), parameter, public :: echarge  = 1.602176634d-19
+  real(8), parameter, public :: hbar     = 1.054571817d-34
+  real(8), parameter, public :: xfmol    = 6.02214076d23
+  real(8), parameter, public :: umass    = 1.66053906660d-27
+  real(8), parameter, public :: pmass    = 1.007276466621d0
+  real(8), parameter, public :: emass    = 9.1093837015d-31
+  real(8), parameter, public :: ccm      = 2.99792458d8
+  real(8), parameter, public :: autk     = 3.1577502480407d5
 
 #endif
-  ! -------------------- common derived constants --------------------------
+! -------------------- common derived constants --------------------------
 !                               planck   = 6.6260...d-34
   real(8), parameter, public :: planck   = hbar*2*pi
 !                               xtangm10 = 0.5291...d-10
@@ -268,9 +268,11 @@ module codata
    write(LUPRI,*)   " Available at http://physics.nist.gov/constants                                           "
    write(LUPRI,*)   " National Institute of Standards and Technology, Gaithersburg, MD 20899                   "
 #else
-   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 1998  "
-   write(LUPRI,*)   "               Peter J. Mohr and Barry N. Taylor                         "
-   write(LUPRI,*)   "  Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  "
+   write(LUPRI,*)   "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
+   write(LUPRI,*)   "       Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 "
+   write(LUPRI,*)   "       Database developed by J. Baker, M. Douma, and S. Kotochigova                       "
+   write(LUPRI,*)   " Available at http://physics.nist.gov/constants                                           "
+   write(LUPRI,*)   " National Institute of Standards and Technology, Gaithersburg, MD 20899                   "
 #endif
 
   end subroutine print_codata_reference
