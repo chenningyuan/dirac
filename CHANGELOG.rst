@@ -16,6 +16,8 @@ New features:
 New defaults:
 
 - One-electron operator ANGMOM's origin was moved from gauge-origin to the molecular center of mass.
+- The CODATA2018 set of physical constants is now used as default (taken from http://physics.nist.gov/constants). Before this version, CODATA1998 was default.
+
 
 19.0 (2019-12-12)
 -----------------
