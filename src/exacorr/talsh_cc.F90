@@ -81,6 +81,7 @@ module talsh_cc
 
          logical :: CCD, lambda
          logical :: CC2 
+         logical :: CCSDT 
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
@@ -108,6 +109,7 @@ module talsh_cc
          mo_vir = exa_input%mo_vir
          t_target_precision = exa_input%t_econv
          CCD = exa_input%ccd
+         CCSDT = exa_input%ccsdt
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
@@ -191,7 +193,10 @@ module talsh_cc
          ierr=talsh_tensor_construct(comm_t%h_int,C8,vovo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%tau,C8,vvoo_dims,init_val=ZERO)
          if (.not.CCD) then
-            call diis (comm_t%t2,comm_t%t1,mode=1)
+            if (CCSDT) then
+            else
+               call diis (comm_t%t2,comm_t%t1,mode=1)
+            end if
          else
             call diis (comm_t%t2,mode=1)
          end if
@@ -209,7 +214,7 @@ module talsh_cc
 
          if (.not.CC2) then
             call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                cc_energy,CCD,ncycles,exa_input%print_level)
+                                cc_energy,CCD,CCSDT,ncycles,exa_input%print_level)
          else if (CC2) then
             call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 cc_energy,CCD,ncycles,exa_input%print_level)
@@ -311,7 +316,7 @@ module talsh_cc
         end subroutine talsh_cc_driver
 
         subroutine solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                ccsd_energy,CCD,ncycles,print_level)
+                                ccsd_energy,CCD,CCSDT,ncycles,print_level)
 
 !        Routine for solving the t amplitude equations
 
@@ -330,13 +335,14 @@ module talsh_cc
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
-         type(talsh_tens_t) :: s1_tensor, s2_tensor
+         type(talsh_tens_t) :: s1_tensor, s2_tensor, s3_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
          integer(INTD)      :: result_dims(1)
          !Tensor dimensions
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims
          integer(INTD), dimension(4) :: vvoo_dims, ovoo_dims
+         integer(INTD), dimension(6) :: vvvooo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd
@@ -345,6 +351,7 @@ module talsh_cc
          real(8) :: t_convergence
          real(8), intent(out) :: ccsd_energy
          logical, intent(in)  :: CCD
+         logical, intent(in)  :: CCSDT
          integer, intent(in)  :: print_level
          integer (INTD)       :: ierr
 
@@ -372,6 +379,11 @@ module talsh_cc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(cint_tensor,C8,ovoo_dims,init_val=ZERO)
+         if (CCSDT) then
+            vvvooo_dims(1:3) = nvir
+            vvvooo_dims(4:6) = nocc
+            ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
+         end if
 
          do iccsd = 1, ncycles
 
@@ -381,6 +393,7 @@ module talsh_cc
             write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
             write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
+            if (CCSDT) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -499,6 +512,15 @@ module talsh_cc
             ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                     !moretests o(2)v(1)
             ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,scale=ONE_HALF) !validated o(3)v(2)
             ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
+          end if
+
+!         calculate s3 tensor, adding new terms to t1 and t2 equations
+
+          if (CCSDT) then
+             ierr=talsh_tensor_init(s3_tensor)
+             ! adding diagram 1/4 <mn||ef> t^{aef}_{imn} to T1
+             ierr=talsh_tensor_contract("S(a,i)+=V(m,n,e,f)*T(a,e,f,i,m,n)",s1_tensor,int_t%vovo,comm_t%t3,scale=ONE_QUARTER_C)
+             
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
