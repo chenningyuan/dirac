@@ -35,6 +35,7 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
+            logical                 :: ccsdt = .false.          !L if true CC2
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
             logical                 :: beta_occ = .false.
@@ -72,7 +73,7 @@
          type(tens_rcrsv_t) :: goo, gvv
          type(tens_rcrsv_t) :: hoo, hov, hvv
          type(tens_rcrsv_t) :: a_int, h_int
-         type(tens_rcrsv_t) :: t1, t2, tau
+         type(tens_rcrsv_t) :: t1, t2, t3, tau
         end type exatns_comm_tens
 
         type, public :: exatns_lambda_tens
@@ -111,7 +112,7 @@
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int
-         type(talsh_tens_t) :: t1, t2, tau
+         type(talsh_tens_t) :: t1, t2, t3, tau
         end type talsh_comm_tens
 
         type, public :: talsh_lambda_tens
