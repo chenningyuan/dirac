@@ -116,6 +116,13 @@ C     from calling routine
       IPRINT = IPRBAS
       IF (BASNAM(1:1).eq.' ') IPRINT = 5
       INTQ   = NINT(Q)
+      IF (abs(Q-INTQ) .gt. 1.d-8) then
+         WRITE (lupri,*) 'BASLIB: Q, QEFF, INTQ',Q,QEFF,INTQ
+         WRITE (lupri,*) 'BASLIB: BASNAM ',BASNAM
+         write (lupri,*) 'Fatal error, nuclear charge Q must be'//
+     &      ' an integer when using a named basis set.'
+         CALL QUIT('BASLIB ERROR, nuclear charge not an integer')
+      end if
       IF (IPRINT .GE. 5) THEN
          WRITE (lupri,*) 'BASLIB: Q, QEFF, INTQ',Q,QEFF,INTQ
          WRITE (lupri,*) 'BASLIB: BASNAM ',BASNAM

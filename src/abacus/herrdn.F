@@ -560,6 +560,7 @@ C***********************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)',IOSTAT=IOS)
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
+      IF (IPREAD .gt. 5) write(lupri, *) 'crt,nontyp',crt,nontyp
       IF (IOS.NE.0) THEN
        WRITE(LUPRI,*)
        WRITE(LUPRI,*) 'Error reading line no ',NMLINE,':'
@@ -1009,11 +1010,18 @@ C
             DOHUCKEL = .FALSE.
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
+            IF (IPREAD .gt. 5) write(lupri, *) 'i,q, nont',i,q, nont(i)
             IF (IOS.NE.0) THEN
               WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
               WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..akasjsxxkd')
             ENDIF
+            IF (NONT(I) .LE. 0) THEN
+              WRITE(LUPRI,*) 'Error in line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              WRITE(LUPRI,*) 'Number of atoms became ',NONT(I)
+              CALL QUIT('Error read READ..zz1')
+            END IF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (DOHUCKEL) NSETS = 2
@@ -1026,6 +1034,12 @@ C
               WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..zzz')
             ENDIF
+            IF (NONT(I) .LE. 0) THEN
+              WRITE(LUPRI,*) 'Error in line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              WRITE(LUPRI,*) 'Number of atoms became ',NONT(I)
+              CALL QUIT('Error read READ..zz1')
+            END IF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
               DOHUCKEL = .FALSE.
@@ -6595,14 +6609,14 @@ C
          CALL OUTPUT(FAMEXP,1,NFAMEXP(1),1,1,NFAMEXP(1),1,1,LUPRI)
          IF ( IFLAG .EQ. 2 ) THEN
             CALL HEADER('Exponents for family basis set(2)',-1)
-            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,1,
-     &           LUPRI)
+            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,
+     &           -1,LUPRI)
          END IF
       END IF
       RETURN
 C
  5000 CONTINUE
-      WRITE(LUPRI,'(/,A,/,2(A,I3/))')
+      WRITE(LUPRI,'(/A/,2(A,I3/))')
      &     '*** ERROR in GENFAMEXP *** ',
      $     'Illegal value for number of exponents: ',NFAMEXP(1),
      &     'Value must be between 1 and ',MXFAMEXP
