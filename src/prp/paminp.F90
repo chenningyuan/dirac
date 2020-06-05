@@ -476,6 +476,9 @@
      &     '* Operator center (a.u.):', (ORIGIN(I),I=1,3),              &
      &     '* Gauge origin    (a.u.):', (GAGORG(I),I=1,3),              &
      &     '* Dipole origin   (a.u.):', (DIPORG(I),I=1,3)
+      GAGORGX = GAGORG(1)
+      GAGORGY = GAGORG(2)
+      GAGORGZ = GAGORG(3)
 
       IF (X2C .OR. BSS) THEN
       IF (DOPCT) THEN
