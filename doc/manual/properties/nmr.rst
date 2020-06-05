@@ -18,7 +18,7 @@ Default is (0, 0, 0).
 keyword(LONDON)
 
 Activate calculations of magnetic properties (NMR shielding constants
-and magnetizabilities with London atomic orbitals.
+and magnetizabilities) with London atomic orbitals.
 
 *Default:* Use conventional atomic orbitals.
 

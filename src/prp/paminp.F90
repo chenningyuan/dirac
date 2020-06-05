@@ -577,13 +577,14 @@
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 !MI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
+
 !gosia: i have to reset these variables once again...
 !or always remember to put *NMR .LONDON in the input...
       if (bxlao .or. bylao .or. bzlao) then
         london = .true.
         doxlr  = .true.
       end if
-!
+
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
