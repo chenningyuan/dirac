@@ -1005,6 +1005,12 @@ C
               WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..akasjsxxkd')
             ENDIF
+            IF (NONT(I) .LE. 0) THEN
+              WRITE(LUPRI,*) 'Error in line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              WRITE(LUPRI,*) 'Number of atoms became ',NONT(I)
+              CALL QUIT('Error read READ..zz1')
+            END IF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (DOHUCKEL) NSETS = 2
@@ -1017,6 +1023,12 @@ C
               WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..zzz')
             ENDIF
+            IF (NONT(I) .LE. 0) THEN
+              WRITE(LUPRI,*) 'Error in line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              WRITE(LUPRI,*) 'Number of atoms became ',NONT(I)
+              CALL QUIT('Error read READ..zz1')
+            END IF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
               DOHUCKEL = .FALSE.
@@ -6586,14 +6598,14 @@ C
          CALL OUTPUT(FAMEXP,1,NFAMEXP(1),1,1,NFAMEXP(1),1,1,LUPRI)
          IF ( IFLAG .EQ. 2 ) THEN
             CALL HEADER('Exponents for family basis set(2)',-1)
-            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,1,
-     &           LUPRI)
+            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,
+     &           -1,LUPRI)
          END IF
       END IF
       RETURN
 C
  5000 CONTINUE
-      WRITE(LUPRI,'(/,A,/,2(A,I3/))')
+      WRITE(LUPRI,'(/A/,2(A,I3/))')
      &     '*** ERROR in GENFAMEXP *** ',
      $     'Illegal value for number of exponents: ',NFAMEXP(1),
      &     'Value must be between 1 and ',MXFAMEXP

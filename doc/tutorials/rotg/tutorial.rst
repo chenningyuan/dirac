@@ -38,13 +38,13 @@ As an example, we show a calculation of the g-tensor of the Hydrogen fluoride mo
 
 .. literalinclude:: rotg.inp
 
-whereas the molecular input file `HF_acv4z.mol` is
+whereas the molecular input file `HF_cv3z.mol` is
 
-.. literalinclude:: HF_acv4z.mol
+.. literalinclude:: HF_cv3z.mol
 
 The calculation is run using::
 
-   pam --inp=rotg --mol=HF_acv4z
+   pam --inp=rotg --mol=HF_cv3z
 
 
 As a result, g-factors are obtained at the coupled Hartree-Fock level. The code also works at the DFT level.
