@@ -560,7 +560,6 @@ C***********************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(BN,A1,I4,I3,A11,A1,D10.2,6I5)',IOSTAT=IOS)
      &     CRT,NONTYP,KCHARG,SYMTXT,ID3,THRS
-      IF (IPREAD .gt. 5) write(lupri, *) 'crt,nontyp',crt,nontyp
       IF (IOS.NE.0) THEN
        WRITE(LUPRI,*)
        WRITE(LUPRI,*) 'Error reading line no ',NMLINE,':'
@@ -1010,7 +1009,6 @@ C
             DOHUCKEL = .FALSE.
             READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)',IOSTAT=IOS)
      &            Q,NONT(I),QEXP
-            IF (IPREAD .gt. 5) write(lupri, *) 'i,q, nont',i,q, nont(i)
             IF (IOS.NE.0) THEN
               WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
               WRITE(LUPRI,*) MLINE(NMLINE)
