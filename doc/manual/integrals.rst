@@ -68,7 +68,7 @@ By default gauge origin is set to the coordinate origin::
 
 keyword(GO ANG)
 
-Same as :ref:`INTEGRALS_.GAUGEO` but
+Same as :ref:`INTEGRALS_.GAUGEORIGIN` but
 reads gauge origin coordinates in angstrom instead of bohr.
 
 keyword(DIPORG)

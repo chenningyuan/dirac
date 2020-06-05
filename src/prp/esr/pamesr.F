@@ -124,7 +124,7 @@ C
      &            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ESRINP.')
-    1          CONTINUE ! 
+    1          CONTINUE !
                GO TO 100
     2          CONTINUE ! .PRINT
 C&&&& PRINT:  Print level in ESR module
