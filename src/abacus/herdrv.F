@@ -75,7 +75,7 @@ C     adds test suite of Gen1Int interface as .GENINT
 C     Bin Gao, Nov. 9, 2011
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
-     &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
+     &             '.QUADRU', 'xXXXXXX', '.SECMOM', '.SUPONL',
      &             '.CARMOM', '.SPHMOM', '.FC    ', '.PSO   ',
      &             '.SD    ', '.DSO   ', '.POINTS', '.SELECT',
      &             '.QUASUM', '.SD+FC ', '.PROPRI', '.HDO   ',
@@ -90,9 +90,9 @@ C     Bin Gao, Nov. 9, 2011
      &             '.MGMO2T', '.MGMTHR', '.HBDO  ', '.SUSCGO',
      &             '.NSTCGO', '.EXPIKR', '.MASSVE', '.DARWIN',
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
-     &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
+     &             '.NOTWO ', 'xXXXXXX', 'xXXXXXX', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.GENINT', '.GO ANG'/
+     &             '.NUCMOD', '.MAGCOR', '.GENINT', 'xXXXXXX'/
 C
 C     Check if input has been processed earlier.
 C
@@ -186,10 +186,6 @@ C
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       MGCOOR = .FALSE.
-      ORIGIN(1:3) = 0.0d0
-      GAGORG(1:3) = 0.0d0
-      GAGORG_SET = .FALSE.
-      DIPORG(1:3) = 0.0d0
       EXPKR (1:3) = 0.0d0
       NPATOM = 0
       IPATOM(1:MXCENT) = 0
@@ -298,12 +294,6 @@ C
             ONEPRP = .TRUE.
             GO TO 100
   110    CONTINUE
-            READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
-            IF (IOS.NE.0) THEN
-              WRITE(LUPRI,*) 'Error in reading ORIGIN(1:3) !'
-              WRITE(LUPRI,*) 'ORIGIN(1:3) :', (ORIGIN(I),I=1,3)
-              CALL QUIT('Error in reading ORIGIN(1:3) !')
-            ENDIF
             GO TO 100
   111    CONTINUE
             SECMOM = .TRUE.
@@ -585,18 +575,9 @@ C
             NOTWO = .TRUE.
             SUPMAT = .FALSE.
             GO TO 100
- 170     CONTINUE ! '.GAUGEO'
-            READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
-            GAGORG_SET = .TRUE.
-            IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
-            ENDIF
+ 170     CONTINUE
             GO TO 100
- 171     CONTINUE ! '.DIPORG'
-            READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
-            IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading DIPORG(1:3)')
-            ENDIF
+ 171     CONTINUE
             GO TO 100
  172     CONTINUE ! '.GFACDI'
             GFACDI = .TRUE.
@@ -643,15 +624,7 @@ C&&& MAGCOR - print magnetic coordinates
             TEST_GEN1INT = .true.
 #endif
             goto 100
- 180     CONTINUE ! .GO ANG
-!           read user specified gauge origin in angstrom
-            read(lucmd, *, iostat=ios) gagorg
-            GAGORG_SET = .TRUE.
-            if (ios /= 0) then
-              call quit('error in reading .GO ANG')
-            end if
-!           convert from angstrom to bohr
-            gagorg = gagorg/xtang
+ 180     CONTINUE
             goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
@@ -688,12 +661,6 @@ C&&& MAGCOR - print magnetic coordinates
          IF (NOTWO) WRITE (LUPRI,'(/A/)')
      &          ' Two-electron integrals not calculated.'
       END IF
-
-      WRITE (LUPRI,'(/A/,(A,3F20.15))')
-     &    ' One-electron operator origins:',
-     &    ' - General operator origin (a.u.)       :', ORIGIN(1:3),
-     &    ' - Magnetic gauge origin (a.u.)         :', GAGORG(1:3),
-     &    ' - Dipole (and multipole) origin (a.u.) :', DIPORG(1:3)
 
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A/)')

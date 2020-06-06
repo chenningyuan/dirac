@@ -7,8 +7,8 @@ This section gives directives for the calculation of NMR parameters.
 
 If common gauge origin (CGO) is used, i.e. :LONDON not specified,
 then the user can define the gauge origin used for the external
-magnetic field with :ref:`INTEGRALS_.GAUGEORIGIN` or :ref:`INTEGRALS_.GO ANG`
-under :ref:`**INTEGRALS`.
+magnetic field with :ref:`HAMILTONIAN_.GAUGEORIGIN` or :ref:`HAMILTONIAN_.GO ANG`
+under :ref:`**HAMILTONIAN`.
 If :ref:`NMR_.USEPCM` is specified then center-of-mass is used as gauge origin.
 Default is (0, 0, 0).
 

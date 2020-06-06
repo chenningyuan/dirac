@@ -4868,7 +4868,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 12)
+      PARAMETER (NTABLE = 72,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4886,6 +4886,7 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
+#include "orgcom.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -4932,7 +4933,9 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT ', '.FAKE2C',
+!                   69        70        71        72
+     &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4984,6 +4987,10 @@ C
       VACREF  = .TRUE.
       CAP     = .FALSE.
       ECPCALC = .FALSE.
+      ORIGIN(1:3) = 0.0d0
+      GAGORG(1:3) = 0.0d0
+      GAGORG_SET = .FALSE.
+      DIPORG(1:3) = 0.0d0
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -5099,7 +5106,8 @@ C     Keep track of number of changes and added finite field operators
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162,163,164,165,166,167,168),I
+     &                161,162,163,164,165,166,167,168,169,170,
+     &                171,172),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -5666,6 +5674,41 @@ C..TODO: check for inconsistencies and add stops
             SPINFR  = .TRUE.
             DOLVC   = .FALSE.
           GO TO 100
+  169     CONTINUE
+!&&&& GAUGEO
+          READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+          GAGORG_SET = .TRUE.
+          IF (IOS.NE.0) THEN
+            CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+          ENDIF
+          GO TO 100
+  170     CONTINUE
+!&&&& GO ANG
+          GO TO 100
+!         read user specified gauge origin in angstrom
+          read(lucmd, *, iostat=ios) gagorg
+          GAGORG_SET = .TRUE.
+          if (ios /= 0) then
+            call quit('error in reading .GO ANG')
+          end if
+!         convert from angstrom to bohr
+          gagorg = gagorg/xtang
+  171     CONTINUE
+!&&&& DIPORG
+          READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
+          IF (IOS.NE.0) THEN
+            CALL QUIT('Error in reading DIPORG(1:3)')
+          ENDIF
+          GO TO 100
+  172     CONTINUE
+!&&&& PHASEO
+          READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
+          IF (IOS.NE.0) THEN
+            WRITE(LUPRI,*) 'Error in reading ORIGIN(1:3) !'
+            WRITE(LUPRI,*) 'ORIGIN(1:3) :', (ORIGIN(I),I=1,3)
+            CALL QUIT('Error in reading ORIGIN(1:3) !')
+          ENDIF
+          GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
@@ -5676,6 +5719,11 @@ C..TODO: check for inconsistencies and add stops
       END IF
   300 CONTINUE
 
+      WRITE (LUPRI,'(/A/,(A,3F20.15))')
+     &    ' One-electron operator origins:',
+     &    ' - General operator origin (a.u.)       :', ORIGIN(1:3),
+     &    ' - Magnetic gauge origin (a.u.)         :', GAGORG(1:3),
+     &    ' - Dipole (and multipole) origin (a.u.) :', DIPORG(1:3)
 
       if (dirac_cfg_fde) then
          call fde_input_init(lupri,'DIRAC.OUT')
