@@ -2,6 +2,8 @@
 **HAMILTONIAN
 .LVCORR
 **INTEGRALS
+.GAUGEO
+ 5.0 5.0 5.0
 *READIN
 .CONTRACT
 **WAVE FUNCTION
@@ -14,6 +16,4 @@
 .3D_INTEGRATE
 .SCALE
   53.25135    !this is to get integrated nr in ppm when not london
-.GAUGE
- 5.0 5.0 5.0
 *END OF
