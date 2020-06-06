@@ -8,15 +8,15 @@ New features:
 
 - Improved start potential with far fewer functions and better accuracy. Contributors: Lucas Visscher.
   Definite reference will follow (see for now: arXiv:2002.02587)
+- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
+   Theoretical study of the relativistic molecular rotational g-tensor.
+   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
 - Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
 
 Revised features:
 
 - Gauge origin (.GAUGEO and .GO ANG) can now ONLY be set under \*\*INTEGRALS.
-- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
-   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
-   Theoretical study of the relativistic molecular rotational g-tensor.
-   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
 
 New defaults:
 
