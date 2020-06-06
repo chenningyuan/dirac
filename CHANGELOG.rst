@@ -1,7 +1,7 @@
 :orphan:
 
 
-20.0 (planned for 2020-12-12)
+20.0 (planned for 2021-01-31)
 -----------------------------
 
 New features:
@@ -16,7 +16,8 @@ New features:
 
 Revised features:
 
-- Gauge origin (.GAUGEO and .GO ANG) can now ONLY be set under \*\*INTEGRALS.
+- Gauge origin (.GAUGEO and .GO ANG) can now ONLY be set under \*\*HAMILTONIAN.
+- Phase and Dipole origins (.PHASEO and .DIPORG, respectively) can now ONLY be set under \*\*HAMILTONIAN.
 
 New defaults:
 
