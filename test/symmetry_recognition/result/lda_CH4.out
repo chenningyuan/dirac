@@ -169,10 +169,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | master
-Commit hash   | a7757fca7
-Commit author | Miroslav Iliaš
-Commit date   | Mon May 25 09:56:34 2020 +0000
+Branch        | master-updates-hj
+Commit hash   | 0201d4000
+Commit author | Hans Joergen Aagard Jensen
+Commit date   | Fri Jun 5 15:23:00 2020 +0200
 
 
 Configuration and build information
@@ -184,17 +184,17 @@ Operating system         | Linux-5.4.0-31-generic
 CMake version            | 3.16.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-05-25 11:41:15.781682
+Configuration time       | 2020-06-05 13:28:13.740503
 Python version           | 2.7.1
 Fortran compiler         | /usr/bin/gfortran
 Fortran compiler version | 9.3.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
 C compiler               | /usr/bin/gcc
 C compiler version       | 9.3.0
-C compiler flags         |  -g
+C compiler flags         |  -g -g
 C++ compiler             | /usr/bin/g++
 C++ compiler version     | 9.3.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
@@ -203,7 +203,7 @@ Math libraries           | /usr/lib/x86_64-linux-gnu/liblapack.so;/usr/lib/x86_6
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
 
 
  LAPACK integer*4/8 selftest passed
@@ -213,7 +213,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu May 28 14:40:53 2020
+     Date and time (Linux)  : Sat Jun  6 07:43:44 2020
      Host name              : agustin-laptop                          
 
 
@@ -305,6 +305,11 @@ FINISH
 
  Two-electron integrals not calculated.
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
 
  Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
 
@@ -455,21 +460,6 @@ Represented as: D2
 
   QM-QM nuclear repulsion energy :     13.423074500184
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           C          12.000000
-                           H3   1      1.007825
-                           H3   2      1.007825
-                           H3   3      1.007825
-                           H3   4      1.007825
-
-                       Total mass:    16.031300 amu
-                       Natural abundance:  98.841 %
-
- Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
 
 
   Atoms and basis sets
@@ -627,6 +617,17 @@ H3    -0.6298891440  -0.6298891440  -0.6298891440
 
 
    Nuclear repulsion energy :   13.423074500184 Hartree
+
+                       * Total mass:    16.031300 amu
+                       * Natural abundance:  98.841 %
+
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
 
 
                                 GETLAB: AO-labels
@@ -823,7 +824,7 @@ H3    -0.6298891440  -0.6298891440  -0.6298891440
 
                     All dipole components are zero by symmetry
 
-Total time used in ONEGEN (CPU)  0.00121200s and (WALL)  0.00100000s
+Total time used in ONEGEN (CPU)  0.00171300s and (WALL)  0.00200000s
 
 
                        Generating Lowdin canonical matrix:
@@ -859,19 +860,19 @@ Total no. of orbitals           (NORB):    17
     *************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Thu May 28 14:40:53 2020
+########## START ITERATION NO.   1 ##########   Sat Jun  6 07:43:44 2020
 
 E_HOMO...E_LUMO, symmetry 1:     5  -0.18456    6   0.25971
 
 => Calculating sum of orbital energies
-It.    1    -9.920538547539      0.00D+00  0.00D+00  0.00D+00               0.00072800s   Scr. nuclei    Thu May 28
+It.    1    -9.920538547539      0.00D+00  0.00D+00  0.00D+00               0.00080200s   Scr. nuclei    Sat Jun  6
 
-########## START ITERATION NO.   2 ##########   Thu May 28 14:40:53 2020
+########## START ITERATION NO.   2 ##########   Sat Jun  6 07:43:44 2020
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00316100s
+SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00390200s
 
 
  ********************************************************************************
@@ -902,7 +903,7 @@ H3      4   0.123E-03   0.856E+01   0.164E+00      57   14838
    Number of grid points in quadrature:     30730 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.12 seconds
+ >>>> Time used in DFTGRD:   0.16 seconds
 
 
  DFT integration
@@ -911,21 +912,21 @@ H3      4   0.123E-03   0.856E+01   0.164E+00      57   14838
    DFT exchange-correlation energy:               =        -6.8433702417748767
    number of electrons from numerical integration =        10.0000075991585664
 
-   time spent in DFT integration                  =   0.10 seconds
+   time spent in DFT integration                  =   0.13 seconds
    number of processors                           =         1
 
 E_HOMO...E_LUMO, symmetry 1:     5  -0.17829    6   0.23210
->>> Total wall time:  0.27600000s, and total CPU time :  0.27470500s
+>>> Total wall time:  0.35700000s, and total CPU time :  0.35107900s
 
-########## END ITERATION NO.   2 ##########   Thu May 28 14:40:54 2020
+########## END ITERATION NO.   2 ##########   Sat Jun  6 07:43:45 2020
 
-It.    2    -39.53090189836      2.96D+01  1.46D+00  1.32D+00               0.27600000s   LL             Thu May 28
+It.    2    -39.53090189836      2.96D+01  1.46D+00  1.32D+00               0.35700000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   3 ##########   Thu May 28 14:40:54 2020
+########## START ITERATION NO.   3 ##########   Sat Jun  6 07:43:45 2020
 
     3 *** Differential density matrix. DCOVLP     = 0.7024
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00328001s
+SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00492600s
 
  DFT integration
 
@@ -933,21 +934,21 @@ SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00328001s
    DFT exchange-correlation energy:               =        -6.0435684591903520
    number of electrons from numerical integration =        10.0000004030393210
 
-   time spent in DFT integration                  =   0.10 seconds
+   time spent in DFT integration                  =   0.13 seconds
    number of processors                           =         1
 
 E_HOMO...E_LUMO, symmetry 1:     5  -0.38387    6   0.09912
->>> Total wall time:  0.11000000s, and total CPU time :  0.11022600s
+>>> Total wall time:  0.14300000s, and total CPU time :  0.14056700s
 
-########## END ITERATION NO.   3 ##########   Thu May 28 14:40:54 2020
+########## END ITERATION NO.   3 ##########   Sat Jun  6 07:43:45 2020
 
-It.    3    -39.31344626228     -2.17D-01 -1.50D+00  1.34D+00   DIIS   2    0.11000000s   LL             Thu May 28
+It.    3    -39.31344626228     -2.17D-01 -1.50D+00  1.34D+00   DIIS   2    0.14300000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   4 ##########   Thu May 28 14:40:54 2020
+########## START ITERATION NO.   4 ##########   Sat Jun  6 07:43:45 2020
 
     4 *** Differential density matrix. DCOVLP     = 1.0745
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00335601s
+SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00375903s
 
  DFT integration
 
@@ -955,15 +956,15 @@ SOfock:LL  1.00D-12    6.00%    0.00%    0.00%    0.00%   0.00335601s
    DFT exchange-correlation energy:               =        -6.5191519855926794
    number of electrons from numerical integration =        10.0000061738986847
 
-   time spent in DFT integration                  =   0.11 seconds
+   time spent in DFT integration                  =   0.12 seconds
    number of processors                           =         1
 
 E_HOMO...E_LUMO, symmetry 1:     5  -0.33981    6   0.12182
->>> Total wall time:  0.12000000s, and total CPU time :  0.11667100s
+>>> Total wall time:  0.13300000s, and total CPU time :  0.13079900s
 
-########## END ITERATION NO.   4 ##########   Thu May 28 14:40:54 2020
+########## END ITERATION NO.   4 ##########   Sat Jun  6 07:43:45 2020
 
-It.    4    -39.87234431018      5.59D-01  9.40D-01  2.00D-01   DIIS   3    0.12000000s   LL             Thu May 28
+It.    4    -39.87234431018      5.59D-01  9.40D-01  2.00D-01   DIIS   3    0.13300000s   LL             Sat Jun  6
 
  ** Exit SCF because maximum number of iterations reached.
 
@@ -981,15 +982,15 @@ It.    4    -39.87234431018      5.59D-01  9.40D-01  2.00D-01   DIIS   3    0.12
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -9.920538547539      0.00D+00  0.00D+00  0.00D+00               0.00072800s   Scr. nuclei    Thu May 28
-It.    2    -39.53090189836      2.96D+01  1.46D+00  1.32D+00               0.27600000s   LL             Thu May 28
-It.    3    -39.31344626228     -2.17D-01 -1.50D+00  1.34D+00   DIIS   2    0.11000000s   LL             Thu May 28
-It.    4    -39.87234431018      5.59D-01  9.40D-01  2.00D-01   DIIS   3    0.12000000s   LL             Thu May 28
+It.    1    -9.920538547539      0.00D+00  0.00D+00  0.00D+00               0.00080200s   Scr. nuclei    Sat Jun  6
+It.    2    -39.53090189836      2.96D+01  1.46D+00  1.32D+00               0.35700000s   LL             Sat Jun  6
+It.    3    -39.31344626228     -2.17D-01 -1.50D+00  1.34D+00   DIIS   2    0.14300000s   LL             Sat Jun  6
+It.    4    -39.87234431018      5.59D-01  9.40D-01  2.00D-01   DIIS   3    0.13300000s   LL             Sat Jun  6
 --------------------------------------------------------------------------------------------------------------------------------
 * Desired convergence limit not reached after    4 iterations but the current convergence is acceptable.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00100000s
-      LL           :    0.16866667s
+      No 2-ints    :    0.00000000s
+      LL           :    0.21100000s
 
 
                                    TOTAL ENERGY
@@ -1059,10 +1060,10 @@ tot.num. of pos.erg shells:    5    4    4    4
 
 
  
-     Date and time (Linux)  : Thu May 28 14:40:54 2020
+     Date and time (Linux)  : Sat Jun  6 07:43:45 2020
      Host name              : agustin-laptop                          
 
->>>> Node 0, utime: 0, stime: 0, minflt: 2170, majflt: 0, nvcsw: 4, nivcsw: 29, maxrss: 20152
+>>>> Node 0, utime: 0, stime: 0, minflt: 2181, majflt: 0, nvcsw: 4, nivcsw: 170, maxrss: 19900
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
