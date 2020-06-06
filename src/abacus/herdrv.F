@@ -188,6 +188,7 @@ C
       MGCOOR = .FALSE.
       ORIGIN(1:3) = 0.0d0
       GAGORG(1:3) = 0.0d0
+      GAGORG_SET = .FALSE.
       DIPORG(1:3) = 0.0d0
       EXPKR (1:3) = 0.0d0
       NPATOM = 0
@@ -586,6 +587,7 @@ C
             GO TO 100
  170     CONTINUE ! '.GAUGEO'
             READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+            GAGORG_SET = .TRUE.
             IF (IOS.NE.0) THEN
               CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
             ENDIF
@@ -644,6 +646,7 @@ C&&& MAGCOR - print magnetic coordinates
  180     CONTINUE ! .GO ANG
 !           read user specified gauge origin in angstrom
             read(lucmd, *, iostat=ios) gagorg
+            GAGORG_SET = .TRUE.
             if (ios /= 0) then
               call quit('error in reading .GO ANG')
             end if

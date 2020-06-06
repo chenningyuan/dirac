@@ -242,7 +242,23 @@ C ... header: print out only if relevant (controlled by RESET)
         CALL PRSYMB(LUPRI,'=',75,0)
       ENDIF
 
-      IF (LONDON.OR.USECM) THEN
+      IF (USECM.AND.GAGORG_SET) THEN
+       WRITE(LUPRI,'(/A/A)') 'WARNING:'//
+     &    ' You have asked for center of mass to be the gauge origin!',
+     &    'WARNING: ...your defined gauge origin is therefore ignored.'
+       GAGORG_SET = .FALSE.
+      ENDIF
+
+      IF (GAGORG_SET .AND. .NOT.USECM) THEN
+         if (maxrep > 0) then
+            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(/A/)')
+     &     '   WARNING: User defined gauge '//
+     &     'may give wrong results when using symmetry !'   
+         end if
+CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
+         DIPORG(:) = GAGORG(:)
+      ELSE
+       IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
@@ -257,6 +273,7 @@ C ... call the routine in abacus/hergp.F
          WRITE(LUPRI,'(A,3F12.6)')
      &  ' * Center of mass used for the gauge & dipole '//
      &  'origins (a.u.) :',GAGORG(1:3)
+       END IF
       END IF
 
       IF (LONDON) THEN
