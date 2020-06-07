@@ -173,9 +173,9 @@ Version information
 -------------------
 
 Branch        | gomeasasp/caar-cc2
-Commit hash   | 36041b7a3
+Commit hash   | 0295756a4
 Commit author | Andre Gomes
-Commit date   | Mon Apr 27 10:51:00 2020 +0200
+Commit date   | Mon May 4 12:55:26 2020 +0200
 
 
 Configuration and build information
@@ -187,7 +187,7 @@ Operating system         | Darwin-18.7.0
 CMake version            | 3.16.2
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-04-27 08:52:46.582209
+Configuration time       | 2020-05-04 11:20:31.966770
 Python version           | 3.7.3
 Fortran compiler         | /opt/mpich-3.4a2_gcc8/bin/mpif90
 Fortran compiler version | 8.3.0
@@ -223,7 +223,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Mon Apr 27 19:29:33 2020
+     Date and time (Mac OSX): Mon May  4 22:48:36 2020
      Host name              : utonium                                 
 
 
@@ -838,7 +838,7 @@ H      0.0000000000   0.8018426389  -0.4934041887
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.01796500s and (WALL)  0.01800000s
+Total time used in ONEGEN (CPU)  0.02421500s and (WALL)  0.02500000s
 
 
                        Generating Lowdin canonical matrix:
@@ -967,8 +967,8 @@ Total time used in ONEGEN (CPU)  0.01796500s and (WALL)  0.01800000s
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> CPU  time used in mk_h2c is   0.23 seconds
- >>> WALL time used in mk_h2c is   0.28 seconds
+ >>> CPU  time used in mk_h2c is   0.26 seconds
+ >>> WALL time used in mk_h2c is   0.31 seconds
 
 
                       Nuclear contribution to dipole moments
@@ -982,7 +982,7 @@ Total time used in ONEGEN (CPU)  0.01796500s and (WALL)  0.01800000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00474000s and (WALL)  0.00500000s
+Total time used in ONEGEN (CPU)  0.00680500s and (WALL)  0.00700000s
 
 
                        Generating Lowdin canonical matrix:
@@ -998,8 +998,8 @@ Total time used in ONEGEN (CPU)  0.00474000s and (WALL)  0.00500000s
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    40
- >>> CPU  time used in PAMSET is   0.28 seconds
- >>> WALL time used in PAMSET is   0.33 seconds
+ >>> CPU  time used in PAMSET is   0.32 seconds
+ >>> WALL time used in PAMSET is   0.37 seconds
 
 
  *******************************************************************************
@@ -1007,7 +1007,7 @@ Total no. of orbitals           (NORB):    40
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Mon Apr 27 19:29:34 2020
+########## START ITERATION NO.   1 ##########   Mon May  4 22:48:36 2020
 
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -76.0275207383138536
@@ -1015,8 +1015,10 @@ Total no. of orbitals           (NORB):    40
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   46.93%    0.00%   30.11%   0.03300000s
-It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05548600s   LL             Mon Apr 27
+SOfock:LL  1.00D-12    0.00%   46.93%    0.00%   30.11%   0.35000000s
+ >>> CPU  time used in SO Fock is   0.38 seconds
+ >>> WALL time used in SO Fock is   0.38 seconds
+It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.37753700s   LL             Mon May  4
 
 
                                    SCF - CYCLE
@@ -1032,11 +1034,11 @@ It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05548600s   LL             Mon Apr 27
+It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.37753700s   LL             Mon May  4
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.05900000s
+      LL           :    0.38300000s
 
 
                                    TOTAL ENERGY
@@ -1093,9 +1095,9 @@ It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05
                     *****************************************************
  
  
-  27 Apr 20 19:29:34 read from DFCOEF:X2C Hamiltonian, with large speed of light (NR limMon Apr 27 16:22:36 2020
-  27 Apr 20 19:29:34 retrieved basis set information
-  27 Apr 20 19:29:34 Initialized global data
+   4 May 20 22:48:37 read from DFCOEF:X2C Hamiltonian, with large speed of light (NR limMon Apr 27 16:22:36 2020
+   4 May 20 22:48:37 retrieved basis set information
+   4 May 20 22:48:37 Initialized global data
   --- active occupied spinors --- 
     #             E   
        1  -0.205466043E+02
@@ -1180,9 +1182,9 @@ It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05
       78   0.379193350E+04
       79   0.227713710E+05
       80   0.227713710E+05
-  27 Apr 20 19:29:34  Starting CC calculation with exatensor
-  27 Apr 20 19:29:34  Registered AO and MO spaces
-  27 Apr 20 19:29:34  Initialized and registered tensor methods
+   4 May 20 22:48:37  Starting CC calculation with exatensor
+   4 May 20 22:48:37  Registered AO and MO spaces
+   4 May 20 22:48:37  Initialized and registered tensor methods
  
       Characteristics of this calculation      
 -----------------------------------------------
@@ -1204,25 +1206,25 @@ It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05
  - Print Level :                        2
 -----------------------------------------------
  
-  27 Apr 20 19:29:34 allocated AO integral tensor
-  27 Apr 20 19:29:34 finished ao integral calculation
-  27 Apr 20 19:29:34 choosing moint_scheme 3
-  27 Apr 20 19:29:37 vv halftransformation completed
-  27 Apr 20 19:29:49 vvvv integrals completed
-  27 Apr 20 19:29:51 vovv integrals completed
-  27 Apr 20 19:29:52 vovo integrals completed
-  27 Apr 20 19:29:53 ov halftransformation completed
-  27 Apr 20 19:29:54 ovvo integrals completed
-  27 Apr 20 19:29:54 vovo integrals anti-symmetrized
-  27 Apr 20 19:29:54 oovv integrals completed
-  27 Apr 20 19:29:55 oo halftransformation completed
-  27 Apr 20 19:29:55 ooov integrals completed
-  27 Apr 20 19:29:55 oooo integrals completed
-  27 Apr 20 19:29:55 initialized two electron integrals
+   4 May 20 22:48:37 allocated AO integral tensor
+   4 May 20 22:48:37 finished ao integral calculation
+   4 May 20 22:48:37 choosing moint_scheme 3
+   4 May 20 22:48:42 vv halftransformation completed
+   4 May 20 22:48:57 vvvv integrals completed
+   4 May 20 22:48:59 vovv integrals completed
+   4 May 20 22:49:00 vovo integrals completed
+   4 May 20 22:49:01 ov halftransformation completed
+   4 May 20 22:49:02 ovvo integrals completed
+   4 May 20 22:49:02 vovo integrals anti-symmetrized
+   4 May 20 22:49:03 oovv integrals completed
+   4 May 20 22:49:03 oo halftransformation completed
+   4 May 20 22:49:04 ooov integrals completed
+   4 May 20 22:49:04 oooo integrals completed
+   4 May 20 22:49:04 initialized two electron integrals
  
     SCF energy ( read ) =     -76.027520738313854
  
-  27 Apr 20 19:29:55 initialized Fock matrix
+   4 May 20 22:49:04 initialized Fock matrix
  
      MP2 energy =  -0.25830648763802172     
  
@@ -1268,16 +1270,16 @@ It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05
 ********************** Solving Left Eigenvector Equation **********************
 *******************************************************************************
  
-  27 Apr 20 19:31:29 Finished calculating common blocks
-  27 Apr 20 19:31:50 Finished calculating fixed intermediates
+   4 May 20 22:50:53 Finished calculating common blocks
+   4 May 20 22:51:20 Finished calculating fixed intermediates
  T1amp      =    5.8985346816715087E-004
- T2amp      =    5.8118370109832646E-002
+ T2amp      =   -5.7896044618658098E+076
  Fbar_ov    =    3.1942398777297845E-005
  wbar_vovo  =    1338.9275268402910     
  w_vvvo     =    447.15608554475256     
- w_vovv     =    470.68129671470928     
+ w_vovv     =   -1.1579208923731620E+077
  w_vovo     =    1338.9444649337945     
- w_ovoo     =    9.1942857190557579     
+ w_ovoo     =    10.194285719055758     
  w_ooov     =    12.245333827662503     
  w_oooo     =    49.242897722577801     
  
@@ -1303,26 +1305,18 @@ It.    1    -76.02752073831      7.60D+01  0.00D+00  6.21D-10               0.05
   Final L1amp = 4.0777992506196837E-04
   Final L2amp = 5.6281151394235188E-02
  
- gprime_oo  =    1.7423325629664999E-003
- gprime_ov  =    4.0777992506196837E-004
- gsymm_ov   =    4.7235957706273180E-004
- gprime_vo  =    5.4733510133550035E-004
- gsymm_vo   =    4.7235957706273174E-004
- gprime_vv  =    9.5581892927824722E-004
- gsymm_oo   =    1.7423325540552855E-003
- gsymm_vv   =    9.3830531349526562E-004
-  27 Apr 20 19:33:08 Calculated density matrices in MO basis
-  27 Apr 20 19:33:08 Initialized talsh library
+   4 May 20 22:52:42 Calculated density matrices in MO basis
+   4 May 20 22:52:42 Initialized talsh library
   Status           0: Size (Bytes) =   53686566912: Max args in HAB =   12288
  Storing the CCSD density matrix on file
 #MSG(TAL-SH): Device utilization statistics for MPI process      0:
 #MSG(TAL-SH): Device utilization statistics for MPI process      1:
 #MSG(DSVP): Shut down DSVP      2: TAVP-MNG#0
-#MSG(DSVP): Counters: Recv    4051; Rtrd    4051; Crtd   57606; Fail    0: Time (s)      214.492
+#MSG(DSVP): Counters: Recv    4017; Rtrd    4017; Crtd   57586; Fail    0: Time (s)      245.329
 #MSG(DSVP): Shut down DSVP      1: TAVP-WRK#1
-#MSG(DSVP): Counters: Recv   28919; Rtrd   28919; Crtd   23334; Fail    0: Time (s)      214.638
+#MSG(DSVP): Counters: Recv   28901; Rtrd   28901; Crtd   23316; Fail    0: Time (s)      245.510
 #MSG(DSVP): Shut down DSVP      0: TAVP-WRK#0
-#MSG(DSVP): Counters: Recv   29169; Rtrd   29169; Crtd   23534; Fail    0: Time (s)      214.644
+#MSG(DSVP): Counters: Recv   29151; Rtrd   29151; Crtd   23516; Fail    0: Time (s)      245.512
  
   Leaving cc_driver routine
 
@@ -1489,33 +1483,33 @@ z         0.12613670 a.u.         -0.92480398 a.u.         -0.79866728 a.u.
     *************************** Expectation values ***************************
     **************************************************************************
 
-    Dipole length: X :    -0.86134394E-13 a.u.      s0 = F   t0 = F
-    Dipole length: Y :     0.14865510E-11 a.u.      s0 = F   t0 = F
-    Dipole length: Z :     0.172511851413 a.u.      s0 = F   t0 = F
-    Quadrupol m.: XX :    -1.594138245682 a.u.      s0 = F   t0 = F
-    Quadrupol m.: XY :     0.38242082E-12 a.u.      s0 = F   t0 = F
-    Quadrupol m.: XZ :    -0.36647356E-12 a.u.      s0 = F   t0 = F
-    Quadrupol m.: YY :     1.749754220375 a.u.      s0 = F   t0 = F
-    Quadrupol m.: YZ :    -0.20491830E-11 a.u.      s0 = F   t0 = F
-    Quadrupol m.: ZZ :    -0.155615974693 a.u.      s0 = F   t0 = F
-    EFG: XX011       :    -1.579771968449 a.u.      s0 = F   t0 = F
-    EFG: XY011       :    -0.89590779E-12 a.u.      s0 = F   t0 = F
-    EFG: XZ011       :    -0.48489648E-13 a.u.      s0 = F   t0 = F
-    EFG: YY011       :     1.515867169774 a.u.      s0 = F   t0 = F
-    EFG: YZ011       :    -0.25475699E-11 a.u.      s0 = F   t0 = F
-    EFG: ZZ011       :     0.63904799E-01 a.u.      s0 = F   t0 = F
-    EFG: XX021       :     1.058865243984 a.u.      s0 = F   t0 = F
-    EFG: XY021       :    -0.54852126E-14 a.u.      s0 = F   t0 = F
-    EFG: XZ021       :     0.41782949E-13 a.u.      s0 = F   t0 = F
-    EFG: YY021       :    -1.140017237614 a.u.      s0 = F   t0 = F
-    EFG: YZ021       :    -1.496683631655 a.u.      s0 = F   t0 = F
-    EFG: ZZ021       :     0.81151994E-01 a.u.      s0 = F   t0 = F
-    EFG: XX031       :     1.058865243985 a.u.      s0 = F   t0 = F
-    EFG: XY031       :    -0.48616782E-13 a.u.      s0 = F   t0 = F
-    EFG: XZ031       :    -0.73078802E-14 a.u.      s0 = F   t0 = F
-    EFG: YY031       :    -1.140017237615 a.u.      s0 = F   t0 = F
-    EFG: YZ031       :     1.496683631656 a.u.      s0 = F   t0 = F
-    EFG: ZZ031       :     0.81151994E-01 a.u.      s0 = F   t0 = F
+    Dipole length: X :     0.30137719E-13 a.u.      s0 = F   t0 = F
+    Dipole length: Y :     0.13720180E-11 a.u.      s0 = F   t0 = F
+    Dipole length: Z :     0.169008544930 a.u.      s0 = F   t0 = F
+    Quadrupol m.: XX :    -1.584252051353 a.u.      s0 = F   t0 = F
+    Quadrupol m.: XY :     0.12309222E-12 a.u.      s0 = F   t0 = F
+    Quadrupol m.: XZ :    -0.52064380E-13 a.u.      s0 = F   t0 = F
+    Quadrupol m.: YY :     1.734816996377 a.u.      s0 = F   t0 = F
+    Quadrupol m.: YZ :    -0.22841139E-11 a.u.      s0 = F   t0 = F
+    Quadrupol m.: ZZ :    -0.150564945024 a.u.      s0 = F   t0 = F
+    EFG: XX011       :    -1.593194828939 a.u.      s0 = F   t0 = F
+    EFG: XY011       :    -0.79990085E-12 a.u.      s0 = F   t0 = F
+    EFG: XZ011       :    -0.86549099E-13 a.u.      s0 = F   t0 = F
+    EFG: YY011       :     1.506125284152 a.u.      s0 = F   t0 = F
+    EFG: YZ011       :    -0.23279825E-11 a.u.      s0 = F   t0 = F
+    EFG: ZZ011       :     0.87069545E-01 a.u.      s0 = F   t0 = F
+    EFG: XX021       :     1.058767393330 a.u.      s0 = F   t0 = F
+    EFG: XY021       :    -0.27029734E-13 a.u.      s0 = F   t0 = F
+    EFG: XZ021       :     0.89757724E-14 a.u.      s0 = F   t0 = F
+    EFG: YY021       :    -1.140270017798 a.u.      s0 = F   t0 = F
+    EFG: YZ021       :    -1.496322021415 a.u.      s0 = F   t0 = F
+    EFG: ZZ021       :     0.81502624E-01 a.u.      s0 = F   t0 = F
+    EFG: XX031       :     1.058767393332 a.u.      s0 = F   t0 = F
+    EFG: XY031       :    -0.16341583E-13 a.u.      s0 = F   t0 = F
+    EFG: XZ031       :    -0.17349586E-13 a.u.      s0 = F   t0 = F
+    EFG: YY031       :    -1.140270017799 a.u.      s0 = F   t0 = F
+    EFG: YZ031       :     1.496322021416 a.u.      s0 = F   t0 = F
+    EFG: ZZ031       :     0.81502624E-01 a.u.      s0 = F   t0 = F
     ---------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1525,13 +1519,13 @@ z         0.12613670 a.u.         -0.92480398 a.u.         -0.79866728 a.u.
           Electronic               Nuclear                  Total       
           contribution             contribution             contribution
 ----------------------------------------------------------------------------
-x        -0.00000000 Debye         0.00000000 Debye        -0.00000000 Debye
+x         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
 y         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
-z         0.43848545 Debye        -2.35063901 Debye        -1.91215356 Debye
+z         0.42958085 Debye        -2.35063901 Debye        -1.92105816 Debye
 ----------------------------------------------------------------------------
-x        -0.00000000 a.u.          0.00000000 a.u.         -0.00000000 a.u.
+x         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
 y         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
-z         0.17251185 a.u.         -0.92480398 a.u.         -0.75229213 a.u.
+z         0.16900854 a.u.         -0.92480398 a.u.         -0.75579544 a.u.
 ----------------------------------------------------------------------------
 
  1 a.u =   2.54177000 Debye
@@ -1548,27 +1542,27 @@ z         0.17251185 a.u.         -0.92480398 a.u.         -0.75229213 a.u.
 
   Nucleus: O   
 
-  qxx      -1.5797719684 au       -0.3192537027 au       -1.8990256711 au 
-  qyy       1.5158671698 au        0.3278449973 au        1.8437121671 au 
+  qxx      -1.5931948289 au       -0.3192537027 au       -1.9124485316 au 
+  qyy       1.5061252842 au        0.3278449973 au        1.8339702814 au 
   qyz      -0.0000000000 au        0.0000000000 au       -0.0000000000 au 
   qzy      -0.0000000000 au        0.0000000000 au       -0.0000000000 au 
-  qzz       0.0639047987 au       -0.0085912946 au        0.0553135040 au 
+  qzz       0.0870695448 au       -0.0085912946 au        0.0784782502 au 
 
   Nucleus: H   
 
-  qxx       1.0588652440 au       -1.3129438798 au       -0.2540786358 au 
-  qyy      -1.1400172376 au        1.3832381275 au        0.2432208899 au 
-  qyz      -1.4966836317 au        1.7934513782 au        0.2967677465 au 
-  qzy      -1.4966836317 au        1.7934513782 au        0.2967677465 au 
-  qzz       0.0811519936 au       -0.0702942477 au        0.0108577459 au 
+  qxx       1.0587673933 au       -1.3129438798 au       -0.2541764865 au 
+  qyy      -1.1402700178 au        1.3832381275 au        0.2429681097 au 
+  qyz      -1.4963220214 au        1.7934513782 au        0.2971293567 au 
+  qzy      -1.4963220214 au        1.7934513782 au        0.2971293567 au 
+  qzz       0.0815026245 au       -0.0702942477 au        0.0112083768 au 
 
   Nucleus: H   
 
-  qxx       1.0588652440 au       -1.3129438798 au       -0.2540786358 au 
-  qyy      -1.1400172376 au        1.3832381275 au        0.2432208899 au 
-  qyz       1.4966836317 au       -1.7934513782 au       -0.2967677465 au 
-  qzy       1.4966836317 au       -1.7934513782 au       -0.2967677465 au 
-  qzz       0.0811519936 au       -0.0702942477 au        0.0108577459 au 
+  qxx       1.0587673933 au       -1.3129438798 au       -0.2541764865 au 
+  qyy      -1.1402700178 au        1.3832381275 au        0.2429681097 au 
+  qyz       1.4963220214 au       -1.7934513782 au       -0.2971293567 au 
+  qzy       1.4963220214 au       -1.7934513782 au       -0.2971293567 au 
+  qzz       0.0815026245 au       -0.0702942477 au        0.0112083768 au 
 
   
   ------------------------------------------------------------------------
@@ -1577,21 +1571,21 @@ z         0.17251185 a.u.         -0.92480398 a.u.         -0.75229213 a.u.
 
   Nucleus: O   
 
-  qxx   -.1899025671E+01 au 
-  qyy   0.1843712167E+01 au 
-  qzz   0.5531350404E-01 au 
+  qxx   -.1912448532E+01 au 
+  qyy   0.1833970281E+01 au 
+  qzz   0.7847825015E-01 au 
 
   Nucleus: H   
 
-  qxx   -.2540786358E+00 au 
-  qyy   0.4457386324E+00 au 
-  qzz   -.1916599965E+00 au 
+  qxx   -.2541764865E+00 au 
+  qyy   0.4460145640E+00 au 
+  qzz   -.1918380775E+00 au 
 
   Nucleus: H   
 
-  qxx   -.2540786358E+00 au 
-  qyy   0.4457386323E+00 au 
-  qzz   -.1916599965E+00 au 
+  qxx   -.2541764865E+00 au 
+  qyy   0.4460145640E+00 au 
+  qzz   -.1918380775E+00 au 
   ------------------------------------------------------------------------
 
   1 a.u. =  9.71736E+21 V*m**-2
@@ -1603,11 +1597,11 @@ z         0.17251185 a.u.         -0.92480398 a.u.         -0.75229213 a.u.
 
 
  
-     Date and time (Mac OSX): Mon Apr 27 19:33:08 2020
+     Date and time (Mac OSX): Mon May  4 22:52:42 2020
      Host name              : utonium                                 
 
->>>> Node 0, utime: 473, stime: 317, minflt: 614962, majflt: 1091, nvcsw: 66, nivcsw: 16709217, maxrss: 2522148864
->>>> Total WALL time used in DIRAC: 3min35s
+>>>> Node 0, utime: 509, stime: 382, minflt: 586415, majflt: 1072, nvcsw: 65, nivcsw: 18299043, maxrss: 2404921344
+>>>> Total WALL time used in DIRAC: 4min6s
   
   Dynamical Memory Usage Summary for Master
   
@@ -1634,4 +1628,4 @@ z         0.17251185 a.u.         -0.92480398 a.u.         -0.75229213 a.u.
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /Users/andre/Desktop/devel/dirac/dirac_caar_cc2/debugging-ccsd-properties
+DIRAC pam run in /Users/andre/Desktop/devel/dirac/dirac_caar_cc2/build_caar-cc2-halbert_gcc8_omp_mpich-3.4a2_exatens_gitlab/test/exacorr_exatensor_lambda

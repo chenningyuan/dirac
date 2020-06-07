@@ -1,5 +1,5 @@
 :orphan:
- 
+
 
 Pick the right basis for your calculation
 =========================================
@@ -30,20 +30,20 @@ In order to make that usage as convenient as possible,
 the following files, containing all sets currently available at the
 URL above (published or to be published), are made available:
 
-+------------------+-------------+----------------+----------------+
-|     quality      |  valence    |  core-valence  |  all-electron  |
-+==================+=============+================+================+
-|     double-zeta  |  dyall.v2z  |  dyall.cv2z    |  dyall.ae2z    |
-+------------------+-------------+----------------+----------------+
-|     triple-zeta  |  dyall.v3z  |  dyall.cv3z    |  dyall.ae3z    |
-+------------------+-------------+----------------+----------------+
-|  quadruple-zeta  |  dyall.v4z  |  dyall.cv4z    |  dyall.ae4z    |
-+------------------+-------------+----------------+----------------+
++------------------+-------------+----------------+----------------+-----------+
+|     quality      |  valence    |  core-valence  |  all-electron  |  DFT      |
++==================+=============+================+================+===========+
+|     double-zeta  |  dyall.v2z  |  dyall.cv2z    |  dyall.ae2z    | dyall.2zp |
++------------------+-------------+----------------+----------------+-----------+
+|     triple-zeta  |  dyall.v3z  |  dyall.cv3z    |  dyall.ae3z    | dyall.3zp |
++------------------+-------------+----------------+----------------+-----------+
+|  quadruple-zeta  |  dyall.v4z  |  dyall.cv4z    |  dyall.ae4z    | dyall.2zp |
++------------------+-------------+----------------+----------------+-----------+
 
 While the division in "valence" and "core-valence" can be at times not so
 clear-cut as for lighter elements, the option was made to stick to the usual
 jargon of non-relativistic theory, particularly in relation to the
-"correlation-consistent" family of basis sets.  
+"correlation-consistent" family of basis sets.
 
 The valence basis sets are defined to include functions for correlation of the
 outer ns shell and the (n-1)s and p shells for the s elements, the outer ns and
@@ -54,14 +54,18 @@ shell, which becomes a semicore shell towards the end of the row.
 
 The core-valence basis sets include the (n-2) shell for the s elements, the
 (n-1) shell for the p elements, the (n-1) shell for the d elements, and nothing
-extra for the f elements. 
+extra for the f elements.
 
 The all-electron basis sets include correlating functions for all shells, down
 to the 1s for all elements. These are intended for use when correlating all
 electrons.
 
+The DFT basis sets do not contain the correlating functions as these are not
+necessary for DFT (or Hartree-Fock) calculations. With inclusion of all required
+polarization functions they are the most economical choice for DFT calculations.
+
 Users are encouraged to look in these files and in the original archives
-published at Theor. Chem. Acc. (as, for instance, for the `5p TZ basis 
+published at Theor. Chem. Acc. (as, for instance, for the `5p TZ basis
 <http://dirac.chem.sdu.dk/basisarchives/dyall/5p_tz_archive>`_ to get a feel for
 what is included in each case.
 
@@ -115,6 +119,3 @@ These basis sets are not all suitable for relativistic calculations,
 especially not for the heavier elements.
 Basis sets developed for full relativistic calculations (including
 spin-orbit coupling) can be found in the directory **basis**.
-
-
-

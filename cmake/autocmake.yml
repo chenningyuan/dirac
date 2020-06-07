@@ -83,7 +83,6 @@ modules:
     - 'custom/tutorials.cmake'
     - 'custom/unit/unit_tests.cmake'
     - 'custom/core.cmake'
-    - 'custom/c_fortran_interface.cmake'
 - documentation:
   - source:
     - 'custom/doxygen.cmake'
