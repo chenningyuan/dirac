@@ -99,6 +99,7 @@ module exacorr_utils
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
       write(*,'(A,L1)') " - Solve Lambda equations :             ", exa_input%lambda
+      write(*,'(A,L1)') " - Compute perturbative Triples :       ", exa_input%do_triples
       write(*,'(A,I5)') " - Integral transformation scheme : ", exa_input%moint_scheme
       write(*,'(A,I5)') " - Maximum number of cycles :       ", exa_input%ncycles
       write(*,'(A,ES10.1)') " - Target precision of amplitudes :  ", exa_input%t_econv
@@ -124,6 +125,10 @@ module exacorr_utils
       end if
       write(*,*) ""
       write(*,'(A,I5)') " - Print Level :                    ", exa_input%print_level
+      write(*,*) ""
+      write(*,'(A)') " - Estimating memory requirements"
+      write(*,'(A,I9,A)') " -- nao  ( scheme 1-3  ) : ",3*16*((nao*nao)/1000)**2/1000," GB" 
+      write(*,'(A,I9,A)') " -- nvir ( scheme 4/42 ) : ",3*16*((exa_input%nvir*exa_input%nvir)/1000)**2/1000," GB"
       write(*,'(A)') "-----------------------------------------------"
       write(*,*) ""
 

@@ -4,17 +4,17 @@
 echo "Don't forget to keep ~/.diracrc up to date"
 
 # path for dirac.x and exacorr.x
-export DIRAC_PATH=/gpfs/alpine/world-shared/chp109/DIRAC_INSTALL
+export DIRAC_PATH=/gpfs/alpine/world-shared/chp109/dirac_install
 
 if [ $# -eq 0 ]
 then
   echo "give the number of the test you want to run"
 else
 
-export INP_file=cc_uf6.inp
-export MOL_file=UF6.xyz
 pam_script=job_pam.pbs
 
+export INP_file=cc_uf6.inp
+export MOL_file=UF6.xyz
 if [ "$1" -eq 1 ] || [ "$1" -gt 8 ]
 then
   fold=scheme1
@@ -66,9 +66,21 @@ then
   echo "${fold} submited"
 fi
 
+export MOL_file=CHFClBr.xyz
+export INP_file=exacc_chfclbr.inp
+if [ "$1" -eq 6 ] || [ "$1" -gt 8 ]
+then
+  fold=chfclbr
+  cp ${pam_script} ${fold}
+  cd ${fold}
+    bsub ${pam_script}
+  cd ..
+  echo "${fold} submited"
+fi
+
 #tests not using pam
 
-if [ "$1" -eq 6 ] || [ "$1" -gt 8 ]
+if [ "$1" -eq 7 ] || [ "$1" -gt 8 ]
 then
   fold=script_exatensor
   cd ${fold}
@@ -77,7 +89,7 @@ then
   echo "${fold} submited"
 fi
 
-if [ "$1" -eq 7 ] || [ "$1" -gt 8 ]
+if [ "$1" -eq 8 ] || [ "$1" -gt 8 ]
 then
   fold=script_talsh
   cd ${fold}

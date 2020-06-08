@@ -40,6 +40,8 @@ C***********************************************************************
       integer              :: nmo(4)
       integer              :: i, j, imo, jmo, ntmo, rcw
 
+      exa_input%print_level=IPRTRA
+
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
@@ -118,7 +120,7 @@ C
 
       if (.true.) then !Always use talsh for now
         call talsh_compute_mo_integrals(nmo,mo_list,
-     &      exa_input%talsh_buff,exa_input%print_level,rcw)
+     &      exa_input%talsh_buff,exa_input%print_level,rcw,TH_CHOLESKY)
       else
 #if defined (VAR_MPI)
          !slaves need the same info to get started
