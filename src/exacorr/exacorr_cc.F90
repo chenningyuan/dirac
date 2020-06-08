@@ -3035,10 +3035,10 @@ print *,'abe',ierr
             class(h_space_t), pointer               :: occ_space
             type(exacc_input), intent(in)           :: exa_input
 
-            integer(INTL),dimension(2) :: ov_root, vo_root
+            integer(INTL),dimension(2) :: ov_root, vo_root, dim2_root
             integer(INTD),dimension(2) :: ov_id, vo_id
-            integer(INTL),dimension(4) :: ooov_root, vovv_root, vvoo_root, oovv_root, temp2_sub
-            integer(INTD),dimension(4) :: ooov_id,   vovv_id,   vvoo_id,   oovv_id
+            integer(INTL),dimension(4) :: ooov_root, vovv_root, vvoo_root, oovv_root, dim4_root
+            integer(INTD),dimension(4) :: ooov_id,   vovv_id,   vvoo_id,   oovv_id, oooo_id
             integer(INTL),dimension(6) :: w_sub
             integer(INTD),dimension(6) :: w_id
 
@@ -3050,6 +3050,14 @@ print *,'abe',ierr
             type(tens_rcrsv_t)           :: res_tensor
             complex(8)                   :: res_val, ONE_THIRD
             type(tens_rcrsv_t)           :: w, wd, y, temp, temp2
+            type(tens_rcrsv_t)           :: t1_i, t1_j, t1_k
+            type(tens_rcrsv_t)           :: t2_i, t2_j, t2_k
+            type(tens_rcrsv_t)           :: t2_jk, t2_ki, t2_ij
+            type(tens_rcrsv_t)           :: vovv_i, vovv_j, vovv_k
+            type(tens_rcrsv_t)           :: ooov_jk, ooov_ki, ooov_ij
+            type(tens_rcrsv_t)           :: oovv_jk, oovv_ki, oovv_ij
+            type(tens_rcrsv_t)           :: f_i, f_j, f_k
+            type(tens_rcrsv_t)           :: P_i, P_j, P_k, P_2     ! Projection tensors
             integer                      :: nr_proc
             real(8)                      :: est, nseg
 
@@ -3061,22 +3069,26 @@ print *,'abe',ierr
 
             call comm_t%fov%get_space_ids(ov_id,ov_root,ierr)
             call comm_t%fov%get_dims(ov_root,rank,ierr)
-            vo_root=ov_root(1)
-            vo_id=ov_id(1)
-            vo_root(1)=ov_root(2)
-            vo_id(1)=ov_id(2)
+            call comm_t%t1%get_space_ids(ov_id,ov_root,ierr)
+            call comm_t%t1%get_dims(ov_root,rank,ierr)
             
             call int_t%ooov%get_space_ids(ooov_id,ooov_root,ierr)
+            call int_t%ooov%get_dims(ooov_root,rank,ierr)
             call int_t%vovv%get_space_ids(vovv_id,vovv_root,ierr)
+            call int_t%vovv%get_dims(vovv_root,rank,ierr)
             call int_t%oovv%get_space_ids(oovv_id,oovv_root,ierr)
             if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting ids')
             call int_t%oovv%get_dims(oovv_root,rank,ierr)
             if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting dims')
+            oooo_id=oovv_id(1)
 
-            vvoo_root(1:2)=oovv_root(3:4)
-            vvoo_root(3:4)=oovv_root(1:2)
-            vvoo_id(1:2)=oovv_id(3:4)
-            vvoo_id(3:4)=oovv_id(1:2)
+            if (exa_input%print_level >0) then
+               write(*,*) 'ov, id:',ov_id,', root: ',ov_root
+               write(*,*) 'vo, id:',vo_id,', root: ',vo_root
+               write(*,*) 'ooov, id:',ooov_id,', root: ',ooov_root
+               write(*,*) 'vovv, id:',vovv_id,', root: ',vovv_root
+               write(*,*) 'oovv, id:',oovv_id,', root: ',oovv_root
+            end if
 
             nocc=oovv_root(1)
             nvir=oovv_root(3)
@@ -3091,7 +3103,6 @@ print *,'abe',ierr
             w_id=idocc
             w_id(1:3)=idvir
             w_sub=nvir
-            temp2_sub=nvir
 
 !           In order to get an efficient algorithm the number of indices that are split 
 !           has to be adjusted
@@ -3122,6 +3133,7 @@ print *,'abe',ierr
                   exit
                 end if
               end do
+              i=3
               call occ_space%get_level_composition(int(i,INTD),subsp,n_subsp,ierr)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
               if (exa_input%print_level >-1) then
@@ -3158,12 +3170,246 @@ print *,'abe',ierr
                 subsp_k=nocc
             end if
 
-            outer: do i = 1, ni
-              w_sub(4)=subsp_i(i)
+            outer: do k = 1, nk
+              w_sub(4)=subsp_k(k)
+              
+              dim2_root=nocc
+              dim2_root(2)=subsp_k(k)
+              ierr=exatns_tensor_create(P_k,"P_k",oovv_id(1:2),dim2_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('P_k creation failed!')
+              !to do ierr=exatns_tensor_init(P_k,'identity')
+
+              dim4_root=vovv_root
+              dim4_root(2)=subsp_k(k)
+              ierr=exatns_tensor_create(vovv_k,"vovv_k",vovv_id,dim4_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('vovv_k creation failed!')
+              ierr=exatns_tensor_init(vovv_k,ZERO)
+              ierr=exatns_tensor_contract("I(c,k,a,b)+=V(c,p,a,b)*D(p,k)",vovv_k,int_t%vovv,P_k)
+              if(ierr.ne.EXA_SUCCESS) call quit('vovv_k extraction failed!')
+
+              dim4_root=vvoo_root
+              dim4_root(3)=subsp_k(k)
+              ierr=exatns_tensor_create(t2_k,"t2_k",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('t2_k creation failed!')
+              ierr=exatns_tensor_init(t2_k,ZERO)
+              ierr=exatns_tensor_contract("I(a,b,k,i)+=T(a,b,p,i)*D(p,k)",t2_k,comm_t%t2,P_k)
+              if(ierr.ne.EXA_SUCCESS) call quit('t2_k extraction failed!')
+
+              dim2_root=vo_root
+              dim2_root(2)=subsp_k(k)
+              ierr=exatns_tensor_create(t1_k,"t1_k",vo_id,dim2_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('t1_k creation failed!')
+              ierr=exatns_tensor_init(t1_k,ZERO)
+              ierr=exatns_tensor_contract("I(a,k)+=T(a,p)*D(p,k)",t1_k,comm_t%t1,P_k)
+              if(ierr.ne.EXA_SUCCESS) call quit('t1_k extraction failed!')
+
+              dim2_root=ov_root
+              dim2_root(1)=subsp_k(k)
+              ierr=exatns_tensor_create(f_k,"f_k",ov_id,dim2_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('f_k creation failed!')
+              ierr=exatns_tensor_init(f_k,ZERO)
+              ierr=exatns_tensor_contract("I(k,a)+=T(p,a)*D(p,k)",f_k,comm_t%fov,P_k)
+              if(ierr.ne.EXA_SUCCESS) call quit('f_k extraction failed!')
+
               do j = 1, nj
                 w_sub(5)=subsp_j(j)
-                do k = 1, nk
-                  w_sub(6)=subsp_k(k)
+
+                dim2_root=nocc
+                dim2_root(2)=subsp_j(j)
+                ierr=exatns_tensor_create(P_j,"P_j",oovv_id(1:2),dim2_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('P_j creation failed!')
+                !to do: ierr=exatns_tensor_init(P_j,'identity')
+
+                dim4_root=vovv_root
+                dim4_root(2)=subsp_j(j)
+                ierr=exatns_tensor_create(vovv_j,"vovv_j",vovv_id,dim4_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('vovv_j creation failed!')
+                ierr=exatns_tensor_init(vovv_j,ZERO)
+                ierr=exatns_tensor_contract("I(c,j,a,b)+=V(c,p,a,b)*D(p,j)",vovv_j,int_t%vovv,P_j)
+                if(ierr.ne.EXA_SUCCESS) call quit('vovv_j extraction failed!')
+
+                dim4_root=vvoo_root
+                dim4_root(3)=subsp_j(j)
+                ierr=exatns_tensor_create(t2_j,"t2_j",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('t2_j creation failed!')
+                ierr=exatns_tensor_init(t2_j,ZERO)
+                ierr=exatns_tensor_contract("I(a,b,j,i)+=T(a,b,p,i)*D(p,j)",t2_j,comm_t%t2,P_j)
+                if(ierr.ne.EXA_SUCCESS) call quit('t2_j extraction failed!')
+
+                dim2_root=vo_root
+                dim2_root(2)=subsp_j(j)
+                ierr=exatns_tensor_create(t1_j,"t1_j",vo_id,dim2_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('t1_j creation failed!')
+                ierr=exatns_tensor_init(t1_j,ZERO)
+                ierr=exatns_tensor_contract("I(a,j)+=T(a,p)*D(p,j)",t1_j,comm_t%t1,P_j)
+                if(ierr.ne.EXA_SUCCESS) call quit('t1_j extraction failed!')
+
+                dim2_root=ov_root
+                dim2_root(1)=subsp_j(j)
+                ierr=exatns_tensor_create(f_j,"f_j",ov_id,dim2_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('f_j creation failed!')
+                ierr=exatns_tensor_init(f_j,ZERO)
+                ierr=exatns_tensor_contract("I(j,a)+=T(p,a)*D(p,j)",f_j,comm_t%fov,P_j)
+                if(ierr.ne.EXA_SUCCESS) call quit('f_j extraction failed!')
+
+                ! --------------------------------------- jk
+                dim4_root=nocc
+                dim4_root(2)=subsp_j(j)
+                dim4_root(4)=subsp_k(k)
+                ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('P_jk creation failed!')
+                ierr=exatns_tensor_contract("P(p,j,q,k)+=U(p,j)*V(q,k)",P_2,P_j,P_k)
+                if(ierr.ne.EXA_SUCCESS) call quit('P_jk construction failed!')
+
+                dim4_root=vvoo_root
+                dim4_root(3)=subsp_j(j)
+                dim4_root(4)=subsp_k(k)
+                ierr=exatns_tensor_create(t2_jk,"t2_jk",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('t2_jk creation failed!')
+                ierr=exatns_tensor_init(t2_jk,ZERO)
+                ierr=exatns_tensor_contract("I(a,b,j,k)+=T(a,b,p,q)*P(p,j,q,k)",t2_jk,comm_t%t2,P_2)
+                if(ierr.ne.EXA_SUCCESS) call quit('t2_jk extraction failed!')
+
+                dim4_root=ooov_root
+                dim4_root(1)=subsp_j(j)
+                dim4_root(2)=subsp_k(k)
+                ierr=exatns_tensor_create(ooov_jk,"ooov_jk",ooov_id,dim4_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('ooov_jk creation failed!')
+                ierr=exatns_tensor_init(ooov_jk,ZERO)
+                ierr=exatns_tensor_contract("I(j,k,i,a)+=V(p,q,i,a)*P(p,j,q,k)",ooov_jk,int_t%ooov,P_2)
+                if(ierr.ne.EXA_SUCCESS) call quit('ooov_jk extraction failed!')
+
+                dim4_root=oovv_root
+                dim4_root(1)=subsp_j(j)
+                dim4_root(2)=subsp_k(k)
+                ierr=exatns_tensor_create(oovv_jk,"oovv_jk",oovv_id,dim4_root,EXA_DATA_KIND_C8)
+                if(ierr.ne.EXA_SUCCESS) call quit('oovv_jk creation failed!')
+                ierr=exatns_tensor_init(oovv_jk,ZERO)
+                ierr=exatns_tensor_contract("I(j,k,a,b)+=V(p,q,a,b)*P(p,j,q,k)",oovv_jk,int_t%oovv,P_2)
+                if(ierr.ne.EXA_SUCCESS) call quit('oovv_jk extraction failed!')
+
+                ierr=exatns_tensor_destroy(P_2)
+
+
+                do i = 1, ni
+                  w_sub(6)=subsp_i(i)
+
+                  dim2_root=nocc
+                  dim2_root(2)=subsp_i(i)
+                  ierr=exatns_tensor_create(P_i,"P_i",oovv_id(1:2),dim2_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('P_i creation failed!')
+                  !to do: ierr=exatns_tensor_init(P_i,'identity')
+
+                  dim4_root=vovv_root
+                  dim4_root(2)=subsp_i(i)
+                  ierr=exatns_tensor_create(vovv_i,"vovv_i",vovv_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('vovv_i creation failed!')
+                  ierr=exatns_tensor_init(vovv_i,ZERO)
+                  ierr=exatns_tensor_contract("I(c,i,a,b)+=V(c,p,a,b)*D(p,i)",vovv_i,int_t%vovv,P_i)
+                  if(ierr.ne.EXA_SUCCESS) call quit('vovv_i extraction failed!')
+
+                  dim4_root=vvoo_root
+                  dim4_root(3)=subsp_i(i)
+                  ierr=exatns_tensor_create(t2_i,"t2_i",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t2_i creation failed!')
+                  ierr=exatns_tensor_init(t2_i,ZERO)
+                  ierr=exatns_tensor_contract("I(a,b,i,j)+=T(a,b,p,j)*D(p,i)",t2_i,comm_t%t2,P_i)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t2_i extraction failed!')
+
+                  dim2_root=vo_root
+                  dim2_root(2)=subsp_i(i)
+                  ierr=exatns_tensor_create(t1_i,"t1_i",vo_id,dim2_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t1_i creation failed!')
+                  ierr=exatns_tensor_init(t1_i,ZERO)
+                  ierr=exatns_tensor_contract("I(a,i)+=T(a,p)*D(p,i)",t1_i,comm_t%t1,P_i)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t1_i extraction failed!')
+
+                  dim2_root=ov_root
+                  dim2_root(1)=subsp_i(i)
+                  ierr=exatns_tensor_create(f_i,"f_i",ov_id,dim2_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('f_i creation failed!')
+                  ierr=exatns_tensor_init(f_i,ZERO)
+                  ierr=exatns_tensor_contract("I(i,a)+=T(p,a)*D(p,i)",f_i,comm_t%fov,P_i)
+                  if(ierr.ne.EXA_SUCCESS) call quit('f_i extraction failed!')
+
+                  ! --------------------------------------- ij
+                  dim4_root=nocc
+                  dim4_root(2)=subsp_i(i)
+                  dim4_root(4)=subsp_j(j)
+                  ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('P_ij creation failed!')
+                  ierr=exatns_tensor_contract("P(p,j,q,k)+=U(p,i)*V(q,j)",P_2,P_j,P_k)
+                  if(ierr.ne.EXA_SUCCESS) call quit('P_ij construction failed!')
+
+                  dim4_root=vvoo_root
+                  dim4_root(3)=subsp_i(i)
+                  dim4_root(4)=subsp_j(j)
+                  ierr=exatns_tensor_create(t2_ij,"t2_ij",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t2_ij creation failed!')
+                  ierr=exatns_tensor_init(t2_ij,ZERO)
+                  ierr=exatns_tensor_contract("I(a,b,i,j)+=T(a,b,p,q)*P(p,i,q,j)",t2_ij,comm_t%t2,P_2)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t2_ij extraction failed!')
+
+                  dim4_root=ooov_root
+                  dim4_root(1)=subsp_i(i)
+                  dim4_root(2)=subsp_j(j)
+                  ierr=exatns_tensor_create(ooov_ij,"ooov_ij",ooov_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ooov_ij creation failed!')
+                  ierr=exatns_tensor_init(ooov_ij,ZERO)
+                  ierr=exatns_tensor_contract("I(i,j,k,a)+=V(p,q,k,a)*P(p,i,q,j)",ooov_ij,int_t%ooov,P_2)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ooov_ij extraction failed!')
+
+                  dim4_root=oovv_root
+                  dim4_root(1)=subsp_i(i)
+                  dim4_root(2)=subsp_j(j)
+                  ierr=exatns_tensor_create(oovv_ij,"oovv_ij",oovv_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('oovv_ij creation failed!')
+                  ierr=exatns_tensor_init(oovv_ij,ZERO)
+                  ierr=exatns_tensor_contract("I(i,j,a,b)+=V(p,q,a,b)*P(p,i,q,j)",oovv_ij,int_t%oovv,P_2)
+                  if(ierr.ne.EXA_SUCCESS) call quit('oovv_ij extraction failed!')
+
+                  ierr=exatns_tensor_destroy(P_2)
+
+                  ! --------------------------------------- ki
+                  dim4_root=nocc
+                  dim4_root(2)=subsp_k(k)
+                  dim4_root(4)=subsp_i(i)
+                  ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('P_ki creation failed!')
+                  ierr=exatns_tensor_contract("P(p,k,q,i)+=U(p,k)*V(q,i)",P_2,P_j,P_k)
+                  if(ierr.ne.EXA_SUCCESS) call quit('P_ij construction failed!')
+
+                  dim4_root=vvoo_root
+                  dim4_root(3)=subsp_k(k)
+                  dim4_root(4)=subsp_i(i)
+                  ierr=exatns_tensor_create(t2_ki,"t2_ki",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t2_ki creation failed!')
+                  ierr=exatns_tensor_init(t2_ki,ZERO)
+                  ierr=exatns_tensor_contract("I(a,b,k,i+=T(a,b,p,q)*P(p,k,q,i)",t2_ki,comm_t%t2,P_2)
+                  if(ierr.ne.EXA_SUCCESS) call quit('t2_ki extraction failed!')
+
+                  dim4_root=ooov_root
+                  dim4_root(1)=subsp_k(k)
+                  dim4_root(2)=subsp_i(i)
+                  ierr=exatns_tensor_create(ooov_ki,"ooov_ki",ooov_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ooov_ki creation failed!')
+                  ierr=exatns_tensor_init(ooov_ki,ZERO)
+                  ierr=exatns_tensor_contract("I(k,i,j,a)+=V(p,q,j,a)*P(p,k,q,i)",ooov_ij,int_t%ooov,P_2)
+                  if(ierr.ne.EXA_SUCCESS) call quit('ooov_ki extraction failed!')
+
+                  dim4_root=oovv_root
+                  dim4_root(1)=subsp_k(k)
+                  dim4_root(2)=subsp_i(i)
+                  ierr=exatns_tensor_create(oovv_ki,"oovv_ki",oovv_id,dim4_root,EXA_DATA_KIND_C8)
+                  if(ierr.ne.EXA_SUCCESS) call quit('oovv_ki creation failed!')
+                  ierr=exatns_tensor_init(oovv_ki,ZERO)
+                  ierr=exatns_tensor_contract("I(k,i,a,b)+=V(p,q,a,b)*P(p,k,q,i)",oovv_ki,int_t%oovv,P_2)
+                  if(ierr.ne.EXA_SUCCESS) call quit('oovv_ki extraction failed!')
+
+                  ierr=exatns_tensor_destroy(P_2)
+
+                  !--------------------------- start computation of triples
+
                   ierr=exatns_tensor_create(w,'Wa',w_id,w_sub,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: creation of wa')
                   ierr=exatns_tensor_create(wd,'W1',w_id,w_sub,EXA_DATA_KIND_C8)
@@ -3177,14 +3423,14 @@ print *,'abe',ierr
                   ierr=exatns_tensor_init(wd,ZERO)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: init of wa')
                   ! term g^{abe}_i t^{ec}_jk
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,i,a,b)*T(e,c,j,k)",wd,int_t%vovv,comm_t%t2)
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,j,a,b)*T(e,c,k,i)",wd,int_t%vovv,comm_t%t2)
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,k,a,b)*T(e,c,i,j)",wd,int_t%vovv,comm_t%t2)
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,i,a,b)*T(e,c,j,k)",wd,vovv_i,t2_jk)
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,j,a,b)*T(e,c,k,i)",wd,vovv_j,t2_ki)
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(e,k,a,b)*T(e,c,i,j)",wd,vovv_k,t2_ij)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 11')
                   ! term g^{abe}_i t^{ec}_jk
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(i,j,l,a)*T(b,c,k,l)",wd,int_t%ooov,comm_t%t2)
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(j,k,l,a)*T(b,c,i,l)",wd,int_t%ooov,comm_t%t2) 
-                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(k,i,l,a)*T(b,c,j,l)",wd,int_t%ooov,comm_t%t2)
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(i,j,l,a)*T(b,c,k,l)",wd,ooov_ij,t2_k)
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(j,k,l,a)*T(b,c,i,l)",wd,ooov_jk,t2_i) 
+                  ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=V+(k,i,l,a)*T(b,c,j,l)",wd,ooov_ki,t2_j)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 12')
 
                   ! antisymmetrization
@@ -3213,14 +3459,14 @@ print *,'abe',ierr
 
                   ! Form Y-intermediate and calculate 5th order (T) energy contribution
                   ierr=exatns_tensor_init(temp,ZERO)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(i,j,a,b)*T(c,k)",temp,int_t%oovv,comm_t%t1)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(j,k,a,b)*T(c,i)",temp,int_t%oovv,comm_t%t1)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(k,i,a,b)*T(c,j)",temp,int_t%oovv,comm_t%t1)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(i,j,a,b)*T(c,k)",temp,oovv_ij,t1_k)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(j,k,a,b)*T(c,i)",temp,oovv_jk,t1_i)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(k,i,a,b)*T(c,j)",temp,oovv_ki,t1_j)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 21')
 
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*T(k,c)",temp,comm_t%t2,comm_t%fov)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,j,k)*T(i,c)",temp,comm_t%t2,comm_t%fov)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,k,i)*T(j,c)",temp,comm_t%t2,comm_t%fov)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*T(k,c)",temp,t2_ij,f_k)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,j,k)*T(i,c)",temp,t2_jk,f_i)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,k,i)*T(j,c)",temp,t2_ki,f_j)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 22')
 
                   ! symmetrization and copy
@@ -3240,35 +3486,36 @@ print *,'abe',ierr
 
                   !Form Y-intermediate and calculate 5th order -T energy contribution
                   ierr=exatns_tensor_init(temp,ZERO)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*T(c,k)",temp,comm_t%t2,comm_t%t1)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,j,k)*T(c,i)",temp,comm_t%t2,comm_t%t1)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,k,i)*T(c,j)",temp,comm_t%t2,comm_t%t1)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*T(c,k)",temp,t2_ij,t1_k)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,j,k)*T(c,i)",temp,t2_jk,t1_i)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,k,i)*T(c,j)",temp,t2_ki,t1_j)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 31')
-                  temp2_sub(3)=subsp_i(i)
-                  temp2_sub(4)=subsp_j(j)
-                  ierr=exatns_tensor_create(temp2,'Temp2',vvoo_id,temp2_sub,EXA_DATA_KIND_C8)
+                  dim4_root=vvoo_root
+                  dim4_root(3)=subsp_i(i)
+                  dim4_root(4)=subsp_j(j)
+                  ierr=exatns_tensor_create(temp2,'Temp2',vvoo_id,dim4_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(temp2,ZERO)
-                  ierr=exatns_tensor_contract("V(a,b,i,j)+=K(a,i)*L(b,j)",temp2,comm_t%t1,comm_t%t1)
-                  ierr=exatns_tensor_contract("V(a,b,i,j)+=K(a,j)*L(b,i)",temp2,comm_t%t1,comm_t%t1,MINUS_ONE)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*W(c,k)",temp,temp2,comm_t%t1,ONE_THIRD)
+                  ierr=exatns_tensor_contract("V(a,b,i,j)+=K(a,i)*L(b,j)",temp2,t1_i,t1_j)
+                  ierr=exatns_tensor_contract("V(a,b,i,j)+=K(a,j)*L(b,i)",temp2,t1_j,t1_i,MINUS_ONE)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*W(c,k)",temp,temp2,t1_k,ONE_THIRD)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 32')
                   ierr=exatns_tensor_destroy(temp2)
-                  temp2_sub(3)=subsp_j(j)
-                  temp2_sub(4)=subsp_k(k)
-                  ierr=exatns_tensor_create(temp2,'Temp2',vvoo_id,temp2_sub,EXA_DATA_KIND_C8)
+                  dim4_root(3)=subsp_j(j)
+                  dim4_root(4)=subsp_k(k)
+                  ierr=exatns_tensor_create(temp2,'Temp2',vvoo_id,dim4_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(temp2,ZERO)
-                  ierr=exatns_tensor_contract("V(a,b,j,k)+=K(a,j)*L(b,k)",temp2,comm_t%t1,comm_t%t1)
-                  ierr=exatns_tensor_contract("V(a,b,j,k)+=K(a,k)*L(b,j)",temp2,comm_t%t1,comm_t%t1,MINUS_ONE)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,j,k)*W(c,i)",temp,temp2,comm_t%t1,ONE_THIRD)
+                  ierr=exatns_tensor_contract("V(a,b,j,k)+=K(a,j)*L(b,k)",temp2,t1_j,t1_k)
+                  ierr=exatns_tensor_contract("V(a,b,j,k)+=K(a,k)*L(b,j)",temp2,t1_k,t1_j,MINUS_ONE)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,j,k)*W(c,i)",temp,temp2,t1_i,ONE_THIRD)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 32')
                   ierr=exatns_tensor_destroy(temp2)
-                  temp2_sub(3)=subsp_k(k)
-                  temp2_sub(4)=subsp_i(i)
-                  ierr=exatns_tensor_create(temp2,'Temp2',vvoo_id,temp2_sub,EXA_DATA_KIND_C8)
+                  dim4_root(3)=subsp_k(k)
+                  dim4_root(4)=subsp_i(i)
+                  ierr=exatns_tensor_create(temp2,'Temp2',vvoo_id,dim4_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(temp2,ZERO)
-                  ierr=exatns_tensor_contract("V(a,b,k,i)+=K(a,k)*L(b,i)",temp2,comm_t%t1,comm_t%t1)
-                  ierr=exatns_tensor_contract("V(a,b,k,i)+=K(a,i)*L(b,k)",temp2,comm_t%t1,comm_t%t1,MINUS_ONE)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,k,i)*W(c,j)",temp,temp2,comm_t%t1,ONE_THIRD)
+                  ierr=exatns_tensor_contract("V(a,b,k,i)+=K(a,k)*L(b,i)",temp2,t1_k,t1_i)
+                  ierr=exatns_tensor_contract("V(a,b,k,i)+=K(a,i)*L(b,k)",temp2,t1_i,t1_k,MINUS_ONE)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,k,i)*W(c,j)",temp,temp2,t1_j,ONE_THIRD)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 32')
                   ierr=exatns_tensor_destroy(temp2)
 
@@ -3294,10 +3541,43 @@ print *,'abe',ierr
                   ierr=exatns_tensor_destroy(w)
                   ierr=exatns_tensor_destroy(y)
                   ierr=exatns_tensor_destroy(temp)
-                  
+
+                  ierr=exatns_tensor_destroy(t2_ij)
+                  ierr=exatns_tensor_destroy(ooov_ij)
+                  ierr=exatns_tensor_destroy(oovv_ij)
+
+                  ierr=exatns_tensor_destroy(t2_ki)
+                  ierr=exatns_tensor_destroy(ooov_ki)
+                  ierr=exatns_tensor_destroy(oovv_ki)
+
+                  ierr=exatns_tensor_destroy(P_i)
+                  ierr=exatns_tensor_destroy(vovv_i)
+                  ierr=exatns_tensor_destroy(t2_i)
+                  ierr=exatns_tensor_destroy(t1_i)
+                  ierr=exatns_tensor_destroy(f_i)
+
                   if (exa_input%moint_scheme==0) exit outer
-                end do 
+
+                end do
+
+                ierr=exatns_tensor_destroy(t2_jk)
+                ierr=exatns_tensor_destroy(ooov_jk)
+                ierr=exatns_tensor_destroy(oovv_jk)
+
+                ierr=exatns_tensor_destroy(P_j)
+                ierr=exatns_tensor_destroy(vovv_j)
+                ierr=exatns_tensor_destroy(t2_j)
+                ierr=exatns_tensor_destroy(t1_j)
+                ierr=exatns_tensor_destroy(f_j)
+
               end do
+
+              ierr=exatns_tensor_destroy(P_k)
+              ierr=exatns_tensor_destroy(vovv_k)
+              ierr=exatns_tensor_destroy(t2_k)
+              ierr=exatns_tensor_destroy(t1_k)
+              ierr=exatns_tensor_destroy(f_k)
+
               ierr=exatns_tensor_get_scalar(res_tensor,res_val)
               if (exa_input%print_level >-1) write (*,*)  'block ',i,' of ',ni,' done'
               if (exa_input%print_level >-1) write (*,*)  'after this block, t3 = ',t_energy
