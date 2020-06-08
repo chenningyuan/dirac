@@ -679,7 +679,7 @@ module talsh_cc
           ierr=talsh_tensor_init(s2_tensor)
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2 ",tensor_norm2(s2_tensor)
 
-          if (iccsd==1) then
+          if (iccsd==1) then  ! Condition added not to calculate tau and tauCC2 twice
  !         creation of tau-like intermediates for cc2
  !
  !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
@@ -1606,10 +1606,10 @@ module talsh_cc
 !-------------------------------------------------------
 !         term 6: S(ij,ab) += P(a,b) V(ij,ae) * G(e,b) |    ! Not Calculated in CC2
 !-------------------------------------------------------
-          if (shunt_CC2) then
-            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
-            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
-          end if
+!          if (shunt_CC2) then
+!            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
+!            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
+!          end if
 !-------------------------------------------------------
 !         term 7: S(ij,ab) -= P(a,b) L(m,a) * W(ij,mb) |
 !-------------------------------------------------------
@@ -1622,10 +1622,10 @@ module talsh_cc
 !-------------------------------------------------------
 !         term 8: S(ij,ab) -= P(i,j) V(im,ab) * G(j,m) |   ! Not Calculated in CC2
 !-------------------------------------------------------
-          if (shunt_CC2) then
-            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
-            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
-          end if
+!          if (shunt_CC2) then
+!            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
+!            ierr=talsh_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
+!          end if
 !----------------------------------------------------------
 !         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |          
 !----------------------------------------------------------
