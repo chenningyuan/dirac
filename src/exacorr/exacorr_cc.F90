@@ -3037,8 +3037,8 @@ print *,'abe',ierr
 
             integer(INTL),dimension(2) :: ov_root, vo_root, dim2_root
             integer(INTD),dimension(2) :: ov_id, vo_id
-            integer(INTL),dimension(4) :: ooov_root, vovv_root, vvoo_root, oovv_root, dim4_root
-            integer(INTD),dimension(4) :: ooov_id,   vovv_id,   vvoo_id,   oovv_id, oooo_id
+            integer(INTL),dimension(4) :: ooov_root, vovv_root, oovv_root, vvoo_root, dim4_root
+            integer(INTD),dimension(4) :: ooov_id, vovv_id, vvoo_id, oovv_id, oooo_id
             integer(INTL),dimension(6) :: w_sub
             integer(INTD),dimension(6) :: w_id
 
@@ -3069,8 +3069,8 @@ print *,'abe',ierr
 
             call comm_t%fov%get_space_ids(ov_id,ov_root,ierr)
             call comm_t%fov%get_dims(ov_root,rank,ierr)
-            call comm_t%t1%get_space_ids(ov_id,ov_root,ierr)
-            call comm_t%t1%get_dims(ov_root,rank,ierr)
+            call comm_t%t1%get_space_ids(vo_id,vo_root,ierr)
+            call comm_t%t1%get_dims(vo_root,rank,ierr)
             
             call int_t%ooov%get_space_ids(ooov_id,ooov_root,ierr)
             call int_t%ooov%get_dims(ooov_root,rank,ierr)
@@ -3080,7 +3080,18 @@ print *,'abe',ierr
             if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting ids')
             call int_t%oovv%get_dims(oovv_root,rank,ierr)
             if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting dims')
-            oooo_id=oovv_id(1)
+            
+            nocc=oovv_root(1)
+            nvir=oovv_root(3)
+            idocc=oovv_id(1)
+            idvir=oovv_id(3)
+            
+            oooo_id=idocc
+            vvoo_id=idocc
+            vvoo_id(1:2)=idvir
+            vvoo_root=nocc
+            vvoo_root(1:2)=nvir
+
 
             if (exa_input%print_level >0) then
                write(*,*) 'ov, id:',ov_id,', root: ',ov_root
@@ -3088,12 +3099,8 @@ print *,'abe',ierr
                write(*,*) 'ooov, id:',ooov_id,', root: ',ooov_root
                write(*,*) 'vovv, id:',vovv_id,', root: ',vovv_root
                write(*,*) 'oovv, id:',oovv_id,', root: ',oovv_root
+               write(*,*) 'vvoo, id:',vvoo_id,', root: ',vvoo_root
             end if
-
-            nocc=oovv_root(1)
-            nvir=oovv_root(3)
-            idocc=oovv_id(1)
-            idvir=oovv_id(3)
 
 !           Initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(res_tensor,"res_tensor",EXA_DATA_KIND_C8)
@@ -3133,12 +3140,11 @@ print *,'abe',ierr
                   exit
                 end if
               end do
-              i=3
               call occ_space%get_level_composition(int(i,INTD),subsp,n_subsp,ierr)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
               if (exa_input%print_level >-1) then
                 write(*,*) ' --- using level =',i
-                write(*,*) ' --- splitting subblocks: 1+2 index, num. el. =',n_subsp
+                write(*,*) ' --- splitting subblocks: 1-3 index, num. el. =',n_subsp
                 write(*,*) ' --- size=',nocc/n_subsp ,', subsp.=',subsp(1:n_subsp)
               end if
               
@@ -3171,13 +3177,15 @@ print *,'abe',ierr
             end if
 
             outer: do k = 1, nk
-              w_sub(4)=subsp_k(k)
+              w_sub(6)=subsp_k(k)
               
               dim2_root=nocc
               dim2_root(2)=subsp_k(k)
               ierr=exatns_tensor_create(P_k,"P_k",oovv_id(1:2),dim2_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('P_k creation failed!')
-              !to do ierr=exatns_tensor_init(P_k,'identity')
+              ierr=exatns_tensor_init(P_k,ZERO)
+              ierr=exatns_tensor_transform(P_k,'OneDiag')
+              if (exa_input%print_level.gt.2) ierr=exatns_tensor_traverse(P_k,'PrintTensor')
 
               dim4_root=vovv_root
               dim4_root(2)=subsp_k(k)
@@ -3218,7 +3226,8 @@ print *,'abe',ierr
                 dim2_root(2)=subsp_j(j)
                 ierr=exatns_tensor_create(P_j,"P_j",oovv_id(1:2),dim2_root,EXA_DATA_KIND_C8)
                 if(ierr.ne.EXA_SUCCESS) call quit('P_j creation failed!')
-                !to do: ierr=exatns_tensor_init(P_j,'identity')
+                ierr=exatns_tensor_init(P_j,ZERO)
+                ierr=exatns_tensor_transform(P_j,'OneDiag')
 
                 dim4_root=vovv_root
                 dim4_root(2)=subsp_j(j)
@@ -3292,13 +3301,14 @@ print *,'abe',ierr
 
 
                 do i = 1, ni
-                  w_sub(6)=subsp_i(i)
+                  w_sub(4)=subsp_i(i)
 
                   dim2_root=nocc
                   dim2_root(2)=subsp_i(i)
                   ierr=exatns_tensor_create(P_i,"P_i",oovv_id(1:2),dim2_root,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('P_i creation failed!')
-                  !to do: ierr=exatns_tensor_init(P_i,'identity')
+                  ierr=exatns_tensor_init(P_i,ZERO)
+                  ierr=exatns_tensor_transform(P_i,'OneDiag')
 
                   dim4_root=vovv_root
                   dim4_root(2)=subsp_i(i)
@@ -3338,7 +3348,7 @@ print *,'abe',ierr
                   dim4_root(4)=subsp_j(j)
                   ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ij creation failed!')
-                  ierr=exatns_tensor_contract("P(p,j,q,k)+=U(p,i)*V(q,j)",P_2,P_j,P_k)
+                  ierr=exatns_tensor_contract("P(p,i,q,j)+=U(p,i)*V(q,j)",P_2,P_i,P_j)
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ij construction failed!')
 
                   dim4_root=vvoo_root
@@ -3375,9 +3385,10 @@ print *,'abe',ierr
                   dim4_root(2)=subsp_k(k)
                   dim4_root(4)=subsp_i(i)
                   ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
+                  !to do: ierr=exatns_tensor_init(P_i,'identity')
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ki creation failed!')
-                  ierr=exatns_tensor_contract("P(p,k,q,i)+=U(p,k)*V(q,i)",P_2,P_j,P_k)
-                  if(ierr.ne.EXA_SUCCESS) call quit('P_ij construction failed!')
+                  ierr=exatns_tensor_contract("P(p,k,q,i)+=U(p,k)*V(q,i)",P_2,P_k,P_i)
+                  if(ierr.ne.EXA_SUCCESS) call quit('P_ki construction failed!')
 
                   dim4_root=vvoo_root
                   dim4_root(3)=subsp_k(k)
@@ -3385,7 +3396,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_create(t2_ki,"t2_ki",vvoo_id,dim4_root,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('t2_ki creation failed!')
                   ierr=exatns_tensor_init(t2_ki,ZERO)
-                  ierr=exatns_tensor_contract("I(a,b,k,i+=T(a,b,p,q)*P(p,k,q,i)",t2_ki,comm_t%t2,P_2)
+                  ierr=exatns_tensor_contract("I(a,b,k,i)+=T(a,b,p,q)*P(p,k,q,i)",t2_ki,comm_t%t2,P_2)
                   if(ierr.ne.EXA_SUCCESS) call quit('t2_ki extraction failed!')
 
                   dim4_root=ooov_root
@@ -3394,7 +3405,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_create(ooov_ki,"ooov_ki",ooov_id,dim4_root,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('ooov_ki creation failed!')
                   ierr=exatns_tensor_init(ooov_ki,ZERO)
-                  ierr=exatns_tensor_contract("I(k,i,j,a)+=V(p,q,j,a)*P(p,k,q,i)",ooov_ij,int_t%ooov,P_2)
+                  ierr=exatns_tensor_contract("I(k,i,j,a)+=V(p,q,j,a)*P(p,k,q,i)",ooov_ki,int_t%ooov,P_2)
                   if(ierr.ne.EXA_SUCCESS) call quit('ooov_ki extraction failed!')
 
                   dim4_root=oovv_root
@@ -3579,7 +3590,7 @@ print *,'abe',ierr
               ierr=exatns_tensor_destroy(f_k)
 
               ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-              if (exa_input%print_level >-1) write (*,*)  'block ',i,' of ',ni,' done'
+              if (exa_input%print_level >-1) write (*,*)  'block ',k,' of ',nk,' done'
               if (exa_input%print_level >-1) write (*,*)  'after this block, t3 = ',t_energy
             end do outer
 
