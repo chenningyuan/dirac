@@ -50,7 +50,7 @@ module module_interest_osr
   integer, public, parameter :: ncc1 = 120                 !(lmx1*(lmx1+1)*(lmx1+2))/6 
   integer, public, parameter :: ncc2 = 680                 !(lmx2*(lmx2+1)*(lmx2+2))/6 
   integer, public, parameter :: nccx = 2205                !max( ncc(lmx1-2)*ncc(lmx-2)*5, ncc(lmx1)*ncc(lmx1) )
-  real(8), public, parameter :: pi   = 3.141592653589793d0 !4.0d0*datan(1.0d0)
+  real(8), public, parameter :: pi   = 3.14159265358979323846d0 !4.0d0*datan(1.0d0)
   integer, public, parameter :: ncc(lmx1) = (/1,3,6,10,15,21,28,36/)
   integer, public, parameter :: nsc(lmx1) = (/1,3,5, 7, 9,11,13,15/)
 

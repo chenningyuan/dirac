@@ -202,10 +202,10 @@ module codata
   real(8), parameter, public :: xtev     = xtj/echarge
 !                               xkjmol   = 2.9195...d3
   real(8), parameter, public :: xkjmol   = xtj*xfmol*1.0d-3
-!                               xkcmol   = 697.7772...d0
-  real(8), parameter, public :: xkcmol   = xkjmol/4.184d0
 !                               xtkjml   = 2.9195...d3
   real(8), parameter, public :: xtkjml   = xkjmol
+!                               xkcmol   = 697.7772...d0
+  real(8), parameter, public :: xkcmol   = xkjmol/4.184d0
 !                               xtkcml   = 697.7772...d0
   real(8), parameter, public :: xtkcml   = xkcmol
 !                               xtnm     = 45.5788...d0
