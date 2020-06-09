@@ -61,6 +61,14 @@ module exacorr_tensor_methods
           procedure, public:: apply=>set_diagonal_apply
         end type set_diagonal_t
 
+        !set projecton matrix
+        type, extends(tens_method_uni_t), public:: set_projection_t
+         complex(8), private :: constant
+         contains
+          procedure, public:: set_projection_init
+          procedure, public:: apply=>set_projection_apply
+        end type set_projection_t
+
         !set orbital energies on diagonal
         type, extends(tens_method_uni_t), public:: set_energy_t
          real(8), allocatable, private :: eps_occ(:),eps_vir(:)
@@ -616,6 +624,9 @@ module exacorr_tensor_methods
          tens=tensor%get_dense_adapter(ierr)
          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
          rank=tens%num_dims
+
+         if (rank.lt.2) call quit('Error: dimension < 2 in set_diagonal_apply')
+         if (rank.gt.4) call quit('Error: dimension > 4 in set_diagonal_apply')
           
          ierr=diagonal_set(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, this%constant)
 
@@ -633,8 +644,8 @@ module exacorr_tensor_methods
           integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
           complex(8), intent(in)    :: constant
 
-          integer            :: po, qo, ro, pa, qa, ra
-          complex(8),pointer :: h2_tens(:,:), h3_tens(:,:,:)
+          integer            :: po, qo, ro, so, pa, qa, ra, sa
+          complex(8),pointer :: h2_tens(:,:), h3_tens(:,:,:), h4_tens(:,:,:,:)
           
           ierr=0
 
@@ -650,6 +661,7 @@ module exacorr_tensor_methods
                   endif
                 end do
             end do
+
           else if (rank==3) then
             call c_f_pointer(tens_body,h3_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
 
@@ -668,11 +680,109 @@ module exacorr_tensor_methods
               end do
             end do
 
+          else if (rank==4) then
+            call c_f_pointer(tens_body,h4_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
+
+            do po = 1, tens_dims(4)
+              pa = tens_bases(4) + po - 1
+              do qo = 1, tens_dims(3)
+                qa = tens_bases(3) + qo - 1
+                if (pa.eq.qa) then
+                  do ro = 1, tens_dims(2)
+                    ra = tens_bases(2) + ro - 1
+                    if (qa.eq.ra) then
+                      do so = 1, tens_dims(1)
+                        sa = tens_bases(1) + so - 1
+                        if (ra.eq.sa) then
+                          h4_tens(ro, qo, po, so) = constant
+                        endif
+                      end do
+                    end if
+                  end do
+                end if
+              end do
+            end do
+
           else
-            call quit('Error: dimension not 2 or 3 in fill_diagonal')
+            call quit('Error: only dimensions 2-4 in fill_diagonal')
           end if
 
         end function diagonal_set
+
+        subroutine set_projection_init(this, const)
+
+          class(set_projection_t), intent(out)   :: this
+          complex(8), intent(in) :: const
+
+          this%constant=const
+
+        end subroutine set_projection_init
+
+        function set_projection_apply(this,tensor,scalar) result(ierr)
+
+         implicit none
+         integer(INTD):: ierr,rank
+         class(set_projection_t), intent(in)  :: this
+         class(tens_rcrsv_t), intent(inout)   :: tensor
+         complex(8), intent(inout), optional  :: scalar
+         type(tens_dense_t):: tens
+
+         ierr=0
+         tens=tensor%get_dense_adapter(ierr)
+         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+         rank=tens%num_dims
+
+         if (rank.ne.4) call quit('Error: omly dimension 4 in set_projection_apply')
+          
+         ierr=projection_set(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, this%constant)
+
+        end function set_projection_apply
+
+        function projection_set(tens_body,data_kind,tens_dims,tens_bases, rank, constant) result (ierr)
+          ! routine to fill the diagonal of a matrix
+
+          implicit none
+
+          integer(INTD)             :: ierr, rank
+          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(INTD), value      :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+          complex(8), intent(in)    :: constant
+
+          integer            :: po, qo, ro, so, pa, qa, ra, sa
+          complex(8),pointer :: h4_tens(:,:,:,:)
+          
+          ierr=0
+
+          h4_tens=ZERO
+
+          if (rank==4) then
+            call c_f_pointer(tens_body,h4_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
+
+            do po = 1, tens_dims(4)
+              pa = tens_bases(4) + po - 1
+              do qo = 1, tens_dims(3)
+                qa = tens_bases(3) + qo - 1
+                if (pa.eq.qa) then
+                  do ro = 1, tens_dims(2)
+                    ra = tens_bases(2) + ro - 1
+                    do so = 1, tens_dims(1)
+                      sa = tens_bases(1) + so - 1
+                      if (sa.eq.ra) then
+                        h4_tens(ro, qo, po, so) = constant
+                      endif
+                    end do
+                  end do
+                end if
+              end do
+            end do
+
+          else
+            call quit('Error: only dimension 4 in projection_set')
+          end if
+
+        end function projection_set
 
         subroutine set_1el_init(this,mo1_list,nmo1,mo2_list,nmo2, min_occ)
 
