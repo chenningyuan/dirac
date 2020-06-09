@@ -3574,9 +3574,6 @@ c#include "dcbbas.h"
 !
 !             ...declare constant(s) in code
 !
-!#    DATA CLIGHT/2.99792458D0/
-!#    DATA ECHARG/1.6021892D0/
-!#    DATA BOHR/5.2917706D-1/
       DATA IONE/1/
       DATA DM1/-1.0D0/
       DATA KREAL/1/
