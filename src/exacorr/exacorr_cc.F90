@@ -250,7 +250,7 @@ module exacorr_cc
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
-                !call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
+                call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
                 !call t3_energy(t_energy,comm_t,int_t,vir_space,exa_input)
                 call t3_energy_occ(t_energy,comm_t,int_t,occ_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
@@ -3098,14 +3098,13 @@ print *,'abe',ierr
             vvoo_root=nocc
             vvoo_root(1:2)=nvir
 
-
-            if (exa_input%print_level >0) then
-               write(*,*) 'ov, id:',ov_id,', root: ',ov_root
-               write(*,*) 'vo, id:',vo_id,', root: ',vo_root
-               write(*,*) 'ooov, id:',ooov_id,', root: ',ooov_root
-               write(*,*) 'vovv, id:',vovv_id,', root: ',vovv_root
-               write(*,*) 'oovv, id:',oovv_id,', root: ',oovv_root
-               write(*,*) 'vvoo, id:',vvoo_id,', root: ',vvoo_root
+            if (exa_input%print_level>4) then
+               write(*,*) ' --- ov,   id:',ov_id,', root: ',ov_root
+               write(*,*) ' --- vo,   id:',vo_id,', root: ',vo_root
+               write(*,*) ' --- ooov, id:',ooov_id,', root: ',ooov_root
+               write(*,*) ' --- vovv, id:',vovv_id,', root: ',vovv_root
+               write(*,*) ' --- oovv, id:',oovv_id,', root: ',oovv_root
+               write(*,*) ' --- vvoo, id:',vvoo_id,', root: ',vvoo_root
             end if
 
 !           Initialize scalars that are to be used as tensors in contractions
@@ -3121,16 +3120,15 @@ print *,'abe',ierr
 !           has to be adjusted
             call interface_mpi_comm_size(global_communicator, nr_proc)
 
-
             !get memory information for splitting
             i=nr_proc*exa_input%talsh_buff
             est=(real(nvir)**3*16.0/1000.0**3+1.0)*6.0
             nseg=((real(i)/2.0)/est)**(1.0/3.0)
-            if (exa_input%print_level >0) then
-              write(*,*) '=== Number of processes:          ',nr_proc
-              write(*,*) '=== resulting memory (TALSH_buff):',i
-              write(*,*) '=== required memory (6*VVV):      ',est
-              write(*,*) '=== size of possible segments:  ',nseg
+            if (exa_input%print_level > 4) then
+              write(*,*) ' --- Number of processes:           ',nr_proc
+              write(*,*) ' --- resulting memory (TALSH_buff): ',i
+              write(*,*) ' --- required memory (6*VVV):       ',est
+              write(*,*) ' --- size of possible segments:     ',nseg
             end if
 
             ! the occupied index are always split
@@ -3149,9 +3147,10 @@ print *,'abe',ierr
               call occ_space%get_level_composition(int(i,INTD),subsp,n_subsp,ierr)
               if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: getting level composition')
               if (exa_input%print_level >-1) then
-                write(*,*) ' --- using level =',i
-                write(*,*) ' --- splitting subblocks: 1-3 index, num. el. =',n_subsp
-                write(*,*) ' --- size=',nocc/n_subsp ,', subsp.=',subsp(1:n_subsp)
+                write(*,*) ' --- splitting occupied spaces: 1-3 index '
+                write(*,*) ' --- using level: ',i
+                write(*,*) ' --- size el.   : ',nocc/n_subsp,', number el.: ',n_subsp
+                write(*,*) ' --- subspace   : ',subsp(1:n_subsp)
               end if
               
               ni=n_subsp
@@ -3281,9 +3280,11 @@ print *,'abe',ierr
                 dim4_root(4)=subsp_k(k)
                 ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
                 if(ierr.ne.EXA_SUCCESS) call quit('P_jk creation failed!')
-                ierr=exatns_tensor_init(P_2,'SetProj')
+                ierr=exatns_tensor_init(P_2,ZERO)
+                ierr=exatns_tensor_transform(P_2,'SetProj')
                 if(ierr.ne.EXA_SUCCESS) call quit('P_jk construction failed!')
                 if(exa_input%print_level > 8) write(*,*) " P_2 =",print_tensornorm2(P_2)
+                if (exa_input%print_level.gt.8) ierr=exatns_tensor_traverse(P_2,'PrintTensor')
 
                 dim4_root=vvoo_root
                 dim4_root(3)=subsp_j(j)
@@ -3367,7 +3368,8 @@ print *,'abe',ierr
                   dim4_root(4)=subsp_j(j)
                   ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ij creation failed!')
-                  ierr=exatns_tensor_init(P_2,'SetProj')
+                  ierr=exatns_tensor_init(P_2,ZERO)
+                  ierr=exatns_tensor_transform(P_2,'SetProj')
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ij construction failed!')
                   if(exa_input%print_level > 8) write(*,*) " P_2 =",print_tensornorm2(P_2)
 
@@ -3406,7 +3408,8 @@ print *,'abe',ierr
                   dim4_root(4)=subsp_i(i)
                   ierr=exatns_tensor_create(P_2,"P_2",oooo_id,dim4_root,EXA_DATA_KIND_C8)
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ki creation failed!')
-                  ierr=exatns_tensor_init(P_2,'SetProj')
+                  ierr=exatns_tensor_init(P_2,ZERO)
+                  ierr=exatns_tensor_transform(P_2,'SetProj')
                   if(ierr.ne.EXA_SUCCESS) call quit('P_ki construction failed!')
                   if(exa_input%print_level > 8) write(*,*) " P_2 =",print_tensornorm2(P_2)
 
@@ -3564,7 +3567,6 @@ print *,'abe',ierr
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 35')
                   ierr=exatns_tensor_get_scalar(res_tensor,res_val)
                   t_energy(3)=t_energy(3) - res_val
-
 
                   if (exa_input%print_level >8) write(*,*) 't3 = ', t_energy
 
