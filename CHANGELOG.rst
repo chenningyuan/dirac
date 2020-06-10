@@ -6,8 +6,10 @@
 
 New features:
 
-- Improved start potential with far fewer functions and better accuracy. Contributors: Lucas Visscher.
-  Definite reference will follow (see for now: arXiv:2002.02587)
+- Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
+   S. Lehtola,  L. Visscher and  E. Engel.
+   Efficient implementation of the superposition of atomic potentials initial guess for electronic structure calculations in Gaussian basis sets.
+   J. Chem. Phys. 152, 144105 (2020); http://dx.doi.org/10.1063/5.0004046 doi: 10.1063/5.0004046
 - Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
    I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
    Theoretical study of the relativistic molecular rotational g-tensor.
@@ -16,14 +18,15 @@ New features:
 
 Revised features:
 
-- Gauge origin (.GAUGEO and .GO ANG) can now ONLY be set under \*\*HAMILTONIAN.
-- Phase and Dipole origins (.PHASEO and .DIPORG, respectively) can now ONLY be set under \*\*HAMILTONIAN.
+- Gauge origin (.GAUGEO and .GO ANG) now can only be set under \*\*HAMILTONIAN.
+- Phase and dipole origins (.PHASEO and .DIPORG, respectively) now can only be set under \*\*HAMILTONIAN.
 
 New defaults:
 
-- One-electron operator ANGMOM's origin was moved from gauge-origin to the molecular center of mass.
+- One-electron operator ANGMOM's origin was moved from the gauge-origin to the molecular center of mass.
 - The CODATA2018 set of physical constants is now used as default (taken from http://physics.nist.gov/constants). Before this version, CODATA1998 was default.
 
+-----------------------------------------------------------------------------------------------------
 
 19.0 (2019-12-12)
 -----------------
@@ -70,6 +73,7 @@ Documentation:
 
 - Restore local build of Sphinx documentation.
 
+-----------------------------------------------------------------------------------------------------
 
 18.0 (2018-12-13)
 -----------------
@@ -118,7 +122,7 @@ New features:
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
 
  Reference:
- E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jense:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+ E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
@@ -207,6 +211,7 @@ Bug fixes:
 - Bugfix: restored "make install" target.
 - Bugfix: Test reladc_fano does not report failure if Stieltjes is deactivated.
 
+-----------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------
@@ -236,6 +241,7 @@ Bug fixes:
 - Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
 - Configuration framework uses [Autocmake](http://autocmake.org).
 
+-----------------------------------------------------------------------------------------------------
 
 14.1 (2015-07-20)
 -----------------
