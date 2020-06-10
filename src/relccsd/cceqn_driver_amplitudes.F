@@ -153,7 +153,7 @@ C
 C
       IF (FOCKSP) THEN
 C       Adding folded diagrams
-        CALL FOLDED(ICURFSS,IHEQ,T1,T2,EPS,FVO,
+        CALL FOLDED(ICURFSS,T1,T2,EPS,FVO,
      &              BUF1,BUF2,BUF3,S1,S2)
       ENDIF
 C
