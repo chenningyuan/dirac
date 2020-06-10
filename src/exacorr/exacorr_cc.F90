@@ -252,6 +252,8 @@ module exacorr_cc
               if (exa_input%do_triples .and. .not.CC2) then
                 !call t3_energy_old(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
                 call t3_energy(t_energy,comm_t,int_t,occ_space,exa_input)
+                call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
+                                    t1diag=t1diag, t_energy=t_energy)
                 call t3_energy_occ(t_energy,comm_t,int_t,occ_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)

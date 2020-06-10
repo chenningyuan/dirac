@@ -770,7 +770,7 @@ module exacorr_tensor_methods
                     do so = 1, tens_dims(1)
                       sa = tens_bases(1) + so - 1
                       if (sa.eq.ra) then
-                        h4_tens(ro, qo, po, so) = constant
+                        h4_tens(so, ro, qo, po) = constant
                       endif
                     end do
                   end do
