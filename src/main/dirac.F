@@ -610,8 +610,9 @@ C
             NGASSP(1,J) = NINT(XELEC)
             NGASSP(2,J) = NINT(XELEC)
          END DO
-      ELSE IF (CISELECT .EQ. 'FULLCI') THEN
-C        ... do a full CI in the active space
+      ELSE IF (CISELECT .EQ. 'CASCI') THEN
+C        ... do a full CI in the active space (open shell orbitals);
+C            equivalent to RESOLVE but setting information for GASCIP program
          NGAS_DC  = 1
          OPT_THR_CVEC = 1.0D-4
 

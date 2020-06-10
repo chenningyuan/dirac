@@ -19,12 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-#ifdef UNDEF
-/* Comdeck log */
-930309-Sheela Kirpekar: added MVLINT and DWNINT
-930726-hjaaj: SDINT: factor DFACSD = (GFAC/D2)
-#endif
-C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
      &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
@@ -518,7 +512,7 @@ C
       END IF
 C
       IF (IPRINT .GT. 5) THEN
-            WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
+         WRITE (LUPRI,'(A,I5)') ' NBAST  ', NBAST
          WRITE (LUPRI,'(A,I5)') ' NELMNT ', NELMNT
          WRITE (LUPRI,'(A,I5)') ' INTTYP ', INTTYP
          WRITE (LUPRI,'(A,I5)') ' NOPTYP ', NOPTYP
@@ -1994,14 +1988,6 @@ Cdj mixed bra-ket part
             DIFOBZ = GAGORG(3) - CORBZ
             CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
-
-
-
-
-
-
-
-
          END IF
   200    CONTINUE
   100 CONTINUE
@@ -2523,7 +2509,7 @@ C
 C  /* Deck mvlint */
       SUBROUTINE MVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C     shki. jan. 93 (based on KININT)
+C     Sheela Kirpekar. jan. 93 (based on KININT)
 C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
@@ -4728,7 +4714,7 @@ C
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
 C
-C     shki, Jan. 93 (based on FRMINT tuh feb 91)
+C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
       use codata
 #include "implicit.h"

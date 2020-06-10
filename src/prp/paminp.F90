@@ -577,13 +577,14 @@
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 !MI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
+
 !gosia: i have to reset these variables once again...
 !or always remember to put *NMR .LONDON in the input...
       if (bxlao .or. bylao .or. bzlao) then
         london = .true.
         doxlr  = .true.
       end if
-!
+
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
@@ -602,10 +603,9 @@
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.                        &
      &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
-         WRITE (LUPRI,'(1X,A,3F18.10)')                                 &
-     &     '* Operator center:', (ORIGIN(I),I=1,3),                     &
-     &     '* Gauge origin   :', (GAGORG(I),I=1,3),                     &
-     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+         WRITE (LUPRI,'(A/A,3F18.10)')                                  &
+     &     '   Gauge origin has been changed:',                         &
+     &     ' * Gauge origin   :', (GAGORG(I),I=1,3)
       ENDIF
 
 !     consistency checks

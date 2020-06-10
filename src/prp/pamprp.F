@@ -71,7 +71,9 @@ C
          WF = PRP_WF(I)
 C
          IF (WF .EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
-            CALL TDHFORB('FULLCI')
+            CALL TDHFORB('CASCI')
+            ! for doing a "RESOLVE" with GASCIP code,
+            ! CI information is only used if requested.
             CALL SETDC2(0)
          ELSE IF (WF .EQ. 'KRMC') THEN
             CALL TKRMCORB
@@ -8323,7 +8325,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
-#include "iratdef.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C
@@ -10241,7 +10242,6 @@ C
 #include "gfac.h"
 #include "orgcom.h"
 #include "spinro.h"
-#include "iratdef.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C

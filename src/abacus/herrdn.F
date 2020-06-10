@@ -400,7 +400,7 @@ C     ***** Read input file and process data *****
 C     ********************************************
 C
 C     JHS050707 .MOL files are treated in the old way
-C               .XYZ files are treated using the Module READFILE. In the long
+C               .XYZ files are treated using the Module READ_XYZFILE. In the long
 C                 run this module should also be able to read .MOL files
 C               These are the only two extensions at the moment.
 
@@ -421,6 +421,18 @@ C               These are the only two extensions at the moment.
      &     //' input file could not be detected.'
         CALL QUIT(' *** ERROR (READIN) unable to detect extension')
       END SELECT
+
+C     Determine center of mass
+
+      KGEOM = 1
+      KMASS = KGEOM + 3*NUCDEP
+      KNAT  = KMASS +   NUCDEP
+      KNUMIS= KNAT  +   NUCDEP
+      KLAST = KNUMIS+   NUCDEP
+      IF (KLAST .GT. LWORK)
+     &   CALL STOPIT('READIN','CMMASS',KLAST,LWORK)
+      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
+     &            IPREAD)
 
       CALL GPCLOSE(LUINFO,'KEEP')
       IF (IPREAD .GT. 20) CALL REAPRI
@@ -740,27 +752,6 @@ C
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif
 
-C
-C     Determine center of mass
-C
-      KGEOM = 1
-      KMASS = KGEOM + 3*NUCDEP
-      KNAT  = KMASS +   NUCDEP
-      KNUMIS= KNAT  +   NUCDEP
-      KLAST = KNUMIS+   NUCDEP
-      IF (KLAST .GT. LWORK)
-     &   CALL STOPIT('READ_MOL','CMMASS',KLAST,LWORK)
-      CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),WORK(KNUMIS),
-     &            IPREAD-1)
-      IF (ADDSYM) THEN
-         DIPORG(1:3) = CMXYZ(1:3)
-         GAGORG(1:3) = CMXYZ(1:3)
-      ELSE
-chj may 09: now done here because READIN now before HERINP
-         DIPORG(1:3) = 0.0D0
-         GAGORG(1:3) = 0.0D0
-      END IF
-      CAVORG(1:3) = CMXYZ(1:3)
 C
 C     *************************************************
 C     ***** Print orbital and geometry input data *****

@@ -44,37 +44,6 @@ Example: Restrict range to four nuclei (first number), the nuclei 1, 3, 7, and 8
    8
 
 
-keyword(PHASEORIGIN)
-
-Origin appearing in the London atomic orbital phase-factors. Default::
-
-  .PHASEORIGIN
-   0.0 0.0 0.0
-
-.. warning::
-
-  This is the text from the DALTON manual. We wonder if it is used for
-  other integrals, in the code in her1int.F it is the final "else" option.
-
-
-keyword(GAUGEORIGIN)
-
-Set the gauge origin. By default it is set to the coordinate origin::
-
-  .GAUGEORIGIN
-   0.0 0.0 0.0
-
-
-keyword(DIPORG)
-
-Origin for all moment integrals, including the dipole (dipole is independent of
-origin only for neutral systems). By default it is set to the coordinate
-origin::
-
-  .DIPORG
-   0.0 0.0 0.0
-
-
 keyword(MAGCOR)
 
 Print the symmetrized nuclear magnetic moments. This corresponds to taking
