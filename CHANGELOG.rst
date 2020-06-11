@@ -23,6 +23,8 @@ New defaults:
 
 - One-electron operator ANGMOM's origin was moved from gauge-origin to the molecular center of mass.
 - The CODATA2018 set of physical constants is now used as default (taken from http://physics.nist.gov/constants). Before this version, CODATA1998 was default.
+- Non-relativistic and relativistic effective core-potential calculations (".NONREL" and ".ECP") now have nuclear point nucleus as default.
+  For non-reativistic calculations this makes it easier to compare to other codes, and for RECP this is the intended behavior which by mistake was not activated.
 
 
 19.0 (2019-12-12)

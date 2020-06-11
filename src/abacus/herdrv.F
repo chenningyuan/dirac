@@ -19,23 +19,12 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
-C
-#ifdef UNDEF
-/* Comdeck notes */
-950602-vebjorn:
-      Added flag HRINPC to ensure that HERMIT input processing is done
-      only once.
-950505-hjaaj: let .NOTWO and .NOHAM imply .NOSUP
- new option .SUPONLy for just SUPMAT .and. .NOT.HAMILT
-    (for generating AOSUPINT file from existing AOTWOINT)
-    Kenneth: will you put .SUPONLy into HERMIT manual ?
-    Done by Kenneth before jan.-96
-#endif
+! file: abacus/herrdn.F
+
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
-C <<< General Input for HERMIT >>>
+C --- General Input for HERMIT ---
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -52,7 +41,9 @@ C
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
+! dcbham.h : ECPCALC, NONREL
 #include "dcbgen.h"
+#include "dcbham.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -94,7 +85,9 @@ C     Bin Gao, Nov. 9, 2011
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
      &             '.NUCMOD', '.MAGCOR', '.GENINT', 'xXXXXXX'/
 C
-C     Check if input has been processed earlier.
+C 950602-vebjorn:
+C     Added flag HRINPC to ensure that HERMIT input processing is done
+C     only once.
 C
       IPRDEF = IPRUSR + 1
       IF (HRINPC) GOTO 1000
@@ -188,12 +181,17 @@ C
       MGCOOR = .FALSE.
       EXPKR (1:3) = 0.0d0
       NPATOM = 0
-      IPATOM(1:MXCENT) = 0
+      CALL IZERO(IPATOM,MXCENT)
+
+      CALL TITLER('Output from HERMIT input processing','*',118)
+
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus
 C      2 - Gaussian nucleus
 C
-      IF(RELCAL) THEN
+      IF (ECPCALC) THEN
+         GAUNUC = .FALSE.
+      ELSE IF (RELCAL) THEN
         GAUNUC = .TRUE.
       ELSE
         GAUNUC = .FALSE.
@@ -205,8 +203,6 @@ C        in order to skip solvent modules in ONEDRV
 C        and cavity center in VIBMAS
 C
       SOLVNT = .FALSE.
-C
-      CALL TITLER('Output from HERMIT input processing','*',118)
 C
 C     **** Find Hermit input *****
 C
@@ -234,6 +230,7 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /CBIHER/  *****
 C
+      INUC = 0
   100 READ (LUCMD, '(A7)') WORD
       CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
@@ -600,7 +597,7 @@ C
             ONEPRP = .TRUE.
             GO TO 100
  177     CONTINUE
-C&&& Nuclear model
+C&&& Nuclear model .NUCMOD
             READ (LUCMD, *,IOSTAT=IOS) INUC
             IF (IOS.NE.0) THEN
              CALL QUIT('Error in reading nuclear model INUC  !')
@@ -637,12 +634,27 @@ C&&& MAGCOR - print magnetic coordinates
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
-      IF(GAUNUC) THEN
-        WRITE(LUPRI,'(A)') ' Nuclear model: '//
+      IF (INUC .EQ. 0) THEN
+         IF(GAUNUC) THEN
+           WRITE(LUPRI,'(A)') ' Using default nuclear model: '//
      &    'Gaussian charge distribution.'
+         ELSE
+           WRITE(LUPRI,'(A)') ' Using default nuclear model: '//
+     &     'Point charge.'
+           IF (NONREL) WRITE(LUPRI,'(A)')
+     &     ' (.NONREL calculations have point nucleus as default)'
+           IF (ECPCALC) WRITE(LUPRI,'(A)')
+     &     ' (.ECP calculations have point nucleus as default)'
+         ENDIF
       ELSE
-        WRITE(LUPRI,'(A)') ' Nuclear model: Point charge.'
-      ENDIF
+         IF(GAUNUC) THEN
+           WRITE(LUPRI,'(A)') ' Nuclear model requested in input: '//
+     &    'Gaussian charge distribution.'
+         ELSE
+           WRITE(LUPRI,'(A)') ' Nuclear model requested in input: '//
+     &     'Point charge.'
+         ENDIF
+      END IF
       IF (SPNORB .AND. SOTEST) THEN
          WRITE (LUPRI,'(/A/)')
      *    ' Error in input: .SPIN-ORBIT and .SOTEST cannot '/
@@ -935,21 +947,10 @@ C     kr and vb, April-96
 C
 C      CLOSE (LUONEL)
 C
-C     Read geometry, orbital spec., etc. (MOLECULE format).
-C     If only supermatrix elements are calculated there is no
-C     need to call readin since all information should already
-C     be on unit LUONEL. Parameter .TRUE. in call indicates that
-C     LUONEL must be written.
+C     Read geometry, orbital spec., etc. (MOLECULE or XYZ format).
+C     Parameter .TRUE. in call indicates that LUONEL for Dalton must be written.
 C
-#ifdef PRG_DIRAC
       CALL READIN(.FALSE.)
-#else
-      OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOONEINT')
-      CALL READIN(.TRUE.)
-      IF (TSTINP) CLOSE (LUONEL,STATUS='DELETE')
-      IF (THRSUP .LT. 0.0D0) THRSUP = THRS
-#endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
          KGEOM = 1

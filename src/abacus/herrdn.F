@@ -891,7 +891,6 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-#include "dcbham.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
@@ -905,6 +904,7 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
+! dcbham.h : MDIRAC
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -914,6 +914,7 @@ C***********************************************************************
 #include "aosotr.h"
 #include "gencon.h"
 #include "dcbgen.h"
+#include "dcbham.h"
 #include "argoscom.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -1960,7 +1961,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbgen.h"
-#include "dcbham.h"
 #include "argoscom.h"
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
@@ -1974,7 +1974,6 @@ C
         ELSE
            GEXP = QEXP
         ENDIF
-        IF (ECPCALC) GEXP = 6.66D+37
 C
 C       Print out warning if GEXP < 1.0D8
 C
@@ -1985,7 +1984,6 @@ C
      &       '  -- WARNING!!! Nuclear Gaussian exponent is small!'
       ELSE
          GEXP = D0
-         IF (ECPCALC) GEXP = 6.66D+37
       END IF
       ECPNUC = NUCIND
       NUCSTR = NUCIND + 1
@@ -2371,7 +2369,6 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
-#include "dcbham.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,HERMIT,NRMPRI
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -2776,6 +2773,7 @@ C
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
+! dcbham.h : ECPCALC
 #include "cbirea.h"
 #include "molinp.h"
 #include "ccom.h"
@@ -2984,6 +2982,7 @@ C
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
+! dcbham.h : ECPCALC
 #include "cbirea.h"
 #include "molinp.h"
 #include "ccom.h"
@@ -3199,7 +3198,8 @@ C  /* Deck orbinx */
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "dcbham."
+! dcbham.h : ECPCALC
+#include "dcbham.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
