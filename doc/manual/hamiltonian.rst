@@ -366,10 +366,12 @@ because it redefines the metric used in the calculation.
 keyword(NONREL)
 
 Standard nonrelativistic calculation based on the Schrodinger equation.  Should
-give identical energy results as with the :ref:`HAMILTONIAN_.LEVY-LEBLOND` keyword.
+give identical energy results as with the :ref:`HAMILTONIAN_.LEVY-LEBLOND` keyword,
+if same nucleus model is chosen.
+Point nucleus model is default for NONREL.
 
 DIRAC runs in the 2-component spin-free mode, which in fact represents the
-traditional one-component mode.
+traditional one-component mode (Pauli Hamiltonian).
 
 
 **Effective core potentials**
@@ -377,11 +379,12 @@ traditional one-component mode.
 
 keyword(ECP)
 
-Perform an effective core potential calculation. The ECP parameters should be set
+Perform a relativistic effective core potential calculation. The ECP parameters should be set
 in the MOL file. Both spin-orbit and spin-free calculations are available by
 specifying spin-orbit (SO) parameters in the MOL file. With SO parameters,
 the 2-component spin-orbit calculation is conducted, whereas the spin-free
 (1-component) calculation is performed by omitting the SO part in the ECP parameter.
+Point nucleus model is default for ECP.
 (See :ref:`ecp_input`)
 
 
