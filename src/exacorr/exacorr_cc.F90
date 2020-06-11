@@ -3597,6 +3597,170 @@ print *,'abe',ierr
 
    
           integer(INTL)              :: ao_root
+          integer(INTD)              :: ierr, ao_level
+          integer(INTL),dimension(2) :: ao2_root
+          integer(INTD),dimension(2) :: ao2_id
+          integer(INTL),dimension(4) :: max_root
+          integer(INTD),dimension(4) :: max_id
+
+          integer                    :: nao, i
+          type(tens_rcrsv_t)         :: Diag, Res, Delta, Factor, Dlk
+          integer(INTL), allocatable :: ind_max(:)
+          complex(8)                 :: scal_fac, D_max, D_el
+          character(len=12)          :: vs_str
+
+          if (print_level.gt.2) write(*,*)  "========= entering decompose_cholesky_exatensor ========= "
+
+
+          nao  = get_nao()   ! This is the total number of ao's
+          ao_root=ao_space%get_root_id(ierr) !get the root space, covers all ao's
+          ao_level=1
+          ao2_root=ao_root
+          ao2_id=ao_id
+          max_root=ao_root
+          max_id=ao_id
+
+          allocate(CD(nao*nao))
+
+          !Initialize
+          ierr=exatns_tensor_create(Diag,"Diagonal",ao2_id,ao2_root,EXA_DATA_KIND_C8)        
+          ierr=exatns_tensor_create(Res,"Residual",ao2_id,ao2_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_create(Factor,"Factor",EXA_DATA_KIND_C8)
+          if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Tensor creation failed!')
+           
+          ierr=exatns_tensor_init(Diag,ZERO) 
+          ierr=exatns_tensor_transform(Diag,'CholDiag')
+          if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computation od Diagonal failed!')
+          if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
+          if (print_level.gt.4) call print_date(" --- Diagonal computed")
+
+          ! find maximum
+          ierr=exatns_tensor_max(Diag,D_el,ind_max)
+          D_max=D_el
+          if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Finding Maximum failed!')
+          
+          m=0
+
+          do while (abs(D_max)>t_cholesky)
+            max_root(1)=ao_space%get_ancestor_id_of_level(ind_max(1),ao_level,ierr)
+            max_root(2)=ao_space%get_ancestor_id_of_level(ind_max(2),ao_level,ierr)
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Assigning shell failed!')
+            if (print_level.gt.2) write(*,*) "--- shell found: ", max_root, D_max
+            
+            ierr=exatns_tensor_create(Dlk,"Dlk",max_id,max_root,EXA_DATA_KIND_C8)  
+            ierr=exatns_tensor_init(Dlk,'Aoint_calculator')
+            if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computing Off-Diagonals failed!')
+            if (print_level.gt.15) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
+            if (print_level.gt.6) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
+            if (print_level.gt.4) call print_date(" --- Off-Diagonal computed")
+
+            ierr=exatns_tensor_create(Delta,"Delta",ao2_id,max_root(1:2),EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(Delta,ZERO)
+
+            do while (abs(D_el)>abs(D_max)/1000)
+
+              !create current elment of the cholesky vector
+              write (vs_str, '(A3,I9.9)') 'CD_',m+1
+              ierr=exatns_tensor_create(CD(m+1),vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Creating Cholesky vector failed!')
+              ierr=exatns_tensor_init(CD(m+1),ZERO)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Setting up Cholesky vector failed!')
+
+              !creating delta for extraction
+              call f_delta%reset(ind_max,2)
+              ierr=exatns_tensor_transform(Delta,f_delta)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Constructing Delta failed!')
+              if (print_level.gt.6) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
+
+              !extracting the relevant element
+              ierr=exatns_tensor_init(Res,ZERO)
+              ierr=exatns_tensor_contract("R(p,q)+=T(r,s,p,q)*D(r,s)",Res,Dlk,Delta)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Extracting off-diagonal Elements!')
+
+              !add previous cholesky elements
+              do i=1,m
+                ierr=exatns_tensor_init(Factor,ZERO)
+                ierr=exatns_tensor_contract("F()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
+                if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Extracting old value failed!')
+                ierr=exatns_tensor_get_scalar(Factor,scal_fac)
+                if (print_level.gt.12) write(*,*) "--- Factor =", scal_fac
+                ierr=exatns_tensor_contract("R(p,q)+=L(p,q)*F()",Res,CD(i),Factor,MINUS_ONE)
+                if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Getting old contribution creation failed!')
+                if (print_level.gt.12) write(*,'(A7,E20.10)') "Res   =",print_tensornorm2 (Res)
+              end do
+              if (print_level.gt.4) call print_date(" ---  previous Chol. vectors summed")
+
+              !sum and denominate
+              scal_fac=ONE / zsqrt(D_max)
+              ierr=exatns_tensor_contract("W(p,q)+=R+(p,q)*O()",CD(m+1),Res,one_tensor,scal_fac)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Scaling failed!')
+              if (print_level.gt.6) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
+              if (print_level.gt.4) call print_date(" ---  new Chol. vectors computed")
+            
+              !update Diagonal
+              ierr=exatns_tensor_init(Res,ZERO)
+              ierr=exatns_tensor_contract("L(p,q)+=R(p,q)*O()",Res,CD(m+1),one_tensor)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Copying failed!')
+              ierr=exatns_tensor_transform(Res,'Square')
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Squaring failed!')            
+              ierr=exatns_tensor_contract("D(p,q)+=L(p,q)*O()",Diag,Res,one_tensor,MINUS_ONE)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Updating Diagonal failed!')
+              if (print_level.gt.6) write(*,'(A7,E20.10)') "Diag  =",print_tensornorm2(Diag)
+              if (print_level.gt.4) call print_date(" ---  Diagonal updated")
+
+              m=m+1
+
+              if (m.ge.nao*nao) then
+                !call quit(" Cholesky decomposition failed")
+                write (*,*) 'WARNING: Cholesky decomposition failed, error=',D_max
+                exit
+              end if
+
+              !find new maximum
+              deallocate(ind_max)
+              ierr=exatns_tensor_max(Diag,D_el,ind_max)
+              if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Getting Maximum failed!')
+
+            end do
+
+            ierr=exatns_tensor_destroy(Dlk)
+            ierr=exatns_tensor_destroy(Delta)
+            D_max=D_el
+
+          end do
+
+          if (print_level.gt.-1) write(*,*) 'Cholesky decomposition done, used ',m,' elements'
+          
+          !cleanup
+          deallocate(ind_max)
+          ierr=exatns_tensor_destroy(Diag)
+          ierr=exatns_tensor_destroy(Res)
+          ierr=exatns_tensor_destroy(Factor)
+
+          !cholesky tensor needs to be destroyed elsewhere
+
+          if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_exatensor ========= "
+
+        end subroutine decompose_cholesky_exatensor
+
+        subroutine decompose_cholesky_exatensor_full (CD, m, ao_id, ao_space, t_cholesky, &
+                                                 j_chol, f_delta, print_level)
+
+          use exacorr_global
+          use exacorr_tensor_methods
+          use exacorr_ao_to_mo, only : print_tensornorm2
+
+          type(tens_rcrsv_t), allocatable, intent(inout) :: CD(:)
+          integer                                        :: m
+          class(h_space_t), pointer, intent(in)          :: ao_space
+          integer(INTD),intent(in)                       :: ao_id
+          real(8),intent(in)                             :: t_cholesky
+          type(chol_J), intent(inout)                    :: j_chol  ! Cholesky: compute off-diagonal elements
+          type(delta_t), intent(inout)                   :: f_delta  ! fill delta matrix
+          integer,intent(in)                             :: print_level
+
+   
+          integer(INTL)              :: ao_root
           integer(INTD)              :: ierr
           integer(INTL),dimension(2) :: ao2_root
           integer(INTD),dimension(2) :: ao2_id
@@ -3735,7 +3899,7 @@ print *,'abe',ierr
 
           if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_exatensor ========= "
 
-        end subroutine decompose_cholesky_exatensor
+        end subroutine decompose_cholesky_exatensor_full
 
 #else
         implicit none
