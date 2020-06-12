@@ -6,9 +6,7 @@
 NiO6 Cluster with old UW PCs w/o most diffuse s and p basis func
 .WAVE F
 .ANALYZE
-!.4INDEX
 **GENERAL
-#.PCMOUT
 .LINDEP
  1.0d-5 1.0d-7
 .DIRECT
@@ -52,7 +50,7 @@ O d         19..30, 39..50, 59..70
 !.BNC_FORCE
 !.OVLSEL
 .MAXITR
- 5
+ 8
 !.CNVINT
 !  0.00100 0.0000100
 .ITRINT

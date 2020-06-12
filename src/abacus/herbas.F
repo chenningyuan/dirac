@@ -150,18 +150,20 @@ C
       DO_SPLIT = (DOTRA .OR. DOKRMC .OR. DOMP2 .OR. DOMP2NO)
       IF (PARCAL) DO_SPLIT = .true. ! if parallel, then also split for direct SCF
 
-CDIRAC:..allow contraction only for elements Z.LE.36
-C      except for 2c NR calculations
-      DO_UNCONT = (TWOCOMP.AND.(.NOT.TWOCOMPBSS)).OR.LEVYLE
-      DO_UNCONT = UNCONT.OR.((INTQ.GT.36).AND.(.NOT.DO_UNCONT))
+CDIRAC:..by default, allow contraction only for elements Z.LE.36
+C        except for 2c NR and RECP calculations
+      DO_UNCONT = INTQ.GT.36 .AND. .NOT.(NONREL.OR.LEVYLE.OR.ECPCALC)
+!     DO_UNCONT = DO_UNCONT .OR. (TWOCOMP.AND.(.NOT.TWOCOMPBSS))
+!     hjaaj: is this still relevant after introducing NONREL above?
+      DO_UNCONT = UNCONT .OR. DO_UNCONT
       IF(DO_UNCONT.AND.(.NOT.UNCONT)) THEN
 !     print only from one process
       if (mytid == MPARID) then
         WRITE(LUPRI,'(/A/A,I5/2A/A/A)')
-     &   '*** WARNING (BASLIB) : Decontracting basis set',
+     &   '*** INFO (BASLIB) : Decontracting basis set',
      &   ' - nuclear charge: ',INTQ,
      &   ' - basis file    : ',BASNAM,
-     &   'Reason: DIRAC cannot yet create proper small component basis',
+     &   'Reason: DIRAC cannot create proper small component basis',
      &   '        for contracted large component basis when Z > 36'
       end if
       ENDIF
