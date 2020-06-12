@@ -42,7 +42,6 @@ C
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
-#include "orgcom.h"
 #include "dgroup.h"
       PARAMETER (NTABLE = 18)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER, g_10ppm
@@ -50,7 +49,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP','.SPINPO',
+      DATA TABLE /'xXXXXXX','.PRINT ','.OPERAT','.MULTIP','.SPINPO',
      &            '.SDCI  ','.MAX CI','.CI ROO','.THRCVE','.THRCI ',
      &            '.SDTCI ','.SDT*CI','.ESR CI','.MY CI ','.THRPCI',
      &            '.KR-CON','.MAXMK2','.G10PPM'/
@@ -96,12 +95,6 @@ C     variables for spin polarization and correlation in CI
 
       USE_KRAMERS_CONJ = .FALSE.
 C
-C     Initialize orgcom.h
-C     ===================
-C
-      GORG_BY_USER = .FALSE.
-      CALL DZERO(GAGORG,3)
-C
 C     Process input
 C     =========================
 C
@@ -134,10 +127,7 @@ C
      &            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ESRINP.')
-C Read user specified gauge origin
-    1          CONTINUE ! .GAUGEO
-                  READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-                  GORG_BY_USER = .TRUE.
+    1          CONTINUE !
                GO TO 100
     2          CONTINUE ! .PRINT
 C&&&& PRINT:  Print level in ESR module
@@ -379,12 +369,6 @@ C
          IF (NERR > 0) CALL QUIT('*ESR: ERROR in specification of CI')
       END IF
 
-      IF (GORG_BY_USER) THEN
-         CALL PRSYMB(LUPRI,'-',75,0)
-         WRITE(LUPRI,'(/A,3F12.6)') '* User defined magnetic '//
-     &           'gauge origin used:',(GAGORG(I), I = 1, 3)
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 
   999 CONTINUE
