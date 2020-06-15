@@ -168,6 +168,7 @@ dirac_test(operators_mo_mtx_elements "short;operators" "")
 dirac_test(spinorbit-from-spinfree "short;scf;resolve" "")
 dirac_test(spinrot "medium;response" "")
 dirac_test(rotg "medium;response" "")
+dirac_test(molecular_mean_field_restart "short;x2c;mp2" "")
 # disabing eomcc expectation value test until the code is verified
 #dirac_test(eomcc_expval "short;cc" "")
 
