@@ -15,10 +15,10 @@ f.add(from_string  = '   Electronic energy',
       rel_tolerance    = 1.0e-8)
 f.add(from_string  = '   Embedding energy',
       num_lines    = 1,
-      rel_tolerance    = 1.0e-8)
+      rel_tolerance    = 1.0e-5)
 f.add(from_string  = '   Total energy',
       num_lines    = 1,
-      rel_tolerance    = 1.0e-8)
+      rel_tolerance    = 1.0e-5)
 
 #test.run(['nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')
 test.run(['dc.inp', 'x2c.inp', 'dc-pbe.inp','levy.inp' ,'spinfree.inp', 'nonrel.inp'], ['ch2o.mol'], f, args='--put peqm.pot')

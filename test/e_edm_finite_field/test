@@ -12,7 +12,7 @@ assert version_info.major == 2
 f = [
     get_filter(from_string='Overview of calculated energies',
                to_string='--------------------------------------------------------------------------------',
-               abs_tolerance=1.0e-10)
+               abs_tolerance=1.0e-9)
 ]
 
 options = cli()

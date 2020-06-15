@@ -10165,14 +10165,14 @@ C          ... do some check of entering values of NAMFA,IAMFA
           IF (NAMFA.GT.IX) THEN 
            write(lupri,*) ': NAMFA=',NAMFA,
      &     ' is greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
+           CALL QUIT('AMFI_RELSCF: Wrong value of NAMFA !!!')
           ENDIF
           DO K=1,NAMFA
            IF (IAMFA(K).GT.IX) THEN
              write(lupri,*)
      &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
      &       ' greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
+           CALL QUIT('AMFI_RELSCF: Wrong value of IAMFA(K) !!!')
            ENDIF
           ENDDO
           IF (NAMFA.GE.2) THEN

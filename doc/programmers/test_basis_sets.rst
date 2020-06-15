@@ -5,7 +5,7 @@ Testing basis set files in DIRAC
 
 The DIRAC program suite hosts more than different 300 basis set input files.
 These are either relativistic basis sets (all-electron, ECP)
-or nonrelativistic basis sets, collected from other sources (Dalton, EMSL etc). Therefore it is necessary to have (automated) tool
+or nonrelativistic basis sets, collected from other sources (Dalton, EMSL etc). Therefore it is necessary to have an (automated) tool
 for testing all basis set files distributed with DIRAC.
 
 Currently, there are few tests focused at checking basis set files:

@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/main
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,10 +9,7 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_MAIN_FORTRAN_SOURCES
-   dirac.h
    dirac.F
-# needs missing object pamgeo
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
 )
 
 set(FREE_MAIN_FORTRAN_SOURCES
@@ -43,6 +41,9 @@ add_dependencies(main visual)
 add_dependencies(main embedding)
 if (ENABLE_STIELTJES)
     add_dependencies(main stieltjes)
+endif()
+if (ENABLE_LAPLACE)
+    add_dependencies(main laplace-minimax)
 endif()
 if (ENABLE_INTEREST)
     add_dependencies(main interest)

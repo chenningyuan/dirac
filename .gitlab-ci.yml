@@ -18,7 +18,7 @@ variables:
 ubuntu_serial32-check:
   only:
     - merge_requests
-  image: ubuntu
+  image: ubuntu:18.04
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install cmake
@@ -43,7 +43,7 @@ ubuntu_serial32-check:
 ubuntu_parallel32-check:
   only:
     - merge_requests
-  image: ubuntu
+  image: ubuntu:18.04
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install cmake
@@ -66,13 +66,13 @@ ubuntu_parallel32-check:
     - ldd dirac.x
     - export DIRAC_MPI_COMMAND="mpirun --allow-run-as-root -np 2"
     - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
-    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted|polprp_ph|dft_overlap_diagnostic)" -L short
+    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted)" -L short
 
 
 ubuntu_parallel64-check:
   only:
     - merge_requests
-  image: ubuntu
+  image: ubuntu:18.04
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install cmake

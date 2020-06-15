@@ -153,7 +153,8 @@ C
 C
       IF (FOCKSP) THEN
 C       Adding folded diagrams
-        CALL FOLDED(ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)
+        CALL FOLDED(ICURFSS,T1,T2,EPS,FVO,
+     &              BUF1,BUF2,BUF3,S1,S2)
       ENDIF
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues

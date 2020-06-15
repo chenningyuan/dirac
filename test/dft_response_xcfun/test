@@ -20,9 +20,9 @@ f.add(from_string = 'Energy eigenvalues in atomic units',
 test.run(['blyp_sdft.inp', 'lda_sdft.inp'], ['he.mol'], f)
 
 f.add(string    = 'ZZSECMOM',
-      rel_tolerance = 1.0e-5)
+      rel_tolerance = 1.0e-4)
 f.add(string    = '  ZDIPLEN   ZDIPLEN   ZDIPLEN',
-      rel_tolerance = 1.0e-6)
+      rel_tolerance = 1.0e-4)
 
 test.run(['b3lyp.inp', 'blyp.inp', 'lda.inp', 'pbex.inp', 'pbec.inp', 'pbe0.inp', 'pbe.inp'], ['hf.mol'], f)
 

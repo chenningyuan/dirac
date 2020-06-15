@@ -2420,7 +2420,7 @@ C         write(6,*) ' Sirius Flag activated '
 *          Current choices : MP, EN, H0READ
 *      3 : zero order energy : E0=EX ( use exact energy of reference state )
 *                              E0=AV ( Use expectation value of H0 )
-*                              E0=RE ; Readin zero order energy in
+*                              E0=RE ; Reading zero order energy in
             ISETKW(47) = 1
             IPERT = 1
 *. Number of correction vectors
@@ -2615,7 +2615,7 @@ CTF
                WRITE(LUOUT,*)
      &          ' Else I do not know about the number of orbital spaces'
                WRITE(LUOUT,*) ' So I will stop '
-               Call Abend2( 'READIN: put GASSH before GASSPC' )
+               Call Abend2( 'LREADIN: put GASSH before GASSPC' )
             END IF
             IDOGAS = 1
             ISETKW(51) = 1
@@ -2648,7 +2648,7 @@ CTF
            WRITE(LUOUT,*)
            WRITE(LUOUT,*)'                                  Lucita  '
            WRITE(LUOUT,*)
-           Call Abend2( 'READIN: Specify CMBSPC before SEQUEN' )
+           Call Abend2( 'LREADIN: Specify CMBSPC before SEQUEN' )
          END IF
 *. Number of combination spaces
          READ(LUCMOL,*) NCMBSPC
@@ -2904,7 +2904,7 @@ C?       WRITE(6,'(A,A)') ' Machine = ', MACHINE
             WRITE(LUOUT,*)
      &         ' Else I do not know about the number of orbital spaces'
             WRITE(LUOUT,*) ' So I will stop '
-            Call Abend2( 'READIN: put GASSH before H0SPC ' )
+            Call Abend2( 'LREADIN: put GASSH before H0SPC ' )
          END IF
          READ(LUCMOL,*) NPTSPC
          IF(NPTSPC.GT.MXPPTSPC) THEN
@@ -2912,7 +2912,7 @@ C?       WRITE(6,'(A,A)') ' Machine = ', MACHINE
             WRITE(LUOUT,*) ' To many perturbation spaces '
             WRITE(LUOUT,*)
      &           ' raise MXPPTSPC from ', MXPPTSPC ,' to ',NPTSPC
-            Call Abend2( 'NPTSPC>MXPPTSPC in READIN ' )
+            Call Abend2( 'NPTSPC>MXPPTSPC in LREADIN ' )
          END IF
 *
          IH0SPC = 1
@@ -2941,7 +2941,7 @@ C          END DO
             WRITE(LUOUT,*)
      &           ' Else I do not know about the number of spaces'
             WRITE(LUOUT,*) ' So I will stop '
-            Call Abend2( 'READIN: put H0SPC before H0FRM ' )
+            Call Abend2( 'LREADIN: put H0SPC before H0FRM ' )
          END IF
 *. Type of perturbation in this subspace
 *
@@ -3293,11 +3293,11 @@ C        READ(LUCMOL,*) NEXCSTATE
          CALL DECODE_LINE(CARD1,MXPLNC,NITEM,ITEM,MX_ITEM)
          N_AVE_OP = NITEM
          IF(N_AVE_OP.GT. MXNRESP) THEN
-            WRITE(LUOUT,*) ' READIN : Error for keyword RESPON'
+            WRITE(LUOUT,*) ' LREADIN : Error for keyword RESPON'
             WRITE(LUOUT,*) ' Specified number of A ops = ', N_AVE_OP
             WRITE(LUOUT,*) ' Larger than MAX = ', MXNRESP
             WRITE(LUOUT,*) ' PLEASE reduce NAVE_OP and RETURN '
-            Call Abend2( ' READIN, KEYWORD RESPON : NAVE_OP .gt. 20 ' )
+            Call Abend2( ' LREADIN, KEYWORD RESPON : NAVE_OP .gt. 20 ' )
          END IF
          DO JITEM = 1, NITEM
             AVE_OP(JITEM) = ITEM(JITEM)
@@ -3305,11 +3305,11 @@ C        READ(LUCMOL,*) NEXCSTATE
 *. Number of respons calculations to be performed
          READ(LUCMOL,*) NRESP
          IF(NRESP.GT. MXNRESP) THEN
-            WRITE(LUOUT,*) ' READIN : Error for keyword RESPON'
+            WRITE(LUOUT,*) ' LREADIN : Error for keyword RESPON'
             WRITE(LUOUT,*) ' Specified number of calcs = ', NRESP
             WRITE(LUOUT,*) ' Larger than MAX = ', MXNRESP
             WRITE(LUOUT,*) ' PLEASE reduce NRESP and RETURN '
-            Call Abend2( ' READIN, KEYWORD RESPON : NRESP .gt. 20 ' )
+            Call Abend2( ' LREADIN, KEYWORD RESPON : NRESP .gt. 20 ' )
          END IF
          DO IRESP = 1, NRESP
 *. Operator1, Operator 2, Maxord for op1, Maxord for op2, freq
@@ -3400,7 +3400,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
          CALL UPPCAS(CARD1,MXPLNC)
          CALL DECODE_LINE(CARD1,MXPLNC,NITEM,ITEM,MX_ITEM)
          IF(NITEM.LT. 2) THEN
-            WRITE(LUOUT,*) ' READIN : Error for keyword TRACI'
+            WRITE(LUOUT,*) ' LREADIN : Error for keyword TRACI'
             WRITE(LUOUT,*) ' Number of items read ', NITEM
             WRITE(LUOUT,*)
      &      ' Form of line should be : complete/restrict, fock/natural'
@@ -3531,7 +3531,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
 *. KEYWORD was not identified
 *
       WRITE(LUOUT,*)
-     &     '  ****  Error, unidentified KEYWORD in READIN   **** '
+     &     '  ****  Error, unidentified KEYWORD in LREADIN   **** '
       WRITE(LUOUT,*)
       WRITE(LUOUT,*) ' Last line read  '
       WRITE(LUOUT,*) ' ================'
@@ -3557,7 +3557,7 @@ C?   &     RESP_OP(1,IRESP) , RESP_OP(2,IRESP)
         WRITE(LUOUT,'(A)')
      &  ' Run will be aborted due to input errors '
         WRITE(LUOUT,'(A,I9)')
-     &  ' Number of input errors detected in READIN ', NERROR
+     &  ' Number of input errors detected in LREADIN ', NERROR
 *
         WRITE(LUOUT,*) 
      &  ' The following keywords were correctly identified'
@@ -3924,7 +3924,7 @@ C       END IF
       ELSE IF(PSSIGN.NE.0.0D0.AND.PLSIGN.NE.0.0D0) THEN
         IDC = 4
       END IF
-C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
+C?    WRITE(6,* ) ' TEST reading IDC = ', IDC
 *
 * 29 : print flag for string information
 *
@@ -4049,7 +4049,7 @@ C?    WRITE(6,* ) ' TEST readin IDC = ', IDC
         Call Abend1( 11 )
       END IF
 *
-* 37 : Avoid any readin of integrals ( useful for obtaining
+* 37 : Avoid any reading of integrals ( useful for obtaining
 *      size of CI expansion etc.
 *
       IF(ISETKW(37).EQ.0 ) THEN
@@ -5269,7 +5269,7 @@ COLD    WRITE(6,*)
 COLD &  '        Epstein-Nesbet partitioning '
 COLD    ELSE IF  (MPORENP.EQ.0) THEN
 COLD    WRITE(6,*)
-COLD &  '        One-body Hamiltonian readin '
+COLD &  '        One-body Hamiltonian read in '
 COLD    END IF
         IF(IE0AVEX.EQ.1) THEN
           WRITE(LUOUT,*)

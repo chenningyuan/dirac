@@ -167,6 +167,7 @@ C     ajt This might come out with halved diagonal
 
 
       subroutine WRITE_HOTFCHT_SPECTRA(STRING,NATOMS)
+      use codata
 #include "hotfccom.h"
       CHARACTER STRING*(*)
       LOGICAL OptionA,ANGSTROM
@@ -186,7 +187,7 @@ C     ajt This might come out with halved diagonal
       WRITE(IHOTFC,'(A)')'Temperatures/K = 0'
       INQUIRE(file='EXCMOLECULE.INP',EXIST=OptionA) 
       IF(OptionA)THEN
-         AC = 0.52917720830
+         AC = XTANG
          !READ EXCITED STATE GEOMETRY
          LUINFO=-1
          CALL GPOPEN (LUINFO,'EXCMOLECULE.INP','OLD',' ','FORMATTED',

@@ -105,7 +105,8 @@ Gauge-origin dependence
 
 To investigate gauge-origin dependence we do a CGO and LAO calculation with the gauge origin placed at::
 
-   .GO ANG
+   **INTEGRALS
+   .GO ANG ! gauge origin in Angstrom
    10.00 0.0 0.0
 
 that is, along the :math:`C_3` axis. Please note that when shifting the gauge origin in this manner you should 

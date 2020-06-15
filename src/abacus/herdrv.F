@@ -19,23 +19,12 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
-C
-#ifdef UNDEF
-/* Comdeck notes */
-950602-vebjorn:
-      Added flag HRINPC to ensure that HERMIT input processing is done
-      only once.
-950505-hjaaj: let .NOTWO and .NOHAM imply .NOSUP
- new option .SUPONLy for just SUPMAT .and. .NOT.HAMILT
-    (for generating AOSUPINT file from existing AOTWOINT)
-    Kenneth: will you put .SUPONLy into HERMIT manual ?
-    Done by Kenneth before jan.-96
-#endif
+! file: abacus/herrdn.F
+
 C  /* Deck herinp */
       SUBROUTINE HERINP(WORK,LWORK)
 C
-C <<< General Input for HERMIT >>>
+C --- General Input for HERMIT ---
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -45,15 +34,16 @@ C
 #include "maxaqn.h"
 #include "efield.h"
 C
-      PARAMETER (NDIR = 6, NTABLE = 79)
+      PARAMETER (NDIR = 6, NTABLE = 80)
       PARAMETER (D0 = 0.0D0)
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7
-      LOGICAL   DIPORG_SET,  GAGORG_SET, CAVORG_SET
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
+! dcbham.h : ECPCALC, NONREL
 #include "dcbgen.h"
+#include "dcbham.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -76,7 +66,7 @@ C     adds test suite of Gen1Int interface as .GENINT
 C     Bin Gao, Nov. 9, 2011
       DATA TABLE  /'.PRINT ', '.INPTES', '.NOSUP ', '.SPIN-O',
      &             '.DIPLEN', '.NO HAM', '.SOTEST', '.DIPVEL',
-     &             '.QUADRU', '.PHASEO', '.SECMOM', '.SUPONL',
+     &             '.QUADRU', 'xXXXXXX', '.SECMOM', '.SUPONL',
      &             '.CARMOM', '.SPHMOM', '.FC    ', '.PSO   ',
      &             '.SD    ', '.DSO   ', '.POINTS', '.SELECT',
      &             '.QUASUM', '.SD+FC ', '.PROPRI', '.HDO   ',
@@ -91,11 +81,13 @@ C     Bin Gao, Nov. 9, 2011
      &             '.MGMO2T', '.MGMTHR', '.HBDO  ', '.SUSCGO',
      &             '.NSTCGO', '.EXPIKR', '.MASSVE', '.DARWIN',
      &             '.CM-1  ', '.CM-2  ', '.SQHDOL', '.SQHDOR',
-     &             '.NOTWO ', '.GAUGEO', '.DIPORG', '.GFACDI',
+     &             '.NOTWO ', 'xXXXXXX', 'xXXXXXX', '.GFACDI',
      &             '.S1ELE ', '.S1ELB ', '.ONEELD', '.THETA ',
-     &             '.NUCMOD', '.MAGCOR', '.GENINT'/
+     &             '.NUCMOD', '.MAGCOR', '.GENINT', 'xXXXXXX'/
 C
-C     Check if input has been processed earlier.
+C 950602-vebjorn:
+C     Added flag HRINPC to ensure that HERMIT input processing is done
+C     only once.
 C
       IPRDEF = IPRUSR + 1
       IF (HRINPC) GOTO 1000
@@ -187,20 +179,19 @@ C
       TRIANG = .TRUE.
       EXPIKR = .FALSE.
       MGCOOR = .FALSE.
-      DIPORG_SET = .FALSE.
-      GAGORG_SET = .FALSE.
-      CAVORG_SET = .FALSE.
-      CALL DZERO(ORIGIN,3)
-      CALL DZERO(GAGORG,3)
-      CALL DZERO(DIPORG,3)
-      CALL DZERO(EXPKR ,3)
+      EXPKR (1:3) = 0.0d0
       NPATOM = 0
       CALL IZERO(IPATOM,MXCENT)
+
+      CALL TITLER('Output from HERMIT input processing','*',118)
+
 C    Initialize nuclear model in NUCLEI
 C      1 - Point nucleus
 C      2 - Gaussian nucleus
 C
-      IF(RELCAL) THEN
+      IF (ECPCALC) THEN
+         GAUNUC = .FALSE.
+      ELSE IF (RELCAL) THEN
         GAUNUC = .TRUE.
       ELSE
         GAUNUC = .FALSE.
@@ -212,8 +203,6 @@ C        in order to skip solvent modules in ONEDRV
 C        and cavity center in VIBMAS
 C
       SOLVNT = .FALSE.
-C
-      CALL TITLER('Output from HERMIT input processing','*',118)
 C
 C     **** Find Hermit input *****
 C
@@ -241,6 +230,7 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /CBIHER/  *****
 C
+      INUC = 0
   100 READ (LUCMD, '(A7)') WORD
       CALL UPCASE(WORD)
       PROMPT = WORD(1:1)
@@ -301,12 +291,6 @@ C
             ONEPRP = .TRUE.
             GO TO 100
   110    CONTINUE
-            READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
-            IF (IOS.NE.0) THEN
-              WRITE(LUPRI,*) 'Error in reading (ORIGIN(I),I=1,3)!'
-              WRITE(LUPRI,*) '(ORIGIN(I),I=1,3):', (ORIGIN(I),I=1,3)
-              CALL QUIT('Error in reading (ORIGIN(I),I=1,3)!')
-            ENDIF
             GO TO 100
   111    CONTINUE
             SECMOM = .TRUE.
@@ -584,25 +568,15 @@ C
             SQHDOR = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
- 169     CONTINUE
+ 169     CONTINUE ! '.NOTWO '
             NOTWO = .TRUE.
             SUPMAT = .FALSE.
             GO TO 100
  170     CONTINUE
-            READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
-            GAGORG_SET = .TRUE.
-            IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
-            ENDIF
             GO TO 100
  171     CONTINUE
-            READ (LUCMD, *,IOSTAT=IOS) (DIPORG(I),I=1,3)
-            DIPORG_SET = .TRUE.
-            IF (IOS.NE.0) THEN
-              CALL QUIT('Error in reading (DIPORG(I),I=1,3)!')
-            ENDIF
             GO TO 100
- 172     CONTINUE
+ 172     CONTINUE ! '.GFACDI'
             GFACDI = .TRUE.
             ONEPRP = .TRUE.
             GOTO 100
@@ -623,7 +597,7 @@ C
             ONEPRP = .TRUE.
             GO TO 100
  177     CONTINUE
-C&&& Nuclear model
+C&&& Nuclear model .NUCMOD
             READ (LUCMD, *,IOSTAT=IOS) INUC
             IF (IOS.NE.0) THEN
              CALL QUIT('Error in reading nuclear model INUC  !')
@@ -648,6 +622,7 @@ C&&& MAGCOR - print magnetic coordinates
 #endif
             goto 100
  180     CONTINUE
+            goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 199
       ELSE
@@ -659,12 +634,27 @@ C&&& MAGCOR - print magnetic coordinates
       NMRISS = FERMI.OR.PSO.OR.SPIDIP.OR.DSO.OR.SDFC.OR.MGCOOR
       WRITE (LUPRI,'(A,I5)') ' Default print level:    ',IPRDEF
       IF (TSTINP) WRITE (LUPRI,'(/A/)') ' Input test run only ...'
-      IF(GAUNUC) THEN
-        WRITE(LUPRI,'(A)') ' Nuclear model: '//
+      IF (INUC .EQ. 0) THEN
+         IF(GAUNUC) THEN
+           WRITE(LUPRI,'(A)') ' Using default nuclear model: '//
      &    'Gaussian charge distribution.'
+         ELSE
+           WRITE(LUPRI,'(A)') ' Using default nuclear model: '//
+     &     'Point charge.'
+           IF (NONREL) WRITE(LUPRI,'(A)')
+     &     ' (.NONREL calculations have point nucleus as default)'
+           IF (ECPCALC) WRITE(LUPRI,'(A)')
+     &     ' (.ECP calculations have point nucleus as default)'
+         ENDIF
       ELSE
-        WRITE(LUPRI,'(A)') ' Nuclear model: Point charge.'
-      ENDIF
+         IF(GAUNUC) THEN
+           WRITE(LUPRI,'(A)') ' Nuclear model requested in input: '//
+     &    'Gaussian charge distribution.'
+         ELSE
+           WRITE(LUPRI,'(A)') ' Nuclear model requested in input: '//
+     &     'Point charge.'
+         ENDIF
+      END IF
       IF (SPNORB .AND. SOTEST) THEN
          WRITE (LUPRI,'(/A/)')
      *    ' Error in input: .SPIN-ORBIT and .SOTEST cannot '/
@@ -683,6 +673,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (NOTWO) WRITE (LUPRI,'(/A/)')
      &          ' Two-electron integrals not calculated.'
       END IF
+
       IF (ONEPRP) THEN
          WRITE (LUPRI,'(/A/)')
      &  ' The following one-electron property integrals are calculated:'
@@ -853,24 +844,16 @@ C&&& MAGCOR - print magnetic coordinates
      &      ' All one-electron property integrals are printed.'
          IF (S1ELE) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     $        'Type A'
+     &        'Type A'
          IF (S1ELB) WRITE (LUPRI,'(10X,A)')
      &       '- first electric derivatives of overlap integrals,'//
-     $        'Type B'
+     &        'Type B'
          IF (ONEELD) THEN
             WRITE (LUPRI,'(10X,A)')
-     $       '- first electric derivatives of one-electron'
+     &       '- first electric derivatives of one-electron'
             WRITE (LUPRI,'(12X,A)') 'Hamiltonian integrals'
          ENDIF
       END IF
-
-! Miro: I hope that these coordinates are in atomic units
-      IF (DNRM2(3,ORIGIN,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Operator center (a.u.):', (ORIGIN(I),I=1,3)
-      IF (DNRM2(3,GAGORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Gauge origin (a.u.)   :', (GAGORG(I),I=1,3)
-      IF (DNRM2(3,DIPORG,1) .GT. D0) WRITE (LUPRI,'(/,A,3F20.15)')
-     &    ' Dipole origin (a.u.)  :', (DIPORG(I),I=1,3)
 
       IF (EXPIKR) WRITE (LUPRI,'(/,A,3F20.15)')
      &    ' Wave numbers:', (EXPKR(I),I=1,3)
@@ -964,40 +947,32 @@ C     kr and vb, April-96
 C
 C      CLOSE (LUONEL)
 C
-C     Read geometry, orbital spec., etc. (MOLECULE format).
-C     If only supermatrix elements are calculated there is no
-C     need to call readin since all information should already
-C     be on unit LUONEL. Parameter .TRUE. in call indicates that
-C     LUONEL must be written.
+C     Read geometry, orbital spec., etc. (MOLECULE or XYZ format).
+C     Parameter .TRUE. in call indicates that LUONEL for Dalton must be written.
 C
-#ifdef PRG_DIRAC
       CALL READIN(.FALSE.)
-#else
-      OPEN (LUONEL,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOONEINT')
-      CALL READIN(.TRUE.)
-      IF (TSTINP) CLOSE (LUONEL,STATUS='DELETE')
-      IF (THRSUP .LT. 0.0D0) THRSUP = THRS
-#endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-        KGEOM = 1
-        KMASS = KGEOM + 3*NATOMS
-        KNAT  = KMASS + NATOMS
-        KLAST = KNAT + (NATOMS + 1)/IRAT
-        IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
-     &                                    LWORK)
-        CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
-        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-        WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
-     &                               (CAVORG(I), I = 1, 3)
+         KGEOM = 1
+         KMASS = KGEOM + 3*NATOMS
+         KNAT  = KMASS + NATOMS
+         KNUMIS= KNAT  + (NATOMS + 1)/IRAT
+         KLAST = KNUMIS+ (NATOMS + 1)/IRAT
+         IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
+     &                                     LWORK)
+         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &      WORK(KNUMIS),IPRDEF)
+         CAVORG(1:3) = CMXYZ(1:3)
+         WRITE(LUPRI,'(/A,3F15.6)')
+     &      ' Cavity center (at center of mass):',
+     &      CAVORG(1:3)
       END IF
 C
       CLOSE(UNIT=LUCMD,STATUS='KEEP')
 C
       RETURN
-C
       END
+
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
 #include "implicit.h"
@@ -1036,7 +1011,7 @@ C
       DORLM  = .FALSE.
       ALLRLM = .FALSE.
       CAVUSR = .FALSE.
-      CALL DZERO(CAVORG,3)
+      CAVORG(1:3) = 0.0d0
 C
       NEWDEF = WORD .EQ. '*ONEINT'
       ICHANG = 0
@@ -1450,778 +1425,6 @@ C
          ELSE
             WRITE (LUPRI,'(A)') ' Symmetry used in SUPINT.'
          END IF
-      END IF
-      RETURN
-      END
-C  /* Deck herint */
-      SUBROUTINE HERINT(WORK,LWORK)
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "dummy.h"
-C
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbihr2.h"
-#include "cbihrs.h"
-#include "orgcom.h"
-#include "nuclei.h"
-#include "huckel.h"
-#include "ccom.h"
-C
-C
-      DIMENSION   RLMORI(3)
-      CHARACTER*8 LABELT(3), LABELS(6)
-C
-      DIMENSION WORK(LWORK)
-C
-C     Control routine for calculation of undifferentiated one- and
-C     two-electron Hamiltonian integrals and transformation of
-C     two-electron integrals to P supermatrix elements.
-C
-      IF (SKIP) RETURN
-C
-C
-C     **********************************
-C     ***** One-Electron Integrals *****
-C     **********************************
-C
-      IF (RUNONE) THEN
-         IF (IPRDEF .GT. 0) CALL TITLER('Output from HERONE','*',126)
-C
-C        ***********************************************
-C        ***** Overlap, kinetic energy and nuclear *****
-C        ***** attraction integrals                *****
-C        ***********************************************
-C
-C        Integrals written on LUONEL -
-C        Some previous information has been written in READIN
-C
-         IF (HAMILT) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL ONEDRV(WORK,LWORK,IPRONE,.FALSE.,0,.FALSE.,.TRUE.,
-     &                  .TRUE.,.FALSE.)
-            CALL TIMER('ONEDRV',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-         END IF
-C
-C        *****************************************
-C        ***** R(l,m) integrals for solvent  *****
-C        *****************************************
-C
-         IF (DORLM) THEN
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL RLMNUC(WORK,LWORK,LMAX,IPRONE)
-            CALL TIMER('RLMNUC',TIMSTR,TIMEND)
-            CALL DCOPY(3,DIPORG,1,RLMORI,1)
-            CALL DCOPY(3,CAVORG,1,DIPORG,1)
-            DO 100 IORDER = 0, LMAX
-               CALL PR1INT('SOLVENT',WORK,LWORK,IORDER,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-  100       CONTINUE
-            CALL DCOPY(3,RLMORI,1,DIPORG,1)
-            CALL TIMER('RLMINT',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-         END IF
-C
-C        *******************************************
-C        ***** One-electron property integrals *****
-C        *******************************************
-C
-         IF (ONEPRP .OR. ADDSTO) THEN
-C
-C           ***** Overlap integrals *****
-C
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            CALL PR1INT('OVERLAP ',WORK,LWORK,IDUMMY,
-     &                  IDUMMY,TRIANG,PROPRI,IPRONE)
-            CALL TIMER('OVERLAP',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-C
-C           ***** Dipole length integrals *****
-C
-            IF (DIPLEN) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DIPLEN ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DIPLEN',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Dipole velocity integrals *****
-C
-            IF (DIPVEL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DIPVEL ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DIPVEL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Quadrupole integrals *****
-C
-            IF (QUADRU) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('QUADRUP',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('QUADRUP',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-            IF (THETA) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('THETA  ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('THETA',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Second moments integrals *****
-C
-            IF (SECMOM) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('SECMOM ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SECMOM',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Kinetic energy integrals *****
-C
-            IF (KINENE) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('KINENER',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('KINENE',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Mass-velocity integrals *****
-C
-            IF (MASSVL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('MASSVEL',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('MASSVL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Darwin integrals *****
-C
-            IF (DARWIN) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DARWIN ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DARWIN',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Spatial one-electron spin-orbit integrals *****
-C
-            IF (SPNORB) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('SPNORB ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SPNORB',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Octupole integrals *****
-C
-            IF (OCTUPO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('OCTUPOL',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('OCTUPO',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Cartesian moments integrals *****
-C
-            IF (CARMOM) THEN
-               ISTR = 0
-               IF (IORCAR .LT. 0) ISTR = ABS(IORCAR)
-               DO 200 IORDER = ISTR, ABS(IORCAR)
-                  CALL TIMER('START ',TIMSTR,TIMEND)
-                  CALL PR1INT('CARMOM ',WORK,LWORK,IORDER,
-     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
-                  CALL TIMER('CARMOM',TIMSTR,TIMEND)
-                  CALL FLSHFO(LUPRI)
-  200          CONTINUE
-            END IF
-C
-C           ***** Spherical moments integrals *****
-C
-            IF (SPHMOM) THEN
-               ISTR = 0
-               IF (IORSPH .LT. 0) ISTR = ABS(IORSPH)
-               DO 300 IORDER = ISTR, ABS(IORSPH)
-                  CALL TIMER('START ',TIMSTR,TIMEND)
-                  CALL PR1INT('SPHMOM ',WORK,LWORK,IORDER,
-     &                        IDUMMY,TRIANG,PROPRI,IPRONE)
-                  CALL TIMER('SPHMOM',TIMSTR,TIMEND)
-                  CALL FLSHFO(LUPRI)
-  300          CONTINUE
-            END IF
-C
-C           ***** Fermi contact integrals *****
-C
-            IF (FERMI) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('FERMI C',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('FERMI ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Paramagnetic spin-orbit integrals *****
-C
-            IF (PSO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('PSO    ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('PSO   ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** spin-dipole integrals *****
-C
-            IF (SPIDIP) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('SPIN-DI',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SPIN-D',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** spin-dipole + Fermi contact integrals *****
-C
-            IF (SDFC) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('SDFC   ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SDFC  ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** diamagnetic spin-orbit integrals *****
-C
-            IF (DSO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DSO    ',WORK,LWORK,IDUMMY,
-     &                     NPQUAD,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DSO   ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Half-derivative overlap integrals *****
-C
-            IF (HDO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('HDO    ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('HDO   ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Bra-half derivative overlap integrals ****
-C
-            IF (SQHDOL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('SQHDOL ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SQHDOL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Ket-half derivative overlap integrals *****
-C
-            IF (SQHDOR) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('SQHDOR ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SQHDOR',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** First magnetic derivative of overlap integrals *****
-C
-            IF (S1MAG) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('S1MAG  ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('S1MAG ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           **** Bra-differentiated overlap integrals (with respect to B) ****
-C
-            IF (S1MAGL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('S1MAGL ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('S1MAGL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           **** Ket-differentiated overlap integrals (with respect to B) ****
-C
-            IF (S1MAGR) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('S1MAGR ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('S1MAGR',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Half B-differentiated overlap matrix *****
-C
-            IF (HBDO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('HBDO   ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('HBDO  ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Ket-differentiated hdo-integrals with respect to B *****
-C
-            IF (HDOBR) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('HDOBR  ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('HDOBR ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Diamagnetic contribution to molecular g-factors *****
-C
-            IF (GFACDI) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('GFACDIA',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('GFACDI',TIMSTR,TIMEND)
-            END IF
-C
-C           *** Test of ket-differentiated hdo-integrals with respect to B ***
-C
-            IF (HDOBRT) THEN
-               LABELT(1) = 'XDIPVEL '
-               LABELT(2) = 'YDIPVEL '
-               LABELT(3) = 'ZDIPVEL '
-               CALL HDBTST(WORK,LWORK,IPRINT,LABELT,NATOM,ORIGIN)
-            END IF
-C
-C           ***** Test of first magnetic derivative of overlap integrals *****
-C
-            IF (S1MAGT) THEN
-               LABELT(1) = 'dS/dBX  '
-               LABELT(2) = 'dS/dBY  '
-               LABELT(3) = 'dS/dBZ  '
-               CALL MG1TST(WORK,LWORK,IPRONE,'OVERLAP ',LABELT,ORIGIN,
-     &                     'SM1 ')
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Test of bra-diff. overlap matrix with respect to B *****
-C
-            IF (S1MLT) THEN
-               LABELT(1) = 'd<S|/dBX'
-               LABELT(2) = 'd<S|/dBY'
-               LABELT(3) = 'd<S|/dBZ'
-               CALL MG1TST(WORK,LWORK,IPRONE,'OVERLAP ',LABELT,ORIGIN,
-     &                     'S1ML')
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Test of ket-diff. overlap matrix with respect to B *****
-C     Need to be rewritten for both operator center and gauge origin
-C     K.Ruud, jul.-94
-C
-            IF (S1MRT) THEN
-               WRITE (LUPRI,'(A)') 'This option is currently disabled'//
-     &              ' (conflicting origin definitions)'
-               CALL QUIT('Unimplemented module S1MRT')
-               LABELT(1) = 'd|S>/dBX'
-               LABELT(2) = 'd|S>/dBY'
-               LABELT(3) = 'd|S>/dBZ'
-               CALL MG1TST(WORK,LWORK,IPRONE,'OVERLAP ',LABELT,ORIGIN,
-     &                     'S1MR')
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Second magnetic derivatives of overlap integrals *****
-C
-            IF (S2MAG) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('S2MAG  ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('S2MAG ',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Test of second magnetic derivatives of overlap integrals ****
-C
-            IF (S2MAGT) THEN
-               LABELS(1) = 'dS/dB2XX'
-               LABELS(2) = 'dS/dB2XY'
-               LABELS(3) = 'dS/dB2XZ'
-               LABELS(4) = 'dS/dB2YY'
-               LABELS(5) = 'dS/dB2YZ'
-               LABELS(6) = 'dS/dB2ZZ'
-               CALL MGTST2(WORK,LWORK,IPRONE,'OVERLAP ',LABELS)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Electronic angular momentum around the origin *****
-C
-            IF (ANGMOM) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('ANGMOM ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('ANGMOM',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Electronic angular momentum around the nuclei *****
-C
-            IF (ANGLON) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('ANGLON ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('ANGLON',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** London orbital contribution to angular momentum *****
-C
-            IF (LONMOM) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('LONMOM ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('LONMOM',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** One-electron contribution to magnetic moment *****
-C
-            IF (MAGMOM) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('MAGMOM ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('MAGMOM',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ***** Test of London contribution to angular momentum *****
-C
-            IF (MGMOMT) THEN
-               LABELT(1) = 'XLONMOM '
-               LABELT(2) = 'YLONMOM '
-               LABELT(3) = 'ZLONMOM '
-               CALL MG1TST(WORK,LWORK,IPRONE,'ONEHAMIL',LABELT,ORIGIN,
-     &                     'LN  ')
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Diamagnetic magnetizability using common gauge origin *****
-C
-            IF (SUSCGO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DSUSCGO',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('SUSCGO',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     **** Diamagnetic shielding tensor using common gauge origin ****
-C
-            IF (NSTCGO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('NSTCGO ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('NSTCGO',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ** Diamagnetic contribution to magnetizability, no london contribution **
-C
-            IF (DSUSNL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DSUSNOL',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DSUSNL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ** Magnetizability, angular part of London orbital contribution **
-C
-            IF (DSUSLL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DSUSLAN',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DSUSLL',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Magnetizability, London orbital contribution *****
-C
-            IF (DSUSLH) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DSUSLH ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DSUSLH',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Diamagnetic part of magnetizability *****
-C
-            IF (DIASUS) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('DIASUS ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('DIASUS',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     **** Test of London orbital contribution to magnetizability ****
-C
-            IF (DSUTST) THEN
-               LABELS(1) = 'XXDSUSLL'
-               LABELS(2) = 'XYDSUSLL'
-               LABELS(3) = 'XZDSUSLL'
-               LABELS(4) = 'YYDSUSLL'
-               LABELS(5) = 'YZDSUSLL'
-               LABELS(6) = 'ZZDSUSLL'
-               LABELT(1) = 'XANGLON '
-               LABELT(2) = 'YANGLON '
-               LABELT(3) = 'ZANGLON '
-               CALL SUSTST(WORK,LWORK,IPRONE,LABELT,LABELS)
-            END IF
-C
-C     ***** Potential energy at the individual nuclei *****
-C
-            IF (NUCPOT) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('NUCPOT ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('NUCPOT',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Test of potential energy ****
-C
-            IF (NPOTST) THEN
-               CALL NPTST(WORK,LWORK,NATOM)
-            END IF
-C
-C     ***** Electric field at the individual nuclei *****
-C
-            IF (NELFLD) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('NEFIELD',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('NELFLD',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Electric field gradient at the individual nuclei, cartesian *****
-C
-            IF (EFGCAR) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('ELFGRDC',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('ELFGRD',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Electric field gradient at the individual nuclei, spherical *****
-C
-            IF (EFGSPH) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('ELFGRDS',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('ELFGRD',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Nuclear shielding without London orbital contribution *****
-C
-            IF (NUCSNL) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('NUCSNLO',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('NSTNLO',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** London orbital contribution to nuclear shielding integrals *****
-C
-            IF (NUCSLO) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('NUCSLO ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('NUCSLO',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Nuclear shielding tensor integrals *****
-C
-            IF (NUCSHI) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('NUCSHI ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('NUCSHI',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C     ***** Test of London orbital contribution to nuclear shieldings *****
-C
-            IF (NSNLTS) THEN
-               CALL NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
-            END IF
-C
-C     ***** Test of non-London orbital contribution to nuclear shieldings *****
-C
-            IF (NSLTST) THEN
-               CALL NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
-            END IF
-C
-C     ***** Test of nuclear shielding tensor integrals *****
-C
-            IF (NSTTST) THEN
-               CALL NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
-            END IF
-C
-C           ***** Cosine and sine integrals *****
-C
-            IF (EXPIKR) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL DCOPY(3,ORIGIN,1,RLMORI,1)
-               CALL DCOPY(3,EXPKR,1,ORIGIN,1)
-               CALL PR1INT('EXPIKR ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL DCOPY(3,RLMORI,1,ORIGIN,1)
-               CALL TIMER('EXPIKR',TIMSTR,TIMEND)
-               CALL FLSHFO(LUPRI)
-            END IF
-C
-C           ****  First order magnetic derivative of electric field  ****
-C
-            IF (CM1) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('CM1    ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('CM1   ',TIMSTR,TIMEND)
-            END IF
-C
-C           ****  Second order magnetic derivative of electric field  ****
-C
-            IF (CM2) THEN
-               CALL TIMER('START ',TIMSTR,TIMEND)
-               CALL PR1INT('CM2    ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-               CALL TIMER('CM2 ',TIMSTR,TIMEND)
-            END IF
-C
-C           ****   First electric derivative of overlap integrals    ****
-C           ****   Type A   ****
-            IF (S1ELE) THEN
-               CALL PR1INT('S1ELE  ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-            END IF
-C
-C           ****   First electric derivative of overlap integrals    ****
-C           ****   Type B   ****
-            IF (S1ELB) THEN
-               CALL PR1INT('S1ELB  ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-            END IF
-C
-C           ****First electric deriv. of one-electron Ham. integrals****
-C
-            IF (ONEELD) THEN
-               CALL PR1INT('ONEELD ',WORK,LWORK,IDUMMY,
-     &                     IDUMMY,TRIANG,PROPRI,IPRONE)
-            END IF
-         END IF
-      END IF
-C
-C     **********************************
-C     ***** Two-Electron Integrals *****
-C     **********************************
-C
-C     Integrals on LUINTA
-C
-      IF (RUNTWO) THEN      
-         I2TYP = 0
-C
-         IF (IPRDEF .GT. 0) CALL TITLER('Output from TWOINT','*',126)
-C
-C        ********************************************
-C        ***** Two-electron repulsion integrals *****
-C        ********************************************
-C
-         IF (HAMILT) THEN
-            CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            IRNTYP = 0
-            CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,
-     &                  IDUMMY,NUMDIS,1,IRNTYP,0,0,.TRUE.,.TRUE.,
-     &                  .FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,IDUMMY,IDUMMY,
-     &                  DUMMY,DUMMY,DUMMY,IDUMMY,.FALSE.)
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-         END IF
-C
-C        *****************************************************
-C        ***** Spatial two-electron spin-orbit integrals *****
-C        *****************************************************
-C
-         IF (SPNORB) THEN
-            CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-            CALL TIMER('START ',TIMSTR,TIMEND)
-            IRNTYP = - 2
-            CALL TWOINT(WORK,LWORK,DUMMY,DUMMY,1,IDUMMY,IDUMMY,DUMMY,
-     &                  IDUMMY,NUMDIS,1,IRNTYP,0,0,.TRUE.,.TRUE.,
-     &                  .FALSE.,TKTIME,IPRTWO,IPRNTA,IPRNTB,IPRNTC,
-     &                  IPRNTD,RTNTWO,IDUMMY,I2TYP,ICEDIF,IFTHRS,
-     &                  DUMMY,DUMMY,DUMMY,IDUMMY,.FALSE.)
-            CALL TIMER('TWOINT',TIMSTR,TIMEND)
-            CALL FLSHFO(LUPRI)
-         END IF
-C
-C        *************************************
-C        ***** Test spin-orbit integrals *****
-C        *************************************
-C
-         IF (SOTEST) THEN
-            CALL SOCHK2(WORK,LWORK,IPRDEF)
-            CALL FLSHFO(LUPRI)
-         END IF
-C
-C        ********************************************************
-C        ***** Test of two-electron part of magnetic moment *****
-C        ********************************************************
-C
-         IF (MGMO2T) THEN
-            CALL MM2TST(WORK,LWORK,PRTHRS,IPRINT)
-         END IF
-      END IF
-C
-C     **********************************
-C     ***** P Supermatrix Elements *****
-C     **********************************
-C
-C     Integrals on LUSUPM
-C
-      IF (RUNSUP) THEN
-         CALL TIMER('START ',TIMSTR,TIMEND)
-         CALL FRMSUP(WORK,LWORK,NOSSUP,OLDSUP,THRSUP,IPRSUP)
-         CALL TIMER('FRMSUP',TIMSTR,TIMEND)
-         CALL FLSHFO(LUPRI)
       END IF
       RETURN
       END

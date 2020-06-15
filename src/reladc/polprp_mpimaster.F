@@ -910,7 +910,7 @@
         write(iw,*) '+++++++ WARNING. Matrix too small for'
         write(iw,*) '+++++++ parallel run!. Please do a serial'
         write(iw,*) '+++++++ calculation.'
-        call quit('+++ Aborting. Matrix too small for parcal.')
+        !call quit('+++ Aborting. Matrix too small for parcal.')
       endif
 !
 !  allocate read/write buffers (master and slaves)
