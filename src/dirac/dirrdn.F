@@ -163,7 +163,7 @@ C     Start the xml output and echo the input to the xml output
          write(luxml,'(A)') 'dirac'
          call xml_end('name')
          call xml_begin('version')
-         write(luxml,'(A)') '2013'
+         write(luxml,'(A)') '2019'
          call xml_end('version')
          call xml_end('program')
          call xml_begin('input')
@@ -176,42 +176,42 @@ C     Start the xml output and echo the input to the xml output
          call xml_end('input')
       endif
 
-C
 C     General input
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       REWIND LUCMD
       CALL GENINP(WORK,LWORK)
-C
-C     Define Hamiltonian
-!     Must be before call of READIN in HERINP because definition
-!     of ECPCALC and maybe other options are used in READIN.
-C
-      REWIND LUCMD
-      CALL HAMINP(WORK,LWORK)
-C
+      CLOSE(LUCMD)
+
 C     Integral and basis input
-C
-      REWIND LUCMD
+
+      OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
+
       DOJACO = DOJACO.AND.(NZ.EQ.1)
-C
+
 C     Set DCB common blocks - first time
 C     ========================================
 C     (will be done the second time in PAMSET)
-C
+
       CALL SETDC1(IPREAD)
-C
+
 C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
-C
+
       CALL GETLAB(IPREAD)
-C
-C     Initialize PE library
-C
+
+C     Define Hamiltonian
+
+      OPEN(LUCMD,FILE='DIRAC.INP')
+      CALL HAMINP(WORK,LWORK)
+      CLOSE(LUCMD)
+
 #ifdef HAS_PELIB
+C     Initialize PE library
+
       IF (PEQM) THEN
         CALL PELIB_IFC_INIT()
       END IF
@@ -405,7 +405,7 @@ C
       RKBIMP_PRJTHR = 2.0D-5
 
 C
-C     Look for 2c. Hamiltonians, MDIRAC and more
+C     Look for 2c Hamiltonians, ECPCALC, MDIRAC and more
 C
       CALL HAMSCAN
 C
@@ -4986,7 +4986,7 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-      ECPCALC = .FALSE.
+!     ECPCALC = .FALSE. - already set in HAMSCAN
       ORIGIN(1:3) = 0.0d0
       GAGORG(1:3) = 0.0d0
       GAGORG_SET = .FALSE.
@@ -8408,6 +8408,8 @@ C
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword
 
+      ECPCALC = .FALSE.
+
       ISDO2C4C=.FALSE.
       ISDO4C2C=.FALSE.
 
@@ -8456,7 +8458,10 @@ C............variable telling that this is a 2-component relativistic calculatio
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF
-         IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.ECP   ') THEN
+            ECPCALC=.TRUE.
+            TWOCOMP=.TRUE.
+         END IF
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN
