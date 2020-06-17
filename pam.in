@@ -1439,9 +1439,6 @@ Options are also read from ~/.diracrc"""
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
         dirac_executable = os.path.join(self.scratch_dir,self.dirac_exe_file)
-        if not os.path.isfile(dirac_executable):
-            print_error_message(dirac_executable+' not found!')
-            sys.exit(13)
 
         # On summit we execute a script that executes dirac.x (to keep things simple...)
         if self.summit:
@@ -1456,18 +1453,51 @@ Options are also read from ~/.diracrc"""
            # create an executable script to set the correct OMP_PLACES before starting dirac.x
            path_to_script = os.path.join(self.scratch_dir,'exec_script.sh')
            with open(path_to_script, 'w') as script:
-               script.write("#!/bin/bash\n")
+               script.write("#!/bin/bash \n")
+               script.write("# ExaTENSOR environment \n")
+               script.write("export QF_PROCS_PER_NODE="+ os.environ.get('QF_PROCS_PER_NODE') +" \n")
+               script.write("export QF_CORES_PER_PROCESS="+ os.environ.get('QF_CORES_PER_PROCESS') +" \n")
+               script.write("export QF_MEM_PER_PROCESS="+ os.environ.get('QF_MEM_PER_PROCESS') +" \n")
+               script.write("export QF_NVMEM_PER_PROCESS="+ os.environ.get('QF_NVMEM_PER_PROCESS') +" \n")
+               script.write("export QF_HOST_BUFFER_SIZE="+ os.environ.get('QF_HOST_BUFFER_SIZE') +" \n")
+               script.write("export QF_GPUS_PER_PROCESS="+ os.environ.get('QF_GPUS_PER_PROCESS') +" \n")
+               script.write("export QF_MICS_PER_PROCESS="+ os.environ.get('QF_MICS_PER_PROCESS') +" \n")
+               script.write("export QF_AMDS_PER_PROCESS="+ os.environ.get('QF_AMDS_PER_PROCESS') +" \n")
+               script.write("export QF_NUM_THREADS="+ os.environ.get('QF_NUM_THREADS') +" \n")
+               script.write("# OpenMP environment \n")
+               script.write("export OMP_NUM_THREADS="+ os.environ.get('OMP_NUM_THREADS') +" \n")
+               script.write("export OMP_DYNAMIC="+ os.environ.get('OMP_DYNAMIC') +" \n")
+               script.write("export OMP_NESTED="+ os.environ.get('OMP_NESTED') +" \n")
+               script.write("export OMP_MAX_ACTIVE_LEVELS="+ os.environ.get('OMP_MAX_ACTIVE_LEVELS') +" \n")
+               script.write("export OMP_THREAD_LIMIT="+ os.environ.get('OMP_THREAD_LIMIT') +" \n")
+               script.write("export OMP_WAIT_POLICY="+ os.environ.get('OMP_WAIT_POLICY') +" \n")
+               script.write("export OMP_PROC_BIND=\""+ os.environ.get('OMP_PROC_BIND') +"\" \n")
                script.write("remainder=$(( $PMIX_RANK % 2 ))\n")
                script.write("if [ $remainder -eq 0 ]; then\n")
                script.write("export OMP_PLACES='{0},{4},{8},{12},{28:56},{16},{20},{24}' \n")
                script.write("else\n")
                script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
                script.write("fi\n")
-               script.write("export OMP_PROC_BIND=\"close,spread,spread\"\n")
+               script.write("# SUMMIT information \n")
+               script.write("export PAMI_IBV_ADAPTER_AFFINITY="+ os.environ.get('PAMI_IBV_ADAPTER_AFFINITY') +" \n")
+               script.write("export PAMI_IBV_ENABLE_OOO_AR="+ os.environ.get('PAMI_IBV_ENABLE_OOO_AR') +" \n")
+               script.write("export PAMI_ENABLE_STRIPING="+ os.environ.get('PAMI_ENABLE_STRIPING') +" \n")
+               script.write("export PAMI_IBV_DISABLE_ODP="+ os.environ.get('PAMI_IBV_DISABLE_ODP') +" \n")
+               script.write("export PAMI_IBV_ENABLE_DCT="+ os.environ.get('PAMI_IBV_ENABLE_DCT') +" \n")
+               script.write("export PAMI_IBV_DEVICE_NAME='mlx5_0:1,mlx5_3:1' \n")
+               script.write("export PAMI_IBV_DEVICE_NAME_1='mlx5_3:1,mlx5_0:1' \n")
+               script.write(" \n")
+               script.write("echo \" OMP_NUM_THREADS = $OMP_NUM_THREADS \" \n")
+               script.write("echo \" OMP_DYNAMIC = $OMP_DYNAMIC \" \n")
+               script.write(" \n")
                script.write("./dirac.x\n")
                script.close()
            os.chmod(path_to_script, 509)
            dirac_executable = path_to_script
+
+        if not os.path.isfile(dirac_executable):
+            print_error_message(dirac_executable+' not found!')
+            sys.exit(13)
 
         if self.parallel_run:
             if self.mpirun is None:
@@ -1991,9 +2021,6 @@ class pam_run(pam_enviroment):
     def perform(self):
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            sys.exit()
 
         self.pam_variables.set_dirac_environment()
         self.pam_variables.print_header()
@@ -2004,6 +2031,10 @@ class pam_run(pam_enviroment):
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            self.pam_variables.remove_scratch_dir()
+            sys.exit()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
