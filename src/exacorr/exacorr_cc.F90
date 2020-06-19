@@ -3742,7 +3742,6 @@ print *,'abe',ierr
               m=m+1
 
               if (m.ge.nao*nao) then
-                !call quit(" Cholesky decomposition failed")
                 write (*,*) 'WARNING: Cholesky decomposition failed, error=',D_max
                 exit
               end if
@@ -3757,7 +3756,9 @@ print *,'abe',ierr
               if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Getting Maximum failed!')
               
               if (print_level.gt.4) write(*,'(A20,I8,I8,A9,E18.8,E18.8)') " --- maximum found: ", &
-                                    ind_max(1), ind_max(2), ', value: ',D_el              
+                                    ind_max(1), ind_max(2), ', value: ',D_el     
+         
+              if (abs(D_el)<t_cholesky) exit
 
             end do
 
@@ -3773,6 +3774,8 @@ print *,'abe',ierr
             ierr=exatns_tensor_destroy(P_k)
             ierr=exatns_tensor_destroy(Diag_l)
             ierr=exatns_tensor_destroy(Diag_lk)
+            
+            if (m.ge.nao*nao) exit
 
           end do
 
