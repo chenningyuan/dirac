@@ -864,6 +864,7 @@ module exacorr_ao_to_mo
           ! create a rank-0 tensor
           ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
+          ierr=exatns_tensor_init(scalar, ZERO)
 
           ! get the rank and do the contraction
           rank = tens%get_rank(ierr)
