@@ -149,7 +149,8 @@ contains
      real(8), allocatable   :: integral(:,:,:)
 
      allocate (integral(number_of_spinors,number_of_spinors,2))
-     read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),i=1,number_of_spinors),j=1,number_of_spinors)
+     ! for historical reasons integrals on MRCONEE were written in c rather than fortran order
+     read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),j=1,number_of_spinors),i=1,number_of_spinors)
 
      select case (target)
 
@@ -222,6 +223,7 @@ contains
            call print_2e_integral(filenumber,ikr,jkr,indk(inz),indl(inz),integral,rcw)
 !          make also kramers-related integral if desired
            if (generate_full_list) then
+              integral = integral * sign(1,ikr*jkr*indk(inz)*indl(inz))
               if (rcw == 2) integral(2) = -integral(2)
               call print_2e_integral(filenumber,-ikr,-jkr,-indk(inz),-indl(inz),integral,rcw)
            end if
@@ -241,6 +243,13 @@ contains
      integer :: filenumber
      real(8) :: integral(:,:,:)
      integer :: i, j, rcw, end_index
+     character*20 integral_format
+
+     if (rcw == 2) then
+        integral_format = '(1P,2E24.16,4i4)'
+     else
+        integral_format = '(1P,E24.16,4i4)'
+     endif
 
      do i = 1, number_of_spinors
         if ( generate_lower_triangular ) then
@@ -249,28 +258,12 @@ contains
            end_index = number_of_spinors
         end if
         do j = 1, end_index
-           if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
-              if (rcw .ne. 1) then
-                 write (filenumber_fcidump,'(1P,2E20.12,7i4)') &
-                    integral(i,j,1),                &
-                    integral(i,j,2),                &
-!                    i,                              &
-!                    j,                              &
-                    spinor(i)%index,                              &
-                    spinor(j)%index,                              &
-                    0,                              &
-                    0
-              else
-                 write (filenumber_fcidump,'(1P,E20.12,7i4)') &
-                    integral(i,j,1),                &
-!                    i,                              &
-!                    j,                              &
-                    spinor(i)%index,                              &
-                    spinor(j)%index,                              &
-                    0,                              &
-                    0
-              end if
-           end if
+           write (filenumber_fcidump,integral_format) &
+                 integral(i,j,1:rcw),            &
+                 spinor(i)%index,                &
+                 spinor(j)%index,                &
+                 0,                              &
+                 0
         end do
      end do
   end subroutine
@@ -286,9 +279,9 @@ contains
      logical :: select_integral
 
      if (rcw == 2) then
-        integral_format = '(1P,2E20.12,4i4)'
+        integral_format = '(1P,2E24.16,4i4)'
      else
-        integral_format = '(1P,E20.12,4i4)'
+        integral_format = '(1P,E24.16,4i4)'
      endif
 
      ! check triangularity condition (if the KR integrals are generated, needs checking when the KR integrals are not generated
@@ -546,16 +539,16 @@ contains
 
   do j = 1, number_of_spinors
     if (group_type .ne. 1) then
-        write (filenumber_fcidump,'(1P,2E20.12,7i4)') (spinor(j)%energy),0.0d0,spinor(j)%index,0,0,0
+        write (filenumber_fcidump,'(1P,2E24.16,4i4)') (spinor(j)%energy),0.0d0,spinor(j)%index,0,0,0
     else
-        write (filenumber_fcidump,'(1P,E20.12,7i4)') (spinor(j)%energy),spinor(j)%index,0,0,0
+        write (filenumber_fcidump,'(1P,E24.16,4i4)') (spinor(j)%energy),spinor(j)%index,0,0,0
     end if
   end do
 
   if (group_type .ne. 1) then
-     write (filenumber_fcidump,'(1P,2E20.12,7i4)') core_energy,0.0d0,0,0,0,0
+     write (filenumber_fcidump,'(1P,2E24.16,4i4)') core_energy,0.0d0,0,0,0,0
   else
-     write (filenumber_fcidump,'(1P,E20.12,7i4)') core_energy,0,0,0,0
+     write (filenumber_fcidump,'(1P,E24.16,4i4)') core_energy,0,0,0,0
   end if
 
   deallocate (multiplication_table)
@@ -613,7 +606,7 @@ contains
       do i = 1, number_of_spinors
          do j = 1, number_of_spinors
             if (abs(propr(i,j)) > threshold .or. abs(propi(i,j)) > threshold) then
-              write (filenumber_propint,'(1P,2E20.12,7i4)') &
+              write (filenumber_propint,'(1P,2E20.12,4i4)') &
                  propr(i,j),                &
                  propi(i,j),                &
                  spinor(i)%index,                              &
