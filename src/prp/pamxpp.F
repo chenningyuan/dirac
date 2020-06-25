@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -191,7 +191,8 @@ Chj: MAXRM, MXLOAD
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 C
-      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
+      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
+     &          OMEGA(MAXEXC,NBSYM),
      &          RCNV(MAXEXC,NBSYM), IORBCL(4,*),
      &          ISSYM(MAXEXC,NBSYM),WORK(*)
       CHARACTER TTYP(-1:1)*2
@@ -943,7 +944,7 @@ Chj: MAXRM, MXLOAD
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL FIRST
-      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),ISSYM(*),
+      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),RCNV(*),ISSYM(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IORBCL(4,*),
      &          IBPVC(*),EVALR(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
@@ -1083,7 +1084,7 @@ C
 #include "dcbxpr.h"
       LOGICAL FIRST,TEST
       CHARACTER FILNAM*6,MEMTYP*6,BLANK16*16,BLANK2*2
-      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),RCNV(*),
+      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),RCNV(*),
      &          GPO(NXPAR,NZ),XPO(NXPAR,NZ,MAXEXC),BBUF(*),
      &          CMO(*),EIG(*),IBEIG(*),IORBCL(4,*),ISSYM(*),
      &          IBVEC(*),IBTYP(2,*),EVECR(NREDM,*),EVALR(*),
@@ -1303,7 +1304,8 @@ Chj: MAXRM, MXLOAD
 #include "dcbxpr.h"
 C
       CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2,SYMLAB*5
-      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
+      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
+     &          OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),IBUF(2),ISSYM(MAXEXC,NBSYM),
      &          WORK(*)
       DATA TTYP /'T-','T0','T+'/
@@ -1851,7 +1853,8 @@ C
 C
       PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
      &          D1=1.0D0,D0=0.0D0)
-      DIMENSION ATMPPF(MAXEXC,NPPAPT,NBSYM,*),OMEGA(MAXEXC,NBSYM),
+      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
+     & OMEGA(MAXEXC,NBSYM),
      &          EIG(*),RCNV(MAXEXC,NBSYM),ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
       real(8), allocatable              :: excerg(:),excbuf(:),fval(:,:)
@@ -2040,12 +2043,14 @@ C.....Default case
             ISYM = JFSYM(IBF,IFRP)
             SYMLAB(ISYM)=REP(ISYM-1)//' '
             MEXC=KEXCNV(ISYM)
-            CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF+1),1)
-            DO IEXC = 1,MEXC
-              IEERG(1,IOFF+IEXC) = IEXC
-              IEERG(2,IOFF+IEXC) = ISYM
-            ENDDO
-            IOFF = IOFF + MEXC
+            IF(MEXC.GT.0) THEN
+              CALL DCOPY(MEXC,OMEGA(1,ISYM),1,EXCERG(IOFF+1),1)
+              DO IEXC = 1,MEXC
+                IEERG(1,IOFF+IEXC) = IEXC
+                IEERG(2,IOFF+IEXC) = ISYM
+              ENDDO
+              IOFF = IOFF + MEXC
+            ENDIF
           ENDDO
         ENDDO
         EXCERG(1) = 0.0D0

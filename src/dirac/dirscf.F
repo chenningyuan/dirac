@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3606,14 +3606,12 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           IF(ATHUCK) THEN
             WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
           ELSEIF(BARNUC) THEN
-            WRITE(LUPRI,'(A)')
-     &    ' Using bare nucleus approximation for initial trial vectors.'
             IF (BNCRON) WRITE(LUPRI,'(A/)')
-     &    "             Improved by an "//
-     &    "estimate of the electronic screening (Slater's rules)."
+     &  " Using bare nucleus plus electronic screening (Slater's"//
+     &  " rules) as start potential."
             IF (BNSPON) WRITE(LUPRI,'(A/)')
-     &    "             Improved by a sum of "//
-     &    "atomic screening potentials."
+     &    " Using sum of fitted atomic potentials as start potential.",
+     &    " Reference: arXiv:2002.02587 (small GRASP fit)"
           ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case

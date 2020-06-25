@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -975,15 +975,17 @@ C
 #endif
       CALL SETDCH
       IF (DORLM .AND. .NOT. CAVUSR) THEN
-         KGEOM = 1
-         KMASS = KGEOM + 3*NATOMS
-         KNAT  = KMASS + NATOMS
-         KLAST = KNAT + (NATOMS + 1)/IRAT
-         IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
-     &                                     LWORK)
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
-         CALL DCOPY(3,CMXYZ,1,CAVORG,1)
-         WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
+        KGEOM  = 1
+        KMASS  = KGEOM  + 3*NATOMS
+        KNUMIS = KMASS  + NATOMS
+        KNAT   = KNUMIS + NATOMS
+        KLAST  = KNAT   + (NATOMS + 1)/IRAT
+        IF (KLAST .GT. LWORK) CALL STOPIT('HERDRV','CMMASS',KLAST,
+     &                                    LWORK)
+        CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &              WORK(KNUMIS),IPRDEF)
+        CALL DCOPY(3,CMXYZ,1,CAVORG,1)
+        WRITE(LUPRI,'(/,A,3F12.6)') ' Cavity center (center of mass):',
      &                               (CAVORG(I), I = 1, 3)
       END IF
 C

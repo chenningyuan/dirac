@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -62,6 +62,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IW = LUPRI
 !
 ! iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
+! LV 2020: this set up is weird, but appears to give no problems here in contrast to
+! polprp. If interface problems show up, look at the fixed code in polprp_driver
 !     INTFCE = 'DIRAC     '
       INTFCE = 'DIRAC6    '
       IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '

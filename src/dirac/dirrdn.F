@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1941,7 +1941,7 @@ C
      &         CALL QUIT('*SCF error: negative number of '//
      &                   'closed shell electrons!')
             IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('*SCF erro: odd even number of '//
+     &         CALL QUIT('*SCF error: odd even number of '//
      &                   'closed shell electrons!')
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
@@ -2644,7 +2644,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 19, NTABLE = 24)
+      PARAMETER (NDIR = 20, NTABLE = 25)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2661,13 +2661,14 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  ','*QCORR '/
+     &             '*SCF   ','*KRCI  ','*QCORR ','*LAPLCE'/
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP'/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
+     &             '.LAPLCE'/
 C
       N_WF = 0
 C
@@ -2692,6 +2693,7 @@ C
       DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
       DOPOLPRP= .FALSE.
+      DOLAPLCE= .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2736,7 +2738,8 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123,124),I
+     &                117,118,119,120,121,122,123,124,
+     &                125),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2922,6 +2925,12 @@ C&&&& POLPRP: Calculate polarization propagator for excitations
             N_WF = N_WF + 1
             DIRAC_WF(N_WF) = 'POLPRP'
             GO TO 100
+C&&&& LAPLCE: Laplace transformation test program
+  125    CONTINUE
+            DOLAPLCE = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'LAPLCE'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2983,6 +2992,7 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
      &   ' * Kramers restricted CI calculation'
       IF(DOKRCC)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CC calculation'
+      IF(DOLAPLCE) WRITE(LUPRI,'(A)') ' * Run Laplace test'
 C
 C     Orbital manipulations
 C
@@ -3029,8 +3039,8 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
-     &                I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+     &                20), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -3136,6 +3146,10 @@ C
       ! by new input reader
       call move_to_next_star(word, lucmd)
       go to 200
+!*LAPLCE
+   20 CONTINUE
+      CALL LAPINP(WORD,.FALSE.)
+      GO TO 200
 
     1 CONTINUE
 C
@@ -9004,4 +9018,215 @@ C
         end do
 
       end function
+C======================================================================C
+      SUBROUTINE LAPINP(WORD,RESET)
+C***********************************************************************
+C
+C     Input section for Laplace module (read in old-fashioned Dirac way)
+C
+C     Written by B. Helmich-Paris (Sep 2015)
+C
+C***********************************************************************
+
+      IMPLICIT NONE
+
+C parameters
+#include "priunit.h"
+#include "lapdim.h"
+
+C common blocks
+#include "dcblap.h"
+
+C constants:
+      INTEGER NTABLE
+      CHARACTER*7, CHRERR
+      PARAMETER (NTABLE = 9)
+      PARAMETER (CHRERR = 'LAPINP>')
+
+C input: 
+      CHARACTER*7 WORD
+      LOGICAL   RESET
+      INTENT(IN) RESET
+      INTENT(INOUT) WORD
+
+C local:
+      INTEGER ILAP, MAXCOL, MINCOL, IOS, ITAB, ICHANG
+      LOGICAL SET, NEWDEF, LWGHTS, LXPNTS
+      CHARACTER PROMPT*1, TABLE(NTABLE)*7, WORD1*7
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.MXITER','.NUMPTS','.TOLRNG','.TOLPAR',
+     &            '.TOLLAP','.STEPMX','.XPNTS ','.WGHTS '/
+      DATA SET /.FALSE./
+
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /DCBLAP/
+C     ===================
+C
+      IPRLAP = 1
+      NLAP   = 0
+      MXITER = 100
+      STEPMX = 0.3D0
+      TOLRNG = 1.D-10
+      TOLPAR = 1.D-15
+
+      ! rather conservative accuracy threshold
+      TOLLAP = 1.D-8
+
+      LWGHTS = .FALSE.
+      LXPNTS = .FALSE.
+
+C
+C     Process input for LAPLCE
+C     ========================
+C
+      NEWDEF = (WORD .EQ. '*LAPLCE')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 ITAB = 1, NTABLE
+                  IF (TABLE(ITAB) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9), ITAB
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in LAPINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in LAPINP.')
+    1          CONTINUE
+C&&&& PRINT  - print level in Laplace module
+                  READ(LUCMD,*) IPRLAP
+               GO TO 100
+    2          CONTINUE
+C&&&& MXITER - maximum number of iterations for Newton type algorithms
+                  READ(LUCMD,*) MXITER
+               GO TO 100
+    3          CONTINUE
+C&&&& NLAP   - number of quadrature points
+                  READ(LUCMD,*) NLAP
+               GO TO 100
+    4          CONTINUE
+C&&&& TOLRNG - threshold for converging Newton type algorithms
+                  READ(LUCMD,*) TOLRNG
+               GO TO 100
+    5          CONTINUE
+C&&&& TOLPAR - threshold for converging Newton type algorithms
+                  READ(LUCMD,*) TOLPAR
+               GO TO 100
+    6          CONTINUE
+C&&&& TOLLAP - threshold for converging Newton type algorithms
+                  READ(LUCMD,*) TOLLAP
+               GO TO 100
+    7          CONTINUE
+C&&&& STEPMX - step length in line search algorithm
+                  READ(LUCMD,*) STEPMX
+               GO TO 100
+    8          CONTINUE
+C&&&& XPNTS  - Laplace exponents
+               LXPNTS = (NLAP.GT.0)
+               MAXCOL = 0
+               DO WHILE (MAXCOL.LT.NLAP)
+                MINCOL = MAXCOL+1
+                MAXCOL = MIN(MAXCOL+5,NLAP)
+                READ(LUCMD,*,IOSTAT=IOS) 
+     &            (XPNTS(ILAP),ILAP=MINCOL,MAXCOL)
+                IF (IOS.NE.0) THEN
+                 CALL QUIT(CHRERR//'Error in reading Laplace exponents')
+                ENDIF
+               END DO 
+               GO TO 100
+    9          CONTINUE
+C&&&& WGHTS  - Laplace weights
+               LWGHTS = (NLAP.GT.0)
+               MAXCOL = 0
+               DO WHILE (MAXCOL.LT.NLAP)
+                MINCOL = MAXCOL+1
+                MAXCOL = MIN(MAXCOL+5,NLAP)
+                READ(LUCMD,*,IOSTAT=IOS) 
+     &            (WGHTS(ILAP),ILAP=MINCOL,MAXCOL)
+                IF (IOS.NE.0) THEN
+                 CALL QUIT(CHRERR//'Error in reading Laplace exponents')
+                ENDIF
+               END DO 
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     &            '" not recognized in LAPINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in LAPINP.')
+            END IF
+      END IF
+  300 CONTINUE
+
+C
+C     Post-processing section
+C     =======================
+C
+      ! check if weights and exponents were provided in input file
+      IF (LWGHTS.NEQV.LXPNTS) THEN
+       CALL QUIT(CHRERR//'You need to specify both Laplace '//
+     &                   'exponents and weights!')
+      END IF
+
+      ! if quadrature points not available in input read 
+      ! pre-tabulated start values
+      INILAP = (.NOT.(LWGHTS.AND.LXPNTS))
+
+      ! if number of quadrature points not given or silly
+      ! determine according to accuracy threshold
+      FNDLAP = (NLAP.LT.1)
+
+      IF (IPRLAP.GT.1) THEN
+       WRITE(LUPRI,*) CHRERR,"print level:",IPRLAP
+       WRITE(LUPRI,*) CHRERR,"maximum iteratations:",MXITER
+       WRITE(LUPRI,*) CHRERR,"number of quadrature points:",NLAP
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Maehly algorithms:",TOLRNG 
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Raphson algorithms:",TOLPAR
+       WRITE(LUPRI,*) CHRERR,"accuracy threshold:",TOLLAP 
+       WRITE(LUPRI,*) CHRERR,
+     &  "step length in line search algorithm:",STEPMX 
+       IF (LWGHTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start weights were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,WGHTS(ILAP)
+        END DO
+       END IF
+       IF (LXPNTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start exponents were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,XPNTS(ILAP)
+        END DO
+       END IF
+      END IF
+
+      RETURN
+      END
+C======================================================================C
 !  -- end of dirac/dirrdn.F --

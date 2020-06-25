@@ -1533,6 +1533,8 @@ contains
                                                         nroots=nroots,                &
                                                         verbose=davidson_verbose)
 
+            if (niter == davidson_max_iterations) exit ! should not extend space anymore because this was the final iteration
+
             if (davidson_solve_rhs.and.davidson_overlap_sorting) then
                 if (davidson_complex_mode_with_reals) then
                     c_small_r_old = c_small_r(1:2*nroots,1:nroots)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -3835,14 +3835,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       DIMENSION C(NP)
 C
       V2 = POL2DER(NORDER,C,XOPT)
       OMEGA = SQRT(V2/UM)
-      TEMP  = V2*XTJ/XTM/XTM
+      TEMP  = V2*XTJ/XTANGM10/XTANGM10
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(ILOGG,'(A,1P,E18.4,A)') 
@@ -3869,8 +3867,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
       DIMENSION C(NP)
@@ -4378,4 +4374,35 @@ C***********************************************************************
          ENDIF
       ENDDO
       END
-      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Usym */
+      SUBROUTINE USYM(A,LDA,N)
+C***********************************************************************
+C
+C     Symmetrize an upper triangular matrix
+C
+C***********************************************************************
+       INTEGER LDA,N,I,J
+       REAL*8 A(LDA,N)
+       DO I=2,N
+          DO J=1,I
+            A(I,J) = A(J,I)
+          ENDDO
+       ENDDO
+       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Fdiag */
+      SUBROUTINE FDIAG(A,LDA,N)
+C***********************************************************************
+C
+C     Force diagonal form by zeroing out all non-diagonal elements
+C
+C***********************************************************************
+       INTEGER LDA,N,I,J
+       REAL*8 A(LDA,N)
+       DO I=1,N
+          DO J=1,N
+            IF(I.NE.J) A(I,J) = 0.0D0
+          ENDDO
+       ENDDO
+       END

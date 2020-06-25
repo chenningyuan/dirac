@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -375,6 +375,14 @@ C***** M P 2   N A T U R A L   O R B I T A L S *************************
 C***********************************************************************
 C
         IF(DOMP2NO) CALL MP2NOGEN()
+C
+C***********************************************************************
+C***** L A P L A C E  ---  T E S T             *************************
+C***********************************************************************
+C
+#ifdef HAS_LAPLACE
+        IF(DOLAPLCE) CALL PAMLAPLCE()
+#endif
 C
 C***********************************************************************
 C***** K R - M C S C F *************************************************

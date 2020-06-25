@@ -9,10 +9,12 @@ from runtest_config import configure
 
 assert version_info.major == 2
 
+# filter covers wide range of outputs from SYMADD, SYMGRP, DBLGRP and from basis set processing;
+# also checks the QM-QM nuclear repulsion energy
 f = [
-    get_filter(from_string='SYMGRP:Point group information',
-               num_lines=5,
-               rel_tolerance=1.0e-9)
+    get_filter(from_string='SYMADD: Detection of molecular symmetry',
+               to_string='References for the basis sets',
+               rel_tolerance=1.0e-8)
 ]
 
 options = cli()

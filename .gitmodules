@@ -10,3 +10,6 @@
 [submodule "external/stieltjes"]
 	path = external/stieltjes
 	url = https://gitlab.com/stieltjes/stieltjes.git
+[submodule "external/laplace-minimax"]
+	path = external/laplace-minimax
+	url = https://github.com/bhelmichparis/laplace-minimax.git

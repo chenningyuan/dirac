@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -515,18 +515,13 @@
       CALL QRVEC(WORK(KFREE),LFREE)
 
 
-      if (mzyee*nz > 0) then
-         allocate(vecaee(mzyee*nz))
-         allocate(vecbee(mzyee*nz))
-         allocate(veccee(mzyee*nz))
-      end if
+      allocate(vecaee(max(1,mzyee*nz)))
+      allocate(vecbee(max(1,mzyee*nz)))
+      allocate(veccee(max(1,mzyee*nz)))
 
-      if (mzyep*nz > 0) then
-         allocate(vecaep(mzyep*nz))
-         allocate(vecbep(mzyep*nz))
-         allocate(veccep(mzyep*nz))
-      end if
-
+      allocate(vecaep(max(1,mzyep*nz)))
+      allocate(vecbep(max(1,mzyep*nz)))
+      allocate(veccep(max(1,mzyep*nz)))
 
 !     Perform the vector dot product to obtain the linear
 !     response function values.
@@ -544,12 +539,12 @@
 
       deallocate(cmo)
       deallocate(ibeig)
-      if (allocated(vecaee)) deallocate(vecaee)
-      if (allocated(vecaep)) deallocate(vecaep)
-      if (allocated(vecbee)) deallocate(vecbee)
-      if (allocated(vecbep)) deallocate(vecbep)
-      if (allocated(veccee)) deallocate(veccee)
-      if (allocated(veccep)) deallocate(veccep)
+      deallocate(vecaee)
+      deallocate(vecaep)
+      deallocate(vecbee)
+      deallocate(vecbep)
+      deallocate(veccee)
+      deallocate(veccep)
 !
 !     Formatted print out of result
 !

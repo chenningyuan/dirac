@@ -7,6 +7,7 @@ module vib_prop
    use prop_contribs
    use openrsp_cfg
    use dirac_interface
+   use codata
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -28,10 +29,8 @@ module vib_prop
    private
 
    !physical constants for conversion to non-atomic units
-   real(8), parameter :: cm1 = 1/219474.631371d0, & !1 centimeter-to-minus-one in au
-                         cvl = 137.03599907d0,    & !c-the-velocity-of-light in au
-                         nm  = 10/0.52917706d0,   & !1 nanometer in au
-                         pi  = 3.14159265358979323846D0 !acos(-1d0)
+   real(8), parameter :: cm1 = 1/XTKAYS,   & !1 centimeter-to-minus-one in au
+                         nm  = 10/XTANG      !1 nanometer in au
 
    !field component lables for printing
    character(2) :: fc(3) = (/'Fx','Fy','Fz'/)
@@ -275,10 +274,10 @@ contains
                                   ,'-------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
-               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ', &
-                                  nint((2*pi*cvl/w)/nm),' nm', &
-               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ', &
-                                 -nint((2*pi*cvl/w)/nm),' nm'
+               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ',  &
+                                  nint((2*pi*cvel/w)/nm),' nm', &
+               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ',  &
+                                 -nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(a,13x,a2,18x,a2,18x,a2/)') ' w0 w1',fc
       write (o,'(3(1x,a,3f20.13/))') (fc(i),pol(i,:),i=1,3)
       write (o,'(a,g16.9)')  '@alpha    isotropic: ', &
@@ -320,11 +319,11 @@ contains
          write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
          write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
                   'w',0,' = ',   a,' au =', nint(     a/cm1),' cm-1 ~ ', &
-                                      nint((2*pi*cvl/a     )/nm),' nm',  &
+                                      nint((2*pi*cvel/a     )/nm),' nm', &
                   'w',1,' = ',   b,' au =', nint(     b/cm1),' cm-1 ~ ', &
-                                      nint((2*pi*cvl/b     )/nm),' nm',  &
+                                      nint((2*pi*cvel/b     )/nm),' nm', &
                   'w',2,' = ',-a-b,' au =', nint((-a-b)/cm1),' cm-1 ~ ', &
-                                      nint((2*pi*cvl/(-a-b))/nm),' nm'
+                                      nint((2*pi*cvel/(-a-b))/nm),' nm'
          write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1 w2',fc
          write (o,'(3(/3(1x,2a2,3f20.12/)))') &
                  ((fc(k),fc(l),hyp(k,l,:,ij),l=1,3),k=1,3)
@@ -340,7 +339,7 @@ contains
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
               ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
-                             nint((2*pi*cvl/w(i))/nm),' nm',i=1,4)
+                             nint((2*pi*cvel/w(i))/nm),' nm',i=1,4)
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1w2 w3',fc
       write (o,'(3(3(/3(1x,3a2,3f20.10/))))') &
               (((fc(i),fc(j),fc(k),shyp(i,j,k,:),k=1,3),j=1,3),i=1,3)
@@ -438,11 +437,11 @@ contains
       write (o,'(//21x,a/21x,a/)') 'Vibrational polarizability (au)', &
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
-      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')             &
-               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ', &
-                                  nint((2*pi*cvl/w)/nm),' nm', &
-               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ', &
-                                 -nint((2*pi*cvl/w)/nm),' nm'
+      write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')              &
+               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ',  &
+                                  nint((2*pi*cvel/w)/nm),' nm', &
+               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ',  &
+                                 -nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       pol = 0
       do q=1,nq
@@ -476,7 +475,7 @@ contains
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
               ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
-                             nint((2*pi*cvl/w(i))/nm),' nm',i=1,3)
+                             nint((2*pi*cvel/w(i))/nm),' nm',i=1,3)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       hyp = 0
       do q=1,nq
@@ -537,7 +536,7 @@ contains
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
               ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
-                             nint((2*pi*cvl/w(i))/nm),' nm',i=1,4)
+                             nint((2*pi*cvel/w(i))/nm),' nm',i=1,4)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       shyp = 0
       do q=1,nq

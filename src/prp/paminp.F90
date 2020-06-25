@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -37,6 +37,7 @@
 !       Last revision: June 14 1996 - tsaue
 !
 !***********************************************************************
+         use memory_allocator
 #ifdef MOD_LAO_REARRANGED
          use london_helper
 #endif
@@ -60,11 +61,19 @@
      &          WORD1*7, WRDSRC*7
       DIMENSION WORK(LWORK)
       LOGICAL CHGO
+      double precision, allocatable :: GEOM(:,:),MASS(:)
+      integer, allocatable :: NAT(:),ISOT(:)
 !
 #include "orgcom.h"
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "nuclei.h"
+!
+      allocate(GEOM(NUCDEP,3))
+      allocate(MASS(NATOMS))
+      allocate(NAT(NATOMS))
+      allocate(ISOT(NATOMS))
 !
       DATA TABDIR /'*END OF','*EXPECT','*LINEAR','*EXCITA',             &
      &             '*MOLGRD','*NMR   ','*ESR   ','*QUADRA',             &
@@ -86,7 +95,7 @@
 !                    29        30        31        32
      &             '.NOPCTR','.EXCDIP','.MAGOUT','.OPTROT',             &
 !                    33        34        35        36
-     &             '.C6    ','.XXXXXX','.BXLAO ','.BYLAO ',             &
+     &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
 
@@ -114,6 +123,7 @@
       MSUSCP       = .FALSE.
       IMAGOUT      = 0
       SHIELD       = .FALSE.
+      SPINRO       = .FALSE.
       PVC_SHIELD   = .FALSE.
       PVC_SPINSPIN = .FALSE.
       SPNSPN       = .FALSE.
@@ -351,8 +361,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG rotational g-tensor
-!MI ... at present it is not implemented
+!&&&& ROTG - rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100
@@ -393,6 +402,10 @@
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
+!&&&& SPIN-R - spin-rotation constant according to Aucar et al
+            DOEXP = .TRUE.
+            DOXLR = .TRUE.
+            SPINRO = .TRUE.
             GO TO 100
   135    CONTINUE 
 !&&&& BXLAO 
@@ -452,9 +465,10 @@
       DO I = 1, NPRP_WF
          WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
-
-!MI ...for magnetic susceptibility, NMR shielding constants and rotational
-!MI   g_tensors operator centers might be changed
+!
+!=========================================================================
+!MI   For magnetic susceptibilities, NMR shielding constants and rotational
+!MI   g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -576,6 +590,7 @@
 #ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
 #endif
+
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
 !===========================================================================
@@ -617,6 +632,12 @@
 
       CALL FLSHFO(LUPRI)
       CALL QEXIT('PRPINP')
+
+      deallocate(ISOT)
+      deallocate(NAT)
+      deallocate(MASS)
+      deallocate(GEOM)
+
       RETURN
 !
       END

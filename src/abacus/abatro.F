@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -433,10 +433,10 @@ C
          IF ((I.EQ.1 .AND. (DIPDER .OR. POLAR  .OR. VCD)) .OR.
      &       (I.EQ.2 .AND. (SHIELD .OR. MAGSUS .OR. VCD .OR.
 #ifndef PRG_DIRAC
-     &                      MOLGFA .OR. SPINRO .OR. VROA .OR.
+     &                      ROTG .OR. SPINRO .OR. VROA .OR.
      &                      OPTROT))) THEN
 #else /* PRG_DIRAC */
-     &                      MOLGFA .OR. SPINRO))) THEN
+     &                      ROTG .OR. SPINRO))) THEN
 #endif /* PRG_DIRAC */
             IAXSYM = 0
             IAXREC = 3*NUCDEP

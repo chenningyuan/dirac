@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -674,6 +674,7 @@ C        In 4-component mode Cartesian Gaussians are always used.
       ALLOCATE(NUC(KBLOCK,KSETS))
       ALLOCATE(NRC(KBLOCK,KSETS))
       ALLOCATE(ISGEN(KBLOCK))
+      ISGEN(:) = 0
       ALLOCATE(SEG(KBLOCK,KSETS))
       ALLOCATE(BASREF(10,MXCENT,MXBSETS))
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
@@ -940,7 +941,7 @@ C
       DIMENSION ALPHAT(KPRM,KBLK)
       DIMENSION CPRIMT(KPRM,KPRM,KBLK)
       DIMENSION CPRIMUT(KPRM,KPRM,KBLK)
-      DIMENSION ISGENT(KBLK)
+      CHARACTER*80 BASNAM
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL SEGT
@@ -1013,6 +1014,12 @@ C
               WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..akasjsxxkd')
             ENDIF
+            IF (NONT(I) .LE. 0) THEN
+              WRITE(LUPRI,*) 'Error in line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              WRITE(LUPRI,*) 'Number of atoms became ',NONT(I)
+              CALL QUIT('Error read READ..zz1')
+            END IF
           ELSE IF (.NOT.ZMTTST) THEN
             NSETS = 1
             IF (DOHUCKEL) NSETS = 2
@@ -1025,6 +1032,12 @@ C
               WRITE(LUPRI,*) MLINE(NMLINE)
               CALL QUIT('Error read READ..zzz')
             ENDIF
+            IF (NONT(I) .LE. 0) THEN
+              WRITE(LUPRI,*) 'Error in line',NMLINE,':'
+              WRITE(LUPRI,*) MLINE(NMLINE)
+              WRITE(LUPRI,*) 'Number of atoms became ',NONT(I)
+              CALL QUIT('Error read READ..zz1')
+            END IF
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
               DOHUCKEL = .FALSE.
@@ -1280,8 +1293,8 @@ C
      &                 NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
-     &                 NBLOCK,ISGEN(IBLOCK(1)),KAOVEC,KPRIM,QB,QB,1,DSM,
-     &                 BASREF(1,I,1))
+     &                 NBLOCK,KAOVEC,KPRIM,QB,QB,DSM,
+     &                 UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
                   NBLCK(I,1) = NBLOCK
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
@@ -1334,8 +1347,8 @@ C Note that the Variables with T have dimension KPRM instead of KPRIM!
      &                   ALPHAT(1,IBLOCK1),
      &                   CPRIMT(1,1,IBLOCK1),
      &                   CPRIMUT(1,1,IBLOCK1),
-     &                   NBLOCK,ISGENT(IBLOCK1),KAOVEC,KPRM,Q,Q,1,DSM,
-     &                   BASREFT(1,I,M))
+     &                   NBLOCK,KAOVEC,KPRM,Q,Q,DSM,
+     &                   UNCONT,BASNAM,BASREFT(1,I,M),IPREAD)
 
                      BASREF(3*(M-1)+4,I,1) = BASREFT(1,I,M)
 C
@@ -1392,7 +1405,7 @@ CMI           ... filling up !!! the JCO must be INITIALIZED before !!!
                           NUC(KT,1)  = NUC(KT,1) + NUCT(IR)
                           NRC(KT,1)  = NRC(KT,1) + NRCT(IR)
                           SEG(KT,1)  = SEGT(IR)
-                          ISGEN(KT)  = ISGENT(IR)
+                          ISGEN(KT)  = 0
                           KT = KT + 1
                         ENDIF 
                       ENDIF
@@ -1637,12 +1650,13 @@ C              ===================================
 C
                ELSE IF ((BASIS .OR. (DOHUCKEL .AND. J .EQ. 2))) THEN
                   KAOVEC = KBLOCK + 1 - IBLOCK(2)
+                  BASNAM = 'HUCKEL'
                   CALL BASLIB(IQM(I,J),JCO(1,I,J),NUC(IBLOCK(J),J),
      &                  NRC(IBLOCK(J),J),SEG(IBLOCK(J),J),
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
-     &                  NBLOCK,ISGEN(IBLOCK(J)),KAOVEC,KPRIM,Q,Q,J,DSM,
-     &                  BASREF(1,I,1))
+     &                  NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
+     &                  UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
 C
                ELSE
 C
@@ -1837,8 +1851,8 @@ C
      &             ALPHA(1,IBLOCK(ISET),ISET),
      &             CPRIM(1,1,IBLOCK(ISET),ISET),
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
-     &             NBLOCK,ISGEN(IBLOCK(ISET)),KAOVEC,KPRIM,Q,Q,1,DSM,
-     &             BASREF(1,I,ISET))
+     &             NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
+     &             UNCONT,BASNAM,BASREF(1,I,ISET),IPREAD)
 C
               NBLCK(I,ISET) = NBLOCK
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
@@ -2408,6 +2422,7 @@ C     ******************************************
 C     ***** Printing of basis information  *****
 C     ******************************************
 C
+      IF (NBASIS .LE. 0) IPREAD = MAX(1,IPREAD)
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Atoms and basis sets',1)
          WRITE (LUPRI,'(A,I5 )') '  Number of atom types :',NONTYP
@@ -2522,6 +2537,10 @@ C
          END IF
          WRITE (LUPRI,'(1X,A,1P,D10.2)') 
      &    ' Threshold for integrals (to be written to file):',THRS
+      END IF
+
+      IF (NBASIS.LE.0) THEN
+         CALL QUIT('Fatal error: no basis functions!')
       END IF
 
 CMI   ... prepare the MNF.INP basis set input file for AMFI
@@ -4223,8 +4242,8 @@ C
 #include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
-#include "huckel.h"
 #include "cbirea.h"
+#include "huckel.h"
 #include "argoscom.h"
 #include "argoscomch.h"
 C
@@ -4267,12 +4286,12 @@ C
                       IF (ISYMAO(I,K) .EQ. -1) THEN
                          ISYMAO(I,K) = IEOR(LVAR,IEOR(MVAR,NVAR))
                       ELSE
-                         WRITE (LUPRI,'(1X,A,/,A,/A,2I5)')
+                         WRITE (LUPRI,'(/A/A/A,2I5)')
      &                   ' Incorrect Cartesian transformation input:',
-     &                   ' Components belonging to different irreps '
+     &                   '  Components belonging to different irreps '
      &                   //'have been combined.',
-     &                   ' Angular quantum number and component:',I-1,K
-                         CALL QUIT('Error in input')
+     &                   '  Angular quantum number and component:',I-1,K
+                         CALL QUIT('Error in Cartesian->own bf input')
                       END IF
                    END IF
   220       CONTINUE
@@ -4302,16 +4321,14 @@ C               stabilizer of the center, that is run over a unique set
 C               of symmetry operations transforming between symmetry
 C               dependent centers
 C   * Counting variables:
-C       NSORB   -
-C       NAORBD  -
-C       NAORB   -
+C       NSORB   - SO orbital number
+C       NAORBD  - AO orbital number
+C       NAORB   - AO orbital shell number
 C       NAA     -
-C       NSORBD  -
 C       JKB     -
 C       IRREPN  -
 C*****************************************************************************
       IHNMAO    = 0
-      NSORB     = 0
       NPARSU(1) = 0
       NSYM      = 0
       NPARLA    = 0
@@ -4321,6 +4338,7 @@ C*****************************************************************************
 C
 C     Run over Irreducible Representations LAMBDA
 C
+      NSORB     = 0 ! counter for total SO number over all symmetries
       DO 400 LA = 0, MAXREP
          NAORBD = 0
          NAORB  = 0
@@ -4377,7 +4395,7 @@ C
 #endif
                   IRREPN        = IRREP(NAORB)
                   IRREP(NAORB)  = IRREPN + 1
-C                  IPIND(NSORB)  = IA*2**8 + NA*2**4 + IRREPN
+C                 IPIND(NSORB)  = IA*2**8 + NA*2**4 + IRREPN
                   IPIND(NSORB)  = IA*2**16 + NA*2**8 + IRREPN
                   JTRAN(NSORB)  = JKB
                   INDGEN(NSORB) = IRREPN*2**24 + NA*2**16 + NUMCFA*2**8
@@ -4465,18 +4483,23 @@ C
 C*****************************************************************************
 C       S Y M M E T R Y      O R B I T A L S
 C*****************************************************************************
-      CALL HEADER('Symmetry Orbitals',1)
-      WRITE (LUPRI,'(A,6X,8I5)')
-     &  '  Number of orbitals in each symmetry: ',(NAOS(I),I=1,MAXREP+1)
+      IF (MAXREP.GT.0.AND.IPREAD.GT.0) THEN
+         CALL HEADER('Symmetry Orbitals',1)
+         WRITE (LUPRI,'(A,6X,8I5)')
+     &     '  Number of orbitals in each symmetry: ',
+     &     (NAOS(I),I=1,MAXREP+1)
+      END IF
       IF(DIRAC) THEN
         COMP(1) = 'L'
         COMP(2) = 'S'
-        WRITE (LUPRI,'(A,8I5)')
-     &   '  Number of large orbitals in each symmetry: ',
-     &    (NCOS(I,1),I=1,MAXREP+1)
-        WRITE (LUPRI,'(A,8I5)')
-     &   '  Number of small orbitals in each symmetry: ',
-     &    (NCOS(I,2),I=1,MAXREP+1)
+        IF (IPREAD .GT. 0) THEN
+           WRITE (LUPRI,'(A,8I5)')
+     &        '  Number of large orbitals in each symmetry: ',
+     &        (NCOS(I,1),I=1,MAXREP+1)
+           WRITE (LUPRI,'(A,8I5)')
+     &        '  Number of small orbitals in each symmetry: ',
+     &        (NCOS(I,2),I=1,MAXREP+1)
+        END IF
       ELSE
         COMP(1) = ' '
         COMP(2) = ' '
@@ -4485,19 +4508,22 @@ C*****************************************************************************
       DO 10 LA=1,MAXREP+1
         NBI=NAOS(LA)
         IF (NBI.GT.0) THEN
-          WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
+           IF (MAXREP.GT.0.AND.IPREAD.GT.0)
+     &          WRITE (LUPRI,'(//A,2X,A3,A1,I2,A1/)')
      &          '  Symmetry',REP(LA-1),'(',LA,')'
           DO 20 L=1,NBI
             I=I+1
             ICENT = IPCEN(I)
             J=NUCDEG(ICENT)
-            WRITE (LUPRI,1060) I,NAMN(ICENT),COMP(ICLASS(I)),
-     +         GTOTYP(IPTYP(I)), ITRAN(I,1),
-     *         (CHRSGN(NINT(CTRAN(I,K))),ITRAN(I,K),K=2,J)
+            IF (MAXREP.GT.0.AND.IPREAD.GT.0)
+     &         WRITE (LUPRI,1060) I,NAMN(ICENT),COMP(ICLASS(I)),
+     +            GTOTYP(IPTYP(I)), ITRAN(I,1),
+     *            (CHRSGN(NINT(CTRAN(I,K))),ITRAN(I,K),K=2,J)
    20     CONTINUE
         ELSE
-          WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1)')
-     *      'No orbitals in symmetry',REP(LA-1),'(',LA,')'
+           IF (MAXREP.GT.0.AND.IPREAD.GT.0)
+     &        WRITE (LUPRI,'(//2X,A,2X,A3,A1,I2,A1)')
+     &        'No orbitals in symmetry',REP(LA-1),'(',LA,')'
         END IF
   10  CONTINUE
       IF (IPREAD .GT. 10) THEN
@@ -4518,6 +4544,9 @@ C*****************************************************************************
       END
 C  /* Deck symnco */
       SUBROUTINE SYMNCO(LWORK,WORK)
+C     **********************************************************
+C     ***** Calculate symmetry-adapted nuclear coordinates *****
+C     **********************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -4531,6 +4560,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION WORK(LWORK)
+
       LENGTH = 48*NUCIND
       CALL IZERO(IPTCNT,LENGTH)
       IOFFT = 0
@@ -4540,7 +4570,7 @@ C
          ICENTA = 0
          ICENTB = 0
          DO 110 ICENT = 1,NUCIND ! loop over symmetry-independent centers
-            MULC = ISTBNU(ICENT) 
+            MULC = ISTBNU(ICENT)
             DO 200 IDIRN = 1,3
                ICENTA = ICENTA + 1
                IF (IAND(MULC,IEOR(IREP,ISYMAX(IDIRN,1))).EQ.0)THEN
@@ -4577,16 +4607,16 @@ C
   420    CONTINUE
   400 CONTINUE
 C
-      IF (IPREAD .GE. 20) THEN
+      IF (IPREAD .GT. 10) THEN
          CALL HEADER('Symmetry-adapted nuclear coordinates',-1)
          WRITE(LUPRI,'(11X,8I4)') (IREP, IREP = 0,MAXREP)
          ICENTA = 0
          DO 500 ICENT = 1,NUCIND
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'X', (IPTCNT(ICENTA+1,IREP,1),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Y', (IPTCNT(ICENTA+2,IREP,1),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Z', (IPTCNT(ICENTA+3,IREP,1),IREP = 0,MAXREP)
             ICENTA = ICENTA + 3
   500    CONTINUE
@@ -4594,18 +4624,18 @@ C
          WRITE(LUPRI,'(11X,8I4)') (IREP, IREP = 0,MAXREP)
          ICENTA = 0
          DO 510 ICENT = 1,NUCIND
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'X', (IPTCNT(ICENTA+1,IREP,2),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Y', (IPTCNT(ICENTA+2,IREP,2),IREP = 0,MAXREP)
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I5)')
      *      NAMN(ICENT),'Z', (IPTCNT(ICENTA+3,IREP,2),IREP = 0,MAXREP)
             ICENTA = ICENTA + 3
   510    CONTINUE
          CALL HEADER('Symmetry-adapted nuclei',-1)
          WRITE (LUPRI,'(11X,8I4)') (IREP, IREP = 0, MAXREP)
          DO 520 ICENT = 1, NUCIND
-            WRITE(LUPRI,'(4X,A1,2X,A1,8I4)')
+            WRITE(LUPRI,'(4X,A6,2X,A1,8I6)')
      &      NAMN(ICENT),CHRXYZ(1),(IPTNUC(ICENT,IREP),IREP = 0,MAXREP)
   520    CONTINUE
       END IF
@@ -4619,9 +4649,16 @@ C
       KSCTRA = KCSTRA + NCOOR*NCOOR
       KLAST  = KSCTRA + NCOOR*NCOOR
       IF (KLAST.GT.LWORK) CALL STOPIT('NUCPRO','TRACOR',KLAST,LWORK)
+
+C     Initialize NCRREP(irep,1)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),1,NCOOR,IPREAD)
+
+C     Initialize NCRREP(irep,2)
       CALL TRACOR(WORK(KCSTRA),WORK(KSCTRA),2,NCOOR,IPREAD)
+
+C     Initialize IPTCOR
       CALL TRACR(NCOOR)
+
       END
 C  /* Deck pricar */
       SUBROUTINE PRICAR(WORK,LWORK)
@@ -4629,6 +4666,7 @@ C
 C     This subroutine prints information about atomic coordinates
 C
 C     tuh 081188 - Bush elected
+Clf       031104 - Bush Jr. re-elected
 C
 
       use codata
@@ -5864,10 +5902,11 @@ C
      &    ' Current limit:',MXCENT
         CALL QUIT('*** ERROR *** MXCENT exceeded in ZMAT')
       END
+#ifndef PRG_DIRAC
 C  /* Deck buildz */
-      SUBROUTINE BUILDZ(IPRINT,NSYMOP,IQM,NBLCK,JCO,BASREF,
+      SUBROUTINE BUILDZ(IPRINT,NSYMOP,IQM,NBLCK,JCO,
      &                NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &                KPRIM,DOOWN)
+     &                KPRIM,DOOWN,UNCONT,BASNAM,BASREF)
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
@@ -5880,7 +5919,7 @@ C
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
-      LOGICAL NOORBTS, DOOWN
+      LOGICAL   UNCONT, NOORBTS, DOOWN
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DIMENSION A(MXCENT),B(MXCENT),CZ(MXCENT,3),D(MXCENT)
       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
@@ -5890,7 +5929,7 @@ C
      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
-      CHARACTER*80 BASREF(10,KATOM)
+      CHARACTER*80 BASREF(10,KATOM), BASNAM
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -5900,51 +5939,52 @@ C
 #include "ccom.h"
 #include "molinp.h"
 #include "cbisol.h"
-    1 FORMAT(/'   INTERNAL COORDINATES'/)
+    1 FORMAT(/'   Internal coordinates (Z matrix)'/)
     2 FORMAT(I5,62X,F15.5)
     3 FORMAT(I5,I5,F14.7,43X,F15.5)
     4 FORMAT(I5,I5,F14.7,I5,F14.7,24X,F15.5)
     5 FORMAT(I5,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
-C    6 FORMAT(//,25X,' CARTESIAN COORDINATES in Angstrom',
-C     $      /,14X,'X',24X,'Y',24X,'Z'/)
+C   6 FORMAT(//25X,' CARTESIAN COORDINATES in Angstrom',
+C    &        /14X,'X',24X,'Y',24X,'Z'/)
     7 FORMAT(I5,3(F20.10,5X),F15.5)
-    8 FORMAT(//,25X,' CARTESIAN COORDINATES in bohr',
-     $      /,14X,'X',24X,'Y',24X,'Z'/)
+    8 FORMAT(//25X,' Cartesian coordinates in bohr',
+     &        /14X,'X',24X,'Y',24X,'Z'/)
     9 format(3f20.10)
 C
       IF (SOLVNT) NUCIND = NUCIND - 1
+C
       IF (IPRINT .GT. 2) THEN
          WRITE(LUPRI,1)
          WRITE(LUPRI,2) 1,CHARGE(1)
          IF (NUCIND .LE. 1) GOTO 201
          WRITE(LUPRI,3) 2,IZ(2,1),BL(2),CHARGE(2)
          IF(NUCIND.LE.2) GO TO 201
-         WRITE(LUPRI,4) 3,IZ(3,1),BL(3),IZ(3,2),ALP(3),
-     &                  CHARGE(3)
+         WRITE(LUPRI,4) 3,IZ(3,1),BL(3),IZ(3,2),ALP(3),CHARGE(3)
          IF(NUCIND.LE.3) GO TO 201
-         DO 101 I=4,NUCIND
+         DO I=4,NUCIND
             WRITE(LUPRI,5) I,IZ(I,1),BL(I),IZ(I,2),ALP(I),
      &                     IZ(I,3),BET(I),IZ(I,4),CHARGE(I)
- 101     CONTINUE
+         END DO
  201  CONTINUE
       END IF
-      DO 102 I = 1,NUCIND
-         DO 102 J = 1,3
+      DO J = 1,3
+         DO I = 1,NUCIND
             CZ(I,J) = D0
- 102  CONTINUE
-      DO 20 I = 1,NUCIND
+         END DO
+      END DO
+      DO I = 1,NUCIND
          ALP(I) = ALP(I)*AR
          BET(I) = BET(I)*AR
- 20   CONTINUE
+      END DO
       CZ(2,3) = BL(2)
-      IF ((NUCIND-3) .GE. 0) THEN
+      IF (NUCIND .GE. 3) THEN
          CZ(3,1) = BL(3)*DSIN(ALP(3))
          IF ((IZ(3,1)-1) .EQ. 0) THEN
             CZ(3,3) = BL(3)*DCOS(ALP(3))
          ELSE
             CZ(3,3) = CZ(2,3)-BL(3)*DCOS(ALP(3))
          END IF
-         DO 80 I = 4,NUCIND
+         DO I = 4,NUCIND
             IF((ABS(CZ(I-1,1))-1.0D-6) .LT. D0) THEN
                CZ(I,1) = BL(I)*DSIN(ALP(I))
                ITEMP = IZ(I,1)
@@ -5954,35 +5994,35 @@ C
             ELSE
                GOTO 90
             END IF
- 80      CONTINUE
+         END DO
  90      CONTINUE
          K=I
-         IF ((K-NUCIND) .LE. 0) THEN
+         IF (K .LE. NUCIND) THEN
             DO 250 J = K,NUCIND
-               CAJ = DCOS(ALP(J))
-               SAJ = DSIN(ALP(J))
-               CBJ = DCOS(BET(J))
-               SBJ = DSIN(BET(J))
+               CAJ = COS(ALP(J))
+               SAJ = SIN(ALP(J))
+               CBJ = COS(BET(J))
+               SBJ = SIN(BET(J))
                IF(IZ(J,4) .EQ. 0) THEN
-                  CALL VEC(U1,CZ,IZ(J,2),IZ(J,3))
-                  CALL VEC(U2,CZ,IZ(J,1),IZ(J,2))
-                  CALL VPROD(VP,U1,U2)
+                  CALL V3VEC(U1,CZ,IZ(J,2),IZ(J,3))
+                  CALL V3VEC(U2,CZ,IZ(J,1),IZ(J,2))
+                  CALL V3PROD(VP,U1,U2)
                   R = SQRT(D1 - (U1(1)*U2(1) + U1(2)*U2(2)
      &                 + U1(3)*U2(3))**2)
-                  DO 120 I = 1,3
+                  DO I = 1,3
                      U3(I) = VP(I)/R
- 120              CONTINUE
-                  CALL VPROD(U4,U3,U2)
-                  DO 130 I = 1,3
+                  END DO
+                  CALL V3PROD(U4,U3,U2)
+                  DO I = 1,3
                      VJ(I) = BL(J)*(-U2(I)*CAJ + U4(I)*SAJ*CBJ
      &                    + U3(I)*SAJ*SBJ)
                      ITEMP = IZ(J,1)
                      CZ(J,I)=VJ(I)+CZ(ITEMP,I)
- 130              CONTINUE
+                  END DO
                ELSE
                   IF (IABS(IZ(J,4)) .EQ. 1) THEN
-                     CALL VEC(U1,CZ,IZ(J,1),IZ(J,3))
-                     CALL VEC(U2,CZ,IZ(J,2),IZ(J,1))
+                     CALL V3VEC(U1,CZ,IZ(J,1),IZ(J,3))
+                     CALL V3VEC(U2,CZ,IZ(J,2),IZ(J,1))
                      ZETA = -(U1(1)*U2(1) + U1(2)*U2(2) +U1(3)*U2(3))
                      A(J) = (-CBJ + ZETA*CAJ)/(D1 - ZETA*ZETA)
                      B(J) = (CAJ - ZETA*CBJ)/(D1 - ZETA*ZETA)
@@ -6000,18 +6040,18 @@ C
                         D(J) = IZ(J,4)*(SQRT(D1+A(J)*CBJ-B(J)*CAJ))
      &                       /SQRT(D1-ZETA*ZETA)
                      END IF
-                     CALL VPROD(V3,U1,U2)
-                     DO 200 I = 1,3
+                     CALL V3PROD(V3,U1,U2)
+                     DO I = 1,3
                         U3(I) = A(J)*U1(I)+B(J)*U2(I)+D(J)*V3(I)
                         VJ(I)=BL(J)*U3(I)
                         ITEMP=IZ(J,1)
                         CZ(J,I)=VJ(I)+CZ(ITEMP,I)
- 200                 CONTINUE
+                     END DO
                   ELSE
-                     CALL VEC(U1,CZ,IZ(J,1),IZ(J,3))
-                     CALL VEC(U2,CZ,IZ(J,2),IZ(J,1))
+                     CALL V3VEC(U1,CZ,IZ(J,1),IZ(J,3))
+                     CALL V3VEC(U2,CZ,IZ(J,2),IZ(J,1))
                      ZETA = -(U1(1)*U2(1)+U1(2)*U2(2)+U1(3)*U2(3))
-                     CALL VPROD(V3,U1,U2)
+                     CALL V3PROD(V3,U1,U2)
                      V3MAG = SQRT(V3(1)*V3(1)+V3(2)*V3(2)
      &                    + V3(3)*V3(3))
                      A(J) = V3MAG*CBJ/(D1-ZETA*ZETA)
@@ -6021,12 +6061,12 @@ C
                         B(J)=-B(J)
                      END IF
                      D(J) = B(J)*ZETA+CAJ
-                     DO 240 I = 1,3
+                     DO I = 1,3
                         U3(I) = B(J)*U1(I)+D(J)*U2(I)+A(J)*V3(I)
                         VJ(I) = BL(J)*U3(I)
                         ITEMP = IZ(J,1)
                         CZ(J,I) = VJ(I)+CZ(ITEMP,I)
- 240                 CONTINUE
+                     END DO
                   END IF
                END IF
  250        CONTINUE
@@ -6053,19 +6093,19 @@ C
 C
       IF (IPRINT .GT. 2) THEN
          WRITE(LUPRI,8)
-         DO 305 I=1,NUCIND
+         DO I=1,NUCIND
             WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3),CHARGE(I)
- 305     CONTINUE
+         END DO
       END IF
 C
 C     Move information to HERMIT common blocks
 C
-      DO 410 I=1,NUCIND
-         DO 420 J = 1, 3
+      DO I=1,NUCIND
+         DO J = 1, 3
             CORD(J,I) = CZ(I,J)/XTANG
             IF (ABS(CORD(J,I)).GT. CORMAX) GOTO 5010
- 420     CONTINUE
- 410  CONTINUE
+         END DO
+      END DO
 C
 C     Update MOLECULE.INP. In order to work properly with the symmetry
 C     detection routines we need to sort atoms with similar charge
@@ -6078,21 +6118,21 @@ C
          DO 601 J = I-1, 1, -1
             IF (CHARGE(I) .EQ. CHARGE(J)) THEN
                NONTYP = NONTYP - 1
-               DO 603 L = 1, ITYP
+               DO L = 1, ITYP
                   IF (CHARGE(I) .EQ. CHNON(L)) NONT(L) = NONT(L) + 1
- 603           CONTINUE
+               END DO
                CHARGK = CHARGE(I)
                XCORD  = CORD(1,I)
                YCORD  = CORD(2,I)
                ZCORD  = CORD(3,I)
                NAVNK  = NAMN(I)
-               DO 602 K = I - 1, J + 1, -1
+               DO K = I - 1, J + 1, -1
                   CHARGE(K + 1) = CHARGE(K)
                   CORD(1,K + 1) = CORD(1,K)
                   CORD(2,K + 1) = CORD(2,K)
                   CORD(3,K + 1) = CORD(3,K)
                   NAMN(K + 1)   = NAMN(K)
- 602           CONTINUE
+               END DO
                CHARGE(J + 1) = CHARGK
                CORD(1,J + 1) = XCORD
                CORD(2,J + 1) = YCORD
@@ -6147,8 +6187,8 @@ C
      &               NRC(JBLOCK,1),SEG(JBLOCK,1),
      &               ALPHA(1,JBLOCK,1),
      &               CPRIM(1,1,JBLOCK,1),CPRIMU(1,1,JBLOCK,1),
-     &               NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,J,DSM,
-     &               BASREF(1,I))
+     &               NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
+     &               UNCONT,BASNAM,BASREF(1,I),IPREAD)
          NBLCK(I,1) = NBLOCK
          JBLOCK = JBLOCK + NBLCK(I,1)
          NOORBTS = NOORBTS .AND. IQM(I,1).EQ.0
@@ -6156,9 +6196,9 @@ C
             NHTYP = MAX(NHTYP,IQM(I,1))
             IF (NHTYP .GT. MXQN) GOTO 5000
          END IF
-         DO 610 K = 1,NONT(I)
+         DO K = 1,NONT(I)
             NOORBT(K + IATOM - 2) = NOORBTS
- 610     CONTINUE
+         END DO
  605  CONTINUE
       NMLINE = NMLINE - 1
       IF (SOLVNT) NUCIND = NUCIND + 1
@@ -6172,15 +6212,15 @@ C
      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
          CALL QUIT('Too high angular quantum no. specified in input.')
  5010 CONTINUE
-        WRITE (LUPRI,'(A,E12.6,A/A/A,E12.6)')
+        WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
      &    ' Atomic coordinate ',CORD(J,NUCIND),
      &    ' too large in BUILDZ',
-     &    ' Note: Program is unstable for large coordinates.',
+     &    ' Note: Program is unstable for large coordinate values.',
      &    ' Maximum coordinate value:',CORMAX
         CALL QUIT('*** ERROR: Atomic coordinate too large in BUILDZ')
       END
-C  /* Deck vec */
-      SUBROUTINE VEC(U,C,J,K)
+C  /* Deck V3vec */
+      SUBROUTINE V3VEC(U,C,J,K)
 #include "implicit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
@@ -6197,8 +6237,8 @@ C
   102 CONTINUE
       RETURN
       END
-C  /* Deck vprod */
-      SUBROUTINE VPROD(VP,X,Y)
+C  /* Deck v3prod */
+      SUBROUTINE V3PROD(VP,X,Y)
 #include "implicit.h"
       DIMENSION VP(3),X(3),Y(3)
 C
@@ -6207,6 +6247,7 @@ C
       VP(3)=X(1)*Y(2)-X(2)*Y(1)
       RETURN
       END
+#endif /* PRG_DIRAC */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Getpot */
       FUNCTION GETPOT(Q,IPRINT)
@@ -6393,7 +6434,7 @@ C
          IF (ILEN .GT. 9) THEN
             WRITE (FRMT,'(A2,I2,A3)') '(F',ILEN,'.0)'
          ELSE
-            WRITE (FRMT,'(1X,A2,I1,A3)') '(F',ILEN,'.0)'
+            WRITE (FRMT,'(A3,I1,A3)') ' (F',ILEN,'.0)'
          END IF
          READ (STRING(ISTART:80),FRMT,IOSTAT=IOS) RVAL
          IF (IOS.NE.0) THEN
@@ -6566,14 +6607,14 @@ C
          CALL OUTPUT(FAMEXP,1,NFAMEXP(1),1,1,NFAMEXP(1),1,1,LUPRI)
          IF ( IFLAG .EQ. 2 ) THEN
             CALL HEADER('Exponents for family basis set(2)',-1)
-            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,1,
-     &           LUPRI)
+            CALL OUTPUT(FAMEXP(1,2),1,NFAMEXP(2),1,1,NFAMEXP(2),1,
+     &           -1,LUPRI)
          END IF
       END IF
       RETURN
 C
  5000 CONTINUE
-      WRITE(LUPRI,'(/,A,/,2(A,I3/))')
+      WRITE(LUPRI,'(/A/,2(A,I3/))')
      &     '*** ERROR in GENFAMEXP *** ',
      $     'Illegal value for number of exponents: ',NFAMEXP(1),
      &     'Value must be between 1 and ',MXFAMEXP

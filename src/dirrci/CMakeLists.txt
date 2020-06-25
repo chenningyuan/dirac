@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/dirrci
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,12 +9,10 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_DIRRCI_FORTRAN_SOURCES
- cosbit.h  
- goscom.h
- cidirr.F
- cigenp.F
- cigosc.F
- cimain.F
+   cidirr.F
+   cigenp.F
+   cigosc.F
+   cimain.F
 )
 
 set(FREE_DIRRCI_FORTRAN_SOURCES
@@ -30,6 +29,7 @@ if(ENABLE_RUNTIMECHECK)
     set_source_files_properties(${FIXED_DIRRCI_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
+# Create the module library
 add_library(
     dirrci 
     OBJECT

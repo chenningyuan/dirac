@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -512,13 +512,11 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
-      USE CODATA, ONLY : XFAMU
+      USE CODATA
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
-      PARAMETER (DMP = 1.6726231D-27, ECHARGE = 2.60217733D-19)
       PARAMETER (THRESH = 1.0D-10)
 C
       CHARACTER*(*) TYPE
@@ -1701,7 +1699,7 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
          SPIN = DATNUC(3,ISOTOP,IATOM)
          IF (SPIN .GT. THRESH) THEN
             DISOTP = ABS(ECHARGE*DATNUC(4,ISOTOP,IATOM)
-     &                   /(D4*PI*SPIN*DMP))
+     &                   /(D4*PI*SPIN*UMASS*PMASS))
          ELSE
             DISOTP = D0
          END IF
@@ -2001,6 +1999,7 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
+      USE CODATA, ONLY : XTANG
 #include "implicit.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
@@ -2045,12 +2044,11 @@ C
       IF (IPRINT .GE. 0) THEN
         WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
         WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'
-        WRITE (LUPRI,'(/A,3F12.6)')
+        WRITE (LUPRI,'(/A,4X,3F20.15)')
      &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
       END IF
-! hjaaj Feb. 2016: commented next two lines because au-to-angstrom conversion factor was missing
-!     IF (IPRINT .GE. 2) WRITE(LUPRI,'(//A,3F12.6)')
-!    &     ' Center-of-mass coordinates (A):',(ORIGIN(K),K=1,3)
+      IF (IPRINT .GE. 2) WRITE(LUPRI,'(/A,7X,3F20.15)')
+     &     ' Center-of-mass coordinates (A):',(ORIGIN(K)*XTANG,K=1,3)
       RETURN
       END
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)

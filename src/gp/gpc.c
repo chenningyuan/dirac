@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2018 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -32,7 +32,13 @@
 #endif
 
 #include <math.h>
-#include "fortran_interface.h"
+typedef int64_t fortran_int8_t;
+typedef int32_t fortran_int4_t;
+#ifdef INT_STAR8
+  typedef fortran_int8_t fortran_int_t;
+#else
+  typedef fortran_int4_t fortran_int_t;
+#endif
 
 void printaddr_(void *p)
 {
