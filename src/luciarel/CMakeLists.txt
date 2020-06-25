@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/luciarel # local include files
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -15,6 +16,7 @@ set(FIXED_LUCIAREL_FORTRAN_SOURCES
    vecmat_r.F
 )
 
+#Miro: I had to hide sources from runtimechecking
 set(FIXED_LUCIAREL_FORTRAN_SOURCES_noruntimecheck
    par_lucia_r.F
    property_r.F
@@ -38,9 +40,6 @@ set(FREE_LUCIAREL_FORTRAN_SOURCES
    symmetry_setup.F90
 )
 
-set(LUCIAREL_C_SOURCES
-)
-
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_LUCIAREL_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_LUCIAREL_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
@@ -53,13 +52,14 @@ if(ENABLE_RUNTIMECHECK)
     set_source_files_properties(${FIXED_LUCIAREL_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
 endif()
 
+
+# Create the module library
 add_library(
     luciarel
     OBJECT
     ${FIXED_LUCIAREL_FORTRAN_SOURCES}
     ${FIXED_LUCIAREL_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_LUCIAREL_FORTRAN_SOURCES}
-    ${LUCIAREL_C_SOURCES}
 )
 
 # deal with intermodule dependencies

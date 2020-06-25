@@ -164,7 +164,7 @@ SDFC        Spin-dipole + Fermi contact integrals
 HDO         Half-derivative overlap integrals
 S1MAG       Second order contribution from overlap matrix to magnetic properties
 ANGLON      Angular momentum around the nuclei
-ANGMOM      Electronic angular momentum around the origin
+ANGMOM      Electronic angular momentum around the molecular center of mass
 LONMOM      London orbital contribution to angular momentum
 MAGMOM      One-electron contributions to magnetic moment
 KINENER     Electronic kinetic energy

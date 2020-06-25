@@ -203,6 +203,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
        use interface_grid
+       use codata
 
 #include "implicit.h" 
 #include "priunit.h" 
@@ -327,7 +328,6 @@ C
       MXOPR = 0 
       NTOTAL = 0
       NALL = 0
-      BOHR   = 0.529177249D0
       NATOM = 1
       WRITE(LUPRI,'(A)')
      &  'Atom  Deg   Rmin        Rmax        Step size     #rp     #tp',
@@ -382,7 +382,7 @@ C        loop over radial points
 C        =======================
 C
          SWITCH = .FALSE.
-         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*BOHR)
+         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*XTANG)
          DO 20 IR = 1, NR
             RWT   = RADWT(IR)
             RNODE = RADNDE(IR)

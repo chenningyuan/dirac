@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,EPS,FVO,
+      SUBROUTINE FOLDED (ICURFSS,T1,T2,EPS,FVO,
      &                   BUF1,BUF2,BUF3,S1,S2)
 C
       implicit none
@@ -49,15 +49,14 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),S1(*),S2(*),EPS(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
-      INTEGER ICURFSS,IHEQ
+      INTEGER ICURFSS
 C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "ihm.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
@@ -301,7 +300,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "results.inc"
 #include "ccpar.inc"
 #include "files.inc"
 C
