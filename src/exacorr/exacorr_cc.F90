@@ -3861,7 +3861,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("E(a,b,c)+=V+(l,a)*T(b,c,l)",temp,ooov_ij,t2_k) ! o(4)v(3)
                   ierr=exatns_tensor_contract("E(a,b,c)+=V+(l,a)*T(b,c,l)",temp,ooov_jk,t2_i) ! o(4)v(3)
                   ierr=exatns_tensor_contract("E(a,b,c)+=V+(l,a)*T(b,c,l)",temp,ooov_ki,t2_j) ! o(4)v(3)
-                  if(print_level > 10) write(*,*) " W0 =",print_tensornorm2(temp)
+                  if(print_level > 10) write(*,*) "W[sym] =",print_tensornorm2(temp)
 
                   ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
                   ierr=exatns_tensor_init(w_tensor,ZERO)
@@ -3869,42 +3869,18 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("W(a,b,c)+=E(a,b,c)*O()",w_tensor,temp,one_tensor)
                   ierr=exatns_tensor_contract("W(a,b,c)+=E(b,c,a)*O()",w_tensor,temp,one_tensor)
                   ierr=exatns_tensor_contract("W(a,b,c)+=E(c,a,b)*O()",w_tensor,temp,one_tensor)
-                  if(print_level > 8) write(*,*) " W =",print_tensornorm2(w_tensor)
+                  if(print_level > 10) write(*,*) "W[+T ] =",print_tensornorm2(w_tensor)
 
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
                   call denom%reset(eps_ijk)
                   ierr=exatns_tensor_init(we_tensor,ZERO)
                   ierr=exatns_tensor_contract("E(a,b,c)+=W(a,b,c)*O()",we_tensor,w_tensor,one_tensor)
                   ierr=exatns_tensor_transform(we_tensor,denom)
-                  if(print_level > 8) write(*,*) " WE  =",print_tensornorm2(we_tensor)
 
                   ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("R()+=W(a,b,c)*E(a,b,c)",res_tensor,w_tensor,we_tensor)
                   ierr=exatns_tensor_get_scalar(res_tensor,result_val)
                   t_energy(1)=t_energy(1) - result_val
-
-                  ! Form Y-intermediate and calculate 5th order (T) energy contribution
-                  ierr=exatns_tensor_init(temp,ZERO)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,oovv_ij,t1_k)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,oovv_jk,t1_i)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,oovv_ki,t1_j)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ij,f_k)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_jk,f_i)
-                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ki,f_j)
-                  if(print_level > 12) write(*,*) " Y0 =",print_tensornorm2(temp)
-
-                  ! symmetrization and copy
-                  ierr=exatns_tensor_init(y_tensor,ZERO)
-                  ierr=exatns_tensor_contract("Y(a,b,c)+=E(a,b,c)*O()",y_tensor,temp,one_tensor)
-                  ierr=exatns_tensor_contract("Y(a,b,c)+=E(b,c,a)*O()",y_tensor,temp,one_tensor)
-                  ierr=exatns_tensor_contract("Y(a,b,c)+=E(c,a,b)*O()",y_tensor,temp,one_tensor)
-                  if(print_level > 8) write(*,*) " Y =",print_tensornorm2(y_tensor)
-
-                  !write value
-                  ierr=exatns_tensor_init(res_tensor,ZERO)
-                  ierr=exatns_tensor_contract("R()+=Y(a,b,c)*W(a,b,c)",res_tensor,y_tensor,we_tensor) 
-                  ierr=exatns_tensor_get_scalar(res_tensor,result_val)
-                  t_energy(2)=t_energy(2) + result_val
 
 
                   !Form Y-intermediate and calculate 5th order -T energy contribution
@@ -3924,20 +3900,43 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ki,t1_k,t1_i)
                   ierr=exatns_tensor_contract("E(a,b)+=V(a)*T(b)",t2_ki,t1_i,t1_k,MINUS_ONE)
                   ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ki,t1_j,ONE_THIRD)
-                  if(print_level > 12) write(*,*) " Y0 =",print_tensornorm2(temp)
 
                   ! symmetrization and copy
                   ierr=exatns_tensor_init(y_tensor,ZERO)
                   ierr=exatns_tensor_contract("Y(a,b,c)+=E(a,b,c)*O()",y_tensor,temp,one_tensor)
                   ierr=exatns_tensor_contract("Y(a,b,c)+=E(b,c,a)*O()",y_tensor,temp,one_tensor)
                   ierr=exatns_tensor_contract("Y(a,b,c)+=E(c,a,b)*O()",y_tensor,temp,one_tensor)
-                  if(print_level > 8) write(*,*) " Y =",print_tensornorm2(y_tensor)
+                  if(print_level > 10) write(*,*) "Y[-T ] =",print_tensornorm2(y_tensor)
 
                   !write value
                   ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("R()+=Y(a,b,c)*W(a,b,c)",res_tensor,y_tensor,w_tensor)
                   ierr=exatns_tensor_get_scalar(res_tensor,result_val)
                   t_energy(3)=t_energy(3) + result_val
+
+                  ! Form Y-intermediate and calculate 5th order (T) energy contribution
+                  ierr=exatns_tensor_init(temp,ZERO)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,oovv_ij,t1_k)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,oovv_jk,t1_i)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,oovv_ki,t1_j)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ij,f_k)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_jk,f_i)
+                  ierr=exatns_tensor_contract("E(a,b,c)+=V(a,b)*T(c)",temp,t2_ki,f_j)
+
+                  ! symmetrization and copy
+                  ierr=exatns_tensor_init(y_tensor,ZERO)
+                  ierr=exatns_tensor_contract("Y(a,b,c)+=E(a,b,c)*O()",y_tensor,temp,one_tensor)
+                  ierr=exatns_tensor_contract("Y(a,b,c)+=E(b,c,a)*O()",y_tensor,temp,one_tensor)
+                  ierr=exatns_tensor_contract("Y(a,b,c)+=E(c,a,b)*O()",y_tensor,temp,one_tensor)
+                  if(print_level > 10) write(*,*) "Y[(T)] =",print_tensornorm2(y_tensor)
+
+                  !write value
+                  ierr=exatns_tensor_init(res_tensor,ZERO)
+                  ierr=exatns_tensor_contract("R()+=Y(a,b,c)*W(a,b,c)",res_tensor,y_tensor,we_tensor) 
+                  ierr=exatns_tensor_get_scalar(res_tensor,result_val)
+                  t_energy(2)=t_energy(2) + result_val
+                  
+                  if(print_level > 10) write(*,*) " W[/D ] =",print_tensornorm2(we_tensor)
 
                 end do
               end do

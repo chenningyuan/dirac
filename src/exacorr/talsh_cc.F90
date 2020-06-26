@@ -221,7 +221,8 @@ module talsh_cc
             t1diag = t1diag/sqrt(dble(nocc))
             if (exa_input%do_triples .and. .not.CC2) then
               !Calculate (T) energy correction
-              call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv)
+              call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
+                              int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
             else
               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
@@ -3136,15 +3137,19 @@ module talsh_cc
 
        end subroutine diis
 
-       subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor,ooov_tensor,vovv_tensor,oovv_tensor)
+       subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor, &
+                             ooov_tensor,vovv_tensor,oovv_tensor,print_level)
 
 !        Evaluate +T, -T and (T) energy terms.
 !        Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
+         
+         use talsh_ao_to_mo, only : tensor_norm2
 
          type(talsh_tens_t), intent(inout)  :: t1_tensor, t2_tensor
          type(talsh_tens_t), intent(inout)  :: fov_tensor, ooov_tensor, vovv_tensor, oovv_tensor
          real(8), intent(in)                :: eps_occ(:),eps_vir(:)
          real(8), intent(out)               :: t_energy(3)
+         integer, intent(in)                :: print_level
 
          integer(INTD)     :: t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
          type(talsh_tens_t):: w_tensor, y_tensor, we_tensor
@@ -3243,6 +3248,7 @@ module talsh_cc
                   ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
                   ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
                   ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
+                  if(print_level > 10) write(*,*) "W[sym] =",tensor_norm2(we_tensor)
 
                   ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
                   ierr=talsh_tensor_init(w_tensor)
@@ -3250,15 +3256,18 @@ module talsh_cc
                   ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
                   ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
                   ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
+                  if(print_level > 10) write(*,*) "W[+T ] =",tensor_norm2(w_tensor)
 
                   ! Form Y-intermediate and calculate 5th order -T energy contribution
                   call form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
+                  if(print_level > 10) write(*,*) "Y[-T ] =",tensor_norm2(y_tensor)
                   ierr=talsh_tensor_init(result_tensor)
                   ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   t_energy(3)=t_energy(3) + result_tens(1)
 
                   ! Form Y-intermediate and calculate 5th order (T) energy contribution
                   call form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
+                  if(print_level > 10) write(*,*) "Y[(T)] =",tensor_norm2(y_tensor)
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
                   call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
                   ierr=talsh_tensor_init(result_tensor)
@@ -3269,11 +3278,13 @@ module talsh_cc
                   ierr=talsh_tensor_init(y_tensor)
                   ierr=talsh_tensor_add("W(a,b,c)+=W(a,b,c)",y_tensor,w_tensor)
                   call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
+                  if(print_level > 10) write(*,*) " W[/D ] =",tensor_norm2(w_tensor)
                   ierr=talsh_tensor_init(result_tensor)
                   ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   t_energy(1)=t_energy(1) + result_tens(1)
                end do
             end do
+            if (print_level >2) write (*,*)  't3_energy:',t_energy
          end do
 
 !        We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
