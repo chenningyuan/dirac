@@ -871,8 +871,8 @@
          exa_input%ccd = .true.
       end if
 
-      if (kw_matches(word, '.CCSDTfull')) then
-         exa_input%ccsdt = .true.
+      if (kw_matches(word, '.CCSDfullT')) then
+         exa_input%ccsd_full_t = .true.
       end if
 
       if (kw_matches(word, '.CC2         ')) then 		!L
