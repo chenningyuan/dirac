@@ -3,15 +3,14 @@
 UF6 ECP Test With Kirk Peterson U-O distance  
 .WAVE F  
 .ANALYZE 
-**GENERAL 
+**HAMILTONIAN 
+.ECP 
 **ANALYZE 
 .MULPOP 
 *MULPOP 
 .VECPOP  
  1..40   
  1..40 
-**HAMILTONIAN 
-.ECP 
 **INTEGRALS                                                                                         
 *READIN                                                                                             
 .UNCONTRACT                                                                                         
