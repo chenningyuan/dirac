@@ -14,9 +14,6 @@
      &        BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  PRIBAS, ATOMBA,   &
      &        UNCONT, CNTMAT, LCNTNUUM
 
-      CHARACTER*80 BASNAM
-      COMMON /CBIRET/ BASNAM
-
 !     MAXFAMEXP = maximum number of exponents in family basis sets
       INTEGER MXFAMEXP
       PARAMETER (MXFAMEXP = 100)

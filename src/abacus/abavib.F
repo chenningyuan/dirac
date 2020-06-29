@@ -3282,7 +3282,7 @@ C
 C
 C     Rotational g tensor
 C
-      IF (MOLGFA) THEN
+      IF (ROTG) THEN
          CALL DZERO(GFACAV,9)
          DO IMOD = 1, NUMMOD
             IF (TEMP(ITMP) .LT. THRZER) THEN
@@ -3511,7 +3511,7 @@ C
 C
 C     Rotational g tensor
 C
-      IF (MOLGFA) THEN
+      IF (ROTG) THEN
          CALL HEADER ('Rotational g tensor',-1)
          WRITE (LUPRI,'(4X,A,7X,A,6X,A)') 'Effective geometry',
      &        '<P^(0)_2>_eff','Vibrationally corrected'

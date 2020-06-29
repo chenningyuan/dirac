@@ -73,7 +73,7 @@ DIRAC offers two different nuclear models, run the p-block atom for the point-nu
    .NUCMOD
     1
 
-* finite nucleus (Gaussian, default in DIRAC)::
+* finite nucleus (Gaussian, default in DIRAC except for ``.NONREL`` and ``.ECP``)::
 
    **INTEGRALS
    .NUCMOD

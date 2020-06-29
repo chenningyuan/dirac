@@ -72,10 +72,10 @@
         WRITE(6,*) ' H0 written to disc '
         CALL TODSC(WORK(KFI),NINT1,-1,LU18)
       ELSE IF(IPART.EQ.3) THEN
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
         LU18 = 18
         REWIND (LU18)
         CALL FRMDSC(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
