@@ -193,8 +193,8 @@
           if(efflen.gt.0) then
             call interface_mpi_send(buf,efflen*rcw,MASTER,MSGN,
      &                            global_communicator)
-            deallocate(buf)
           endif
+          if (allocated(buf))  deallocate(buf)
 
 
 !----------------------------------------------------------------
@@ -244,8 +244,9 @@
           if(efflen.gt.0) then
             call interface_mpi_send(buf,efflen*rcw,MASTER,MSGN,
      &                              global_communicator)
-            deallocate(buf)
           endif
+
+          if (allocated(buf))  deallocate(buf)
 
 
 !----------------------------------------------------------------

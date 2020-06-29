@@ -227,7 +227,7 @@ further details. Notice that this PCMSolver input is identical to the one given 
     **DIRAC       
     .WAVE FUNCTION
     **HAMILTONIAN 
-    .NONREL       
+    .NONREL       ! activates also point nuclei
     *PCM          
     .PRINT        
      6            

@@ -35,7 +35,9 @@ is to increase the speed of light (here to 2000 a.u.)::
 Adjusting the nucleus model
 ---------------------------
 Most nonrelativistic programs employ a point nucleus model.
-You can force point nuclei also in DIRAC::
+Point nucleus is default for ``.NONREL`` and Gaussian nucleus
+is default for ```.LEVY-LEBLOND``.
+You can always force point nuclei in DIRAC::
 
   **DIRAC
   [...]
@@ -93,3 +95,4 @@ following DIRAC input file::
 The user should make sure that the geometry is specified in atomic units
 as the conversion factor from Angstrom to AU may be different in the two
 programs.
+

@@ -37,20 +37,8 @@ C
       but that requires a little more coding.
       SORT renamed to PARSRT (it is likely that library routines exist
       called SORT).
-950531-kr: Reorganized the code so that the node programs are
-started only once for a given calculation
 950428-kr+hjaaj;
  Merged with Odense version. Implemented DOINT in PARLOP.
-941219-hjaaj
-(1)  Note: in old HERFCK 'IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD' was
- transferred to TWOINT, do we want to do that in CALINT for ITYPE=3 ???
-(2)  removed JSYMDM,JFCTYP,ITRIPL from /PARINT/ in aba.cdk
-941114-hjaaj
-PARDRV,SDINIT,RVINIT,CALINT:  removed TRIPLE in parameter list
-SDINIT,RVINIT: removed ITRIPL message tag; moved IFCTYP and IREPDM
- message tags after NDMAT message tag
-CALINT: call TWOINT directly instead of CALL HERFCK
-PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 #endif
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
@@ -507,8 +495,14 @@ C     ... not used any more (was used for PVM)
       JLEVYL = 0
       IF (LEVYLE) JLEVYL = 1
 
+      JNONREL = 0
+      IF (NONREL) JNONREL = 1
+
       JTWOCOMP = 0
       IF (TWOCOMP) JTWOCOMP = 1
+
+      JECPCALC = 0
+      IF (ECPCALC) JECPCALC = 1
 
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
@@ -1396,9 +1390,11 @@ C
       SOLVNT = JSOLVN .EQ. 1
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
-      LEVYLE = JLEVYL .EQ. 1
       TWOCOMP = JTWOCOMP .EQ. 1
-      ICEDIF = JCEDIF
+      LEVYLE  = JLEVYL .EQ. 1
+      NONREL  = JNONREL .EQ. 1
+      ECPCALC = JECPCALC .EQ. 1
+      ICEDIF  = JCEDIF
 C
       DO 200 I = 0, MAXREP
          DOREPS(I)  = JDOREP(I+1) .EQ. 1

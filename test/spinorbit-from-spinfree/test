@@ -31,7 +31,7 @@ for inp in ['Rn.x2c.scf_2fs_1iter.inp']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],
-                    extra_args=' --noarch --gb=1.777 --put="DFPCMO.Rn.x2c_sf.scf.v2z.D2h=DFPCMO"',
+                    extra_args=' --noarch --gb=1.777 --ag=3 --put="DFPCMO.Rn.x2c_sf.scf.v2z.D2h=DFPCMO"',
                     filters={'out': f1})
 
 
@@ -40,7 +40,7 @@ for inp in ['Tl.x2c.resolve_2fs_fromSFMO.inp']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],
-                    extra_args=' --noarch --gb=1.777 --put="DFPCMO.Tl.x2c_sf.scf.v2z.D2h=DFPCMO"',
+                    extra_args=' --noarch --gb=1.777 --ag=3 --put="DFPCMO.Tl.x2c_sf.scf.v2z.D2h=DFPCMO"',
                     filters={'out': f2})
 
 
@@ -49,7 +49,7 @@ for inp in ['Tl.x2c.resolve_2fs.inp']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],
-                    extra_args=' --noarch --gb=1.777 --put="DFPCMO.Tl.x2c.scf.v2z.D2h=DFPCMO"',
+                    extra_args=' --noarch --gb=1.777 --ag=3 --put="DFPCMO.Tl.x2c.scf.v2z.D2h=DFPCMO"',
                     filters={'out': f2})
 
 sys.exit(ierr)

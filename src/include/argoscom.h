@@ -1,7 +1,7 @@
 !    -- FILE: argoscom.h --
 !    This is for the ECP routine
-      INTEGER IGRPAG, ECPNUC, ECPNONT(600),                             &
-     &        ndptag, MAXANG(60), irowmax(60,60), ireparg(60,60,100)   
+      INTEGER IGRPAG, ECPNUC, ECPNONT(1000),                            &
+     &       ndptag, MAXANG(200), irowmax(200,200), ireparg(200,200,100) 
       COMMON /argoscom/ IGRPAG, ECPNUC, ECPNONT,                        & 
      &                  ndptag, MAXANG, irowmax, ireparg           
 !

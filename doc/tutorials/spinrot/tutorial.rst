@@ -59,13 +59,13 @@ As an example, we show a calculation of the SR constant of the fluorine nucleus 
 
 .. literalinclude:: spinrot.inp
 
-whereas the molecular input file `HF_acv4z.mol` is
+whereas the molecular input file `HF_cv3z.mol` is
 
-.. literalinclude:: HF_acv4z.mol
+.. literalinclude:: HF_cv3z.mol
 
 The calculation is run using::
 
-   pam --inp=spinrot --mol=HF_acv4z
+   pam --inp=spinrot --mol=HF_cv3z
 
 
 As a result, SR constants are obtained at the coupled Hartree-Fock level. The code also works at the DFT level.
