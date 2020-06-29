@@ -1277,36 +1277,40 @@ module exacorr_ao_to_mo
         allocate(uvv_tensor(m))
 
 !       perform ao to mo transformation for cholesky tensors
-        do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uoo',i
-          ierr=exatns_tensor_create(uoo_tensor(i),vs_str,uoo_id,uoo_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uoo_tensor(i),ZERO)
-          call ao2mo_exat(CD(i),uoo_tensor(i),print_level)
-        end do
+        !do i=1,m
+        !  write (vs_str, '(A3,I9.9)') 'uoo',i
+        !  ierr=exatns_tensor_create(uoo_tensor(i),vs_str,uoo_id,uoo_dims,EXA_DATA_KIND_C8)
+        !  ierr=exatns_tensor_init(uoo_tensor(i),ZERO)
+        !  call ao2mo_exat(CD(i),uoo_tensor(i),print_level)
+        !end do
+        call ao2mo_cholesky(CD,uoo_tensor,uoo_dims,uoo_id,'uoo',m,print_level)
         if (print_level.gt.6) call print_date(' uoo done ')
 
-        do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uov',i
-          ierr=exatns_tensor_create(uov_tensor(i),vs_str,uov_id,uov_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uov_tensor(i),ZERO)
-          call ao2mo_exat(CD(i),uov_tensor(i),print_level)
-        end do
+        ! do i=1,m
+        !   write (vs_str, '(A3,I9.9)') 'uov',i
+        !   ierr=exatns_tensor_create(uov_tensor(i),vs_str,uov_id,uov_dims,EXA_DATA_KIND_C8)
+        !   ierr=exatns_tensor_init(uov_tensor(i),ZERO)
+        !   call ao2mo_exat(CD(i),uov_tensor(i),print_level)
+        ! end do
+        call ao2mo_cholesky(CD,uov_tensor,uov_dims,uov_id,'uov',m,print_level)
         if (print_level.gt.6) call print_date(' uov done ')
 
-        do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uvo',i
-          ierr=exatns_tensor_create(uvo_tensor(i),vs_str,uvo_id,uvo_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uvo_tensor(i),ZERO)
-          call ao2mo_exat(CD(i),uvo_tensor(i),print_level)
-        end do
+        ! do i=1,m
+        !   write (vs_str, '(A3,I9.9)') 'uvo',i
+        !   ierr=exatns_tensor_create(uvo_tensor(i),vs_str,uvo_id,uvo_dims,EXA_DATA_KIND_C8)
+        !   ierr=exatns_tensor_init(uvo_tensor(i),ZERO)
+        !   call ao2mo_exat(CD(i),uvo_tensor(i),print_level)
+        ! end do
+        call ao2mo_cholesky(CD,uvo_tensor,uvo_dims,uvo_id,'uvo',m,print_level)
         if (print_level.gt.6) call print_date(' uvv done ')
 
-        do i=1,m
-          write (vs_str, '(A3,I9.9)') 'uvv',i
-          ierr=exatns_tensor_create(uvv_tensor(i),vs_str,uvv_id,uvv_dims,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uvv_tensor(i),ZERO)
-          call ao2mo_exat(CD(i),uvv_tensor(i),print_level)
-        end do
+        ! do i=1,m
+        !   write (vs_str, '(A3,I9.9)') 'uvv',i
+        !   ierr=exatns_tensor_create(uvv_tensor(i),vs_str,uvv_id,uvv_dims,EXA_DATA_KIND_C8)
+        !   ierr=exatns_tensor_init(uvv_tensor(i),ZERO)
+        !   call ao2mo_exat(CD(i),uvv_tensor(i),print_level)
+        ! end do
+        call ao2mo_cholesky(CD,uvv_tensor,uvv_dims,uvv_id,'uvv',m,print_level)
         if (print_level.gt.6) call print_date(' uvv done ')
 
 !       remove ao cholesky vectors
@@ -1457,6 +1461,100 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_destroy(one_element)
 
       end subroutine get_CC_integrals_chol
+
+      subroutine ao2mo_cholesky(ao_tensor,mo_tensor,mo2_dims,mo2_id,h_str,m,print_level)
+
+!       Transform integral tensor from ao-basis to mo-basis
+
+        implicit none
+
+        type(tens_rcrsv_t), intent(inout) :: ao_tensor(:), mo_tensor(:)
+        integer(INTL),dimension(2)        :: mo2_dims
+        integer(INTD),dimension(2)        :: mo2_id
+        character(len=3)                  :: h_str
+        integer,intent(in)                :: m, print_level
+
+        ! Auxilliary tensors that are created and destroyed inside this subroutine
+        type(tens_rcrsv_t):: coef_tensor(2,2)
+        type(tens_rcrsv_t):: t_tensor
+
+        integer           :: i, ui
+        integer(INTD)     :: ierr,spin, aorank
+        integer(INTD)     :: ao2_id(2), t2_id(2), coef_id(2)
+        integer(INTL)     :: ao2_root(2), t2_root(2), coef_root(2)
+        character(len=9)  :: coef_name
+        character(len=38) :: info_str
+        character(len=12) :: vs_str
+
+        if (print_level >5) call print_date('=== entered ao2mo_cholesky')
+
+!       Determine ranks
+        aorank = ao_tensor(1)%get_rank(ierr)
+        if (ierr.ne.0) call quit('ao2mo_cholesky: ao tensor corrupted (rank)')
+!       Create mo tensor
+
+        if (aorank.eq.2) then
+          call ao_tensor(1)%get_space_ids(ao2_id,ao2_root,ierr)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: ao tensor corrupted (2) ')
+
+          !create temporary tensor
+          t2_id(1)   = mo2_id(1)
+          t2_id(2)   = ao2_id(2)
+          t2_root(1) = mo2_dims(1)
+          t2_root(2) = ao2_root(2)
+          ierr=exatns_tensor_create(t_tensor,'temp',t2_id,t2_root,EXA_DATA_KIND_C8)
+          if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp2 tensor not created')
+
+          !get coefficent tensors
+          do i=1,m
+            coef_id(1)   = ao2_id(i)
+            coef_root(1) = ao2_root(i)
+            coef_id(2)   = mo2_id(i)
+            coef_root(2) = mo2_dims(i)
+            do spin = 1, 2
+              write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
+              ierr=exatns_tensor_create(coef_tensor(spin,i),coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: tensor not created')
+              ierr=exatns_tensor_init(coef_tensor(spin,i),mocoef_initlabel(coef_id(1),coef_id(2),spin))
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: coef_tensor not set')
+              if (print_level>10) write(*,*) "created and initialized coef_tensor ",i,spin, &
+                mocoef_initlabel(coef_id(1),coef_id(2),spin),print_tensornorm2(coef_tensor(spin,i))
+            end do
+          end do
+
+          do ui=1,m
+            write (vs_str, '(A3,I9.9)') h_str,i
+            ierr=exatns_tensor_create(mo_tensor(i),vs_str,mo2_id,mo2_dims,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(mo_tensor(i),ZERO)
+            do spin = 1, 2
+              ierr=exatns_tensor_init(t_tensor,ZERO)
+              i=1 ! first index
+              ierr=exatns_tensor_contract(t_tensor,ao_tensor(ui),coef_tensor(spin,i),"B(p,s)+=A(r,s)*M+(r,p)")
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: contraction 1 failed')
+              i=2  ! second index
+              ierr=exatns_tensor_contract(mo_tensor(ui),t_tensor,coef_tensor(spin,i),"C(p,q)+=B(p,s)*M(s,q)")
+              if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: contraction 2 failed')
+              if (print_level>8) then
+                write (info_str,'(A28,I5,A3,I2)') 'full transformation done: u=',ui,',s=',spin
+                call print_date(info_str)
+              end if
+            end do
+          end do
+
+          do i=1,m
+            do spin = 1, 2
+              ierr=exatns_tensor_destroy(coef_tensor(spin,i))
+            end do
+          end do
+          ierr=exatns_tensor_destroy(t_tensor)
+
+        else
+          call quit('ao2mo_cholesky: wrong rank or mode')
+        end if
+
+        if (print_level >5) call print_date('=== leaving ao2mo_cholesky')
+
+      end subroutine ao2mo_cholesky
 
       subroutine decompose_cholesky_exatensor (CD, m, ao_id, ao_space, t_cholesky, &
                                                  f_delta, exa_blocksize, print_level)
