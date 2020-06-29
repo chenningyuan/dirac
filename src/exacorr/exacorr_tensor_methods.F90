@@ -1396,7 +1396,7 @@ module exacorr_tensor_methods
             do r = 1, tens_dims(3)
               do q = 1, tens_dims(2)
                 do p = 1, tens_dims(1)
-                  t4_tens(p,q,r,s) = t4_tens(p,q,r,s)*t4_tens(p,q,r,s)
+                  t4_tens(p,q,r,s) = conjg(t4_tens(p,q,r,s))*t4_tens(p,q,r,s)
                 end do
               end do
             end do
@@ -1409,7 +1409,7 @@ module exacorr_tensor_methods
                 do r = 1, tens_dims(3)
                   do q = 1, tens_dims(2)
                     do p = 1, tens_dims(1)
-                      t6_tens(p,q,r,s,t,u) = t6_tens(p,q,r,s,t,u)*t6_tens(p,q,r,s,t,u)
+                      t6_tens(p,q,r,s,t,u) = conjg(t6_tens(p,q,r,s,t,u))*t6_tens(p,q,r,s,t,u)
                     end do
                   end do
                 end do
