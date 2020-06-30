@@ -345,8 +345,8 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -362,6 +362,7 @@ C  /* Deck polpri */
 #include "dorps.h"
 #include "symmet.h"
 #include "chrxyz.h"
+C
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0

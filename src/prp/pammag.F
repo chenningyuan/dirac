@@ -37,7 +37,6 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use dirac_cfg
-      use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif

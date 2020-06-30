@@ -1043,10 +1043,10 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+#include "consts.h"
 #include "mxcent.h"
 #include "nuclei.h"
 C

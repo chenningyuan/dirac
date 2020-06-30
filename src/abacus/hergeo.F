@@ -204,8 +204,8 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"

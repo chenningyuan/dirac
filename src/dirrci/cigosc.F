@@ -3569,8 +3569,8 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.06.19, chukyo-u
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
-      use codata
 #include "implicit.h"
+#include "codata.h"
 !
 !     ...for MXCOOR
 #include "mxcent.h"
@@ -3596,6 +3596,7 @@ c#include "dcbbas.h"
 !
       EXTERNAL DDOT
 !-----------------------------------------------------------------------
+!
       IF( IPRINT .GE. 6 ) WRITE(LUPRI,"(' >>>> CLTMOM5')")
       L1 = NRIVEC * N3DIM
 !
