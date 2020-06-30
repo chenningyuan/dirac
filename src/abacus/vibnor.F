@@ -1,8 +1,8 @@
       SUBROUTINE VIBNOR(HESS,AMASS,DKIN,HESSMW,
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C     Find normal coordinates in DNORCR and normal frequences in FREQ
 C     for projected Hessian eigenvalue problem

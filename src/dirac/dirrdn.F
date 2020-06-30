@@ -358,14 +358,14 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "consts.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
-      LOGICAL LBIT, FIND_KEYWORD
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7,MXFORM*6, FMT*6
+     &          WORD1*7, MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
-      LOGICAL   NOGENINP, USER_STOL
+      LOGICAL   LBIT, FIND_KEYWORD, NOGENINP, USER_STOL, SET_CVALUE
+      REAL*8    CSCALE
 C
 #include "dcbgen.h"
 
@@ -383,11 +383,11 @@ C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
-     &             '.PRINT ','.XXXXXX','.PCMOUT','.LINDEP',
+     &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
-     &             '.IMPMOS','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
@@ -402,8 +402,12 @@ C
       DOQJACO    = .FALSE.
       DOIMPMOS   = .FALSE.
 C
+      SET_CVALUE = .FALSE.
+C
+      CODSET     = 'NOCODATA'
+      CALL SET_CODATA_VALUES(CODSET)
+C
       RKBIMP_PRJTHR = 2.0D-5
-
 C
 C     Look for 2c Hamiltonians, ECPCALC, MDIRAC and more
 C
@@ -469,8 +473,10 @@ C
                  ENDIF
             GO TO 100
   102    CONTINUE
-C&&&& CVALUE: Set a different value of light
+C&&&& CVALUE: Set a different value of speed of light (in a.u.)
             READ(LUCMD,*) CVAL
+            SET_CVALUE = .TRUE.
+            CSCALE = CVAL
             GO TO 100
   103    CONTINUE
 C&&&& NOSET: Skip the PAMSET module
@@ -490,6 +496,8 @@ C           and used in some abacus routines. /hjaaj aug 2005
             USRIPR = .TRUE.
             GO TO 100
   106    CONTINUE
+C&&&& PRJTHR
+            READ(LUCMD,*) RKBIMP_PRJTHR
             GO TO 100
   107    CONTINUE
 C&&&& PCMOUT: Write coefficients to formatted DFPCMO
@@ -524,31 +532,11 @@ C
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
             DOACUT = .TRUE.
             GO TO 100
-C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
   114    CONTINUE
+C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
             DOACIN = .TRUE.
             GO TO 100
   115    CONTINUE
-            GO TO 100
-  116    CONTINUE
-C&&&& FAMILY: Family basis (Not yet implemented)
-            FAMILY = .TRUE.
-            GO TO 100
-  117    CONTINUE
-            SKIP2E = .TRUE.
-            GO TO 100
-  118    CONTINUE
-            LOWJACO = .TRUE.
-            GO TO 100
-  119    CONTINUE
-C&&&& RKBIMP: import RKB coefficients
-            DORKBIMP=.TRUE.
-            GO TO 100
-  120    CONTINUE
-C&&&& PRJTHR
-            READ(LUCMD,*) RKBIMP_PRJTHR
-            GO TO 100
-  121    CONTINUE
 C&&&& IMPMOS
             DOIMPMOS = .TRUE.
             READ(LUCMD,*) NFILES
@@ -557,11 +545,44 @@ C&&&& IMPMOS
             END IF
             READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
+  116    CONTINUE
+C&&&& FAMILY: Family basis (Not yet implemented)
+            FAMILY = .TRUE.
+            GO TO 100
+  117    CONTINUE
+C&&&& SKIP2E
+            SKIP2E = .TRUE.
+            GO TO 100
+  118    CONTINUE
+C&&&& LOWJAC
+            LOWJACO = .TRUE.
+            GO TO 100
+  119    CONTINUE
+C&&&& RKBIMP: import RKB coefficients
+            DORKBIMP=.TRUE.
+            GO TO 100
+  120    CONTINUE
+C&&&& CODATA: Choose between CODATA sets
+            READ(LUCMD,*) CODSET
+            CALL UPCASE(CODSET)
+            CALL SET_CODATA_VALUES(CODSET)
+            IF(SET_CVALUE) THEN
+             CVAL = CSCALE
+            ELSE
+             CVAL = CVEL
+            END IF
+            GO TO 100
+  121    CONTINUE
+C&&&& XXXXXX
+            GO TO 100
   122    CONTINUE
+C&&&& XXXXXX
             GO TO 100
   123    CONTINUE
+C&&&& XXXXXX
             GO TO 100
   124    CONTINUE
+C&&&& XXXXXX
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -640,7 +661,7 @@ C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
 C
-      call print_codata_reference
+      call print_codata_reference(CODSET)
 
       WRITE(LUPRI,'(1X,A,F18.7)')
      +   '* The speed of light : ',CVEL
@@ -4720,8 +4741,7 @@ C***********************************************************************
       use codata
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
+#include "consts.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 C
@@ -4733,6 +4753,8 @@ C
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
+C
+      call set_codata_values(CODSET)
 C
 C     Initialize temporary variables
 C     ==============================
@@ -8570,7 +8592,7 @@ C
 C     Position menu file at the specified keyword
 C
 C     Written by L. Visscher, october 2006
-C     Revsision Jan. 2016 hjaaj: Comparison is now case insensitive.
+C     Revision Jan. 2016 hjaaj: Comparison is now case insensitive.
 C
 C***********************************************************************
 #include "implicit.h"

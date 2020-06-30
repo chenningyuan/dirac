@@ -2389,7 +2389,6 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
@@ -2398,7 +2397,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbrho1.h"
-C
+#include "codata.h"
 C
 C     Calculate distance between centers
 C
@@ -2744,7 +2743,6 @@ C
 C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2754,6 +2752,7 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbrho.h"
+#include "codata.h"
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
 C
 #include "ibtfun.h"
