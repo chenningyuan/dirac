@@ -6,6 +6,7 @@ module talsh_cis
     use exacorr_utils
     use intermediates
     use talsh_common_routines
+    use davidson
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
@@ -42,12 +43,14 @@ module talsh_cis
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer(C_INT)       :: ierr
-         complex(8), pointer :: result_tens(:,:,:,:)
+         real(8)   :: r1(:,:)
+         complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:)
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer :: i,j,a,b
+         integer :: bj,ai
 
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
@@ -57,14 +60,13 @@ module talsh_cis
          type(talsh_tens_t) :: id_mat_occ, id_mat_vir
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, vv_dims
-         integer(INTD), dimension(4) :: oooo_dims, vovo_dims
+         integer(INTD), dimension(4) :: oooo_dims, vovo_dims, voov_dims
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
          integer(C_INT)     :: one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CIS control and result variables
-         real(8) :: cis_energy
          real(8) :: t_target_precision
          integer :: ncycles
 
@@ -89,6 +91,9 @@ module talsh_cis
          vovo_dims(2) = nocc
          vovo_dims(3) = nvir
          vovo_dims(4) = nocc
+         voov_dims(1) = nvir
+         voov_dims(2:3) = nocc
+         voov_dims(4) = nvir
 
  !      create identity matrix for the occupied space
          ierr=talsh_tensor_construct(id_mat_occ,C8,oo_dims,init_val=ZERO)
@@ -108,14 +113,14 @@ module talsh_cis
          en ddo
 
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(result_tensor,C8,vovo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(result_tensor,C8,voov_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,result_tens,one_dims)
+         call c_f_pointer(body_p,result_tens,voov_dims)
 
          call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
 
          !Constrcut one-body tensor
-         ierr=talsh_tensor_construct(one-body_tensor,C8,vovo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(one-body_tensor,C8,voov_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
          !compute fock matrix tensor 
@@ -130,18 +135,23 @@ module talsh_cis
          ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,one-body_tensor)
 
+         ! transform tensor to matrix sigma1 and digonal it 
+         do j = 1, nvir
+            do b = 1, nocc
+                do i = 1, nocc
+                    do a = 1, nvir
+                        bj=b+j-1
+                        ai=a+i-1
+                        sigma1(bj,ai)=result_tens(b,i,j,a)
+                    end do 
+                end do
+            end do 
+          end do
 
-         call diagoanl_cis_matrix(result_tens)
+         call diagoanl_cis_matrix(sigma1)
+
          ! print CIS matrix
-         !do b = 1, nvir
-         !   do i = 1, nocc
-         !    do a = 1, nvir
-         !     do j = 1, nocc
-         !       write(*,*) result_tens(b,i,a,j)
-         !    end do
-         !   end do
-         !  end do 
-         ! end do
+
          ierr=talsh_tensor_destruct(id_mat_occ)
          ierr=talsh_tensor_destruct(id_mat_vir)
          ierr=talsh_tensor_destruct(result_tensor)
@@ -150,8 +160,32 @@ module talsh_cis
 
     
 !----------------------------------------------------------------------------------------------------------------------    
-    subroutine diagoanl_cis_matrix
+    subroutine diagoanl_cis_matrix(M)
 
+        integer :: lwork, info
+        character(len=1) :: do_left = 'N', do_right = 'V'
+        real(kind=8), allocatable :: work(:)
+        real(kind=8), allocatable :: rwork(:)
+        integer :: vectors_L, vectors_N
+        complex(kind=8), intent(inout), pointer :: M(:,:)
+        complex(kind=8), pointer :: eValues(:) 
+        complex(kind=8), pointer :: eVectorsR(:,:)
+        complex(kind=8), pointer :: eVectorsL(:,:)
+
+        vectors_N = size(M,1)
+        vectors_L = size(M,2)
+        allocate(eVectorsL(1,vectors_L))
+        allocate(eVectorsR(vectors_N,vectors_L))
+        allocate(eValues(vectors_L))
+        eVectorsR = 0.0d0
+        eValues   = 0.0d0
+        lwork = -1	
+
+        call zgeev (do_left, do_right, vectors_L, M, vectors_L, &
+        eValues, eVectorsL, vectors_L, eVectorsR, vectors_L, &
+        WORK, LWORK, rwork, INFO)
+
+        print(eValues)
 
     end subroutine diagoanl_cis_matrix
 
