@@ -103,6 +103,17 @@ module exacorr_tensor_methods
           procedure, public:: apply=>square_t_apply
         end type square_t
 
+        !setting elements of tensor to zero (1-real, 2-imaginary, 3-complex)
+        type, extends(tens_method_uni_t), public:: set_zero_t
+         integer,private  :: mode 
+         contains
+          procedure, public:: set_zero_init
+          procedure, public:: reset=>set_zero_reset
+          procedure, public:: pack=>set_zero_pack
+          procedure, public:: unpack=>set_zero_unpack
+          procedure, public:: apply=>set_zero_apply
+        end type set_zero_t
+
        contains
 
         function compute_2e_ao_tensor(this,tensor,scalar) result(ierr)
@@ -1492,5 +1503,194 @@ module exacorr_tensor_methods
         end select
 
       end function square
+
+      subroutine set_zero_init(this,mode)
+        implicit none
+        class(set_zero_t), intent(out):: this
+        integer, intent(in)           :: mode
+        
+        if (mode.lt.1 .or. mode.gt.3) call quit ('Error in set_zero_init: wrong mode')
+        this%mode=mode
+
+      end subroutine set_zero_init
+
+      subroutine set_zero_reset(this,mode)
+        implicit none
+        class(set_zero_t), intent(inout) :: this
+        integer, intent(in)           :: mode
+        
+        if (mode.lt.1 .or. mode.gt.3) call quit ('Error in set_zero_reset: wrong mode')
+        this%mode=mode
+
+      end subroutine set_zero_reset
+
+      subroutine set_zero_pack(this,packet,ierr)
+        implicit none
+        class(set_zero_t), intent(in)        :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+
+        call pack_builtin(packet,this%mode)
+
+        if(present(ierr)) ierr=0  
+        return
+      end subroutine set_zero_pack
+
+      subroutine set_zero_unpack(this,packet,ierr)
+        implicit none
+        class(set_zero_t), intent(inout)     :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+
+        call unpack_builtin(packet,this%mode)
+
+        if(present(ierr)) ierr=0
+        return
+      end subroutine set_zero_unpack
+
+      function set_zero_apply(this,tensor,scalar) result(ierr)
+        implicit none
+        integer(INTD) :: ierr, rank
+        class(set_zero_t), intent(in) :: this
+        class(tens_rcrsv_t), intent(inout) :: tensor
+        complex(8), intent(inout), optional :: scalar
+
+        type(tens_dense_t)         :: tens
+        integer(INTL), allocatable :: tens_root(:)
+        integer(INTD), allocatable :: tens_id(:)
+
+        ierr=0
+        tens=tensor%get_dense_adapter(ierr)
+        if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+        rank=tens%num_dims
+        if (rank.gt.4) call quit('Error: only up to 4 dim. implemented in set zero')
+        
+        ierr=setting_zero(this%mode,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
+
+      end function set_zero_apply
+
+      integer function setting_zero(mode,tens_body,tens_dims,tens_bases,rank) result (ierr)
+
+        implicit none
+
+        integer, intent(in)       :: mode
+        type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+        integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+        integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+        integer(INTD)             :: rank
+
+        integer                :: p,q,r,s
+        complex(8),pointer     :: tens1(:)
+        complex(8),pointer     :: tens2(:,:)
+        complex(8),pointer     :: tens3(:,:,:)
+        complex(8),pointer     :: tens4(:,:,:,:)
+        complex(8),pointer     :: tens5(:,:,:,:,:)
+        complex(8),pointer     :: tens6(:,:,:,:,:,:)
+
+        ierr=0
+
+        select case (rank)
+        case (1)
+          call c_f_pointer(tens_body,tens1,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens1=ZERO
+          else if (mode.eq.1) then
+            do p = 1, tens_dims(1)
+                tens1(p) = dcmplx(dreal(tens1(p)),0.D0)
+            end do
+          else if (mode.eq.2) then
+            do p = 1, tens_dims(1)
+                tens1(p) = dcmplx(0.D0,dimag(tens1(p)))
+            end do
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (2)
+          call c_f_pointer(tens_body,tens2,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens2=ZERO
+          else if (mode.eq.1) then
+            do q = 1, tens_dims(2)
+              do p = 1, tens_dims(1)
+                tens2(p,q) = dcmplx(dreal(tens2(p,q)),0.D0)
+              end do
+            end do
+          else if (mode.eq.2) then
+            do q = 1, tens_dims(2)
+              do p = 1, tens_dims(1)
+                tens2(p,q) = dcmplx(0.D0,dimag(tens2(p,q)))
+              end do
+            end do
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (3)
+          call c_f_pointer(tens_body,tens3,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens3=ZERO
+          else if (mode.eq.1) then
+            do r = 1, tens_dims(3)
+              do q = 1, tens_dims(2)
+                do p = 1, tens_dims(1)
+                  tens3(p,q,r) = dcmplx(dreal(tens3(p,q,r)),0.D0)
+                end do
+              end do
+            end do
+          else if (mode.eq.2) then
+            do r = 1, tens_dims(3)
+              do q = 1, tens_dims(2)
+                do p = 1, tens_dims(1)
+                  tens3(p,q,r) = dcmplx(0.D0,dimag(tens3(p,q,r)))
+                end do
+              end do
+            end do
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (4)
+          call c_f_pointer(tens_body,tens4,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens4=ZERO
+          else if (mode.eq.1) then
+            do s = 1, tens_dims(4)
+              do r = 1, tens_dims(3)
+                do q = 1, tens_dims(2)
+                  do p = 1, tens_dims(1)
+                    tens4(p,q,r,s) = dcmplx(dreal(tens4(p,q,r,s)),0.D0)
+                  end do
+                end do
+              end do
+            end do
+          else if (mode.eq.2) then
+            do s = 1, tens_dims(4)
+              do r = 1, tens_dims(3)
+                do q = 1, tens_dims(2)
+                  do p = 1, tens_dims(1)
+                    tens4(p,q,r,s) = dcmplx(0.D0,dimag(tens4(p,q,r,s)))
+                  end do
+                end do
+              end do
+            end do
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (5)
+          call c_f_pointer(tens_body,tens5,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens5=ZERO
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case (6)
+          call c_f_pointer(tens_body,tens6,tens_dims(1:rank))
+          if(mode.eq.3) then
+            tens6=ZERO
+          else 
+            call quit('Error: wrong mode in set zero')
+          end if
+        case default
+          call quit('setting zero: rank not implemented')
+        end select
+      end function setting_zero
 
 end module exacorr_tensor_methods

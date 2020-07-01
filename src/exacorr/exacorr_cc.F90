@@ -519,7 +519,8 @@ module exacorr_cc
          type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
          type(square_t)               :: t_square             ! square matrix elements
          type(set_projection_t)       :: set_proj             ! projection matrix for triples
-         
+         type(set_zero_t)             :: cmplx_zero,imag_zero ! zero out tensors
+
          integer:: min_occ
 
          !Copy user input to local arrays for the definition of MO spaces (for standard CC we only distinguish occupied and virtual spinors)
@@ -623,7 +624,17 @@ module exacorr_cc
          !Register method to square tensor
          ierr=exatns_method_register('Square',t_square)
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Square) failed!')
-        
+         
+         !Register method to set to ZERO
+         call cmplx_zero%set_zero_init(3)
+         ierr=exatns_method_register('ZERO',cmplx_zero)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(cmplx_zero) failed!')
+         
+         !Register method to set imaginary part to zero
+         call imag_zero%set_zero_init(1)
+         ierr=exatns_method_register('ZERO_I',imag_zero)
+         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(imag_zero) failed!')
+
         end subroutine exacorr_cc_methods
 
         subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,print_level)
