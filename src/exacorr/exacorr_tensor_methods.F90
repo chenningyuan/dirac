@@ -1563,7 +1563,6 @@ module exacorr_tensor_methods
         tens=tensor%get_dense_adapter(ierr)
         if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
         rank=tens%num_dims
-        if (rank.gt.4) call quit('Error: only up to 4 dim. implemented in set zero')
         
         ierr=setting_zero(this%mode,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank),rank)
 
