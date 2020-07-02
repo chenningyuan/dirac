@@ -333,6 +333,7 @@ module talsh_cc
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: tau2_tensor
          type(talsh_tens_t) :: cint_tensor
+         type(talsh_tens_t) :: dint_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
@@ -384,6 +385,7 @@ module talsh_cc
             vvvooo_dims(1:3) = nvir
             vvvooo_dims(4:6) = nocc
             ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(dint_tensor,C8,vvoo_dims,init_val=ZERO)
          end if
 
          do iccsd = 1, ncycles
@@ -401,6 +403,9 @@ module talsh_cc
              write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
+
+!aspg: for the moment, will add the contributions to t3 at the end of the list of contractions. a reorganization will be in order
+!      once the correctness of results is established
 
 !NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
 !to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
@@ -518,9 +523,53 @@ module talsh_cc
 !         calculate s3 tensor, adding new terms to t1 and t2 equations
 
           if (CCSDT) then
-             ierr=talsh_tensor_init(s3_tensor)
-             ! adding diagram 1/4 <mn||ef> t^{aef}_{imn} to T1
+
+             ! additional diagrams to singles equation
+             ! <ai|H_NT_3|0>_C term: Diagram S7 from Shavitt and Bartlett
+             ! S7: 1/4 <mn||ef> t^{aef}_{imn} 
              ierr=talsh_tensor_contract("S(a,i)+=V(m,n,e,f)*T(a,e,f,i,m,n)",s1_tensor,int_t%vovo,comm_t%t3,scale=ONE_QUARTER_C)
+
+             ! additional diagrams to doubles equation 
+             ! <abij|H_NT_3|0>_C term: diagrams D10a-D10c from Shavitt and Bartlett
+             ! D10a: f^{e}_{m} t^{abe}_{ijm} 
+             ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,e)*T(a,b,e,i,j,m)",s2_tensor,comm_t%fov,comm_t%t3)
+
+             ! D10b: 1/2 P(ab) <bm||ef> t^{aef}_{ijm}
+             ierr=talsh_tensor_init(dint_tensor)
+             ierr=talsh_tensor_contract("D(a,b,i,j)+=V(b,m,e,f)*T(a,e,f,i,j,m)",dint_tensor,int_t%vovv,comm_t%t3,scale=ONE_HALF)
+             ierr=talsh_tensor_contract("S(a,b,i,j)+=D(b,a,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE)
+
+             ! D10c: -1/2 P(ij) <mn||je> t^{abe}_{imn}
+             ierr=talsh_tensor_init(dint_tensor)
+             ierr=talsh_tensor_contract("D(a,b,i,j)+=V(m,n,j,e)*T(a,b,e,i,m,n)",dint_tensor,int_t%ooov,comm_t%t3,scale=ONE_HALF)
+             ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,j,i)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE)
+
+             ! <abij|H_NT_1T_3|0>_C term: diagrams D11a-D11c from Shavitt and Bartlett
+             ! with the difference that we need the scaling factor in front of these since we are not using restricted indexes i>j, and a>b
+             ! D11a:        <mn||ef> t^{e}_{m} t^{fab}_{nij}
+             ierr=talsh_tensor_init(hoo_aux_tensor)
+             ierr=talsh_tensor_contract("M(n,f)+=V(m,n,e,f)*T(e,m)",hoo_aux_tensor,int_t%oovv,comm_t%t1)
+             ierr=talsh_tensor_contract("S(a,b,i,j)+=M(n,f)*T(f,a,b,n,i,j)",s2_tensor,hoo_aux_tensor,comm_t%t3,scale=ONE_QUARTER_C)
+
+             ! D11b: -P(ab) <mn||ef> t^{a}_{m} t^{efb}_{inj}
+             ! to recall, cint is ovoo
+             ierr=talsh_tensor_init(cint_tensor)
+             ierr=talsh_tensor_init(dint_tensor)
+             ierr=talsh_tensor_contract("C(m,b,i,j)+=V(m,n,e,f)*T(e,f,b,i,n,j)",cint_tensor,int_t%oovv,comm_t%t3)
+             ierr=talsh_tensor_contract("D(a,b,i,j)+=C(m,b,i,j)*T(a,m)",dint_tensor,cint_tensor,comm_t%t1)
+             ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE_QUARTER_C)
+             ierr=talsh_tensor_contract("S(b,a,i,j)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=ONE_QUARTER_C)
+             ! D11c: -P(ij) <mn||ef> t^{e}_{i} t^{afb}_{mnj}
+             ierr=talsh_tensor_init(cint_tensor)
+             ierr=talsh_tensor_init(dint_tensor)
+             ierr=talsh_tensor_contract("C(i,f,m,n)+=V(m,n,e,f)*T(e,i)",cint_tensor,int_t%oovv,comm_t%t1)
+             ierr=talsh_tensor_contract("D(a,b,i,j)+=C+(m,n,i,f)*T(a,b,f,m,n,i)",dint_tensor,cint_tensor,comm_t%t3)
+             ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE_QUARTER_C)
+             ierr=talsh_tensor_contract("S(a,b,j,i)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=ONE_QUARTER_C)
+
+             ! now for the s3 tensor
+             ierr=talsh_tensor_init(s3_tensor)
+
              
           end if
 
