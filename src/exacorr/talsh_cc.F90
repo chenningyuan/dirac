@@ -569,8 +569,75 @@ module talsh_cc
 
              ! now for the s3 tensor
              ierr=talsh_tensor_init(s3_tensor)
+ 
+             ! notation for the permutations: 
+             ! P(ijk)                    => ijk + jik + jki + ikj + kij + kji 
+             ! P( a/bc ) = 1 - Pab - Pac => abc - bac - cba
+             ! P( k/ij ) = 1 - Pik - Pjk => ijk - kji - ikj
+             ! P( k/ij | a/bc ) = 
+             !    P( a/bc )P( k/ij ) = 1 - (Pab + Pac + Pik + Pjk) + (Pab*Pik + Pab*Pjk + Pac*Pik + Pac*Pjk)
+             !                           => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
 
+             ! diagrams
+             ! T1a:      P( k/ij | a/bc ) < bc || dk > t^{ad}_{ij}  
+             ! T1b:    - P( i/jk | c/ab ) < lc || jk > t^{ab}_{il}
+
+             ! T2a:      P( c/ab ) f_{cd} t^{abd}_{ijk}
+             ! T2b:    - P( k/ij ) f_{lk} t^{abc}_{ijl} 
+             ! T2c:  1/2 P( c/ab ) < ab || de > t^{dec}_{ijk}   
+             ! T2d:  1/2 P( k/ij ) < lm || ij > t^{abc}_{lmk} 
+             ! T2e:      P( i/jk | a/bc ) < al || id > t^{dbc}_{ljk} 
+
+             ! T3a:    - P( k/ij | a/bc ) f_{ld} t^{ad}_{ij} t^{bc}_{lk} 
+             ! T3b:      P( i/jk | abc  ) < lb || de > t^{ad}_{il} t^{ec}_{jk} 
+             ! T3c:    - P( ijk  | a/bc ) < lm || dj > t^{ad}_{il} t^{bc}_{mk} 
+             ! T3d: -1/2 P( i/jk | c/ab ) < lc || de > t^{ab}_{il} t^{de}_{jk}
+             ! T3e:  1/2 P( k/ij | a/bc ) < lm || dk > t^{ad}_{ij} t^{bc}_{lm}
+
+             ! T4a:      P( i/jk | c/ab ) < ab || de > t^{d}_{i} t^{ec}_{jk} 
+             ! T4b:      P( k/ij | a/bc ) < lm || ij > t^{a}_{l} t^{bc}_{mk} 
+             ! T4c:    - P( ijk  | a/bc ) < al || id > t^{d}_{j} t^{bc}_{lk}  
+             ! T4d:    - P( i/jk | abc  ) < al || id > t^{b}_{l} t^{dc}_{jk}
+
+             ! T5a:      P( i/jk | a/bc ) < lm || de > t^{ad}_{il} t^{ebc}_{mjk} 
+             ! T5b: -1/2 P( i/jk ) < lm || de > t^{de}_{li} t^{abc}_{mjk}
+             ! T5c: -1/2 P( a/bc ) < lm || de > t^{da}_{lm} t^{ebc}_{ijk}
+             ! T5d: -1/2 P( k/ij | a/bc ) < lm || de > t^{ad}_{ij} t^{bec}_{lmk}
+             ! T5e: -1/2 P( i/jk | c/ab ) < lm || de > t^{ab}_{il} t^{dec}_{jmk}
+             ! T5f:  1/4 P( k/ij ) < lm || de > t^{de}_{ij} t^{abc}_{lmk}
+             ! T5g:  1/4 P( c/ab ) < lm || de > t^{ab}_{lm} t^{dec}_{ijk}
+
+             ! T6a:    - P( i/jk ) f_{ld} t^{d}_{i} t^{abc}_{ljk} 
+             ! T6b:    - P( a/bc ) f_{ld} t^{a}_{l} t^{dbc}_{ijk}
+             ! T6c:      P( i/jk | a/bc ) < al || de > t^{d}_{i} t^{ebc}_{ljk} 
+             ! T6d:    - P( i/jk | a/bc ) < lm || id > t^{a}_{l} t^{dbc}_{mjk}   
+             ! T6e:      P( a/bc ) < la || de > t^{d}_{l} t^{ebc}_{ijk} 
+             ! T6f:    - P( i/jk ) < lm || di > t^{d}_{l} t^{abc}_{mjk}  
+             ! T6g: -1/2 P( abc ) < lb || de > t^{a}_{l} t^{dec}_{ijk}  
+             ! T6h:  1/2 P( ijk ) < lm || dj > t^{d}_{i} t^{abc}_{lmk}
+
+             ! T7a:    - P( i/jk | abc ) < lb || de > t^{d}_{i} t^{a}_{l} t^{ec}_{jk} 
+             ! T7b:      P( ijk | a/bc ) < lm || dj > t^{d}_{i} t^{a}_{l} t^{bc}_{mk}
+             ! T7c:      P( k/ij | a/bc ) < al || de > t^{d}_{i} t^{e}_{j} t^{bc}_{lk}
+             ! T7d:      P( i/jk | c/ab ) < lm || id > t^{a}_{l} t^{b}_{m} t^{dc}_{jk}
+
+             ! T8a:    - P( i/jk | c/ab ) < lm || de > t^{d}_{l} t^{ab}_{im} t^{ec}_{jk}   
+             ! T8b:    - P( ijk | a/bc ) < lm || de > t^{ad}_{il} t^{e}_{j} t^{bc}_{mk}
+             ! T8c:    - P( i/jk | abc ) < lm || de > t^{ad}_{il} t^{b}_{m} t^{ec}_{jk} 
+             ! T8d:  1/2 P( i/jk | c/ab ) < lm || de > t^{a}_{l} t^{db}_{im} t^{ec}_{jk}   
+             ! T8e:  1/2 P( k/ij | a/bc ) < lm || de > t^{a}_{l} t^{de}_{ij} t^{bc}_{mk}
+
+             ! T9a:    - P( i/jk ) < lm || de > t^{d}_{l} t^{e}_{i} t^{abc}_{mjk}
+             ! T9b:    - P( a/bc ) < lm || de > t^{d}_{l} t^{a}_{m} t^{ebc}_{ijk}
+             ! T9c:  1/2 P( j/ik ) < lm || de > t^{d}_{i} t^{abc}_{ljm} t^{e}_{k}
+             ! T9d:  1/2 P( b/ac ) < lm || de > t^{a}_{l} t^{dbe}_{ijk} t^{c}_{m}
+             ! T9e:    - P( i/jk | a/bc ) < lm || de > t^{d}_{i} t^{a}_{l} t^{ebc}_{mjk} 
              
+             ! T10a:     P( k/ij | a/bc ) < lm || de > t^{d}_{i} t^{a}_{l} t^{e}_{j} t^{bc}_{mk}
+             ! T10b:     P( i/jk | c/ab ) < lm || de > t^{d}_{i} t^{a}_{l} t^{b}_{m} t^{ec}_{jk}
+
+             ! after these, we have to rescale s3 since the expressions above assume i > j > k, a > b > c
+
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
