@@ -339,6 +339,7 @@ module talsh_cc
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
          type(talsh_tens_t) :: s1_tensor, s2_tensor, s3_tensor
+         type(talsh_tens_t) :: vvvooo_aux_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
          integer(INTD)      :: result_dims(1)
@@ -386,6 +387,7 @@ module talsh_cc
             vvvooo_dims(1:3) = nvir
             vvvooo_dims(4:6) = nocc
             ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(vvvooo_aux_tensor,C8,vvvooo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(dint_tensor,C8,vvoo_dims,init_val=ZERO)
          end if
 
@@ -524,6 +526,11 @@ module talsh_cc
 !         calculate s3 tensor, adding new terms to t1 and t2 equations
 
           if (CCSDT) then
+             ! note on the variants: 
+             ! onlt adding XXX to CCSD yields CCSDT-1
+             ! adding S7 + D10a + D10b + D10c + T1a + T1b + T2a + T2b to CCSD yields CCSDT-1a
+             ! adding diagrams in CCSDT-1a + D11a + D11b + D11c to CCSD yields CCSDT-1b
+
 
              ! additional diagrams to singles equation
              ! <ai|H_NT_3|0>_C term: Diagram S7 from Shavitt and Bartlett
@@ -580,11 +587,58 @@ module talsh_cc
              !                           => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
 
              ! diagrams
+             ! note on the variants: 
+             ! adding S7+D10a+D10b+D10c+T1a+T1b+T2a+T2b to CCSD yields CCSDT-1a
+             ! adding diagrams in CCSDT-1a + D11a + D11b + D11c to CCSD yields CCSDT-1b
+
              ! T1a:      P( k/ij | a/bc ) < bc || dk > t^{ad}_{ij}  
+             ierr=talsh_tensor_init(vvvooo_aux_tensor)
+             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V+(d,k,b,c)*T(a,d,i,j)",vvvooo_aux_tensor,int_t%vovv,comm_t%t2)
+
+             ! P( k/ij | a/bc ) => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
+             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(b,a,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(a,b,c,k,i,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(b,a,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(b,a,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(c,a,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(c,a,b,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+
              ! T1b:    - P( i/jk | c/ab ) < lc || jk > t^{ab}_{il}
+             ierr=talsh_tensor_init(vvvooo_aux_tensor)
+             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V+(j,k,l,c)*T(a,b,i,l)",vvvooo_aux_tensor,int_t%ooov,comm_t%t2)
+
+             ! - P( i/jk | c/ab ) => - abcijk + cbaijk + acbijk + abcjik + abckji - cbajik - acbjik - cbakji - acbkji
+             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(a,c,b,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(a,b,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(a,b,c,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(c,b,a,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(a,c,b,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(c,b,a,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(a,c,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
 
              ! T2a:      P( c/ab ) f_{cd} t^{abd}_{ijk}
+             ierr=talsh_tensor_init(vvvooo_aux_tensor)
+             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=F(c,d)*T(a,b,d,i,j,k)",vvvooo_aux_tensor,comm_t%fvv,comm_t%t3)
+
+             ! P( c/ab ) => abc - cba - acb 
+             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(a,c,b,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+
              ! T2b:    - P( k/ij ) f_{lk} t^{abc}_{ijl} 
+             ierr=talsh_tensor_init(vvvooo_aux_tensor)
+             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=F(l,k)*T(a,b,c,i,j,l)",vvvooo_aux_tensor,comm_t%foo,comm_t%t3)
+
+             ! - P( k/ij ) => - ijk + kji + ikj
+             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
+             ierr=talsh_tensor_contract("S(a,b,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
+
              ! T2c:  1/2 P( c/ab ) < ab || de > t^{dec}_{ijk}   
              ! T2d:  1/2 P( k/ij ) < lm || ij > t^{abc}_{lmk} 
              ! T2e:      P( i/jk | a/bc ) < al || id > t^{dbc}_{ljk} 
