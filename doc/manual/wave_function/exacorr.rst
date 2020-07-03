@@ -75,6 +75,8 @@ AO to MO integral transformation scheme. In TALSH only 3 and 42 are available.
 In Exatensor 1-4 and 42 are available. 42 uses cholesky decompostion. 
 Scheme 4 reduces the memory by only treating a part of the AO integrals. 
 The other methds keep all AO integrals in memeory. 
+Scheme 0 prints the memory requirements and attempts to allocate the memory 
+without doing the calculation. 
 
 *Default:*
 
