@@ -864,6 +864,7 @@ module exacorr_ao_to_mo
           ! create a rank-0 tensor
           ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
+          ierr=exatns_tensor_init(scalar, ZERO)
 
           ! get the rank and do the contraction
           rank = tens%get_rank(ierr)
@@ -878,6 +879,10 @@ module exacorr_ao_to_mo
               ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c)*D(a,b,c)')
           case(4)
               ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d)*D(a,b,c,d)')
+          case(5)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d,e)*D(a,b,c,d,e)')
+          case(6)
+              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d,e,f)*D(a,b,c,d,e,f)')
           case default
               ierr=1
           end select

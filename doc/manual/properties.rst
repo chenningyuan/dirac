@@ -227,6 +227,44 @@ where appears the relativistic Zeeman operator
 
 expressed in terms of the operator :math:`\hat{\mathbf{m}}_e^{[1]}` associated with the magnetic dipole moment of the electrons and the external magnetic field :math:`\mathbf{B}_0`. Note reference to the gauge origin :math:`G`.
 
+keyword(ROTG)
+
+Evaluate rotational g-tensors: linear response and nuclear contributions, see :cite:`Aucar_JCP2014`.
+
+Elements of the rotational g-tensor are given by
+
+.. math::
+
+   g_{\mu\nu} = g^{nuc}_{\mu\nu} + g^{elec}_{\mu\nu}
+
+with
+
+.. math::
+
+   g^{elec}_{\mu\nu}= - \frac{2 m_p c}{e} \frac{\partial^2}{\partial L_{\mu}\partial B_{0;\nu}}\langle\langle\hat{h}^{BO};\hat{h}^Z\rangle\rangle_0
+
+where appears the first order correction to the Born-Oppenheimer (BO) approximation
+
+.. math::
+
+   \hat{h}^{BO}=-\boldsymbol{\boldsymbol{\omega}}\cdot\hat{\mathbf{J}}_e;
+   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\otimes\mathbf{I}^{-1},
+
+expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the electrons :math:`\hat{\mathbf{J}}_e=\hat{\mathbf{L}}_e+\hat{\mathbf{S}}_e`, and the relativistic Zeeman operator
+
+.. math::
+
+   \hat{h}^Z=-\hat{\mathbf{m}}_e^{[1]}\cdot\mathbf{B}_0;
+   \quad\hat{\mathbf{m}}^{[1]}_e=-\sum_i\frac{e}{2}(\mathbf{r}_{iG}\times c\boldsymbol{\alpha}(i)),
+
+expressed in terms of the operator :math:`\hat{\mathbf{m}}_e^{[1]}` associated with the magnetic dipole moment of the electrons and the external magnetic field :math:`\mathbf{B}_0`. Note reference to the gauge origin :math:`G`.
+
+Results are dimensionless.
+
+The total g-tensor, as well as its linear response and nuclear contributions are always given separately.
+
+Using :ref:`PROPERTIES_.PRINT` 1, the paramagnetic (e-e) and diamagnetic (e-p) parts of the linear response contributions are given separately, together with results for the :math:`\mathbf{L}` and :math:`\mathbf{S}` parts of the linear response.
+
 keyword(SPIN-SPIN COUPLING)
 
 Evaluate indirect spin-spin couplings :cite:`Visscher_jcc1999` . The indirect spin-spin tensor :math:`J_{KL}` associated with nuclei :math:`K` and :math:`L` may be expressed as

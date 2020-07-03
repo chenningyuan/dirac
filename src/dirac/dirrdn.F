@@ -163,7 +163,7 @@ C     Start the xml output and echo the input to the xml output
          write(luxml,'(A)') 'dirac'
          call xml_end('name')
          call xml_begin('version')
-         write(luxml,'(A)') '2013'
+         write(luxml,'(A)') '2019'
          call xml_end('version')
          call xml_end('program')
          call xml_begin('input')
@@ -176,42 +176,42 @@ C     Start the xml output and echo the input to the xml output
          call xml_end('input')
       endif
 
-C
 C     General input
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       REWIND LUCMD
       CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
+
 C     Integral and basis input
-C
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
+
       DOJACO = DOJACO.AND.(NZ.EQ.1)
-C
+
 C     Set DCB common blocks - first time
 C     ========================================
 C     (will be done the second time in PAMSET)
-C
+
       CALL SETDC1(IPREAD)
-C
+
 C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
-C
+
       CALL GETLAB(IPREAD)
-C
+
 C     Define Hamiltonian
-C
+
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
-C     Initialize PE library
-C
+
 #ifdef HAS_PELIB
+C     Initialize PE library
+
       IF (PEQM) THEN
         CALL PELIB_IFC_INIT()
       END IF
@@ -405,7 +405,7 @@ C
       RKBIMP_PRJTHR = 2.0D-5
 
 C
-C     Look for 2c. Hamiltonians, MDIRAC and more
+C     Look for 2c Hamiltonians, ECPCALC, MDIRAC and more
 C
       CALL HAMSCAN
 C
@@ -4880,7 +4880,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 12)
+      PARAMETER (NTABLE = 72,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4898,6 +4898,7 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
+#include "orgcom.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -4944,7 +4945,9 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT ', '.FAKE2C',
+!                   69        70        71        72
+     &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4995,7 +4998,11 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-      ECPCALC = .FALSE.
+!     ECPCALC = .FALSE. - already set in HAMSCAN
+      ORIGIN(1:3) = 0.0d0
+      GAGORG(1:3) = 0.0d0
+      GAGORG_SET = .FALSE.
+      DIPORG(1:3) = 0.0d0
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -5111,7 +5118,8 @@ C     Keep track of number of changes and added finite field operators
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162,163,164,165,166,167,168),I
+     &                161,162,163,164,165,166,167,168,169,170,
+     &                171,172),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -5120,9 +5128,9 @@ C     Keep track of number of changes and added finite field operators
            GO TO 100
          END IF
          WRITE (LUPRI,'(/,3A,/)')
-     *       ' Keyword ',WORD,' not recognized in HAMINP.'
+     *       ' Keyword ',WORD,' not recognized under **HAMILTONIAN.'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal keyword in HAMINP.')
+         CALL QUIT('Illegal keyword under **HAMILTONIAN.')
   101    CONTINUE
 C&&&& PRINT: Print level for Hamiltonian
            READ(LUCMD,*) IPRHAM
@@ -5139,9 +5147,9 @@ C&&&& OPERATOR: Read in additional  operator, the print level is IPRGEN from the
            N1OPER = N1OPER + 1
            IF(N1OPER.GT.MAX1OPER) THEN
              WRITE(LUPRI,'(A)')
-     &       '***** HAMINP ERROR *****',
+     &       '***** **HAMILTONIAN ERROR *****',
      &       'Redimension MAX1OPER of /CBIHAM/ !'
-             CALL QUIT('HAMINP: beyond MAX1OPER !')
+             CALL QUIT('**HAMILTONIAN: beyond MAX1OPER !')
            ENDIF
            IPR1OP(N1OPER) = INDXPR
            ICHANG = ICHANG + 1
@@ -5317,13 +5325,13 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
                READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT,IGTINT
                IF (IOS.NE.0) THEN
                 CALL QUIT(
-     &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT,IGTINT')
+     &   '**HAMILTONIAN: Error in reading .INTFLG with Gaunt')
                ENDIF
             ELSE
                READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT
                IF (IOS.NE.0) THEN
                 CALL QUIT(
-     &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT')
+     &   '**HAMILTONIAN: Error in reading INTFLG without Gaunt')
                ENDIF
                INTFLG_CHANGE = .TRUE.
             END IF
@@ -5339,17 +5347,17 @@ C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
                WRITE(LUPRI,'(2X,A)')
-     &         'HAMINP: Error in reading .BSS/IBSS'
+     &         '**HAMILTONIAN: Error in reading .BSS/IBSS'
                WRITE(LUPRI,*) 'IBSS=',IBSS
                CALL QUIT(
-     &         'HAMINP: Error in reading of .BSS/IBSS')
+     &         '**HAMILTONIAN: Error in reading of .BSS/IBSS')
              ENDIF
 C
 C            Check that we have not defined operators yet,
 C            as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
-     &        'HAMINP:give .BSS option before .OPERAT !')
+     &        '**HAMILTONIAN:give .BSS option before .OPERAT !')
              ENDIF
             GO TO 100
 
@@ -5432,8 +5440,8 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
 C           Check that we have not defined operators yet,
 C           as they need to be modified within BSS transformations
             IF (I_FINFIELD.GT.0) THEN
-              CALL QUIT(
-     &       'HAMINP: specify the .X2COLD option before .OPERAT !')
+              CALL QUIT('**HAMILTONIAN:'//
+     &         ' specify the .X2COLD option before .OPERATOR !')
             ENDIF
             GO TO 100
   137     CONTINUE
@@ -5447,7 +5455,7 @@ C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
-     &        'HAMINP: specify the .X2C option before .OPERAT !')
+     &        '**HAMILTONIAN: specify the .X2C option before .OPERAT !')
              ENDIF
              GO TO 100
   138     CONTINUE
@@ -5509,7 +5517,7 @@ C    Check that we have not defined operators yet,
 C      as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
-     &        'HAMINP:give .BSS option before .OPERAT !')
+     &        '**HAMILTONIAN:give .BSS option before .OPERAT !')
              ENDIF
 C&&& BSS4: do BSS in 4c-mode
              GO TO 100
@@ -5599,7 +5607,8 @@ CMI&& Activate 4c-2c MO transformation
 #ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
 #else
-          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+          call quit(
+     &     '**HAMILTONIAN: PCMSolver not compiled, no PCM available!')
 #endif
           GOTO 100
 ! .HFXATT
@@ -5608,16 +5617,18 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .xB
   159     CONTINUE
+          call quit('.xB not implemented in this version')
           GOTO 100
 ! .xC
   160     CONTINUE
+          call quit('.xC not implemented in this version')
           GOTO 100
 
-
-!         ECP
+! .ECP
   161     CONTINUE
           ECPCALC = .TRUE.
           TWOCOMP = .TRUE.
+          DOLVC   = .FALSE.
           GO TO 100
 
   162     CONTINUE
@@ -5634,7 +5645,7 @@ C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
             CALL QUIT(
-     &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
+     &     '**HAMILTONIAN: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
           GO TO 100
   163     CONTINUE
@@ -5678,16 +5689,56 @@ C..TODO: check for inconsistencies and add stops
             SPINFR  = .TRUE.
             DOLVC   = .FALSE.
           GO TO 100
+  169     CONTINUE
+!&&&& GAUGEO
+          READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+          GAGORG_SET = .TRUE.
+          IF (IOS.NE.0) THEN
+            CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+          ENDIF
+          GO TO 100
+  170     CONTINUE
+!&&&& GO ANG
+          GO TO 100
+!         read user specified gauge origin in angstrom
+          read(lucmd, *, iostat=ios) gagorg
+          GAGORG_SET = .TRUE.
+          if (ios /= 0) then
+            call quit('error in reading .GO ANG')
+          end if
+!         convert from angstrom to bohr
+          gagorg = gagorg/xtang
+  171     CONTINUE
+!&&&& DIPORG
+          READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
+          IF (IOS.NE.0) THEN
+            CALL QUIT('Error in reading DIPORG(1:3)')
+          ENDIF
+          GO TO 100
+  172     CONTINUE
+!&&&& PHASEO
+          READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
+          IF (IOS.NE.0) THEN
+            WRITE(LUPRI,*) 'Error in reading ORIGIN(1:3) !'
+            WRITE(LUPRI,*) 'ORIGIN(1:3) :', (ORIGIN(I),I=1,3)
+            CALL QUIT('Error in reading ORIGIN(1:3) !')
+          ENDIF
+          GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
         WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *         '" not recognized in HAMINP.'
+     *         '" not recognized for **HAMILTONIAN.'
         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-        CALL QUIT('Illegal prompt in HAMINP.')
+        CALL QUIT('Illegal prompt for **HAMILTONIAN.')
       END IF
   300 CONTINUE
 
+      WRITE (LUPRI,'(/A/,(A,3F20.15))')
+     &    ' One-electron operator origins:',
+     &    ' - General operator origin (a.u.)       :', ORIGIN(1:3),
+     &    ' - Magnetic gauge origin (a.u.)         :', GAGORG(1:3),
+     &    ' - Dipole (and multipole) origin (a.u.) :', DIPORG(1:3)
 
       if (dirac_cfg_fde) then
          call fde_input_init(lupri,'DIRAC.OUT')
@@ -5737,7 +5788,7 @@ C
      $   CALL QUIT('FREEPJ, VEXTPJ, or LEVYLE require URKBAL = .FALSE.')
 C
       IF(FREEPJ.AND.VEXTPJ) THEN
-        WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
+        WRITE(LUPRI,'(A)') '***** **HAMILTONIAN ERROR *****'
         WRITE(LUPRI,'(A)') 'You cannot specify both VEXTPJ and FREEPJ !'
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
@@ -5769,7 +5820,7 @@ CMI   ... take care of 2c-4c/4c-2c transitions !
 CMI     Remove inconsistencies for the TWOCOMP option
       IF (TWOCOMP.AND.(LEVYLE.OR.
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
-        WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
+        WRITE(LUPRI,'(A)') '***** **HAMILTONIAN ERROR *****'
         WRITE(LUPRI,'(A)')
      &  'You cannot specify both TWOCOMP and other otions '//
      &  ' (LEVYLE.OR.URKBAL.OR.FREEPJ.OR.VEXTPJ)!'
@@ -5781,38 +5832,38 @@ C
 C     Remove inconsistencies for the BSS/X2C option
 C     =====================================================
       IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.(BSS.or.x2c)) THEN
-          CALL QUIT(
-     &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'DO2C4C/DO4C2C/USEDF options require BSS keyword !')
       ENDIF
 
       IF (BSS .or. x2c) THEN
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
-          CALL QUIT(
-     &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
         IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
      &      .not.x2cmod_mmf)THEN
-          CALL QUIT(
-     &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
+          CALL QUIT('**HAMILTONIAN: '//
+     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
      &    & BSS/X2C !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
-         CALL QUIT(
-     &   'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS/X2C!')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'Conflicting options URKBAL/SPINFR2 & BSS/X2C!')
         ENDIF
 C ...   DIRCON(1) means contracted L component basis set !
         IF (ZORA) THEN
-          CALL QUIT(
-     &    'HAMINP: Conflicting options ZORA & BSS/X2C !')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'Conflicting options ZORA & BSS/X2C !')
         ENDIF
 
 CMI  ... check not combining .IOTC, .DKH1, .DKH2
         IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
-          WRITE(LUPRI,'(/,2x,3(A,L6))')
-     &    'HAMINP: conflicting options; IOTC=',IOTC,' DKH1=',DKH1,
-     &    ' DKH2=',DKH2
-          CALL QUIT('HAMINP: Conflicting options IOTC & DKH1 or '//
-     &    'DKH2 & DKH2 or IOTC & DKH1 !')
+          WRITE(LUPRI,'(/3(A,L6))')
+     &    '**HAMILTONIAN: conflicting options; IOTC=',IOTC,
+     &    ' DKH1=',DKH1,' DKH2=',DKH2
+          CALL QUIT('**HAMILTONIAN: Conflicting options IOTC & DKH1 '//
+     &    'or DKH2 & DKH2 or IOTC & DKH1 !')
         ENDIF
 
 CMI  ... todo: more precise specification needed
@@ -5832,8 +5883,8 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
         IF (CONT2C.and.BSS) THEN
          IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.
      &       I2CHAM.NE.5.AND.I2CHAM.NE.6) THEN
-           write(lupri,*) 'HAMINP: wrong value of I2CHAM=',I2CHAM
-          CALL QUIT('HAMINP: wrong value of I2CHAM !')
+           write(lupri,*) '**HAMILTONIAN: wrong value of I2CHAM=',I2CHAM
+          CALL QUIT('**HAMILTONIAN: wrong value of I2CHAM !')
          ENDIF
         ENDIF
 
@@ -6049,23 +6100,26 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
 
         ENDIF
 
-      ELSE IF (GAUNT) THEN
-        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE IF (ECPCALC) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &   '  employing effective-core-potentials (ECP)'
+        WRITE(LUPRI,'(A)')
+     &   ' * Employing effective-core-potentials (ECP)'
       ELSE IF (NONREL) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
       ELSE IF(MDIRAC) THEN
         WRITE(LUPRI,'(A)') ' * Modified Dirac-Coulomb Hamiltonian'
         WRITE(LUPRI,'(A)') 
      &    '   Switching to the INTEREST integral package (M. Repisky)'
+      ELSE IF (GAUNT) THEN
+        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
 
       if (x2c.and.ecpcalc) then
-         call quit('Incompatible options: X2C and ECP')
+         call quit('Incompatible options: .X2C* and .ECP')
+      end if
+      if (GAUNT.and.ecpcalc) then
+         call quit('Incompatible options: .GAUNT and .ECP')
       end if
 
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
@@ -6210,6 +6264,10 @@ C
      & ' one-electron Hamiltonians.'
       ENDIF
 
+#ifdef NOT_USED
+
+! hjaaj 11-Jun-2020: DIRCON(:) is not used in this version of Dirac
+
 C ============ Output for the basis set ===============
       WRITE(LUPRI,'(A)') ' * Basis set:'
 C     ... first large component
@@ -6232,18 +6290,23 @@ CMI   ... treat the small component basis set only if not beeing
 CMI   in the pure two-component mode
       IF (.NOT.TWOCOMP) THEN
 
-C     ... then small component only if not beeing in the two-component mode
+C     ... then small component only if not being in the two-component mode
       IF ( DIRCON(2) ) THEN
          WRITE(LUPRI,'(A)')'   - contracted small component basis set'
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted small component basis set'
       END IF
       IF ( DIRCON(2) .AND. .NOT. URKBAL ) THEN
-         WRITE(LUPRI,'(A)') '**** ERROR in HAMINP ****'
+         WRITE(LUPRI,'(A)') '**** ERROR in **HAMILTONIAN ****'
          WRITE(LUPRI,'(A)') 'Contracted small component basis set '//
      &      'and restricted kinetic balance is not implemented.'
-         CALL QUIT('*** ERROR in HAMINP ****')
+         CALL QUIT('*** ERROR in **HAMILTONIAN ****')
       END IF
+
+      END IF
+#endif
+
+      IF (.NOT.TWOCOMP) THEN
 
       IF(URKBAL) THEN
         WRITE(LUPRI,1000) 'unrestricted'
@@ -6297,10 +6360,10 @@ C
       ELSE
          WRITE(LUPRI,'(/A,I5)')
      &        ' ERROR: ISPHTR not legal:',ISPHTR
-         CALL QUIT('HAMINP: Invalid ISPHTR!')
+         CALL QUIT('**HAMILTONIAN: Invalid ISPHTR!')
       ENDIF
 
-      ENDIF
+      END IF ! .not.TWOCOMP
 
 C ==================================================================
 C   ... Check that the selected One-center model is reasonable,
@@ -6423,7 +6486,7 @@ C
           ISYXPR = IPRPSYM(INDXPR)-1
           IF(ISYXPR.NE.0) THEN
              SYMSTP = .TRUE.
-             WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
+             WRITE(LUPRI,'(4X,A)') '***** **HAMILTONIAN ERROR *****'
              WRITE(LUPRI,'(4X,A,A)')
      &         'The operator is not totally symmetric under ',
      &         'the molecular point group'
@@ -6441,7 +6504,7 @@ C
 !  wave-functions !
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
-            WRITE(LUPRI,'(4X,A)') '***** HAMINP WARNING *****'
+            WRITE(LUPRI,'(4X,A)') '***** **HAMILTONIAN WARNING *****'
             WRITE(LUPRI,'(4X,A,A8,A)') 'The operator ',PRPNAM(INDXPR),
      &      ' is not totally symmetric under time reversal !'
 
@@ -6474,7 +6537,7 @@ C
 CMI  ... treat the INPERR as in paminp.F - proper input is required
         IF (INPERR.GT.0) THEN
           WRITE(LUPRI,'(/,2x,a,i4)') 'INPERR=',INPERR
-          CALL QUIT('Operator input error in *HAMINP')
+          CALL QUIT('Operator input error in ***HAMILTONIAN')
         ENDIF
       ENDIF
       IF(ONESYS) THEN
@@ -6616,12 +6679,12 @@ C
          IF (WORD(1:2) .EQ. '**') GO TO 1
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in HAMINP.')
+         CALL QUIT('Illegal directory in **HAMILTONIAN.')
       ELSE
          WRITE (LUPRI,'(/,4A,/)') ' Prompter "',PROMPT,'" illegal or',
      *                        ' out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Program stopped in HAMINP, error in prompt.')
+         CALL QUIT('Program stopped in **HAMILTONIAN, error in prompt.')
       END IF
     2 CONTINUE
 !       work can be easily removed by changing internal memget to alloc
@@ -6713,10 +6776,10 @@ C
 C
  500  CONTINUE
 C
-      IF (SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
-     &                     ' molecular point group symmetry!')
-      IF (TRSSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
-     &          ' time-reversal symmetry (T+ and T- mixing) !')
+      IF (SYMSTP) CALL QUIT('**HAMILTONIAN: Non-symmetric operator '//
+     &                     'under  molecular point group symmetry!')
+      IF (TRSSTP) CALL QUIT('**HAMILTONIAN: Non-symmetric operator '//
+     &          'under  time-reversal symmetry (T+ and T- mixing) !')
 
 C
       CALL QEXIT('HAMINP')
@@ -8357,6 +8420,8 @@ C
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword
 
+      ECPCALC = .FALSE.
+
       ISDO2C4C=.FALSE.
       ISDO4C2C=.FALSE.
 
@@ -8405,7 +8470,10 @@ C............variable telling that this is a 2-component relativistic calculatio
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF
-         IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.ECP   ') THEN
+            ECPCALC=.TRUE.
+            TWOCOMP=.TRUE.
+         END IF
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN

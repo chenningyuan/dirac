@@ -11,6 +11,7 @@ module birefring
 #ifdef PRG_DIRAC
    use dirac_interface   !provides lsquit
    use openrsp_cfg
+   use codata
 #endif
 
    implicit none
@@ -31,10 +32,8 @@ module birefring
    private
 
    !wavenumber, velocity of light, and nanometer (in au), pi
-   real(8), parameter :: cm1 = 1/219474.631371d0, &
-                         cvl = 137.03599907d0, &
-                         nm  = 10/0.52917706d0, &
-                         pi  = 3.1415926535897931d0
+   real(8), parameter :: cm1 = 1/XTKAYS,       &
+                         nm  = 10/XTANG
 
    !field component lables for printing
    character(2) :: fc(3) = (/'Fx','Fy','Fz'/)
@@ -362,7 +361,7 @@ contains
                'Electric-field-gradient-induced (Buckingham) birefringence (EFGB)', &
                '-----------------------------------------------------------------'
       write (o,'(6x,a,f12.9,a,i7,a,i4,a/)') 'For frequency w = ',w, &
-               ' au =',nint(w/cm1),' cm-1 ~ ', nint((2*pi*cvl/w)/nm),' nm'
+               ' au =',nint(w/cm1),' cm-1 ~ ', nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(4(6x,a,1x,g13.7/)/2(6x,a,1x,g13.7/)/)') &
                'B-tensor           <<mu;mu,th>>w0 = -Effq(-w,w,0) average     :',Bten,  &
                'B-calligraphic     <<mu;mu,th>>0w = -Effq(-w,0,w) average     :',Bcal,  &
@@ -819,7 +818,7 @@ contains
       write (o,'(//26x,a/26x,a/)') 'Polarizability (au)' &
                                   ,'-------------------'
       write (o,'(4x,a,f6.3,a,i7,a,i4,a/)') 'For frequency w = ',w &
-              ,' au =',nint(w/cm1),' cm-1 ~ ', nint((2*pi*cvl/w)/nm),' nm'
+              ,' au =',nint(w/cm1),' cm-1 ~ ', nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(a,13x,a2,18x,a2,18x,a2/)') ' -w  w',fc
       write (o,'(3(1x,a,3f20.12/))') (fc(i),Al(i,:),i=1,3)
       if (any(Xn/=0)) then
@@ -830,7 +829,7 @@ contains
          write (o,'(//18x,a/18x,a/)') 'No-London Hypermagnetizability - Eta (au)' &
                                      ,'-----------------------------------------'
          write (o,'(4x,a,f6.3,a,i7,a,i4,a/)') 'For frequency w = ',w,' au =' &
-                 ,nint(w/cm1),' cm-1 ~ ',nint((2*pi*cvl/w)/nm),' nm'
+                 ,nint(w/cm1),' cm-1 ~ ',nint((2*pi*cvel/w)/nm),' nm'
          write (o,'(a,18x,a2,18x,a2,18x,a2)') ' w;-w',bc
          write (o,'(3(3(/3(1x,3a2,3f20.11/))))') &
                  (((fc(i),fc(j),bc(k),Etn(i,j,k,:),k=1,3),j=1,3),i=1,3)
@@ -859,7 +858,7 @@ contains
          write (o,'(//17x,a/17x,a/)') 'London Hypermagnetizability - Eta (au)', &
                                       '--------------------------------------'
          write (o,'(4x,a,f6.3,a,i7,a,i4,a/)') 'For frequency w = ',w &
-                 ,' au =',nint(w/cm1),' cm-1 ~ ',nint((2*pi*cvl/w)/nm),' nm'
+                 ,' au =',nint(w/cm1),' cm-1 ~ ',nint((2*pi*cvel/w)/nm),' nm'
          write (o,'(a,18x,a2,18x,a2,18x,a2)') ' w;-w',bc
          write (o,'(3(3(/3(1x,3a2,3f20.11/))))') &
                  (((fc(i),fc(j),bc(k),Eta(i,j,k,:),k=1,3),j=1,3),i=1,3)

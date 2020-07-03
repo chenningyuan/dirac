@@ -27,7 +27,6 @@ contains
   call interface_mpi_bcast_l0(exa_input%cc2,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%ccsd_full_t,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%noints,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_triples,1,exa_MPI_RANK,global_communicator)
