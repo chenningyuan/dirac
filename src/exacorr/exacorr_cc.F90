@@ -251,8 +251,8 @@ module exacorr_cc
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
-                call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-                !call t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
+                !call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
+                call t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -3203,16 +3203,16 @@ print *,'abe',ierr
 
                   ! add to energy
                   ierr=exatns_tensor_init(res_tensor,ZERO)
-                  ierr=exatns_tensor_contract("R()+=W+(a,b,c,i,j,k)*D+(a,b,c,i,j,k)",res_tensor,w,wd) 
+                  ierr=exatns_tensor_contract("R()+=W+(a,b,c,i,j,k)*D(a,b,c,i,j,k)",res_tensor,w,wd) 
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 13')
                   ierr=exatns_tensor_get_scalar(res_tensor,res_val)
                   t_energy(1)=t_energy(1) + res_val
 
                   ! Form Y-intermediate and calculate 5th order (T) energy contribution
                   ierr=exatns_tensor_init(temp,'ZERO')
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(i,j,a,b)*T(c,k)",temp,oovv_ij,t1_k)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(j,k,a,b)*T(c,i)",temp,oovv_jk,t1_i)
-                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(k,i,a,b)*T(c,j)",temp,oovv_ki,t1_j)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V+(i,j,a,b)*T(c,k)",temp,oovv_ij,t1_k)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V+(j,k,a,b)*T(c,i)",temp,oovv_jk,t1_i)
+                  ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V+(k,i,a,b)*T(c,j)",temp,oovv_ki,t1_j)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: contraction 21')
 
                   ierr=exatns_tensor_contract("T(a,b,c,i,j,k)+=V(a,b,i,j)*T(k,c)",temp,t2_ij,f_k)
