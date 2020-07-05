@@ -1331,12 +1331,12 @@ module exacorr_ao_to_mo
         ovvo_root(2:3) = nvir
 
 !       initialise tensors to zero
-        ierr=exatns_tensor_init(int_t%oooo,ZERO)
-        ierr=exatns_tensor_init(int_t%ooov,ZERO)
-        ierr=exatns_tensor_init(int_t%oovv,ZERO)
-        ierr=exatns_tensor_init(int_t%vovo,ZERO)
-        ierr=exatns_tensor_init(int_t%vovv,ZERO)
-        ierr=exatns_tensor_init(int_t%vvvv,ZERO)
+        ierr=exatns_tensor_init(int_t%oooo,'ZERO')
+        ierr=exatns_tensor_init(int_t%ooov,'ZERO')
+        ierr=exatns_tensor_init(int_t%oovv,'ZERO')
+        ierr=exatns_tensor_init(int_t%vovo,'ZERO')
+        ierr=exatns_tensor_init(int_t%vovv,'ZERO')
+        ierr=exatns_tensor_init(int_t%vvvv,'ZERO')
 
 !       Get antisymmetric oooo tensor
         hid=o_id
@@ -1515,6 +1515,7 @@ module exacorr_ao_to_mo
             coef_id(2)   = mo2_id(i)
             coef_root(2) = mo2_dims(i)
             do spin = 1, 2
+              if (print_level>8) write(*,*) 'coef_id:',coef_id,', coef_root:',coef_root
               write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
               ierr=exatns_tensor_create(coef_tensor(spin,i),coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: tensor not created')
@@ -1529,9 +1530,9 @@ module exacorr_ao_to_mo
             write (vs_str, '(A3,I9.9)') h_str,ui
             ierr=exatns_tensor_create(mo_tensor(ui),vs_str,mo2_id,mo2_dims,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: u tensor creation failed')
-            ierr=exatns_tensor_init(mo_tensor(ui),ZERO)
+            ierr=exatns_tensor_init(mo_tensor(ui),'ZERO')
             do spin = 1, 2
-              ierr=exatns_tensor_init(t_tensor,ZERO)
+              ierr=exatns_tensor_init(t_tensor,'ZERO')
               i=1 ! first index
               ierr=exatns_tensor_contract(t_tensor,ao_tensor(ui),coef_tensor(spin,i),"B(p,s)+=A(r,s)*M+(r,p)")
               if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: contraction 1 failed')
@@ -1633,7 +1634,7 @@ module exacorr_ao_to_mo
           if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Tensor creation failed!')
           ierr=exatns_tensor_init(One_vec,ONE)
            
-          ierr=exatns_tensor_init(Diag,ZERO) 
+          ierr=exatns_tensor_init(Diag,'ZERO') 
           ierr=exatns_tensor_transform(Diag,'CholDiag')
           if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computation od Diagonal failed!')
           if (print_level.gt.10) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
@@ -1660,15 +1661,15 @@ module exacorr_ao_to_mo
             if (print_level.gt.10) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
             ierr=exatns_tensor_create(Delta_lk,"Delta_lk",max_id(1:3),max_root(1:3),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Creating Delta_lk failed!')
-            ierr=exatns_tensor_init(Delta_lk,ZERO)
+            ierr=exatns_tensor_init(Delta_lk,'ZERO')
 
             ierr=exatns_tensor_create(P_l,"P_l",(/ ao_id, max_id(1) /),(/ ao_root, max_root(1) /),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('P_l creation failed!')
-            ierr=exatns_tensor_init(P_l,ZERO)
+            ierr=exatns_tensor_init(P_l,'ZERO')
             ierr=exatns_tensor_transform(P_l,'OneDiag')
             ierr=exatns_tensor_create(P_k,"P_k",(/ ao_id, max_id(2), ao_id /),(/ ao_root, max_root(2), ao_root /),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('P_k creation failed!')
-            ierr=exatns_tensor_init(P_k,ZERO)
+            ierr=exatns_tensor_init(P_k,'ZERO')
             ierr=exatns_tensor_transform(P_k,'OneDiag')
             ierr=exatns_tensor_create(Temp_l,"Temp_l",(/ max_id(1), ao_id /),(/ max_root(1), ao_root /),EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(Temp_lk,"Temp_lk",max_id(1:3),max_root(1:3),EXA_DATA_KIND_C8)
@@ -1679,12 +1680,12 @@ module exacorr_ao_to_mo
               write (vs_str, '(A3,I9.9)') 'CD_',m+1
               ierr=exatns_tensor_create(CD(m+1),vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Creating Cholesky vector failed!')
-              ierr=exatns_tensor_init(CD(m+1),ZERO)
+              ierr=exatns_tensor_init(CD(m+1),'ZERO')
               if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Setting up Cholesky vector failed!')
 
               !extracting the relevant element
-              ierr=exatns_tensor_init(Temp,ZERO)
-              ierr=exatns_tensor_init(Res,ZERO)
+              ierr=exatns_tensor_init(Temp,'ZERO')
+              ierr=exatns_tensor_init(Res,'ZERO')
               call f_delta%reset((/ ind_max(1), ind_max(2), int(1,INTL) /),3)
               ierr=exatns_tensor_transform(Delta_lk,f_delta)
               if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Constructing Delta_lk failed!')
@@ -1715,7 +1716,7 @@ module exacorr_ao_to_mo
               if (print_level.gt.10) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
             
               !update Diagonal
-              ierr=exatns_tensor_init(Res,ZERO)
+              ierr=exatns_tensor_init(Res,'ZERO')
               ierr=exatns_tensor_contract("L(p,q)+=R(p,q)*O()",Res,CD(m+1),one_element)
               if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Copying failed!')
               ierr=exatns_tensor_transform(Res,'Square')
@@ -1733,9 +1734,9 @@ module exacorr_ao_to_mo
 
               !find new maximum
               deallocate(ind_max)
-              ierr=exatns_tensor_init(Temp_l,ZERO)
+              ierr=exatns_tensor_init(Temp_l,'ZERO')
               ierr=exatns_tensor_contract("L(l,q)+=D(p,q)*P(p,l)",Temp_l,Diag,P_l)
-              ierr=exatns_tensor_init(Temp_lk,ZERO)
+              ierr=exatns_tensor_init(Temp_lk,'ZERO')
               ierr=exatns_tensor_contract("D(l,k,u)+=L(l,q)*P(q,k,u)",Temp_lk,Temp_l,P_k)
               ierr=exatns_tensor_max(Temp_lk,D_el,ind_max)
               if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Getting Maximum failed!')
@@ -1830,7 +1831,7 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_create(Factor,"Factor",EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Tensor creation failed!')
            
-          ierr=exatns_tensor_init(Diag,ZERO) 
+          ierr=exatns_tensor_init(Diag,'ZERO') 
           ierr=exatns_tensor_transform(Diag,'CholDiag')
           if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computation od Diagonal failed!')
           if (print_level.gt.10) write(*,'(A7,E20.10)') "Diag  =", print_tensornorm2 (Diag)
@@ -1839,7 +1840,7 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_max(Diag,D_max,ind_max)
           if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Finding Maximum failed!')
           call f_delta%reset(ind_max,2)
-          ierr=exatns_tensor_init(Delta,ZERO)
+          ierr=exatns_tensor_init(Delta,'ZERO')
           ierr=exatns_tensor_transform(Delta,f_delta)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_transform(f_delta) failed!')
           if (print_level.gt.10) write(*,'(A7,E20.10)') "Delta =",print_tensornorm2 (Delta)
@@ -1853,17 +1854,17 @@ module exacorr_ao_to_mo
             write (vs_str, '(A3,I9.9)') 'CD_',m+1
             ierr=exatns_tensor_create(CD(m+1),vs_str,ao2_id,ao2_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Creating Cholesky vector failed!')
-            ierr=exatns_tensor_init(CD(m+1),ZERO)
+            ierr=exatns_tensor_init(CD(m+1),'ZERO')
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Setting up Cholesky vector failed!')
 
             call j_chol%reset(ind_max)
-            ierr=exatns_tensor_init(Dlk,ZERO)
+            ierr=exatns_tensor_init(Dlk,'ZERO')
             ierr=exatns_tensor_transform(Dlk,j_chol)
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computing Off-Diagonals failed!')
             if (print_level.gt.15) ierr=exatns_tensor_traverse(Dlk,'PrintTensor')
             if (print_level.gt.10) write(*,'(A7,E20.10)') "Dpq   =",print_tensornorm2 (Dlk)
 
-            ierr=exatns_tensor_init(Res,ZERO)
+            ierr=exatns_tensor_init(Res,'ZERO')
             do i=1,m
               ierr=exatns_tensor_init(Factor,ZERO)
               ierr=exatns_tensor_contract("F()=L(p,q)*D(p,q)",Factor,CD(i),Delta)
@@ -1882,7 +1883,7 @@ module exacorr_ao_to_mo
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Scaling failed!')
             if (print_level.gt.10) write(*,'(A7,E20.10)') "CD_m  =",print_tensornorm2 (CD(m+1))
             
-            ierr=exatns_tensor_init(Res,ZERO)
+            ierr=exatns_tensor_init(Res,'ZERO')
             ierr=exatns_tensor_contract("L(p,q)+=R(p,q)*O()",Res,CD(m+1),one_element)
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Copying failed!')
             ierr=exatns_tensor_transform(Res,'Square')
