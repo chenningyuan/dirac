@@ -2824,13 +2824,13 @@ print *,'abe',ierr
 
             !get memory information for splitting
             i=nr_proc*exa_input%talsh_buff
-            est=(real(nvir)**3*16.0/1000.0**3+1.0)*6.0
-            nseg=((real(i)/2.0)/est)**(1.0/3.0)
+            nseg=max(real(nvir,8)**(1.0/3.0),3.0D0)
+            est=(real(nvir)**3*16.0/1000.0**3+1.0)*nseg**3
             if (exa_input%print_level > 0) then
-              write(*,*) ' --- Number of processes:           ',nr_proc
-              write(*,*) ' --- resulting memory (TALSH_buff): ',i
-              write(*,*) ' --- required memory (6*VVV):       ',est
-              write(*,*) ' --- size of possible segments:     ',nseg
+              write(*,*) ' --- Number of processes (np):      ',nr_proc
+              write(*,*) ' --- size of segments (ns):         ',nseg
+              write(*,*) ' --- avail. memory (np*TALSH_buff): ',i
+              write(*,*) ' --- required memory (ns^3*VVV):    ',est
               write(*,*) '======================================'
             end if
 
@@ -2852,7 +2852,7 @@ print *,'abe',ierr
               if (exa_input%print_level > 0) then
                 write(*,*) ' --- splitting occupied spaces: 1-3 index '
                 write(*,*) ' --- using level: ',i
-                write(*,*) ' --- number el. : ',n_subsp,', size el.: ',nocc/n_subsp
+                write(*,*) ' --- number el. : ',n_subsp,', size el.: ',real(nocc)/real(n_subsp)
                 write(*,*) ' --- subspace   : ',subsp(1:n_subsp)
                 write(*,*) '======================================'
               end if
@@ -3383,6 +3383,7 @@ print *,'abe',ierr
             real(8)                      :: eps_ijk
             !complex(8), allocatable      :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
             integer                      :: i,j,k
+            character(len=40)            :: info_str
 
             if (print_level >0) call print_date('entering t3_energy_old')
 
@@ -3649,6 +3650,10 @@ print *,'abe',ierr
 
                 end do
               end do
+              if (print_level>0) then
+                write (info_str,'(A9,I4,A4,I4,A9,I10)') '  block  ',k,' of ',nocc,' done, n=',k**2
+                call print_date(info_str)
+              end if
               if (print_level >2) write (*,*)  't3_energy:',t_energy
             end do
 
