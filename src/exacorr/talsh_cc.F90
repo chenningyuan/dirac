@@ -14,9 +14,7 @@ module talsh_cc
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0), &
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0), &
-                                 ONE_SIXTH_C=(1.0D0/6.0D0, 0.D0), ONE_EIGHT_C=(0.125D0,0), &
-                                 ONE_SIXTHEENTH_C=(0.0625D0, 0.D0)
+                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
 
         type(talsh_tens_t) :: one_tensor
