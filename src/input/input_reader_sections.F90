@@ -892,6 +892,11 @@
          exa_input%iterative_scheme = 22
       end if
 
+      if (kw_matches(word, '.CCSDfullTQ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 40
+      end if
+
       if (kw_matches(word, '.CCSDfullT')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 30
