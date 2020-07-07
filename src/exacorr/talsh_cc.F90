@@ -14,7 +14,9 @@ module talsh_cc
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0), &
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
+                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0), &
+                                 ONE_SIXTH_C=(1.0D0/6.0D0, 0.D0), ONE_EIGHT_C=(0.125D0,0), &
+                                 ONE_SIXTHEENTH_C=(0.0625D0, 0.D0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
 
         type(talsh_tens_t) :: one_tensor
@@ -819,6 +821,7 @@ module talsh_cc
              ! now for the s4 tensor
              ierr=talsh_tensor_init(s4_tensor)
              print *,'s4 1',ierr
+             ! after these, we have to rescale s4 since the expressions above assume i > j > k > l, a > b > c > d
 
           end if ! CCSDTQ contributions
 
@@ -837,10 +840,10 @@ module talsh_cc
 
           if (iterative_level.ge.3) then        
              ierr=talsh_tensor_init(comm_t%t3)
-             ierr=talsh_tensor_add("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)",comm_t%t3,s3_tensor,scale=ONE_QUARTER_C)
+             ierr=talsh_tensor_add("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)",comm_t%t3,s3_tensor)
              if (iterative_level.eq.4) then
                 ierr=talsh_tensor_init(comm_t%t4)
-                ierr=talsh_tensor_add("T4(a,b,c,d,i,j,k,l)+=S4(a,b,c,d,i,j,k,l)",comm_t%t4,s4_tensor,scale=ONE_QUARTER_C)
+                ierr=talsh_tensor_add("T4(a,b,c,d,i,j,k,l)+=S4(a,b,c,d,i,j,k,l)",comm_t%t4,s4_tensor)
              end if
           end if
 
