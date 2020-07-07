@@ -29,7 +29,7 @@ f.add(from_re     = 'TOTAL ENERGY',
 #  compare SCF eigenvalues
 f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 5.0e-7)
 # check the total COSCI averaged energy - must be identical with the previos SCF energy
 f.add(from_re     = 'Total average:',
       num_lines   = 1,
