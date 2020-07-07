@@ -250,7 +250,7 @@ module exacorr_cc
               ! calculate T1 diagnostic
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
-              if (exa_input%do_triples .and. .not.CC2) then
+              if (exa_input%do_perturbative .and. .not.CC2) then !  .and. .not.CCSDT .and. .not.CCSDTQ) then
                 !call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
                 call t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
