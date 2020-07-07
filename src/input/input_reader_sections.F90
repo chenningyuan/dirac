@@ -902,6 +902,21 @@
          exa_input%iterative_scheme = 30
       end if
 
+      if (kw_matches(word, '.CCSDT1A')) then
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 33
+      end if
+
+      if (kw_matches(word, '.CCSDT1A')) then
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 32
+      end if
+
+      if (kw_matches(word, '.CCSDT1')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 31
+      end if
+
       if (kw_matches(word, '.TCONVERG')) then
          call kw_read(word, exa_input%t_econv)
       end if

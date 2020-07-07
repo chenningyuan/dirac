@@ -547,7 +547,7 @@ module talsh_ao_to_mo
 
          type(talsh_tens_t), intent(inout):: a_tensor
 
-         integer(INTD) :: a_dims(1:4)
+         integer(INTD) :: a_dims(1:8)
          integer(INTD) :: ierr, a_rank
 
 !        scalars (need to be defined as tensor types)
@@ -575,6 +575,14 @@ module talsh_ao_to_mo
             ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
          case (4)
             ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
+         case (5)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
+         case (6)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
+         case (7)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
+         case (8)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
          case default
             call quit ('wrong dimension in tensor_norm2')
          end select

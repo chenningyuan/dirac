@@ -185,6 +185,9 @@ module talsh_cc
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
                             & full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4)
             else if (CCSDT) then
+               ! this is wrong, but we should start from T(a,b,c,i,j,k) from T(a,d,i,j) and T(a,b,i,l)
+               !ierr=talsh_tensor_contract("T(a,b,c,i,j,k)+=V+(i,j,a,d)*V+(i,l,a,b)",comm_t%t3,int_t%oovv,int_t%oovv)
+               print *,'t3 init',ierr
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2,full_t3_tensor=comm_t%t3)
             else ! CCSD and variants
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
@@ -432,8 +435,10 @@ module talsh_cc
             print *,' ierr construct s3',ierr
             ierr=talsh_tensor_construct(vvvooo_aux_tensor,C8,vvvooo_dims,init_val=ZERO)
             print *,' ierr construct vvvooo_aux_tensor',ierr
+! this is not needed for ccsdt-1
             ierr=talsh_tensor_construct(dint_tensor,C8,vvoo_dims,init_val=ZERO)
             print *,' ierr construct dint_tensor',ierr
+!
             if (iterative_level.eq.4) then
                vvvvoooo_dims(1:4) = nvir
                vvvvoooo_dims(5:8) = nocc
@@ -448,7 +453,8 @@ module talsh_cc
 
           call get_tau(comm_t,CCD)
 
-          if (print_level.gt.6) then
+!         if (print_level.gt.6) then
+          if (.true.) then 
             write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
             write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
@@ -582,17 +588,20 @@ module talsh_cc
           if (iterative_level.ge.3) then
              ! note on the variants: 
              ! scheme 30: full CCSDT
-             ! scheme 31: only adding XXX to CCSD yields CCSDT-1
-             ! scheme 32: adding S7 + D10a + D10b + D10c + T1a + T1b + T2a + T2b to CCSD yields CCSDT-1a
-             ! scheme 33: adding diagrams in CCSDT-1a + D11a + D11b + D11c to CCSD yields CCSDT-1b
+             ! scheme 31: adding D10a + D10b + D10c + T1a + T1b to CCSD yields CCSDT-1
+             ! scheme 32: adding S7 + T2a + T2b to CCSDT-1 yields CCSDT-1a
+             ! scheme 33: adding  D11a + D11b + D11c to CCSDT-1a  yields CCSDT-1b 
 
 
+            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
              ! additional diagrams to singles equation
              ! <ai|H_NT_3|0>_C term: Diagram S7 from Shavitt and Bartlett
              ! S7: 1/4 <mn||ef> t^{aef}_{imn} 
              ierr=talsh_tensor_contract("S(a,i)+=V(m,n,e,f)*T(a,e,f,i,m,n)",s1_tensor,int_t%oovv,comm_t%t3,scale=ONE_QUARTER_C)
              print *,'s7',ierr
+           end if
 
+           if (iterative_scheme.eq.30 .or. iterative_scheme.eq.31 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
              ! additional diagrams to doubles equation 
              ! <abij|H_NT_3|0>_C term: diagrams D10a-D10c from Shavitt and Bartlett
              ! D10a: f^{e}_{m} t^{abe}_{ijm} 
@@ -614,9 +623,10 @@ module talsh_cc
              print *,'d10c 2',ierr
              ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,j,i)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE)
              print *,'d10c 3',ierr
+            end if
 
              ! these diagrams define CCSDT (scheme 30) and CCSDT-1b (scheme 33)
-             if (iterative_scheme.eq.30 .or. iterative_scheme.eq.33) then
+            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.33) then
              ! <abij|H_NT_1T_3|0>_C term: diagrams D11a-D11c from Shavitt and Bartlett
              ! with the difference that we need the scaling factor in front of these since we are not using restricted indexes i>j, and a>b
              ! D11a:        <mn||ef> t^{e}_{m} t^{fab}_{nij}
@@ -655,7 +665,7 @@ module talsh_cc
              print *,'d11c 5',ierr
                 ierr=talsh_tensor_contract("S(a,b,j,i)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=ONE_QUARTER_C)
              print *,'d11c 6',ierr
-             end if ! (iterative_scheme.eq.30 .or. iterative_scheme.eq.34)
+            end if ! (iterative_scheme.eq.30 .or. iterative_scheme.eq.33)
 
              ! now for the s3 tensor
              ierr=talsh_tensor_init(s3_tensor)
@@ -671,10 +681,12 @@ module talsh_cc
 
              ! diagrams
              ! note on the variants: 
-             ! adding S7+D10a+D10b+D10c+T1a+T1b+T2a+T2b to CCSD yields CCSDT-1a
-             ! adding diagrams in CCSDT-1a + D11a + D11b + D11c to CCSD yields CCSDT-1b
+             ! scheme 30: full CCSDT
+             ! scheme 31: adding D10a + D10b + D10c + T1a + T1b to CCSD yields CCSDT-1
+             ! scheme 32: adding S7 + T2a + T2b to CCSDT-1 yields CCSDT-1a
+             ! scheme 33: adding  D11a + D11b + D11c to CCSDT-1a  yields CCSDT-1b 
 
-            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.31 .or. iterative_scheme.eq.33) then
+            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.31 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
              ! T1a:      P( k/ij | a/bc ) < bc || dk > t^{ad}_{ij}  
              ierr=talsh_tensor_init(vvvooo_aux_tensor)
              print *,'t1a 1',ierr
@@ -726,7 +738,9 @@ module talsh_cc
              print *,'t1b 10',ierr
              ierr=talsh_tensor_contract("S(a,c,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
              print *,'t1b 11',ierr
+            end if 
 
+            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
              ! T2a:      P( c/ab ) f_{cd} t^{abd}_{ijk}
              ierr=talsh_tensor_init(vvvooo_aux_tensor)
              print *,'t2a 1',ierr
@@ -754,7 +768,7 @@ module talsh_cc
              print *,'t2b 4',ierr
              ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
              print *,'t2b 5',ierr
-             end if
+            end if
 
              if (iterative_scheme.eq.30) then
              ! T2c:  1/2 P( c/ab ) < ab || de > t^{dec}_{ijk}   
