@@ -2286,11 +2286,7 @@ C
      &   'open shell Fock operator', abs(OPEN_FAC)
          IF (OPEN_FAC .LT. 0.0D0) THEN
             WRITE (LUPRI,'(A)')
-     &   '   to improve convergence (default value).',
-     &   '   The final open-shell orbital energies are recalculated '//
-     &   'with 1.0 scaling,',
-     &   '   such that all occupied orbital energies correspond to '//
-     &   "Koopmans' theorem ionization energies."
+     &   '   to improve convergence (default value).'
          END IF
       END IF
 

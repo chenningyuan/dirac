@@ -1267,16 +1267,13 @@ C     ***********************************
 C     ***** Perform SCF-iterations ******
 C     ***********************************
 C
-      OPEN_FAC_save = OPEN_FAC
       DODIIS_save   = DODIIS
 C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
-      OPEN_FAC = OPEN_FAC_save
       IF(DHFEXIT) GOTO 30
 C
 C     Start cycle
@@ -1729,7 +1726,6 @@ C
 
       CALL FLSHFO(LUPRI)
 
-      OPEN_FAC = OPEN_FAC_save
       DODIIS   = DODIIS_save
 C
 C     Close necessary files
