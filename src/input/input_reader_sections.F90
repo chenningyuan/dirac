@@ -866,14 +866,35 @@
 
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 20
       end if
 
-      if (kw_matches(word, '.CCSDfullT')) then
-         exa_input%ccsd_full_t = .true.
+      if (kw_matches(word, '.ITERT_LEVEL')) then
+         call kw_read(word, exa_input%iterative_level)
       end if
 
-      if (kw_matches(word, '.CC2         ')) then 		!L
+      if (kw_matches(word, '.ITERT_SCHEME')) then
+         call kw_read(word, exa_input%iterative_scheme)
+      end if
+
+      if (kw_matches(word, '.PERTT_LEVEL')) then
+         call kw_read(word, exa_input%perturbative_level)
+      end if
+
+      if (kw_matches(word, '.PERTT_SCHEME')) then
+         call kw_read(word, exa_input%perturbative_scheme)
+      end if
+
+      if (kw_matches(word, '.CC2         ')) then 
          exa_input%cc2 = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 22
+      end if
+
+      if (kw_matches(word, '.CCSDfullT')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 30
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
@@ -892,8 +913,12 @@
          exa_input%lambda = .true.
       end if
 
-      if (kw_matches(word, '.NOTRIPLES')) then
-         exa_input%do_triples = .false.
+      if (kw_matches(word, '.NOITERT')) then
+         exa_input%do_iterative = .false.
+      end if
+
+      if (kw_matches(word, '.NOPERTT')) then
+         exa_input%do_perturbative = .false.
       end if
 
       if (kw_matches(word, '.EXA_BLOCKSIZE')) then
