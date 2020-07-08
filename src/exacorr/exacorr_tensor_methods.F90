@@ -82,14 +82,18 @@ module exacorr_tensor_methods
          integer, private              :: occ_id, vir_id    
          contains
           procedure, public:: set_energy_init
+          !procedure, public:: reset=>set_energy_reset
+          !procedure, public:: pack=>set_energy_pack
+          !procedure, public:: unpack=>set_energy_unpack
           procedure, public:: apply=>set_energy_apply
         end type set_energy_t
 
         !Scale by denominators:
         type, extends(tens_method_uni_t), public:: denom_t
           real(8), allocatable, private :: eps_occ(:),eps_vir(:)
-          real(8), private              :: eps_ijk
+          real(8), private              :: level_shift
           integer(INTD), private        :: occ_id
+          integer, private              :: norb(2)
           contains
             procedure, public::  denom_t_init
             procedure, public::  reset=>denom_t_reset
@@ -97,6 +101,20 @@ module exacorr_tensor_methods
             procedure, public::  unpack=>denom_t_unpack
             procedure, public::  apply=>denom_t_apply
         end type denom_t
+
+        !Scale by denominators for delta_triples
+        type, extends(tens_method_uni_t), public:: denom3_t
+          real(8), allocatable, private :: eps_occ(:),eps_vir(:)
+          real(8), private              :: level_shift
+          integer, private              :: norb(2)
+          real(8), private              :: eps_ijk
+          contains
+            procedure, public::  denom3_t_init
+            procedure, public::  reset=>denom3_t_reset
+            procedure, public::  pack=>denom3_t_pack
+            procedure, public::  unpack=>denom3_t_unpack
+            procedure, public::  apply=>denom3_t_apply
+        end type denom3_t
 
         !Initializer for the one electron integrals
         type, extends(tens_method_uni_t), public:: set_1el_t
@@ -1154,10 +1172,7 @@ module exacorr_tensor_methods
          real(8), intent(in)      :: level_shift
          class(set_energy_t), intent(out):: this
 
-         type(cmo)          :: cspinor
-         integer            :: lumo
-         real(8)            :: e_homo, e_lumo
-         real(8), parameter :: THRESHOLD=1.D-8
+         type(cmo)   :: cspinor
 
          call get_mo_coefficients (cspinor,mo_occ,nocc)
          allocate(this%eps_occ(nocc))
@@ -1169,28 +1184,65 @@ module exacorr_tensor_methods
          this%eps_vir = cspinor%energy
          call dealloc_mo (cspinor)
 
-         if (level_shift.gt.1.0D-14) then
-           e_homo = maxval(this%eps_occ)
-           e_lumo = minval(this%eps_vir)
-           lumo   = minloc(this%eps_vir,1)
-
-           do while(e_lumo-e_homo < THRESHOLD)
-             write(*,*) "e_homo, e_lumo", e_homo, e_lumo
-             if (e_lumo+level_shift-e_homo >THRESHOLD) then
-               this%eps_vir(lumo)=e_lumo+level_shift
-               write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
-             else
-               call quit('Negative HOMO-LUMO gap')
-             end if
-             e_lumo = minval(this%eps_vir)
-             lumo   = minloc(this%eps_vir, 1)
-           end do
-         end if
+         call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
          this%occ_id=occ_space_id
          this%vir_id=vir_space_id
 
         end subroutine set_energy_init
+
+      subroutine set_energy_reset(this,eps_occ,eps_vir,nocc,nvir)
+        implicit none
+
+        class(denom_t), intent(inout) :: this
+        real(8), intent(in)           :: eps_occ(:),eps_vir(:)
+        integer, intent(in)           :: nocc, nvir
+
+        if (nocc.ne.this%norb(1)) call quit('denom_t_reset: wrong number of orbitals')
+        if (nvir.ne.this%norb(2)) call quit('denom_t_reset: wrong number of orbitals')
+
+        this%eps_occ = eps_occ
+        this%eps_vir = eps_vir
+
+        call shift_orbital_energy(this%eps_vir,this%eps_occ,this%level_shift)
+
+      end subroutine set_energy_reset
+
+      subroutine set_energy_pack(this,packet,ierr)
+        implicit none
+        class(denom_t), intent(in)           :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+        integer                              :: i
+        
+        do i = 1, this%norb(1)
+          call pack_builtin(packet,this%eps_occ(i))
+        end do
+        do i = 1, this%norb(2)
+          call pack_builtin(packet,this%eps_vir(i))
+        end do
+
+        if(present(ierr)) ierr=0  
+        return
+      end subroutine set_energy_pack
+
+      subroutine set_energy_unpack(this,packet,ierr)
+        implicit none
+        class(denom_t), intent(inout)        :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+        integer                              :: i
+
+        do i = 1, this%norb(1)
+          call unpack_builtin(packet,this%eps_occ(i))
+        end do
+        do i = 1, this%norb(2)
+          call unpack_builtin(packet,this%eps_vir(i))
+        end do
+
+        if(present(ierr)) ierr=0
+        return
+      end subroutine set_energy_unpack
 
         function set_energy_apply(this,tensor,scalar) result(ierr)
 
@@ -1283,22 +1335,22 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
       
       subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift,occ_id)
-
         use exacorr_mo
         use exacorr_global
-
         implicit none
+
         integer, intent(in)          :: nocc, nvir
         integer, intent(in)          :: mo_occ(:),mo_vir(:)
         real(8), intent(in)          :: level_shift
         integer(INTD), intent(in)    :: occ_id
         class(denom_t), intent(out)  :: this
          
-
         type(cmo)          :: cspinor
-        integer            :: lumo
-        real(8)            :: e_homo, e_lumo
-        real(8), parameter :: THRESHOLD=1.D-8
+
+        this%occ_id=occ_id
+        this%level_shift=level_shift
+        this%norb(1)=nocc
+        this%norb(2)=nvir
 
         call get_mo_coefficients (cspinor,mo_occ,nocc)
         allocate(this%eps_occ(nocc))
@@ -1310,35 +1362,24 @@ module exacorr_tensor_methods
         this%eps_vir = cspinor%energy
         call dealloc_mo (cspinor)
 
-        if (level_shift.gt.1.0D-14) then
-          e_homo = maxval(this%eps_occ)
-          e_lumo = minval(this%eps_vir)
-          lumo   = minloc(this%eps_vir,1)
-
-          do while(e_lumo-e_homo < THRESHOLD)
-            print*, "e_homo, e_lumo", e_homo, e_lumo
-            if (e_lumo+level_shift-e_homo >THRESHOLD) then
-              this%eps_vir(lumo)=e_lumo+level_shift
-              print *, "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
-            else
-              call quit('Negative HOMO-LUMO gap')
-            end if
-            e_lumo = minval(this%eps_vir)
-            lumo   = minloc(this%eps_vir, 1)
-          end do
-        end if
-
-        this%eps_ijk=1.0D0
-        this%occ_id=occ_id
+        call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
       end subroutine denom_t_init
 
-      subroutine denom_t_reset(this,val)
+      subroutine denom_t_reset(this,eps_occ,eps_vir,nocc,nvir)
         implicit none
-        class(denom_t), intent(inout) :: this
-        real(8), intent(in)           :: val
 
-        this%eps_ijk=val
+        class(denom_t), intent(inout) :: this
+        real(8), intent(in)           :: eps_occ(:),eps_vir(:)
+        integer, intent(in)           :: nocc, nvir
+
+        if (nocc.ne.this%norb(1)) call quit('denom_t_reset: wrong number of orbitals')
+        if (nvir.ne.this%norb(2)) call quit('denom_t_reset: wrong number of orbitals')
+
+        this%eps_occ = eps_occ
+        this%eps_vir = eps_vir
+
+        call shift_orbital_energy(this%eps_vir,this%eps_occ,this%level_shift)
 
       end subroutine denom_t_reset
 
@@ -1348,8 +1389,13 @@ module exacorr_tensor_methods
         class(obj_pack_t), intent(inout)     :: packet
         integer(INTD), intent(out), optional :: ierr
         integer                              :: i
-
-        call pack_builtin(packet,this%eps_ijk)
+        
+        do i = 1, this%norb(1)
+          call pack_builtin(packet,this%eps_occ(i))
+        end do
+        do i = 1, this%norb(2)
+          call pack_builtin(packet,this%eps_vir(i))
+        end do
 
         if(present(ierr)) ierr=0  
         return
@@ -1362,7 +1408,12 @@ module exacorr_tensor_methods
         integer(INTD), intent(out), optional :: ierr
         integer                              :: i
 
-        call unpack_builtin(packet,this%eps_ijk)
+        do i = 1, this%norb(1)
+          call unpack_builtin(packet,this%eps_occ(i))
+        end do
+        do i = 1, this%norb(2)
+          call unpack_builtin(packet,this%eps_vir(i))
+        end do
 
         if(present(ierr)) ierr=0
         return
@@ -1387,10 +1438,6 @@ module exacorr_tensor_methods
         case (2)
           allocate (tens_id  (2))
           allocate (tens_root(2))
-        case (3)
-          allocate (tens_id  (3))
-          allocate (tens_root(3))
-          if (this%eps_ijk.gt.0) call quit ('Error: eps_ijk not set in denom_t_apply')
         case (4)
           allocate (tens_id  (4))
           allocate (tens_root(4))
@@ -1405,12 +1452,12 @@ module exacorr_tensor_methods
         if (tens_id(1) == this%occ_id) lambda = .true. ! tens_id corresponds to occupied space
 
         ierr=denominate(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
-                         this%eps_occ,this%eps_vir,this%eps_ijk,lambda)
+                         this%eps_occ,this%eps_vir,lambda)
 
       end function denom_t_apply
 
       integer function denominate(rank,tens_body,data_kind,tens_dims,tens_bases, &
-                         eps_occ,eps_vir,eps_ijk,lambda) result (ierr)
+                         eps_occ,eps_vir,lambda) result (ierr)
 
         !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
         !                        and for 3-d and 6-d tensor for triples
@@ -1423,13 +1470,11 @@ module exacorr_tensor_methods
         integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
         integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
         real(8), intent(in)       :: eps_occ(:),eps_vir(:)
-        real(8), intent(in)       :: eps_ijk
         logical, intent(in)       :: lambda
 
         integer(INTL)      :: i,j,k,a,b,c
         real(8)            :: denominator
         complex(8),pointer :: t1_tens(:,:)
-        complex(8),pointer :: th_tens(:,:,:)
         complex(8),pointer :: t2_tens(:,:,:,:)
         complex(8),pointer :: t3_tens(:,:,:,:,:,:)
 
@@ -1457,18 +1502,6 @@ module exacorr_tensor_methods
               end do
             end do
           end if
-        !!!!!!!!! now follows a denominator for triples, is completely different !!!!!!!!!!!!!!!
-        case (3)
-          call c_f_pointer(tens_body,th_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
-          do c = 1, tens_dims(3)
-            do b = 1, tens_dims(2)
-              do a = 1, tens_dims(1)
-                denominator = eps_ijk - eps_vir(a+tens_bases(1)-1) &
-                            - eps_vir(b+tens_bases(2)-1) - eps_vir(c+tens_bases(3)-1) 
-                th_tens(a,b,c) = th_tens(a,b,c) / denominator
-              end do
-            end do
-          end do
         case (4)
           call c_f_pointer(tens_body,t2_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
           if (.not.lambda) then
@@ -1538,6 +1571,145 @@ module exacorr_tensor_methods
          end select
 
       end function denominate
+
+        ! --------------------------------------------------------------------------------
+
+      subroutine denom3_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift)
+        use exacorr_mo
+        use exacorr_global
+        implicit none
+
+        class(denom3_t), intent(out) :: this
+        integer, intent(in)          :: nocc, nvir
+        integer, intent(in)          :: mo_occ(:),mo_vir(:)
+        real(8), intent(in)          :: level_shift
+         
+        type(cmo)          :: cspinor
+
+        this%level_shift=level_shift
+        this%norb(1)=nocc
+        this%norb(2)=nvir
+
+        call get_mo_coefficients (cspinor,mo_occ,nocc)
+        allocate(this%eps_occ(nocc))
+        this%eps_occ = cspinor%energy
+        call dealloc_mo (cspinor)
+
+        call get_mo_coefficients (cspinor,mo_vir,nvir)
+        allocate(this%eps_vir(nvir))
+        this%eps_vir = cspinor%energy
+        call dealloc_mo (cspinor)
+
+        call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
+
+        this%eps_ijk=1.0D0
+
+      end subroutine denom3_t_init
+
+      subroutine denom3_t_reset(this,val)
+        implicit none
+        class(denom3_t), intent(inout) :: this
+        real(8), intent(in)           :: val
+
+        this%eps_ijk=val
+
+      end subroutine denom3_t_reset
+
+      subroutine denom3_t_pack(this,packet,ierr)
+        implicit none
+        class(denom3_t), intent(in)           :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+
+        call pack_builtin(packet,this%eps_ijk)
+
+        if(present(ierr)) ierr=0  
+        return
+      end subroutine denom3_t_pack
+
+      subroutine denom3_t_unpack(this,packet,ierr)
+        implicit none
+        class(denom3_t), intent(inout)        :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+
+        call unpack_builtin(packet,this%eps_ijk)
+
+        if(present(ierr)) ierr=0
+        return
+      end subroutine denom3_t_unpack
+
+      function denom3_t_apply(this,tensor,scalar) result(ierr)
+        implicit none
+        integer(INTD)                       :: ierr,n
+        class(denom3_t), intent(in)          :: this
+        class(tens_rcrsv_t), intent(inout)  :: tensor
+        complex(8), intent(inout), optional :: scalar
+        type(tens_dense_t)                  :: tens
+        integer(INTD), allocatable          :: tens_id(:)
+        integer(INTL), allocatable          :: tens_root(:)
+
+        ierr=0
+        tens=tensor%get_dense_adapter(ierr)
+        if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+
+        select case (tens%num_dims)
+        case (3)
+          allocate (tens_id  (3))
+          allocate (tens_root(3))
+          if (this%eps_ijk.gt.0) call quit ('Error: eps_ijk not set in denom3_t_apply')
+        case default
+          call quit ('Error: wrong dimension of tensor in denom3_t_apply')
+        end select
+
+        ierr=denominate3(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
+                         this%eps_vir,this%eps_ijk)
+
+      end function denom3_t_apply
+
+      integer function denominate3(rank,tens_body,data_kind,tens_dims,tens_bases, &
+                         eps_vir,eps_ijk) result (ierr)
+
+        !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
+        !                        and for 3-d and 6-d tensor for triples
+
+        implicit none
+
+        integer(INTD),intent(in)  :: rank            !in: number of dimensions of the tensor
+        type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+        integer(INTD), value      :: data_kind       !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+        integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+        integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+        real(8), intent(in)       :: eps_vir(:)
+        real(8), intent(in)       :: eps_ijk
+
+        integer(INTL)      :: a,b,c
+        real(8)            :: denominator
+        complex(8),pointer :: th_tens(:,:,:)
+
+        ierr=0 !set error code to success
+        if(data_kind /= EXA_DATA_KIND_C8) then
+          ierr=-1 !invalid data kind requested
+          return
+        endif
+
+        select case (rank)
+        case (3)
+          call c_f_pointer(tens_body,th_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
+          do c = 1, tens_dims(3)
+            do b = 1, tens_dims(2)
+              do a = 1, tens_dims(1)
+                denominator = eps_ijk - eps_vir(a+tens_bases(1)-1) &
+                            - eps_vir(b+tens_bases(2)-1) - eps_vir(c+tens_bases(3)-1) 
+                th_tens(a,b,c) = th_tens(a,b,c) / denominator
+              end do
+            end do
+          end do
+         case default
+            call quit ('Error: wrong dimension of tensor in denominate')
+         end select
+
+      end function denominate3
 
         ! --------------------------------------------------------------------------------
 
@@ -2003,5 +2175,36 @@ module exacorr_tensor_methods
         end function get_chol_J
 
         ! --------------------------------------------------------------------------------
+        ! --------------------------------------------------------------------------------
+
+        subroutine shift_orbital_energy(eps_vir,eps_occ,level_shift)
+          implicit none
+
+          real(8), intent(inout)   :: eps_vir(:),eps_occ(:)
+          real(8), intent(in)      :: level_shift
+
+          integer            :: lumo
+          real(8)            :: e_homo, e_lumo
+          real(8), parameter :: THRESHOLD=1.D-8
+
+          if (level_shift.gt.1.0D-14) then
+            e_homo = maxval(eps_occ)
+            e_lumo = minval(eps_vir)
+            lumo   = minloc(eps_vir,1)
+
+            do while(e_lumo-e_homo < THRESHOLD)
+              write(*,*) "e_homo, e_lumo", e_homo, e_lumo
+              if (e_lumo+level_shift-e_homo >THRESHOLD) then
+                eps_vir(lumo)=e_lumo+level_shift
+                write(*,*) "lumo energy level shifted by ", level_shift,&
+                            " to ",e_lumo+level_shift
+              else
+                call quit('Negative HOMO-LUMO gap')
+              end if
+              e_lumo = minval(eps_vir)
+              lumo   = minloc(eps_vir, 1)
+            end do
+          end if
+        end subroutine shift_orbital_energy
 
 end module exacorr_tensor_methods

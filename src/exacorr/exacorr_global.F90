@@ -16,10 +16,6 @@ module exacorr_global
         type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
         logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
-        integer, dimension(2) ::  chol_J_ind = -99 ! index to compute J(mu,nu){lam,sig}
-        integer, parameter :: chol_J_tag=8479
-        integer, dimension(2) ::  delta = -99 ! value to extract slices
-        integer, parameter :: delta_tag=8453
 
 !       Functions and routines to interact with these data
         public nfunctions

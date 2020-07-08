@@ -97,11 +97,11 @@ module exacorr_cc
          logical :: CC2         !L
 
          !methods
-         type(delta_t)   :: f_delta  ! fill delta matrix
-         type(denom_t)   :: denom
-
-         !Cholesky
-         type(chol_J)    :: j_chol  ! Cholesky: compute off-diagonal elements
+         type(delta_t)      :: f_delta
+         type(denom_t)      :: denom
+         type(set_energy_t) :: orb_set
+         type(denom3_t)     :: denom3
+         type(chol_J)       :: j_chol
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -113,7 +113,7 @@ module exacorr_cc
 
 !        Register and initialize user defined methods needed in the CC calculation
 
-         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,f_delta,denom,j_chol)
+         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,f_delta,denom,denom3,j_chol)
 
          if (my_MPI_rank == 0) call print_date(" Initialized and registered tensor methods")
 
@@ -201,7 +201,8 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,scf_energy,exa_input%print_level)
+            call init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, &
+                            f_delta,denom,orb_set,scf_energy,exa_input%print_level)
             call print_date('initialized Fock matrix')
 
 !           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
@@ -262,7 +263,7 @@ module exacorr_cc
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
               if (.FALSE.) then ! (exa_input%do_triples .and. .not.CC2) then
-                call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
+                call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom3,exa_input%mo_occ,exa_input%print_level,exa_input%beta_occ)
                 !call t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
@@ -495,7 +496,7 @@ module exacorr_cc
         end subroutine exacorr_cc_spaces
 
 
-        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, f_delta, denom, j_chol)
+        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, f_delta, denom, denom3, j_chol)
 
 !        This subroutine initalizes and registers all user-defined methods for ExaTensor
 
@@ -513,7 +514,9 @@ module exacorr_cc
          integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id
          type(delta_t)                 :: f_delta  ! fill delta matrix
          type(denom_t)                 :: denom    ! method to scale CC amplitudes by the inverse of orbital energy differences
-         type(chol_J), intent(inout)   :: j_chol  ! Cholesky: compute diagonal elements
+         type(denom3_t)                :: denom3   ! scale with fixed occ value
+         type(set_energy_t)            :: orb_set  ! place orbital energies on diagonal
+         type(chol_J), intent(inout)   :: j_chol   ! Cholesky: compute diagonal elements
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -528,7 +531,6 @@ module exacorr_cc
          type(init_dm_tensor_t)       :: dm_init(4)           ! array of initializers for MO transformation algorithm 2
          type(set_diagonal_t)         :: one_diag             ! identity matrix
          type(set_1el_t)              :: one_el(3)            ! one electron integrals
-         type(set_energy_t)           :: orb_set              ! place orbital energies on diagonal
          type(square_t)               :: t_square             ! square matrix elements
          type(set_projection_t)       :: set_proj             ! projection matrix for triples
          type(set_zero_t)             :: cmplx_zero,imag_zero ! zero out tensors
@@ -595,6 +597,11 @@ module exacorr_cc
          call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift,occ_space_id)
          ierr=exatns_method_register('Denominate',denom)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
+
+         !Register denominator of triples using delta
+         call denom3%denom3_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift)
+         ierr=exatns_method_register('Denominate3',denom3)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate3) failed!')
 
          !Register the standard print method with treshold such that it only prints interesting elements
          call tens_printer%reset_thresh(1.0D-6)
@@ -2631,7 +2638,8 @@ print *,'abe',ierr
 
         end subroutine diis
 
-        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,scf_energy,print_level)
+        subroutine init_fock (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
+                              f_delta,denom,orb_set,scf_energy,print_level)
 
           use exacorr_global
           use exacorr_tensor_methods
@@ -2642,6 +2650,9 @@ print *,'abe',ierr
           type(exatns_intg_tens), intent(inout)  :: int_t
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
+          type(delta_t)                          :: f_delta
+          type(denom_t)                          :: denom
+          type(set_energy_t)                     :: orb_set
           integer, intent(in)                    :: print_level
           real(8), intent(out)                   :: scf_energy
 
@@ -2700,6 +2711,8 @@ print *,'abe',ierr
               ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
             end if
 
+            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id)
+
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(orb_tensor,'OrbSet')
@@ -2752,6 +2765,71 @@ print *,'abe',ierr
 
         end subroutine init_fock
 
+        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id)
+          use exacorr_tensor_methods
+          implicit none
+
+          type(exatns_comm_tens)                 :: comm_t
+          type(delta_t)                          :: f_delta 
+          type(denom_t)                          :: denom
+          type(set_energy_t)                     :: orb_set 
+          integer(INTL),dimension(2), intent(in) :: oo_root, vv_root
+          integer(INTD),dimension(2), intent(in) :: oo_id, vv_id 
+
+          real(8),allocatable        :: eps_occ(:),eps_vir(:)
+          integer                    :: nocc, nvir, i
+          integer(INTL),dimension(2) :: delta_set
+          type(tens_rcrsv_t)         :: d_mat, res_tensor
+          complex(8)                 :: res_val
+          integer(INTD)              :: ierr
+
+          nocc=oo_root(1)
+          nvir=vv_root(1)
+
+          allocate(eps_occ(nocc))
+          allocate(eps_vir(nvir))
+
+          ierr=exatns_tensor_create(res_tensor,"res_tensor",EXA_DATA_KIND_C8)
+
+          ierr=exatns_tensor_create(d_mat,"d_mat",oo_id,oo_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(d_mat,'ZERO')
+          do i = 1, nocc
+              delta_set=i
+              call f_delta%reset(delta_set,2)
+              ierr=exatns_tensor_transform(d_mat,f_delta)
+
+              ierr=exatns_tensor_init(res_tensor,ZERO)
+              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_tensor,comm_t%foo,d_mat)
+              ierr=exatns_tensor_get_scalar(res_tensor,res_val)
+              eps_occ(i)=real(res_val,8)
+
+          end do
+          ierr=exatns_tensor_destroy(d_mat)
+
+          ierr=exatns_tensor_create(d_mat,"d_mat",vv_id,vv_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(d_mat,'ZERO')
+          do i = 1, nocc
+              delta_set=i
+              call f_delta%reset(delta_set,2)
+              ierr=exatns_tensor_transform(d_mat,f_delta)
+
+              ierr=exatns_tensor_init(res_tensor,ZERO)
+              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_tensor,comm_t%fvv,d_mat)
+              ierr=exatns_tensor_get_scalar(res_tensor,res_val)
+              eps_vir(i)=real(res_val,8)
+
+          end do
+          ierr=exatns_tensor_destroy(d_mat)
+
+          call denom%reset(eps_occ,eps_vir,nocc,nvir)
+          call denom%reset(eps_occ,eps_vir,nocc,nvir)
+
+          deallocate(eps_occ)
+          deallocate(eps_vir)
+          ierr=exatns_tensor_destroy(res_tensor)
+
+        end subroutine update_eps
+
         subroutine t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
             
             use exacorr_ao_to_mo, only : print_tensornorm2
@@ -2789,7 +2867,7 @@ print *,'abe',ierr
             integer                      :: nr_proc
             real(8)                      :: est, nseg
 
-            if (exa_input%print_level >-1) call print_date('entering t3_energy')
+            if (exa_input%print_level >-1) call print_date('entering t3_energy_split')
 
             t_energy = ZERO
 
@@ -3364,12 +3442,12 @@ print *,'abe',ierr
             deallocate(subsp_j)
             deallocate(subsp_k)
             
-            if (exa_input%print_level >-1) call print_date('leaving t3_energy')
+            if (exa_input%print_level >-1) call print_date('leaving t3_energy_split')
 
         end subroutine t3_energy_split
 
 
-        subroutine t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,mo_occ,print_level)
+        subroutine t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom3,mo_occ,print_level,beta_occ)
             
             use exacorr_global
             use exacorr_tensor_methods
@@ -3379,9 +3457,10 @@ print *,'abe',ierr
             type(exatns_comm_tens)                  :: comm_t
             type(exatns_intg_tens)                  :: int_t
             type(delta_t)                           :: f_delta  ! fill delta matrix
-            type(denom_t)                           :: denom
+            type(denom3_t)                          :: denom3
             integer                                 :: mo_occ(:)
             integer                                 :: print_level
+            logical                                 :: beta_occ
 
             integer(INTL),dimension(2) :: ov_root, vo_root, subspace_id2
             integer(INTD),dimension(2) :: ov_id, vo_id
@@ -3410,7 +3489,9 @@ print *,'abe',ierr
             !complex(8), allocatable      :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
             integer                      :: i,j,k
 
-            if (print_level >0) call print_date('entering t3_energy_old')
+            if (print_level >0) call print_date('entering t3_energy_delta')
+
+            if (beta_occ) call quit('t3_energy_delta: only closed shell')
 
             ONE_THIRD=ONE/3.00D0
 
@@ -3607,10 +3688,10 @@ print *,'abe',ierr
                   if(print_level > 10) write(*,*) "W[+T ] =",print_tensornorm2(w_tensor)
 
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
-                  call denom%reset(eps_ijk)
+                  call denom3%reset(eps_ijk)
                   ierr=exatns_tensor_init(we_tensor,'ZERO')
                   ierr=exatns_tensor_contract("E(a,b,c)+=W(a,b,c)*O()",we_tensor,w_tensor,one_tensor)
-                  ierr=exatns_tensor_transform(we_tensor,denom)
+                  ierr=exatns_tensor_transform(we_tensor,denom3)
 
                   ierr=exatns_tensor_init(res_tensor,ZERO)
                   ierr=exatns_tensor_contract("R()+=W(a,b,c)*E(a,b,c)",res_tensor,w_tensor,we_tensor)
@@ -3715,7 +3796,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_destroy(y_tensor)
             ierr=exatns_tensor_destroy(temp)
 
-            if (print_level >0) call print_date('leaving t3_energy_old')
+            if (print_level >0) call print_date('leaving t3_energy_delta')
 
         end subroutine t3_energy_delta
 
