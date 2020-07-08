@@ -516,7 +516,7 @@ module exacorr_cc
          type(denom_t)                 :: denom    ! method to scale CC amplitudes by the inverse of orbital energy differences
          type(denom3_t)                :: denom3   ! scale with fixed occ value
          type(set_energy_t)            :: orb_set  ! place orbital energies on diagonal
-         type(chol_J), intent(inout)   :: j_chol   ! Cholesky: compute diagonal elements
+         type(chol_J)                  :: j_chol   ! Cholesky: compute diagonal elements
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
          integer, allocatable   :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
@@ -599,9 +599,9 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
 
          !Register denominator of triples using delta
-         call denom3%denom3_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift)
-         ierr=exatns_method_register('Denominate3',denom3)
-         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate3) failed!')
+         !call denom3%denom3_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift)
+         !ierr=exatns_method_register('Denominate3',denom3)
+         !if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate3) failed!')
 
          !Register the standard print method with treshold such that it only prints interesting elements
          call tens_printer%reset_thresh(1.0D-6)
@@ -2779,8 +2779,8 @@ print *,'abe',ierr
           real(8),allocatable        :: eps_occ(:),eps_vir(:)
           integer                    :: nocc, nvir, i
           integer(INTL),dimension(2) :: delta_set
-          type(tens_rcrsv_t)         :: d_mat, res_tensor
-          complex(8)                 :: res_val
+          type(tens_rcrsv_t)         :: d_mat, res_val
+          complex(8)                 :: res
           integer(INTD)              :: ierr
 
           nocc=oo_root(1)
@@ -2789,7 +2789,7 @@ print *,'abe',ierr
           allocate(eps_occ(nocc))
           allocate(eps_vir(nvir))
 
-          ierr=exatns_tensor_create(res_tensor,"res_tensor",EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_create(res_val,"res_val",EXA_DATA_KIND_C8)
 
           ierr=exatns_tensor_create(d_mat,"d_mat",oo_id,oo_root,EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(d_mat,'ZERO')
@@ -2798,10 +2798,10 @@ print *,'abe',ierr
               call f_delta%reset(delta_set,2)
               ierr=exatns_tensor_transform(d_mat,f_delta)
 
-              ierr=exatns_tensor_init(res_tensor,ZERO)
-              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_tensor,comm_t%foo,d_mat)
-              ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-              eps_occ(i)=real(res_val,8)
+              ierr=exatns_tensor_init(res_val,ZERO)
+              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_val,comm_t%foo,d_mat)
+              ierr=exatns_tensor_get_scalar(res_val,res)
+              eps_occ(i)=real(res,8)
 
           end do
           ierr=exatns_tensor_destroy(d_mat)
@@ -2813,10 +2813,10 @@ print *,'abe',ierr
               call f_delta%reset(delta_set,2)
               ierr=exatns_tensor_transform(d_mat,f_delta)
 
-              ierr=exatns_tensor_init(res_tensor,ZERO)
-              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_tensor,comm_t%fvv,d_mat)
-              ierr=exatns_tensor_get_scalar(res_tensor,res_val)
-              eps_vir(i)=real(res_val,8)
+              ierr=exatns_tensor_init(res_val,ZERO)
+              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_val,comm_t%fvv,d_mat)
+              ierr=exatns_tensor_get_scalar(res_val,res)
+              eps_vir(i)=real(res,8)
 
           end do
           ierr=exatns_tensor_destroy(d_mat)
@@ -2826,7 +2826,7 @@ print *,'abe',ierr
 
           deallocate(eps_occ)
           deallocate(eps_vir)
-          ierr=exatns_tensor_destroy(res_tensor)
+          ierr=exatns_tensor_destroy(res_val)
 
         end subroutine update_eps
 

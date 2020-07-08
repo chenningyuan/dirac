@@ -55,7 +55,7 @@ module exacorr_tensor_methods
         type, extends(tens_method_uni_t), public:: delta_t
          integer(INTL), private :: ind(4)
          contains
-          procedure, private:: delta_t_init
+          procedure, public:: delta_t_init
           procedure, public:: reset=>delta_t_reset
           procedure, public:: pack=>delta_t_pack
           procedure, public:: unpack=>delta_t_unpack
@@ -79,12 +79,14 @@ module exacorr_tensor_methods
         !set orbital energies on diagonal
         type, extends(tens_method_uni_t), public:: set_energy_t
          real(8), allocatable, private :: eps_occ(:),eps_vir(:)
-         integer, private              :: occ_id, vir_id    
+         integer, private              :: occ_id, vir_id   
+         real(8), private              :: level_shift
+         integer, private              :: norb(2) 
          contains
           procedure, public:: set_energy_init
-          !procedure, public:: reset=>set_energy_reset
-          !procedure, public:: pack=>set_energy_pack
-          !procedure, public:: unpack=>set_energy_unpack
+          procedure, public:: reset=>set_energy_reset
+          procedure, public:: pack=>set_energy_pack
+          procedure, public:: unpack=>set_energy_unpack
           procedure, public:: apply=>set_energy_apply
         end type set_energy_t
 
@@ -142,7 +144,7 @@ module exacorr_tensor_methods
         type, extends(tens_method_uni_t), public:: chol_J
          integer(INTL), private :: ind(1:2)
          contains
-          procedure, private:: chol_J_init
+          procedure, public:: chol_J_init
           procedure, public:: reset=>chol_J_reset
           procedure, public:: pack=>chol_J_pack
           procedure, public:: unpack=>chol_J_unpack
@@ -1161,18 +1163,23 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
 
         subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,level_shift)
-
          use exacorr_mo
          use exacorr_global
-
          implicit none
+
+         class(set_energy_t)      :: this
          integer, intent(in)      :: nocc, nvir
          integer(INTD),intent(in) :: occ_space_id, vir_space_id
          integer, intent(in)      :: mo_occ(:),mo_vir(:)
          real(8), intent(in)      :: level_shift
-         class(set_energy_t), intent(out):: this
 
          type(cmo)   :: cspinor
+
+         this%occ_id=occ_space_id
+         this%vir_id=vir_space_id
+         this%level_shift=level_shift
+         this%norb(1)=nocc
+         this%norb(2)=nvir
 
          call get_mo_coefficients (cspinor,mo_occ,nocc)
          allocate(this%eps_occ(nocc))
@@ -1186,20 +1193,14 @@ module exacorr_tensor_methods
 
          call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
-         this%occ_id=occ_space_id
-         this%vir_id=vir_space_id
-
         end subroutine set_energy_init
 
       subroutine set_energy_reset(this,eps_occ,eps_vir,nocc,nvir)
         implicit none
 
-        class(denom_t), intent(inout) :: this
+        class(set_energy_t)           :: this
         real(8), intent(in)           :: eps_occ(:),eps_vir(:)
         integer, intent(in)           :: nocc, nvir
-
-        if (nocc.ne.this%norb(1)) call quit('denom_t_reset: wrong number of orbitals')
-        if (nvir.ne.this%norb(2)) call quit('denom_t_reset: wrong number of orbitals')
 
         this%eps_occ = eps_occ
         this%eps_vir = eps_vir
@@ -1210,7 +1211,7 @@ module exacorr_tensor_methods
 
       subroutine set_energy_pack(this,packet,ierr)
         implicit none
-        class(denom_t), intent(in)           :: this
+        class(set_energy_t), intent(in)      :: this
         class(obj_pack_t), intent(inout)     :: packet
         integer(INTD), intent(out), optional :: ierr
         integer                              :: i
@@ -1228,7 +1229,7 @@ module exacorr_tensor_methods
 
       subroutine set_energy_unpack(this,packet,ierr)
         implicit none
-        class(denom_t), intent(inout)        :: this
+        class(set_energy_t), intent(inout)   :: this
         class(obj_pack_t), intent(inout)     :: packet
         integer(INTD), intent(out), optional :: ierr
         integer                              :: i
