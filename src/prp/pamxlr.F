@@ -401,7 +401,6 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
-      use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -410,6 +409,7 @@ C***********************************************************************
 #endif
       use dirac_cfg
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
@@ -448,7 +448,6 @@ C
 #include "ibtfun.h"
 #include "gauss_legendre.h"
 C
-
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -1902,8 +1901,8 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 C
       PARAMETER(D0 = 0.0D0)
@@ -1921,7 +1920,6 @@ C
       DATA RESPLAB/'Real part           ',
      &             'Imaginary part      ',
      &             '                    '/
-C
 C
 C     Loop over perturbation operators
 C     ================================

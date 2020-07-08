@@ -30,7 +30,6 @@
 
       MODULE READ_XYZFILE
         USE FILE
-        USE CODATA
         IMPLICIT NONE
 
         PRIVATE
@@ -49,9 +48,9 @@
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          REAL(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
-          REAL(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
-          REAL(KIND=8)            :: nucexp=0.0
+          REAL(KIND=8)            :: charge=0.0D0    ! this is the actual charge that may be taken zero or fractional
+          REAL(KIND=8)            :: bascharge=0.0D0 ! this is the charge for the specified element that is used when searching the basis set library
+          REAL(KIND=8)            :: nucexp=0.0D0
           TYPE(atom), POINTER     :: next
         END TYPE atom
 
@@ -87,7 +86,7 @@
         INTEGER :: natoms_given
 
 !     The unit conversion global variable is used when reading/writing xyz files
-       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION = 1.D0 / XTANG
+       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
 
       CONTAINS
 
@@ -414,7 +413,7 @@
 
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
-        use codata
+#include "codata.h"
 #include "infpar.h"
 #include "cbirea.h"
 
@@ -437,7 +436,7 @@
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
 !     FOR UNIT CONVERSION and explicitly defined charges and/or nuclear exponents
-          REAL(KIND=8)      :: ONE=1.0
+          REAL(KIND=8)      :: ONE=1.0d0
           CHARACTER(LEN=32) :: UNITNAME='Angstrom'
           TYPE(atom), POINTER                :: mol
 
@@ -449,6 +448,8 @@
           LOGICAL                            :: first_call=.TRUE.
           CHARACTER(LEN=9) :: symtxt
           SAVE first_call
+
+          UNIT_CONVERSION = 1.D0 / XTANG
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
@@ -699,8 +700,6 @@
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
-
-      use codata
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
@@ -840,10 +839,10 @@
 !               .MOL files, the main difference is the split between reading the files
 !               and writing them to the common blocks
 
-      use codata
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
+#include "codata.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"

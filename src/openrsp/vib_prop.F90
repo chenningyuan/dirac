@@ -7,7 +7,6 @@ module vib_prop
    use prop_contribs
    use openrsp_cfg
    use dirac_interface
-   use codata
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit
    !     with unit (lupri) as extra argument, which doesn't
@@ -28,15 +27,10 @@ module vib_prop
 
    private
 
-   !physical constants for conversion to non-atomic units
-   real(8), parameter :: cm1 = 1/XTKAYS,   & !1 centimeter-to-minus-one in au
-                         nm  = 10/XTANG      !1 nanometer in au
-
    !field component lables for printing
    character(2) :: fc(3) = (/'Fx','Fy','Fz'/)
 
 contains
-
 
    subroutine print_tensor(dims, tensor, title, freqs, colwidth, unit)
    !ajt This is used for printing response function tensors
@@ -274,9 +268,9 @@ contains
                                   ,'-------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
-               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ',  &
+               'w',0,' = ', w,' au =', nint(w/cminv),' cm-1 ~ ',  &
                                   nint((2*pi*cvel/w)/nm),' nm', &
-               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ',  &
+               'w',1,' = ',-w,' au =',-nint(w/cminv),' cm-1 ~ ',  &
                                  -nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(a,13x,a2,18x,a2,18x,a2/)') ' w0 w1',fc
       write (o,'(3(1x,a,3f20.13/))') (fc(i),pol(i,:),i=1,3)
@@ -318,11 +312,11 @@ contains
                                      ,'------------------------'
          write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
          write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))') &
-                  'w',0,' = ',   a,' au =', nint(     a/cm1),' cm-1 ~ ', &
+                  'w',0,' = ',   a,' au =', nint(     a/cminv),' cm-1 ~ ', &
                                       nint((2*pi*cvel/a     )/nm),' nm', &
-                  'w',1,' = ',   b,' au =', nint(     b/cm1),' cm-1 ~ ', &
+                  'w',1,' = ',   b,' au =', nint(     b/cminv),' cm-1 ~ ', &
                                       nint((2*pi*cvel/b     )/nm),' nm', &
-                  'w',2,' = ',-a-b,' au =', nint((-a-b)/cm1),' cm-1 ~ ', &
+                  'w',2,' = ',-a-b,' au =', nint((-a-b)/cminv),' cm-1 ~ ', &
                                       nint((2*pi*cvel/(-a-b))/nm),' nm'
          write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1 w2',fc
          write (o,'(3(/3(1x,2a2,3f20.12/)))') &
@@ -338,7 +332,7 @@ contains
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
-              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
+              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cminv),' cm-1 ~ ', &
                              nint((2*pi*cvel/w(i))/nm),' nm',i=1,4)
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1w2 w3',fc
       write (o,'(3(3(/3(1x,3a2,3f20.10/))))') &
@@ -438,16 +432,16 @@ contains
                                    '-------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(2(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')              &
-               'w',0,' = ', w,' au =', nint(w/cm1),' cm-1 ~ ',  &
+               'w',0,' = ', w,' au =', nint(w/cminv),' cm-1 ~ ',  &
                                   nint((2*pi*cvel/w)/nm),' nm', &
-               'w',1,' = ',-w,' au =',-nint(w/cm1),' cm-1 ~ ',  &
+               'w',1,' = ',-w,' au =',-nint(w/cminv),' cm-1 ~ ',  &
                                  -nint((2*pi*cvel/w)/nm),' nm'
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       pol = 0
       do q=1,nq
          R(:,:) = reshape((/((dipg(j,q)*dipg(i,q),i=1,3),j=1,3)/),(/3,3/))
          pol = pol + R(:,:)/(wq(q)**2-w**2)
-         t(1:3,q) = (/1d0*q,wq(q)/cm1,wq(q)/)
+         t(1:3,q) = (/1d0*q,wq(q)/cminv,wq(q)/)
          t(4:5,q) = (/1d0/(wq(q)**2-w**2),1d0/)*1/3d0*sum((/(R(i,i),i=1,3)/))
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2/)') ' w0 w1',fc
@@ -474,7 +468,7 @@ contains
                                    '------------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(3(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
-              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
+              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cminv),' cm-1 ~ ', &
                              nint((2*pi*cvel/w(i))/nm),' nm',i=1,3)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       hyp = 0
@@ -497,7 +491,7 @@ contains
             t(4+k,q) = sum((/(((R(i,i,j,k)-R(i,j,i,k))*dax(j),i=1,3),j=1,3)/))/5
             t(8+k,q) = sum((/(((R(i,i,j,k)-R(j,i,i,k))*dax(j),i=1,3),j=1,3)/))/5
          end do
-         t(:,q) = (/1d0*q,wq(q)/cm1,wq(q),t(1,q),t(5,q),t(9,q),t(2:4,q),t(6:8,q),t(10:12,q)/)
+         t(:,q) = (/1d0*q,wq(q)/cminv,wq(q),t(1,q),t(5,q),t(9,q),t(2:4,q),t(6:8,q),t(10:12,q)/)
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1 w2',Fc
       write (o,'(3(/3(1x,2a2,3f20.12/)))') ((Fc(i),Fc(j),hyp(i,j,:),j=1,3),i=1,3)
@@ -535,7 +529,7 @@ contains
                                    '-------------------------------------------'
       write (o,'(4x,a/)') 'Optical frequencies and wavelengths:'
       write (o,'(4(8x,a,i1,a,f6.3,a,i7,a,i5,a/))')                   &
-              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cm1),' cm-1 ~ ', &
+              ('w',i-1,' = ',w(i),' au =',nint(w(i)/cminv),' cm-1 ~ ', &
                              nint((2*pi*cvel/w(i))/nm),' nm',i=1,4)
       write (o,'(4x,a,3f8.4/)') 'Normalized dipole axis: ',dax
       shyp = 0
@@ -560,7 +554,7 @@ contains
          t( 1: 9,q) = (/(sum((/((R(i,i,j,j,k)+R(i,j,i,j,k)+R(i,j,j,i,k),i=1,3),j=1,3)/)),k=1,9)/)/15
          t(10:18,q) = (/(sum((/((R(i,i,j,j,k)-R(i,j,j,i,k),i=1,3),j=1,3)/)),k=1,9)/)/10
          t(19:27,q) = (/(sum((/((R(i,i,j,j,k)+R(i,j,j,i,k)-2*R(i,j,i,j,k),i=1,3),j=1,3)/)),k=1,9)/)/10
-         t(:,q) = (/1d0*q,wq(q)/cm1,wq(q),t(1:2,q),t(10:11,q), &
+         t(:,q) = (/1d0*q,wq(q)/cminv,wq(q),t(1:2,q),t(10:11,q), &
                     t(19:20,q),t(3:9,q),t(12:18,q),t(21:27,q)/)
       end do
       write (o,'(a,13x,a2,18x,a2,18x,a2)') ' w0w1w2 w3',Fc

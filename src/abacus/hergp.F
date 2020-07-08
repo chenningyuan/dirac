@@ -512,9 +512,8 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
-      USE CODATA
-C
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
       PARAMETER (THRESH = 1.0D-10)
@@ -1768,8 +1767,8 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1782,6 +1781,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
+C
       CARTRA = .TRUE.
 C
 C     Atomic polar tensors (au)
@@ -1955,9 +1955,8 @@ C
 C     radovan: AMASS is not used !?
 C     hjaaj:   AMASS is passed on to VIBMAS
 C
-      USE CODATA, ONLY : XFAMU
-C
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1966,7 +1965,6 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 #include "symmet.h"
-
 C
       ICHTOT = 0
       JATOM  = 0
@@ -1999,8 +1997,8 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
-      USE CODATA, ONLY : XTANG
 #include "implicit.h"
+#include "codata.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
@@ -2027,8 +2025,8 @@ C
             RMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'MASS')
             AMASS(IATOM) = RMASS
             TOTMAS       = TOTMAS + RMASS
-            PMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
-            ABUND        = ABUND*DP01*PMASS
+            QMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
+            ABUND        = ABUND*DP01*QMASS
             ORIGIN(1) = ORIGIN(1) + RMASS*GEOM(1,IATOM)
             ORIGIN(2) = ORIGIN(2) + RMASS*GEOM(2,IATOM)
             ORIGIN(3) = ORIGIN(3) + RMASS*GEOM(3,IATOM)

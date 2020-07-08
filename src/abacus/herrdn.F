@@ -283,7 +283,7 @@ C               - common block HRUNIT: deleted !!!
 C******************************************************************************
         USE READ_XYZFILE
         use memory_allocator
-
+        use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -320,8 +320,10 @@ C     JHS
 #include "aosotr.h"
 #include "infpar.h"
 
-      integer, parameter   :: LWORK = 15000000 ! do no use WORK_memsize because WORK may be allocated in calling routine
+      integer, parameter   :: LWORK = 15000000 ! do not use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)          ! and we do not need that much memory in READIN
+C
+      call set_codata_values(CODSET)
 C
 C     A SET variable has been replaced by RDINPC. This allows external control
 C     of READIN processing. The processing should be performed once every
@@ -482,9 +484,9 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
-      use codata
       USE RECP_NTR
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -492,7 +494,8 @@ C******************************************************************************
 #include "maxaqn.h"
 #include "argoscom.h"
 #include "argoscomch.h"
-      PARAMETER (D0 = 0.0D0, THRMIN = 1.D-15)
+#include "consts.h"
+      PARAMETER (THRMIN = 1.D-15)
 #include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
 
@@ -539,6 +542,7 @@ C     JHS The following variables come from a common block and are thus kept in 
 #endif
 #include "dgroup.h"
 #include "memint.h"
+C
       CALL QENTER('READ_MOL')
       ZMAT = .FALSE.
 C
@@ -823,7 +827,6 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
-       use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -836,7 +839,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "aosotr.h"
-
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -883,7 +885,6 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -939,8 +940,6 @@ C
       LOGICAL SEGT
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C
-
 C
 C     MBSIP = basis-set identifier (WK/UniKA/04-11-2002).
       MBSIP = 0
@@ -1942,13 +1941,14 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
-       use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER(D0 = 0.0D00, CORMAX = 1.D5)
+#include "consts.h"
+      PARAMETER(CORMAX = 1.D5)
 #if defined (SYS_HPUX)
       PARAMETER (LUERR = 7)
 #else
@@ -2087,7 +2087,6 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2360,7 +2359,6 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3528,7 +3526,6 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3676,7 +3673,6 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3800,7 +3796,6 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4036,7 +4031,6 @@ C
 C     Process molecular data
 C
 C******************************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4659,10 +4653,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-
-      use codata
-
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -4683,6 +4675,7 @@ C
 #include "chrnos.h"
 C
 #include "memint.h"
+C
       NCOOR = 3*NUCDEP
       NWARN = 0
 C
@@ -4944,10 +4937,10 @@ C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C     Conversion Factor Bohr/fm 52917.7249.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "nucdata.h"
+#include "codata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)
       PARAMETER (FAC2=2.556D0)
@@ -5672,7 +5665,6 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -5901,12 +5893,12 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
+#include "consts.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
