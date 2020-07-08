@@ -870,19 +870,19 @@
          exa_input%iterative_scheme = 20
       end if
 
-      if (kw_matches(word, '.ITERT_LEVEL')) then
+      if (kw_matches(word, '.ITLEVEL')) then
          call kw_read(word, exa_input%iterative_level)
       end if
 
-      if (kw_matches(word, '.ITERT_SCHEME')) then
+      if (kw_matches(word, '.ITSCHEME')) then
          call kw_read(word, exa_input%iterative_scheme)
       end if
 
-      if (kw_matches(word, '.PERTT_LEVEL')) then
+      if (kw_matches(word, '.PTLEVEL')) then
          call kw_read(word, exa_input%perturbative_level)
       end if
 
-      if (kw_matches(word, '.PERTT_SCHEME')) then
+      if (kw_matches(word, '.PTSCHEME')) then
          call kw_read(word, exa_input%perturbative_scheme)
       end if
 
