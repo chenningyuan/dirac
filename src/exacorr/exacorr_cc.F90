@@ -217,7 +217,7 @@ module exacorr_cc
             ierr=exatns_tensor_init(comm_t%t2,ZERO)
 !           the tensor_add routine is not implemented in exatensor, work around this by using a contraction
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
-            ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
+            ierr=exatns_tensor_transform(comm_t%t2,denom)
 
             ierr=exatns_tensor_init(result_tensor,ZERO)
 !           Calculate and print the MP2 energy
@@ -253,9 +253,9 @@ module exacorr_cc
             end if
 
             if (.not.CC2) then
-               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,exa_input%print_level)
+               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,denom,exa_input%print_level)
             else if (CC2) then 
-               call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,exa_input%print_level)
+               call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,denom,ncycles,exa_input%print_level)
             end if
 
             if (.not.CCD) then
@@ -264,7 +264,7 @@ module exacorr_cc
               t1diag = t1diag/sqrt(dble(nocc))
               if (.FALSE.) then ! (exa_input%do_triples .and. .not.CC2) then
                 call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom3,exa_input%mo_occ,exa_input%print_level,exa_input%beta_occ)
-                !call t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
+                !call t3_energy_split(t_energy,comm_t,int_t,occ_space,denom,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -665,11 +665,12 @@ module exacorr_cc
 
         end subroutine exacorr_cc_methods
 
-        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,print_level)
+        subroutine solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,denom,print_level)
 
 !        Routine for solving the t amplitude equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_tensor_methods
 
 !        Input
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -680,6 +681,7 @@ module exacorr_cc
          logical, intent(in)  :: CCD
          real(8), intent(in)  :: t_target_precision
          real(8), intent(out) :: ccsd_energy
+         type(denom_t)        :: denom
          integer, intent(in)  :: print_level
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
@@ -852,11 +854,11 @@ module exacorr_cc
           if (.not.CCD) then
               ierr=exatns_tensor_init(comm_t%t1,ZERO)
               ierr=exatns_tensor_contract("T1(a,i)+=S1(a,i)*K()",comm_t%t1,s1_tensor,one_tensor)
-              ierr=exatns_tensor_transform(comm_t%t1,'Denominate')
+              ierr=exatns_tensor_transform(comm_t%t1,denom)
           end if
           ierr=exatns_tensor_init(comm_t%t2,ZERO)
           ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)*K()",comm_t%t2,s2_tensor,one_tensor)
-          ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
+          ierr=exatns_tensor_transform(comm_t%t2,denom)
 
           if (.not.CCD) then
               call diis (comm_t%t2,vvoo_id,vvoo_root,comm_t%t1,vo_id,vo_root,t_convergence)
@@ -904,11 +906,12 @@ module exacorr_cc
 
         end subroutine solve_t_equations
 
-        subroutine solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,ncycles,print_level)
+        subroutine solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,ccsd_energy,denom,ncycles,print_level)
 
 !        Routine for solving the t amplitude equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_tensor_methods
 
          logical :: debug_local = .false.
 
@@ -921,6 +924,7 @@ module exacorr_cc
          logical, intent(in) :: CCD
          real(8), intent(in) :: t_target_precision
          real(8), intent(out) :: ccsd_energy
+         type(denom_t)        :: denom
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
 !        intermediary tensor for handling permutation symmetry
@@ -1204,11 +1208,11 @@ module exacorr_cc
           if (.not.CCD) then
               ierr=exatns_tensor_init(comm_t%t1,ZERO)
               ierr=exatns_tensor_contract("T1(a,i)+=S1(a,i)*K()",comm_t%t1,s1_tensor,one_tensor)
-              ierr=exatns_tensor_transform(comm_t%t1,'Denominate')
+              ierr=exatns_tensor_transform(comm_t%t1,denom)
           end if
           ierr=exatns_tensor_init(comm_t%t2,ZERO)
           ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)*K()",comm_t%t2,s2_tensor,one_tensor)
-          ierr=exatns_tensor_transform(comm_t%t2,'Denominate')
+          ierr=exatns_tensor_transform(comm_t%t2,denom)
 
           if (debug_local) then
              if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
@@ -2715,12 +2719,12 @@ print *,'abe',ierr
 
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(orb_tensor,'OrbSet')
+            ierr=exatns_tensor_init(orb_tensor,orb_set)
             ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,o_tensor, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            ierr=exatns_tensor_init(orb_tensor,'OrbSet')
+            ierr=exatns_tensor_init(orb_tensor,orb_set)
             ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,o_tensor, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             if (print_level >0) call print_date('orbital energies subtracted from the diagonal')
@@ -2821,8 +2825,10 @@ print *,'abe',ierr
           end do
           ierr=exatns_tensor_destroy(d_mat)
 
+          write(*,*) eps_occ, eps_vir
+
           call denom%reset(eps_occ,eps_vir,nocc,nvir)
-          call denom%reset(eps_occ,eps_vir,nocc,nvir)
+          call orb_set%reset(eps_occ,eps_vir,nocc,nvir)
 
           deallocate(eps_occ)
           deallocate(eps_vir)
@@ -2830,9 +2836,10 @@ print *,'abe',ierr
 
         end subroutine update_eps
 
-        subroutine t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
+        subroutine t3_energy_split(t_energy,comm_t,int_t,occ_space,denom,exa_input)
             
             use exacorr_ao_to_mo, only : print_tensornorm2
+            use exacorr_tensor_methods
             use interface_to_mpi
 
             real(8), intent(out)                    :: t_energy(3)
@@ -2840,6 +2847,7 @@ print *,'abe',ierr
             type(exatns_intg_tens)                  :: int_t
             class(h_space_t), pointer               :: occ_space
             type(exacc_input), intent(in)           :: exa_input
+            type(denom_t)                           :: denom
 
             integer(INTL),dimension(2) :: ov_root, vo_root, dim2_root
             integer(INTD),dimension(2) :: ov_id, vo_id
@@ -3297,7 +3305,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_init(wd,'ZERO')
                   ierr=exatns_tensor_contract("W(a,b,c,i,j,k)+=C(a,b,c,i,j,k)*O()",wd,w,one_tensor)
                   !Denominate
-                  ierr=exatns_tensor_transform(wd,'Denominate')
+                  ierr=exatns_tensor_transform(wd,denom)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: denominate')
                   if(exa_input%print_level > 8) write(*,*) " WD =",print_tensornorm2(wd)
 

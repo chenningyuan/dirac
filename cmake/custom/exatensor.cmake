@@ -10,7 +10,7 @@ endif()
 # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
 # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
 set(EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-set(EXATENSOR_GIT_HASH a0ec9b144c3b5415b125ffa4687d9ac3e2fe6501 CACHE STRING "ExaTENSOR Git repository hash in use")
+set(EXATENSOR_GIT_HASH c0a96b2fca285b4994cae7635ea9cb0ed3e470cd CACHE STRING "ExaTENSOR Git repository hash in use")
 
 if(ENABLE_EXATENSOR)
     ExternalProject_Add(exatensor
@@ -26,7 +26,7 @@ if(ENABLE_EXATENSOR)
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
     #Make sure to manually add all ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
-    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 endif()
