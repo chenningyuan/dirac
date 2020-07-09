@@ -1458,7 +1458,7 @@ C              SMALL KINBAL (IBSFLAG = 4)
 C
                CALL FLSHFO(LUPRI)
                CALL RDLINE(LUINFO)
-               READ (MLINE(NMLINE),'(A5,1X,A7)',IOSTAT=IOS)
+               READ (MLINE(NMLINE),'(A5,1X,A8)',IOSTAT=IOS)
      &             BSET,BSKEYWORD
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
@@ -1498,7 +1498,7 @@ C
                      ENDIF
                   ELSE IF ( BSKEYWORD(1:8) .EQ. 'EXPLICIT') THEN
                      IBSFLAG = 1
-                     READ (MLINE(NMLINE),'(14X,12I5)',IOSTAT=IOS)
+                     READ (MLINE(NMLINE)(15:),*,IOSTAT=IOS)
      &                     IQM(I,2),(JCO(K,I,2),K=1,IQM(I,2))
                      IF (IOS.NE.0) THEN
                        WRITE(LUPRI,*) 'Error reading line',NMLINE,':'
