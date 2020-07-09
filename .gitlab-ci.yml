@@ -17,7 +17,7 @@ variables:
 
 ubuntu_gnu_serial32-check:
   only:
-    - merge_requests
+    - nightly_tests
   image: ubuntu:18.04
   before_script:
     - apt-get -qq update
@@ -74,7 +74,7 @@ ubuntu_gnu_parallel32-check:
 
 ubuntu_gnu_parallel64-check:
   only:
-    - merge_requests
+    - nightly_tests
   image: ubuntu:18.04
   before_script:
     - apt-get -qq update
@@ -140,7 +140,7 @@ ubuntu_intel_mkl_int64-check:
 
 ubuntu_intelmpi_mkl-check:
   only:
-    - merge_requests
+    - nightly_tests
   image: ubuntu:18.04
   before_script:
     - apt-get -qq update
