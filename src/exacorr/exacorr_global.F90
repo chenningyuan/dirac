@@ -114,7 +114,7 @@ module exacorr_global
                 end if
              else
                one_el_exist = .FALSE.
-               if (exa_input%beta_occ .and. exa_input%level_shift.lt.1.0D-10) then
+               if (exa_input%beta_occ) then
                  if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA)')
                end if
              end if
@@ -642,7 +642,7 @@ module exacorr_global
               write(*,*) "core orbital need to be closed shell"
               call quit ("change .OCC_BETA in EXACORR")
             end if
-
+            
             exa_input%nocc=nmo(1)+nmo(2)
             exa_input%nvir=nmo(3)+nmo(4)
             allocate (exa_input%mo_occ(exa_input%nocc))

@@ -16,8 +16,8 @@ f1.add(from_string = 'Total energy',
 
 f2 = Filter()
 f2.add(from_string = 'Final CCSD energy',
-      num_lines   = 1,
-      rel_tolerance   = 5.0e-9)
+      num_lines   = 4,
+      rel_tolerance   = 1.0e-8)
 f2.add(from_string = 'SCF energy (',
       num_lines   = 1,
       rel_tolerance   = 5.0e-9)
