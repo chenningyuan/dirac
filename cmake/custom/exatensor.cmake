@@ -26,7 +26,7 @@ if(ENABLE_EXATENSOR)
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libexatensor.a)
     set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib/libtalsh.a)
     #Make sure to manually add all ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
-    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 endif()

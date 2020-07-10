@@ -113,8 +113,7 @@ module exacorr_cc
 
 !        Register and initialize user defined methods needed in the CC calculation
 
-         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,f_delta,denom,denom3,j_chol)
-
+         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,f_delta,orb_set,denom,denom3,j_chol)
          if (my_MPI_rank == 0) call print_date(" Initialized and registered tensor methods")
 
 !        copy input variables to local ones for ease of reference
@@ -496,7 +495,7 @@ module exacorr_cc
         end subroutine exacorr_cc_spaces
 
 
-        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, f_delta, denom, denom3, j_chol)
+        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id,f_delta,orb_set,denom,denom3,j_chol)
 
 !        This subroutine initalizes and registers all user-defined methods for ExaTensor
 
@@ -513,9 +512,9 @@ module exacorr_cc
          ! identifiers of the spaces that we will use in the methods
          integer(INTD), intent(in)     :: ao_space_id, occ_space_id, vir_space_id
          type(delta_t)                 :: f_delta  ! fill delta matrix
+         type(set_energy_t)            :: orb_set  ! place orbital energies on diagonal
          type(denom_t)                 :: denom    ! method to scale CC amplitudes by the inverse of orbital energy differences
          type(denom3_t)                :: denom3   ! scale with fixed occ value
-         type(set_energy_t)            :: orb_set  ! place orbital energies on diagonal
          type(chol_J)                  :: j_chol   ! Cholesky: compute diagonal elements
 
          integer                :: nocc,nvir           ! the size of the mo basis for occupied and virtual orbitals (Kramers pairs)
@@ -2719,12 +2718,15 @@ print *,'abe',ierr
 
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             ierr=exatns_tensor_init(orb_tensor,orb_set)
+            if(ierr.ne.EXA_SUCCESS) call quit('init_fock: set orbitals failed!')
             ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,o_tensor, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             ierr=exatns_tensor_init(orb_tensor,orb_set)
+            if(ierr.ne.EXA_SUCCESS) call quit('init_fock: set orbitals failed!')
             ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,o_tensor, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
             if (print_level >0) call print_date('orbital energies subtracted from the diagonal')
@@ -2812,7 +2814,7 @@ print *,'abe',ierr
 
           ierr=exatns_tensor_create(d_mat,"d_mat",vv_id,vv_root,EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(d_mat,'ZERO')
-          do i = 1, nocc
+          do i = 1, nvir
               delta_set=i
               call f_delta%reset(delta_set,2)
               ierr=exatns_tensor_transform(d_mat,f_delta)
@@ -2824,8 +2826,6 @@ print *,'abe',ierr
 
           end do
           ierr=exatns_tensor_destroy(d_mat)
-
-          write(*,*) eps_occ, eps_vir
 
           call denom%reset(eps_occ,eps_vir,nocc,nvir)
           call orb_set%reset(eps_occ,eps_vir,nocc,nvir)

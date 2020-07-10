@@ -2194,11 +2194,10 @@ module exacorr_tensor_methods
             lumo   = minloc(eps_vir,1)
 
             do while(e_lumo-e_homo < THRESHOLD)
-              write(*,*) "e_homo, e_lumo", e_homo, e_lumo
               if (e_lumo+level_shift-e_homo >THRESHOLD) then
                 eps_vir(lumo)=e_lumo+level_shift
-                write(*,*) "lumo energy level shifted by ", level_shift,&
-                            " to ",e_lumo+level_shift
+                write(*,*) 'E_homo =',e_homo,', E_lumo =',e_lumo,&
+                           ', E_lumo(shifted) =',eps_vir(lumo)
               else
                 call quit('Negative HOMO-LUMO gap')
               end if

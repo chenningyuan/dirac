@@ -709,7 +709,7 @@ module exacorr_ao_to_mo
           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_contract() failed!')
           ierr=exatns_tensor_get_scalar(scalar,scalar_complex)
           if(ierr.ne.EXA_SUCCESS) call quit('print_tensornorm2: get_scalar failed!')
-          scalar_real=abs(scalar_complex)
+          scalar_real=real(scalar_complex,8)
           ierr=exatns_tensor_destroy(scalar)
           if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 
@@ -1625,7 +1625,7 @@ module exacorr_ao_to_mo
           else
             ao_level=1
           end if
-          if (print_level.gt.2) then
+          if (print_level.gt.8) then
             write (*,*) ' --- ao_level =     ',ao_level  
             do i=1,nao
               write(*,*) ' i =',i-1,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr)
@@ -1666,32 +1666,23 @@ module exacorr_ao_to_mo
                                   max_root(1), max_root(2), ', value: ',D_max
 
             ierr=exatns_tensor_create(Dlk,"Dlk",max_id,max_root,EXA_DATA_KIND_C8)  
-            if (print_level.gt.6) write(*,*) 'Dlk create:',ierr
             ierr=exatns_tensor_init(Dlk,'Aoint_calculator')
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computing Off-Diagonals failed!')
-            if (print_level.gt.6) write(*,*) 'Aoint:',ierr
             if (print_level.gt.10) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
-            if (print_level.gt.6) write(*,*) 'print Dlk'
             ierr=exatns_tensor_create(Delta_lk,"Delta_lk",max_id(1:3),max_root(1:3),EXA_DATA_KIND_C8)
-            if (print_level.gt.6) write(*,*) 'Delta_lk create:',ierr
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Creating Delta_lk failed!')
             ierr=exatns_tensor_init(Delta_lk,'ZERO')
-            if (print_level.gt.6) write(*,*) 'Delta_lk:',ierr
 
             ierr=exatns_tensor_create(P_l,"P_l",(/ ao_id, max_id(1) /),(/ ao_root, max_root(1) /),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('P_l creation failed!')
             ierr=exatns_tensor_init(P_l,'ZERO')
             ierr=exatns_tensor_transform(P_l,'OneDiag')
-            if (print_level.gt.6) write(*,*) 'P_l:',ierr
             ierr=exatns_tensor_create(P_k,"P_k",(/ ao_id, max_id(2), ao_id /),(/ ao_root, max_root(2), ao_root /),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('P_k creation failed!')
             ierr=exatns_tensor_init(P_k,'ZERO')
             ierr=exatns_tensor_transform(P_k,'OneDiag')
-            if (print_level.gt.6) write(*,*) 'P_k:',ierr
             ierr=exatns_tensor_create(Temp_l,"Temp_l",(/ max_id(1), ao_id /),(/ max_root(1), ao_root /),EXA_DATA_KIND_C8)
-            if (print_level.gt.6) write(*,*) 'Temp_l:',ierr
             ierr=exatns_tensor_create(Temp_lk,"Temp_lk",max_id(1:3),max_root(1:3),EXA_DATA_KIND_C8)
-            if (print_level.gt.6) write(*,*) 'Temp_lk:',ierr            
 
             do while (abs(D_el)>abs(D_max)/1000)
 
