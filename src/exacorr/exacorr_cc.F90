@@ -263,7 +263,7 @@ module exacorr_cc
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
                 !call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-                call t3_energy_split(t_energy,comm_t,int_t,occ_space,exa_input)
+                call t3_energy_split(t_energy,comm_t,int_t,occ_space,denom,exa_input)
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -298,15 +298,15 @@ module exacorr_cc
 !            solve lambda-equations and caluclate density matrix in MO basis
              if (.not.CCD) then
                 if (.not.CC2) then
-                  call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,&
+                  call solve_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision,&
                       & ncycles,exa_input%print_level,l1_tensor)
                 else
-                  call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,&
+                  call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision,&
                       & ncycles,exa_input%print_level,l1_tensor)
                 end if
                 call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor)
              else
-               call solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision, &
+               call solve_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision, &
                                           ncycles,exa_input%print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
@@ -598,9 +598,9 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
 
          !Register denominator of triples using delta
-         !call denom3%denom3_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift)
-         !ierr=exatns_method_register('Denominate3',denom3)
-         !if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate3) failed!')
+         call denom3%denom3_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift)
+         ierr=exatns_method_register('Denominate3',denom3)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate3) failed!')
 
          !Register the standard print method with treshold such that it only prints interesting elements
          call tens_printer%reset_thresh(1.0D-6)
@@ -1279,16 +1279,19 @@ module exacorr_cc
 
         end subroutine solve_CC2_t_equations
 
-        subroutine solve_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level,l1_tensor)
+        subroutine solve_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision,ncycles,print_level,l1_tensor)
 
 !        Routine for solving the lambda equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_tensor_methods
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens), intent(inout) :: comm_t
          type(exatns_intg_tens), intent(inout) :: int_t
          type(exatns_lambda_tens)              :: lambda_t
+!        denominator
+         type(denom_t)      :: denom
 !        solution tensors
          type(tens_rcrsv_t), intent(inout)           :: l2_tensor
          type(tens_rcrsv_t), intent(inout), optional :: l1_tensor
@@ -1626,11 +1629,11 @@ module exacorr_cc
           if (.not.CCD) then
             ierr=exatns_tensor_init(l1_tensor)
             ierr=exatns_tensor_contract("L1(i,a)+=S1(i,a)*K()",l1_tensor,s1_tensor,one_tensor)
-            ierr=exatns_tensor_transform(l1_tensor,"Denominate")
+            ierr=exatns_tensor_transform(l1_tensor,denom)
           end if
           ierr=exatns_tensor_init(l2_tensor)
           ierr=exatns_tensor_contract("L2(i,j,a,b)+=S2(i,j,a,b)*K()",l2_tensor,s2_tensor,one_tensor)
-          ierr=exatns_tensor_transform(l2_tensor,"Denominate")
+          ierr=exatns_tensor_transform(l2_tensor,denom)
 
           if (.not.CCD) then
             call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
@@ -1679,17 +1682,20 @@ module exacorr_cc
 
         end subroutine solve_lambda_equations
 
-        subroutine solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,dims,t_target_precision,ncycles,print_level,l1_tensor)
+        subroutine solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,denom,dims,t_target_precision,ncycles,print_level,l1_tensor)
 
 !        Routine for solving the lambda equations
 
          use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_tensor_methods
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(exatns_comm_tens), intent(inout) :: comm_t
          type(exatns_comm_tens) :: comm_t_CC2
          type(exatns_intg_tens), intent(inout) :: int_t
          type(exatns_lambda_tens)              :: lambda_t, lambda_t_CC2
+!         denominator
+         type(denom_t)      :: denom
 !        solution tensors
          type(tens_rcrsv_t), intent(inout)           :: l2_tensor
          type(tens_rcrsv_t), intent(inout), optional :: l1_tensor
@@ -2157,11 +2163,11 @@ print *,'abe',ierr
           if (.not.CCD) then
             ierr=exatns_tensor_init(l1_tensor)
             ierr=exatns_tensor_contract("L1(i,a)+=S1(i,a)*K()",l1_tensor,s1_tensor,one_tensor)
-            ierr=exatns_tensor_transform(l1_tensor,"Denominate")
+            ierr=exatns_tensor_transform(l1_tensor,denom)
           end if
           ierr=exatns_tensor_init(l2_tensor)
           ierr=exatns_tensor_contract("L2(i,j,a,b)+=S2(i,j,a,b)*K()",l2_tensor,s2_tensor,one_tensor)
-          ierr=exatns_tensor_transform(l2_tensor,"Denominate")
+          ierr=exatns_tensor_transform(l2_tensor,denom)
 
           if (.not.CCD) then
             call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
@@ -3303,7 +3309,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_contract("Y(a,b,c,i,j,k)+=T(c,a,b,i,j,k)*O()",y,temp,one_tensor)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: copy 2')
                   if(exa_input%print_level > 8) write(*,*) "Y[(T)] =",print_tensornorm2(y)
-                  ierr=exatns_tensor_transform(y,'Denominate')
+                  ierr=exatns_tensor_transform(y,denom)
                   if(ierr.ne.EXA_SUCCESS) call quit('ERROR in t3_energy: denominate')
 
                   !write value
