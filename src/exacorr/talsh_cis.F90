@@ -111,23 +111,31 @@ module talsh_cis
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,voov_dims)
 
+         print *,'before get_CIS_integrals'
          call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
+         print *,'after get_CIS_integrals'
 
          !Constrcut body_one tensor
          ierr=talsh_tensor_construct(body_one_tensor,C8,voov_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
          !compute fock matrix tensor 
+         print *,'before get_CIS_fockmatrix'
          call get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_foo_tensor,diag_fvv_tensor, &
                                   int_t, exa_input%print_level)
+         print *,'after get_CIS_fockmatrix'
 !        set body_one tensor element 
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
+         print *,'OB(b,i,j,a)+=F(i,j)*I(b,a) ierr',ierr
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
+         print *,'OB(b,i,j,a)+=F(b,a)*I(i,j) ierr',ierr
 
          
          ! create CIS hamiltonian tensor 
          ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
+         print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
+         print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
 
          ! transform tensor to matrix sigma1 and digonal it 
          do j = 1, nvir
@@ -141,9 +149,11 @@ module talsh_cis
                 end do
             end do 
           end do
+          print *,'after setting up sigma1'
 
          eValues   = 0.0d0
          call diagoanl_cis_matrix(sigma1,eValues)
+         print *,'after diagoanl_cis_matrix'
 
          !print(eValues)
          ! print CIS matrix
