@@ -3184,6 +3184,8 @@ module talsh_cc
          integer        :: nocc, nvir, i, j, k
          complex(8), allocatable :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
 
+         if (print_level>0) call print_date('entering t3_energy')
+
 !        Get nocc and nvir from tensor information
          ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
@@ -3322,6 +3324,8 @@ module talsh_cc
          ierr=talsh_tensor_destruct(we_tensor)
          ierr=talsh_tensor_destruct(w_tensor)
          ierr=talsh_tensor_destruct(y_tensor)
+
+         if (print_level>0) call print_date('leaving t3_energy')
 
        end subroutine t3_energy
 
