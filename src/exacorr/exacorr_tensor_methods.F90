@@ -56,6 +56,7 @@ module exacorr_tensor_methods
         !set diagonal to constant
         type, extends(tens_method_uni_t), public:: set_diagonal_t
          complex(8), private :: constant
+         logical, private :: offdiag
          contains
           procedure, public:: set_diagonal_init
           procedure, public:: apply=>set_diagonal_apply
@@ -613,12 +614,14 @@ module exacorr_tensor_methods
 
         end function tens_init_ht
 
-        subroutine set_diagonal_init(this, const)
+        subroutine set_diagonal_init(this, const,offdiag)
 
           class(set_diagonal_t), intent(out)   :: this
           complex(8), intent(in) :: const
+          logical, intent(in)    :: offdiag
 
           this%constant=const
+          this%offdiag=offdiag
 
         end subroutine set_diagonal_init
 
@@ -639,11 +642,12 @@ module exacorr_tensor_methods
          if (rank.lt.2) call quit('Error: dimension < 2 in set_diagonal_apply')
          if (rank.gt.4) call quit('Error: dimension > 4 in set_diagonal_apply')
           
-         ierr=diagonal_set(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, this%constant)
+         ierr=diagonal_set(tens%body_ptr,tens%data_kind,tens%dims(1:rank),tens%bases(1:rank), rank, &
+                           this%constant,this%offdiag)
 
         end function set_diagonal_apply
 
-        function diagonal_set(tens_body,data_kind,tens_dims,tens_bases, rank, constant) result (ierr)
+        function diagonal_set(tens_body,data_kind,tens_dims,tens_bases, rank, constant, offdiag) result (ierr)
           ! routine to fill the diagonal of a matrix
 
           implicit none
@@ -654,6 +658,7 @@ module exacorr_tensor_methods
           integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
           integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
           complex(8), intent(in)    :: constant
+          logical, intent(in)       :: offdiag
 
           integer            :: po, qo, ro, so, pa, qa, ra, sa
           complex(8),pointer :: h2_tens(:,:), h3_tens(:,:,:), h4_tens(:,:,:,:)
@@ -662,7 +667,7 @@ module exacorr_tensor_methods
 
           if (rank==2) then
             call c_f_pointer(tens_body,h2_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
-
+            if (offdiag) h2_tens=ZERO
             do qo = 1, tens_dims(2) ! loop over columns
               qa = tens_bases(2) + qo - 1
                 do ro = 1, tens_dims(1) ! loop over rows
@@ -675,7 +680,7 @@ module exacorr_tensor_methods
 
           else if (rank==3) then
             call c_f_pointer(tens_body,h3_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
-
+            if (offdiag) h3_tens=ZERO
             do po = 1, tens_dims(3) ! loop over depth
               pa = tens_bases(3) + po - 1
               do qo = 1, tens_dims(2) ! loop over colums
@@ -693,7 +698,7 @@ module exacorr_tensor_methods
 
           else if (rank==4) then
             call c_f_pointer(tens_body,h4_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
-
+            if (offdiag) h4_tens=ZERO
             do po = 1, tens_dims(4)
               pa = tens_bases(4) + po - 1
               do qo = 1, tens_dims(3)
@@ -766,10 +771,10 @@ module exacorr_tensor_methods
           
           ierr=0
 
-          h4_tens=ZERO
-
           if (rank==4) then
             call c_f_pointer(tens_body,h4_tens,tens_dims(1:rank)) !map C pointer to 3-dimensional array
+            
+            h4_tens=ZERO
 
             do po = 1, tens_dims(4)
               pa = tens_bases(4) + po - 1
