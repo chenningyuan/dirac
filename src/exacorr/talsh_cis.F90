@@ -19,13 +19,6 @@ module talsh_cis
     private
 
     public talsh_cis_driver
-    interface diis
-    module procedure diis
-    end interface
-
-    interface get_subtensor
-    module procedure get_subtensor
-    end interface
 
     contains
 !---------------------------------------------------------------------------------------------------------------
@@ -44,7 +37,6 @@ module talsh_cis
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer(C_INT)       :: ierr
-         real(8)   :: r1(:,:)
          complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:)
          complex(kind=8), pointer :: eValues(:) 
          type(C_PTR):: body_p
@@ -415,4 +407,4 @@ module talsh_cis
     
            end subroutine get_CIS_integrals
 
-
+end module
