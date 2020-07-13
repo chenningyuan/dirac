@@ -203,97 +203,95 @@ contains
 #include "dcbdhf.h"
 #include "priunit.h"
 
-    integer, intent(in) :: myway
+    character(len=6), intent(in) :: myway
 !   ----------------------------------------------------------------------------
 !   local variables
 !   ----------------------------------------------------------------------------
-    integer             :: i, j, k, l, m
-    integer             :: ier
+    integer             :: i, j
+    character(len=1)    :: c
 !   ----------------------------------------------------------------------------
 
-      if(myway == 1)then
+    c = myway(1:1)
+    select case(c)
+      case ('s')
+            if(myway(5:6) == '4c')then
+            
+                        print *, 'saving cb... 4c'
+                        open(99,file='xamfi-4c',status='unknown',form='unformatted',     &
+                        access='sequential',action='readwrite',position='rewind')
+            else
+                        print *, 'saving cb... 2c'
+                        open(99,file='xamfi-2c',status='unknown',form='unformatted',     &
+                        access='sequential',action='readwrite',position='rewind')
+            end if
 
-      nr_quat_save            = nz
-      nzt_aoo_save            = nzt
-      if(mdirac) nzt_aoo_save = nz ! default: 1
+            nzt_aoo_save            = nzt
+            if(mdirac) nzt_aoo_save = nz ! default: 1
+      
+            write(99)   nz, nzt_aoo_save,ntbas(0),ntbas(0),ntbas(0),ntbas(1),ntbas(2),&
+                        n2bastq, n2bbasxq, ncmot, n2tmt
+            print *, '   stored values are ',nz, nzt,ntbas(0),ntbas(0),ntbas(0),ntbas(1),ntbas(2),&
+            n2bastq, n2bbasxq, ncmot, n2tmt
+            do i= 1, nr_fsym
+                  write(99) &
+                        npsh(i),&
+                        nesh(i),&
+                        norb(i),&
+                        nfbas(i,0),&
+                        nfbas(i,1),&
+                        nfbas(i,2),&
+                        ntmo(i),&
+                        i2tmt(i),&
+                        i2tmot(i)
+                  do j = 1, nr_fsym
+                        write(99)&
+                        i2basx(i,j)
+                  end do
+            end do
+            close(99,status="keep")
 
-!                               [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
-      nr_ao_total_aoo_save    = ntbas(0)
-      nrows_save              = ntbas(0)
-      ncols_save              = ntbas(0)
-!                       [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
-      nr_ao_large_aoo_save    = ntbas(1)
-!                       [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
-      nr_ao_small_aoo_save    = ntbas(2)
-!
-      n2bastq_dim_aoo_save    = n2bastq
-      n2bbasxq_dim_aoo_save   = n2bbasxq
-!
-      nr_cmo_q_save           = ncmotq
-!
-      aoo_n2tmt_save          = n2tmt
+      case ('g')
+            if(myway(5:6) == '4c')then
+                  print *, 'retrieving cb... 4c'
+                  open(99,file='xamfi-4c',status='old',form='unformatted',     &
+                  access='sequential',action='readwrite',position='rewind')
+            else
+                  print *, 'retrieving cb... 2c'
+                  open(99,file='xamfi-2c',status='old',form='unformatted',     &
+                  access='sequential',action='readwrite',position='rewind')
+            end if
 
-      do i = 1, nr_fsym
-        dim_pshell_save(i)       =  npsh(i)
-        dim_eshell_save(i)       =  nesh(i)
-        dim_oshell_save(i)       =  norb(i)
-!                         [  L+S  ]
-        nr_ao_all_save(i)        = nfbas(i,0)
-!                         [  L    ]
-        nr_ao_l_save(i)          = nfbas(i,1)
-!                         [    S  ]
-        nr_ao_s_save(i)          = nfbas(i,2)
+            read(99)    nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
+                        n2bastq, n2bbasxq, ncmot, n2tmt
+                  ncmot = 0
+                  do i= 1, nr_fsym
+                        read(99) &
+                              npsh(i),&
+                              nesh(i),&
+                              norb(i),&
+                              nfbas(i,0),&
+                              nfbas(i,1),&
+                              nfbas(i,2),&
+                              ntmo(i),&
+                              i2tmt(i),&
+                              i2tmot(i)
+                        do j = 1, nr_fsym
+                              read(99)&
+                              i2basx(i,j)
+                        end do
+                        ICMO(i)  = NCMOT
+                        ICMOQ(i) = NCMOT*NZ
+                        NCMO(i)  = NFBAS(i,0)*NORB(i)
+                        NCMOQ(i) = NCMO(i)*NZ
+                        NCMOT    = NCMOT + NCMO(i)
+                  end do
+                  ncmotq = ncmot * nz
+                  print *, ' restored values are ',nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
+                  n2bastq, n2bbasxq, ncmot, n2tmt
+            close(99,status="keep")
+            if(mdirac) nzt = nz ! default: 1
 
-        nr_tmo_save(i)           = ntmo(i)
-        ioff_tmt_save(i)         = i2tmt(i)
-        ioff_tmot_save(i)        = i2tmot(i)
-
-        do m = 1, nr_fsym
-          ioff_aomat_x_save(m,i) = i2basx(m,i)
-        end do
-      end do
-
-      else
-
-      nz = nr_quat_save
-      nzt = nzt_aoo_save
-      if(mdirac) nz = nzt_aoo_save
-
-!                               [  L+S  ] (ifsym==1) + [  L+S  ] (ifsym==2)
-      ntbas(0) = nr_ao_total_aoo_save
-!                       [  L    ] (ifsym==1) + [  L    ] (ifsym==2)
-      ntbas(1) = nr_ao_large_aoo_save
-!                       [    S  ] (ifsym==1) + [    S  ] (ifsym==2)
-      ntbas(2) = nr_ao_small_aoo_save
-!
-      n2bastq  = n2bastq_dim_aoo_save
-      n2bbasxq = n2bbasxq_dim_aoo_save
-!
-      ncmotq = nr_cmo_q_save
-!
-      n2tmt  = aoo_n2tmt_save
-
-      do i = 1, nr_fsym
-        npsh(i) = dim_pshell_save(i)
-        nesh(i) = dim_eshell_save(i)
-        norb(i) = dim_oshell_save(i)
-!                         [  L+S  ]
-        nfbas(i,0) = nr_ao_all_save(i)
-!                         [  L    ]
-        nfbas(i,1) = nr_ao_l_save(i)
-!                         [    S  ]
-        nfbas(i,2) = nr_ao_s_save(i)
-
-        ntmo(i)   = nr_tmo_save(i)
-        i2tmt(i)  = ioff_tmt_save(i)
-        i2tmot(i) = ioff_tmot_save(i)
-
-        do m = 1, nr_fsym
-          i2basx(m,i) = ioff_aomat_x_save(m,i)
-        end do
-      end do
-
-      end if
+      end select
 
   end subroutine xamfi_set_cb
 !**********************************************************************

@@ -199,18 +199,18 @@ contains
        !> --------------------------------
 
        CALL OPNFIL(LUTMAT_aoo,'AOMOMATaoo','OLD','XAMFI ')
-       CALL READT(LUTMAT_aoo,aoo_N2TMT,WORK(KTMAT))
+       CALL READT(LUTMAT_aoo,aoo_N2TMT,WORK(KTMAT)); CALL READT(LUTMAT_aoo,aoo_N2TMT,work(KSAOMO))
        CLOSE(LUTMAT_aoo,STATUS='KEEP')
 
        CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
 
        do i = 1,nr_fsym
-         CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                          &
-                     nr_tmo(I),nr_tmo(I),                                                 &
-                     work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),             &
-                     WORK(IOFF_TMOT(I)+KFMO ),nr_tmo(I),nr_tmo(I),NZ,IPQTOQ(1,0),         &
-                     WORK(KTMAT+ioff_tmt(I)),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),  &
-                     WORK(KTMAT+ioff_tmt(I)),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),  &
+         CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
+                     nr_tmo(I),nr_tmo(I),                                                     &
+                     work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
+                     WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
+                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),    &
+                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),    &
                      WORK(KFREE),LFREE,30)
        end do
 

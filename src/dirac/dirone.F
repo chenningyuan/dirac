@@ -2303,6 +2303,7 @@ C
 !       ---------------------------------------------------
   7   IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
         NZT = 1
+        write(lupri,*) '|BLU8>: NZT = ',NZT
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
@@ -2468,6 +2469,7 @@ C.........reset NEWPRP to re-initialize AOPROPER
           else if(x2c)then
 
 !           todo: put in an interface routine to be called inside x2c_driver
+            write(lupri,*) '|BLU10.a>: NZT = ',NZT
             if(mdirac)then
               NZT            = 1
               NPSH(1:nfsym)  = NFORB(1:nfsym,2) ! check!!!
@@ -2480,9 +2482,12 @@ C.........reset NEWPRP to re-initialize AOPROPER
               NORB(IFRP)  = NESH(IFRP)    +  NPSH(IFRP)
               NTMO(IFRP)  = NORB(IFRP)
             END DO
+            write(lupri,*) '|BLU10.b>: NZT = ',NZT
 
 !           optimized x2c module
             call x2c_main()
+
+            write(lupri,*) '|BLU10.c>: NZT = ',NZT
 
 !           re-allocate
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
@@ -2561,7 +2566,9 @@ C.........do canonical orthonormalization
           close(lulmat,status='keep')
 
 !         reset orbital dimensions
+          write(lupri,*) '|BLU6.a>: NZT = ',NZT
           NZT = 1
+          write(lupri,*) '|BLU6.b>: NZT = ',NZT
           DO IFRP = 1,NFSYM
             NESH(IFRP)  = NFORB(IFRP,1)
             NPSH(IFRP)  = NFORB(IFRP,2)
@@ -2635,7 +2642,9 @@ C
 #ifdef MOD_XAMFI
       !> store common block variables while still being in 4c mode
       if(aoomod.and. .not. x2c)then
-         call xamfi_set_cb(+1)
+         call xamfi_set_cb("set-4c")
+      else if(aoomod .and. x2c)then
+         call xamfi_set_cb("set-2c")
       endif
 #endif
 C
@@ -2643,7 +2652,7 @@ C     Copy information from NBORB to the subblock array if we have not
 C     partioned the orbital space otherwise.
 C
       IF (.NOT.SUB_BL) CALL INISUB
-      IF (SPINFR.or.(x2c.and.x2cmod_mmf)) THEN
+      IF (SPINFR.or.(linear.and.x2c.and.x2cmod_mmf)) THEN
          SUB_BL = .TRUE.
       ENDIF
 
@@ -2705,32 +2714,11 @@ C
         CALL SETDC2(0)
       ENDIF
 
-#ifdef MOD_XAMFI
-      if(x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1.and.nucind==1)then
-       CALL MEMGET2('REAL','SCR1'  ,KTMATaoo,aoo_N2TMT,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','SCR2'  ,KTBUFaoo,aoo_N2TMT,WORK,KFREE,LFREE)
-
-       write(6,*) ' dimensions for AOMOMAT reading ... ',aoo_n2tmt
-
-       CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GMOTRA ')
-       CALL READT(LUTMAT,aoo_N2TMT,work(ktmataoo))
-       CALL READT(LUTMAT,aoo_N2TMT,work(ktbufaoo))
-       print *, ' BLU0 first elements of 4c AOMOMAT and inverse one ',
-     & work(ktmataoo), work(ktbufaoo)
-       CLOSE(LUTMAT,STATUS='KEEP')
-
-       CALL OPNFIL(LUTMAT,'AOMOMATaoo','UNKNOWN','GMOTRA')
-       CALL WRITT(LUTMAT,aoo_N2TMT,WORK(ktmataoo))
-       CALL WRITT(LUTMAT,aoo_N2TMT,WORK(ktbufaoo))
-       CALL ORBDAT
-       CLOSE(LUTMAT,STATUS='KEEP')
-      end if
-#endif
-
-
-      write(lupri,*) ' dimensions for AOMOMAT ... ',n2tmt
-       print *, ' BLU1 first elements of 4c AOMOMAT and inverse one ',
-     & work(ktmat:ktmat+100), work(ktbuf:ktbuf+100)
+      loffk = 2592 !> debug offset
+      write(lupri,*) ' dimensions for AOMOMAT ... ',n2tmt,loffk
+       print *, '|BLU1> first elements of 4c AOMOMAT and inverse one',
+     & work((ktmat+loffk):(ktmat+loffk+10)), 
+     & work((ktbuf+loffk):(ktbuf+loffk+10))
             iprscf = 40
 
 C
@@ -2745,7 +2733,35 @@ C
       CALL ORBDAT
 
       CLOSE(LUTMAT,STATUS='KEEP')
+
+#ifdef MOD_XAMFI
+      write(6,*)'|BLU0>: x2c,x2cmod_mmf,aoomod,nucdep,nucind,n2tmt',
+     & x2c,x2cmod_mmf,aoomod,nucdep,nucind,aoo_n2tmt
+      if(.not.x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1
+     &   .and.nucind==1)then
+       CALL MEMGET2('REAL','SCR1'  ,KTMATaoo,N2TMT,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','SCR2'  ,KTBUFaoo,N2TMT,WORK,KFREE,LFREE)
+
+       write(6,*)'|BLU0> dimensions for AOMOMAT reading ...',n2tmt
+
+       CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GMOTRA ')
+       CALL READT(LUTMAT,N2TMT,work(ktmataoo))
+       CALL READT(LUTMAT,N2TMT,work(ktbufaoo))
+       write(6,*)'|BLU0> first elements of 4c AOMOMAT and inverse one ',
+     & work((ktmataoo+loffk):(ktmataoo+loffk+10)), 
+     & work((ktbufaoo+loffk):(ktbufaoo+loffk+10))
+       CLOSE(LUTMAT,STATUS='KEEP')
+
+       CALL OPNFIL(LUTMAT,'AOMOMATaoo','UNKNOWN','GMOTRA')
+       CALL WRITT(LUTMAT,N2TMT,WORK(ktmataoo))
+       CALL WRITT(LUTMAT,N2TMT,WORK(ktbufaoo))
+       CALL ORBDAT
+       CLOSE(LUTMAT,STATUS='KEEP')
+      end if
+#endif
 !
+       write(lupri,*) '|BLU5>: NZT = ',NZT
+
       if(x2c.and.x2cmod_mmf)then
         if(aoomod)then
 #ifdef MOD_XAMFI
@@ -2754,6 +2770,9 @@ C
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
+
+            !> ... and temporarily switch on 4c mode
+            call xamfi_set_cb("get-4c")
 
             !> density matrix for 2e-SO+scalar corrections always with fractional occupation for open shell atoms
             if(aoofocc .and. aoc)then
@@ -2766,6 +2785,8 @@ C
             !> turn off x2c to properly call twofck
             x2c_save = x2c
             x2c      = .false.
+            !nzt_save = nzt
+            !nzt      = nz
 
 !           !> generate density matrix - incoming variable to the aoosoc module
             allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
@@ -2779,7 +2800,7 @@ C
             close(lucoef,status='keep')
 
 !           !> generate density matrix
-            call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
+            call denmat(dmat_aoosoc,cmo_aoosoc,50)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
@@ -2808,11 +2829,12 @@ C
             lwork_local = lwork - ntbas(0)**2*nz*nfmat
      &                  - ntbas(0)**2*nz - ncmotq
 
-
+            
 
             !> debugging
             iprscf = 40
-
+            write(lupri,*) '|BLU4>: ntmo, i2tmt,i2tmot',
+     &      ntmo(1:nfsym), i2tmt(1:nfsym), i2tmot(1:nfsym)
 
             call get_xamfi_correction(
      &                                dmat_aoosoc,
@@ -2823,8 +2845,8 @@ C
      &                                iprham
      &                               )
 
-            !> reset common block variables
-            call xamfi_set_cb(-1)
+            !> reset common block variables to 2c mode
+            call xamfi_set_cb("get-2c")
 
             !> restore logicals
             if(aoofocc)then
@@ -2832,6 +2854,7 @@ C
               nfmat = nfmat_save
             end if
             x2c = x2c_save
+            !nzt = nzt_save
 
             deallocate(pctm_aoosoc)
             deallocate(cmo_aoosoc)
@@ -2948,7 +2971,7 @@ C
             aoc_save   = aoc
             nfmat_save = nfmat
             !> implies focc ...
-            aoc        = .false.
+            !aoc        = .false.
             nfmat      = 1
           end if
 #endif
@@ -3272,6 +3295,7 @@ CMI        ... transform to the Lowdin basis "Theta"
    10   CONTINUE
 C
         NZT = NZ
+        write(lupri,*) '|BLU11.a>: NZT = ',NZT
       END IF
 
       IF(LEVYLE) THEN
@@ -3286,6 +3310,7 @@ C
 C       The modified Dirac equation at the integral level (InteRest):
 C       =============================================================
         NZT = 1
+        write(lupri,*) '|BLU7>: NZT = ',NZT
 
         imat = 1
         DO IFRP = 1,NFSYM
