@@ -1675,12 +1675,10 @@ module exacorr_ao_to_mo
 
             ierr=exatns_tensor_create(P_l,"P_l",(/ ao_id, max_id(1) /),(/ ao_root, max_root(1) /),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('P_l creation failed!')
-            ierr=exatns_tensor_init(P_l,'ZERO')
-            ierr=exatns_tensor_transform(P_l,'OneDiag')
+            ierr=exatns_tensor_transform(P_l,'Unity')
             ierr=exatns_tensor_create(P_k,"P_k",(/ ao_id, max_id(2), ao_id /),(/ ao_root, max_root(2), ao_root /),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('P_k creation failed!')
-            ierr=exatns_tensor_init(P_k,'ZERO')
-            ierr=exatns_tensor_transform(P_k,'OneDiag')
+            ierr=exatns_tensor_transform(P_k,'Unity')
             ierr=exatns_tensor_create(Temp_l,"Temp_l",(/ max_id(1), ao_id /),(/ max_root(1), ao_root /),EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(Temp_lk,"Temp_lk",max_id(1:3),max_root(1:3),EXA_DATA_KIND_C8)
 

@@ -166,8 +166,8 @@ module exacorr_cc
 !        These other nodes return only after exatns_stop() is called by the driver.
 
 !        Start ExaTENSOR within MPI_COMM_WORLD (called global_communicator in the MPI interface that DIRAC uses):
-         call exatns_ctrl_reset_logging(1,2) !logging for debugging purposes
-         ierr=exatns_start(int(global_communicator,INTD))
+         !call exatns_ctrl_reset_logging(1,2) !logging for debugging purposes
+         ierr=exatns_start(int(global_communicator,INT_MPI))
 
          if(ierr.eq.EXA_SUCCESS) then
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
