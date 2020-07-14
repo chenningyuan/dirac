@@ -2118,7 +2118,6 @@ C*****************************************************************************
      &    pctrafo_all_op_driver
       use x2c_fio
       use x2c_utils, only:
-     &    get_2e_2c_fock_matrix_x2c,
      &    write_fock_matrices_saao_basis_x2c,
      &    read_fock_matrices_saao_basis_x2c
 
@@ -2130,6 +2129,7 @@ C*****************************************************************************
       use num_grid_gen
       use interface_mo_specific
       use interface_ao_specific
+      use x_fock
 #ifdef MOD_XAMFI
       use xamfi_global_parameters
       use xamfi_internal_parameters
@@ -2767,6 +2767,8 @@ C
 #ifdef MOD_XAMFI
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SO+scalar corrections in an atomic run
 
+            if(nz/=4) call quit('C1 symmetry required for X-AMFI')
+
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
@@ -2865,8 +2867,10 @@ C
 #endif
         end if ! aoomod
 
+        write(lupri,*) ' |BLU12.a> ',x2c_2c_mmf_mos
+        
         if(x2c_2c_mmf_mos)then
-
+ 
 !         release memory
           if(allocated(work))then
             CALL MEMREL('GMOTRA - mmfmos',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -2966,12 +2970,13 @@ C
 ! ***     atomic 2e-SO + scalar corrections: calculate G_A[2c] and save it on D2FCK_mmf
 
 #ifdef MOD_XAMFI
-          !> density matrix for 2e-SO/scalar corrections always with fractional occupation for open shell atoms
+          write(lupri,*) ' |BLU12.b> ',aoofocc,aoc,aoomod
+          
           if(aoomod .and. aoofocc .and. aoc)then
             aoc_save   = aoc
             nfmat_save = nfmat
             !> implies focc ...
-            !aoc        = .false.
+            aoc        = .false.
             nfmat      = 1
           end if
 #endif
@@ -2991,15 +2996,25 @@ C
           !> calculate density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
-          deallocate(cmo_mmf)
-
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
 
           if(.not.onesys)
-     &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
-     &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
-
+     &    call get_scso_2e_fock(tbuf_mmf,
+     &                          cmo_mmf,
+     &                          tmat_mmf,
+     &                          ntbas(0),
+     &                          ntbas(0),
+     &                          nfmat,
+     &                          intflg,
+     &                          mdirac,
+     &                          nz,
+     &                          ipqtoq(1,0),
+     &                          ihqmat(1,-1),
+     &                          'AOMOMAT   ',
+     &                          lfree,
+     &                          iprham
+     &                         )
 
           !> here we split...
 
@@ -3047,9 +3062,9 @@ C
 
           end if
 
-
-          deallocate(tbuf_mmf)
           deallocate(tmat_mmf)
+          deallocate(cmo_mmf)
+          deallocate(tbuf_mmf)
 
         end if ! x2c_2c_mmf_mos == .true.
 

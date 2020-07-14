@@ -29,6 +29,7 @@
 !
 module xamfi_driver
 
+  use x_fock
   use xamfi_global_parameters
   use xamfi_utils
   use xamfi_internal_parameters
@@ -88,6 +89,7 @@ contains
                             nr_quat,                   &
                             aoo_cb_pq_to_uq(1,0),      &
                             aoo_ihqmat(1,-1),          &
+                            'AOMOMATaoo',              &
                             lwork_ext,                 &
                             print_lvl                  &
                            )

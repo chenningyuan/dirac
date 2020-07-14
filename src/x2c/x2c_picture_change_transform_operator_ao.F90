@@ -37,7 +37,6 @@ module x2c_pct_ao
       read_fock_matrices_saao_basis_x2c, &
       write_fock_matrices_saao_basis_x2c,&
       make_two_e_fock_so_exclusive,      &
-      get_2e_fock_matrix_x2c,            &
       print_x2cmat
 #ifdef MOD_INTEREST
   use module_interest_interface

@@ -31,10 +31,12 @@
 module xamfi_utils
 
   use picture_change_operations
+  use x_fock
   use xamfi_internal_parameters, only: aoo_dfopen, aoo_nopen, aoo_n2tmt,        &
                                        nr_fsym, nr_ao_all, nr_tmo, ioff_aomat_x,&
                                        lutmat_aoo, N2BBASXQ_dim_aoo,            &
                                        ioff_tmot, ioff_tmt, nzt_aoo
+  
 #ifdef MOD_INTEREST
   use module_interest_interface
 #endif
@@ -45,7 +47,6 @@ module xamfi_utils
 
   implicit none
 
-  public get_scso_2e_fock
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
@@ -56,213 +57,6 @@ module xamfi_utils
 
 contains
 
-!----------------------------------------------------------------------
-  subroutine get_scso_2e_fock(                       &
-                             dmat,                   &
-                             cmo,                    &
-                             fmat,                   &
-                             nrows,                  &
-                             ncols,                  &
-                             nr_2e_fock_matrices,    &
-                             intflg,                 &
-                             mdirac,                 &
-                             nz,                     &
-                             ipqtoq,                 &
-                             ihqmat,                 &
-                             lwork_ext,              &
-                             print_lvl               &
-                             )
-!**********************************************************************
-#ifdef VAR_MPI
-#include "mpif.h"
-#endif
-     real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
-     real(8), intent(inout)             :: cmo(*)
-     real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
-     integer, intent(in)                :: nr_2e_fock_matrices
-     integer, intent(in)                :: nrows
-     integer, intent(in)                :: ncols
-     integer, intent(in)                :: nz
-     integer, intent(in)                :: intflg
-     integer, intent(in)                :: ipqtoq(4,0:7)
-     integer, intent(in)                :: ihqmat(4,-1:1)
-     integer, intent(in)                :: lwork_ext
-     integer, intent(in)                :: print_lvl
-     logical, intent(in)                :: mdirac
-!----------------------------------------------------------------------
-     integer                            :: i, npos, local_lwork, j, kwork, kfree, lfree
-     integer                            :: kdtemp, kdevec, kfmo, kfao, ktmat, ksaomo
-     real(8), allocatable               :: work(:)
-     integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
-     logical, allocatable               :: saveflags(:)
-     logical                            :: parcal
-!----------------------------------------------------------------------
-
-!    take care of present "limitations" (being pragmatic for now)
-     if(nz /= 4       ) call quit( 'c1 symmetry required for aoosoc module' )
-
-#ifdef BUGGY_AOC_XAMFI
-!    !> in order for this routine to work with AOC as well we would need to transform 
-     !> the AO Fock matrices to MO basis via MKMOFK and backtransform to AO basis afterwards
-     !> FIXME!
-     !> For the time being we circumvent it by reusing the Fock matrices from the preceeding 
-     !> X2C transformation.
-     if(nr_2e_fock_matrices > 1)then
-
-       call get_scso_2e_fock_aoc(                       &
-                                 dmat,                  &
-                                 fmat,                  &
-                                 nrows,                 &
-                                 ncols,                 &
-                                 1,                     &
-                                 nz                     &
-                                )
-
-
-     else
-#endif
-
-       local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices - 10000
-       allocate(work(local_lwork))
-
-       !> 2e-fock matrix construction
-       allocate(isymop(nr_2e_fock_matrices))
-       allocate(ifckop(nr_2e_fock_matrices))
-       allocate(ihrmop(nr_2e_fock_matrices))
-
-       ihrmop = 0
-       ifckop = 0
-       isymop = 0
-
-       do i = 1,nr_2e_fock_matrices
-!        totally symmetric operator
-         isymop(i) = 1
-!        fock matrix type
-         ifckop(i) = 1
-!        hermitian operator
-         ihrmop(i) = 1
-       end do
-
-       allocate(saveflags(4))
-
-       call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-       parcal = .false.
-#ifdef VAR_MPI
-       call mpi_initialized(parcal,i)
-#endif
-       call SetIntTaskArrayDimension(npos,parcal)
-       allocate(pos(npos))
-
-
-!      2e-fock matrices (Dirac driver routine)
-       call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
-                   pos,intflg,print_lvl,work,local_lwork)
-
-       if(parcal) call SetTaskDistribFlags(saveflags)
-       deallocate(pos)
-       deallocate(saveflags)
-       deallocate(ihrmop)
-       deallocate(ifckop)
-       deallocate(isymop)
-
-       if(nr_2e_fock_matrices == 1) goto 9999
-
-       !> Add active two-electron Fock matrices to closed-shell Fock matrix
-       do i = 1,aoo_nopen
-         !> The factor is DF and not D2*DF because of the multiplication with D2 in TWOFCK.
-         call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
-       end do
-
-       !> Transform AO Fock to MO Fock (taking care of coupling of open shells)
-       !> ---------------------------------------------------------------------
-
-       KWORK = 1; KFREE = KWORK; LFREE = local_lwork
-       CALL MEMGET2('REAL','TMAT' ,KTMAT ,aoo_N2TMT,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','SAOMO',KSAOMO,aoo_N2TMT,WORK,KFREE,LFREE)
-
-       CALL OPNFIL(LUTMAT_aoo,'AOMOMATaoo','OLD','XAMFI ')
-
-       print *, 'AOMOMAT is open...',lutmat_aoo
-       write(6,*) ' dimensions for AOMOMAT reading ... ',aoo_n2tmt
-
-       !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
-       CALL READT(LUTMAT_aoo,aoo_N2TMT,work(ktmat)); CALL READT(LUTMAT_aoo,aoo_N2TMT,work(KSAOMO))
-       CLOSE(LUTMAT_aoo,STATUS='KEEP')
-
-       CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_aoo*nr_2e_fock_matrices,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_aoo,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','FMO  ',KFMO  ,N2BBASXQ_dim_aoo,WORK,KFREE,LFREE)
-       CALL MKMOFK(work(kFMO),fmat,dmat,work(kTMAT),cmo,work(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
-
-       !> Backtransform MO Fock to AO Fock
-       !> --------------------------------
-
-       CALL OPNFIL(LUTMAT_aoo,'AOMOMATaoo','OLD','XAMFI ')
-       CALL READT(LUTMAT_aoo,aoo_N2TMT,WORK(KTMAT)); CALL READT(LUTMAT_aoo,aoo_N2TMT,work(KSAOMO))
-       CLOSE(LUTMAT_aoo,STATUS='KEEP')
-
-       CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
-
-       do i = 1,nr_fsym
-         CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
-                     nr_tmo(I),nr_tmo(I),                                                     &
-                     work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
-                     WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
-                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),    &
-                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),    &
-                     WORK(KFREE),LFREE,30)
-       end do
-
-       fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)
-
-9999   deallocate(work)
-
-#ifdef BUGGY_AOC_XAMFI
-     end if
-#endif
-
-  end subroutine get_scso_2e_fock
-!----------------------------------------------------------------------
-
-  subroutine get_scso_2e_fock_aoc(                        &
-                                  dmat,                   &
-                                  fmat,                   &
-                                  nrows,                  &
-                                  ncols,                  &
-                                  nr_2e_fock_matrices,    &
-                                  nz                      &
-                                 )
-!**********************************************************************
-     real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
-     real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
-     integer, intent(in)                :: nr_2e_fock_matrices
-     integer, intent(in)                :: nrows
-     integer, intent(in)                :: ncols
-     integer, intent(in)                :: nz
-!----------------------------------------------------------------------
-     integer                            :: i
-!----------------------------------------------------------------------
-
-     dmat = 0
-     fmat = 0
-
-     !> read the F1 Fock matrix in AO basis from file
-     open(81,file='4cf1AO',status='old',form='unformatted',         &
-          access='sequential',action='read',position='rewind')
-     read(81) dmat
-     close(81,status="delete")
-
-     !> read the F1+F2 Fock matrix in AO basis from file
-     open(81,file='4cf1f2AO',status='old',form='unformatted',       &
-          access='sequential',action='read',position='rewind')
-     read(81) fmat
-     close(81,status="delete")
- 
-     !> subtract F1 from full Fock matrix to get F2
-     call daxpy(nrows*ncols*nz*nr_2e_fock_matrices,-1.0d0,dmat,1,fmat,1)
-
-  end subroutine get_scso_2e_fock_aoc
 !----------------------------------------------------------------------
 
   subroutine get_normalized_2e_soc(                      &
