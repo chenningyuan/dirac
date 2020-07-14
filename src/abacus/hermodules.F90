@@ -693,6 +693,7 @@
           END IF
 
         first_call = .FALSE.
+        close (tmp_file)
 
         END SUBROUTINE READ_BASIS
 
