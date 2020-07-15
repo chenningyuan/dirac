@@ -9,6 +9,7 @@
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use talsh_cc,only             : talsh_cc_driver
+      use talsh_cis,only            : talsh_cis_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacc_cfg
       use exacorr_global
@@ -86,8 +87,7 @@
              mo_list(imo+nmo(1)+nmo(2)+nmo(3)) = imo
          end do
 
-!         call talsh_compute_mo_integrals(nmo,mo_list,
-!     &      exa_input%talsh_buff,exa_input%print_level,rcw)
+         !call talsh_compute_mo_integrals(nmo,mo_list,exa_input%talsh_buff,exa_input%print_level,rcw)
          call exacorr_compute_mo_integrals (nmo, mo_list, &
                                       exa_input%print_level)
       end if
@@ -101,7 +101,13 @@
 
       if (cc_calculation) then
          if (exa_input%talsh) then
-            if (mytid == 0) call talsh_cc_driver (exa_input)
+            if (mytid == 0) then
+                 if (exa_input%cis) then
+                   call talsh_cis_driver (exa_input)
+                 else
+                   call talsh_cc_driver (exa_input)
+                end if
+            end if
          else
 #if defined (VAR_MPI)
 !           slaves need the same info to get started

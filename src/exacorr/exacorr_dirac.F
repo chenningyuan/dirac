@@ -150,6 +150,7 @@ C***********************************************************************
 
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
+      use talsh_cis,only            : talsh_cis_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
@@ -200,7 +201,11 @@ C
 #endif
 
       if (exa_input%talsh) then
-         call talsh_cc_driver (exa_input)
+         if (exa_input%cis) then
+            call talsh_cis_driver (exa_input)
+         else
+            call talsh_cc_driver (exa_input)
+         end if 
       else
 #if defined (VAR_MPI)
          ! slaves need the same info to get started
