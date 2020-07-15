@@ -19,13 +19,6 @@ module talsh_cis
     private
 
     public talsh_cis_driver
-    interface diis
-    module procedure diis
-    end interface
-
-    interface get_subtensor
-    module procedure get_subtensor
-    end interface
 
     contains
 !---------------------------------------------------------------------------------------------------------------
@@ -44,7 +37,6 @@ module talsh_cis
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer(C_INT)       :: ierr
-         real(8)   :: r1(:,:)
          complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:)
          complex(kind=8), pointer :: eValues(:) 
          type(C_PTR):: body_p
@@ -75,6 +67,10 @@ module talsh_cis
 !        Initialize libraries
          buf_size=exa_input%talsh_buff*buf_size
          ierr=talsh_init(buf_size,host_arg_max)
+         call print_date('Initialized talsh library')
+         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+         call interest_initialize(.true.)
+         call print_date('Initialized interest library')
 
         !DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
@@ -96,6 +92,15 @@ module talsh_cis
          voov_dims(1) = nvir
          voov_dims(2:3) = nocc
          voov_dims(4) = nvir
+
+         call print_date("Getting orbital energies")
+         ! Get orbital energies from the DIRAC restart file
+         allocate (eps_occ(nocc))
+         allocate (eps_vir(nvir))
+         call get_orbital_energies(nocc,mo_occ,eps_occ)
+         call get_orbital_energies(nvir,mo_vir,eps_vir)
+         call print_date("Retrieved orbital energies")
+
 
  !      create identity matrix for the occupied space
          ierr=talsh_tensor_construct(id_mat_occ,C8,oo_dims,init_val=ZERO)
@@ -119,23 +124,31 @@ module talsh_cis
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,voov_dims)
 
+         print *,'before get_CIS_integrals'
          call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
+         print *,'after get_CIS_integrals'
 
          !Constrcut body_one tensor
          ierr=talsh_tensor_construct(body_one_tensor,C8,voov_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
          !compute fock matrix tensor 
+         print *,'before get_CIS_fockmatrix'
          call get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_foo_tensor,diag_fvv_tensor, &
                                   int_t, exa_input%print_level)
+         print *,'after get_CIS_fockmatrix'
 !        set body_one tensor element 
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
+         print *,'OB(b,i,j,a)+=F(i,j)*I(b,a) ierr',ierr
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
+         print *,'OB(b,i,j,a)+=F(b,a)*I(i,j) ierr',ierr
 
          
          ! create CIS hamiltonian tensor 
          ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
+         print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
+         print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
 
          ! transform tensor to matrix sigma1 and digonal it 
          do j = 1, nvir
@@ -149,9 +162,11 @@ module talsh_cis
                 end do
             end do 
           end do
+          print *,'after setting up sigma1'
 
          eValues   = 0.0d0
          call diagoanl_cis_matrix(sigma1,eValues)
+         print *,'after diagoanl_cis_matrix'
 
          !print(eValues)
          ! print CIS matrix
@@ -216,7 +231,9 @@ module talsh_cis
     type(talsh_tens_t)              :: id_mat_occ 
     integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2)
     integer(INTD)                   :: ierr
+    logical                         :: one_el_exist
     real(8), allocatable            :: eps_occ(:),eps_vir(:)
+    real(8)                         :: e_core
     integer                         :: min_occ
     type(C_PTR)                     :: body_p
     complex(8), pointer, contiguous :: h_tens(:,:)
@@ -224,6 +241,8 @@ module talsh_cis
 
 
     min_occ=minval(mo_occ)
+    allocate (eps_occ(nocc))
+    allocate (eps_vir(nvir))
 
 !        Get foo tensor
     fo_dims(1:2) = nocc
@@ -233,6 +252,12 @@ module talsh_cis
     fv_dims(1:2) = nvir
     ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
 
+    print *,'one_el_exist',one_el_exist
+    print *,'e_core',e_core
+    !   get one electron integrals
+    one_el_exist = exist_one_el(e_core)
+    print *,'one_el_exist',one_el_exist
+    print *,'e_core',e_core
 
 !           create density (identity) matrix for the occupied space
     ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
@@ -246,7 +271,11 @@ module talsh_cis
 !           create fock matrix for the occupied and virtual space
     ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+    print *,'before get_one_el',h_tens
+    print *,'before get_one_el',mo_occ,nocc,mo_occ,nocc,min_occ
+    print *,'before get_one_el',one_el_exist
     call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
+    print *,'after get_one_el',h_tens
 
     ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
@@ -415,4 +444,4 @@ module talsh_cis
     
            end subroutine get_CIS_integrals
 
-
+end module
