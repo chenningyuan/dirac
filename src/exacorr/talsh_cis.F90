@@ -77,6 +77,8 @@ module talsh_cis
          nvir = exa_input%nvir
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
+         allocate(sigma1(nocc*nvir,nocc*nvir))
+         allocate(eValues(nocc*nvir))
          mo_occ = exa_input%mo_occ
          mo_vir = exa_input%mo_vir
 
@@ -149,24 +151,18 @@ module talsh_cis
          print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
          print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
-
+         print *,'nocc',nocc
+         print *,'nvir',nvir
+         print *,'result_tens',size(result_tens)
          ! transform tensor to matrix sigma1 and digonal it 
-         do j = 1, nvir
-            do b = 1, nocc
-                do i = 1, nocc
-                    do a = 1, nvir
-                        bj=b+j-1
-                        ai=a+i-1
-                        sigma1(bj,ai)=result_tens(b,i,j,a)
-                    end do 
-                end do
-            end do 
-          end do
-          print *,'after setting up sigma1'
 
+         sigma1=reshape(result_tens,(/nocc*nvir,nocc*nvir/))
+
+
+         print *,'after setting up sigma1',size(sigma1)
          eValues   = 0.0d0
          call diagoanl_cis_matrix(sigma1,eValues)
-         print *,'after diagoanl_cis_matrix'
+         print *,'after diagoanl_cis_matrix',eValues
 
          !print(eValues)
          ! print CIS matrix
@@ -185,22 +181,26 @@ module talsh_cis
         integer :: lwork, info
         real(kind=8), allocatable :: work(:)
         real(kind=8), allocatable :: rwork(:)
-        integer :: vectors_L, vectors_N
+        integer :: vectors_L, vectors_R
         complex(kind=8), intent(inout), pointer :: M(:,:)
         complex(kind=8), pointer :: eVal(:) 
         complex(kind=8), pointer :: eVectorsR(:,:)
         complex(kind=8), pointer :: eVectorsL(:,:)
         character(len=1) :: do_left = 'N', do_right = 'V'
 
-        vectors_N = size(M,1)
+        vectors_R = size(M,1)
         vectors_L = size(M,2)
-        allocate(eVectorsL(1,vectors_L))
-        allocate(eVectorsR(vectors_N,vectors_L))
-        allocate(eVal(vectors_L))
-        eVectorsR = 0.0d0
+        print *,'vectors_R',vectors_R
+        print *,'vectors_L',vectors_L
         lwork = -1	
-
-        call zgeev (do_left, do_right, vectors_L, M, vectors_L, &
+        allocate(eVectorsL(vectors_L,vectors_R))
+        allocate(eVectorsR(vectors_L,vectors_R))
+        allocate(eVal(vectors_R))
+        !eVectorsR = 0.0d0
+        allocate(work(MAX(1,LWORK)))
+        allocate(rwork(2*vectors_R))
+        !print *,'M',M
+        call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
         eVal, eVectorsL, vectors_L, eVectorsR, vectors_L, &
         WORK, LWORK, rwork, INFO)
 
