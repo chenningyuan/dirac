@@ -150,6 +150,7 @@ contains
 
 #ifdef VAR_MPI
       if (parallel_xc) then
+         call xc_mpi_bcast(nc)
          call xc_mpi_bcast(nr_g_ao_blocks)
          call xc_mpi_bcast(nr_u_ao_blocks)
          call xc_mpi_bcast(g_ao_start    )
