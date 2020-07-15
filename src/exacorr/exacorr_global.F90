@@ -86,11 +86,6 @@ module exacorr_global
              if (tobe) then
                 scf_file = 0
                 call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
-                if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
-                  if (exa_input%level_shift.lt.1.0D-10) then
-                    call quit ('Open shell computations with DIRAC and EXACORR require level shift (LSHIFT)')
-                  end if
-               end if
              else
                 inquire (file='RSD_MOS',exist=tobe)
                 if (tobe) then
@@ -647,7 +642,7 @@ module exacorr_global
               write(*,*) "core orbital need to be closed shell"
               call quit ("change .OCC_BETA in EXACORR")
             end if
-
+            
             exa_input%nocc=nmo(1)+nmo(2)
             exa_input%nvir=nmo(3)+nmo(4)
             allocate (exa_input%mo_occ(exa_input%nocc))

@@ -12,8 +12,8 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 test.run(['scf_x2c.inp'], ['H2O_nosym.mol'], f,"--get='X2CMAT AOMOMAT DFCOEF'")
 f.add(from_string = 'Final CCSD energy',
-      num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
+      num_lines   = 4,
+      rel_tolerance   = 1.0e-8)
 #Test Lambda
 f.add(from_string = 'T1amp',
       num_lines   = 2,

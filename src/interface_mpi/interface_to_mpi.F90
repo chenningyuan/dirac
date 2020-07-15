@@ -141,6 +141,7 @@ module interface_to_mpi
 
   interface interface_mpi_isend
     module procedure interface_mpi_isend_i0
+    module procedure interface_mpi_isend_i1
   end interface
 
   interface interface_mpi_recv
@@ -157,6 +158,7 @@ module interface_to_mpi
 
   interface interface_mpi_irecv
     module procedure interface_mpi_irecv_i0
+    module procedure interface_mpi_irecv_i1
   end interface
 
   interface interface_mpi_reduce
@@ -1065,6 +1067,38 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_isend_i1(x,ndim,receiver,message_id,communicator,request)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: receiver
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: receiver_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    receiver_i4     = receiver
+    communicator_i4 = communicator
+    call mpi_isend(x, ndim_i4, my_MPI_INTEGER, receiver_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call mpi_isend(x, ndim   , my_MPI_INTEGER, receiver   , message_id   , communicator   , request   , ierr   )
+#endif
+
+  end subroutine
+
 !-------------------------------------------------------------------------------
 ! mpi_recv interfaces
 !-------------------------------------------------------------------------------
@@ -1387,6 +1421,41 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: sender
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: sender_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    sender_i4       = sender
+    communicator_i4 = communicator
+    call mpi_irecv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
+    request         = request_i4
+#else
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    call mpi_irecv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , request   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_irecv_i1(x,ndim,sender,message_id,communicator,request)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(:)
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: sender
     integer(kind=integer_kind) :: message_id

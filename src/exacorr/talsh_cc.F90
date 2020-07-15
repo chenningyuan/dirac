@@ -2679,6 +2679,12 @@ module talsh_cc
          deallocate(mo_list)
          if (print_level.gt.6) call print_date(' uvv done ')
 
+!        remove ao cholesky tensor
+         do i=1,m
+           ierr=talsh_tensor_destruct(chol_tensor(i))
+         end do
+         deallocate(chol_tensor)
+
 !        define dims
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>
          oooo_dims = nocc
@@ -2700,17 +2706,6 @@ module talsh_cc
          vvov_dims(3) = nocc
          vvvv_dims = nvir
 
-!        Get antisymmetric oovv tensor
-         ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ovov_dims,init_val=ZERO)
-         do i=1,m
-           ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.6) call print_date(' oovv done ')
-
 !        Get antisymmetric oooo tensor
          ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(temp_tensor,C8,oooo_dims,init_val=ZERO)
@@ -2721,7 +2716,6 @@ module talsh_cc
          call mulliken_to_dirac_sort(temp_tensor,int_t%oooo,12)
          ierr=talsh_tensor_destruct(temp_tensor)
          if (print_level.gt.6) call print_date(' oooo done ')
-
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
          ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
@@ -2744,17 +2738,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(ovvo_tensor)
          if (print_level.gt.6) call print_date(' vovo done ')
 
-!        Get vvvv tensor
-         ierr=talsh_tensor_construct(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,vvvv_dims,init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.6) call print_date(' vvvv done ')
-
 !        Get ooov tensor
          ierr=talsh_tensor_construct(int_t%ooov,C8,ooov_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(temp_tensor,C8,ooov_dims,init_val=ZERO)
@@ -2765,6 +2748,29 @@ module talsh_cc
          call mulliken_to_dirac_sort(temp_tensor,int_t%ooov,12)
          ierr=talsh_tensor_destruct(temp_tensor)
          if (print_level.gt.6) call print_date(' ooov done ')
+
+!        remove oo tensor
+         do i=1,m
+           ierr=talsh_tensor_destruct(uoo_tensor(i))
+         end do
+         deallocate(uoo_tensor)
+
+!        Get antisymmetric oovv tensor
+         ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(temp_tensor,C8,ovov_dims,init_val=ZERO)
+         do i=1,m
+           ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
+         end do
+         if (ierr.ne.0) stop 'program error: cholesky not working'
+         call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
+         ierr=talsh_tensor_destruct(temp_tensor)
+         if (print_level.gt.6) call print_date(' oovv done ')
+
+!        remove vo tensor
+         do i=1,m
+           ierr=talsh_tensor_destruct(uvo_tensor(i))
+         end do
+         deallocate(uvo_tensor)
 
 !        Get vovv tensor
          ierr=talsh_tensor_construct(int_t%vovv,C8,vovv_dims,init_val=ZERO)
@@ -2777,18 +2783,27 @@ module talsh_cc
          ierr=talsh_tensor_destruct(temp_tensor)
          if (print_level.gt.6) call print_date(' vovv done ')
 
-!        Clean-up
+!        remove ov tensor
          do i=1,m
-           ierr=talsh_tensor_destruct(chol_tensor(i))
-           ierr=talsh_tensor_destruct(uoo_tensor(i))
            ierr=talsh_tensor_destruct(uov_tensor(i))
-           ierr=talsh_tensor_destruct(uvo_tensor(i))
+         end do
+         deallocate(uov_tensor)
+
+!        Get vvvv tensor
+         ierr=talsh_tensor_construct(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(temp_tensor,C8,vvvv_dims,init_val=ZERO)
+         do i=1,m
+            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
+         end do
+         if (ierr.ne.0) stop 'program error: cholesky not working'
+         call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
+         ierr=talsh_tensor_destruct(temp_tensor)
+         if (print_level.gt.6) call print_date(' vvvv done ')
+
+!        remove vv tensor
+         do i=1,m
            ierr=talsh_tensor_destruct(uvv_tensor(i))
          end do
-         deallocate(chol_tensor)
-         deallocate(uoo_tensor)
-         deallocate(uov_tensor)
-         deallocate(uvo_tensor)
          deallocate(uvv_tensor)
 
        end subroutine get_CC_integrals_chol
@@ -3509,6 +3524,5 @@ module talsh_cc
 
 
        end subroutine get_subtensor
-
 
 end module talsh_cc
