@@ -871,8 +871,9 @@
          exa_input%ccd = .true.
       end if
 
-      if (kw_matches(word, '.CIS         ')) then 		!L
+      if (kw_matches(word, '.CIS   ')) then
          exa_input%cis = .true.
+         print *,'inside exacc input reader, cis keyword set to',exa_input%cis
       end if
 
       if (kw_matches(word, '.CC2         ')) then 		!L

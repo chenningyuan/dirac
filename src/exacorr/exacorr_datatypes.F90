@@ -35,7 +35,7 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
-            logical                 :: cis = .false.            ! if true CIS
+            logical                 :: cis = .false.            ! enables CIS, and branch off away from the CC driver 
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
             logical                 :: beta_occ = .false.

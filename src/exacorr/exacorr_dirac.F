@@ -205,7 +205,7 @@ C
             call talsh_cis_driver (exa_input)
          else
             call talsh_cc_driver (exa_input)
-         end if 
+         end if
       else
 #if defined (VAR_MPI)
          ! slaves need the same info to get started

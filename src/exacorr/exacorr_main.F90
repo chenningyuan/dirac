@@ -101,12 +101,12 @@
 
       if (cc_calculation) then
          if (exa_input%talsh) then
-            if (mytid == 0) then
-                 if (exa_input%cis) then
-                   call talsh_cis_driver (exa_input)
-                 else
-                   call talsh_cc_driver (exa_input)
-                end if
+            if (mytid == 0) then 
+               if (exa_input%cis) then
+                  call talsh_cis_driver (exa_input)
+               else
+                  call talsh_cc_driver (exa_input)
+               end if
             end if
          else
 #if defined (VAR_MPI)
