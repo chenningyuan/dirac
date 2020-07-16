@@ -1625,10 +1625,11 @@ module exacorr_ao_to_mo
           else
             ao_level=1
           end if
-          if (print_level.gt.8) then
+          if (print_level.gt.5) then
             write (*,*) ' --- ao_level =     ',ao_level  
             do i=1,nao
-              write(*,*) ' i =',i-1,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr)
+              write(*,*) ' i =',i,', id = ',ao_space%get_ancestor_id_of_level(int(i-1,INTL),ao_level,ierr),&
+                         ', shell=',get_shell_index(i)
             end do
           end if
 
@@ -1666,7 +1667,7 @@ module exacorr_ao_to_mo
                                   max_root(1), max_root(2), ', value: ',D_max
 
             ierr=exatns_tensor_create(Dlk,"Dlk",max_id,max_root,EXA_DATA_KIND_C8)  
-            ierr=exatns_tensor_init(Dlk,'Aoint_calculator')
+            ierr=exatns_tensor_init(Dlk,'AointSegment')
             if(ierr.ne.EXA_SUCCESS) call quit('decomp_cholesky: Computing Off-Diagonals failed!')
             if (print_level.gt.10) write(*,'(A7,E20.10)') "Dlk   =",print_tensornorm2 (Dlk)
             ierr=exatns_tensor_create(Delta_lk,"Delta_lk",max_id(1:3),max_root(1:3),EXA_DATA_KIND_C8)

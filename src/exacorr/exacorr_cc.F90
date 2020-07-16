@@ -526,6 +526,7 @@ module exacorr_cc
          ! types of the initializer methods
          type(tens_printer_t)         :: tens_printer         ! generic method, but needs to be defined here in specific form
          type(compute_2e_ao_tensor_t) :: aoint_calculator     ! method to initialize the ao-integrals tensor
+         type(compute_2e_ao_seg_t)    :: aoint_seg            ! only for segment
          type(init_mocoef_tensor_t)   :: occupied_init(2), virtual_init(2) ! methods to initialize MO coeffcient tensors
          type(init_dm_tensor_t)       :: dm_init(4)           ! array of initializers for MO transformation algorithm 2
          type(set_diagonal_t)         :: one_diag             ! identity matrix
@@ -591,6 +592,10 @@ module exacorr_cc
          !Register the ao integral generation as a method
          ierr=exatns_method_register('Aoint_calculator',aoint_calculator)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(aoint) failed!')
+
+         !Register the ao integral generation for a segment
+         ierr=exatns_method_register('AointSegment',aoint_seg)
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(AointSegment) failed!')
 
          !Register the denominator initializer as a method
          call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift,occ_space_id)
@@ -2719,7 +2724,7 @@ print *,'abe',ierr
               ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor')
             end if
 
-            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id)
+            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
 
             ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
             ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
@@ -2776,7 +2781,7 @@ print *,'abe',ierr
 
         end subroutine init_fock
 
-        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id)
+        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
           use exacorr_tensor_methods
           implicit none
 
@@ -2786,6 +2791,7 @@ print *,'abe',ierr
           type(set_energy_t)                     :: orb_set 
           integer(INTL),dimension(2), intent(in) :: oo_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, vv_id 
+          integer, intent(in)                    :: print_level
 
           real(8),allocatable        :: eps_occ(:),eps_vir(:)
           integer                    :: nocc, nvir, i
@@ -2831,6 +2837,20 @@ print *,'abe',ierr
 
           end do
           ierr=exatns_tensor_destroy(d_mat)
+          
+          if (print_level.gt.3) then
+            write(*,*) ' --- recomputed active occupied spinors --- '
+            write(*,*) '   i             E   '
+            do i=1,nocc
+              write(*,'(I8,E18.9)') i, eps_occ(i)
+            end do
+
+            write(*,*) ' --- recomputed active virtual spinors --- '
+            write(*,*) '   i             E   '
+            do i=1,nvir
+              write(*,'(I8,E18.9)') i, eps_vir(i)
+            end do
+          end if
 
           call denom%reset(eps_occ,eps_vir,nocc,nvir)
           call orb_set%reset(eps_occ,eps_vir,nocc,nvir)
