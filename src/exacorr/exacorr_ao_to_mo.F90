@@ -346,7 +346,7 @@ module exacorr_ao_to_mo
          a2int_root(3:4) = aoint_root(3:4)
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-         ierr=exatns_tensor_init(a2int_tensor,ZERO)
+         ierr=exatns_tensor_init(a2int_tensor,'ZERO')
 
 !        Do 1st and 2nd quarter-transformation
          call ao2mo_exat (aoint_tensor,a2int_tensor,print_level)
@@ -411,7 +411,7 @@ module exacorr_ao_to_mo
 !        Do 1st half-transformation
          ierr=exatns_tensor_create(a2int_tensor,'a2int',a2int_id,a2int_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('ERROR in aomo_transform_2: int. tens. too large ')
-         ierr=exatns_tensor_init(a2int_tensor,ZERO)
+         ierr=exatns_tensor_init(a2int_tensor,'ZERO')
          if(ierr.ne.EXA_SUCCESS) call quit('ERROR in aomo_transform_2: initialization failed ')
          if (print_level >5) call print_date('constructed a2')
          ierr=exatns_tensor_contract(a2int_tensor,aoint_tensor,dm_tensor,"D(i,j,r,s)+=L(p,q,r,s)*R(p,q,i,j)")
@@ -561,7 +561,7 @@ module exacorr_ao_to_mo
 !        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-         ierr=exatns_tensor_init(moint_tensor,ZERO)
+         ierr=exatns_tensor_init(moint_tensor,'ZERO')
         
 !        Transform integrals
          select case (algorithm)
@@ -619,7 +619,7 @@ module exacorr_ao_to_mo
 !        Allocate auxilliary tensor to get integrals (without anti-symmetrization) in Mulliken order
          ierr=exatns_tensor_create(moint_tensor,'mulliken',moint_id,moint_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-         ierr=exatns_tensor_init(moint_tensor,ZERO)
+         ierr=exatns_tensor_init(moint_tensor,'ZERO')
 
 !        Transform integrals
          call ao2mo_exat (a2int_tensor,moint_tensor,print_level)
@@ -807,7 +807,7 @@ module exacorr_ao_to_mo
           if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp2 tensor not created')
 
           do spin = 1, 2
-            ierr=exatns_tensor_init(t_tensor,ZERO)
+            ierr=exatns_tensor_init(t_tensor,'ZERO')
 
             i=1 ! first index
             coef_id(1)   = ao2_id(i)
@@ -895,7 +895,7 @@ module exacorr_ao_to_mo
           if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp4 tensor not created')
 
           do spin = 1, 2
-            ierr=exatns_tensor_init(t_tensor,ZERO)
+            ierr=exatns_tensor_init(t_tensor,'ZERO')
 
             i=ind_a ! first index
             coef_id(1)   = ao4_id(i)
@@ -1020,8 +1020,8 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_create(t_tensor(1),'temp',t2_id,t2_root,EXA_DATA_KIND_C8)
           ierr=exatns_tensor_create(t_tensor(2),'temp',t2_id,t2_root,EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp2 tensor not created')
-          ierr=exatns_tensor_init(t_tensor(1),ZERO)
-          ierr=exatns_tensor_init(t_tensor(2),ZERO)
+          ierr=exatns_tensor_init(t_tensor(1),'ZERO')
+          ierr=exatns_tensor_init(t_tensor(2),'ZERO')
           
           i=1 ! first index
           coef_id(1)   = ao_id(i)
@@ -1118,8 +1118,8 @@ module exacorr_ao_to_mo
           ierr=exatns_tensor_create(t_tensor(1),'temp',t4_id,t4_root,EXA_DATA_KIND_C8)
           ierr=exatns_tensor_create(t_tensor(2),'temp',t4_id,t4_root,EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_exat: temp2 tensor not created')
-          ierr=exatns_tensor_init(t_tensor(1),ZERO)
-          ierr=exatns_tensor_init(t_tensor(2),ZERO)
+          ierr=exatns_tensor_init(t_tensor(1),'ZERO')
+          ierr=exatns_tensor_init(t_tensor(2),'ZERO')
 
           i=ind_a ! first index
           coef_id(1)   = ao4_id(i)
@@ -1284,39 +1284,15 @@ module exacorr_ao_to_mo
         allocate(uvv_tensor(m))
 
 !       perform ao to mo transformation for cholesky tensors
-        !do i=1,m
-        !  write (vs_str, '(A3,I9.9)') 'uoo',i
-        !  ierr=exatns_tensor_create(uoo_tensor(i),vs_str,uoo_id,uoo_dims,EXA_DATA_KIND_C8)
-        !  ierr=exatns_tensor_init(uoo_tensor(i),'ZERO')
-        !  call ao2mo_exat(CD(i),uoo_tensor(i),print_level)
-        !end do
         call ao2mo_cholesky(CD,uoo_tensor,uoo_dims,uoo_id,'uoo',m,print_level)
         if (print_level.gt.6) call print_date(' uoo done ')
 
-        !do i=1,m
-        !  write (vs_str, '(A3,I9.9)') 'uov',i
-        !  ierr=exatns_tensor_create(uov_tensor(i),vs_str,uov_id,uov_dims,EXA_DATA_KIND_C8)
-        !  ierr=exatns_tensor_init(uov_tensor(i),'ZERO')
-        !  call ao2mo_exat(CD(i),uov_tensor(i),print_level)
-        !end do
         call ao2mo_cholesky(CD,uov_tensor,uov_dims,uov_id,'uov',m,print_level)
         if (print_level.gt.6) call print_date(' uov done ')
 
-        !do i=1,m
-        !  write (vs_str, '(A3,I9.9)') 'uvo',i
-        !  ierr=exatns_tensor_create(uvo_tensor(i),vs_str,uvo_id,uvo_dims,EXA_DATA_KIND_C8)
-        !  ierr=exatns_tensor_init(uvo_tensor(i),'ZERO')
-        !  call ao2mo_exat(CD(i),uvo_tensor(i),print_level)
-        !end do
         call ao2mo_cholesky(CD,uvo_tensor,uvo_dims,uvo_id,'uvo',m,print_level)
         if (print_level.gt.6) call print_date(' uvo done ')
 
-        !do i=1,m
-        !  write (vs_str, '(A3,I9.9)') 'uvv',i
-        !  ierr=exatns_tensor_create(uvv_tensor(i),vs_str,uvv_id,uvv_dims,EXA_DATA_KIND_C8)
-        !  ierr=exatns_tensor_init(uvv_tensor(i),'ZERO')
-        !  call ao2mo_exat(CD(i),uvv_tensor(i),print_level)
-        !end do
         call ao2mo_cholesky(CD,uvv_tensor,uvv_dims,uvv_id,'uvv',m,print_level)
         if (print_level.gt.6) call print_date(' uvv done ')
 
@@ -1344,7 +1320,7 @@ module exacorr_ao_to_mo
         hid=o_id
         hroot=nocc
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tensor(i),uoo_tensor(i))
         end do
@@ -1359,7 +1335,7 @@ module exacorr_ao_to_mo
         hroot=nocc
         hroot(1:2)=nvir
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uoo_tensor(i))
         end do
@@ -1367,9 +1343,9 @@ module exacorr_ao_to_mo
         call mulliken_to_dirac_sort(temp_tensor,int_t%vovo,0)
         ierr=exatns_tensor_destroy(temp_tensor)
         ierr=exatns_tensor_create(ovvo_tensor,'ovvo',ovvo_id,ovvo_root,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(ovvo_tensor,ZERO)
+        ierr=exatns_tensor_init(ovvo_tensor,'ZERO')
         ierr=exatns_tensor_create(temp_tensor,'temp',ovvo_id,ovvo_root,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uvo_tensor(i))
         end do
@@ -1386,7 +1362,7 @@ module exacorr_ao_to_mo
         hroot=nocc
         hroot(4)=nvir
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tensor(i),uov_tensor(i))
         end do
@@ -1409,7 +1385,7 @@ module exacorr_ao_to_mo
         hroot(2)=nvir
         hroot(4)=nvir
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
         end do
@@ -1450,7 +1426,7 @@ module exacorr_ao_to_mo
         hid=v_id
         hroot=nvir
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
-        ierr=exatns_tensor_init(temp_tensor,ZERO)
+        ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
           ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
         end do
