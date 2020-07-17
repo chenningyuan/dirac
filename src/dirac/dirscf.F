@@ -598,6 +598,15 @@ C
             CALL DAXPY(N2BBASXQ,DF(IOPEN),
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
           END DO
+
+#ifdef DEBUG_SOC
+        CALL DAXPY(N2BBASXQ,-1.0d0,CMO,1,FOCK,1)
+        CALL HEADER('PREDHF: BLUX F[2] matrix in SA-AO basis',-1)
+        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+        CALL DAXPY(N2BBASXQ,1.0d0,CMO,1,FOCK,1)
+#endif
+
         ENDIF
 C
 C       Write total Fock matrix
@@ -1532,10 +1541,17 @@ C
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
            END DO
          ENDIF
+
+#ifdef DEBUG_SOC
+         CALL DAXPY(N2BBASXQ,-1.0d0,CMO,1,FOCK,1)
+         CALL HEADER('SCFCYC_1: BLUX F[2] matrix in SA-AO basis',-1)
+         CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                  NZ,IPQTOQ(1,0),LUPRI)
+         CALL DAXPY(N2BBASXQ,1.0d0,CMO,1,FOCK,1)
+#endif
 C
 C       Write total Fock matrix
 C
-        print *, 'writing to DFFCKT --> NFMAT is ',NFMAT
         CALL WRIFCK(LUFCKT,FOCK,NFMAT)
         !> DFFCK1 --> one-electron part
         !> DFFCKT --> first entry

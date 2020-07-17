@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+!#define DEBUG_SOC
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck onegen */
       SUBROUTINE ONEGEN(WORK,LWORK)
@@ -2125,6 +2127,7 @@ C*****************************************************************************
      &    x2c_molecular_mean_field_mos
       use x2c_cb_interface, only:
      &    renew_x2c_cb_orb_shell_dim
+      use x2c_renew_AOMOMAT
       use quaternion_algebra
       use num_grid_gen
       use interface_mo_specific
@@ -2136,7 +2139,8 @@ C*****************************************************************************
       use xamfi_environment
       use xamfi_utils, only:
      &    dump_normalized_2e_soc,
-     &    read_normalized_2e_soc
+     &    read_normalized_2e_soc,
+     &    goodbye_xamfi
       use xamfi_driver, only:
      &    get_xamfi_correction
 #endif
@@ -2303,7 +2307,6 @@ C
 !       ---------------------------------------------------
   7   IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
         NZT = 1
-        write(lupri,*) '|BLU8>: NZT = ',NZT
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
           NESH(IFRP)  = NFORB(IFRP,1)
@@ -2469,7 +2472,6 @@ C.........reset NEWPRP to re-initialize AOPROPER
           else if(x2c)then
 
 !           todo: put in an interface routine to be called inside x2c_driver
-            write(lupri,*) '|BLU10.a>: NZT = ',NZT
             if(mdirac)then
               NZT            = 1
               NPSH(1:nfsym)  = NFORB(1:nfsym,2) ! check!!!
@@ -2482,13 +2484,8 @@ C.........reset NEWPRP to re-initialize AOPROPER
               NORB(IFRP)  = NESH(IFRP)    +  NPSH(IFRP)
               NTMO(IFRP)  = NORB(IFRP)
             END DO
-            write(lupri,*) '|BLU10.b>: NZT = ',NZT
-
 !           optimized x2c module
             call x2c_main()
-
-            write(lupri,*) '|BLU10.c>: NZT = ',NZT
-
 !           re-allocate
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
 #include "memint.h"
@@ -2566,9 +2563,7 @@ C.........do canonical orthonormalization
           close(lulmat,status='keep')
 
 !         reset orbital dimensions
-          write(lupri,*) '|BLU6.a>: NZT = ',NZT
           NZT = 1
-          write(lupri,*) '|BLU6.b>: NZT = ',NZT
           DO IFRP = 1,NFSYM
             NESH(IFRP)  = NFORB(IFRP,1)
             NPSH(IFRP)  = NFORB(IFRP,2)
@@ -2704,7 +2699,7 @@ C
 !      in: AO2MO (linear symmetry adapted if linsym = T)--> KTMAT
 !     out: right index transformed overlap matrix Saomo --> KTBUF
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
-     &              IPRHAM,WORK(KFREE),LFREE)
+     &             IPRHAM,WORK(KFREE),LFREE)
 C
 C     If requested, reduce transformation matrix by projection with
 C     respect to a set of fragment orbitals
@@ -2713,17 +2708,8 @@ C
         CALL PSIPRJ(WORK(KTMAT),WORK(KTBUF),IPRONE,WORK,KFREE,LFREE)
         CALL SETDC2(0)
       ENDIF
-
-      loffk = 2592 !> debug offset
-      write(lupri,*) ' dimensions for AOMOMAT ... ',n2tmt,loffk
-       print *, '|BLU1> first elements of 4c AOMOMAT and inverse one',
-     & work((ktmat+loffk):(ktmat+loffk+10)), 
-     & work((ktbuf+loffk):(ktbuf+loffk+10))
-            iprscf = 40
-
 C
 C     Write transformation matrices
-C
       CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
 !     AO2MO transformation matrix (linear symmetry adapted if linsym == .true.)
       CALL WRITT(LUTMAT,N2TMT,WORK(KTMAT))
@@ -2735,21 +2721,14 @@ C
       CLOSE(LUTMAT,STATUS='KEEP')
 
 #ifdef MOD_XAMFI
-      write(6,*)'|BLU0>: x2c,x2cmod_mmf,aoomod,nucdep,nucind,n2tmt',
-     & x2c,x2cmod_mmf,aoomod,nucdep,nucind,aoo_n2tmt
       if(.not.x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1
      &   .and.nucind==1)then
        CALL MEMGET2('REAL','SCR1'  ,KTMATaoo,N2TMT,WORK,KFREE,LFREE)
        CALL MEMGET2('REAL','SCR2'  ,KTBUFaoo,N2TMT,WORK,KFREE,LFREE)
 
-       write(6,*)'|BLU0> dimensions for AOMOMAT reading ...',n2tmt
-
        CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','GMOTRA ')
        CALL READT(LUTMAT,N2TMT,work(ktmataoo))
        CALL READT(LUTMAT,N2TMT,work(ktbufaoo))
-       write(6,*)'|BLU0> first elements of 4c AOMOMAT and inverse one ',
-     & work((ktmataoo+loffk):(ktmataoo+loffk+10)), 
-     & work((ktbufaoo+loffk):(ktbufaoo+loffk+10))
        CLOSE(LUTMAT,STATUS='KEEP')
 
        CALL OPNFIL(LUTMAT,'AOMOMATaoo','UNKNOWN','GMOTRA')
@@ -2759,8 +2738,6 @@ C
        CLOSE(LUTMAT,STATUS='KEEP')
       end if
 #endif
-!
-       write(lupri,*) '|BLU5>: NZT = ',NZT
 
       if(x2c.and.x2cmod_mmf)then
         if(aoomod)then
@@ -2776,7 +2753,8 @@ C
             !> ... and temporarily switch on 4c mode
             call xamfi_set_cb("get-4c")
 
-            !> density matrix for 2e-SO+scalar corrections always with fractional occupation for open shell atoms
+            !> if requested (.FOCC): density matrix for 2e-SO+scalar corrections
+            !> always with fractional occupation for open shell atoms
             if(aoofocc .and. aoc)then
               aoc_save   = aoc
               nfmat_save = nfmat
@@ -2784,11 +2762,9 @@ C
               nfmat      = 1
             end if
 
-            !> turn off x2c to properly call twofck
+            !> turn off x2c to properly call twofck in 4c mode
             x2c_save = x2c
             x2c      = .false.
-            !nzt_save = nzt
-            !nzt      = nz
 
 !           !> generate density matrix - incoming variable to the aoosoc module
             allocate(dmat_aoosoc(ntbas(0)**2*nz*nfmat))
@@ -2802,7 +2778,7 @@ C
             close(lucoef,status='keep')
 
 !           !> generate density matrix
-            call denmat(dmat_aoosoc,cmo_aoosoc,50)
+            call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
@@ -2830,13 +2806,6 @@ C
 
             lwork_local = lwork - ntbas(0)**2*nz*nfmat
      &                  - ntbas(0)**2*nz - ncmotq
-
-            
-
-            !> debugging
-            iprscf = 40
-            write(lupri,*) '|BLU4>: ntmo, i2tmt,i2tmot',
-     &      ntmo(1:nfsym), i2tmt(1:nfsym), i2tmot(1:nfsym)
 
             call get_xamfi_correction(
      &                                dmat_aoosoc,
@@ -2866,8 +2835,6 @@ C
         call quit('X-AMFI not available in this version')
 #endif
         end if ! aoomod
-
-        write(lupri,*) ' |BLU12.a> ',x2c_2c_mmf_mos
         
         if(x2c_2c_mmf_mos)then
  
@@ -2876,12 +2843,14 @@ C
             CALL MEMREL('GMOTRA - mmfmos',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)
           end if
-!         perform the final step for the molecular mean-field procedure within the X2C-module
+!         perform the final steps for the molecular mean-field procedure within the X2C-module
 !         ------------------------------------------------------------------------------------
 
-!         purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
-!                  and renew the coefficient file DFCOEF
-!                  a potential issue could be frozen orbitals - test me!
+          !> step 1
+          !> ****** 
+!         !> purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
+!                     and renew the coefficient file DFCOEF
+!                     FIXME: a potential issue could be frozen orbitals - test me!
           allocate(tmat_mmf(n2bbasxq))
           allocate(tbuf_mmf(n2bbasxq))
           allocate(scratch_mmf(norbt))
@@ -2905,6 +2874,42 @@ C
           deallocate(scratch_mmf)
           deallocate(tbuf_mmf)
           deallocate(tmat_mmf)
+          
+          !> step 2
+          !> ******
+          !> pupose: renew AOMOMAT with matrices of proper dimensions
+
+          allocate(tmat_mmf(n2tmt),tbuf_mmf(n2tmt),scratch_mmf(n2tmt))
+          tbuf_mmf = 0; tmat_mmf = 0; scratch_mmf = 0
+
+          CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+          CALL READT(LUTMAT,N2TMT,tmat_mmf)
+          CALL READT(LUTMAT,N2TMT,tbuf_mmf)
+          CLOSE(LUTMAT,STATUS='DELETE')
+
+          CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
+          
+          call x2c_molecular_mean_field_AOMOMAT(
+     &            fh    = LUTMAT,
+     &            tm1   = tmat_mmf,
+     &            tm2   = tbuf_mmf,
+     &            tmX   = scratch_mmf,
+     &            lr1   = nfbas(1:nfsym,0),
+     &            lc1   = norb(1:nfsym),
+     &            lr2   = nfbas(1:nfsym,0),
+     &            lc2   = norb(1:nfsym),
+     &            lrX   = nfbas(1:nfsym,1),
+     &            lcX   = nesh(1:nfsym),
+     &            nfsym = nfsym,
+     &            nzt   = nzt,
+     &            I2TMT = i2tmt(1:nfsym),
+     &            N2TMT = N2TMT,
+     &            lupri = lupri,
+     &            debug = iprham > 2          
+     &            )
+
+          !> NOTE: ORBDAT is called after the reset of dimensions below and eventually AOMOMAT is closed 
+          deallocate(scratch_mmf,tbuf_mmf,tmat_mmf)
 
 !         re-allocate
           call alloc(WORK,LWORK,id='WORK in GMOTRA - mmfmos')
@@ -2962,16 +2967,19 @@ C
 !         reset interface-ao
           call interface_ao_write()
 
+
+          !> final step: store orbital dimensions, etc --> "runtime" data on AOMOMAT
+          CALL ORBDAT
+          CLOSE(LUTMAT,STATUS='KEEP')
+
 !         release memory
           CALL MEMREL('GMOTRA - mmfmos-2',WORK,KWORK,KWORK,KFREE,LFREE)
           call dealloc(work)
 
-! ***     post-SCF X2Cmmf:                   calculate H1_mmf_X2C_AO and save it on DFFCK1_mmf
-! ***     atomic 2e-SO + scalar corrections: calculate G_A[2c] and save it on D2FCK_mmf
+!         !> post-SCF X2Cmmf:                   calculate H1_mmf_X2C_AO and save it on DFFCK1_mmf
+!         !> atomic 2e-SO + scalar corrections: calculate G_A[2c] and save it on D2FCK_mmf
 
 #ifdef MOD_XAMFI
-          write(lupri,*) ' |BLU12.b> ',aoofocc,aoc,aoomod
-          
           if(aoomod .and. aoofocc .and. aoc)then
             aoc_save   = aoc
             nfmat_save = nfmat
@@ -3000,25 +3008,33 @@ C
           tmat_mmf    = 0
 
           if(.not.onesys)
-     &    call get_scso_2e_fock(tbuf_mmf,
-     &                          cmo_mmf,
-     &                          tmat_mmf,
-     &                          ntbas(0),
-     &                          ntbas(0),
-     &                          nfmat,
-     &                          intflg,
-     &                          mdirac,
-     &                          nz,
-     &                          ipqtoq(1,0),
-     &                          ihqmat(1,-1),
-     &                          'AOMOMAT   ',
-     &                          lfree,
-     &                          iprham
+     &    call get_scso_2e_fock(dmat                  = tbuf_mmf,
+     &                          cmo                   = cmo_mmf,
+     &                          fmat                  = tmat_mmf,
+     &                          nrows                 = ntbas(0),
+     &                          ncols                 = ntbas(0),
+     &                          nr_2e_fock_matrices   = nfmat,
+     &                          intflg                = intflg,
+     &                          nz                    = nz,
+     &                          ipqtoq                = ipqtoq,
+     &                          x_nopen               = nopen,
+     &                          x_dfopen              = df(0:nopen),
+     &                          x_n2tmt               = n2tmt,
+     &                          nzt_x                 = nzt,
+     &                          nr_fsym               = nfsym,
+     &                          N2BBASXQ_dim_x        = n2bbasxq,
+     &                          nr_tmo                = ntmo,
+     &                          nr_ao_all             =nfbas(1:nfsym,0),
+     &                          ioff_tmot             = i2tmot,
+     &                          ioff_tmt              = i2tmt,
+     &                          ioff_aomat_x          = i2basx,
+     &                          myAOMOMAT             = 'AOMOMAT   ',
+     &                          lwork_ext             = lfree,
+     &                          print_lvl             = iprham
      &                         )
 
           !> here we split...
-
-          !> either construct H1_mmf_X2C_AO for post-SCF X2Cmmf calculation ...
+          !> a. either construct H1_mmf_X2C_AO for post-SCF X2Cmmf calculation ...
           if(.not.aoomod)then
 
             open(lux2c,file='X2CMAT',status='old',form='unformatted',
@@ -3041,7 +3057,8 @@ C
      &                                              lux2c, 0)
             close(lux2c, status='keep')
 
-          !> ... or save the G_A[2c] contribution to calculate the final 2e-SO+scalar atomic correction below
+          !> ... or 
+          !> b. save the G_A[2c] contribution to calculate the final 2e-SO+scalar atomic correction below
           else !
             open(lux2c,file='D2FCK_mmf',status='unknown',
      &           access='sequential',action='readwrite',
@@ -3105,7 +3122,7 @@ C
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - 2e-normalized (final)',-1)
@@ -3123,6 +3140,8 @@ C
      &                                  nint(charge(1)),
      &                                  lux2c
      &                                 )
+            call goodbye_xamfi(atom(1)%charge)
+            
             !> restore logicals
             if(aoofocc)then
               aoc   = aoc_save
@@ -3310,7 +3329,6 @@ CMI        ... transform to the Lowdin basis "Theta"
    10   CONTINUE
 C
         NZT = NZ
-        write(lupri,*) '|BLU11.a>: NZT = ',NZT
       END IF
 
       IF(LEVYLE) THEN
@@ -3325,7 +3343,6 @@ C
 C       The modified Dirac equation at the integral level (InteRest):
 C       =============================================================
         NZT = 1
-        write(lupri,*) '|BLU7>: NZT = ',NZT
 
         imat = 1
         DO IFRP = 1,NFSYM
@@ -7579,4 +7596,7 @@ C***********************************************************************
       close (lupot, STATUS = 'KEEP')
 
       end
+#ifdef DEBUG_SOC
+#undef DEBUG_SOC
+#endif
 ! -- end of dirone.F --

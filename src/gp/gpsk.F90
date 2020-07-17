@@ -30,6 +30,7 @@ module common_matvec_op
   private
   public lowgen90
   public calc_diff_a_b
+  public insert_elm_a_b
 
 contains
 
@@ -142,6 +143,25 @@ contains
        print '(2x,a,e26.18)', '* calc_diff_a_b: largest deviation between two matrix elements in mat a and b: ',maxdiff
 
   end subroutine calc_diff_a_b
+
+!**********************************************************************
+  subroutine insert_elm_a_b(a,lra,lca,nza,b,lrb,lcb,nzb)
+    implicit none
+    real*8, INTENT(IN)    :: a(lra,lca,nza)
+    real*8, INTENT(INOUT) :: b(lrb,lcb,nzb)
+    integer,INTENT(IN)    :: lra, lca, nza, lrb, lcb, nzb
+
+    INTEGER               :: i, j, k
+
+    if(nza /= nzb ) call QUIT('insert_elm_a_b: NZ mismatch between matrix A and B')
+    do i = 1, nzb
+      do j = 1, lcb
+        do k = 1, lrb
+          b(k,j,i) = a(k,j,i)
+        end do
+      end do
+    end do
+  end subroutine insert_elm_a_b
 
 #ifdef LAPACK_QCHOLS
 !**********************************************************************

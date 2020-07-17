@@ -3476,7 +3476,7 @@ C
           write(lupri,'(2X,A,I3,A,I3,A,I3,A,I3,A,I3)')
      &    '>>>> NPSH(I)=',NPSH(I),
      &    ' NESH(I)=',NESH(I),' NTMO(I)=',NTMO(I),
-     &    ' - NORB(I)=',NORB(I),'>>> used NREF=',NREF
+     &    ' NORB(I)=',NORB(I),'>>> used NREF=',NREF
         ENDIF
       ENDDO
 

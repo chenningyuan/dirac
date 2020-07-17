@@ -548,7 +548,7 @@ contains
        ndim_2c_mo_ao = 0
        offset_2      = 1
        do i = 1, nfsym
-!        print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
+         !print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
          call bcktr1(mo_coeff_2c_ao(offset_2),               &
                      naosh_L(i),                             &
                      nesh_dim(i),                            &

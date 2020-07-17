@@ -269,9 +269,9 @@ contains
     print '( 18x,a)', ' *** a module for the generation of atomic two-electron            ***'
     print '(18x,a )', ' *** scalar- and spin-orbit corrections                            ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** library version: X-AMFI v1.2 (June 2016)                      ***'
+    print '(18x,a )', ' *** library version: X-AMFI v1.3 (July 2020)                      ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** authors:         - Stefan Knecht (ETH Zuerich, CH)            ***'
+    print '(18x,a )', ' *** authors:         - Stefan Knecht (GSI Darmstadt, DE)          ***'
     print '(18x,a )', ' ***                  - Trond Saue ( U Toulouse, F)                ***'
     print '(18x,a )', ' ***                  - Hans Joergen Aa. Jensen (SDU Odense, DK)   ***'
     print '(18x,a )', ' ***                  - Michal Repisky (U Tromsoe, NO)             ***'
@@ -281,20 +281,21 @@ contains
     print '(18x,a )', ' ***                    @ spin-same-orbit                          ***'
     print '(18x,a )', ' ***                    @ spin-same + spin-other-orbit             ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** contact: stefan.knecht@phys.chem.ethz.ch                      ***'
+    print '(18x,a )', ' *** contact: s.knecht@gsi.de                                      ***'
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine hello_xamfi
 !**********************************************************************
 
-  subroutine goodbye_xamfi()
+  subroutine goodbye_xamfi(Z)
 !**********************************************************************
-
+    real*8, INTENT(IN) :: Z
     print '(/18x,a)', ' *********************************************************************'
     print '( 18x,a)', ' ***                          X-AMFI                               ***'
     print '( 18x,a)', ' *** Atomic 2e-scalar and spin-orbit corrections are ready.        ***'
-    print '( 18x,a)', ' *** The corrections have been stored on the file aoo2esoc.Z where ***'
-    print '( 18x,a)', ' *** Z is the nuclear charge in 3-digit format.                    ***'
+    print '( 18x,a)', ' *** The corrections have been stored on the file aoo2esoc.Z       ***'
+    print '( 18x,a)', ' *** where Z is the nuclear charge in 3-digit format.              ***'
+    print '( 18x,a,i3,a,i0.3,a)', ' *** Example for the present case with Z = ',NINT(Z),': aoo2esoc.',NINT(Z),'       ***'
     print '(18x,a/)', ' *********************************************************************'
 
   end subroutine goodbye_xamfi

@@ -23,6 +23,7 @@ set(FREE_X2C_FORTRAN_SOURCES
     x2c_io_interface.F90
     x2c_picture_change_transform_mo_coefficients_ao.F90
     x2c_picture_change_transform_operator_ao.F90
+    x2c_renew_AOMOMAT.F90
     x2c_setup_basic_h1_4c_matrix_ao2onmo.F90
     x2c_setup_defining_h1_4c_matrix_ao2onmo.F90
     x2c_transform_h1_inf_2c_matrix_onmo2ao.F90

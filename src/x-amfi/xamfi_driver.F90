@@ -34,7 +34,7 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
 #undef DEBUG_SOC
@@ -77,21 +77,30 @@ contains
       allocate(fmat(nrows*ncols*nr_quat*nr_2e_fock_matrices)); fmat = 0
 
       !> get full (scalar+spin-orbit) 2e-fock matrix
-      call get_scso_2e_fock(                           &
-                            dmat,                      &
-                            cmo,                       &
-                            fmat,                      &
-                            nrows,                     &
-                            ncols,                     &
-                            nr_2e_fock_matrices,       &
-                            aoo_intflg,                &
-                            aoo_mdirac,                &
-                            nr_quat,                   &
-                            aoo_cb_pq_to_uq(1,0),      &
-                            aoo_ihqmat(1,-1),          &
-                            'AOMOMATaoo',              &
-                            lwork_ext,                 &
-                            print_lvl                  &
+      call get_scso_2e_fock(                                              &
+                            dmat                  = dmat,                 &
+                            cmo                   = cmo,                  &
+                            fmat                  = fmat,                 &
+                            nrows                 = nrows,                &
+                            ncols                 = ncols,                &
+                            nr_2e_fock_matrices   = nr_2e_fock_matrices,  &
+                            intflg                = aoo_intflg,           &
+                            nz                    = nr_quat,              &
+                            ipqtoq                = aoo_cb_pq_to_uq(1,0), &
+                            x_nopen               = aoo_nopen,            &
+                            x_dfopen              = aoo_dfopen(0:aoo_nopen),&
+                            x_n2tmt               = aoo_n2tmt,            &
+                            nzt_x                 = nzt_aoo,              &
+                            nr_fsym               = nr_fsym,              &
+                            N2BBASXQ_dim_x        = N2BBASXQ_dim_aoo,     &
+                            nr_tmo                = nr_tmo,               &
+                            nr_ao_all             = nr_ao_all,            &
+                            ioff_tmot             = ioff_tmot,            &
+                            ioff_tmt              = ioff_tmt,             &
+                            ioff_aomat_x          = ioff_aomat_x,         &
+                            myAOMOMAT             = 'AOMOMATaoo',         &
+                            lwork_ext             = lwork_ext,            &
+                            print_lvl             = print_lvl             &
                            )
 
 #ifdef DEBUG_SOC
@@ -126,10 +135,9 @@ contains
                                  print_lvl             &
                                 )
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
-      !> debug print
-!     if(print_lvl > 2)then
+        !> debug print
         call print_x2cmat(                             &
                           fmat,                        &
                           nr_ao_large_aoo,             &
@@ -139,8 +147,6 @@ contains
                           'X-AMFI - 2e-normalized',    &
                           6                            &
                          )
-!     end if
-#undef DEBUG_SOC
 #endif
 
       !> save spin-orbit parts on file (of atom(1) ... == atomic fragment)
@@ -156,7 +162,7 @@ contains
 
       deallocate(fmat)
 
-      call goodbye_xamfi()
+      !call goodbye_xamfi()
 
   end subroutine get_xamfi_correction
 !----------------------------------------------------------------------
@@ -277,5 +283,7 @@ contains
 
   end subroutine put_xamfi_correction
 !----------------------------------------------------------------------
-
+#ifdef DEBUG_SOC  
+#undef DEBUG_SOC
+#endif
   end module xamfi_driver

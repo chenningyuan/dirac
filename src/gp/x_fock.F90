@@ -28,12 +28,6 @@
 !
 module x_fock
 
-  use xamfi_internal_parameters, only: aoo_dfopen, aoo_nopen, aoo_n2tmt,        &
-                                       nr_fsym, nr_ao_all, nr_tmo, ioff_aomat_x,&
-                                       N2BBASXQ_dim_aoo,            &
-                                       ioff_tmot, ioff_tmt, nzt_aoo
-
-
   implicit none
 
   public get_scso_2e_fock
@@ -51,10 +45,19 @@ contains
                              ncols,                  &
                              nr_2e_fock_matrices,    &
                              intflg,                 &
-                             mdirac,                 &
                              nz,                     &
                              ipqtoq,                 &
-                             ihqmat,                 &
+                             x_nopen,                &
+                             x_dfopen,               &
+                             x_n2tmt,                &
+                             nzt_x,                  &
+                             nr_fsym,                &
+                             N2BBASXQ_dim_x,         &
+                             nr_tmo,                 &
+                             nr_ao_all,              &
+                             ioff_tmot,              &
+                             ioff_tmt,               &
+                             ioff_aomat_x,           &
                              myAOMOMAT,              &
                              lwork_ext,              &
                              print_lvl               &
@@ -87,10 +90,19 @@ contains
      integer, intent(in)                :: nz
      integer, intent(in)                :: intflg
      integer, intent(in)                :: ipqtoq(4,0:7)
-     integer, intent(in)                :: ihqmat(4,-1:1)
+     integer, INTENT(IN)                :: x_nopen
+     real*8 , INTENT(IN)                :: x_dfopen(0:x_nopen)
+     integer, INTENT(IN)                :: x_n2tmt
+     integer, INTENT(IN)                :: nzt_x
+     integer, INTENT(IN)                :: nr_fsym
+     integer, INTENT(IN)                :: N2BBASXQ_dim_x
+     integer, INTENT(IN)                :: nr_tmo(nr_fsym)
+     integer, INTENT(IN)                :: nr_ao_all(nr_fsym)
+     integer, INTENT(IN)                :: ioff_tmot(nr_fsym)
+     integer, INTENT(IN)                :: ioff_tmt(nr_fsym)
+     integer, INTENT(IN)                :: ioff_aomat_x(nr_fsym,nr_fsym)
      integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
-     logical, intent(in)                :: mdirac
      character(len=10), intent(in)      :: myAOMOMAT
 !----------------------------------------------------------------------
      integer                            :: i, npos, local_lwork, j, kwork, kfree, lfree
@@ -148,37 +160,34 @@ contains
        if(nr_2e_fock_matrices == 1) goto 9999
 
        !> Add active two-electron Fock matrices to closed-shell Fock matrix
-       do i = 1,aoo_nopen
+       do i = 1,x_nopen
          !> The factor is DF and not D2*DF because of the multiplication with D2 in TWOFCK.
-         call daxpy(nrows*ncols*nz,aoo_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
+         call daxpy(nrows*ncols*nz,x_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
        end do
 
        !> Transform AO Fock to MO Fock (taking care of coupling of open shells)
        !> ---------------------------------------------------------------------
 
        KWORK = 1; KFREE = KWORK; LFREE = local_lwork
-       CALL MEMGET2('REAL','TMAT' ,KTMAT ,aoo_N2TMT,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','SAOMO',KSAOMO,aoo_N2TMT,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','TMAT' ,KTMAT ,x_N2TMT,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','SAOMO',KSAOMO,x_N2TMT,WORK,KFREE,LFREE)
 
        CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
 
-       print *, 'AOMOMAT is open...',islutmat
-       write(6,*) ' dimensions for AOMOMAT reading ... ',aoo_n2tmt
-
        !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
-       CALL READT(isLUTMAT,aoo_N2TMT,work(ktmat)); CALL READT(isLUTMAT,aoo_N2TMT,work(KSAOMO))
+       CALL READT(isLUTMAT,x_N2TMT,work(ktmat)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
        CLOSE(isLUTMAT,STATUS='KEEP')
 
-       CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_aoo*nr_2e_fock_matrices,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_aoo,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','FMO  ',KFMO  ,N2BBASXQ_dim_aoo,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_x*nr_2e_fock_matrices,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
+       CALL MEMGET2('REAL','FMO  ',KFMO  ,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
        CALL MKMOFK(work(kFMO),fmat,dmat,work(kTMAT),cmo,work(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
 
        !> Backtransform MO Fock to AO Fock
        !> --------------------------------
 
        CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
-       CALL READT(isLUTMAT,aoo_N2TMT,WORK(KTMAT)); CALL READT(isLUTMAT,aoo_N2TMT,work(KSAOMO))
+       CALL READT(isLUTMAT,x_N2TMT,WORK(KTMAT)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
        CLOSE(isLUTMAT,STATUS='KEEP')
 
        CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
@@ -188,9 +197,9 @@ contains
                      nr_tmo(I),nr_tmo(I),                                                     &
                      work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
                      WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
-                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),    &
-                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_aoo,IPQTOQ(1,0),    &
-                     WORK(KFREE),LFREE,30)
+                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),    &
+                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),    &
+                     WORK(KFREE),LFREE,print_lvl)
        end do
 
        fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)

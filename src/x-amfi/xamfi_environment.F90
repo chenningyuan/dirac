@@ -214,24 +214,18 @@ contains
     c = myway(1:1)
     select case(c)
       case ('s')
-            if(myway(5:6) == '4c')then
             
-                        print *, 'saving cb... 4c'
-                        open(99,file='xamfi-4c',status='unknown',form='unformatted',     &
-                        access='sequential',action='readwrite',position='rewind')
-            else
-                        print *, 'saving cb... 2c'
-                        open(99,file='xamfi-2c',status='unknown',form='unformatted',     &
-                        access='sequential',action='readwrite',position='rewind')
-            end if
+            !print *, 'saving cb...',myway(5:6)
+            open(99,file='xamfi-'//myway(5:6),status='unknown',form='unformatted',   &
+            access='sequential',action='readwrite',position='rewind')
 
             nzt_aoo_save            = nzt
             if(mdirac) nzt_aoo_save = nz ! default: 1
       
             write(99)   nz, nzt_aoo_save,ntbas(0),ntbas(0),ntbas(0),ntbas(1),ntbas(2),&
                         n2bastq, n2bbasxq, ncmot, n2tmt
-            print *, '   stored values are ',nz, nzt,ntbas(0),ntbas(0),ntbas(0),ntbas(1),ntbas(2),&
-            n2bastq, n2bbasxq, ncmot, n2tmt
+            !print *, '   stored values are ',nz, nzt,ntbas(0),ntbas(0),ntbas(0),ntbas(1),ntbas(2),&
+            !n2bastq, n2bbasxq, ncmot, n2tmt
             do i= 1, nr_fsym
                   write(99) &
                         npsh(i),&
@@ -251,15 +245,9 @@ contains
             close(99,status="keep")
 
       case ('g')
-            if(myway(5:6) == '4c')then
-                  print *, 'retrieving cb... 4c'
-                  open(99,file='xamfi-4c',status='old',form='unformatted',     &
-                  access='sequential',action='readwrite',position='rewind')
-            else
-                  print *, 'retrieving cb... 2c'
-                  open(99,file='xamfi-2c',status='old',form='unformatted',     &
-                  access='sequential',action='readwrite',position='rewind')
-            end if
+            !print *, 'retrieving cb... '//myway(5:6)
+            open(99,file='xamfi-'//myway(5:6),status='old',form='unformatted',     &
+            access='sequential',action='readwrite',position='rewind')
 
             read(99)    nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
                         n2bastq, n2bbasxq, ncmot, n2tmt
@@ -286,8 +274,8 @@ contains
                         NCMOT    = NCMOT + NCMO(i)
                   end do
                   ncmotq = ncmot * nz
-                  print *, ' restored values are ',nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
-                  n2bastq, n2bbasxq, ncmot, n2tmt
+                  !print *, ' restored values are ',nz, nzt,ntbas(0),nrows,ncols,ntbas(1),ntbas(2),&
+                  !n2bastq, n2bbasxq, ncmot, n2tmt
             close(99,status="keep")
             if(mdirac) nzt = nz ! default: 1
 
