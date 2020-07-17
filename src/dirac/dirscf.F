@@ -1492,6 +1492,7 @@ C        ======================
            call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
 !          if(aoc) call quit('AOC not working yet for aoo2esssoc...')
            !> stefan: enabling this is wrong but not doing it as well...
+           !> NOTE to myself: why did I write this comment in the first place?
            !> if possible the contributions should be added in the MO basis but how to calculate the energy at this point correctly???
 !          IF (AOC) THEN
 !             DO IOPEN = 1,NOPEN
