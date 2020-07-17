@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import shutil
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = ' TOTAL ENERGY',
+      num_lines   = 11,
+      rel_tolerance   = 1.0e-8)
+
+test.run(['s.inp'], ['s.xyz'], f, args='--get="X2CMAT aoo2esoc.016"')
+shutil.copy('X2CMAT', 'X2CMAT.016')
+
+test.run(['f.inp'], ['f.xyz'], f, args='--get="X2CMAT aoo2esoc.009"')
+shutil.copy('X2CMAT', 'X2CMAT.009')
+
+# molecular U matrix (from molecular core h1^{4c}) + AMFI 2e-SO corrections
+test.run(['x2c_amfi_nosym.inp'], ['sf.xyz'], f)
+
+# molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO + scalar corrections
+test.run(['x2c_xamfi_nosym.inp'], ['sf.xyz'], f, args='--put="aoo2esoc*"')
+
+# molecular U matrix (from molecular core h1^{4c}) + atomic 2e-SO corrections + scalar corrections (symmetry turned on)
+test.run(['x2c_xamfi_sym.inp'], ['sf.xyz'], f, args='--put="aoo2esoc*"')
+
+# 4c reference
+test.run(['4c_nosym.inp'], ['sf.xyz'], f)
+
+os.unlink('X2CMAT')
+os.unlink('X2CMAT.009')
+os.unlink('X2CMAT.016')
+os.unlink('aoo2esoc.009')
+os.unlink('aoo2esoc.016')
+
+sys.exit(test.return_code)
