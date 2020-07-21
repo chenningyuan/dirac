@@ -1216,6 +1216,7 @@ module exacorr_ao_to_mo
         use exacorr_tensor_methods
         use exacorr_global
         use exacorr_datatypes
+        use exacorr_utils
 
 !       information needed to compute the ao-tensor
         integer(INTD),intent(in)              :: ao_id
@@ -1252,6 +1253,7 @@ module exacorr_ao_to_mo
         o_id=vovo_id(2)
         v_id=vovo_id(1)
 
+        call print_date('-Start- Cholesky Decomposition')
         if (moint_scheme.eq.41) then
             call decompose_cholesky_exatensor_full (CD, m, ao_id, ao_space, t_cholesky, &
                                                     j_chol, f_delta, print_level)
@@ -1259,6 +1261,7 @@ module exacorr_ao_to_mo
             call decompose_cholesky_exatensor (CD, m, ao_id, ao_space, t_cholesky, &
                                                f_delta,exa_blocksize,print_level)  
         end if
+        call print_date('-End- Cholesky Decomposition')
 
         ierr=exatns_tensor_create(one_element,"one_element",EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(one_element,ONE)

@@ -123,6 +123,7 @@ module talsh_cc
          call print_date("Retrieved orbital energies")
 
 !        Get fixed two-body tensors
+         call print_date('-Start- Integral Transformation')
          if (exa_input%moint_scheme.eq.41) then
            call get_CC_integrals_chol_2 (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
          else if (exa_input%moint_scheme.eq.42) then
@@ -130,6 +131,7 @@ module talsh_cc
          else
            call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
          end if
+         call print_date('-End- Integral Transformation')
 
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,comm_t%foo,comm_t%fov,comm_t%fvv, &
@@ -170,7 +172,7 @@ module talsh_cc
 !=====================
 
 !        Start CCSD iterations
-
+         call print_date('-Start- CC Iterations')
          oo_dims = nocc
          ierr=talsh_tensor_construct(comm_t%goo,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
@@ -214,6 +216,7 @@ module talsh_cc
             call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
                                 cc_energy,CCD,ncycles,exa_input%print_level)
          end if
+         call print_date('-End- CC Iterations')
 
          if (.not.CCD) then
             ! calculate T1 diagnostic
@@ -221,8 +224,10 @@ module talsh_cc
             t1diag = t1diag/sqrt(dble(nocc))
             if (exa_input%do_triples .and. .not.CC2) then
               !Calculate (T) energy correction
+              call print_date('-Start- Triples')
               call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
                               int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
+              call print_date('-End- Triples')
               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
             else
               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
@@ -239,7 +244,7 @@ module talsh_cc
          end if
 
          if (lambda) then
-
+          call print_date('-Start- Lambda Equations')
 !         Construct lambda tensor
           if (.not.CCD) ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
           oovv_dims(1:2) = nocc
@@ -265,7 +270,7 @@ module talsh_cc
                                         t_target_precision,ncycles,exa_input%print_level)
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
           end if
-
+          call print_date('-End- Lambda Equations')
          end if
 
 !        Destruct tensors and shut down library
@@ -2432,8 +2437,6 @@ module talsh_cc
          type(talsh_tens_t) :: minusone_tensor
          integer(INTD)      :: minusone_dims(1)
 
-         call print_date('entering integral transformation, scheme = 2')
-
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
 
@@ -2611,15 +2614,15 @@ module talsh_cc
          integer(C_INT), dimension(2)    :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
          integer                         :: i
          
-
-         call print_date('entering integral transformation, scheme = 42')
          write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
 
 !        Get cholesky-vectors and copy them in to a talsh tensor
+         call print_date('-Start- Cholesky Decomposition')
          call decompose_cholesky_talsh (chol_tensor, m, t_cholesky, nao, print_level)
+         call print_date('-End- Cholesky Decomposition')
 
 !        allocate intermediate tensors
          allocate(uoo_tensor(m))
@@ -2843,16 +2846,16 @@ module talsh_cc
          integer, dimension(3)           :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
          integer(C_INT)                  :: rank
          
-
-         call print_date('entering integral transformation, scheme = 42')
          write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
 
 !        Get cholesky-vectors and copy them in to a talsh tensor
+         call print_date('-Start- Cholesky Decomposition')
          call decompose_cholesky_talsh_2 (chol_tensor, t_cholesky, nao, print_level)
          ierr = talsh_tensor_dimensions(chol_tensor,rank,chol_dims)
+         call print_date('-End- Cholesky Decomposition')
 
 !        define dims
          uoo_dims=nocc
@@ -3184,8 +3187,6 @@ module talsh_cc
          integer        :: nocc, nvir, i, j, k
          complex(8), allocatable :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
 
-         if (print_level>0) call print_date('entering t3_energy')
-
 !        Get nocc and nvir from tensor information
          ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
@@ -3324,8 +3325,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(we_tensor)
          ierr=talsh_tensor_destruct(w_tensor)
          ierr=talsh_tensor_destruct(y_tensor)
-
-         if (print_level>0) call print_date('leaving t3_energy')
 
        end subroutine t3_energy
 
