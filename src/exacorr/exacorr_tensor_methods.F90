@@ -15,6 +15,12 @@ module exacorr_tensor_methods
          contains
           procedure, public:: apply=>compute_2e_ao_tensor
         end type compute_2e_ao_tensor_t
+        
+        !Initializer for the 2e AO integral tensor, allows smaller segments:
+        type, extends(tens_method_uni_t), public:: compute_2e_ao_seg_t
+         contains
+          procedure, public:: apply=>compute_2e_ao_seg
+        end type compute_2e_ao_seg_t
 
         !Initializer for the mo coefficients tensor:
         type, extends(tens_method_uni_t), public:: init_mocoef_tensor_t
@@ -267,12 +273,11 @@ module exacorr_tensor_methods
                                   ll,el,xl,yl,zl,cl,&
                                   li,ei,xi,yi,zi,ci,&
                                   lj,ej,xj,yj,zj,cj )
-                     ijkl = 0
                      do l = 1, nl
                         do k = 1, nk
                            do j = 1, nj
                               do i = 1, ni
-                                 ijkl = ijkl + 1
+                                 ijkl = (l-1)*nk*nj*ni+(k-1)*nj*ni+(j-1)*ni+i
                                  ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
                               end do
                            end do
@@ -293,6 +298,176 @@ module exacorr_tensor_methods
          deallocate(gto4)
 
         end function tens_init_ao_integrals
+
+        ! --------------------------------------------------------------------------------
+
+        function compute_2e_ao_seg(this,tensor,scalar) result(ierr)
+          implicit none
+          integer(INTD):: ierr,n
+          class(compute_2e_ao_seg_t), intent(in):: this
+          class(tens_rcrsv_t), intent(inout):: tensor
+          complex(8), intent(inout), optional:: scalar
+          type(tens_dense_t):: tens
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          n=tens%num_dims
+          if (n.ne.4) call quit('Error: dimension not 4 in compute_2e_ao_tensor')
+          ierr=tens_init_ao_seg(tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n))
+          return
+
+        end function compute_2e_ao_seg
+
+        integer function tens_init_ao_seg(tens_body, data_kind, tens_dims, tens_bases) result (ierr)
+          !Initialization routine that is used to fill a tensor with AO integrals
+
+          use exacorr_datatypes
+          use exacorr_global
+          use module_interest_eri
+
+          implicit none
+
+          type(C_PTR), value:: tens_body           !in: C pointer to the tensorbody (tensor elements)
+          integer(INTD), value:: data_kind            !in: data kind: {EXA_DATA_KIND_R4,EXA_DATA_KIND_R8,EXA_DATA_KIND_C4,EXA_DATA_KIND_C8}
+          integer(INTL), intent(in):: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(INTL), intent(in):: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+          integer:: nao(4)
+          integer:: basis_angular ! 1=cartesian, 2=spherical
+          complex(8),pointer :: ao_tens(:,:,:,:)
+          integer :: first_ao(1:4), off_ao(4)
+          integer :: nshells(4)
+          type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)  ! arrays with basis function information
+          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl
+          integer :: li,lj,lk,ll,ni,nj,nk,nl,i0,j0,k0,l0
+          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+          real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+          !$OMP threadprivate(gout)
+          real(8), parameter :: FIJKL = 1.0
+
+
+          ierr=0 !set error code to success
+          if(data_kind /= EXA_DATA_KIND_C8) then
+            ierr=-1 !invalid data kind requested
+            return
+          endif
+
+!         Interest needs to be initalized for each thread, this function will initialize (or return immediately if it is).
+          call interest_initialize(.false.)
+
+          ! map the arguments to names used in the context of integral evaluation
+          first_ao(1:4) = tens_bases(1:4)
+          nao(1:4) = tens_dims(1:4)
+          call c_f_pointer(tens_body,ao_tens,nao(1:4)) !map C pointer to 4-dimensional array
+
+!         Allocate and get shell information for all shells that we will treat
+          call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
+          call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
+          call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
+          call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+          basis_angular = get_basis_angular()
+
+!         get information about shell offset
+          do i=1,4
+            call get_shell_offset(first_ao(i),j)
+            off_ao(i)=tens_bases(i)-j-1
+          end do
+
+!         Intranode parallelization should be possible in the loops below because Interest is thread safe
+
+          loff = 0
+          do lsh = 1, nshells(4)
+            ll   =  gto4(lsh)%orb_momentum
+            el   =  gto4(lsh)%exponent(1)
+            xl   =  gto4(lsh)%coord(1)
+            yl   =  gto4(lsh)%coord(2)
+            zl   =  gto4(lsh)%coord(3)
+            cl   =  gto4(lsh)%coefficient(1)
+            nl   =  nfunctions(ll,basis_angular)
+            if(lsh.eq.1) then
+              l0=off_ao(4)
+            else
+              l0=0
+            end if
+            koff = 0
+            do ksh = 1, nshells(3)
+              lk   =  gto3(ksh)%orb_momentum
+              ek   =  gto3(ksh)%exponent(1)
+              xk   =  gto3(ksh)%coord(1)
+              yk   =  gto3(ksh)%coord(2)
+              zk   =  gto3(ksh)%coord(3)
+              ck   =  gto3(ksh)%coefficient(1)
+              nk   =  nfunctions(lk,basis_angular)
+              if(ksh.eq.1) then
+                k0=off_ao(3)
+              else
+                k0=0
+              end if
+              joff = 0
+              do jsh = 1, nshells(2)
+                lj   =  gto2(jsh)%orb_momentum
+                ej   =  gto2(jsh)%exponent(1)
+                xj   =  gto2(jsh)%coord(1)
+                yj   =  gto2(jsh)%coord(2)
+                zj   =  gto2(jsh)%coord(3)
+                cj   =  gto2(jsh)%coefficient(1)
+                nj   =  nfunctions(lj,basis_angular)
+                if(jsh.eq.1) then
+                  j0=off_ao(2)
+                else
+                  j0=0
+                end if
+                ioff = 0
+                do ish = 1, nshells(1)
+                  li   =  gto1(ish)%orb_momentum
+                  ei   =  gto1(ish)%exponent(1)
+                  xi   =  gto1(ish)%coord(1)
+                  yi   =  gto1(ish)%coord(2)
+                  zi   =  gto1(ish)%coord(3)
+                  ci   =  gto1(ish)%coefficient(1)
+                  ni   =  nfunctions(li,basis_angular)
+                  if(ish.eq.1) then
+                    i0=off_ao(1)
+                  else
+                    i0=0
+                  end if
+
+!                 output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
+                  call interest_eri('llll',FIJKL,gout,&
+                                  lk,ek,xk,yk,zk,ck,&
+                                  ll,el,xl,yl,zl,cl,&
+                                  li,ei,xi,yi,zi,ci,&
+                                  lj,ej,xj,yj,zj,cj )
+                  do l = 1, nl
+                    if (l+loff.gt.tens_dims(4)) exit
+                    do k = 1, nk
+                       if (k+koff.gt.tens_dims(3)) exit
+                       do j = 1, nj
+                         if (j+joff.gt.tens_dims(2)) exit
+                         do i = 1, ni
+                           if (i+ioff.gt.tens_dims(1)) exit
+                           ijkl = (l+l0-1)*nk*nj*ni+(k+k0-1)*nj*ni+(j+j0-1)*ni+(i+i0)
+                           ao_tens(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
+                         end do
+                       end do
+                     end do
+                   end do
+                   ioff = ioff + ni
+                end do
+                joff = joff + nj
+              end do
+              koff = koff + nk
+            end do
+            loff = loff + nl
+          end do
+
+          deallocate(gto1)
+          deallocate(gto2)
+          deallocate(gto3)
+          deallocate(gto4)
+
+        end function tens_init_ao_seg
 
         ! --------------------------------------------------------------------------------
 

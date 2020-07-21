@@ -114,8 +114,8 @@ module exacorr_global
                 end if
              else
                one_el_exist = .FALSE.
-               if (exa_input%beta_occ) then
-                 if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA)')
+               if (exa_input%beta_occ .and. exa_input%level_shift.lt.1.0D-14) then
+                 if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA) or LSHIFT')
                end if
              end if
 
