@@ -180,6 +180,7 @@ module exacorr_cc
             ierr=exatns_tensor_init(one_tensor,ONE)
             
 !           Get fixed two-body tensors
+            call print_date('-Start- Integral Transformation')
             ierr=exatns_tensor_create(int_t%oooo,"oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%ooov,"ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(int_t%oovv,"oovv",oovv_id,oovv_root,EXA_DATA_KIND_C8)
@@ -193,7 +194,7 @@ module exacorr_cc
             else
                 call get_CC_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme,exa_input%print_level)
             end if
-            call print_date('initialized two electron integrals')
+            call print_date('-End- Integral Transformation')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
             ierr=exatns_tensor_create(comm_t%foo,"foo",oo_id,oo_root,EXA_DATA_KIND_C8)
@@ -229,7 +230,7 @@ module exacorr_cc
             write(*,*) ""
 
 !           Start CC(S)D iterations
-
+            call print_date('-Start- CC Iterations')
             ierr=exatns_tensor_create(comm_t%goo,"goo",oo_id,oo_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%gvv,"gvv",vv_id,vv_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%hoo,"hoo",oo_id,oo_root,EXA_DATA_KIND_C8)
@@ -256,14 +257,17 @@ module exacorr_cc
             else if (CC2) then 
                call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,denom,ncycles,exa_input%print_level)
             end if
+            call print_date('-End- CC Iterations')
 
             if (.not.CCD) then
               ! calculate T1 diagnostic
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
               if (exa_input%do_triples .and. .not.CC2) then
+                call print_date('-Start- Triples')
                 !call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
                 call t3_energy_split(t_energy,comm_t,int_t,occ_space,denom,exa_input)
+                call print_date('-End- Triples')
                 call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
                                     t1diag=t1diag, t_energy=t_energy)
               else
@@ -282,7 +286,7 @@ module exacorr_cc
             end if
 
             if (lambda ) then
-
+             call print_date('-Start- Lambda Equations')
 !            construct lambda tensors + initialize with t-amplitudes
              if (.not.CCD) then
                 ierr=exatns_tensor_create(l1_tensor,"l1",ov_id,ov_root,EXA_DATA_KIND_C8)
@@ -310,7 +314,10 @@ module exacorr_cc
                                           ncycles,exa_input%print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
-
+             
+             if (.not.CCD) ierr=exatns_tensor_destroy(l1_tensor)
+             ierr=exatns_tensor_destroy(l2_tensor)
+             call print_date('-End- Lambda Equations')
             end if
 
             ierr=exatns_tensor_destroy(int_t%oooo)
@@ -332,12 +339,8 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(comm_t%h_int)
             ierr=exatns_tensor_destroy(result_tensor)
             ierr=exatns_tensor_destroy(one_tensor)
-            if (.not.CCD) then
-              ierr=exatns_tensor_destroy(comm_t%t1)
-              ierr=exatns_tensor_destroy(l1_tensor)
-            end if
+            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%t1)
             ierr=exatns_tensor_destroy(comm_t%t2)
-            ierr=exatns_tensor_destroy(l2_tensor)
 
             !Stop ExaTENSOR runtime
             ierr=exatns_stop()
@@ -2902,7 +2905,7 @@ print *,'abe',ierr
             real(8)                      :: est, nseg
             character(len=40)            :: info_str
 
-            if (exa_input%print_level >-1) call print_date('entering t3_energy_split')
+            if (exa_input%print_level >4) call print_date('entering t3_energy_split')
 
             t_energy = ZERO
 
@@ -2999,7 +3002,7 @@ print *,'abe',ierr
 
             end if
 
-            outer: do k = 1, n_subsp
+            do k = 1, n_subsp
               w_sub(6)=subsp(k)
               
               dim2_root=nocc
@@ -3409,7 +3412,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_destroy(f_i)
                   ierr=exatns_tensor_destroy(P_i)
 
-                  if (exa_input%moint_scheme==0) exit outer
+                  if (exa_input%moint_scheme==0) exit
 
                 end do
 
@@ -3422,6 +3425,8 @@ print *,'abe',ierr
                 ierr=exatns_tensor_destroy(t1_j)
                 ierr=exatns_tensor_destroy(f_j)
                 ierr=exatns_tensor_destroy(P_j)
+
+                if (exa_input%moint_scheme==0) exit
 
               end do
 
@@ -3436,7 +3441,10 @@ print *,'abe',ierr
                 call print_date(info_str)
               end if
               if (exa_input%print_level > 0) write (*,*)  'after this block, t3 = ',t_energy
-            end do outer
+
+              if (exa_input%moint_scheme==0) exit
+
+            end do
 
             ! We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
             t_energy = t_energy / SIX
@@ -3445,7 +3453,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_destroy(res_tensor)
             deallocate(subsp)
             
-            if (exa_input%print_level >-1) call print_date('leaving t3_energy_split')
+            if (exa_input%print_level >4) call print_date('leaving t3_energy_split')
 
         end subroutine t3_energy_split
 
@@ -3493,7 +3501,7 @@ print *,'abe',ierr
             integer                      :: i,j,k
             character(len=40)            :: info_str
 
-            if (print_level >0) call print_date('entering t3_energy_delta')
+            if (print_level > 4) call print_date('entering t3_energy_delta')
 
             if (beta_occ) call quit('t3_energy_delta: only closed shell')
 
@@ -3804,7 +3812,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_destroy(y_tensor)
             ierr=exatns_tensor_destroy(temp)
 
-            if (print_level >0) call print_date('leaving t3_energy_delta')
+            if (print_level > 4) call print_date('leaving t3_energy_delta')
 
         end subroutine t3_energy_delta
 
