@@ -71,7 +71,7 @@ module exacorr_utils
       print*, "                   ***                                               ***"
       print*, "                   ***  Authors:         - Lucas Visscher            ***"
       print*, "                   ***                   - Anastasios Papadopoulos   ***"
-      print*, "                   ***  Contributors:    - Johann Potoschnig         ***"
+      print*, "                   ***  Contributors:    - Johann Pototschnig         ***"
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Andre S. P. Gomes         ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
@@ -95,6 +95,7 @@ module exacorr_utils
       integer, intent(in) :: nao
 
       write(*,*) ""
+      write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "      Characteristics of this calculation      "
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
@@ -140,7 +141,9 @@ module exacorr_utils
       real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
       real(8), intent(in), optional :: t1diag
       real(8), intent(in), optional :: t_energy(3)
-
+      
+      write(*,*) ""
+      write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "     -     Final results from EXACORR     -    "
       write(*,'(A)') "-----------------------------------------------"
       if (talsh) then 
