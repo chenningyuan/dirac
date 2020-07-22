@@ -71,7 +71,7 @@ module exacorr_utils
       print*, "                   ***                                               ***"
       print*, "                   ***  Authors:         - Lucas Visscher            ***"
       print*, "                   ***                   - Anastasios Papadopoulos   ***"
-      print*, "                   ***  Contributors:    - Johann Pototschnig         ***"
+      print*, "                   ***  Contributors:    - Johann Pototschnig        ***"
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Andre S. P. Gomes         ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"

@@ -19,8 +19,8 @@ module talsh_ao_to_mo
         public ao2mo_2ind
         public mulliken_to_dirac_sort
         public compute_nelectrons
-        public decompose_cholesky_talsh
-        public decompose_cholesky_talsh_2
+        public decompose_cholesky_talsh_vec
+        public decompose_cholesky_talsh_all
 
         interface compute_ao_integrals
            module procedure compute_ao_integrals
@@ -118,7 +118,7 @@ module talsh_ao_to_mo
 
          else if (.TRUE.) then
             !determine cholesky vectors for ao integrals
-            call decompose_cholesky_talsh (CD, m, th_cholesky, nao, print_level)
+            call decompose_cholesky_talsh_vec (CD, m, th_cholesky, nao, print_level)
 
             !ao2mo transfomation
             allocate(upq(m))
@@ -161,7 +161,7 @@ module talsh_ao_to_mo
 
          else
             !determine cholesky vectors for ao integrals
-            call decompose_cholesky_talsh_2 (chol_tensor, th_cholesky, nao, print_level)
+            call decompose_cholesky_talsh_all (chol_tensor, th_cholesky, nao, print_level)
             ierr = talsh_tensor_dimensions(chol_tensor,i,chol_dims)
             
             u3_dims=chol_dims
@@ -816,7 +816,7 @@ module talsh_ao_to_mo
 
         end subroutine ao2mo_2ind
 
-    subroutine decompose_cholesky_talsh (CD, m, t_cholesky, nao, print_level)
+    subroutine decompose_cholesky_talsh_vec (CD, m, t_cholesky, nao, print_level)
 
 !       Cholesky decomposition based on treating the shells seperately using talsh tensor operations
 !       possible additions: 
@@ -988,9 +988,9 @@ module talsh_ao_to_mo
 
         if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_talsh ========= "
 
-    end subroutine decompose_cholesky_talsh
+    end subroutine decompose_cholesky_talsh_vec
 
-    subroutine decompose_cholesky_talsh_2 (CD, t_cholesky, nao, print_level)
+    subroutine decompose_cholesky_talsh_all (CD, t_cholesky, nao, print_level)
 
 !       Cholesky decomposition based on treating the shells seperately using talsh tensor operations
 !       possible additions: 
@@ -1186,6 +1186,6 @@ module talsh_ao_to_mo
 
         if (print_level.gt.2) write(*,*)  "========= leaving decompose_cholesky_talsh ========= "
 
-    end subroutine decompose_cholesky_talsh_2
+    end subroutine decompose_cholesky_talsh_all
 
 end module talsh_ao_to_mo
