@@ -270,6 +270,9 @@ module talsh_cc
                                         t_target_precision,ncycles,exa_input%print_level)
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
           end if
+
+          if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
+          ierr=talsh_tensor_destruct(l2_tensor)
           call print_date('-End- Lambda Equations')
          end if
 
@@ -293,12 +296,9 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
          ierr=talsh_tensor_destruct(one_tensor)
-         if (.not.CCD) then
-           ierr=talsh_tensor_destruct(comm_t%t1)
-           ierr=talsh_tensor_destruct(l1_tensor)
-         end if
+         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%t1)
          ierr=talsh_tensor_destruct(comm_t%t2)
-         ierr=talsh_tensor_destruct(l2_tensor)
+
 !        Get statistics
          ierr=talsh_stats()
          ierr = talsh_shutdown()

@@ -314,6 +314,9 @@ module exacorr_cc
                                           ncycles,exa_input%print_level)
                call exacorr_dm_driver(exa_input,dims,comm_t%t2,l2_tensor)
              end if
+             
+             if (.not.CCD) ierr=exatns_tensor_destroy(l1_tensor)
+             ierr=exatns_tensor_destroy(l2_tensor)
              call print_date('-End- Lambda Equations')
             end if
 
@@ -336,12 +339,8 @@ module exacorr_cc
             ierr=exatns_tensor_destroy(comm_t%h_int)
             ierr=exatns_tensor_destroy(result_tensor)
             ierr=exatns_tensor_destroy(one_tensor)
-            if (.not.CCD) then
-              ierr=exatns_tensor_destroy(comm_t%t1)
-              ierr=exatns_tensor_destroy(l1_tensor)
-            end if
+            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%t1)
             ierr=exatns_tensor_destroy(comm_t%t2)
-            ierr=exatns_tensor_destroy(l2_tensor)
 
             !Stop ExaTENSOR runtime
             ierr=exatns_stop()
@@ -3003,7 +3002,7 @@ print *,'abe',ierr
 
             end if
 
-            outer: do k = 1, n_subsp
+            do k = 1, n_subsp
               w_sub(6)=subsp(k)
               
               dim2_root=nocc
@@ -3413,7 +3412,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_destroy(f_i)
                   ierr=exatns_tensor_destroy(P_i)
 
-                  if (exa_input%moint_scheme==0) exit outer
+                  if (exa_input%moint_scheme==0) exit
 
                 end do
 
@@ -3426,6 +3425,8 @@ print *,'abe',ierr
                 ierr=exatns_tensor_destroy(t1_j)
                 ierr=exatns_tensor_destroy(f_j)
                 ierr=exatns_tensor_destroy(P_j)
+
+                if (exa_input%moint_scheme==0) exit
 
               end do
 
@@ -3440,7 +3441,10 @@ print *,'abe',ierr
                 call print_date(info_str)
               end if
               if (exa_input%print_level > 0) write (*,*)  'after this block, t3 = ',t_energy
-            end do outer
+
+              if (exa_input%moint_scheme==0) exit
+
+            end do
 
             ! We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
             t_energy = t_energy / SIX
