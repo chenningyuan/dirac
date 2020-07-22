@@ -415,7 +415,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 42,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -442,7 +442,7 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE ','.NMFREQ'/
+     &            '.MPOLE ','.NMFREQ','.ANATHR','.XXXXXX'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -531,6 +531,7 @@ C     Calculation of C6 dispersion coefficient
       XLR_XVCFIL = 'NORXVC'
       XLR_UNCOUP = .FALSE.
       XLRANA     = .FALSE.
+      XLR_ANATHR = 2.0D0
       XSTERN     = .FALSE.
       XSTERNC    = .FALSE.
       NOSPIA     = .FALSE.
@@ -569,7 +570,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42), I
+     &                     41,42,43,44), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -908,6 +909,12 @@ C                 set by the choice of quadrature scheme
                        NBFREQ = MAXFLR
                     END IF
                   END IF
+               GO TO 100
+ 43            CONTINUE
+C&&&& ANATHR: Threshold for analysis of linear response function
+               READ(LUCMD,*) XLR_ANATHR
+               GO TO 100
+ 44            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1808,14 +1815,13 @@ C
                     RIBF(J1) = RIBF(J1) + BBUF(J)
                     RVBF(J2) = RVBF(J2) + BBUF(J)
                   ENDDO
-          THR = 2.0D-0
 C.......Give major inactive orbitals
         WRITE(LUPRI,'(3X,A)') 'Dominant inactive orbitals:'
         CALL ABSIND (NI,RIBF,INDX)
         DO J = NI,1,-1
           JJ = INDX(J)
           FAC = RIBF(JJ)*TMP
-          IF(ABS(FAC).LE.THR) GOTO 3
+          IF(ABS(FAC).LE.XLR_ANATHR) GOTO 3
           I1  = IIBF(JJ)
           J1 = IORBCL(2,I1)
           WRITE(LUPRI,'(I6,A1,A3,A1,E16.8,3X,F8.2,A1)')
@@ -1829,7 +1835,7 @@ C       Give major virtual orbitals
         DO J = NV,1,-1
           JJ = INDX(J)
           FAC = RVBF(JJ)*TMP
-          IF(ABS(FAC).LE.THR) GOTO 4
+          IF(ABS(FAC).LE.XLR_ANATHR) GOTO 4
           I2 = IVBF(JJ)
           J2 = IORBCL(2,I2)
           WRITE(LUPRI,'(I6,A1,A3,A1,E16.8,3X,F8.2,A1)')
@@ -1839,11 +1845,11 @@ C       Give major virtual orbitals
  4      CONTINUE
         CALL ABSIND (NXPAR,BBUF,INDX)
         WRITE(LUPRI,'(3X,A,E10.2/)')
-     &   'Amplitudes larger than threshold ',THR
+     &   'Amplitudes larger than threshold ',XLR_ANATHR
         DO J = NXPAR,1,-1
           JJ = INDX(J)
           FAC = BBUF(JJ)*TMP
-          IF(ABS(FAC).LE.THR) GOTO 5
+          IF(ABS(FAC).LE.XLR_ANATHR) GOTO 5
           I1 = JXOP(1,JJ)
           I2 = JXOP(2,JJ)
           WRITE(LUPRI,
