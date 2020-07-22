@@ -125,9 +125,9 @@ module talsh_cc
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
          if (exa_input%moint_scheme.eq.41) then
-           call get_CC_integrals_chol_all (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
-         else if (exa_input%moint_scheme.eq.42) then
            call get_CC_integrals_chol_vec (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
+         else if (exa_input%moint_scheme.eq.42) then
+           call get_CC_integrals_chol_all (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
          else
            call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
          end if
@@ -2621,6 +2621,7 @@ module talsh_cc
 
 !        Get cholesky-vectors and copy them in to a talsh tensor
          call print_date('-Start- Cholesky Decomposition')
+         if (print_level.gt.1) write(*,*) "using vector of tensors"
          call decompose_cholesky_talsh_vec (chol_tensor, m, t_cholesky, nao, print_level)
          call print_date('-End- Cholesky Decomposition')
 
@@ -2851,6 +2852,7 @@ module talsh_cc
 
 !        Get cholesky-vectors and copy them in to a talsh tensor
          call print_date('-Start- Cholesky Decomposition')
+         if (print_level.gt.1) write(*,*) "using complete tensor"
          call decompose_cholesky_talsh_all (chol_tensor, t_cholesky, nao, print_level)
          ierr = talsh_tensor_dimensions(chol_tensor,rank,chol_dims)
          call print_date('-End- Cholesky Decomposition')
