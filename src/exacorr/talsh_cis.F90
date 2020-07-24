@@ -56,7 +56,7 @@ module talsh_cis
          integer(INTD), dimension(2) :: oo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, vovo_dims, voov_dims
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t) :: result_tensor
+         type(talsh_tens_t) :: result_tensor,sigma_tensor
          integer(C_INT)     :: one_dims(1)
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
@@ -94,6 +94,7 @@ module talsh_cis
          voov_dims(1) = nvir
          voov_dims(2:3) = nocc
          voov_dims(4) = nvir
+
 
          call print_date("Getting orbital energies")
          ! Get orbital energies from the DIRAC restart file
@@ -145,27 +146,51 @@ module talsh_cis
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
          print *,'OB(b,i,j,a)+=F(b,a)*I(i,j) ierr',ierr
 
-         
+         !ierr=talsh_tensor_get_body_access(int_t%vovo,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,result_tens,vovo_dims)
+         !print *,'int_t%vovo(2,1,1,1)',result_tens(2,1,1,1)
+         !print *,'int_t%vovo(1,1,1,2)',result_tens(1,1,1,2)
+
+
+
          ! create CIS hamiltonian tensor 
          ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
          print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
+         print *,'result(2,1,1,1)',result_tens(2,1,1,1)
+         print *,'result(1,1,1,2)',result_tens(1,1,1,2)
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
          print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
          print *,'nocc',nocc
          print *,'nvir',nvir
          print *,'result_tens',size(result_tens)
-         ! transform tensor to matrix sigma1 and digonal it 
 
-         sigma1=reshape(result_tens,(/nocc*nvir,nocc*nvir/))
+         !print *,'result(1,1,1,1)',result_tens(1,1,1,1)
+         !print *,'result(2,1,1,2)',result_tens(2,1,1,2)
 
 
-         print *,'after setting up sigma1',size(sigma1)
-         eValues   = 0.0d0
+         ! transform tensor to matrix sigma1 and digonal it
+         do b=1,nvir,1
+            do i=1,nocc,1
+                do j=1,nocc,1
+                    do a=1,nvir,1
+                        bj=(j-1)*nvir+b
+                        ai=(i-1)*nvir+a
+                        !if (ABS(result_tens(b,i,j,a))>0.001) then
+                        sigma1(bj,ai)=result_tens(b,i,j,a)
+                            !sigma1(bj,ai)=(1.0000000000000000,0.0000000000000000)
+                        !else 
+                            !sigma1(bj,ai)=(0.0000000000000000,0.0000000000000000)
+                        !end if 
+                    end do
+                end do
+            end do 
+         end do 
+
+
+
          call diagoanl_cis_matrix(sigma1,eValues)
          print *,'after diagoanl_cis_matrix',eValues
 
-         !print(eValues)
-         ! print CIS matrix
 
          ierr=talsh_tensor_destruct(id_mat_occ)
          ierr=talsh_tensor_destruct(id_mat_vir)
@@ -178,7 +203,7 @@ module talsh_cis
     subroutine diagoanl_cis_matrix(M,eVal)
 
     ! set parameter needed in lapack
-        integer :: lwork, info
+        integer :: lwork, info,i,j
         real(kind=8), allocatable :: work(:)
         real(kind=8), allocatable :: rwork(:)
         integer :: vectors_L, vectors_R
@@ -192,17 +217,20 @@ module talsh_cis
         vectors_L = size(M,2)
         print *,'vectors_R',vectors_R
         print *,'vectors_L',vectors_L
-        lwork = -1	
+        !print *,'sigma(3,4)_dia',M(3,4)
+        !print *,'sigma(4,3)_dia',M(4,3)
+        lwork = 10*vectors_R	
         allocate(eVectorsL(vectors_L,vectors_R))
         allocate(eVectorsR(vectors_L,vectors_R))
         allocate(eVal(vectors_R))
         !eVectorsR = 0.0d0
         allocate(work(MAX(1,LWORK)))
         allocate(rwork(2*vectors_R))
-        !print *,'M',M
+        !print *,'Matrix',M
         call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
-        eVal, eVectorsL, vectors_L, eVectorsR, vectors_L, &
+        eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
         WORK, LWORK, rwork, INFO)
+        print *,'INFO',info
 
 
     end subroutine diagoanl_cis_matrix
