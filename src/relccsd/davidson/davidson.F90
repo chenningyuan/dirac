@@ -644,67 +644,35 @@ contains
  
 
     subroutine gram_schmidt_projection_R(projection, u, v)
+
+!LV     NB: we assume that all vectors are already normalized
+!LV     because normalizing here is order N^2 in the number of trial vectors
+
         real(kind=8), intent(inout) :: projection(:)
         real(kind=8), intent(in) :: u(:)
         real(kind=8), intent(in) :: v(:)
         real(kind=8) :: numerator, denominator, factor
-        real(kind=8) :: norm_denominator
         integer :: N, N_complex
         double precision ddot, dznrm2
-        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
+        real(kind=8) :: factor_complex(2)
 
         N = size(u,1)
 
         projection = 0.0d0 
 
-!       if (davidson_debug) then
-!           call davidson_print_vectors(u, label="U in GS projection            ")
-!           call davidson_print_vectors(v, label="V in GS projection            ")
-!       end if
-
         if (davidson_complex_mode_with_reals) then
             N_complex = N / 2
-
-            if (davidson_debug) print *,'denominator complex before xdotc',denominator_complex
-            if (davidson_debug) print *,'  numerator complex before xdotc',numerator_complex
-
-            call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
-            call xdotc(numerator_complex,N_complex, u, 1, v, 1) 
-
-            if (davidson_debug) print *,'denominator complex  after xdotc',denominator_complex
-            if (davidson_debug) print *,'  numerator complex  after xdotc',numerator_complex
-
-            norm_denominator = dznrm2(N_complex, u, 1)
-
-            if (davidson_debug) print *,'  norm denominator',norm_denominator
-            if (norm_denominator .gt. safe_minimum) then
-                call dladiv(numerator_complex(1),numerator_complex(2), &
-                            denominator_complex(1),denominator_complex(2), &
-                            factor_complex(1), factor_complex(2))
-                if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
-            else
-                factor_complex(1) = 0.0d0
-                factor_complex(2) = 0.0d0
-            end if
+            call xdotc(factor_complex,N_complex, u, 1, v, 1)
             projection = u
             call zscal(N_complex, factor_complex, projection, 1)
             if (davidson_debug) print *, "GS projection, factor: ",factor_complex
 
         else
-            denominator = ddot(N, u, 1, u, 1) 
-            numerator   = ddot(N, v, 1, u, 1) 
-            if (denominator .gt. safe_minimum) then
-                factor = numerator/denominator
-            else
-                factor = 0.0d0
-            end if
+            factor   = ddot(N, v, 1, u, 1)
             projection = u
             call dscal(N, factor, projection, 1)
             if (davidson_debug) print *, "GS projection, factor: ",factor
         end if
-
-!       if (davidson_debug) &
-!           call davidson_print_vectors(projection, label="GS projection                 ")
 
     end subroutine 
 
@@ -715,7 +683,7 @@ contains
 
         real(kind=8), allocatable   :: projection(:)
         integer :: vectors_L, vectors_N
-        integer :: i, j, k
+        integer :: i, j, k, igs
         logical :: verbose_local
         real(kind=8) :: norm, vr, vi, pr, pi
 
@@ -735,22 +703,6 @@ contains
             if (verbose_local) then
                 if (davidson_debug) print *, "debug, Gram-Schmidt orthogonalization"
                 print *, "  renormalizing vector v(",j,") : (norm = ",norm,")"
-                if (davidson_complex_mode_with_reals) then
-                    do k = 1, vectors_N, 2
-                        vr = vectors(k,j)
-                        vi = vectors(k+1,j)
-                        if (vi < 0.0d0) then
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
-                        else
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
-                        end if
-                    end do
-                else
-                    do k = 1, vectors_N
-                        vr = vectors(k,j)
-                        print "(4x,1e14.6)", vr
-                    end do
-                end if
                 print *, ""
             end if 
             if (norm .ge. safe_minimum ) then
@@ -758,65 +710,23 @@ contains
             else
                 stop ('division by zero in orthogonalization') 
             end if
-            if (verbose_local) then
-                print *, "renormalized  vector v(",j,") : "
-                if (davidson_complex_mode_with_reals) then
-                    do k = 1, vectors_N, 2
-                        vr = vectors(k,j)
-                        vi = vectors(k+1,j)
-                        if (vi < 0.0d0) then
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
-                        else
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
-                        end if
-                    end do
-                else
-                    do k = 1, vectors_N
-                        vr = vectors(k,j)
-                        print "(4x,1e14.6)", vr
-                    end do
-                end if
-                print *, ""
-            end if
-            do i = 1, j-1
-                call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
-                if (verbose_local) then
-                    print *," projection of v(",i,") onto v(",j,"):"
-                    if (davidson_complex_mode_with_reals) then
-                        do k = 1, vectors_N, 2
-                            vr = vectors(k,j)
-                            vi = vectors(k+1,j)
-    
-                            pr = projection(k)
-                            pi = projection(k+1)
-
-                            if (vi < 0.0d0) then
-                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i", pr, " -",abs(pi)," i"
-                            else
-                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," +", vi," i", pr," +", pi," i"
-                            end if
-                        end do
-                    else
-                        do k = 1, vectors_N
-                            vr = vectors(k,j)
-                            pr = projection(k)
-                            print "(4x,1e14.6)", vr
-                        end do
-                    end if
-                    print *, ""
-                end if
-                vectors(:,j) = vectors(:,j) - projection(:)
+            do igs = 1, 2 ! Gram-Schmidt needs to be done twice for numerical stability
+               do i = 1, j-1
+                   call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
+                   vectors(:,j) = vectors(:,j) - projection(:)
+               end do
+               norm = vector_norm(vectors(:,j))
+               if (norm .ge. safe_minimum ) then
+                   vectors(:,j) = vectors(:,j) / norm
+               else
+                   stop ('division by zero in orthogonalization')
+               end if
             end do
-            norm = vector_norm(vectors(:,j))
-            if (norm .ge. safe_minimum ) then
-                vectors(:,j) = vectors(:,j) / norm
-            else
-                stop ('division by zero in orthogonalization')
-            end if
-            if (verbose_local) then
-                call davidson_print_vectors(vectors, label="all vectors                   ")
-            end if
         end do
+
+        if (verbose_local) then
+            call davidson_print_vectors(vectors, label="all vectors                   ")
+        end if
 
         deallocate(projection)
     end subroutine 
