@@ -471,97 +471,9 @@ contains
               end if
            end if 
         end do
-        call orthonormalize_trial_vectors(workspace%Lprev, workspace%L, rank, workspace%trial1, workspace%trial2)
+        call gram_schmidt_orthogonalization_tensors(workspace%Lprev, workspace%L, rank, workspace%trial1, workspace%trial2)
 
     end subroutine
-
-    subroutine orthonormalize_trial_vectors(L,Lnew,rank1,trial1,trial2)
-        integer, intent(in) :: L, Lnew, rank1
-        type(talsh_tens_t), pointer, intent(inout) :: trial1(:), trial2(:) 
-
-        call gram_schmidt_orthogonalization_tensors(L,Lnew,rank1,trial1,trial2)
-    end subroutine
-
-
-    subroutine gram_schmidt_projection_R(projection, u, v)
-        real(kind=8), intent(inout) :: projection(:)
-        real(kind=8), intent(in) :: u(:)
-        real(kind=8), intent(in) :: v(:)
-        real(kind=8) :: numerator, denominator, factor
-        real(kind=8) :: norm_denominator
-        integer :: N, N_complex
-        double precision ddot, dznrm2
-        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
-
-        N = size(u,1)
-
-        projection = 0.0d0 
-
-        if (davidson_complex_mode_with_reals) then
-            N_complex = N / 2
-
-            call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
-            call xdotc(numerator_complex,N_complex, u, 1, v, 1) 
-
-            norm_denominator = dznrm2(N_complex, u, 1)
-
-            if (norm_denominator .gt. safe_minimum) then
-                call dladiv(numerator_complex(1),numerator_complex(2), &
-                            denominator_complex(1),denominator_complex(2), &
-                            factor_complex(1), factor_complex(2))
-            else
-                factor_complex(1) = 0.0d0
-                factor_complex(2) = 0.0d0
-            end if
-            projection = u
-            call zscal(N_complex, factor_complex, projection, 1)
-        end if
-
-    end subroutine 
-
-    subroutine gram_schmidt_orthogonalization(vectors, start_from, verbose)
-        real(kind=8), intent(inout) :: vectors(:,:)
-        integer, intent(in) :: start_from
-        logical, optional, intent(in) :: verbose
-
-        real(kind=8), allocatable   :: projection(:)
-        integer :: vectors_L, vectors_N
-        integer :: i, j, k
-        logical :: verbose_local
-        real(kind=8) :: norm, vr, vi, pr, pi
-
-        vectors_L = size(vectors,2)
-        vectors_N = size(vectors,1)
-
-        allocate(projection(vectors_N))
-
-        if (present(verbose)) then
-            verbose_local = verbose
-        else
-            verbose_local = .false.
-        end if
-
-        do j = start_from, vectors_L
-            norm = vector_norm(vectors(:,j))
-            if (norm .ge. safe_minimum ) then
-                vectors(:,j) = vectors(:,j) / norm
-            else
-                stop ('division by zero in orthogonalization') 
-            end if
-            do i = 1, j-1
-                call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
-                vectors(:,j) = vectors(:,j) - projection(:)
-            end do
-            norm = vector_norm(vectors(:,j))
-            if (norm .ge. safe_minimum ) then
-                vectors(:,j) = vectors(:,j) / norm
-            else
-                stop ('division by zero in orthogonalization')
-            end if
-        end do
-
-        deallocate(projection)
-    end subroutine 
 
 
     subroutine renormalize_vectors(v1,v2)
@@ -582,32 +494,73 @@ contains
 
     end subroutine
 
+
+    subroutine gram_schmidt_projection_tensors(factor, u1, u2, v1, v2)
+       complex(8), intent(inout) :: factor
+       type(talsh_tens_t), intent(inout) :: u1, u2
+       type(talsh_tens_t), intent(inout) :: v1, v2
+
+       type(talsh_tens_t) :: result_tensor_num, result_tensor_den
+       complex(8), pointer :: result_tens_num(:), result_tens_den(:)
+       type(C_PTR):: body_p_num, body_p_den
+
+       integer(C_INT)     :: one_dims(1)
+       integer  :: ierr, rank
+
+       one_dims(1) = 1
+       ierr=talsh_tensor_construct(result_tensor_den,C8,one_dims(1:0),init_val=ZERO)
+       ierr=talsh_tensor_get_body_access(result_tensor_den,body_p_den,C8,int(0,C_INT),DEV_HOST)
+       call c_f_pointer(body_p_den,result_tens_den,one_dims)
+       ierr=talsh_tensor_construct(result_tensor_num,C8,one_dims(1:0),init_val=ZERO)
+       ierr=talsh_tensor_get_body_access(result_tensor_num,body_p_num,C8,int(0,C_INT),DEV_HOST)
+       call c_f_pointer(body_p_den,result_tens_num,one_dims)
+
+       rank=talsh_tensor_rank(v1)
+
+       if (rank.eq.1) then
+          ierr=talsh_tensor_contract("num()+=v+(a)*v(a)",result_tensor_num,v1,u1)
+          ierr=talsh_tensor_contract("den()+=u(a)*u(a)",result_tensor_den,u1,u1)
+
+          ierr=talsh_tensor_contract("num()+=v+(a,b,c)*v(a,b,c)",result_tensor_num,v2,u2)
+          ierr=talsh_tensor_contract("den()+=u(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2)
+
+       else if (rank.eq.2) then
+          ierr=talsh_tensor_contract("num()+=v+(a,b)*v(a,b)",result_tensor_num,v1,u1)
+          ierr=talsh_tensor_contract("den()+=u(a,b)*u(a,b)",result_tensor_den,u1,u1)
+
+          ierr=talsh_tensor_contract("num()+=v+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,v2,u2)
+          ierr=talsh_tensor_contract("den()+=u(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2)
+       end if
+
+       factor = result_tens_num(1) / result_tens_den(1)
+
+       ierr=talsh_tensor_destruct(result_tensor_num)
+       ierr=talsh_tensor_destruct(result_tensor_den)
+
+    end subroutine
+
     subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,rank1,trial1,trial2)
         integer, intent(in) :: L, Lnew, rank1
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
         real :: norm_r
         integer(INTD) :: r1_rank
         integer :: ierr, i, j
-        type(talsh_tens_t) :: projection 
+        complex(8) :: factor
 
         if (rank1.gt.2) call quit('rank not implemented in form_r_tensors')
 
         do j = L, Lnew
+            do i = 1, j-1
+                call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
+                if (rank1.eq.1) then
+                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(i),trial1(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(i),trial2(j),scale=-factor)
+                else if (rank1.eq.2) then
+                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=-factor)
+                end if
+            end do
             call renormalize_vectors(trial1(j),trial2(j))
-!           do i = 1, j-1
-!               call gram_schmidt_projection_tensors(projection1, projectionvectors(:,i),vectors(:,j))
-
-!               if (rank1.eq.1) then
-!                  ierr=projection1
-!                  ierr=projection2
-
-!                  ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),projection1,scale=MINUS_ONE)
-!                  ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),projection2,scale=MINUS_ONE)
-!               else if (rank1.eq.2) then
-!!add me 
-!               end if
-!           end do
-!           call renormalize_vectors(trial1(j),trial2(j))
          end do
 
     end subroutine
