@@ -1229,9 +1229,10 @@ contains
             end if
             r(:,k) = residue_a(:,k) - residue_b(:,k)
         end do
-!       if (davidson_debug) then
-!           call davidson_print_vectors(r,  label="debug: in form_r, r           ", complex_dimension=1)
-!       end if
+        if (davidson_debug) then
+            call davidson_print_vectors(residue_a,  label="debug: in form_r, residue_a   ", complex_dimension=1)
+            call davidson_print_vectors(residue_b,  label="debug: in form_r, residue_b   ", complex_dimension=1)
+        end if
 
         deallocate(residue_a)
         deallocate(residue_b)

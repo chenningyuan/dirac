@@ -4,6 +4,7 @@ use talsh
 use tensor_algebra
 use talsh_common_routines
 use exacorr_datatypes
+use talsh_ao_to_mo, only : tensor_norm2
 
 
 implicit none
@@ -250,7 +251,7 @@ contains
         if (present(max_subspace_size)) then
             davidson_max_subspace_size = max_subspace_size  
         else
-            davidson_max_subspace_size = 4 ! 1024
+            davidson_max_subspace_size = 8 ! 1024
         end if
 
         if (present(max_iterations)) then
@@ -445,178 +446,42 @@ contains
 
 
     subroutine update_trial_vectors(delta,workspace)
+        type(talsh_davidson_workspace) :: workspace
         logical, pointer, intent(inout) :: delta(:)
-        type(talsh_davidson_workspace), intent(inout) :: workspace
 
-        integer :: i
+        integer :: ierr, i
+        integer(INTD) :: rank
+
+        rank=talsh_tensor_rank(workspace%trial1(1))
+        if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
 
         workspace%Lprev = workspace%L
         do i = 1, size(delta,1)
            if (delta(i)) then
               workspace%L = workspace%L + 1
-           ! copy workspace%delta1(i) to workspace%trial1(workspace%L)
-           ! copy workspace%delta2(i) to workspace%trial2(workspace%L)
+
+              ierr=talsh_tensor_init(workspace%trial1(workspace%L), ZERO)
+              ierr=talsh_tensor_init(workspace%trial2(workspace%L), ZERO)
+              if (rank.eq.1) then
+                 ierr=talsh_tensor_add("t(a)+=d(a)",workspace%trial1(workspace%L),workspace%delta1(i))
+                 ierr=talsh_tensor_add("t(a,b,c)+=d(a,b,c)",workspace%trial2(workspace%L),workspace%delta2(i))
+              else if (rank.eq.2) then
+                 ierr=talsh_tensor_add("t(a,b)+=d(a,b)",workspace%trial1(workspace%L),workspace%delta1(i))
+                 ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace%trial2(workspace%L),workspace%delta2(i))
+              end if
            end if 
         end do
-        call orthonormalize_trial_vectors(workspace%Lprev, workspace%L, workspace%trial1, workspace%trial2)
+        call orthonormalize_trial_vectors(workspace%Lprev, workspace%L, rank, workspace%trial1, workspace%trial2)
 
     end subroutine
 
-    subroutine orthonormalize_trial_vectors(L,Lnew,trial1,trial2)
-        integer, intent(in) :: L, Lnew
+    subroutine orthonormalize_trial_vectors(L,Lnew,rank1,trial1,trial2)
+        integer, intent(in) :: L, Lnew, rank1
         type(talsh_tens_t), pointer, intent(inout) :: trial1(:), trial2(:) 
 
-        integer :: i, j
-        logical :: debug_ortho = .false.
-
-        gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2,verbose=debug_ortho)
+        call gram_schmidt_orthogonalization_tensors(L,Lnew,rank1,trial1,trial2)
     end subroutine
 
-
-    function updated_subspace_vectors_R(old_vectors_R, delta, orthogonalize_all,verbose)
-        real(kind=8), pointer:: updated_subspace_vectors_R(:,:)
-
-        real(kind=8), intent(inout), pointer :: old_vectors_R(:,:)
-        real(kind=8), intent(in)      :: delta(:,:)
-        logical, optional, intent(in) :: orthogonalize_all
-        logical, optional, intent(in) :: verbose
-
-        integer :: vectors_L, vectors_N
-        integer :: vectors_Ld, vectors_Nd
-        integer :: new_L
-        integer :: i, ortho_from_vector
-        logical :: orthogonalize_all_local
-        logical :: verbose_local
-        real(kind=8), allocatable :: c(:,:)
-
-        vectors_N = size(old_vectors_R,1)
-        vectors_L = size(old_vectors_R,2)
-
-        vectors_Nd= size(delta,1)
-        vectors_Ld= size(delta,2)
-
-        if (present(orthogonalize_all)) then
-            orthogonalize_all_local = orthogonalize_all 
-        else
-            orthogonalize_all_local = .false.
-        end if
-
-        if (present(verbose)) then
-            verbose_local = verbose
-        else
-            verbose_local = .false.
-        end if
-
-        new_L = vectors_L + vectors_Ld
-        allocate(updated_subspace_vectors_R(vectors_N, new_L))
-        updated_subspace_vectors_R = 0.0d0
-
-        do i = 1, vectors_L
-            updated_subspace_vectors_R(:,i) = old_vectors_R(:,i)
-        end do 
-        deallocate(old_vectors_R)
-
-        do i = 1, vectors_Ld  
-           updated_subspace_vectors_R(:, vectors_L + i) = delta(:,i)
-        end do
-
-!       if (verbose_local) &
-!           call davidson_print_vectors(updated_subspace_vectors_R, label="new subspace vectors before OR")
-
-        if (orthogonalize_all_local) then
-            call orthonormalize_subspace(updated_subspace_vectors_R, verbose=verbose_local)
-        else ! only orthogonalize the new vectors with respect to the old ones
-            ortho_from_vector=vectors_L + 1
-            call orthonormalize_subspace(updated_subspace_vectors_R, start_from=ortho_from_vector, verbose=verbose_local)
-        end if
-
-    end function
-
-    subroutine orthonormalize_subspace(b, start_from, method, verbose)
-        real(kind=8), intent(inout)   :: b(:,:)
-        integer, optional, intent(in) :: start_from
-        logical, optional, intent(in) :: verbose
-        integer, optional, intent(in) :: method
-
-        integer :: method_local
-        integer :: start_from_local
-        logical :: verbose_local
-
-        if (present(start_from)) then
-            start_from_local = start_from  
-        else
-            start_from_local = 1 ! orthonormalize the full set of trial of vectors
-        end if
-
-        if (present(method)) then
-            method_local = method 
-        else
-            method_local = 1 ! 1 = Gram-Schmidt procedure, 2 = QR
-        end if
-
-        if (present(verbose)) then
-            verbose_local = verbose
-        else
-            verbose_local = .false.
-        end if
-
-        if (method_local .eq. 1) then
-            call gram_schmidt_orthogonalization(b, start_from_local, verbose=verbose_local)
-        else if (method_local .eq. 2) then
-            call qr_orthogonalization(b, start_from_local)
-        end if
-
-    end subroutine
-
-
-    subroutine qr_orthogonalization(b, start_from)
-        real(kind=8), intent(inout)   :: b(:,:)
-        integer, intent(in) :: start_from
-        integer :: m, n, info, lwork, i, k, m_complex
-        real(kind=8), allocatable :: work(:), tau(:), q(:,:)
-        real(kind=8) :: norm 
-        double precision ddot
-
-        m = size(b,1)
-        n = size(b,2)
-        k = min(m,n)
- 
-        allocate(q(m,n))
-        q = b
-        stop ('orthogonalization via QR decomposition not fully debugged yet')
-        if (davidson_complex_mode_with_reals) then
-!           stop ('orthogonalization via QR decomposition not implemented yet for complex variables')
-            m_complex = m / 2
-            k = min(m_complex,n)
-            allocate(tau(k))
- 
-            lwork = -1
-            allocate(work(1))
-            call dgeqrf(m, n, b, m, tau, work, lwork, info)
-            lwork = 2*work(1)
-            deallocate(work)
-
-            allocate(work(lwork))
-            call dgeqrf(m, n, b, m, tau, work, lwork, info)
-            deallocate(work)
- 
-            lwork = -1
-            allocate(work(1))
-            call dorgqr(m, n, k, b, m, tau, work, lwork, info)
-            lwork = 2*work(1)
-            deallocate(work)
-            allocate(work(lwork))
-            call dorgqr(m, n, k, b, m, tau, work, lwork, info)
-            deallocate(work)
-            deallocate(tau)
-        end if
-
-        do i = start_from, n
-            b(:,i) = q(:,i)
-        end do
-        deallocate(q)
-    end subroutine
- 
 
     subroutine gram_schmidt_projection_R(projection, u, v)
         real(kind=8), intent(inout) :: projection(:)
@@ -698,6 +563,54 @@ contains
         deallocate(projection)
     end subroutine 
 
+
+    subroutine renormalize_vectors(v1,v2)
+       type(talsh_tens_t), intent(inout) :: v1, v2
+       real :: norm_r
+       complex(8) :: norm
+
+       norm_r = tensor_norm2(v1) +  tensor_norm2(v2)
+       norm = CMPLX(norm_r, 0.0d0)
+       norm_r = 1.0d0 / norm_r
+
+       if (norm_r .ge. safe_minimum ) then
+          call divide_tensor_elements_by_value(v1, norm)
+          call divide_tensor_elements_by_value(v2, norm)
+       else
+          call quit ('norm of tensors too small for division, quitting')
+       end if
+
+    end subroutine
+
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,rank1,trial1,trial2)
+        integer, intent(in) :: L, Lnew, rank1
+        type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
+        real :: norm_r
+        integer(INTD) :: r1_rank
+        integer :: ierr, i, j
+        type(talsh_tens_t) :: projection 
+
+        if (rank1.gt.2) call quit('rank not implemented in form_r_tensors')
+
+        do j = L, Lnew
+            call renormalize_vectors(trial1(j),trial2(j))
+!           do i = 1, j-1
+!               call gram_schmidt_projection_tensors(projection1, projectionvectors(:,i),vectors(:,j))
+
+!               if (rank1.eq.1) then
+!                  ierr=projection1
+!                  ierr=projection2
+
+!                  ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),projection1,scale=MINUS_ONE)
+!                  ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),projection2,scale=MINUS_ONE)
+!               else if (rank1.eq.2) then
+!!add me 
+!               end if
+!           end do
+!           call renormalize_vectors(trial1(j),trial2(j))
+         end do
+
+    end subroutine
 
     subroutine davidson_print_vectors_complex(vectors, label, nvectors)
         complex(kind=8), intent(in) :: vectors(:,:)
@@ -979,7 +892,11 @@ contains
         integer(INTD) :: r1_rank 
         integer :: ierr, i
         logical :: debug_form_r = .true.
+        type(talsh_tens_t) :: one_tensor
+        integer(C_INT)     :: one_dims(1)
 
+        one_dims(1) = 1
+        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 ! we only need to know the rank of delta1 because the rank of r2 will always be r1_rank+2, that is: 
 ! r1 = 1 (1h for IP, 1p for EA) then r2 = 3 (2h1p for IP, 1h2p for EA)
 ! r1 = 2 (1h1p for EE, 2h for DIP, 2p for DEA) then r2 = 4 (2h2p for EE, 3h1p for DIP, 1h3p for DEA)
@@ -987,8 +904,8 @@ contains
         r1_rank=talsh_tensor_rank(workspace%delta1(k))
         if (r1_rank.gt.2) call quit('rank not implemented in form_r_tensors')
 
-        ierr=talsh_tensor_init(workspace%delta1(k), ZERO)
-        ierr=talsh_tensor_init(workspace%delta2(k), ZERO)
+!       ierr=talsh_tensor_init(workspace%delta1(k), ZERO)
+!       ierr=talsh_tensor_init(workspace%delta2(k), ZERO)
 
 !       if (debug_form_r) then
 !          call davidson_print_vectors(eigenvectors_subspace,   label="eigenvectors_subspace in form_r")
@@ -998,14 +915,14 @@ contains
 
            factor1 =  eigenvectors_subspace(i,k)
            factor2 = -eigenvalues_subspace(k)*factor1
-           if (debug_form_r) write(6,*) 'i',i,'alpha(i,k)',factor1,'lambda*alpha',factor2
+           if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
 
            if (r1_rank.eq.1) then
-              ierr=talsh_tensor_add("r(a)+=s(a)",workspace%delta1(k),workspace%sigma1(i),scale=factor1)
-              ierr=talsh_tensor_add("r(a)+=t(a)",workspace%delta1(k),workspace%trial1(i),scale=factor2)
+              ierr=talsh_tensor_contract("r(a)+=s(a)*K()",workspace%delta1(k),workspace%sigma1(i),one_tensor,scale=factor1)
+              ierr=talsh_tensor_contract("r(a)+=t(a)*K()",workspace%delta1(k),workspace%trial1(i),one_tensor,scale=factor2)
 
-              ierr=talsh_tensor_add("r(a,b,c)+=s(a,b,c)",workspace%delta2(k),workspace%sigma2(i),scale=factor1)
-              ierr=talsh_tensor_add("r(a,b,c)+=t(a,b,c)",workspace%delta2(k),workspace%trial2(i),scale=factor2)
+              ierr=talsh_tensor_contract("r(a,b,c)+=s(a,b,c)*K()",workspace%delta2(k),workspace%sigma2(i),one_tensor,scale=factor1)
+              ierr=talsh_tensor_contract("r(a,b,c)+=t(a,b,c)*K()",workspace%delta2(k),workspace%trial2(i),one_tensor,scale=factor2)
 
             else if (r1_rank.eq.2) then
               ierr=talsh_tensor_add("r(a,b)+=s(a,b)",workspace%delta1(k),workspace%sigma1(i),scale=factor1)
@@ -1016,15 +933,14 @@ contains
 
            end if
 
-           if (debug_form_r) then
-              write (6,*) 'debug >>> in form_r_tensors, accumulated r1 root',k,' for L',i,' >>>'
-              call print_tensor_elements(workspace%delta1(k))
-              write (6,*) 'debug <<< in form_r_tensors, accumulated r1 for L',i,' <<<'
-              write (6,*) 'debug >>> in form_r_tensors, accumulated r2 root',k,' for L',i,' >>>'
-              call print_tensor_elements(workspace%delta2(k))
-              write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
-       end if
-
+!          if (debug_form_r) then
+!             write (6,*) 'debug >>> in form_r_tensors, accumulated r1 root',k,' for L',i,' >>>'
+!             call print_tensor_elements(workspace%delta1(k))
+!             write (6,*) 'debug <<< in form_r_tensors, accumulated r1 for L',i,' <<<'
+!             write (6,*) 'debug >>> in form_r_tensors, accumulated r2 root',k,' for L',i,' >>>'
+!             call print_tensor_elements(workspace%delta2(k))
+!             write (6,*) 'debug <<< in form_r_tensors, accumulated r2 for L',i,' <<<'
+!          end if
        
        end do
 
@@ -1063,13 +979,13 @@ contains
           write (6,*) 'debug <<< in form_r_tensors, r1 <<<'
        end if
 
+       ierr=talsh_tensor_destruct(one_tensor)
 
     end subroutine    
 
 
 
     function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, workspace, correct_all)
-        use talsh_ao_to_mo, only : tensor_norm2
         integer, intent(in)       :: nroots, output_file_unit
         type(talsh_davidson_workspace), intent(inout) :: workspace
         complex(kind=8), intent(in)  :: e_small_M(:)
@@ -1094,10 +1010,19 @@ contains
 
         unconverged_roots = 0
         do k = 1, nroots
+           ierr=talsh_tensor_init(workspace%delta1(k), ZERO)
+           print *,'debug, init workspace%delta1(k) to zero, ierr',ierr
+           ierr=talsh_tensor_init(workspace%delta2(k), ZERO)
+           print *,'debug, init workspace%delta2(k) to zero, ierr',ierr
+        end do
+        do k = 1, nroots
 ! instead of having a new variable to store r(:,k), we will do collect the results on workspace%delta{1,2,...} 
            call form_r_tensors(k,c_small_M,e_small_M,workspace)
             
 ! get the norm of the whole intermediate r(:,k) tensor, which means to calculate it over the different excitation ranks 
+           print *,'debug, norm of delta1(',k,'):',tensor_norm2(workspace%delta1(k))
+           print *,'debug, norm of delta2(',k,'):',tensor_norm2(workspace%delta2(k))
+
            norm_r = tensor_norm2(workspace%delta1(k)) +  tensor_norm2(workspace%delta2(k))
 
            if (norm_r .lt. davidson_convergence_threshold) then 
@@ -1131,7 +1056,7 @@ contains
                  write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
                  call print_tensor_elements(workspace%delta1(k))
                  write (6,*) 'debug <<< in correction_to_vectors, delta1 <<<'
-                 write (6,*) 'debug >>> in form_r_tensors, delta2 root',k,' >>>'
+                 write (6,*) 'debug >>> in correction_to_vectors, delta2 root',k,' >>>'
                  call print_tensor_elements(workspace%delta2(k))
                  write (6,*) 'debug <<< in correction_to_vectors, delta2 <<<'
               end if
@@ -1878,11 +1803,10 @@ contains
         complex(kind=8), pointer, contiguous :: c_small_l_old(:,:)  => NULL()
         logical, pointer :: delta(:) => NULL()
 
-        integer :: vectors_N, L, min_subspace_size, max_subspace_size, niter
+        integer :: niter
         integer :: i, j, k
         integer :: nroots, ierr
 
-        vectors_N = workspace%Nmax
         nroots    = workspace%nroots
 !
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
@@ -1892,17 +1816,13 @@ contains
 !!                                   davidson_solve_lhs,      &
 !!                                   davidson_solve_rhs)
 
- 
-        min_subspace_size = nroots
         workspace%L = nroots
-        max_subspace_size = max(nroots, workspace%Lmax)
-
 
         write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
-        if ( nroots .gt. vectors_N ) then 
+        if ( nroots .gt. workspace%Nmax ) then 
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
            return 
-        else if ( nroots .eq. vectors_N ) then
+        else if ( nroots .eq. workspace%Nmax ) then
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
@@ -1915,16 +1835,10 @@ contains
             if (davidson_solve_rhs) then
                call create_sigma_right(exa_input,int_t,eom_t,t2_tensor,workspace)
                call create_subspace_matrix_right(M_small,workspace) 
-!           else if (davidson_solve_lhs) then
-!              call create_sigma_left(exa_input,int_t,eom_t,t2_tensor, &
-!  &                            workspace%trial1,workspace_t%trial2, &
-!  &                            workspace%sigma1,workspace_t%sigma2)
-!              call create_subspace_matrix_left(M_small,workspace_t) 
             else
                stop 'unknown choice of side to solve for in davidson'  
             end if
 
-!!          sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
 !!          if (associated(projector)) call apply_projector(projector,sigma_vector)
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
@@ -1958,7 +1872,6 @@ contains
             if (.not.associated(delta)) then
                 write(davidson_output_file_unit,*) "All roots converged."
             end if
-            call quit('bb')
 
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
@@ -1967,7 +1880,7 @@ contains
                call update_trial_vectors(delta,workspace)
             end if
  
-            if (workspace%L .eq. max_subspace_size) then
+            if (workspace%L .ge. workspace%Lmax) then
                write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
                exit
             end if
@@ -1976,7 +1889,7 @@ contains
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
 
-        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",L
+        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",workspace%L
 
 !!      call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
@@ -2626,6 +2539,88 @@ contains
 
     end subroutine
 
+    subroutine divide_tensor_elements_by_value(a_tensor, denominator)
+       type(talsh_tens_t), intent(inout)    :: a_tensor
+       complex(8), intent(in) :: denominator
+
+       integer(INTD)  ::  a_rank
+       integer(INTD)  ::  a_dims1(1)
+       integer(INTD)  ::  a_dims2(1:2)
+       integer(INTD)  ::  a_dims3(1:3)
+       integer(INTD)  ::  a_dims4(1:4)
+       integer(INTD)  ::  ierr
+       integer  ::  i, j, k, l, m, n, o, p
+       type(C_PTR)         :: a_body
+       complex(8), pointer :: a_tens1(:)
+       complex(8), pointer :: a_tens2(:,:)
+       complex(8), pointer :: a_tens3(:,:,:)
+       complex(8), pointer :: a_tens4(:,:,:,:)
+
+       a_rank=talsh_tensor_rank(a_tensor)
+
+       if (a_rank.eq.1) then 
+         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims1)
+         if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
+
+         ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(a_body,a_tens1,a_dims1)
+
+         do i = 1, a_dims2(1)
+            a_tens1(i)=a_tens1(i) / denominator 
+         end do
+
+       else if (a_rank.eq.2) then
+         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims2)
+         if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
+
+         ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(a_body,a_tens2,a_dims2)
+
+         do i = 1, a_dims2(1)
+           do j = 1, a_dims2(2)
+             a_tens2(i,j)=a_tens2(i,j) / denominator
+           end do
+         end do
+
+       else if (a_rank.eq.3) then 
+         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims3)
+         if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
+
+         ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(a_body,a_tens3,a_dims3)
+
+         do i = 1, a_dims3(1)
+            do j = 1, a_dims3(2)
+              do k = 1, a_dims3(3)
+                 a_tens3(i,j,k)=a_tens3(i,j,k) / denominator
+             end do
+           end do
+         end do
+
+       else if (a_rank.eq.4) then 
+         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims4)
+         if (ierr.ne.0) call quit('error in divide_tensor_elements_by_value')
+
+         ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(a_body,a_tens4,a_dims4)
+
+         do i = 1, a_dims4(1)
+            do j = 1, a_dims4(2)
+              do k = 1, a_dims4(3)
+                do l = 1, a_dims4(4)
+                   a_tens4(i,j,k,l)=a_tens4(i,j,k,l) / denominator 
+                end do
+             end do
+           end do
+         end do
+
+       else
+          call quit('unsupported tensor rank in divide_tensor_elements_by_value')
+       end if
+
+
+
+    end subroutine
 
     subroutine multiply_tensor_elements(a_tensor, b_tensor)
 ! this routine performs element-wise multiplication of two tensors
@@ -2659,9 +2654,9 @@ contains
     
        if ((a_rank.eq.1).and.(b_rank.eq.1)) then
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims1)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims1)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
     
          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(a_body,a_tens1,a_dims1)
@@ -2670,15 +2665,15 @@ contains
     
 ! add test to check dimensions
 !        a_tens1(:) = a_tens1(:)*b_tens1(:)
-         do i = 1, a_dims2(1)
+         do i = 1, a_dims1(1)
             a_tens1(i)=a_tens1(i)*b_tens1(i)
          end do
     
        else if ((a_rank.eq.2).and.(b_rank.eq.2)) then
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims2)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims2)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
     
          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(a_body,a_tens2,a_dims2)
@@ -2695,9 +2690,9 @@ contains
     
        else if ((a_rank.eq.3).and.(b_rank.eq.3)) then
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims3)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims3)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
     
          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(a_body,a_tens3,a_dims3)
@@ -2716,9 +2711,9 @@ contains
     
        else if ((a_rank.eq.4).and.(b_rank.eq.4)) then
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims4)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
          ierr = talsh_tensor_dimensions(b_tensor,b_rank,b_dims4)
-         if (ierr.ne.0) stop 'error in mulitply_tensor'
+         if (ierr.ne.0) call quit('error in multiply_tensor_elements')
        
          ierr=talsh_tensor_get_body_access(a_tensor,a_body,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(a_body,a_tens4,a_dims4)
