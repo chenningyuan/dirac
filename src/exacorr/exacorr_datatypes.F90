@@ -42,7 +42,7 @@
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
-            integer                 :: moint_scheme = 3
+            integer                 :: moint_scheme = 4
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
