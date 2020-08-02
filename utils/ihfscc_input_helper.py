@@ -297,13 +297,13 @@ class molecular_electronic_structure:
 			self.exchange_spinors(i,min)
 				
 
-	def create_spinor_list(self,scf_output):
-		self.set_spinor_list(scf_output)
+	def create_spinor_list(self,scf_output,expand_degeneracies):
+		self.set_spinor_list(scf_output,expand_degeneracies)
 		self.selection_sort_SpinorEnergy()
 		self.set_homo_lumo()
 
 
-	def set_spinor_list(self,scf_output):
+	def set_spinor_list(self,scf_output,expand_degeneracies=False):
 		start_regexp_definition                        = "\s+ SCF - CYCLE"
 		end_regexp_definition                          = "    gap     :\s+([-+]?\d+?\.\d*) au"
 		lumo_energy_regexp_definition                  = "    E\(LUMO\) :\s+([-+]?\d+?\.\d*) au"   
@@ -383,10 +383,17 @@ class molecular_electronic_structure:
 					for spinors in eigenvalues_and_degeneracy.finditer(l) :
 						sp = spinor() 
 						sp.set_symmetries(boson_symmetry,fermion_symmetry)
-						sp.set_occupation(float(spinor_occupancy))
 						sp.set_eigenvalue(float(spinors.group(1)))
 						sp.set_degeneracy(int(spinors.group(2)))
-						self.spinor_list.append(sp)
+						sp.set_occupation(float(spinor_occupancy))
+                                                if (expand_degeneracies) :
+                                                        degn = int(spinors.group(2)) / 2
+                                                        if (degn > 1) :
+                                                                sp.set_degeneracy(2)
+                                                        for _ in range(degn) :
+						                self.spinor_list.append(sp)
+                                                else :
+						        self.spinor_list.append(sp)
 
                 f.close()
 
@@ -413,6 +420,8 @@ def parse_cmdline():
 
         parser.add_option("--process_scf_only",action="store_true",dest="process_scf_only", default=False,
                      help="whether to only read in the scf orbitals and print them, or to contine to setup of fscc input (default=False)")
+        parser.add_option("--expand_degeneracies",action="store_true",dest="expand_degeneracies", default=False,
+                     help="whether to count and print 2*n-fold degenerate energies n times (default=False)")
         parser.add_option("--reset_energy_scale",action="store_true",dest="reset_energy_scale", default=False,
                      help="resets orbital energies by making the HOMO the origin")
 
@@ -538,6 +547,7 @@ def main():
 	options = parse_cmdline()
 
         datafile      = options.scf_output
+        expand_degn   = options.expand_degeneracies
 #       inputfile     = options.fscc_input
 #       templatefile  = options.fscc_template
         inputfile     = "foo"
@@ -546,7 +556,7 @@ def main():
         print "#debug: scf,template,final",datafile,templatefile,inputfile
    
         molecule = molecular_electronic_structure()
-	molecule.create_spinor_list(datafile)
+	molecule.create_spinor_list(datafile,expand_degeneracies=expand_degn)
         molecule.print_all_spinors(set_energy_origin_to_homo=options.reset_energy_scale)
         if not options.process_scf_only:
 	        print_fscc_summary(options)
