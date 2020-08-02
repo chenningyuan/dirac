@@ -600,9 +600,9 @@ C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
 C  BRANCH CODE
-        jm1 = 1
+        jm1 = 3
         j0  = 2
-        jp1 = 3
+        jp1 = 1
         D2SQRT2 = D2*SQRT(D2)
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
@@ -711,12 +711,12 @@ C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
           GTENSOR(K,1) =  D2*ESRVAL(2,3,1,I)
           GTENSOR(K,2) = -D2*ESRVAL(2,3,2,I)
-          GTENSOR(K,3) =  D4*ESRVAL(3,3,1,I)
+          GTENSOR(K,3) =  D4*ESRVAL(2,2,1,I)
 c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
           J = IPESR(MXCOOR+K,2)
           GCORR(K,1)   =  D2*ESRVAL(2,3,1,J)
           GCORR(K,2)   = -D2*ESRVAL(2,3,2,J)
-          GCORR(K,3)   =  D4*ESRVAL(3,3,1,J)
+          GCORR(K,3)   =  D4*ESRVAL(2,2,1,J)
         ENDDO
 C
       ELSE
@@ -941,6 +941,17 @@ C             is a real operator
       CALL QDIAG(MZ,MULTIPESR,ESRVAL,MULTIPESR,MULTIPESR,
      &           ESRVAL(1,1,1,2),1,ESRVAL(1,1,1,3),
      &           MULTIPESR,MULTIPESR,WORK(KFREE),LFREE,IERR)
+      ! Change order in S_Z to decreasing instead of increasing value
+      ! to follow usual convention
+      DO I = 1, MULTIPESR/2
+         J = MULTIPESR + 1 -I
+         TEMP = ESRVAL(I,1,1,2)
+         ESRVAL(I,1,1,2) = ESRVAL(J,1,1,2)
+         ESRVAL(J,1,1,2) = TEMP
+         DO K = 1,MZ
+            CALL DSWAP(MULTIPESR,ESRVAL(1,J,K,3),1,ESRVAL(1,I,K,3),1)
+         END DO
+      END DO
 
       IF (IPRESR .GT. 4) THEN
         DO I = 2,3
@@ -1026,7 +1037,7 @@ C
       IERR = 0
       DO J = 1,MULTIPESR
          SZJ = ESRVAL(J,J,1,3)
-         K   = NINT(SZJ+SEFF+D1)
+         K   = NINT(-SZJ+SEFF+D1)
          WRITE (LUPRI,'(A,I5,F15.10,I5)')
      &     ' State no., <Sigma_Z>, index S_Z(eff) :',J,SZJ,K
          IF (K .NE. J) THEN
@@ -1040,63 +1051,95 @@ C
 C
 C     ... Check relative phases using Sigma_X
 C
-C       Use Sigma_X to determine phase of J.gt.1
-C       using the requirement that <J+1|Seff_+|J> .gt. 0
-C       (which is same as <J+1|Sigma_X|J> .gt. 0) /tow+hjaaj
+C       Use Sigma_X and Sigma_Y to determine phase of M_J .gt. -J_eff
+C       using the requirement that Re(<J+1|S_x|J>) .gt. 0 and Im(<J+1|S_y|J>) .lt. 0 and 
 C
-      PHASE_JM1_R = D1
-      PHASE_JM1_I = D0
-      DO J = 2,MULTIPESR
-        JM1 = J-1
+      PHASE_J_R = 1.0D0 ! keep eigenvector for M_J = -J as it is
+      PHASE_J_I = 0.0D0
+      DO J = 1,MULTIPESR-1  ! M_S = -S, ..., S-1
+        JP1 = J+1 ! M_S + 1
+        SX_R = ESRVAL(JP1,J,1,1)
+        SY_I = ESRVAL(JP1,J,2,2)
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JM1,<J|S_x|JM1>  :",J,JM1,ESRVAL(J,JM1,1,1),
-     &                            ' + i',ESRVAL(J,JM1,2,1)
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JM1,<J|S_y|JM1>  :",J,JM1,ESRVAL(J,JM1,1,2),
-     &                            ' + i',ESRVAL(J,JM1,2,2)
-        SPLUS_R = ESRVAL(J,JM1,1,1) - ESRVAL(J,JM1,2,2)
-        SPLUS_I = ESRVAL(J,JM1,2,1) + ESRVAL(J,JM1,1,2)
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JM1,<J|S_+|JM1>  :",J,JM1,SPLUS_R,
-     &                            ' + i',SPLUS_I
-        PHASE_J_R = PHASE_JM1_R*SPLUS_R
-     &            - PHASE_JM1_I*SPLUS_I
-        PHASE_J_I = PHASE_JM1_R*SPLUS_I
-     &            + PHASE_JM1_I*SPLUS_R
-C       ... here PHASE is new phase of vector J-1
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JM1,<J|S_x|JM1'> :",J,JM1,PHASE_J_R,' + i',PHASE_J_I
-        PHASE_J_NORM = SQRT(PHASE_J_R**2 + PHASE_J_I**2)
-        PHASE_J_R  = PHASE_J_R / PHASE_J_NORM
-        PHASE_J_I  = PHASE_J_I / PHASE_J_NORM
-           Seff_M = (JM1 - 1) - Seff
-           CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) / 2
-           write(lupri,*) 'CPLUS / 2 ', CPLUS
-           WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
-     &     " J,JM1,<J|S_x|JM1'> :",J,JM1,PHASE_J_R,' + i',PHASE_J_I,
-     &     '; PHASE_J_NORM',PHASE_J_NORM, PHASE_J_NORM - CPLUS
-C
-        IF (MZ .EQ. 2) THEN
-           DO M = 1, NZCONF
-              C_M_R = CIEVEC(M,J,1)
-              C_M_I = CIEVEC(M,J,2)
-              CIEVEC(M,J,1) = PHASE_J_R*C_M_R - PHASE_J_I*C_M_I
-              CIEVEC(M,J,2) = PHASE_J_R*C_M_I + PHASE_J_I*C_M_R
-           END DO
-           PHASE_JM1_R = PHASE_J_R
-           PHASE_JM1_I = PHASE_J_I
+     &     " JP1,J,<JP1|S_x|J>  :",JP1,J,SX_R,
+     &                            ' + i',ESRVAL(JP1,J,2,1)
+        WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
+     &     " JP1,J,<JP1|S_y|J>  :",JP1,J,ESRVAL(JP1,J,1,2),
+     &                            ' + i',SY_I
+        ! from below:
+        ! SX_R = SX_R(old)*P_R(old) - SY_I(old)*P_I(old)
+        ! SY_I = SY_R(old)*P_I(old) + SX_I(old)*P_R(old)
+        ! four cases:
+        IF      (SX_R .gt. 0.0D0 .and. SY_I .lt. 0.0D0) then
+           ! OK, do nothing, (a - ib)
+            PHASE_JP1_R =  PHASE_J_R
+            PHASE_JP1_I =  PHASE_J_I
+        ELSE IF (SX_R .gt. 0.0D0 .and. SY_I .gt. 0.0D0) then
+           ! (a - ib) = (b + ia)*(-i)
+            PHASE_JP1_R = +PHASE_J_I
+            PHASE_JP1_I = -PHASE_J_R
+        ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .lt. 0.0D0) then
+           ! (a - ib) = (-b - ia)*(i)
+            PHASE_JP1_R = -PHASE_J_I
+            PHASE_JP1_I = -PHASE_J_R
+        ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .gt. 0.0D0) then
+           ! (a -ib) = (-a + ib)*(-1)
+            PHASE_JP1_R = -PHASE_J_R
+            PHASE_JP1_I = -PHASE_J_I
         ELSE
-           PHASCHK = PHASE_JM1_R * ESRVAL(J,JM1,1,1)
-           IF (PHASCHK .LT. D0) THEN
-             PHASE_JM1_R = -PHASE_JM1_R
-C         ... here PHASE is updated to new phase of vector J
-             WRITE (LUPRI,'(A)')
-     &         ' Wrong phase, we scale this eigenvector with -1 ...'
-             DO IZ = 1,MZ
-               CALL DSCAL(NZCONF,DM1,CIEVEC(1,J,IZ),1)
-             END DO
+           CALL QUIT('One of Sx and Sy is zero.')
+        END IF
+        PHASE_J_R = PHASE_JP1_R
+        PHASE_J_I = PHASE_JP1_I
+
+
+C       ... here PHASE is new phase of vector MJ+1
+!       WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
+!    &     " JP1,J,<JP1|S_x|J'> :",JP1,J,PHASE_JP1_R,' + i',PHASE_JP1_I
+!       PHASE_J_NORM = SQRT(PHASE_J_R**2 + PHASE_J_I**2)
+!       PHASE_J_R  = PHASE_J_R / PHASE_J_NORM
+!       PHASE_J_I  = PHASE_J_I / PHASE_J_NORM
+!          Seff_M = (J - 1) - Seff
+!          CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) / 2
+!          write(lupri,*) 'CPLUS / 2 ', CPLUS
+!          WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
+!    &     " JP1,J,<JP1|S_x|J'> :",JP1,J,PHASE_J_R,' + i',PHASE_J_I,
+!    &     '; PHASE_J_NORM',PHASE_J_NORM, PHASE_J_NORM - CPLUS
+C
+      WRITE (LUPRI,'(A,2I3,2F15.10)')
+     &   ' J, JP1, Phase factors',J,JP1,PHASE_J_R, PHASE_J_I
+        IF (MZ .EQ. 2) THEN
+           SX_R = ESRVAL(JP1,J,1,1)
+!          SX_I = ESRVAL(JP1,J,2,1)
+!          SY_R = ESRVAL(JP1,J,1,2)
+           SY_I = ESRVAL(JP1,J,2,2)
+           ESRVAL(JP1,J,1,1) = SX_R*PHASE_J_R - SY_I*PASE_J_I
+!          ESRVAL(JP1,J,2,1)
+!          ESRVAL(JP1,J,1,2)
+           ESRVAL(JP1,J,2,2) = SY_I*PHASE_J_R + SX_R*PASE_J_I
+           DO M = 1, NZCONF
+              C_M_R = CIEVEC(M,JP1,1)
+              C_M_I = CIEVEC(M,JP1,2)
+              CIEVEC(M,JP1,1) = PHASE_J_R*C_M_R - PHASE_J_I*C_M_I
+              CIEVEC(M,JP1,2) = PHASE_J_R*C_M_I + PHASE_J_I*C_M_R
+           END DO
+        ELSE
+           IF (PHASE_J_R .LT. 0) THEN
+           ESRVAL(JP1,J,1,1) = -ESRVAL(JP1,J,1,1)
+           ESRVAL(JP1,J,2,2) = -ESRVAL(JP1,J,2,2)
+           DO IZ = 1,MZ
+              CALL DSCAL(NZCONF,-1.0d0,CIEVEC(1,JP1,IZ),1)
+           END DO
            END IF
         END IF
+        ESRVAL(J,JP1,1,1) =  ESRVAL(JP1,J,1,1)
+        ESRVAL(J,JP1,2,2) = -ESRVAL(JP1,J,2,2)
+        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
+     &     " JP1,J,<JP1|S_x|J>  :",JP1,J,ESRVAL(JP1,J,1,1),
+     &                            ' + i',ESRVAL(JP1,J,2,1)
+        WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
+     &     " JP1,J,<JP1|S_y|J>  :",JP1,J,ESRVAL(JP1,J,1,2),
+     &                            ' + i',ESRVAL(JP1,J,2,2)
       END DO
 C
 C **  Form S**2 matrix in ESRVAL(...,4) in CIEVEC basis
