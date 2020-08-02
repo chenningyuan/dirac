@@ -1584,7 +1584,7 @@ C
                      NERR = NERR + 1
                      WRITE(LUPRI,'(A,2I3)') '.OPEN SHELL error: '//
      &                  'Number of spinors must be even'//
-     &                  'numbers and at least 2 in total:',IAC1,IAC2
+     &                  ' numbers and at least 2 in total:',IAC1,IAC2
                   END IF
                   IF (NERR .GT. 0) THEN
                      CALL QUIT('Error in .OPEN SHELL specifications')
@@ -1958,12 +1958,20 @@ C
                DTEMP          = DTEMP +
      &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
-            IF (NELEC_DHF(IFRP).LT.0)
-     &         CALL QUIT('*SCF error: negative number of '//
-     &                   'closed shell electrons!')
-            IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('*SCF error: odd even number of '//
-     &                   'closed shell electrons!')
+            IF (NELEC_DHF(IFRP).LT.0) THEN
+               write(lupri,*) '*SCF error sym',ifrp,
+     &             ' : negative number of '//
+     &             'closed shell electrons :',nelec_dhf(ifrp)
+               CALL QUIT('*SCF error: negative number of '//
+     &             'closed shell electrons!')
+            END IF
+            IF (MOD(NELEC_DHF(IFRP),2).NE.0) THEN
+               write(lupri,*) '*SCF error sym',ifrp,
+     &             ' : odd even number of '//
+     &             'closed shell electrons :',nelec_dhf(ifrp)
+               CALL QUIT('*SCF error: odd even number of '//
+     &             'closed shell electrons!')
+            END IF
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
          NAELEC_DHF = NINT(DTEMP)

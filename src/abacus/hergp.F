@@ -2042,7 +2042,7 @@ C
       IF (IPRINT .GE. 0) THEN
         WRITE(LUPRI,'(/23X,A,F12.6,A)')'* Total mass: ',TOTMAS,' amu'
         WRITE(LUPRI,'( 23X,A,F8.3,A)') '* Natural abundance:',ABUND,' %'
-        WRITE (LUPRI,'(2//A,4X,3F20.15))')
+        WRITE (LUPRI,'(//,(A,4X,3F20.15)))')
      &    '* Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3),
      &    '* Center-of-mass coordinates (A)   :',(ORIGIN(K)*XTANG,K=1,3)
       END IF
