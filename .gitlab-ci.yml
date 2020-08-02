@@ -59,7 +59,7 @@ ubuntu_intel_mkl_int64-check:
     - apt-get -qq update
     - apt-get -qq -y install intel-oneapi-icc intel-oneapi-ifort intel-oneapi-mkl
     - set +e
-    - . /opt/intel/inteloneapi/setvars.sh
+    - . /opt/intel/oneapi/setvars.sh
     - set -e
   script:
     - uname -a
