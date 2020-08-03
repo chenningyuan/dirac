@@ -61,7 +61,7 @@ module talsh_cis
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CIS control and result variables
-         real(8) :: t_target_precision
+         real(8) :: tem
          integer :: ncycles
 
 !        Initialize libraries
@@ -127,53 +127,33 @@ module talsh_cis
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,result_tens,voov_dims)
 
-         print *,'before get_CIS_integrals'
+         !print *,'before get_CIS_integrals'
          call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
-         print *,'after get_CIS_integrals'
+
 
          !Constrcut body_one tensor
          ierr=talsh_tensor_construct(body_one_tensor,C8,voov_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
          !compute fock matrix tensor 
-         print *,'before get_CIS_fockmatrix'
          call get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_foo_tensor,diag_fvv_tensor, &
                                   int_t, exa_input%print_level)
 
 
-         print *,'after get_CIS_fockmatrix'
+         !print *,'after get_CIS_fockmatrix'
 !        set body_one tensor element 
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
-         print *,'OB(b,i,j,a)+=F(i,j)*I(b,a) ierr',ierr
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
-         print *,'OB(b,i,j,a)+=F(b,a)*I(i,j) ierr',ierr
 
-         !ierr=talsh_tensor_get_body_access(body_one_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,result_tens,voov_dims)
-         !print *,'int_t%vovo(2,1,2,1)',result_tens(2,1,2,1)
-         !print *,'OB(b,i,j,a)',result_tens(1,1,1,1)
 
 
 
           !create CIS hamiltonian tensor 
          ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
-         print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
-         !print *,'result(1,1,1,1)',result_tens(2,1,1,1)
-         !print *,'result(2,1,1,2)',result_tens(2,1,1,2)
-         !do i=1,nvir,1
-            !print *,'two-electron',result_tens(i,1,1,i)
-         !end do
+         !print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
-         print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
-         print *,'nocc',nocc
-         print *,'nvir',nvir
-         print *,'result_tens',size(result_tens)
+         !print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
 
-         !print *,'result(1,1,1,1)',result_tens(1,1,1,1)
-         !print *,'result(2,1,1,2)',result_tens(2,1,1,2)
-
-
-         ! transform tensor to matrix sigma1 and digonal it
 
         do j=1,nocc,1
             do b=1,nvir,1
@@ -181,25 +161,29 @@ module talsh_cis
                     do a=1,nvir,1
                         bj=(j-1)*nvir+b
                         ai=(i-1)*nvir+a
-                        !if (ABS(result_tens(b,i,j,a))>0.001) then
                         sigma1(bj,ai)=result_tens(b,i,j,a)
-                            !sigma1(bj,ai)=(1.0000000000000000,0.0000000000000000)
-                        !else 
-                            !sigma1(bj,ai)=(0.0000000000000000,0.0000000000000000)
-                        !end if 
                     end do
                 end do
             end do 
          end do 
 
-         !do i=1,nocc*nvir,1
-            !print *,'diagonal element_sigma1',sigma1(1,i)
-         !end do
-
 
 
          call diagoanl_cis_matrix(sigma1,eValues)
-         print *,'after diagoanl_cis_matrix',eValues
+         do i=1,size(eValues)-1,1
+            do j=i+1,size(eValues),1
+            tem = abs(eValues(i))
+            if (abs(eValues(i)) > abs(eValues(j))) then
+                tem=eValues(i)
+                eValues(i)=eValues(j)
+                eValues(j)=tem
+            end if 
+            end do 
+         end do
+
+         do i=4,size(eValues),4
+         print *,'CIS excitation energy',abs(eValues(i))*27.211386245988
+         end do
 
 
          ierr=talsh_tensor_destruct(id_mat_occ)
@@ -225,22 +209,16 @@ module talsh_cis
 
         vectors_R = size(M,1)
         vectors_L = size(M,2)
-        print *,'vectors_R',vectors_R
-        print *,'vectors_L',vectors_L
-        !print *,'sigma(3,4)_dia',M(3,4)
-        !print *,'sigma(4,3)_dia',M(4,3)
-        lwork = 10*vectors_R	
+        lwork = 100*vectors_R	
         allocate(eVectorsL(vectors_L,vectors_R))
         allocate(eVectorsR(vectors_L,vectors_R))
         allocate(eVal(vectors_R))
-        !eVectorsR = 0.0d0
         allocate(work(MAX(1,LWORK)))
         allocate(rwork(2*vectors_R))
-        !print *,'Matrix',M
         call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
         eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
         WORK, LWORK, rwork, INFO)
-        print *,'INFO',info
+        !print *,'INFO',info
 
 
     end subroutine diagoanl_cis_matrix
@@ -327,14 +305,14 @@ module talsh_cis
     call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
     do i=1,fo_dims(1)
         eps_occ(i)=h_tens(i,i)
-        print *,'eps_occ(i)',eps_occ(i)
+        !print *,'eps_occ(i)',eps_occ(i)
     end do
 
     ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
     do i=1,fv_dims(1)
         eps_vir(i)=h_tens(i,i)
-        print *,'eps_vir(i)',eps_vir(i)
+        !print *,'eps_vir(i)',eps_vir(i)
     end do
 
     ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
