@@ -386,10 +386,11 @@ C
 C     Written by Anette Noerager - Mar 2000
 C
 C***********************************************************************
-       use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "consts.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -401,8 +402,6 @@ C
       LOGICAL   FILEX
       DIMENSION GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
      &          GEVEC(3,3), GCOR(3),JMS(-5:5)
-C
-      PARAMETER (D2=2.0D0, D3 = 3.0D0, D4 = 4.0D0)
 C
 C Used from common blocks:
 C  dcbgen : LUCOEF
@@ -2069,17 +2068,18 @@ C
 C     April 2000 A. Noerager
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (FACTOR = ALPHAC*ALPHAC/(D2*XFMP))
-C                factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       CHARACTER NAME*6, NAMEX(3)*6
       DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
      &          TMATX(3,3)
 #include "chrxyz.h"
+C
+C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
+      FACTOR = ALPHAC*ALPHAC/(D2*XFMP)
 C
 C     Multiply with FACTOR
 C

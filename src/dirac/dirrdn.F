@@ -163,7 +163,7 @@ C     Start the xml output and echo the input to the xml output
          write(luxml,'(A)') 'dirac'
          call xml_end('name')
          call xml_begin('version')
-         write(luxml,'(A)') '2013'
+         write(luxml,'(A)') '2019'
          call xml_end('version')
          call xml_end('program')
          call xml_begin('input')
@@ -176,42 +176,42 @@ C     Start the xml output and echo the input to the xml output
          call xml_end('input')
       endif
 
-C
 C     General input
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       REWIND LUCMD
       CALL GENINP(WORK,LWORK)
-C
-C     Define Hamiltonian
-!     Must be before call of READIN in HERINP because definition
-!     of ECPCALC and maybe other options are used in READIN.
-C
-      REWIND LUCMD
-      CALL HAMINP(WORK,LWORK)
-C
+      CLOSE(LUCMD)
+
 C     Integral and basis input
-C
-      REWIND LUCMD
+
+      OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
+
       DOJACO = DOJACO.AND.(NZ.EQ.1)
-C
+
 C     Set DCB common blocks - first time
 C     ========================================
 C     (will be done the second time in PAMSET)
-C
+
       CALL SETDC1(IPREAD)
-C
+
 C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
-C
+
       CALL GETLAB(IPREAD)
-C
-C     Initialize PE library
-C
+
+C     Define Hamiltonian
+
+      OPEN(LUCMD,FILE='DIRAC.INP')
+      CALL HAMINP(WORK,LWORK)
+      CLOSE(LUCMD)
+
 #ifdef HAS_PELIB
+C     Initialize PE library
+
       IF (PEQM) THEN
         CALL PELIB_IFC_INIT()
       END IF
@@ -358,14 +358,14 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "consts.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
-      LOGICAL LBIT, FIND_KEYWORD
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7,MXFORM*6, FMT*6
+     &          WORD1*7, MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
-      LOGICAL   NOGENINP, USER_STOL
+      LOGICAL   LBIT, FIND_KEYWORD, NOGENINP, USER_STOL, SET_CVALUE
+      REAL*8    CSCALE
 C
 #include "dcbgen.h"
 
@@ -383,11 +383,11 @@ C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
-     &             '.PRINT ','.XXXXXX','.PCMOUT','.LINDEP',
+     &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
-     &             '.IMPMOS','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
@@ -402,10 +402,14 @@ C
       DOQJACO    = .FALSE.
       DOIMPMOS   = .FALSE.
 C
-      RKBIMP_PRJTHR = 2.0D-5
-
+      SET_CVALUE = .FALSE.
 C
-C     Look for 2c. Hamiltonians, MDIRAC and more
+      CODSET     = 'NOCODATA'
+      CALL SET_CODATA_VALUES(CODSET)
+C
+      RKBIMP_PRJTHR = 2.0D-5
+C
+C     Look for 2c Hamiltonians, ECPCALC, MDIRAC and more
 C
       CALL HAMSCAN
 C
@@ -469,8 +473,10 @@ C
                  ENDIF
             GO TO 100
   102    CONTINUE
-C&&&& CVALUE: Set a different value of light
+C&&&& CVALUE: Set a different value of speed of light (in a.u.)
             READ(LUCMD,*) CVAL
+            SET_CVALUE = .TRUE.
+            CSCALE = CVAL
             GO TO 100
   103    CONTINUE
 C&&&& NOSET: Skip the PAMSET module
@@ -490,6 +496,8 @@ C           and used in some abacus routines. /hjaaj aug 2005
             USRIPR = .TRUE.
             GO TO 100
   106    CONTINUE
+C&&&& PRJTHR
+            READ(LUCMD,*) RKBIMP_PRJTHR
             GO TO 100
   107    CONTINUE
 C&&&& PCMOUT: Write coefficients to formatted DFPCMO
@@ -524,31 +532,11 @@ C
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
             DOACUT = .TRUE.
             GO TO 100
-C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
   114    CONTINUE
+C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
             DOACIN = .TRUE.
             GO TO 100
   115    CONTINUE
-            GO TO 100
-  116    CONTINUE
-C&&&& FAMILY: Family basis (Not yet implemented)
-            FAMILY = .TRUE.
-            GO TO 100
-  117    CONTINUE
-            SKIP2E = .TRUE.
-            GO TO 100
-  118    CONTINUE
-            LOWJACO = .TRUE.
-            GO TO 100
-  119    CONTINUE
-C&&&& RKBIMP: import RKB coefficients
-            DORKBIMP=.TRUE.
-            GO TO 100
-  120    CONTINUE
-C&&&& PRJTHR
-            READ(LUCMD,*) RKBIMP_PRJTHR
-            GO TO 100
-  121    CONTINUE
 C&&&& IMPMOS
             DOIMPMOS = .TRUE.
             READ(LUCMD,*) NFILES
@@ -557,11 +545,44 @@ C&&&& IMPMOS
             END IF
             READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
+  116    CONTINUE
+C&&&& FAMILY: Family basis (Not yet implemented)
+            FAMILY = .TRUE.
+            GO TO 100
+  117    CONTINUE
+C&&&& SKIP2E
+            SKIP2E = .TRUE.
+            GO TO 100
+  118    CONTINUE
+C&&&& LOWJAC
+            LOWJACO = .TRUE.
+            GO TO 100
+  119    CONTINUE
+C&&&& RKBIMP: import RKB coefficients
+            DORKBIMP=.TRUE.
+            GO TO 100
+  120    CONTINUE
+C&&&& CODATA: Choose between CODATA sets
+            READ(LUCMD,*) CODSET
+            CALL UPCASE(CODSET)
+            CALL SET_CODATA_VALUES(CODSET)
+            IF(SET_CVALUE) THEN
+             CVAL = CSCALE
+            ELSE
+             CVAL = CVEL
+            END IF
+            GO TO 100
+  121    CONTINUE
+C&&&& XXXXXX
+            GO TO 100
   122    CONTINUE
+C&&&& XXXXXX
             GO TO 100
   123    CONTINUE
+C&&&& XXXXXX
             GO TO 100
   124    CONTINUE
+C&&&& XXXXXX
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -640,7 +661,7 @@ C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
 C
-      call print_codata_reference
+      call print_codata_reference(CODSET)
 
       WRITE(LUPRI,'(1X,A,F18.7)')
      +   '* The speed of light : ',CVEL
@@ -1563,7 +1584,7 @@ C
                      NERR = NERR + 1
                      WRITE(LUPRI,'(A,2I3)') '.OPEN SHELL error: '//
      &                  'Number of spinors must be even'//
-     &                  'numbers and at least 2 in total:',IAC1,IAC2
+     &                  ' numbers and at least 2 in total:',IAC1,IAC2
                   END IF
                   IF (NERR .GT. 0) THEN
                      CALL QUIT('Error in .OPEN SHELL specifications')
@@ -1937,12 +1958,20 @@ C
                DTEMP          = DTEMP +
      &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
-            IF (NELEC_DHF(IFRP).LT.0)
-     &         CALL QUIT('*SCF error: negative number of '//
-     &                   'closed shell electrons!')
-            IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('*SCF error: odd even number of '//
-     &                   'closed shell electrons!')
+            IF (NELEC_DHF(IFRP).LT.0) THEN
+               write(lupri,*) '*SCF error sym',ifrp,
+     &             ' : negative number of '//
+     &             'closed shell electrons :',nelec_dhf(ifrp)
+               CALL QUIT('*SCF error: negative number of '//
+     &             'closed shell electrons!')
+            END IF
+            IF (MOD(NELEC_DHF(IFRP),2).NE.0) THEN
+               write(lupri,*) '*SCF error sym',ifrp,
+     &             ' : odd even number of '//
+     &             'closed shell electrons :',nelec_dhf(ifrp)
+               CALL QUIT('*SCF error: odd even number of '//
+     &             'closed shell electrons!')
+            END IF
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
          NAELEC_DHF = NINT(DTEMP)
@@ -2265,11 +2294,7 @@ C
      &   'open shell Fock operator', abs(OPEN_FAC)
          IF (OPEN_FAC .LT. 0.0D0) THEN
             WRITE (LUPRI,'(A)')
-     &   '   to improve convergence (default value).',
-     &   '   The final open-shell orbital energies are recalculated '//
-     &   'with 1.0 scaling,',
-     &   '   such that all occupied orbital energies correspond to '//
-     &   "Koopmans' theorem ionization energies."
+     &   '   to improve convergence (default value).'
          END IF
       END IF
 
@@ -4720,8 +4745,7 @@ C***********************************************************************
       use codata
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
+#include "consts.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 C
@@ -4733,6 +4757,8 @@ C
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
+C
+      call set_codata_values(CODSET)
 C
 C     Initialize temporary variables
 C     ==============================
@@ -4986,7 +5012,7 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-      ECPCALC = .FALSE.
+!     ECPCALC = .FALSE. - already set in HAMSCAN
       ORIGIN(1:3) = 0.0d0
       GAGORG(1:3) = 0.0d0
       GAGORG_SET = .FALSE.
@@ -8408,6 +8434,8 @@ C
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword
 
+      ECPCALC = .FALSE.
+
       ISDO2C4C=.FALSE.
       ISDO4C2C=.FALSE.
 
@@ -8456,7 +8484,10 @@ C............variable telling that this is a 2-component relativistic calculatio
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF
-         IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.ECP   ') THEN
+            ECPCALC=.TRUE.
+            TWOCOMP=.TRUE.
+         END IF
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN
@@ -8565,7 +8596,7 @@ C
 C     Position menu file at the specified keyword
 C
 C     Written by L. Visscher, october 2006
-C     Revsision Jan. 2016 hjaaj: Comparison is now case insensitive.
+C     Revision Jan. 2016 hjaaj: Comparison is now case insensitive.
 C
 C***********************************************************************
 #include "implicit.h"

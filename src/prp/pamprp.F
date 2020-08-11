@@ -2088,15 +2088,13 @@ C  *  radovan bast              december 2004             07/02/2005   *
 C  *                                                                   *
 C  *********************************************************************
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "consts.h"
 C
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
-C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
-      PARAMETER (DFAC = XTANG**3)
+      DOUBLE PRECISION DFAC
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -2106,6 +2104,9 @@ C
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
 C
       dimension average(maxflr)
+C
+C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
+      DFAC = XTANG**3
 C
       CALL AROUND('Electric dipole polarizability')
       WRITE(LUPRI,'(/A,F12.8,A/)') ' 1 a.u = ',DFAC,' angstrom**3'
@@ -2987,7 +2988,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2995,8 +2995,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz,
-     &           REDHZ=1E19*nmagn*nmagn/planck)
+      DOUBLE PRECISION AUTOHZ,REDHZ
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3006,6 +3005,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
+#include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -3018,6 +3018,9 @@ C
       CALL QENTER('PRP_SPNSP1')
       CALL TITLER
      &    ('DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS','*',116)
+C
+      AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz
+      REDHZ=1E19*nmagn*nmagn/planck
 C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
@@ -3272,7 +3275,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
@@ -3644,7 +3646,6 @@ C     Written by T.Saue Feb 19 1997
 C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3652,8 +3653,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz,
-     &           REDHZ=1E19*nmagn*nmagn/planck)
+      DOUBLE PRECISION AUTOHZ,REDHZ
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3662,6 +3662,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
+#include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),
      &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
@@ -3670,6 +3671,9 @@ C
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
 #include "ibtfun.h"
+C
+      AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz
+      REDHZ=1E19*nmagn*nmagn/planck
 C
       KFRSAV = KFREE
       CALL QENTER('PRP_DSO1')
@@ -4667,7 +4671,6 @@ C
 #include "krciprop.h"
 #include "dgroup.h"
 #include "pgroup.h"
-      PARAMETER (D3 = 3.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND)
@@ -6184,7 +6187,6 @@ C    Written by MI, jan. 2003
 C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv     
 C     
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6198,9 +6200,9 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbsusc.h"
+#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D0=0.0D0,
-     &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
-     &           CGS = SI*XFMOL*1.0D6, THRESHM = 1.0D-5)
+     &           THRESHM = 1.0D-5)
 
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
@@ -6211,9 +6213,13 @@ C***********************************************************************
       CHARACTER*6 ABC(3)
       CHARACTER*1 JCA,JCB
       INTEGER ICONVXYZ
+      DOUBLE PRECISION SI,CGS
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
 
       CALL QENTER('PRP_MSUSCP')
+
+      SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21
+      CGS = SI*XFMOL*1.0D6
 
 C=============================================================================
 C  Call routine for calculation of all remaining exp.value terms
@@ -7243,21 +7249,23 @@ C     Written by T.Enevoldsen Nov. 14 1997
 C
 CMI/Dec '04  DMATLO is reserved for future use
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-      PARAMETER (FACTOR = 1.D6*ALPHA2)
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
       INTEGER Z
+      DOUBLE PRECISION FACTOR
       DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
      &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3), 
      &          DMATRE(3,3),DMATREE(3,3),DMATREP(3,3),DMATREO(3,3),
      &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
+C
+      FACTOR = 1.D6*ALPHA2
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
@@ -7517,7 +7525,6 @@ C     PV contribution to NMR shielding
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -7531,6 +7538,7 @@ C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "codata.h"
 C
       PARAMETER ( GFERMI = 2.22254D-14 )
       PARAMETER ( STHETAW2 = 0.2319D0 )
@@ -7544,7 +7552,6 @@ C
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
-C
 C
       FACTOR = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
 C
@@ -7686,7 +7693,6 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -7700,23 +7706,23 @@ C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "codata.h"
 C
       PARAMETER ( GFERMI = 2.22254D-14 )
       PARAMETER ( STHETAW2 = 0.2319D0 )
-      PARAMETER ( AU2HZ = 6.579683920721D15 )
 C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
      &          WORK(*)
+      DOUBLE PRECISION FACTOR
 C
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
 C
-C
       FACTOR = (GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
-      FACTOR = (FACTOR*AU2HZ)/(D2*PI*CVEL*CVEL)
+      FACTOR = (FACTOR*XTHZ)/(D2*PI*CVEL*CVEL)
       FACTOR = FACTOR*1.0D9
 C
       CALL AROUND('PV contribution to spin-spin coupling (in nHz)')
@@ -8042,7 +8048,6 @@ C                    MI, Sept.2006 - making functional
 C                    Agustin Aucar, November 2019
 C
 C*****************************************************************************
-      use codata
       use memory_allocator
 C
       implicit none
@@ -8305,7 +8310,6 @@ C              MI, Prievidza/Odense, August 2006
 C              Agustin Aucar, November 2019
 C     
 C***********************************************************************
-      use codata
       use memory_allocator
 C
       implicit none
@@ -8589,8 +8593,6 @@ C     Agustin Aucar
 C     November 2019
 C
 C***********************************************************************
-      use codata
-C
       implicit none
 C
       integer I,J
@@ -8607,6 +8609,7 @@ C
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbham.h"
+#include "codata.h"
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,KATOM,NUMIS,
      &        ICOOR,NATTYP
@@ -9204,19 +9207,21 @@ C     Output routine for optical rotation, based on LNROUT from DALTON
 C     Written by T. Saue in collaboration with K. Ruud Feb 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0,
-     &          FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4))
+      PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0)
+      DOUBLE PRECISION FACTOR
 #include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
+#include "codata.h"
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
       EXTERNAL TOTMASS
+C
+      FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
 C
       IF(LONDON) THEN
         CALL AROUND('Optical rotation (London)')
@@ -9789,7 +9794,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER (D3 = 3.0D0)
+#include "consts.h"
 #include "nuclei.h"
 #include "symmet.h"
       LOGICAL    DOATOM(*)
@@ -9868,7 +9873,6 @@ C
 C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use codata
       use memory_allocator
 C
       implicit none
@@ -10219,7 +10223,6 @@ C
 C     Written by Agustin Aucar and T. Saue sep 2013
 C
 C***********************************************************************
-      use codata
       use memory_allocator
 C
       implicit none
@@ -10791,8 +10794,6 @@ C     Agustin Aucar and Trond Saue
 C     June 2014
 C
 C***********************************************************************
-      use codata
-C
       implicit none
 C
       integer I,J
@@ -10809,6 +10810,7 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "codata.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -10828,10 +10830,12 @@ C
      &                 GTRANP(3,3,KATOM),GTRANNEQ(3,3,KATOM),
      &                 GTRANTNEQ(3,3,KATOM)
 C
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
-     &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
+C
+      FACPPM = ALPHA2/2.D0*1.0D6
+      FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3
 C
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
