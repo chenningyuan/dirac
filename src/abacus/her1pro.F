@@ -333,7 +333,7 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'xxxxxxx', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRD_FC ', 
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
@@ -2084,7 +2084,18 @@ C     Miro Ilias, Malaya K Nayak
          ANTI = .FALSE. 
       GO TO 200
 
+!
+! electronic gradient of the Fermi contact operator
+! -------------------------------------------------
+!     Miro Ilias
  84   continue
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &' Calculation of grad FC - gradient of the Fermi contact operator'
+         INTTYP = 59 ! new type of integrals
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+         ANTI = .TRUE.
+      GO TO 200
  85   continue
  86   continue
  87   continue
@@ -2768,6 +2779,58 @@ C  /* Deck frmtyp */
   100 CONTINUE
       RETURN
       END
+
+C  /* Deck frmtyp */
+      SUBROUTINE GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(9*MXCENT)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = NATOM
+      CALL NTYPTS(NOPTYP)
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+
+               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            ! X component
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'XGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  !INTREP(ITYP) = IREP
+                  INTREP(ITYP) = ISYMAX(1,1)
+            ! Y component
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'YGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  !INTREP(ITYP) = IREP
+                  INTREP(ITYP) = ISYMAX(2,1)
+            ! Z component
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'ZGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  !INTREP(ITYP) = IREP
+                  INTREP(ITYP) = ISYMAX(3,1)
+               END IF
+            END IF
+  200    CONTINUE
+  100 CONTINUE
+      RETURN
+      END
+
 C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral

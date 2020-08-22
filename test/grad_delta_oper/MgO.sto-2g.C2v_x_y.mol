@@ -1,0 +1,11 @@
+INTGRL
+ MgO molecule; C2v symm. 
+ small test basis, re from Huber,Herzberg  
+C   2    2  X  Y   A
+       8.0   1
+O      .0000000000        0.0000000000         1.749
+LARGE BASIS STO-2G
+      12.0    1    
+Mg    0.0000000000        0.0000000000         0.000
+LARGE BASIS STO-2G 
+FINISH

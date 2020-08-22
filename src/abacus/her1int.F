@@ -122,7 +122,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 3) THEN
+      ELSE IF (INTTYP .EQ. 3 .OR. INTTYP .EQ. 59) THEN  ! DIPLEN and gradFC
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -1784,6 +1784,14 @@ C
      &                  SHLINT,NOPTYP,NATOMC,.FALSE.,ONCN,
      &                  CORCX,CORCY,CORCZ)
 
+!
+!        gradient of the Fermi contact operator
+!        --------------------------------------
+!
+         ELSE IF (INTTYP .EQ. 59) THEN
+            CALL GRDFRMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &      SHGTF,SHLINT,NOPTYP,EXPP,CORPX,CORPY,CORPZ,SAAB,
+     &             DOATOM)
 
 
 C        Electric field contribution to magnetic moment
@@ -4715,6 +4723,98 @@ C
   100 CONTINUE
       RETURN
       END
+
+!
+!
+! electric gradient of Fermi contact integrals, <mi| grad delta(r-R)|ni>, INTTYP=59
+!
+!  Miro Ilias, GSI
+!
+      SUBROUTINE GRDFRMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &            SHGTF,SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
+#include "implicit.h"
+#include "priunit.h"
+#include "pi.h"
+#include "gfac.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "maxorb.h"
+C
+      PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+      LOGICAL DOATOM(NUCIND)
+      DIMENSION SHLINT(KCKTAB,NOPTYP)
+#include "onecom.h"
+#include "lmns.h"
+#include "symmet.h"
+#include "nuclei.h"
+C
+#include "ibtfun.h"
+
+      INT = 0
+      DO 100 ICOMPA = 1,KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+
+         INTTYP = 0
+         !INT = INT + 3
+         DO 200 IREP = 0, MAXREP
+            DO 300 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               !INTTYP = INTTYP + 1
+               FRM  = D0
+               FRMX = D0
+               FRMY = D0
+               FRMZ = D0
+               DO 400 ISYMOP = 0, MAXOPR
+               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+                  XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+                  RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
+                  FINT = PT(IBTAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
+!   Contributions from center A
+                  IF (LVALA .GT. 0) FINT = FINT*((XC - CORAX)**LVALA)
+                  IF (MVALA .GT. 0) FINT = FINT*((YC - CORAY)**MVALA)
+                  IF (NVALA .GT. 0) FINT = FINT*((ZC - CORAZ)**NVALA)
+!   Contribution from center B - UNDIFFERENTIATED 
+                  FINTX = D1
+                  FINTY = D1
+                  FINTZ = D1
+                  IF (LVALB .GT. 0) FINTX = FINTX*((XC - CORBX)**LVALB)
+                  IF (MVALB .GT. 0) FINTY = FINTY*((YC - CORBY)**MVALB)
+                  IF (NVALB .GT. 0) FINTZ = FINTZ*((ZC - CORBZ)**NVALB)
+                  FRMX = FRMX + FINT*FINTX
+                  FRMY = FRMY + FINT*FINTY
+                  FRMZ = FRMZ + FINT*FINTZ
+               END IF
+  400          CONTINUE
+
+               SHLINT(INT+1,INTTYP+1) = SHLINT(INT+1,INTTYP+1) 
+     &                                         - SAAB*FRMX
+               SHLINT(INT+2,INTTYP+2) = SHLINT(INT+2,INTTYP+2)   
+     &                                         - SAAB*FRMY
+               SHLINT(INT+3,INTTYP+3) = SHLINT(INT+3,INTTYP+3)
+     &                                         - SAAB*FRMZ
+               INTTYP = INTTYP + 3
+
+            END IF
+            END IF
+  300       CONTINUE
+  200    CONTINUE
+         INT = INT + 3
+  100 CONTINUE
+
+      RETURN
+      END
+
+
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
 C
