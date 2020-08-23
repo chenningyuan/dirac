@@ -7,6 +7,8 @@
 **GENERAL
 .DIRECT
 1 1 1
+.PRINT
+1
 **INTEGRALS
 .PRINT
 1
@@ -44,12 +46,47 @@
 *PRPTRA
 # we need this print level to get all MO mtx elements printed
 .PRINT
-2
-# d/dx delra(r-R) operator ...
+5
+# grad delra(r-R) operator ...
 .OPERATOR
- 'X-gradDelta'
- DIAGONAL
- 'XGFCMg02'
+ 'x O   '
+ XALPHA   
+ 'XGFO  01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'y O   '
+ YALPHA   
+ 'YGFO  01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'z O   '
+ ZALPHA 
+ 'ZGFO  01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'x Mg  '
+ XALPHA   
+ 'XGFMg 02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'y Mg  '
+ YALPHA   
+ 'YGFMg 02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'z Mg  '
+ ZALPHA 
+ 'ZGFMg 02'
  COMFACTOR
  1.00D0
 *END OF

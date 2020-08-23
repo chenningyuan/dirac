@@ -2085,15 +2085,17 @@ C     Miro Ilias, Malaya K Nayak
       GO TO 200
 
 !
-! electronic gradient of the Fermi contact operator
-! -------------------------------------------------
-!     Miro Ilias
+! ---------------------------------------------------------
+!  electronic gradient of the delta(r-R) contact operator,
+!   "grad delta(r-R)" 
+! ---------------------------------------------------------
+!     Miro Ilias, GSI.de, Aug.2020
  84   continue
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
-     &' Calculation of grad FC - gradient of the Fermi contact operator'
+     &   'PR1DIR: Calculation of "grad delta(r-R)" operator'
          INTTYP = 59 ! new type of integrals
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+         CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
          ANTI = .TRUE.
       GO TO 200
  85   continue
@@ -2560,7 +2562,7 @@ C
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP too large in NTYPTS '
          WRITE (LUPRI,'(/A,I5)') ' MAXTYP: ', 9*MXCENT
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP: ', NOPTYP
-         CALL QUIT('ERROR in NTYPTS, NOPTYP out of range')
+         CALL QUIT('ERROR in NTYPTS, NOPTYP is out of range')
       END IF
       RETURN
       END
@@ -2780,8 +2782,12 @@ C  /* Deck frmtyp */
       RETURN
       END
 
-C  /* Deck frmtyp */
-      SUBROUTINE GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
+      SUBROUTINE GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
+!-------------------------------------------------------------------
+! Define "grad delta(r-R)" operator
+!
+! Written by Miro Ilias, GSI.de, August 2020
+!-------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2795,35 +2801,36 @@ C  /* Deck frmtyp */
 #include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
-      NOPTYP = NATOM
+      NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-
                IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
             ! X component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'XGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  !INTREP(ITYP) = IREP
                   INTREP(ITYP) = ISYMAX(1,1)
             ! Y component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'YGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  !INTREP(ITYP) = IREP
                   INTREP(ITYP) = ISYMAX(2,1)
             ! Z component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'ZGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  !INTREP(ITYP) = IREP
                   INTREP(ITYP) = ISYMAX(3,1)
+               IF (IPRINT.GE.7) THEN
+                  WRITE(LUPRI,'(A,I3,1X,A,A8,1X,A,I3,A,I2)')
+     &            "GRDFRMTYP: ITYP=",ITYP,"LABINT(ITYP)=",LABINT(ITYP),
+     &            "INTREP(ITYP)=",INTREP(ITYP)
+               ENDIF
                END IF
             END IF
   200    CONTINUE
