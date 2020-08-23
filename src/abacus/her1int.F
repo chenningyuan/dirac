@@ -4724,12 +4724,13 @@ C
       RETURN
       END
 
-!
+!-------------------------------------------------------------------------------------------
 !
 ! electric gradient of Fermi contact integrals, <mi| grad delta(r-R)|ni>, INTTYP=59
 !
-!  Miro Ilias, GSI
+! Written by Miro Ilias, GSI.de, August 2020
 !
+!-------------------------------------------------------------------------------------------
       SUBROUTINE GRDFRMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            SHGTF,SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
 #include "implicit.h"
@@ -4802,7 +4803,20 @@ C
      &                                         - SAAB*FRMY
                SHLINT(INT+3,INTTYP+3) = SHLINT(INT+3,INTTYP+3)
      &                                         - SAAB*FRMZ
-               INTTYP = INTTYP + 3
+              INTTYP = INTTYP + 3
+
+              if (DABS(SHLINT(INT+1,INTTYP+1)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'x delta shlint=',SHLINT(INT+1,INTTYP+1)
+              endif
+              if (DABS(SHLINT(INT+2,INTTYP+2)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'y delta shlint=',SHLINT(INT+2,INTTYP+2)
+              endif
+              if (DABS(SHLINT(INT+3,INTTYP+3)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'z delta shlint=',SHLINT(INT+3,INTTYP+3)
+              endif
 
             END IF
             END IF

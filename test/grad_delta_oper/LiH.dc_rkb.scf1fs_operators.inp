@@ -1,0 +1,149 @@
+**DIRAC
+.TITLE
+  LiH
+.WAVE F ! Activate integral and wave functions modules
+.ANALYZE
+.4INDEX
+**GENERAL
+.DIRECT
+1 1 1
+.PRINT
+1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+1
+.INTFLG
+1 1 0
+**WAVE FUNCTIONS 
+.SCF
+*SCF
+.CLOSED SHELL
+4   
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0D-9  1.0D-6
+#################################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+**MOLTRA
+.NO2IND
+.NO4IND
+.NOMDCI
+.ACTIVE
+1..2
+.PRPTRA
+*PRPTRA
+# we need this print level to get all MO mtx elements printed
+.PRINT
+5
+#---------------------------------------
+#   DIPLEN integrals for comparison
+#---------------------------------------
+.OPERATOR
+ 'x diplen'
+ DIAGONAL 
+ 'XDIPLEN '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'y diplen'
+ DIAGONAL 
+ 'YDIPLEN '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'z diplen'
+ DIAGONAL 
+ 'ZDIPLEN '
+ COMFACTOR
+ 1.00D0
+#---------------------------------------
+#   DIPVEL integrals for comparison
+#---------------------------------------
+.OPERATOR
+ 'd/dx oper'
+ DIAGONAL 
+ 'XDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy oper'
+ DIAGONAL 
+ 'YDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz oper'
+ DIAGONAL 
+ 'ZDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+#  Fermi-contact integral for comparison
+#
+.OPERATOR
+ 'FC Li '
+ DIAGONAL 
+ 'FC Li 01'
+ COMFACTOR
+ 1.00D0
+#-----------------------------------------------
+# grad delra(r-R) operator for given nuclei
+#-----------------------------------------------
+.OPERATOR
+ 'd/dx delta Li'
+ DIAGONAL 
+ 'XGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy delta Li'
+ DIAGONAL 
+ 'YGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz delta Li'
+ DIAGONAL
+ 'ZGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dx delta H'
+ DIAGONAL 
+ 'XGFH  02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy delta H'
+ DIAGONAL 
+ 'YGFH  02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz delta H'
+ DIAGONAL
+ 'ZGFH  02'
+ COMFACTOR
+ 1.00D0
+*END OF

@@ -2097,6 +2097,7 @@ C     Miro Ilias, Malaya K Nayak
          CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
          ANTI = .TRUE.
+         !ANTI = .FALSE.
       GO TO 200
  85   continue
  86   continue
@@ -2784,7 +2785,7 @@ C  /* Deck frmtyp */
 
       SUBROUTINE GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
 !-------------------------------------------------------------------
-! Define "grad delta(r-R)" operator
+! Define "grad delta(r-R)" operator - assigns labels and symmetries
 !
 ! Written by Miro Ilias, GSI.de, August 2020
 !-------------------------------------------------------------------
@@ -2794,9 +2795,9 @@ C  /* Deck frmtyp */
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      DIMENSION INTREP(9*MXCENT)
+      DIMENSION INTREP(3*MXCENT)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8
+      CHARACTER LABINT(3*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -2813,20 +2814,29 @@ C  /* Deck frmtyp */
                   LABINT(ITYP) = 'XGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  INTREP(ITYP) = ISYMAX(1,1)
+                  !INTREP(ITYP) = ISYMAX(1,1)
+                  !INTREP(ITYP) = 0
+                  !INTREP(ITYP) = IREP
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(1,1))
             ! Y component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'YGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  INTREP(ITYP) = ISYMAX(2,1)
+                  !INTREP(ITYP) = ISYMAX(2,1)
+                  !INTREP(ITYP) = 0
+                  !INTREP(ITYP) = IREP
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(2,1))
             ! Z component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'ZGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  INTREP(ITYP) = ISYMAX(3,1)
-               IF (IPRINT.GE.7) THEN
+                  !INTREP(ITYP) = ISYMAX(3,1)
+                  !INTREP(ITYP) = 0
+                  !INTREP(ITYP) = IREP
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(3,1))
+               IF (IPRINT.GE.6) THEN
                   WRITE(LUPRI,'(A,I3,1X,A,A8,1X,A,I3,A,I2)')
      &            "GRDFRMTYP: ITYP=",ITYP,"LABINT(ITYP)=",LABINT(ITYP),
      &            "INTREP(ITYP)=",INTREP(ITYP)
