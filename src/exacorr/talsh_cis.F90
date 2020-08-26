@@ -161,7 +161,7 @@ module talsh_cis
                     do a=1,nvir,1
                         bj=(j-1)*nvir+b
                         ai=(i-1)*nvir+a
-                        sigma1(bj,ai)=result_tens(b,i,j,a)
+                        sigma1(ai,bj)=result_tens(b,i,j,a)
                     end do
                 end do
             end do 
@@ -181,7 +181,7 @@ module talsh_cis
             end do 
          end do
 
-         do i=4,size(eValues),4
+         do i=1,size(eValues),1
          print *,'CIS excitation energy',abs(eValues(i))*27.211386245988
          end do
 
@@ -209,7 +209,7 @@ module talsh_cis
 
         vectors_R = size(M,1)
         vectors_L = size(M,2)
-        lwork = 100*vectors_R	
+        lwork = 100000*vectors_R	
         allocate(eVectorsL(vectors_L,vectors_R))
         allocate(eVectorsR(vectors_L,vectors_R))
         allocate(eVal(vectors_R))
