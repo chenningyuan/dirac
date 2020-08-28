@@ -75,6 +75,8 @@ module talsh_cis
         !DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
          nvir = exa_input%nvir
+         print *,'nocc', nocc
+         print *,'nvir', nvir 
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
          allocate(sigma1(nocc*nvir,nocc*nvir))
