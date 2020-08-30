@@ -2096,8 +2096,9 @@ C     Miro Ilias, Malaya K Nayak
          INTTYP = 59 ! new type of integrals
          CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
-         ANTI = .TRUE.
-         !ANTI = .FALSE.
+         !ANTI = .TRUE.
+         ANTI = .FALSE.
+         SQUARE = .TRUE.
       GO TO 200
  85   continue
  86   continue

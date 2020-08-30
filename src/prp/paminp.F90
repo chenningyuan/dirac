@@ -3053,10 +3053,14 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+!
+! return ITIM parameter for given square operator PRPLBL
+!
       CHARACTER*8 PRPLBL
       INTEGER ITIM
       IF(PRPLBL(4:7).EQ.'RNST'.OR.                                      &
      &   PRPLBL(3:7).EQ.'RM2H3'.OR.                                     &
+     &   PRPLBL(2:3).EQ.'GF'.OR.                                        &
      &   PRPLBL(3:7).EQ.'RDSUL'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
      &   PRPLBL(1:7).EQ.'d|S>/dB') THEN

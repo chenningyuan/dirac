@@ -122,7 +122,7 @@ C
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 3 .OR. INTTYP .EQ. 59) THEN  ! DIPLEN and gradFC
+      ELSE IF (INTTYP .EQ. 3 ) THEN  ! DIPVEL 
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -392,6 +392,11 @@ C     type 45 already defined
          JMAXD = 0
          JMAXM = 0
          DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.59) THEN ! MI: gradFC
+         JMAXD = 1
+         JMAXM = 0
+         DONUC1= .TRUE.
          DOMOM1 = .TRUE.
 C     type 58 already defined (NUCFIEL)
       ELSE IF (INTTYP .EQ. 62) THEN
@@ -2000,9 +2005,10 @@ Cdj mixed bra-ket part
   200    CONTINUE
   100 CONTINUE
 C
-C     Print
+C     Control printout of the atomic integrals over your chosen operator
 C
-      IF (IPRINT .GT. 30) THEN
+!     IF (IPRINT .GT. 30) THEN
+      IF (IPRINT .GE. 3) THEN
          DO 400 I = 1, NOPTYP
             CALL AROUND('SHLINT for '//LABINT(I)//' in PR1DR1')
             CALL OUTPUT(SHLINT(1,I),1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
@@ -4726,10 +4732,16 @@ C
 
 !-------------------------------------------------------------------------------------------
 !
-! electric gradient of Fermi contact integrals, <mi| grad delta(r-R)|ni>, INTTYP=59
+! Electric gradient of Fermi contact integrals, <mi| grad delta(r-R)|ni>, INTTYP=59
+!
+! Entering: 
+!           XP,YP,ZP  ... nuclear center coordinates of the Dirac delta function
+!           SAAB 
+!           DOATOM
+!           EXPP    ...  sum Gauss.exponents alpha_A+alpha_B
+!           NOPTYP
 !
 ! Written by Miro Ilias, GSI.de, August 2020
-!
 !-------------------------------------------------------------------------------------------
       SUBROUTINE GRDFRMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &            SHGTF,SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
@@ -4741,7 +4753,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 C
-      PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       LOGICAL DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
@@ -4761,14 +4773,12 @@ C
          LVALB = LVALUB(ICOMPB)
          MVALB = MVALUB(ICOMPB)
          NVALB = NVALUB(ICOMPB)
-
          INTTYP = 0
-         !INT = INT + 3
+         INT = INT + 1
          DO 200 IREP = 0, MAXREP
             DO 300 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
             IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
-               !INTTYP = INTTYP + 1
                FRM  = D0
                FRMX = D0
                FRMY = D0
@@ -4794,37 +4804,61 @@ C
                   FRMX = FRMX + FINT*FINTX
                   FRMY = FRMY + FINT*FINTY
                   FRMZ = FRMZ + FINT*FINTZ
+! Contribution from center B - DIFFERENTIATED
+                  IF (LVALB .GT. 0) THEN
+                     XFINT = (LVALB-1)*((XC-CORBX)**(LVALB-1))
+                     XFINT = XFINT + ((XC-CORBX)**(LVALB+1))*(-D2)*EXPB
+                  ELSE
+                     XFINT = - D2*EXPB*(XC-CORBX)
+                  END IF
+                  IF (MVALB .GT. 0) THEN
+                     YFINT = (MVALB-1)*((YC-CORBY)**(MVALB-1))
+                     YFINT = YFINT + ((YC-CORBY)**(MVALB+1))*(-D2)*EXPB
+                  ELSE
+                     YFINT = - D2*EXPB*(YC-CORBY)
+                  END IF
+                  IF (NVALB .GT. 0) THEN
+                     ZFINT = (NVALB-1)*((ZC-CORBZ)**(NVALB-1))
+                     ZFINT = ZFINT + ((ZC-CORBZ)**(NVALB+1))*(-D2)*EXPB
+                  ELSE
+                     ZFINT = - D2*EXPB*(ZC-CORBZ)
+                  END IF
+                  ! - sign from:  grad.delta(r-R) - delta(r-R).grad
+                  FRMX = FRMX - FINT*XFINT
+                  FRMY = FRMY - FINT*YFINT
+                  FRMZ = FRMZ - FINT*ZFINT
                END IF
   400          CONTINUE
-
-               SHLINT(INT+1,INTTYP+1) = SHLINT(INT+1,INTTYP+1) 
+               SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1) 
      &                                         - SAAB*FRMX
-               SHLINT(INT+2,INTTYP+2) = SHLINT(INT+2,INTTYP+2)   
+               SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)   
      &                                         - SAAB*FRMY
-               SHLINT(INT+3,INTTYP+3) = SHLINT(INT+3,INTTYP+3)
+               SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
      &                                         - SAAB*FRMZ
-              INTTYP = INTTYP + 3
+              if (DABS(SHLINT(INT,INTTYP+1)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'x delta shlint=',SHLINT(INT,INTTYP+1),
+     &                           INT, INTTYP+1
+              endif
+              if (DABS(SHLINT(INT,INTTYP+2)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'y delta shlint=',SHLINT(INT,INTTYP+2),
+     &                          INT, INTTYP+2
+              endif
+              if (DABS(SHLINT(INT,INTTYP+3)).GE.1.0d-9) then
+                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
+                 write(lupri,*) 'z delta shlint=',SHLINT(INT,INTTYP+3),
+     &                          INT, INTTYP+3
+              endif
 
-              if (DABS(SHLINT(INT+1,INTTYP+1)).GE.1.0d-9) then
-                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
-                 write(lupri,*) 'x delta shlint=',SHLINT(INT+1,INTTYP+1)
-              endif
-              if (DABS(SHLINT(INT+2,INTTYP+2)).GE.1.0d-9) then
-                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
-                 write(lupri,*) 'y delta shlint=',SHLINT(INT+2,INTTYP+2)
-              endif
-              if (DABS(SHLINT(INT+3,INTTYP+3)).GE.1.0d-9) then
-                 write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
-                 write(lupri,*) 'z delta shlint=',SHLINT(INT+3,INTTYP+3)
-              endif
+               INTTYP = INTTYP + 3
 
             END IF
             END IF
   300       CONTINUE
   200    CONTINUE
-         INT = INT + 3
+         INT = INT + 1
   100 CONTINUE
-
       RETURN
       END
 

@@ -11,7 +11,7 @@
 1
 **INTEGRALS
 .PRINT
-1
+3
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *READIN
@@ -93,13 +93,20 @@ all
  'ZDIPVEL '
  COMFACTOR
  1.00D0
-#
-#  Fermi-contact integral for comparison
-#
+#------------------------------------------------------------
+#  Fermi-contact integrals for given nuclei for comparison
+#------------------------------------------------------------
 .OPERATOR
  'FC Li '
  DIAGONAL 
  'FC Li 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'FC H  '
+ DIAGONAL 
+ 'FC H  02'
  COMFACTOR
  1.00D0
 #-----------------------------------------------
