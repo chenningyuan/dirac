@@ -209,6 +209,7 @@ module exacorr_cc
             if (.not.CCD) then
                ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
                ierr=exatns_tensor_init(comm_t%t1,ZERO)
+               ierr=exatns_tensor_contract("T(a,i)+=V+(i,a)*K()",comm_t%t1,comm_t%fov,one_tensor)
             end if
 
 !           Initialize t2 amplitudes with the MP2 values
@@ -219,12 +220,16 @@ module exacorr_cc
             ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
             ierr=exatns_tensor_transform(comm_t%t2,denom)
 
-            ierr=exatns_tensor_init(result_tensor,ZERO)
 !           Calculate and print the MP2 energy
-            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER) ! o(2)v(2)
+            ierr=exatns_tensor_init(result_tensor,ZERO)
+            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
             ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-            mp2_energy=real(result_val,8) ! Casting into real(8)
-
+            mp2_energy=real(result_val,8)
+            ierr=exatns_tensor_init(result_tensor,ZERO)
+            ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            mp2_energy=mp2_energy+real(result_val,8)
+         
             write(*,*) ""
             write(*,*) "    MP2 energy = ", mp2_energy
             write(*,*) ""
