@@ -299,7 +299,7 @@ module intermediates
 
 !       ov ! validated
         ierr=exatns_tensor_init(comm_t%hov,'ZERO')
-        ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
+        ierr=exatns_tensor_contract("H(k,c)+=V(k,l,c,d)*T+(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
         ierr=exatns_tensor_contract("H(k,c)+=F(k,c)*K()",comm_t%hov,comm_t%fov,one_tensor)           ! add fock matrix
 
        end subroutine get_hov_exatns
@@ -871,7 +871,7 @@ module intermediates
 
 !       ov ! validated
         ierr=talsh_tensor_init(comm_t%hov)
-        ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
+        ierr=talsh_tensor_contract("H(k,c)+=V(k,l,c,d)*T+(d,l)",comm_t%hov,oovv_tensor,comm_t%t1) ! o(2)v(2)
         ierr=talsh_tensor_add("H(k,c)+=F(k,c)",comm_t%hov,comm_t%fov)
 
        end subroutine get_hov_talsh
