@@ -1152,6 +1152,7 @@ C
       allocate(WT(NPOINTS))
 c    MARTIN
       allocate(ECD(NPOINTS,NEXCNV))
+      CALL DZERO(ECD,NPOINTS*NEXCNV)
 C    MARTIN
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
@@ -1257,7 +1258,27 @@ C     ====================================
      &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
      &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
      	  ENDIF
+C         CALC OSC fpr (e-e)
      	  OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
+C         CALC ECD FOR (e-e)
+          IF (ANGPLOT.AND.CHIAVG) THEN
+           ECD(IP,IEXC) =       
+     &     + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
+     &     + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
+     &     + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
+     &     + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
+     &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
+     &     + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+          ELSEIF (ANGPLOT) THEN
+           ECD(IP,IEXC) = 
+           !e-e part
+     &     +4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
+     &     -TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC))  
+     &     -4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
+     &     -TMOM(3,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC)) 
+     &     +4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(2,2,IPAR,IEXC)
+     &     -TMOM(2,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC))
+          ENDIF
        ENDIF
 
 C
@@ -1302,47 +1323,29 @@ C     ====================================
      &	   + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
      &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
      &	   + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
-
-C    MARTIN
-        IF (ANGPLOT.AND.CHIAVG) THEN
-          !ALLOCATE(ECD(NPOINTS))
-             ECD(IP,IEXC) =       
-     &     + EEWT(1)*TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (x,y,z)  
-     &     + EEWT(2)*TMOM(3,2,1,IEXC)*TMOM(1,1,1,IEXC) ! (y,z,x)
-     &     + EEWT(3)*TMOM(1,2,1,IEXC)*TMOM(2,1,1,IEXC) ! (z,x,y)
-     &     + EEWT(4)*TMOM(3,2,1,IEXC)*TMOM(2,1,1,IEXC) ! (x,z,y)
-     &     + EEWT(5)*TMOM(1,2,1,IEXC)*TMOM(3,1,1,IEXC) ! (y,x,z)
-     &     + EEWT(6)*TMOM(2,2,1,IEXC)*TMOM(1,1,1,IEXC) ! (z,y,x)
-     &     + EEWT(1)*TMOM(2,2,2,IEXC)*TMOM(3,1,2,IEXC) ! (x,y,z)  
-     &     + EEWT(2)*TMOM(3,2,2,IEXC)*TMOM(1,1,2,IEXC) ! (y,z,x)
-     &     + EEWT(3)*TMOM(1,2,2,IEXC)*TMOM(2,1,2,IEXC) ! (z,x,y)
-     &     + EEWT(4)*TMOM(3,2,2,IEXC)*TMOM(2,1,2,IEXC) ! (x,z,y)
-     &     + EEWT(5)*TMOM(1,2,2,IEXC)*TMOM(3,1,2,IEXC) ! (y,x,z)
-     &     + EEWT(6)*TMOM(2,2,2,IEXC)*TMOM(1,1,2,IEXC) ! (z,y,x)
-
-        ELSEIF (ANGPLOT) THEN
-          ECD(IP,IEXC) = 
-          !e-e part
-     &    + 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,1,IEXC)*TMOM(3,2,1,IEXC)            
-     &     - TMOM(2,2,1,IEXC)*TMOM(3,1,1,IEXC))  
-     &    - 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,1,IEXC)*TMOM(3,2,1,IEXC)
-     &     - TMOM(3,1,1,IEXC)*TMOM(1,2,1,IEXC)) 
-     &    + 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,1,IEXC)*TMOM(2,2,1,IEXC)
-     &     - TMOM(2,1,1,IEXC)*TMOM(1,2,1,IEXC))
-          !e-p part 
-     &    + 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,2,IEXC)*TMOM(3,2,2,IEXC)            
-     &     - TMOM(2,2,2,IEXC)*TMOM(3,1,2,IEXC))  
-     &    - 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,2,IEXC)*TMOM(3,2,2,IEXC)
-     &     - TMOM(3,1,2,IEXC)*TMOM(1,2,2,IEXC)) 
-     &    + 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,2,IEXC)*TMOM(2,2,2,IEXC)
-     &     - TMOM(2,1,2,IEXC)*TMOM(1,2,2,IEXC))
-        ENDIF
-C    MARTIN
-
-
      	  ENDIF
+C         CALC OSC fpr (e-p)
           OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
+C         CALC ECD FOR (e-p)
+          IF (ANGPLOT.AND.CHIAVG) THEN
+           ECD(IP,IEXC) = ECD(IP,IEXC)
+     &     + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
+     &     + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
+     &     + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
+     &     + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
+     &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
+     &     + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
+          ELSEIF (ANGPLOT) THEN
+           ECD(IP,IEXC) = ECD(IP,IEXC)
+     &    + 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
+     &    - TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC))  
+     &    - 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
+     &    - TMOM(3,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC)) 
+     &    + 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(2,2,IPAR,IEXC)
+     &    - TMOM(2,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC))
+          ENDIF
         ENDIF
+CC      END OF if(NZXOPP.GT.0)
    10   CONTINUE
       ENDDO
 C
