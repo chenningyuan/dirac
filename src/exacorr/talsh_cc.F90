@@ -15,7 +15,7 @@ module talsh_cc
                                  ONE_HALF=(0.5D0,0.D0), &
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                  MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-        real(8), parameter    :: ONE_QUARTER_R=0.25D0
+        real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0
 
         type(talsh_tens_t) :: one_tensor
 
@@ -387,7 +387,7 @@ module talsh_cc
 
           call get_tau(comm_t,CCD)
 
-          if (print_level.gt.6) then
+          if (print_level.gt.-1) then
             write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
             write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
@@ -453,7 +453,7 @@ module talsh_cc
              return
           end if
 
-          if (print_level.gt.8) then
+          if (print_level.gt.-1) then
              if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
              print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
@@ -2333,7 +2333,7 @@ module talsh_cc
               end do
             end if
 
-            if (print_level.gt.3) then
+            if (print_level.gt.-1) then
               write(*,*) ' --- recomputed active occupied spinors --- '
               write(*,*) '   i             E   '
               do i=1,nocc
