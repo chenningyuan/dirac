@@ -388,9 +388,9 @@ module talsh_cc
           call get_tau(comm_t,CCD)
 
           if (print_level.gt.-1) then
-            write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
-            write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
-            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
+            if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
+            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
+            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -454,15 +454,15 @@ module talsh_cc
           end if
 
           if (print_level.gt.-1) then
-             if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
-             print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-             print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
+             !if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
+             !print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
+             !print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
              print*, "hoint  = ",tensor_norm2(comm_t%hoo)
-             print*, "goint  = ",tensor_norm2(comm_t%goo)
              print*, "hvint  = ",tensor_norm2(comm_t%hvv)
+             print*, "goint  = ",tensor_norm2(comm_t%goo)
              print*, "gvint  = ",tensor_norm2(comm_t%gvv)
              if (.not.CCD) print*, "hovint = ",tensor_norm2(comm_t%hov)
-             print*, "a int  = ",tensor_norm2(comm_t%a_int)*ONE_QUARTER_R
+             print*, "a int  = ",tensor_norm2(comm_t%a_int)
              print*, "c int  = ",tensor_norm2(cint_tensor)
              print*, "h int  = ",tensor_norm2(comm_t%h_int)
           end if
@@ -509,6 +509,11 @@ module talsh_cc
             ierr=talsh_tensor_contract("S(a,i)+=H(k,i)*T(a,k)",s1_tensor,hoo_aux_tensor,comm_t%t1)                     !moretests o(2)v(1)
             ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,scale=ONE_HALF) !validated o(3)v(2)
             ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
+          end if
+
+          if (print_level.gt.-1) then
+            if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
+            write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
