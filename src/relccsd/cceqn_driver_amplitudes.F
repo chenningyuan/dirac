@@ -93,16 +93,17 @@ C
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1s TO AVOID CRASHES
 C
-c     print*,"T1 amplitudes ",zdotu(ndimt1,t1,1,t1,1)
-c     print*,"T2 amplitudes ",zdotu(ndimt2,t2,1,t2,1)
+      print*,"T1 amplitudes ",ddot(ndimt1,t1,1,t1,1)
+      print*,"T2 amplitudes ",ddot(ndimt2,t2,1,t2,1)
       CALL XTIME(5,1,'- T1 equations                  ')
       CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
-c     print*,"HO intermediate ",zdotu(nfoo,ho,1,ho,1)
+      print*,"HO intermediate ",ddot(nfoo,ho,1,ho,1)
       CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
-c     print*,"HV intermediate ",zdotu(nfvv,hv,1,hv,1)
+      print*,"HV intermediate ",ddot(nfvv,hv,1,hv,1)
            
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
+          print*,"HOV intermediate ",ddot(nfvo,hv,1,hv,1)
           CALL amplitude_equation_T1 (FVO,T1,T2,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,NBUF3,S1)
       ENDIF
@@ -119,17 +120,21 @@ C
       CALL XTIME(5,1,'- T2 equations                  ')
       CALL XTIME(0,1,'-- GOINTM                        ')
       CALL XCOPY (NFOO,HO,1,GO,1)
+      print*,"GO intermediate ",ddot(nfoo,GO,1,GO,1)
       CALL GOINTM (FVO,T1,BUF1,BUF2,GO)
       CALL XTIME(0,2,'-- GOINTM                        ')
       CALL XTIME(0,1,'-- GVINTM                        ')
       CALL XCOPY (NFVV,HV,1,GV,1)
+      print*,"GV intermediate ",ddot(nfvv,GV,1,GV,1)
       CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
       CALL XTIME(0,2,'-- GVINTM                        ')
       CALL XTIME(0,1,'-- AINTM                         ')
       CALL AINTM (T1,T2,BUF1,BUF2,AZ)
+      print*,"A intermediate ",ddot(nfoo*nfoo,AZ,1,AZ,1)
       CALL XTIME(0,2,'-- AINTM                         ')
       CALL XTIME(0,1,'-- HINTM                         ')
       CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
+      print*,"H intermediate ",ddot(nfvo*nfvo,H,1,H,1)
       CALL XTIME(0,2,'-- HINTM                         ')
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
