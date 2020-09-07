@@ -335,8 +335,8 @@ module intermediates
         ierr=exatns_tensor_init(comm_t%goo,'ZERO')
         ierr=exatns_tensor_contract("G(k,i)+=H(k,i)*K()",comm_t%goo,comm_t%hoo,one_tensor)
         if (.not.CCD) then 
-            ierr=exatns_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,ooov_tensor,comm_t%t1) ! o(3)v(1)
-            ierr=exatns_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1) ! o(2)v(1)
+            ierr=exatns_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,ooov_tensor,comm_t%t1,MINUS_ONE) ! o(3)v(1)
+            ierr=exatns_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1,MINUS_ONE) ! o(2)v(1)
         end if
 
        end subroutine get_goo_exatns
@@ -906,8 +906,8 @@ module intermediates
         ierr=talsh_tensor_init(comm_t%goo)
         ierr=talsh_tensor_add("G(k,i)+=H(k,i)",comm_t%goo,comm_t%hoo)
         if (.not.CCD) then
-            ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,ooov_tensor,comm_t%t1)!,scale=MINUS_ONE)     ! o(3)v(1)
-            ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1)                         ! o(2)v(1)
+            ierr=talsh_tensor_contract("G(k,i)+=V(k,l,i,c)*T(c,l)",comm_t%goo,ooov_tensor,comm_t%t1,scale=MINUS_ONE)     ! o(3)v(1)
+            ierr=talsh_tensor_contract("G(k,i)+=F(k,c)*T(c,i)",comm_t%goo,comm_t%fov,comm_t%t1,scale=MINUS_ONE)                         ! o(2)v(1)
         end if
 
        end subroutine get_goo_talsh

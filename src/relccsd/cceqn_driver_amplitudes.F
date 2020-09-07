@@ -95,14 +95,14 @@ C  CHECK FOR CASES WITH NO NON_ZERO T1s TO AVOID CRASHES
 C
       CALL XTIME(5,1,'- T1 equations                  ')
       CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
+      CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 C      print*,"T1 amplitudes ",zdotc(ndimt1,t1,1,t1,1)
 C      print*,"T2 amplitudes ",zdotc(ndimt2,t2,1,t2,1)
 C      print*,"TAU intermediate ",zdotc(NO(1)*NVVOT(1),BUF2,1,BUF2,1)
-      CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
-      print*,"HV intermediate ",zdotc(nfvv,hv,1,hv,1)
            
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
+C          print*,"HOV intermediate ",zdotc(nfvo,hov,1,hov,1)
           CALL amplitude_equation_T1 (FVO,T1,T2,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,NBUF3,S1)
       ENDIF

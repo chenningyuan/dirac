@@ -387,10 +387,10 @@ module talsh_cc
 
           call get_tau(comm_t,CCD)
 
-          if (print_level.gt.3) then
+          if (print_level.gt.6) then
             if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_HALF_R
+            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -453,10 +453,7 @@ module talsh_cc
              return
           end if
 
-          if (print_level.gt.6) then
-             !if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
-             !print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-             !print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_HALF_R
+          if (print_level.gt.8) then
              print*, "hoint  = ",tensor_norm2(comm_t%hoo)
              print*, "hvint  = ",tensor_norm2(comm_t%hvv)
              print*, "goint  = ",tensor_norm2(comm_t%goo)
@@ -511,7 +508,7 @@ module talsh_cc
             ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
           end if
 
-          if (print_level.gt.-1) then
+          if (print_level.gt.6) then
             if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
             write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
           end if
