@@ -11,11 +11,11 @@ module talsh_cc
 
         implicit none
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
+                                 ONE_QUARTER=(0.25D0,0.D0), MINUS_ONE_QUARTER=(-0.25D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0), &
                                  MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                                  MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-        real(8), parameter    :: ONE_QUARTER=0.25D0
+        real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0
 
         type(talsh_tens_t) :: one_tensor
 
@@ -137,11 +137,12 @@ module talsh_cc
          call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,comm_t%foo,comm_t%fov,comm_t%fvv, &
                                   int_t, scf_energy, exa_input%level_shift, exa_input%print_level)
 
-!        Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
+!        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
             vo_dims(1) = nvir
             vo_dims(2) = nocc
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_contract("T(a,i)+=V+(i,a)",comm_t%t1,comm_t%fov,one_tensor)
          end if
 
 !        Initialize t2 amplitudes with the MP2 values
@@ -162,7 +163,10 @@ module talsh_cc
 !        Calculate and print the MP2 energy
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
-         mp2_energy=result_tens(1) * ONE_QUARTER
+         mp2_energy=result_tens(1)*ONE_QUARTER_R
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+         mp2_energy=mp2_energy+result_tens(1)
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
@@ -384,9 +388,9 @@ module talsh_cc
           call get_tau(comm_t,CCD)
 
           if (print_level.gt.6) then
-            write(*,*) "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
-            write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
-            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
+            if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
+            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
+            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -450,15 +454,12 @@ module talsh_cc
           end if
 
           if (print_level.gt.8) then
-             if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
-             print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER
-             print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
              print*, "hoint  = ",tensor_norm2(comm_t%hoo)
-             print*, "goint  = ",tensor_norm2(comm_t%goo)
              print*, "hvint  = ",tensor_norm2(comm_t%hvv)
+             print*, "goint  = ",tensor_norm2(comm_t%goo)
              print*, "gvint  = ",tensor_norm2(comm_t%gvv)
              if (.not.CCD) print*, "hovint = ",tensor_norm2(comm_t%hov)
-             print*, "a int  = ",tensor_norm2(comm_t%a_int)*ONE_QUARTER
+             print*, "a int  = ",tensor_norm2(comm_t%a_int)
              print*, "c int  = ",tensor_norm2(cint_tensor)
              print*, "h int  = ",tensor_norm2(comm_t%h_int)
           end if
@@ -507,6 +508,11 @@ module talsh_cc
             ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
           end if
 
+          if (print_level.gt.6) then
+            if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
+            write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
+          end if
+
           if (ierr.ne.TALSH_SUCCESS) then
              write(*,*) " ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
@@ -545,7 +551,7 @@ module talsh_cc
 
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
-          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
+          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
 
           call print_iteration(iccsd,t_convergence,ccsd_energy)
           if (t_convergence .lt. t_target_precision) exit
@@ -666,7 +672,7 @@ module talsh_cc
 
          
 !          call get_tau(comm_t, CCD)   !L : See : is it usefull for cc2
-!          if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER
+!          if (debug_local) print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
 !          if (debug_local) print*, "t1    = ",tensor_norm2(comm_t%t1)
 !          if (debug_local) print*, "t2    = ",tensor_norm2(comm_t%t2)
 
@@ -738,7 +744,7 @@ module talsh_cc
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_tensor,int_t%ooov,comm_t%t1)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_tensor,int_t%ooov,comm_t%t1,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-    &                                 Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER_C)
+    &                                 Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
 
 !         b. W_{ij}^{ab} = V_{ef}^{ab} - P\_(ab)\sum_{m} t_m^b V_{ef}^{am} + \frac{1}{4}P\_(ab)\sum_{ef} t^e_i t^f_j V_{ef}^{mn}
           ierr=talsh_tensor_init(Wabef_tensor)
@@ -746,7 +752,7 @@ module talsh_cc
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_tensor,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_tensor,int_t%vovv,comm_t%t1)
           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-    &                                 Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER_C)
+    &                                 Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
 
 !         Diagrams using the CC2 W intermediates above
 !
@@ -845,7 +851,7 @@ module talsh_cc
 
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
-          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER
+          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
 
 !         call print_iteration(iccsd,t_target_precision,t_convergence,ccsd_energy)
           call print_iteration(iccsd,t_convergence,ccsd_energy)
@@ -974,19 +980,19 @@ module talsh_cc
 
          if (print_level.gt.8) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
-             print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
-             ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER
+             print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
+             ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R
              ! print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
              print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
              ! print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
-             ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER
+             ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER_R
              print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
              print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
              print*, "w_vovv     = ", tensor_norm2(lambda_t%w_vovv)*0.5D0
              print*, "w_vovo     = ", tensor_norm2(lambda_t%w_vovo)
              print*, "w_ovoo     = ", tensor_norm2(lambda_t%w_ovoo)*0.5D0
              print*, "w_ooov     = ", tensor_norm2(lambda_t%w_ooov)*0.5D0
-             print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER
+             print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER_R
          end if
 
 !************************************
@@ -1031,7 +1037,7 @@ module talsh_cc
 !         debug
           if (print_level.gt.8) then
              if (.not.CCD) print*, "L1  = ", tensor_norm2(l1_tensor)
-             print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+             print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER_R
              print*, "goo = ", tensor_norm2(lambda_t%goo)
              print*, "gvv = ", tensor_norm2(lambda_t%gvv)
           end if
@@ -1215,7 +1221,7 @@ module talsh_cc
 
          if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
-         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER_R
          write(*,*) ""
 
 !*****************
@@ -1669,7 +1675,7 @@ module talsh_cc
 
          if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
-         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER_R
          write(*,*) ""
 
 !*****************
@@ -1834,19 +1840,19 @@ module talsh_cc
 
          if (print_level.gt.8) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
-             print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER
-             ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER
+             print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
+             ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R
              ! print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
              print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
              ! print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
-             ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER
+             ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER_R
              print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
              print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
              print*, "w_vovv     = ", tensor_norm2(lambda_t%w_vovv)*0.5D0
              print*, "w_vovo     = ", tensor_norm2(lambda_t%w_vovo)
              print*, "w_ovoo     = ", tensor_norm2(lambda_t%w_ovoo)*0.5D0
              print*, "w_ooov     = ", tensor_norm2(lambda_t%w_ooov)*0.5D0
-             print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER
+             print*, "w_oooo     = ", tensor_norm2(lambda_t%w_oooo)*ONE_QUARTER_R
          end if
 
 !************************************
@@ -1891,7 +1897,7 @@ module talsh_cc
 !         debug
           if (print_level.gt.8) then
              if (.not.CCD) print*, "L1  = ", tensor_norm2(l1_tensor)
-             print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+             print*, "L2  = ", tensor_norm2(l2_tensor)*ONE_QUARTER_R
              print*, "goo = ", tensor_norm2(lambda_t%goo)
              print*, "gvv = ", tensor_norm2(lambda_t%gvv)
           end if
@@ -2083,11 +2089,11 @@ module talsh_cc
 		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(e,i,m,a)*L(j,m,b,e)",sub_tensor,voov_aux_tensor,l2_tensor)
 		!diagramme 27
 		ierr=talsh_tensor_contract("R(i,j,m,n)+=T(e,f,m,n)*L(i,j,e,f)",oooo_aux_tensor,comm_t%t2,l2_tensor)
-		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,j,m,n)*V(m,n,a,b)",sub_tensor,oooo_aux_tensor,int_t%oovv,scale=ONE_QUARTER_C)
+		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,j,m,n)*V(m,n,a,b)",sub_tensor,oooo_aux_tensor,int_t%oovv,scale=ONE_QUARTER)
 		!diagramme 26
                 ierr=talsh_tensor_init(oooo_aux_tensor,ZERO)
 		ierr=talsh_tensor_contract("R(i,j,m,n)+=T(e,f,m,n)*V(i,j,e,f)",oooo_aux_tensor,comm_t%t2,int_t%oovv)
-		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,j,m,n)*L(m,n,a,b)",sub_tensor,oooo_aux_tensor,l2_tensor,scale=ONE_QUARTER_C)
+		ierr=talsh_tensor_contract("S(i,j,a,b)+=R(i,j,m,n)*L(m,n,a,b)",sub_tensor,oooo_aux_tensor,l2_tensor,scale=ONE_QUARTER)
 		!Substraction :
 		ierr=talsh_tensor_add("S(i,j,a,b)+=O(i,j,a,b)",s2_tensor,sub_tensor,scale=MINUS_ONE)
 		
@@ -2140,7 +2146,7 @@ module talsh_cc
 
          if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
          if (.not.CCD) write(*,'(A,ES22.16)') "  Final L1amp = ", tensor_norm2(l1_tensor)
-         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER
+         write(*,'(A,ES22.16)') "  Final L2amp = ", tensor_norm2(l2_tensor)*ONE_QUARTER_R
          write(*,*) ""
 
 !*****************
@@ -2326,6 +2332,20 @@ module talsh_cc
                 end if
                 e_lumo = minval(eps_vir)
                 lumo   = minloc(eps_vir, 1)
+              end do
+            end if
+
+            if (print_level.gt.3) then
+              write(*,*) ' --- recomputed active occupied spinors --- '
+              write(*,*) '   i             E   '
+              do i=1,nocc
+                write(*,'(I8,E18.9)') i, eps_occ(i)
+              end do
+
+              write(*,*) ' --- recomputed active virtual spinors --- '
+              write(*,*) '   i             E   '
+              do i=1,nvir
+                write(*,'(I8,E18.9)') i, eps_vir(i)
               end do
             end if
 
