@@ -93,17 +93,16 @@ C
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1s TO AVOID CRASHES
 C
-      print*,"T1 amplitudes ",zdotc(ndimt1,t1,1,t1,1)
-      print*,"T2 amplitudes ",zdotc(ndimt2,t2,1,t2,1)
       CALL XTIME(5,1,'- T1 equations                  ')
       CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
-      print*,"HO intermediate ",zdotc(nfoo,ho,1,ho,1)
+C      print*,"T1 amplitudes ",zdotc(ndimt1,t1,1,t1,1)
+C      print*,"T2 amplitudes ",zdotc(ndimt2,t2,1,t2,1)
+C      print*,"TAU intermediate ",zdotc(NO(1)*NVVOT(1),BUF2,1,BUF2,1)
       CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
       print*,"HV intermediate ",zdotc(nfvv,hv,1,hv,1)
            
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
-          print*,"HOV intermediate ",zdotc(nfvo,hv,1,hv,1)
           CALL amplitude_equation_T1 (FVO,T1,T2,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,NBUF3,S1)
       ENDIF
@@ -120,21 +119,17 @@ C
       CALL XTIME(5,1,'- T2 equations                  ')
       CALL XTIME(0,1,'-- GOINTM                        ')
       CALL XCOPY (NFOO,HO,1,GO,1)
-      print*,"GO intermediate ",zdotc(nfoo,GO,1,GO,1)
       CALL GOINTM (FVO,T1,BUF1,BUF2,GO)
       CALL XTIME(0,2,'-- GOINTM                        ')
       CALL XTIME(0,1,'-- GVINTM                        ')
       CALL XCOPY (NFVV,HV,1,GV,1)
-      print*,"GV intermediate ",zdotc(nfvv,GV,1,GV,1)
       CALL GVINTM (FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
       CALL XTIME(0,2,'-- GVINTM                        ')
       CALL XTIME(0,1,'-- AINTM                         ')
       CALL AINTM (T1,T2,BUF1,BUF2,AZ)
-      print*,"A intermediate ",zdotc(nfoo*nfoo,AZ,1,AZ,1)
       CALL XTIME(0,2,'-- AINTM                         ')
       CALL XTIME(0,1,'-- HINTM                         ')
       CALL HINTM (T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-      print*,"H intermediate ",zdotc(nfvo*nfvo,H,1,H,1)
       CALL XTIME(0,2,'-- HINTM                         ')
 C
 C  INTERMEDIATES FORMED --- START T2 EQUATIONS
@@ -169,8 +164,6 @@ C       Adding folded diagrams
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues
 C
-      print*,"S1 amplitudes ",zdotc(ndimt1,s1,1,s1,1)
-      print*,"S2 amplitudes ",zdotc(ndimt2,s2,1,s2,1)
       CALL XCOPY (NDIMT1,S1,1,T1,1)
       CALL XCOPY (NDIMT2,S2,1,T2,1)
 C

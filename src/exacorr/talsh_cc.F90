@@ -387,10 +387,10 @@ module talsh_cc
 
           call get_tau(comm_t,CCD)
 
-          if (print_level.gt.-1) then
+          if (print_level.gt.3) then
             if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
+            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_HALF_R
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -453,10 +453,10 @@ module talsh_cc
              return
           end if
 
-          if (print_level.gt.-1) then
+          if (print_level.gt.6) then
              !if (.not.CCD) print*, "T1amp  = ",tensor_norm2(comm_t%t1)
              !print*, "T2amp  = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-             !print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
+             !print*, "Tau    = ",tensor_norm2(comm_t%tau)*ONE_HALF_R
              print*, "hoint  = ",tensor_norm2(comm_t%hoo)
              print*, "hvint  = ",tensor_norm2(comm_t%hvv)
              print*, "goint  = ",tensor_norm2(comm_t%goo)
@@ -2338,7 +2338,7 @@ module talsh_cc
               end do
             end if
 
-            if (print_level.gt.-1) then
+            if (print_level.gt.3) then
               write(*,*) ' --- recomputed active occupied spinors --- '
               write(*,*) '   i             E   '
               do i=1,nocc
