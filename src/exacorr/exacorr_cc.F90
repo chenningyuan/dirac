@@ -205,19 +205,19 @@ module exacorr_cc
                             f_delta,denom,orb_set,scf_energy,exa_input%print_level)
             call print_date('initialized Fock matrix')
 
-!           Initialize t1 amplitudes to zero (we assume canonical orbitals for the moment)
+!           Initialize t1 amplitudes
             if (.not.CCD) then
                ierr=exatns_tensor_create(comm_t%t1,"t1",vo_id,vo_root,EXA_DATA_KIND_C8)
                ierr=exatns_tensor_init(comm_t%t1,ZERO)
                ierr=exatns_tensor_contract("T(a,i)+=V+(i,a)*K()",comm_t%t1,comm_t%fov,one_tensor)
+               ierr=exatns_tensor_transform(comm_t%t1,denom)
             end if
 
 !           Initialize t2 amplitudes with the MP2 values
             ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             ierr=exatns_tensor_init(comm_t%t2,ZERO)
-!           the tensor_add routine is not implemented in exatensor, work around this by using a contraction
-            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
             ierr=exatns_tensor_transform(comm_t%t2,denom)
 
 !           Calculate and print the MP2 energy
