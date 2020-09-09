@@ -119,6 +119,20 @@ module exacorr_global
                end if
              end if
 
+             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
+             inquire (file='MDPROP',exist=tobe)
+             if (tobe.and.one_el_exist) then
+                call read_mdprop (int_1el, ierr)
+                if (ierr == 0) then
+                  call print_date("read property integrals from MDPROP")
+                else
+                  call print_date("could not read property integrals from MDPROP")
+                  int_1el%n_prop = 0
+                endif
+             else
+               int_1el%n_prop = 0
+             end if
+
              call synchronize_global_data
 
          end subroutine initialize_global_data
@@ -190,6 +204,19 @@ module exacorr_global
 
                call interface_mpi_bcast (int_1el%h_core,2*nsp*nsp,my_MPI_master,global_communicator)
              end if
+
+!            Property integrals
+             call interface_mpi_bcast (int_1el%n_prop,1,my_MPI_master,global_communicator)
+             if (int_1el%n_prop>0) then
+                if (my_MPI_rank /= my_MPI_master) then
+                   nullify  (int_1el%h_prop)
+                   allocate (int_1el%h_prop(nsp,nsp,int_1el%n_prop))
+                   nullify  (int_1el%property_labels)
+                   allocate (int_1el%property_labels(int_1el%n_prop))
+                end if
+                call interface_mpi_bcast (int_1el%h_prop,2*nsp*nsp*int_1el%n_prop,my_MPI_master,global_communicator)
+                call interface_mpi_bcast (int_1el%property_labels,int_1el%n_prop,my_MPI_master,global_communicator)
+             end if
 #else
              return ! For running a serial version no action is required.
 #endif
@@ -203,6 +230,11 @@ module exacorr_global
              call dealloc_mo (cspinor_all)
              if(one_el_exist) then
                deallocate(int_1el%h_core)
+             end if
+             if(int_1el%n_prop>0) then
+               deallocate(int_1el%h_prop)
+               deallocate(int_1el%property_labels)
+               int_1el%n_prop=0
              end if
          end subroutine delete_global_data
 
