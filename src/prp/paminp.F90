@@ -1840,7 +1840,7 @@
 
 ! gradient of Fermi contact (or dirac delta) integrals
       ELSE IF(LABINT(2:3).EQ.'GF') THEN
-        CLASLB = 'GRD_FC '
+        CLASLB = 'GRAD_FC'
 !
 !     Paramagnetic spin-orbit integrals
 !

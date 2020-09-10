@@ -333,7 +333,7 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ', 
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRD_FC ', 
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRAD FC', 
 !                  85         86         87         88
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
