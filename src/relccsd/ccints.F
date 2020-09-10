@@ -1476,15 +1476,15 @@ C     of the index transformations.
 C
       CALL COMPUTE_HF_ENERGY (FOO,E0,E1)
 C
+C     Write human-readable output (mostly concerning checks of the unperturbed Fock matrix)
+C
+      CALL WRITE_FM_OUTPUT (EPS,FOO,FVV)
+C
 C     We normally we take the diagonal of the Fock matrix as zeroth order Hamiltonian
 C     this can be modified to using the original orbital energies
 C     (note that there is no difference between these two options if norecmp is true)
 
       IF (.NOT.USEOE)  CALL COPY_DIAG_TO_EPS (EPS,FOO,FVV)
-C
-C     Write human-readable output (mostly concerning checks, so before adding a finite field)
-C
-      CALL WRITE_FM_OUTPUT (EPS,FOO,FVV)
 
       IF (ADD_FINITE_FIELD) THEN
          CALL ADD_PERTURBATION (FOCKSP,NSP,FOO,FVO,FVV)
