@@ -1,4 +1,4 @@
-mrdwiodule talsh_cc
+module talsh_cc
 !This module contains the routines needed to calculate ae coupled cluster wave function
 
         use tensor_algebra
