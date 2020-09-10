@@ -121,7 +121,12 @@ module exacorr_global
              end if
 
              ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
-             inquire (file='MDPROP',exist=tobe)
+             if (exa_input%nff(1)>0) then
+               inquire (file='MDPROP',exist=tobe)
+             else
+              exa_input%nff(2)=1
+              tobe=.FALSE.
+             end if
              if (tobe.and.one_el_exist) then
                 call read_mdprop (int_1el, ierr)
                 if (ierr == 0) then

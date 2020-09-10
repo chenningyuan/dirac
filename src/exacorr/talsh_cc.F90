@@ -81,6 +81,9 @@ module talsh_cc
 
          logical :: CCD, lambda
          logical :: CC2 
+
+         integer :: iff  !integer to loop over field strengths, for now hardwired
+         
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
@@ -133,9 +136,11 @@ module talsh_cc
          end if
          call print_date('-End- Integral Transformation')
 
+         ! begin finite field loop
+         do iff=1,exa_input%nff(2)
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
-                    comm_t%foo,comm_t%fov,comm_t%fvv, int_t, scf_energy)
+                    comm_t%foo,comm_t%fov,comm_t%fvv, int_t, scf_energy,iff)
 
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
@@ -246,6 +251,8 @@ module talsh_cc
          else
             call diis (comm_t%t2,mode=2)
          end if
+         ! end finite field loop
+         end do
 
          if (lambda) then
           call print_date('-Start- Lambda Equations')
@@ -2186,7 +2193,7 @@ module talsh_cc
 
 
         subroutine init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
-                                       fo_tensor,fov_tensor,fv_tensor,int_t,scf_energy)
+                                       fo_tensor,fov_tensor,fv_tensor,int_t,scf_energy,iff)
 
 !        Written by Lucas Visscher, summer 2017
 
@@ -2199,7 +2206,7 @@ module talsh_cc
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
          real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
          real(8), intent(out)                 :: scf_energy
-         integer                              :: iff=1  !integer to loop over field strengths, for now hardwired
+         integer, intent(in)                  :: iff !integer to loop over field strengths, for now hardwired
          
 !        target tensors to be filled and given back to the caller
          type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
