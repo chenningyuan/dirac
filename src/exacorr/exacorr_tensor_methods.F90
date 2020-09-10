@@ -1367,8 +1367,11 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
 
         subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,level_shift)
+         
          use exacorr_mo
          use exacorr_global
+         use exacorr_utils, only : shift_orbital_energy
+
          implicit none
 
          class(set_energy_t)      :: this
@@ -1400,6 +1403,9 @@ module exacorr_tensor_methods
         end subroutine set_energy_init
 
       subroutine set_energy_reset(this,eps_occ,eps_vir,nocc,nvir)
+
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         class(set_energy_t)           :: this
@@ -1540,8 +1546,11 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
       
       subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift,occ_id)
+
         use exacorr_mo
         use exacorr_global
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         integer, intent(in)          :: nocc, nvir
@@ -1572,6 +1581,9 @@ module exacorr_tensor_methods
       end subroutine denom_t_init
 
       subroutine denom_t_reset(this,eps_occ,eps_vir,nocc,nvir)
+
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         class(denom_t), intent(inout) :: this
@@ -1780,8 +1792,11 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
 
       subroutine denom3_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift)
+
         use exacorr_mo
         use exacorr_global
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         class(denom3_t), intent(out) :: this
@@ -2381,35 +2396,6 @@ module exacorr_tensor_methods
 
         ! --------------------------------------------------------------------------------
         ! --------------------------------------------------------------------------------
-
-        subroutine shift_orbital_energy(eps_vir,eps_occ,level_shift)
-          implicit none
-
-          real(8), intent(inout)   :: eps_vir(:),eps_occ(:)
-          real(8), intent(in)      :: level_shift
-
-          integer            :: lumo
-          real(8)            :: e_homo, e_lumo
-          real(8), parameter :: THRESHOLD=1.D-8
-
-          if (level_shift.gt.1.0D-14) then
-            e_homo = maxval(eps_occ)
-            e_lumo = minval(eps_vir)
-            lumo   = minloc(eps_vir,1)
-
-            do while(e_lumo-e_homo < THRESHOLD)
-              if (e_lumo+level_shift-e_homo >THRESHOLD) then
-                eps_vir(lumo)=e_lumo+level_shift
-                write(*,*) 'E_homo =',e_homo,', E_lumo =',e_lumo,&
-                           ', E_lumo(shifted) =',eps_vir(lumo)
-              else
-                call quit('Negative HOMO-LUMO gap')
-              end if
-              e_lumo = minval(eps_vir)
-              lumo   = minloc(eps_vir, 1)
-            end do
-          end if
-        end subroutine shift_orbital_energy
 
 end module exacorr_tensor_methods
 

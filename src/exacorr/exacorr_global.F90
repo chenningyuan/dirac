@@ -387,39 +387,42 @@ module exacorr_global
 
       end subroutine get_one_el
 
-      subroutine add_finitefield (h,label,field_strength,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+      subroutine add_finitefield (h,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
 
-        complex(8), intent(inout) :: h(:,:)      ! one_body matrix to which the property field should be added
-        character*8, intent(in) :: label         ! name of the property to be added
-        complex(8), intent(in) :: field_strength ! multiplication factor for the property values
-        integer, intent(in)     :: nmo1          ! the length of the mo basis
-        integer, intent(in)     :: mo1_list(:)   ! and their indices
-        integer, intent(in)     :: nmo2          ! the length of the mo basis
-        integer, intent(in)     :: mo2_list(:)   ! and their indices
-        integer, intent(in)     :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+        complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
+        type(exacc_input), intent(in) :: exa_input   ! field strength and label
+        integer, intent(in)           :: iff
+        integer, intent(in)           :: nmo1          ! the length of the mo basis
+        integer, intent(in)           :: mo1_list(:)   ! and their indices
+        integer, intent(in)           :: nmo2          ! the length of the mo basis
+        integer, intent(in)           :: mo2_list(:)   ! and their indices
+        integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
 
-        integer :: pmo, qmo, i_prop
+        integer :: pmo, qmo, i_prop, i
         logical :: found
 
         if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
         if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
 
-        found = .false.
-        do i_prop = 1, int_1el%n_prop
-           if (int_1el%property_labels(i_prop) == label) then
-               found = .true.
-               exit
+        do i=1,exa_input%nff(1)
+          found = .false.
+          do i_prop = 1, int_1el%n_prop
+            if (int_1el%property_labels(i_prop) == exa_input%ff_names(i)) then
+              found = .true.
+              exit
             end if
-        end do
+          end do
 
-        if (.not.found) then
-           print*, " ERROR: property ",label," not found on property integrals file"
-           stop "property to be added not found"
-        end if
+          if (.not.found) then
+            print*, " ERROR: property ",exa_input%ff_names(i)," not found on property integrals file"
+            stop "property to be added not found"
+          end if
 
-        do qmo = 1, nmo2
-          do pmo = 1, nmo1
-            h(pmo, qmo) = h(pmo, qmo) + int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop) * field_strength
+          do qmo = 1, nmo2
+            do pmo = 1, nmo1
+              h(pmo, qmo) = h(pmo, qmo) + &
+              int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop) * exa_input%ff(i,iff)
+            end do
           end do
         end do
 
@@ -826,13 +829,13 @@ module exacorr_global
         type(exacc_input), intent(inout) :: exa_input
         integer                          :: i
 
-        write(*,*) ' --- active occupied spinors --- '
+        write(*,*) ' --- read active occupied spinors --- '
         write(*,*) '   #             E   '
         do i=1,exa_input%nocc
           write(*,'(I8,E18.9)') exa_input%mo_occ(i), cspinor_all%energy(exa_input%mo_occ(i))
         end do 
         
-        write(*,*) ' --- active virtual spinors --- '
+        write(*,*) ' --- read active virtual spinors --- '
         write(*,*) '   #             E   '
         do i=1,exa_input%nvir
           write(*,'(I8,E18.9)') exa_input%mo_vir(i), cspinor_all%energy(exa_input%mo_vir(i))

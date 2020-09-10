@@ -2790,7 +2790,10 @@ print *,'abe',ierr
         end subroutine init_fock
 
         subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
+          
           use exacorr_tensor_methods
+          use exacorr_utils, only : print_orbital_energy
+
           implicit none
 
           type(exatns_comm_tens)                 :: comm_t
@@ -2846,19 +2849,7 @@ print *,'abe',ierr
           end do
           ierr=exatns_tensor_destroy(d_mat)
           
-          if (print_level.gt.3) then
-            write(*,*) ' --- recomputed active occupied spinors --- '
-            write(*,*) '   i             E   '
-            do i=1,nocc
-              write(*,'(I8,E18.9)') i, eps_occ(i)
-            end do
-
-            write(*,*) ' --- recomputed active virtual spinors --- '
-            write(*,*) '   i             E   '
-            do i=1,nvir
-              write(*,'(I8,E18.9)') i, eps_vir(i)
-            end do
-          end if
+          if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,2)
 
           call denom%reset(eps_occ,eps_vir,nocc,nvir)
           call orb_set%reset(eps_occ,eps_vir,nocc,nvir)

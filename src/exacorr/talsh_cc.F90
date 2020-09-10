@@ -134,8 +134,8 @@ module talsh_cc
          call print_date('-End- Integral Transformation')
 
 !        Get fixed one-body tensors, needs to follow the two body tensors
-         call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,comm_t%foo,comm_t%fov,comm_t%fvv, &
-                                  int_t, scf_energy, exa_input%level_shift, exa_input%print_level)
+         call init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
+                    comm_t%foo,comm_t%fov,comm_t%fvv, int_t, scf_energy)
 
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
@@ -2185,26 +2185,27 @@ module talsh_cc
         end subroutine solve_CC2_lambda_methode1_equations
 
 
-        subroutine get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,fo_tensor,fov_tensor,fv_tensor, &
-                                       int_t, scf_energy, level_shift, print_level)
+        subroutine init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
+                                       fo_tensor,fov_tensor,fv_tensor,int_t,scf_energy)
 
 !        Written by Lucas Visscher, summer 2017
 
          use exacorr_global
+         use exacorr_utils, only : shift_orbital_energy,print_orbital_energy
 
          implicit none
 
-         integer, intent(in)                  :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in)                  :: print_level
+         type(exacc_input), intent(in)        :: exa_input
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
          real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
-         real(8), intent(in)                  :: level_shift
          real(8), intent(out)                 :: scf_energy
-
+         integer                              :: iff=1  !integer to loop over field strengths, for now hardwired
+         
 !        target tensors to be filled and given back to the caller
          type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
          type(talsh_intg_tens), intent(inout) :: int_t
 
+         integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
          type(talsh_tens_t)              :: id_mat_occ, diag_mat_occ, diag_mat_vir
          type(talsh_tens_t)              :: h_tensor
          integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
@@ -2225,6 +2226,10 @@ module talsh_cc
          real(8), parameter :: THRESHOLD=1.0D-8
          character*8        :: property
          complex(8)         :: field_strength
+
+         
+         nocc = exa_input%nocc
+         nvir = exa_input%nvir
 
          min_occ=minval(mo_occ)
          result_dims(1)=1
@@ -2262,22 +2267,24 @@ module talsh_cc
             ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
-
-            ! hardwired to test, should of course be controlled via input
-            property = 'ZDIPLEN '
-            field_strength = dcmplx(0.00,0.00)
-            call add_finitefield(h_tens,property,field_strength,mo_occ,nocc,mo_occ,nocc,min_occ)
+            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_occ,nocc,min_occ)
 
             ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
-            call add_finitefield(h_tens,property,field_strength,mo_vir,nvir,mo_vir,nvir,min_occ)
+            call add_finitefield(h_tens,exa_input,iff,mo_vir,nvir,mo_vir,nvir,min_occ)
 
             ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
-            call add_finitefield(h_tens,property,field_strength,mo_occ,nocc,mo_vir,nvir,min_occ)
-            write (*,'(3A,2E12.3)') "    Added finite field ",property," with strength ",field_strength
+            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_vir,nvir,min_occ)
+
+            do i=1,exa_input%nff(1)
+              write(*,*) ""
+              write (*,'(3A,2E12.3)') "    Added finite field ",exa_input%ff_names(i), &
+                                       " with strength ",exa_input%ff(i,iff)
+              write(*,*) ""
+            end do
 
 !           Get access to result
             result_dims(1) = 1
@@ -2307,7 +2314,7 @@ module talsh_cc
             ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
             call print_date('two electron integrals added to Fock Matrix')
             
-            if (print_level >10) then
+            if (exa_input%print_level >10) then
               call print_tensor(fo_tensor, 1.0D-6, 'fo_tensor')
               call print_tensor(fov_tensor, 1.0D-6, 'fov_tensor')
               call print_tensor(fv_tensor, 1.0D-6, 'fv_tensor')
@@ -2326,37 +2333,9 @@ module talsh_cc
               eps_vir(i)=h_tens(i,i)
             end do
 
-            !apply level shit
-            if (level_shift.gt.1.0D-14) then
-              e_homo = maxval(eps_occ)
-              e_lumo = minval(eps_vir)
-              lumo   = minloc(eps_vir,1)
-
-              do while(e_lumo-e_homo < THRESHOLD)
-                if (e_lumo+level_shift-e_homo >THRESHOLD) then
-                  eps_vir(lumo)=e_lumo+level_shift
-                  write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
-                else
-                  call quit('Negative HOMO-LUMO gap')
-                end if
-                e_lumo = minval(eps_vir)
-                lumo   = minloc(eps_vir, 1)
-              end do
-            end if
-
-            if (print_level.gt.3) then
-              write(*,*) ' --- recomputed active occupied spinors --- '
-              write(*,*) '   i             E   '
-              do i=1,nocc
-                write(*,'(I8,E18.9)') i, eps_occ(i)
-              end do
-
-              write(*,*) ' --- recomputed active virtual spinors --- '
-              write(*,*) '   i             E   '
-              do i=1,nvir
-                write(*,'(I8,E18.9)') i, eps_vir(i)
-              end do
-            end if
+            !apply level shift
+            call shift_orbital_energy(eps_vir,eps_occ,exa_input%level_shift)
+            if (exa_input%print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
 
             !set diag_mat
             ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
@@ -2375,12 +2354,11 @@ module talsh_cc
               h_tens(i,i) = eps_vir(i)
             end do
 
-
             ierr=talsh_tensor_add("F(i,j)+=D(i,j)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
             ierr=talsh_tensor_add("F(a,b)+=D(a,b)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
-            if (print_level >1) call print_date('diagonal substracted from Fock Matrix')
+            if (exa_input%print_level >1) call print_date('diagonal substracted from Fock Matrix')
             
-            if (print_level >0) then 
+            if (exa_input%print_level >0) then 
               write(*,*) ""
               ierr=talsh_tensor_init(result_tensor)
               ierr=talsh_tensor_contract("R()+=F(i,j)*F(i,j)",result_tensor,fo_tensor,fo_tensor)
@@ -2408,26 +2386,14 @@ module talsh_cc
             write(*,*) ""
             write (*,'(A,F23.15)') "    SCF energy ( read ) = ", scf_energy
             write(*,*) ""
-            if (level_shift.gt.1.0D-14) then
-              e_homo = maxval(eps_occ)
-              e_lumo = minval(eps_vir)
-              lumo   = minloc(eps_vir,1)
 
-              do while(e_lumo-e_homo < THRESHOLD)
-                write(*,*) "e_homo, e_lumo", e_homo, e_lumo
-                if (e_lumo+level_shift-e_homo >THRESHOLD) then
-                  eps_vir(lumo)=e_lumo+level_shift
-                  write(*,*) "lumo energy level shifted by ", level_shift," to ",e_lumo+level_shift
-                else
-                  call quit('Negative HOMO-LUMO gap')
-                end if
-                e_lumo = minval(eps_vir)
-                lumo   = minloc(eps_vir, 1)
-              end do
-            end if
+            !apply level shift
+            call shift_orbital_energy(eps_vir,eps_occ,exa_input%level_shift)
+            if (exa_input%print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
+
          end if
-         if (print_level >0) call print_date('Fock matrix initialized')
-        end subroutine get_CC_Fockmatrix
+         if (exa_input%print_level >0) call print_date('Fock matrix initialized')
+        end subroutine init_fock_talsh
 
         subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
 

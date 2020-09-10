@@ -203,20 +203,7 @@ C
          call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
-         ! slaves need the same info to get started
-         call interface_mpi_bcast(exa_input%nkr_occ,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
-         call interface_mpi_bcast(exa_input%nkr_vir,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-         call interface_mpi_bcast(exa_input%nocc,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_occ(exa_input%nocc))
-         call interface_mpi_bcast(exa_input%nvir,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_vir(exa_input%nvir))
-         call exacc_sync_cw(0)
+         call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
          if (exa_input%lambda) then 
@@ -226,10 +213,7 @@ C
          call exacorr_cc_driver (exa_input)
       end if
 
-      deallocate (exa_input%mokr_occ)
-      deallocate (exa_input%mokr_vir)
-      deallocate (exa_input%mo_occ  )
-      deallocate (exa_input%mo_vir  )
+      call exacc_deallocate_cw()
 
       end
 
