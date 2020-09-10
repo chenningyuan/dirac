@@ -136,28 +136,55 @@ module talsh_cc
          end if
          call print_date('-End- Integral Transformation')
 
+!        create tensors needed in CC
+         oo_dims = nocc
+         vv_dims = nvir
+         ierr=talsh_tensor_construct(comm_t%goo,C8,oo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%gvv,C8,vv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
+         if (.not.CCD) then
+            ov_dims(1) = nocc
+            ov_dims(2) = nvir
+            vo_dims(1) = nvir
+            vo_dims(2) = nocc
+            ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+         end if
+         oooo_dims = nocc
+         vovo_dims = nvir
+         vovo_dims(2) = nocc
+         vovo_dims(4) = nocc
+         vvoo_dims(1:2) = nvir
+         vvoo_dims(3:4) = nocc
+         ierr=talsh_tensor_construct(comm_t%a_int,C8,oooo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%h_int,C8,vovo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%tau,C8,vvoo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         if (ierr.eq.TALSH_SUCCESS) then
+            call print_date('Succesfully allocated all tensors')
+         else
+            write(*,*) " ccdriver: error in tensor allocation, code=",ierr
+            return
+         end if
+
          ! begin finite field loop
          do iff=1,exa_input%nff(2)
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
                     comm_t%foo,comm_t%fov,comm_t%fvv, int_t, scf_energy,iff)
 
+         if (iff==1) then
+
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
-            vo_dims(1) = nvir
-            vo_dims(2) = nocc
-            ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_init(comm_t%t1)
             ierr=talsh_tensor_contract("T(a,i)+=V+(i,a)",comm_t%t1,comm_t%fov,one_tensor)
          end if
 
 !        Initialize t2 amplitudes with the MP2 values
-         vvoo_dims(1:2) = nvir
-         vvoo_dims(3:4) = nocc
-         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
-!        ierr=talsh_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
-!        work-around because complex conjugation does not work in the above statement
-         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
-!        end of work-around
+         ierr=talsh_tensor_init(comm_t%t2)
+         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
 
          if (.not.CCD) then
             call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
@@ -180,38 +207,15 @@ module talsh_cc
          call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
 !=====================
 
+         end if
+
 !        Start CCSD iterations
          call print_date('-Start- CC Iterations')
-         oo_dims = nocc
-         ierr=talsh_tensor_construct(comm_t%goo,C8,oo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
-         vv_dims = nvir
-         ierr=talsh_tensor_construct(comm_t%gvv,C8,vv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
-         if (.not.CCD) then
-            ov_dims(1) = nocc
-            ov_dims(2) = nvir
-            ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
-         end if
-         oooo_dims  = nocc
-         ierr=talsh_tensor_construct(comm_t%a_int,C8,oooo_dims,init_val=ZERO)
-         vovo_dims(1) = nvir
-         vovo_dims(2) = nocc
-         vovo_dims(3) = nvir
-         vovo_dims(4) = nocc
-         ierr=talsh_tensor_construct(comm_t%h_int,C8,vovo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(comm_t%tau,C8,vvoo_dims,init_val=ZERO)
+
          if (.not.CCD) then
             call diis (comm_t%t2,comm_t%t1,mode=1)
          else
             call diis (comm_t%t2,mode=1)
-         end if
-
-         if (ierr.eq.TALSH_SUCCESS) then
-            call print_date('Succesfully allocated all tensors')
-         else
-            write(*,*) " ccdriver: error in tensor allocation, code=",ierr
-            return
          end if
 
          if (exa_input%print_level.gt.8) then
@@ -251,6 +255,7 @@ module talsh_cc
          else
             call diis (comm_t%t2,mode=2)
          end if
+
          ! end finite field loop
          end do
 
@@ -299,7 +304,10 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%fvv)
          ierr=talsh_tensor_destruct(comm_t%tau)
          ierr=talsh_tensor_destruct(comm_t%hoo)
-         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%hov)
+         if (.not.CCD) then
+            ierr=talsh_tensor_destruct(comm_t%hov)
+            ierr=talsh_tensor_destruct(comm_t%t1)
+         end if
          ierr=talsh_tensor_destruct(comm_t%hvv)
          ierr=talsh_tensor_destruct(comm_t%goo)
          ierr=talsh_tensor_destruct(comm_t%gvv)
@@ -307,7 +315,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%h_int)
          ierr=talsh_tensor_destruct(result_tensor)
          ierr=talsh_tensor_destruct(one_tensor)
-         if (.not.CCD) ierr=talsh_tensor_destruct(comm_t%t1)
          ierr=talsh_tensor_destruct(comm_t%t2)
 
 !        Get statistics
@@ -3064,6 +3071,7 @@ module talsh_cc
                end if
                ierr=talsh_tensor_construct(t2_res_tensor(i),C8,t2_dims,init_val=ZERO)
                ierr=talsh_tensor_construct(t2_err_tensor(i),C8,t2_dims,init_val=ZERO)
+               if (ierr.ne.0) stop 'not enough space for diis'
             end do
             itens = 0
             ntens = 0

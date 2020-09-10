@@ -481,6 +481,7 @@ module talsh_ao_to_mo
 
          moint_dims = nmo
          ierr=talsh_tensor_construct(moint_tensor,C8,moint_dims,init_val=ZERO)
+         if (ierr.ne.0) stop 'get_integral_tensor: tensor construction failed'
 !        Transform integrals
          call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 !        Switch to Dirac order and antisymmetrize
