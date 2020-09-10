@@ -1,4 +1,4 @@
-module talsh_cc
+mrdwiodule talsh_cc
 !This module contains the routines needed to calculate ae coupled cluster wave function
 
         use tensor_algebra
@@ -2223,6 +2223,8 @@ module talsh_cc
          real(8)            :: e_lumo, e_homo
          integer            :: lumo
          real(8), parameter :: THRESHOLD=1.0D-8
+         character*8        :: property
+         complex(8)         :: field_strength
 
          min_occ=minval(mo_occ)
          result_dims(1)=1
@@ -2243,7 +2245,7 @@ module talsh_cc
 !        get one electron integrals
          one_el_exist = exist_one_el(e_core)
 
-!        write one electron integrals to tensor
+!        copy one electron integrals to the OO, VV and OV Fock matrix tensors
          if (one_el_exist) then
 
 !           create density (identity) matrix for the occupied space
@@ -2255,20 +2257,27 @@ module talsh_cc
               h_tens(i,i) = ONE
             enddo
 
-!           now write one electron integrals
+!           now select the one electron integrals and copy them into the tensors
 
             ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
 
+            ! hardwired to test, should of course be controlled via input
+            property = 'ZDIPLEN '
+            field_strength = dcmplx(0.00,0.00)
+            call add_finitefield(h_tens,property,field_strength,mo_occ,nocc,mo_occ,nocc,min_occ)
 
             ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
+            call add_finitefield(h_tens,property,field_strength,mo_vir,nvir,mo_vir,nvir,min_occ)
 
             ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
+            call add_finitefield(h_tens,property,field_strength,mo_occ,nocc,mo_vir,nvir,min_occ)
+            write (*,'(3A,2E12.3)') "    Added finite field ",property," with strength ",field_strength
 
 !           Get access to result
             result_dims(1) = 1
@@ -2287,7 +2296,7 @@ module talsh_cc
             scf_energy=real(result_tens(1),8) ! Casting into real(8)
             scf_energy=scf_energy+e_core
             write(*,*) ""
-            write (*,'(A,F23.15)') "    SCF energy (single determinant, calculated) = ", scf_energy
+            write (*,'(A,F23.15)') "    Reference energy (single determinant, calculated) = ", scf_energy
             write(*,*) ""
             call print_date('one electron integrals added to Fock Matrix')
 

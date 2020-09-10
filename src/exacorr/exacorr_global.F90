@@ -31,6 +31,7 @@ module exacorr_global
         public get_eps
         public exist_one_el
         public get_one_el
+        public add_finitefield
         public get_shell_index
         public get_shell_size
         public get_shell_offset
@@ -384,7 +385,45 @@ module exacorr_global
           end do
         end do
 
-     end subroutine get_one_el
+      end subroutine get_one_el
+
+      subroutine add_finitefield (h,label,field_strength,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+
+        complex(8), intent(inout) :: h(:,:)      ! one_body matrix to which the property field should be added
+        character*8, intent(in) :: label         ! name of the property to be added
+        complex(8), intent(in) :: field_strength ! multiplication factor for the property values
+        integer, intent(in)     :: nmo1          ! the length of the mo basis
+        integer, intent(in)     :: mo1_list(:)   ! and their indices
+        integer, intent(in)     :: nmo2          ! the length of the mo basis
+        integer, intent(in)     :: mo2_list(:)   ! and their indices
+        integer, intent(in)     :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+
+        integer :: pmo, qmo, i_prop
+        logical :: found
+
+        if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
+        if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
+
+        found = .false.
+        do i_prop = 1, int_1el%n_prop
+           if (int_1el%property_labels(i_prop) == label) then
+               found = .true.
+               exit
+            end if
+        end do
+
+        if (.not.found) then
+           print*, " ERROR: property ",label," not found on property integrals file"
+           stop "property to be added not found"
+        end if
+
+        do qmo = 1, nmo2
+          do pmo = 1, nmo1
+            h(pmo, qmo) = h(pmo, qmo) + int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop) * field_strength
+          end do
+        end do
+
+      end subroutine add_finitefield
 
       subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
 
