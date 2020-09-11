@@ -676,41 +676,42 @@ module exacorr_ao_to_mo
 
         function print_tensornorm2 (tens) result(scalar_real)
 
-          type(tens_rcrsv_t):: tens, scalar
-          integer(INTD) :: ierr,rank
-          complex(8) :: scalar_complex
-          real(8)    :: scalar_real
+          type(tens_rcrsv_t) :: tens
+          type(tens_rcrsv_t) :: tensor_scalar
+          integer(INTD)      :: ierr,rank
+          complex(8)         :: scalar_complex
+          real(8)            :: scalar_real
 
           ! create a rank-0 tensor
-          ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_create(tensor_scalar,'tensor_scalar',EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
-          ierr=exatns_tensor_init(scalar,ZERO)
+          ierr=exatns_tensor_init(tensor_scalar,ZERO)
 
           ! get the rank and do the contraction
           rank = tens%get_rank(ierr)
           select case (rank)
           case(0)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+()*D()')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+()*D()')
           case(1)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a)*D(a)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a)*D(a)')
           case(2)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b)*D(a,b)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b)*D(a,b)')
           case(3)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c)*D(a,b,c)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c)*D(a,b,c)')
           case(4)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d)*D(a,b,c,d)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c,d)*D(a,b,c,d)')
           case(5)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d,e)*D(a,b,c,d,e)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c,d,e)*D(a,b,c,d,e)')
           case(6)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d,e,f)*D(a,b,c,d,e,f)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c,d,e,f)*D(a,b,c,d,e,f)')
           case default
               ierr=1
           end select
           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_contract() failed!')
-          ierr=exatns_tensor_get_scalar(scalar,scalar_complex)
+          ierr=exatns_tensor_get_scalar(tensor_scalar,scalar_complex)
           if(ierr.ne.EXA_SUCCESS) call quit('print_tensornorm2: get_scalar failed!')
           scalar_real=real(scalar_complex,8)
-          ierr=exatns_tensor_destroy(scalar)
+          ierr=exatns_tensor_destroy(tensor_scalar)
           if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 
         end function print_tensornorm2

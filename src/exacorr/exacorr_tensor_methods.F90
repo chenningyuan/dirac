@@ -1518,6 +1518,8 @@ module exacorr_tensor_methods
                                this%eps_occ, this%eps_vir, this%occ_id, this%vir_id)
 
           deallocate(dims)
+          deallocate(tens_id)
+          deallocate(tens_root)
         end function set_energy_apply
 
         integer function energy_set_diag(rank,tens_body,tens_dims,tens_bases, space_id, &
@@ -1685,6 +1687,8 @@ module exacorr_tensor_methods
         ierr=denominate(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
                          this%eps_occ,this%eps_vir,lambda)
 
+        deallocate(tens_id)
+        deallocate(tens_root)
       end function denom_t_apply
 
       integer function denominate(rank,tens_body,data_kind,tens_dims,tens_bases, &
@@ -1899,6 +1903,8 @@ module exacorr_tensor_methods
         ierr=denominate3(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
                          this%eps_vir,this%eps_ijk)
 
+        deallocate(tens_id)
+        deallocate(tens_root)
       end function denom3_t_apply
 
       integer function denominate3(rank,tens_body,data_kind,tens_dims,tens_bases, &
@@ -2150,6 +2156,9 @@ module exacorr_tensor_methods
                                prop)
 
           deallocate(dims)
+          deallocate(tens_id)
+          deallocate(tens_root)
+          deallocate(prop)
       end function set_ff_apply
 
       function property_set(rank,tens_body,tens_dims,tens_bases, &

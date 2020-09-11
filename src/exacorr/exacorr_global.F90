@@ -223,7 +223,8 @@ module exacorr_global
                    allocate (int_1el%property_labels(int_1el%n_prop))
                 end if
                 call interface_mpi_bcast (int_1el%h_prop,2*nsp*nsp*int_1el%n_prop,my_MPI_master,global_communicator)
-                call interface_mpi_bcast (int_1el%property_labels,int_1el%n_prop,my_MPI_master,global_communicator)
+                call interface_mpi_bcast(int_1el%property_labels,len(int_1el%property_labels(1))*int_1el%n_prop, &
+                                            my_MPI_master,global_communicator)
              end if
 #else
              return ! For running a serial version no action is required.
@@ -433,6 +434,7 @@ module exacorr_global
 
         found = .false.
         do i_prop = 1, int_1el%n_prop
+          !print*,int_1el%property_labels(i_prop),'=?=',p_label
           if (int_1el%property_labels(i_prop) == p_label) then
             found = .true.
             exit
