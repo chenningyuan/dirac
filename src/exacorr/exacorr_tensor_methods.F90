@@ -133,6 +133,20 @@ module exacorr_tensor_methods
           procedure, public:: apply=>set_1el_apply
         end type set_1el_t
 
+        !get property integrals
+        type, extends(tens_method_uni_t), public:: set_ff_t
+          integer, private              :: occ_id, vir_id 
+          integer, private              :: nocc, nvir, min_occ
+          integer, allocatable, private :: mo_occ(:), mo_vir(:) 
+          integer, private              :: i_prop
+         contains
+          procedure, public:: set_ff_init
+          procedure, public:: reset=>set_ff_reset
+          procedure, public:: pack=>set_ff_pack
+          procedure, public:: unpack=>set_ff_unpack
+          procedure, public:: apply=>set_ff_apply
+        end type set_ff_t
+
         !set projecton matrix
         type, extends(tens_method_uni_t), public:: set_projection_t
          complex(8), private :: constant
@@ -2022,6 +2036,151 @@ module exacorr_tensor_methods
           end do
 
         end function one_el_set
+
+        ! --------------------------------------------------------------------------------
+
+      subroutine set_ff_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,min_occ)
+          implicit none
+          class(set_ff_t)          :: this
+          integer, intent(in)      :: nocc, nvir, min_occ
+          integer(INTD),intent(in) :: occ_space_id, vir_space_id
+          integer, intent(in)      :: mo_occ(:),mo_vir(:)
+
+          this%occ_id=occ_space_id
+          this%vir_id=vir_space_id
+          this%nocc=nocc
+          this%nvir=nvir
+          this%min_occ=min_occ
+          this%i_prop=-1
+
+          allocate(this%mo_occ(nocc))
+          this%mo_occ = mo_occ
+
+          allocate(this%mo_vir(nvir))
+          this%mo_vir = mo_vir
+
+      end subroutine set_ff_init
+
+      subroutine set_ff_reset(this,i_prop)
+        implicit none
+        class(set_ff_t)         :: this
+        integer, intent(in)     :: i_prop
+
+        this%i_prop=i_prop
+
+      end subroutine set_ff_reset
+
+      subroutine set_ff_pack(this,packet,ierr)
+        implicit none
+        class(set_ff_t), intent(in)          :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+        
+        call pack_builtin(packet,this%i_prop)
+
+        if(present(ierr)) ierr=0  
+        return
+      end subroutine set_ff_pack
+
+      subroutine set_ff_unpack(this,packet,ierr)
+        implicit none
+        class(set_ff_t), intent(inout)       :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+
+        call unpack_builtin(packet,this%i_prop)
+
+        if(present(ierr)) ierr=0
+        return
+      end subroutine set_ff_unpack
+
+      function set_ff_apply(this,tensor,scalar) result(ierr)
+
+          use exacorr_global
+
+          implicit none
+
+          integer(INTD)                       :: ierr, rank
+          class(set_ff_t), intent(in)         :: this
+          class(tens_rcrsv_t), intent(inout)  :: tensor
+          complex(8), intent(inout), optional :: scalar
+
+          type(tens_dense_t   )      :: tens
+          integer(INTL), allocatable :: dims(:), tens_root(:)
+          integer(INTD), allocatable :: tens_id(:)
+          integer                    :: space_id
+          complex(8), allocatable    :: prop(:,:) 
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          rank=tens%num_dims
+          if (rank.ne.2) call quit('Error: only 2-dimensional property')
+
+          allocate(dims(rank))
+          call tensor%get_dims(dims,rank)
+
+          allocate (tens_id (rank))
+          allocate (tens_root (rank))
+          call tensor%get_space_ids(tens_id,tens_root,ierr)
+
+          if (tens_id(1) == this%occ_id) then
+            if (tens_id(2) == this%occ_id) then
+              allocate(prop(this%nocc,this%nocc))
+              call get_ff_mat (prop,this%i_prop,this%mo_occ,this%nocc, &
+                                                this%mo_occ,this%nocc,this%min_occ)
+            else 
+              allocate(prop(this%nocc,this%nvir))
+              call get_ff_mat (prop,this%i_prop,this%mo_occ,this%nocc, &
+                                                this%mo_vir,this%nvir,this%min_occ)
+            end if
+          else
+            if (tens_id(2) == this%occ_id) then
+              allocate(prop(this%nvir,this%nocc))
+              call get_ff_mat (prop,this%i_prop,this%mo_vir,this%nvir, &
+                                                this%mo_occ,this%nocc,this%min_occ)
+            else 
+              allocate(prop(this%nvir,this%nvir))
+              call get_ff_mat (prop,this%i_prop,this%mo_vir,this%nvir, &
+                                                this%mo_vir,this%nvir,this%min_occ)
+            end if
+          end if
+
+          ierr=property_set(rank,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank), &
+                               prop)
+
+          deallocate(dims)
+      end function set_ff_apply
+
+      function property_set(rank,tens_body,tens_dims,tens_bases, &
+                              prop) result (ierr)
+
+          implicit none
+
+          integer(INTD)             :: ierr, rank
+          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+          complex(8), allocatable   :: prop(:,:) 
+
+          complex(8),pointer    :: p_tens(:,:)
+          integer(INTL)         :: po, qo, pg, qg
+
+
+          ierr=0
+          call c_f_pointer(tens_body,p_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
+
+          p_tens = ZERO
+          do po = 1, tens_dims(2) 
+            pg = tens_bases(2) + po - 1
+            do qo = 1, tens_dims(1) 
+              qg = tens_bases(1) + qo - 1
+              p_tens(qo,po) = prop(qg,pg)
+            end do
+          end do
+
+      end function property_set
 
         ! --------------------------------------------------------------------------------
        

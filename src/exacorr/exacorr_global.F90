@@ -32,6 +32,8 @@ module exacorr_global
         public exist_one_el
         public get_one_el
         public add_finitefield
+        public get_ff_ind
+        public get_ff_mat
         public get_shell_index
         public get_shell_size
         public get_shell_offset
@@ -404,24 +406,13 @@ module exacorr_global
         integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
 
         integer :: pmo, qmo, i_prop, i
-        logical :: found
 
         if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
         if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
 
         do i=1,exa_input%nff(1)
-          found = .false.
-          do i_prop = 1, int_1el%n_prop
-            if (int_1el%property_labels(i_prop) == exa_input%ff_names(i)) then
-              found = .true.
-              exit
-            end if
-          end do
 
-          if (.not.found) then
-            print*, " ERROR: property ",exa_input%ff_names(i)," not found on property integrals file"
-            stop "property to be added not found"
-          end if
+          call get_ff_ind (i_prop,exa_input%ff_names(i))
 
           do qmo = 1, nmo2
             do pmo = 1, nmo1
@@ -432,6 +423,53 @@ module exacorr_global
         end do
 
       end subroutine add_finitefield
+
+      subroutine get_ff_ind (i_prop,p_label)
+
+        character(8), intent(in)      :: p_label   ! label
+        integer,intent(out)           :: i_prop
+
+        logical :: found
+
+        found = .false.
+        do i_prop = 1, int_1el%n_prop
+          if (int_1el%property_labels(i_prop) == p_label) then
+            found = .true.
+            exit
+          end if
+        end do
+
+        if (.not.found) then
+          print*, " ERROR: property ",p_label," not found on property integrals file"
+          stop "property to be added not found"
+          i_prop=-1
+        end if
+
+      end subroutine get_ff_ind
+
+      subroutine get_ff_mat (h,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+
+        complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
+        integer, intent(in)           :: i_prop
+        integer, intent(in)           :: nmo1          ! the length of the mo basis
+        integer, intent(in)           :: mo1_list(:)   ! and their indices
+        integer, intent(in)           :: nmo2          ! the length of the mo basis
+        integer, intent(in)           :: mo2_list(:)   ! and their indices
+        integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+
+        integer :: pmo, qmo
+
+        if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
+        if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
+
+        do qmo = 1, nmo2
+          do pmo = 1, nmo1
+            h(pmo, qmo) = h(pmo, qmo) + &
+            int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
+          end do
+        end do
+
+      end subroutine get_ff_mat
 
       subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
 
