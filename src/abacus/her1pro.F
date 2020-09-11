@@ -2093,10 +2093,9 @@ C     Miro Ilias, Malaya K Nayak
  84   continue
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
      &   'PR1DIR: Calculation of "grad delta(r-R)" operator'
-         INTTYP = 59 ! new type of integrals
+         INTTYP = 59 ! 'GRAD FC' type
          CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
-         !ANTI = .TRUE.
          ANTI = .FALSE.
          SQUARE = .TRUE.
       GO TO 200
@@ -2797,7 +2796,7 @@ C  /* Deck frmtyp */
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(3*MXCENT)
-      LOGICAL DOATOM(NUCIND)
+      LOGICAL   DOATOM(NUCIND)
       CHARACTER LABINT(3*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
@@ -2815,27 +2814,18 @@ C  /* Deck frmtyp */
                   LABINT(ITYP) = 'XGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  !INTREP(ITYP) = ISYMAX(1,1)
-                  !INTREP(ITYP) = 0
-                  !INTREP(ITYP) = IREP
-                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(1,1))
+                  INTREP(ITYP) = IEOR(IREP,ISYMAX(1,1))
             ! Y component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'YGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  !INTREP(ITYP) = ISYMAX(2,1)
-                  !INTREP(ITYP) = 0
-                  !INTREP(ITYP) = IREP
                   INTREP(ITYP) = IBTXOR(IREP,ISYMAX(2,1))
             ! Z component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'ZGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  !INTREP(ITYP) = ISYMAX(3,1)
-                  !INTREP(ITYP) = 0
-                  !INTREP(ITYP) = IREP
                   INTREP(ITYP) = IBTXOR(IREP,ISYMAX(3,1))
                IF (IPRINT.GE.6) THEN
                   WRITE(LUPRI,'(A,I3,1X,A,A8,1X,A,I3,A,I2)')

@@ -112,72 +112,72 @@ C   DOMOM1: true  - do < ( x  )**j A | ... | B>
 C           false - do <           A | ... | ( x  )**j B>
 C   (comment added Nov. 2002 / HJAaJ)
 C
-      IF (INTTYP .EQ. 1 .OR. INTTYP .EQ. 45) THEN
+      IF (INTTYP .EQ. 1 .OR. INTTYP .EQ. 45) THEN ! OVERLAP or CM1
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 2) THEN
+      ELSE IF (INTTYP .EQ. 2) THEN  ! DIPLEN
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 3 ) THEN  ! DIPVEL 
+      ELSE IF (INTTYP .EQ. 3) THEN  ! DIPVEL 
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 4) THEN
+      ELSE IF (INTTYP .EQ. 4) THEN  ! QUADRUP
          JMAXD  = 0
          JMAXM  = 2
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 5) THEN
+      ELSE IF (INTTYP .EQ. 5) THEN  ! SPNORB
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 6) THEN
+      ELSE IF (INTTYP .EQ. 6) THEN  ! SECMOM
          JMAXD  = 0
          JMAXM  = 2
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 7) THEN
+      ELSE IF (INTTYP .EQ. 7) THEN  ! THETA
          JMAXD  = 0
          JMAXM  = 2
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 8) THEN
+      ELSE IF (INTTYP .EQ. 8) THEN  ! CARMOM or SPHMOM or SOLVNT
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ. 9) THEN
+      ELSE IF (INTTYP .EQ. 9) THEN ! FC (FRMINT)
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.10) THEN
+      ELSE IF (INTTYP .EQ.10) THEN  ! PSO
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.11) THEN
+      ELSE IF (INTTYP .EQ.11) THEN  ! SD
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.12) THEN ! DSO
+      ELSE IF (INTTYP .EQ.12) THEN  ! DSO
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.13) THEN
+      ELSE IF (INTTYP .EQ.13) THEN  ! SDFC
          JMAXD  = 0
          JMAXM  = 0
          DONUC1 = .TRUE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.14) THEN
+      ELSE IF (INTTYP .EQ.14) THEN  ! HDO
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .TRUE.
@@ -338,7 +338,7 @@ C     type 45 already defined
          JMAXM  = 1 + IORDER
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.47) THEN
+      ELSE IF (INTTYP .EQ. 47) THEN
          JMAXD  = 0
          JMAXM  = 2 + IORDER
          DONUC1 = .FALSE.
@@ -348,27 +348,27 @@ C     type 45 already defined
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.49) THEN
+      ELSE IF (INTTYP .EQ. 49) THEN
          JMAXD  = 0
          JMAXM  = 1
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.50) THEN
+      ELSE IF (INTTYP .EQ. 50) THEN
          JMAXD  = 1
          JMAXM  = 0
          DONUC1 = .FALSE.
          DOMOM1 = .TRUE.
-      ELSEIF (INTTYP .EQ.51) THEN
+      ELSEIF (INTTYP .EQ. 51) THEN
          JMAXD  = 2
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
-      ELSEIF (INTTYP .EQ.52) THEN
+      ELSEIF (INTTYP .EQ. 52) THEN
          JMAXD  = 1
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
-      ELSEIF (INTTYP .EQ.53) THEN
+      ELSEIF (INTTYP .EQ. 53) THEN
          JMAXD  = 1
          JMAXM  = 2
          DONUC1 = .TRUE.
@@ -383,22 +383,22 @@ C     type 45 already defined
          JMAXM = 1
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.56) THEN
+      ELSE IF (INTTYP .EQ. 56) THEN
          JMAXD = 0
          JMAXM = 0
          DONUC1= .FALSE.
          DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.57) THEN
+      ELSE IF (INTTYP .EQ. 57) THEN
          JMAXD = 0
          JMAXM = 0
          DONUC1= .FALSE.
-         DOMOM1 = .TRUE.
-      ELSE IF (INTTYP .EQ.59) THEN ! MI: gradFC
-         JMAXD = 1
-         JMAXM = 0
-         DONUC1= .TRUE.
          DOMOM1 = .TRUE.
 C     type 58 already defined (NUCFIEL)
+      ELSE IF (INTTYP .EQ. 59) THEN ! MI: grad(FC)
+         JMAXD = 0 ! we do not need ODC for this property
+         JMAXM = 0 ! we do not need ODC for this property
+         DONUC1= .TRUE.
+         DOMOM1 = .TRUE.
       ELSE IF (INTTYP .EQ. 62) THEN
          JMAXD = 0
          JMAXM = 0
@@ -1265,9 +1265,10 @@ C
             TEMP(3) = ORIGIN(3)
          END IF
 C
-C        * NEXT IF-STATEMENT CHANGED TO INCLUDE DARWIN TERM*
-C
-         IF (INTTYP .NE. 9 .AND. INTTYP .NE. 41) THEN
+         IF (INTTYP .NE.  9 .AND. INTTYP .NE. 41 .AND.
+     &       INTTYP .NE. 59) THEN
+         ! GETODC not needed for FC, DARWIN, GRAD FC
+         ! because of delta function at nuclei
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,DIFODC,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,EXPPI,
      &                  WORK,LWORK,CORPX,CORPY,CORPZ,DONUC1,DOMOM1,
@@ -1794,8 +1795,7 @@ C
 !        --------------------------------------
 !
          ELSE IF (INTTYP .EQ. 59) THEN
-            CALL GRDFRMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &      SHGTF,SHLINT,NOPTYP,EXPP,CORPX,CORPY,CORPZ,SAAB,
+            CALL GRDFRMINT(SHLINT,NOPTYP,EXPP,CORPX,CORPY,CORPZ,SAAB,
      &             DOATOM)
 
 
@@ -4678,16 +4678,14 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 C
-      PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
-      PARAMETER (DFAC = D4*GFAC*PI/D3)
-      LOGICAL DOATOM(NUCIND)
+      PARAMETER (DFAC = 4.0D0*GFAC*PI/3.0D0)
+      LOGICAL   DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4702,16 +4700,16 @@ C
          DO 200 IREP = 0, MAXREP
             DO 300 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                INTTYP = INTTYP + 1
-               FRM = D0
+               FRM = 0.0D0
                DO 400 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+                  XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
-                  FINT = PT(IBTAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
+                  FINT = PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
                   IF (LVALA .GT. 0) FINT = FINT*((XC - CORAX)**LVALA)
                   IF (MVALA .GT. 0) FINT = FINT*((YC - CORAY)**MVALA)
                   IF (NVALA .GT. 0) FINT = FINT*((ZC - CORAZ)**NVALA)
@@ -4742,99 +4740,154 @@ C
 !           NOPTYP
 !
 ! Written by Miro Ilias, GSI.de, August 2020
+! Finishe by Hans Joergen Aa. Jensen, SDU Odense, September 2020
 !-------------------------------------------------------------------------------------------
-      SUBROUTINE GRDFRMINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
-     &            SHGTF,SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
+      SUBROUTINE GRDFRMINT(SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
+!
+! integrals for GRAD(FC)
+! are grad(xhi_a xhi_b) for r=R
+!   = (grad xhi_a) xhi_b + xhi_a (grad xhi_b) for r=R
+!   = (grad xhi_a)(R) xhi_b(R) + xhi_a(R) (grad xhi_b)(R)
+!
+! MI and HJAaJ, Sep 2020
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "gfac.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
-      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-      LOGICAL DOATOM(NUCIND)
+      PARAMETER (DFAC = 2.0D0*PI/3.0D0)
+      LOGICAL   DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
-
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
+         ! real "m_l" components of primitive A
+         ! x**LVALA * y**MVALA * z**NVALA * exp(...)
          LVALA = LVALUA(ICOMPA)
          MVALA = MVALUA(ICOMPA)
          NVALA = NVALUA(ICOMPA)
       DO 100 ICOMPB = 1, KCKTB
+         ! real "m_l" components of primitive B
          LVALB = LVALUB(ICOMPB)
          MVALB = MVALUB(ICOMPB)
          NVALB = NVALUB(ICOMPB)
-         INTTYP = 0
          INT = INT + 1
+         !  INT corresponds to a specific ICOMPA,ICOMPB combination
+         ! i.e. for 2 p orbital INT = (1:9),
+         !      for s and p orbitals INT = (1:3)
+         ! used in SHLINT(INT,INTTYP)
+         ! 
+         INTTYP = 0
+         !  used for components of this integral block
+         !  (in this case 3 for d/dx, d/dy, and d/dz
+         !   times the number of atoms)
          DO 200 IREP = 0, MAXREP
+         ! symmetry operator working on atoms
             DO 300 IATOM = 1, NUCIND
+            ! sum of symmetry independent atoms
             IF (DOATOM(IATOM)) THEN
-            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
-               FRM  = D0
-               FRMX = D0
-               FRMY = D0
-               FRMZ = D0
-               DO 400 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+            ! do this atom?
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            ! this symmetry operation (IREP)
+            ! working on symmetry independent atoms (IATOM)
+            ! gives a new atom not handled before
+               FRM  = 0.0D0
+               FRMX = 0.0D0
+               FRMY = 0.0D0
+               FRMZ = 0.0D0
+               DO ISYMOP = 0, MAXOPR
+               ! symmetry operator working on the three operators
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               !  a symmetry dependent atom exists for this ISYMOP
+               ! we must take all symmetry operations on
+               ! the operator working on the symmetry indepent
+               ! IATOM, because the symmetry version of
+               ! the operator will contain contributions
+               ! at all symmetry equivalent atoms.
+                  XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+                  ! coordinates of symdep atom getting 
+                  ! contributions for this ISYMOP on FC(IATOM)
                   RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
-                  FINT = PT(IBTAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
-!   Contributions from center A
-                  IF (LVALA .GT. 0) FINT = FINT*((XC - CORAX)**LVALA)
-                  IF (MVALA .GT. 0) FINT = FINT*((YC - CORAY)**MVALA)
-                  IF (NVALA .GT. 0) FINT = FINT*((ZC - CORAZ)**NVALA)
-!   Contribution from center B - UNDIFFERENTIATED 
-                  FINTX = D1
-                  FINTY = D1
-                  FINTZ = D1
-                  IF (LVALB .GT. 0) FINTX = FINTX*((XC - CORBX)**LVALB)
-                  IF (MVALB .GT. 0) FINTY = FINTY*((YC - CORBY)**MVALB)
-                  IF (NVALB .GT. 0) FINTZ = FINTZ*((ZC - CORBZ)**NVALB)
-                  FRMX = FRMX + FINT*FINTX
-                  FRMY = FRMY + FINT*FINTY
-                  FRMZ = FRMZ + FINT*FINTZ
-! Contribution from center B - DIFFERENTIATED
-                  IF (LVALB .GT. 0) THEN
-                     XFINT = (LVALB-1)*((XC-CORBX)**(LVALB-1))
-                     XFINT = XFINT + ((XC-CORBX)**(LVALB+1))*(-D2)*EXPB
+                  ! distance squard from Center to P
+                  ! (P is center of gaussian product A with B)
+                  FINT = DFAC*SAAB*PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
+                  ! PT tells what sign the FC operator of 
+                  ! symmetry ISYMOP has at this nucleus
+
+!    Calculate polynomial contributions to GTO_A( C )
+!    and derivative contribution
+                  IF (LVALA .GT. 0) THEN
+                     FINTAX = ((XC - CORAX)**LVALA)
+                     XFINTA = LVALA*((XC-CORAX)**(LVALA-1))
+     &                      - 2.0D0*((XC-CORAX)**(LVALA+1))*EXPA
                   ELSE
-                     XFINT = - D2*EXPB*(XC-CORBX)
+                     FINTAX = 1.0D0
+                     XFINTA = - 2.0D0*(XC-CORAX)*EXPA
+                  END IF
+                  IF (MVALA .GT. 0) THEN
+                     FINTAY = ((YC - CORAY)**MVALA)
+                     YFINTA = MVALA*((YC-CORAY)**(MVALA-1))
+     &                      - 2.0D0*((YC-CORAY)**(MVALA+1))*EXPA
+                  ELSE
+                     FINTAY = 1.0D0
+                     YFINTA = -2.0D0*(YC-CORAY)*EXPA
+                  END IF
+                  IF (NVALA .GT. 0) THEN
+                     FINTAZ = ((ZC - CORAZ)**NVALA)
+                     ZFINTA = NVALA*((ZC-CORAZ)**(NVALA-1))
+     &                      - 2.0D0*((ZC-CORAZ)**(NVALA+1))*EXPA
+                  ELSE
+                     FINTAZ = 1.0D0
+                     ZFINTA = -2.0D0*(ZC-CORAZ)*EXPA
+                  END IF
+
+!    Calculate polynomial contributions to GTO_B( C )
+!    and derivative contribution
+                  IF (LVALB .GT. 0) THEN
+                     FINTBX = ((XC - CORBX)**LVALB)
+                     XFINTB = LVALB*((XC-CORBX)**(LVALB-1))
+     &                      - 2.0D0*((XC-CORBX)**(LVALB+1))*EXPB
+                  ELSE
+                     FINTBX = 1.0D0
+                     XFINTB = - 2.0D0*(XC-CORBX)*EXPB
                   END IF
                   IF (MVALB .GT. 0) THEN
-                     YFINT = (MVALB-1)*((YC-CORBY)**(MVALB-1))
-                     YFINT = YFINT + ((YC-CORBY)**(MVALB+1))*(-D2)*EXPB
+                     FINTBY = ((YC - CORBY)**MVALB)
+                     YFINTB = MVALB*((YC-CORBY)**(MVALB-1))
+     &                      - 2.0D0*((YC-CORBY)**(MVALB+1))*EXPB
                   ELSE
-                     YFINT = - D2*EXPB*(YC-CORBY)
+                     FINTBY = 1.0D0
+                     YFINTB = -2.0D0*(YC-CORBY)*EXPB
                   END IF
                   IF (NVALB .GT. 0) THEN
-                     ZFINT = (NVALB-1)*((ZC-CORBZ)**(NVALB-1))
-                     ZFINT = ZFINT + ((ZC-CORBZ)**(NVALB+1))*(-D2)*EXPB
+                     FINTBZ = ((ZC - CORBZ)**NVALB)
+                     ZFINTB = NVALB*((ZC-CORBZ)**(NVALB-1))
+     &                      - 2.0D0*((ZC-CORBZ)**(NVALB+1))*EXPB
                   ELSE
-                     ZFINT = - D2*EXPB*(ZC-CORBZ)
+                     FINTBZ = 1.0D0
+                     ZFINTB = -2.0D0*(ZC-CORBZ)*EXPB
                   END IF
-                  ! - sign from:  grad.delta(r-R) - delta(r-R).grad
-                  FRMX = FRMX - FINT*XFINT
-                  FRMY = FRMY - FINT*YFINT
-                  FRMZ = FRMZ - FINT*ZFINT
-               END IF
-  400          CONTINUE
+
+               END IF  ! IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0
+               END DO  ! ISYMOP
                SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1) 
-     &                                         - SAAB*FRMX
+     &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
+     &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
                SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)   
-     &                                         - SAAB*FRMY
+     &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
+     &                 *FINTAX*FINTXY*FINTAZ*FINTBZ
                SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
-     &                                         - SAAB*FRMZ
+     &           - FINT*(ZFINTA*FINTBZ + FINTAZ*ZFINTB)
+     &                 *FINTAY*FINTBY*FINTAX*FINTBX
               if (DABS(SHLINT(INT,INTTYP+1)).GE.1.0d-9) then
                  write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
                  write(lupri,*) 'x delta shlint=',SHLINT(INT,INTTYP+1),
@@ -4861,7 +4914,6 @@ C
   100 CONTINUE
       RETURN
       END
-
 
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
