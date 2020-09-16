@@ -35,7 +35,7 @@ module talsh_eom
         type(C_PTR):: trial1_body_p, trial2_body_p
 
         logical :: enable_double_manifold = .false.
-        logical :: debug_trial = .true.
+        logical :: debug_trial = .false.
 
         ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
         ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
@@ -209,6 +209,7 @@ module talsh_eom
       complex(8), pointer, contiguous:: Fmi_p_tens(:,:), Fae_p_tens(:,:) 
       type(C_PTR):: hdiag1_body_p, hdiag2_body_p
       type(C_PTR):: Fmi_body_p, Fae_body_p
+      logical :: debug_hdiag_create = .false.
 
 
       diagonal = ZERO
@@ -233,27 +234,30 @@ module talsh_eom
 
             do i = 1,  workspace%tens1_dims(1)
                diagonal = -fmi_p_tens(i,i)
-               write (6,*) 'f_ii:',fmi_p_tens(i,i),'diag:',diagonal
+               if (debug_hdiag_create) write (6,*) 'f_ii:',fmi_p_tens(i,i),'diag:',diagonal
                hdiag1_h_p_tens(i) = diagonal
             end do
-
-     write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
-     write (6,*) hdiag1_h_p_tens(1:nocc)
-     write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
+            if (debug_hdiag_create) then
+               write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
+               write (6,*) hdiag1_h_p_tens(1:nocc)
+               write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
+            end if
 
             do i = 1, workspace%tens2_dims(3)
                do j = 1, workspace%tens2_dims(2)
                   do a = 1, workspace%tens2_dims(1)
                      diagonal = fae_p_tens(a,a) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
+                     if (debug_hdiag_create) &
                      write (6,*) 'f_ii:',fmi_p_tens(i,i),'f_jj:',fmi_p_tens(j,j),'f_aa',fae_p_tens(a,a),'diag:',diagonal
                      hdiag2_h_p_tens(a,j,i) = diagonal 
                   end do
                end do
             end do
-
-     write (6,*) 'debug >>> hdiag2_h_p_tens >>>'
-     write (6,*) hdiag2_h_p_tens(1:nvir,1:nocc,1:nocc)
-!    write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
+            if (debug_hdiag_create) then
+               write (6,*) 'debug >>> hdiag2_h_p_tens >>>'
+               write (6,*) hdiag2_h_p_tens(1:nvir,1:nocc,1:nocc)
+!              write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
+            end if
 
          case("EA")
             call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))

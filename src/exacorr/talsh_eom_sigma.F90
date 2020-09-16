@@ -134,11 +134,11 @@ module talsh_eom_sigma
       ierr=talsh_tensor_destruct(v_aux)
 
       ! debug
-!     if (debug_exa) then
-        print*, "r1_sigma", tensor_norm2(sigma1_tensor)
-        print*, "r2_sigma", tensor_norm2(sigma2_tensor),tensor_norm2(sigma2_tensor)*ONE_QUARTER
-        print*, "r_sigma ", (tensor_norm2(sigma1_tensor) + tensor_norm2(sigma2_tensor))
-!     end if
+      if (debug_exa) then
+        print*, "norm r1_sigma", tensor_norm2(sigma1_tensor)
+        print*, "norm r2_sigma", tensor_norm2(sigma2_tensor),tensor_norm2(sigma2_tensor)*ONE_QUARTER
+        print*, "norm r_sigma ", (tensor_norm2(sigma1_tensor) + tensor_norm2(sigma2_tensor))
+      end if
 
     end subroutine talsh_sigma_right_ip
 
