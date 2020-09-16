@@ -163,19 +163,22 @@ module talsh_eom
                     call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
+                    print *,'j:',j,' i:',i,i1,j1,a1
 ! aspg, come back and see how to handle this
                     if (enable_double_manifold) then ! we have to go into the 2h1p section to select trial vectors
-                       if (j .le. workspace%N(1)) then 
-                          trial1_h_p_tens(j) = ONE
+                       print *,'a'
+                       if (i .le. workspace%N(1)) then 
+                          trial1_h_p_tens(i) = ONE
                        else
+                       print *,'b'
 ! translate j into the spinor indexes:w
-                          print *,'j:',j,i1,j1,a1
-                          call from_linear_to_indexes_oov(j,i1,j1,a1,workspace%tens2_dims(3),workspace%tens2_dims(1))
+                          call from_linear_to_indexes_oov(i,i1,j1,a1,workspace%tens2_dims(3),workspace%tens2_dims(1))
                           trial2_h_p_tens(a1,j1,i1) = ONE
                        end if
                     else
+                       print *,'c'
 ! aspg, for now, we only set the tens1 part of the trial vectors
-                       trial1_h_p_tens(j) = ONE
+                       trial1_h_p_tens(i) = ONE
                     end if
               end select
            end if
