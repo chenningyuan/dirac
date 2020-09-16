@@ -26,6 +26,7 @@ module talsh_eom
 
         integer :: nocc, nvir, i, j, a, b, ierr, iroot, k(1), N, N1, N2 
         real(8), allocatable :: diagonal(:)
+        integer :: i1, j1, a1
 
         complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
         complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
@@ -34,8 +35,8 @@ module talsh_eom
         type(C_PTR):: hdiag1_body_p, hdiag2_body_p
         type(C_PTR):: trial1_body_p, trial2_body_p
 
-        logical :: enable_double_manifold = .false.
-        logical :: debug_trial = .false.
+        logical :: enable_double_manifold = .true.
+        logical :: debug_trial = .true.
 
         ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
         ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
@@ -72,6 +73,12 @@ module talsh_eom
                      end do
                   end do
                end if
+
+              if (debug_trial) then
+                 do i = 1, size(diagonal,1)
+                     write (6,*) 'H_II(',i,'):',diagonal(i)
+                 end do
+              end if
 
         end select
 
@@ -117,11 +124,16 @@ module talsh_eom
  
         end if
 
+! forcing full excitation manifold 
+        if (enable_double_manifold) then
+              workspace%nroots = workspace%N(1) + workspace%N(2)
+        else
 ! forcing only the single part now
-        if (workspace%nroots.gt.workspace%N(1)) then
-           workspace%nroots = workspace%N(1)
-           write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
-        end if 
+           if (workspace%nroots.gt.workspace%N(1)) then
+              workspace%nroots = workspace%N(1)
+              write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
+           end if 
+        end if
 
         write(6,*) 'roots',workspace%nroots
         j = 0
@@ -152,10 +164,19 @@ module talsh_eom
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
 ! aspg, come back and see how to handle this
-!                   if (enable_double_manifold) then ! we have to go into the 2h1p section to select trial vectors
-!                   end if
+                    if (enable_double_manifold) then ! we have to go into the 2h1p section to select trial vectors
+                       if (j .le. workspace%N(1)) then 
+                          trial1_h_p_tens(j) = ONE
+                       else
+! translate j into the spinor indexes:w
+                          print *,'j:',j,i1,j1,a1
+                          call from_linear_to_indexes_oov(j,i1,j1,a1,workspace%tens2_dims(3),workspace%tens2_dims(1))
+                          trial2_h_p_tens(a1,j1,i1) = ONE
+                       end if
+                    else
 ! aspg, for now, we only set the tens1 part of the trial vectors
-                    trial1_h_p_tens(j) = ONE
+                       trial1_h_p_tens(j) = ONE
+                    end if
               end select
            end if
         end do
@@ -351,12 +372,12 @@ module talsh_eom
 
             call eom_ip(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
           case("EA")
-            call eom_ea(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+            call eom_ea(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
           case("EE")
             if (.not.exa_input%eom_properties) then
-              call eom_ee(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor=t1_tensor)
+        call eom_ee(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor=t1_tensor)
             else
-              call eom_ee(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
+        call eom_ee(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
             end if
           case default
             call quit ('Error: No valid EOM-flavour chosen')
@@ -366,12 +387,12 @@ module talsh_eom
           case("IP")
             call eom_ip(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
           case("EA")
-            call eom_ea(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
+            call eom_ea(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
           case("EE")
             if (.not.exa_input%eom_properties) then
-              call eom_ee(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
+              call eom_ee(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
             else
-              call eom_ee(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor)
+              call eom_ee(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor)
             end if
         case default
           call quit ('Error: No valid EOM-flavour chosen')
@@ -478,19 +499,6 @@ module talsh_eom
       call talsh_tensor_print_info(workspace_t%Hdiag2)
       call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
 
-!     create all coefficient and sigma tensors
-      ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,(/nocc/),init_val=ONE)
-      ierr=talsh_tensor_construct(eom_t%r1_sigma,C8,(/nocc/),init_val=ZERO)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l1_coeff,C8,(/nocc/),init_val=ONE)
-        ierr=talsh_tensor_construct(eom_t%l1_sigma,C8,(/nocc/),init_val=ZERO)
-      end if
-      ierr=talsh_tensor_construct(eom_t%r2_coeff,C8,voo_dims,init_val=ONE)
-      ierr=talsh_tensor_construct(eom_t%r2_sigma,C8,voo_dims,init_val=ZERO)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l2_coeff,C8,oov_dims,init_val=ONE)
-        ierr=talsh_tensor_construct(eom_t%l2_sigma,C8,oov_dims,init_val=ZERO)
-      end if
 
 !***********************************
 !     calculate right sigma vector *
@@ -503,42 +511,20 @@ module talsh_eom
 !     calculate left eigenvector for properties *
 !************************************************
 
-      if (exa_input%eom_properties) then
-        call sigma_left_ip(exa_input,int_t,eom_t,t2_tensor)
-        call print_date("Calculated EOM-IP LHS")
-      end if
-
-!**************
-!     cleanup *
-!**************
-
-      ierr=talsh_tensor_destruct(eom_t%r1_coeff)
-      ierr=talsh_tensor_destruct(eom_t%r1_sigma)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_destruct(eom_t%l1_coeff)
-        ierr=talsh_tensor_destruct(eom_t%l1_sigma)
-      end if
-      ierr=talsh_tensor_destruct(eom_t%r2_coeff)
-      ierr=talsh_tensor_destruct(eom_t%r2_sigma)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_destruct(eom_t%l2_coeff)
-        ierr=talsh_tensor_destruct(eom_t%l2_sigma)
-      end if
-      ierr=talsh_tensor_destruct(eom_t%fbar_oo)
-      ierr=talsh_tensor_destruct(eom_t%fbar_ov)
-      ierr=talsh_tensor_destruct(eom_t%fbar_vv)
-      ierr=talsh_tensor_destruct(eom_t%w_oooo)
-      ierr=talsh_tensor_destruct(eom_t%w_ooov)
-      ierr=talsh_tensor_destruct(eom_t%w_ovoo)
-      ierr=talsh_tensor_destruct(eom_t%w_vovo)
+!      if (exa_input%eom_properties) then
+!        call sigma_left_ip(exa_input,int_t,eom_t,t2_tensor)
+!        call print_date("Calculated EOM-IP LHS")
+!      end if
 
     end subroutine eom_ip
 
-    subroutine eom_ea(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+    subroutine eom_ea(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
        use talsh_eom_sigma, only : sigma_right_ea, sigma_left_ea
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
+      type(talsh_davidson_workspace), intent(inout) :: workspace_t
+      type(talsh_projectors), intent(inout) :: projector_t
       type(talsh_eom_tens),  intent(inout) :: eom_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_intg_tens), intent(inout) :: int_t
@@ -604,52 +590,33 @@ module talsh_eom
       end if
       ierr=talsh_tensor_destruct(eom_t%wbar_vovo)
 
-!     create all coefficient and sigma tensors
-      ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,(/nvir/),init_val=ONE)
-      ierr=talsh_tensor_construct(eom_t%r1_sigma,C8,(/nvir/),init_val=ZERO)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l1_coeff,C8,(/nvir/),init_val=ONE)
-        ierr=talsh_tensor_construct(eom_t%l1_sigma,C8,(/nvir/),init_val=ZERO)
-      end if
-      ierr=talsh_tensor_construct(eom_t%r2_coeff,C8,vvo_dims,init_val=ONE)
-      ierr=talsh_tensor_construct(eom_t%r2_sigma,C8,vvo_dims,init_val=ZERO)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l2_coeff,C8,ovv_dims,init_val=ONE)
-        ierr=talsh_tensor_construct(eom_t%l2_sigma,C8,ovv_dims,init_val=ZERO)
-      end if
-
 !***********************************
 !     calculate right sigma vector *
 !***********************************
 
-      call sigma_right_ea(exa_input,int_t,eom_t,t2_tensor)
+      call talsh_tensor_print_info(workspace_t%Hdiag1)
+      call talsh_tensor_print_info(workspace_t%Hdiag2)
+      call talsh_eom_Hdiag_create(workspace_t, eom_t%Fbar_oo, eom_t%Fbar_vv, exa_input%eom_flavour)
+      call talsh_tensor_print_info(workspace_t%Hdiag1)
+      call talsh_tensor_print_info(workspace_t%Hdiag2)
+      call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
+
+      call talsh_davidson_driver(exa_input,int_t,eom_t,t2_tensor, workspace_t, projector_t)
       call print_date("Calculated EOM-EA RHS")
 
 !************************************************
 !     calculate left eigenvector for properties *
 !************************************************
 
-      if (exa_input%eom_properties) then
-        call sigma_left_ea(exa_input,int_t,eom_t,t2_tensor)
-        call print_date("Calculated EOM-EA LHS")
-      end if
+!      if (exa_input%eom_properties) then
+!        call sigma_left_ea(exa_input,int_t,eom_t,t2_tensor)
+!        call print_date("Calculated EOM-EA LHS")
+!      end if
 
 !**************
 !     cleanup *
 !**************
 
-      ierr=talsh_tensor_destruct(eom_t%r1_coeff)
-      ierr=talsh_tensor_destruct(eom_t%r1_sigma)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_destruct(eom_t%l1_coeff)
-        ierr=talsh_tensor_destruct(eom_t%l1_sigma)
-      end if
-      ierr=talsh_tensor_destruct(eom_t%r2_coeff)
-      ierr=talsh_tensor_destruct(eom_t%r2_sigma)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_destruct(eom_t%l2_coeff)
-        ierr=talsh_tensor_destruct(eom_t%l2_sigma)
-      end if
       ierr=talsh_tensor_destruct(eom_t%fbar_oo)
       ierr=talsh_tensor_destruct(eom_t%fbar_ov)
       ierr=talsh_tensor_destruct(eom_t%fbar_vv)
@@ -660,11 +627,13 @@ module talsh_eom
 
     end subroutine eom_ea
 
-    subroutine eom_ee(exa_input,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
+    subroutine eom_ee(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
        use talsh_eom_sigma, only : sigma_right_ee, sigma_left_ee
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
+      type(talsh_davidson_workspace), intent(inout) :: workspace_t
+      type(talsh_projectors), intent(inout) :: projector_t
       type(talsh_eom_tens),  intent(inout) :: eom_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_intg_tens), intent(inout) :: int_t
@@ -746,25 +715,18 @@ module talsh_eom
       end if
       ierr=talsh_tensor_destruct(eom_t%wbar_vovo)
 
-!     create all coefficient and sigma tensors
-      ierr=talsh_tensor_construct(eom_t%r1_coeff,C8,vo_dims,init_val=ONE)
-      ierr=talsh_tensor_construct(eom_t%r1_sigma,C8,vo_dims,init_val=ZERO)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l1_coeff,C8,ov_dims,init_val=ONE)
-        ierr=talsh_tensor_construct(eom_t%l1_sigma,C8,ov_dims,init_val=ZERO)
-      end if
-      ierr=talsh_tensor_construct(eom_t%r2_coeff,C8,vvoo_dims,init_val=ONE)
-      ierr=talsh_tensor_construct(eom_t%r2_sigma,C8,vvoo_dims,init_val=ZERO)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_construct(eom_t%l2_coeff,C8,oovv_dims,init_val=ONE)
-        ierr=talsh_tensor_construct(eom_t%l2_sigma,C8,oovv_dims,init_val=ZERO)
-      end if
-
 !***********************************
 !     calculate right sigma vector *
 !***********************************
 
-      call sigma_right_ee(exa_input,int_t,eom_t,t2_tensor)
+      call talsh_tensor_print_info(workspace_t%Hdiag1)
+      call talsh_tensor_print_info(workspace_t%Hdiag2)
+      call talsh_eom_Hdiag_create(workspace_t, eom_t%Fbar_oo, eom_t%Fbar_vv, exa_input%eom_flavour)
+      call talsh_tensor_print_info(workspace_t%Hdiag1)
+      call talsh_tensor_print_info(workspace_t%Hdiag2)
+      call talsh_eom_trial_create(workspace_t, exa_input%eom_flavour)
+
+      call talsh_davidson_driver(exa_input,int_t,eom_t,t2_tensor, workspace_t, projector_t)
       call print_date("Calculated EOM-EE RHS")
 
 !************************************************
@@ -777,30 +739,20 @@ module talsh_eom
         call get_gvv_lambda(eom_t%gvv,l2_tensor,t2_tensor)
       end if
 
-      if (exa_input%eom_properties) then
-        if (.not.CCD) then
-          call sigma_left_ee(exa_input,int_t,eom_t,t1_tensor)
-        else
-          call sigma_left_ee(exa_input,int_t,eom_t)
-        end if
-        call print_date("Calculated EOM-EE LHS")
-      end if
+!     if (exa_input%eom_properties) then
+!       if (.not.CCD) then
+!         call sigma_left_ee(exa_input,int_t,eom_t,t1_tensor)
+!       else
+!         call sigma_left_ee(exa_input,int_t,eom_t)
+!       end if
+!       call print_date("Calculated EOM-EE LHS")
+!     end if
 
 !**************
 !     cleanup *
 !**************
 
-      ierr=talsh_tensor_destruct(eom_t%r1_coeff)
-      ierr=talsh_tensor_destruct(eom_t%r1_sigma)
       if (exa_input%eom_properties) then
-        ierr=talsh_tensor_destruct(eom_t%l1_coeff)
-        ierr=talsh_tensor_destruct(eom_t%l1_sigma)
-      end if
-      ierr=talsh_tensor_destruct(eom_t%r2_coeff)
-      ierr=talsh_tensor_destruct(eom_t%r2_sigma)
-      if (exa_input%eom_properties) then
-        ierr=talsh_tensor_destruct(eom_t%l2_coeff)
-        ierr=talsh_tensor_destruct(eom_t%l2_sigma)
         ierr=talsh_tensor_destruct(eom_t%goo)
         ierr=talsh_tensor_destruct(eom_t%gvv)
       end if
@@ -816,5 +768,24 @@ module talsh_eom
       ierr=talsh_tensor_destruct(eom_t%w_vvvv)
 
     end subroutine eom_ee
+
+    subroutine from_linear_to_indexes_oov(b_desired,i,j,a,dim_o,dim_v)
+       integer, intent(in)  :: b_desired, dim_o, dim_v
+       integer, intent(out) :: i, j, a
+       integer :: b
+       
+       b = 0
+       do i = 1, dim_o
+          do j = 1, dim_o
+             do a = 1, dim_v
+                b = b + 1
+                print *, 'i:',i,'j:',j,'a:',a,'   b:',b
+                if  (b .eq. b_desired) return
+             end do
+          end do
+       end do
+    end subroutine
+
+
 
 end module

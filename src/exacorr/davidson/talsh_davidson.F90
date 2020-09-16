@@ -1396,11 +1396,14 @@ contains
 
         integer :: M_dims(2) 
         integer :: ierr, i
-!       
-!   for the moment we force the number of roots to be 4
-!
-        workspace%nroots = 2
-        workspace%Lmax   = davidson_max_subspace_size
+
+! for the moment for the number of roots to the dimension of the excitation manifold for IP-CCSD
+!       workspace%nroots = 2
+        workspace%nroots = nocc + nocc*nocc*nvirt 
+        print *, 'nocc:',nocc
+        print *, 'nvirt:',nvirt
+        print *, 'nroots',workspace%nroots
+        workspace%Lmax   = max(workspace%nroots,davidson_max_subspace_size)
         workspace%L      = workspace%nroots 
         workspace%Lprev  = 0
 
@@ -1458,8 +1461,8 @@ contains
               workspace%tens1_dims = (/ nvirt, nocc /)
               workspace%N(1) = nvirt*nocc
 ! doubles
-              workspace%tens1_rank = 4
-              allocate(workspace%tens2_dims(workspace%tens1_rank))
+              workspace%tens2_rank = 4
+              allocate(workspace%tens2_dims(workspace%tens2_rank))
               workspace%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
               workspace%N(2) = nvirt*nvirt*nocc*nocc
 
@@ -1493,13 +1496,14 @@ contains
 
 
 ! debug statements
-        if (workspace_create_debug) then
+!       if (workspace_create_debug) then
            write(davidson_output_file_unit, "(4x,a)")  'in talsh_davidson_workspace_create'
 
-           write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
+           write(davidson_output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
      &  'created tensor for trial vectors, dimensions :',workspace%Nmax,"x",workspace%Lmax
 
 
+        if (workspace_create_debug) then
            do i = 1, workspace%Lmax
               write(davidson_output_file_unit, "(4x,a,i4)") 'info on workspace%trial1, element',i
               call talsh_tensor_print_info(workspace%trial1(i))
@@ -1512,10 +1516,10 @@ contains
            write(davidson_output_file_unit, "(4x,a)") 'info on workspace%Hdiag2' 
            call talsh_tensor_print_info(workspace%Hdiag2)
 
-           write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
+           write(davidson_output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
      &  'created tensor for sigma vectors, dimensions :',workspace%Nmax,"x",workspace%Lmax
 
-           write(davidson_output_file_unit, "(4x,a,i6,a,i6)") &
+           write(davidson_output_file_unit, "(4x,a,i6,2x,a,2x,i6)") &
      &  'created tensor for correction vectors, dimensions :',workspace%Nmax,"x",workspace%nroots
       end if
 
@@ -1524,7 +1528,7 @@ contains
 
 
    subroutine create_sigma_right(exa_input,int_t,eom_t,t2_tensor,workspace)
-      use talsh_eom_sigma, only : sigma_right_ip
+      use talsh_eom_sigma, only : sigma_right_ip, sigma_right_ea
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_eom_tens),  intent(inout) :: eom_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
