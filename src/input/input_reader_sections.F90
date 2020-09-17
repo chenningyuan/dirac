@@ -868,6 +868,10 @@
          exa_input%ccd = .true.
       end if
 
+      if (kw_matches(word, '.MP2NO         ')) then 		!L
+         exa_input%mp2no = .true.
+      end if
+
       if (kw_matches(word, '.CC2         ')) then 		!L
          exa_input%cc2 = .true.
       end if

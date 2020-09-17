@@ -35,6 +35,7 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
+            logical                 :: mp2no = .false.          !L if true mp2 natural orbital
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.

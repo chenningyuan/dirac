@@ -27,13 +27,6 @@ module talsh_mp2no
 !           module procedure scale_with_denominators
 !        end interface
 !
-        interface diis
-           module procedure diis
-        end interface
-
-        interface get_subtensor
-           module procedure get_subtensor
-        end interface
 
        contains
 !-------------------------------------------------------------------------------------------
@@ -53,7 +46,9 @@ module talsh_mp2no
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer(C_INT)       :: ierr
-         complex(8), pointer :: result_tens(:)
+         complex(8), pointer :: MP2_density_tens(:,:)
+         complex(kind=8), pointer :: N_occupation(:) 
+         complex(kind=8), pointer :: NOs_MO(:,:)
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
@@ -62,11 +57,15 @@ module talsh_mp2no
          type(talsh_comm_tens) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(talsh_intg_tens) :: int_t
+!        HF orbital energy tensor  
+         type(talsh_tens_t) :: diag_foo_tensor, diag_fvv_tensor
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vv_dims
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t) :: result_tensor
+         type(talsh_tens_t) :: result_tensor, MP2_density_tensor 
          integer(C_INT)     :: one_dims(1)
+         integer             :: i,j,k
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 
@@ -84,19 +83,27 @@ module talsh_mp2no
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,result_tens,one_dims)
+
+         
 
          !DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
          nvir = exa_input%nvir
+         print *,'number of virtual orbital', nvir
+         print *,'number of occupied orbital', nocc
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
          mo_occ = exa_input%mo_occ
          mo_vir = exa_input%mo_vir
-
+         vv_dims(1) = nvir
+         vv_dims(2) = nvir
+         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr=talsh_tensor_construct(MP2_density_tensor,C8,vv_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(MP2_density_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,MP2_density_tens,vv_dims)
+         print *,'construct mp2_tensor',ierr
+         print *,'row_DM', size(MP2_density_tens,1)
+         print *,'Col_DM', size(MP2_density_tens,2)
 
          call print_exainput(exa_input,get_nao())
 
@@ -108,12 +115,11 @@ module talsh_mp2no
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
 
-!        Get fixed two-body tensors
+!        Get oovv integrals 
          call get_MP2_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
 
 !        Get fixed one-body tensors, needs to follow the two body tensors
-         call get_MP2_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,comm_t%foo,comm_t%fvv, &
-                                  int_t, exa_input%print_level)
+!        call get_MP2_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_foo_tensor, diag_fvv_tensor,int_t, exa_input%print_level)
 
 
 !        Initialize t2 amplitudes with the MP2 values
@@ -123,27 +129,70 @@ module talsh_mp2no
 !        ierr=talsh_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
 !        work-around because complex conjugation does not work in the above statement
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
+         print *,'oovv',ierr
 !        end of work-around
 
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 
-!        Calculate and print the MP2 density matrix 
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
-         mp2_energy=result_tens(1) * ONE_HALF
+!        Calculate and print the MP2 density matrix within virtual molecular basis
+         ierr=talsh_tensor_init(MP2_density_tensor)
+         ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",MP2_density_tensor,comm_t%t2,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
+         print *,'after constructing density matrix',ierr
+         print *,'row_DM', size(MP2_density_tens,1)
+         print *,'Col_DM', size(MP2_density_tens,2)
 
 
 !        Make some noise so that we know we are leaving
          write(*,*) ""
-         call print_date('Leaving cc_driver routine')
+         call print_date('Go to natural orbital')
 
-        end subroutine talsh_mp2_driver
+!        Diagoliazation of Density matrix 
+         call diagoanl_DMP2_matrix(MP2_density_tens,N_occupation,NOs_MO)
+
+         do i=1,size(N_occupation),1
+                print *,'occupation number',abs(N_occupation(i))
+         end do
+       
+
+        end subroutine talsh_mp2no_driver
 
 
-        end module talsh_mp2no
 
+!----------------------------------------------------------------------------------------------------------------------    
+        subroutine diagoanl_DMP2_matrix(M,eVal,eVectorsR)
+
+                ! set parameter needed in lapack
+                    integer :: lwork, info,i,j
+                    real(kind=8), allocatable :: work(:)
+                    real(kind=8), allocatable :: rwork(:)
+                    integer :: vectors_L, vectors_R
+                    complex(kind=8), intent(inout), pointer :: M(:,:)
+                    complex(kind=8), pointer :: eVal(:) 
+                    complex(kind=8), pointer :: eVectorsR(:,:)
+                    complex(kind=8), pointer :: eVectorsL(:,:)
+                    character(len=1) :: do_left = 'N', do_right = 'V'
+            
+                    vectors_R = size(M,1)
+                    vectors_L = size(M,2)
+                    print *,'vector_R', vectors_R
+                    print *,'vector_L', vectors_L
+                    lwork = 10000000*vectors_R	
+                    allocate(eVectorsL(vectors_L,vectors_R))
+                    allocate(eVectorsR(vectors_L,vectors_R))
+                    allocate(eVal(vectors_R))
+                    allocate(work(MAX(1,LWORK)))
+                    allocate(rwork(2*vectors_R))
+                    call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
+                    eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
+                    WORK, LWORK, rwork, INFO)
+                    !print *,'INFO',info
+            
+            
+        end subroutine diagoanl_DMP2_matrix
+            
+            
 !-----------------------------------------------------------------------------------------------------------
 
         subroutine get_MP2_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
@@ -279,10 +328,9 @@ module talsh_mp2no
   
         end subroutine get_MP2_integrals
 
-!---------------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------------------------------------
 
-        subroutine get_MP2_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,fo_tensor,fv_tensor, &
-                                       int_t, print_level)
+        subroutine get_MP2_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_mat_occ,diag_mat_vir,int_t, print_level)
 
 !        Written by Lucas Visscher, summer 2017
 !        Revised by Xiang Yuan, July 2020
@@ -294,11 +342,12 @@ module talsh_mp2no
          integer, intent(in)                  :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)                  :: print_level
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
-         real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
+   
 
 
 !        target tensors to be filled and given back to the caller
-         type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor
+         type(talsh_tens_t), intent(inout)    :: diag_mat_occ, diag_mat_vir
+         type(talsh_tens_t)                   :: fo_tensor, fv_tensor
          type(talsh_intg_tens), intent(inout) :: int_t
 
          type(talsh_tens_t)              :: id_mat_occ
@@ -306,6 +355,7 @@ module talsh_mp2no
          integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2)
          integer(INTD)                   :: ierr
          logical                         :: one_el_exist
+         real(8), allocatable            :: eps_occ(:),eps_vir(:) ! orbital energies
          type(one_el_t)                  :: one_int
          real(8)                         :: e_core
          integer                         :: nkp, min_occ
@@ -387,9 +437,29 @@ module talsh_mp2no
               eps_vir(i)=h_tens(i,i)
             end do
 
+
+            ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            h_tens = ZERO
+            do i = 1, nocc
+                h_tens(i,i) = eps_occ(i)
+            end do
+
+            ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            h_tens = ZERO
+            do i = 1, nvir
+                h_tens(i,i) = eps_vir(i)
+            end do
+
+
             ierr=talsh_tensor_destruct(id_mat_occ)
             ierr=talsh_tensor_destruct(result_tensor)
        
          if (print_level >0) call print_date('Fock matrix initialized')
-
+        end if 
         end subroutine get_MP2_Fockmatrix
+end module talsh_mp2no
+        !------------------------------------------------------------------------------------------------

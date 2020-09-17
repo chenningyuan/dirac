@@ -25,6 +25,7 @@ if(ENABLE_EXATENSOR)
    talsh_common_routines.F90
    talsh_gradient.F90
    talsh_cc.F90
+   talsh_mp2no.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
