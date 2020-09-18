@@ -14,6 +14,11 @@ module talsh_eom
   complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
   real(8),    parameter :: ONE_QUARTER=0.25D0
 
+  type, public :: talsh_eom_results
+     character, pointer :: flavor(:)
+     type(talsh_davidson_results) :: results
+  end type talsh_eom_results
+
   private
 
   public talsh_eom_driver
@@ -163,20 +168,20 @@ module talsh_eom
                     call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-                    print *,'j:',j,' i:',i,i1,j1,a1
+!                   print *,'j:',j,' i:',i,i1,j1,a1
 ! aspg, come back and see how to handle this
                     if (enable_double_manifold) then ! we have to go into the 2h1p section to select trial vectors
-                       print *,'a'
+!                      print *,'a'
                        if (i .le. workspace%N(1)) then 
                           trial1_h_p_tens(i) = ONE
                        else
-                       print *,'b'
+!                      print *,'b'
 ! translate j into the spinor indexes:w
-                          call from_linear_to_indexes_oov(i,i1,j1,a1,workspace%tens2_dims(3),workspace%tens2_dims(1))
+                          call from_linear_to_indexes_oov(i-workspace%N(1),i1,j1,a1,workspace%tens2_dims(3),workspace%tens2_dims(1))
                           trial2_h_p_tens(a1,j1,i1) = ONE
                        end if
                     else
-                       print *,'c'
+!                      print *,'c'
 ! aspg, for now, we only set the tens1 part of the trial vectors
                        trial1_h_p_tens(i) = ONE
                     end if
@@ -327,7 +332,98 @@ module talsh_eom
 
     end subroutine
 
-    subroutine talsh_eom_driver (exa_input,eps_occ,eps_vir, t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
+    subroutine talsh_steom_eigval_driver (eom_results_t,exa_input,eps_occ,eps_vir,intermediates_t,int_t)
+
+!     input variables
+      type(exacc_input),     intent(in   )           :: exa_input
+      type(talsh_intg_tens), intent(inout)           :: int_t
+      real(8),               intent(in)              :: eps_occ(:), eps_vir(:)
+      type(talsh_intermediates_tens), intent(inout)  :: intermediates_t
+
+!     local variables
+      type(talsh_intermediates_tens), intent(inout)  :: intermediates_t
+      type(talsh_davidson_workspace) :: workspace_t
+      type(talsh_projectors) :: projector_t
+
+      write(*,*) ""
+      write(*,'(A)') "*******************************************************************************"
+      write(*,'(A)') "************************** ST Equation of Motion ******************************"
+      write(*,'(A)') "*******************************************************************************"
+      write(*,*) ""
+
+      call talsh_davidson_setup(unit_output=6, &
+                                solve_right=.true.,&
+                                solve_left=.false.,&
+                                symmetric=.false., &
+                                complex_mode=.true.)
+
+      call print_date("Entering the steom_eigval_driver routine")
+!     todo : store the results from each of ip/ea runs 
+!     we also need to control whether we need to do IP and EA, depending on the options. for now sticking to STEOM-EE, which needs both
+      call print_date("Setting up RHS EOM-IP run")
+      if (.not.exa_input%ccd) then
+         call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, "IP", 2)
+!        call talsh_davidson_create_results(eomip_results_t)
+!        call eom_ip(eomip_results_t,left,right,exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+         call eom_ip(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+         call talsh_davidson_workspace_destroy(workspace_t)
+         call print_date("Done with  RHS EOM-IP run")
+
+         call print_date("Setting up RHS EOM-EA run")
+!        call talsh_davidson_create_results(eomea_results_t)
+         call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, "EA", 2)
+         call eom_ea(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor,t1_tensor)
+         call talsh_davidson_workspace_destroy(workspace_t)
+      else
+         call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, "IP", 2)
+         call eom_ip(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
+         call talsh_davidson_workspace_destroy(workspace_t)
+         call print_date("Done with  RHS EOM-IP run")
+
+         call print_date("Setting up RHS EOM-EA run")
+         call talsh_davidson_workspace_create(workspace_t, exa_input%nocc, exa_input%nvir, "EA", 2)
+         call eom_ea(exa_input,workspace_t,projector_t,eom_t,t2_tensor,int_t,foo_tensor,fov_tensor,fvv_tensor)
+         call talsh_davidson_workspace_destroy(workspace_t)
+      end if
+      call print_date("Done with  RHS EOM-EA run")
+
+! build the S coefficients from the EOM-IP/EA vectors that go into (Hbar*S)C in the G matrix
+! use stuff in eomip_results_t and eomea_results_t
+
+! build the "g" coefficients 
+
+! build the G matrix over the active space
+
+! diagonalize G and get the STEOM eigenvalues. G should likely be a Fortran array
+
+! store eigenvalues and eigenvectors, to do transition moments etc
+
+      print*, ""
+      call print_date("Leaving the steom_eigval_driver routine")
+      return
+
+
+    end subroutine
+
+
+! i think we should split drivers into:
+!
+! *_eigval_driver : solves for the eigenvalues and eigenvectors, left and/or right, stores results in derived type keeping eigenvalue/vector results. 
+!                      this will use e.g davidson to solve (A - lambda*I)*X = 0 by expanding X into trial vectors B. for this solutions, we can optionally provide projection operators (to do e.g. cvs)
+! 
+! *_dmat_driver   : forms density matrices (1-body, 2-body) from results from *_eigval_driver, and additionally getting info from ground-state lambda, to prepare density or transition density matrices 
+!
+! *_expval_driver : uses results from *_eigenvalue_driver and from *_dmat_driver to build density matrices and contract them with property operators
+!
+! *_lrsp_driver   : solves for modified eigenvalue equations, using *_eigval_driver, for the different perturbations specified, forms the linear response function
+!                      this will use e.g davidson to solve the generalized linear system (A - omega*S)*X - C = 0, with omega a frequency (number), S a metric (matrix) and C a vector (=property gradient, etc), 
+!                      we should also be able to apply projectors to the (Hbar - omegaS)X part.
+!                      for the generalized linear problem, we should store the vectors for each omega, keeping track of which C the solutions are associated to
+! *_qrsp_driver   : uses *_linresp_driver to solve the linear response equations involved in the quadratic response, and forms the quadratic response function
+!
+! and within each use the different variants : EOM-IP/EE/EA/../-CC* where CC* refers to {P-,}EOM-{CC{SD,SDT},MBPT2}, CCn,
+    subroutine talsh_eom_eigval_driver (exa_input,eps_occ,eps_vir, t2_tensor,int_t,&
+   & foo_tensor,fov_tensor,fvv_tensor,l2_tensor,t1_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   )           :: exa_input
@@ -406,7 +502,7 @@ module talsh_eom
 
 !     make some noise so that we know we are leaving
       print*, ""
-      call print_date("Leaving eom_driver routine")
+      call print_date("Leaving eom_eigval_driver routine")
       return
 
     end subroutine talsh_eom_driver
@@ -507,6 +603,9 @@ module talsh_eom
 !     calculate right sigma vector *
 !***********************************
 
+      call print_date("Entering EOM-IP RHS calculation")
+! if it would be possible to pass the sigma routine we use instead of having should be something like this, to make things easier on the davidson side
+!     workspace_t%sigma_routine => sigma_right_ip 
       call talsh_davidson_driver(exa_input,int_t,eom_t,t2_tensor, workspace_t, projector_t)
       call print_date("Calculated EOM-IP RHS")
 
@@ -514,6 +613,7 @@ module talsh_eom
 !     calculate left eigenvector for properties *
 !************************************************
 
+      call print_date("Entering EOM-IP RHS calculation")
 !      if (exa_input%eom_properties) then
 !        call sigma_left_ip(exa_input,int_t,eom_t,t2_tensor)
 !        call print_date("Calculated EOM-IP LHS")
@@ -782,7 +882,7 @@ module talsh_eom
           do j = 1, dim_o
              do a = 1, dim_v
                 b = b + 1
-                print *, 'i:',i,'j:',j,'a:',a,'   b:',b
+!               print *, 'i:',i,'j:',j,'a:',a,'   b:',b
                 if  (b .eq. b_desired) return
              end do
           end do

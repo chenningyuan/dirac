@@ -30,6 +30,12 @@
          integer, pointer :: shell_indices(:)
         end type basis_set_info_t
 
+        type, public :: spinor_info_t
+           integer                 :: nocc, nvir             ! number of spinors
+           integer, allocatable    :: occ(:), vir(:)         ! list of active spinors
+           real(8), allocatable    :: eps_occ(:), eps_vir(:) ! orbital energies
+        end type spinor_info_t
+
 !       Input parameter
         type, public :: exacc_input
             logical                 :: talsh = .true.           ! if false, use ExaTensor
@@ -59,32 +65,32 @@
         end type exacc_input
 
 !       All two electron integral tensors
-        type, public :: exatns_intg_tens
+        type, public :: exatns_intg_tens_t
          type(tens_rcrsv_t) :: oooo
          type(tens_rcrsv_t) :: ooov
          type(tens_rcrsv_t) :: oovv, vovo
          type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
-        end type exatns_intg_tens
+        end type exatns_intg_tens_t
 
 !       All cholesky tensors
-        type, public :: exatns_chol_tens
+        type, public :: exatns_chol_tens_t
          type(tens_rcrsv_t) :: oou
          type(tens_rcrsv_t) :: ovu
          type(tens_rcrsv_t) :: vou
          type(tens_rcrsv_t) :: vvu
-        end type exatns_chol_tens
+        end type exatns_chol_tens_t
 
 !       Common blocks between t and lambda
-        type, public :: exatns_comm_tens
+        type, public :: exatns_comm_tens_t
          type(tens_rcrsv_t) :: foo, fov, fvv
          type(tens_rcrsv_t) :: goo, gvv
          type(tens_rcrsv_t) :: hoo, hov, hvv
          type(tens_rcrsv_t) :: a_int, h_int
          type(tens_rcrsv_t) :: t1, t2, tau
-        end type exatns_comm_tens
+        end type exatns_comm_tens_t
 
-        type, public :: exatns_lambda_tens
+        type, public :: exatns_lambda_tens_t
          type(tens_rcrsv_t) :: fbar_oo, fbar_ov, fbar_vv
          type(tens_rcrsv_t) :: w_oooo
          type(tens_rcrsv_t) :: w_ovoo, w_ooov
@@ -92,13 +98,13 @@
          type(tens_rcrsv_t) :: w_vvvo, w_vovv
          type(tens_rcrsv_t) :: w_vvvv
          type(tens_rcrsv_t) :: goo, gvv
-        end type exatns_lambda_tens
+        end type exatns_lambda_tens_t
 
-        type, public :: exatns_dm_tens
+        type, public :: exatns_dm_tens_t
          type(tens_rcrsv_t) :: prime_oo, symm_oo
          type(tens_rcrsv_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(tens_rcrsv_t) :: prime_vv, symm_vv
-        end type exatns_dm_tens
+        end type exatns_dm_tens_t
 
         type, public :: space_dims
          integer       :: occ_space_id, vir_space_id
@@ -106,24 +112,24 @@
         end type space_dims
 
 !       All two electron integral tensors
-        type, public :: talsh_intg_tens
+        type, public :: talsh_intg_tens_t
          type(talsh_tens_t) :: oooo
          type(talsh_tens_t) :: ooov
          type(talsh_tens_t) :: oovv, vovo
          type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
-        end type talsh_intg_tens
+        end type talsh_intg_tens_t
 
 !       Common blocks between t and lambda
-        type, public :: talsh_comm_tens
+        type, public :: talsh_comm_tens_t
          type(talsh_tens_t) :: foo, fov, fvv
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int
          type(talsh_tens_t) :: t1, t2, tau
-        end type talsh_comm_tens
+        end type talsh_comm_tens_t
 
-        type, public :: talsh_lambda_tens
+        type, public :: talsh_lambda_tens_t
          type(talsh_tens_t) :: fbar_oo, fbar_ov, fbar_vv
          type(talsh_tens_t) :: w_oooo
          type(talsh_tens_t) :: w_ovoo, w_ooov
@@ -131,47 +137,26 @@
          type(talsh_tens_t) :: w_vvvo, w_vovv
          type(talsh_tens_t) :: w_vvvv
          type(talsh_tens_t) :: goo, gvv
-        end type talsh_lambda_tens
+        end type talsh_lambda_tens_t
 
-        type, public :: talsh_dm_tens
+        type, public :: talsh_dm_tens_t
          type(talsh_tens_t) :: prime_oo, symm_oo
          type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(talsh_tens_t) :: prime_vv, symm_vv
-        end type talsh_dm_tens
+        end type talsh_dm_tens_t
 
-        type, extends(talsh_lambda_tens), public :: talsh_eom_tens
-        end type talsh_eom_tens
+! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
+!
+        type, extends(talsh_lambda_tens), public :: talsh_intermediates_tens_t
+           type(talsh_tens_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
+                                         ! but could be pointers to that storage as well. but the point of keeping them here is to keep everything 
+                                         ! in one placewe make a copy of what may be pointers to what is  
+        end type talsh_intermediates_tens_t
 
-
-        type, public :: talsh_projectors
+! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations
+        type, public :: talsh_projectors_tens_t
          type(talsh_tens_t) :: p1, p2
-        end type talsh_projectors
-
-        type, public :: talsh_davidson_workspace
-           integer :: nroots              ! number of roots we're looking for
-           integer, pointer :: N(:)       ! number of rows per excitation level
-           integer :: Nmax                ! total number of rows =  dim(T1)+dim(T2)+...
-           integer :: Lmax                ! total number of columns = dim(maximum number of trial vectors)
-           integer :: L, Lprev            ! counters for keeping tabs on how much of the workspace we've used
-                                          ! in most usages N = Nmax and L will grow up to Lmax
-                                          ! with Lprev keeping the number of the prior iteration (staring at 0)
-! aspg, 24/03/2020
-! original idea was to that  to M to be a tensor, but using arrays of tensors as below, better to keep it as a pointer
-!          type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax); it is in tensor 
-!                                         ! form to conform with the operations, but it will be a pointer to it 
-!                                         ! that will be passed to the lapack routines 
-           complex(8), pointer, contiguous:: M(:,:) !  subspace matrix, dimension : (Lmax, Lmax)
-! see to change those below to tensors segmented into singly/doubly/... manifolds
-           type(talsh_tens_t), pointer :: trial1(:),   trial2(:) ! workspace for trial vectors
-           type(talsh_tens_t), pointer :: CTtrial1(:), CTtrial2(:) ! workspace for conjugate transpose of trial vectors 
-           type(talsh_tens_t), pointer :: sigma1(:), sigma2(:)     ! workspace for sigma vectors
-           type(talsh_tens_t), pointer :: delta1(:), delta2(:)     ! workspace for correction vectors
-           type(talsh_tens_t), pointer :: precond1(:), precond2(:) ! workspace for preconditioner
-           type(talsh_tens_t) :: Hdiag1, Hdiag2                    ! workspace for diagonal elements of the similarity-transformed Hamiltonian
-           integer, pointer :: tens1_dims(:), tens2_dims(:)        ! since all tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
-           integer :: tens1_rank, tens2_rank                       ! since all tensors for a given model IP/EA/EE/... have the same rank, we keep this information
-        
-        end type
+        end type talsh_projectors_tens_t
 
 !       One electron integrals
         type, public  :: one_el_t

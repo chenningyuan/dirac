@@ -13,12 +13,10 @@ complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
                          MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                          MINUS_TWO=(-2.D0,0.D0)
 
-
 public talsh_davidson_get_eigenvalue_shift
 public talsh_davidson_setup
 public talsh_davidson_destroy
 public talsh_davidson_driver
-!public davidson_print_vectors
 public davidson_print_vectors_complex
 public talsh_solve_values_vectors
 public talsh_sort_values_vectors
@@ -43,17 +41,47 @@ interface davidson_print_vectors_complex
     module procedure davidson_print_vectors_complex_1d
 end interface
 
-public talsh_davidson_results
+public talsh_davidson_results_t
+public talsh_davidson_workspace_t
+
 
 private
 
 ! derived types
 
-type talsh_davidson_results
-    real(kind=8), pointer :: eValues(:,:) 
-    real(kind=8), pointer :: eVectorsR(:,:)
-    real(kind=8), pointer :: eVectorsL(:,:) 
-end type
+type talsh_davidson_results_t
+    complex(kind=8), pointer :: values(:,:) 
+    type(talsh_tens_t), pointer :: rhs1(:), rhs2(:) 
+    type(talsh_tens_t), pointer :: lhs1(:), lhs2(:) 
+end type talsh_davidson_results_t
+
+! this is the workspace storage for a given instance of the solver
+type :: talsh_davidson_workspace_t
+   integer :: nroots              ! number of solutions we're looking for
+   integer, pointer :: N(:)       ! number of rows per excitation level
+   integer :: Nmax                ! total number of rows =  dim(T1)+dim(T2)+...
+   integer :: Lmax                ! total number of columns = dim(maximum number of trial vectors)
+   integer :: L, Lprev            ! counters for keeping tabs on how much of the workspace we've used
+                                  ! in most usages N = Nmax and L will grow up to Lmax
+                                  ! with Lprev keeping the number of the prior iteration (staring at 0)
+! aspg, 24/03/2020
+! original idea was to that  to M to be a tensor, but using arrays of tensors as below, better to keep it as a pointer
+!          type(talsh_tens_t) :: M        ! subspace matrix, dimension : (Lmax, Lmax); it is in tensor 
+!                                         ! form to conform with the operations, but it will be a pointer to it 
+!                                         ! that will be passed to the lapack routines 
+   complex(8), pointer, contiguous:: M(:,:) !  subspace matrix, dimension : (Lmax, Lmax)
+! see to change those below to tensors segmented into singly/doubly/... manifolds
+   type(talsh_tens_t), pointer :: trial1(:),   trial2(:)   ! workspace for trial vectors
+   type(talsh_tens_t), pointer :: sigma1(:), sigma2(:)     ! workspace for sigma vectors
+   type(talsh_tens_t), pointer :: delta1(:), delta2(:)     ! workspace for correction vectors
+   type(talsh_tens_t), pointer :: precond1(:), precond2(:) ! workspace for preconditioner
+   type(talsh_tens_t), pointer :: metric1(:), metric2(:)   ! workspace for metric, for generalized eigenvalue problem, or linear equation problem 
+   type(talsh_tens_t) :: Hdiag1, Hdiag2                    ! workspace for diagonal elements of the similarity-transformed Hamiltonian
+! this so far is not really used outside of davidson, if it is, we should create a type
+   integer, pointer :: tens1_dims(:), tens2_dims(:)        ! since all tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
+   integer :: tens1_rank, tens2_rank                       ! since all tensors for a given model IP/EA/EE/... have the same rank, we keep this information
+end type talsh_davidson_workspace_t
+
 
 
 ! module parameters
@@ -131,49 +159,49 @@ contains
 ! left vectors, if asked, are ignored
         N_local = N
 
-        results%eValues => NULL()
-        results%eVectorsR => NULL()
-        results%eVectorsL => NULL()
+!       results%eValues => NULL()
+!       results%eVectorsR => NULL()
+!       results%eVectorsL => NULL()
 
 
-        if (davidson_symmetric) then
-            if (values) then 
-                allocate(results%eValues(1,nroots))
-                results%eValues   = 0.0d0
-            end if
-            if (right) then
-                allocate(results%eVectorsR(N_local,nroots))
-                results%eVectorsR = 0.0d0
-            end if
-        else
-            if (values) then
-                allocate(results%eValues(2,nroots))
-                results%eValues   = 0.0d0
-            end if
-            if (right) then
-                allocate(results%eVectorsR(N_local,nroots))
-                results%eVectorsR = 0.0d0
-            else
-                allocate(results%eVectorsR(1,nroots))
-                results%eVectorsR = 0.0d0
-            end if
-            if (left) then
-                allocate(results%eVectorsL(N_local,nroots))
-                results%eVectorsL = 0.0d0
-            else
-                allocate(results%eVectorsL(1,nroots))
-                results%eVectorsL = 0.0d0
-            end if
-        end if
+!       if (davidson_symmetric) then
+!           if (values) then 
+!               allocate(results%eValues(1,nroots))
+!               results%eValues   = 0.0d0
+!           end if
+!           if (right) then
+!               allocate(results%eVectorsR(N_local,nroots))
+!               results%eVectorsR = 0.0d0
+!           end if
+!       else
+!           if (values) then
+!               allocate(results%eValues(2,nroots))
+!               results%eValues   = 0.0d0
+!           end if
+!           if (right) then
+!               allocate(results%eVectorsR(N_local,nroots))
+!               results%eVectorsR = 0.0d0
+!           else
+!               allocate(results%eVectorsR(1,nroots))
+!               results%eVectorsR = 0.0d0
+!           end if
+!           if (left) then
+!               allocate(results%eVectorsL(N_local,nroots))
+!               results%eVectorsL = 0.0d0
+!           else
+!               allocate(results%eVectorsL(1,nroots))
+!               results%eVectorsL = 0.0d0
+!           end if
+!       end if
     end subroutine
 
 
     subroutine free_davidson_results(results)
         type(talsh_davidson_results), intent(inout) :: results
 
-        if (associated(results%eValues)) deallocate(results%eValues)
-        if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
-        if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
+!       if (associated(results%eValues)) deallocate(results%eValues)
+!       if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
+!       if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
     end subroutine
 
 
@@ -840,7 +868,7 @@ contains
         integer, intent(in) :: k
         complex(kind=8), intent(in)  :: eigenvectors_subspace(:,:)
         complex(kind=8), intent(in)  :: eigenvalues_subspace(:)
-        type(talsh_davidson_workspace), intent(inout) :: workspace
+        type(talsh_davidson_workspace_t), intent(inout) :: workspace
         complex(kind=8) :: factor1, factor2
         integer(INTD) :: r1_rank 
         integer :: ierr, i
@@ -940,7 +968,7 @@ contains
 
     function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, workspace, correct_all)
         integer, intent(in)       :: nroots, output_file_unit
-        type(talsh_davidson_workspace), intent(inout) :: workspace
+        type(talsh_davidson_workspace_t), intent(inout) :: workspace
         complex(kind=8), intent(in)  :: e_small_M(:)
         complex(kind=8), intent(in)  :: c_small_M(:,:)
         logical, optional, intent(in) :: correct_all
@@ -1025,7 +1053,7 @@ contains
     end function
 
     subroutine form_preconditioner(workspace, eigenvalues)
-        type(talsh_davidson_workspace) :: workspace
+        type(talsh_davidson_workspace_t) :: workspace
         complex(kind=8), intent(in)  :: eigenvalues(:)
 
         complex(8), pointer, contiguous:: preco_1d_p(:)
@@ -1346,7 +1374,7 @@ contains
  
 
     subroutine talsh_davidson_workspace_destroy(workspace)
-        type(talsh_davidson_workspace),  intent(inout) :: workspace
+        type(talsh_davidson_workspace_t),  intent(inout) :: workspace
         integer :: ierr, i
 
       
@@ -1389,7 +1417,7 @@ contains
     end subroutine 
 
     subroutine talsh_davidson_workspace_create(workspace, nocc, nvirt, flavor, excitation_level)
-        type(talsh_davidson_workspace),  intent(inout) :: workspace
+        type(talsh_davidson_workspace_t),  intent(inout) :: workspace
         character*2 :: flavor
         integer, intent(in) :: nocc, nvirt, excitation_level
         logical :: workspace_create_debug = .false.
@@ -1533,7 +1561,7 @@ contains
       type(talsh_eom_tens),  intent(inout) :: eom_t
       type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_intg_tens), intent(inout) :: int_t
-      type(talsh_davidson_workspace), intent(inout) :: workspace
+      type(talsh_davidson_workspace_t), intent(inout) :: workspace
 
       complex(8), pointer, contiguous:: s1_h_p_p(:)
       type(C_PTR):: s1_body_p
@@ -1552,31 +1580,28 @@ contains
 
       do iroot = (workspace%L - workspace%nroots + 1), workspace%L
 
-         if (debug_sigma_right) write (6,*) 'root ',iroot
-! aspg
-! debug info
-         ierr = talsh_tensor_get_body_access(workspace%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
-         if (debug_sigma_right) write (6,*) 's1_body_p',s1_body_p
-         ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-         call c_f_pointer(s1_body_p,s1_h_p_p,workspace%tens1_dims(1:workspace%tens1_rank))
-
-         ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
-         if (debug_sigma_right) write (6,*) 't1_body_p',t1_body_p
-         call c_f_pointer(t1_body_p,t1_h_p_p,workspace%tens1_dims(1:workspace%tens1_rank))
-
-         ierr = talsh_tensor_get_body_access(workspace%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
-         if (debug_sigma_right) write (6,*) 's2_body_p',s2_body_p
-         ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-         call c_f_pointer(s2_body_p,s2_h_p_p,workspace%tens2_dims(1:workspace%tens2_rank))
-
-         ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
-         if (debug_sigma_right) write (6,*) 't2_body_p',t2_body_p
-         call c_f_pointer(t2_body_p,t2_h_p_p,workspace%tens2_dims(1:workspace%tens2_rank))
-! debug info
-! aspg
-! aspg
-! debug info     
          if (debug_sigma_right) then
+            write (6,*) 'root ',iroot
+! aspg
+! debug info
+            ierr = talsh_tensor_get_body_access(workspace%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
+            write (6,*) 's1_body_p',s1_body_p
+            ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
+            call c_f_pointer(s1_body_p,s1_h_p_p,workspace%tens1_dims(1:workspace%tens1_rank))
+
+            ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
+            write (6,*) 't1_body_p',t1_body_p
+            call c_f_pointer(t1_body_p,t1_h_p_p,workspace%tens1_dims(1:workspace%tens1_rank))
+
+            ierr = talsh_tensor_get_body_access(workspace%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
+            write (6,*) 's2_body_p',s2_body_p
+           ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
+            call c_f_pointer(s2_body_p,s2_h_p_p,workspace%tens2_dims(1:workspace%tens2_rank))
+
+            ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
+            write (6,*) 't2_body_p',t2_body_p
+            call c_f_pointer(t2_body_p,t2_h_p_p,workspace%tens2_dims(1:workspace%tens2_rank))
+
             write (6,*) 'debug >>> t1_tens before sigma, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             do i = 1, workspace%tens1_dims(1)

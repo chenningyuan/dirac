@@ -46,7 +46,7 @@ module talsh_cc
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
          use talsh_gradient
-         use talsh_eom,      only       : talsh_eom_driver
+         use talsh_eom,      only       : talsh_eom_eigval_driver
 
          type(exacc_input), intent(in) :: exa_input
 
@@ -313,6 +313,9 @@ module talsh_cc
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
                                  comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift,keep_diagonal=.true.)
+! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
+         
+! with the ground-state intermediates done, and t amplitudes store
 
              if (debug_eom) then
              print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
@@ -324,17 +327,12 @@ module talsh_cc
              call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
            end if
 
-           if ( (exa_input%eom_flavour.eq."IP" .or. exa_input%eom_flavour.eq."EA") .and. .not.CCD) then
-             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,t1_tensor=comm_t%t1) 
-           elseif ( (exa_input%eom_flavour.eq."IP" .or. exa_input%eom_flavour.eq."EA") .and. CCD) then
-             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv)
-           elseif (exa_input%eom_flavour.eq."EE" .and. .not.CCD) then
-             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor,comm_t%t1)
-           elseif (exa_input%eom_flavour.eq."EE" .and. CCD) then
-             call talsh_eom_driver(exa_input,eps_occ,eps_vir, comm_t%t2,int_t,comm_t%foo,comm_t%fov,comm_t%fvv,l2_tensor)
-           else
-             call quit ('Error: No valid EOM-flavour chosen')
-           end if
+! create eom intermediates
+
+! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
+! we just need different results instances
+           call talsh_eom_eigval_driver(eom_results_t,exa_input,eps_occ,eps_vir,comm_t,int_t)
+! TODO: if we want properties etc, now we call other drivers
 
          end if
 
