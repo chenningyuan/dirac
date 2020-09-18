@@ -39,6 +39,7 @@ module talsh_mp2no
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
          use talsh_gradient
+         use davidson
 
          type(exacc_input), intent(in) :: exa_input
 
@@ -46,9 +47,13 @@ module talsh_mp2no
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer(C_INT)       :: ierr
-         complex(8), pointer :: MP2_density_tens(:,:)
+         complex(8), pointer :: MP2_density_tens(:,:),MP2_density_tens_2(:,:)
          complex(kind=8), pointer :: N_occupation(:) 
          complex(kind=8), pointer :: NOs_MO(:,:)
+         real(kind=8), pointer :: eVectorsR(:,:)
+         real(kind=8), pointer :: eVectorsL(:,:) 
+         real(kind=8), pointer :: e_small(:,:)
+         real(kind=8)          :: energy_shift(2)
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
@@ -68,6 +73,9 @@ module talsh_mp2no
          integer             :: i,j,k
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
+         logical :: left_local, right_local, apply_evalues_shift
+         integer :: sorting_order_local
+         
 
 
 !        Make some noise so that we know we are here
@@ -148,13 +156,36 @@ module talsh_mp2no
          write(*,*) ""
          call print_date('Go to natural orbital')
 
-!        Diagoliazation of Density matrix 
-         call diagoanl_DMP2_matrix(MP2_density_tens,N_occupation,NOs_MO)
+!        Diagoliazation of Density matrix
+         allocate(e_small(2,size(MP2_density_tens,2)))
+         e_small = 0.0
+         call diagoanl_DMP2_matrix(MP2_density_tens,e_small,NOs_MO)
+         allocate(eVectorsR(size(NOs_MO,1),size(NOs_MO,2))) 
+         do i=1,size(e_small,2),1
+                print *,'occupation number',e_small(1,i)
+         end do
+         sorting_order_local = 1
+         apply_evalues_shift = .false.
+         left_local = .false. 
+         right_local = .true.
+         do i=1,size(NOs_MO,1),1
+                  eVectorsR (:,i)= real(NOs_MO(:,i))
+         end do
 
-         do i=1,size(N_occupation),1
-                print *,'occupation number',abs(N_occupation(i))
+         do j=1,size(eVectorsR,2),1
+                print *,'natural orbital in MO basis',eVectorsR(:,j)
+         end do
+         energy_shift =0.0
+         call sort_values_vectors(sorting_order_local, e_small, eVectorsR, eVectorsR, &
+                                     right_local, left_local,apply_evalues_shift,energy_shift)
+
+         do i=1,size(e_small,2),1
+                print *,'occupation number_order',e_small(1,i)
          end do
        
+         do j=1,size(eVectorsR,2),1
+                  print *,'natural orbital in MO basis_order',eVectorsR(:,j)
+         end do
 
         end subroutine talsh_mp2no_driver
 
@@ -169,19 +200,19 @@ module talsh_mp2no
                     real(kind=8), allocatable :: rwork(:)
                     integer :: vectors_L, vectors_R
                     complex(kind=8), intent(inout), pointer :: M(:,:)
-                    complex(kind=8), pointer :: eVal(:) 
+                    real(kind=8), pointer :: eVal(:,:) 
                     complex(kind=8), pointer :: eVectorsR(:,:)
                     complex(kind=8), pointer :: eVectorsL(:,:)
                     character(len=1) :: do_left = 'N', do_right = 'V'
             
-                    vectors_R = size(M,1)
-                    vectors_L = size(M,2)
+                    vectors_L = size(M,1)
+                    vectors_R = size(M,2)
                     print *,'vector_R', vectors_R
                     print *,'vector_L', vectors_L
                     lwork = 10000000*vectors_R	
                     allocate(eVectorsL(vectors_L,vectors_R))
                     allocate(eVectorsR(vectors_L,vectors_R))
-                    allocate(eVal(vectors_R))
+                    allocate(eVal(2,vectors_R))
                     allocate(work(MAX(1,LWORK)))
                     allocate(rwork(2*vectors_R))
                     call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
