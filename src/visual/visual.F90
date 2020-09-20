@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,6 @@ module visual
 
   use memory_allocator
   use visual_cfg
-  use codata
   use dirac_ao_eval
   use interface_ao
   use matrix_defop_old
@@ -55,8 +54,7 @@ module visual
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbxlr.h"
-
-
+#include "codata.h"
 
     integer, parameter :: file_unit = 137
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -205,9 +205,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use interface_grid
 
 #include "implicit.h" 
-#include "priunit.h" 
-
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "codata.h"
+#include "priunit.h"
+#include "consts.h"
 
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
@@ -241,6 +241,7 @@ C
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
 #include "ibtfun.h"
+C
       ADDSML = num_grid_cfg_force_4c_grid.OR.
      &         (MC.GT.1.AND.(.NOT.LEVYLE))
 C
@@ -327,7 +328,6 @@ C
       MXOPR = 0 
       NTOTAL = 0
       NALL = 0
-      BOHR   = 0.529177249D0
       NATOM = 1
       WRITE(LUPRI,'(A)')
      &  'Atom  Deg   Rmin        Rmax        Step size     #rp     #tp',
@@ -382,7 +382,7 @@ C        loop over radial points
 C        =======================
 C
          SWITCH = .FALSE.
-         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*BOHR)
+         RBRAGG = BRAGG(NINT(ZAN(NATOM)))/(5.0D0*XTANG)
          DO 20 IR = 1, NR
             RWT   = RADWT(IR)
             RNODE = RADNDE(IR)
@@ -1286,11 +1286,10 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
-
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+#include "consts.h"
 #include "dcbbas.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -1311,7 +1310,6 @@ C     Arrays for 2nd order polynomial fit:
 C
       DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
 C
-
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//
      &      'for atom pair (', ICENTA,',', ICENTB,')'
@@ -1462,7 +1460,6 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"

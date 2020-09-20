@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,7 +26,6 @@ module visual_in_point
   use interface_ao
   use visual_cfg
   use visual_london
-  use codata
   use dirac_ao_eval
   use density_eval
   use matrix_defop_old

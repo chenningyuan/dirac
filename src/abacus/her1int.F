@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,12 +19,6 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-#ifdef UNDEF
-/* Comdeck log */
-930309-Sheela Kirpekar: added MVLINT and DWNINT
-930726-hjaaj: SDINT: factor DFACSD = (GFAC/D2)
-#endif
-C  /* Deck pr1drv */
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
      &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
@@ -535,6 +529,7 @@ C
          WRITE (LUPRI,'(A,3F20.10)') ' GAUGE  ', (GAGORG(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' DIPOLE ', (DIPORG(I),I=1,3)
          WRITE (LUPRI,'(A,3F20.10)') ' CAVITY ', (CAVORG(I),I=1,3)
+         WRITE (LUPRI,'(A,3F20.10)') ' CM     ', (CMXYZ(I),I=1,3)
          WRITE (LUPRI,'(A,I5)') ' JMAXD  ',JMAXD
          WRITE (LUPRI,'(A,I5)') ' JMAXM  ',JMAXM
       END IF
@@ -1222,7 +1217,8 @@ C     Choose origin for expansions coefficients:
 C     1) A certain nuclei
 C     2) Dipole origin
 C     3) Gauge origin
-C     4) Operator center ("molecular" origin)
+C     4) Molecular center of mass
+C     5) Operator center ("molecular" origin)
 C
          IF ((INTTYP .EQ. 17) .OR. (INTTYP .EQ. 20) .OR.
      &       (INTTYP .EQ. 22) .OR. (INTTYP .EQ. 26).OR. 
@@ -1234,17 +1230,19 @@ C
      &            (INTTYP .EQ. 6) .OR. (INTTYP .EQ. 7) .OR.
      &            (INTTYP .EQ. 8) .OR. (INTTYP .EQ. 29) .OR.
      &            (INTTYP .EQ. 30) .OR. (INTTYP .EQ. 31) .OR.
-     &            (INTTYP .EQ. 53) .OR.
-     &            (INTTYP .EQ. 56) .OR. (INTTYP .EQ. 57) .OR.
-     &            (INTTYP .EQ. 58)) THEN
+     &            (INTTYP .EQ. 53) .OR. (INTTYP .EQ. 56) .OR.
+     &            (INTTYP .EQ. 57) .OR. (INTTYP .EQ. 58)) THEN
             TEMP(1) = DIPORG(1)
             TEMP(2) = DIPORG(2)
             TEMP(3) = DIPORG(3)
-         ELSE IF ((INTTYP .EQ. 18) .OR. (INTTYP .EQ. 37) .OR.
-     &            (INTTYP .EQ. 38)) THEN
+         ELSE IF ((INTTYP .EQ. 37) .OR. (INTTYP .EQ. 38)) THEN
             TEMP(1) = GAGORG(1)
             TEMP(2) = GAGORG(2)
             TEMP(3) = GAGORG(3)
+         ELSE IF (INTTYP .EQ. 18) THEN
+            TEMP(1) = CMXYZ(1)
+            TEMP(2) = CMXYZ(2)
+            TEMP(3) = CMXYZ(3)
          ELSE IF ((INTTYP .EQ. 46) .OR. (INTTYP .EQ. 47)) THEN
             TEMP(1) = CAVORG(1)
             TEMP(2) = CAVORG(2)
@@ -1464,8 +1462,8 @@ C
             CALL AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  D1)
 C
-C        Angular momentum around the origin
-C        ----------------------------------
+C        Angular momentum around the molecular center of mass
+C        ----------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 18) THEN
             CALL AM1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
@@ -2521,20 +2519,24 @@ C
 C  /* Deck mvlint */
       SUBROUTINE MVLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT)
 C
-C     shki. jan. 93 (based on KININT)
+C     Sheela Kirpekar. jan. 93 (based on KININT)
 C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
-      PARAMETER (ALPMVL = ALPHA2*0.125D0, ALPMV2 = ALPHA2*0.25D0)
+      DOUBLE PRECISION ALPMVL,ALPMV2
+
+      ALPMVL = ALPHA2*0.125D0
+      ALPMV2 = ALPHA2*0.25D0
+
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4726,17 +4728,17 @@ C
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
 C
-C     shki, Jan. 93 (based on FRMINT tuh feb 91)
+C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)
+      DOUBLE PRECISION DWNFAC
       DIMENSION SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
@@ -4744,6 +4746,8 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+C
+      DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC
       INT = 0
       DO 100 ICOMPA = 1,KCKTA

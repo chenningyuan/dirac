@@ -41,7 +41,12 @@ find_package(Sphinx QUIET)
 if(SPHINX_FOUND)
     add_custom_target(
         html
-        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/preprocess_sphinx ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/preprocess_sphinx ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR} html
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        )
+    add_custom_target(
+        latex
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/preprocess_sphinx ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR} latex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
     add_custom_target(

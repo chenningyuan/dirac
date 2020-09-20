@@ -1,7 +1,37 @@
 :orphan:
 
 
-18.1 (unreleased)
+20.0 (planned for 2021-01-31)
+-----------------------------
+
+New features:
+
+- Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
+   S. Lehtola,  L. Visscher and  E. Engel.
+   Efficient implementation of the superposition of atomic potentials initial guess for electronic structure calculations in Gaussian basis sets.
+   J. Chem. Phys. 152, 144105 (2020); http://dx.doi.org/10.1063/5.0004046 doi: 10.1063/5.0004046
+- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
+   Theoretical study of the relativistic molecular rotational g-tensor.
+   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
+- Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
+- "make latex" for making a latex version of the documenation in "build/latex", used e.g. pdflatex to make a pdf version of the manual. Contributor: Hans Joergen Aa. Jensen
+
+Revised features:
+
+- Gauge origin (.GAUGEO and .GO ANG) now can only be set under \*\*HAMILTONIAN.
+- Phase and dipole origins (.PHASEO and .DIPORG, respectively) now can only be set under \*\*HAMILTONIAN.
+
+New defaults:
+
+- One-electron operator ANGMOM's origin was moved from the gauge-origin to the molecular center of mass.
+- The CODATA2018 set of physical constants is now used as default (taken from http://physics.nist.gov/constants). Before this version, CODATA1998 was default.
+- Non-relativistic and relativistic effective core-potential calculations (".NONREL" and ".ECP") now have nuclear point nucleus as default.
+  For non-relativistic calculations this makes it easier to compare to other codes, and for RECP this is the intended behavior which by mistake was not activated.
+
+-----------------------------------------------------------------------------------------------------
+
+19.0 (2019-12-12)
 -----------------
 
 New features:
@@ -10,6 +40,14 @@ New features:
    I. A. Aucar, S. S. Gómez, M. C. Ruiz de Azúa, and C. G. Giribet.
    Theoretical study of the nuclear spin-molecular rotation coupling for relativistic electrons and non-relativistic nuclei.
    J. Chem. Phys. 136, 204119 (2012); http://dx.doi.org/10.1063/1.4721627 doi: 10.1063/1.4721627
+- Interface with the Quantum Computing package OpenFermion. https://github.com/bsenjean/Openfermion-Dirac. Contributors: Bruno Senjean and Luuk Visscher.
+   T. E. O'Brien, B. Senjean, R. Sagastizabal, X. Bonet-Monroig, A. Dutkiewicz, F. Buda, L. DiCarlo and L. Visscher
+   Calculating energy derivatives for quantum chemistry on a quantum computer.
+   Accepted to npj: Quantum Information. https://arxiv.org/abs/1905.03742
+- Expectation value of Nuclear Magnetic-Quadrupole-Moment interaction constant using ".OPERATOR" and ".NMQM" keyword in KRCI. Contributor: Malaya K. Nayak
+   T. Fleig, M. K. Nayak and M. G. Kozlov.
+   TaN, a molecular system for probing P,T-violating hadron physics.
+   Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
 
 Revised features:
 
@@ -20,6 +58,9 @@ Error corrections:
 - Fixed use of point charges (do not try to obtain e.g. mass of a point charge).
 - Fixed spelling error in keyword .GAUNTSCALE (was .GAUTSCALE).
 - Fixed T1EQN1 function call in src/relccsd/ccgrad.F (thanks to Martin Siegert).
+- Fixed wrong memory allocation for spin-free or non-relativistic KRMCSCF.
+- Fixed runtime error for XPROPMAT in src/krmc/krmccan.F property modules.
+- Fixed runtime error for calling XPRIND in src/prp/pamprp.F property modules.
 
 Basis set corrections:
 
@@ -35,6 +76,7 @@ Documentation:
 
 - Restore local build of Sphinx documentation.
 
+-----------------------------------------------------------------------------------------------------
 
 18.0 (2018-12-13)
 -----------------
@@ -83,7 +125,7 @@ New features:
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
 
  Reference:
- E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jense:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+ E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
@@ -172,6 +214,7 @@ Bug fixes:
 - Bugfix: restored "make install" target.
 - Bugfix: Test reladc_fano does not report failure if Stieltjes is deactivated.
 
+-----------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------
@@ -201,6 +244,7 @@ Bug fixes:
 - Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
 - Configuration framework uses [Autocmake](http://autocmake.org).
 
+-----------------------------------------------------------------------------------------------------
 
 14.1 (2015-07-20)
 -----------------

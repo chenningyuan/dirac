@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1083,21 +1083,21 @@ C
 C
 C     Matrix to hold orbitals.
 C
-      CALL MEMGET('REAL',KCMO,N2ORBTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,N2ORBTQ,WORK,KFREE,LFREE)
 C
 C     Construct T^{\dagger} S
 C     -----------------------
 C
 C     Fetch T
 C
-      CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMAT',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','RAPPBOS')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT,STATUS='KEEP')
 C
 C     Calculate T^{\dagger} S
 C
-      CALL MEMGET('REAL',KSMOAO,N2TMT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SMOAO',KSMOAO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MKSMOAO(WORK(KSMOAO),WORK(KTMAT),IPRINT,WORK(KFREE),LFREE)
 C
 C     Transform orbitals to orthonormal basis
@@ -1126,8 +1126,8 @@ C     -----------------------------------
 C
       CALL MEMREL('RAPPBOS.trans',WORK,KWORK,KTMAT,KFREE,LFREE)
 C
-      CALL MEMGET('INTE',KINDX,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRDUM,4*NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDX',KINDX,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RDUM',KRDUM,4*NORBT,WORK,KFREE,LFREE)
 C
       DO I = 1, NFSYM
          CALL APPBOS(I,NORB(I),WORK(KINDX),IBOSYM(1+IORB(I)),
@@ -1223,7 +1223,6 @@ C
             JSAO1 = JSAO1 + NFBASI
          END DO
          JSAO = JSAO + NFBASI
-         CALL MEMCHK('after copy of overlap mat',WORK,1)
          IF (IPROPT .GE. 10) THEN
             WRITE(LUPRI,'(A,I3)')
      &        ' RGMCMO: Coefficients for symmetry ',I
@@ -1234,7 +1233,6 @@ C
          IF ( NPSH(I) .EQ. 0) THEN
             CALL QNORM(WORK(KSAO1),CMO(1+ICMOQ(I)),NFBASI,NORBI,
      &                 NZ,IPQTOQ(1,0),IRETUR,WORK(KSCR1),WORK(KSCR2))
-         CALL MEMCHK('after first QNORM',WORK,1)
          ELSE
 C           --- change CMO order from positron,electron to
 C               electron,positron for the Gram-Schmidt
@@ -1265,7 +1263,6 @@ C               because we want to start with the occupied orbitals
             END DO
          END IF
 C
-         CALL MEMCHK('after first QNORM',WORK,1)
          CALL MEMREL('RGMCMO.QNORM',WORK,KWORK,KSCR1,KFREE,LFREE)
 C
          IF (IPROPT .GE. 10) THEN

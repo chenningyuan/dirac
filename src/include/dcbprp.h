@@ -42,7 +42,7 @@
       INTEGER IPRPRP, IPEPOLAR(3, 2), IPSPNSPN(2, MXCOOR),              &
      &        IPDSO(MXCOOR*(MXCOOR+1)/2), NDSOIN, IPSHIELD(MXCOOR+3),   &
      &        IPNSTDIA(MXCOOR*3), NNSTIN, IPESR(MXCOOR+3, 2), NPRP_WF,  &
-     &        IPROTG(2,3),IPMSUSC(2,3),IMAGOUT, EXCPRPTYP,              &
+     &        IPROTG(9),IPMSUSC(2,3),IMAGOUT, EXCPRPTYP,                &
      &        IPCON21(3),IPCON22(3),IPCON23(6),                         &
      &        IPLONDON(4,3),IPCON(3),IPRNST(MXCOOR*3),                  &
      &        IP_PVC_SHIELD(MXCOOR+3),                                  &

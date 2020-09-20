@@ -10,6 +10,9 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
+f.add(from_string = 'SYMGRP:Point group information',
+      to_string='References for the basis sets',
+      rel_tolerance   = 1.0e-8)
 f.add(from_string = 'TOTAL ENERGY',
       num_lines   = 11,
       rel_tolerance   = 1.0e-9)

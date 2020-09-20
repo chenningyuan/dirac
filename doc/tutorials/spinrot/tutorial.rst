@@ -10,11 +10,6 @@ Introduction
 In this tutorial we introduce the calculation of nuclear spin-rotation tensors as given in the DIRAC code, based on the theoretical
 developments by I. Agustín Aucar *et al.* For details, you are welcome to consult :cite:`Aucar_JCP2012`.
 
-.. note::
-   
-   The current implementation gives theoretically correct results only for molecules in equilibrium.
-
-
 The nuclear spin-rotation (SR) tensor elements of a nucleus :math:`N` are given by
 
 .. math::
@@ -40,7 +35,7 @@ In tensorial notation, the nuclear spin-rotation contributions of a nucleus :mat
 
 where :math:`{\bf R}_{MN}` is the position of nucleus :math:`M` with respect to the position of nucleus :math:`N`; :math:`{\bf R}_{N,CM}` is the position of nucleus :math:`N` with respect to the molecular center of mass; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
 
-For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`M_{N,\alpha\beta}^{NU} + M_{N,\alpha\beta}^{EV}`, is equal to a new tensor element which is independent of the electronic dynamics (see Eq. 60 of :cite:`Aucar_JCP2012`),
+For molecules at their equilibrium geometry, it is found that the sum of the first two terms, :math:`{\bf M}_N^{NU} (eq) + {\bf M}_N^{EV} (eq)`, is equal to a new tensor which is independent of the electronic dynamics (see Eq. 60 of :cite:`Aucar_JCP2012`),
 
 .. math::
 
@@ -49,7 +44,12 @@ For molecules at their equilibrium geometry, it is found that the sum of the fir
                               \left[  \left( {\bf R}_{M,CM}  \cdot \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right) {\bf 1}
                                     - {\bf R}_{M,CM} \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right]   \otimes {\bf I}^{-1}
 
-Therefore, the electronic dependence of the nuclear spin-rotation tensor of a nucleus :math:`N` in a molecule in equilibrium is completely given by its linear response term, :math:`M_{N,\alpha\beta}^{LR}` (see Eq. 59 of :cite:`Aucar_JCP2012`).
+Therefore, the electronic dependence of the nuclear spin-rotation tensor of a nucleus :math:`N` in a molecule in equilibrium is completely given by its linear response term, :math:`{\bf M}_N^{LR}` (see Eq. 59 of :cite:`Aucar_JCP2012`).
+
+
+.. note::
+   
+   The current implementation gives by default (:ref:`PROPERTIES_.PRINT` values up to 3) results only for molecules in equilibrium.
 
 
 Application to the HF molecule
@@ -59,13 +59,13 @@ As an example, we show a calculation of the SR constant of the fluorine nucleus 
 
 .. literalinclude:: spinrot.inp
 
-whereas the molecular input file `HF_acv4z.mol` is
+whereas the molecular input file `HF_cv3z.mol` is
 
-.. literalinclude:: HF_acv4z.mol
+.. literalinclude:: HF_cv3z.mol
 
 The calculation is run using::
 
-   pam --inp=spinrot --mol=HF_acv4z
+   pam --inp=spinrot --mol=HF_cv3z
 
 
 As a result, SR constants are obtained at the coupled Hartree-Fock level. The code also works at the DFT level.

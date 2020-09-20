@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -155,7 +155,7 @@
 !  .. Miro: check single "big" integer*4/8 variable MPI sending and receiving
       CALL interface_MPI_ISEND(big_int,1,0,25,global_communicator,IREQ)
       CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG, global_communicator,ISTAT)
-      CALL interface_MPI_IRECV(big_int_recv,1,0,df_MPI_ANY_TAG,global_communicator,IREQ)
+      CALL interface_MPI_RECV(big_int_recv,1,0,df_MPI_ANY_TAG,global_communicator)
 
       if (big_int.ne.big_int_recv) then
         print *,'selftest_mpi: big_int, big_int_recv=',big_int, big_int_recv

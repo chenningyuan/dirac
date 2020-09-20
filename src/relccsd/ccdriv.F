@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -276,8 +276,6 @@ C
       NTOL      = relcc_fopr_desired_convergence
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
-!         IF (SPFR) 
-!     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF
@@ -435,6 +433,10 @@ CMI     ...default maximum number iterations per sector
       DO I = 1, 16
         NINACT(I) = NELEC(I) - NACTH(I)
         NACT(I) = NACTH(I) + NACTP(I)
+        IF (.not.FirstCall.and.NINACT(I).LT.0) THEN
+           WRITE (IW,*) "more holes than electrons in input"
+           CALL QUIT ("Input error")
+        END IF
       ENDDO
 CMI   ... translate MAXITxy easy input to MAXIT_SECT type input ...
       IF (MAXIT02.NE.-1) MAXIT_SECT(5) = MAXIT02
@@ -1055,6 +1057,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use spinor_indexing
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -2117,6 +2120,10 @@ CMI ..... write only active irreps
        ENDIF
 
       ENDIF
+
+!     initialize module needed to reorder matrix elements read from MRCONEE or MDPROP
+      call init_index (focksp,nsp,irepsp,irepspi)
+
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
  1001 FORMAT (/' Configuration in abelian subgroup'//T40,8(1X,A4))
@@ -2177,7 +2184,7 @@ C
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
      &                              a_indk(:),   a_indl(:),
-     &                              a_ibuf(:),   a_index(:)
+     &                              a_ibuf(:)
       real (kind=kreal), allocatable, target :: a_cbuf(:),
      &                              a_buf1(:),
      &                              a_buf2(:),   a_foo(:),
@@ -2203,11 +2210,6 @@ C
 C  Allocate core for integral sorting step
 C
       call alloc(a_kr,2*NSP+2, id="kr")
-      IF (EQNS.EQ.'FOCKSP') THEN
-         call alloc(a_INDEX,NSP*NSP*16, id="index")
-      ELSE
-         call alloc(a_INDEX,NSP*NSP*4, id="index")
-      ENDIF
       call alloc(a_INDK,NSP*NSP    , id="indk")
       call alloc(a_INDL,NSP*NSP    , id="indl")
       call alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
@@ -2289,16 +2291,15 @@ C
       IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
       IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
-      CALL RDINTS(IPRNT,NSP,a_INDEX,a_KR,a_INDK,a_INDL,
-     &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,IREPSP,
-     &            IREPSPI,a_V1,a_V1A,
+      CALL RDINTS(IPRNT,NSP,a_KR,a_INDK,a_INDL,
+     &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,
+     &            a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
      &            a_FVV,BREIT,SRTALL,INTERFACE)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
-      call dealloc(a_INDEX, id="index" )
       call dealloc(a_INDK, id="indk" )
       call dealloc(a_INDL, id="indl" )
       call dealloc(a_CBUF, id="cbuf" )
@@ -2361,7 +2362,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
@@ -2742,7 +2743,6 @@ C
 #include "diis.inc"
 #include "inpt.inc"
 #include "eqns.inc"
-#include "results.inc"
 #include "symm.inc"
 #include "dgroup.h"
 #include "complex.inc"
@@ -4440,6 +4440,8 @@ C
       CHARACTER*14 REPNT(16)
       integer   :: spinor_info(5,2)
       integer   :: i,irep,irp,isp,j,jrep,krep,nfsym,nz
+      integer   :: nspc(2,0:2),ncore2
+      real(8)   :: toterg
 C
 C---------------Executable code--------------------------------------
 C
@@ -4449,8 +4451,8 @@ C
 C
       IF (MYPROC.EQ.MASTER) THEN
        OPEN (MRCONEE,FILE='MRCONEE',FORM='UNFORMATTED')
-       READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,
-     &                              NFSYM,NZ,SPFR,NORBT
+       READ (MRCONEE,END=10,ERR=10) NSP,BREIT,ECORE,NFSYM,NZ,
+     &                              SPFR,NORBT,toterg,nspc,ncore2
        READ (MRCONEE,END=10,ERR=10) NSYMRP,(REPNT(IRP),IRP=1,NSYMRP),
      &                 (NELEC(IRP),IRP=1,NSYMRP),
      &                 (spinor_info(1,irp),irp=1,nfsym),
@@ -4458,8 +4460,8 @@ C
      &                 (spinor_info(3,irp),irp=1,nfsym),
      &                 (spinor_info(4,irp),irp=1,nfsym),
      &                 (spinor_info(5,irp),irp=1,nfsym)
-       ncore_elec = 0
-       ncore_elec = ncore_elec + spinor_info(3,1)*2 + spinor_info(3,2)*2
+       ncore_elec = -ncore2
+       ncore_elec = ncore_elec+spinor_info(3,1)*2+spinor_info(3,2)*2
        GOTO 11
 C---- Keep OLD (MOLFDIR) format here for compatibility
    10     WRITE (IW,*) "Missing information on MRCONEE, I assume"//

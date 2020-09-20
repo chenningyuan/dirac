@@ -1,7 +1,7 @@
 !define DEBUG_MP2_NO
 
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -613,7 +613,7 @@ C
       INTEGER   NSTR_ONE(2,0:2,2),NSTRT_ONE(2),
      &          KVEC_ONE(2,2),KQ_ONE(2,2),KIBE_ONE(2,2),KE_ONE(2,2)
 ! core
-      INTEGER   NSPC(2,0:2),KQC(2)
+      INTEGER   NSPC(2,0:2),KQC(2),NSPC2(2,0:3)
 C
       CALL QENTER('DENMP2NO')
 #include "memint.h"
@@ -1104,8 +1104,9 @@ C     by making all the MO coefficients for these orbitals zero.
       END IF
 
       IF (.NOT.NO2IND) THEN
+         NSPC2=-1
          CALL TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR_ONE,NSTRT_ONE,NSPC,
-     &               KQ,KQC,KE_ONE,KIBE_ONE)
+     &               KQ,KQC,KE_ONE,KIBE_ONE,NSPC2)
       END IF
 
       CALL FLSHFO(LUPRI)

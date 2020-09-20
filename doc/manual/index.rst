@@ -40,6 +40,7 @@ Keyword reference
    - :doc:`POLPRP <wave_function/polprp>` --- Polarization Propagator module (ADC) for excitations
    - :doc:`*MVOCAL <wave_function/mvocal>` --- Modified virtual orbitals
    - :doc:`*MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
+   - :doc:`*LAPLCE <wave_function/laplce>` --- Laplace transformation of orbital-energy denominators
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`*MULPOP <analyze/mulpop>` --- Mulliken population analysis

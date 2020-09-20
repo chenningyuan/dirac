@@ -1582,14 +1582,13 @@ C         Introduced .NMQM flag programmed by MKN
 C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
-      use codata
       use memory_allocator
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
 C
-#include "propconst.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
@@ -1606,7 +1605,8 @@ C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
-     &                   NPROP_KRCI,MZ)
+     &                   NPROP_KRCI,2)
+CMKN     &                   NPROP_KRCI,MZ)
       DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI),
      &          ENSPSMOM(NPROP_ROOTS_KRCI),HYFENFIN(NPROP_ROOTS_KRCI),
      &          HYFEDMFIN(NPROP_ROOTS_KRCI),EEFFAU(NPROP_ROOTS_KRCI)
@@ -1619,6 +1619,7 @@ C#include "chrnos.h"
       integer, intent(in)  :: mz
 C
 #include "memint.h"
+C
       CALL QENTER('XKRCIPRPANA')
 C
       IZERO = 0
@@ -2211,6 +2212,59 @@ C
 C
       end if
 C     =======================================================
+C     7. Nuclear Magnetic Quadrupole Moment Interaction 
+C     Written by Malaya K. Nayak, Mar 23, 2015
+C     =======================================================
+      if (donmqm_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' *********  Nuclear Magnetic Quadrupole Moment  *********',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'MQM') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print nMQM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [alpha X EFG] | state >  '//
+     & '    Nuc. MQM Constant [a.u.]       Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & ' NMQM  state',INIST,'(',XREPEIG(ISYMST_IN),')         state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
 C
 C     release dynamically allocated memory
       if(print_ev) call dealloc(INDX)
@@ -2221,6 +2275,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FLIP_BLOCK */
       SUBROUTINE FLIP_BLOCK(PROP,ACHAR,IPRINT)
+C
+C     Flip the Off-diagonal blocks of property matrix to Diagonal blocks
+C     for parallel components of Hyperfine and Anapole moment operators. 
+C
+C     Written by Malaya K. Nayak Sept 04 2013
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"

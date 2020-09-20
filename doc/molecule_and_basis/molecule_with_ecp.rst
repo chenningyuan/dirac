@@ -6,9 +6,11 @@ How to specify ECP parameters in mol files
 ==========================================
 
 Effective core potential (ECP) is an efficient method in many quantum mechanical calculations.
-It reduces basis set demands in heavy elements by replacing core electrons with effective potential. 
-For the account of spin-orbital and other relativistic effects, many ECP parameters developed recently are based
+It reduces basis set demands in heavy elements by replacing core electrons with an effective potential. 
+To account of spin-orbit and other relativistic effects, many recently developed ECP parameters are based
 on atomic Dirac-Fock calculations, and are sometimes called the relativistic effective core potentials (RECP).
+
+Following the usual practice the point nucleus model is used by default for ECP calculations.
 
 
 Theory

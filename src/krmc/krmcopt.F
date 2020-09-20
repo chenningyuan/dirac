@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -61,6 +61,12 @@ C
       LOGICAL EX
       INTEGER RENAME
       real(8), allocatable :: WORK(:)
+C     JVP-2020 modification to save moltra input
+C     variables to save 
+      CHARACTER*72 SAVTRA(4,2,2)
+      INTEGER SAVINT(5)
+      LOGICAL SAVLOG(10)
+      REAL*8  SAVREAL(2)
 C
       call legacy_lwork_get(LWORK)
 #include "memint.h"
@@ -68,6 +74,8 @@ C
 C
       CALL QENTER('PSIOPT')
 C
+C     JVP-2020, save moltra inp info
+      CALL SAVE_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
 C
 C     Determine the wave function type
 C     --------------------------------
@@ -177,7 +185,8 @@ C
 !     2. lvcorr correction
       if(dolvc.and.((iopt_intdef.eq.3).or.(onecap.and.intv1c.eq.2)))then
         kfree_save = kfree
-        call memget('REAL',klvc,n2bbasxq*(nopen_mc+1),work,kfree,lfree)
+        call memget2('REAL','lvc',klvc,n2bbasxq*(nopen_mc+1),
+     &     work,kfree,lfree)
         call lvcorr(work(klvc),work(kfree),lfree,ipropt)
         call memrel('lvcorr',work,1,kfree_save,kfree,lfree)
 !       set lvcorr value (otherwise it was initialized to 0.0d0)
@@ -195,50 +204,51 @@ C hjaaj + sk 04-jul-07: new memory allocation scheme when calling
 C                       KR-MCSCF with .CIONLY .or.
 C                                     MOPT_MXMACRO .lt. 0
 C
-      CALL MEMGET('REAL',KCMO  ,NCMOTQ        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO  ,NCMOTQ        ,WORK,KFREE,LFREE)
       IF (MOPT_MXMACRO .LT. 0) THEN
-         CALL MEMGET('REAL',KDV   ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFC   ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFV   ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFQ   ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KPV   ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KGCI  ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KGOEE ,0          ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KGOEP ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DV'  ,KDV   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FC'  ,KFC   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FV'  ,KFV   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FQ'  ,KFQ   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PV'  ,KPV   ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GCI' ,KGCI  ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GOEE',KGOEE ,0          ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GOEP',KGOEP ,0          ,WORK,KFREE,LFREE)
          IF (OPT_CIPROGRAM .EQ. 'LUCIAREL') THEN
-            CALL MEMGET('REAL',KFCAC ,0       ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KH2AC ,0       ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCREF ,0       ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','FCAC',KFCAC ,0       ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','H2AC',KH2AC ,0       ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','CREF',KCREF ,0       ,WORK,KFREE,LFREE)
          ELSE
-            CALL MEMGET('REAL',KFCAC ,N2ASHXQ ,WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KH2AC ,NASHT*NASHT*NNASHX*NZ*3,
+            CALL MEMGET2('REAL','FCAC',KFCAC ,N2ASHXQ ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','H2AC',KH2AC ,NASHT*NASHT*NNASHX*NZ*3,
      &           WORK,KFREE,LFREE)
-            CALL MEMGET('REAL',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','CREF',KCREF ,NZCONFQ ,WORK,KFREE,LFREE)
          END IF
       ELSE
-         CALL MEMGET('REAL',KDV   ,N2ASHXQ    ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFC   ,N2ORBXQ    ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFV   ,N2ORBXQ    ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFQ   ,NZ*NASHT*NORBT,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KPV   ,NASHT*NASHT*NNASHX*NZ*3,
+         CALL MEMGET2('REAL','DV'  ,KDV   ,N2ASHXQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FC'  ,KFC   ,N2ORBXQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FV'  ,KFV   ,N2ORBXQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FQ'  ,KFQ   ,NZ*NASHT*NORBT,
      &        WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFCAC ,N2ASHXQ ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KH2AC ,NASHT*NASHT*NNASHX*NZ*3,
+         CALL MEMGET2('REAL','PV'  ,KPV   ,NASHT*NASHT*NNASHX*NZ*3,
+     &        WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FCAC',KFCAC ,N2ASHXQ ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','H2AC',KH2AC ,NASHT*NASHT*NNASHX*NZ*3,
      &        WORK,KFREE,LFREE)
 c hjaaj 03-jul-07: TODO : implement buffered i/o of cref and gci
 c        where nzconfq_buf is max size in memory
 c        for MPI we could perhaps try NZCONFQ_BUF = NZCONFQ / NMPROC
-c        CALL MEMGET('REAL',KCREF ,NZCONFQ_BUF,WORK,KFREE,LFREE)
-c        CALL MEMGET('REAL',KGCI  ,NZCONFQ_BUF,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KCREF ,NZCONFQ    ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KGCI  ,NZCONFQ    ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KGOEE ,NZHOPEQ    ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KGOEP ,NZXOPPQ    ,WORK,KFREE,LFREE)
+c        CALL MEMGET2('REAL','CREF',KCREF ,NZCONFQ_BUF,WORK,KFREE,LFREE)
+c        CALL MEMGET2('REAL','GCI ',KGCI  ,NZCONFQ_BUF,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CREF',KCREF ,NZCONFQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GCI ',KGCI  ,NZCONFQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GOEE',KGOEE ,NZHOPEQ    ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GOEP',KGOEP ,NZXOPPQ    ,WORK,KFREE,LFREE)
       END IF
 
 !     implement boson symmetry in MCSCF - enabling spinfree MCSCF
 !     sk + hjaaj 10-aug-10
-      call memget('INTE',kibeig,norbt,work,kfree,lfree)
+      call memget2('INTE','ibeig',kibeig,norbt,work,kfree,lfree)
 C
 C     ***************************************************
 C     *** Call 2nd order optimization *******************
@@ -278,6 +288,9 @@ c     CLOSE(LUKRM3,STATUS='DELETE')
       CLOSE(LUKRM4,STATUS='DELETE')
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='DELETE')
       CLOSE(LUITFO,STATUS='DELETE')
+C
+C     JVP-2020, restore MOLTRA input info
+      CALL RESET_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
 C
       call dealloc(WORK)
       CALL QEXIT('PSIOPT')
@@ -516,8 +529,8 @@ C
 C
 C           Get all coefficients
 C
-            CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-            CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
 C
             CALL IZERO(WORK(KIBEIG),NORBT)
 C
@@ -791,8 +804,8 @@ C     calculate 1-particle density to be exported on file - default
         WRITE(LUPRI,'(//A/)') ' INFO: dumping 1-particle density'//
      &  ' matrix calculated for the (converged) MCSCF wave function'//
      &  ' to file.'
-        CALL MEMGET('REAL',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT  ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','UNO'  ,KUNO  ,N2ASHXQ,WORK,KFREE,LFREE)
         CALL RGETNO(CREF,WORK(KOCCNO),WORK(KUNO),CMO,
      &             .false.,MOISNO,.true.,1,WORK,KFREE,LFREE)
         CALL MEMREL('PSIOP1.after RGETNO',WORK,1,KFRSAV,KFREE,LFREE)
@@ -890,7 +903,6 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-!SK      print*,'RGRAD calling ...'
          CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
 C
@@ -971,7 +983,7 @@ C
       IF (NZHOPE .GT. 0) THEN
          CALL DZERO(GOEE,NZHOPEQ)
          LFPV = NZ*NASHT*NORBT
-         CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FPV',KFPV,LFPV,WORK,KFREE,LFREE)
          CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEE,
      &                JXOPE,NZHOPE,WORK(KFPV),DFAC,
      &                IPQTOQ(1,0),IPRINT)
@@ -989,7 +1001,7 @@ C
       IF (NZXOPP .GT. 0) THEN
          CALL DZERO(GOEP,NZXOPPQ)
          LFPV = NZ*NASHT*NORBT
-         CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FPV',KFPV,LFPV,WORK,KFREE,LFREE)
          CALL RORBGRD(.TRUE.,DV,FC,FC,FV,FQ,GOEP,
      &                JXOPP,NZXOPP,WORK(KFPV),DFAC,
      &                IPQTOQ(1,0),IPRINT)
@@ -1142,14 +1154,14 @@ C
          ELSE
             LPV = 0
          END IF
-         CALL MEMGET('REAL',KPVMOLF,LPV,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','PVMOLF',KPVMOLF,LPV,WORK,KFREE,LFREE)
 chjaaj:  DVMOLF is always calculated in this version
 c        IF (CALCDV) THEN
             LDV = (2*NASHT)**2 * MIN(2,NZ)
 c        ELSE
 c           LDV = 0
 c        END IF
-         CALL MEMGET('REAL',KDVMOLF,LDV,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','DVMOLF',KDVMOLF,LDV,WORK,KFREE,LFREE)
 C
          IF ( OPT_CIPROGRAM .EQ. 'GASCIP' ) THEN
 C        Density matrices generated by KRMC GASCIP
@@ -1374,15 +1386,17 @@ C
       CALL QENTER('RFCKMAT')
       CALL RTKTIME(.TRUE.,12)
 C
-      CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H1AO',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
       IF (NASHT .GT. 0) THEN
          IF (NISHT .GT. 0) THEN
 C
-            CALL MEMGET('REAL',KFCAO,2*N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','FCAO',KFCAO,2*N2BBASXQ,
+     &         WORK,KFREE,LFREE)
             KFAO  = KFCAO
             KFVAO = KFCAO + N2BBASXQ
 C
-            CALL MEMGET('REAL',KDCAO,2*N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','DCAO',KDCAO,2*N2BBASXQ,
+     &         WORK,KFREE,LFREE)
             KDAO  = KDCAO
             KDVAO = KDCAO + N2BBASXQ
 C
@@ -1390,11 +1404,12 @@ C
 C
          ELSE
 C
-            CALL MEMGET('REAL',KFCAO,2*N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','FCAO',KFCAO,2*N2BBASXQ,
+     &         WORK,KFREE,LFREE)
             KFVAO = KFCAO + N2BBASXQ
             KFAO  = KFVAO
 C
-            CALL MEMGET('REAL',KDVAO,N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','DVAO',KDVAO,N2BBASXQ,WORK,KFREE,LFREE)
             KFCAO = KDVAO
             KDAO  = KDVAO
 C
@@ -1403,10 +1418,10 @@ C
       ELSE
          IF (NISHT .GT. 0) THEN
 C
-            CALL MEMGET('REAL',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','FCAO',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
             KFAO = KFCAO
 C
-            CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','DCAO',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
             KDAO = KDCAO
 C
             NFMAT = 1
@@ -1419,7 +1434,7 @@ C
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       if (NPOS.GT.0) THEN
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
       else
          KPOS = KFREE
       endif
@@ -1683,22 +1698,22 @@ C     ***************************************************
 C     *** Get 1-electron Fock matrix ********************
 C     ***************************************************
 C
-      CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H1AO',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL DIRH1(WORK(KH1AO),IPRINT_local,WORK(KFREE),LFREE)
 C
 C     ***************************************************
 C     *** Get 2-electron Fock matrix ********************
 C     ***************************************************
 C
-      CALL MEMGET('REAL',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FCAO',KFCAO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DCAO',KDCAO,N2BBASXQ,WORK,KFREE,LFREE)
       IF (NISHT .GT. 0) THEN
 
          NFMAT = 1
 
          call SetTaskDistribFlags((/.TRUE., .TRUE., .TRUE., .TRUE. /))
          call SetIntTaskArrayDimension(NPOS,PARCAL)
-         CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
 
 C        Construct one-electron density matrix DCAO
 
@@ -1715,7 +1730,7 @@ C        Construct one-electron density matrix DCAO
 C     if x2c_mmf, add the mmf two-electron Fock matrix
 
       IF (X2CMMF) THEN
-         CALL MEMGET('REAL',KF2MMF,N2BBASXQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','F2MMF',KF2MMF,N2BBASXQ,WORK,KFREE,LFREE)
          open(lux2c,file='DFFCK_mmf',status='old',form='unformatted',
      &        access='sequential',action='readwrite',
      &        position='rewind')
@@ -1945,8 +1960,8 @@ C
 C        TODO FIXME: the control parameter should be consistent
 C        with IOPTST.
 C
-         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
          ISTART = MOD(IOPTST,100)
          CALL ROPTST(ISTART,0,WORK(KCMO),DUMMY,WORK(KIBEIG),-1,
      &               WORK,KFREE,LFREE)
@@ -2454,7 +2469,7 @@ C         for debug
          if(fcidump)then
            NZCONF = 1
            LZCONF = 0
-           CALL MEMGET('INT8',KZCONF,LZCONF,WORK,KFREE,LFREE)
+           CALL MEMGET2('INT8','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
            GOTO 999
          end if
 C
@@ -2483,7 +2498,7 @@ C           to obtain determinant information.
 C           (LZCONF = 2 * NCONF because "INTEGER*8 IDET(NZCONF,2)")
 C
             LZCONF = 2 * NZCONF
-            CALL MEMGET('INT8',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET2('INT8','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
             IF (KZCONF .NE. KIDET) CALL QUIT(
      &         'KZCONF .ne. KIDET -- indicates programming error!')
 C
@@ -2493,7 +2508,8 @@ C          Generate list of Kramers partners...
 C          This is only used for debugging purposes.
 C
            IF ( MOD(NAELEC,2) .EQ. 0) THEN
-             CALL MEMGET('INTE',KRLIST,NZCONF,WORK,KFREE,LFREE)
+             CALL MEMGET2('INTE','KRLIST',KRLIST,NZCONF,
+     &          WORK,KFREE,LFREE)
              CALL GASCIP_KRLIST(NZCONF,WORK(KZCONF),WORK(KRLIST),IPROPT)
              CALL IWRTKRMC(LUKRMC,'KRLIST  ',WORK(KRLIST),NZCONF)
              CALL MEMREL('RSETCI.KRLIST',WORK,1,KRLIST,KFREE,LFREE)
@@ -2505,13 +2521,13 @@ C           Call driver routine for getting NZCONF
             CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
 C
             LZCONF = 0
-            CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
 C
          ELSE IF ( USE_CIPROGRAM .EQ. 'KRCC' ) THEN
             WRITE(LUPRI,*) 'KRCC: IT is ok'
             NZCONF = 1
             LZCONF = 0
-            CALL MEMGET('INTE',KZCONF,LZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
          ELSE
 C
             WRITE(LUPRI,'(A/3A)')
@@ -3127,7 +3143,7 @@ C                 ... generate LUCIAREL block/structure information
 C                 ... if CI Nat. Orb. module shall be used later
                   NATOLCR_SAVE = NATOLCR
                   NATOLCR = .FALSE.
-                  CALL MEMGET('REAL',KEIG  ,NORBT,WORK,KFREE,LFREE)
+                  CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
                   CALL DZERO(WORK(KEIG),NORBT)
 C                 ... transformation to Fock-type orbitals
                   CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPRINT,WORK(KEIG),
@@ -3249,7 +3265,7 @@ C
         END IF
         if( linear .and. readmj_df ) MJVEC_AVAIL = .true.
         IF( MJVEC_AVAIL )THEN
-          CALL MEMGET('INTE',KMJVEC,NORBT,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','MJVEC',KMJVEC,NORBT,WORK,KFREE,LFREE)
           CALL IZERO(WORK(KMJVEC),NORBT)
 !
 !         read mj-vector from DFCOEF or KRMC"SCF"(OLD)
@@ -3643,7 +3659,7 @@ C
 C
 C           Full CI.
 C
-            CALL MEMGET('REAL','ECI',KECI,NZCONF,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ECI',KECI,NZCONF,WORK,KFREE,LFREE)
             CALL GASCIP_STARTVEC(WORK(KZCONF),CMO,CREF,ECI,
      &                           NZCONF,IOPT_STATE,
      &                           THRPCI,IPROPT, WORK,KFREE,LFREE)
@@ -3990,7 +4006,7 @@ C
 C
       IF (NZ .GT. 1 .AND. NZHOPE.GT.NZXOPE) THEN
          GOEER = .TRUE.
-         CALL MEMGET('REAL',KGOEER,NZHOPEQ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','GOEER',KGOEER,NZHOPEQ,WORK,KFREE,LFREE)
          CALL DCOPY(NZHOPEQ,GOEE,1,WORK(KGOEER),1)
          CALL REOGP(NZXOPE,NZHOPE,NZ,WORK(KGOEER),GOEE)
       ELSE
@@ -4010,12 +4026,12 @@ C
 C
       NREDM  = 3 * (MOPT_MXMICRO+2)
       NEXSIM = 1
-      CALL MEMGET('REAL',KIBTYP,2*NREDM     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIBCVC,NREDM       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIBEVC,NREDM       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIBPVC,NREDM       ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVALR,NEXSIM      ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVECR,NEXSIM*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBTYP',KIBTYP,2*NREDM     ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBCVC',KIBCVC,NREDM       ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBEVC',KIBEVC,NREDM       ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBPVC',KIBPVC,NREDM       ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVALR',KEVALR,NEXSIM      ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVECR',KEVECR,NEXSIM*NREDM,WORK,KFREE,LFREE)
 C
 C
 C     ***************************************************
@@ -4241,8 +4257,8 @@ C     ***************************************************
 C     *** Get solution vectors = kappa ******************
 C     ***************************************************
 C
-      CALL MEMGET('REAL',KKAPPA,NZXOPTQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDELTACI,NZCONFQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','KAPPA',KKAPPA,NZXOPTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DELTACI',KDELTACI,NZCONFQ,WORK,KFREE,LFREE)
 C
 CDEBUG - jth
 CDEBUG DZERO - can safely be removed as XRSXV1 does a DZERO
@@ -4300,7 +4316,7 @@ C     ***************************************************
 C
 C     Unpack KAPPA
 C
-      CALL MEMGET('REAL',KUKAPPA,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UKAPPA',KUKAPPA,N2ORBXQ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KUKAPPA),N2ORBXQ)
       CALL RUPKWOP(WORK(KKAPPA),WORK(KKAPPA+NZXOPEQ),
      &             WORK(KUKAPPA),NORBT,
@@ -5175,14 +5191,14 @@ C
       REWIND(LUKRMC)
       CALL MOLLAB('LREDUCED',LUKRMC,LUPRI)
 C
-      CALL MEMGET('REAL',KREDE,NREDM*NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KREDS,NREDM*NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KREDGP,NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEVECR,NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBEVC,NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBPVC,NREDM,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBCVC,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','REDE' ,KREDE,NREDM*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','REDS' ,KREDS,NREDM*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','REDGP',KREDGP,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EVECR',KEVECR,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBTYP',KIBTYP,2*NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEVC',KIBEVC,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBPVC',KIBPVC,NREDM,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBCVC',KIBCVC,NREDM,WORK,KFREE,LFREE)
 C
       CALL REALRED(LUKRMC,NZRED,NREDM,WORK(KREDE),WORK(KREDGP),
      &     WORK(KEVECR),WORK(KIBTYP),
@@ -5467,44 +5483,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck krmcdao */
-      SUBROUTINE KRMCDAO(TYPE,DCAO,DVAO,WORK,LWORK)
-C***********************************************************************
-C
-C     Get AO density matrices.
-C
-C     TYPE controls which density matrix is calculated:
-C
-C     For any number of electrons:
-C
-C     TYPE = '+': D_{pq} = <0|X^+_{pq}|0>
-C     TYPE = '-': D_{pq} = <0|X^-_{pq}|0>
-C
-C     For an odd number of electrons:
-C
-C     TYPE = 's': D_{pq} = <0|p^{\dagger}q|0>
-C
-C     Written by J. Thyssen - Feb 2 2001
-C     Last revision :
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcborb.h"
-C
-      DIMENSION DCAO(*), DVAO(*)
-      DIMENSION WORK(*)
-      CHARACTER TYPE*2
-C
-C     Get wave function
-C     -----------------
-C
-c      CALL MEMGET('REAL
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rh1diag */
       SUBROUTINE RH1DIAG(CMO,WORK,LWORK)
 C***********************************************************************
@@ -5533,8 +5511,8 @@ C
 C
 C     Get one-electron Fock matrix
 C
-      CALL MEMGET('REAL',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KH1MO,N2ORBTQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H1AO',KH1AO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','H1MO',KH1MO,N2ORBTQ,WORK,KFREE,LFREE)
       CALL DIRH1(WORK(KH1AO),IPROPT,WORK(KFREE),LFREE)
       IF (BNCRON .AND. (2*NISHT+NAELEC).GT.1) THEN
           CALL BNCORR(WORK(KH1AO),WORK(KFREE),LFREE,IPROPT)
@@ -5546,7 +5524,7 @@ C
 C     1) Get TMAT (AO-MO transformation)
 C
       LUTMAT = 3
-      CALL MEMGET('REAL',KTMAT,N2TMT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TMAT',KTMAT,N2TMT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','RH1DIAG')
       CALL READT(LUTMAT,N2TMT,WORK(KTMAT))
       CLOSE(LUTMAT,STATUS='KEEP')
@@ -5571,8 +5549,8 @@ C
 C
 C     3) Diagonalize H1DIAG / BNCORR
 C
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
       CALL DFDIAG(WORK(KH1MO),WORK(KEIG),WORK(KIBEIG),WORK(KH1AO),
      &            .FALSE.,WORK,KFREE,LFREE)
 C
@@ -5635,7 +5613,7 @@ C
       CALL RPRKAP(GPOE,GPOP,JXOPE,NHOPE,
      &     JXOPP,NXOPP,NZ,IPQTOQ(1,0),LUPRI)
       IF(NXOPE.GT.0) THEN
-         CALL MEMGET('REAL',KBUF,NXOPE*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BUFe',KBUF,NXOPE*NZ,WORK,KFREE,LFREE)
          II = 0
          III = 0
          DO I = 1,NHOPE
@@ -5690,7 +5668,7 @@ C     e-p orbital rotations
 C     =====================
 C
       IF(NXOPP.GT.0) THEN
-        CALL MEMGET('REAL',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUFp',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
         II = 0
         DO I = 1,NXOPP
           DTST = D0
@@ -5871,7 +5849,7 @@ C
 C
       CALL QENTER('FSMROT')
 C
-      CALL MEMGET('REAL',KGRAD,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GRAD',KGRAD,N2ORBXQ,WORK,KFREE,LFREE)
 C
 C     Scatter gradients into matrix
 C
@@ -5970,7 +5948,7 @@ C
 C
       IF (NHOPE .GT. 0) THEN
 C
-         CALL MEMGET('REAL',KBUF,NHOPE*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','BUFe',KBUF,NHOPE*NZ,WORK,KFREE,LFREE)
 C
 C
          II = 0
@@ -6014,7 +5992,7 @@ C
       ENDIF
 C
       IF (NXOPP .GT. 0) THEN
-        CALL MEMGET('REAL',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUFp',KBUF,NXOPP*NZ,WORK,KFREE,LFREE)
 C
          II = 0
          DO I = 1, NXOPP
@@ -6102,8 +6080,8 @@ C     write(lupri,*) 'SVLDEG: fq before trans'
 C     call prqmat(fq,norbt,nasht,norbt,nasht,nz,
 C    &     ipqtoq(1,0),lupri)
 C
-      CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KU,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FD',KFD,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','U',KU,N2ORBXQ,WORK,KFREE,LFREE)
 C
       CALL DCOPY(N2ORBXQ,FC,1,WORK(KFD),1)
       CALL DAXPY(N2ORBXQ,D1,FV,1,WORK(KFD),1)
@@ -6130,12 +6108,12 @@ C
 C     Calculate trial vector
 C     ----------------------
 C
-      CALL MEMGET('REAL',KBEE,NXOPE*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBEP,NXOPP*NZ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHEE,NXOPE,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KHEP,NXOPP,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BEE',KBEE,NXOPE*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BEP',KBEP,NXOPP*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HEE',KHEE,NXOPE,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','HEP',KHEP,NXOPP,WORK,KFREE,LFREE)
       LFPV = NASHT*NORBT*NZ
-      CALL MEMGET('REAL',KFPV,LFPV,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FPV',KFPV,LFPV,WORK,KFREE,LFREE)
 C
 C     Calculate diagonal part of Hessian
 C
@@ -6255,11 +6233,11 @@ C
       CALL QENTER('SVLDE1')
 C
       IF (C .EQ. 'E') THEN
-         CALL MEMGET('REAL',KVEC,2 * (NASHT+NISHT) * NSSHT,
+         CALL MEMGET2('REAL','VECe',KVEC,2 * (NASHT+NISHT) * NSSHT,
      &        WORK,KFREE,LFREE)
          NDIM = NSSHT
       ELSE IF (C .EQ. 'P') THEN
-         CALL MEMGET('REAL',KVEC,2 * (NASHT+NISHT) * NPSHT,
+         CALL MEMGET2('REAL','VECp',KVEC,2 * (NASHT+NISHT) * NPSHT,
      &        WORK,KFREE,LFREE)
          NDIM = NPSHT
       ELSE
@@ -6362,7 +6340,7 @@ C
          call quit('SVLDE2: only C="E" implemented yet, write me!')
       END IF
 C
-      CALL MEMGET('REAL',KVEC,NC*NC*NZ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','VEC',KVEC,NC*NC*NZ,WORK,KFREE,LFREE)
 C
 C
 C     Calculate V^{\dagger} V
@@ -6377,7 +6355,7 @@ C
 C     Diagonalize matrix
 C     ------------------
 C
-      CALL MEMGET('REAL',KEIG,NC,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NC,WORK,KFREE,LFREE)
 C
       IF (NZ .EQ. 1) THEN
          IJOB = 1
@@ -6459,27 +6437,27 @@ C
 C
 C
       IF (C .EQ. 'E') THEN
-         CALL MEMGET('REAL',KFD,NESHT*NESHT*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FDe',KFD,NESHT*NESHT*NZ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KFD),NESHT*NESHT*NZ)
          CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NESHT,NESHT,IDXE2G,NZ)
          NDIM = NESHT
       ELSE IF (C .EQ. 'P') THEN
-         CALL MEMGET('REAL',KFD,NPSHT*NPSHT*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FDp',KFD,NPSHT*NPSHT*NZ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KFD),NPSHT*NPSHT*NZ)
          CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NPSHT,NPSHT,IDXP2G,NZ)
          NDIM = NPSHT
       ELSE IF (C .EQ. 'I') THEN
-         CALL MEMGET('REAL',KFD,NISHT*NISHT*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FDi',KFD,NISHT*NISHT*NZ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KFD),NISHT*NISHT*NZ)
          CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NISHT,NISHT,IDXI2G,NZ)
          NDIM = NISHT
       ELSE IF (C .EQ. 'A') THEN
-         CALL MEMGET('REAL',KFD,NASHT*NASHT*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FDa',KFD,NASHT*NASHT*NZ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KFD),NASHT*NASHT*NZ)
          CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NASHT,NASHT,IDXU2G,NZ)
          NDIM = NASHT
       ELSE IF (C .EQ. 'S') THEN
-         CALL MEMGET('REAL',KFD,NSSHT*NSSHT*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FDs',KFD,NSSHT*NSSHT*NZ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KFD),NSSHT*NSSHT*NZ)
          CALL MATGAT(FD,NORBT,NORBT,WORK(KFD),NSSHT,NSSHT,IDXS2G,NZ)
          NDIM = NSSHT
@@ -6493,7 +6471,7 @@ C
 C     Diagonalize matrix
 C     ------------------
 C
-      CALL MEMGET('REAL',KEIG,NDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NDIM,WORK,KFREE,LFREE)
 C
       IF (NZ .EQ. 1) THEN
          IJOB = 1

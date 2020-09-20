@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -442,8 +442,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -732,8 +732,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -786,7 +786,6 @@ C
       CHARACTER*4 REPNA(*), REPNAO(*)
       INTEGER TSHOLD
       REAL*8 E_OFF
-
 C
 C---------------Local variables--------------------------------------
 C
