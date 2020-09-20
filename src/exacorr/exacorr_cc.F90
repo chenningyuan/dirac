@@ -57,9 +57,9 @@ module exacorr_cc
          complex(8)                     :: result_val
 
 !        Common tensors
-         type(exatns_comm_tens) :: comm_t
+         type(exatns_comm_tens_t) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_intg_tens) :: int_t
+         type(exatns_intg_tens_t) :: int_t
 !        Lambda tensors
          type(tens_rcrsv_t) :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
@@ -611,8 +611,8 @@ module exacorr_cc
          use exacorr_global,   only : debug_exa
 
 !        Input
-         type(exatns_comm_tens), intent(inout) :: comm_t
-         type(exatns_intg_tens), intent(inout) :: int_t
+         type(exatns_comm_tens_t), intent(inout) :: comm_t
+         type(exatns_intg_tens_t), intent(inout) :: int_t
          type(space_dims),intent(in) :: dims
          integer :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root, vir_space_root
@@ -847,9 +847,9 @@ module exacorr_cc
          use exacorr_global,   only : debug_exa
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_comm_tens), intent(inout) :: comm_t
-         type(exatns_intg_tens), intent(inout) :: int_t
-         type(exatns_lambda_tens)              :: lambda_t
+         type(exatns_comm_tens_t), intent(inout) :: comm_t
+         type(exatns_intg_tens_t), intent(inout) :: int_t
+         type(exatns_lambda_tens_t)              :: lambda_t
 !        solution tensors
          type(tens_rcrsv_t), intent(inout)           :: l2_tensor
          type(tens_rcrsv_t), intent(inout), optional :: l1_tensor
@@ -1252,7 +1252,7 @@ module exacorr_cc
          integer(INTD),intent(in)              :: ao_space_id
          class(h_space_t), pointer, intent(in) :: ao_space
 !        target integral tensors to be filled and given back to the caller
-         type(exatns_intg_tens), intent(inout) :: int_t 
+         type(exatns_intg_tens_t), intent(inout) :: int_t 
 
          integer(INTL)              :: ao_space_root,subspace_id(4),num_subspaces
          integer(INTL),allocatable  :: ao_subspaces(:)
@@ -1627,8 +1627,8 @@ module exacorr_cc
 
           implicit none
   
-          type(exatns_comm_tens), intent(inout)  :: comm_t
-          type(exatns_intg_tens), intent(inout)  :: int_t
+          type(exatns_comm_tens_t), intent(inout)  :: comm_t
+          type(exatns_intg_tens_t), intent(inout)  :: int_t
           integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
           integer, intent(in)                    :: print_level

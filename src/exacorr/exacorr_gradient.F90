@@ -32,7 +32,7 @@ module exacorr_gradient
       type(tens_rcrsv_t),intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),intent(inout), optional :: t1_tensor, l1_tensor
 !     density matrices type, output
-      type(exatns_dm_tens) :: gamma
+      type(exatns_dm_tens_t) :: gamma
 !     tensor dimensions
       integer(INTD), dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id
       integer(INTL), dimension(2) :: oo_root,ov_root,vo_root,vv_root
@@ -120,7 +120,7 @@ module exacorr_gradient
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
 
 !     input variables
-      type(exatns_dm_tens), intent(inout) :: gamma
+      type(exatns_dm_tens_t), intent(inout) :: gamma
       type(tens_rcrsv_t),   intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
       type(space_dims),     intent(in   ) :: dims
@@ -282,7 +282,7 @@ module exacorr_gradient
 
 !     input variables
       type(exacc_input),    intent(in   ) :: exa_input
-      type(exatns_dm_tens), intent(inout) :: gamma
+      type(exatns_dm_tens_t), intent(inout) :: gamma
 !     talsh tensor to get local copy
       type(talsh_tens_t)           :: tensor_slice
       integer(INTD), dimension(2)  :: h_dims

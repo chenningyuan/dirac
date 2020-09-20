@@ -46,7 +46,7 @@ module talsh_cc
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
          use talsh_gradient
-         use talsh_eom,      only       : talsh_eom_eigval_driver
+         use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
 
          type(exacc_input), intent(in) :: exa_input
 
@@ -60,11 +60,15 @@ module talsh_cc
          integer(C_INT):: host_arg_max
 
 !        Common tensors
-         type(talsh_comm_tens) :: comm_t
+         type(talsh_comm_tens_t) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_intg_tens) :: int_t
+         type(talsh_intg_tens_t) :: int_t
 !        Lambda tensors
          type(talsh_tens_t) :: l1_tensor, l2_tensor
+!        1- and 2-body cc intermediates 
+         type(talsh_intermediates_tens_t) :: interm_t
+!        eom results
+         type(talsh_eom_results_tens_t) :: eom_results_t
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -311,17 +315,18 @@ module talsh_cc
          if (eom) then
 
 !        Get fixed one-body tensors, needs to follow the two body tensors
-         call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
+            call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
                                  comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift,keep_diagonal=.true.)
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
+            call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
          
 ! with the ground-state intermediates done, and t amplitudes store
 
-             if (debug_eom) then
+          if (debug_eom) then
              print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
              print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
              print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
-             end if
+          end if
 
            if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
              call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
@@ -331,7 +336,7 @@ module talsh_cc
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances
-           call talsh_eom_eigval_driver(eom_results_t,exa_input,eps_occ,eps_vir,comm_t,int_t)
+           call talsh_eom_eigval_driver(eom_results_t,exa_input,eps_occ,eps_vir,interm_t,int_t)
 ! TODO: if we want properties etc, now we call other drivers
 
          end if
@@ -376,8 +381,8 @@ module talsh_cc
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens), intent(inout) :: comm_t
-         type(talsh_intg_tens), intent(inout) :: int_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
 !        intermediate tensors (same notation as in relccsd)
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: tau2_tensor
@@ -628,9 +633,9 @@ module talsh_cc
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_comm_tens), intent(inout) :: comm_t
-         type(talsh_intg_tens), intent(inout) :: int_t
-         type(talsh_lambda_tens)              :: lambda_t
+         type(talsh_comm_tens_t), intent(inout) :: comm_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
+         type(talsh_lambda_tens_t)              :: lambda_t
 !        solution tensors
          type(talsh_tens_t), intent(inout)           :: l2_tensor
          type(talsh_tens_t), intent(inout), optional :: l1_tensor
@@ -1027,7 +1032,7 @@ module talsh_cc
          logical, optional, intent(in)        :: keep_diagonal
 !        target tensors to be filled and given back to the caller
          type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
-         type(talsh_intg_tens), intent(inout) :: int_t
+         type(talsh_intg_tens_t), intent(inout) :: int_t
 
          type(talsh_tens_t)              :: id_mat_occ, diag_mat_occ, diag_mat_vir
          type(talsh_tens_t)              :: h_tensor
@@ -1240,7 +1245,7 @@ module talsh_cc
          integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
-         type(talsh_intg_tens),intent(inout)    :: int_t
+         type(talsh_intg_tens_t),intent(inout)    :: int_t
          integer(INTD) :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
          integer(INTD)                      :: ierr
@@ -1418,7 +1423,7 @@ module talsh_cc
          integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 !        target integral tensors to be filled and given back to the caller
-         type(talsh_intg_tens),intent(inout)    :: int_t
+         type(talsh_intg_tens_t),intent(inout)    :: int_t
 
          real(8), intent(in)                  :: t_cholesky ! cholesky threshold
 

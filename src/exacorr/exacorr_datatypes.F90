@@ -147,7 +147,7 @@
 
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
-        type, extends(talsh_lambda_tens), public :: talsh_intermediates_tens_t
+        type, extends(talsh_lambda_tens_t), public :: talsh_intermediates_tens_t
            type(talsh_tens_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
                                          ! but could be pointers to that storage as well. but the point of keeping them here is to keep everything 
                                          ! in one placewe make a copy of what may be pointers to what is  

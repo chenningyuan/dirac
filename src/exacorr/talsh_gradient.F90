@@ -7,7 +7,7 @@ module talsh_gradient
   use talsh
   use tensor_algebra
   use talsh_ao_to_mo, only    : tensor_norm2
-  use exacorr_datatypes, only : talsh_dm_tens, exacc_input
+  use exacorr_datatypes, only : talsh_dm_tens_t, exacc_input
   use exacorr_utils, only     : print_date
   use, intrinsic:: ISO_C_BINDING
 
@@ -31,7 +31,7 @@ module talsh_gradient
       type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
 !     density matrices type, output
-      type(talsh_dm_tens) :: gamma
+      type(talsh_dm_tens_t) :: gamma
 !     tensor dimensions
       integer(INTD), dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
 !     CCD switch
@@ -104,7 +104,7 @@ module talsh_gradient
       use exacorr_global, only : debug_exa
 
 !     input variables
-      type(talsh_dm_tens), intent(inout) :: gamma
+      type(talsh_dm_tens_t), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
       integer,             intent(in   ) :: nocc, nvir
@@ -250,7 +250,7 @@ module talsh_gradient
 
 !     input variables
       type(exacc_input),   intent(in   )  :: exa_input
-      type(talsh_dm_tens), intent(inout)  :: gamma
+      type(talsh_dm_tens_t), intent(inout)  :: gamma
 !     matrix dimensions
       integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
 !     body pointers
