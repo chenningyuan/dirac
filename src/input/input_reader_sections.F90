@@ -205,9 +205,12 @@
 
 #include "dgroup.h"
 #include "maxorb.h"
+! orgcom.h : GAGORG
+#include "orgcom.h"
 
       call reset_available_kw_list()
 
+      visual_cfg_gauge_origin(1:3) = GAGORG(1:3) ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
       if (kw_matches(word, '.LIST  ')) then
@@ -461,12 +464,6 @@
       end if
       if (kw_matches(word, '.ESPNRH')) then
          call read_input_visual_helper(iq_espnrho)
-      end if
-
-      if (kw_matches(word, '.GAUGE ')) then
-         call kw_read(word, visual_cfg_gauge_origin(1), &
-                            visual_cfg_gauge_origin(2), &
-                            visual_cfg_gauge_origin(3))
       end if
 
       if (kw_matches(word, '.NICS  ')) then

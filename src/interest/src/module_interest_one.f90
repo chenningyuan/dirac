@@ -374,9 +374,9 @@
     real(8) :: gamma,rxwp,rywp,rzwp,cntr,cntab,cnorm,tval,fnbra,fdbra
     real(8), save:: fintl(ncc2)
     !$OMP threadprivate(fintl)
-    real(8), parameter :: pi52     = 34.986836655249725d0 !2*pow(pi,5/2) 
-    real(8), parameter :: pow_pi_3 = 31.006276680299816d0 !  pow(pi,3) 
-    real(8), parameter :: b2fm     = 52917.720859d0       !GreenBook 3'rd edition 
+    real(8), parameter :: pi52     = 2.d0*pi**(5.d0/2.d0) !2*pow(pi,5/2)
+    real(8), parameter :: pow_pi_3 = pi**3.d0             !  pow(pi,3)
+    real(8), parameter :: b2fm     = 52917.7210903d0      ! From CODATA2018
 
 
     !> AB-pair indexation

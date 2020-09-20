@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -413,8 +413,11 @@ C           IP is gerade(1)/ungerade(2) !
                 JS    = IBBAS(IBREP,IC) - IBAS(IFRP) + J
                 DVEC = ABS(CMO(JS,I,1)) + ABS(CMO(JS,I,2))
      &               + ABS(CMO(JS,I,3)) + ABS(CMO(JS,I,4))
-                IF(DVEC.GT.DM10) WRITE(LUPRI,100)
-     &            JU,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
+!                IF(DVEC.GT.DM10) WRITE(LUPRI,100)
+!     &            JU,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
+!     &               (CMO(JS,I,IZ),IZ = 1,4)
+                WRITE(LUPRI,100)
+     &            JS,PLABEL(IPLAB(IBAS(IFRP)+JS,2),2),
      &               (CMO(JS,I,IZ),IZ = 1,4)
               ENDDO
             ENDDO

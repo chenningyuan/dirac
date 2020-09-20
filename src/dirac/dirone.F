@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -7309,11 +7309,12 @@ c
             CYCLE
          ELSE
 c        ... Get charges and exponents for the electrons in this group
-            n_charge = IZATOM(I)
+            n_charge = nint(CHARGE(I))
+            ! do no use atom number in IZATOM(I) here
+            ! Reason: if ECP we need the reduced charge to get a reasonable start guess ...
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
      &           (n_charge,n_exp,DUMMY,DUMMY)
-!    &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 
@@ -7402,25 +7403,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &     FIT_EXP,FIT_COEF)
 C***********************************************************************      
       implicit none
-      logical newel, early_exit
       integer,intent (in)    :: n_charge
       integer,intent (inout) :: n_exp
       real*8,intent (out)    :: fit_exp(*),fit_coef(*)
-      integer                :: i,intorb,intisg
-      integer, parameter     :: lupot=91, iprint=0
 
+      integer                :: i,intorb,intisg, lupot, lu_not_used
+      logical                :: newel, early_exit, emsl_type
+      integer, parameter     :: iprint=0
+
+      lupot  = lu_not_used(91)
       early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
-      call findel ('SCRPOT',n_charge,lupot)
-      call finpos (newel,n_exp,intorb,intisg,lupot,iprint)
-      if (early_exit) then
-         rewind (lupot)
-         return
+      call find_element ('SCRPOT',n_charge,lupot,iprint,emsl_type)
+      call find_pos (newel,n_exp,intorb,intisg,lupot,iprint)
+
+      if (.not. early_exit) then
+         do i = 1, n_exp
+            read (lupot,*) fit_exp(i),fit_coef(i)
+         end do
       end if
-      
-      do i = 1, n_exp
-         read (lupot,*) fit_exp(i),fit_coef(i)
-      end do
-      rewind (lupot)
+
+      close (lupot, STATUS = 'KEEP')
 
       end
 ! -- end of dirone.F --

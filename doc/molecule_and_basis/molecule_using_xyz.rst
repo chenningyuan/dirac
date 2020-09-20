@@ -7,7 +7,7 @@ How to specify the molecule and basis set using xyz files
 =========================================================
 
 The actual xyz file only contains the number of centers, the atoms, and the
-corresponding coordinates.  It could look like this one::
+corresponding coordinates (by default in angstroms).  It could look like this one::
 
   6
   Methanol, identifying the alcoholic proton as H1

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -28,6 +28,7 @@ module density_eval
 
    public mat_lao_sym
    public gga_sym
+   public gga_lao_sym
    public get_n
    public get_gamma5
    public get_s
@@ -89,7 +90,6 @@ contains
 !   ----------------------------------------------------------------------------
     integer                :: irep, iblock, imat, iz, jxyz
     integer                :: i, j, ii, jj
-    integer, parameter     :: h(4) = (/-1, 1, 1, 1/)
     integer                :: st1, st2, nr1, nr2
     real(8)                :: average
 !   ----------------------------------------------------------------------------
@@ -98,7 +98,59 @@ contains
 
        irep = isym(imat) - 1
 
-       do jxyz = 0, 3
+       do iblock = 1, nr_ao_blocks
+          nr1 = ao_block_nr(iblock)
+          st1 = ao_block_start(iblock)
+          nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+          st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+          if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+          if (.not. (st2 > st1)) then
+             do i = 1, nr1
+                do j = 1, nr2
+                   ii = st1 + i - 1
+                   jj = st2 + j - 1
+             
+                   average = mat(ii, jj, iq(0), imat) &
+                           - mat(jj, ii, iq(0), imat)
+                   average = 0.5d0*average
+             
+                   mat(ii, jj, iq(0), imat) =  average
+                   mat(jj, ii, iq(0), imat) = -average
+                end do
+             end do
+          end if
+       end do
+    end do
+
+  end subroutine
+
+  subroutine gga_lao_sym(mat_dim, &
+                     nz,      &
+                     nr_mat,  &
+                     mat,     &
+                     isym)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_mat
+    real(8), intent(inout) :: mat(mat_dim, mat_dim, nz, nr_mat)
+    integer, intent(in)    :: isym(nr_mat)
+!   ----------------------------------------------------------------------------
+    integer                :: irep, iblock, imat, jxyz
+    integer                :: i, j, ii, jj
+    integer                :: st1, st2, nr1, nr2
+    real(8)                :: average
+!   ----------------------------------------------------------------------------
+
+    ! symmetrize the imaginary parts
+
+    do imat = 1, nr_mat
+
+       irep = isym(imat) - 1
+
+       do jxyz = jxyz_start, 3
           do iblock = 1, nr_ao_blocks
              nr1 = ao_block_nr(iblock)
              st1 = ao_block_start(iblock)
@@ -111,13 +163,13 @@ contains
                    do j = 1, nr2
                       ii = st1 + i - 1
                       jj = st2 + j - 1
-                
+
                       average = mat(ii, jj, iq(jxyz), imat) &
-                              + h(iq(jxyz))*mat(jj, ii, iq(jxyz), imat)
+                              + mat(jj, ii, iq(jxyz), imat)
                       average = 0.5d0*average
-                
+
                       mat(ii, jj, iq(jxyz), imat) = average
-                      mat(jj, ii, iq(jxyz), imat) = h(iq(jxyz))*average
+                      mat(jj, ii, iq(jxyz), imat) = average
                    end do
                 end do
              end if
@@ -126,6 +178,7 @@ contains
     end do
 
   end subroutine
+
 
   subroutine gga_sym(mat_dim, &
                      nz,      &
@@ -1191,7 +1244,6 @@ contains
 
    end subroutine
 
-
    subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, cx, cy, cz)
    
 !    ----------------------------------------------------------------------------
@@ -1365,8 +1417,8 @@ contains
      real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz
-     integer              :: a, b, c, ii
-     real(8)              :: r_co(3), f(mat_dim)
+     integer              :: a, b, c, ii, i, j
+     real(8)              :: r_co(3), f(mat_dim), s1, s2
      real(8), external    :: ddot
 !    ----------------------------------------------------------------------------
 
@@ -1378,6 +1430,7 @@ contains
      f = 0.0d0
 
      do a = 1, 3   ! Bx, By, Bz
+
        select case (a)
          case (1)
            b = 2; c = 3
@@ -1386,6 +1439,10 @@ contains
          case (3)
            b = 1; c = 2
        end select
+
+       do ii = 1, mat_dim
+         f(ii) = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))
+       end do
 
        do jxyz = jxyz_start, 3
 
@@ -1397,10 +1454,7 @@ contains
            st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
-           do ii = 1, mat_dim
-             f(ii) = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))
-           end do
-
+!          lao(st1) * dmat(st1, st2) * ao(st2)
            call dgemv('N',                      &
                       nr1,                      &
                       nr2,                      &
@@ -1413,9 +1467,9 @@ contains
                       buffer,                   &
                       1)
      
-           s(jxyz, a) = s(jxyz, a) &
-                   + llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
+           s1 = llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
 
+!          ao(st1) * dmat(st1, st2) * lao(st2)
            call dgemv('N',                      &
                       nr1,                      &
                       nr2,                      &
@@ -1428,11 +1482,11 @@ contains
                       buffer,                   &
                       1)
      
-           s(jxyz, a) = s(jxyz, a) &
-                   - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+           s2 = llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+           s(jxyz, a) = s(jxyz, a) + (s1 - s2)
 
          end do
-
        end do
      end do
 
@@ -1528,7 +1582,7 @@ contains
 
 !          gga
            do ixyz = 1, 3 !dR
-!            (1) [R_M \times r] (\partial(i)ao_M) * gn_0(i) * Dmat * ao_N
+!            (1) [(R_M \times r)(\partial(ixyz)ao_M) ] * Dmat * ao_N
              call dgemv('N',                      &
                         nr1,                      &
                         nr2,                      &
@@ -1559,7 +1613,7 @@ contains
              gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
                      - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
              
-!            (2) [R_M \times r] *ao_M * Dmat * (\partial(i) ao_N)*gn_0(i)
+!            (2) [(R_M \times r)*ao_M] * Dmat * (\partial(ixyz) ao_N)
              call dgemv('N',                             &
                         nr1,                             &
                         nr2,                             &
@@ -1590,9 +1644,8 @@ contains
              gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
                      - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
 
-!            (3) [R_M \times (\partial(i) r)] ao_M * gn_0(i) * Dmat * ao_N
+!            (3) [R_M \times (\partial(ixyz) r)] ao_M * Dmat * ao_N
              if (ixyz == b) then
-!              "-" sign included
                call dgemv('N',                      &
                           nr1,                      &
                           nr2,                      &
@@ -1606,7 +1659,7 @@ contains
                           1)
               
                gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
-                       - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g0_m1(0, b) + st1), 1, buffer, 1)
+                       - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g0_m1(0, c) + st1), 1, buffer, 1)
               
                call dgemv('N',                          &
                           nr1,                          &
@@ -1614,7 +1667,7 @@ contains
                           1.0d0,                        &
                           dmat(st1, st2, iq(jxyz)),     &
                           mat_dim,                      &
-                          ao(ao_off_g0_m1(0, b) + st2), &
+                          ao(ao_off_g0_m1(0, c) + st2), &
                           1,                            &
                           0.0d0,                        &
                           buffer,                       &
@@ -2426,6 +2479,7 @@ contains
 !    ----------------------------------------------------------------------------
 
      s_b_lao = 0.0d0
+     !call get_s_lao(s_b_lao, (/0/), irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
      call get_s_lao(s_b_lao, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
 !    s_b_lao(Sigma_{x,y,z}, B_{x,y,z})

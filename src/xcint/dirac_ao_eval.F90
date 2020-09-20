@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -148,6 +148,13 @@ contains
                sx = bitstring_parity(iand(irep_of_axes(1), isym))*center_xyz(shell_center(ishell), 1)
                sy = bitstring_parity(iand(irep_of_axes(2), isym))*center_xyz(shell_center(ishell), 2)
                sz = bitstring_parity(iand(irep_of_axes(3), isym))*center_xyz(shell_center(ishell), 3)
+
+!#define DEBUG_GAUGEO
+#ifdef DEBUG_GAUGEO
+               sx = bitstring_parity(iand(irep_of_axes(1), isym))*(center_xyz(shell_center(ishell), 1) - global_gauge_origin(1))
+               sy = bitstring_parity(iand(irep_of_axes(2), isym))*(center_xyz(shell_center(ishell), 2) - global_gauge_origin(2))
+               sz = bitstring_parity(iand(irep_of_axes(3), isym))*(center_xyz(shell_center(ishell), 3) - global_gauge_origin(3))
+#endif
 
                do k = 1, block_length
                   px(k) = cx(k) - sx

@@ -170,6 +170,13 @@ wave vector
    \left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)e^{+i\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)}\right]_{k=0}
    =\frac{e}{\omega}\frac{i^{n}}{n!}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)^{n}
 
+keyword(NOLENR)
+
+Deactivate length representation.
+
+keyword(NOVELR)
+
+Deactivate velocity representation.
 
 
 Control variational parameters
@@ -289,3 +296,14 @@ keyword(ONLYSG)
 Only call FMOLI in sigmavector routine: 2-electron Fock matrices using
 one-index transformed densities :cite:`Saue2003`.
 
+keyword(GNOISE)
+
+To test the robustness of property gradients to numerical noise artificial noise is added to
+the MO-coefficients. More precisely, the user activates noise and provides a "noise level".
+Then, for each element of the coefficient array, a pseudo-random number in the interval (-1,+1]
+is selected, multiplied with the "noise level" and added to the element.
+
+*Example:* ::
+
+    .GNOISE
+     1.0D-10

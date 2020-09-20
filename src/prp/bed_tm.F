@@ -330,6 +330,13 @@ C         ====================================
      &               WORK,KFREE,LFREE,IPRXPP)          
                 TMOM(IOP,IPAR,IEXC)=D2*
      &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+CTROND
+              WRITE(6,*) 'TEST..',PRPNAM(INDXPR),'.e-e.',GPOE(1,1)
+                IF(IPRXPP.GE.3) THEN
+                  WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
+                  CALL PRINT_GP_XP(GPOE,XPOE,
+     &               get_orbital_rotation_indices_pp(),NZXOPE,NZ)
+                ENDIF
               ELSE
                 TMOM(IOP,IPAR,IEXC)=D0
               ENDIF
@@ -361,6 +368,13 @@ C         ====================================
      &               WORK,KFREE,LFREE,IPRXPP)
                 TMOM(IOP,IPAR,IEXC)=D2*
      &               DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+CTROND
+              WRITE(6,*) 'TEST..',PRPNAM(INDXPR),'.e-p.',GPOP(1,1)
+                IF(IPRXPP.GE.3) THEN
+                  WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-p) part'
+                  CALL PRINT_GP_XP(GPOP,XPOP,
+     &               get_orbital_rotation_indices_pn(),NZXOPP,NZ)
+                ENDIF
               ELSE
                 TMOM(IOP,IPAR,IEXC)=D0
               ENDIF

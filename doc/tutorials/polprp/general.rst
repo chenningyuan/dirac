@@ -36,13 +36,17 @@ of the argon atom will cover all these aspects in detail.
 
 The results obtained have to be interpreted properly depending of the type of Hamiltonian used:
 
-- NONREL: You can used contracted basis sets, only the large component basis is used. In the various ireps of the final states you will find the singlet and one or more triplett components. In the absence of SOC tripletts acquire zero transition moments (implying zero oscillator strengths) but the energies are calculated anyhow. For the classification of the individual ireps the same principles as for RELCCSD apply. A combination of linear symmetry and NONREL is not (yet) possible. The highest available symmetry is D2h.
+- NONREL: 2-component non-relativistic Hamiltonian with point nuclei. You can used contracted basis sets for all atoms, only the large component basis is used.
+  In the various irreps of the final states you will find the singlet and one or more triplet components. In the absence of SOC triplets acquire zero transition moments (implying zero oscillator strengths) but the energies are calculated anyhow. For the classification of the individual irreps the same principles as for RELCCSD apply. A combination of linear symmetry and NONREL is not (yet) possible. The highest available symmetry is D\ :sub:`2h`\ .
 
-- SPINFREE: Same spin manifolds as for NONREL but you include all scalar relativistic effects up to infinite order. Triplett final states get no osc. strength.
+- LEVY-LELBOND: 4-component non-relativistic Hamiltonian. You can used contracted basis sets for all atoms, only the large component basis is used.
+  Same facts for singlet and triplet as for NONREL.
 
-- Four-component (default): The number of available final state ireps is very much reduced and the final states can no longer be classified as pure singlets or pure triplets. Depending on the nuclear charge the former (degenerate) triplet components will now undergo further splitting. One can normally identify the degenerate (SOC-free) parent state without any problems.  
+- SPINFREE: Same spin manifolds as for NONREL but you include all scalar relativistic effects up to infinite order. Triplet final states get no osc. strength.
 
-- X2Cmmf: The results behave exactly the same way as in the four-component case but you harvest all the advantages of the X2Cmmf method. In the valence space no loss of accuracy with respect to 4C was observed.
+- Four-component Dirac-Coulomb (default): The number of available final state irreps is very much reduced and the final states can no longer be classified as pure singlets or pure triplets. Depending on the nuclear charge the former (degenerate) triplet components will now undergo further splitting. One can normally identify the degenerate (SOC-free) parent state without any problems.  
+
+- X2Cmmf: The results are generally very similar to the four-component case but you harvest all the advantages of the X2Cmmf method (in particular speed). In the valence space no loss of accuracy with respect to 4C was observed.
 
 Creating POLPRP input (here: excitation spectrum of argon)
 ----------------------------------------------------------
@@ -62,7 +66,7 @@ SOC contracted basis sets need to be decontracted, however. To activate POLPRP w
 Furthermore we need Mulliken analysis (18) also for the virtuals (21,22,23). In the MOLTRA section we see that all occupied orbitals
 and nearly all virtuals are included in the active space (26,27). As mentioned above, for the calculation of transition moments
 we need the dipole moment integrals in MO basis which is triggered in lines 28-35 of the MOLTRA section. In the POLPRP section we
-indicate that we want to compute TMs (.DOTRMO) and all ireps where a possible final state can occur are calculated because the
+indicate that we want to compute TMs (.DOTRMO) and all irreps where a possible final state can occur are calculated because the
 .STATE keyword was omitted. Then the program determines all these symmetries by itself. The Print directive in line 38/39 is required
 to generate the orbital list of active occupied and virtual spinors. You need this orbital list if the postprocessing tools are to be used.
 The DAVIDSON section controls the 
@@ -76,12 +80,12 @@ Working with the output files
 
 Besides the usual Dirac .out file where a lot of technical information of the POLPRP calculation is printed some essential result
 files are produced that can be used for further analysis and postprocessing. These are the file ADCEVECS.XX, ADCSTATE.XX and ADCTRMOM (the latter
-only if TMs were activated). XX here stands for the corresponding irep number that can be 01..32 at most (linear case).
+only if TMs were activated). XX here stands for the corresponding irrep number that can be 01..32 at most (linear case).
 
 The ADCEVECS.XX files contain the eigenvectors of the large ADC matrix in binary form and can be used for restarts of the module. If copied
 to the scratch directory, the module reads them in and starts from these already converged eigenvectors.
 
-The ADCSTATE.XX file contains human-readable information about the eigenstates of irep XX where the most important
+The ADCSTATE.XX file contains human-readable information about the eigenstates of irrep XX where the most important
 configurations appear first::
 
       Excited state:    1
@@ -104,7 +108,7 @@ configurations appear first::
       127 ( 3, 1Eu)  <----   9 ( 3, 1Eu)   0 ( 0,    )  <----   0 ( 0,    )        0.136675          0.018680
       151 ( 4, 2Eu)  <----  15 ( 4, 2Eu)   0 ( 0,    )  <----   0 ( 0,    )       -0.136675          0.018680
 
-Hereby the excitation energy of the first state in symmetry (irep) 1 is given in au and eV and PS 
+Hereby the excitation energy of the first state in symmetry (irrep) 1 is given in au and eV and PS 
 stands for pole strength which is a bit misleading in this context but
 describes the percentage of single-excitation character of this particular final state (96.06%). The next entry is the residual error
 stemming from the Davidson diagonalizer. Obviously, the next line tells us that we have 3.94 % double excitation character.
@@ -112,9 +116,9 @@ stemming from the Davidson diagonalizer. Obviously, the next line tells us that 
 The following rows now reveal the leading configurations this state is composed of. First let us focus on the two rightmost columns with
 expansion coefficients (ISR basis!) and their squares. It is observed that these coefficients are pairwise identical apart from a sign
 reflecting the fact of
-Kramers pairing. All spinors occur twice in the corresponding Kramers ireps and possess identical orbital energies. Therefore the expansion
+Kramers pairing. All spinors occur twice in the corresponding Kramers irreps and possess identical orbital energies. Therefore the expansion
 distributes equally over both possible one-particle configurations. The first number gives the absolute spinor number with respect to the 
-active orbital list and the number in parenthesis is the relative spinor number within the given irep. The corresponding first line tells us that our
+active orbital list and the number in parenthesis is the relative spinor number within the given irrep. The corresponding first line tells us that our
 first expansion term consists of a single-particle excitation from occupied spinor 9 into virtual spinor 128 with a coefficient of 0.355139 etc. The other zeros indicate the
 single-particle character of this excitation and get nonzero for a 2h-->2p type. In the framework of ISR and perturbation theory one can approximately
 think of expansion determinants that are described here. Strictly speaking, these are correlated singly excited configurations.
@@ -218,7 +222,7 @@ The verbose output in case of transition moment calculation can be more or less 
 file. In the near future we will considerably shrink the output of POLPRP but for the moment it provides a high level of detail useful
 for the analysis of difficult cases.
 
-The sequence just described is now repeated for all ireps separately. It is a big advantage of the ADC/ISR method that the representation
-matrices exhibit full block structure. So each symmetry (irep) can be treated independently and the user can select the desired ireps by
+The sequence just described is now repeated for all irreps separately. It is a big advantage of the ADC/ISR method that the representation
+matrices exhibit full block structure. So each symmetry (irrep) can be treated independently and the user can select the desired irreps by
 the .STATE directive (see manual).
 

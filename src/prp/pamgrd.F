@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -545,6 +545,26 @@ C
 C     Transform to MO-basis only the blocks of correct fermion symmetry
 C     =================================================================
 C         
+CTROND
+!      IF (PRPNAM(INDXPR)(1:5).EQ.'BEDcZ'.AND.
+!     &    PRPNAM(INDXPR)(8:10).EQ.'X00' .AND.
+!     &    PRPNAM(INDXPR)(14:16).EQ.'Z00') THEN
+!          DO I = 1,NXPAR
+!             WRITE(6,*) 'JXOP..',JXOP(1,I),JXOP(2,I)
+!          ENDDO
+!          I1=1
+!          I2=2
+CTROND    Radium
+!         II = 165
+!         IA = 213
+CTROND     Magnesium
+C          II = 30
+C          IA = 40
+!          CALL GPOTEST(PRPNAM(INDXPR),II,IA,NZ,
+!     &           PRPAO(I2BASX(I1,I2)+1,1),NTBAS(0),
+!     &           CMO(IPCMO(I1)+1),NFBAS(I1,0),NORB(I1),
+!     &           CMO(IPCMO(I2)+1),NFBAS(I2,0),NORB(I2))
+!      ENDIF
       CALL DZERO(PRPMO,N2PMOX*NZ)
       IOPSY = JBTOF(IREP,1)
 !     write(*,*) 'N2PMOX,NZ:', N2PMOX,NZ
@@ -925,3 +945,31 @@ C
       CALL QEXIT('PRPORB')
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GPOTEST(PRPNAM,I1,I2,NZ,PRPAO,NB,
+     &           CMO1,NF1,NO1,CMO2,NF2,NO2)
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION PRPAO(NB,NB),CMO1(NF1,NO1),CMO2(NF2,NO2)
+      CHARACTER*16 PRPNAM
+      WRITE(LUPRI,*) 'GPOTEST: Checking element (',I1,',',I2,
+     &   ') of property ',PRPNAM
+      IF(NZ.GT.1) CALL QUIT('GPOTEST: NZ. gt. 1. Write me!')
+      GPO = 0.0D0
+      DO J = 1,NF2
+        DO I = 1,NF1
+          TMP = CMO1(I,I1)*PRPAO(I,J)*CMO2(J,I2)
+          GPO = GPO + TMP
+          IF(ABS(TMP).GT.1e-20) THEN
+            WRITE(LUPRI,'(ES16.8,2I4,3ES16.8)') 
+     &        ABS(TMP),I,J,
+     &        CMO1(I,I1),PRPAO(I,J),CMO2(J,I2)
+          ENDIF
+        ENDDO
+      ENDDO
+      WRITE(LUPRI,'(A,A16,A,ES16.8)') 
+     &   'GPOTEST: Total ',PRPNAM,' : ',GPO
+      RETURN
+      END
+

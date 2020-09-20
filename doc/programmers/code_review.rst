@@ -55,15 +55,30 @@ Then you cannot push directly but do not worry and follow these steps:
 * Create a new branch from the branch that you changed and tried to push.
 * Push the newly created branch to https://gitlab.com/dirac/dirac.
 * Create a merge request and point it to the branch you originally meant to modify.
-* Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``
+* Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``  ::
 
-::
-  $ git checkout master
-  # WARNING! next step will delete commits that came after origin/master
-  $ git reset --hard origin/master
+   $ git checkout master
+   #WARNING! next step will delete commits that came after origin/master
+   $ git reset --hard origin/master
 
 If you do not clean up your local master or release branch, it can start to diverge next time you pull
 since your local history may be different from remote history.
+
+
+How to get changes from a release branch to master?
+---------------------------------------------------
+
+Visit https://gitlab.com/dirac/dirac/-/merge_requests/new, select the release branch as "Source branch",
+verify that "Target branch" is the `master` branch, then click the green button "Compare branches and continue".
+
+Scroll down and have a look at the commits whether the changes to be merged are what you expected. Abort if this
+looks unexpected. You can also browse the "Changes" to see what is part of this merge request.
+
+Then fill out the rest (title, description) like any other merge request. Note
+that you cannot and should not mark the source branch to be deleted upon merge and that's
+good, since we want to keep the release branches forever (these branches are protected against deletion).
+
+Finally green button: "Submit merge request".
 
 
 Further reading

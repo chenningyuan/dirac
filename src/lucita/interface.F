@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1245,7 +1245,7 @@ C        .. we do not accept user input of less than 100 000 !
       IF(ENVIRO(1:6).EQ.'DALTON') THEN
         CALL GET_CMOAO_DALTON(CMO,NMOS_ENV(1),NAOS_ENV(1),NSMOB)
       ELSE IF(ENVIRO(1:6).EQ.'MOLCAS') THEN
-*. Readin from LUMORB file
+*. Read in from LUMORB file
         CALL GETMOAO_MOLCAS(CMO,LUMOIN)
       ELSE IF(ENVIRO(1:5).EQ.'LUCIA' ) THEN
 *. Read in from LUCIA 1e file : unit 91
@@ -1598,7 +1598,7 @@ C     write(6,*) ' IHSM = ', IHSM
          IF (FNDLAB(LABEL,LUPRP)) THEN
 C           write(6,*) ' Label obtained'
             READ(LUPRP) (SCR(I),I=1,NINT01)
-C           write(6,*) 'integrals readin'
+C           write(6,*) 'integrals read in'
 C           call prsym(scr,NBAST)
 C           CALL READT(LUPRP,NBAST*(NBAST+1)/2,WRK(KSCR2))
          ELSE
@@ -6597,7 +6597,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
       NTIT = 0
 *
 *
-      call qenter('ReadIn')
+      call qenter('rdmoluc')
 *
 *---  Read input from standard input ----------------------------------*
 *  Read Namelist
@@ -6620,7 +6620,7 @@ C    &           ' MO orbitals obtained from LUCIA ')
          end if
       End Do
 *  If not found, call error message
-      if ( JCMD.eq.0 ) Call ErrMsg('Readin',001)
+      if ( JCMD.eq.0 ) Call ErrMsg('rdmoluc',001)
 *  Go to predefined number of this keyword (if found)
       Goto ( 100,  200,  300,  400,  500,
      &       600,  700,  800,  900,  1000,
@@ -7293,13 +7293,13 @@ c     call XFLUSH(6)
         end do
       end if
 *
-      Call qExit('Readin')
+      Call qExit('rdmoluc')
       RETURN
 991   Call StkA(0,COMMAND)
-      Call ErrMsg('Readin',002)
+      Call ErrMsg('rdmoluc',002)
       Call Quit(20)
 992   Call StkA(0,COMMAND)
-      Call ErrMsg('Readin',003)
+      Call ErrMsg('rdmoluc',003)
       Call Quit(20)
       END
 ***********************************************************************

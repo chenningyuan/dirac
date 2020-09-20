@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -96,7 +96,6 @@ contains
     real(8), intent(inout) :: work(lwork)
 
     real(8), allocatable   :: fao(:), fmo(:), tb_dmat(:)
-    integer, allocatable   :: npos_array(:)
     integer :: size_tb_dmat, size_fao, size_fmo
 !-----------------------------------------------------------------------
 
@@ -405,9 +404,9 @@ contains
 !
 ! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
 !
+    allocate(npos_array(max(1,npos)))
     if (npos > 0) then
-    call alloc(npos_array, npos)
-    npos_array(1:npos) = 0
+      npos_array(1:npos) = 0
     end if
 
     lwork = len_f77_work
@@ -438,9 +437,7 @@ contains
       end do
     end if
 
-    if (allocated(npos_array)) then
-      call dealloc(npos_array)
-    end if
+    deallocate(npos_array)
 
 !       construct kohn-sham contribution
 !       ================================

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -373,14 +373,20 @@ C
         READ(IUNIT)
       ENDIF
 C
-C     Read single group irrep (spinfree and Levy-Leblond calcs)
-C     =========================================================
+C     Read supersymmetry info
+C     =======================
 C
       IF(LBIT(IOPT,4)) THEN
         IF(TEST) THEN
           call alloc(ki, no)
           CALL READI(IUNIT,NO,ki)
-          CALL ADAIBP(IBEIG,ki,IDIM)
+          JO = 1
+          DO IFRP = 1,NFSYM
+            CALL ADAIBO(
+     &         IBEIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         ki(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
+          ENDDO
           call dealloc(ki)
         ELSE
           READ (IUNIT,END=70,ERR=80) IBEIG
@@ -1504,36 +1510,15 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Adaibp */
-      SUBROUTINE ADAIBP(IBO1,IBO2,IDIM)
-C***********************************************************************
-C
-C     Pre-routine to adaibo
-C     Written by T.Saue Feb 1 2001
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcborb.h"
-#include "dgroup.h"
-      DIMENSION IBO1(*),IBO2(*),IDIM(3,2)
-      I2 = 1
-      DO IFRP = 1,NFSYM
-        CALL ADAIBO(
-     &         IBO1(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         IBO2(I2),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-          I2 = I2 + IDIM(2,IFRP)+IDIM(1,IFRP)
-      ENDDO
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Adaibo */
       SUBROUTINE ADAIBO(IBO1,NO1,NP1,NE1,IBO2,NO2,NP2,NE2)
 C***********************************************************************
 C
 C     Adapt boson irrep array IBO2 to current dimensions IBO1
+C     If negative-energy solutions are missing,
+C        then initial values are zeroed out.
+C     If positive-energy solutions are missing,
+C        then final values are zeroed out.      
 C     Written by T.Saue
 C
 C***********************************************************************
@@ -1815,6 +1800,9 @@ C
       CALL WRITT(LUCOEF,NDIM,CAO)
       CALL WRITT(LUCOEF,NORBT,EIG)
       CALL WRITI(LUCOEF,NORBT,IBEIG)
+!     Add additional information about basis set to create a simple interface file
+!     for correlated calculations (like exacorr)
+      call append_basisinfo_to_dfcoef (LUCOEF)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -4444,4 +4432,57 @@ C
       ENDDO
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CMOCLEAN(CMO,NBAS,NORB,NZ,FACTOR)
+C***********************************************************************
+C
+C     Input is CMO-coefficients. 
+C     The routine sets coefficients with norm below the 
+C     threshold FACTOR to zero.
+C
+C     Written by Trond Saue Nov 13 2019
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: NBAS,NORB,NZ
+      real*8, intent(in)    :: FACTOR
+      real*8, intent(inout) :: CMO(NBAS,NORB,NZ)
+      real*8, allocatable   :: BUF(:)
+      real*8                :: TMP
+      integer               :: IORB,IBAS,IZ
+
+CTROND
+      WRITE(6,*) 'Enter CMOCLEAN..',NBAS,NORB,NZ,FACTOR
+      IF(NZ.EQ.1) THEN
+        DO IORB = 1,NORB
+          DO IBAS = 1,NBAS
+          IF(ABS(CMO(IBAS,IORB,1)).LT.FACTOR) THEN
+            CMO(IBAS,IORB,1) = 0.0D0
+          ENDIF
+          ENDDO
+        ENDDO
+      ELSE
+        allocate(buf(nbas))
+        DO IORB = 1,NORB
+          BUF = 0.0D0
+          DO IZ = 1,NZ
+            DO IBAS = 1,NBAS
+              BUF(IBAS) = BUF(IBAS) + CMO(IBAS,IORB,IZ)**2
+            ENDDO
+          ENDDO
+          TMP = FACTOR*FACTOR
+          DO IZ = 1,NZ
+            DO IBAS = 1,NBAS
+              IF(BUF(IBAS).LT.FACTOR) THEN
+                CMO(IBAS,IORB,IZ)=0.0D0
+              ENDIF
+            ENDDO
+          ENDDO
+        ENDDO
+        deallocate(buf)
+      ENDIF
+      RETURN
+      END
+      
+      
 ! -- end of dirgp.F --

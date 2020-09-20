@@ -1,4 +1,14 @@
 
+
+.. raw:: html
+
+  <a class="btn btn-info"
+     href="http://diracprogram.org"
+     data-mode="1"
+     style="margin-bottom: 50px"
+     target="_blank">Project website: http://diracprogram.org</a>
+
+
 Setting up DIRAC
 ================
 
@@ -117,7 +127,9 @@ Tutorials and walkthrus
   :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
-  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` 
+  :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
+  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
+  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
@@ -185,6 +197,9 @@ Tutorials and walkthrus
   :doc:`VIBCAL <tutorials/utils/vibcal>` |
   :doc:`CFREAD <tutorials/utils/cfread>` |
   :doc:`LABREAD <tutorials/utils/labread>`
+
+* **Python interface with OpenFermion:**
+  :doc:`Openfermion-Dirac <tutorials/openfermion/openfermion-dirac>`
 
 * **Outdated tutorials (need update):**
   :doc:`DIRRCI <tutorials/dusty_attic/dirrci>` |
