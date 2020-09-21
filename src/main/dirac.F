@@ -1444,6 +1444,11 @@ C
 #else
          call exa_cc()
 #endif
+      ELSE IF (ITASK .EQ. 21) THEN
+C
+C        start BEDLEB MPI calculation
+C
+         call bedleb_launch_slave_procs()
 
       ELSE
 C
@@ -1563,7 +1568,6 @@ C
 C        start FDE MPI calculation
 C
          call fde_launch_slave_process()
-
       ELSE
 C
 C        Unknown task. Abort execution.
