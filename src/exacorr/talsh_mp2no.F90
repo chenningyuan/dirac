@@ -33,8 +33,7 @@ module talsh_mp2no
         subroutine talsh_mp2no_driver (exa_input)
 
 !This subroutine drives the mp2 natural orbital calculation
-
-! Written by Xiang Yuan, July 2020
+!Written by Xiang Yuan, July 2020
 
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
@@ -47,13 +46,15 @@ module talsh_mp2no
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
          integer(C_INT)       :: ierr
-         complex(8), pointer :: MP2_density_tens(:,:),MP2_density_tens_2(:,:)
+         complex(8), pointer :: MP2_density_tens(:,:)
          complex(kind=8), pointer :: N_occupation(:) 
          complex(kind=8), pointer :: NOs_MO(:,:)
          real(kind=8), pointer :: eVectorsR(:,:)
          real(kind=8), pointer :: eVectorsL(:,:) 
          real(kind=8), pointer :: e_small(:,:)
-         real(kind=8)          :: energy_shift(2)
+         complex(kind=8), pointer :: thre_tens(:,:)
+         complex(kind=8), pointer :: test_tens(:,:)
+         real(kind=8)          :: energy_shift(2),threshold
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
@@ -68,9 +69,9 @@ module talsh_mp2no
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vv_dims
 !        scalars (need to be defined as tensor types)
-         type(talsh_tens_t) :: result_tensor, MP2_density_tensor 
+         type(talsh_tens_t) :: result_tensor, MP2_density_tensor
          integer(C_INT)     :: one_dims(1)
-         integer             :: i,j,k
+         integer             :: i,j
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
          logical :: left_local, right_local, apply_evalues_shift
@@ -161,31 +162,71 @@ module talsh_mp2no
          e_small = 0.0
          call diagoanl_DMP2_matrix(MP2_density_tens,e_small,NOs_MO)
          allocate(eVectorsR(size(NOs_MO,1),size(NOs_MO,2))) 
+         allocate(thre_tens(size(NOs_MO,1),size(NOs_MO,2))) 
          do i=1,size(e_small,2),1
                 print *,'occupation number',e_small(1,i)
          end do
-         sorting_order_local = 1
-         apply_evalues_shift = .false.
-         left_local = .false. 
-         right_local = .true.
-         do i=1,size(NOs_MO,1),1
-                  eVectorsR (:,i)= real(NOs_MO(:,i))
+
+
+         do j=1,size(NOs_MO,1),1
+                print *,'natural orbital in MO basis',NOs_MO(:,j)
          end do
 
-         do j=1,size(eVectorsR,2),1
-                print *,'natural orbital in MO basis',eVectorsR(:,j)
-         end do
-         energy_shift =0.0
-         call sort_values_vectors(sorting_order_local, e_small, eVectorsR, eVectorsR, &
+
+
+!        Sorted occupation number and natural orbital 
+        energy_shift =0.0
+        sorting_order_local = 1
+        apply_evalues_shift = .false.
+        left_local = .false. 
+        right_local = .true.
+        do i=1,size(NOs_MO,1),1
+                eVectorsR (:,i)= real(NOs_MO(:,i))
+        end do
+        call sort_values_vectors(sorting_order_local, e_small, eVectorsR, eVectorsR, &
                                      right_local, left_local,apply_evalues_shift,energy_shift)
+         do i=1,size(NOs_MO,1),1
+                   do j=1,size(NOs_MO,2),1            
+                         NOs_MO(j,i)=complex(eVectorsR(j,i),0.0)  
+                   end do 
+         end do
 
-         do i=1,size(e_small,2),1
-                print *,'occupation number_order',e_small(1,i)
+!         do i=1,size(e_small,2),1
+!                print *,'occupation number_order',e_small(1,i)
+!         end do
+       
+!         do j=1,size(eVectorsR,2),1
+!                print *,'natural orbital in MO basis_order_in complex',NOs_MO(:,j)
+!         end do
+
+!        reduced natural orbital 
+         threshold = 1.d-5
+         do i=1,size(NOs_MO,1),1
+                if (e_small(1,i) < threshold) then
+                    NOs_MO(:,i)=complex(0.0,0.0)  
+                else
+                   do j=1,size(NOs_MO,2),1            
+                         NOs_MO(j,i)=complex(eVectorsR(j,i),0.0)  
+                   end do 
+                end if 
          end do
        
          do j=1,size(eVectorsR,2),1
-                  print *,'natural orbital in MO basis_order',eVectorsR(:,j)
+                print *,'reduced natural orbital in MO basis_order_in complex',NOs_MO(:,j)
          end do
+
+
+
+         !print *,'natural orbital in MO basis_order_in complex_TT',NOs_MO
+         !allocate(test_tens(size(NOs_MO,1),size(NOs_MO,2))) 
+         !ierr=talsh_tensor_get_body_access(threshold_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,test_tens,vv_dims) ! to use as a regular Fortran array
+         !do i=1,size(NOs_MO,1),1 
+         !       print *,'threshold matrix ',test_tens(:,i)
+         !end do
+
+
+
 
         end subroutine talsh_mp2no_driver
 
