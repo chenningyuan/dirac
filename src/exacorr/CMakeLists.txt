@@ -23,8 +23,9 @@ if(ENABLE_EXATENSOR)
    exacorr_cc.F90
    talsh_ao_to_mo.F90
    talsh_common_routines.F90
-   talsh_eom_sigma.F90
-   talsh_eom.F90
+   talsh_sigma_eomccsd.F90
+   talsh_trial_eomccsd.F90
+   talsh_drivers_eomccsd.F90
    talsh_gradient.F90
    talsh_cc.F90
    davidson/talsh_davidson.F90

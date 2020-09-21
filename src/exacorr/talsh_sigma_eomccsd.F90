@@ -1,4 +1,4 @@
-module talsh_eom_sigma
+module talsh_sigma_eomccsd
 
   use talsh
   use tensor_algebra
@@ -14,43 +14,50 @@ module talsh_eom_sigma
 
   private
 
-  interface sigma_right_ip
-     module procedure talsh_sigma_right_ip
+  public talsh_sigma_eomccsd_rhs_ip
+  public talsh_sigma_eomccsd_lhs_ip
+  public talsh_sigma_eomccsd_rhs_ea
+  public talsh_sigma_eomccsd_lhs_ea
+  public talsh_sigma_eomccsd_rhs_ee
+  public talsh_sigma_eomccsd_lhs_ee
+
+  interface sigma_eomccsd_rhs_ip
+     module procedure talsh_sigma_eomccsd_rhs_ip
   end interface
 
-  interface sigma_left_ip
-     module procedure talsh_sigma_left_ip
+  interface sigma_eomccsd_lhs_ip
+     module procedure talsh_sigma_eomccsd_lhs_ip
   end interface
 
-  public sigma_right_ip
-  public sigma_left_ip
+  public sigma_eomccsd_rhs_ip
+  public sigma_eomccsd_lhs_ip
 
-  interface sigma_right_ea
-     module procedure talsh_sigma_right_ea
+  interface sigma_eomccsd_rhs_ea
+     module procedure talsh_sigma_eomccsd_rhs_ea
   end interface
 
-  interface sigma_left_ea
-     module procedure talsh_sigma_left_ea
+  interface sigma_eomccsd_lhs_ea
+     module procedure talsh_sigma_eomccsd_lhs_ea
   end interface
 
-  public sigma_right_ea
-  public sigma_left_ea
+  public sigma_eomccsd_rhs_ea
+  public sigma_eomccsd_lhs_ea
 
-  interface sigma_right_ee
-     module procedure talsh_sigma_right_ee
+  interface sigma_eomccsd_rhs_ee
+     module procedure talsh_sigma_eomccsd_rhs_ee
   end interface
 
-  interface sigma_left_ee
-     module procedure talsh_sigma_left_ee
+  interface sigma_eomccsd_lhs_ee
+     module procedure talsh_sigma_eomccsd_lhs_ee
   end interface
 
-  public sigma_right_ee
-  public sigma_left_ee
+  public sigma_eomccsd_rhs_ee
+  public sigma_eomccsd_lhs_ee
   
 
   contains
 
-    subroutine talsh_sigma_right_ip(exa_input, int_t, interm_t, r1_tensor, r2_tensor, sigma1_tensor, sigma2_tensor)
+    subroutine talsh_sigma_eomccsd_rhs_ip(exa_input, int_t, interm_t, r1_tensor, r2_tensor, sigma1_tensor, sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
@@ -139,16 +146,15 @@ module talsh_eom_sigma
         print*, "norm r_sigma ", (tensor_norm2(sigma1_tensor) + tensor_norm2(sigma2_tensor))
       end if
 
-    end subroutine talsh_sigma_right_ip
+    end subroutine talsh_sigma_eomccsd_rhs_ip
 
 
-    subroutine talsh_sigma_left_ip(exa_input,int_t,interm_t,t2_tensor, l1_tensor, l2_tensor, sigma1_tensor, sigma2_tensor)
+    subroutine talsh_sigma_eomccsd_lhs_ip(exa_input,int_t,interm_t,l1_tensor, l2_tensor, sigma1_tensor, sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-      type(talsh_tens_t),    intent(inout) :: t2_tensor
       type(talsh_tens_t),    intent(inout) :: l1_tensor
       type(talsh_tens_t),    intent(inout) :: l2_tensor
       type(talsh_tens_t),    intent(inout) :: sigma1_tensor
@@ -219,7 +225,7 @@ module talsh_eom_sigma
 !----------------------------------------------------------------------
 
       ierr=talsh_tensor_construct(v_aux,C8,(/exa_input%nvir/),init_val=ZERO)
-      ierr=talsh_tensor_contract("U(e)+=L(m,n,f)*T(e,f,m,n)",v_aux,l2_tensor,t2_tensor,scale=ONE_HALF)
+      ierr=talsh_tensor_contract("U(e)+=L(m,n,f)*T(e,f,m,n)",v_aux,l2_tensor,interm_t%t2,scale=ONE_HALF)
       ierr=talsh_tensor_contract("S(i,j,a)+=V(i,j,e,a)*U(e)",sigma2_tensor,int_t%oovv,v_aux)
       ierr=talsh_tensor_destruct(v_aux)
 
@@ -230,9 +236,9 @@ module talsh_eom_sigma
       ierr=talsh_tensor_contract("S(i,j,a)+=L(i)*F(j,a)",sigma2_tensor,l1_tensor,interm_t%fbar_ov)
       ierr=talsh_tensor_contract("S(i,j,a)+=L(j)*F(i,a)",sigma2_tensor,l1_tensor,interm_t%fbar_ov,scale=MINUS_ONE)
 
-    end subroutine talsh_sigma_left_ip
+    end subroutine talsh_sigma_eomccsd_lhs_ip
 
-    subroutine talsh_sigma_right_ea(exa_input,int_t,interm_t,t2_tensor,r1_tensor,r2_tensor,sigma1_tensor,sigma2_tensor)
+    subroutine talsh_sigma_eomccsd_rhs_ea(exa_input,int_t,interm_t,t2_tensor,r1_tensor,r2_tensor,sigma1_tensor,sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
@@ -325,9 +331,9 @@ module talsh_eom_sigma
         print*, "r2_sigma", tensor_norm2(sigma2_tensor)*ONE_QUARTER
       end if
 
-    end subroutine talsh_sigma_right_ea
+    end subroutine talsh_sigma_eomccsd_rhs_ea
 
-    subroutine talsh_sigma_left_ea(exa_input,int_t,interm_t,t2_tensor,l1_tensor,l2_tensor,sigma1_tensor,sigma2_tensor)
+    subroutine talsh_sigma_eomccsd_lhs_ea(exa_input,int_t,interm_t,t2_tensor,l1_tensor,l2_tensor,sigma1_tensor,sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
@@ -415,9 +421,9 @@ module talsh_eom_sigma
       ierr=talsh_tensor_contract("S(i,a,b)+=F(i,a)*L(b)",sigma2_tensor,interm_t%fbar_ov,l1_tensor)
       ierr=talsh_tensor_contract("S(i,a,b)+=F(i,b)*L(a)",sigma2_tensor,interm_t%fbar_ov,l1_tensor,scale=MINUS_ONE)
 
-    end subroutine talsh_sigma_left_ea
+    end subroutine talsh_sigma_eomccsd_lhs_ea
 
-    subroutine talsh_sigma_right_ee(exa_input,int_t,interm_t,t2_tensor,r1_tensor,r2_tensor,sigma1_tensor,sigma2_tensor)
+    subroutine talsh_sigma_eomccsd_rhs_ee(exa_input,int_t,interm_t,t2_tensor,r1_tensor,r2_tensor,sigma1_tensor,sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
@@ -574,9 +580,9 @@ module talsh_eom_sigma
 
       ierr=talsh_tensor_contract("S(a,b,i,j)+=W(a,b,e,f)*R(e,f,i,j)",sigma2_tensor,interm_t%w_vvvv,r2_tensor,scale=ONE_HALF)
 
-    end subroutine talsh_sigma_right_ee
+    end subroutine talsh_sigma_eomccsd_rhs_ee
 
-    subroutine talsh_sigma_left_ee(exa_input,int_t,interm_t,l1_tensor,l2_tensor,t1_tensor,sigma1_tensor,sigma2_tensor)
+    subroutine talsh_sigma_eomccsd_lhs_ee(exa_input,int_t,interm_t,l1_tensor,l2_tensor,t1_tensor,sigma1_tensor,sigma2_tensor)
 
 !     input variables
       type(exacc_input),     intent(in   ) :: exa_input
@@ -743,6 +749,6 @@ module talsh_eom_sigma
 
       ierr=talsh_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",sigma2_tensor,l2_tensor,interm_t%w_vvvv,scale=ONE_HALF)
 
-    end subroutine talsh_sigma_left_ee
+    end subroutine talsh_sigma_eomccsd_lhs_ee
 
-end module talsh_eom_sigma
+end module talsh_sigma_eomccsd

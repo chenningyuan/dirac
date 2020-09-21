@@ -1550,7 +1550,8 @@ contains
 
 
    subroutine create_sigma_right(exa_input,int_t,interm_t,workspace_t)
-      use talsh_eom_sigma, only : sigma_right_ip, sigma_right_ea
+      use talsh_sigma_eomccsd
+!     use talsh_sigma_eomccsd, only : sigma_eomccsd_right_ip, sigma_eomccsd_right_ea, sigma_eomccsd_right_ee
       type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
@@ -1636,7 +1637,7 @@ contains
 ! aspg
 
 
-         call sigma_right_ip(exa_input,int_t,interm_t, &
+         call interm_t%sigma_rhs_p(exa_input,int_t,interm_t, &
    &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
    &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
 
@@ -1823,8 +1824,19 @@ contains
             write(davidson_output_file_unit,*) ""
 
             if (davidson_solve_rhs) then
-               call create_sigma_right(exa_input,int_t,interm_t,workspace_t)
-               call create_subspace_matrix_right(M_small,workspace_t) 
+               if (associated(interm_t%sigma_rhs_p)) then
+                  call create_sigma_right(exa_input,int_t,interm_t,workspace_t)
+                  call create_subspace_matrix_right(M_small,workspace_t) 
+               else
+                  stop 'RHS sigma vector routine has not been defined prior to calling the solver'  
+               end if
+            else if (davidson_solve_lhs) then
+               if (associated(interm_t%sigma_lhs_p)) then
+                  stop 'LHS sigma vector in solver not yet implemented'
+               else
+                  stop 'LHS sigma vector routine has not been defined prior to calling the solver'  
+               end if
+! write me
             else
                stop 'unknown choice of side to solve for in davidson'  
             end if

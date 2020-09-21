@@ -151,7 +151,28 @@
            type(talsh_tens_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
                                          ! but could be pointers to that storage as well. but the point of keeping them here is to keep everything 
                                          ! in one placewe make a copy of what may be pointers to what is  
+           procedure(sigma_vector), pointer, nopass :: sigma_rhs_p => NULL()
+           procedure(sigma_vector), pointer, nopass :: sigma_lhs_p => NULL()
+
         end type talsh_intermediates_tens_t
+
+        abstract interface       
+           subroutine sigma_vector(exa_input, int_t, interm_t, r1, r2, s1, s2)
+           import :: exacc_input
+           import :: talsh_intg_tens_t
+           import :: talsh_intermediates_tens_t
+           import :: talsh_tens_t
+
+              type(exacc_input),     intent(in   ) :: exa_input
+              type(talsh_intg_tens_t), intent(inout) :: int_t
+              type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+              type(talsh_tens_t),    intent(inout) :: r1
+              type(talsh_tens_t),    intent(inout) :: r2
+              type(talsh_tens_t),    intent(inout) :: s1
+              type(talsh_tens_t),    intent(inout) :: s2
+            end subroutine  
+        end interface
+
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations
         type, public :: talsh_projectors_tens_t
