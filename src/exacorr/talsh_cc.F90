@@ -318,21 +318,23 @@ module talsh_cc
             call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
                                  comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift,keep_diagonal=.true.)
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
-            call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
-         
+            if (exa_input%eom_properties) then
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
+            else
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
+            end if
+
 ! with the ground-state intermediates done, and t amplitudes store
 
-          if (debug_eom) then
-             print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
-             print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
-             print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
-          end if
+            if (debug_eom) then
+               print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
+               print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
+               print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
+            end if
 
-           if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
-             call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
-           end if
-
-! create eom intermediates
+            if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
+               call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
+            end if
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances

@@ -17,7 +17,10 @@ module talsh_trial_eomccsd
   real(8),    parameter :: ONE_QUARTER=0.25D0
 
   public talsh_eomccsd_ip_trial_create 
+
   public talsh_eomccsd_ip_Hdiag_create
+  public talsh_eomccsd_ea_Hdiag_create
+  public talsh_eomccsd_ee_Hdiag_create
 
   contains
 
@@ -227,7 +230,7 @@ module talsh_trial_eomccsd
     subroutine talsh_eomccsd_ip_Hdiag_create(workspace, Fmi_tensor, Fae_tensor)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
       type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
-      integer :: nocc, nvir, i, j, a, b, ierr 
+      integer :: nocc, nvir, i, j, a, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
       real(8) :: diagonal
       complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
@@ -252,35 +255,131 @@ module talsh_trial_eomccsd
 
 ! transfer the diagonals of 
 
-            call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
-            call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+      call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+      call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-            do i = 1,  workspace%tens1_dims(1)
-               diagonal = -fmi_p_tens(i,i)
-               if (debug_hdiag_create) write (6,*) 'f_ii:',fmi_p_tens(i,i),'diag:',diagonal
-               hdiag1_h_p_tens(i) = diagonal
+      do i = 1,  workspace%tens1_dims(1)
+         diagonal = -fmi_p_tens(i,i)
+         if (debug_hdiag_create) write (6,*) 'f_ii:',fmi_p_tens(i,i),'diag:',diagonal
+         hdiag1_h_p_tens(i) = diagonal
+      end do
+      if (debug_hdiag_create) then
+         write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
+         write (6,*) hdiag1_h_p_tens(1:nocc)
+         write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
+      end if
+
+      do i = 1, workspace%tens2_dims(3)
+         do j = 1, workspace%tens2_dims(2)
+            do a = 1, workspace%tens2_dims(1)
+               diagonal = fae_p_tens(a,a) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
+               if (debug_hdiag_create) &
+               write (6,*) 'f_ii:',fmi_p_tens(i,i),'f_jj:',fmi_p_tens(j,j),'f_aa',fae_p_tens(a,a),'diag:',diagonal
+               hdiag2_h_p_tens(a,j,i) = diagonal 
             end do
-            if (debug_hdiag_create) then
-               write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
-               write (6,*) hdiag1_h_p_tens(1:nocc)
-               write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
-            end if
+         end do
+      end do
+      if (debug_hdiag_create) then
+         write (6,*) 'debug >>> hdiag2_h_p_tens >>>'
+         write (6,*) hdiag2_h_p_tens(1:nvir,1:nocc,1:nocc)
+!        write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
+      end if
 
-            do i = 1, workspace%tens2_dims(3)
-               do j = 1, workspace%tens2_dims(2)
-                  do a = 1, workspace%tens2_dims(1)
-                     diagonal = fae_p_tens(a,a) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
-                     if (debug_hdiag_create) &
-                     write (6,*) 'f_ii:',fmi_p_tens(i,i),'f_jj:',fmi_p_tens(j,j),'f_aa',fae_p_tens(a,a),'diag:',diagonal
-                     hdiag2_h_p_tens(a,j,i) = diagonal 
-                  end do
+    end subroutine
+
+
+    subroutine talsh_eomccsd_ea_Hdiag_create(workspace, Fmi_tensor, Fae_tensor)
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+      integer :: nocc, nvir, i, a, b, ierr 
+      integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
+      real(8) :: diagonal
+      complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
+      complex(8), pointer, contiguous:: Fmi_p_tens(:,:), Fae_p_tens(:,:) 
+      type(C_PTR):: hdiag1_body_p, hdiag2_body_p
+      type(C_PTR):: Fmi_body_p, Fae_body_p
+
+      diagonal = ZERO
+
+      ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
+      ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
+
+      ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
+      ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
+
+      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
+      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+
+! transfer the diagonals of 
+
+      call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+      call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+
+      do a = 1, workspace%tens1_dims(1)
+         diagonal = fae_p_tens(a,a)
+         hdiag1_h_p_tens(a) = diagonal
+      end do
+
+      do i = 1, workspace%tens2_dims(3)
+         do b = 1, workspace%tens2_dims(2)
+            do a = 1, workspace%tens2_dims(1)
+               diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(i,i) 
+               hdiag2_h_p_tens(a,b,i) = diagonal
+            end do
+         end do
+      end do
+
+    end subroutine
+
+    subroutine talsh_eomccsd_ee_Hdiag_create(workspace, Fmi_tensor, Fae_tensor)
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+      integer :: nocc, nvir, i, j, a, b, ierr 
+      integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
+      real(8) :: diagonal
+      complex(8), pointer, contiguous:: hdiag1_hp_tens(:,:), hdiag2_hp_tens(:,:,:,:)
+      complex(8), pointer, contiguous:: hdiag1_h_p_tens(:),  hdiag2_h_p_tens(:,:,:)
+      complex(8), pointer, contiguous:: Fmi_p_tens(:,:), Fae_p_tens(:,:) 
+      type(C_PTR):: hdiag1_body_p, hdiag2_body_p
+      type(C_PTR):: Fmi_body_p, Fae_body_p
+      logical :: debug_hdiag_create = .false.
+
+
+      diagonal = ZERO
+
+      ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
+      ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
+
+      ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
+      ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+      call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
+
+      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
+      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+
+      call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+      call c_f_pointer(hdiag2_body_p,hdiag2_hp_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+
+      do i = 1, workspace%tens1_dims(2)
+         do a = 1, workspace%tens1_dims(1)
+            diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
+            hdiag1_hp_tens(a,i) = diagonal
+         end do
+      end do
+
+      do j = 1,  workspace%tens2_dims(4)
+         do i = 1,  workspace%tens2_dims(3)
+            do b = 1,  workspace%tens2_dims(2)
+               do a = 1,   workspace%tens2_dims(1)
+                  diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
+                  hdiag2_hp_tens(a,b,i,j) = diagonal
                end do
             end do
-            if (debug_hdiag_create) then
-               write (6,*) 'debug >>> hdiag2_h_p_tens >>>'
-               write (6,*) hdiag2_h_p_tens(1:nvir,1:nocc,1:nocc)
-!              write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
-            end if
+         end do
+      end do
 
     end subroutine
 

@@ -173,8 +173,16 @@ module intermediates
         module procedure form_ccsd_intermediates_talsh
      end interface form_ccsd_intermediates
 
+     interface destroy_ccsd_intermediates
+#if defined (VAR_MPI)
+!       module procedure destroy_ccsd_intermediates_exacorr
+#endif
+        module procedure destroy_ccsd_intermediates_talsh
+     end interface destroy_ccsd_intermediates
+
 !    top-level driver for forming intermediates with CCSD wavefunctions
      public form_ccsd_intermediates
+     public destroy_ccsd_intermediates
 
 !    CCSD intermediates
      public get_tau
@@ -1351,24 +1359,25 @@ module intermediates
 
        end subroutine get_gvv_lambda_talsh
 
-       subroutine form_ccsd_intermediates_talsh(interm_t, CCD, nocc, nvir, comm_t, int_t)
-        use tensor_algebra
-        use talsh
-        use exacorr_datatypes
-        use exacorr_utils
-        use talsh_common_routines
-        use talsh_ao_to_mo
+       subroutine form_ccsd_intermediates_talsh(interm_t, CCD, nocc, nvir, comm_t, int_t, l2_tensor)
+          use tensor_algebra
+          use talsh
+          use exacorr_datatypes
+          use exacorr_utils
+          use talsh_common_routines
+          use talsh_ao_to_mo
 
 ! input variables
           type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
 ! CCD switch
-         logical, intent(in) :: CCD
-         integer, intent(in) :: nocc, nvir
+          logical, intent(in) :: CCD
+          integer, intent(in) :: nocc, nvir
           type(talsh_comm_tens_t),    intent(inout) :: comm_t
           type(talsh_intg_tens_t), intent(inout) :: int_t
+          type(talsh_tens_t),    intent(inout), optional :: l2_tensor 
 ! tensor dims
          integer, dimension(2) :: oo_dims, ov_dims, vv_dims, vo_dims
-         integer, dimension(4) :: oooo_dims, ooov_dims, ovoo_dims, vovo_dims, vvoo_dims
+         integer, dimension(4) :: oooo_dims, ooov_dims, ovoo_dims, vovo_dims, vvoo_dims, oovv_dims
 !     error code
          integer :: ierr
 
@@ -1424,6 +1433,19 @@ module intermediates
             call get_w_vovo (interm_t%w_vovo,int_t,interm_t%t2)
          end if
 
+
+!  if information is present for the lagrange multipliers, construct the intermediates
+!  required for lhs/lambda equations
+         if (present(l2_tensor)) then
+            oovv_dims = (/nocc,nocc,nvir,nvir/)
+            ierr=talsh_tensor_construct(interm_t%goo,C8,oo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(interm_t%gvv,C8,vv_dims,init_val=ZERO)
+            call get_goo_lambda(interm_t%goo,l2_tensor,interm_t%t2)
+            call get_gvv_lambda(interm_t%gvv,l2_tensor,interm_t%t2)
+            print*, "g_oo      tensor norm", tensor_norm2(interm_t%goo)
+            print*, "g_vv      tensor norm", tensor_norm2(interm_t%gvv)
+         end if
+
          print*, "t1        tensor norm", tensor_norm2(interm_t%t1)
          print*, "t2        tensor norm", tensor_norm2(interm_t%t2)
          print*, "fbar_oo   tensor norm", tensor_norm2(interm_t%fbar_oo)
@@ -1439,5 +1461,33 @@ module intermediates
 
       end subroutine
 
+      subroutine destroy_ccsd_intermediates_talsh(interm_t)
+         use tensor_algebra
+         use talsh
+         use exacorr_datatypes
+         use exacorr_utils
+         use talsh_common_routines
+         use talsh_ao_to_mo
+
+! input variables
+         type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+         integer :: ierr
+
+         print*, "destroying ccsd intermediates for talsh"
+         ierr=talsh_tensor_destruct(interm_t%goo)
+         ierr=talsh_tensor_destruct(interm_t%gvv)
+         ierr=talsh_tensor_destruct(interm_t%fbar_oo)
+         ierr=talsh_tensor_destruct(interm_t%fbar_ov)
+         ierr=talsh_tensor_destruct(interm_t%fbar_vv)
+         ierr=talsh_tensor_destruct(interm_t%w_oooo)
+         ierr=talsh_tensor_destruct(interm_t%w_ooov)
+         ierr=talsh_tensor_destruct(interm_t%w_ovoo)
+         ierr=talsh_tensor_destruct(interm_t%w_vovo)
+         ierr=talsh_tensor_destruct(interm_t%w_vovv)
+         ierr=talsh_tensor_destruct(interm_t%w_vvvo)
+         ierr=talsh_tensor_destruct(interm_t%w_vvvv)
+         print*, "done destroying ccsd intermediates"
+
+      end subroutine
 
 end module
