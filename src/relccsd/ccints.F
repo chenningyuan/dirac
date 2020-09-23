@@ -1471,25 +1471,29 @@ C        Complete the Fock matrix by adding the two-electron contributions
       END IF
 C
 C     We calculate the 1-determinant energy, which can be compared
-C     to the value read from the RMRCONEE file as a check on the correctness
+C     to the value read from the MRCONEE file as a check on the correctness
 C     of the index transformations.
 C
       CALL COMPUTE_HF_ENERGY (FOO,E0,E1)
 C
 C     Write human-readable output (mostly concerning checks of the unperturbed Fock matrix)
 C
-      CALL WRITE_FM_OUTPUT (EPS,FOO,FVV)
+      CALL WRITE_FM_OUTPUT (E0,E1,EPS,FOO,FVV)
+C
+C     If desired: add a finite field. The thus perturbed Fock matrix will be used
+C     in the following so we need to recompute the energy for consistency
+C
+      IF (ADD_FINITE_FIELD) THEN
+         CALL ADD_PERTURBATION (FOCKSP,NSP,FOO,FVO,FVV)
+         CALL COMPUTE_HF_ENERGY (FOO,E0,E1)
+      END IF
+
 C
 C     We normally we take the diagonal of the Fock matrix as zeroth order Hamiltonian
 C     this can be modified to using the original orbital energies
 C     (note that there is no difference between these two options if norecmp is true)
 
       IF (.NOT.USEOE)  CALL COPY_DIAG_TO_EPS (EPS,FOO,FVV)
-
-      IF (ADD_FINITE_FIELD) THEN
-         CALL ADD_PERTURBATION (FOCKSP,NSP,FOO,FVO,FVV)
-         CALL COMPUTE_HF_ENERGY (FOO,E0,E1)
-      END IF
 
       ENDIF ! end of serial block executed only on master
 
@@ -1512,7 +1516,7 @@ C     Write Fock matrix to file for restart and post-processing purposes
 
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE WRITE_FM_OUTPUT (EPS,FOO,FVV)
+      SUBROUTINE WRITE_FM_OUTPUT (E0,E1,EPS,FOO,FVV)
 C
       implicit none
 C
@@ -1528,7 +1532,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 EPS(*)
+      REAL*8 E0,E1,EPS(*)
       REAL*8 FOO(*),FVV(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -1553,6 +1557,7 @@ C---------------Executable code--------------------------------------
 C
       FOCKSP = EQNS.EQ.'FOCKSP'
 C
+      WRITE (IW,1000) E0+E1
 C
       WRITE (IW,1001)
       II = 1
@@ -1646,6 +1651,7 @@ C
       ENDIF
       WRITE (IW,1005)
 C
+ 1000 FORMAT (//' Single determinant electronic energy :',T40,F25.15)
  1001 FORMAT (//' Checking the orbital energies, the program computes',
      & ' the diagonal elements of the'/' reconstructed Fock matrix.',
      & ' Differences with the reference orbital energies'/
