@@ -46,46 +46,46 @@
 *PRPTRA
 # we need this print level to get all MO mtx elements printed
 .PRINT
-5
-# grad delra(r-R) operator ...
+3
+# grad delta(r-R) operator ...
 .OPERATOR
- 'x O   '
- XALPHA   
+ 'd/dx d O'
+ DIAGONAL 
  'XGFO  01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'y O   '
- YALPHA   
+ 'd/dy d O'
+ DIAGONAL 
  'YGFO  01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'z O   '
- ZALPHA 
+ 'd/dz d O'
+ DIAGONAL
  'ZGFO  01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'x Mg  '
- XALPHA   
+ 'd/dx dMg'
+ DIAGONAL 
  'XGFMg 02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'y Mg  '
- YALPHA   
+ 'd/dy dMg'
+ DIAGONAL 
  'YGFMg 02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'z Mg  '
- ZALPHA 
+ 'd/dz dMg'
+ DIAGONAL
  'ZGFMg 02'
  COMFACTOR
  1.00D0

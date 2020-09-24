@@ -8,17 +8,17 @@
 .DIRECT
 1 1 1
 .PRINT
-1
+0
 **INTEGRALS
 .PRINT
-3
+0
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *READIN
 .UNCONTRACTED
 **HAMILTONIAN
 .PRINT
-1
+0
 .INTFLG
 1 1 0
 **WAVE FUNCTIONS 
@@ -46,7 +46,7 @@ all
 *PRPTRA
 # we need this print level to get all MO mtx elements printed
 .PRINT
-5
+3
 #---------------------------------------
 #   DIPLEN integrals for comparison
 #---------------------------------------
@@ -110,45 +110,45 @@ all
  COMFACTOR
  1.00D0
 #-----------------------------------------------
-# grad delra(r-R) operator for given nuclei
+# grad delta(r-R) operator for given nuclei
 #-----------------------------------------------
 .OPERATOR
- 'd/dx delta Li'
+ 'd/dx dLi'
  DIAGONAL 
  'XGFLi 01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'd/dy delta Li'
+ 'd/dy dLi'
  DIAGONAL 
  'YGFLi 01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'd/dz delta Li'
+ 'd/dz dLi'
  DIAGONAL
  'ZGFLi 01'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'd/dx delta H'
+ 'd/dx d H'
  DIAGONAL 
  'XGFH  02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'd/dy delta H'
+ 'd/dy d H'
  DIAGONAL 
  'YGFH  02'
  COMFACTOR
  1.00D0
 #
 .OPERATOR
- 'd/dz delta H'
+ 'd/dz d H'
  DIAGONAL
  'ZGFH  02'
  COMFACTOR

@@ -2087,9 +2087,9 @@ C     Miro Ilias, Malaya K Nayak
 !
 ! ---------------------------------------------------------
 !  electronic gradient of the delta(r-R) contact operator,
-!   "grad delta(r-R)" 
+!   "grad delta(r-R)", real and T(+) operator
 ! ---------------------------------------------------------
-!     Miro Ilias, GSI.de, Aug.2020
+!     Miro Ilias, H.J.Aa Jensen, GSI.de, Aug.-Sept. 2020
  84   continue
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
      &   'PR1DIR: Calculation of "grad delta(r-R)" operator'
@@ -2097,7 +2097,7 @@ C     Miro Ilias, Malaya K Nayak
          CALL SETATM(DOATOM,NATOM,INTTYP)
          CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
          ANTI = .FALSE.
-         SQUARE = .TRUE.
+         SQUARE = .FALSE.
       GO TO 200
  85   continue
  86   continue

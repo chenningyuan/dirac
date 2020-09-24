@@ -4759,12 +4759,13 @@ C
 #include "maxorb.h"
 C
       PARAMETER (DFAC = 2.0D0*PI/3.0D0)
-      LOGICAL   DOATOM(NUCIND)
+      LOGICAL   DOATOM(NUCIND), CTRL_PRINT
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
 #include "symmet.h"
 #include "nuclei.h"
+      CTRL_PRINT=.FALSE.
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -4775,6 +4776,7 @@ C
          NVALA = NVALUA(ICOMPA)
       DO 100 ICOMPB = 1, KCKTB
          ! real "m_l" components of primitive B
+         ! x**LVALB * y**MVALB * z**NVALB * exp(...)
          LVALB = LVALUB(ICOMPB)
          MVALB = MVALUB(ICOMPB)
          NVALB = NVALUB(ICOMPB)
@@ -4879,6 +4881,7 @@ C
 
                END IF  ! IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0
                END DO  ! ISYMOP
+
                SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1) 
      &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
      &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
@@ -4888,6 +4891,8 @@ C
                SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
      &           - FINT*(ZFINTA*FINTBZ + FINTAZ*ZFINTB)
      &                 *FINTAY*FINTBY*FINTAX*FINTBX
+
+              IF (CTRL_PRINT) THEN
               if (DABS(SHLINT(INT,INTTYP+1)).GE.1.0d-9) then
                  write(lupri,*) LVALA,MVALA,NVALA,':',LVALB,MVALB,NVALB
                  write(lupri,*) 'x delta shlint=',SHLINT(INT,INTTYP+1),
@@ -4903,6 +4908,7 @@ C
                  write(lupri,*) 'z delta shlint=',SHLINT(INT,INTTYP+3),
      &                          INT, INTTYP+3
               endif
+              ENDIF
 
                INTTYP = INTTYP + 3
 
