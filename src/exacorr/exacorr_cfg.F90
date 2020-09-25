@@ -56,12 +56,14 @@ contains
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%nff,2,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff_names(exa_input%nff(1)))
-  call interface_mpi_bcast(exa_input%ff_names,len(exa_input%ff_names(1))*exa_input%nff(1), &
+  if (exa_input%nff(1)>0) then
+    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff_names(exa_input%nff(1)))
+    call interface_mpi_bcast(exa_input%ff_names,len(exa_input%ff_names(1))*exa_input%nff(1), &
                            exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
-  call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2),exa_MPI_RANK,global_communicator)
-  
+    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
+    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2),exa_MPI_RANK,global_communicator)
+  end if
+
   end subroutine exacc_sync_cw
 #endif
 
@@ -76,8 +78,10 @@ contains
   deallocate (exa_input%mo_occ  )
   deallocate (exa_input%mo_vir  )
 
-  deallocate (exa_input%ff_names)
-  deallocate (exa_input%ff)
+  if (exa_input%nff(1)>0) then
+    deallocate (exa_input%ff_names)
+    deallocate (exa_input%ff)
+  end if
 
   end subroutine exacc_deallocate_cw
 

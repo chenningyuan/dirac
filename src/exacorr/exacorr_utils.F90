@@ -112,6 +112,7 @@ module exacorr_utils
       end if
       if (exa_input%level_shift.gt.1.0D-14) then
         write(*,'(A,ES10.1)') " - Level Shift :                      ",exa_input%level_shift
+        write(*,'(A)')        " WARNING: MP2 energies are wrong due to level shift"
       end if
       if (exa_input%nff(1).gt.0) then
         write(*,'(A,L1)') " - Adding finite fields                 "
@@ -317,28 +318,31 @@ module exacorr_utils
 
           real(8), intent(inout)   :: eps_vir(:),eps_occ(:)
           real(8), intent(in)      :: level_shift
-
-          integer            :: lumo, printl
+          
+          integer            :: print_level=1
+          integer            :: lumo,i
           real(8)            :: e_homo, e_lumo
           real(8), parameter :: THRESHOLD=1.D-8
+          
+          e_homo = maxval(eps_occ)
+          lumo   = minloc(eps_vir,1)
+
 
           if (level_shift.gt.1.0D-14) then
-            e_homo = maxval(eps_occ)
             e_lumo = minval(eps_vir)
-            lumo   = minloc(eps_vir,1)
 
-            do while(e_lumo-e_homo < THRESHOLD)
-              if (e_lumo+level_shift-e_homo >THRESHOLD) then
-                eps_vir(lumo)=e_lumo+level_shift
-                if (printl.gt.-1) then
+            do i=1,size(eps_vir)
+              eps_vir(i)=eps_vir(i)+level_shift
+              
+              if (print_level.gt.-1) then
                   write(*,*) "LUMO shifted from  ", e_lumo," to ",eps_vir(lumo)
-                end if
-              else
-                call quit('Negative HOMO-LUMO gap')
               end if
-              e_lumo = minval(eps_vir)
-              lumo   = minloc(eps_vir, 1)
+
             end do
+          end if
+          
+          if (eps_vir(lumo)-e_homo<THRESHOLD) then
+            call quit('Negative HOMO-LUMO gap (.LSHIFT possible)')
           end if
 
     end subroutine shift_orbital_energy
