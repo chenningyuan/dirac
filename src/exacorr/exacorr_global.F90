@@ -565,7 +565,7 @@ module exacorr_global
           allocate(dist_a(sl))
 
           dist_a=eps-e_min
-          where(dist_a<0) dist_a=1000
+          where(dist_a<0) dist_a=1000000
           j=minloc(abs(dist_a),1)
           mo1=1
           do i=j-1,1,-1
@@ -576,7 +576,7 @@ module exacorr_global
           end do
 
           dist_a=eps-e_max
-          where(dist_a>0) dist_a=1000
+          where(dist_a>0) dist_a=1000000
           j=minloc(abs(dist_a),1)
           mo2=sl
           do i=j,sl-1
