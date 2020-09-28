@@ -32,8 +32,8 @@ module talsh_mp2no
 !-------------------------------------------------------------------------------------------
         subroutine talsh_mp2no_driver (exa_input)
 
-!This subroutine drives the mp2 natural orbital calculation
-!Written by Xiang Yuan, July 2020
+!       This subroutine drives the mp2 natural orbital calculation
+!       Written by Xiang Yuan, July 2020
 
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
@@ -42,19 +42,20 @@ module talsh_mp2no
 
          type(exacc_input), intent(in) :: exa_input
 
-         integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+         integer                :: nocc, nvir   ! the size of the mo basis for occupied and virtual spinors
+         integer                :: nao, nmo     ! the size of the ao & mo basis for natural orbital transformation 
+         integer,  allocatable  :: mp2no_mo_list(:)   ! and their indices
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         real(8), allocatable   :: eps_occ(:),eps_vir(:) ! HF orbital energies
 
+!        Point connected with tensors 
          integer(C_INT)       :: ierr
          complex(8), pointer :: MP2_density_tens(:,:)
          complex(kind=8), pointer :: N_occupation(:) 
-         complex(kind=8), pointer :: NOs_MO(:,:)
-         real(kind=8), pointer :: eVectorsR(:,:)
-         real(kind=8), pointer :: eVectorsL(:,:) 
-         real(kind=8), pointer :: e_small(:,:)
-         complex(kind=8), pointer :: thre_tens(:,:)
+         complex(kind=8), pointer :: NOs_MO(:,:), NOs_MO_red(:,:)
          complex(kind=8), pointer :: test_tens(:,:)
-         real(kind=8)          :: energy_shift(2),threshold
+         real(kind=8), pointer :: eVectors_Real(:,:)  ! natural orbital in real number used for sorted routine 
+         real(kind=8), pointer :: e_small(:,:)
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
@@ -63,19 +64,24 @@ module talsh_mp2no
          type(talsh_comm_tens) :: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(talsh_intg_tens) :: int_t
-!        HF orbital energy tensor  
-         type(talsh_tens_t) :: diag_foo_tensor, diag_fvv_tensor
-!        intermediate tensors (same notation as in relccsd)
-         integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
-         integer(INTD), dimension(2) :: oo_dims, ov_dims, vv_dims
-!        scalars (need to be defined as tensor types)
+         
+!        Intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t) :: result_tensor, MP2_density_tensor
-         integer(C_INT)     :: one_dims(1)
-         integer             :: i,j
-!        orbital energies
-         real(8), allocatable :: eps_occ(:),eps_vir(:)
-         logical :: left_local, right_local, apply_evalues_shift
-         integer :: sorting_order_local
+         type(talsh_tens_t) :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
+         type(talsh_tens_t) :: NOs_MO_tensor, NOs_MO_red_tensor, NOs_AO_tensor  ! natural orbital in MO; MO_reduced; AO basis
+         integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vv_dims, no_red_dims, no_ao_dims
+         integer(INTD)               :: mocoef_dims(2)
+         integer(C_INT)              :: one_dims(1)
+         real(kind=8)                :: energy_shift(2)
+
+!        Scalars (need to be defined as tensor types)
+         real(kind=8)       :: threshold
+         integer            :: i,j
+         integer            :: num_no_red       ! number of reduced natural orbital
+         integer            :: sorting_order_local
+         logical            :: left_local, right_local, apply_evalues_shift  !variable in davidson module controling sorted routine 
+
          
 
 
@@ -92,7 +98,6 @@ module talsh_mp2no
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
-
          
 
          !DO NOT CHANGE THESE VARIABLES
@@ -111,12 +116,12 @@ module talsh_mp2no
          ierr=talsh_tensor_get_body_access(MP2_density_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,MP2_density_tens,vv_dims)
          print *,'construct mp2_tensor',ierr
-         print *,'row_DM', size(MP2_density_tens,1)
-         print *,'Col_DM', size(MP2_density_tens,2)
-
+         print *,'mo_occ', mo_occ
+         print *,'mo_vir', mo_vir  
          call print_exainput(exa_input,get_nao())
-
          call print_date("Getting orbital energies")
+
+
 !        Get orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
          allocate (eps_vir(nvir))
@@ -138,7 +143,7 @@ module talsh_mp2no
 !        ierr=talsh_tensor_add("T(a,b,i,j)+=V+(i,j,a,b)",t2_tensor,oovv_tensor)
 !        work-around because complex conjugation does not work in the above statement
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor) ! o(2)v(2)
-         print *,'oovv',ierr
+!        print *,'oovv',ierr
 !        end of work-around
 
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
@@ -149,85 +154,132 @@ module talsh_mp2no
          ierr=talsh_tensor_init(MP2_density_tensor)
          ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",MP2_density_tensor,comm_t%t2,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
          print *,'after constructing density matrix',ierr
-         print *,'row_DM', size(MP2_density_tens,1)
-         print *,'Col_DM', size(MP2_density_tens,2)
+!         print *,'Row_DM', size(MP2_density_tens,1)
+!         print *,'Col_DM', size(MP2_density_tens,2)
 
 
 !        Make some noise so that we know we are leaving
          write(*,*) ""
          call print_date('Go to natural orbital')
 
+
 !        Diagoliazation of Density matrix
          allocate(e_small(2,size(MP2_density_tens,2)))
          e_small = 0.0
          call diagoanl_DMP2_matrix(MP2_density_tens,e_small,NOs_MO)
-         allocate(eVectorsR(size(NOs_MO,1),size(NOs_MO,2))) 
-         allocate(thre_tens(size(NOs_MO,1),size(NOs_MO,2))) 
-         do i=1,size(e_small,2),1
-                print *,'occupation number',e_small(1,i)
-         end do
-
-
-         do j=1,size(NOs_MO,1),1
-                print *,'natural orbital in MO basis',NOs_MO(:,j)
-         end do
-
-
-
-!        Sorted occupation number and natural orbital 
-        energy_shift =0.0
-        sorting_order_local = 1
-        apply_evalues_shift = .false.
-        left_local = .false. 
-        right_local = .true.
-        do i=1,size(NOs_MO,1),1
-                eVectorsR (:,i)= real(NOs_MO(:,i))
-        end do
-        call sort_values_vectors(sorting_order_local, e_small, eVectorsR, eVectorsR, &
-                                     right_local, left_local,apply_evalues_shift,energy_shift)
-         do i=1,size(NOs_MO,1),1
-                   do j=1,size(NOs_MO,2),1            
-                         NOs_MO(j,i)=complex(eVectorsR(j,i),0.0)  
-                   end do 
-         end do
-
-!         do i=1,size(e_small,2),1
-!                print *,'occupation number_order',e_small(1,i)
-!         end do
-       
-!         do j=1,size(eVectorsR,2),1
-!                print *,'natural orbital in MO basis_order_in complex',NOs_MO(:,j)
-!         end do
-
-!        reduced natural orbital 
-         threshold = 1.d-5
-         do i=1,size(NOs_MO,1),1
-                if (e_small(1,i) < threshold) then
-                    NOs_MO(:,i)=complex(0.0,0.0)  
-                else
-                   do j=1,size(NOs_MO,2),1            
-                         NOs_MO(j,i)=complex(eVectorsR(j,i),0.0)  
-                   end do 
-                end if 
-         end do
-       
-         do j=1,size(eVectorsR,2),1
-                print *,'reduced natural orbital in MO basis_order_in complex',NOs_MO(:,j)
-         end do
-
-
-
-         !print *,'natural orbital in MO basis_order_in complex_TT',NOs_MO
-         !allocate(test_tens(size(NOs_MO,1),size(NOs_MO,2))) 
-         !ierr=talsh_tensor_get_body_access(threshold_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,test_tens,vv_dims) ! to use as a regular Fortran array
-         !do i=1,size(NOs_MO,1),1 
-         !       print *,'threshold matrix ',test_tens(:,i)
+         !do i=1,size(e_small,2),1
+         !       print *,'occupation number',e_small(1,i)
          !end do
 
 
 
+!        Sorted occupation number and natural orbital 
+         allocate(eVectors_Real(size(NOs_MO,1),size(NOs_MO,2))) 
+         energy_shift =0.0
+         sorting_order_local = 1
+         apply_evalues_shift = .false.
+         left_local = .false. 
+         right_local = .true.
+         do i=1,size(NOs_MO,1),1
+                eVectors_Real (:,i)= real(NOs_MO(:,i))
+         end do
+         call sort_values_vectors(sorting_order_local, e_small, eVectors_Real, eVectors_Real, &
+                                     right_local, left_local,apply_evalues_shift,energy_shift)
 
+!-------------------------Test Part------------------------------------------------------
+!         do i=1,size(NOs_MO,1),1
+!             do j=1,size(NOs_MO,2),1            
+!               NOs_MO(j,i)=complex(eVectorsR(j,i),0.0)  
+!             end do 
+!         end do
+
+!          do i=1,size(e_small,2),1
+!                 print *,'occupation number_order',e_small(1,i)
+!          end do
+       
+!         do j=1,size(eVectorsR,2),1
+!                print *,'natural orbital in MO basis_order_in complex',NOs_MO(:,j)
+!         end do
+!---------------------------------------------------------------------------------------
+
+!        Set theshold and Reduce natural orbital space  
+         threshold = 1.d-5
+         num_no_red=0
+         do i=1,size(NOs_MO,1),1
+                if (e_small(1,i) > threshold) then
+                        num_no_red = num_no_red +1
+                end if 
+         end do
+         print *,'number of NOs kept in following',num_no_red
+         no_red_dims(1)=nvir
+         no_red_dims(2)=num_no_red
+         !allocate(NOs_MO_red(no_red_dims(1),no_red_dims(2))) 
+         ierr=talsh_tensor_construct(NOs_MO_red_tensor,C8,no_red_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(NOs_MO_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
+         do i=1,size(NOs_MO_red,2),1
+                do j=1,size(NOs_MO_red,1),1            
+                         NOs_MO_red(j,i)=complex(eVectors_Real(j,i+nvir-num_no_red),0.0)  
+                end do 
+         end do
+       
+         do j=1,size(NOs_MO_red,2),1
+                print *,'reduced natural orbital in MO basis',NOs_MO_red(:,j)
+         end do
+
+
+!       Extracting virtual MO coeffcient in AO basis set
+         nao = (nocc + nvir)/2
+         nmo = nvir 
+         mocoef_dims(1) = nao
+         mocoef_dims(2) = nmo
+         allocate(mp2no_mo_list(nvir))
+         mp2no_mo_list = mo_vir
+         ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=ZERO)
+         call get_MP2_mocoef_tensor (nao, nmo, mp2no_mo_list, mocoefa_tensor, mocoefb_tensor) 
+         ierr=talsh_tensor_add("moco_a(a,b)+=moco_b(a,b)",mocoefa_tensor,mocoefb_tensor)
+
+!       Transform reduced natural orbital from MO basis into AO basis
+         no_ao_dims(1)=nao
+         no_ao_dims(2)=num_no_red
+         ierr=talsh_tensor_construct(NOs_AO_tensor,C8,no_ao_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MO_red_tensor,scale=ONE)
+
+
+
+!--------------------------------------------Test part-----------------------------------------------------
+        print *, '!--------------------------------------------------------------'
+        allocate(test_tens(nao,num_no_red)) 
+        !ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+        call c_f_pointer(body_p,test_tens,no_ao_dims) ! to use as a regular Fortran array
+        print *, 'size test_tens', size(test_tens,2)
+        do i=1,num_no_red,1 
+                print *,'reduced natural orbital in AO basis',test_tens(:,i)
+        end do
+
+        print *, '!--------------------------------------------------------------'
+        ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+        call c_f_pointer(body_p,test_tens,mocoef_dims) ! to use as a regular Fortran array
+        print *, 'size test_tens', size(test_tens,2)
+        do i=1,nmo,1 
+                !print *,'MO_AO coeff matrix_a ',test_tens(:,i)
+                !print *, 'size row', size(test_tens,1)
+                !print *, 'size col', size(test_tens,2)
+                print *,'MO in AO basis coeff matrix ',test_tens(:,i)
+        end do
+
+!         print *, '!--------------------------------------------------------------'
+!         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+!         call c_f_pointer(body_p,test_tens,mocoef_dims) ! to use as a regular Fortran array
+!         do i=1,nmo,1 
+!                print *,'MO_AO coeff matrix_b ',test_tens(:,i)
+                !print *, 'size row', size(test_tens,1)
+                !print *, 'size col', size(test_tens,2)
+                !print *,'MO_AO coeff matrix ',test_tens
+!         end do
+!-------------------------------------------------------------------------------------------------------------
         end subroutine talsh_mp2no_driver
 
 
@@ -260,12 +312,55 @@ module talsh_mp2no
                     eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
                     WORK, LWORK, rwork, INFO)
                     !print *,'INFO',info
-            
-            
+                      
         end subroutine diagoanl_DMP2_matrix
             
             
-!-----------------------------------------------------------------------------------------------------------
+!----------------------------------------------------------------------------------------------------------------
+
+        subroutine get_MP2_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
+
+                !This subroutine reads the desired subset of mo coefficients from DIRAC
+                
+                !        Written by Lucas Visscher, winter 2016/2017 (but in Goa, India, temperature about 30 C)
+                
+                         use exacorr_mo
+                         use exacorr_global
+                
+                         implicit none
+                         integer, intent(in) :: nao          ! the length of the ao basis
+                         integer, intent(in) :: nmo          ! the length of the mo basis
+                         integer, intent(in) :: mo_list(:)   ! and their indices
+                         type(talsh_tens_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
+                
+                         integer(INTD)       :: ierr, tens_rank
+                         type(cmo)           :: cspinor
+                         integer(INTD)       :: mocoef_dims(1:2)
+                
+                         complex(8), pointer, contiguous:: camo_tens(:,:),cbmo_tens(:,:)
+                         type(C_PTR):: body_p
+                
+                         ierr=talsh_tensor_dimensions(mocoefa_tensor,tens_rank,mocoef_dims)
+                         ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+                         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
+                         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+                         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
+                
+                         call get_mo_coefficients (cspinor,mo_list,nmo)
+                
+                !        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
+                !        T. Saue, H. Jensen, J. Chem. Phys. 111 (1999) 6211–6222, Equation 16.
+                !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
+                !        using Kramers' symmetry.
+                
+                         camo_tens = cspinor%coeff(:,:,1)
+                         cbmo_tens = cspinor%coeff(:,:,2)
+                
+        end subroutine get_MP2_mocoef_tensor
+
+
+
+!--------------------------------------------------------------------------------------------------------------------
 
         subroutine get_MP2_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
 
@@ -399,6 +494,13 @@ module talsh_mp2no
            ierr=talsh_tensor_destruct(aoint_tensor)
   
         end subroutine get_MP2_integrals
+
+
+
+
+
+
+
 
 !------------------------------------------------------------------------------------------------------------------
 
