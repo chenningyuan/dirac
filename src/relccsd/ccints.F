@@ -1722,6 +1722,9 @@ C
       READ (MRCONEE) (BUF1(IJ),BUF2(IJ),IJ=1,NSPQ)
       CLOSE (MRCONEE)
 
+C  For some historical reason integrals are written in c-order, complex conjugate to go to fortran order
+      BUF2 = - BUF2
+
 C  ORDER AND PUT IN FOCK MATRIX
 C
       IF (FOCKSP) THEN
@@ -1742,21 +1745,21 @@ C
                IF (ITYP.EQ.1) THEN
                   IF (CARITH) THEN
                      FOO(RCW*IND-1) = BUF1(IJ)
-                     FOO(RCW*IND)   = - BUF2(IJ)
+                     FOO(RCW*IND)   = BUF2(IJ)
                   ELSE
                      FOO(IND) = BUF1(IJ)
                   ENDIF
                ELSEIF (ITYP.EQ.2) THEN
                   IF (CARITH) THEN
                      FVO(RCW*IND-1) = BUF1(IJ)
-                     FVO(RCW*IND)   = - BUF2(IJ)
+                     FVO(RCW*IND)   = BUF2(IJ)
                   ELSE
                      FVO(IND) = BUF1(IJ)
                   ENDIF
                ELSEIF (ITYP.EQ.4) THEN
                   IF (CARITH) THEN
                      FVV(RCW*IND-1) = BUF1(IJ)
-                     FVV(RCW*IND)   = - BUF2(IJ)
+                     FVV(RCW*IND)   = BUF2(IJ)
                   ELSE
                      FVV(IND) = BUF1(IJ)
                   ENDIF
@@ -1847,21 +1850,21 @@ C
                IF (ITYP.EQ.1) THEN
                   IF (CARITH) THEN
                      FOO(RCW*IND-1) = FOO(RCW*IND-1) + BUF1(IJ)
-                     FOO(RCW*IND)   = FOO(RCW*IND)   - BUF2(IJ)
+                     FOO(RCW*IND)   = FOO(RCW*IND)   + BUF2(IJ)
                   ELSE
                      FOO(IND) = FOO(IND) + BUF1(IJ)
                   ENDIF
                ELSEIF (ITYP.EQ.2) THEN
                   IF (CARITH) THEN
                      FVO(RCW*IND-1) = FVO(RCW*IND-1) + BUF1(IJ)
-                     FVO(RCW*IND)   = FVO(RCW*IND)   - BUF2(IJ)
+                     FVO(RCW*IND)   = FVO(RCW*IND)   + BUF2(IJ)
                   ELSE
                      FVO(IND) = FVO(IND) + BUF1(IJ)
                   ENDIF
                ELSEIF (ITYP.EQ.4) THEN
                   IF (CARITH) THEN
                      FVV(RCW*IND-1) = FVV(RCW*IND-1) + BUF1(IJ)
-                     FVV(RCW*IND)   = FVV(RCW*IND)   - BUF2(IJ)
+                     FVV(RCW*IND)   = FVV(RCW*IND)   + BUF2(IJ)
                   ELSE
                      FVV(IND) = FVV(IND) + BUF1(IJ)
                   ENDIF
