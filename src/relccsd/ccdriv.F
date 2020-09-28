@@ -274,6 +274,60 @@ C
       MAXIT     = relcc_fopr_max_iterations
       NTOL      = relcc_fopr_desired_convergence
 
+C     Switch on evaluation of property output if necessary
+      IF (DOMP2G) THEN
+          DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'MP2 ') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'MP2 '
+          END IF
+      END IF
+
+!     following section is for switching on coupled cluster property evaluation.
+      IF (DOCCSDG) THEN
+          DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'CCSD') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'CCSD'
+          END IF
+      END IF
+! the following section is to activate excited state property evaluation module
+
+      if (relcc_do_eomprop) then
+        DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'EOM ') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'EOM '
+          END IF
+      END IF
+
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
       NTOLGR = NTOL
