@@ -1722,9 +1722,6 @@ C
       READ (MRCONEE) (BUF1(IJ),BUF2(IJ),IJ=1,NSPQ)
       CLOSE (MRCONEE)
 
-C  For some historical reason integrals are written in c-order, complex conjugate to go to fortran order
-      BUF2 = - BUF2
-
 C  ORDER AND PUT IN FOCK MATRIX
 C
       IF (FOCKSP) THEN
