@@ -170,6 +170,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "mxcent.h"
+#include "dcbprp.h"
 #include "dcbmp2no.h"
 #include "dcbham.h"
 C
@@ -273,7 +274,6 @@ C
       MAXDIM    = relcc_fopr_max_dimension_diis
       MAXIT     = relcc_fopr_max_iterations
       NTOL      = relcc_fopr_desired_convergence
-
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
           DOEXP = .TRUE.
@@ -5061,3 +5061,5 @@ C
 !     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
 !    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
+
+
