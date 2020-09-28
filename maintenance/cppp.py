@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 # (c) Ulf Ekstrom
 
@@ -120,7 +120,7 @@ def main():
     filenames = []
     target = filenames
     if len(sys.argv) == 1:
-        print usage
+        print(usage)
         return
     for arg in sys.argv[1:]:
         arg = arg.strip()
@@ -134,7 +134,7 @@ def main():
             target.append(arg)
             if target in [defined, undefined]:
                 if '=' in arg:
-                    print 'Error: Giving a macro a value (%s) is not supported. Quitting!' % arg
+                    print('Error: Giving a macro a value (%s) is not supported. Quitting!' % arg)
                     return -1
         target = filenames
     for fn in filenames:
