@@ -40,8 +40,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D2PI = D2*PI,D4=4.0D0,CENT=1.0D2)
       PARAMETER(NITER=10)
@@ -50,6 +49,11 @@
       DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
       CHARACTER POTFIL*40,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
 !     Heading
 !

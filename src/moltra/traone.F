@@ -840,7 +840,7 @@ C     - Number of boson symmetry reps (for LUCITA)
      &               (IBSPI(I),I=1,2*NSTRT),(NORB(I),I=1,NFSYM),NBSYMRP
 C     Matrix elements over the core Fock operator.
       WRITE (LUMLF1) ((FMOM(I,J,1),FMOM(I,J,2),
-     &                 J=1,NSTRT*2),I=1,NSTRT*2)
+     &                 I=1,NSTRT*2),J=1,NSTRT*2)
       CLOSE (LUMLF1)
 C
       WRITE (LUPRI,1000) 
