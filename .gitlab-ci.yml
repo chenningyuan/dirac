@@ -68,7 +68,7 @@ ubuntu_intel_mkl_int64-check:
     - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
     - echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
     - apt-get -qq update
-    - apt-get -qq -y install intel-oneapi-icc intel-oneapi-ifort intel-oneapi-mkl
+    - apt-get -qq -y install intel-oneapi-dpcpp-cpp-compiler intel-oneapi-ifort intel-oneapi-mkl
     - set +e
     - . /opt/intel/oneapi/setvars.sh
     - set -e
@@ -77,15 +77,15 @@ ubuntu_intel_mkl_int64-check:
     - lscpu
     - free -h -g
     - ifort --version
-    - icc --version
-    - icpc --version
+    - icx --version
+    - icpx --version
     - echo "MKLROOT=$MKLROOT"
     - git --version
     - cmake --version
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --cmake-options="-D ENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icc --cxx=icpc --mkl=sequential  build_serial_intel
+    - ./setup --cmake-options="-D ENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=sequential  build_serial_intel
     - cd build_serial_intel
     - make -j $N_PROC
     - ldd dirac.x
