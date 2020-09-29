@@ -856,10 +856,6 @@ C
 
 !      read this "core" Hamiltonian
        read (luone,ERR=20,END=20) h_core
-!      For some vague historical reason hcore is not written in fortran order by MOLTRA but as its transpose
-!      In RELCCSD the complex conjugate is taken (quicker than doing the transpose) after the read, we do the same thing here
-!      but it would be good to fix this in MOLTRA and just write in fortran order (LV, 8-3-2019)
-       h_core = dconjg(h_core)
 
 !      reorder and store in the data type
        nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors

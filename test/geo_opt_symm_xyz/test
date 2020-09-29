@@ -9,8 +9,8 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = '<<<  End of Minimization <<<',
-      to_string   = '-------------------------------------------------------',
+f.add(from_string = 'Newton step taken',
+      to_string   = 'Bond distances (angstroms)',
       ignore_below = 5.0e-9,
       rel_tolerance   = 1.0e-3)
 f.add(from_string = 'Energy at final geometry is',

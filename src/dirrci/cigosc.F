@@ -1233,7 +1233,7 @@ C
          READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
          READ(MRCONEE) (IRPMO(IMO),IRPAMO(IMO),EPS(IMO),IMO=1,NSPACT)
          READ(MRCONEE)
-     &    ((ONER(IMO,JMO),ONEI(IMO,JMO),JMO=1,NSPACT),IMO=1,NSPACT)
+     &    ((ONER(IMO,JMO),ONEI(IMO,JMO),IMO=1,NSPACT),JMO=1,NSPACT)
          CLOSE(MRCONEE)
       ELSE
          in_fcidump = 1
@@ -3569,8 +3569,8 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.06.19, chukyo-u
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
-      use codata
 #include "implicit.h"
+#include "codata.h"
 !
 !     ...for MXCOOR
 #include "mxcent.h"
@@ -3596,6 +3596,7 @@ c#include "dcbbas.h"
 !
       EXTERNAL DDOT
 !-----------------------------------------------------------------------
+!
       IF( IPRINT .GE. 6 ) WRITE(LUPRI,"(' >>>> CLTMOM5')")
       L1 = NRIVEC * N3DIM
 !
