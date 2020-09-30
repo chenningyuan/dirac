@@ -67,7 +67,7 @@ module talsh_mp2no
          
 !        Intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t) :: result_tensor
-         type(exatns_dm_tens) :: MP2_density_tensor
+         type(talsh_dm_tens) :: MP2_density_tensor
          type(talsh_tens_t) :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
          type(talsh_tens_t) :: NOs_MO_tensor, NOs_MO_red_tensor, NOs_AO_tensor  ! natural orbital in MO; MO_reduced; AO basis
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -153,7 +153,7 @@ module talsh_mp2no
 
 
 !        Calculate and print the MP2 density matrix within virtual molecular basis
-         ierr=talsh_tensor_init(MP2_density_tensor)
+         ierr=talsh_tensor_init(MP2_density_tensor%prime_vv)
          ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",MP2_density_tensor%prime_vv,comm_t%t2,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
          print *,'after constructing density matrix',ierr
 !         print *,'Row_DM', size(MP2_density_tens,1)
