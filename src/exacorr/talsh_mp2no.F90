@@ -66,7 +66,8 @@ module talsh_mp2no
          type(talsh_intg_tens) :: int_t
          
 !        Intermediate tensors (same notation as in relccsd)
-         type(talsh_tens_t) :: result_tensor, MP2_density_tensor
+         type(talsh_tens_t) :: result_tensor
+         type(exatns_dm_tens) :: MP2_density_tensor
          type(talsh_tens_t) :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
          type(talsh_tens_t) :: NOs_MO_tensor, NOs_MO_red_tensor, NOs_AO_tensor  ! natural orbital in MO; MO_reduced; AO basis
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -112,8 +113,9 @@ module talsh_mp2no
          vv_dims(1) = nvir
          vv_dims(2) = nvir
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(MP2_density_tensor,C8,vv_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(MP2_density_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    
+         ierr=talsh_tensor_construct(MP2_density_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(MP2_density_tensor%prime_vv,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,MP2_density_tens,vv_dims)
          print *,'construct mp2_tensor',ierr
          print *,'mo_occ', mo_occ
@@ -152,7 +154,7 @@ module talsh_mp2no
 
 !        Calculate and print the MP2 density matrix within virtual molecular basis
          ierr=talsh_tensor_init(MP2_density_tensor)
-         ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",MP2_density_tensor,comm_t%t2,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
+         ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",MP2_density_tensor%prime_vv,comm_t%t2,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
          print *,'after constructing density matrix',ierr
 !         print *,'Row_DM', size(MP2_density_tens,1)
 !         print *,'Col_DM', size(MP2_density_tens,2)
@@ -210,6 +212,7 @@ module talsh_mp2no
                         num_no_red = num_no_red +1
                 end if 
          end do
+! storing the MP2 NOs that are above the given threshold
          print *,'number of NOs kept in following',num_no_red
          no_red_dims(1)=nvir
          no_red_dims(2)=num_no_red
