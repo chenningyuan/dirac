@@ -241,7 +241,7 @@ with
 
 .. math::
 
-   g^{elec}_{\mu\nu}= - \frac{2 m_p c}{e} \frac{\partial^2}{\partial L_{\mu}\partial B_{0;\nu}}\langle\langle\hat{h}^{BO};\hat{h}^Z\rangle\rangle_0
+   g^{elec}_{\mu\nu}= - \frac{2 m_p}{e} \frac{\partial^2}{\partial L_{\mu}\partial B_{0;\nu}}\langle\langle\hat{h}^{BO};\hat{h}^Z\rangle\rangle_0
 
 where appears the first order correction to the Born-Oppenheimer (BO) approximation
 
@@ -501,4 +501,3 @@ Finally, employing :ref:`PROPERTIES_.PRINT` 4 expectation value and nuclear cont
 For more details, the user is welcome to see the Tutorial Section.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
-
