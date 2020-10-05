@@ -67,12 +67,7 @@ module talsh_mp2no
 !        Intermediate tensors (same notation as in relccsd)
          type(talsh_tens_t) :: result_tensor
          type(talsh_dm_tens) :: MP2_density_tensor
-<<<<<<< HEAD
          type(talsh_tens_t) :: NOs_MO_tensor  ! natural orbital in MO basis
-=======
-         type(talsh_tens_t) :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
-         type(talsh_tens_t) :: NOs_MO_tensor, NOs_MO_red_tensor, NOs_AO_tensor  ! natural orbital in MO; MO_reduced; AO basis
->>>>>>> 70556d281e613d2960a96e2378979e3ebf063fdc
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vv_dims
          integer(C_INT)              :: one_dims(1)
@@ -117,10 +112,6 @@ module talsh_mp2no
          vv_dims(1) = nvir
          vv_dims(2) = nvir
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-<<<<<<< HEAD
-=======
-    
->>>>>>> 70556d281e613d2960a96e2378979e3ebf063fdc
          ierr=talsh_tensor_construct(MP2_density_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(MP2_density_tensor%prime_vv,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,MP2_density_tens,vv_dims)
@@ -154,12 +145,8 @@ module talsh_mp2no
 
 !        Calculate and print the MP2 density matrix within virtual molecular basis
          ierr=talsh_tensor_init(MP2_density_tensor%prime_vv)
-<<<<<<< HEAD
          ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
-=======
-         ierr=talsh_tensor_contract("D(a,b)+=T(c,b,i,j)*V(i,j,c,a)",MP2_density_tensor%prime_vv,comm_t%t2,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
->>>>>>> 70556d281e613d2960a96e2378979e3ebf063fdc
          print *,'after constructing density matrix',ierr
 !         print *,'Row_DM', size(MP2_density_tens,1)
 !         print *,'Col_DM', size(MP2_density_tens,2)
@@ -193,26 +180,8 @@ module talsh_mp2no
                                      right_local, left_local,apply_evalues_shift,energy_shift)
 
          do i=1,size(NOs_MO,1),1
-<<<<<<< HEAD
                 do j=1,size(NOs_MO,2),1            
                      NOs_MO(j,i)=complex(eVectors_Real(j,i),0.0)  
-=======
-                if (e_small(1,i) > threshold) then
-                        num_no_red = num_no_red +1
-                end if 
-         end do
-! storing the MP2 NOs that are above the given threshold
-         print *,'number of NOs kept in following',num_no_red
-         no_red_dims(1)=nvir
-         no_red_dims(2)=num_no_red
-         !allocate(NOs_MO_red(no_red_dims(1),no_red_dims(2))) 
-         ierr=talsh_tensor_construct(NOs_MO_red_tensor,C8,no_red_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(NOs_MO_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
-         do i=1,size(NOs_MO_red,2),1
-                do j=1,size(NOs_MO_red,1),1            
-                         NOs_MO_red(j,i)=complex(eVectors_Real(j,i+nvir-num_no_red),0.0)  
->>>>>>> 70556d281e613d2960a96e2378979e3ebf063fdc
                 end do 
          end do
 
