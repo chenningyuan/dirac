@@ -342,7 +342,7 @@ module exacorr_utils
           end if
           
           if (eps_vir(lumo)-e_homo<THRESHOLD) then
-            call quit('Negative HOMO-LUMO gap (.LSHIFT possible)')
+            write(*,*) 'WARNING: Negative HOMO-LUMO gap (.LSHIFT possible)'
           end if
 
     end subroutine shift_orbital_energy
