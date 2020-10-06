@@ -47,6 +47,7 @@
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
+            integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs

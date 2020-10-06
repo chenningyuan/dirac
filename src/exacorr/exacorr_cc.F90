@@ -2919,7 +2919,7 @@ print *,'abe',ierr
             integer(INTD)                :: ierr,rank
             integer(INTD)                :: idocc, idvir
             integer(INTL)                :: nocc, nvir
-            integer(INTL)                :: i,j,k , n_subsp
+            integer(INTL)                :: i, j, k, k0, n_subsp
             integer(INTL),allocatable    :: subsp(:)
             type(tens_rcrsv_t)           :: res_tensor
             complex(8)                   :: res_val, ONE_THIRD, prefact
@@ -2938,6 +2938,11 @@ print *,'abe',ierr
             character(len=40)            :: info_str
 
             if (exa_input%print_level >4) call print_date('entering t3_energy_split')
+            if (exa_input%tripl_block(1).gt.0) then
+              k0=exa_input%tripl_block(1)
+            else
+              k0=1
+            end if
 
             t_energy = ZERO
 
@@ -2993,7 +2998,11 @@ print *,'abe',ierr
 
             !get memory information for splitting
             i=nr_proc*exa_input%talsh_buff
-            nseg=max(real(nvir,8)**(1.0/3.0),3.0D0)
+            if (exa_input%tripl_block(2).gt.0) then
+              nseg=exa_input%tripl_block(2)
+            else
+              nseg=max(real(nvir,8)**(1.0/3.0),3.0D0)
+            end if
             est=(real(nvir)**3*16.0/1000.0**3+1.0)*nseg**3
             if (exa_input%print_level > 0) then
               write(*,*) ' --- Number of processes (np):      ',nr_proc
@@ -3034,7 +3043,7 @@ print *,'abe',ierr
 
             end if
 
-            do k = 1, n_subsp
+            do k = k0, n_subsp
               w_sub(6)=subsp(k)
               
               dim2_root=nocc
