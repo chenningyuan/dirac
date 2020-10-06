@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+#print(sys.path.append(os.path.join(os.path.dirname(__file__), '..')))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string  = '* Anisotropic circular dichroism:',
+      num_lines     = 7,
+      rel_tolerance    = 1.0e-9)
+
+f.add(from_string = ' * Isotropic circular dichroism',
+	  num_lines   = 7,
+	  rel_tolerance    = 1.0e-9  )
+
+test.run(['ECD_kz.inp'], ['H2O2_60.xyz'], f)
+
+
+sys.exit(test.return_code)
