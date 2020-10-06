@@ -2612,15 +2612,14 @@ module talsh_cc
          integer(C_INT), dimension(4)  :: oooo_dims,ooov_dims,oovv_dims,ovov_dims,ovvo_dims
          integer(C_INT), dimension(4)  :: vovo_dims,vovv_dims,vvov_dims,vvvv_dims
          type(talsh_tens_t)            :: ovvo_tensor
-         integer(C_INT)                :: nmo(4)
-         integer, allocatable          :: mo_list(:)
 
 !        cholesky
          type(talsh_tens_t), allocatable :: chol_tensor(:) 
          integer(C_INT)                  :: m
          type(talsh_tens_t)              :: temp_tensor
          type(talsh_tens_t), allocatable :: uoo_tensor(:), uov_tensor(:), uvo_tensor(:), uvv_tensor(:)
-         integer(C_INT), dimension(2)    :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
+         type(talsh_tens_t), allocatable :: uoa_tensor(:), uva_tensor(:)
+         integer(C_INT), dimension(2)    :: chol_dims, dim3
          integer                         :: i
          
          write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
@@ -2635,68 +2634,54 @@ module talsh_cc
          call print_date('-End- Cholesky Decomposition')
 
 !        allocate intermediate tensors
-         allocate(uoo_tensor(m))
-         allocate(uvo_tensor(m))
-         allocate(uov_tensor(m))
-         allocate(uvv_tensor(m))
-         if (print_level.gt.6) write(*,*)  '--- allocation finished'
+         allocate(uoa_tensor(m))
+         allocate(uva_tensor(m))
 
 !        define dims
          chol_dims=nao
-         uoo_dims=nocc
-         uov_dims=nocc
-         uov_dims(2)=nvir
-         uvo_dims=nocc
-         uvo_dims(1)=nvir
-         uvv_dims=nvir
 
-!        perform ao to mo transformation for cholesky tensor
-         allocate(mo_list(2*nocc))
-         mo_list(1:nocc)                      = mo_occ(1:nocc)
-         mo_list(nocc+1:nocc+nocc)            = mo_occ(1:nocc)
-         do i=1,m
-            ierr=talsh_tensor_construct(uoo_tensor(i),C8,uoo_dims,init_val=ZERO)
-            call ao2mo_2ind (chol_tensor(i),uoo_tensor(i),uoo_dims,mo_list)
-         end do
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uoo done ')
-
-         allocate(mo_list(nocc+nvir))
-         mo_list(1:nocc)                      = mo_occ(1:nocc)
-         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-         do i=1,m
-            ierr=talsh_tensor_construct(uov_tensor(i),C8,uov_dims,init_val=ZERO)
-            call ao2mo_2ind (chol_tensor(i),uov_tensor(i),uov_dims,mo_list)
-         end do
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uov done ')
-
-
-         allocate(mo_list(nocc+nvir))
-         mo_list(1:nvir)                      = mo_vir(1:nvir)
-         mo_list(nvir+1:nvir+nocc)            = mo_occ(1:nocc)
-         do i=1,m
-            ierr=talsh_tensor_construct(uvo_tensor(i),C8,uvo_dims,init_val=ZERO)
-            call ao2mo_2ind (chol_tensor(i),uvo_tensor(i),uvo_dims,mo_list)
-         end do
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uvo done ')
-
-         allocate(mo_list(2*nvir))
-         mo_list(1:nvir)                      = mo_vir(1:nvir)
-         mo_list(nvir+1:nvir+nvir)            = mo_vir(1:nvir)
-         do i=1,m
-            ierr=talsh_tensor_construct(uvv_tensor(i),C8,uvv_dims,init_val=ZERO)
-            call ao2mo_2ind (chol_tensor(i),uvv_tensor(i),uvv_dims,mo_list)
-         end do
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uvv done ')
+!        transform first index
+         call ao2mo_vec(chol_tensor,uva_tensor,m,nvir,mo_vir(1:nvir),1)
+         if (print_level.gt.2) call print_date(' uva done ')
+         call ao2mo_vec(chol_tensor,uoa_tensor,m,nocc,mo_occ(1:nocc),1)
+         if (print_level.gt.2) call print_date(' uoa done ')
 
 !        remove ao cholesky tensor
          do i=1,m
            ierr=talsh_tensor_destruct(chol_tensor(i))
          end do
          deallocate(chol_tensor)
+
+!        transform second index
+!        allocate final cholesky tensors
+         allocate(uoo_tensor(m))
+         allocate(uvo_tensor(m))
+         allocate(uov_tensor(m))
+         allocate(uvv_tensor(m))
+
+         call ao2mo_vec(uoa_tensor,uoo_tensor,m,nocc,mo_occ(1:nocc),2)
+         if (print_level.gt.2) call print_date(' uoo done ')
+
+         call ao2mo_vec(uoa_tensor,uov_tensor,m,nvir,mo_vir(1:nvir),2)
+         if (print_level.gt.2) call print_date(' uov done ')
+
+!        remove oa tensor
+         do i=1,m
+           ierr=talsh_tensor_destruct(uoa_tensor(i))
+         end do
+         deallocate(uoa_tensor)
+
+         call ao2mo_vec(uva_tensor,uvo_tensor,m,nocc,mo_occ(1:nocc),2)
+         if (print_level.gt.2) call print_date(' uvo done ')
+
+         call ao2mo_vec(uva_tensor,uvv_tensor,m,nvir,mo_vir(1:nvir),2)
+         if (print_level.gt.2) call print_date(' uvv done ')
+        
+!        remove va tensor
+         do i=1,m
+           ierr=talsh_tensor_destruct(uva_tensor(i))
+         end do
+         deallocate(uva_tensor)
 
          if (print_level.gt.1) call print_date(' ao2mo transformation done ')
 
@@ -2844,13 +2829,12 @@ module talsh_cc
          integer(C_INT), dimension(4)  :: oooo_dims,ooov_dims,oovv_dims,ovov_dims,ovvo_dims
          integer(C_INT), dimension(4)  :: vovo_dims,vovv_dims,vvov_dims,vvvv_dims
          type(talsh_tens_t)            :: ovvo_tensor
-         integer                       :: nmo(4)
-         integer, allocatable          :: mo_list(:)
 
 !        cholesky
          type(talsh_tens_t)              :: chol_tensor, test_tensor, err_tensor
+         type(talsh_tens_t)              :: uoa_tensor, uva_tensor
          type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
-         integer, dimension(3)           :: chol_dims, uoo_dims, uov_dims, uvo_dims, uvv_dims
+         integer, dimension(3)           :: chol_dims, dims3
          integer(C_INT)                  :: rank
          
 
@@ -2866,52 +2850,45 @@ module talsh_cc
          ierr = talsh_tensor_dimensions(chol_tensor,rank,chol_dims)
          call print_date('-End- Cholesky Decomposition')
 
-!        define dims
-         uoo_dims=nocc
-         uov_dims=nocc
-         uov_dims(2)=nvir
-         uvo_dims=nvir
-         uvo_dims(2)=nocc
-         uvv_dims=nvir
-         uoo_dims(3)=chol_dims(3)
-         uov_dims(3)=chol_dims(3)
-         uvo_dims(3)=chol_dims(3)
-         uvv_dims(3)=chol_dims(3)
+!       transform first index
+        dims3=chol_dims
+        dims3(1)=nocc
+        ierr=talsh_tensor_construct(uoa_tensor,C8,dims3,init_val=ZERO)
+        call ao2mo_ind(chol_tensor,uoa_tensor,nocc,mo_occ(1:nocc),1)
+        if (print_level.gt.2) call print_date(' uoa done ')
 
-!        perform ao to mo transformation for cholesky tensor
-         allocate(mo_list(2*nocc))
-         mo_list(1:nocc)                      = mo_occ(1:nocc)
-         mo_list(nocc+1:nocc+nocc)            = mo_occ(1:nocc)
-         ierr=talsh_tensor_construct(uoo_tensor,C8,uoo_dims,init_val=ZERO)
-         call ao2mo_2ind (chol_tensor,uoo_tensor,uoo_dims(1:2),mo_list)
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uoo done ')
+        dims3(1)=nvir
+        ierr=talsh_tensor_construct(uva_tensor,C8,dims3,init_val=ZERO)
+        call ao2mo_ind(chol_tensor,uva_tensor,nvir,mo_vir(1:nvir),1)
+        if (print_level.gt.2) call print_date(' uva done ')
 
-         allocate(mo_list(nocc+nvir))
-         mo_list(1:nocc)                      = mo_occ(1:nocc)
-         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-         ierr=talsh_tensor_construct(uov_tensor,C8,uov_dims,init_val=ZERO)
-         call ao2mo_2ind (chol_tensor,uov_tensor,uov_dims(1:2),mo_list)
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uov done ')
+        ierr=talsh_tensor_destruct(chol_tensor)
 
-         allocate(mo_list(nocc+nvir))
-         mo_list(1:nvir)                      = mo_vir(1:nvir)
-         mo_list(nvir+1:nvir+nocc)            = mo_occ(1:nocc)
-         ierr=talsh_tensor_construct(uvo_tensor,C8,uvo_dims,init_val=ZERO)
-         call ao2mo_2ind (chol_tensor,uvo_tensor,uvo_dims(1:2),mo_list)
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uvo done ')
+!       transform second index
+        dims3(1:2)=nocc
+        ierr=talsh_tensor_construct(uoo_tensor,C8,dims3,init_val=ZERO)
+        call ao2mo_ind(uoa_tensor,uoo_tensor,nocc,mo_occ(1:nocc),2)
+        if (print_level.gt.2) call print_date(' uoo done ')
 
-         allocate(mo_list(2*nvir))
-         mo_list(1:nvir)                      = mo_vir(1:nvir)
-         mo_list(nvir+1:nvir+nvir)            = mo_vir(1:nvir)
-         ierr=talsh_tensor_construct(uvv_tensor,C8,uvv_dims,init_val=ZERO)
-         call ao2mo_2ind (chol_tensor,uvv_tensor,uvv_dims(1:2),mo_list)
-         deallocate(mo_list)
-         if (print_level.gt.2) call print_date(' uvv done ')
+        dims3(2)=nvir
+        ierr=talsh_tensor_construct(uov_tensor,C8,dims3,init_val=ZERO)
+        call ao2mo_ind(uoa_tensor,uov_tensor,nvir,mo_vir(1:nvir),2)
+        if (print_level.gt.2) call print_date(' uov done ')
 
-         ierr=talsh_tensor_destruct(chol_tensor)
+        ierr=talsh_tensor_destruct(uoa_tensor)
+
+        dims3(1)=nvir
+        dims3(2)=nocc
+        ierr=talsh_tensor_construct(uvo_tensor,C8,dims3,init_val=ZERO)
+        call ao2mo_ind(uva_tensor,uvo_tensor,nocc,mo_occ(1:nocc),2)
+        if (print_level.gt.2) call print_date(' uvo done ')
+
+        dims3(1:2)=nvir
+        ierr=talsh_tensor_construct(uvv_tensor,C8,dims3,init_val=ZERO)
+        call ao2mo_ind(uva_tensor,uvv_tensor,nvir,mo_vir(1:nvir),2)
+        if (print_level.gt.2) call print_date(' uov done ')
+
+        ierr=talsh_tensor_destruct(uva_tensor)
 
          if (print_level.gt.1) call print_date(' ao2mo transformation done ')
 
