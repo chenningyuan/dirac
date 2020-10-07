@@ -1277,13 +1277,13 @@ module exacorr_ao_to_mo
         !        transform v part
         dimA=nao
         dimA(1)=nvir
-        dimB=nocc
-        dimB(1)=nvir
-        dimC=nvir
         idA=ao_id
         idA(1)=v_id
+        dimB=nocc
+        dimB(1)=nvir
         idB=o_id
         idB(1)=v_id
+        dimC=nvir
         idC=v_id
 
         do i=1,m
@@ -1315,26 +1315,26 @@ module exacorr_ao_to_mo
 !       transform o part
         dimA=nao
         dimA(1)=nocc
+        idA=ao_id
+        idA(1)=o_id        
         dimB=nvir
         dimB(1)=nocc
-        dimC=nocc
-        idA=ao_id
-        idA(1)=o_id
         idB=v_id
         idB(1)=o_id
+        dimC=nocc
         idC=o_id
 
         do i=1,m
           ierr=exatns_tensor_destroy(temp_tens(i))
-          write (vs_str, '(A3,I9.9)') 'uvo',i
-          ierr=exatns_tensor_create(uvo_tens(i),vs_str,idB,dimB,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(uvo_tens(i),'ZERO')
-          write (vs_str, '(A3,I9.9)') 'uvv',i
-          ierr=exatns_tensor_create(uvv_tens(i),vs_str,idC,dimC,EXA_DATA_KIND_C8) 
-          ierr=exatns_tensor_init(uvv_tens(i),'ZERO')
+          write (vs_str, '(A3,I9.9)') 'uov',i
+          ierr=exatns_tensor_create(uov_tens(i),vs_str,idB,dimB,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uov_tens(i),'ZERO')
+          write (vs_str, '(A3,I9.9)') 'uoo',i
+          ierr=exatns_tensor_create(uoo_tens(i),vs_str,idC,dimC,EXA_DATA_KIND_C8) 
+          ierr=exatns_tensor_init(uoo_tens(i),'ZERO')
           write (vs_str, '(A3,I9.9)') 'tem',i
           ierr=exatns_tensor_create(temp_tens(i),vs_str,idA,dimA,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(temp_tens(i),'ZERO')         
+          ierr=exatns_tensor_init(temp_tens(i),'ZERO') 
         end do
 
         call ao2mo_vect(chol_tens,temp_tens,m,11,print_level)
@@ -1349,7 +1349,7 @@ module exacorr_ao_to_mo
 
         if (print_level.gt.2) call print_date(' uoo/uvo done ')
         write(*,'(A7,F20.15)') "uoo = ",print_tensornorm2 (uoo_tens(1))
-        write(*,'(A7,F20.15)') "uvo = ",print_tensornorm2 (uvo_tens(1))
+        write(*,'(A7,F20.15)') "uov = ",print_tensornorm2 (uov_tens(1))
 
         do i=1,m
           ierr=exatns_tensor_destroy(uoo_tens(i))
@@ -1639,7 +1639,7 @@ module exacorr_ao_to_mo
         type(tens_rcrsv_t), allocatable :: ao_vec(:), mo_vec(:)
         integer, intent(in)             :: ind, m, print_level
 
-        type(tens_rcrsv_t)  :: mocoef_alpha, mocoef_beta
+        type(tens_rcrsv_t)  :: coef_alpha, coef_beta
         integer(INTD)       :: ao_id(2), mo_id(2), coef_id(2)
         integer(INTL)       :: ao_dim(2), mo_dim(2), coef_dim(2)
         integer(INTD)       :: ierr, rank
@@ -1660,45 +1660,45 @@ module exacorr_ao_to_mo
         else
           call quit('ao2mo_vect: index not available ')
         end if
-
+       
 !       Initialize tensors with MO coefficients
-        mo_id(1)=ao_id(ii)
-        mo_id(2)=mo_id(ii)
-        mo_dim(1)=ao_dim(ii)
-        mo_dim(2)=mo_dim(ii)
-        ierr=exatns_tensor_create(mocoef_alpha,'mo_alpha',mo_id,mo_dim,EXA_DATA_KIND_C8)
+        coef_id(1)=ao_id(ii)
+        coef_id(2)=mo_id(ii)
+        coef_dim(1)=ao_dim(ii)
+        coef_dim(2)=mo_dim(ii)
+        ierr=exatns_tensor_create(coef_alpha,'coef_alpha',coef_id,coef_dim,EXA_DATA_KIND_C8)
         if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: tensor not created')
-        ierr=exatns_tensor_init(mocoef_alpha,mocoef_initlabel(mo_id(1),mo_id(2),1))
+        ierr=exatns_tensor_init(coef_alpha,mocoef_initlabel(coef_id(1),coef_id(2),1))
         if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: coef_tensor not set')
-        if (print_level>8) write(*,*) "created and initialized alpha ", &
-                mocoef_initlabel(mo_id(1),mo_id(2),1),print_tensornorm2(mocoef_alpha)
-        ierr=exatns_tensor_create(mocoef_beta,'mo_beta',mo_id,mo_dim,EXA_DATA_KIND_C8)
+        if (print_level>8) write(*,*) "created and initialized alpha ", coef_id, coef_dim, &
+                mocoef_initlabel(coef_id(1),coef_id(2),1),print_tensornorm2(coef_alpha)
+        ierr=exatns_tensor_create(coef_beta,'coef_beta',coef_id,coef_dim,EXA_DATA_KIND_C8)
         if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: tensor not created')
-        ierr=exatns_tensor_init(mocoef_beta,mocoef_initlabel(mo_id(1),mo_id(2),2))
+        ierr=exatns_tensor_init(coef_beta,mocoef_initlabel(coef_id(1),coef_id(2),2))
         if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: coef_tensor not set')
-        if (print_level>8) write(*,*) "created and initialized alpha ", &
-                mocoef_initlabel(mo_id(1),mo_id(2),2),print_tensornorm2(mocoef_beta)
+        if (print_level>8) write(*,*) "created and initialized alpha ", coef_id, coef_dim, &
+                mocoef_initlabel(coef_id(1),coef_id(2),2),print_tensornorm2(coef_beta)
 
 !       transform the index
         do i=1,m
           if (ind.eq.11) then
-            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),mocoef_alpha,"B(p,q)+=A(i,q)*M+(i,p)")
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_alpha,"B(p,q)+=A(i,q)*M+(i,p)")
             if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2a1')
           else if (ind.eq.12) then
-            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),mocoef_beta,"B(p,q)+=A(i,q)*M+(i,p)")
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_beta,"B(p,q)+=A(i,q)*M+(i,p)")
             if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2b1')
           else if (ind.eq.21) then
-            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),mocoef_alpha,"C(p,q)+=B(p,i)*M(i,q)")
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_alpha,"C(p,q)+=B(p,i)*M(i,q)")
             if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2a2')
           else if (ind.eq.22) then
-            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),mocoef_beta,"C(p,q)+=B(p,i)*M(i,q)")
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_beta,"C(p,q)+=B(p,i)*M(i,q)")
             if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2b2')
           end if 
         end do
 
 !       clean up
-        ierr=exatns_tensor_destroy(mocoef_alpha)
-        ierr=exatns_tensor_destroy(mocoef_beta)
+        ierr=exatns_tensor_destroy(coef_alpha)
+        ierr=exatns_tensor_destroy(coef_beta)
 
       end subroutine ao2mo_vect
 
