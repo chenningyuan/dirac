@@ -23,7 +23,7 @@ module talsh_mp2no
 
         private
 
-        public talsh_mp2no_driver
+        public talsh_mp2no_driver,get_MP2_FNOs
 
 !        interface scale_with_denominators
 !           module procedure scale_with_denominators
@@ -31,8 +31,90 @@ module talsh_mp2no
 !
 
        contains
-!-------------------------------------------------------------------------------------------
-        subroutine talsh_mp2no_driver (exa_input)
+!-------------------------------------------------------------------------------------------------------------------------------------
+
+       subroutine talsh_mp2no_driver (exa_input)
+        use exacorr_global
+        use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
+        use talsh_gradient
+        use davidson
+        type(exacc_input), intent(in) :: exa_input
+        integer                :: nocc, nvir   ! the size of the mo basis for occupied and virtual spinors
+        integer,  allocatable  :: mo_vir(:)    ! the list of occupied and virtual orbitals
+
+!        Point connected with tensors 
+        integer(C_INT)              :: ierr
+        real(kind=8), pointer       :: NO_OCC_1(:)         ! natural orbital occupation number saved in new files
+        complex(kind=8), pointer    :: NOs_MO(:,:)  ! sorted natural orbital in MO basis
+        complex(kind=8), pointer    :: NOs_AO_tens(:,:)  ! natural orbital in AO basis
+        type(basis_set_info_t)      :: ao_basis ! information about the ao basis
+        type(cmo)                   :: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code
+        character                   :: text*74      ! holds text read from DFCOEF, only used for printing this
+        integer, parameter          :: CORRUPT  = 2 ! file unreadable
+        integer                     :: nsym
+        integer                     :: mp2out
+        integer                     :: err
+        integer                     :: init_t
+        logical                     :: ALIVE
+
+!        Scalars (need to be defined as tensor types)
+        real(kind=8)       :: threshold=0.0
+        integer            :: i,j
+
+        nocc = exa_input%nocc
+        nvir = exa_input%nvir
+        mo_vir = exa_input%mo_vir
+        INQUIRE(FILE="MP2NOs_MO",EXIST=ALIVE)
+        if (ALIVE) then
+                init_t = 0
+                open(mp2out, file = 'MP2NOs_MO', status='OLD',FORM='UNFORMATTED',&     
+                access='SEQUENTIAL',iostat=err) 
+                print *,'test open', err
+                allocate(NOs_MO(nvir,nvir))
+                allocate(NO_OCC_1(nvir))
+                read(mp2out,iostat=err) text,nsym
+                print *,'test read test', err
+                print *, 'test*nsym', text,nsym
+                read(mp2out,iostat=err) NOs_MO
+                print *,'test NOs_MO', err
+                !print *, 'NOs_MO', NOs_MO 
+                read(mp2out,iostat=err) NO_OCC_1
+                print *,'test NO_OCC_1', err
+                threshold = 1.0d-5
+                if (threshold /= 0.0) then
+                   call get_MP2_FNOs (exa_input,init_t,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
+                end if 
+                print *,'get_MP2_FNOs', err
+                call MP2_write_newDFCOEF (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,ierr)
+
+        else
+                init_t=1
+                call talsh_mp2no_main (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)
+                threshold = 1.0d-5
+                if (threshold /= 0.0) then
+                   call get_MP2_FNOs (exa_input,init_t,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
+                end if 
+                call MP2_write_newDFCOEF (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,ierr)
+        end if 
+
+         
+ 
+
+
+
+!--------------------------------------------Test part-----------------------------------------------------
+
+       print *,'occupation number_order',NO_OCC_1     
+       print *, '!--------------------------------------------------------------'
+       do i=1,size(NOs_AO_tens,2),1 
+               print *,'reduced natural orbital in AO basis',NOs_AO_tens(:,i)
+       end do
+
+      end subroutine talsh_mp2no_driver
+
+ !-----------------------------------------------------------------------------------------------------------------------------------------------
+
+        subroutine talsh_mp2no_main (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)
 
 !       This subroutine drives the mp2 natural orbital calculation
 !       Written by Xiang Yuan, July 2020
@@ -44,17 +126,22 @@ module talsh_mp2no
 
          type(exacc_input), intent(in) :: exa_input
 
-         integer                :: nocc, nvir   ! the size of the mo basis for occupied and virtual spinors
-         integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+         complex(kind=8), pointer,intent(inout)     :: NOs_MO(:,:)
+         real(kind=8), pointer,intent(inout)        :: NO_OCC_1(:)         ! natural orbital occupation number and the one saved in new files
+         integer,intent(inout)                      :: nocc, nvir   ! the size of the mo basis for occupied and virtual spinors
+         integer,  allocatable,intent(inout)        :: mo_vir(:) ! the list of virtual orbitals
+
+         integer,  allocatable  :: mo_occ(:)               ! the list of occupied orbitals
          real(8), allocatable   :: eps_occ(:),eps_vir(:) ! HF orbital energies
 
 !        Point connected with tensors 
-         integer(C_INT)       :: ierr
-         complex(8), pointer :: MP2_density_tens(:,:)
-         complex(kind=8), pointer :: NOs_MO(:,:)
+         integer(C_INT)              :: ierr
+         complex(8), pointer         :: MP2_density_tens(:,:)
+         real(kind=8), pointer       :: eVectors_Real(:,:)  ! natural orbital in real number used for sorted routine 
          complex(kind=8), pointer :: test_tens(:,:)
-         real(kind=8), pointer :: eVectors_Real(:,:)  ! natural orbital in real number used for sorted routine 
-         real(kind=8), pointer :: NO_OCC(:,:)         ! natural orbital occupation number 
+        
+         real(kind=8), pointer :: NO_OCC(:,:)       ! natural orbital occupation number and the one saved in new files
+         complex(kind=8), pointer :: NOs_AO_tens(:,:)  ! natural orbital in AO basis
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
@@ -82,8 +169,6 @@ module talsh_mp2no
          integer            :: sorting_order_local
          logical            :: left_local, right_local, apply_evalues_shift  !variable in davidson module controling sorted routine 
 
-         
-
 
 !        Make some noise so that we know we are here
          call print_date('Entered mp2_driver routine')
@@ -101,14 +186,15 @@ module talsh_mp2no
          
 
          !DO NOT CHANGE THESE VARIABLES
-         nocc = exa_input%nocc
-         nvir = exa_input%nvir
+         !nocc = exa_input%nocc
+         !nvir = exa_input%nvir
          print *,'number of virtual orbital', nvir
          print *,'number of occupied orbital', nocc
          allocate(mo_occ(nocc))
-         allocate(mo_vir(nvir))
+         !allocate(mo_vir(nvir))
          mo_occ = exa_input%mo_occ
-         mo_vir = exa_input%mo_vir
+         !mo_vir = exa_input%mo_vir
+
          vv_dims(1) = nvir
          vv_dims(2) = nvir
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
@@ -179,41 +265,27 @@ module talsh_mp2no
          call sort_values_vectors(sorting_order_local, NO_OCC, eVectors_Real, eVectors_Real, &
                                      right_local, left_local,apply_evalues_shift,energy_shift)
 
+
+          allocate(NO_OCC_1(size(NO_OCC,2)))
+          do i=1,size(NO_OCC,2),1
+             NO_OCC_1(i)=NO_OCC(1,i)
+          end do
+
          do i=1,size(NOs_MO,1),1
                 do j=1,size(NOs_MO,2),1            
                      NOs_MO(j,i)=complex(eVectors_Real(j,i),0.0)  
                 end do 
          end do
 
-         call MP2_read_write_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
-!---------------------------------------------------------------------------------------
-        ! threshold = 1.0d-5
-        if (threshold /= 0) then
-            call get_MP2_FNOs (threshold,nocc,nvir,mo_vir,eVectors_Real,NO_OCC)
-        end if 
+         call MP2_write_newDFCOEF (ao_basis,cspinor_all,'DFCOEF','MP2NOs_MO',NO_OCC_1,NOs_MO,ierr)
 
 !--------------------------------------------Test part-----------------------------------------------------
-   
-          do i=1,size(NO_OCC,2),1
-             print *,'occupation number_order',NO_OCC(1,i)
-          end do
-          
-          do j=1,size(eVectors_Real,2),1
-             print *,'natural orbital in MO basis_order_in complex',NOs_MO(:,j)
-          end do
-!         print *, '!--------------------------------------------------------------'
-!         ierr=talsh_tensor_get_body_access(mocoefb_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-!         call c_f_pointer(body_p,test_tens,mocoef_dims) ! to use as a regular Fortran array
-!         do i=1,nmo,1 
-!                print *,'MO_AO coeff matrix_b ',test_tens(:,i)
-                !print *, 'size row', size(test_tens,1)
-                !print *, 'size col', size(test_tens,2)
-                !print *,'MO_AO coeff matrix ',test_tens
-!         end do
-!-------------------------------------------------------------------------------------------------------------
-        end subroutine talsh_mp2no_driver
 
-
+         do j=1,size(eVectors_Real,2),1
+            print *,'natural orbital in MO basis_order_in complex',NOs_MO(:,j)
+         end do
+        
+        end subroutine talsh_mp2no_main
 
 !----------------------------------------------------------------------------------------------------------------------    
         subroutine diagoanl_DMP2_matrix(M,eVal,eVectorsR)
@@ -295,11 +367,9 @@ module talsh_mp2no
 
         subroutine get_MP2_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
 
-  !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
+  !        Routine to get integrals needed in MP2NO in the form of antisymmetric tensors.
   !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
   !        full integral list.
-  
-  !        Written by Lucas Visscher, summer 2017
   !        Revised by Xiang Yuan, July 2020
   
            use exacorr_global
@@ -376,14 +446,17 @@ module talsh_mp2no
 
 !------------------------------------------------------------------------------------------------------------
 
-     subroutine get_MP2_FNOs (threshold,nocc,nvir,mo_vir,eVectors_Real,NO_OCC)
-!        Routine to et theshold and reduce natural orbital space including transform from MO basis to AO basis 
+     subroutine get_MP2_FNOs (exa_input,init_t,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC,NOs_AO_tens)
+!        Routine to set theshold and reduce natural orbital space including transform from MO basis to AO basis 
 
-        integer, intent(in)                :: nocc,nvir      ! the size of the mo basis for occupied and virtual spinors
-        integer, intent(in)                :: mo_vir(:)      ! the list of virtual orbitals
-        real(kind=8), pointer, intent(in)  :: eVectors_Real(:,:)  ! natural orbital in real number used for sorted routine 
-        real(kind=8), intent(in)           :: threshold
-        real(kind=8), pointer,intent(in)   :: NO_OCC(:,:)         ! natural orbital occupation number 
+        type(exacc_input), intent(in)          :: exa_input
+        integer, intent(in)                    :: nocc,nvir      ! the size of the mo basis for occupied and virtual spinors
+        integer, intent(in)                    :: mo_vir(:)      ! the list of virtual orbitals
+        integer, intent(in)                    :: init_t         ! key to initial the lib
+        complex(kind=8), pointer, intent(in)   :: NOs_MO(:,:)    ! sorted natural orbital in MO basis
+        real(kind=8), intent(in)               :: threshold
+        real(kind=8), pointer,intent(in)       :: NO_OCC(:)         ! natural orbital occupation number 
+        complex(kind=8), pointer,intent(out)   :: NOs_AO_tens(:,:)
 
         integer(C_INT)                     :: ierr
         type(C_PTR)                        :: body_p
@@ -399,29 +472,42 @@ module talsh_mp2no
         integer(INTD)                      :: mocoef_dims(2)
         integer                            :: nao, nmo     ! the size of the ao & mo basis for natural orbital transformation 
         integer                            :: i,j
-        complex(kind=8), pointer           :: test_tens(:,:)
+
+
+
+
+
+ !       Initialize libraries
+
+        if (init_t == 0) then
+                buf_size=exa_input%talsh_buff*buf_size
+                ierr=talsh_init(buf_size,host_arg_max)
+                call print_date('Initialized talsh library')
+                write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+                call interest_initialize(.true.)
+                call print_date('Initialized interest library')
+        end if
 
         num_no_red=0
-        do i=1,size(eVectors_Real,1),1
-               if (NO_OCC(1,i) > threshold) then
+        do i=1,size(NOs_MO,1),1
+               if (NO_OCC(i) > threshold) then
                        num_no_red = num_no_red +1
                end if 
         end do
         print *,'number of NOs kept in following',num_no_red
         no_red_dims(1)=nvir
         no_red_dims(2)=num_no_red
+        print *,'size no_red_dims(1)',no_red_dims(1)
+        print *,'size no_red_dims(2)',no_red_dims(2)
         ierr=talsh_tensor_construct(NOs_MO_red_tensor,C8,no_red_dims,init_val=ZERO)
         ierr=talsh_tensor_get_body_access(NOs_MO_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
         do i=1,size(NOs_MO_red,2),1
                do j=1,size(NOs_MO_red,1),1            
-                        NOs_MO_red(j,i)=complex(eVectors_Real(j,i+nvir-num_no_red),0.0)  
+                        NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red)
                end do 
         end do
-      
-        do j=1,size(NOs_MO_red,2),1
-               print *,'reduced natural orbital in MO basis',NOs_MO_red(:,j)
-        end do
+        print *,'NOs_MO_red',ierr
 
 
 !        Extracting virtual MO coeffcient in AO basis set
@@ -435,6 +521,7 @@ module talsh_mp2no
         ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=ZERO)
         call get_MP2_mocoef_tensor (nao, nmo, mp2no_mo_list, mocoefa_tensor, mocoefb_tensor) 
         ierr=talsh_tensor_add("moco_a(a,b)+=moco_b(a,b)",mocoefa_tensor,mocoefb_tensor)
+        print *,'Extracting virtual MO coeffcient in AO basis set',ierr
 
 
 !        Transform reduced natural orbital from MO basis into AO basis
@@ -443,32 +530,14 @@ module talsh_mp2no
         ierr=talsh_tensor_construct(NOs_AO_tensor,C8,no_ao_dims,init_val=ZERO)
         ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MO_red_tensor,scale=ONE)
+        call c_f_pointer(body_p,NOs_AO_tens,no_ao_dims) ! to use as a regular Fortran array
 
         
-!--------------------------------------------Test part--------------------------------------------------------------------------
-        print *, '!--------------------------------------------------------------'
-        !ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-        call c_f_pointer(body_p,test_tens,no_ao_dims) ! to use as a regular Fortran array
-        print *, 'size test_tens', size(test_tens,2)
-        do i=1,num_no_red,1 
-                print *,'reduced natural orbital in AO basis',test_tens(:,i)
-        end do
 
-        print *, '!--------------------------------------------------------------'
-        ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-        call c_f_pointer(body_p,test_tens,mocoef_dims) ! to use as a regular Fortran array
-        print *, 'size test_tens', size(test_tens,2)
-        do i=1,nmo,1 
-                !print *,'MO_AO coeff matrix_a ',test_tens(:,i)
-                !print *, 'size row', size(test_tens,1)
-                !print *, 'size col', size(test_tens,2)
-                print *,'MO in AO basis coeff matrix ',test_tens(:,i)
-        end do
-!--------------------------------------------Test part--------------------------------------------------------------------------
       end subroutine get_MP2_FNOs
 
 !----------------------------------------------------------------------------------------------------------------------------
-      subroutine MP2_read_write_from_dirac (ao_basis,cspinor,file_in_name,ierr)
+      subroutine MP2_write_newDFCOEF (ao_basis,cspinor,file_in_name,file_out_name,NO_OCC,NOs_MO,ierr)
 
         use exacorr_mo
         use exacorr_datatypes
@@ -482,8 +551,11 @@ module talsh_mp2no
  !      by reading also the basis set information into gtos
  
         character(len=*),intent(in) :: file_in_name
+        character(len=*),intent(in) :: file_out_name
         type(basis_set_info_t), intent(inout) :: ao_basis
         type(cmo), intent(inout):: cspinor
+        complex(kind=8), pointer, intent(inout) :: NOs_MO(:,:)
+        real(kind=8), pointer, intent(inout) :: NO_OCC(:)
         integer, intent(out)   :: ierr 
         integer, parameter     :: NOERROR  = 0 ! no error
         integer, parameter     :: NOTFOUND = 1 ! file not found
@@ -522,17 +594,12 @@ module talsh_mp2no
            ierr = NOTFOUND
            return
         else
-           !call get_free_fileunit(lucoef)
-           !call get_free_fileunit(inf_mp2no)
            lucoef=100
            inf_mp2no = lucoef+10
            open (lucoef,file=file_in_name,status='OLD',FORM='UNFORMATTED',&     
                 access='SEQUENTIAL')
-           !open (inf_mp2no,file='MP2NOs',FORM='UNFORMATTED',&     
-                !access='SEQUENTIAL')
-           open (inf_mp2no,file='MP2NOs',FORM='FORMATTED',&     
+           open (inf_mp2no,file=file_out_name,FORM='UNFORMATTED',&     
                 access='SEQUENTIAL')
-           !open (unit=99,file='test.txt')
            read (lucoef,end=10,err=10) text,nsym,&         
                 ((idim(i,j),i=1,3),j=1,nsym),total_energy
         end if
@@ -564,16 +631,12 @@ module talsh_mp2no
         do i = 1, 2*nmo
            index(i) = i ! we set the index compatible with the fact that we store all mo's
         end do
-         !WRITE(inf_mp2no) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),total_energy
-         !WRITE(inf_mp2no) coeff
-         !WRITE(inf_mp2no) EIG
-         !WRITE(inf_mp2no) IBEIG
-         WRITE(inf_mp2no,'(A74)') TEXT
-         WRITE(inf_mp2no,'(7(X,I0))') NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM)
-         WRITE(inf_mp2no,'(E24.16)') total_energy
-         WRITE(inf_mp2no,'(6F22.16)') coeff
-         WRITE(inf_mp2no,'(6E22.12)') EIG
-         WRITE(inf_mp2no,'(66(X,I0))') IBEIG
+         !WRITE(inf_mp2no,*) TEXT,NSYM
+         !WRITE(inf_mp2no,*) NOs_MO
+         !WRITE(inf_mp2no,*) NO_OCC
+         WRITE(inf_mp2no) TEXT,NSYM
+         WRITE(inf_mp2no) NOs_MO
+         WRITE(inf_mp2no) NO_OCC
  !      switch to unrestricted spinor picture
         allocate(seig(2*nmo))
         allocate(scoeff(nao,2*nmo,2)) ! nao, 2*nmo, spin
@@ -630,19 +693,19 @@ module talsh_mp2no
  !      values of the contraction coefficients for all shells (packed into a 1-d array)
         read (LUCOEF,err=20,end=20) priccf
  
-        !write(inf_mp2no) nao_bas,nshells,npriexp,ncnt 
-        !WRITE(inf_mp2no) nhkt,ncent,nuco
-        !WRITE(inf_mp2no) jstrt,numcf
-        !WRITE(inf_mp2no) cent
-        !WRITE(inf_mp2no) priexp
-        !WRITE(inf_mp2no) priccf
-
         !write(inf_mp2no,*) nao_bas,nshells,npriexp,ncnt 
         !WRITE(inf_mp2no,*) nhkt,ncent,nuco
         !WRITE(inf_mp2no,*) jstrt,numcf
         !WRITE(inf_mp2no,*) cent
         !WRITE(inf_mp2no,*) priexp
         !WRITE(inf_mp2no,*) priccf
+        write(inf_mp2no) nao_bas,nshells,npriexp,ncnt 
+        WRITE(inf_mp2no) nhkt,ncent,nuco
+        WRITE(inf_mp2no) jstrt,numcf
+        WRITE(inf_mp2no) cent
+        WRITE(inf_mp2no) priexp
+        WRITE(inf_mp2no) priccf
+
 
         ! put in gtos
         ao_basis%nshells       = nshells
@@ -717,13 +780,126 @@ module talsh_mp2no
         return
 
 
-        end subroutine MP2_read_write_from_dirac
+        end subroutine MP2_write_newDFCOEF
 
 
 
 !------------------------------------------------------------------------------------------------------------------
 
 
+        subroutine get_MP2_ForMa_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
+
+                !        Routine to get integrals needed in FORCK matrix of MP2NO code in the form of antisymmetric tensors.
+                !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
+                !        full integral list.
+                           
+                         use exacorr_global
+                         use talsh_ao_to_mo
+                
+                         integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+                         integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
+                !        target integral tensors to be filled and given back to the caller
+                         type(talsh_intg_tens),intent(inout)  :: int_t
+                         integer, intent(in)                  :: print_level
+                
+                         integer(INTD) :: oooo_dims(1:4),vovo_dims(1:4)
+                
+                         integer(INTD)                      :: ierr
+                         complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
+                         type(C_PTR)                        :: body_p
+                
+                         integer :: nao
+                
+                !        auxilliary integral tensors (only needed inside this routine)
+                         type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
+                         integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4)
+                
+                !        arrays needed to communicate with the MO integral generator
+                         integer:: nmo(4)
+                         integer, allocatable :: mo_list(:)
+                
+                !        scalars (need to be defined as tensor types)
+                         type(talsh_tens_t) :: minusone_tensor
+                         integer(INTD)      :: minusone_dims(1)
+                
+                         call print_date('entering integral transformation, scheme = 2')
+                
+                !        Retrieve basis set information
+                         nao     = get_nao()      ! number of basis functions
+                
+                !        Get tensor with AO integrals
+                         aoint_dims      = nao
+                         ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+                         if (ierr /= 0) then
+                            print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
+                            call quit ('error constructing aoint_tensor')
+                         end if
+                         call print_date('allocated AO integral tensor')
+                !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
+                         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+                         call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
+                         call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
+                         call print_date('finished ao integral calculation')
+                
+                !        Get antisymmetric oooo tensor
+                         oooo_dims = nocc
+                         ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
+                         allocate (mo_list(4*nocc))
+                         nmo = nocc
+                         mo_list(1:nocc)          = mo_occ(1:nocc)
+                         mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
+                         mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
+                         mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
+                         call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
+                         deallocate (mo_list)
+                         call print_date('finished oooo integrals')
+                
+                !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
+                !        Get vovo tensor
+                         vovo_dims(1) = nvir
+                         vovo_dims(2) = nocc
+                         vovo_dims(3) = nvir
+                         vovo_dims(4) = nocc
+                         ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
+                         allocate (mo_list(2*nvir+2*nocc))
+                         nmo(1:2) = nvir
+                         nmo(3:4) = nocc
+                         mo_list(1:nvir)                      = mo_vir(1:nvir)
+                         mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
+                         mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
+                         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
+                         call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
+                         deallocate (mo_list)
+                !        Get ovvo tensor
+                         ovvo_dims(1) = nocc
+                         ovvo_dims(2) = nvir
+                         ovvo_dims(3) = nvir
+                         ovvo_dims(4) = nocc
+                         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
+                         allocate (mo_list(2*nvir+2*nocc))
+                         nmo(1) = nocc
+                         nmo(2) = nvir
+                         nmo(3) = nvir
+                         nmo(4) = nocc
+                         mo_list(1:nocc)                      = mo_occ(1:nocc)
+                         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
+                         mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
+                         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
+                         call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
+                         deallocate (mo_list)
+                !        Make anti-symmetrized vovo tensor
+                         minusone_dims(1) = 1
+                         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+                         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
+                         ierr=talsh_tensor_destruct(ovvo_tensor)
+                         call print_date('finished vovo integrals')
+                               
+                !        Clean-up
+                         ierr=talsh_tensor_destruct(aoint_tensor)
+            
+                         
+        end subroutine get_MP2_ForMa_integrals
+!----------------------------------------------------------------------------------------------------------------------------------------                
 
 
         subroutine get_MP2_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_mat_occ,diag_mat_vir,int_t, print_level)
@@ -857,5 +1033,6 @@ module talsh_mp2no
          if (print_level >0) call print_date('Fock matrix initialized')
         end if 
         end subroutine get_MP2_Fockmatrix
+
 end module talsh_mp2no
         !------------------------------------------------------------------------------------------------
