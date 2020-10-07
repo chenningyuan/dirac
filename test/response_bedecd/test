@@ -12,11 +12,11 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string  = '* Anisotropic circular dichroism:',
       num_lines     = 7,
-      rel_tolerance    = 1.0e-9)
+      rel_tolerance    = 1.0e-6)
 
 f.add(from_string = ' * Isotropic circular dichroism',
 	  num_lines   = 7,
-	  rel_tolerance    = 1.0e-9  )
+	  rel_tolerance    = 1.0e-6  )
 
 test.run(['ECD_kz.inp'], ['H2O2_60.xyz'], f)
 
