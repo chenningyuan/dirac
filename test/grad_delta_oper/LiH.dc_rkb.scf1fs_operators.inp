@@ -8,10 +8,10 @@
 .DIRECT
 1 1 1
 .PRINT
-0
+1
 **INTEGRALS
 .PRINT
-0
+1
 .NUCMOD ! 1-Point nucleus, 2-gaussian
 2
 *READIN

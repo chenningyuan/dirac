@@ -4740,7 +4740,8 @@ C
 !           NOPTYP
 !
 ! Written by Miro Ilias, GSI.de, August 2020
-! Finishe by Hans Joergen Aa. Jensen, SDU Odense, September 2020
+! Finished by Hans Joergen Aa. Jensen, SDU Odense, September 2020
+!
 !-------------------------------------------------------------------------------------------
       SUBROUTINE GRDFRMINT(SHLINT,NOPTYP,EXPP,XP,YP,ZP,SAAB,DOATOM)
 !
@@ -4887,7 +4888,7 @@ C
      &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
                SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)   
      &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
-     &                 *FINTAX*FINTXY*FINTAZ*FINTBZ
+     &                 *FINTAX*FINTBX*FINTAZ*FINTBZ
                SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
      &           - FINT*(ZFINTA*FINTBZ + FINTAZ*ZFINTB)
      &                 *FINTAY*FINTBY*FINTAX*FINTBX
