@@ -133,6 +133,20 @@ module exacorr_tensor_methods
           procedure, public:: apply=>set_1el_apply
         end type set_1el_t
 
+        !get property integrals
+        type, extends(tens_method_uni_t), public:: set_ff_t
+          integer, private              :: occ_id, vir_id 
+          integer, private              :: nocc, nvir, min_occ
+          integer, allocatable, private :: mo_occ(:), mo_vir(:) 
+          integer, private              :: i_prop
+         contains
+          procedure, public:: set_ff_init
+          procedure, public:: reset=>set_ff_reset
+          procedure, public:: pack=>set_ff_pack
+          procedure, public:: unpack=>set_ff_unpack
+          procedure, public:: apply=>set_ff_apply
+        end type set_ff_t
+
         !set projecton matrix
         type, extends(tens_method_uni_t), public:: set_projection_t
          complex(8), private :: constant
@@ -1367,8 +1381,11 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
 
         subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,level_shift)
+         
          use exacorr_mo
          use exacorr_global
+         use exacorr_utils, only : shift_orbital_energy
+
          implicit none
 
          class(set_energy_t)      :: this
@@ -1400,6 +1417,9 @@ module exacorr_tensor_methods
         end subroutine set_energy_init
 
       subroutine set_energy_reset(this,eps_occ,eps_vir,nocc,nvir)
+
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         class(set_energy_t)           :: this
@@ -1498,6 +1518,8 @@ module exacorr_tensor_methods
                                this%eps_occ, this%eps_vir, this%occ_id, this%vir_id)
 
           deallocate(dims)
+          deallocate(tens_id)
+          deallocate(tens_root)
         end function set_energy_apply
 
         integer function energy_set_diag(rank,tens_body,tens_dims,tens_bases, space_id, &
@@ -1540,8 +1562,11 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
       
       subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift,occ_id)
+
         use exacorr_mo
         use exacorr_global
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         integer, intent(in)          :: nocc, nvir
@@ -1572,6 +1597,9 @@ module exacorr_tensor_methods
       end subroutine denom_t_init
 
       subroutine denom_t_reset(this,eps_occ,eps_vir,nocc,nvir)
+
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         class(denom_t), intent(inout) :: this
@@ -1659,6 +1687,8 @@ module exacorr_tensor_methods
         ierr=denominate(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
                          this%eps_occ,this%eps_vir,lambda)
 
+        deallocate(tens_id)
+        deallocate(tens_root)
       end function denom_t_apply
 
       integer function denominate(rank,tens_body,data_kind,tens_dims,tens_bases, &
@@ -1780,8 +1810,11 @@ module exacorr_tensor_methods
         ! --------------------------------------------------------------------------------
 
       subroutine denom3_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift)
+
         use exacorr_mo
         use exacorr_global
+        use exacorr_utils, only : shift_orbital_energy
+
         implicit none
 
         class(denom3_t), intent(out) :: this
@@ -1870,6 +1903,8 @@ module exacorr_tensor_methods
         ierr=denominate3(tens%num_dims,tens%body_ptr,tens%data_kind,tens%dims(1:n),tens%bases(1:n), &
                          this%eps_vir,this%eps_ijk)
 
+        deallocate(tens_id)
+        deallocate(tens_root)
       end function denom3_t_apply
 
       integer function denominate3(rank,tens_body,data_kind,tens_dims,tens_bases, &
@@ -2007,6 +2042,154 @@ module exacorr_tensor_methods
           end do
 
         end function one_el_set
+
+        ! --------------------------------------------------------------------------------
+
+      subroutine set_ff_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,min_occ)
+          implicit none
+          class(set_ff_t)          :: this
+          integer, intent(in)      :: nocc, nvir, min_occ
+          integer(INTD),intent(in) :: occ_space_id, vir_space_id
+          integer, intent(in)      :: mo_occ(:),mo_vir(:)
+
+          this%occ_id=occ_space_id
+          this%vir_id=vir_space_id
+          this%nocc=nocc
+          this%nvir=nvir
+          this%min_occ=min_occ
+          this%i_prop=-1
+
+          allocate(this%mo_occ(nocc))
+          this%mo_occ = mo_occ
+
+          allocate(this%mo_vir(nvir))
+          this%mo_vir = mo_vir
+
+      end subroutine set_ff_init
+
+      subroutine set_ff_reset(this,i_prop)
+        implicit none
+        class(set_ff_t)         :: this
+        integer, intent(in)     :: i_prop
+
+        this%i_prop=i_prop
+
+      end subroutine set_ff_reset
+
+      subroutine set_ff_pack(this,packet,ierr)
+        implicit none
+        class(set_ff_t), intent(in)          :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+        
+        call pack_builtin(packet,this%i_prop)
+
+        if(present(ierr)) ierr=0  
+        return
+      end subroutine set_ff_pack
+
+      subroutine set_ff_unpack(this,packet,ierr)
+        implicit none
+        class(set_ff_t), intent(inout)       :: this
+        class(obj_pack_t), intent(inout)     :: packet
+        integer(INTD), intent(out), optional :: ierr
+
+        call unpack_builtin(packet,this%i_prop)
+
+        if(present(ierr)) ierr=0
+        return
+      end subroutine set_ff_unpack
+
+      function set_ff_apply(this,tensor,scalar) result(ierr)
+
+          use exacorr_global
+
+          implicit none
+
+          integer(INTD)                       :: ierr, rank
+          class(set_ff_t), intent(in)         :: this
+          class(tens_rcrsv_t), intent(inout)  :: tensor
+          complex(8), intent(inout), optional :: scalar
+
+          type(tens_dense_t   )      :: tens
+          integer(INTL), allocatable :: dims(:), tens_root(:)
+          integer(INTD), allocatable :: tens_id(:)
+          integer                    :: space_id
+          complex(8), allocatable    :: prop(:,:) 
+
+          ierr=0
+          tens=tensor%get_dense_adapter(ierr)
+          if (ierr.ne.EXA_SUCCESS) call quit('Error: getting dense_adapter')
+          rank=tens%num_dims
+          if (rank.ne.2) call quit('Error: only 2-dimensional property')
+
+          allocate(dims(rank))
+          call tensor%get_dims(dims,rank)
+
+          allocate (tens_id (rank))
+          allocate (tens_root (rank))
+          call tensor%get_space_ids(tens_id,tens_root,ierr)
+
+          if (tens_id(1) == this%occ_id) then
+            if (tens_id(2) == this%occ_id) then
+              allocate(prop(this%nocc,this%nocc))
+              call get_ff_mat (prop,this%i_prop,this%mo_occ,this%nocc, &
+                                                this%mo_occ,this%nocc,this%min_occ)
+            else 
+              allocate(prop(this%nocc,this%nvir))
+              call get_ff_mat (prop,this%i_prop,this%mo_occ,this%nocc, &
+                                                this%mo_vir,this%nvir,this%min_occ)
+            end if
+          else
+            if (tens_id(2) == this%occ_id) then
+              allocate(prop(this%nvir,this%nocc))
+              call get_ff_mat (prop,this%i_prop,this%mo_vir,this%nvir, &
+                                                this%mo_occ,this%nocc,this%min_occ)
+            else 
+              allocate(prop(this%nvir,this%nvir))
+              call get_ff_mat (prop,this%i_prop,this%mo_vir,this%nvir, &
+                                                this%mo_vir,this%nvir,this%min_occ)
+            end if
+          end if
+
+          ierr=property_set(rank,tens%body_ptr,tens%dims(1:rank),tens%bases(1:rank), &
+                               prop)
+
+          deallocate(dims)
+          deallocate(tens_id)
+          deallocate(tens_root)
+          deallocate(prop)
+      end function set_ff_apply
+
+      function property_set(rank,tens_body,tens_dims,tens_bases, &
+                              prop) result (ierr)
+
+          implicit none
+
+          integer(INTD)             :: ierr, rank
+          type(C_PTR), value        :: tens_body       !in: C pointer to the tensor body (tensor elements)
+          integer(INTL), intent(in) :: tens_dims(1:*)  !in: tensor dims (extent of each tensor dimension)
+          integer(INTL), intent(in) :: tens_bases(1:*) !in: base offsets for each tensor dimension)
+
+          complex(8), allocatable   :: prop(:,:) 
+
+          complex(8),pointer    :: p_tens(:,:)
+          integer(INTL)         :: po, qo, pg, qg
+
+
+          ierr=0
+          call c_f_pointer(tens_body,p_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
+
+          p_tens = ZERO
+          do po = 1, tens_dims(2) 
+            pg = tens_bases(2) + po - 1
+            do qo = 1, tens_dims(1) 
+              qg = tens_bases(1) + qo - 1
+              p_tens(qo,po) = prop(qg,pg)
+            end do
+          end do
+
+      end function property_set
 
         ! --------------------------------------------------------------------------------
        
@@ -2381,35 +2564,6 @@ module exacorr_tensor_methods
 
         ! --------------------------------------------------------------------------------
         ! --------------------------------------------------------------------------------
-
-        subroutine shift_orbital_energy(eps_vir,eps_occ,level_shift)
-          implicit none
-
-          real(8), intent(inout)   :: eps_vir(:),eps_occ(:)
-          real(8), intent(in)      :: level_shift
-
-          integer            :: lumo
-          real(8)            :: e_homo, e_lumo
-          real(8), parameter :: THRESHOLD=1.D-8
-
-          if (level_shift.gt.1.0D-14) then
-            e_homo = maxval(eps_occ)
-            e_lumo = minval(eps_vir)
-            lumo   = minloc(eps_vir,1)
-
-            do while(e_lumo-e_homo < THRESHOLD)
-              if (e_lumo+level_shift-e_homo >THRESHOLD) then
-                eps_vir(lumo)=e_lumo+level_shift
-                write(*,*) 'E_homo =',e_homo,', E_lumo =',e_lumo,&
-                           ', E_lumo(shifted) =',eps_vir(lumo)
-              else
-                call quit('Negative HOMO-LUMO gap')
-              end if
-              e_lumo = minval(eps_vir)
-              lumo   = minloc(eps_vir, 1)
-            end do
-          end if
-        end subroutine shift_orbital_energy
 
 end module exacorr_tensor_methods
 

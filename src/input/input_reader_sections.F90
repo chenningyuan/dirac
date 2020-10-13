@@ -845,6 +845,8 @@
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
+      integer :: i,j
+      real(8) :: val_real, val_imag
 !     --------------------------------------------------------------------------
 
 #ifndef MOD_EXACORR
@@ -892,6 +894,10 @@
          exa_input%do_triples = .false.
       end if
 
+      if (kw_matches(word, '.TRIPL_BLOCK')) then
+         call kw_read(word, exa_input%tripl_block)
+      end if
+
       if (kw_matches(word, '.EXA_BLOCKSIZE')) then
          call kw_read(word, exa_input%exa_blocksize)
       end if
@@ -920,6 +926,19 @@
 
       if (kw_matches(word, '.TALSH_BUFF')) then
          call kw_read(word, exa_input%talsh_buff)
+      end if
+
+      if (kw_matches(word, '.FF_PROP')) then
+         call kw_read(word, exa_input%nff)
+         allocate(exa_input%ff_names(exa_input%nff(1)))
+         allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
+         do i=1,exa_input%nff(1)
+           call kw_read(word, exa_input%ff_names(i))
+           do j=1,exa_input%nff(2)
+             call kw_read(word, val_real,val_imag)
+             exa_input%ff(i,j)=dcmplx(val_real,val_imag)
+           enddo
+         enddo
       end if
 
       call check_whether_kw_found(word, kw_section)

@@ -676,41 +676,42 @@ module exacorr_ao_to_mo
 
         function print_tensornorm2 (tens) result(scalar_real)
 
-          type(tens_rcrsv_t):: tens, scalar
-          integer(INTD) :: ierr,rank
-          complex(8) :: scalar_complex
-          real(8)    :: scalar_real
+          type(tens_rcrsv_t) :: tens
+          type(tens_rcrsv_t) :: tensor_scalar
+          integer(INTD)      :: ierr,rank
+          complex(8)         :: scalar_complex
+          real(8)            :: scalar_real
 
           ! create a rank-0 tensor
-          ierr=exatns_tensor_create(scalar,'scalar',EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_create(tensor_scalar,'tensor_scalar',EXA_DATA_KIND_C8)
           if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_tensor_create() failed!')
-          ierr=exatns_tensor_init(scalar,ZERO)
+          ierr=exatns_tensor_init(tensor_scalar,ZERO)
 
           ! get the rank and do the contraction
           rank = tens%get_rank(ierr)
           select case (rank)
           case(0)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+()*D()')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+()*D()')
           case(1)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a)*D(a)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a)*D(a)')
           case(2)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b)*D(a,b)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b)*D(a,b)')
           case(3)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c)*D(a,b,c)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c)*D(a,b,c)')
           case(4)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d)*D(a,b,c,d)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c,d)*D(a,b,c,d)')
           case(5)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d,e)*D(a,b,c,d,e)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c,d,e)*D(a,b,c,d,e)')
           case(6)
-              ierr=exatns_tensor_contract(scalar,tens,tens,'E()+=D+(a,b,c,d,e,f)*D(a,b,c,d,e,f)')
+              ierr=exatns_tensor_contract(tensor_scalar,tens,tens,'E()+=D+(a,b,c,d,e,f)*D(a,b,c,d,e,f)')
           case default
               ierr=1
           end select
           if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_contract() failed!')
-          ierr=exatns_tensor_get_scalar(scalar,scalar_complex)
+          ierr=exatns_tensor_get_scalar(tensor_scalar,scalar_complex)
           if(ierr.ne.EXA_SUCCESS) call quit('print_tensornorm2: get_scalar failed!')
           scalar_real=real(scalar_complex,8)
-          ierr=exatns_tensor_destroy(scalar)
+          ierr=exatns_tensor_destroy(tensor_scalar)
           if(ierr.ne.EXA_SUCCESS) then; ierr=45; return; endif
 
         end function print_tensornorm2
@@ -1234,10 +1235,10 @@ module exacorr_ao_to_mo
         integer(INTL)                   :: nao, nocc, nvir
         integer(INTD)                   :: o_id, v_id
         integer                         :: i, m
-        type(tens_rcrsv_t), allocatable :: CD(:)
-        integer(INTL),dimension(2)      :: uoo_dims, uov_dims, uvo_dims, uvv_dims
-        integer(INTD),dimension(2)      :: uoo_id, uov_id, uvo_id, uvv_id
-        type(tens_rcrsv_t), allocatable :: uoo_tensor(:), uov_tensor(:), uvo_tensor(:), uvv_tensor(:)
+        type(tens_rcrsv_t), allocatable :: chol_tens(:), temp_tens(:)
+        integer(INTL),dimension(2)      :: dimA, dimB, DimC
+        integer(INTD),dimension(2)      :: idA, idB, idC
+        type(tens_rcrsv_t), allocatable :: uoo_tens(:), uov_tens(:), uvo_tens(:), uvv_tens(:)
         integer(INTL),dimension(4)      :: vovo_root, ovvo_root, hroot
         integer(INTD),dimension(4)      :: vovo_id, ovvo_id, hid
         type(tens_rcrsv_t)              :: ovvo_tensor, temp_tensor, one_element
@@ -1255,10 +1256,10 @@ module exacorr_ao_to_mo
 
         call print_date('-Start- Cholesky Decomposition')
         if (moint_scheme.eq.41) then
-            call decompose_cholesky_exatensor_full (CD, m, ao_id, ao_space, t_cholesky, &
+            call decompose_cholesky_exatensor_full (chol_tens, m, ao_id, ao_space, t_cholesky, &
                                                     j_chol, f_delta, print_level)
         else
-            call decompose_cholesky_exatensor (CD, m, ao_id, ao_space, t_cholesky, &
+            call decompose_cholesky_exatensor (chol_tens, m, ao_id, ao_space, t_cholesky, &
                                                f_delta,exa_blocksize,print_level)  
         end if
         call print_date('-End- Cholesky Decomposition')
@@ -1266,44 +1267,93 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(one_element,"one_element",EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(one_element,ONE)
 
-!       set dimensions for cholesky spaces
-        uoo_dims=nocc
-        uov_dims=nocc
-        uov_dims(2)=nvir
-        uvo_dims=nocc
-        uvo_dims(1)=nvir
-        uvv_dims=nvir
-        uoo_id=o_id
-        uov_id=o_id
-        uov_id(2)=v_id
-        uvo_id=o_id
-        uvo_id(1)=v_id
-        uvv_id=v_id
-
 !       allocate cholesky vectors
-        allocate(uoo_tensor(m))
-        allocate(uov_tensor(m))
-        allocate(uvo_tensor(m))
-        allocate(uvv_tensor(m))
+        allocate(uoo_tens(m))
+        allocate(uov_tens(m))
+        allocate(uvo_tens(m))
+        allocate(uvv_tens(m))
+        allocate(temp_tens(m))
 
-!       perform ao to mo transformation for cholesky tensors
-        call ao2mo_cholesky(CD,uoo_tensor,uoo_dims,uoo_id,'uoo',m,print_level)
-        if (print_level.gt.6) call print_date(' uoo done ')
+        !        transform v part
+        dimA=nao
+        dimA(1)=nvir
+        idA=ao_id
+        idA(1)=v_id
+        dimB=nocc
+        dimB(1)=nvir
+        idB=o_id
+        idB(1)=v_id
+        dimC=nvir
+        idC=v_id
 
-        call ao2mo_cholesky(CD,uov_tensor,uov_dims,uov_id,'uov',m,print_level)
-        if (print_level.gt.6) call print_date(' uov done ')
-
-        call ao2mo_cholesky(CD,uvo_tensor,uvo_dims,uvo_id,'uvo',m,print_level)
-        if (print_level.gt.6) call print_date(' uvo done ')
-
-        call ao2mo_cholesky(CD,uvv_tensor,uvv_dims,uvv_id,'uvv',m,print_level)
-        if (print_level.gt.6) call print_date(' uvv done ')
-
-!       remove ao cholesky vectors
         do i=1,m
-          ierr=exatns_tensor_destroy(CD(i))
+          write (vs_str, '(A3,I9.9)') 'tem',i
+          ierr=exatns_tensor_create(temp_tens(i),vs_str,idA,dimA,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(temp_tens(i),'ZERO')
+          write (vs_str, '(A3,I9.9)') 'uvo',i
+          ierr=exatns_tensor_create(uvo_tens(i),vs_str,idB,dimB,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uvo_tens(i),'ZERO')
+          write (vs_str, '(A3,I9.9)') 'uvv',i
+          ierr=exatns_tensor_create(uvv_tens(i),vs_str,idC,dimC,EXA_DATA_KIND_C8)  
+          ierr=exatns_tensor_init(uvv_tens(i),'ZERO')        
         end do
-        deallocate(CD)
+
+        call ao2mo_vect(chol_tens,temp_tens,m,11,print_level)
+        call ao2mo_vect(temp_tens,uvo_tens,m,21,print_level)
+        call ao2mo_vect(temp_tens,uvv_tens,m,21,print_level)
+        do i=1,m
+          ierr=exatns_tensor_init(temp_tens(i),'ZERO')
+        end do
+        call ao2mo_vect(chol_tens,temp_tens,m,12,print_level)
+        call ao2mo_vect(temp_tens,uvo_tens,m,22,print_level)
+        call ao2mo_vect(temp_tens,uvv_tens,m,22,print_level)
+
+        if (print_level.gt.2) call print_date(' uvo/uvv done ')
+
+!       transform o part
+        dimA=nao
+        dimA(1)=nocc
+        idA=ao_id
+        idA(1)=o_id        
+        dimB=nvir
+        dimB(1)=nocc
+        idB=v_id
+        idB(1)=o_id
+        dimC=nocc
+        idC=o_id
+
+        do i=1,m
+          ierr=exatns_tensor_destroy(temp_tens(i))
+          write (vs_str, '(A3,I9.9)') 'uov',i
+          ierr=exatns_tensor_create(uov_tens(i),vs_str,idB,dimB,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(uov_tens(i),'ZERO')
+          write (vs_str, '(A3,I9.9)') 'uoo',i
+          ierr=exatns_tensor_create(uoo_tens(i),vs_str,idC,dimC,EXA_DATA_KIND_C8) 
+          ierr=exatns_tensor_init(uoo_tens(i),'ZERO')
+          write (vs_str, '(A3,I9.9)') 'tem',i
+          ierr=exatns_tensor_create(temp_tens(i),vs_str,idA,dimA,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(temp_tens(i),'ZERO') 
+        end do
+
+        call ao2mo_vect(chol_tens,temp_tens,m,11,print_level)
+        call ao2mo_vect(temp_tens,uoo_tens,m,21,print_level)
+        call ao2mo_vect(temp_tens,uov_tens,m,21,print_level)
+        do i=1,m
+          ierr=exatns_tensor_init(temp_tens(i),'ZERO')
+        end do
+        call ao2mo_vect(chol_tens,temp_tens,m,12,print_level)
+        call ao2mo_vect(temp_tens,uoo_tens,m,22,print_level)
+        call ao2mo_vect(temp_tens,uov_tens,m,22,print_level)
+
+        if (print_level.gt.2) call print_date(' uoo/uvo done ')
+
+        ! cleanup
+        do i=1,m
+          ierr=exatns_tensor_destroy(temp_tens(i))
+          ierr=exatns_tensor_destroy(chol_tens(i))
+        end do
+        deallocate(temp_tens)
+        deallocate(chol_tens)
 
 !       Determine space ids and root for auxilliary voov tensor from vovo tensor
         ovvo_id = o_id
@@ -1325,12 +1375,12 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tensor(i),uoo_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tens(i),uoo_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: oooo')
         call mulliken_to_dirac_sort(temp_tensor,int_t%oooo,12)
         ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' oooo done ')
+        if (print_level.gt.2) call print_date(' oooo done ')
 
 !       Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
         hid=o_id
@@ -1340,7 +1390,7 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uoo_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tens(i),uoo_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: vovo')
         call mulliken_to_dirac_sort(temp_tensor,int_t%vovo,0)
@@ -1350,14 +1400,14 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',ovvo_id,ovvo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uvo_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tens(i),uvo_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: ovvo')
         call mulliken_to_dirac_sort(temp_tensor,ovvo_tensor,0)
         ierr=exatns_tensor_destroy(temp_tensor)
         ierr=exatns_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,one_element,MINUS_ONE)
         ierr=exatns_tensor_destroy(ovvo_tensor)
-        if (print_level.gt.6) call print_date(' vovo done ')
+        if (print_level.gt.2) call print_date(' vovo done ')
 
 !       Get ooov tensor
         hid=o_id
@@ -1367,18 +1417,18 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tensor(i),uov_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tens(i),uov_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: ooov')
         call mulliken_to_dirac_sort(temp_tensor,int_t%ooov,12)
         ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' ooov done ')
+        if (print_level.gt.2) call print_date(' ooov done ')
 
 !       uoo no longer needed
         do i=1,m
-           ierr=exatns_tensor_destroy(uoo_tensor(i))
+           ierr=exatns_tensor_destroy(uoo_tens(i))
         end do
-        deallocate(uoo_tensor)
+        deallocate(uoo_tens)
 
 !       Get antisymmetric oovv tensor
         hid=o_id
@@ -1390,18 +1440,18 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tens(i),uov_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: oovv')
         call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
         ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' oovv done ')
+        if (print_level.gt.2) call print_date(' oovv done ')
 
 !       uvo no longer needed
         do i=1,m
-          ierr=exatns_tensor_destroy(uvo_tensor(i))
+          ierr=exatns_tensor_destroy(uvo_tens(i))
         end do
-        deallocate(uvo_tensor)
+        deallocate(uvo_tens)
 
 !       Get vovv tensor
         hid=v_id
@@ -1411,19 +1461,19 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,ZERO)
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uov_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tens(i),uov_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: vovv')
         if (print_level.gt.6) call print_date(' now sorting ')
         call mulliken_to_dirac_sort(temp_tensor,int_t%vovv,34)
         ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' vovv done ')
+        if (print_level.gt.2) call print_date(' vovv done ')
 
 !       uov no longer needed
         do i=1,m
-          ierr=exatns_tensor_destroy(uov_tensor(i))
+          ierr=exatns_tensor_destroy(uov_tens(i))
         end do
-        deallocate(uov_tensor)
+        deallocate(uov_tens)
 
 !       Get vvvv tensor
         hid=v_id
@@ -1431,18 +1481,18 @@ module exacorr_ao_to_mo
         ierr=exatns_tensor_create(temp_tensor,'temp',hid,hroot,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_init(temp_tensor,'ZERO')
         do i=1,m
-          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
+          ierr=exatns_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tens(i),uvv_tens(i))
         end do
         if(ierr.ne.EXA_SUCCESS) call quit('cholesky integrals: vvvv')
         call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
         ierr=exatns_tensor_destroy(temp_tensor)
-        if (print_level.gt.6) call print_date(' vvvv done ')
+        if (print_level.gt.2) call print_date(' vvvv done ')
 
 !       uvv no longer needed
         do i=1,m
-          ierr=exatns_tensor_destroy(uvv_tensor(i))
+          ierr=exatns_tensor_destroy(uvv_tens(i))
         end do
-        deallocate(uvv_tensor)
+        deallocate(uvv_tens)
 
         ierr=exatns_tensor_destroy(one_element)
 
@@ -1496,13 +1546,13 @@ module exacorr_ao_to_mo
             coef_id(2)   = mo2_id(i)
             coef_root(2) = mo2_dims(i)
             do spin = 1, 2
-              if (print_level>8) write(*,*) 'coef_id:',coef_id,', coef_root:',coef_root
+              if (print_level>-1) write(*,*) 'coef_id:',coef_id,', coef_root:',coef_root
               write (coef_name,'(A7,2I1)') 'mocoef_',spin,i
               ierr=exatns_tensor_create(coef_tensor(spin,i),coef_name,coef_id,coef_root,EXA_DATA_KIND_C8)
               if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: tensor not created')
               ierr=exatns_tensor_init(coef_tensor(spin,i),mocoef_initlabel(coef_id(1),coef_id(2),spin))
               if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_cholesky: coef_tensor not set')
-              if (print_level>8) write(*,*) "created and initialized coef_tensor ",i,spin, &
+              if (print_level>-1) write(*,*) "created and initialized coef_tensor ",i,spin, &
                 mocoef_initlabel(coef_id(1),coef_id(2),spin),print_tensornorm2(coef_tensor(spin,i))
               if (print_level>15)  ierr=exatns_tensor_traverse(coef_tensor(spin,i),'PrintTensor')
             end do
@@ -1544,6 +1594,77 @@ module exacorr_ao_to_mo
         if (print_level >5) call print_date('=== leaving ao2mo_cholesky')
 
       end subroutine ao2mo_cholesky
+
+      subroutine ao2mo_vect(ao_vec,mo_vec,m,ind,print_level)
+!     Transform integral tensor vector from ao-basis to mo-basis
+
+        implicit none
+         
+        type(tens_rcrsv_t), allocatable :: ao_vec(:), mo_vec(:)
+        integer, intent(in)             :: ind, m, print_level
+
+        type(tens_rcrsv_t)  :: coef_alpha, coef_beta
+        integer(INTD)       :: ao_id(2), mo_id(2), coef_id(2)
+        integer(INTL)       :: ao_dim(2), mo_dim(2), coef_dim(2)
+        integer(INTD)       :: ierr, rank
+        integer             :: i, ii
+
+!       Get info about tensors
+        rank = ao_vec(1)%get_rank(ierr)
+        if (ierr.ne.0 .or. rank.ne.2) call quit('ao2mo_vect: ao tensor corrupted (rank)')
+        call ao_vec(1)%get_space_ids(ao_id,ao_dim,ierr)
+        if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: ao tensor corrupted (2) ')
+        call mo_vec(1)%get_space_ids(mo_id,mo_dim,ierr)
+        if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: mo tensor corrupted (2) ')
+
+        if (ind.eq.11 .or. ind.eq.12) then
+          ii=1
+        else if (ind.eq.21 .or. ind.eq.22) then
+          ii=2
+        else
+          call quit('ao2mo_vect: index not available ')
+        end if
+       
+!       Initialize tensors with MO coefficients
+        coef_id(1)=ao_id(ii)
+        coef_id(2)=mo_id(ii)
+        coef_dim(1)=ao_dim(ii)
+        coef_dim(2)=mo_dim(ii)
+        ierr=exatns_tensor_create(coef_alpha,'coef_alpha',coef_id,coef_dim,EXA_DATA_KIND_C8)
+        if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: tensor not created')
+        ierr=exatns_tensor_init(coef_alpha,mocoef_initlabel(coef_id(1),coef_id(2),1))
+        if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: coef_tensor not set')
+        if (print_level>8) write(*,*) "created and initialized alpha ", coef_id, coef_dim, &
+                mocoef_initlabel(coef_id(1),coef_id(2),1),print_tensornorm2(coef_alpha)
+        ierr=exatns_tensor_create(coef_beta,'coef_beta',coef_id,coef_dim,EXA_DATA_KIND_C8)
+        if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: tensor not created')
+        ierr=exatns_tensor_init(coef_beta,mocoef_initlabel(coef_id(1),coef_id(2),2))
+        if(ierr.ne.EXA_SUCCESS) call quit('ao2mo_vect: coef_tensor not set')
+        if (print_level>8) write(*,*) "created and initialized alpha ", coef_id, coef_dim, &
+                mocoef_initlabel(coef_id(1),coef_id(2),2),print_tensornorm2(coef_beta)
+
+!       transform the index
+        do i=1,m
+          if (ind.eq.11) then
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_alpha,"B(p,q)+=A(i,q)*M+(i,p)")
+            if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2a1')
+          else if (ind.eq.12) then
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_beta,"B(p,q)+=A(i,q)*M+(i,p)")
+            if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2b1')
+          else if (ind.eq.21) then
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_alpha,"C(p,q)+=B(p,i)*M(i,q)")
+            if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2a2')
+          else if (ind.eq.22) then
+            ierr=exatns_tensor_contract(mo_vec(i),ao_vec(i),coef_beta,"C(p,q)+=B(p,i)*M(i,q)")
+            if(ierr.ne.EXA_SUCCESS) call quit('error in ao2mo_vect: 2b2')
+          end if 
+        end do
+
+!       clean up
+        ierr=exatns_tensor_destroy(coef_alpha)
+        ierr=exatns_tensor_destroy(coef_beta)
+
+      end subroutine ao2mo_vect
 
       subroutine decompose_cholesky_exatensor (CD, m, ao_id, ao_space, t_cholesky, &
                                                  f_delta, exa_blocksize, print_level)
