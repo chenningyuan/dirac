@@ -18,20 +18,20 @@ The nuclear spin-rotation (SR) tensor elements of a nucleus :math:`N` are given 
 
 They have three terms: the first of them is independent of the electronic variables, whereas the second and third are given by an expectation value (EV) and a linear response (LR) function, respectively.
 
-In tensorial notation, the nuclear spin-rotation contributions of a nucleus :math:`N` are given by:
+In tensorial notation, the nuclear spin-rotation contributions of a nucleus :math:`N` are given, in SI units, by:
 
 .. math::
 
-   {\bf M}_N^{NU} =& \; \frac{e^2 \hslash^2}{2 m_p c^2} \, g_N  \sum_{M \neq N} \frac{Z_M}{|{\bf R}_{MN}|^3} \\
+   {\bf M}_N^{NU} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N  \sum_{M \neq N} \frac{Z_M}{|{\bf R}_{MN}|^3} \\
                    & \hspace{2cm} \left(  \left\{ \left[ {\bf R}_{M,CM} - \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) {\bf R}_{N,CM} \right] \cdot {\bf R}_{MN} \right\} {\bf 1}  \right. \\
                    & \hspace{4cm} \left. - \left[ {\bf R}_{M,CM} - \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) {\bf R}_{N,CM} \right] {\bf R}_{MN} \right)   \otimes {\bf I}^{-1}  \\
                    & \\
                    & \\
-   {\bf M}_N^{EV} =& \; \frac{e^2 \hslash^2}{2 m_p c^2} \, g_N \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) \\
+   {\bf M}_N^{EV} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N \left( 1 - \frac{Z_N m_p}{m_N g_N} \right) \\
                    & \hspace{2cm} \left[ \left(  \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle \cdot {\bf R}_{N,CM} \right) {\bf 1} - \langle 0 | \frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 } | 0 \rangle  \; \; {\bf R}_{N,CM}\right] \otimes {\bf I}^{-1} \\
                    & \\
                    & \\
-   {\bf M}_N^{LR} =& \; \frac{e^2 \hslash^2}{2 m_p c^2} \, g_N  \;  \langle \langle  \left (\frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 }\times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e\rangle\rangle \; \otimes  \; {\bf I}^{-1}
+   {\bf M}_N^{LR} =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N  \;  \langle\langle \; \left (\frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 }\times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e \; \rangle\rangle \; \otimes  \; {\bf I}^{-1}
 
 where :math:`{\bf R}_{MN}` is the position of nucleus :math:`M` with respect to the position of nucleus :math:`N`; :math:`{\bf R}_{N,CM}` is the position of nucleus :math:`N` with respect to the molecular center of mass; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
 
@@ -40,7 +40,7 @@ For molecules at their equilibrium geometry, it is found that the sum of the fir
 .. math::
 
    {\bf M}_N^{nuc} =& \; {\bf M}_N^{NU} (eq) \; + \; {\bf M}_N^{EV} (eq) \\
-                           =& \frac{e^2 \hslash^2}{2 m_p c^2} \, g_N \sum_{M \neq N} Z_M
+                           =& \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2 \hslash^2}{2 m_p h} \, g_N \sum_{M \neq N} Z_M
                               \left[  \left( {\bf R}_{M,CM}  \cdot \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right) {\bf 1}
                                     - {\bf R}_{M,CM} \frac{{\bf R}_{MN}}{|{\bf R}_{MN}|^3} \right]   \otimes {\bf I}^{-1}
 
@@ -88,10 +88,16 @@ As it can be seen, the total SR constant of the fluorine nucleus is given, and t
 
 In addition, the results are fully detailed, showing the three terms mentioned above (NU, EV and LR).
 
-Finally, if one is interested in the relationship between the SR constants and :ref:`PROPERTIES_.SHIELDING` (see :cite:`Aucar_JPCL2016` and :cite:`AucarChap2019`), we print also the SR constants in ppm, by multiplying each SR tensor element :math:`M_{N,\alpha\beta}` by :math:`\frac{m_p I_{\beta \gamma}}{g_N}`, where :math:`m_p` is the mass of a proton and :math:`g_N` is the g-factor of the nucleus `N`.
+Finally, if one is interested in the relationship between the SR constants and :ref:`PROPERTIES_.SHIELDING` (see :cite:`Aucar_JPCL2016` and :cite:`AucarChap2019`), which is given, in SI units, by
+
+.. math::
+
+   {\bf \sigma}_N = \; \frac{1}{4\pi\epsilon_0c^2} \, \frac{e^2}{2} \;  \langle\langle \; \left (\frac{{\bf r}-{\bf r}_N}{|{\bf r} -{\bf r}_N|^3 }\times c \, {\bf \alpha}\right) \; ; \; \left( {\bf r}-{\bf r}_{GO} \times c \, {\bf \alpha}\right) \; \rangle\rangle
+
+
+then we print also the SR constants in ppm, by multiplying each SR tensor element :math:`M_{N,\alpha\beta}` (given in kHz) by :math:`\frac{m_p I_{\beta \gamma}}{g_N}\,\frac{2\, \pi \, 10^9}{m_e \, \hslash}`, where :math:`m_p` and :math:`m_e` are the proton and electron masses, respectively, :math:`\hslash` is the reduced Planck's constant, and :math:`g_N` is the g-factor of nucleus `N`.
 
 
 In this way, one obtains the following output:
 
 .. literalinclude:: SR-HF-ppm
-
