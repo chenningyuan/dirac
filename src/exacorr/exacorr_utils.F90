@@ -207,13 +207,14 @@ module exacorr_utils
 
     end subroutine print_exaoutput
 
-    subroutine print_iteration(iteration,convergence,energy)
+    subroutine print_iteration(iteration,convergence,energy,print_level)
     ! Formatted print for iterations
 
       ! input variables
       integer, intent(in)           :: iteration
       real(8), intent(in)           :: convergence
       real(8), intent(in), optional :: energy
+      integer, intent(in), optional :: print_level
 
       if (iteration.eq.1 .and. present(energy)) then
         write(*,*) ""
@@ -231,6 +232,12 @@ module exacorr_utils
         write(*,'(A3,I2,A4,F20.15,A3,E10.1)') "   ", iteration, "    ", energy, "   ", convergence
       else if (iteration.ne.1) then
         write(*,'(A3,I2,A4,E10.1)') "   ", iteration, "    ", convergence
+      end if
+      
+      if (present(print_level)) then
+        if (print_level.gt.4) then
+          call print_date(' CC iteration done')
+        end if
       end if
 
     end subroutine print_iteration
