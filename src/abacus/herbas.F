@@ -490,17 +490,20 @@ C
 
             IQM = IQM + 1 ! counting s, p, d, ... total shells
 C
-C    For DO_SPLIT:
-C           We should not make blocks of primitives too large in case of uncontracted sets
+C           Compute size of blocks in case we need to split large blocks of primitives.
 C           Compute maximum size (should of course always be one, hence the MAX in the
-C           determination step).
+C           determination step) and also check if this fits the size for the fixed dimensioned
+C           alpha and cprim arrays. We have two separate hardcoded parameters, this is to make
+C           sure no conflicts arise (terrible spaghetti code, but have no time to fix everything, LV, Oct 2020).
 C
             KHK_SC = (IQM+1)*(IQM+2)/2 ! number of basis function components for small component l+1
             MAXPRIM_IN_BLOCK = MAX(1,MAX_IN_BLOCK/KHK_SC)
+            MAXPRIM_IN_BLOCK = MIN(KPRIM,MAXPRIM_IN_BLOCK)
             N_SPLIT = (INTEXP-1)/MAXPRIM_IN_BLOCK + 1
             IF (N_SPLIT .GT. 1) MAXPRIM_IN_BLOCK = (INTEXP-1)/N_SPLIT+1 ! spread load evenly
 
             JCO(IQM) = 1
+            ! this is an intricate loop construction that should be rewritten by someone who understands programming (LV, 2020)
   11        CONTINUE
 CMI           ... to have INTORB fixed for repeating calls of READ_NU
             NBLOCK = NBLOCK + 1
@@ -508,18 +511,25 @@ CMI           ... to have INTORB fixed for repeating calls of READ_NU
                CALL QUIT('Too many AO shell blocks; increase MXSHEL')
             END IF
 C
-            IF (DO_SPLIT .AND.
-     &          (INTORB.LE.0.AND.INTEXP.GT.MAXPRIM_IN_BLOCK)) THEN
-               IF (ANO .OR. SADLEJ) THEN
-                  SPLIT = .FALSE.
-               ELSE
-                  INTEXP_2 = INTEXP - MAXPRIM_IN_BLOCK
-                  INTEXP = MAXPRIM_IN_BLOCK
-                  JCO(IQM) = JCO(IQM) + 1
-                  SPLIT = .TRUE.
-               ENDIF
-            ELSE
+            IF (ANO .OR. SADLEJ .OR. INTORB.GT.0) THEN
+               ! splitting with ANO type sets is not possible
+               ! also the intorb > 0 case is problematic for splitting
                SPLIT = .FALSE.
+            ELSEIF (INTEXP.GT.KPRIM) THEN
+               ! splitting is always necessary, otherwise the fixed array size is too small
+               SPLIT = .TRUE.
+            ELSEIF (INTEXP.GT.MAXPRIM_IN_BLOCK .AND. DO_SPLIT) THEN
+               ! splitting is desired by the user to reduce memory consumption
+               SPLIT = .TRUE.
+            ELSE
+               ! splitting is not necessary (or we are in the last block after splitting)
+               SPLIT = .FALSE.
+            ENDIF
+           
+            IF (SPLIT) THEN
+               INTEXP_2 = INTEXP - MAXPRIM_IN_BLOCK
+               INTEXP = MAXPRIM_IN_BLOCK
+               JCO(IQM) = JCO(IQM) + 1
             ENDIF
 
 C
