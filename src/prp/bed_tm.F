@@ -1061,7 +1061,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       INTEGER LWORK, NCOMP, NOPTP,IIP
       character (len=5)                 :: TPAR(3)
-      real(8)             :: PBUF(3,2),EEWT(6), TMP
+      real(8)             :: BCPU, PBUF(3,2),EEWT(6), TMP
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE         
       integer  POINT_PER_PROC, MOD_POINT, ITASK, SNODE, PPPP, NPOINTS
@@ -1123,11 +1123,13 @@ C     * Most variables have been moved to shared_bedled_var_module
 C     * for sharing with MPI slave processes
 C     ************************************************************
       CHARACTER*6 MXFORM, FMT
+      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12 
+      CHARACTER ALLCPUTID*12
       INTEGER :: ISTAT(df_mpi_status_size)
       INTEGER IBEIG(*)
       DIMENSION CMO(*),WORK(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC)
-      real(8)             :: EVECR(NREDM,*)
+      real(8)             :: EVECR(NREDM,*), CPUTIME
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       integer   KFRSAV
 C
@@ -1145,6 +1147,11 @@ C     ****************************************************
 C     * All initialization will be performed by the 
 C     * master node from this point 
 C     ****************************************************     
+C     
+C     Setup timing of the BEDLEB routine 
+C
+      CPUTIME = 0
+      CALL GETTIM(BCPU,WALL1)
       IF (MYPROC.eq.MASTER) THEN
 
 #else
@@ -1241,6 +1248,7 @@ C
       WRITE(6,*) 'BED rotational average. '
       WRITE(6,*) '  Lmax    = ',NROTAV
       WRITE(6,*) '  Npoints = ',NPOINTS
+      WRITE(6,*) '  Nprocs  = ',NMPROC
 C
 C     Prepare solution vectors
 C     ========================
@@ -1527,7 +1535,8 @@ C     ********************************************************
 C     If running parallel MPI - gather all DATA here
 C     ********************************************************
       IF (NMPROC.gt.1) THEN
-        call bedleb_gather_slave_data(NPAR, WORK,KFREE,LFREE,KFRSAV)
+        call bedleb_gather_slave_data(NPAR, WORK,KFREE,LFREE,KFRSAV,
+     &                                CPUTIME)
 C       SLAVES WILL EXIT BEDLED HERE
         IF (MYPROC.ne.MASTER) THEN
           CALL QEXIT('BEDLEB')
@@ -1578,11 +1587,24 @@ C    MARTIN
         deallocate(ECD)
       ENDIF
 C    MARTIN
-
-
-
-
-
+C     
+C     End timing of the BEDLEB routine 
+C
+      CALL GETTIM(CPU2,WALL2)
+      CPU    = CPU2 - BCPU
+      WALL   = WALL2 - WALL1
+      TOTWAL = TOTWAL + WALL
+      CPUTIME = CPUTIME + CPU
+C
+      TOTTID = SECTID(TOTWAL)
+      WRITE(LUPRI,'(A,A12)')
+     &    '>>>> Total wall time used in BEDLEB           : ',
+     &       TOTTID
+      CPUTID = SECTID(CPU)
+      ALLCPUTID = SECTID(CPUTIME)
+      WRITE(LUPRI,'(A,A12,A1,A12)')
+     &    '>>>> Master CPU/Total CPU time used in BEDLEB : ',
+     &       CPUTID,'/',ALLCPUTID
 C            
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -1616,7 +1638,8 @@ C     * This master routine initially starts/calls all the slaves      C
 C     * by sending the iTask ID to main and then follows up            C
 C     * by broadcasting all the initial allocatable variables          C
 C                                                                      C
-      SUBROUTINE bedleb_gather_slave_data(NPAR,WORK,KFREE,LFREE,KFRSAV)
+      SUBROUTINE bedleb_gather_slave_data(NPAR,WORK,KFREE,LFREE,KFRSAV,
+     &                                    CPUTIME)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use orbital_rotation_indices
       use interface_to_mpi
@@ -1626,6 +1649,7 @@ C
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+      real(8)             :: TMPCPU
 #include "maxash.h"
 #include "dcborb.h"
 C
@@ -1650,6 +1674,9 @@ C
 
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+
+      CALL GETTIM(CPU2,WALL2)
+      CPU    = CPU2 - BCPU
 
       MPARID = 0
       MASTER = MPARID
@@ -1682,6 +1709,8 @@ C       *************** Sends OSC ***************
      &                            MASTER, 28,global_communicator)
         ENDDO
         ENDDO
+        CALL interface_MPI_SEND(CPU, 1,
+     &                          MASTER, 28,global_communicator)
 C       *************** Deallocate ***************
 
 C       Deallocate all data for the Slaves
@@ -1756,6 +1785,9 @@ C         ------------------------------
             OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + TMP
           ENDDO
           ENDDO
+          CALL interface_MPI_RECV(TMPCPU, 1,
+     &                          SNODE, 28,global_communicator)
+          CPUTIME = CPUTIME + TMPCPU
 C       end SNODE
         ENDDO
       ENDIF
