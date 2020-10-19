@@ -34,6 +34,7 @@ module talsh_mp2no
 !-------------------------------------------------------------------------------------------------------------------------------------
 
        subroutine talsh_mp2no_driver (exa_input)
+        !       Written by Xiang Yuan, Oct 2020
         use exacorr_global
         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
         use talsh_gradient
@@ -85,11 +86,11 @@ module talsh_mp2no
                    call get_MP2_FNOs (exa_input,init_t,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
                 end if 
                 print *,'get_MP2_FNOs', err
-                call MP2_write_newDFCOEF (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,ierr)
+                call MP2_write_newDFCOEF (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,ierr)  !construct reduced natural orbital in AO basis used in following computation 
 
         else
                 init_t=1
-                call talsh_mp2no_main (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)
+                call talsh_mp2no_main (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)   !generate MP2NOs_MO file containing all natural orbital and occupation number in MO basis
                 threshold = 1.0d-5
                 if (threshold /= 0.0) then
                    call get_MP2_FNOs (exa_input,init_t,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
