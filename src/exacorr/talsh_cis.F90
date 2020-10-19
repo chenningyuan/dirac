@@ -6,7 +6,6 @@ module talsh_cis
     use exacorr_utils
     use intermediates
     use talsh_common_routines
-!    use davidson
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
@@ -25,7 +24,7 @@ module talsh_cis
 
     subroutine talsh_cis_driver (exa_input)
     ! This routine drives CIS calculation including construction of CIS Hamiltonian and diagnolization
-    !  Written by Xiang Yuan, June 2020
+    ! Written by Xiang Yuan, June 2020
         use exacorr_global
         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
         use talsh_gradient
@@ -35,7 +34,6 @@ module talsh_cis
 
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-
          integer(C_INT)       :: ierr
          complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:),check_tens(:,:)
          complex(kind=8), pointer :: eValues(:) 
@@ -43,7 +41,7 @@ module talsh_cis
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
          complex(8), pointer, contiguous :: h_tens(:,:)
-         integer :: i,j,a,b
+         integer :: i,j,a,b,n
          integer :: bj,ai
 
 
@@ -72,7 +70,8 @@ module talsh_cis
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
 
-        !DO NOT CHANGE THESE VARIABLES
+        
+!        DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
          nvir = exa_input%nvir
          print *,'nocc', nocc
@@ -85,7 +84,7 @@ module talsh_cis
          mo_vir = exa_input%mo_vir
 
 
-         !Initialize scalars that are to be used as tensors in contractions
+!        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
          oo_dims(1:2) = nocc
          vv_dims(1:2) = nvir
@@ -98,16 +97,17 @@ module talsh_cis
          voov_dims(4) = nvir
 
 
-         call print_date("Getting orbital energies")
-         ! Get orbital energies from the DIRAC restart file
+!        Get orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
          allocate (eps_vir(nvir))
-         call get_orbital_energies(nocc,mo_occ,eps_occ)
-         call get_orbital_energies(nvir,mo_vir,eps_vir)
-         call print_date("Retrieved orbital energies")
 
+!        Construct necessary tensor 
+         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr=talsh_tensor_construct(result_tensor,C8,voov_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,result_tens,voov_dims)
 
- !      create identity matrix for the occupied space
+ !       Create identity matrix for the Occupied space
          ierr=talsh_tensor_construct(id_mat_occ,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,h_tens,oo_dims) ! to use as a regular Fortran array
@@ -115,7 +115,8 @@ module talsh_cis
          do i = 1, nocc
            h_tens(i,i) = ONE
          end do
-!        create identity matrix for the virtual space
+
+!        Create identity matrix for the Virtual space
          ierr=talsh_tensor_construct(id_mat_vir,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(id_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,h_tens,vv_dims) ! to use as a regular Fortran array
@@ -124,37 +125,28 @@ module talsh_cis
            h_tens(i,i) = ONE
          end do
 
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(result_tensor,C8,voov_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,result_tens,voov_dims)
 
-         !print *,'before get_CIS_integrals'
-         call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
+         call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)  !        Get molecular integral used in CIS 
 
 
-         !Constrcut body_one tensor
+!        Constrcut one body integral tensor
          ierr=talsh_tensor_construct(body_one_tensor,C8,voov_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
-         !compute fock matrix tensor 
+
+!        Compute fock matrix tensor 
          call get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_foo_tensor,diag_fvv_tensor, &
                                   int_t, exa_input%print_level)
 
-
-         !print *,'after get_CIS_fockmatrix'
-!        set body_one tensor element 
+!        Set one body integral tensor element 
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
 
 
 
-
-          !create CIS hamiltonian tensor 
+!        Constrcut two body integral tensor and Create CIS Hamiltonian tensor 
          ierr=talsh_tensor_contract("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
-         !print *,'HCIS(b,i,j,a)+=TB(b,i,a,j)*M() ierr',ierr
          ierr=talsh_tensor_add("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
-         !print *,'HCIS(b,i,j,a)+=OB(b,i,j,a) ierr',ierr
 
 
         do j=1,nocc,1
@@ -170,8 +162,8 @@ module talsh_cis
          end do 
 
 
-
-         call diagoanl_cis_matrix(sigma1,eValues)
+         call diagoanl_cis_matrix(sigma1,eValues) ! Get CIS eigenvector and excitation energy
+!        Sort the eigenvector according to the excitation energy 
          do i=1,size(eValues)-1,1
             do j=i+1,size(eValues),1
             tem = abs(eValues(i))
@@ -183,9 +175,9 @@ module talsh_cis
             end do 
          end do
 
-         do i=1,size(eValues),1
-         print *,'CIS excitation energy',abs(eValues(i))*27.211386245988
-         end do
+!       Print CIS energy
+        n =10  !number of state print
+        call print_energy_CIS(eValues,size(eValues),n)
 
 
          ierr=talsh_tensor_destruct(id_mat_occ)
@@ -198,7 +190,7 @@ module talsh_cis
 !----------------------------------------------------------------------------------------------------------------------    
     subroutine diagoanl_cis_matrix(M,eVal)
 
-    ! set parameter needed in lapack
+!       Set parameter needed in zgeev
         integer :: lwork, info,i,j
         real(kind=8), allocatable :: work(:)
         real(kind=8), allocatable :: rwork(:)
@@ -220,8 +212,6 @@ module talsh_cis
         call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
         eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
         WORK, LWORK, rwork, INFO)
-        !print *,'INFO',info
-
 
     end subroutine diagoanl_cis_matrix
 
@@ -230,7 +220,8 @@ module talsh_cis
     subroutine get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_mat_occ, diag_mat_vir, &
         int_t, print_level)
 
-!        Written by Lucas Visscher, summer 2017
+!        Routine to get Fock matrix in MO basis. For CIS, we only need the diagonal entry (orbital energy)
+!        Written by Lucas Visscher, summer 2017 (talsh_cc)
 !        Revised by Xiang Yuan, June 2020
     use exacorr_global
 
@@ -241,7 +232,7 @@ module talsh_cis
     integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
 
 
-!        target tensors to be filled and given back to the caller
+!   target tensors to be filled and given back to the caller
     type(talsh_tens_t), intent(inout)    :: diag_mat_occ, diag_mat_vir
     type(talsh_intg_tens), intent(inout) :: int_t
 
@@ -270,10 +261,11 @@ module talsh_cis
     fv_dims(1:2) = nvir
     ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
 
-    !   get one electron integrals
+!        Get one electron integrals
     one_el_exist = exist_one_el(e_core)
 
-!           create density (identity) matrix for the occupied space
+
+!        Create density (identity) matrix for the occupied space
     ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
     ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
@@ -282,7 +274,7 @@ module talsh_cis
     h_tens(i,i) = ONE
     end do
 
-!           create fock matrix for the occupied and virtual space
+!        Create Fock Matrix for the occupied and virtual space
     ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
     call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
@@ -302,21 +294,20 @@ module talsh_cis
     end if
 
 
-!set diag element of fock matrix 
+!       Set diagonal element of Fock Matrix 
     ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
     do i=1,fo_dims(1)
         eps_occ(i)=h_tens(i,i)
-        !print *,'eps_occ(i)',eps_occ(i)
     end do
 
     ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
     do i=1,fv_dims(1)
         eps_vir(i)=h_tens(i,i)
-        !print *,'eps_vir(i)',eps_vir(i)
     end do
 
+!       Get orbital energy 
     ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
     ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
@@ -337,26 +328,25 @@ module talsh_cis
     if (print_level >0) call print_date('Fock matrix initialized')  
     end subroutine get_CIS_fockmatrix
 
-!-----------------------------------------------------------------------------------------------------------------
+
+!-------------------------------------------------------------------------------------------------------------------------------
 
 
     subroutine get_CIS_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
 
-    !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
-    !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
-    !        full integral list.
-    
-    !        Written by Lucas Visscher, summer 2017
-    !        Revised by Xiang Yuan, June 2020
-    !        This routine now only contains the integrals int_t%oooo, int_t%vovo needed in CIS.
+!            Routine to get integrals needed in CIS in the form of antisymmetric tensors.
+!            In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
+!            full integral list.
+!            Written by Lucas Visscher, summer 2017
+!            Revised by Xiang Yuan, June 2020
+!            This routine now only contains the integrals int_t%oooo, int_t%vovo needed in CIS.
     
              use exacorr_global
              use talsh_ao_to_mo
     
              integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
              integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-    !        target integral tensors to be filled and given back to the caller
-             type(talsh_intg_tens),intent(inout)  :: int_t
+             type(talsh_intg_tens),intent(inout)  :: int_t ! target integral tensors to be filled and given back to the caller
              integer, intent(in)                  :: print_level
     
              integer(INTD) :: oooo_dims(1:4),vovo_dims(1:4)
@@ -367,24 +357,24 @@ module talsh_cis
     
              integer :: nao
     
-    !        auxilliary integral tensors (only needed inside this routine)
+!            Auxilliary integral tensors (only needed inside this routine)
              type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
              integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4)
     
-    !        arrays needed to communicate with the MO integral generator
+!            Arrays needed to communicate with the MO integral generator
              integer:: nmo(4)
              integer, allocatable :: mo_list(:)
     
-    !        scalars (need to be defined as tensor types)
+!            Scalars (need to be defined as tensor types)
              type(talsh_tens_t) :: minusone_tensor
              integer(INTD)      :: minusone_dims(1)
     
              call print_date('entering integral transformation, scheme = 2')
     
-    !        Retrieve basis set information
+!            Retrieve basis set information
              nao     = get_nao()      ! number of basis functions
     
-    !        Get tensor with AO integrals
+!            Get tensor with AO integrals
              aoint_dims      = nao
              ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
              if (ierr /= 0) then
@@ -392,13 +382,13 @@ module talsh_cis
                 call quit ('error constructing aoint_tensor')
              end if
              call print_date('allocated AO integral tensor')
-    !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
+!            Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
              ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
              call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
              call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
              call print_date('finished ao integral calculation')
     
-    !        Get antisymmetric oooo tensor
+!            Get antisymmetric oooo tensor
              oooo_dims = nocc
              ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
              allocate (mo_list(4*nocc))
@@ -411,8 +401,8 @@ module talsh_cis
              deallocate (mo_list)
              call print_date('finished oooo integrals')
     
-    !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-    !        Get vovo tensor
+!            Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
+!            Get vovo tensor
              vovo_dims(1) = nvir
              vovo_dims(2) = nocc
              vovo_dims(3) = nvir
@@ -427,7 +417,7 @@ module talsh_cis
              mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
              call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
              deallocate (mo_list)
-    !        Get ovvo tensor
+!            Get ovvo tensor
              ovvo_dims(1) = nocc
              ovvo_dims(2) = nvir
              ovvo_dims(3) = nvir
@@ -444,16 +434,34 @@ module talsh_cis
              mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
              call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
              deallocate (mo_list)
-    !        Make anti-symmetrized vovo tensor
+!            Make anti-symmetrized vovo tensor
              minusone_dims(1) = 1
              ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
              ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
              ierr=talsh_tensor_destruct(ovvo_tensor)
              call print_date('finished vovo integrals')
     
-    !        Clean-up
+!            Clean-up
              ierr=talsh_tensor_destruct(aoint_tensor)
     
            end subroutine get_CIS_integrals
+
+!-----------------------------------------------------------------------------------------------------------
+    subroutine print_energy_CIS(eValues,size,n)
+        complex(kind=8), pointer :: eValues(:)
+        integer :: size, n, i  
+        print *,'         -     CIS excitation energy     -'
+        print *,'-----------------------------------------------------------------------------------------'
+        print *,'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'
+        if (n > size) then
+            print *,'wrong number of state, please revise n'
+        end if 
+
+        do i=1,n,1
+             print "(I5,(F18.5),(F23.5),(F27.5))",i,abs(eValues(i)),abs(eValues(i))*27.211386245988,abs(eValues(i))*219474.63137
+        end do
+        print *,'-----------------------------------------------------------------------------------------'
+
+    end subroutine print_energy_CIS
 
 end module
