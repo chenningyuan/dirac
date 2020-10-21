@@ -276,8 +276,6 @@ C
       NTOL      = relcc_fopr_desired_convergence
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
-!         IF (SPFR) 
-!     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF

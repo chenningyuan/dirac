@@ -2,7 +2,7 @@
 #
 # GitLab CI buildup script for the DIRAC program suite.
 #
-# Contains 32-bit and 64-bit builds, both serial and parallel 
+# Contains 32-bit and 64-bit builds, both serial and parallel
 #
 # Written by Radovan BAST, Tromso, Norway
 #            Miroslav ILIAS, Mate Bel University, Banska Bystrica, Slovakia
@@ -15,34 +15,7 @@ variables:
   GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
 
-ubuntu_serial32-check:
-  only:
-    - merge_requests
-  image: ubuntu:18.04
-  before_script:
-    - apt-get -qq update
-    - apt-get -qq -y install cmake
-    - apt-get -qq -y install gfortran
-    - apt-get -qq -y install gcc
-    - apt-get -qq -y install g++
-    - apt-get -qq -y install libomp-dev
-    - apt-get -qq -y install python python-pip
-    - pip install sphinx matplotlib sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
-  script:
-#             do the serial buildup 
-#    ...determine number of processors
-    - echo "The shell is $SHELL"
-    - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
-    - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --check --omp --cmake-options="-D ENABLE_UNIT_TESTS=ON" build_serial
-    - cd build_serial
-    - make -j $N_PROC
-    - export OMP_NUM_THREADS=2
-    - ctest -VV -j $N_PROC -E basis_input_scripted -L short # exclude long (failing) test
-#  do the documentation buildup
-    - make -j $N_PROC html
-
-ubuntu_parallel32-check:
+ubuntu_gnu_parallel32-check:
   only:
     - merge_requests
   image: ubuntu:18.04
@@ -54,14 +27,15 @@ ubuntu_parallel32-check:
     - apt-get -qq -y install g++
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
-    - apt-get -qq -y install python 
+    - apt-get -qq -y install python
   script:
 #   do the parallel buildup here
 #    ...determine number of processors
+    - gfortran --version
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
-    - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker 
+    - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker
     - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
     - ./setup --mpi --omp --check --cmake-options="-D ENABLE_UNIT_TESTS=ON" build_parallel32
     - cd build_parallel32
@@ -69,35 +43,41 @@ ubuntu_parallel32-check:
     - ldd dirac.x
     - export DIRAC_MPI_COMMAND="mpirun --allow-run-as-root -np 2"
     - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
-    - export OMP_NUM_THREADS=2
-    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted)" -L short
+    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted|polprp_ph|dft_overlap_diagnostic)" -L short
 
-
-ubuntu_parallel64-check:
+ubuntu_intel_mkl_int64-check:
   only:
     - merge_requests
   image: ubuntu:18.04
   before_script:
     - apt-get -qq update
-    - apt-get -qq -y install cmake
-    - apt-get -qq -y install gfortran
-    - apt-get -qq -y install gcc
-    - apt-get -qq -y install g++
-    - apt-get -qq -y install libomp-dev
-    - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
-    - apt-get -qq -y install python 
+    - apt-get -qq -y install cmake git
+    - apt-get -qq -y install python python-pip
+    - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
+    - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+    - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+    - echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
+    - apt-get -qq update
+    - apt-get -qq -y install intel-oneapi-dpcpp-cpp-compiler intel-oneapi-ifort intel-oneapi-mkl
+    - set +e
+    - . /opt/intel/oneapi/setvars.sh
+    - set -e
   script:
-#   do the parallel buildup here
-#    ...determine number of processors
+    - uname -a
+    - lscpu
+    - free -h -g
+    - ifort --version
+    - icx --version
+    - icpx --version
+    - echo "MKLROOT=$MKLROOT"
+    - git --version
+    - cmake --version
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
-    - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
-    - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker 
-    - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
-    - ./setup --mpi --int64 --omp --lapack=off --blas=off --cmake-options="-D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" --check build_parallel64
-    - cd build_parallel64
+    - echo "Number of processors/jobs for the serial build step is $N_PROC"
+    - ./setup --cmake-options="-D ENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=sequential  build_serial_intel
+    - cd build_serial_intel
     - make -j $N_PROC
     - ldd dirac.x
-    - export DIRAC_MPI_COMMAND="mpirun --allow-run-as-root -np 2"
-    - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
-    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted|bss_energy|lucita_short|lucita_q_corrections|atomic_x2c_2esoc_models_energy|pe_energy|pe_response|pe_exc|lucita_large)" -L short
+    - ctest -VV -j $N_PROC -E basis_input_scripted -L short # exclude long (failing) test
+

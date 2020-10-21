@@ -152,8 +152,9 @@ C  /* Deck prnred */
 C
 C     Prints out information about redundant internal coordinates.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
+#include "pi.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
@@ -217,8 +218,8 @@ C  /* Deck redvib */
 C
 C     Converts normal coordinates to redundant internal coordinates.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C
 #include "mxcent.h"
@@ -4267,12 +4268,13 @@ C     nuclei - as Roland also notes in his paper;
 C     with covalent/metallic radii we should get reasonable
 C     r_ref for all bonds)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
       LOGICAL   ORIG_LINDH
+C
       IROWI = 2
       IROWJ = 2
       IF (ATMARR(I,1) .LE. 2) IROWI = 1

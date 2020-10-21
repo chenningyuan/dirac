@@ -2088,15 +2088,13 @@ C  *  radovan bast              december 2004             07/02/2005   *
 C  *                                                                   *
 C  *********************************************************************
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "consts.h"
 C
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
-C
-C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
-      PARAMETER (DFAC = XTANG**3)
+      DOUBLE PRECISION DFAC
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -2106,6 +2104,9 @@ C
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
 C
       dimension average(maxflr)
+C
+C     conversion factor alpha/a.u. > 1.0D30*alpha/m**3
+      DFAC = XTANG**3
 C
       CALL AROUND('Electric dipole polarizability')
       WRITE(LUPRI,'(/A,F12.8,A/)') ' 1 a.u = ',DFAC,' angstrom**3'
@@ -2987,7 +2988,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2995,8 +2995,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz,
-     &           REDHZ=1E19*nmagn*nmagn/planck)
+      DOUBLE PRECISION AUTOHZ,REDHZ
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3006,6 +3005,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
+#include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -3018,6 +3018,9 @@ C
       CALL QENTER('PRP_SPNSP1')
       CALL TITLER
      &    ('DIRAC  - INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS','*',116)
+C
+      AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz
+      REDHZ=1E19*nmagn*nmagn/planck
 C
       KFRSAV = KFREE
       NSCOOR = 3*NUCDEP
@@ -3272,7 +3275,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
@@ -3644,7 +3646,6 @@ C     Written by T.Saue Feb 19 1997
 C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3652,8 +3653,7 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
-      PARAMETER (AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz,
-     &           REDHZ=1E19*nmagn*nmagn/planck)
+      DOUBLE PRECISION AUTOHZ,REDHZ
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -3662,6 +3662,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
+#include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
       DIMENSION EXPVAL(*),
      &          IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
@@ -3670,6 +3671,9 @@ C
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
 #include "ibtfun.h"
+C
+      AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz
+      REDHZ=1E19*nmagn*nmagn/planck
 C
       KFRSAV = KFREE
       CALL QENTER('PRP_DSO1')
@@ -4667,7 +4671,6 @@ C
 #include "krciprop.h"
 #include "dgroup.h"
 #include "pgroup.h"
-      PARAMETER (D3 = 3.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
       LOGICAL   DOATOM(NUCIND)
@@ -6184,7 +6187,6 @@ C    Written by MI, jan. 2003
 C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv     
 C     
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6198,9 +6200,9 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbsusc.h"
+#include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D0=0.0D0,
-     &           SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21,
-     &           CGS = SI*XFMOL*1.0D6, THRESHM = 1.0D-5)
+     &           THRESHM = 1.0D-5)
 
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &     ABCNV(NBFREQ,NLRBPT),WORK(*)
@@ -6211,9 +6213,13 @@ C***********************************************************************
       CHARACTER*6 ABC(3)
       CHARACTER*1 JCA,JCB
       INTEGER ICONVXYZ
+      DOUBLE PRECISION SI,CGS
       DATA ABC /'khi_aa','khi_bb','khi_cc'/
 
       CALL QENTER('PRP_MSUSCP')
+
+      SI = (XTANG*XTANG*ECHARGE*ECHARGE/EMASS)*1.0D-21
+      CGS = SI*XFMOL*1.0D6
 
 C=============================================================================
 C  Call routine for calculation of all remaining exp.value terms
@@ -7243,21 +7249,23 @@ C     Written by T.Enevoldsen Nov. 14 1997
 C
 CMI/Dec '04  DMATLO is reserved for future use
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-      PARAMETER (FACTOR = 1.D6*ALPHA2)
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6, SGN*3
       INTEGER Z
+      DOUBLE PRECISION FACTOR
       DIMENSION TMAT(3,3), DMAT(3,3), PMATEE(3,3), PMATEP(3,3),
      &          SYM(3,3),  ANTI(3,3), AXES(3,3), DMATLO(3,3), 
      &          DMATRE(3,3),DMATREE(3,3),DMATREP(3,3),DMATREO(3,3),
      &          PVAL(6), WRK(3), IWRK(3), ABSP(3)
 #include "chrxyz.h"
+C
+      FACTOR = 1.D6*ALPHA2
 C
       CALL DSCAL(9,FACTOR,TMAT,1)
       CALL DSCAL(9,FACTOR,DMAT,1)
@@ -7517,7 +7525,6 @@ C     PV contribution to NMR shielding
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -7531,6 +7538,7 @@ C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "codata.h"
 C
       PARAMETER ( GFERMI = 2.22254D-14 )
       PARAMETER ( STHETAW2 = 0.2319D0 )
@@ -7544,7 +7552,6 @@ C
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
-C
 C
       FACTOR = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
 C
@@ -7686,7 +7693,6 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use codata
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -7700,23 +7706,23 @@ C-----------------------------------------------------------------------
 #include "maxorb.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
+#include "codata.h"
 C
       PARAMETER ( GFERMI = 2.22254D-14 )
       PARAMETER ( STHETAW2 = 0.2319D0 )
-      PARAMETER ( AU2HZ = 6.579683920721D15 )
 C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
      &          WORK(*)
+      DOUBLE PRECISION FACTOR
 C
 #include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
 C
-C
       FACTOR = (GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
-      FACTOR = (FACTOR*AU2HZ)/(D2*PI*CVEL*CVEL)
+      FACTOR = (FACTOR*XTHZ)/(D2*PI*CVEL*CVEL)
       FACTOR = FACTOR*1.0D9
 C
       CALL AROUND('PV contribution to spin-spin coupling (in nHz)')
@@ -8042,7 +8048,6 @@ C                    MI, Sept.2006 - making functional
 C                    Agustin Aucar, November 2019
 C
 C*****************************************************************************
-      use codata
       use memory_allocator
 C
       implicit none
@@ -8050,23 +8055,16 @@ C
       integer I
 C
 #include "priunit.h"
-C
-#include "mxcent.h"
-C..parameters of maximum number of nuclei
-#include "maxaqn.h"
-C..highest angular quantum number
-#include "maxorb.h"
-C..maximum number of orbitals/basis functions
-C
+#include "mxcent.h"   ! parameters of maximum number of nuclei
+#include "maxaqn.h"   ! highest angular quantum number
+#include "maxorb.h"   ! maximum number of orbitals/basis functions
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "rotg.h"
 #include "dgroup.h"
 C
-      INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,
-     &        ISYXPR,ITRXPR,NPCOMP
-C
+      INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,ISYXPR,ITRXPR,NPCOMP
       DOUBLE PRECISION PFAC,DL,DS
 C
       CHARACTER PNAME*16, PLABEL(2)*8
@@ -8083,7 +8081,75 @@ C
 C
 C     Here we set up the operators needed for the linear reponse part
 C
-C     Define left-hand operators: -c alpha x r
+C     Define left-hand operators: L and S
+C
+C     Orbital angular momentum
+C
+       PNAME     = 'X Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
+       PLABEL(1) = 'XANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('XANGMOM ',IPROTG(1),LLRAPU,NLRAPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Y Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
+       PLABEL(1) = 'YANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('YANGMOM ',IPROTG(2),LLRAPU,NLRAPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Z Orb. ang. mom.'
+       IPTYP     = 1    ! diagonal operator
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DL   ! factor
+       PLABEL(1) = 'ZANGMOM'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('ZANGMOM ',IPROTG(3),LLRAPU,NLRAPT,
+     &                       INDXPR,MAXLLR)
+C
+C     Spin angular momentum
+C
+       PNAME     = 'X Spin ang.mom. '
+       IPTYP     = 10   ! Sigma_x
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
+C
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('XSPINMOM',IPROTG(4),LLRAPU,NLRAPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Y Spin ang.mom. '
+       IPTYP     = 11   ! Sigma_y
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('YSPINMOM',IPROTG(5),LLRAPU,NLRAPT,
+     &                       INDXPR,MAXLLR)
+C
+       PNAME     = 'Z Spin ang.mom. '
+       IPTYP     = 12   ! Sigma_z
+       NPCOMP    = 1    ! one component
+       PFAC(1)   = DS   ! factor
+       PLABEL(1) = 'OVERLAP'
+       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
+       CALL OP1IND('ZSPINMOM',IPROTG(6),LLRAPU,NLRAPT,
+     &                       INDXPR,MAXLLR)
+C
+C
+C     Define right-hand operators: (c/2) alpha x r
 C
 C     XAVECTOR
       IOP(1) = 5
@@ -8092,12 +8158,16 @@ C     YAVECTOR
 C     ZAVECTOR
       IOP(3) = 7
 C
-C
-         PFAC(1)  = -CVAL
-         PFAC(2)  = -CVAL
-         NPCOMP   = 2
+      PFAC(1)  = 0.5D0*CVAL
+      PFAC(2)  = 0.5D0*CVAL
+      NPCOMP   = 2
 C
       IF (LINEAR) THEN  ! linear molecule detected using symmetry
+C
+Ciaa   LINDET is used to record that LINEAR symmetry is used,
+C      even when in further steps it could be changed, as occur
+C      for UKB, spin-free and ZORA calculations.
+       LINDET=.TRUE.    ! save that linear symmetry is used
 C
 C        X component of B-field
 C
@@ -8107,7 +8177,7 @@ C
          PLABEL(2) = 'YDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,IPRINT)
-         CALL OP1IND('XFIELD ',IPROTG(1),LLRAPU,NLRAPT,INDXPR
+         CALL OP1IND('XFIELD ',IPROTG(7),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C
       ELSE ! if LINEAR is not TRUE
@@ -8120,7 +8190,7 @@ C
          PLABEL(2) = 'YDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,IPRINT)
-         CALL OP1IND('XFIELD ',IPROTG(1),LLRAPU,NLRAPT,INDXPR
+         CALL OP1IND('XFIELD ',IPROTG(7),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C
 C        Y component of B-field
@@ -8131,7 +8201,7 @@ C
          PLABEL(2) = 'ZDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,IPRINT)
-         CALL OP1IND('YFIELD ',IPROTG(2),LLRAPU,NLRAPT,INDXPR
+         CALL OP1IND('YFIELD ',IPROTG(8),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C
 C        Z component of B-field
@@ -8142,112 +8212,11 @@ C
          PLABEL(2) = 'XDIPLEN'
          CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &        INDXPR,ISYXPR,ITRXPR,IPRINT)
-         CALL OP1IND('ZFIELD ',IPROTG(3),LLRAPU,NLRAPT,INDXPR
+         CALL OP1IND('ZFIELD ',IPROTG(9),LLRBPU,NLRBPT,INDXPR
      &     ,MAXLLR)
 C
       END IF !LINEAR
 C
-C
-C     Define right-hand operators
-C
-      IF (LINEAR) THEN  ! linear molecule detected using symmetry
-C
-Ciaa   LINDET is used to record that LINEAR symmetry is used,
-C      even when in further steps it could be changed, as occur
-C      for UKB, spin-free and ZORA calculations.
-       LINDET=.TRUE.    ! save that linear symmetry is used
-C
-C     Orbital angular momentum
-C
-       PNAME     = 'X Orb. ang. mom.'
-       IPTYP     = 1    ! diagonal operator
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DL   ! factor
-       PLABEL(1) = 'XANGMOM'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('XANGMOM ',IPROTG(4),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-C     Spin angular momentum
-C
-       PNAME     = 'X Spin ang.mom. '
-       IPTYP     = 10   ! Sigma_x
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DS   ! factor
-       PLABEL(1) = 'OVERLAP'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('XSPINMOM',IPROTG(7),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-      ELSE ! if LINEAR is not TRUE
-C
-C     Orbital angular momentum
-C
-       PNAME     = 'X Orb. ang. mom.'
-       IPTYP     = 1    ! diagonal operator
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DL   ! factor
-       PLABEL(1) = 'XANGMOM'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('XANGMOM ',IPROTG(4),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-       PNAME     = 'Y Orb. ang. mom.'
-       IPTYP     = 1    ! diagonal operator
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DL   ! factor
-       PLABEL(1) = 'YANGMOM'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('YANGMOM ',IPROTG(5),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-       PNAME     = 'Z Orb. ang. mom.'
-       IPTYP     = 1    ! diagonal operator
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DL   ! factor
-       PLABEL(1) = 'ZANGMOM'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('ZANGMOM ',IPROTG(6),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-C     Spin angular momentum
-C
-       PNAME     = 'X Spin ang.mom. '
-       IPTYP     = 10   ! Sigma_x
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DS   ! factor
-C
-       PLABEL(1) = 'OVERLAP'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('XSPINMOM',IPROTG(7),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-       PNAME     = 'Y Spin ang.mom. '
-       IPTYP     = 11   ! Sigma_y
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DS   ! factor
-       PLABEL(1) = 'OVERLAP'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('YSPINMOM',IPROTG(8),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-C
-       PNAME     = 'Z Spin ang.mom. '
-       IPTYP     = 12   ! Sigma_z
-       NPCOMP    = 1    ! one component
-       PFAC(1)   = DS   ! factor
-       PLABEL(1) = 'OVERLAP'
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('ZSPINMOM',IPROTG(9),LLRBPU,NLRBPT,
-     &                       INDXPR,MAXLLR)
-      END IF !LINEAR
 C
 C     Print section for g-tensor
 C
@@ -8266,7 +8235,7 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       WRITE(LUPRI,'(1X,A)') '** A operators **'
       CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,3
+      DO I = 1,6
         INDOP1 = IPROTG(I)
         IF(INDOP1.GT.0) THEN
           INDXPR = LLRAPU(INDOP1)
@@ -8280,8 +8249,8 @@ C
       CALL PRSYMB(LUPRI,'-',75,0)
       WRITE(LUPRI,'(1X,A)') '** B operators **'
       CALL PRSYMB(LUPRI,'-',75,0)
-      DO I = 1,6
-        INDOP1 = IPROTG(I+3)
+      DO I = 1,3
+        INDOP1 = IPROTG(I+6)
         IF(INDOP1.GT.0) THEN
           INDXPR = LLRBPU(INDOP1)
           CALL WRIXPR(INDOP1,INDXPR)
@@ -8305,7 +8274,6 @@ C              MI, Prievidza/Odense, August 2006
 C              Agustin Aucar, November 2019
 C     
 C***********************************************************************
-      use codata
       use memory_allocator
 C
       implicit none
@@ -8327,17 +8295,16 @@ C
 #include "rotg.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "consts.h"
 C
       integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
      &                                 GEOM(:,:),MASS(:),AMASS(:)
 C
-      integer IBUFA(3),IBUFB1(3),IBUFB2(3),IA,IB1,IB2,IFREQ,JA,
-     &        JATOM,JB1,JB2,KA,KB1,KB2,NA,NB1,NB2,IABLRF_EE,IABLRF_EP
+      integer IBUFA1(3),IBUFA2(3),IBUFB(3),IA1,IA2,IB,JA1,JA2,JB,
+     &        KA1,KA2,KB,NA1,NA2,NB,JATOM,IABLRF_EE,IABLRF_EP,IFREQ
       double precision ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &                 ABCNV(NBFREQ,NLRBPT),D0
-C
-      PARAMETER (D0 = 0.0D0)
+     &                 ABCNV(NBFREQ,NLRBPT)
 C
       JATOM = NATOMS + NFLOAT
       allocate(PMATL(3,3,2)) ! L part of g-tensor for ee and ep contributions.
@@ -8360,17 +8327,30 @@ C--------------------------------------------------------------------
 C
 C     *** Extract g-tensor ***
 C
-C     The 3 -c alpha x r operators as A operators in <<A;B>> :
-      NA = 0
+C     The 3 L orbital angular momentum directions as A operators in <<A;B>> :
+      NA1 = 0
       DO I = 1,3
         IF(IPROTG(I).GT.0) THEN
-          NA = NA + 1
-          IBUFA(NA) = I
+          NA1 = NA1 + 1
+          IBUFA1(NA1) = I
         ENDIF
       END DO
-      IF (NA.LE.0) THEN
-        WRITE(LUPRI,'(2X,A,I2)') 'PRP_ROTG: NA=',NA
-        CALL QUIT('PRP_ROTG: Wrong value of NA!')
+      IF (NA1.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_ROTG: NA1=',NA1
+        CALL QUIT('PRP_ROTG: Wrong value of NA1!')
+      ENDIF
+C
+C     The 3 S spin angular momentum directions as A operators in <<A;B>> :
+      NA2 = 0
+      DO I = 1,3
+        IF(IPROTG(I+3).GT.0) THEN
+          NA2 = NA2 + 1
+          IBUFA2(NA2) = I
+        ENDIF
+      END DO
+      IF (NA2.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_ROTG: NA2=',NA2
+        CALL QUIT('PRP_ROTG: Wrong value of NA2!')
       ENDIF
 C
 Ciaa   As in the current implementation UKB, spin-free and ZORA
@@ -8380,30 +8360,17 @@ C      LINDET allows to recover LINEAR symmetry defined in DEF_ROTG
 C      if it is lost due to the use of UKB, SF or ZORA functionalities
       IF ((URKBAL.or.SPINFR.or.ZORA).and.LINDET) LINEAR=.TRUE.
 C
-C     The 3 L orbital angular momentum directions as B operators in <<A;B>> :
-      NB1 = 0
-      DO I = 1,3
-        IF(IPROTG(I+3).GT.0) THEN
-          NB1 = NB1 + 1
-          IBUFB1(NB1) = I
-        ENDIF
-      END DO
-      IF (NB1.LE.0) THEN
-        WRITE(LUPRI,'(2X,A,I2)') 'PRP_ROTG: NB1=',NB1
-        CALL QUIT('PRP_ROTG: Wrong value of NB1!')
-      ENDIF
-C
-C     The 3 S spin angular momentum directions as B operators in <<A;B>> :
-      NB2 = 0
+C     The 3 (c/2) alpha x r operators as B operators in <<A;B>> :
+      NB = 0
       DO I = 1,3
         IF(IPROTG(I+6).GT.0) THEN
-          NB2 = NB2 + 1
-          IBUFB2(NB2) = I
+          NB = NB + 1
+          IBUFB(NB) = I
         ENDIF
       END DO
-      IF (NB2.LE.0) THEN
-        WRITE(LUPRI,'(2X,A,I2)') 'PRP_ROTG: NB2=',NB2
-        CALL QUIT('PRP_ROTG: Wrong value of NB2!')
+      IF (NB.LE.0) THEN
+        WRITE(LUPRI,'(2X,A,I2)') 'PRP_ROTG: NB=',NB
+        CALL QUIT('PRP_ROTG: Wrong value of NB!')
       ENDIF
 C
 C--------------------------------------------------------------------
@@ -8447,36 +8414,33 @@ C
         CALL DZERO(PMATL,2*9)
         CALL DZERO(PMATS,2*9)
 C
-        DO IB1 = 1,NB1
-          JB1 = IBUFB1(IB1)
-          KB1 = IPROTG(3+JB1)
-          DO IA = 1,NA
-            JA = IBUFA(IA)
-            KA = IPROTG(JA)
+        DO IB = 1,NB
+          JB = IBUFB(IB)
+          KB = IPROTG(6+JB)
+          DO IA1 = 1,NA1
+            JA1 = IBUFA1(IA1)
+            KA1 = IPROTG(JA1)
 C           First extract the e-e contribution
             IF (.NOT. XLR_SKIPEE)
-     &         PMATL(JB1,JA,1) = ABLRF(IFREQ,KA,KB1,IABLRF_EE)
+     &         PMATL(JB,JA1,1) = ABLRF(IFREQ,KA1,KB,IABLRF_EE)
 C           then extract the e-p contribution
             IF (.NOT. XLR_SKIPEP)
-     &         PMATL(JB1,JA,2) = ABLRF(IFREQ,KA,KB1,IABLRF_EP)
+     &         PMATL(JB,JA1,2) = ABLRF(IFREQ,KA1,KB,IABLRF_EP)
           ENDDO
-        ENDDO
 C
-        DO IB2 = 1,NB2
-          JB2 = IBUFB2(IB2)
-          KB2 = IPROTG(6+JB2)
-          DO IA = 1,NA
-            JA = IBUFA(IA)
-            KA = IPROTG(JA)
+          DO IA2 = 1,NA2
+            JA2 = IBUFA2(IA2)
+            KA2 = IPROTG(3+JA2)
 C           First extract the e-e contribution
             IF (.NOT. XLR_SKIPEE)
-     &         PMATS(JB2,JA,1) = ABLRF(IFREQ,KA,KB2,IABLRF_EE)
+     &         PMATS(JB,JA2,1) = ABLRF(IFREQ,KA2,KB,IABLRF_EE)
 C           then extract the e-p contribution
             IF (.NOT. XLR_SKIPEP)
-     &         PMATS(JB2,JA,2) = ABLRF(IFREQ,KA,KB2,IABLRF_EP)
+     &         PMATS(JB,JA2,2) = ABLRF(IFREQ,KA2,KB,IABLRF_EP)
           ENDDO
         ENDDO
       END DO
+C
 C
       WRITE (LUPRI,'(/,A,18X,3F20.15)')
      &    ' Gauge origin (a.u.):', (GAGORG(I),I=1,3)
@@ -8518,16 +8482,14 @@ C
 #include "rotg.h"
 #include "ibtfun.h"
 #include "priunit.h"
+#include "consts.h"
 C
       double precision GEOM,CMXYZ,ORIGIN
 C
       DIMENSION GEOM(3*(NATOMS+NFLOAT)),CMXYZ(3),ORIGIN(3)
 C
       integer IX,IY,IZ,IPRINT,ISYMOP,KK
-C
-      double precision XCOOR1,YCOOR1,ZCOOR1,XCOOR2,YCOOR2,ZCOOR2,D0
-
-      PARAMETER (D0 = 0.0D0)
+      double precision XCOOR1,YCOOR1,ZCOOR1,XCOOR2,YCOOR2,ZCOOR2
 C
       IF (IPRINT.GE.5) THEN
        CALL HEADER(
@@ -8589,8 +8551,6 @@ C     Agustin Aucar
 C     November 2019
 C
 C***********************************************************************
-      use codata
-C
       implicit none
 C
       integer I,J
@@ -8607,19 +8567,19 @@ C
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbham.h"
+#include "codata.h"
+#include "consts.h"
 C
-      integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,KATOM,NUMIS,
-     &        ICOOR,NATTYP
+      integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,
+     &        KATOM,NUMIS,ICOOR,NATTYP
 C
       double precision GEOM(KATOM,3),AMASS(KATOM),ANGUMOM(3),
      &                 TINERT(9),OMEGA(3),EIGVAL(3),EIGVEC(3,3),
-     &                 PMATL(3,3,2),PMATS(3,3,2),D1,GFATOT,
+     &                 PMATL(3,3,2),PMATS(3,3,2),GFATOT,
      &                 GFAN,GFALR,GFALRLEE,GFALRLEP,GFALRSEE,
      &                 GFALRSEP,GTRANT(3,3),GTRANN(3,3),
      &                 GTRANP(3,3),GTRANPLEE(3,3),GTRANPLEP(3,3),
      &                 GTRANPSEE(3,3),GTRANPSEP(3,3),CONST,DISOTP
-C
-      PARAMETER (D1 = 1.0D0)
 C
       LOGICAL PLANAR,LINMOL
 C
@@ -8719,10 +8679,10 @@ C     Linear molecule detected using symmetry
 C
       IF (LINEAR) THEN
         GFAN     = GFANUC(1,1)*PMASS*EIGVAL(3)
-        GFALRLEE = PMATL(1,1,1)*PMASS*EIGVAL(3)
-        GFALRLEP = PMATL(1,1,2)*PMASS*EIGVAL(3)
-        GFALRSEE = PMATS(1,1,1)*PMASS*EIGVAL(3)
-        GFALRSEP = PMATS(1,1,2)*PMASS*EIGVAL(3)
+        GFALRLEE = PMATL(1,1,1)*PMASS*EIGVAL(3)*(-D2)
+        GFALRLEP = PMATL(1,1,2)*PMASS*EIGVAL(3)*(-D2)
+        GFALRSEE = PMATS(1,1,1)*PMASS*EIGVAL(3)*(-D2)
+        GFALRSEP = PMATS(1,1,2)*PMASS*EIGVAL(3)*(-D2)
 C       Total linear response contribution to GFA
         GFALR=GFALRLEE+GFALRLEP+GFALRSEE+GFALRSEP
 C       Total molecular g-factor
@@ -8762,13 +8722,13 @@ C
             GTRANN(I,J)    = GTRANN(I,J)    + EIGVEC(IX,I)
      &                   *GFANUC(JX,JY)*EIGVEC(IY,J)*CONST
             GTRANPLEE(I,J) = GTRANPLEE(I,J) + EIGVEC(IX,I)
-     &                   *PMATL(JX,JY,1)*EIGVEC(IY,J)*CONST
+     &                   *PMATL(JX,JY,1)*EIGVEC(IY,J)*CONST*(-D2)
             GTRANPLEP(I,J) = GTRANPLEP(I,J) + EIGVEC(IX,I)
-     &                   *PMATL(JX,JY,2)*EIGVEC(IY,J)*CONST
+     &                   *PMATL(JX,JY,2)*EIGVEC(IY,J)*CONST*(-D2)
             GTRANPSEE(I,J) = GTRANPSEE(I,J) + EIGVEC(IX,I)
-     &                   *PMATS(JX,JY,1)*EIGVEC(IY,J)*CONST
+     &                   *PMATS(JX,JY,1)*EIGVEC(IY,J)*CONST*(-D2)
             GTRANPSEP(I,J) = GTRANPSEP(I,J) + EIGVEC(IX,I)
-     &                   *PMATS(JX,JY,2)*EIGVEC(IY,J)*CONST
+     &                   *PMATS(JX,JY,2)*EIGVEC(IY,J)*CONST*(-D2)
 C           Total linear response contribution to NSR
             GTRANP(I,J) = GTRANPLEE(I,J) + GTRANPLEP(I,J)
      &                   + GTRANPSEE(I,J) + GTRANPSEP(I,J)
@@ -9204,19 +9164,21 @@ C     Output routine for optical rotation, based on LNROUT from DALTON
 C     Written by T. Saue in collaboration with K. Ruud Feb 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0,
-     &          FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4))
+      PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0)
+      DOUBLE PRECISION FACTOR
 #include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
+#include "codata.h"
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
       EXTERNAL TOTMASS
+C
+      FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
 C
       IF(LONDON) THEN
         CALL AROUND('Optical rotation (London)')
@@ -9285,8 +9247,7 @@ C
 #include "dcbnmr.h"
 #include "chrxyz.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7,chcomp*1
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
-      integer a, b, c
+      DIMENSION WORK(LWORK)
 #include "chrnos.h"
 #include "ibtfun.h"
 #include "dcbxpr.h"
@@ -9789,7 +9750,7 @@ C***********************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER (D3 = 3.0D0)
+#include "consts.h"
 #include "nuclei.h"
 #include "symmet.h"
       LOGICAL    DOATOM(*)
@@ -9868,7 +9829,6 @@ C
 C     Written by Agustin Aucar and Trond Saue Sep 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use codata
       use memory_allocator
 C
       implicit none
@@ -9876,24 +9836,17 @@ C
       integer I,J
 C
 #include "priunit.h"
-C
-#include "mxcent.h"
-C..parameters of maximum number of nuclei
-#include "maxaqn.h"
-C..highest angular quantum number
-#include "maxorb.h"
-C..maximum number of orbitals/basis functions
-C
+#include "mxcent.h"   ! parameters of maximum number of nuclei
+#include "maxaqn.h"   ! highest angular quantum number
+#include "maxorb.h"   ! maximum number of orbitals/basis functions
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "chrxyz.h"
 #include "dcbexp.h"
-#include "dcbprp.h"
-c...common block for expectation values
-#include "dcbxlr.h"
-C...common block for linear reponse
+#include "dcbprp.h"   ! common block for expectation values
+#include "dcbxlr.h"   ! common block for linear reponse
 #include "dcbxpr.h"
 #include "dcbgen.h"
 #include "spinro.h"
@@ -10219,7 +10172,6 @@ C
 C     Written by Agustin Aucar and T. Saue sep 2013
 C
 C***********************************************************************
-      use codata
       use memory_allocator
 C
       implicit none
@@ -10791,8 +10743,6 @@ C     Agustin Aucar and Trond Saue
 C     June 2014
 C
 C***********************************************************************
-      use codata
-C
       implicit none
 C
       integer I,J
@@ -10809,6 +10759,7 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbham.h"
+#include "codata.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -10828,10 +10779,12 @@ C
      &                 GTRANP(3,3,KATOM),GTRANNEQ(3,3,KATOM),
      &                 GTRANTNEQ(3,3,KATOM)
 C
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, FACPPM = ALPHA2/2.D0*1.0D6,
-     &           FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL PLANAR,LINMOL,DOATOM(NUCIND)
+C
+      FACPPM = ALPHA2/2.D0*1.0D6
+      FAC = ALPHA2/(2.D0*PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3
 C
 C
 Ciaa  Nuclear rotational angular momentum could be defined here to obtain Omega afterwards
