@@ -905,7 +905,7 @@ module exacorr_cc
           ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
           ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)
 
-          call print_iteration(iccsd,t_convergence,ccsd_energy)
+          call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
           if (t_convergence .lt. t_target_precision) exit
          end do
 
