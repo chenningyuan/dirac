@@ -95,7 +95,7 @@ module talsh_mp2no
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
 
-!       print *,'occupation number_order',NO_OCC_1     
+       print *,'Occupation number_order',NO_OCC_1     
 !       print *, '!--------------------------------------------------------------'
 !       do i=1,size(NOs_AO_tens,2),1 
 !               print *,'reduced natural orbital in AO basis',NOs_AO_tens(:,i)
