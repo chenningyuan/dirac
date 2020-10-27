@@ -629,7 +629,7 @@ module fde_evaluators_dirac
                     BUF,NDIMENSION,2,DOLND,0)
         CALL GETRHO(gf%n(i),0,GAO,DMAT,BUF)
         CALL GETGRHO(gf%gn(1:3,i),0,GAO,GAO1,DMAT,BUF)
-        CALL GETLRHO(gf%hn(1,i),gf%hn(1,i),gf%hn(1,i), &
+        CALL GETLRHO(gf%hn(1,i),gf%hn(2,i),gf%hn(3,i), &
                      gf%hn(4,i),gf%hn(5,i),gf%hn(6,i), &
                      GAO,GAO1,GAO2,DMAT,BUF)
 
