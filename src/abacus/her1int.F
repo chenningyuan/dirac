@@ -4766,7 +4766,8 @@ C
 #include "lmns.h"
 #include "symmet.h"
 #include "nuclei.h"
-      CTRL_PRINT=.FALSE.
+      !CTRL_PRINT=.FALSE.
+      CTRL_PRINT=.TRUE.
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA

@@ -2808,26 +2808,30 @@ C  /* Deck frmtyp */
       DO 100 IREP = 0, MAXREP
          DO 200 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               !IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
             ! X component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'XGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-                  INTREP(ITYP) = IEOR(IREP,ISYMAX(1,1))
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(1,1))
+                  !INTREP(ITYP) = IEOR(IREP,ISYMAX(1,1))
             ! Y component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'YGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   INTREP(ITYP) = IBTXOR(IREP,ISYMAX(2,1))
+                  !INTREP(ITYP) = IEOR(IREP,ISYMAX(2,1))
             ! Z component
                   ITYP = ITYP + 1
                   LABINT(ITYP) = 'ZGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   INTREP(ITYP) = IBTXOR(IREP,ISYMAX(3,1))
-               IF (IPRINT.GE.6) THEN
+                  !INTREP(ITYP) = IEOR(IREP,ISYMAX(3,1))
+               IF (IPRINT.GE.0) THEN
                   WRITE(LUPRI,'(A,I3,1X,A,A8,1X,A,I3,A,I2)')
      &            "GRDFRMTYP: ITYP=",ITYP,"LABINT(ITYP)=",LABINT(ITYP),
      &            "INTREP(ITYP)=",INTREP(ITYP)
