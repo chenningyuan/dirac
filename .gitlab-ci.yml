@@ -31,12 +31,15 @@ ubuntu_gnu_parallel32-check:
     - apt-get -qq update
     - apt-get -qq -y install git
     - apt-get -qq -y install cmake
-    - apt-get -qq -y install gfortran
-    - apt-get -qq -y install gcc
-    - apt-get -qq -y install g++
+    - apt-get -qq -y install gfortran-8
+    - apt-get -qq -y install gcc-8
+    - apt-get -qq -y install g++-8
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
     - apt-get -qq -y install python
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 700
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+    - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 800
   script:
 #   do the parallel buildup here
 #    ...determine number of processors
