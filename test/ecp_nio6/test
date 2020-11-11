@@ -8,6 +8,8 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
+os.environ['DIRAC_MPI_COMMAND'] = ""
+
 f = Filter()
 f.add(string = 'Total energy                             :',
       rel_tolerance = 1.0e-5)
