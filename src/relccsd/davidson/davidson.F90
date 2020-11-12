@@ -1343,14 +1343,14 @@ contains
            if (left) then
               norm = vector_norm(vL(:,i))
               if (dabs(norm - 1.0d0).gt.tolerance) then
-                 print *, "Warning! LHS subspace eigenvector",i,"not normalized(",norm,"), normalizing it."
+                 print '(a,1i4,a,1e14.6,a)', "Warning! LHS subspace eigenvector",i,"not normalized(",norm,"), normalizing it."
                  if (norm.gt.safe_minimum) norm = 1.0d0/norm 
                  vL(:,i) = norm*vL(:,i)
               end if
            else
               norm = vector_norm(vR(:,i))
               if (dabs(norm - 1.0d0).gt.tolerance) then
-                 print *, "Warning! RHS subspace eigenvector",i,"not normalized(",norm,"), normalizing it."
+                 print '(a,1i4,a,1e14.6,a)', "Warning! RHS subspace eigenvector",i,"not normalized(",norm,"), normalizing it."
                  if (norm.gt.safe_minimum) norm = 1.0d0/norm
                  vR(:,i) = norm*vR(:,i)
               end if
