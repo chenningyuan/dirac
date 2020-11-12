@@ -28,9 +28,6 @@ f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
 
-if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==''):
-    os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n 4 "
-
 os.system('ulimit -s unlimited')
 
 test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
