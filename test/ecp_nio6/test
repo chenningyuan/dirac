@@ -13,8 +13,6 @@ if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==
 else:
   os.environ['DIRAC_MPI_COMMAND'] = " mpirun --allow-run-as-root -np 1 "
 
-#os.environ['OMPI_MCA_btl'] = '^openib'
-
 f = Filter()
 f.add(string = 'Total energy                             :',
       rel_tolerance = 1.0e-5)
