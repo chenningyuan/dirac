@@ -1328,8 +1328,35 @@ contains
         end if
         deallocate(work)
 
+        call renormalize_evectors(left, vectors_L, eVectorsR, eVectorsL)
+
     end subroutine
  
+    subroutine renormalize_evectors(left, nvectors, vR, vL)
+        logical, intent(in) :: left
+        integer, intent(in) :: nvectors
+        real(kind=8), intent(inout) :: vR(:,:), vL(:,:) 
+        integer :: vectors_L, i
+        real(kind=8) :: norm, tolerance = 1.0d-10
+
+        do i = 1, nvectors
+           if (left) then
+              norm = vector_norm(vL(:,i))
+              if (dabs(norm - 1.0d0).gt.tolerance) then
+                 print *, "Warning! LHS subspace eigenvector",i,"not normalized(",norm,"), normalizing it."
+                 if (norm.gt.safe_minimum) norm = 1.0d0/norm 
+                 vL(:,i) = norm*vL(:,i)
+              end if
+           else
+              norm = vector_norm(vR(:,i))
+              if (dabs(norm - 1.0d0).gt.tolerance) then
+                 print *, "Warning! RHS subspace eigenvector",i,"not normalized(",norm,"), normalizing it."
+                 if (norm.gt.safe_minimum) norm = 1.0d0/norm
+                 vR(:,i) = norm*vR(:,i)
+              end if
+           end if
+        end do
+    end subroutine
 
     subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym, projector)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
