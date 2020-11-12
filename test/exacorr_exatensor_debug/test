@@ -27,9 +27,6 @@ f.add(from_string = 'Final L1amp',
 
 os.system('ulimit -s unlimited')
 
-if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==''):
-    os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n 4 "
-
 test.run(['exacc.inp'], ['H2O_nosym.mol'], f,"--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)
