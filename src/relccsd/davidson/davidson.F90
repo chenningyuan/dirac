@@ -1317,6 +1317,7 @@ contains
             call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                         eValues(1,:), eValues(2,:), eVectorsL, vectors_L, eVectorsR, &
                         vectors_L, WORK, LWORK, INFO)
+            call check_for_complex_values_vectors(left, vectors_N, vectors_L, eValues, eVectorsL, eVectorsR)
         end if
 !       print *, 'in small_solve_eigenvalue: info',info
         if (info .gt. 0) then
@@ -1331,6 +1332,44 @@ contains
         call renormalize_evectors(left, vectors_L, eVectorsR, eVectorsL)
 
     end subroutine
+
+! for the moment this routine only checks whether we found a complex conjugate pair
+! of eigenvalues and prints a warning. still to thing about how to handle the complex
+! eigenvectors if we are in real algebra.
+    subroutine check_for_complex_values_vectors(left,nrows,nvectors,eV,vL,vR)
+        logical, intent(in) :: left
+        integer, intent(in) :: nrows, nvectors
+        real(kind=8), intent(inout) :: vR(:,:), vL(:,:), eV(:,:)
+        integer :: i, j
+        real(kind=8) :: norm, tolerance = 1.0d-10
+        real(kind=8), allocatable :: complex_eigenvectors(:,:)
+        integer, allocatable :: complex_eigenvalue_pairs(:)
+
+        allocate(complex_eigenvalue_pairs(nvectors))
+        complex_eigenvalue_pairs = 0
+
+!       allocate(complex_eigenvectors(nrows,2))
+!       complex_eigenvectors = 0.0d0
+
+! expected results from dgeev: 
+! If the j-th eigenvalue is real, then v(j) = VR(:,j), the j-th column of VR.
+! If the j-th and (j+1)-st eigenvalues form a complex conjugate pair, then 
+!   v(j)   = VR(:,j) + i*VR(:,j+1) 
+!   v(j+1) = VR(:,j) - i*VR(:,j+1).
+
+        do i = 1, nvectors - 1
+           j = i + 1
+           if ((dabs(eV(2,i)).gt.tolerance).and.(complex_eigenvalue_pairs(j).ne.0)) then
+              complex_eigenvalue_pairs(i) = j
+              complex_eigenvalue_pairs(j) = i
+              write (davidson_output_file_unit,'(a,1i4,a,1i4,a,2e14.6,a,2e14.6,a)') &
+              "Warning! Eigenvalues",i," and ",j," form c.c. pair: (", &
+              eV(1,i),eV(2,i),"), (",eV(1,j),eV(2,j),")"
+           end if
+        end do
+
+        deallocate(complex_eigenvalue_pairs)
+    end subroutine 
  
     subroutine renormalize_evectors(left, nvectors, vR, vL)
         logical, intent(in) :: left
