@@ -203,9 +203,10 @@ C
       if (exa_input%talsh) then
          if (exa_input%mp2no) then
               call talsh_mp2no_driver (exa_input)
-         else
-              call talsh_cc_driver (exa_input)
-         end if 
+! if we do MP2NOs we reinitialize global data, which in essence means to replace DFCOEF by the MP2NO file
+              call initialize_global_data
+         end if
+         call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
          ! slaves need the same info to get started

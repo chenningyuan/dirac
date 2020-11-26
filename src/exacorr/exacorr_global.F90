@@ -71,7 +71,7 @@ module exacorr_global
              integer :: my_MPI_rank
 #endif
              integer :: ierr, scf_file
-             logical :: tobe
+             logical :: tobe, tobe_mp2no, tobe_dfcoef, tobe_respect
 
 #if defined (VAR_MPI)
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -81,23 +81,33 @@ module exacorr_global
                 return
              end if
 #endif
+             ! our preferred coefficent file is the MP2 NO one, if present we use it before DFCOEF 
+             inquire (file='MP2NOs_AO',exist=tobe_mp2no)
+             inquire (file='DFCOEF',exist=tobe_dfcoef)
+             inquire (file='RSD_MOS',exist=tobe_respect)
+             ierr = -1
+             if (tobe_mp2no) then
+               scf_file = 2
+               call print_date ("Found Dirac MP2 natural orbitals file. using it.")
+               call read_from_dirac (ao_basis,cspinor_all,'MP2NOs_AO',ierr)
+             else if (tobe_dfcoef) then
              ! read MO coefficients and ao basis set information
-             inquire (file='DFCOEF',exist=tobe)
-             if (tobe) then
                 scf_file = 0
+                call print_date ("Found Dirac SCF orbitals file. using it.")
                 call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
                 if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
                   if (exa_input%level_shift.lt.1.0D-10) then
                     call quit ('Open shell computations with DIRAC and EXACORR require level shift (LSHIFT)')
                   end if
                end if
-             else
-                inquire (file='RSD_MOS',exist=tobe)
-                if (tobe) then
+              else if (tobe_respect) then
                    scf_file = 1
+                   call print_date ("Found ReSpect SCF orbitals file. using it.")
                    call read_from_respect (ao_basis,cspinor_all,ierr)
-                end if
-             end if
+              end if
+
+
+
 
              if (ierr == 0) then
                 call print_date ("retrieved basis set information")

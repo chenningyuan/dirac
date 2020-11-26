@@ -105,9 +105,8 @@
             if (mytid == 0) then
                   if (exa_input%mp2no) then
                     call talsh_mp2no_driver (exa_input)
-                  else
-                    call talsh_cc_driver (exa_input)
-                 end if
+                  end if
+                  call talsh_cc_driver (exa_input)
              end if
  
          else

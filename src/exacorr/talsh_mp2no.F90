@@ -444,7 +444,7 @@ module talsh_mp2no
   
    !     read information of from DFCOEF
    !     we only need ao_basis
-         call read_from_dirac(ao_basis,cspinor_hf,file_in_name,ierr)
+         call mp2no_read_from_dirac(ao_basis,cspinor_hf,file_in_name,ierr)
 
   
          nao = size(NOs_MO,1)
@@ -468,9 +468,10 @@ module talsh_mp2no
 
 
          cspinor=cspinor_hf
-         do i = noo+1, nmo
-            cspinor%energy(i)=NO_OCC(i-noo)
-         end do
+
+!         do i = noo+1, nmo
+!            cspinor%energy(i)=NO_OCC(i-noo)
+!         end do
 
          do i = 1, nao
             do j = noo+1, nmo
@@ -484,10 +485,10 @@ module talsh_mp2no
             enddo
          enddo
 
-         print *,'show occupation number of cspinor'
-         do i = 1, nmo
-            print "(a,2e14.6,$)","    ",cspinor%energy(i)
-         end do
+!         print *,'show occupation number of cspinor'
+!         do i = 1, nmo
+!            print "(a,2e14.6,$)","    ",cspinor%energy(i)
+!         end do
 
          print *,'show no coeff of cspinor'
          do i = 1, nao
@@ -558,8 +559,6 @@ module talsh_mp2no
          deallocate(priccf)
   
          close (lucoef,status='KEEP')
-  
-
 
          return
 
@@ -573,7 +572,7 @@ module talsh_mp2no
 
 
 !---------------------------------------------------------------------------------------------------------------------------------------
-        subroutine read_from_dirac (ao_basis,cspinor,file_name,ierr)
+        subroutine mp2no_read_from_dirac (ao_basis,cspinor,file_name,ierr)
 
          use exacorr_mo
          use exacorr_datatypes
@@ -781,7 +780,7 @@ module talsh_mp2no
          close (lucoef,status='KEEP')
          return
   
-         end subroutine read_from_dirac
+         end subroutine mp2no_read_from_dirac
 
 !----------------------------------------------------------------------------------------------------------------------------------------------
         subroutine diagoanl_DMP2_matrix(M,eVal,eVectorsR)
