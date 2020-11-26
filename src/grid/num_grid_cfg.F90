@@ -35,7 +35,9 @@ module num_grid_cfg
    logical,       public :: num_grid_cfg_multigrid               = .false.
    logical,       public :: num_grid_cfg_no_pruning              = .false.
    logical,       public :: num_grid_cfg_zipgrid                 = .true.
+   logical,       public :: num_grid_cfg_grasp                   = .false.   
    real(8),       public :: num_grid_cfg_radint                  = 1.0d-13
+   real(8),       public :: num_grid_cfg_screen                  = 0.0D0
 
    private
 

@@ -117,8 +117,9 @@ Tutorials and walkthrus
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
   
-* **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
+* **Orbital manipulations:**
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` |
+  :doc:`Atomic shift operator <tutorials/atomic_shift/tutorial>`   
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`

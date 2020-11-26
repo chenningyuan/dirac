@@ -1708,6 +1708,21 @@
       ELSEIF(PLABEL(1:7).EQ.'FDEVEMB') THEN
         CLASLB = 'FDEVEMB'
         IORDER   = 0
+      ELSEIF(PLABEL(1:7).EQ.'UEHLING') THEN
+        CLASLB = 'UEHLING'
+        IORDER   = 0
+      ELSEIF(PLABEL(2:7).EQ.'SEFGMG') THEN
+        CLASLB = 'SEFGMG '
+        IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGHF') THEN
+        CLASLB = 'SEFGHF'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:6).EQ.'SEFGLF') THEN
+        CLASLB = 'SEFGLF'
+        IORDER   = 0
+      ELSEIF(PLABEL(1:4).EQ.'SEPZ') THEN
+        CLASLB = 'SEPZ'
+        IORDER   = 0
       ELSEIF(PLABEL(1:7).EQ.'BETAMAT') THEN
         CLASLB = 'BETAMAT'
         IORDER   = 0
@@ -2178,6 +2193,60 @@
         DO I = 1,NUCIND
           DOATOM(I) = .TRUE.
         ENDDO
+      ELSEIF(CLASLB.EQ.'UEHLING') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'UEHLING '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGMG ') THEN
+        NOPTYP    = 3
+        LABINT(1) = 'XSEFGMG '
+        LABINT(2) = 'YSEFGMG '
+        LABINT(3) = 'ZSEFGMG '        
+        INTREP(1) = ISYMAX(1,1)
+        INTREP(2) = ISYMAX(2,1)
+        INTREP(3) = ISYMAX(3,1)
+        SQUARE    = .FALSE.
+        ANTI      = .TRUE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGHF') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGHF  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEFGLF') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEFGLF  '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
+      ELSEIF(CLASLB.EQ.'SEPZ') THEN
+        NOPTYP    = 1
+        LABINT(1) = 'SEPZ    '
+        INTREP(1) = 0
+        SQUARE    = .FALSE.
+        ANTI      = .FALSE.
+        IORDER    = 0
+        DO I = 1,NUCIND
+          DOATOM(I) = .TRUE.
+        ENDDO
       ELSEIF(CLASLB.EQ.'BETAMAT') THEN
         NOPTYP    = 1
         LABINT(1) = 'BETAMAT '
@@ -2234,6 +2303,7 @@
         IF(NPRPLBL.GT.MAXPRPLBL) THEN
           CALL QUIT('XPLDEF:Redimension MAXPRPLBL !')
         ENDIF
+        !sunaga
         IF(PLABEL.EQ.LABINT(ICMP)) THEN
         !mi: the only place to reset LABERR, more printout needed for "else" branch
           LABERR = .FALSE.
@@ -2512,6 +2582,7 @@
 !
       ISYM = IPRPSYM(INDXPR)
       ITIM = IPRPTIM(INDXPR)
+!      write(*,*)"PRPNAM,REP,TTYP",PRPNAM(INDXPR),REP(ISYM-1),TTYP(ITIM)!sunaga
       IF(IND.EQ.0) THEN
         WRITE(LUPRI,'(6X,A16,5X,A3,5X,A2)')                             &
      &    PRPNAM(INDXPR),REP(ISYM-1),TTYP(ITIM)

@@ -1018,7 +1018,6 @@ contains
                      ao,                               &
                      buffer                            &
                     )
-
          call xc_contribution_blas3(                          &
                                     use_gga,                  &
                                     use_gga_qr,               &

@@ -498,8 +498,6 @@ C  /* Deck denst1 */
      &                   CMO,LRC,LCC,JVEC,NVEC,NBAS)
 C*****************************************************************************
 C
-C     Construct density matrix for fermion corep IFRP
-C
 C     DMAT:= alpha*CMO*CMO(H) +  beta*DMAT
 C
 C     Written by T.Saue Mar 3 1995

@@ -5471,6 +5471,43 @@ C.....Say hello
       IF(IPRINT.GE.1) THEN
         CALL HEADER('Atomic start',-1)
       ENDIF
+      CALL ATOMIC_DENS(DMAT,MAXATOM,MXOPEN,ATOMFIL,VECATOM,
+     &     NVECATOM,OCCATOM,IPRINT,WORK,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE ATOMIC_DENS(DMAT,MATOM,MSHEL,ATOMFIL,VECATOM,
+     &     NVECATOM,SHELLFAC,IPRINT,WORK,KFREE,LFREE)
+C***********************************************************************
+C
+C     Routine for atomic start
+C     NNEG - number of positronic solutions
+C     NPOS - number of electronic solutions
+C     NBAS - number of AO-basis functions
+C
+C***********************************************************************
+      use quaternion_algebra
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "mxcent.h"
+C
+#include "dcbdhf.h"
+#include "nuclei.h"
+#include "dcbham.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      CHARACTER*6  ATOMFIL(MATOM)
+      CHARACTER*72 VECATOM(MSHEL,MATOM)
+      INTEGER      NVECATOM(MATOM)
+      REAL*8       SHELLFAC(MSHEL,MATOM)
+      DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
+C.....Local variables
+      LOGICAL TOBE
+      CHARACTER TEXT*74
+      INTEGER NNEG,NPOS,NBAS
+C
+      KFRSAV=KFREE
 C.....Initialize buffer density matrix
       NDMAT=NTBAS(0)*NTBAS(0)*NZ
       NDBUF=NTBAS(0)*NTBAS(0)*NZC1
@@ -5481,6 +5518,7 @@ C.....Loop over atomic types
       CALL MEMGET2('INTE','INFO',KINF,NTBAS(0),WORK,KFREE,LFREE)
       ICENT = 1
       DO IATOM = 1,NONTYP
+      IF(NVECATOM(IATOM).GT.0) THEN
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ICENT,1,-1)
         IF (MBAS == 0) CYCLE
@@ -5488,21 +5526,21 @@ C.......Read atomic coefficients in C1 format
         INQUIRE(FILE=ATOMFIL(IATOM),EXIST=TOBE)         
         IF(.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,A6,A)') 
-     &     'ATOMIC_START: Atomic coefficient file ',ATOMFIL(IATOM),
+     &     'ATOMIC_DNES: Atomic coefficient file ',ATOMFIL(IATOM),
      &     ' not found !'
            CALL QUIT
-     &     ('ATOMIC_START: Atomic coefficient file not found !')
+     &     ('ATOMIC_DENS: Atomic coefficient file not found !')
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
         READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
-     &     'ATOMIC_START: ',
+     &     'ATOMIC_DENS: ',
      &     'Wrong number of basis function for atomic type ',IATOM,
      &     'Correct number          : ', MBAS,
      &     'Number read from ',ATOMFIL(IATOM),' : '  ,NBAS
            CALL QUIT
-     &     ('ATOMIC_START: Wrong number of basis functions !')
+     &     ('ATOMIC_DENS: Wrong number of basis functions !')
         ENDIF
         IF(IPRINT.GE.1) THEN
           WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
@@ -5544,7 +5582,7 @@ C.........extract selected vectors from CMO and place in CBUF
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
 C.........Generate contribution to atomic density matrix from this shell
-          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,OCCATOM(ISHELL,IATOM),
+          CALL DENST1(WORK(KADE),NBAS,NBAS,NZC1,SHELLFAC(ISHELL,IATOM),
      &                FAC,WORK(KCBUF),NBAS,NSEL,1,NSEL,NBAS)
           IF(IPRINT.GE.4) THEN
             WRITE(LUPRI,'(A,I3)') '* Density matrix from atom ',IATOM
@@ -5552,7 +5590,7 @@ C.........Generate contribution to atomic density matrix from this shell
      &                 NZC1,IPQTOQ(1,0),LUPRI)
           ENDIF
           FAC = D1
-          CALL MEMREL('ATOMIC_START.shell',WORK,1,KCBUF,KFREE,LFREE)
+          CALL MEMREL('ATOMIC_DENS.shell',WORK,1,KCBUF,KFREE,LFREE)
         ENDDO
 C.......Now we have the atomic density matrix. 
 C       Put all contributions from this atomic type into the 
@@ -5567,9 +5605,10 @@ C       molecular C1 density matrix
      &                   WORK(KR1BUF),WORK(KC1BUF),
      &                   WORK(KI1BUF),WORK(KJ1BUF))
 C.......Release memory        
-        CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
+        CALL MEMREL('ATOMIC_DENS',WORK,1,KCMO,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
-        ICENT = ICENT+NONT(IATOM)
+      ENDIF
+      ICENT = ICENT+NONT(IATOM)
       ENDDO
 C
       IF(NBSYM.EQ.1) THEN
@@ -5577,7 +5616,7 @@ C
       ELSE
 C.......transform atomic start to actual symmetry
         IF(IPRINT.GE.5) THEN 
-          WRITE(LUPRI,'(A)') '* C1 Density matrix from atomic guess'
+          WRITE(LUPRI,'(A)') '* ATOM_DENS: C1 density matrix:'
           CALL PRQMAT(WORK(KDBUF),NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NZC1,IQDEF,LUPRI)
         ENDIF
@@ -5600,7 +5639,7 @@ C.......transform atomic start to actual symmetry
         ENDDO
       ENDIF
       IF(IPRINT.GE.4) THEN
-        WRITE(LUPRI,'(A)') '* Density matrix from atomic guess'
+        WRITE(LUPRI,'(A)') '* Atomic density matrix:'
         DO IFRP = 1,NFSYM
           WRITE(LUPRI,'(/A,A3)')
      &      '* Fermion ircop ',FREP(IFRP)
@@ -5609,7 +5648,7 @@ C.......transform atomic start to actual symmetry
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
       ENDIF
-      CALL MEMREL('ATOMIC_START',WORK,1,KFRSAV,KFREE,LFREE)
+      CALL MEMREL('ATOMIC_DENS',WORK,1,KFRSAV,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
