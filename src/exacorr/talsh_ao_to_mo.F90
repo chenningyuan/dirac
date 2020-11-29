@@ -396,7 +396,8 @@ module talsh_ao_to_mo
          integer(INTD) :: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
          integer(INTD) :: ierr, tens_rank
-         integer       :: i, imo, nao
+         integer       :: i, imo, nao, j, k 
+         type(C_PTR)                        :: body_p
 
          ! call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
@@ -464,7 +465,8 @@ module talsh_ao_to_mo
 !        Destruct a2 and a3 integrals:
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
-         ! call print_date('leaving aomo_transform')
+
+!          call print_date('leaving aomo_transform')
 
         end subroutine aomo_transform
 

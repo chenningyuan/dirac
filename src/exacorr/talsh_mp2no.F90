@@ -423,6 +423,7 @@ module talsh_mp2no
   
          character(len=*),intent(in) :: file_in_name,file_out_name
          type(basis_set_info_t), intent(inout) :: ao_basis
+         type(basis_set_info_t)                :: ao_basis_test
          integer,intent(inout)                 :: ierr
          type(cmo), intent(inout):: cspinor
          type(cmo)              :: cspinor_hf   
@@ -438,26 +439,29 @@ module talsh_mp2no
          integer                :: nshells, iao, ibas
          integer                :: npo, nto, npriexp, ncnt
          integer                :: nao, nmo, nno, noo ! number of atomic orbital; molecular orbital; natural orbital; occupied orbital 
-         integer, allocatable   :: numcf(:),jstrt(:)
+!         integer, allocatable   :: numcf(:),jstrt(:)
+         integer, pointer   :: numcf(:),jstrt(:)
          real(8), allocatable   :: priexp(:),priccf(:)
          integer                :: i,j
   
    !     read information of from DFCOEF
    !     we only need ao_basis
-         call mp2no_read_from_dirac(ao_basis,cspinor_hf,file_in_name,ierr)
 
-  
+         call mp2no_read_from_dirac(ao_basis,cspinor_hf,file_in_name,numcf,jstrt,ierr)
+!         print *, "ierr read_from_dirac", ierr
+
+!         print *, "ao_basis%gtos(ishell)%n_primitives after read_from_dirac", ao_basis%gtos(:)%n_primitives
          nao = size(NOs_MO,1)
          nno = size(NOs_MO,2)
          nmo = cspinor_hf%nmo
          noo = nmo - nno
 
-         print *,'show orbital energy of cspinor_hf'
-         do i = 1, nmo
-            print "(a,2e14.6,$)","    ",cspinor_hf%energy(i)
-         end do
+!         print *,'show orbital energy of cspinor_hf'
+!         do i = 1, nmo
+!           print "(a,2e14.6,$)","    ",cspinor_hf%energy(i)
+!         end do
 
-         print *,'show coeff of cspinor_hf'
+         print *,'show coeff of cspinor_hf of alfha'
          do i = 1, nao
             print "(4x,a,$)", ""
             do j = 1, nmo
@@ -466,6 +470,14 @@ module talsh_mp2no
             print *, ""
          enddo
 
+!         print *,'show coeff of cspinor_hf of beta'
+!         do i = 1, nao
+!            print "(4x,a,$)", ""
+!            do j = 1, nmo
+!               print "(a,2e14.6,$)","    ",cspinor_hf%coeff(i,j,2)
+!            enddo
+!            print *, ""
+!         enddo
 
          cspinor=cspinor_hf
 
@@ -517,12 +529,13 @@ module talsh_mp2no
   
          ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
          ! TODO: change storage on DIRAC side to use the basis set type
-         nshells = ao_basis%nshells
+
          ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
+         nshells = ao_basis%nshells
          ncnt = 1
          npriexp =  nshells
-         allocate(jstrt(nshells))
-         allocate(numcf(nshells))
+!         allocate(jstrt(nshells))
+!         allocate(numcf(nshells))
          allocate(priexp(nshells))
          allocate(priccf(nshells))
          do ishell = 1, nshells
@@ -532,6 +545,7 @@ module talsh_mp2no
             priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
          end do
    
+
          ! write the header
          write (lucoef) text,nsym,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
          ! write the mo-coefficients
@@ -544,22 +558,46 @@ module talsh_mp2no
          write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
   !      orb_momentum, atom_number, n_primives for all shells
          write (lucoef) ao_basis%gtos(:)%orb_momentum,ao_basis%gtos(:)%atom_number,ao_basis%gtos(:)%n_primitives
+  !       print *, "orb_momentum in read_into_dirac_mp2write", ao_basis%gtos(:)%orb_momentum
+  !       print *, "atom_number in read_into_dirac_mp2write", ao_basis%gtos(:)%atom_number
+  !       print *, "n_primitives in read_into_dirac_mp2write", ao_basis%gtos(:)%n_primitives
   !      start of exponent values, number of contracted for all shells
          write (lucoef) jstrt,numcf
+  !       print *, "jstrf in write_into_dirac_mp2write", jstrt
+  !       print *, "numcf in write_into_dirac_mp2write", numcf
   !      coordinates (x, y, z) of center for all shells
-         write (lucoef) (ao_basis%gtos(ishell)%coord(:),ishell=1,nshells)
+  !       write (lucoef) (ao_basis%gtos(ishell)%coord(:),ishell=1,nshells)
+         write (lucoef) (ao_basis%gtos(:)%coord(i),i=1,3)
+  !       print *,'size of cood', size(ao_basis%gtos(1)%coord,1)
+  !       do i = 1, 3
+  !          do ishell = 1, nshells
+  !             do i = 1, 3
+  !           write (lucoef) ao_basis%gtos(ishell)%coord(i)
+  !          end do 
+  !       end do
+  !       print *, "cood in write_into_dirac_mp2write", ao_basis%gtos(1)%coord(3)
+  !      print *, "cood in write_into_dirac_mp2write", (ao_basis%gtos(:)%coord(i),i=1,3)
   !      values of the exponents for all shells (packed into a 1-d array)
          write (lucoef) priexp
+  !       print *,'priexp in write_into_dirac', priexp
   !      values of the contraction coefficients for all shells (packed into a 1-d array)
          write (lucoef) priccf
-  
-         deallocate(jstrt)
-         deallocate(numcf)
+
+
+
+
+   !      deallocate(jstrt)
+   !      deallocate(numcf)
          deallocate(priexp)
          deallocate(priccf)
   
          close (lucoef,status='KEEP')
 
+         call mp2no_read_from_dirac(ao_basis_test,cspinor,file_out_name,numcf,jstrt,ierr)
+!         do ishell = 1, nshells
+!          print *, "ao_basis_test%gtos(ishell)%coord", &
+!     &                            ao_basis_test%gtos(ishell)%coord
+!         end do
          return
 
 
@@ -572,7 +610,7 @@ module talsh_mp2no
 
 
 !---------------------------------------------------------------------------------------------------------------------------------------
-        subroutine mp2no_read_from_dirac (ao_basis,cspinor,file_name,ierr)
+        subroutine mp2no_read_from_dirac (ao_basis,cspinor,file_name,numcf,jstrt,ierr)
 
          use exacorr_mo
          use exacorr_datatypes
@@ -590,7 +628,9 @@ module talsh_mp2no
          character(len=*),intent(in) :: file_name
          type(basis_set_info_t), intent(inout) :: ao_basis
          type(cmo), intent(inout):: cspinor
-         integer, intent(out)   :: ierr 
+!         integer, allocatable   :: jstrt(:), numcf(:)
+         integer, pointer       :: jstrt(:), numcf(:)
+         integer, intent(out)   :: ierr
          integer, parameter     :: NOERROR  = 0 ! no error
          integer, parameter     :: NOTFOUND = 1 ! file not found
          integer, parameter     :: CORRUPT  = 2 ! file unreadable
@@ -610,8 +650,7 @@ module talsh_mp2no
          integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
          real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
          integer, allocatable   :: ibeig(:),index(:)
-         integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
-         integer, allocatable   :: jstrt(:)
+         integer, allocatable   :: ncent(:),nhkt(:),nuco(:)
          real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
          complex(8), allocatable:: scoeff(:,:,:)
          integer, allocatable   :: ao_map(:,:)
@@ -705,10 +744,15 @@ module talsh_mp2no
          read (LUCOEF,err=20,end=20) nhkt,ncent,nuco
   !      start of exponent values, number of contracted for all shells
          read (LUCOEF,err=20,end=20) jstrt,numcf
+!         print *, "jstrt in read_from_dirac", jstrt
+!        print *, "cent in read_from_dirac", numcf
   !      coordinates (x, y, z) of center for all shells
          read (LUCOEF,err=20,end=20) cent
+         print *, "cent(1,3) in read_from_dirac", cent(1,3)
+         print *, "cent in read_from_dirac", cent
   !      values of the exponents for all shells (packed into a 1-d array)
          read (LUCOEF,err=20,end=20) priexp
+   !      print *,'priexp in read_from_dirac', priexp
   !      values of the contraction coefficients for all shells (packed into a 1-d array)
          read (LUCOEF,err=20,end=20) priccf
   
@@ -722,6 +766,7 @@ module talsh_mp2no
             ao_basis%gtos(ishell)%orb_momentum = nhkt(ishell)
             ao_basis%gtos(ishell)%atom_number  = ncent(ishell)
             ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
+!            print *, "ao_basis%gtos(ishell)%n_primitives in talsh_mp2_read_from_dirac",  ao_basis%gtos(ishell)%n_primitives
             nullify  (ao_basis%gtos(ishell)%exponent) 
             allocate (ao_basis%gtos(ishell)%exponent(nuco(ishell)))
             nullify  (ao_basis%gtos(ishell)%coefficient)
@@ -733,15 +778,42 @@ module talsh_mp2no
             ao_basis%gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
             ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
   !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-            call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+!          print *, "ao_basis%gtos(ishell)%n_primitives before_compress in mp2no",  &
+!&          ao_basis%gtos(ishell)%n_primitives
+!          print *, "ao_basis%gtos(ishell)%exponent before compress",& 
+!     &                                  ao_basis%gtos(ishell)%exponent
+!          print *, "ao_basis%gtos(ishell)%coefficient before compress", 
+!     &                             ao_basis%gtos(ishell)%coefficient
+!          print *, "ao_basis%gtos(ishell)%coord before compress", 
+!     &                            ao_basis%gtos(ishell)%coord
+           call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+!            ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
+!            ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
+!            ao_basis%gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
             if (ierr == 1) ierr = CONTRAC
+  !          print *, "ao_basis%gtos(ishell)%n_primitives in talsh_mp2_read_from_dirac_nuco", nuco(ishell)
+!            print *, "ao_basis%gtos(ishell)%n_primitives after_compress in mp2no", &
+!&            ao_basis%gtos(ishell)%n_primitives
+!          print *, "ao_basis%gtos(ishell)%exponent after compres", &
+!     &                                  ao_basis%gtos(ishell)%exponent
+!          print *, "ao_basis%gtos(ishell)%coefficient after compress",& 
+!     &                             ao_basis%gtos(ishell)%coefficient
+!          print *, "ao_basis%gtos(ishell)%coord after compress", &
+!     &                            ao_basis%gtos(ishell)%coord
+            
          end do
-  
+!         print *, "nhkt in read_into_dirac_mp2read", nhkt
+!         print *, "ncent in read_into_dirac_mp2read", ncent
+!         print *, "nuco in read_into_dirac_mp2read", nuco
+!         print *, "numcf in read_into_dirac_mp2read", numcf
+!         print *, "cent in read_from_dirac_mp2read", cent(1,1:3)
+!         print *, "cood in read_from_dirac_mp2read", ao_basis%gtos(4)%coord(:)
+
          deallocate(ncent)
          deallocate(nhkt)
          deallocate(nuco)
-         deallocate(numcf)
-         deallocate(jstrt)
+   !      deallocate(numcf)
+   !      deallocate(jstrt)
          deallocate(cent)
          deallocate(priexp)
          deallocate(priccf)
