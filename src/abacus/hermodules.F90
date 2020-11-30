@@ -88,6 +88,10 @@
 !     The unit conversion global variable is used when reading/writing xyz files
        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
 
+#ifdef HAS_PELIB 
+!     Variable for PElib (to ensure symmetry detection is disabled for xyz)
+LOGICAL, PUBLIC :: pelib_sym_xyz
+#endif 
       CONTAINS
 
         SUBROUTINE ADD_ATOM(latom, fatom, name,x)
@@ -463,7 +467,9 @@
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
           KCHARG=0
-
+#ifdef HAS_PELIB 
+          pelib_sym_xyz = .true.
+#endif 
           DO
             read(tmp_file,*,iostat=ios) str
 
@@ -496,6 +502,9 @@
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
+#ifdef HAS_PELIB
+              pelib_sym_xyz = .false.
+#endif
 
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
