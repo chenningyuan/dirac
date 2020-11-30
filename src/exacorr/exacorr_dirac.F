@@ -492,28 +492,9 @@ C
      &                                   priccf(iPrimStart:iPrimEnd,k)
           ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
 !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-!          print *, "ao_basis%gtos(ishell)%exponent before contra", 
-!     &                              ao_basis%gtos(ishell)%exponent
-!          print *, "ao_basis%gtos(ishell)%n_primitives before compress", 
-!     &                              ao_basis%gtos(ishell)%n_primitives
           call compress_unc_shell (ao_basis%gtos(ishell),ierr)
           if (ierr == 1) ierr = CONTRAC
-          !print *, "aobasis % gtos(ishell)%orb_momentum ", nhkt(ishell)
-          !print *, "ao_basis%gtos(ishell)%atom_number ", ncent(ishell)
-!          print *, "ao_basis%gtos(ishell)%n_primitives after compress", 
-!     &     ao_basis%gtos(ishell)%n_primitives
-!          print *, "if contrac", ierr 
-!          print *, "ao_basis%gtos(ishell)%exponent after contra", 
-!     &                              ao_basis%gtos(ishell)%exponent
-!          print *, "ao_basis%gtos(ishell)%coefficient ", 
-!     &                             ao_basis%gtos(ishell)%coefficient
-          print *, "ao_basis%gtos(ishell)%coord ", 
-     &                            ao_basis%gtos(ishell)%coord
        end do
-       print *, "cent in read_from_dirac_exacorr", 
-     &  cent(1,1:3)
-!       print *, "cood in read_from_dirac_exacorr", 
-!     &  ao_basis%gtos(4)%coord(:)
 
        deallocate(ncent)
        deallocate(nhkt)
@@ -545,7 +526,6 @@ C
           close (lucoef,status='KEEP')
           call quit ('Error in read_from_dirac')
        endif
-       print *, "ao_basis % shell_indices ", ao_basis%shell_indices
        close (lucoef,status='KEEP')
 
        call print_date("read from DFCOEF:"//text)

@@ -62,7 +62,7 @@ module talsh_mp2no
 
 !       Scalars (need to be defined as tensor types)
 !       Normally, we don't generate MP2NOs_MO, but only MP2NOs_AO
-        real(kind=8)       :: threshold=0.0d0
+        real(kind=8)       :: threshold=1.0d-5
         integer            :: i,j
 
         nocc = exa_input%nocc
@@ -80,22 +80,23 @@ module talsh_mp2no
            read(mp2out,iostat=err) NO_OCC_1
            print *, 'foobaz'
            call talsh_create_AO_to_MNO_trans (exa_input,initialize_talsh,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
-           call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,ierr)  
+           call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,nocc,ierr)  
 
         else
            print *, 'foobar'
+           print *,'Threshold set', threshold
            initialize_talsh=1
 ! generate MP2NOs_MO file containing all natural orbital and occupation number in MO basis
            call talsh_generate_MP2_VNO_MObasis (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)   
            call talsh_create_AO_to_MNO_trans (exa_input,initialize_talsh,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
-           call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,ierr)
+           call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,nocc,ierr)
         end if 
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
-!       print *,'MP2 virtual spinor occupation numbers'
-!       do i = 1, size(NO_OCC_1,1)
-!          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
-!       end do
+        print *,'Occupation numbers of all natural orbital'
+       do i = 1, size(NO_OCC_1,1)
+          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
+       end do
        deallocate(NO_OCC_1)
 
       end subroutine talsh_mp2no_driver
@@ -265,8 +266,9 @@ module talsh_mp2no
             enddo
             deallocate(NOs_MO_R)
 
-           print *,'sorted MP2 NOs and occupation numbers'
-           call print_values_R_vectors_C(NO_OCC,NOs_MO)
+!           print *,'Occupation numbers of all natural orbital'
+!           call print_values_R_vectors_C(NO_OCC,NOs_MO)
+
 
             NO_OCC_1(:) = NO_OCC(1,:)
 
@@ -289,15 +291,15 @@ module talsh_mp2no
            do i = 1, ndim
               print "(a,2e14.6,$)","    ",values(:,i)
            enddo
-           print "(4x,a)", ""
-           print "(4x,a)", "Eigenvectors"
-           do i = 1, ndim
-              print "(4x,a,$)", ""
-              do k = 1, ndim
-                 print "(a,2e14.6,$)","    ",vectors(i,k)
-              enddo
-              print *, ""
-           enddo
+!           print "(4x,a)", ""
+!           print "(4x,a)", "Eigenvectors"
+!           do i = 1, ndim
+!              print "(4x,a,$)", ""
+!              do k = 1, ndim
+!                 print "(a,2e14.6,$)","    ",vectors(i,k)
+!              enddo
+!              print *, ""
+!           enddo
         end subroutine
 
 !----------------------------------------------------------------------------------------------------------------------    
@@ -352,7 +354,7 @@ module talsh_mp2no
            no_red_dims(1)=nvir
            no_red_dims(2)=num_no_red
 !          print *,'size no_red_dims(1)',no_red_dims(1)
-!          print *,'size no_red_dims(2)',no_red_dims(2)
+!           print *,'size no_red_dims(2)',no_red_dims(2)
            ierr=talsh_tensor_construct(NOs_MO_red_tensor,C8,no_red_dims,init_val=ZERO)
            ierr=talsh_tensor_get_body_access(NOs_MO_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
            call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
@@ -379,14 +381,14 @@ module talsh_mp2no
 !          Print *,'Extracting virtual MO coeffcient in AO basis set',ierr
            ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
            call c_f_pointer(body_p,show_result,mocoef_dims)
-           print *,'coeff of HF Molecular Orbital'
-           do i = 1, nao
-              print "(4x,a,$)", ""
-              do j = 1, nmo
-                 print "(a,2e14.6,$)","    ",show_result(i,j)
-              enddo
-              print *, ""
-           enddo
+!           print *,'coeff of HF Molecular Orbital'
+!           do i = 1, nao
+!              print "(4x,a,$)", ""
+!              do j = 1, nmo
+!                 print "(a,2e14.6,$)","    ",show_result(i,j)
+!              enddo
+!              print *, ""
+!           enddo
                 
                 
            call print_date('Transform reduced natural orbital from MO basis into AO basis')
@@ -397,20 +399,20 @@ module talsh_mp2no
            ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
            ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MO_red_tensor,scale=ONE)
            call c_f_pointer(body_p,NOs_AO_tens,no_ao_dims) ! to use as a regular Fortran array
-           print *,'coeff of natural Orbital in AO basis'
-           do i = 1, nao
-              print "(4x,a,$)", ""
-              do j = 1, num_no_red
-                 print "(a,2e14.6,$)","    ",NOs_AO_tens(i,j)
-              enddo
-              print *, ""
-           enddo
+!           print *,'coeff of natural Orbital in AO basis'
+!           do i = 1, nao
+!              print "(4x,a,$)", ""
+!              do j = 1, num_no_red
+!                 print "(a,2e14.6,$)","    ",NOs_AO_tens(i,j)
+!              enddo
+!              print *, ""
+!           enddo
                           
         end subroutine talsh_create_AO_to_MNO_trans
 
 !-----------------------------------------------------------------------------------------------------------------------
 
-      subroutine write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor,file_in_name,file_out_name,NO_OCC,NOs_MO,ierr)
+      subroutine write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor,file_in_name,file_out_name,NO_OCC,NOs_MO,nocc,ierr)
 
          use exacorr_mo
          use exacorr_datatypes
@@ -424,6 +426,7 @@ module talsh_mp2no
          character(len=*),intent(in) :: file_in_name,file_out_name
          type(basis_set_info_t), intent(inout) :: ao_basis
          type(basis_set_info_t)                :: ao_basis_test
+         integer,intent(in)                    :: nocc  !occupied orbital 
          integer,intent(inout)                 :: ierr
          type(cmo), intent(inout):: cspinor
          type(cmo)              :: cspinor_hf   
@@ -438,9 +441,10 @@ module talsh_mp2no
          integer                :: ishell
          integer                :: nshells, iao, ibas
          integer                :: npo, nto, npriexp, ncnt
-         integer                :: nao, nmo, nno, noo ! number of atomic orbital; molecular orbital; natural orbital; occupied orbital 
+         integer                :: nao, nmo, nno ! number of atomic orbital; molecular orbital; natural orbital
 !         integer, allocatable   :: numcf(:),jstrt(:)
          integer, pointer   :: numcf(:),jstrt(:)
+         integer,allocatable    :: index(:)
          real(8), allocatable   :: priexp(:),priccf(:)
          integer                :: i,j
   
@@ -448,50 +452,51 @@ module talsh_mp2no
    !     we only need ao_basis
 
          call mp2no_read_from_dirac(ao_basis,cspinor_hf,file_in_name,numcf,jstrt,ierr)
-!         print *, "ierr read_from_dirac", ierr
 
-!         print *, "ao_basis%gtos(ishell)%n_primitives after read_from_dirac", ao_basis%gtos(:)%n_primitives
          nao = size(NOs_MO,1)
          nno = size(NOs_MO,2)
-         nmo = cspinor_hf%nmo
-         noo = nmo - nno
+         nmo = nocc+nno
+         allocate(index(2*nmo))
+         do i = 1, 2*nmo
+            index(i) = i ! we set the index compatible with the fact that we store all mo's
+         end do
+
+         call alloc_mo (cspinor,nao,2*nmo)
+         cspinor%allocated = cspinor_hf%allocated
+         cspinor%restricted = cspinor_hf%restricted
+         cspinor%complex_algebra = cspinor_hf%complex_algebra
+         cspinor%total_energy = cspinor_hf%total_energy
+         cspinor%energy = cspinor_hf%energy
+         cspinor%fermion_irrep = cspinor_hf%fermion_irrep
+         cspinor%boson_irrep = 0
+         cspinor%index = index
+
 
 !         print *,'show orbital energy of cspinor_hf'
 !         do i = 1, nmo
 !           print "(a,2e14.6,$)","    ",cspinor_hf%energy(i)
 !         end do
-
-         print *,'show coeff of cspinor_hf of alfha'
-         do i = 1, nao
-            print "(4x,a,$)", ""
-            do j = 1, nmo
-               print "(a,2e14.6,$)","    ",cspinor_hf%coeff(i,j,1)
-            enddo
-            print *, ""
-         enddo
-
-!         print *,'show coeff of cspinor_hf of beta'
-!         do i = 1, nao
-!            print "(4x,a,$)", ""
-!            do j = 1, nmo
-!               print "(a,2e14.6,$)","    ",cspinor_hf%coeff(i,j,2)
-!            enddo
-!            print *, ""
-!         enddo
-
-         cspinor=cspinor_hf
-
+!         deallocate(cspinor%coeff)
+!         allocate(cspinor%coeff(nao,nocc+nno,2))
 !         do i = noo+1, nmo
 !            cspinor%energy(i)=NO_OCC(i-noo)
 !         end do
 
-         do i = 1, nao
-            do j = noo+1, nmo
+         do i = 1, cspinor%nao
+            do j = 1, nocc
+                  cspinor%coeff(i,j,1)=cspinor_hf%coeff(i,j,1)
+                  cspinor%coeff(i,j,2)=cspinor_hf%coeff(i,j,2)
+            enddo
+         enddo
+
+
+         do i = 1, cspinor%nao
+            do j = nocc+1, cspinor_hf%nmo
                if (mod(j,2)==0) then
                   cspinor%coeff(i,j,1)=0
-                  cspinor%coeff(i,j,2)=NOs_MO(i,j-noo)
+                  cspinor%coeff(i,j,2)=NOs_MO(i,j-nocc)
                else 
-                  cspinor%coeff(i,j,1)=NOs_MO(i,j-noo)
+                  cspinor%coeff(i,j,1)=NOs_MO(i,j-nocc)
                   cspinor%coeff(i,j,2)=0
                end if
             enddo
@@ -502,7 +507,8 @@ module talsh_mp2no
 !            print "(a,2e14.6,$)","    ",cspinor%energy(i)
 !         end do
 
-         print *,'show no coeff of cspinor'
+         print *,'Total number of orbitals including natural orbital and occupied HF orbital:', nmo
+         print *,'Orbital coeff in AO basis, that is contained in the MP2NOs_AO file'
          do i = 1, nao
             print "(4x,a,$)", ""
             do j = 1, nmo
@@ -558,28 +564,12 @@ module talsh_mp2no
          write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
   !      orb_momentum, atom_number, n_primives for all shells
          write (lucoef) ao_basis%gtos(:)%orb_momentum,ao_basis%gtos(:)%atom_number,ao_basis%gtos(:)%n_primitives
-  !       print *, "orb_momentum in read_into_dirac_mp2write", ao_basis%gtos(:)%orb_momentum
-  !       print *, "atom_number in read_into_dirac_mp2write", ao_basis%gtos(:)%atom_number
-  !       print *, "n_primitives in read_into_dirac_mp2write", ao_basis%gtos(:)%n_primitives
   !      start of exponent values, number of contracted for all shells
          write (lucoef) jstrt,numcf
-  !       print *, "jstrf in write_into_dirac_mp2write", jstrt
-  !       print *, "numcf in write_into_dirac_mp2write", numcf
-  !      coordinates (x, y, z) of center for all shells
   !       write (lucoef) (ao_basis%gtos(ishell)%coord(:),ishell=1,nshells)
          write (lucoef) (ao_basis%gtos(:)%coord(i),i=1,3)
-  !       print *,'size of cood', size(ao_basis%gtos(1)%coord,1)
-  !       do i = 1, 3
-  !          do ishell = 1, nshells
-  !             do i = 1, 3
-  !           write (lucoef) ao_basis%gtos(ishell)%coord(i)
-  !          end do 
-  !       end do
-  !       print *, "cood in write_into_dirac_mp2write", ao_basis%gtos(1)%coord(3)
-  !      print *, "cood in write_into_dirac_mp2write", (ao_basis%gtos(:)%coord(i),i=1,3)
   !      values of the exponents for all shells (packed into a 1-d array)
          write (lucoef) priexp
-  !       print *,'priexp in write_into_dirac', priexp
   !      values of the contraction coefficients for all shells (packed into a 1-d array)
          write (lucoef) priccf
 
@@ -593,11 +583,7 @@ module talsh_mp2no
   
          close (lucoef,status='KEEP')
 
-         call mp2no_read_from_dirac(ao_basis_test,cspinor,file_out_name,numcf,jstrt,ierr)
-!         do ishell = 1, nshells
-!          print *, "ao_basis_test%gtos(ishell)%coord", &
-!     &                            ao_basis_test%gtos(ishell)%coord
-!         end do
+!         call mp2no_read_from_dirac(ao_basis_test,cspinor,file_out_name,numcf,jstrt,ierr)
          return
 
 
@@ -744,15 +730,10 @@ module talsh_mp2no
          read (LUCOEF,err=20,end=20) nhkt,ncent,nuco
   !      start of exponent values, number of contracted for all shells
          read (LUCOEF,err=20,end=20) jstrt,numcf
-!         print *, "jstrt in read_from_dirac", jstrt
-!        print *, "cent in read_from_dirac", numcf
   !      coordinates (x, y, z) of center for all shells
          read (LUCOEF,err=20,end=20) cent
-         print *, "cent(1,3) in read_from_dirac", cent(1,3)
-         print *, "cent in read_from_dirac", cent
   !      values of the exponents for all shells (packed into a 1-d array)
          read (LUCOEF,err=20,end=20) priexp
-   !      print *,'priexp in read_from_dirac', priexp
   !      values of the contraction coefficients for all shells (packed into a 1-d array)
          read (LUCOEF,err=20,end=20) priccf
   
@@ -778,36 +759,9 @@ module talsh_mp2no
             ao_basis%gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
             ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
   !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-!          print *, "ao_basis%gtos(ishell)%n_primitives before_compress in mp2no",  &
-!&          ao_basis%gtos(ishell)%n_primitives
-!          print *, "ao_basis%gtos(ishell)%exponent before compress",& 
-!     &                                  ao_basis%gtos(ishell)%exponent
-!          print *, "ao_basis%gtos(ishell)%coefficient before compress", 
-!     &                             ao_basis%gtos(ishell)%coefficient
-!          print *, "ao_basis%gtos(ishell)%coord before compress", 
-!     &                            ao_basis%gtos(ishell)%coord
            call compress_unc_shell (ao_basis%gtos(ishell),ierr)
-!            ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
-!            ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-!            ao_basis%gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-            if (ierr == 1) ierr = CONTRAC
-  !          print *, "ao_basis%gtos(ishell)%n_primitives in talsh_mp2_read_from_dirac_nuco", nuco(ishell)
-!            print *, "ao_basis%gtos(ishell)%n_primitives after_compress in mp2no", &
-!&            ao_basis%gtos(ishell)%n_primitives
-!          print *, "ao_basis%gtos(ishell)%exponent after compres", &
-!     &                                  ao_basis%gtos(ishell)%exponent
-!          print *, "ao_basis%gtos(ishell)%coefficient after compress",& 
-!     &                             ao_basis%gtos(ishell)%coefficient
-!          print *, "ao_basis%gtos(ishell)%coord after compress", &
-!     &                            ao_basis%gtos(ishell)%coord
-            
+            if (ierr == 1) ierr = CONTRAC            
          end do
-!         print *, "nhkt in read_into_dirac_mp2read", nhkt
-!         print *, "ncent in read_into_dirac_mp2read", ncent
-!         print *, "nuco in read_into_dirac_mp2read", nuco
-!         print *, "numcf in read_into_dirac_mp2read", numcf
-!         print *, "cent in read_from_dirac_mp2read", cent(1,1:3)
-!         print *, "cood in read_from_dirac_mp2read", ao_basis%gtos(4)%coord(:)
 
          deallocate(ncent)
          deallocate(nhkt)
