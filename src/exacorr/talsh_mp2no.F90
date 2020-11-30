@@ -62,7 +62,7 @@ module talsh_mp2no
 
 !       Scalars (need to be defined as tensor types)
 !       Normally, we don't generate MP2NOs_MO, but only MP2NOs_AO
-        real(kind=8)       :: threshold=1.0d-4
+        real(kind=8)       :: threshold=0.0d-0
         integer            :: i,j
 
         nocc = exa_input%nocc
@@ -466,7 +466,6 @@ module talsh_mp2no
          cspinor%restricted = cspinor_hf%restricted
          cspinor%complex_algebra = cspinor_hf%complex_algebra
          cspinor%total_energy = cspinor_hf%total_energy
-         cspinor%energy = cspinor_hf%energy
          cspinor%fermion_irrep = cspinor_hf%fermion_irrep
          cspinor%boson_irrep = 0
          cspinor%index = index
@@ -476,11 +475,15 @@ module talsh_mp2no
 !         do i = 1, nmo
 !           print "(a,2e14.6,$)","    ",cspinor_hf%energy(i)
 !         end do
-!         deallocate(cspinor%coeff)
-!         allocate(cspinor%coeff(nao,nocc+nno,2))
-!         do i = noo+1, nmo
-!            cspinor%energy(i)=NO_OCC(i-noo)
-!         end do
+
+!          cspinor%energy = cspinor_hf%energy
+         do i = 1, nocc
+            cspinor%energy(i)=cspinor_hf%energy(i)
+         end do
+
+         do i = nocc+1, cspinor_hf%nmo
+            cspinor%energy(i)=NO_OCC(i-nocc)
+         end do
 
          do i = 1, cspinor%nao
             do j = 1, nocc
