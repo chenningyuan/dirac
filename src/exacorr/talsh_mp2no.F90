@@ -62,7 +62,7 @@ module talsh_mp2no
 
 !       Scalars (need to be defined as tensor types)
 !       Normally, we don't generate MP2NOs_MO, but only MP2NOs_AO
-        real(kind=8)       :: threshold=1.0d-5
+        real(kind=8)       :: threshold=1.0d-4
         integer            :: i,j
 
         nocc = exa_input%nocc
@@ -354,7 +354,7 @@ module talsh_mp2no
            no_red_dims(1)=nvir
            no_red_dims(2)=num_no_red
 !          print *,'size no_red_dims(1)',no_red_dims(1)
-!           print *,'size no_red_dims(2)',no_red_dims(2)
+!          print *,'size no_red_dims(2)',no_red_dims(2)
            ierr=talsh_tensor_construct(NOs_MO_red_tensor,C8,no_red_dims,init_val=ZERO)
            ierr=talsh_tensor_get_body_access(NOs_MO_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
            call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
@@ -453,7 +453,7 @@ module talsh_mp2no
 
          call mp2no_read_from_dirac(ao_basis,cspinor_hf,file_in_name,numcf,jstrt,ierr)
 
-         nao = size(NOs_MO,1)
+         nao = cspinor_hf%nao
          nno = size(NOs_MO,2)
          nmo = nocc+nno
          allocate(index(2*nmo))
@@ -552,6 +552,7 @@ module talsh_mp2no
          end do
    
 
+
          ! write the header
          write (lucoef) text,nsym,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
          ! write the mo-coefficients
@@ -583,7 +584,8 @@ module talsh_mp2no
   
          close (lucoef,status='KEEP')
 
-!         call mp2no_read_from_dirac(ao_basis_test,cspinor,file_out_name,numcf,jstrt,ierr)
+
+         call mp2no_read_from_dirac(ao_basis_test,cspinor,file_out_name,numcf,jstrt,ierr)
          return
 
 
@@ -672,7 +674,7 @@ module talsh_mp2no
          allocate(eig(nto))
          allocate(ibeig(nto))
          allocate(index(2*nmo))
-          
+               
          ! read the mo coefficients and orbital eigenvalues
          read (lucoef,end=10,err=10) coeff
          read (lucoef,end=10,err=10) eig
@@ -701,12 +703,13 @@ module talsh_mp2no
          deallocate(index)
          deallocate(seig)
          deallocate(scoeff)
-  
+
          ! read the basis set information and check for consistency
          read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
          if (nao < nao_bas) then
             ierr = INCONSIS
             close (lucoef,status='KEEP')
+            print *,"ierr", ierr     
             return
          elseif (nao > nao_bas) then
             print*,"WARNING: assuming Levy-Leblond Hamiltonian"
