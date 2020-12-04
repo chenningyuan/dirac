@@ -127,7 +127,10 @@ module talsh_mp2no
          integer(C_INT)              :: ierr
          complex(8), pointer         :: MP2_density_tens(:,:)
          real(kind=8), pointer       :: NOs_MO_R(:,:) ! natural orbitals, complex values represented as reals 
-         complex(kind=8), pointer :: test_tens(:,:)
+         complex(kind=8), pointer    :: test_tens(:,:)
+         real(kind=8), pointer       :: MP2_density_quater(:,:,:)
+         real(kind=8), pointer       :: NO_OCC_quater(:)
+         real(kind=8), pointer       :: NOs_MO_quater(:,:,:)
         
          real(kind=8), pointer :: NO_OCC(:,:)       ! natural orbital occupation number and the one saved in new files
          complex(kind=8), pointer :: NOs_AO_tens(:,:)  ! natural orbital in AO basis
@@ -224,7 +227,13 @@ module talsh_mp2no
          allocate(NO_OCC(2,size(MP2_density_tens,2)))
          allocate(NO_OCC_1(size(MP2_density_tens,2)))
          NO_OCC = 0.0d0
-         call diagoanl_DMP2_matrix(MP2_density_tens,NO_OCC,NOs_MO)
+
+!         call write_matrix(MP2_density_tens,'DM_complex')
+         call complex_to_quaternion(exa_input,MP2_density_tens,MP2_density_quater)
+         call diagoanl_matrix_complex(MP2_density_tens,NO_OCC)        
+         call diagoanl_matrix_quater(MP2_density_quater,NO_OCC_quater,NOs_MO_quater)
+!         call quaternion_to_complex(NOs_MO_quater,NOs_MO)
+
 
          n_mp2nos = size(NOs_MO,1) ! MP2NOs is a square matrix, so we only leed one dimension
 
@@ -511,11 +520,20 @@ module talsh_mp2no
 !         end do
 
          print *,'Total number of orbitals including natural orbital and occupied HF orbital:', nmo
-         print *,'Orbital coeff in AO basis, that is contained in the MP2NOs_AO file'
+         print *,'Orbital coeff of KrmaPair1 in AO basis, that is contained in the MP2NOs_AO file'
          do i = 1, nao
             print "(4x,a,$)", ""
             do j = 1, nmo
                print "(a,2e14.6,$)","    ",cspinor%coeff(i,j,1)
+            enddo
+            print *, ""
+         enddo
+
+         print *,'Orbital coeff of KrmaPair2 in AO basis, that is contained in the MP2NOs_AO file'
+         do i = 1, nao
+            print "(4x,a,$)", ""
+            do j = 1, nmo
+               print "(a,2e14.6,$)","    ",cspinor%coeff(i,j,2)
             enddo
             print *, ""
          enddo
@@ -815,7 +833,7 @@ module talsh_mp2no
          end subroutine mp2no_read_from_dirac
 
 !----------------------------------------------------------------------------------------------------------------------------------------------
-        subroutine diagoanl_DMP2_matrix(M,eVal,eVectorsR)
+        subroutine diagoanl_matrix_complex(M,eVal)
 
                 ! Set parameter needed in lapack
                         integer :: lwork, info,i,j
@@ -842,8 +860,41 @@ module talsh_mp2no
                                     eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
                                     WORK, LWORK, rwork, INFO)
   
-        end subroutine diagoanl_DMP2_matrix
-                                                        
+        end subroutine diagoanl_matrix_complex
+
+!---------------------------------------------------------------------------------------------                                                        
+        subroutine diagoanl_matrix_quater(A,EIG,VEC)
+
+         ! Set parameter needed in qdiag
+                 
+                 real(kind=8), intent(in), pointer :: A(:,:,:)
+                 real(kind=8), pointer :: EIG(:) 
+                 real(kind=8), pointer :: VEC(:,:,:)                 
+                 integer :: LRA, LCA, LRV, LCV
+                 integer :: NZ, N, MATZ, LWORK, IERR
+                 integer :: i, j
+                 real(kind=8), allocatable :: WORK(:)
+                 
+
+                 LRA = size(A,1)
+                 LCA = size(A,2)
+                 LRV = size(VEC,1)
+                 LCV = size(VEC,2)
+                 lwork = 10000000*LRA
+                 NZ = 4
+                 N = 2*LRA
+                 MATZ = 1
+
+                 allocate(EIG(N))
+                 allocate(VEC(LRV,LCV,NZ))
+                 allocate(work(MAX(1,LWORK)))
+
+
+                 call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,&
+                             WORK,LWORK,IERR)
+
+      end subroutine diagoanl_matrix_quater
+
 !-------------------------------------------------------------------------------------------------------------------------------------
 
         subroutine get_MP2_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
@@ -957,261 +1008,128 @@ module talsh_mp2no
         end subroutine get_MP2_integrals
                 
 
-
-
 !-----------------------------------------------------------------------------------------------------------------------------------------------
-!      The Following two routines are about Fock matrix and the corresponding integrals.
-!      For CCSD(T), we need canonical orbitals, these maybe useful.
 
-        subroutine get_MP2_ForMa_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
+        subroutine quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo,npo)
 
-                !        Routine to get integrals needed in FORCK matrix of MP2NO code in the form of antisymmetric tensors.
-                !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
-                !        full integral list.
-                           
-                         use exacorr_global
-                         use talsh_ao_to_mo
-                
-                         integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-                         integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-                !        target integral tensors to be filled and given back to the caller
-                         type(talsh_intg_tens),intent(inout)  :: int_t
-                         integer, intent(in)                  :: print_level
-                
-                         integer(INTD) :: oooo_dims(1:4),vovo_dims(1:4)
-                
-                         integer(INTD)                      :: ierr
-                         complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
-                         type(C_PTR)                        :: body_p
-                
-                         integer :: nao
-                
-                !        auxilliary integral tensors (only needed inside this routine)
-                         type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
-                         integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4)
-                
-                !        arrays needed to communicate with the MO integral generator
-                         integer:: nmo(4)
-                         integer, allocatable :: mo_list(:)
-                
-                !        scalars (need to be defined as tensor types)
-                         type(talsh_tens_t) :: minusone_tensor
-                         integer(INTD)      :: minusone_dims(1)
-                
-                         call print_date('entering integral transformation, scheme = 2')
-                
-                !        Retrieve basis set information
-                         nao     = get_nao()      ! number of basis functions
-                
-                !        Get tensor with AO integrals
-                         aoint_dims      = nao
-                         ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
-                         if (ierr /= 0) then
-                            print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
-                            call quit ('error constructing aoint_tensor')
-                         end if
-                         call print_date('allocated AO integral tensor')
-                !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-                         ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-                         call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
-                         call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
-                         call print_date('finished ao integral calculation')
-                
-                !        Get antisymmetric oooo tensor
-                         oooo_dims = nocc
-                         ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-                         allocate (mo_list(4*nocc))
-                         nmo = nocc
-                         mo_list(1:nocc)          = mo_occ(1:nocc)
-                         mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
-                         mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
-                         mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
-                         call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
-                         deallocate (mo_list)
-                         call print_date('finished oooo integrals')
-                
-                !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-                !        Get vovo tensor
-                         vovo_dims(1) = nvir
-                         vovo_dims(2) = nocc
-                         vovo_dims(3) = nvir
-                         vovo_dims(4) = nocc
-                         ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-                         allocate (mo_list(2*nvir+2*nocc))
-                         nmo(1:2) = nvir
-                         nmo(3:4) = nocc
-                         mo_list(1:nvir)                      = mo_vir(1:nvir)
-                         mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
-                         mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
-                         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-                         call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
-                         deallocate (mo_list)
-                !        Get ovvo tensor
-                         ovvo_dims(1) = nocc
-                         ovvo_dims(2) = nvir
-                         ovvo_dims(3) = nvir
-                         ovvo_dims(4) = nocc
-                         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-                         allocate (mo_list(2*nvir+2*nocc))
-                         nmo(1) = nocc
-                         nmo(2) = nvir
-                         nmo(3) = nvir
-                         nmo(4) = nocc
-                         mo_list(1:nocc)                      = mo_occ(1:nocc)
-                         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-                         mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
-                         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-                         call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
-                         deallocate (mo_list)
-                !        Make anti-symmetrized vovo tensor
-                         minusone_dims(1) = 1
-                         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-                         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
-                         ierr=talsh_tensor_destruct(ovvo_tensor)
-                         call print_date('finished vovo integrals')
-                               
-                !        Clean-up
-                         ierr=talsh_tensor_destruct(aoint_tensor)
-            
-                         
-        end subroutine get_MP2_ForMa_integrals
+         !     switch to Kramer's unrestricted picture
+         
+         !     input variables
+               real(8),    intent(inout) :: coeff(:,:,:), eig(:)
+               real(8),    intent(  out) :: seig(:)
+               complex(8), intent(  out) :: scoeff(:,:,:)
+               integer,    intent(in   ) :: nao, nmo, npo
+         !     summation and dummy variables
+               integer                 :: i, j, spin
+         
+         !     create new arrays grouped by Kramer's partners + drop "positronic" solutions
+         
+               do i = 1, npo+nmo
+                 seig(2*i-1) = eig(npo+i)
+                 seig(2*i  ) = eig(npo+i)
+               end do
+         
+               do spin = 1, 2
+                 if (spin == 1) then
+                     do j = 1, nmo
+                         do i = 1, nao
+                         scoeff(i,2*j-1,spin) = dcmplx(coeff(i,j+npo,1),coeff(i,j+npo,2))
+                         scoeff(i,2*j  ,spin) = dcmplx(coeff(i,j+npo,3),coeff(i,j+npo,4))
+                         end do
+                     end do
+                 else if (spin == 2) then
+                     do j = 1, nmo
+                         do i = 1, nao
+                         scoeff(i,2*j-1,spin) = dcmplx(-coeff(i,j+npo,3), coeff(i,j+npo,4))
+                         scoeff(i,2*j  ,spin) = dcmplx( coeff(i,j+npo,1),-coeff(i,j+npo,2))
+                         end do
+                     end do
+                 end if
+               end do
+         
+              end subroutine quaternion_to_complex
 
-!----------------------------------------------------------------------------------------------------------------------------------------                
+!----------------------------------------------------------------------------------------------------------------
 
-!       subroutine talsh_get_AO_fockmatrix_from_file()
-!       end subroutine 
+              subroutine complex_to_quaternion(exa_input,dm_mo_fort,dm_diracformat)
+         
+               use exacorr_global, only : get_nsolutions
 
-        subroutine get_MP2_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_mat_occ,diag_mat_vir,int_t, print_level)
-
-!        Written by Lucas Visscher, summer 2017
-!        Revised by Xiang Yuan, July 2020
-!        Maybe used one day.....
-         use exacorr_global
-
-         implicit none
-
-         integer, intent(in)                  :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in)                  :: print_level
-         integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
-   
+               !input variables
+               type(exacc_input),   intent(in)  :: exa_input
+               !matrix dimensions
+               integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
+               complex(8), pointer         :: dm_mo_fort(:,:)
+               real(8),pointer             :: dm_diracformat(:,:,:)
+               !complete mo list
+               integer, allocatable :: mo_list(:)
+               !error code
+               integer :: ierr
+               !loop variables
+               integer :: i, j, norbt
+               integer :: i_unbar, j_unbar, j_bar
+               !debug
+               logical :: debug=.false.
+               integer :: k
 
 
-!        target tensors to be filled and given back to the caller
-         type(talsh_tens_t), intent(inout)    :: diag_mat_occ, diag_mat_vir
-         type(talsh_tens_t)                   :: fo_tensor, fv_tensor
-         type(talsh_intg_tens), intent(inout) :: int_t
-
-         type(talsh_tens_t)              :: id_mat_occ
-         type(talsh_tens_t)              :: h_tensor
-         integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2)
-         integer(INTD)                   :: ierr
-         logical                         :: one_el_exist
-         real(8), allocatable            :: eps_occ(:),eps_vir(:) ! orbital energies
-         type(one_el_t)                  :: one_int
-         real(8)                         :: e_core
-         integer                         :: nkp, min_occ
-         type(C_PTR)                     :: body_p
-         complex(8), pointer, contiguous :: h_tens(:,:)
-         integer                         :: i, j
-         type(talsh_tens_t)              :: result_tensor
-         integer(INTD)                   :: result_dims(1)
-         complex(8), pointer             :: result_tens(:)
+!***************
+!     set dims *
+!***************
+ 
+      nocc    = exa_input%nocc
+      nvir    = exa_input%nvir
+      nkr_occ = exa_input%nkr_occ
+      nkr_vir = exa_input%nkr_vir
 
 
-         real(8), parameter :: THRESHOLD=1.0D-8
+!*****************************************************************************************************************************
+!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
+!*****************************************************************************************************************************
+      if (debug) then
+        print *,'<<<<< DM, complete, before formatting to dirac'
+        k = 1
+        do i=1,(nocc+nvir)
+           do j=1,(nocc+nvir)
+              write(*,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_mo_fort(i,j),i,j
+              k = k + 1
+           end do
+         end do
+         print *,'>>>>> DM, complete, before formatting to dirac'
+      end if
 
-         min_occ=minval(mo_occ)
-         result_dims(1)=1
+      norbt = nkr_occ + nkr_vir
+      allocate(mo_list(norbt))
+      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
+      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
 
-!        Get foo tensor
-         fo_dims(1:2) = nocc
-         ierr=talsh_tensor_construct(fo_tensor,C8,fo_dims,init_val=ZERO)
-
-!        Get fvv tensor
-         fv_dims(1:2) = nvir
-         ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
-
-
-!        get one electron integrals
-         one_el_exist = exist_one_el(e_core)
-
-!        write one electron integrals to tensor
-         if (one_el_exist) then
-
-!           create density (identity) matrix for the occupied space
-            ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            h_tens = ZERO
-            do i = 1, nocc
-              h_tens(i,i) = ONE
-            enddo
-
-!           now write one electron integrals
-
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
-
-
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
-
-!           Get access to result
-            result_dims(1) = 1
-            ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,result_tens,result_dims)
-
-            call print_date('one electron integrals added to Fock Matrix')
-
-            ierr=talsh_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",fo_tensor,int_t%oooo,id_mat_occ, ONE)
-            ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
-            call print_date('two electron integrals added to Fock Matrix')
-            
-            if (print_level >10) then
-              call print_tensor(fo_tensor, 1.0D-6, 'fo_tensor')
-              call print_tensor(fv_tensor, 1.0D-6, 'fv_tensor')
-            end if
-
-            !now we can get the correct epsilon values
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            do i=1,fo_dims(1)
-              eps_occ(i)=h_tens(i,i)
-            end do
-
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            do i=1,fv_dims(1)
-              eps_vir(i)=h_tens(i,i)
-            end do
+      nesh = get_nsolutions() / 2
+      allocate (dm_diracformat(nesh,nesh,4))
+      dm_diracformat = real(ZERO)
+      do j = 1, norbt
+        j_unbar = 2*j-1
+        j_bar   = 2*j
+        do i = 1, norbt
+          ! We copy the unbar-unbar part of the density matrix, as well as the unbar-bar part
+          ! This follows from eq. 27 of Shee, Visscher, Saue JCP 145 184107, 2016
+          ! it would be good to test whether the Kramers-restricted assumption holds
+          ! Or even to average over the two density matrices and enforce a Kramers-restricted density
+          i_unbar = 2*i-1
+          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
+          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
+        end do
+      end do
 
 
-            ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            h_tens = ZERO
-            do i = 1, nocc
-                h_tens(i,i) = eps_occ(i)
-            end do
-
-            ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            h_tens = ZERO
-            do i = 1, nvir
-                h_tens(i,i) = eps_vir(i)
-            end do
-
-
-            ierr=talsh_tensor_destruct(id_mat_occ)
-            ierr=talsh_tensor_destruct(result_tensor)
-       
-         if (print_level >0) call print_date('Fock matrix initialized')
-        end if 
-        end subroutine get_MP2_Fockmatrix
-
+      deallocate (dm_diracformat)
+      deallocate (mo_list)
+      deallocate (dm_mo_fort)
+         
+              end subroutine complex_to_quaternion
+ !-------------------------------------------------------------------------------------------------
+              
+              
 end module talsh_mp2no
-        !------------------------------------------------------------------------------------------------
+
