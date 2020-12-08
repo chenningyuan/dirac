@@ -168,8 +168,8 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -284,8 +284,8 @@ C  /* Deck mkvrs1 */
 C     
 C     Punch out geometry to VRML-file
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -997,8 +997,8 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"

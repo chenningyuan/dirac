@@ -27,8 +27,8 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1011,18 +1011,10 @@ C     Zero off-diagonal blocks.
       ENDIF
       IF (STEX_DIAG) THEN
 c     Zero all non-diagonal elements. Mainly for testing.
-         DO II=1,STEX_NPARAM
-            DO JJ=1,STEX_NPARAM
-               IF (II.NE.JJ) AMAT(II,1,1,JJ,1,1) = 0.0D0
-            ENDDO
-         ENDDO
+         CALL FDIAG(AMAT,STEX_NPARAM,STEX_NPARAM)
       ELSE
 C     Make symmetric
-         DO II=2,STEX_NPARAM
-            DO JJ=1,II
-               AMAT(II,1,1,JJ,1,1) = AMAT(JJ,1,1,II,1,1)
-            ENDDO
-         ENDDO
+         CALL USYM(AMAT,STEX_NPARAM,STEX_NPARAM)
       ENDIF
       CALL QEXIT('STEX_BUILD_A')
       END

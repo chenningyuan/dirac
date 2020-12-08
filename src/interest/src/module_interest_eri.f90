@@ -232,7 +232,7 @@ CONTAINS
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2) 
+    real(8), parameter :: pi52 = 2.d0*pi**(5.d0/2.d0) !2*pow(pi,5/2)
 
 
     !> AB-pair indexation
@@ -533,7 +533,7 @@ CONTAINS
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2)
+    real(8), parameter :: pi52 = 2.d0*pi**(5.d0/2.d0) !2*pow(pi,5/2)
 
 
     !> AB-pair indexation
@@ -779,7 +779,7 @@ CONTAINS
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
     real(8) :: rxwp,rywp,rzwp,rxwq,rywq,rzwq
     real(8) :: cntr,cntab,cntcd,tval,fnbra,fdbra,fnket,fdket
-    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2)
+    real(8), parameter :: pi52 = 2.d0*pi**(5.d0/2.d0) !2*pow(pi,5/2)
 
 
     !> AB-pair indexation
@@ -1334,7 +1334,7 @@ CONTAINS
     real(8) :: cntab,cntcd
     real(8) :: px,py,pz,qx,qy,qz
     real(8) :: psq,ppq,rho,rxpq,rypq,rzpq
-    real(8), parameter :: pi52 = 34.986836655249725d0 !2*pow(pi,5/2) 
+    real(8), parameter :: pi52 = 2.d0*pi**(5.d0/2.d0) !2*pow(pi,5/2)
 
 
     AeqB   = ( ca==cb )

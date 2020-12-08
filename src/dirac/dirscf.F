@@ -1267,16 +1267,13 @@ C     ***********************************
 C     ***** Perform SCF-iterations ******
 C     ***********************************
 C
-      OPEN_FAC_save = OPEN_FAC
       DODIIS_save   = DODIIS
 C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
-      OPEN_FAC = OPEN_FAC_save
       IF(DHFEXIT) GOTO 30
 C
 C     Start cycle
@@ -1729,7 +1726,6 @@ C
 
       CALL FLSHFO(LUPRI)
 
-      OPEN_FAC = OPEN_FAC_save
       DODIIS   = DODIIS_save
 C
 C     Close necessary files
@@ -3606,14 +3602,12 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           IF(ATHUCK) THEN
             WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
           ELSEIF(BARNUC) THEN
-            WRITE(LUPRI,'(A)')
-     &    ' Using bare nucleus approximation for initial trial vectors.'
             IF (BNCRON) WRITE(LUPRI,'(A/)')
-     &    "             Improved by an "//
-     &    "estimate of the electronic screening (Slater's rules)."
+     &  " Using bare nucleus plus electronic screening (Slater's"//
+     &  " rules) as start potential."
             IF (BNSPON) WRITE(LUPRI,'(A/)')
-     &    "             Improved by a sum of "//
-     &    "atomic screening potentials."
+     &    " Using sum of fitted atomic potentials as start potential.",
+     &    " Reference: arXiv:2002.02587 (small GRASP fit)"
           ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case

@@ -373,14 +373,20 @@ C
         READ(IUNIT)
       ENDIF
 C
-C     Read single group irrep (spinfree and Levy-Leblond calcs)
-C     =========================================================
+C     Read supersymmetry info
+C     =======================
 C
       IF(LBIT(IOPT,4)) THEN
         IF(TEST) THEN
           call alloc(ki, no)
           CALL READI(IUNIT,NO,ki)
-          CALL ADAIBP(IBEIG,ki,IDIM)
+          JO = 1
+          DO IFRP = 1,NFSYM
+            CALL ADAIBO(
+     &         IBEIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         ki(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
+          ENDDO
           call dealloc(ki)
         ELSE
           READ (IUNIT,END=70,ERR=80) IBEIG
@@ -1504,36 +1510,15 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Adaibp */
-      SUBROUTINE ADAIBP(IBO1,IBO2,IDIM)
-C***********************************************************************
-C
-C     Pre-routine to adaibo
-C     Written by T.Saue Feb 1 2001
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcborb.h"
-#include "dgroup.h"
-      DIMENSION IBO1(*),IBO2(*),IDIM(3,2)
-      I2 = 1
-      DO IFRP = 1,NFSYM
-        CALL ADAIBO(
-     &         IBO1(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         IBO2(I2),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-          I2 = I2 + IDIM(2,IFRP)+IDIM(1,IFRP)
-      ENDDO
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Adaibo */
       SUBROUTINE ADAIBO(IBO1,NO1,NP1,NE1,IBO2,NO2,NP2,NE2)
 C***********************************************************************
 C
 C     Adapt boson irrep array IBO2 to current dimensions IBO1
+C     If negative-energy solutions are missing,
+C        then initial values are zeroed out.
+C     If positive-energy solutions are missing,
+C        then final values are zeroed out.      
 C     Written by T.Saue
 C
 C***********************************************************************
@@ -1815,6 +1800,9 @@ C
       CALL WRITT(LUCOEF,NDIM,CAO)
       CALL WRITT(LUCOEF,NORBT,EIG)
       CALL WRITI(LUCOEF,NORBT,IBEIG)
+!     Add additional information about basis set to create a simple interface file
+!     for correlated calculations (like exacorr)
+      call append_basisinfo_to_dfcoef (LUCOEF)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)

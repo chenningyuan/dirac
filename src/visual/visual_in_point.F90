@@ -26,7 +26,6 @@ module visual_in_point
   use interface_ao
   use visual_cfg
   use visual_london
-  use codata
   use dirac_ao_eval
   use density_eval
   use matrix_defop_old
