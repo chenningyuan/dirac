@@ -750,7 +750,8 @@ C
 C      allocate(ZAN(nucdep))
 C      allocate(C(3,nucdep))
 C      CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
-C     
+C
+      NCUTZ = num_grid_cfg_minz
       INTANG=num_grid_cfg_ANGMIN
       m = NLEB(INTANG)
       NDIM2 = NTBAS(0)*NTBAS(0)
@@ -768,6 +769,7 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
+      write(*,*)"NCUTZ"
       write(*,*)'NUCIND,NUCDEP,MAXOPR',NUCIND,NUCDEP,MAXOPR
       write(*,*)'test,test3'
       DO II=1,NUCIND
@@ -792,9 +794,11 @@ C         IXYZ = 4-IMXYZ
       DO 10 IATOM = 1, NUCIND !change
       DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
 !ayaki  What is this roop? MXOPR=0 in dftgrd.F
-C       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
+C     IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN         
        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
-!ayaki   IBTAND=IAND, but I am not sure what is it.     
+         IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
+     &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
+!     ayaki   IBTAND=IAND, but I am not sure what is it.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
          NAT = NAT + 1
@@ -900,6 +904,10 @@ C        Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
          deallocate(NUMIR)
          deallocate(R)
 C     deallocate(W)
+        ELSE
+          WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)
+          WRITE(LUPRI,'(A,/)')"     effQED potential is skipped"
+        ENDIF                   !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
         ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
 C      

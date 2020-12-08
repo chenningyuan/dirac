@@ -19,6 +19,8 @@
 
         case ('**GRID ')
            call read_input_grid(word, kw_section)
+        case ('*EFFQED ')
+           call read_input_effqed(word, kw_section)
 
 !       *VISUAL is for backward compatibility
 !       *VISUAL used to be under **ANALYZE
@@ -189,6 +191,10 @@
          call kw_read(word, num_grid_cfg_integration_check_level)
       end if
 
+      if (kw_matches(word, '.effQED')) then
+!         num_grid_cfg_effQED = .TRUE.
+      end if
+      
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
@@ -2702,4 +2708,46 @@
 #else
      call quit('read_input_diagonalization_tests not in release version')
 #endif  /* MOD_UNRELEASED */
+   end subroutine
+
+   subroutine read_input_effqed(word, kw_section)
+
+      use input_reader
+      use num_grid_cfg
+
+      implicit none
+
+!     ---------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     ---------------------------------------------------------------------------
+
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.GRASP ')) then
+         num_grid_cfg_grasp = .true.
+      end if
+
+      if (kw_matches(word, '.ANGQED')) then
+         call kw_read(word, num_grid_cfg_angqed)
+      end if
+
+      if (kw_matches(word, '.MINIMUM')) then
+         call kw_read(word, num_grid_cfg_minz)
+      end if
+
+      if (kw_matches(word, '.UEHCUT')) then
+         num_grid_cfg_uehcut = .true.
+      end if
+
+      if (kw_matches(word, '.ALLATOM')) then
+         num_grid_cfg_allatom = .true.
+      end if
+
+      if (kw_matches(word, '.PRINTPOT')) then
+         num_grid_cfg_printpot = .true.
+      end if
+
+      call check_whether_kw_found(word, kw_section)
+
    end subroutine
