@@ -14,6 +14,7 @@ variables:
   GIT_SSL_NO_VERIFY: "true"
   GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
+  DEBIAN_FRONTEND: "noninteractive"
 # exatensor stuff
   WRAP: "NOWRAP"
   TOOLKIT: "GNU"
@@ -61,11 +62,11 @@ ubuntu_gnu_parallel32-check:
 ubuntu_intel_mkl_int64-check:
   only:
     - merge_requests
-  image: ubuntu:18.04
+  image: ubuntu:20.04
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install cmake git
-    - apt-get -qq -y install python python-pip
+    - apt-get -qq -y install python python3-pip
     - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
     - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
     - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
