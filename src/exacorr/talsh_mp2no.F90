@@ -48,7 +48,7 @@ module talsh_mp2no
 !       Point connected with tensors 
         integer                     :: ierr
         real(kind=8), pointer       :: NO_OCC_1(:)         ! natural orbital occupation number saved in new files
-        complex(kind=8), pointer    :: NOs_MO(:,:)  ! sorted natural orbital in MO basis
+        complex(kind=8), pointer    :: NOs_MO(:,:,:)  ! sorted natural orbital in MO basis
         complex(kind=8), pointer    :: NOs_AO_tens(:,:)  ! natural orbital in AO basis
         type(basis_set_info_t)      :: ao_basis ! information about the ao basis
         type(cmo)                   :: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code
@@ -73,7 +73,7 @@ module talsh_mp2no
            initialize_talsh = 0
            open(mp2out, file = 'MP2NOs_MO', status='OLD',FORM='UNFORMATTED',&     
            access='SEQUENTIAL',iostat=err) 
-           allocate(NOs_MO(nvir,nvir))
+           allocate(NOs_MO(nvir,nvir,2))
            allocate(NO_OCC_1(nvir))
            read(mp2out,iostat=err) text,nsym
            read(mp2out,iostat=err) NOs_MO
@@ -88,8 +88,11 @@ module talsh_mp2no
            initialize_talsh=1
 ! generate MP2NOs_MO file containing all natural orbital and occupation number in MO basis
            call talsh_generate_MP2_VNO_MObasis (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)   
+           print *, 'talsh_generate_MP2_VNO_MObasis works?'
            call talsh_create_AO_to_MNO_trans (exa_input,initialize_talsh,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
+           print *, 'talsh_create_AO_to_MNO_trans works?'
            call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,nocc,ierr)
+           print *, 'write_AOtoMNO_trans_DFCOEFformat works?'
         end if 
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
@@ -115,7 +118,7 @@ module talsh_mp2no
 
          type(exacc_input), intent(in) :: exa_input
 
-         complex(kind=8), pointer,intent(inout)     :: NOs_MO(:,:)
+         complex(kind=8), pointer,intent(inout)     :: NOs_MO(:,:,:)
          real(kind=8), pointer,intent(inout)        :: NO_OCC_1(:)         ! natural orbital occupation number and the one saved in new files
          integer,intent(inout)                      :: nocc, nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable,intent(inout)        :: mo_vir(:) ! the list of virtual orbitals
@@ -127,7 +130,7 @@ module talsh_mp2no
          integer(C_INT)              :: ierr
          complex(8), pointer         :: MP2_density_tens(:,:)
          real(kind=8), pointer       :: NOs_MO_R(:,:) ! natural orbitals, complex values represented as reals 
-         complex(kind=8), pointer    :: test_tens(:,:)
+         complex(kind=8), pointer    :: test_tens(:,:,:)
          real(kind=8), pointer       :: MP2_density_quater(:,:,:)
          real(kind=8), pointer       :: NO_OCC_quater(:)
          real(kind=8), pointer       :: NOs_MO_quater(:,:,:)
@@ -230,9 +233,10 @@ module talsh_mp2no
 
 !         call write_matrix(MP2_density_tens,'DM_complex')
          call complex_to_quaternion(exa_input,MP2_density_tens,MP2_density_quater)
-         call diagoanl_matrix_complex(MP2_density_tens,NO_OCC)        
+         print *, "size of DM_quaternion", size(MP2_density_quater,1)
+!         call diagoanl_matrix_complex(MP2_density_tens,NO_OCC,NOs_MO)        
          call diagoanl_matrix_quater(MP2_density_quater,NO_OCC_quater,NOs_MO_quater)
-!         call quaternion_to_complex(NOs_MO_quater,NOs_MO)
+         call quaternion_to_complex(NOs_MO_quater,NOs_MO)
 
 
          n_mp2nos = size(NOs_MO,1) ! MP2NOs is a square matrix, so we only leed one dimension
@@ -241,48 +245,52 @@ module talsh_mp2no
 !        call print_values_R_vectors_C(NO_OCC,NOs_MO)
 
 !  Make some noise so that we know we are proceeding 
-         call print_date('Sort natural orbital (using RELCCSD davidson auxiliary routines)')
+!         call print_date('Sort natural orbital (using RELCCSD davidson auxiliary routines)')
 
 ! temporaryly using the relccsd davidson sort_values_vectors, which in this case
 ! means we need to setup the complex mode in the davidson module, and with that
 ! we can handle complex eigenvalues and eigenvectors
-         call davidson_setup(complex_mode=.true.,unit_output=6,solve_right=.false.)
+!         call davidson_setup(complex_mode=.true.,unit_output=6,solve_right=.false.)
 
 ! allocate first dimension as 2*n_mp2nos since representing the complex numbers as pairs of reals
-            allocate(NOs_MO_R(2*n_mp2nos,n_mp2nos)) 
-
+!         print *, "n_mp2no", n_mp2nos
+!            allocate(NOs_MO_R(2*n_mp2nos,n_mp2nos)) 
 ! copy over the MP2 NOs from the original array of complex variables to the auxiliary real array
-            do i = 1, n_mp2nos
-               j = 2*i - 1 
-               do k = 1, n_mp2nos
-                  NOs_MO_R(j,k)   = dreal(NOs_MO(i,k))
-                  NOs_MO_R(j+1,k) = dimag(NOs_MO(i,k))
-               enddo
-            enddo
+!            do i = 1, n_mp2nos
+!               j = 2*i - 1 
+!               do k = 1, n_mp2nos
+!                  NOs_MO_R(j,k)   = dreal(NOs_MO(i,k))
+!                  NOs_MO_R(j+1,k) = dimag(NOs_MO(i,k))
+!               enddo
+!            enddo
 
-            call sort_values_vectors(sorting_order, NO_OCC, NOs_MO_R, NOs_MO_R, &
-                                     right,left,apply_evalues_shift,energy_shift)
+!            call sort_values_vectors(sorting_order, NO_OCC, NOs_MO_R, NOs_MO_R, &
+!                                     right,left,apply_evalues_shift,energy_shift)
 
 !           call davidson_print_vectors(NO_OCC,   label="MP2 NOs occupation numbers    ")
 !           call davidson_print_vectors(NOs_MO_R, label="MP2 Natural orbitals (RHS)    ", complex_dimension=1)
 
 !  as we had to use a representation of complex numbers as pairs of reals, we reconstruct now the actual array of complex variables
-            do i = 1, n_mp2nos
-               j = 2*i - 1
-               do k = 1, n_mp2nos
-                  NOs_MO(i,k) = dcmplx(NOs_MO_R(j,k),NOs_MO_R(j+1,k))
-               end do
-            enddo
-            deallocate(NOs_MO_R)
+!            do i = 1, n_mp2nos
+!               j = 2*i - 1
+!               do k = 1, n_mp2nos
+!                  NOs_MO(i,k) = dcmplx(NOs_MO_R(j,k),NOs_MO_R(j+1,k))
+!               end do
+!            enddo
+!            deallocate(NOs_MO_R)
 
 !           print *,'Occupation numbers of all natural orbital'
 !           call print_values_R_vectors_C(NO_OCC,NOs_MO)
 
 
-            NO_OCC_1(:) = NO_OCC(1,:)
+         do i = 1, size(NO_OCC_quater)
+            NO_OCC_1(2*i-1) =  NO_OCC_quater(i)
+            NO_OCC_1(2*i  ) =  NO_OCC_quater(i)
+         end do
+!            NO_OCC_1(:) = NO_OCC(1,:)
 
 
-            deallocate(NO_OCC)
+            deallocate(NO_OCC_quater)
 
         end subroutine talsh_generate_MP2_VNO_MObasis
 
@@ -321,7 +329,7 @@ module talsh_mp2no
            integer, intent(in)                    :: nocc,nvir      ! the size of the mo basis for occupied and virtual spinors
            integer, intent(in)                    :: mo_vir(:)      ! the list of virtual orbitals
            integer, intent(in)                    :: initialize_talsh         ! key to initial the lib
-           complex(kind=8), pointer, intent(in)   :: NOs_MO(:,:)    ! sorted natural orbital in MO basis
+           complex(kind=8), pointer, intent(in)   :: NOs_MO(:,:,:)    ! sorted natural orbital in MO basis
            real(kind=8), intent(in)               :: threshold
            real(kind=8), pointer,intent(in)       :: NO_OCC(:)         ! natural orbital occupation number 
            complex(kind=8), pointer,intent(out)   :: NOs_AO_tens(:,:)
@@ -330,8 +338,10 @@ module talsh_mp2no
            integer(C_SIZE_T)                  :: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
            integer(C_INT)                     :: host_arg_max
            type(talsh_tens_t)                 :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
-           type(talsh_tens_t)                 :: NOs_MO_red_tensor  ! reduced natural orbital in MO basis
+           type(talsh_tens_t)                 :: NOs_MOa_red_tensor  ! reduced natural orbital spin_1 in MO basis
+           type(talsh_tens_t)                 :: NOs_MOb_red_tensor  ! reduced natural orbital spin_2 in MO basis
            type(talsh_tens_t)                 :: NOs_AO_tensor  ! reduced natural orbital in AO basis
+           type(talsh_tens_t)                 :: NOs_AOb_tensor  ! reduced natural orbital in AO basis
            complex(kind=8), pointer           :: NOs_MO_red(:,:)
            complex(kind=8), pointer           :: show_result(:,:)
            integer, allocatable               :: mp2no_mo_list(:)   ! molecular orbital indices
@@ -354,24 +364,36 @@ module talsh_mp2no
            end if
                 
            num_no_red = 0
-           do i=1,size(NOs_MO,1),1
+           do i=1,size(NO_OCC,1),1
               if (NO_OCC(i) > threshold) then
                  num_no_red = num_no_red +1
               end if 
            end do
 
+!           print *, size(NOs_MO,1)
+!           print *, size(NO_OCC,1)
            no_red_dims(1)=nvir
            no_red_dims(2)=num_no_red
 !          print *,'size no_red_dims(1)',no_red_dims(1)
 !          print *,'size no_red_dims(2)',no_red_dims(2)
-           ierr=talsh_tensor_construct(NOs_MO_red_tensor,C8,no_red_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(NOs_MO_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+           ierr=talsh_tensor_construct(NOs_MOa_red_tensor,C8,no_red_dims,init_val=ZERO)
+           ierr=talsh_tensor_get_body_access(NOs_MOa_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
            call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
            do i=1,size(NOs_MO_red,2),1
                 do j=1,size(NOs_MO_red,1),1            
-                        NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red)
+                        NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red,1)
                 end do 
            end do
+
+           ierr=talsh_tensor_construct(NOs_MOb_red_tensor,C8,no_red_dims,init_val=ZERO)
+           ierr=talsh_tensor_get_body_access(NOs_MOb_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+           call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
+           do i=1,size(NOs_MO_red,2),1
+                do j=1,size(NOs_MO_red,1),1            
+                        NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red,2)
+                end do 
+           end do
+
 !       print *,'NOs_MO_red',ierr
                   
         
@@ -386,18 +408,18 @@ module talsh_mp2no
            ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=ZERO)
            ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=ZERO)
            call get_MP2_mocoef_tensor (nao, nmo, mp2no_mo_list, mocoefa_tensor, mocoefb_tensor) 
-           ierr=talsh_tensor_add("moco_a(a,b)+=moco_b(a,b)",mocoefa_tensor,mocoefb_tensor)
-!          Print *,'Extracting virtual MO coeffcient in AO basis set',ierr
+!           ierr=talsh_tensor_add("moco_a(a,b)+=moco_b(a,b)",mocoefa_tensor,mocoefb_tensor)
+          Print *,'Extracting virtual MO coeffcient in AO basis set',ierr
            ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
            call c_f_pointer(body_p,show_result,mocoef_dims)
-!           print *,'coeff of HF Molecular Orbital'
-!           do i = 1, nao
-!              print "(4x,a,$)", ""
-!              do j = 1, nmo
-!                 print "(a,2e14.6,$)","    ",show_result(i,j)
-!              enddo
-!              print *, ""
-!           enddo
+           print *,'coeff of HF Molecular Orbital'
+           do i = 1, nao
+              print "(4x,a,$)", ""
+              do j = 1, nmo
+                 print "(a,2e14.6,$)","    ",show_result(i,j)
+              enddo
+              print *, ""
+           enddo
                 
                 
            call print_date('Transform reduced natural orbital from MO basis into AO basis')
@@ -405,17 +427,20 @@ module talsh_mp2no
            no_ao_dims(1)=nao
            no_ao_dims(2)=num_no_red
            ierr=talsh_tensor_construct(NOs_AO_tensor,C8,no_ao_dims,init_val=ZERO)
+           ierr=talsh_tensor_construct(NOs_AOb_tensor,C8,no_ao_dims,init_val=ZERO)
            ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-           ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MO_red_tensor,scale=ONE)
+           ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MOa_red_tensor,scale=ONE)
+          ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AOb_tensor,mocoefb_tensor,NOs_MOb_red_tensor,scale=ONE)
+           ierr=talsh_tensor_add("NO_AO(a,b)+=NO_AO2(a,b)",NOs_AO_tensor,NOs_AOb_tensor)
            call c_f_pointer(body_p,NOs_AO_tens,no_ao_dims) ! to use as a regular Fortran array
-!           print *,'coeff of natural Orbital in AO basis'
-!           do i = 1, nao
-!              print "(4x,a,$)", ""
-!              do j = 1, num_no_red
-!                 print "(a,2e14.6,$)","    ",NOs_AO_tens(i,j)
-!              enddo
-!              print *, ""
-!           enddo
+           print *,'coeff of natural Orbital in AO basis'
+           do i = 1, nao
+              print "(4x,a,$)", ""
+              do j = 1, num_no_red
+                 print "(a,2e14.6,$)","    ",NOs_AO_tens(i,j)
+              enddo
+              print *, ""
+           enddo
                           
         end subroutine talsh_create_AO_to_MNO_trans
 
@@ -691,6 +716,7 @@ module talsh_mp2no
             if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
          end if
   
+         print *,'print npo', npo
          allocate(coeff(nao,nto,nz))
          allocate(eig(nto))
          allocate(ibeig(nto))
@@ -833,7 +859,7 @@ module talsh_mp2no
          end subroutine mp2no_read_from_dirac
 
 !----------------------------------------------------------------------------------------------------------------------------------------------
-        subroutine diagoanl_matrix_complex(M,eVal)
+        subroutine diagoanl_matrix_complex(M,eVal,eVectorsR)
 
                 ! Set parameter needed in lapack
                         integer :: lwork, info,i,j
@@ -850,7 +876,7 @@ module talsh_mp2no
                         vectors_R = size(M,2)
                         print *,'vector_R', vectors_R
                         print *,'vector_L', vectors_L
-                        lwork = 10000000*vectors_R	
+                        lwork = 1000000*vectors_R	
                         allocate(eVectorsL(vectors_L,vectors_R))
                         allocate(eVectorsR(vectors_L,vectors_R))
                         allocate(eVal(2,vectors_R))
@@ -859,7 +885,12 @@ module talsh_mp2no
                         call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
                                     eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
                                     WORK, LWORK, rwork, INFO)
+
+                        deallocate(eVectorsL)
+                        deallocate(work)
+                        deallocate(rwork)
   
+       call print_date('After diagonal_matrix_complex')
         end subroutine diagoanl_matrix_complex
 
 !---------------------------------------------------------------------------------------------                                                        
@@ -868,23 +899,26 @@ module talsh_mp2no
          ! Set parameter needed in qdiag
                  
                  real(kind=8), intent(in), pointer :: A(:,:,:)
-                 real(kind=8), pointer :: EIG(:) 
+                 real(kind=8), pointer :: EIG(:)
                  real(kind=8), pointer :: VEC(:,:,:)                 
                  integer :: LRA, LCA, LRV, LCV
                  integer :: NZ, N, MATZ, LWORK, IERR
                  integer :: i, j
                  real(kind=8), allocatable :: WORK(:)
                  
-
+               
                  LRA = size(A,1)
+                 print *, "LRA?", LRA
                  LCA = size(A,2)
-                 LRV = size(VEC,1)
-                 LCV = size(VEC,2)
+                 print *, "LCA?", LCA
+                 LRV = LRA
+                 print *, "LRV?", LRV
+                 LCV = LCA
+                 print *, "LCV?", LCV
                  lwork = 10000000*LRA
                  NZ = 4
-                 N = 2*LRA
+                 N = LRA
                  MATZ = 1
-
                  allocate(EIG(N))
                  allocate(VEC(LRV,LCV,NZ))
                  allocate(work(MAX(1,LWORK)))
@@ -893,6 +927,13 @@ module talsh_mp2no
                  call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,&
                              WORK,LWORK,IERR)
 
+                  print *, "occupation number in quaternion"
+                  do i = 1, LRA
+                     print *, EIG(i)
+                  end do
+                  deallocate(work)
+   
+                print *, "it works in quaternion_to_complex?"
       end subroutine diagoanl_matrix_quater
 
 !-------------------------------------------------------------------------------------------------------------------------------------
@@ -1010,43 +1051,61 @@ module talsh_mp2no
 
 !-----------------------------------------------------------------------------------------------------------------------------------------------
 
-        subroutine quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo,npo)
+        subroutine quaternion_to_complex(coeff,scoeff)
 
          !     switch to Kramer's unrestricted picture
          
          !     input variables
-               real(8),    intent(inout) :: coeff(:,:,:), eig(:)
-               real(8),    intent(  out) :: seig(:)
-               complex(8), intent(  out) :: scoeff(:,:,:)
-               integer,    intent(in   ) :: nao, nmo, npo
+               real(8),    intent(inout), pointer :: coeff(:,:,:)
+               complex(8), intent(out), pointer   :: scoeff(:,:,:)
+               integer                 :: nao, nmo, npo
          !     summation and dummy variables
                integer                 :: i, j, spin
          
          !     create new arrays grouped by Kramer's partners + drop "positronic" solutions
          
-               do i = 1, npo+nmo
-                 seig(2*i-1) = eig(npo+i)
-                 seig(2*i  ) = eig(npo+i)
-               end do
-         
+               nao = size(coeff,1)
+               nmo = size(coeff,2)
+               print *, "nao in quaternion_to_complex", nao
+               print *, "nmo in quaternion_to_complex", nmo
+               npo = 0
+               allocate(scoeff(2*nao,2*nmo,2))
                do spin = 1, 2
                  if (spin == 1) then
                      do j = 1, nmo
                          do i = 1, nao
-                         scoeff(i,2*j-1,spin) = dcmplx(coeff(i,j+npo,1),coeff(i,j+npo,2))
-                         scoeff(i,2*j  ,spin) = dcmplx(coeff(i,j+npo,3),coeff(i,j+npo,4))
+                         scoeff(2*i-1,2*j-1,spin) = dcmplx(coeff(i,j+npo,1),coeff(i,j+npo,2))
+                         scoeff(2*i,2*j  ,spin) = dcmplx(coeff(i,j+npo,3),coeff(i,j+npo,4))
                          end do
                      end do
                  else if (spin == 2) then
                      do j = 1, nmo
                          do i = 1, nao
-                         scoeff(i,2*j-1,spin) = dcmplx(-coeff(i,j+npo,3), coeff(i,j+npo,4))
-                         scoeff(i,2*j  ,spin) = dcmplx( coeff(i,j+npo,1),-coeff(i,j+npo,2))
+                         scoeff(2*i-1,2*j-1,spin) = dcmplx(-coeff(i,j+npo,3), coeff(i,j+npo,4))
+                         scoeff(2*i,2*j  ,spin) = dcmplx( coeff(i,j+npo,1),-coeff(i,j+npo,2))
                          end do
                      end do
                  end if
                end do
-         
+
+               print *,'natural orbital_1 after qdiag'
+               do i = 1, 2*nao
+                  print "(4x,a,$)", ""
+                  do j = 1, 2*nmo
+                     print "(a,2e14.6,$)","    ",scoeff(i,j,1)
+                  enddo
+                  print *, ""
+               enddo
+
+               print *,'natural orbital_2 after qdiag'
+               do i = 1, 2*nao
+                  print "(4x,a,$)", ""
+                  do j = 1, 2*nmo
+                     print "(a,2e14.6,$)","    ",scoeff(i,j,2)
+                  enddo
+                  print *, ""
+               enddo
+
               end subroutine quaternion_to_complex
 
 !----------------------------------------------------------------------------------------------------------------
@@ -1098,12 +1157,16 @@ module talsh_mp2no
          print *,'>>>>> DM, complete, before formatting to dirac'
       end if
 
-      norbt = nkr_occ + nkr_vir
+!      norbt = nkr_occ + nkr_vir
+      norbt = nkr_vir
+      print *,"norbt", norbt 
       allocate(mo_list(norbt))
       mo_list(1:nkr_occ)                 = exa_input%mokr_occ
       mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
 
-      nesh = get_nsolutions() / 2
+!      nesh = get_nsolutions() / 2
+      nesh = norbt
+      print *,"nesh", nesh 
       allocate (dm_diracformat(nesh,nesh,4))
       dm_diracformat = real(ZERO)
       do j = 1, norbt
@@ -1122,12 +1185,10 @@ module talsh_mp2no
         end do
       end do
 
-
-      deallocate (dm_diracformat)
+!      deallocate (dm_diracformat)
       deallocate (mo_list)
-      deallocate (dm_mo_fort)
-         
-              end subroutine complex_to_quaternion
+!      deallocate (dm_mo_fort)
+      end subroutine complex_to_quaternion
  !-------------------------------------------------------------------------------------------------
               
               
