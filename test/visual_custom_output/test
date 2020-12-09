@@ -1,0 +1,47 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from subprocess import Popen, PIPE
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = '! Requested density at point(s) !',
+      num_lines   = 11,
+      rel_tolerance   = 1.0e-5)
+
+test.run(['dc.inp'],             ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
+test.run(['vis_density_dc.inp'], ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="scalar_field"')#, extf="scalar_field")
+test.run(['vis_jbz_dc.inp'],     ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="vector_field"')#, extf="vector_field")
+test.run(['vis_gradjbz_dc.inp'], ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="tensor_field"')#, extf="tensor_field")
+
+def compare(fname, fname_ref):
+    p = Popen(["diff", fname, fname_ref], stdin=PIPE)
+    p.communicate()
+    if p.returncode == 0:
+        print('{} and {} are the same'.format(fname, fname_ref))
+        sys.stderr.write('{} and {} are the same'.format(fname, fname_ref))
+        sys.stdout.write('{} and {} are the same'.format(fname, fname_ref))
+    elif p.returncode == 1:
+        print('{} and {} are different'.format(fname, fname_ref))
+        sys.stderr.write('{} and {} are different'.format(fname, fname_ref))
+        sys.stdout.write('{} and {} are different'.format(fname, fname_ref))
+    else:
+        print('error %s' % p.returncode)
+        sys.stderr.write('error %s' % p.returncode)
+
+
+compare("scalar_field", "result/scalar_field")
+#compare("scalar_field", "result/scalar_field")
+#compare("scalar_field", "result/scalar_field")
+
+# cleanup
+os.unlink('DFCOEF')
+os.unlink('PAMXVC')
+os.unlink('TBMO')
+
+sys.exit(test.return_code)
