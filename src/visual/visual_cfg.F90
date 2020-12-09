@@ -42,6 +42,8 @@ module visual_cfg
    character(60), public           :: visual_cfg_out_scalar_file_name
    character(60), public           :: visual_cfg_out_vector_file_name
    character(60), public           :: visual_cfg_out_2ndtensor_file_name
+   logical,      public            :: visual_cfg_london_skip_cube = .false.
+   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
    integer, public :: iq_gamma5   =  1
    integer, public :: iq_density  =  2

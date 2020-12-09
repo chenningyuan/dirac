@@ -585,6 +585,14 @@
          end if 
       end if
 
+      if (kw_matches(word, '.NOCUBE')) then
+         visual_cfg_london_skip_cube  = .true.
+      end if
+
+      if (kw_matches(word, '.NOVTK ')) then
+         visual_cfg_london_skip_vtk   = .true.
+      end if
+
 
       call check_whether_kw_found(word, kw_section)
 
