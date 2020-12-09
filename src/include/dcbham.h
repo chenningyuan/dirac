@@ -24,7 +24,9 @@
 !     NOSMLV     - No small nuclear attraction integrals
 !     URKBAL     - Unrestricted kinetic balance
 !     MDIRAC     - modified Dirac Hamiltonian
-!     LEVYLE     - Levy-Leblond Hamiltonian
+!     LEVYLE     - 4-component non-relativistic Levy-Leblond Hamiltonian
+!     NONRAL     - 2-component non-relativistic Pauli Hamiltonian
+!     ECPCALC    - RECP calculation
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
 !     SSMTRC_SAVE- Scaling factor for SS overlap matrix, temporary variable
@@ -139,7 +141,7 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX,  &
+     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
      &        WRITE_Jz_MATRIX, NONREL, FAKE2C
 
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
@@ -152,7 +154,7 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
-     &                ecpcalc,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
+     &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
      &                FAKE2C, I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!

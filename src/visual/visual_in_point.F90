@@ -26,7 +26,6 @@ module visual_in_point
   use interface_ao
   use visual_cfg
   use visual_london
-  use codata
   use dirac_ao_eval
   use density_eval
   use matrix_defop_old
@@ -475,6 +474,13 @@ contains
                   end if
                   matrix_33(1:3, 1:3) = matrix_33(1:3, 1:3) + temp_33(1:3, 1:3)
                end if
+
+               ! the order of elements on matrix_33(1:3,1:3) from get_gj* subroutines:
+               !
+               !  (1,1) (1,2) (1,3)        d(jx)/dx d(jy)/dx d(jz)/dx
+               !  (2,1) (2,2) (2,3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
+               !  (3,1) (3,2) (3,3)        d(jx)/dz d(jy)/dz d(jz)/dz
+               !
 
                if (visual_cfg_property(imat) == iq_divj) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)

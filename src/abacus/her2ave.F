@@ -2484,8 +2484,8 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
-       use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -2502,6 +2502,7 @@ C#include <debye.h>
 #include "dorps.h"
 #include "symmet.h"
 #include "chrxyz.h"
+C
       DATA CHRABC /'A','B','C'/
 C
       INERT = INDEX(SPC,'PRI') .NE. 0

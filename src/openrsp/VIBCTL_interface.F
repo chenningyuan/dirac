@@ -168,6 +168,7 @@ C     ajt This might come out with halved diagonal
 
       subroutine WRITE_HOTFCHT_SPECTRA(STRING,NATOMS)
 #include "hotfccom.h"
+#include "codata.h"
       CHARACTER STRING*(*)
       LOGICAL OptionA,ANGSTROM
       INTEGER IDUMMY,LUINFO,IPOS,IPOS2,numbertypes,atomtypes,J
@@ -176,7 +177,7 @@ C     ajt This might come out with halved diagonal
       CHARACTER(1) T1,ID3
       CHARACTER(15) T15
       DOUBLE PRECISION X,Y,Z,AC !AngstromConvert
-      
+C
       IF(HOTFC)WRITE(IHOTFC,'(A)')' '
       WRITE(IHOTFC,'(A,I5)')'NumberOfAtoms =',NATOMS
       WRITE(IHOTFC,'(A,A)')'SpectraType =',STRING
@@ -186,7 +187,7 @@ C     ajt This might come out with halved diagonal
       WRITE(IHOTFC,'(A)')'Temperatures/K = 0'
       INQUIRE(file='EXCMOLECULE.INP',EXIST=OptionA) 
       IF(OptionA)THEN
-         AC = 0.52917720830
+         AC = XTANG
          !READ EXCITED STATE GEOMETRY
          LUINFO=-1
          CALL GPOPEN (LUINFO,'EXCMOLECULE.INP','OLD',' ','FORMATTED',

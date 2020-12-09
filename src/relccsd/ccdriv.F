@@ -276,8 +276,6 @@ C
       NTOL      = relcc_fopr_desired_convergence
 C     Switch on evaluation of property output if necessary
       IF (DOMP2G) THEN
-!         IF (SPFR) 
-!     &   CALL QUIT('MP2 density matrix not available in spinfree mode')
           DOEXP = .TRUE.
           IPRP_WF = 0
           DO I = 1, NPRP_WF
@@ -2364,7 +2362,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
@@ -2745,7 +2743,6 @@ C
 #include "diis.inc"
 #include "inpt.inc"
 #include "eqns.inc"
-#include "results.inc"
 #include "symm.inc"
 #include "dgroup.h"
 #include "complex.inc"

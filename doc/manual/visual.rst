@@ -381,14 +381,6 @@ Example::
    file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
 
 
-keyword(GAUGE)
-
-Specify gauge origin. Example::
-
-  .GAUGE
-   0.0 0.0 0.0
-
-
 keyword(SMALLAO)
 
 Force evaluation of small component basis functions.

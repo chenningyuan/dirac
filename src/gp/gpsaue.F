@@ -3831,18 +3831,16 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       DIMENSION C(NP)
 C
       V2 = POL2DER(NORDER,C,XOPT)
       OMEGA = SQRT(V2/UM)
-      TEMP  = V2*XTJ/XTM/XTM
+      TEMP  = V2*XTJ/XTANGM10/XTANGM10
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(ILOGG,'(A,1P,E18.4,A)') 
@@ -3865,12 +3863,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
       DIMENSION C(NP)
@@ -3907,12 +3903,13 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
+C
       XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
@@ -3952,11 +3949,12 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(D2=2.0D0,D4=4.0D0)
+C
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
       WRITE(LUPRI,'(A,2X,E10.4,A)')
@@ -3984,11 +3982,12 @@ C
 C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
+C
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
       READ(LUSTDIN,*) NORDER
@@ -4048,13 +4047,14 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(DTOL = 1.0D-4)
 C
       DIMENSION X(NP),Y(NP),C(NP)
+C
 C* Find smallest y-value and take corresponding x-value as start value
 C* for Newton-Raphsons method      
       IYOPT = IDMIN(NP,Y,1)

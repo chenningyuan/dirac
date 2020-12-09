@@ -1283,8 +1283,8 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
-         use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1834,8 +1834,8 @@ C***********************************************************************
 C
 C
 C***********************************************************************
-         use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"

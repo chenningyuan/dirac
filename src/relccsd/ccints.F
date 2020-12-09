@@ -55,7 +55,6 @@ C
 #include "inpt.inc"
 #include "waio.h"
 #include "dcbgen.h"
-#include "dcbham.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -95,7 +94,7 @@ C
 C
       CALL FLSHFO (IW)
       FOCKSP = EQNS.EQ.'FOCKSP'
-      IF (INTERFACE_LOC(1:6).EQ.'DIRAC6'.AND..NOT.SPINFR) THEN
+      IF (INTERFACE_LOC(1:6).EQ.'DIRAC6'.AND..NOT.SPFR) THEN
          PERMSYM = .FALSE.
       ELSE
          PERMSYM = .TRUE.
@@ -995,8 +994,9 @@ C
 #include "eqns.inc"
 #include "inpt.inc"
 #include "ccpar.inc"
+#include "symm.inc"
+! This dependency on a DIRAC common block should go but otherwise NZ is not known.
 #include "dgroup.h"
-#include "dcbham.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1044,7 +1044,7 @@ CMI      ... zero imaginary part of two-el. integrals
          end if
        ELSE
 C     For complex groups we read the real and imaginary part.
-         IF (LEVYLE) THEN
+         IF (SPFR) THEN
           READ (MDINT,END=10010,ERR=10020) IKR,JKR,NONZR,
      &         (INDK(INZ),INDL(INZ),INZ=1,NONZR),
      &         (CBUF(1,INZ),INZ=1,NONZR) 
