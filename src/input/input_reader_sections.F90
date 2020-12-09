@@ -563,6 +563,29 @@
          visual_cfg_london_skip_kappa = .true.
       end if
 
+      if (kw_matches(word, '.OUTFIL')) then
+         visual_cfg_out_file_custom = .true.
+!        file for scalar field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_scalar_file_name   = trim(line)
+            visual_cfg_out_scalar_file_custom = .true.
+         end if 
+!        file for vector field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_vector_file_name   = trim(line)
+            visual_cfg_out_vector_file_custom = .true.
+         end if 
+!        file for 2ndtensor field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_2ndtensor_file_name   = trim(line)
+            visual_cfg_out_2ndtensor_file_custom = .true.
+         end if 
+      end if
+
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine

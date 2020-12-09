@@ -544,6 +544,9 @@ contains
       integer              :: lunit_radial_scalar
       integer              :: lunit_radial_vector
       integer              :: lunit_radial_tensor
+      integer              :: lunit_outfil_custom_scalar
+      integer              :: lunit_outfil_custom_vector
+      integer              :: lunit_outfil_custom_2ndtensor
       real(8), allocatable :: temp(:, :)
       real(8), allocatable :: temp2(:, :, :, :)
       real(8), allocatable :: res(:)
@@ -604,114 +607,141 @@ contains
       lunit_3d_tensor     = 28
       lunit_line_tensor   = 29
       lunit_radial_tensor = 30
+      lunit_outfil_custom_scalar    = 31
+      lunit_outfil_custom_vector    = 32
+      lunit_outfil_custom_2ndtensor = 33
 
-      if (visual_cfg_2d) then
-         open(lunit_2d_scalar,           &
-              file   = 'plot.2d.scalar', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_2d_vector,           &
-              file   = 'plot.2d.vector', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_2d_tensor,           &
-              file   = 'plot.2d.tensor', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_2d_flow,             &
-              file   = 'plot.2d.flow',   &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_3d .or. visual_cfg_3d_fast) then
-         open(lunit_3d_cube,           &
-              file   = 'plot.3d.cube', &
-              status = 'new',          &
-              access = 'sequential',   &
-              form   = 'formatted')
-         open(lunit_3d_vector,           &
-              file   = 'plot.3d.vector', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_3d_vector_vtk,           &
-              file   = 'plot.3d.vector.vtk', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-         open(lunit_3d_scalar,           &
-              file   = 'plot.3d.scalar', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_3d_tensor,           &
-              file   = 'plot.3d.tensor', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
-!        gosia: if we import grid on which we plot, then don't do *cube or *vtk files
-!        as this grid is not necessarily uniform.
-!        If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
-         open(lunit_3d_vector,           &
-              file   = 'plot.3d.vector', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_3d_scalar,           &
-              file   = 'plot.3d.scalar', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-         open(lunit_3d_tensor,           &
-              file   = 'plot.3d.tensor', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_line) then
-         open(lunit_line_scalar,           &
-              file   = 'plot.line.scalar', &
-              status = 'new',              &
-              access = 'sequential',       &
-              form   = 'formatted')
-         open(lunit_line_vector,           &
-              file   = 'plot.line.vector', &
-              status = 'new',              &
-              access = 'sequential',       &
-              form   = 'formatted')
-         open(lunit_line_tensor,           &
-              file   = 'plot.line.tensor', &
-              status = 'new',            &
-              access = 'sequential',     &
-              form   = 'formatted')
-      end if
-
-      if (visual_cfg_radial) then
-         open(lunit_radial_scalar,           &
-              file   = 'plot.radial.scalar', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-         open(lunit_radial_vector,           &
-              file   = 'plot.radial.vector', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-         open(lunit_radial_tensor,           &
-              file   = 'plot.radial.tensor', &
-              status = 'new',                &
-              access = 'sequential',         &
-              form   = 'formatted')
-      end if
+      if (.not.visual_cfg_out_file_custom) then
+         if (visual_cfg_2d) then
+            open(lunit_2d_scalar,           &
+                 file   = 'plot.2d.scalar', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_2d_vector,           &
+                 file   = 'plot.2d.vector', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_2d_tensor,           &
+                 file   = 'plot.2d.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_2d_flow,             &
+                 file   = 'plot.2d.flow',   &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_3d .or. visual_cfg_3d_fast) then
+            open(lunit_3d_cube,           &
+                 file   = 'plot.3d.cube', &
+                 status = 'new',          &
+                 access = 'sequential',   &
+                 form   = 'formatted')
+            open(lunit_3d_vector,           &
+                 file   = 'plot.3d.vector', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_vector_vtk,           &
+                 file   = 'plot.3d.vector.vtk', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+            open(lunit_3d_scalar,           &
+                 file   = 'plot.3d.scalar', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_tensor,           &
+                 file   = 'plot.3d.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
+!           gosia: if we import grid on which we plot, then don't do *cube or *vtk files
+!           as this grid is not necessarily uniform.
+!           If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
+            open(lunit_3d_vector,           &
+                 file   = 'plot.3d.vector', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_scalar,           &
+                 file   = 'plot.3d.scalar', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+            open(lunit_3d_tensor,           &
+                 file   = 'plot.3d.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_line) then
+            open(lunit_line_scalar,           &
+                 file   = 'plot.line.scalar', &
+                 status = 'new',              &
+                 access = 'sequential',       &
+                 form   = 'formatted')
+            open(lunit_line_vector,           &
+                 file   = 'plot.line.vector', &
+                 status = 'new',              &
+                 access = 'sequential',       &
+                 form   = 'formatted')
+            open(lunit_line_tensor,           &
+                 file   = 'plot.line.tensor', &
+                 status = 'new',            &
+                 access = 'sequential',     &
+                 form   = 'formatted')
+         end if
+         
+         if (visual_cfg_radial) then
+            open(lunit_radial_scalar,           &
+                 file   = 'plot.radial.scalar', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+            open(lunit_radial_vector,           &
+                 file   = 'plot.radial.vector', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+            open(lunit_radial_tensor,           &
+                 file   = 'plot.radial.tensor', &
+                 status = 'new',                &
+                 access = 'sequential',         &
+                 form   = 'formatted')
+         end if
+      else
+         if (visual_cfg_out_scalar_file_custom) then
+            open(lunit_outfil_custom_scalar,       &
+                 file   = trim(visual_cfg_out_scalar_file_name), &
+                 status = 'new',                    &
+                 access = 'sequential',             &
+                 form   = 'formatted')
+         end if
+         if (visual_cfg_out_vector_file_custom) then
+            open(lunit_outfil_custom_vector,       &
+                 file   = trim(visual_cfg_out_vector_file_name), &
+                 status = 'new',                    &
+                 access = 'sequential',             &
+                 form   = 'formatted')
+         end if
+         if (visual_cfg_out_2ndtensor_file_custom) then
+            open(lunit_outfil_custom_2ndtensor,       &
+                 file   = trim(visual_cfg_out_2ndtensor_file_name), &
+                 status = 'new',                    &
+                 access = 'sequential',             &
+                 form   = 'formatted')
+         end if
+      end if !if (.not.visual_cfg_out_file_custom) then
 
       if (visual_cfg_list) then
 
@@ -801,23 +831,47 @@ contains
                                        q_max_dim,          &
                                        q)
 
-            write(lunit_line_scalar, '(4ES18.8E3)')      &
-               r(1),                                             &
-               r(2),                                             &
-               r(3),                                             &
-               q(0, 1)
-            write(lunit_line_vector, '(6ES18.8E3)')     &
-               r(1),                                             &
-               r(2),                                             &
-               r(3),                                             &
-               q(1:3, 1)
-            if (visual_cfg_tensor) then
-              write(lunit_line_tensor, '(12ES18.8E3)')     &
-                 r(1),                                             &
-                 r(2),                                             &
-                 r(3),                                             &
-                 q(4:12, 1)
-            end if
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_line_scalar, '(4ES18.8E3)')     &
+                  r(1),                                    &
+                  r(2),                                    &
+                  r(3),                                    &
+                  q(0, 1)
+               write(lunit_line_vector, '(6ES18.8E3)')     &
+                  r(1),                                    &
+                  r(2),                                    &
+                  r(3),                                    &
+                  q(1:3, 1)
+               if (visual_cfg_tensor) then
+                  write(lunit_line_tensor, '(12ES18.8E3)')     &
+                     r(1),                                     &
+                     r(2),                                     &
+                     r(3),                                     &
+                     q(4:12, 1)
+               end if
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(0, 1)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(1:3, 1)
+               end if
+               if (visual_cfg_out_2ndtensor_file_custom) then
+                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(4:12, 1)
+               end if
+            end if !if (.not.visual_cfg_out_file_custom) then
 
          end do
       end if
@@ -865,12 +919,37 @@ contains
 !           Write results
 !           =============
 
-            write(lunit_radial_scalar, '(2e18.10)') &
-               rad,                                 &
-               q(0, 1)
-            write(lunit_radial_vector, '(4e18.10)') &
-               rad,                                 &
-               q(1:3, 1)
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_radial_scalar, '(2e18.10)') &
+                  rad,                                 &
+                  q(0, 1)
+               write(lunit_radial_vector, '(4e18.10)') &
+                  rad,                                 &
+                  q(1:3, 1)
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(0, 1)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     q(1:3, 1)
+               end if
+               !if (visual_cfg_out_2ndtensor_file_custom) then
+               !   write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+               !      r(1),                                             &
+               !      r(2),                                             &
+               !      r(3),                                             &
+               !      q(4:12, 1)
+               !end if
+            end if !if (.not.visual_cfg_out_file_custom) then
+
 
          end do
          write(lupri,*) '  The radial distribution integrates to: ',radtot*s
@@ -910,6 +989,7 @@ contains
                v(1:3)  = q(1:3, 1)
 !              gosia TODO add tensors
                !t(4:12) = q(4:12, 1)
+!              gosia TODO write to custom files
 
                write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
                   ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
@@ -957,17 +1037,41 @@ contains
                                        q_max_dim,          &
                                        w)
 
-            write(lunit_3d_vector, '(6ES18.8E3)') &
-               r(1:3),                         &
-               w(1:3)
-            write(lunit_3d_scalar, '(4ES18.8E3)') &
-               r(1:3),                         &
-               w(0)
-            if (visual_cfg_tensor) then
-              write(lunit_3d_tensor, '(12ES18.8E3)') &
-                 r(1:3),                          &
-                 w(4:12)
-            end if
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_3d_vector, '(6ES18.8E3)') &
+                  r(1:3),                         &
+                  w(1:3)
+               write(lunit_3d_scalar, '(4ES18.8E3)') &
+                  r(1:3),                         &
+                  w(0)
+               if (visual_cfg_tensor) then
+                 write(lunit_3d_tensor, '(12ES18.8E3)') &
+                    r(1:3),                          &
+                    w(4:12)
+               end if
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(0)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(1:3)
+               end if
+               if (visual_cfg_out_2ndtensor_file_custom) then
+                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(4:12)
+               end if
+            end if !if (.not.visual_cfg_out_file_custom) then
 
          end do
  98      continue
@@ -998,17 +1102,41 @@ contains
                                        w, &
                                        jb_input=v)
 
-            write(lunit_3d_vector, '(6ES18.8E3)') &
-               r(1:3),                         &
-               w(1:3)
-            write(lunit_3d_scalar, '(4ES18.8E3)') &
-               r(1:3),                         &
-               w(0)
-            if (visual_cfg_tensor) then
-              write(lunit_3d_tensor, '(12ES18.8E3)') &
-                 r(1:3),                         &
-                 w(4:12)
-            end if
+            if (.not.visual_cfg_out_file_custom) then
+               write(lunit_3d_vector, '(6ES18.8E3)') &
+                  r(1:3),                         &
+                  w(1:3)
+               write(lunit_3d_scalar, '(4ES18.8E3)') &
+                  r(1:3),                         &
+                  w(0)
+               if (visual_cfg_tensor) then
+                 write(lunit_3d_tensor, '(12ES18.8E3)') &
+                    r(1:3),                         &
+                    w(4:12)
+               end if
+            else
+               if (visual_cfg_out_scalar_file_custom) then
+                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(0)
+               end if
+               if (visual_cfg_out_vector_file_custom) then
+                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(1:3)
+               end if
+               if (visual_cfg_out_2ndtensor_file_custom) then
+                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                     r(1),                                             &
+                     r(2),                                             &
+                     r(3),                                             &
+                     w(4:12)
+               end if
+            end if !if (.not.visual_cfg_out_file_custom) then
 
          end do
  99      continue
@@ -1225,17 +1353,41 @@ contains
                                                 q_max_dim,          &
                                                 q(0, kcube))
 
-                     write(lunit_3d_vector, '(6ES18.8E3)') &
-                        r(1:3),                                    &
-                        q(1:3, kcube)
-                     write(lunit_3d_scalar, '(4ES18.8E3)')  &
-                        r(1:3),                                    &
-                        q(0, kcube)
-                     if (visual_cfg_tensor) then
-                       write(lunit_3d_tensor, '(12ES18.8E3)')  &
-                          r(1:3),                                    &
-                          q(4:12, kcube)
-                     end if
+                     if (.not.visual_cfg_out_file_custom) then
+                        write(lunit_3d_vector, '(6ES18.8E3)') &
+                           r(1:3),                                    &
+                           q(1:3, kcube)
+                        write(lunit_3d_scalar, '(4ES18.8E3)')  &
+                           r(1:3),                                    &
+                           q(0, kcube)
+                        if (visual_cfg_tensor) then
+                          write(lunit_3d_tensor, '(12ES18.8E3)')  &
+                             r(1:3),                                    &
+                             q(4:12, kcube)
+                        end if
+                     else
+                        if (visual_cfg_out_scalar_file_custom) then
+                           write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
+                              r(1),                                             &
+                              r(2),                                             &
+                              r(3),                                             &
+                              q(0, kcube)
+                        end if
+                        if (visual_cfg_out_vector_file_custom) then
+                           write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
+                              r(1),                                             &
+                              r(2),                                             &
+                              r(3),                                             &
+                              q(1:3, kcube)
+                        end if
+                        if (visual_cfg_out_2ndtensor_file_custom) then
+                           write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
+                              r(1),                                             &
+                              r(2),                                             &
+                              r(3),                                             &
+                              q(4:12, kcube)
+                        end if
+                     end if !if (.not.visual_cfg_out_file_custom) then
                      if (visual_cfg_tensor) then
                        temp2(icube, jcube, kcube, 1:12) = q(1:12, kcube)
                      else
@@ -1290,6 +1442,10 @@ contains
 
       if (visual_cfg_3d_gridimp) close(lunit_3d_gridimp, status = 'keep')
       if (visual_cfg_3d_readjb)  close(lunit_3d_jbfile, status = 'keep')
+
+      if (visual_cfg_out_scalar_file_custom)    close(lunit_outfil_custom_scalar, status = 'keep')
+      if (visual_cfg_out_vector_file_custom)    close(lunit_outfil_custom_vector, status = 'keep')
+      if (visual_cfg_out_2ndtensor_file_custom) close(lunit_outfil_custom_2ndtensor, status = 'keep')
 
       deallocate(q)
       deallocate(atom_xyz)

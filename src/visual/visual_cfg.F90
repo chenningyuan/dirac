@@ -35,6 +35,13 @@ module visual_cfg
    logical,      public            :: visual_cfg_skip(max_para) = .false.
    integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
    integer,      public            :: visual_cfg_irep_xvector(max_para)
+   logical,      public            :: visual_cfg_out_file_custom = .false.
+   logical,      public            :: visual_cfg_out_scalar_file_custom = .false.
+   logical,      public            :: visual_cfg_out_vector_file_custom = .false.
+   logical,      public            :: visual_cfg_out_2ndtensor_file_custom = .false.
+   character(60), public           :: visual_cfg_out_scalar_file_name
+   character(60), public           :: visual_cfg_out_vector_file_name
+   character(60), public           :: visual_cfg_out_2ndtensor_file_name
 
    integer, public :: iq_gamma5   =  1
    integer, public :: iq_density  =  2
