@@ -49,7 +49,7 @@ module talsh_mp2no
         integer                     :: ierr
         real(kind=8), pointer       :: NO_OCC_1(:)         ! natural orbital occupation number saved in new files
         complex(kind=8), pointer    :: NOs_MO(:,:)  ! sorted natural orbital in MO basis
-        complex(kind=8), pointer    :: NOs_AO_tens(:,:)  ! natural orbital in AO basis
+        real(8),pointer             :: NOs_AO_quat(:,:,:)  ! new quaternion orbital in AO basis
         type(basis_set_info_t)      :: ao_basis ! information about the ao basis
         type(cmo)                   :: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code
         character                   :: text*74      ! holds text read from DFCOEF, only used for printing this
@@ -72,11 +72,10 @@ module talsh_mp2no
            print *,'Threshold set', threshold
            initialize_talsh=1
 ! generate MP2NOs_MO file containing all natural orbital and occupation number in MO basis
-           call talsh_generate_MP2_VNO_MObasis (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)   
-           print *, 'talsh_generate_MP2_VNO_MObasis works?'
-!           call talsh_create_AO_to_MNO_trans (exa_input,initialize_talsh,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC_1,NOs_AO_tens)
+           call talsh_generate_MP2_VNO_MObasis (exa_input,NO_OCC_1,nocc,nvir,mo_vir)   
+!           call talsh_create_AO_to_MNO_trans (exa_input,threshold,NOs_AO_quat,'DM_complex')
 !           print *, 'talsh_create_AO_to_MNO_trans works?'
-!           call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_tens,nocc,ierr)
+!           call write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor_all,'DFCOEF','MP2NOs_AO',NO_OCC_1,NOs_AO_quat,nocc,ierr)
 !           print *, 'write_AOtoMNO_trans_DFCOEFformat works?'
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
@@ -90,7 +89,7 @@ module talsh_mp2no
 
  !-----------------------------------------------------------------------------------------------------------------------------------------------
 
-      subroutine talsh_generate_MP2_VNO_MObasis (exa_input,NOs_MO,NO_OCC_1,nocc,nvir,mo_vir)
+      subroutine talsh_generate_MP2_VNO_MObasis (exa_input,NO_OCC_1,nocc,nvir,mo_vir)
 
 !       This subroutine obtains the complex mp2 natural orbital in MO basis
 !       Written by Xiang Yuan, July 2020
@@ -101,12 +100,11 @@ module talsh_mp2no
 
 
          type(exacc_input), intent(in) :: exa_input
-
-         complex(kind=8), pointer,intent(inout)    :: NOs_MO(:,:)
-         real(kind=8), pointer                     :: NO_OCC(:,:)       ! natural orbital occupation number and the one saved in new files
          real(kind=8), pointer,intent(inout)       :: NO_OCC_1(:)         ! natural orbital occupation number and the one saved in new files
          integer,intent(inout)                     :: nocc, nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable,intent(inout)       :: mo_vir(:) ! the list of virtual orbitals
+         complex(kind=8), pointer                  :: NOs_MO(:,:)
+         real(kind=8), pointer                     :: NO_OCC(:,:)       ! natural orbital occupation number and the one saved in new files
          integer,  allocatable                     :: mo_occ(:)               ! the list of occupied orbitals
          real(8), allocatable                      :: eps_occ(:),eps_vir(:) ! HF orbital energies
 
@@ -126,17 +124,14 @@ module talsh_mp2no
          complex(8), pointer         :: MP2_density_tens(:,:)
          complex(kind=8), pointer    :: test_tens(:,:)
 
-
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
 
-
          
-
 !        Scalars (need to be defined as tensor types)
          real(kind=8)  :: energy_shift(2) = 0.0d0
-         integer       :: i,j, k, n_mp2nos
+         integer       :: i, j, k
          integer       :: num_no_red       ! number of reduced natural orbital
          integer       :: sorting_order = -1
          logical       :: left  = .false.  !variable in davidson module controling sorted routine 
@@ -199,16 +194,15 @@ module talsh_mp2no
          ierr=talsh_tensor_init(MP2_density_tensor%prime_vv)
          ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
-!        print *,'after constructing density matrix',ierr
-
 
 !  Make some noise so that we know we are proceeding 
+         call print_date('Save complex non-digonal DM to file DM_complex')
+!        call write_matrix(MP2_density_tens,'DM_complex')
          call print_date('Diagonalizing MP2 VV density matrix')
 !  Diagoliazation of Density matrix
          allocate(NO_OCC(2,size(MP2_density_tens,2)))
          allocate(NO_OCC_1(size(MP2_density_tens,2)))
          NO_OCC = 0.0d0
-
 
          call diagoanl_matrix_complex(MP2_density_tens,NO_OCC,NOs_MO)        
          NO_OCC_1(:) = NO_OCC(1,:)
@@ -246,137 +240,54 @@ module talsh_mp2no
 !-----------------------------------------------------------------------------------------------------------------------
 
  
-        subroutine talsh_create_AO_to_MNO_trans (exa_input,initialize_talsh,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC,NOs_AO_tens)
+        subroutine talsh_create_AO_to_MNO_trans (exa_input,threshold,NOs_AO_quat,Matrix_name)
          !        Routine to set theshold and reduce natural orbital space including transform from MO basis to AO basis 
          !        Now theshold is 0
-                         
-                    type(exacc_input), intent(in)          :: exa_input
-                    integer, intent(in)                    :: nocc,nvir      ! the size of the mo basis for occupied and virtual spinors
-                    integer, intent(in)                    :: mo_vir(:)      ! the list of virtual orbitals
-                    integer, intent(in)                    :: initialize_talsh         ! key to initial the lib
-                    complex(kind=8), pointer, intent(in)   :: NOs_MO(:,:,:)    ! sorted natural orbital in MO basis
-                    real(kind=8), intent(in)               :: threshold
-                    real(kind=8), pointer,intent(in)       :: NO_OCC(:)         ! natural orbital occupation number 
-                    complex(kind=8), pointer,intent(out)   :: NOs_AO_tens(:,:)
-                    integer(C_INT)                     :: ierr
-                    type(C_PTR)                        :: body_p
-                    integer(C_SIZE_T)                  :: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-                    integer(C_INT)                     :: host_arg_max
-                    type(talsh_tens_t)                 :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
-                    type(talsh_tens_t)                 :: NOs_MOa_red_tensor  ! reduced natural orbital spin_1 in MO basis
-                    type(talsh_tens_t)                 :: NOs_MOb_red_tensor  ! reduced natural orbital spin_2 in MO basis
-                    type(talsh_tens_t)                 :: NOs_AO_tensor  ! reduced natural orbital in AO basis
-                    type(talsh_tens_t)                 :: NOs_AOb_tensor  ! reduced natural orbital in AO basis
-                    complex(kind=8), pointer           :: NOs_MO_red(:,:)
-                    complex(kind=8), pointer           :: show_result(:,:)
-                    integer, allocatable               :: mp2no_mo_list(:)   ! molecular orbital indices
-                    integer                            :: num_no_red
-                    integer(INTD), dimension(2)        :: no_red_dims, no_ao_dims
-                    integer(INTD)                      :: mocoef_dims(2)
-                    integer                            :: nao, nmo     ! the size of the ao & mo basis for natural orbital transformation 
+
+!                    use matrix_complex_to_quaternion :
+                    use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
+                    use talsh_gradient
+
+
+                    character(len=*),intent(in)        :: Matrix_name
+                    type(exacc_input), intent(in)      :: exa_input
+                    real(kind=8), intent(in)           :: threshold
+                    real(kind=8), pointer,intent(out)  :: NOs_AO_quat(:,:,:)      ! new quaternion orbital in AO basis 
+
+                    complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
+                    real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
+                    real(kind=8), pointer              :: NO_OCC_quat(:)          ! occupation number from qdia of DM
+                    real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
+                    real(kind=8), pointer              :: NOs_MO_quat_cano(:,:,:) ! new canonical orbital 
+
                     integer                            :: i,j
-                    real(kind=8), pointer       :: MP2_density_quater(:,:,:)
-                    real(kind=8), pointer       :: NO_OCC_quater(:)
-                    real(kind=8), pointer       :: NOs_MO_quater(:,:,:)
-                               
-                         
-         !       Initialize libraries
-                         
-                    if (initialize_talsh == 0) then
-                       buf_size=exa_input%talsh_buff*buf_size
-                       ierr=talsh_init(buf_size,host_arg_max)
-                       call print_date('Initialized talsh library')
-                       write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
-                       call interest_initialize(.true.)
-                       call print_date('Initialized interest library')
-                    end if
-                         
-                    num_no_red = 0
-                    do i=1,size(NO_OCC,1),1
-                       if (NO_OCC(i) > threshold) then
-                          num_no_red = num_no_red +1
-                       end if 
-                    end do
-         
-!                    call write_matrix(MP2_density_tens,'DM_complex')
-         !           print *, size(NOs_MO,1)
-         !           print *, size(NO_OCC,1)
-                    no_red_dims(1)=nvir
-                    no_red_dims(2)=num_no_red
-         !          print *,'size no_red_dims(1)',no_red_dims(1)
-         !          print *,'size no_red_dims(2)',no_red_dims(2)
-                    ierr=talsh_tensor_construct(NOs_MOa_red_tensor,C8,no_red_dims,init_val=ZERO)
-                    ierr=talsh_tensor_get_body_access(NOs_MOa_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-                    call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
-                    do i=1,size(NOs_MO_red,2),1
-                         do j=1,size(NOs_MO_red,1),1            
-                                 NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red,1)
-                         end do 
-                    end do
-         
-                    ierr=talsh_tensor_construct(NOs_MOb_red_tensor,C8,no_red_dims,init_val=ZERO)
-                    ierr=talsh_tensor_get_body_access(NOs_MOb_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-                    call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
-                    do i=1,size(NOs_MO_red,2),1
-                         do j=1,size(NOs_MO_red,1),1            
-                                 NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red,2)
-                         end do 
-                    end do
-         
-         !       print *,'NOs_MO_red',ierr
-                           
-                 
-                    call print_date('Extracting virtual MO coeffcient in AO basis set')
-         !       Extracting virtual MO coeffcient in AO basis set
-                    nao = (nocc + nvir)/2
-                    nmo = nvir 
-                    mocoef_dims(1) = nao
-                    mocoef_dims(2) = nmo
-                    allocate(mp2no_mo_list(nvir))
-                    mp2no_mo_list = mo_vir
-                    ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=ZERO)
-                    ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=ZERO)
-                    call get_MP2_mocoef_tensor (nao, nmo, mp2no_mo_list, mocoefa_tensor, mocoefb_tensor) 
-         !           ierr=talsh_tensor_add("moco_a(a,b)+=moco_b(a,b)",mocoefa_tensor,mocoefb_tensor)
-                   Print *,'Extracting virtual MO coeffcient in AO basis set',ierr
-                    ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-                    call c_f_pointer(body_p,show_result,mocoef_dims)
-                    print *,'coeff of HF Molecular Orbital'
-                    do i = 1, nao
-                       print "(4x,a,$)", ""
-                       do j = 1, nmo
-                          print "(a,2e14.6,$)","    ",show_result(i,j)
-                       enddo
-                       print *, ""
-                    enddo
-                         
-                         
-         call print_date('Transform reduced natural orbital from MO basis into AO basis')
-         !Transform reduced natural orbital from MO basis into AO basis
-                    no_ao_dims(1)=nao
-                    no_ao_dims(2)=num_no_red
-                    ierr=talsh_tensor_construct(NOs_AO_tensor,C8,no_ao_dims,init_val=ZERO)
-                    ierr=talsh_tensor_construct(NOs_AOb_tensor,C8,no_ao_dims,init_val=ZERO)
-                    ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-   ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MOa_red_tensor,scale=ONE)
-   ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AOb_tensor,mocoefb_tensor,NOs_MOb_red_tensor,scale=ONE)
-                    ierr=talsh_tensor_add("NO_AO(a,b)+=NO_AO2(a,b)",NOs_AO_tensor,NOs_AOb_tensor)
-                    call c_f_pointer(body_p,NOs_AO_tens,no_ao_dims) ! to use as a regular Fortran array
-                    print *,'coeff of natural Orbital in AO basis'
-                    do i = 1, nao
-                       print "(4x,a,$)", ""
-                       do j = 1, num_no_red
-                          print "(a,2e14.6,$)","    ",NOs_AO_tens(i,j)
-                       enddo
-                       print *, ""
-                    enddo
+
+                                                        
+                    call print_date('Read complex density matrix from DM_complex')
+                    call read_matrix(MP2_density_comp, Matrix_name)
+
+                    call print_date('Transform DM from complex into quaternion')
+                    call complex_to_quaternion(exa_input, MP2_density_comp, MP2_density_quat)
+
+                    call print_date('Qdiag Density matrix')
+                    call diagoanl_matrix_quater(MP2_density_quat, NO_OCC_quat, NOs_MO_quat)
+
+                    call print_date('Sort and choose quaterbion natural orbital')
+                    call sort_values_vectors (sortingorder, NOs_OCC_quat, NOs_MO_quat, threshold)
+
+!                    call print_date('Get new Canonical orbital')
+!                    call get_Cano_Orbital(NOs_MO_quat,NOs_MO_quat_cano)
+
+                    call print_date('Get new orbital in AO basis')
+                    call basis_transform(NOs_MO_quat, NOs_AO_quat)
+                        
                                    
                  end subroutine talsh_create_AO_to_MNO_trans
          
 !-----------------------------------------------------------------------------------------------------------------------
 
 
-      subroutine write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor,file_in_name,file_out_name,NO_OCC,NOs_MO,nocc,ierr)
+      subroutine write_AOtoMNO_trans_DFCOEFformat (ao_basis,cspinor,file_in_name,file_out_name,NO_OCC,NOs_AO_quat,nocc,ierr)
 
          use exacorr_mo
          use exacorr_datatypes
@@ -397,7 +308,7 @@ module talsh_mp2no
          type(qumo)             :: qorbital
          character              :: text*74      ! holds text read from DFCOEF, only used for printing this
          real(kind=8), pointer       :: NO_OCC(:)         ! natural orbital occupation number saved in new files
-         complex(kind=8), pointer    :: NOs_MO(:,:)
+         real(8),pointer             :: NOs_AO_quat(:,:,:)  ! new quaternion orbital in AO basis
          integer                :: nsym
          real(8)                :: total_energy
          logical                :: tobe
@@ -533,6 +444,7 @@ module talsh_mp2no
 
 
 !---------------------------------------------------------------------------------------------------------------------------------------
+
         subroutine mp2no_read_from_dirac (ao_basis,cspinor,file_name,numcf,jstrt,ierr)
 
          use exacorr_mo
@@ -748,42 +660,40 @@ module talsh_mp2no
          end subroutine mp2no_read_from_dirac
 
 !----------------------------------------------------------------------------------------------------------------------------------------------
-        subroutine diagoanl_matrix_complex(M,eVal,eVectorsR)
 
-                ! Set parameter needed in lapack
-                        integer :: lwork, info,i,j
-                        real(kind=8), allocatable :: work(:)
-                        real(kind=8), allocatable :: rwork(:)
-                        integer :: vectors_L, vectors_R
-                        complex(kind=8), intent(inout), pointer :: M(:,:)
-                        real(kind=8), pointer :: eVal(:,:) 
-                        complex(kind=8), pointer :: eVectorsR(:,:)
-                        complex(kind=8), pointer :: eVectorsL(:,:)
-                        character(len=1) :: do_left = 'N', do_right = 'V'      
+      subroutine diagoanl_matrix_complex(M,eVal,eVectorsR)
+         ! Set parameter needed in lapack
+               integer :: lwork, info,i,j
+               real(kind=8), allocatable :: work(:)
+               real(kind=8), allocatable :: rwork(:)
+               integer :: vectors_L, vectors_R
+               complex(kind=8), intent(inout), pointer :: M(:,:)
+               real(kind=8), pointer :: eVal(:,:) 
+               complex(kind=8), pointer :: eVectorsR(:,:)
+               complex(kind=8), pointer :: eVectorsL(:,:)
+               character(len=1) :: do_left = 'N', do_right = 'V'      
 
-                        vectors_L = size(M,1)
-                        vectors_R = size(M,2)
-                        print *,'vector_R', vectors_R
-                        print *,'vector_L', vectors_L
-                        lwork = 1000000*vectors_R	
-                        allocate(eVectorsL(vectors_L,vectors_R))
-                        allocate(eVectorsR(vectors_L,vectors_R))
-                        allocate(eVal(2,vectors_R))
-                        allocate(work(MAX(1,LWORK)))
-                        allocate(rwork(2*vectors_R))
-                        call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
-                                    eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
-                                    WORK, LWORK, rwork, INFO)
+               vectors_L = size(M,1)
+               vectors_R = size(M,2)
+               lwork = 1000000*vectors_R	
+               allocate(eVectorsL(vectors_L,vectors_R))
+               allocate(eVectorsR(vectors_L,vectors_R))
+               allocate(eVal(2,vectors_R))
+               allocate(work(MAX(1,LWORK)))
+               allocate(rwork(2*vectors_R))
 
-                        deallocate(eVectorsL)
-                        deallocate(work)
-                        deallocate(rwork)
+               call zgeev (do_left, do_right, vectors_R, M, vectors_L, &
+                           eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
+                           WORK, LWORK, rwork, INFO)
+
+               deallocate(eVectorsL)
+               deallocate(work)
+               deallocate(rwork)
   
        call print_date('After diagonal_matrix_complex')
-        end subroutine diagoanl_matrix_complex
+      end subroutine diagoanl_matrix_complex
 
 
-                                         
 !---------------------------------------------------------------------------------------------------------------------------------------------------
                 
         subroutine get_MP2_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
