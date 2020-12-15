@@ -3805,7 +3805,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3,2)
 
@@ -3825,11 +3825,16 @@ C     Check for the presence of coefficient file
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(TOBE) THEN
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RKBIMP')
-C       IDIM(1,IFRP) - number of positronic solutions
-C       IDIM(2,IFRP) - number of electronic solutions
-C       IDIM(3,IFRP) - number of AO-basis functions
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+        IF(FNDLAB('INFO    ',LUCOEF)) THEN         
+C         IDIM(1,IFRP) - number of positronic solutions
+C         IDIM(2,IFRP) - number of electronic solutions
+C         IDIM(3,IFRP) - number of AO-basis functions
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+     &         ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      ELSE
+         CALL QUIT('RKBIMP: Error reading info')
+      ENDIF
+        
 C.......Check that the number of negative energy solutions is smaller than UKB
 C.......and calculate space needed to store UKB complement in orthonormal basis
         NBUF = 0
