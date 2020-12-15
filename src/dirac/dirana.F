@@ -1282,7 +1282,7 @@ C
 #include "dcbham.h"
 #include "dummy.h"
 C
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       DIMENSION WORK(*)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          NVECS(2,0:2),IOFF(2),IDIM(3,2)
@@ -1304,8 +1304,13 @@ C     is used in the orbital strings
 C
       DO I = 1,NREFS
         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','ANAPRJ')
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+        IF(FNDLAB('INFO    ',LUCOEF)) THEN         
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
      &       (NSTR(J,2,I),NSTR(J,1,I),IDUM,J=1,NSYM),DUM
+        ELSE
+          WRITE(6,*) 'PRJSOB: Error reading first record on ',REFFIL(I)     
+          CALL QUIT('PRJSOB: Error reading info')
+        ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
       ENDDO
       DO IFRP = 1,NFSYM
