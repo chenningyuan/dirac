@@ -9,17 +9,15 @@ CONTAINS
 ! Purpose: Do the final multiplication of the initial wave function
 !          with the coupling block and the final state wavefunctions.
 !
-
     use adc_fano_exchange
     use memory_allocator
-    use codata
     use adc_cfg
 #ifdef HAS_STIELTJES
     use stieltjesmod
 #endif
 
     IMPLICIT NONE
-
+#include "pi.h"
 !
 ! Calling Variables
 !
@@ -428,13 +426,13 @@ CONTAINS
 
     use adc_fano_exchange
     use memory_allocator
-    use codata
     use adc_cfg
 #ifdef HAS_STIELTJES
     use stieltjesmod
 #endif
 
     IMPLICIT NONE
+#include "pi.h"
 
 !
 ! Calling Variables

@@ -1502,15 +1502,22 @@ C***********************************************************************
 C
       PARAMETER ( D1 = 1.0D00 , DM1 = -1.0D00 )
 C
+C dcbham.h : spinfr, levyle
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbham.h"
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
 C
+      IF (spinfr .OR. levyle) THEN
+         NZ_local = 1
+      ELSE
+         NZ_local = NZ
+      END IF
       IF (IPRINT .GE. 20) THEN
          CALL HEADER('Output from RADDFQ',-1)
          WRITE(LUPRI,'(A,I3)') 'NXY       = ',NXY
@@ -1571,7 +1578,7 @@ C     Term 2 (real part)
 C     ------------------
 C
 C
-      IF (NZ .GE. 2) THEN
+      IF (NZ_local .GE. 2) THEN
 C
 C        - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;2,1}
 C
@@ -1598,7 +1605,7 @@ C     Term 3 and 4 (real part)
 C     ------------------------
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
 C
@@ -1638,7 +1645,7 @@ C     Term 6 (real part)
 C     ------------------
 C
 C
-      IF (NZ .GE. 2 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 2 .AND. IX .NE. IY) THEN
 C
 C        - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
 C
@@ -1649,7 +1656,7 @@ C
 C
       END IF
 C
-      IF (NZ .GE. 4) THEN
+      IF (NZ_local .GE. 4) THEN
 C
 C
 C        Term 7 (real part)
@@ -1720,7 +1727,7 @@ C     Term 10 (real part)
 C     ------------------
 C
 C
-      IF (NZ .GE. 2 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 2 .AND. IX .NE. IY) THEN
 C
 C        - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;2,3}
 C
@@ -1732,7 +1739,7 @@ C
       END IF
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C
 C        Term 11 (real part)
@@ -1763,7 +1770,7 @@ C
 C
 C     Skip remaining 36 terms if NZ = 1.
 C
-      IF (NZ .EQ. 1) GOTO 100
+      IF (NZ_local .EQ. 1) GOTO 100
 C
 C
 C     *************************
@@ -1821,7 +1828,7 @@ C     Term 3 and 4 (i-imag part)
 C     --------------------------
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;4,1}
 C
@@ -1869,7 +1876,7 @@ C
 C
       END IF
 C
-      IF (NZ .GE. 4) THEN
+      IF (NZ_local .GE. 4) THEN
 C
 C
 C        Term 7 (i-imag part)
@@ -1949,7 +1956,7 @@ C
       END IF
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C
 C        Term 11 (i-imag part)
@@ -1980,7 +1987,7 @@ C
 C
 C     Skip remaining 24 terms if NZ = 2.
 C
-      IF (NZ .EQ. 2) GOTO 100
+      IF (NZ_local .EQ. 2) GOTO 100
 C
 C
       call quit('*** ERROR in RADDFQ *** NZ = 4 not implemented')
@@ -2993,8 +3000,10 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+C dcbham.h : spinfr, levyle
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbham.h"
 #include "dgroup.h"
 C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3,*)
@@ -3002,7 +3011,14 @@ C
 C
       LOGICAL SWAPIJ
 C
-      if (nz .eq. 4) call quit('nz=4 not implemented')
+      IF (spinfr .OR. levyle) THEN
+         NZ_local = 1
+      ELSE
+         NZ_local = NZ
+      END IF
+      if (NZ_local .eq. 4) then
+         call quit('SYMMH2AX1: nz=4 not implemented')
+      end if
       DO IN = 1, N
          CALL DCOPY(NASHT*NASHT*NNASHX*3*NZ,H2AC(1,1,1,1,1,IN),1,
      &        H2ACO,1)
@@ -3044,7 +3060,7 @@ C
 C                    NZ = 2:
 C                    -------
 C
-                     IF (NZ .GE. 2) THEN
+                     IF (NZ_local .GE. 2) THEN
 C
 C                       (kl|ij) + (ij|kl) = (kl|ij) + (ji|lk)^*
 C
@@ -3069,7 +3085,7 @@ C
 C                    NZ = 4:
 C                    -------
 C
-                     IF (NZ .GE. 4) THEN
+                     IF (NZ_local .GE. 4) THEN
 C
 C                       (kl|iJ) + (iJ|kl) = (kl|iJ) + (Ji|lk)^*
 C
@@ -3134,7 +3150,7 @@ C
      &                    H2AC(K,L,NIJ,1,3,IN) +
      &                    H2ACO(I,J,NKL,1,3)
 C
-                     IF (NZ .GE. 2) THEN
+                     IF (NZ_local .GE. 2) THEN
 C
 C                       NZ = 2:
 C                       -------
@@ -3159,7 +3175,7 @@ C
 C
                      END IF
 C
-                     IF (NZ .GE. 4) THEN
+                     IF (NZ_local .GE. 4) THEN
 C
 C                       NZ = 4:
 C                       -------

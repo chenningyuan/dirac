@@ -1,5 +1,3 @@
-include(InstallRequiredSystemLibraries)
-
 set(CPACK_SOURCE_GENERATOR "TGZ")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "DIRAC")
 set(CPACK_PACKAGE_VENDOR "R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher, and contributors")
@@ -46,6 +44,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin"
         COMMAND rm -f  ${EXPORT_DIR}/external/pcmsolver/.git
         COMMAND rm -f  ${EXPORT_DIR}/external/unit-tests/.git
         COMMAND rm -f  ${EXPORT_DIR}/external/stieltjes/.git
+        COMMAND rm -f  ${EXPORT_DIR}/external/laplace-minimax/.git
         COMMAND rm -rf ${EXPORT_DIR}/src/interest/
         COMMAND rm -rf ${EXPORT_DIR}/src/openrsp/
         COMMAND rm -rf ${EXPORT_DIR}/src/aoosoc/

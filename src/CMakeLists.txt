@@ -62,6 +62,10 @@ cmake_dependent_option(ENABLE_SRDFT "srDFT module" ON  "ENABLE_UNRELEASED" OFF)
 if(ENABLE_SRDFT)
     add_definitions(-DMOD_SRDFT)
 endif()
+cmake_dependent_option(ENABLE_LAPLACE "Laplace module" ON  "ENABLE_UNRELEASED" OFF)
+if(ENABLE_LAPLACE)
+    add_definitions(-DHAS_LAPLACE)
+endif()
 
 #--------------------------------------------------------------------------------------------------------------
 #
@@ -236,7 +240,7 @@ if(ENABLE_PCMSOLVER)
     message(STATUS "PCM accompanying libs cleared of 'libc' due to static linking")
   endif()
   dirac_test(pcm_energy "short;scf;pcm" "")
-  dirac_test(pcm_response "short;polarizabilities;pcm" "")
+  dirac_test(pcm_response "medium;polarizabilities;pcm" "")
 
   set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pcm_dirac> ${EXTERNAL_OBJECTS})
 endif()
@@ -330,7 +334,7 @@ message(STATUS "Spinfree MCSCF module: ${ENABLE_MCSCF_spinfree}")
 if(ENABLE_AOOSOC)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/aoosoc)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:aoosoc> ${EXTERNAL_OBJECTS})
-    dirac_test(atomic_x2c_2esoc_models_energy "short" "")
+    dirac_test(atomic_x2c_2esoc_models_energy "medium" "")
     dirac_test(atomic_x2c_spinfree_energy "medium" "")
 else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_AOOSOC)
@@ -346,13 +350,41 @@ else()
 endif()
 message(STATUS "srDFT module: ${ENABLE_SRDFT}")
 
+# laplace-minimax as separate external library
+if(ENABLE_LAPLACE)
+
+# external part
+#include_directories (${PROJECT_BINARY_DIR}/external/laplace-minimax-build)
+
+  set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}  )
+
+  add_external(laplace-minimax)
+
+  set(EXTERNAL_LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/liblaplace-minimax.a
+    ${EXTERNAL_LIBS})
+
+# dirac part
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:laplace> ${EXTERNAL_OBJECTS})
+
+else()
+    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_LAPLACE)
+endif()
+message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 
 # pelib interface routines added as module
 if(ENABLE_PELIB)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
     set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "short;scf;pelib" "")
-    dirac_test(pe_response "short;polarizabilities;pelib" "")
+    dirac_test(pe_energy "medium;scf;pelib" "")
+    dirac_test(pe_response "medium;polarizabilities;pelib" "")
     dirac_test(pe_exc "short;pelib" "")
 endif()
 

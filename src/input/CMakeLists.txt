@@ -8,18 +8,12 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_INPUT_FORTRAN_SOURCES
-# subroutine set_lscale_dft_gaunt()
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirrdn.F
 )
 
 set(FREE_INPUT_FORTRAN_SOURCES
    input_reader.F90
    input_reader_sections.F90
    parse_input.F90
-##    input_reader_sections.F90 depends on Fortran modules:
-   ${PROJECT_SOURCE_DIR}/src/grid/num_grid_cfg.F90
-   ${PROJECT_SOURCE_DIR}/src/visual/visual_cfg.F90
-   ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

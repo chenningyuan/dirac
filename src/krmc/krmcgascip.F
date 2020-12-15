@@ -2465,7 +2465,7 @@ C     degeneracy: energy difference less than 0.01 bohr)
       !> hardwire for debugging:
 !     n_csim = 4
 C
-      if (N_CSIM .GT. N_ROOTS) then
+      if (N_CSIM .GT. N_ROOTS .AND. N_CSIM .LT. NDET) then
         HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
    40   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
         call flshfo(lupri)

@@ -137,37 +137,27 @@ CMKN
       IF (DONE) RETURN
       CALL DRIVER  (CI)
       CALL USEROUT (CI)
-CMKN
-C      call dealloc(CI)
-CMKN
 C Modified by Malaya .K. Nayak on 4th Feb. 2011
 C This part will calculate the RASCI property
-CMKN
       REWIND (5)
       READ (5,CIFOPR,END=700,ERR=700)
   700 CONTINUE
       IF (PROPER) THEN
-      WRITE (6,'(//80A1)') ('#',I=1,80)
-      WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
+        WRITE (6,'(//80A1)') ('#',I=1,80)
+        WRITE (6,'(A30,//A30)')'Entering RASCI Property Module',
      &                       'Implemented by Malaya K. Nayak'
-      DO IEOPER = 1,NEOPER
-      NAMEA = NAMEE(IEOPER)
-      CALL SETUP   (CI,DONE)
-      RESTART = .TRUE.
-      IF (DONE) RETURN
-      MAXITER = 1
-      CALL DRIVER  (CI)
-      END DO
-      WRITE(6,'(//10x,A41)')'-- Normal end of RASCI Property Module --'
-      ELSE
-      WRITE (6,'(//70A1)') ('*',I=1,70)
-      WRITE (6,'(A36,//A36)')'RASCI Property Module Implemented by',
-     &                       'Dr. Malaya K. Nayak is not activated'
-      WRITE (6,'(//70A1)') ('*',I=1,70)
+        DO IEOPER = 1,NEOPER
+          NAMEA = NAMEE(IEOPER)
+          CALL SETUP   (CI,DONE)
+          RESTART = .TRUE.
+          IF (DONE) RETURN
+          MAXITER = 1
+          CALL DRIVER  (CI)
+        END DO
+        WRITE(6,'(//10x,A41)')
+     &    '-- Normal end of RASCI Property Module --'
       END IF
-CMKN
       call dealloc(CI)
-CMKN
 C
 C     Clean up : Throw away Scratch Files 
 C
@@ -191,6 +181,8 @@ C
 #include "general.inc"
 #include "mempoint.inc"
 C
+      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
+      NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT,FCI
       REAL*8 CI(*)
       CHARACTER*8 TIMEX,DATEX*10
       LOGICAL DONE
@@ -200,9 +192,25 @@ C
       WRITE (6,1000) DATEX,TIMEX
       CALL CPUUSED(CPUSET)
 C
+C     ! In case we run GOSCIP: we're done after that calculation
+      NGAS  = 1
+      MINE  = 0
+      MAXE  = 0
+      IGAS  = 0
+      NGASO = 0
+      NELACT = 0
+      REWIND (5)
+      READ (5,GOSCIP,END=1,ERR=1)
+ 1    IF (NELACT.NE.0) THEN
+        CALL PAMGOS(CI,MAXCORE,NELACT,NGAS,IGAS,MINE,MAXE,NGASO)
+        DONE = .TRUE.
+        RETURN
+      ELSE
+        DONE = .FALSE.
+      ENDIF
+C
       CALL SYMMIN
-      CALL USERIN (CI,DONE)
-      IF (DONE) RETURN
+      CALL USERIN
       CALL ORBSIN
       CALL SORTMEM
       CALL SHUFFLE (CI(ITR),CI(ITI),CI(IIK),
@@ -216,9 +224,9 @@ C
      &               ISTART,SELECT,(NSEL(I),I=1,NROOTS)
       WRITE (6,1011) MAXITER,CONVERE,CONVERR,CPUMAX,RESTART
       IF (GETDET) THEN
-	 WRITE (6,1012) GETDET,COMIN,MAKENAT
+         WRITE (6,1012) GETDET,COMIN,MAKENAT
       ELSE 
-	 WRITE (6,1013) GETDET,MAKENAT
+         WRITE (6,1013) GETDET,MAKENAT
       ENDIF
       WRITE (6,1020) NELEC,NORB,NORBR
       IF (NORBR(1).EQ.0) MAXH1=0
@@ -374,10 +382,7 @@ C
      &               CI(IPJR+LCOREX),CI(IVW1),
      &               CI(IPDG))
       ENDIF
-CMKN
-C      WRITE (6,1000)
       IF (.NOT.PROPER) WRITE (6,1000)
-CMKN
 C
       DO 200 ITER = 1, MAXITER
          CALL CPUUSED(CPITER)
@@ -1268,20 +1273,21 @@ C
 #include "files.inc"
 #include "symm.inc"
 #include "mempoint.inc"
-CMKN
-      DIMENSION DGER(NDET),DGEI(NDET),DI(MDET)
-CMKN
       DIMENSION DGEL(*),DR(*),TINTR(*),TINTI(*),GMATR(*),GMATI(*)
       DIMENSION IVWA(*),IJREC(NORB,NORB)
       DIMENSION IJEX(*),ILIND(*),IRIND(*),JLIND(*),JRIND(*),JVECL(2,*)
       LOGICAL ENDFIL
+      real*8, allocatable :: DGER(:),DGEI(:),DI(:)
 C
       REWIND (MRCTWOE)
       CALL ZZERO(NDET,DGEL)
-CMKN
-      CALL ZZERO(NDET,DGER)
-      CALL ZZERO(NDET,DGEI)
-CMKN
+      IF (PROPER) THEN
+        allocate(DGER(NDET))
+        allocate(DGEI(NDET))
+        allocate(DI(NDET))
+        CALL ZZERO(NDET,DGER)
+        CALL ZZERO(NDET,DGEI)
+      ENDIF
 C     -------------------------------------------
 C     THE COULOMB TYPE OF CONTRIBUTIONS : (II|JJ)
 C     -------------------------------------------
@@ -1291,9 +1297,9 @@ C     -------------------------------------------
         J = MOD(IJ-1,NORB) + 1
         IF (I.NE.J) GOTO 3000
           CALL ZZERO (MDET,DR(1))
-CMKN
-      IF (.NOT.REALAR) CALL ZZERO (MDET,DI(1))
-CMKN
+          IF(PROPER) THEN
+            IF (.NOT.REALAR) CALL ZZERO (NDET,DI)
+          ENDIF
           IF (IJREC(I,J).GT.0) THEN
              IVERT = IJREC(I,J) - 1
              ICOREX = 0
@@ -1321,13 +1327,11 @@ C         --------------------------------
                   IL = ILD + IDH
                   DGEL(IL) = DGEL(IL) + GMATR(IJ)
                   DR(IL) = 1.D0
-CMKN
-      IF (PROPER) THEN
-      DGER(IL) = DGER(IL) + GMATR(IJ)
-      IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + GMATI(IJ)
-      DI(IL) = 1.D0
-      END IF
-CMKN
+                  IF (PROPER) THEN
+                    DGER(IL) = DGER(IL) + GMATR(IJ)
+                    IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + GMATI(IJ)
+                    DI(IL) = 1.D0
+                  END IF
   300             CONTINUE
   400          CONTINUE
 C           --------------
@@ -1357,19 +1361,18 @@ C
                JD2 = JVECL(1,IVERT+1) + ICOREX
                NDH = IABS(JVECL(2,IVERT))
                IF (NDH.EQ.0) GOTO 2000
-                DO 1400 ID = JD1, JD2
-                   ILD = JLIND(ID) - 1
-                   DO 1300 IDH = 1, NDH
-                      IL = ILD + IDH
-                      DGEL(IL) = DGEL(IL) + TINTR(IX) * DR(IL)
-CMKN
-      IF (PROPER) THEN
-      DGER(IL) = DGER(IL) + TINTR(IX)*DR(IL)
-      IF (.NOT.REALAR) DGEI(IL) = DGEI(IL) + TINTI(IX)*DI(IL)
-      END IF
-CMKN
- 1300                 CONTINUE
- 1400              CONTINUE
+               DO 1400 ID = JD1, JD2
+                 ILD = JLIND(ID) - 1
+                 DO 1300 IDH = 1, NDH
+                   IL = ILD + IDH
+                   DGEL(IL) = DGEL(IL) + TINTR(IX) * DR(IL)
+                   IF (PROPER) THEN
+                     DGER(IL) = DGER(IL) + TINTR(IX)*DR(IL)
+                     IF (.NOT.REALAR) 
+     &               DGEI(IL) = DGEI(IL) + TINTI(IX)*DI(IL)
+                   END IF
+ 1300            CONTINUE
+ 1400          CONTINUE
 C               --------------
 C               DO NEXT VERTEX
 C               --------------
@@ -1419,18 +1422,16 @@ C             --------------------------------
              NDH = IABS(JVECL(2,IVERT))
              IF (NDH.EQ.0) GOTO 5000
              DO 2400 ID = JD1, JD2
-                IRD = IABS(JRIND(ID)) - 1
-                DO 2300 IDH = 1, NDH
-                   IR = IRD + IDH
-                   DGEL(IR) = DGEL(IR) + TINTR(IX)
-CMKN
-      IF (PROPER) THEN
-      DGER(IR) = DGER(IR) + TINTR(IX)
-      IF (.NOT.REALAR) DGEI(IR) = DGEI(IR) + TINTI(IX)
-      END IF
-CMKN
- 2300              CONTINUE
- 2400           CONTINUE
+               IRD = IABS(JRIND(ID)) - 1
+               DO 2300 IDH = 1, NDH
+                 IR = IRD + IDH
+                 DGEL(IR) = DGEL(IR) + TINTR(IX)
+                 IF (PROPER) THEN
+                   DGER(IR) = DGER(IR) + TINTR(IX)
+                   IF (.NOT.REALAR) DGEI(IR) = DGEI(IR) + TINTI(IX)
+                 END IF
+ 2300          CONTINUE
+ 2400        CONTINUE
 C            --------------
 C            DO NEXT VERTEX
 C            --------------
@@ -1445,22 +1446,21 @@ C     GET NEXT INTEGRAL BLOCK
 C     -----------------------
       GOTO 5000
  5001 CONTINUE
-CMKN
       IF (PROPER) THEN
-      WRITE(*,25)NAMEA
-      DO IROOT = 1,NROOTS
-      WRITE(*,50)IROOT,INDMIN(IROOT),DGER(INDMIN(IROOT)),
-     &                               DGEI(INDMIN(IROOT))
-      END DO
+        WRITE(*,25)NAMEA
+        DO IROOT = 1,NROOTS
+          WRITE(*,50)IROOT,INDMIN(IROOT),DGER(INDMIN(IROOT)),
+     &                                   DGEI(INDMIN(IROOT))
+        END DO
+        deallocate(DGER)
+        deallocate(DGEI)
+        deallocate(DI)
       END IF
-CMKN
       RETURN
-CMKN
    25 FORMAT (/' UN-CORRELATED PROPERTY: ',A8,14X,'REAL',14X,
      &          'IMAGINARY')
    50 FORMAT (/' Root',I4,' is determinant',I4,' Exp. Value:',
      &           F16.12,4X,F16.12)
-CMKN
       END
 C
       BLOCK DATA DIRDAT
@@ -1749,27 +1749,24 @@ C      END OF WRITING CI-MATRIX FOR DIFFERENT OPERATORS
 C      *************************************************************
 CMKN
       IF (PROPER) THEN
-      WRITE(*,25)NAMEA
-      DO IVEC=1,NVEC-MVEC
-      PRPR=0.0D0
-      PRPI=0.0D0
-      DO I=1,NDET
-      IF (REALAR) THEN
-      PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
-      ELSE
-      PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
-     &         +SIGMAI(I,IVEC)*VECTI(I,IVEC)
-      PRPI=PRPI+SIGMAR(I,IVEC)*VECTI(I,IVEC)
-     &         -SIGMAI(I,IVEC)*VECTR(I,IVEC)
-      END IF
+        WRITE(*,25)NAMEA
+        DO IVEC=1,NVEC-MVEC
+          PRPR=0.0D0
+          PRPI=0.0D0
+        DO I=1,NDET
+        IF (REALAR) THEN
+          PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+        ELSE
+          PRPR=PRPR+SIGMAR(I,IVEC)*VECTR(I,IVEC)
+     &             +SIGMAI(I,IVEC)*VECTI(I,IVEC)
+          PRPI=PRPI+SIGMAR(I,IVEC)*VECTI(I,IVEC)
+     &             -SIGMAI(I,IVEC)*VECTR(I,IVEC)
+        END IF
       END DO
-      WRITE(*,50)IVEC,IVEC,PRPR,PRPI
-C      WRITE(*,51)IVEC,IVEC,PRPR,PRPI
+      WRITE(*,50) IVEC,IVEC,PRPR,PRPI
       END DO
       END IF
-CMKN
 C     **************************************************************
-CMKN
 C
       DO IVEC = 1, NVEC - MVEC
       CALL PUTSIG (MVEC+IVEC,SIGMAR(1,IVEC),SIGMAI(1,IVEC))
@@ -2052,9 +2049,9 @@ C
 #include "symm.inc"
 C
       DIMENSION GMATR(*),GMATI(*),TINTR(*),TINTI(*),IJEX(*)
-CMKN
-      DIMENSION PROP(2,300,300),AIJ(2*300*300),APHASE(2)
-CMKN
+      real(8), allocatable :: PROP(:,:,:)
+      real(8), allocatable :: AIJ(:)
+      DIMENSION APHASE(2)
       LOGICAL ENDFIL
 C
       OPEN (MRCONEE,FILE=FNAM(1),FORM='UNFORMATTED')
@@ -2086,6 +2083,7 @@ C     -------------------------------------------------------------
 	    If (i.NE.0.AND.j.NE.0) Then
 	       ji = norb*(i-1)+j
 	       gmatr(ji) = tintr(jid)
+!LV 28-9-2020: did not modify next line after MRCONEE change, code appeared to have already used Fortran ordering
 	       IF (.NOT.REALAR) gmati(ji) = tinti(jid)
             EndIf
          enddo
@@ -2119,35 +2117,39 @@ C     READ PROPERTY INTEGRALS FROM FILE 'MDPROP'
 C     Proposed & Written by (Malaya K. Nayak)
 C     ******************************************
       IF (PROPER) THEN
-      IF (REALAR) THEN
-      IRW = 1
-      ELSE
-      IRW = 2
-      END IF
-      CALL PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
+        allocate(PROP(2,MORB,MORB))
+        allocate(AIJ(2*MORB*MORB))
+        IF (REALAR) THEN
+          IRW = 1
+        ELSE
+          IRW = 2
+        END IF
+        CALL PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
 C     *****************************************************
 C     Reorder Property Integrals as per 'CI' Subroutine and
 C     Replace the 1-electron integral by Property Integral
 C     **********************************************
-      IA = 0
-      DO II=1,MORB
-      DO JJ=1,MORB
-      IA = IA+1
-      I = INDMO(II)
-      J = INDMO(JJ)
-      IF (I.NE.0 .AND. J.NE.0) THEN
-      IJ = (I-1)*NORB+J
-      GMATR(IJ) = 0.0D0
-      GMATI(IJ) = 0.0D0
-      IF (REALAR) THEN
-      GMATR(IJ) = GMATR(IJ) + AIJ(IA)
-      ELSE
-      GMATR(IJ) = GMATR(IJ) + AIJ(IRW*IA-1)
-      GMATI(IJ) = GMATI(IJ) + AIJ(IRW*IA)
-      END IF
-      END IF
-      END DO
-      END DO
+        IA = 0
+        DO II=1,MORB
+          DO JJ=1,MORB
+            IA = IA+1
+             I = INDMO(II)
+             J = INDMO(JJ)
+             IF (I.NE.0 .AND. J.NE.0) THEN
+               IJ = (I-1)*NORB+J
+               GMATR(IJ) = 0.0D0
+               GMATI(IJ) = 0.0D0
+               IF (REALAR) THEN
+                 GMATR(IJ) = GMATR(IJ) + AIJ(IA)
+               ELSE
+                 GMATR(IJ) = GMATR(IJ) + AIJ(IRW*IA-1)
+                 GMATI(IJ) = GMATI(IJ) + AIJ(IRW*IA)
+              END IF
+            END IF
+          END DO
+        END DO
+        deallocate(PROP)
+        deallocate(AIJ)
       END IF
 C     *****************************************************
 C     END OF READING & RE-ORDERING PROPERTY INTIGRALS
@@ -2866,10 +2868,7 @@ C
       IF (NPDET.NE.NDET.OR.NPROOT.LT.NROOTS) GOTO 10000
       DO 20 IROOT = 1, NROOTS
       EIGEN2(IROOT) = EIGEN1(IROOT)
-CMKN
-C      WRITE (6,1000) IROOT,EIGEN1(IROOT)
       IF (.NOT.PROPER) WRITE (6,1000) IROOT,EIGEN1(IROOT)
-CMKN
       IVEC = IROOT
       CALL ZZERO (NDET,VECTR(1,IVEC))
       IF (.NOT.REALAR) CALL ZZERO (NDET,VECTI(1,IVEC))
@@ -3633,25 +3632,21 @@ C
      &                  (TINTI(IX),IX=1,NKL)
       ENDIF
       IF (KL.LT.0) ENDFIL=.TRUE.
-CMKN
 C     ******************************************************
 C     THIS PART IS DONE TO MAKE ALL 2-ELECTRON INTEGRAL ZERO
 C     Proposed & Implimented by (Malaya K. Nayak)
 C     ******************************************************
       IF (PROPER) THEN
-      DO IX=1,NKL
-      TINTR(IX)=0.0D0
-      TINTI(IX)=0.0D0
-      END DO
+        CALL ZZERO(NKL,TINTR)
+        CALL ZZERO(NKL,TINTI)
       END IF
 C     ******************************************************
 C     END OF MAKING ALL 2-ELECTRON INTEGRAL ZERO
 C     ******************************************************
-CMKN
       RETURN
       END
 C
-      SUBROUTINE USERIN (CI,DONE)
+      SUBROUTINE USERIN
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -3660,34 +3655,16 @@ C
 #include "general.inc"
 #include "symm.inc"
 C
-      LOGICAL TOBE,DONE
+      LOGICAL TOBE
       CHARACTER*4 IREPNA,VECFIL*11
-CTROND: check this !
       DIMENSION NRAS1(16),NRAS2(16)
-      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
 C
-      NAMELIST /GOSCIP/ NELACT,NGAS
       NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MINH1,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
       NAMELIST /OPTIM/ IGENEX
       NAMELIST /LEADDET/ GETDET,COMIN
       NAMELIST /NATURAL/ MAKENAT
-C
-      NGAS  = 0
-      NELEC = 0
-      REWIND (5)
-      READ (5,GOSCIP,END=10,ERR=10)
-!     SK - during the merge of the COSCI-TDM this variable renaming
-!     on the NAMELIST slipped my attention.
-      NELEC = MAX(NELEC,NELACT)
- 10   IF (NELEC.NE.0) THEN
-        CALL PAMGOS(CI,MAXCORE,NELEC,NGAS,IGAS,MINE,MAXE,NGASO)
-        DONE = .TRUE.
-        RETURN         
-      ELSE
-        DONE = .FALSE.
-      ENDIF
 C
       NELEC = 0
       DO I = 1, NSYMRP

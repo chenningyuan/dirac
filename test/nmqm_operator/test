@@ -38,7 +38,7 @@ for inp in ['MgF.dc_rkb.scf_prptra_nmqm.inp','MgF.dc_rkb.scf_prptra_nmqm_def.inp
 f = [
     get_filter(from_string='Overview of calculated energies',
                to_string='--------------------------------------------------------------------------------',
-               abs_tolerance=1.0e-11)
+               abs_tolerance=5e-8)
 ]
 options = cli()
 ierr = 0

@@ -1,13 +1,19 @@
 #!/bin/bash
 
+#Sometimes one needs to set additional environment variables, on MACOSX the following can be used:
+#source /Users/visscher/.bash_profile
+
 BRANCH='master'
 COMPILER='GNU'
 MAKE_RELEASE=0
 BUILDNAME='undefined'
 INT64=0
-TRACK='Nightly'
+TRACK='master'
 DEPLOY_KEY='undefined'
-NUM_JOBS=1
+#Example for mac, replace by proper path and uncomment
+#DEPLOY_KEY='/Users/visscher/.ssh/nightly_rsa'
+#Assuming that the machine is empty and you have 4 or more cores available, reduce or increase NUM_JOBS as desired.
+NUM_JOBS=4
 
 while getopts b:r:c:n:i:t:k:j: opt; do
   case $opt in
@@ -59,10 +65,11 @@ fi
 
 if [ "$COMPILER" == 'Intel' ]; then
     source /opt/intel/bin/compilervars.sh intel64
-    SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --mkl=sequential"
+    SETUP_FLAGS="--fc=ifort --cc=icc --cxx=icpc --mkl=parallel"
 else
+    export DIRAC_MPI_COMMAND="mpirun -np 4"
     export MATH_ROOT=/opt/intel/mkl
-    SETUP_FLAGS="--fc=gfortran --cc=gcc --cxx=g++"
+    SETUP_FLAGS="--fc=gfortran --cc=gcc --cxx=g++ --mpi"
 fi
 
 if [ $INT64 -eq 1 ]; then
