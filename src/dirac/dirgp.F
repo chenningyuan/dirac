@@ -138,14 +138,20 @@ C
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
       REWIND IUNIT
+      CALL NEWLAB('INFO    ',IUNIT,LUPRI)
       WRITE(IUNIT) TEXT,NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM),
-     &             TOTERG
+     &     TOTERG
+      CALL NEWLAB('COEFS   ',IUNIT,LUPRI)      
       WRITE(IUNIT) CMO
+      CALL NEWLAB('EVALS   ',IUNIT,LUPRI)            
       WRITE(IUNIT) EIG
+      CALL NEWLAB('SUPERSYM',IUNIT,LUPRI)                  
       WRITE(IUNIT) IBEIG
 !     Add additional information about basis set to create a simple interface file
 !     for correlated calculations (like exacorr)
+      CALL NEWLAB('BASINFO ',IUNIT,LUPRI)                        
       call append_basisinfo_to_dfcoef (IUNIT)
+      CALL NEWLAB('EOFLABEL',IUNIT,LUPRI)                              
 C
       RETURN
       END
@@ -256,7 +262,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL INFO,LBIT,TEST
+      LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
       DIMENSION IDIM(3,2)
@@ -265,14 +271,17 @@ C
       integer, allocatable :: ki(:)
 C
       IF(IOPT.EQ.0) RETURN
+C
+C     Read title line - always done
+C     =============================
+C
       REWIND IUNIT
-C
-C     Read title line
-C     ===============
-C
-      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+      IF(FNDLAB('INFO    ',IUNIT)) THEN
+        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-
+      ELSE
+        GOTO 20        
+      ENDIF
       IF(IOPT.EQ.-1) RETURN
 C
 C     Compatibility check for NFSYM and NFBAS
@@ -331,70 +340,73 @@ C     Read coefficients
 C     =================
 C
       IF(LBIT(IOPT,2)) THEN
-        IF(TEST) THEN
-          call alloc(kc, nc)
-          CALL READT(IUNIT,NC, kc)
-          JC = 1
-          DO IFRP = 1,NFSYM
-            CALL ADACMO(NFBAS(IFRP,0),NZ,
-     &         CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         kc(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
-          ENDDO
-          call dealloc(kc)
+        IF(FNDLAB('COEFS   ',IUNIT)) THEN
+          IF(TEST) THEN
+            call alloc(kc, nc)
+            CALL READT(IUNIT,NC, kc)
+            JC = 1
+            DO IFRP = 1,NFSYM
+              CALL ADACMO(NFBAS(IFRP,0),NZ,
+     &           CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &           kc(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+              JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
+            ENDDO
+            call dealloc(kc)
+          ELSE
+            READ (IUNIT,END=30,ERR=40) CMO
+         ENDIF
         ELSE
-          READ (IUNIT,END=30,ERR=40) CMO
+          GOTO 40 
         ENDIF
-        IF(IOPT.LT.4) RETURN
-      ELSE
-        READ(IUNIT)
       ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT,3)) THEN
-        IF(TEST) THEN
-          call alloc(ko, no)
-          CALL READT(IUNIT,NO,ko)
-          JO = 1
-          DO IFRP = 1,NFSYM
-            CALL ADAEIG(
-     &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         ko(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
-          ENDDO
-          call dealloc(ko)
+        IF(FNDLAB('EVALS   ',IUNIT)) THEN         
+          IF(TEST) THEN
+            call alloc(ko, no)
+            CALL READT(IUNIT,NO,ko)
+            JO = 1
+            DO IFRP = 1,NFSYM
+              CALL ADAEIG(
+     &           EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &           ko(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+              JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
+            ENDDO
+            call dealloc(ko)
+          ELSE
+            READ (IUNIT,END=50,ERR=60) EIG
+          ENDIF
         ELSE
-          READ (IUNIT,END=50,ERR=60) EIG
-        ENDIF
-        IF(IOPT.LT.8) RETURN
-      ELSE
-        READ(IUNIT)
+          GOTO 60
+        ENDIF 
       ENDIF
 C
 C     Read supersymmetry info
 C     =======================
 C
       IF(LBIT(IOPT,4)) THEN
-        IF(TEST) THEN
-          call alloc(ki, no)
-          CALL READI(IUNIT,NO,ki)
-          JO = 1
-          DO IFRP = 1,NFSYM
-            CALL ADAIBO(
-     &         IBEIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         ki(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
-          ENDDO
-          call dealloc(ki)
-        ELSE
-          READ (IUNIT,END=70,ERR=80) IBEIG
+        IF(FNDLAB('SUPERSYM',IUNIT)) THEN                  
+          IF(TEST) THEN
+            call alloc(ki, no)
+            CALL READI(IUNIT,NO,ki)
+            JO = 1
+            DO IFRP = 1,NFSYM
+              CALL ADAIBO(
+     &          IBEIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &          ki(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+              JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
+            ENDDO
+            call dealloc(ki)
+          ELSE
+            READ (IUNIT,END=70,ERR=80) IBEIG
+          ENDIF
+        ELSE 
+          GOTO 80
         ENDIF
-        IF(IOPT.LT.16) RETURN
-      ELSE
-        READ(IUNIT)
-      ENDIF
+      ENDIF 
 C
       RETURN
 C
