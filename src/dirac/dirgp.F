@@ -1807,14 +1807,20 @@ C
       IDIM(3) = NTBAS(0)
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
+      CALL NEWLAB('INFO    ',LUCOEF,LUPRI)      
       WRITE(LUCOEF) TEXT,1,(IDIM(I),I = 1,3),TOTERG
       NDIM = NTBAS(0)*NORBT*4
+      CALL NEWLAB('COEFS   ',LUCOEF,LUPRI)            
       CALL WRITT(LUCOEF,NDIM,CAO)
+      CALL NEWLAB('EVALS   ',LUCOEF,LUPRI)                  
       CALL WRITT(LUCOEF,NORBT,EIG)
+      CALL NEWLAB('SUPERSYM',LUCOEF,LUPRI)                        
       CALL WRITI(LUCOEF,NORBT,IBEIG)
 !     Add additional information about basis set to create a simple interface file
 !     for correlated calculations (like exacorr)
+      CALL NEWLAB('BASINFO ',LUCOEF,LUPRI)                              
       call append_basisinfo_to_dfcoef (LUCOEF)
+      CALL NEWLAB('EOFLABEL',LUCOEF,LUPRI)                                    
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -3354,7 +3360,7 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3388,11 +3394,27 @@ C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
       CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
-      READ(LUCOEF) TEXT,NSYM,(IDIM(I),I = 1,3),TOTERG
+      IF(FNDLAB('INFO    ',LUCOEF)) THEN
+         READ(LUCOEF) TEXT,NSYM,(IDIM(I),I = 1,3),TOTERG
+      ELSE
+         CALL QUIT('ACMOIN: Error reading info')
+      ENDIF
       NDIM = NTBAS(0)*NORBT*4
-      CALL READT(LUCOEF,NDIM,CMO2)
-      CALL READT(LUCOEF,NORBT,EIG2)
-      CALL READI(LUCOEF,NORBT,IBEIG2)
+      IF(FNDLAB('COEFS   ',LUCOEF)) THEN      
+         CALL READT(LUCOEF,NDIM,CMO2)
+      ELSE
+         CALL QUIT('ACMOIN: Error reading coefficients')
+      ENDIF
+      IF(FNDLAB('EVALS   ',LUCOEF)) THEN               
+         CALL READT(LUCOEF,NORBT,EIG2)
+      ELSE
+         CALL QUIT('ACMOIN: Error reading eigenvalues')
+      ENDIF
+      IF(FNDLAB('SUPERSYM',LUCOEF)) THEN                        
+         CALL READI(LUCOEF,NORBT,IBEIG2)
+      ELSE
+         CALL QUIT('ACMOIN: Error reading supersymmetry info')
+      ENDIF
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 

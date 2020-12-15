@@ -1478,7 +1478,7 @@ C
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
 C     Local variables
-      LOGICAL LBIT
+      LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION IDIM(3,2)
       REAL*8 CMCSCF_MAGIC
@@ -1492,8 +1492,13 @@ C
 C     Read title line
 C     ===============
 C
-      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
-     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      IF(FNDLAB('INFO    ',IUNIT)) THEN      
+        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+     &          ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      ELSE
+         CALL QUIT('SELOWN: Error reading info')
+      ENDIF
+      
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
@@ -1535,27 +1540,33 @@ C     Read coefficients
 C     =================
 C    
       IF(LBIT(IOPT_TMP,2)) THEN
-        CALL READT(IUNIT,NCDIM,CMO)
-      ELSE
-        READ(IUNIT)
+        IF(FNDLAB('COEFS   ',IUNIT)) THEN               
+          CALL READT(IUNIT,NCDIM,CMO)
+        ELSE
+         CALL QUIT('SELOWN: Error reading coefficients')
+        ENDIF
       ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT_TMP,3)) THEN
-        CALL READT(IUNIT,NEDIM,EIG)
-      ELSE
-        READ(IUNIT)
+        IF(FNDLAB('EVALS   ',IUNIT)) THEN                        
+          CALL READT(IUNIT,NEDIM,EIG)
+        ELSE
+          CALL QUIT('SELOWN: Error reading eigenvalues')
+        ENDIF
       ENDIF
 C
 C     Read boson irrep info
 C     =====================
 C
       IF(LBIT(IOPT_TMP,4)) THEN
-        CALL READI(IUNIT,NEDIM,IBEIG)
-      ELSE
-        READ(IUNIT)
+        IF(FNDLAB('SUPERSYM',IUNIT)) THEN
+          CALL READI(IUNIT,NEDIM,IBEIG)
+        ELSE
+          CALL QUIT('SELOWN: Error reading supersymmetry info')
+        ENDIF
       ENDIF
 C
 C     Select and adjust format to molecular basis
