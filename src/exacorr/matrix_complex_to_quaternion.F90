@@ -109,7 +109,6 @@ module matrix_complex_to_quaternion
 
             NO_OCC = 0.0d0
             NO_OCC(1,:) = NO_OCC_quat(:)
-            NO_OCC(2,:) = NO_OCC_quat(:)
 
 
             do i = 1, n_mp2nos
@@ -135,7 +134,6 @@ module matrix_complex_to_quaternion
 
             NO_OCC = 0.0d0
             NO_OCC(1,:) = NO_OCC_quat(:)
-            NO_OCC(2,:) = NO_OCC_quat(:)
 
             do i = 1, n_mp2nos
                do k = 1, n_mp2nos
@@ -157,7 +155,7 @@ module matrix_complex_to_quaternion
             enddo
 
 
-            NO_OCC_quat(i) = NO_OCC_(2,i)
+            NO_OCC_quat(:) = NO_OCC_(1,:)
 
 !           call davidson_print_vectors(NO_OCC,   label="MP2 NOs occupation numbers    ")
 !           call davidson_print_vectors(NOs_MO_R, label="MP2 Natural orbitals (RHS)    ", complex_dimension=1)
@@ -166,8 +164,6 @@ module matrix_complex_to_quaternion
             deallocate(NOs_MO_L)
             deallocate(NOs_OCC)            
 
-!            NO_OCC_1(:) = NO_OCC(1,:)
-!            deallocate(NO_OCC_quater)
 
         end subroutine sort_values_vectors
 
