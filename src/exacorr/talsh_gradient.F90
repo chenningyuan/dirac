@@ -21,6 +21,10 @@ module talsh_gradient
   private
 
   public talsh_dm_driver
+  public talsh_dm_form_mo_fort_from_tensors
+  public talsh_dm_form_ao_diracformat_from_dm_mo
+  public talsh_dm_initialize_dmtens
+  public talsh_dm_cleanup_dmtens
 
   contains
 
@@ -34,8 +38,6 @@ module talsh_gradient
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
 !     density matrices type, output
       type(talsh_dm_tens) :: gamma
-!     tensor dimensions
-      integer(INTD), dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
 !     CCD switch
       logical :: CCD
 !     error code
@@ -46,23 +48,7 @@ module talsh_gradient
 !************************************
 !     construct gamma prime tensors *
 !************************************
- 
-      oo_dims = exa_input%nocc
-      ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%symm_oo,C8,oo_dims,init_val=ZERO)
-      if (.not.CCD) then
-        ov_dims(1) = exa_input%nocc
-        ov_dims(2) = exa_input%nvir
-        ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(gamma%symm_ov,C8,ov_dims,init_val=ZERO)
-        vo_dims(1) = exa_input%nvir
-        vo_dims(2) = exa_input%nocc
-        ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(gamma%symm_vo,C8,vo_dims,init_val=ZERO)
-      end if
-      vv_dims = exa_input%nvir
-      ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%symm_vv,C8,vv_dims,init_val=ZERO)
+      call talsh_dm_initialize_dmtens(exa_input,gamma)
 
 !**************************************
 !     calculate DM blocks in MO basis *
@@ -82,24 +68,76 @@ module talsh_gradient
       call store_dm_mo(exa_input,gamma)
 
 !     cleanup
-      ierr=talsh_tensor_destruct(gamma%prime_oo)
+      call talsh_dm_cleanup_dmtens(gamma,CCD)
+
+    end subroutine talsh_dm_driver
+
+    subroutine talsh_dm_cleanup_dmtens(dmat,CCD)
+      type(talsh_dm_tens), intent(inout) :: dmat
+!     CCD switch
+      logical, intent(in) :: CCD
+!     error code
+      integer(INTD) :: ierr
+
+      ierr=talsh_tensor_destruct(dmat%prime_oo)
       if (.not.CCD) then
-        ierr=talsh_tensor_destruct(gamma%prime_ov)
-        ierr=talsh_tensor_destruct(gamma%symm_ov)
-        ierr=talsh_tensor_destruct(gamma%prime_vo)
-        ierr=talsh_tensor_destruct(gamma%symm_vo)
+        ierr=talsh_tensor_destruct(dmat%prime_ov)
+        ierr=talsh_tensor_destruct(dmat%symm_ov)
+        ierr=talsh_tensor_destruct(dmat%prime_vo)
+        ierr=talsh_tensor_destruct(dmat%symm_vo)
       end if
-      ierr=talsh_tensor_destruct(gamma%prime_vv)
-      ierr=talsh_tensor_destruct(gamma%symm_oo)
-      ierr=talsh_tensor_destruct(gamma%symm_vv)
+      ierr=talsh_tensor_destruct(dmat%prime_vv)
+      ierr=talsh_tensor_destruct(dmat%symm_oo)
+      ierr=talsh_tensor_destruct(dmat%symm_vv)
+
+      if (ierr.ne.TALSH_SUCCESS) then
+        print*," ccdriver: error in evaluation of density matrices, code=",ierr
+        return
+      end if
+    end subroutine
+
+    subroutine talsh_dm_initialize_dmtens(exa_input,dmat)
+!     Routine for obtaining the density matrices in the MO basis
+!     input variables
+      type(exacc_input), intent(in   ) :: exa_input
+!     density matrices type, output
+      type(talsh_dm_tens), intent(inout) :: dmat 
+!     tensor dimensions
+      integer(INTD), dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
+!     CCD switch
+      logical :: CCD
+!     error code
+      integer(INTD) :: ierr
+
+      CCD = exa_input%CCD
+
+!************************************
+!     construct gamma prime tensors *
+!************************************
+
+      oo_dims = exa_input%nocc
+      ierr=talsh_tensor_construct(dmat%prime_oo,C8,oo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(dmat%symm_oo,C8,oo_dims,init_val=ZERO)
+      if (.not.CCD) then
+        ov_dims(1) = exa_input%nocc
+        ov_dims(2) = exa_input%nvir
+        ierr=talsh_tensor_construct(dmat%prime_ov,C8,ov_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(dmat%symm_ov,C8,ov_dims,init_val=ZERO)
+        vo_dims(1) = exa_input%nvir
+        vo_dims(2) = exa_input%nocc
+        ierr=talsh_tensor_construct(dmat%prime_vo,C8,vo_dims,init_val=ZERO)
+        ierr=talsh_tensor_construct(dmat%symm_vo,C8,vo_dims,init_val=ZERO)
+      end if
+      vv_dims = exa_input%nvir
+      ierr=talsh_tensor_construct(dmat%prime_vv,C8,vv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(dmat%symm_vv,C8,vv_dims,init_val=ZERO)
 
       if (ierr.ne.TALSH_SUCCESS) then
         print*," ccdriver: error in evaluation of density matrices, code=",ierr
         return
       end if
 
-
-    end subroutine talsh_dm_driver
+   end subroutine
 
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
@@ -343,13 +381,54 @@ module talsh_gradient
       nkr_occ = exa_input%nkr_occ
       nkr_vir = exa_input%nkr_vir
 
-!***************************************
-!     copy DM blocks into one large DM *
-!***************************************
-
+! set up storage for density matrices in MO and AO bases, in fortran storage
       allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
       dm_mo_fort = ZERO
 
+      norbt = nkr_occ + nkr_vir
+      allocate(mo_list(norbt))
+      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
+      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
+
+      nesh = get_nsolutions() / 2
+      allocate (dm_diracformat(nesh,nesh,4))
+      dm_diracformat = real(ZERO)
+
+! form MO basis density matrix
+      call talsh_dm_form_mo_fort_from_tensors(dm_mo_fort, gamma, nocc, nvir, CCD)
+! form AO basis density matrix
+      call talsh_dm_form_ao_diracformat_from_dm_mo(dm_diracformat, dm_mo_fort, mo_list, norbt)
+! save AOm basis density matrix to file
+      call store_cc_density ('CCSD', dm_diracformat )
+
+      deallocate (dm_diracformat)
+      deallocate (mo_list)
+      deallocate (dm_mo_fort)
+
+    end subroutine store_dm_mo
+
+    subroutine talsh_dm_form_mo_fort_from_tensors(dm_mo_fort,gamma,nocc,nvir,CCD)
+!     input variables
+      type(talsh_dm_tens), intent(inout)     :: gamma 
+      complex(8), allocatable, intent(inout) :: dm_mo_fort(:,:)
+!     matrix dimensions
+      integer, intent(in) :: nocc, nvir
+      logical, intent(in) :: CCD 
+
+!     body pointers
+      type(C_PTR)                     :: body_p2
+      complex(8), pointer, contiguous :: dm_block(:,:)
+!     error code
+      integer :: ierr
+!     loop variables
+      integer :: i, j
+! debug
+      logical :: debug=.false.
+      integer :: k
+
+!***************************************
+!     copy DM blocks into one large DM *
+!***************************************
 !     -----------
 !     | OO | OV |
 !     -----------
@@ -381,7 +460,7 @@ module talsh_gradient
 !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
 !*****************************************************************************************************************************
       if (debug) then
-        print *,'<<<<< DM, complete, before formatting to dirac'
+        print *,'<<<<< DM, complete, in MO basis and fortran storage'
         k = 1
         do i=1,(nocc+nvir)
            do j=1,(nocc+nvir)
@@ -389,17 +468,25 @@ module talsh_gradient
               k = k + 1
            end do
          end do
-         print *,'>>>>> DM, complete, before formatting to dirac'
+         print *,'>>>>> DM, complete, in MO basis and fortran storage'
       end if
 
-      norbt = nkr_occ + nkr_vir
-      allocate(mo_list(norbt))
-      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
-      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
+    end subroutine
 
-      nesh = get_nsolutions() / 2
-      allocate (dm_diracformat(nesh,nesh,4))
-      dm_diracformat = real(ZERO)
+   subroutine talsh_dm_form_ao_diracformat_from_dm_mo(dm_diracformat, dm_mo_fort, mo_list, norbt)
+      complex(8), allocatable, intent(in) :: dm_mo_fort(:,:)
+      integer, allocatable, intent(in) :: mo_list(:)
+      real(8),allocatable, intent(inout)  :: dm_diracformat(:,:,:)
+      integer, intent(in) :: norbt
+!     loop variables
+      integer :: i, j
+      integer :: i_unbar, j_unbar, j_bar
+
+!*****************************************************************************************************************************
+!     Determine where an element of the MO density matrix  should go in the full list of MOs 
+!     (NB: DIRAC assumes restricted densities and uses Kramers pairs) 
+!*****************************************************************************************************************************
+
       do j = 1, norbt
         j_unbar = 2*j-1
         j_bar   = 2*j
@@ -415,14 +502,7 @@ module talsh_gradient
           dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
         end do
       end do
-
-      call store_cc_density ('CCSD', dm_diracformat )
-
-      deallocate (dm_diracformat)
-      deallocate (mo_list)
-      deallocate (dm_mo_fort)
-
-    end subroutine store_dm_mo
+   end subroutine
 
 !!!
     subroutine print_tensor_elements(tensor, relccsd_order)
