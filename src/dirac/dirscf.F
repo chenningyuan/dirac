@@ -5462,7 +5462,7 @@ C
 #include "dgroup.h"
       DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
 C.....Local variables
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       INTEGER NNEG,NPOS,NBAS
 C
@@ -5494,7 +5494,13 @@ C.......Read atomic coefficients in C1 format
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
-        READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+        IF(FNDLAB('INFO    ',LUATOM)) THEN
+           READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+        ELSE
+           WRITE(LUPRI,*) 'ATOMIC_START: error reading info ',
+     &                    ATOMFIL(IATOM) 
+          CALL QUIT('ATOMIC START: Error reading info')
+        ENDIF
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5515,7 +5521,13 @@ C.......Read atomic coefficients in C1 format
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','CMO ',KCMO,NACMOQ,WORK,KFREE,LFREE)
-        CALL READT(LUATOM,NACMOQ,WORK(KCMO))
+        IF(FNDLAB('COEFS   ',LUATOM)) THEN      
+          CALL READT(LUATOM,NACMOQ,WORK(KCMO))
+       ELSE
+          WRITE(LUPRI,*) 'ATOMIC_START: error reading coefficients ',
+     &                    ATOMFIL(IATOM) 
+          CALL QUIT('ATOMIC_START: Error reading coefficients')
+        ENDIF
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
