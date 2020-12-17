@@ -5639,6 +5639,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+      LOGICAL FNDLAB
       CHARACTER TEXT*74
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
@@ -5660,9 +5661,15 @@ C     INDEP runs over symmetry dependent centers
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
-        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')        
-        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
-     &        NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
+        IF(FNDLAB('INFO    ',LUHOC)) THEN
+          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+     &          NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+        ELSE
+          WRITE(6,*) 'ADHOC: not able to read info from file ',
+     &                HOCFIL(ITYP)
+          CALL QUIT('ADHOC: Error reading info')
+        ENDIF
 C.............NPSH............NESH............NBAS...........TOTERG
         CLOSE(LUHOC,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
@@ -5710,14 +5717,32 @@ C
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
-        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
-     &        NNEG,NPOS,NAO(ITYP),DUM
+        IF(FNDLAB('INFO    ',LUHOC)) THEN
+          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+     &          NNEG,NPOS,NAO(ITYP),DUM
+        ELSE
+          WRITE(6,*) 'ADHOC2: not able to read info from file ',
+     &                HOCFIL(ITYP)
+          CALL QUIT('ADHOC2: Error reading info')
+        ENDIF
         NTOT = NNEG+NPOS
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL READT(LUHOC,NQA ,WORK(KQA))
+        IF(FNDLAB('COEFS   ',LUHOC)) THEN
+          CALL READT(LUHOC,NQA ,WORK(KQA))
+        ELSE
+          WRITE(6,*) 'ADHOC2: not able to read coefficients ',
+     &      'from file ',HOCFIL(ITYP)
+          CALL QUIT('ADHOC2: Error reading coefficients')
+        ENDIF
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL READT(LUHOC,NTOT,WORK(KEA))
+        IF(FNDLAB('EVALS   ',LUHOC)) THEN
+           CALL READT(LUHOC,NTOT,WORK(KEA))
+        ELSE
+           WRITE(6,*) 'ADHOC2: not able to read eigenvalues ',
+     &       'from file ',HOCFIL(ITYP)
+          CALL QUIT('ADHOC2: Error reading eigenvalues')
+        ENDIF
         CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
