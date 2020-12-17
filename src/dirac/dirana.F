@@ -1307,7 +1307,8 @@ C
         IF(FNDLAB('INFO    ',LUCOEF)) THEN         
           READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
      &       (NSTR(J,2,I),NSTR(J,1,I),IDUM,J=1,NSYM),DUM
-        ELSE
+C.............NPSH........NESH........NBAS...........TOTERG
+       ELSE
           WRITE(6,*) 'PRJSOB: Error reading first record on ',REFFIL(I)     
           CALL QUIT('PRJSOB: Error reading info')
         ENDIF
@@ -4304,6 +4305,7 @@ C
      &          NAO(MAXREF),WORK(*)
       DIMENSION IOFF(2)
       CHARACTER TEXT*74
+      LOGICAL FNDLAB
 C
       KFRSAV = KFREE
       IF(IPRPRJ.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
@@ -4322,9 +4324,15 @@ C.........Find the total number of basis functions for this atom type
           CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.........Read information from coefficient file
           CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+          IF(FNDLAB('INFO    ',LUCOEF)) THEN         
+            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
      &          NSTR(1,2,IREFS),NSTR(1,1,IREFS),NAO(IREFS),DUM
-C...............NPSH............NESH............NBAS...........TOTERG
+C...............NPSH............NESH............NBAS.......TOTERG
+          ELSE
+            WRITE(6,*) 'PRJAOB: Error reading first record on ',
+     &        REFFIL(IREFS)     
+            CALL QUIT('PRJAOB: Error reading info')
+          ENDIF
           CLOSE(LUCOEF,STATUS='KEEP')
           IF(NAO(IREFS).NE.MBAS) THEN
              WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
@@ -4393,14 +4401,32 @@ C     ==========================
           IREFS = IREFS + 1
 C.........Read C1 coefficients and orbitalenergies
           CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+          IF(FNDLAB('INFO    ',LUCOEF)) THEN
+            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
      &        NNEG,NPOS,NAO(IREFS),DUM
+          ELSE
+            WRITE(LUPRI,*) 'PRJAOB: error reading coefficients ',
+     &                    REFFIL(IREFS) 
+            CALL QUIT('PRJAOB: Error reading coefficients')
+          ENDIF
           NTOT = NNEG+NPOS
           NQA  = NAO(IREFS)*NTOT*NZC1
           CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-          CALL READT(LUCOEF,NQA,WORK(KQA))
+          IF(FNDLAB('COEFS   ',LUCOEF)) THEN      
+            CALL READT(LUCOEF,NQA,WORK(KQA))
+          ELSE
+            WRITE(LUPRI,*) 'PRJAOB: error reading coefficients ', 
+     &                     REFFIL(IREFS) 
+            CALL QUIT('PRJAOB: Error reading coefficients')
+          ENDIF
           CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
-          CALL READT(LUCOEF,NTOT,WORK(KEA))
+          IF(FNDLAB('EVALS   ',LUCOEF)) THEN
+            CALL READT(LUCOEF,NTOT,WORK(KEA))
+          ELSE
+            WRITE(6,*) 'PRJAOB: not able to read eigenvalues ',
+     &       'from file ',REFFIL(IREFS)
+            CALL QUIT('PRJAOB: Error reading eigenvalues')
+          ENDIF
           CLOSE(LUCOEF,STATUS='KEEP')
 C.........Make pointer array to selected reference orbitals
           NDIM = NTOT+1
