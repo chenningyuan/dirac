@@ -172,9 +172,9 @@ Version information
 -------------------
 
 Branch        | caar-respect
-Commit hash   | 801380cfb
-Commit author | Lucas
-Commit date   | Thu Dec 17 10:06:45 2020 +0000
+Commit hash   | e597a5b2d
+Commit author | Johann Pototschnig
+Commit date   | Fri Dec 18 11:44:57 2020 +0100
 
 
 Configuration and build information
@@ -186,17 +186,17 @@ Operating system         | Linux-5.4.0-58-generic
 CMake version            | 3.10.2
 CMake generator          | Unix Makefiles
 CMake build type         | debug
-Configuration time       | 2020-12-18 10:24:46.322292
+Configuration time       | 2020-12-18 14:41:35.274452
 Python version           | 3.7.7
 Fortran compiler         | /home/pototschnig/mpich/bin/mpif90
 Fortran compiler version | 8.4.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
 C compiler               | /home/pototschnig/mpich/bin/mpicc
 C compiler version       | 8.4.0
-C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C compiler flags         |  -g  -fopenmp
 C++ compiler             | /home/pototschnig/mpich/bin/mpicxx
 C++ compiler version     | 8.4.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | True
@@ -205,7 +205,7 @@ Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE;MOD_EXACORR
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE;MOD_EXACORR
 
 
  LAPACK integer*4/8 selftest passed
@@ -218,7 +218,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Dec 18 11:28:15 2020
+     Date and time (Linux)  : Fri Dec 18 16:37:19 2020
      Host name              : poto-W65-W67RB                          
 
 
@@ -227,13 +227,12 @@ Contents of the input file
 
 **DIRAC                                                                                             
 .TITLE                                                                                              
-Test Respect reader                                                                                 
+H2O, Test ReSpect reader                                                                            
 .WAVE FUNCTION                                                                                      
 **HAMILTONIAN                                                                                       
-.X2C                                                                                                
-**WAVE FUNCTION                                                                                     
+.X2Cmmf                                                                                             
+**WAVE FUNCTIONS                                                                                    
 .EXACC                                                                                              
-!Standalone input                                                                                   
 **EXACC                                                                                             
 .OCCUPIED                                                                                           
 3..5                                                                                                
@@ -262,9 +261,9 @@ O    0.0000000000         0.0000000000        -0.2249058930
                                                                                                     
 
 
-    *************************************************************************
-    ************************** Test Respect reader **************************
-    *************************************************************************
+    **************************************************************************
+    ************************ H2O, Test ReSpect reader ************************
+    **************************************************************************
 
  Jobs in this run:
    * Wave function
@@ -280,9 +279,12 @@ O    0.0000000000         0.0000000000        -0.2249058930
   Available at http://physics.nist.gov/constants                                           
   National Institute of Standards and Technology, Gaithersburg, MD 20899                   
  * The speed of light :        137.0359992
- * Running in two-component mode
+ * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
  * Spherical transformation embedded in MO-transformation
    for large components
  * Transformation to scalar RKB basis embedded in
@@ -364,11 +366,14 @@ Point group: C1
   label    atoms   charge   prim    cont     basis   
   ----------------------------------------------------------------------
   H           2       1       7       5      L  - [4s1p|2s1p]                                                    
+                             19      19      S  - [1s4p1d|1s4p1d]                                                
   O           1       8      27      15      L  - [9s4p1d|3s2p1d]                                                
+                             68      68      S  - [4s10p4d1f|4s10p4d1f]                                          
   ----------------------------------------------------------------------
                              41      25      L  - large components
+                            106     106      S  - small components
   ----------------------------------------------------------------------
-  total:      3      10      41      25
+  total:      3      10     147     131
 
   Cartesian basis used.
   Threshold for integrals (to be written to file):  1.00D-15
@@ -470,16 +475,22 @@ O      0.0000000000   0.0000000000  -0.2249058930
      1  L H   1 s        2  L H   1 px       3  L H   1 py       4  L H   1 pz       5  L H   1 s        6  L H   1 px  
      7  L H   1 py       8  L H   1 pz       9  L O   1 s       10  L O   1 px      11  L O   1 py      12  L O   1 pz  
     13  L O   1 dxx     14  L O   1 dxy     15  L O   1 dxz     16  L O   1 dyy     17  L O   1 dyz     18  L O   1 dzz 
-   * Small components:    0
-
+   * Small components:   40
+    19  S H   1 s       20  S H   1 px      21  S H   1 py      22  S H   1 pz      23  S H   1 dxx     24  S H   1 dxy 
+    25  S H   1 dxz     26  S H   1 dyy     27  S H   1 dyz     28  S H   1 dzz     29  S H   1 s       30  S H   1 px  
+    31  S H   1 py      32  S H   1 pz      33  S H   1 dxx     34  S H   1 dxy     35  S H   1 dxz     36  S H   1 dyy 
+    37  S H   1 dyz     38  S H   1 dzz     39  S O   1 s       40  S O   1 px      41  S O   1 py      42  S O   1 pz  
+    43  S O   1 dxx     44  S O   1 dxy     45  S O   1 dxz     46  S O   1 dyy     47  S O   1 dyz     48  S O   1 dzz 
+    49  S O   1 fxxx    50  S O   1 fxxy    51  S O   1 fxxz    52  S O   1 fxyy    53  S O   1 fxyz    54  S O   1 fxzz
+    55  S O   1 fyyy    56  S O   1 fyyz    57  S O   1 fyzz    58  S O   1 fzzz
 
 
   Symmetry Orbitals
   -----------------
 
-  Number of orbitals in each symmetry:           25
+  Number of orbitals in each symmetry:          131
   Number of large orbitals in each symmetry:     25
-  Number of small orbitals in each symmetry:      0
+  Number of small orbitals in each symmetry:    106
 
 * Large component functions
 
@@ -504,6 +515,51 @@ O      0.0000000000   0.0000000000  -0.2249058930
         1 functions:    O  dyz 
         1 functions:    O  dzz 
 
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
+        1 functions:    H  s   
+        4 functions:    H  px  
+        4 functions:    H  py  
+        4 functions:    H  pz  
+        1 functions:    H  dxx 
+        1 functions:    H  dxy 
+        1 functions:    H  dxz 
+        1 functions:    H  dyy 
+        1 functions:    H  dyz 
+        1 functions:    H  dzz 
+        4 functions:    O  s   
+       10 functions:    O  px  
+       10 functions:    O  py  
+       10 functions:    O  pz  
+        4 functions:    O  dxx 
+        4 functions:    O  dxy 
+        4 functions:    O  dxz 
+        4 functions:    O  dyy 
+        4 functions:    O  dyz 
+        4 functions:    O  dzz 
+        1 functions:    O  fxxx
+        1 functions:    O  fxxy
+        1 functions:    O  fxxz
+        1 functions:    O  fxyy
+        1 functions:    O  fxyz
+        1 functions:    O  fxzz
+        1 functions:    O  fyyy
+        1 functions:    O  fyyz
+        1 functions:    O  fyzz
+        1 functions:    O  fzzz
+
 
    ***************************************************************************
    *************************** Hamiltonian defined ***************************
@@ -525,22 +581,24 @@ O      0.0000000000   0.0000000000  -0.2249058930
     S. Knecht and T. Saue:
     manuscript in preparation, Strasbourg 2010.
 
- * Running in two-component mode
+ * after the four-component SCF procedure perform a X2C/BSS/IOTC transformation
+   of the 4c Fock operator.
+ * Running in four-component mode
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
  * Default integral flags passed to all modules
    - LL-integrals:     1
-   - LS-integrals:     0
+   - LS-integrals:     1
    - SS-integrals:     0
    - GT-integrals:     0
-===========================================================================
-   Set-up for AMFI/RELSCF calculations
-===========================================================================
-  ...no reading under "*AMFI  ", thus default settings
- * AMFI   code print level:    0
- * RELSCF code print level:    0
- * RELSCF maximum number of iterations:   50
- * All AMFI mean-field summations are on neutral individual atoms.
- * order of AMFI contributions to the X2C Hamiltonian:  2
-  --> adding spin-same orbit MFSSO2 terms.
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
 
 
     **************************************************************************
@@ -593,45 +651,45 @@ O      0.0000000000   0.0000000000  -0.2249058930
                     *****************************************************
  
  
-  18 Dec 20 11:28:15 Finished reading data from RSD_MOS
-  18 Dec 20 11:28:15 retrieved basis set information
-  18 Dec 20 11:28:15 Initialized global data
+  18 Dec 20 16:37:19 Finished reading data from RSD_MOS
+  18 Dec 20 16:37:19 retrieved basis set information
+  18 Dec 20 16:37:19 Initialized global data
   --- read active occupied spinors --- 
     #             E   
-       5  -0.692771943E+00
-       6  -0.692771943E+00
-       7  -0.564596275E+00
-       8  -0.564596275E+00
-       9  -0.492868870E+00
-      10  -0.492868870E+00
+       5  -0.693053504E+00
+       6  -0.693053504E+00
+       7  -0.564665201E+00
+       8  -0.564665201E+00
+       9  -0.493089299E+00
+      10  -0.493089299E+00
   --- read active virtual spinors --- 
     #             E   
-      11   0.180359770E+00
-      12   0.180359770E+00
-      13   0.251304319E+00
-      14   0.251304319E+00
-      15   0.660896182E+00
-      16   0.660896182E+00
-      17   0.737109680E+00
-      18   0.737109680E+00
-      19   0.107462746E+01
-      20   0.107462746E+01
-      21   0.112297139E+01
-      22   0.112297139E+01
-      23   0.119782393E+01
-      24   0.119782393E+01
-      25   0.141466080E+01
-      26   0.141466080E+01
-      27   0.147145549E+01
-      28   0.147145549E+01
-      29   0.163534381E+01
-      30   0.163534381E+01
-      31   0.166934486E+01
-      32   0.166934486E+01
-      33   0.189241682E+01
-      34   0.189241682E+01
-  18 Dec 20 11:28:15 Entered cc_driver routine
-  18 Dec 20 11:28:15 Initialized talsh library
+      11   0.180535405E+00
+      12   0.180535405E+00
+      13   0.251263460E+00
+      14   0.251263460E+00
+      15   0.660854286E+00
+      16   0.660854286E+00
+      17   0.737234586E+00
+      18   0.737234586E+00
+      19   0.107473860E+01
+      20   0.107473860E+01
+      21   0.112309066E+01
+      22   0.112309066E+01
+      23   0.119791985E+01
+      24   0.119791985E+01
+      25   0.141489544E+01
+      26   0.141489544E+01
+      27   0.147141349E+01
+      28   0.147141349E+01
+      29   0.163701289E+01
+      30   0.163701289E+01
+      31   0.166934459E+01
+      32   0.166934459E+01
+      33   0.189248159E+01
+      34   0.189248159E+01
+  18 Dec 20 16:37:19 Entered cc_driver routine
+  18 Dec 20 16:37:19 Initialized talsh library
   Status           0: Size (Bytes) =   18819317760: Max args in HAB =   12288
 
   Integral module InteRest is initialized
@@ -640,7 +698,7 @@ O      0.0000000000   0.0000000000  -0.2249058930
   Last commit time        | Wed Oct 16 14:37:58 2013 +0200
   Last update time        | Sat Feb 20 15:39:00 2015 +0200
 
-  18 Dec 20 11:28:15 Initialized interest library
+  18 Dec 20 16:37:19 Initialized interest library
  
 -----------------------------------------------
       Characteristics of this calculation      
@@ -666,131 +724,131 @@ O      0.0000000000   0.0000000000  -0.2249058930
  -- nvir ( scheme 4/42 ) :         0 GB
 -----------------------------------------------
  
-  18 Dec 20 11:28:15 Getting orbital energies
-  18 Dec 20 11:28:15 Retrieved orbital energies
-  18 Dec 20 11:28:15 -Start- Integral Transformation
-  18 Dec 20 11:28:15 allocated AO integral tensor
-  18 Dec 20 11:28:15 finished ao integral calculation
-  18 Dec 20 11:28:15 finished oovv integrals
-  18 Dec 20 11:28:15 finished oooo integrals
-  18 Dec 20 11:28:15 finished vovo integrals
-  18 Dec 20 11:28:16 finished vvvv integrals
-  18 Dec 20 11:28:16 finished ooov integrals
-  18 Dec 20 11:28:16 finished vovv integrals
-  18 Dec 20 11:28:16 -End- Integral Transformation
-  18 Dec 20 11:28:16 Succesfully allocated all tensors
+  18 Dec 20 16:37:19 Getting orbital energies
+  18 Dec 20 16:37:19 Retrieved orbital energies
+  18 Dec 20 16:37:19 -Start- Integral Transformation
+  18 Dec 20 16:37:19 allocated AO integral tensor
+  18 Dec 20 16:37:19 finished ao integral calculation
+  18 Dec 20 16:37:19 finished oovv integrals
+  18 Dec 20 16:37:19 finished oooo integrals
+  18 Dec 20 16:37:19 finished vovo integrals
+  18 Dec 20 16:37:19 finished vvvv integrals
+  18 Dec 20 16:37:19 finished ooov integrals
+  18 Dec 20 16:37:19 finished vovv integrals
+  18 Dec 20 16:37:19 -End- Integral Transformation
+  18 Dec 20 16:37:19 Succesfully allocated all tensors
  
-    SCF energy ( read ) =     -76.080632856030761
+    SCF energy ( read ) =     -76.029066747130798
  
   --- shifted active occupied spinors --- 
     #             E   
-       1  -0.692771943E+00
-       2  -0.692771943E+00
-       3  -0.564596275E+00
-       4  -0.564596275E+00
-       5  -0.492868870E+00
-       6  -0.492868870E+00
+       1  -0.693053504E+00
+       2  -0.693053504E+00
+       3  -0.564665201E+00
+       4  -0.564665201E+00
+       5  -0.493089299E+00
+       6  -0.493089299E+00
   --- shifted active virtual spinors --- 
     #             E   
-       1   0.180359770E+00
-       2   0.180359770E+00
-       3   0.251304319E+00
-       4   0.251304319E+00
-       5   0.660896182E+00
-       6   0.660896182E+00
-       7   0.737109680E+00
-       8   0.737109680E+00
-       9   0.107462746E+01
-      10   0.107462746E+01
-      11   0.112297139E+01
-      12   0.112297139E+01
-      13   0.119782393E+01
-      14   0.119782393E+01
-      15   0.141466080E+01
-      16   0.141466080E+01
-      17   0.147145549E+01
-      18   0.147145549E+01
-      19   0.163534381E+01
-      20   0.163534381E+01
-      21   0.166934486E+01
-      22   0.166934486E+01
-      23   0.189241682E+01
-      24   0.189241682E+01
-  18 Dec 20 11:28:16 Fock matrix initialized
+       1   0.180535405E+00
+       2   0.180535405E+00
+       3   0.251263460E+00
+       4   0.251263460E+00
+       5   0.660854286E+00
+       6   0.660854286E+00
+       7   0.737234586E+00
+       8   0.737234586E+00
+       9   0.107473860E+01
+      10   0.107473860E+01
+      11   0.112309066E+01
+      12   0.112309066E+01
+      13   0.119791985E+01
+      14   0.119791985E+01
+      15   0.141489544E+01
+      16   0.141489544E+01
+      17   0.147141349E+01
+      18   0.147141349E+01
+      19   0.163701289E+01
+      20   0.163701289E+01
+      21   0.166934459E+01
+      22   0.166934459E+01
+      23   0.189248159E+01
+      24   0.189248159E+01
+  18 Dec 20 16:37:19 Fock matrix initialized
  
-     MP2 energy =   -8.8462577508456944E-002
+     MP2 energy =   -8.8366605696393152E-002
  
 
  =======================================
    Matrix of pair correlation energies
  =============================================
-  0.00E+00 -1.38E-02 -3.93E-03 -6.69E-03 -3.90E-03 -4.72E-03
- -1.38E-02  0.00E+00 -6.69E-03 -3.93E-03 -4.72E-03 -3.90E-03
- -3.93E-03 -6.69E-03  0.00E+00 -1.06E-02 -3.64E-03 -4.68E-03
- -6.69E-03 -3.93E-03 -1.06E-02  0.00E+00 -4.68E-03 -3.64E-03
- -3.90E-03 -4.72E-03 -3.64E-03 -4.68E-03  0.00E+00 -8.90E-03
- -4.72E-03 -3.90E-03 -4.68E-03 -3.64E-03 -8.90E-03  0.00E+00
- Sum of pair correlation energies :  -0.17692515501691342     
- Correlation energy               :   -8.8462577508456708E-002
+  0.00E+00 -1.38E-02 -3.93E-03 -6.67E-03 -4.72E-03 -3.89E-03
+ -1.38E-02  0.00E+00 -6.67E-03 -3.93E-03 -3.89E-03 -4.72E-03
+ -3.93E-03 -6.67E-03  0.00E+00 -1.06E-02 -4.68E-03 -3.63E-03
+ -6.67E-03 -3.93E-03 -1.06E-02  0.00E+00 -3.63E-03 -4.68E-03
+ -4.72E-03 -3.89E-03 -4.68E-03 -3.63E-03  0.00E+00 -8.90E-03
+ -3.89E-03 -4.72E-03 -3.63E-03 -4.68E-03 -8.90E-03  0.00E+00
+ Sum of pair correlation energies :  -0.17673321139278639     
+ Correlation energy               :   -8.8366605696393194E-002
  =============================================
  =======================================
 
-  18 Dec 20 11:28:16 -Start- CC Iterations
+  18 Dec 20 16:37:19 -Start- CC Iterations
  
  -----------------------------------------------
    It.     Energy                  Convergence  
  -----------------------------------------------
-    1      -0.092088012454064      0.4E-01
-    2      -0.093442065599489      0.1E-01
-    3      -0.093966139990604      0.6E-02
-    4      -0.093987777943363      0.1E-02
-    5      -0.093989039225852      0.3E-03
-    6      -0.093988744321388      0.4E-04
-    7      -0.093988787138989      0.8E-05
-    8      -0.093988769695260      0.1E-05
-    9      -0.093988765571695      0.4E-06
-   10      -0.093988761587966      0.2E-06
-   11      -0.093988760470216      0.7E-07
-   12      -0.093988760630841      0.2E-07
-   13      -0.093988760699913      0.4E-08
-   14      -0.093988760697823      0.9E-09
+    1      -0.091992095623857      0.4E-01
+    2      -0.093342607747729      0.1E-01
+    3      -0.093864586263187      0.6E-02
+    4      -0.093886130003261      0.1E-02
+    5      -0.093887379202377      0.3E-03
+    6      -0.093887085945575      0.4E-04
+    7      -0.093887128150688      0.8E-05
+    8      -0.093887110669827      0.1E-05
+    9      -0.093887106443094      0.3E-06
+   10      -0.093887103222741      0.7E-07
+   11      -0.093887102061753      0.3E-07
+   12      -0.093887101835256      0.9E-08
+   13      -0.093887101839951      0.2E-08
+   14      -0.093887101842433      0.3E-09
  -----------------------------------------------
  
  
-  18 Dec 20 11:28:16 -End- CC Iterations
-  18 Dec 20 11:28:16 -Start- Triples
- t3_energy:  -7.7387614542679284E-004   7.6750486379109048E-005   1.1771214697661991E-004
- t3_energy:  -3.0611886752905980E-003   3.6939478005539847E-004   5.5096296420812491E-004
- t3_energy:  -5.6906490370131485E-003   7.3369651249585049E-004   1.0926200262188961E-003
- t3_energy:  -1.0147587135534951E-002   1.3656243020023938E-003   2.0308651305136552E-003
-  18 Dec 20 11:28:16 -End- Triples
+  18 Dec 20 16:37:20 -End- CC Iterations
+  18 Dec 20 16:37:20 -Start- Triples
+ t3_energy:  -7.7257278880044598E-004   7.6549064278538006E-005   1.1742038533755726E-004
+ t3_energy:  -3.0544954154703525E-003   3.6789505260016329E-004   5.4877803341278327E-004
+ t3_energy:  -5.6793561105720888E-003   7.3102516913952720E-004   1.0887710207247304E-003
+ t3_energy:  -1.0129468241060549E-002   1.3611263007283036E-003   2.0244602631869241E-003
+  18 Dec 20 16:37:20 -End- Triples
  
 -----------------------------------------------
      -     Final results from EXACORR     -    
 -----------------------------------------------
  Using the single-node TALSH library 
  
-  MP2 energy :                        -0.088462577508457
-  Final CCSD energy :                 -0.093988760697823
-  4th order triples correction :      -0.001691264522589
-  5th order triples (T) correction :   0.000227604050334
-  5th order triples -T  correction :   0.000338477521752
-  CCSD+T  correlation energy :        -0.095680025220412
-  CCSD(T) correlation energy :        -0.095452421170079
-  CCSD-T  correlation energy :        -0.095341547698660
-  T1 diagnostic      :                 0.000616680296212
+  MP2 energy :                        -0.088366605696393
+  Final CCSD energy :                 -0.093887101842433
+  4th order triples correction :      -0.001688244706843
+  5th order triples (T) correction :   0.000226854383455
+  5th order triples -T  correction :   0.000337410043864
+  CCSD+T  correlation energy :        -0.095575346549276
+  CCSD(T) correlation energy :        -0.095348492165822
+  CCSD-T  correlation energy :        -0.095237936505412
+  T1 diagnostic      :                 0.000613841695875
  
-  SCF energy :                       -76.080632856030761
-  Total MP2 energy :                 -76.169095433539212
-  Total CCSD energy :                -76.174621616728587
-  Total CCSD+T  energy :             -76.176312881251178
-  Total CCSD(T) energy :             -76.176085277200841
-  Total CCSD-T  energy :             -76.175974403729427
+  SCF energy :                       -76.029066747130798
+  Total MP2 energy :                 -76.117433352827192
+  Total CCSD energy :                -76.122953848973225
+  Total CCSD+T  energy :             -76.124642093680066
+  Total CCSD(T) energy :             -76.124415239296610
+  Total CCSD-T  energy :             -76.124304683636197
  
 -----------------------------------------------
  
  
-  18 Dec 20 11:28:16 Leaving cc_driver routine
+  18 Dec 20 16:37:20 Leaving cc_driver routine
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -798,10 +856,10 @@ O      0.0000000000   0.0000000000  -0.2249058930
 
 
  
-     Date and time (Linux)  : Fri Dec 18 11:28:16 2020
+     Date and time (Linux)  : Fri Dec 18 16:37:20 2020
      Host name              : poto-W65-W67RB                          
 
->>>> Node 0, utime: 1, stime: 0, minflt: 107269, majflt: 0, nvcsw: 23, nivcsw: 23, maxrss: 610788
+>>>> Node 0, utime: 1, stime: 0, minflt: 107304, majflt: 0, nvcsw: 23, nivcsw: 21, maxrss: 610596
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
@@ -829,4 +887,4 @@ O      0.0000000000   0.0000000000  -0.2249058930
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/pototschnig/DIRAC/caar/build-omp/test/exacorr_talsh_respect
+DIRAC pam run in /home/pototschnig/DIRAC/caar-respect/build-omp/test/exacorr_talsh_respect

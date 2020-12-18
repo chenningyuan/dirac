@@ -1,12 +1,11 @@
 **DIRAC
 .TITLE
-Test Respect reader
+H2O, Test ReSpect reader
 .WAVE FUNCTION
 **HAMILTONIAN
-.X2C
-**WAVE FUNCTION
+.X2Cmmf
+**WAVE FUNCTIONS
 .EXACC
-!Standalone input
 **EXACC
 .OCCUPIED
 3..5
