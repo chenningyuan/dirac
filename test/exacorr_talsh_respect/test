@@ -25,6 +25,7 @@ test.run(['cc_respect_1c.inp'], ['h2o.xyz'], f, args=' --put=RSD_MOS ')
 shutil.copyfile(r'h2o-2c.rsd_mos',r'RSD_MOS')
 test.run(['cc_respect_2c.inp'], ['h2o.xyz'], f, args=' --put=RSD_MOS ')
 test.run(['cc_exacorr_x2cmmf.inp'], ['h2o.xyz'], f)
+test.run(['cc_exacorr_nonrel.inp'], ['h2o.xyz'], f)
 
 f1 = Filter()
 f1.add(from_string = 'Overview of calculated energies',
