@@ -1,0 +1,24 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final CCSD energy',
+      num_lines   = 7,
+      rel_tolerance   = 1.0e-6)
+f.add(from_string = 'SCF energy ( read )',
+      num_lines   = 1,
+      rel_tolerance   = 1.0e-5)
+f.add(from_string = 'read active occupied spinors',
+      num_lines   = 22,
+      rel_tolerance   = 1.0e-5)
+
+test.run(['respect_pam.inp'], ['h2o.xyz'], f, args=' --put=RSD_MOS ')
+
+sys.exit(test.return_code)
