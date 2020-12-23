@@ -45,11 +45,6 @@ if (ENABLE_EXATENSOR)
    compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
 endif()
 
-if (ENABLE_GENIAO)
-   compile_standalone(geniao.x src/geniao/generate_iao.F90   "${_list_of_executables}")
-   compile_standalone(avas.x src/geniao/generate_avas.F90   "${_list_of_executables}")
-endif()
-
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
     compile_standalone(dirac_mointegral_export.x utils/dirac_mointegral_export.F90   "${_list_of_executables}")

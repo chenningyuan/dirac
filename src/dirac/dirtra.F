@@ -1684,7 +1684,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      DIMENSION AMAT(*),WORK(LWORK)
+      DIMENSION AMAT(N2BBASX,MZ),WORK(LWORK)
       CALL QENTER('BUTOBS')
 #include "memint.h"
 C
@@ -1692,25 +1692,24 @@ C
       CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       IZOFF = 0
       DO IZ = 1,MZ
-        CALL DCOPY(N2BBASX,AMAT(IZOFF+1),1,WORK(KBUF),1)
+        CALL DCOPY(N2BBASX,AMAT(1,IZ),1,WORK(KBUF),1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF =         (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JSOFF = (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
                   IF(NBBAS(IREP,IC).GT.0) 
      &              CALL DCOPY(NBBAS(IREP,IC),WORK(KBUF+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
+     &                                        AMAT(ISOFF+1,IZ)   ,1)
                 ENDDO
               ENDDO
             ENDDO
           ENDDO
         ENDDO
-        IZOFF = IZOFF + N2BBASX
       ENDDO
 C
       CALL MEMREL('BUTOBS',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1741,36 +1740,32 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      DIMENSION AMAT(*)
+      DIMENSION AMAT(N2BBASX,MZ)
       real(8), allocatable :: buf(:)
       CALL QENTER('BSTOBU_no_work')
 C
 C     Memory allocation
 C
-      call alloc(buf, mz*n2bbasx)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,BUF,1)
-      IZOFF = 0
+      call alloc(buf, n2bbasx)
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(1,IZ),1,BUF,1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JSOFF = (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
-!                 print *,'copy IREP,IC, in JREP  ,JC: nbbas =',
-!    &                          IREP,IC,JREP  ,JC, NBBAS(IREP,IC)
                   IF(NBBAS(IREP,IC).GT.0)
      &              CALL DCOPY(NBBAS(IREP,IC),buf(1+ISOFF),1,
-     &                                        AMAT(IUOFF+1)   ,1)
+     &                                        AMAT(IUOFF+1,IZ)   ,1)
                 ENDDO
               ENDDO
             ENDDO
           ENDDO
         ENDDO
-        IZOFF = IZOFF + N2BBASX
       ENDDO
 C
 C     Memory deallocation
@@ -1802,7 +1797,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      real(8), intent(inout) :: amat(*)
+      real(8), intent(inout) :: amat(ntbas(0)*ntbas(1),mz)
       real(8), allocatable   :: bufx(:)
       integer                :: ndim_mat
 
@@ -1823,20 +1818,18 @@ C
       call flshfo(6)
 C
 C     Memory allocation
-      call alloc(bufx, mz*ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
+      call alloc(bufx, ntbas(1)*ntbas(0), id='bufx LS-L Dao --> Hao')
 
-      call dcopy(mz*ntbas(0)*ntbas(1),amat,1,bufx,1)
-      call dzero(amat,mz*ntbas(0)*ntbas(1))
 
 !     IREP+1 for icos because loop indices in herrdn.F run from 
 !     1 --> maxrep+1 for icos!
 
-
-      izoff = 0
       do iz = 1,mz
+        call dcopy(ntbas(0)*ntbas(1),amat(1,iz),1,bufx,1)
+        call dzero(amat(1,iz),ntbas(0)*ntbas(1))
         do jrep = 0,maxrep
           do j = 0,nbbas(jrep,1)-1
-            joff = izoff + (ibbas(jrep,1)+j)*ntbas(0)
+            joff = (ibbas(jrep,1)+j)*ntbas(0)
             print *,'joff ==> column in L part', joff
             do ic = 1, 2
               do irep = 0,maxrep
@@ -1846,7 +1839,7 @@ C     Memory allocation
                 if(nbbas(irep,ic).gt.0)then
 
                    call dcopy(nbbas(irep,ic),bufx(1+isoff),1,
-     &                                       amat(1+iuoff),1)
+     &                                       amat(1+iuoff,iz),1)
 
                 end if
 
@@ -1854,7 +1847,6 @@ C     Memory allocation
             end do
           end do
         end do
-        izoff = izoff + ntbas(1)*ntbas(0)
       end do
 C
 C     Memory deallocation
@@ -1887,26 +1879,25 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-      DIMENSION AMAT(*)
+      DIMENSION AMAT(N2BBASX,MZ)
       real(8), allocatable             :: buf(:)
       CALL QENTER('BUTOBS')
 C
-      call alloc(buf, mz*n2bbasx, id='buf in butobs')
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,buf,1)
-      IZOFF = 0
+      call alloc(buf, n2bbasx, id='buf in butobs')
       DO IZ = 1,MZ
+        CALL DCOPY(N2BBASX,AMAT(1,IZ),1,buf,1)
         DO JC = 1,2
           DO JREP = 0,MAXREP
             DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
+              JSOFF = (IBBAS(JREP  ,JC)+J)*NTBAS(0)
+              JUOFF = (ICOS (JREP+1,JC)+J)*NTBAS(0)
               DO IC = 1,2
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
                   if(NBBAS(IREP,IC).GT.0)then
                     CALL DCOPY(NBBAS(IREP,IC),buf(1+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
+     &                                        AMAT(ISOFF+1,IZ)   ,1)
                   end if
                 ENDDO
               ENDDO
@@ -1916,63 +1907,6 @@ C
       ENDDO
 C
       call dealloc(buf)
-      CALL QEXIT ('BUTOBS')
-      RETURN
-C
-      END
-      SUBROUTINE BUTOBS_no_work2(AMAT,MZ,bmat)
-C***********************************************************************
-C
-C     Matrix transform:
-C     from symmetry/class sorted basis ("unsorted basis" = Hermit sorted)
-C     to class/symmetry sorted basis ("sorted basis" = Dirac sorted)
-C
-C     Written by T.Saue Mar 2 1995
-C     Last revision : May 6 1996 - tsaue
-C
-C***********************************************************************
-
-         use memory_allocator
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-C
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "symmet.h"
-C
-      DIMENSION AMAT(*)
-      real(8), intent(inout) :: bmat(*)
-      CALL QENTER('BUTOBS')
-C
-      write(lupri,*) 'dim of mat in butobs: ',MZ*N2BBASX,mz,n2bbasx
-      call flshfo(lupri)
-      CALL DCOPY(MZ*N2BBASX,AMAT,1,bmat,1)
-      IZOFF = 0
-      DO IZ = 1,MZ
-        DO JC = 1,2
-          DO JREP = 0,MAXREP
-            DO J = 0,NBBAS(JREP,JC)-1
-              JSOFF = IZOFF + (IBBAS(JREP  ,JC)+J)*NTBAS(0)
-              JUOFF = IZOFF + (ICOS (JREP+1,JC)+J)*NTBAS(0)
-              DO IC = 1,2
-                DO IREP = 0,MAXREP
-                  IUOFF = JUOFF + ICOS (IREP+1,IC)
-                  ISOFF = JSOFF + IBBAS(IREP  ,IC)
-                  if(NBBAS(IREP,IC).GT.0)then
-                    CALL DCOPY(NBBAS(IREP,IC),bmat(1+IUOFF),1,
-     &                                        AMAT(ISOFF+1)   ,1)
-                  end if
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDDO
-        IZOFF = IZOFF + N2BBASX
-      ENDDO
-C
       CALL QEXIT ('BUTOBS')
       RETURN
 C
