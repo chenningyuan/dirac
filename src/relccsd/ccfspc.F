@@ -72,8 +72,8 @@ C  For each term we also indicate which part of the array needs to be extracted 
 C  second class of virtual indices which are the inactive virtuals).
 C
 C--------------------------------------------------------------------
-      allocate (ds1(ndimt1))
-      allocate (ds2(ndimt2))
+      allocate (ds1(RCW*ndimt1))
+      allocate (ds2(RCW*ndimt2))
       CALL XCOPY (NDIMT1,A0,0,DS1,1)
       CALL XCOPY (NDIMT2,A0,0,DS2,1)
 C--------------------------------------------------------------------
