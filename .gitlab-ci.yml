@@ -94,3 +94,4 @@ ubuntu_intel_mkl_int64-check:
     - make -j $N_PROC
     - ldd dirac.x
     - ctest -VV -j $N_PROC -E basis_input_scripted -L short # exclude long (failing) test
+

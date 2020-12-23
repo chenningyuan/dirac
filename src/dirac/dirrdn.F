@@ -49,6 +49,7 @@ C***********************************************************************
 #endif
 #ifdef HAS_PELIB
       use pe_variables, only: peqm
+      use read_xyzfile, only: pelib_sym_xyz
 #endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
@@ -211,10 +212,12 @@ C     Define Hamiltonian
 
 #ifdef HAS_PELIB
 C     Initialize PE library
-
-      IF (PEQM) THEN
-        CALL PELIB_IFC_INIT()
-      END IF
+       IF (PEQM) THEN
+         ! first check if symmetry is disabled (for xyz input)
+         IF (PELIB_SYM_XYZ) CALL QUIT(".PElib/xyz input:" //
+     &                                  " Activate .NOSYM!")
+         CALL PELIB_IFC_INIT()
+       END IF
 #endif
 !     this is the new input reader
 !     contains:
