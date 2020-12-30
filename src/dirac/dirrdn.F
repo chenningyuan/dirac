@@ -49,6 +49,7 @@ C***********************************************************************
 #endif
 #ifdef HAS_PELIB
       use pe_variables, only: peqm
+      use read_xyzfile, only: pelib_sym_xyz
 #endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
@@ -211,10 +212,12 @@ C     Define Hamiltonian
 
 #ifdef HAS_PELIB
 C     Initialize PE library
-
-      IF (PEQM) THEN
-        CALL PELIB_IFC_INIT()
-      END IF
+       IF (PEQM) THEN
+         ! first check if symmetry is disabled (for xyz input)
+         IF (PELIB_SYM_XYZ) CALL QUIT(".PElib/xyz input:" //
+     &                                  " Activate .NOSYM!")
+         CALL PELIB_IFC_INIT()
+       END IF
 #endif
 !     this is the new input reader
 !     contains:
@@ -5101,7 +5104,11 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
+<<<<<<< HEAD
       PARAMETER (NTABLE = 73,NDIR = 12)
+=======
+      PARAMETER (NTABLE = 76,NDIR = 12)
+>>>>>>> 5b5bbfa61632980fd49548e0e4c54c3def802b08
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -5166,11 +5173,19 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
+<<<<<<< HEAD
      &            '.TRSMIX','.PEQM  ','.JZOUT', '.FAKE2C',
 !                   69        70        71        72
      &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO'/
 !                   73
      &            '.KOUT'/
+=======
+     &            '.TRSMIX','.PEQM  ','.JZOUT ', '.FAKE2C',
+!                   69        70        71        72
+     &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
+!                   73        74        75        76
+     &            '.KOUT  ','.XXXXXX','.XXXXXX', '.XXXXXX'/
+>>>>>>> 5b5bbfa61632980fd49548e0e4c54c3def802b08
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -5344,7 +5359,11 @@ C     Keep track of number of changes and added finite field operators
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
      &                161,162,163,164,165,166,167,168,169,170,
+<<<<<<< HEAD
      &                171,172,173),I
+=======
+     &                171,172,173,174,175,176),I
+>>>>>>> 5b5bbfa61632980fd49548e0e4c54c3def802b08
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -5951,6 +5970,15 @@ C..TODO: check for inconsistencies and add stops
   173     CONTINUE
 !&&&& .KOUT : save Kappa_MO matrices into formatted files for analysis
             WRITE_K_MATRIX = .TRUE.
+<<<<<<< HEAD
+=======
+          GO TO 100
+  174     CONTINUE
+          GO TO 100
+  175     CONTINUE
+          GO TO 100
+  176     CONTINUE
+>>>>>>> 5b5bbfa61632980fd49548e0e4c54c3def802b08
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300

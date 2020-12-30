@@ -144,8 +144,12 @@
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
+<<<<<<< HEAD
      &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C
 
+=======
+     &        WRITE_Jz_MATRIX, NONREL, FAKE2C, WRITE_K_MATRIX
+>>>>>>> 5b5bbfa61632980fd49548e0e4c54c3def802b08
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
