@@ -38,7 +38,16 @@
 #include <string.h>
 
 #include "trace.h"
-#include "fortran_interface.h"
+
+#define FORTRAN_STRx_TO_INT8(a) (int64_t)strtol(a,NULL,16)
+#define FORTRAN_STRx_TO_INT4(a) (int32_t)strtol(a,NULL,16)
+typedef int64_t fortran_int8_t;
+typedef int32_t fortran_int4_t;
+#ifdef INT_STAR8
+  typedef fortran_int8_t fortran_int_t;
+#else
+  typedef fortran_int4_t fortran_int_t;
+#endif
 
 /* using linux's interface to memory */
 #if defined (__linux)

@@ -46,12 +46,6 @@ module prop_test
 
    private
 
-   !physical constants for conversion to non-atomic units
-   real(8), parameter:: cm1 = 1/219474.631371d0, & !1 centimeter-to-minus-one in au
-                        cvl = 137.03599907d0,    & !c-the-velocity-of-light in au
-                        nm  = 10/0.52917706d0,   & !1 nanometer in au
-                        pi  = 3.14159265358979323846D0 !acos(-1.d0)
-
    !field component lables for printing
    character*2:: fc(3) = (/'Fx','Fy','Fz'/), &
                  bc(3) = (/'Bx','By','Bz'/)

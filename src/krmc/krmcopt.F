@@ -61,6 +61,12 @@ C
       LOGICAL EX
       INTEGER RENAME
       real(8), allocatable :: WORK(:)
+C     JVP-2020 modification to save moltra input
+C     variables to save 
+      CHARACTER*72 SAVTRA(4,2,2)
+      INTEGER SAVINT(5)
+      LOGICAL SAVLOG(10)
+      REAL*8  SAVREAL(2)
 C
       call legacy_lwork_get(LWORK)
 #include "memint.h"
@@ -68,6 +74,8 @@ C
 C
       CALL QENTER('PSIOPT')
 C
+C     JVP-2020, save moltra inp info
+      CALL SAVE_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
 C
 C     Determine the wave function type
 C     --------------------------------
@@ -280,6 +288,9 @@ c     CLOSE(LUKRM3,STATUS='DELETE')
       CLOSE(LUKRM4,STATUS='DELETE')
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='DELETE')
       CLOSE(LUITFO,STATUS='DELETE')
+C
+C     JVP-2020, restore MOLTRA input info
+      CALL RESET_MOLTRA_INP(SAVTRA,SAVLOG,SAVREAL,SAVINT,IPRINT)
 C
       call dealloc(WORK)
       CALL QEXIT('PSIOPT')
@@ -892,7 +903,6 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-!SK      print*,'RGRAD calling ...'
          CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
 C

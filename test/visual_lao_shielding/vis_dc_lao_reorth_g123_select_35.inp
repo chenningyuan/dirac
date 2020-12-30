@@ -1,6 +1,8 @@
 **DIRAC
 **HAMILTONIAN
 .LVCORR
+.GAUGEO
+ 1.0 2.0 3.0
 **INTEGRALS
 *READIN
 .CONTRACT
@@ -16,8 +18,6 @@
 .3D_INTEGRATE
 .SCALE
  -53.25135    !this is to get integrated nr in ppm
-.GAUGE
- 1.0 2.0 3.0
 .OCCUPATION
  2
  1 3 1.0
