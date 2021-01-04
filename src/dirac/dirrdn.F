@@ -2690,7 +2690,7 @@ C
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
      &             '*SCF   ','*KRCI  ','*QCORR ','*LAPLCE',
-     &             '.EXACC '/ 
+     &             '*EXACC '/ 
 
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
