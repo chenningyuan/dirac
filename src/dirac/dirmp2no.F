@@ -632,7 +632,6 @@ C
 C     set default values
 C
       TRA_ANTIS = .FALSE.
-      TRA_MSOUT = .TRUE.
       NO2IND    = .FALSE.
       NO4IND    = .FALSE.
       NOPAIR    = .TRUE.
@@ -1117,7 +1116,7 @@ C     --------------------------------------
       IF (.NOT.NO4IND)
      &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
-     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &               TRA_ANTIS,ITRA_INTFL4)
 
 C      Print timing information
 

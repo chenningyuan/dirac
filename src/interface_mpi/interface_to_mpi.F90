@@ -115,6 +115,8 @@ module interface_to_mpi
     module procedure interface_mpi_bcast_r4
     module procedure interface_mpi_bcast_cx
     module procedure interface_mpi_bcast_c1
+    module procedure interface_mpi_bcast_cmplx2
+    module procedure interface_mpi_bcast_cmplx3
   end interface
 
   interface interface_mpi_gather
@@ -139,6 +141,7 @@ module interface_to_mpi
 
   interface interface_mpi_isend
     module procedure interface_mpi_isend_i0
+    module procedure interface_mpi_isend_i1
   end interface
 
   interface interface_mpi_recv
@@ -155,6 +158,7 @@ module interface_to_mpi
 
   interface interface_mpi_irecv
     module procedure interface_mpi_irecv_i0
+    module procedure interface_mpi_irecv_i1
   end interface
 
   interface interface_mpi_reduce
@@ -260,6 +264,7 @@ module interface_to_mpi
   integer,                        parameter, public :: df_mpi_info_null    = mpi_info_null
   integer,                        parameter, public :: df_mpi_byte         = mpi_byte
   integer,                        parameter, public :: df_mpi_real8        = mpi_real8
+  integer,                        parameter, public :: df_mpi_complex8     = mpi_complex8
   integer,                        parameter, public :: df_mpi_integer      = mpi_integer
   integer,                        parameter, public :: df_mpi_integer8     = mpi_integer8
   integer,                        parameter, public :: df_mpi_logical      = mpi_logical
@@ -288,6 +293,7 @@ contains
     integer(kind=4)            :: communicator_i4
     integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+
     ndim_i4         = ndim
     root_proc_i4    = root_proc
     communicator_i4 = communicator
@@ -297,7 +303,6 @@ contains
     if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , my_MPI_INTEGER, root_proc   , communicator   , ierr   )
 #endif
-
   end subroutine
 !-------------------------------------------------------------------------------
 
@@ -604,6 +609,62 @@ contains
 #else
     if (.not. MPI_INIT_called) return
     call mpi_bcast(x, ndim   , MPI_CHARACTER, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_bcast_cmplx2(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    complex(8)                 :: x(:,:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, MPI_COMPLEX8, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call mpi_bcast(x, ndim   , MPI_COMPLEX8, root_proc   , communicator   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_bcast_cmplx3(x,ndim,root_proc,communicator)
+
+!-------------------------------------------------------------------------------
+    complex(8)                 :: x(:,:,:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: root_proc
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: root_proc_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    root_proc_i4    = root_proc
+    communicator_i4 = communicator
+    call mpi_bcast(x, ndim_i4, MPI_COMPLEX8, root_proc_i4, communicator_i4, ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call mpi_bcast(x, ndim   , MPI_COMPLEX8, root_proc   , communicator   , ierr   )
 #endif
 
   end subroutine
@@ -1006,6 +1067,38 @@ contains
   end subroutine
 !-------------------------------------------------------------------------------
 
+  subroutine interface_mpi_isend_i1(x,ndim,receiver,message_id,communicator,request)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(:)
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: receiver
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: receiver_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    receiver_i4     = receiver
+    communicator_i4 = communicator
+    call mpi_isend(x, ndim_i4, my_MPI_INTEGER, receiver_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
+#else
+    if (.not. MPI_INIT_called) return
+    call mpi_isend(x, ndim   , my_MPI_INTEGER, receiver   , message_id   , communicator   , request   , ierr   )
+#endif
+
+  end subroutine
+
 !-------------------------------------------------------------------------------
 ! mpi_recv interfaces
 !-------------------------------------------------------------------------------
@@ -1328,6 +1421,41 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: x
+    integer(kind=integer_kind) :: ndim
+    integer(kind=integer_kind) :: sender
+    integer(kind=integer_kind) :: message_id
+    integer(kind=integer_kind) :: communicator
+    integer(kind=integer_kind) :: request
+    integer(kind=integer_kind) :: ierr
+!-------------------------------------------------------------------------------
+#ifdef VAR_MPI_32BIT_INT
+    integer(kind=4)            :: ndim_i4
+    integer(kind=4)            :: sender_i4
+    integer(kind=4)            :: message_id_i4
+    integer(kind=4)            :: communicator_i4
+    integer(kind=4)            :: request_i4
+    integer(kind=4)            :: ierr_i4
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    ndim_i4         = ndim
+    message_id_i4   = message_id
+    sender_i4       = sender
+    communicator_i4 = communicator
+    call mpi_irecv(x, ndim_i4, my_MPI_INTEGER, sender_i4, message_id_i4, communicator_i4, request_i4, ierr_i4)
+    request         = request_i4
+#else
+!-------------------------------------------------------------------------------
+    if (.not. MPI_INIT_called) return
+    call mpi_irecv(x, ndim   , my_MPI_INTEGER, sender   , message_id   , communicator   , request   , ierr   )
+#endif
+
+  end subroutine
+!-------------------------------------------------------------------------------
+
+  subroutine interface_mpi_irecv_i1(x,ndim,sender,message_id,communicator,request)
+
+!-------------------------------------------------------------------------------
+    integer(kind=integer_kind) :: x(:)
     integer(kind=integer_kind) :: ndim
     integer(kind=integer_kind) :: sender
     integer(kind=integer_kind) :: message_id
@@ -2191,13 +2319,19 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind) :: ierr
+    integer(kind=integer_kind) :: mpi_th_provided
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: ierr_i4
+    integer(kind=4)            :: mpi_th_provided_i4
 !-------------------------------------------------------------------------------
-    call mpi_init(ierr_i4)
+!caar    call mpi_init(ierr_i4)
+    call mpi_init_thread(MPI_THREAD_MULTIPLE,mpi_th_provided_i4,ierr_i4)
+    if (mpi_th_provided_i4 /= MPI_THREAD_MULTIPLE) print*, 'warning: MPI library has no thread support'
 #else
-    call mpi_init(ierr   )
+!caar    call mpi_init(ierr   )
+    call mpi_init_thread(MPI_THREAD_MULTIPLE,mpi_th_provided,ierr)
+    if (mpi_th_provided /= MPI_THREAD_MULTIPLE) print*, 'warning: MPI library has no thread support'
 #endif
     MPI_INIT_called = .true.
 
@@ -3291,20 +3425,21 @@ contains
 
 !-------------------------------------------------------------------------------
     integer(kind=integer_kind)       :: datatype
-    integer(kind=integer_kind)       :: extent
+    integer(kind=mpi_address_kind)   :: lb, extent 
 !-------------------------------------------------------------------------------
 #ifdef VAR_MPI_32BIT_INT
     integer(kind=4)            :: datatype_i4
-    integer(kind=4)            :: extent_i4
     integer(kind=4)            :: ierr_i4
+    integer(kind=mpi_address_kind)   :: lb_i4, extent_i4 
 !-------------------------------------------------------------------------------
     datatype_i4     = datatype
+    lb_i4 = extent 
 #if interface_to_mpi_DEBUG > 0
     write (0,*) 'datatype ',datatype
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
 #endif
     if (.not. MPI_INIT_called) return
-    call mpi_type_extent(datatype_i4, extent_i4, ierr_i4)
+    call mpi_type_get_extent(datatype_i4, lb_i4, extent_i4, ierr_i4)
     extent          = extent_i4
 #else
     integer(kind=integer_kind)       :: ierr
@@ -3313,7 +3448,7 @@ contains
     write (0,*) 'mpi_type_extent called, MPI_INIT ?',MPI_INIT_called
 #endif
     if (.not. MPI_INIT_called) return
-    call mpi_type_extent(datatype   , extent   , ierr   )
+    call mpi_type_get_extent(datatype   , lb, extent   , ierr   )
 #endif
 
   end subroutine
