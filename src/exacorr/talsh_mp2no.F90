@@ -417,15 +417,18 @@ module talsh_mp2no
                     real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
                     real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
                     real(kind=8), pointer              :: NOs_MO_quat_cano(:,:,:) ! new canonical orbital 
-                    real(kind=8), pointer              :: Fock_HF(:,:)            ! natural orbital from qdia of DM
-                    real(kind=8), pointer              :: HF_AO(:,:)              ! new canonical orbital 
+                    real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
+                    real(kind=8), pointer              :: HF_AO(:,:,:)            ! new canonical orbital 
+                    integer                            :: sz,flb                  ! size of matrix and flag for block
 
                                                         
                     call print_date('Read complex density matrix from DM_complex')
                     call read_matrix(MP2_density_comp,Matrix_name)
 
                     call print_date('Read Fock matrix and HF orbital in AO basis from DFCOEF')
-                    call quater_read_from_dirac_fock(Fock_HF,HF_AO)
+                    flb = 0                       ! we read vv block of Fock matrix
+                    sz = size(MP2_density_comp,1) ! the size of the FM is the same as DM
+                    call quater_read_from_dirac_fock(Fock_HF,HF_AO,sz,flb)
 
                     call print_date('Transform DM from complex into quaternion')
                     call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
