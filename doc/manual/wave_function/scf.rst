@@ -99,6 +99,30 @@ Occupation of MJ-splitted fermion irreps (only for the linear
 symmetry). Next line contains sequence of occupation numbers, see
 the SCF output for how many.
 
+keyword(KPSELE)
+
+Occupation of  Kappa-splitted fermion irreps (only for the atomic symmetry). It can be combined with Ghost atom at the linear symmetry, but cannot be combined with MJSELE.
+
+The format of KPSELE in the case of Uranium (:math:`[Rn]5f^36d^17s^2`) is as follows.
+
+::
+   .KPSELEC
+   9                             # Number of the Kappa-splitted orbital
+   #s  d- d+ g- g+ p- p+ f- f+       
+    14 12 18  0  0 10 20  6  8    # Number of the electrons in the closed orbitals
+     0  0  0  0  0  0  0  6  8    # Orbitals that is occupied by the electronss in the open shell 1 (In this case, :math:`5f^3`)
+     0  4  6  0  0  0  0  0  0    # Orbitals that is occupied by the electronss in the open shell 2 (In this case, :math:`6d^1`)
+
+The practical notations are as follows.
+- When your basis set includes high angular momentum functions (e.g., g,h,i...), you must specify even if they are unoccupied.
+- The above example is the case of one atom. When you work with ghost atom, the order of the orbitals are changed as s, p-, p+, d-, d+...
+- The numbers of the electrons in the open shells are specified by using .OPEN SHELL. In this above case, you should specify as follows.
+::
+   .OPEN SHELL
+   2
+   3/0,14
+   1/10,0
+   
 keyword(AOC)
 
 Average-of-configuration calculation (default for open-shell

@@ -1113,7 +1113,7 @@ C
               WRITE(LUPRI,'(/A,I4,3A,I2,A)')
      &            '* Block',ISUB,' in ',FREP(IFSYM),
      &            ':  Omega = ',ABS(ID),'/2'
-              WRITE (NAME_SUB(ID),'(I2,"/2")') ABS(ID)
+              WRITE (NAME_SUB2(ID),'(I3,"/2")') ABS(ID)
             ENDIF
 C
             NTOT = 0
@@ -1198,8 +1198,8 @@ C...........Closed shell
                   WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE
-                  WRITE(LUPRI,'(4X,18(A3,1X))')
-     &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18
               ENDDO
@@ -1221,8 +1221,8 @@ C...........Open shells
                   WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE  
-                  WRITE(LUPRI,'(4X,18A4)')
-     &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18                    
               ENDDO
@@ -1244,8 +1244,8 @@ C...........Virtual shells
                   WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE 
-                  WRITE(LUPRI,'(4X,18(A3,1X))')
-     &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18                   
               ENDDO              
@@ -1267,8 +1267,8 @@ C...........Negative energy shells
                   WRITE(LUPRI,'(2X,A,18(A5,1X))')
      &                 'Mj',(NAME_SUB3(IBEIG(J)),J=I+1,I+JMAX)
                 ELSE
-                  WRITE(LUPRI,'(4X,18(A3,1X))')
-     &                 (NAME_SUB(IBEIG(J)),J=I+1,I+JMAX)
+                  WRITE(LUPRI,'(4X,18(A5))')
+     &                 (NAME_SUB2(IBEIG(J)),J=I+1,I+JMAX)
                 ENDIF
                 TMP = TMP - 18                
               ENDDO              
@@ -1302,7 +1302,7 @@ C
               WRITE(TLINE3(IT:),'(1X,A5)') NAME_SUB3(ID)
               IT = IT + 1
             ELSE
-              WRITE(TLINE(IT:),'(A3)') NAME_SUB(ID)
+              WRITE(TLINE(IT:),'(A5)') NAME_SUB2(ID)
             ENDIF  
             IT = IT + 5
           ENDDO
