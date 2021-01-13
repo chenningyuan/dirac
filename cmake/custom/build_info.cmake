@@ -147,17 +147,16 @@ if(ENABLE_EXATENSOR)
    message(STATUS "Please read carefully the Dirac documentation guide for setting up the Exacorr runtime environment")
 
    set(_exatensor_git_repo_location ${EXATENSOR_GIT_REPO_LOCATION})
-   message(STATUS "ExaTensor sorce code repository : ${EXATENSOR_GIT_REPO_LOCATION}")
+   message(STATUS "ExaTensor source code repository : ${EXATENSOR_GIT_REPO_LOCATION}")
 
    set(_exatensor_git_hash ${EXATENSOR_GIT_HASH})
-   message(STATUS "Exatensor sorce code git hash : ${EXATENSOR_GIT_HASH}")
+   message(STATUS "Exatensor source code git hash : ${EXATENSOR_GIT_HASH}")
 
    set(_exatensor_configuration ${EXATENSOR_CONFIGURATION})
    message(STATUS "ExaTensor configuration variables : ${EXATENSOR_CONFIGURATION}")
 endif()
 
 # generate the build_info.h include file with defined set of variables
-# note: cmake 2.8.2 and lower has undefined variable CMAKE_CURRENT_LIST_DIR,
 get_filename_component(CMAKE_CURRENT_LIST_DIR ${CMAKE_CURRENT_LIST_FILE} PATH)
 configure_file(
     ${CMAKE_CURRENT_LIST_DIR}/build_info.h.in
