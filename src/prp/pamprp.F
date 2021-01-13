@@ -3942,7 +3942,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "gfac.h"
-#include "pi.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -4663,7 +4662,6 @@ C***********************************************************************
 #include "maxorb.h"
 #include "gfac.h"
 #include "pi.h"
-C
 #include "consts.h"
 #include "maxash.h"
 #include "dcbgen.h"
@@ -4676,7 +4674,6 @@ C
       LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
-C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -7707,6 +7704,7 @@ C-----------------------------------------------------------------------
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "codata.h"
+#include "pi.h"
 C
       PARAMETER ( GFERMI = 2.22254D-14 )
       PARAMETER ( STHETAW2 = 0.2319D0 )
@@ -8994,7 +8992,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "gfac.h"
-#include "pi.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -9174,6 +9171,7 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
 #include "codata.h"
+#include "pi.h"
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
       EXTERNAL TOTMASS
@@ -9234,7 +9232,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "gfac.h"
-#include "pi.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -9425,7 +9422,6 @@ C***********************************************************************
 #include "maxmom.h"
 #include "maxorb.h"
 #include "gfac.h"
-#include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
