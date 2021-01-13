@@ -34,9 +34,11 @@ module talsh_mp2no
 !-------------------------------------------------------------------------------------------------------------------------------------
 
        subroutine talsh_mp2no_driver (exa_input)
-!       In principle, current code will generate two files:
-!       MP2NOs_MO: MP2 natural orbital in MO basis & MP2NOs_AO: MP2 natural orbital in AO basis
-!       Written by Xiang Yuan, Oct 2020.
+!       This  module  constructs  the  MP2  density  matrix  using  talsh.
+!       We will write the complex density matrix to file.  
+!       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
+!       The new canonical orbitals are written into new file by Module3.
+!       Written by Xiang Yuan
         use exacorr_global
         type(exacc_input), intent(in) :: exa_input
 
@@ -68,11 +70,11 @@ module talsh_mp2no
  !-----------------------------------------------------------------------------------------------------------------------------------------------
 
       subroutine talsh_generate_MP2_VNO_MObasis (exa_input,NO_OCC_1)
-
 !       This subroutine obtains the complex mp2 natural orbital in MO basis
-!       Do complex diag to obtain complex occupation number
-!       The  non-diagonal complex DM is written into file DMcomplex
-!       Written by Xiang Yuan, July 2020
+!       Do complex diag to obtain complex occupation number. However, we don't these orbital and occupation number. 
+!       The non-diagonal complex DM is written into file DMcomplex
+!       Written by Xiang Yuan
+
 
          use exacorr_global
          use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
@@ -347,6 +349,7 @@ module talsh_mp2no
                integer :: ierr
          !     loop variables
                integer :: i, j
+               integer, parameter :: mp2dm = 10
          ! debug
                logical :: debug=.false.
                integer :: k
@@ -380,7 +383,7 @@ module talsh_mp2no
          !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
          !*****************************************************************************************************************************
 
-               open (mp2dm,file=file_out,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+               open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
                if (debug) then
                  print *,'<<<<< DM, complete, before formatting to dirac'
                  k = 1
@@ -416,10 +419,12 @@ module talsh_mp2no
                     complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
                     real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
                     real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
+                    real(kind=8), pointer              :: NOs_MO_quat_red(:,:,:)  ! natural orbitals which have occ larger than threshold
                     real(kind=8), pointer              :: NOs_MO_quat_cano(:,:,:) ! new canonical orbital 
                     real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-                    real(kind=8), pointer              :: HF_AO(:,:,:)            ! new canonical orbital 
+                    real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
                     integer                            :: sz,flb                  ! size of matrix and flag for block
+                    integer                            :: n_cano                  ! number of new scanonical orbital
 
                                                         
                     call print_date('Read complex density matrix from DM_complex')
@@ -437,13 +442,13 @@ module talsh_mp2no
                     call diagoanl_matrix_quater(MP2_density_quat,NO_OCC_quat,NOs_MO_quat)
 
                     call print_date('Sort and choose quaterbion natural orbital')
-                    call sort_values_vectors (sortingorder,NOs_OCC_quat,NOs_MO_quat,threshold)
+                    call sort_values_vectors (NOs_OCC_quat,NOs_MO_quat,NOs_MO_quat_red,threshold,n_cano)
 
                     call print_date('Get new Canonical orbital')
-                    call get_Cano_Orbital(NOs_MO_quat,NOs_MO_quat_cano,Fock_HF,New_energy)
+                    call get_Cano_Orbital(NOs_MO_quat_red,NOs_MO_quat_cano,Fock_HF,New_energy,n_cano)
 
                     call print_date('Get new orbital in AO basis')
-                    call basis_transform(NOs_MO_quat,HF_AO,NOs_AO_quat)
+                    call basis_transform(NOs_MO_quat_red,HF_AO,NOs_AO_quat)
                         
                                    
          end subroutine obtain_new_cano_orbital_ao_basis

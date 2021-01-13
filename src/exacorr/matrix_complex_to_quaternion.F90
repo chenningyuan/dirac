@@ -1,34 +1,23 @@
 module matrix_complex_to_quaternion
 !This module contains the routines needed to calculate the mp2 natural orbitals 
 
-        use tensor_algebra
-        use talsh
         use exacorr_datatypes
         use exacorr_utils
         use intermediates
-        use talsh_common_routines
         use exacorr_mo
         use exacorr_global,only: nfunctions
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-        real(8), parameter    :: ONE_QUARTER=0.25D0
-
-        type(talsh_tens_t) :: one_tensor
-
         private
 
-        public talsh_mp2no_driver,talsh_create_AO_to_MNO_trans
+        public read_matrix,sort_values_vectors,basis_transform,diagoanl_matrix_quater, &
+               complex_to_quaternion,get_Cano_Orbital
 
-!        interface scale_with_denominators
-!           module procedure scale_with_denominators
-!        end interface
-!
+        interface basis_transform
+         module procedure basis_transform_vector
+         module procedure basis_transform_matrix
+        end interface
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
@@ -36,287 +25,412 @@ module matrix_complex_to_quaternion
        subroutine read_matrix (Matrix, Matrix_name)
 !       Written by Xiang Yuan, Dec 2020.
 
-        use davidson
-        complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! MP2 density matrix from DM_complex
-        character(len=*),intent(in)              :: Matrix_name
+        complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! complex matrix from DM_complex
+        character(len=*), intent(in)             :: Matrix_name
+        logical :: debug=.false.
+
+        integer :: i, j, k, ierr
+        integer, parameter :: cm = 10
+        real(kind=8)       :: a,b
+
+        ! first round for reading matrix size
+        open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+        if (debug) then
+          print *,'<<<<< complex matrix existed '
+          ierr = 0
+          do while(ierr==0)
+                read(cm,'(3X,I4,2x,2F28.10,2x,4I4)',iostat=ierr) k,a,b,i,j
+          end do
+           print *,'>>>>> read complex matrix'
+        end if
+        close(cm)
+
+        allocate(Matrix(i,j))
+
+        open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+        if (debug) then
+          print *,'<<<<< complex matrix existed '
+          ierr = 0
+          do while(ierr==0)
+                read(cm,'(3X,I4,2x,2F28.10,2x,4I4)',iostat=ierr) k,a,b,i,j
+                Matrix(i,j) = cmplx(a,b)
+          end do
+           print *,'>>>>> read complex matrix'
+        end if
+        close(cm)
 
 
+      end subroutine read_matrix
 
-
-!--------------------------------------------Test part-------------------------------------------------------------------------------------------
-!        print *,'Occupation numbers of all natural orbital'
-!       do i = 1, size(NO_OCC_1,1)
-!          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
-!       end do
-!       deallocate(NO_OCC_1)
-
-!      end subroutine read_matrix
 
  !-----------------------------------------------------------------------------------------------------------------------------------------------
 
-      subroutine sort_values_vectors (sortingorder, NOs_OCC_quat, NOs_MO_quat, threshold)
+      subroutine sort_values_vectors (NOs_OCC_quat,NOs_MO_quat,NOs_MO_quat_red,threshold,count)
 
 !       This subroutine sorts and choose the natural orbital used in following computation 
+!       descending order for occupation number 
 !       Written by Xiang Yuan, July 2020
 
-         use exacorr_global
-         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
-         use talsh_gradient
-         use davidson
+         !input variables
+         real(kind=8), pointer, intent(inout)       :: NO_OCC_quat(:)          ! occupation number from qdia of DM
+         real(kind=8), pointer, intent(inout)       :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
+         real(kind=8), pointer, intent(inout)       :: NOs_MO_quat_red(:,:,:)  ! natural orbitals which have occ larger than threshold
+         real(kind=8), intent(in)                   :: threshold
+         real(kind=8), intent(out)                  :: count
 
-         type(exacc_input), intent(in) :: exa_input
-
-         real(kind=8), pointer       :: NO_OCC_quat(:)          ! occupation number from qdia of DM
-         real(kind=8), pointer       :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
-         real(kind=8)                :: threshold
-
-         complex(kind=8), pointer,intent(inout)     :: NOs_MO(:,:)
-
-!        Point connected with tensors 
-         integer(C_INT)              :: ierr
-         real(kind=8), allocatable   :: NOs_MO_R(:,:) ! auxilary array of quaternion natural orbital used in sort routine        
-         real(kind=8), allocatable   :: NOs_MO_L(:,:) ! auxilary array of quaternion natural orbital used in sort routine   
-         real(kind=8), allocatable   :: NO_OCC(:,:)   ! auxilary array of occupation number used in sort routine 
-
-!        Scalars (need to be defined as tensor types)
-         real(kind=8)  :: energy_shift(2) = 0.0d0
-         integer       :: i, j, k, n_mp2nos
-         integer       :: num_no_red       ! number of reduced natural orbital
-         integer       :: sorting_order = -1
-         logical       :: left  = .true.  !variable in davidson module controling sorted routine 
-         logical       :: right = .true.   !variable in davidson module controling sorted routine 
-         logical       :: apply_evalues_shift = .false.  !variable in davidson module controling sorted routine 
+         real(kind=8)      :: temp
+         real, allocatable :: temp_arr(:,:,:)
+         integer           :: i,j
+         integer           :: sz_dm_red      ! size of reduced natural orbital matrix
 
 
-         n_mp2nos = size(NOs_MO_quat,1) ! MP2NOs is a square matrix, so we only need one dimension
+         sz = size(NO_OCC_quat,1)
+         allocate(temp_arr(sz,1,4))
+
+         ! sorting occupation number in descending order 
+         do i = 1, sz/2
+            temp = NO_OCC_quat(i)
+            NO_OCC_quat(i) = NO_OCC_quat(sz+1-i)
+            NO_OCC_quat(sz+1-i) = temp
+         end do
+
+         ! sorting natural orbital in descending order 
+         do i = 1, sz/2
+            temp_arr(:,1,:) = NOs_MO_quat(:,i,:)
+            NOs_MO_quat(:,i,:) = NOs_MO_quat(:,sz+1-i,:)
+            NOs_MO_quat(:,sz+1-i,:) = temp_arr(:,1,:)
+         end do
+         
+ 
+         count = 0
+         do i = 1, sz
+            if (NO_OCC_quat(i)> threshold) then
+               count = count +1
+            end if
+         end do
 
 
-!  Make some noise so that we know we are proceeding 
-         call print_date('Sort natural orbital (using RELCCSD davidson auxiliary routines)')
-
-! temporaryly using the relccsd davidson sort_values_vectors, which in this case
-! means we need to setup the complex mode in the davidson module, and with that
-! we can handle complex eigenvalues and eigenvectors
-         call davidson_setup(complex_mode=.true.,unit_output=6,solve_right=.false.)
-
-! allocate first dimension as 2*n_mp2nos since representing the complex numbers as pairs of reals
-         print *, "n_mp2no", n_mp2nos
-            allocate(NOs_MO_R(n_mp2nos,n_mp2nos)) 
-            allocate(NOs_MO_L(n_mp2nos,n_mp2nos))
-            allocate(NO_OCC(2,size(NO_OCC_quat,1))) 
-
-! quaternions have 4 component, so we sort two times, sort 1, 2 component 
-
-            NO_OCC = 0.0d0
-            NO_OCC(1,:) = NO_OCC_quat(:)
+         if (count == 0) then
+            print *,'no natural orbital pass current threshold, please decrease the value'
+            return
+         end if
 
 
-            do i = 1, n_mp2nos
-               do k = 1, n_mp2nos
-                  NOs_MO_R(i,k) = (NOs_MO_quat(i,k,1))
-                  NOs_MO_L(i,k) = (NOs_MO_quat(i,k,2))
-               enddo
-            enddo
-
-
-            call sort_values_vectors(sorting_order, NO_OCC, NOs_MO_R, NOs_MO_L, &
-                                     right,left,apply_evalues_shift,energy_shift)
-
-
-            do i = 1, n_mp2nos
-               do k = 1, n_mp2nos
-                     NOs_MO_quat(i,k,1) = (NOs_MO_R(i,k))
-                     NOs_MO_quat(i,k,2) = (NOs_MO_L(i,k))
-               enddo
-            enddo
-
-!  sort 3, 4 component 
-
-            NO_OCC = 0.0d0
-            NO_OCC(1,:) = NO_OCC_quat(:)
-
-            do i = 1, n_mp2nos
-               do k = 1, n_mp2nos
-                     NOs_MO_R(i,k) = (NOs_MO_quat(i,k,3))
-                     NOs_MO_L(i,k) = (NOs_MO_quat(i,k,4))
-               enddo
-            enddo
-
-
-            call sort_values_vectors(sorting_order, NO_OCC, NOs_MO_R, NOs_MO_L, &
-                                     right,left,apply_evalues_shift,energy_shift)
-
-
-            do i = 1, n_mp2nos
-               do k = 1, n_mp2nos
-                     NOs_MO_quat(i,k,3) = (NOs_MO_R(i,k))
-                     NOs_MO_quat(i,k,4) = (NOs_MO_L(i,k))
-               enddo
-            enddo
-
-
-            NO_OCC_quat(:) = NO_OCC_(1,:)
-
-!           call davidson_print_vectors(NO_OCC,   label="MP2 NOs occupation numbers    ")
-!           call davidson_print_vectors(NOs_MO_R, label="MP2 Natural orbitals (RHS)    ", complex_dimension=1)
-
-            deallocate(NOs_MO_R)
-            deallocate(NOs_MO_L)
-            deallocate(NOs_OCC)            
-
+         allocate(NOs_MO_quat_red(sz,count,4))
+         do i = 1, sz
+            NOs_MO_quat_red(:,i,:) = NOs_MO_quat(:,i,:)
+         end do
 
         end subroutine sort_values_vectors
 
 !-------------------------------------------------------------------------------------------------------------------------------------------
 
-        subroutine print_values_R_vectors_C(values,vectors)
-           real(kind=8),    intent(in) :: values(:,:)
-           complex(kind=8), intent(in) :: vectors(:,:)
-           integer :: ndim, i, k
-   
-           ndim = size(values,2)
- 
-           print "(4x,a)", "Eigenvalues"
-           print "(4x,a,$)", ""
-           do i = 1, ndim
-              print "(a,2e14.6,$)","    ",values(:,i)
-           enddo
-!           print "(4x,a)", ""
-!           print "(4x,a)", "Eigenvectors"
-!           do i = 1, ndim
-!              print "(4x,a,$)", ""
-!              do k = 1, ndim
-!                 print "(a,2e14.6,$)","    ",vectors(i,k)
-!              enddo
-!              print *, ""
-!           enddo
-        end subroutine
-
-!----------------------------------------------------------------------------------------------------------------------    
-
-        subroutine basis_transform (exa_input,initialize_talsh,threshold,nocc,nvir,mo_vir,NOs_MO,NO_OCC,NOs_AO_tens)
-!        Routine to set theshold and reduce natural orbital space including transform from MO basis to AO basis 
-!        Now theshold is 0
+        subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out)
+!        Routine to do basis transform by quaternion matrix multiplication(vectors).
+!        We follows V' = U * V.
+!        V': vectors in new basis;  V: vectors in old basis; U: transform matrix;        
                 
-           type(exacc_input), intent(in)          :: exa_input
-           integer, intent(in)                    :: nocc,nvir      ! the size of the mo basis for occupied and virtual spinors
-           integer, intent(in)                    :: mo_vir(:)      ! the list of virtual orbitals
-           integer, intent(in)                    :: initialize_talsh         ! key to initial the lib
-           complex(kind=8), pointer, intent(in)   :: NOs_MO(:,:,:)    ! sorted natural orbital in MO basis
-           real(kind=8), intent(in)               :: threshold
-           real(kind=8), pointer,intent(in)       :: NO_OCC(:)         ! natural orbital occupation number 
-           complex(kind=8), pointer,intent(out)   :: NOs_AO_tens(:,:)
-           integer(C_INT)                     :: ierr
-           type(C_PTR)                        :: body_p
-           integer(C_SIZE_T)                  :: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-           integer(C_INT)                     :: host_arg_max
-           type(talsh_tens_t)                 :: mocoefa_tensor, mocoefb_tensor ! HF molecular orbital in AO basis 
-           type(talsh_tens_t)                 :: NOs_MOa_red_tensor  ! reduced natural orbital spin_1 in MO basis
-           type(talsh_tens_t)                 :: NOs_MOb_red_tensor  ! reduced natural orbital spin_2 in MO basis
-           type(talsh_tens_t)                 :: NOs_AO_tensor  ! reduced natural orbital in AO basis
-           type(talsh_tens_t)                 :: NOs_AOb_tensor  ! reduced natural orbital in AO basis
-           complex(kind=8), pointer           :: NOs_MO_red(:,:)
-           complex(kind=8), pointer           :: show_result(:,:)
-           integer, allocatable               :: mp2no_mo_list(:)   ! molecular orbital indices
-           integer                            :: num_no_red
-           integer(INTD), dimension(2)        :: no_red_dims, no_ao_dims
-           integer(INTD)                      :: mocoef_dims(2)
-           integer                            :: nao, nmo     ! the size of the ao & mo basis for natural orbital transformation 
-           integer                            :: i,j
+           !input variables
+           real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! target matrix in basis_1
+           real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! basis_2
+           real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! target matrix in basis_2
+
+
+
+           real(kind=8), pointer     :: A(:,:), B(:,:), C(:,:)               ! matrix used in qgemm
+
+           integer                   :: LRA, LCA, NZA
+           integer                   :: LRB, LCB, NZB
+           integer                   :: LRC, LCC, NZC
+
+           integer                   :: re,fl
+
+
+
+           LRA = size(basis2_in,1)
+           LCA = size(basis2_in,2)
+           LRB = size(mat_basis1_in,1)
+           LCB = size(mat_basis1_in,2)
+           LRC = size(basis2_in,1)
+           LCC = size(mat_basis1_in,2)
+
+
+           allocate(A(LRA*LCA,NZA))
+           allocate(B(LRB*LCB,NZB))
+           allocate(C(LRC*LCC,NZC))
+
+
+           re = 1
+           call matrix_three_two(basis2_in,A,re)
+           call matrix_three_two(mat_basis1_in,B,re)
+
+           fl = 0
+           call qua_mat_mulp(A,B,C,fl)
+
+           re = -1
+           call matrix_three_two(mat_basis2_out,C,re)
+
+           deallocate(A)
+           deallocate(B)
+           deallocate(C)
+
                       
-                
-!       Initialize libraries
-                
-           if (initialize_talsh == 0) then
-              buf_size=exa_input%talsh_buff*buf_size
-              ierr=talsh_init(buf_size,host_arg_max)
-              call print_date('Initialized talsh library')
-              write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
-              call interest_initialize(.true.)
-              call print_date('Initialized interest library')
-           end if
-                
-           num_no_red = 0
-           do i=1,size(NO_OCC,1),1
-              if (NO_OCC(i) > threshold) then
-                 num_no_red = num_no_red +1
-              end if 
-           end do
+        end subroutine basis_transform_vector
 
-!           print *, size(NOs_MO,1)
-!           print *, size(NO_OCC,1)
-           no_red_dims(1)=nvir
-           no_red_dims(2)=num_no_red
-!          print *,'size no_red_dims(1)',no_red_dims(1)
-!          print *,'size no_red_dims(2)',no_red_dims(2)
-           ierr=talsh_tensor_construct(NOs_MOa_red_tensor,C8,no_red_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(NOs_MOa_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-           call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
-           do i=1,size(NOs_MO_red,2),1
-                do j=1,size(NOs_MO_red,1),1            
-                        NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red,1)
-                end do 
-           end do
 
-           ierr=talsh_tensor_construct(NOs_MOb_red_tensor,C8,no_red_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(NOs_MOb_red_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-           call c_f_pointer(body_p,NOs_MO_red,no_red_dims) ! to use as a regular Fortran array
-           do i=1,size(NOs_MO_red,2),1
-                do j=1,size(NOs_MO_red,1),1            
-                        NOs_MO_red(j,i)=NOs_MO(j,i+nvir-num_no_red,2)
-                end do 
-           end do
+!-----------------------------------------------------------------------------------------------------------------------------------
 
-!       print *,'NOs_MO_red',ierr
-                  
+        subroutine basis_transform_matrix (mat_basis1_in,basis2_in,mat_basis2_out,mat)
+!        Routine to do basis transform by quaternion matrix multiplication(matrix).
+!        We follows C = ABA^{-1}
+!        C: matrix in new basis;  B: matrix in old basis; A: change of basis matrix;       
+                         
+         !input variables
+         real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! target matrix in basis_1
+         real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! basis_2
+         real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! target matrix in basis_2
+         character                              :: mat                     ! flag used for matrix basis transform
+
+         integer                                :: re,fl
+         real(kind=8), pointer                  :: A(:,:), B(:,:), C(:,:)  ! matrix used in qgemm
+         real(kind=8), pointer                  :: aux(:,:), A_inv(:,:)    ! matrix used in qgemm
+         integer                                :: LRA, LCA
+         integer                                :: LRB, LCB
+         integer                                :: LRC, LCC
+
+
+         LRA = size(basis2_in,1)
+         LCA = size(basis2_in,2)
+         LRB = size(mat_basis1_in,1)
+         LCB = size(mat_basis1_in,2)
+         LRC = size(basis2_in,1)
+         LCC = size(mat_basis1_in,2)
+
+         allocate(A(LRA*LCA,NZA))
+         allocate(A_inv(LRA*LCA,NZA))
+         allocate(B(LRB*LCB,NZB))
+         allocate(C(LRC*LCC,NZC))
+         allocate(aux(LRC*LCC,NZC))
+
+
+         call get_inver_quamat(basis2_in,A_inv)
+         re = 1
+         call matrix_three_two(basis2_in,A,re)
+         call matrix_three_two(mat_basis1_in,B,re)
+         
+
+         fl = 0
+         call qua_mat_mulp(A,B,aux,fl)
+         call qua_mat_mulp(aux,A_inv,C,fl)     
+
+
+         re = -1
+         call matrix_three_two(mat_basis2_out,C,re)
+
+         deallocate(A)
+         deallocate(A_inv)
+         deallocate(B)
+         deallocate(C)
+         deallocate(aux)
+
+        end subroutine basis_transform_matrix
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------
         
-           call print_date('Extracting virtual MO coeffcient in AO basis set')
-!       Extracting virtual MO coeffcient in AO basis set
-           nao = (nocc + nvir)/2
-           nmo = nvir 
-           mocoef_dims(1) = nao
-           mocoef_dims(2) = nmo
-           allocate(mp2no_mo_list(nvir))
-           mp2no_mo_list = mo_vir
-           ierr=talsh_tensor_construct(mocoefa_tensor,C8,mocoef_dims,init_val=ZERO)
-           ierr=talsh_tensor_construct(mocoefb_tensor,C8,mocoef_dims,init_val=ZERO)
-           call get_MP2_mocoef_tensor (nao, nmo, mp2no_mo_list, mocoefa_tensor, mocoefb_tensor) 
-!           ierr=talsh_tensor_add("moco_a(a,b)+=moco_b(a,b)",mocoefa_tensor,mocoefb_tensor)
-          Print *,'Extracting virtual MO coeffcient in AO basis set',ierr
-           ierr=talsh_tensor_get_body_access(mocoefa_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-           call c_f_pointer(body_p,show_result,mocoef_dims)
-           print *,'coeff of HF Molecular Orbital'
-           do i = 1, nao
-              print "(4x,a,$)", ""
-              do j = 1, nmo
-                 print "(a,2e14.6,$)","    ",show_result(i,j)
-              enddo
-              print *, ""
-           enddo
-                
-                
-           call print_date('Transform reduced natural orbital from MO basis into AO basis')
-!          Transform reduced natural orbital from MO basis into AO basis
-           no_ao_dims(1)=nao
-           no_ao_dims(2)=num_no_red
-           ierr=talsh_tensor_construct(NOs_AO_tensor,C8,no_ao_dims,init_val=ZERO)
-           ierr=talsh_tensor_construct(NOs_AOb_tensor,C8,no_ao_dims,init_val=ZERO)
-           ierr=talsh_tensor_get_body_access(NOs_AO_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-           ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AO_tensor,mocoefa_tensor,NOs_MOa_red_tensor,scale=ONE)
-          ierr=talsh_tensor_contract("NO_AO(a,b)+=MO_AO(a,i)*NO_MO(i,b)",NOs_AOb_tensor,mocoefb_tensor,NOs_MOb_red_tensor,scale=ONE)
-           ierr=talsh_tensor_add("NO_AO(a,b)+=NO_AO2(a,b)",NOs_AO_tensor,NOs_AOb_tensor)
-           call c_f_pointer(body_p,NOs_AO_tens,no_ao_dims) ! to use as a regular Fortran array
-           print *,'coeff of natural Orbital in AO basis'
-           do i = 1, nao
-              print "(4x,a,$)", ""
-              do j = 1, num_no_red
-                 print "(a,2e14.6,$)","    ",NOs_AO_tens(i,j)
-              enddo
-              print *, ""
-           enddo
-                          
-        end subroutine basis_transform
-!-----------------------------------------------------------------------------------------------------------------------
+      subroutine qua_mat_mulp (A,B,C,flag)
+!        Routine to do quaternion matrix multiplication. We use qgemm routine from qalebra.F.
+                         
+         !input variables         
+         real(kind=8), pointer, intent(inout)  :: A(:,:), B(:,:), C(:,:)               ! matrix used in qgemm
+         integer, intent(in)                   :: flag
+
+
+         integer                   :: M, N, K                              !paramter for blas routine dgemm
+         integer                   :: IQPA(:), LRA, LCA, NZA
+         integer                   :: IQPB(:), LRB, LCB, NZB
+         integer                   :: IQPC(:), LRC, LCC, NZC         
+         real(kind=8)              :: ALPHA, BETA
+         character                 :: FA, FB ,TA ,TB
+
+   
+         LRA = size(A,1)
+         LCA = size(A,2)
+         LRB = size(B,1)
+         LCB = size(B,2)
+         LRC = size(C,1)
+         LCC = size(C,2)
+         
+         M = size(A,1)
+         N = size(B,2)
+         K = size(A,2)
+         
+         NZA = 4
+         NZB = 4
+         NZC = 4
+         
+         FA = 'N'
+         FB = 'N'
+         TA = 'N'
+         TB = 'N'
+         
+         ALPHA = 1.0
+         BETA = 0.0
+         
+         
+         allocate(IQPA(NZA))
+         allocate(IQPB(NZB))
+         allocate(IQPC(NZC)) 
+         
+!       There three options: case1 does C=A^{dagger}*B; case3 does C=A^{T}*B; case3 does C=A*B
+         if (flag == 1) then
+            FB = 'H'
+            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
+                     FB,TB,IQPB,A,LRB,LCB,NZB,BETA, &
+                     IQPC,C,LRC,LCC,NZC)     
+
+         else if (flag == -1) then
+            FA = 'T'
+            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
+                     FB,TB,IQPB,A,LRB,LCB,NZB,BETA, &
+                     IQPC,C,LRC,LCC,NZC)    
+
+         else if (flag == -2) then
+            FA = 'T'
+            FB = 'T'
+            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
+                     FB,TB,IQPB,A,LRB,LCB,NZB,BETA, &
+                     IQPC,C,LRC,LCC,NZC)                       
+         else 
+            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
+                       FB,TB,IQPB,A,LRB,LCB,NZB,BETA, &
+                       IQPC,C,LRC,LCC,NZC)    
+         end if
+
+
+         deallocate(IQPA)
+         deallocate(IQPB)
+         deallocate(IQPC)
+                               
+
+      end subroutine qua_mat_mulp
+         
+
+!-----------------------------------------------------------------------------------------------------------------------------------   
+
+       subroutine matrix_three_two(matrix_three_dim,matrix_two_dim,re)
+!      This subroutine does arrangement on the quaternion matrix from three dimension array to two dimension array or the reverse.
+
+         real(kind=8), pointer, intent(inout)  :: matrix_three_dim(:,:,:)   
+         real(kind=8), pointer, intent(inout)  :: matrix_two_dim(:,:)  
+         integer, intent(in) ::   re           ! flag to determine three to two or two to three dimension transform. 
+
+         integer :: i, j, k, q, f, sz_1, sz_2, sz_3, sz_4
+
+         sz_1 = size(matrix_three_dim,1)
+         sz_2 = size(matrix_three_dim,2)
+         sz_3 = size(matrix_three_dim,3)
+         sz_4 = sz_1*sz_2
+
+         if (re == 1) then
+            do k = 1, sz_3
+               do j = 1, sz_2
+                  do i = 1, sz_1
+                     q = i + (j-1)*sz_1
+                     matrix_two_dim(q,k) = matrix_three_dim(i,j,k)
+                  end do
+               end do
+            end do
+
+         else
+            do k = 1, sz_3
+               do q = 1, sz_4
+                  j = q/sz_2
+                  f = mod(q,sz_2)
+                  if (f == 0) then
+                     i = sz_2
+                     j = j-1
+                  else
+                     i = f
+                  end if
+                  matrix_three_dim(i,j,k) = matrix_two_dim(q,k)
+               end do
+            end do
+
+         end if
+
+       end subroutine matrix_three_two
+
+
+
+!-----------------------------------------------------------------------------------------------------------------------------------  
+       
+       subroutine get_inver_quamat(matrix,matrix_inv)
+!        compute the inverse or pseudo-inverse matrix 
+!        We follows A^{-1} = (AP^{-1}Λ^{-1}P)^{T}. 
+!        We need to obtain symmetric matrix A^{T}*A and then diagonal it to get eigenvector P and eigenvalue Λ. 
+
+            real(kind=8), pointer, intent(inout)  :: matrix(:,:,:)   
+            real(kind=8), pointer, intent(inout)  :: matrix_inv(:,:)
+
+            real(kind=8), pointer :: matrix_two_dim(:,:,:)
+            real(kind=8), pointer :: Lambda(:)
+            real(kind=8), pointer :: Lambda_inv_two(:,:)
+            real(kind=8), pointer :: Lambda_inv_three(:,:)
+            real(kind=8), pointer :: sym(:,:), sym_three_dim(:,:,:)
+            real(kind=8), pointer :: aux(:,:), aux_2(:,:)
+            real(kind=8), pointer :: P_three_dim(:,:,:)  
+            real(kind=8), pointer :: P_two_dim(:,:,:)  
+            integer               :: re     !re = 1 for three to two transform, else for two to three transform
+            integer               :: fx     !fx is FX in qgemm routine
+            integer               :: sz_eig
+            integer               :: i
+            
+            
+!           Get symmetric matrix A^{T}*A
+            re = 1
+            call matrix_three_two(matrix,matrix_two_dim)
+            fx = -1
+            call qua_mat_mulp(matrix_two_dim,matrix_two_dim,sym,fl)
+            re = 0
+            call matrix_three_two(sym,sym_three_dim)
+
+!           Diagonalization of A^{T}*A
+            call diagoanl_matrix_quater(sym_three_dim,Lambda,P_three_dim)
+
+!           Set Λ^{-1}
+            sz_eig = size(Lambda,1)
+            allocate(Lambda_inv_three(sz_eig,sz_eig,4))
+            allocate(Lambda_inv_two(sz_eig*sz_eig,4))
+            Lambda_inv_three = 0.0
+            do i =1, sz_eig
+               if(Lambda(i)/=0) then
+                  Lambda_inv_three(i,i,1) = 1.0/Lambda(i)
+               end if
+               else
+                  Lambda_inv_three(i,i,1) = 0.0
+            end do 
+            re = 1
+            call matrix_three_two(Lambda_inv_three,Lambda_inv_two)
+
+
+            re = 1
+            call matrix_three_two(P_three_dim,P_two_dim)
+            fx = 0  ! aux=P*Λ^{-1}
+            call qua_mat_mulp(P_two_dim,Lambda_inv_two,aux,fx)
+            fx = 1  ! aux_2=aux*P^{-1}
+            call qua_mat_mulp(aux,P_two_dim,aux_2,fx)
+            fx = -2 ! A^{-1}=aux_2^{T}*A^{T}
+            call qua_mat_mulp(aux_2,matrix_two_dim,matrix_inv,fx)
+
+            deallocate(Lambda_inv_three)
+            deallocate(Lambda_inv_two)
+            
+ 
+                  
+      end subroutine get_inver_quamat
+         
+!-----------------------------------------------------------------------------------------------------------------------------------  
                                                   
         subroutine diagoanl_matrix_quater(A,EIG,VEC)
 
@@ -332,13 +446,9 @@ module matrix_complex_to_quaternion
                  
                
                  LRA = size(A,1)
-                 print *, "LRA?", LRA
                  LCA = size(A,2)
-                 print *, "LCA?", LCA
                  LRV = LRA
-                 print *, "LRV?", LRV
                  LCV = LCA
-                 print *, "LCV?", LCV
                  lwork = 10000000*LRA
                  NZ = 4
                  N = LRA
@@ -348,8 +458,7 @@ module matrix_complex_to_quaternion
                  allocate(work(MAX(1,LWORK)))
 
 
-                 call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,&
-                             WORK,LWORK,IERR)
+                 call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,WORK,LWORK,IERR)
 
                   print *, "occupation number in quaternion"
                   do i = 1, LRA
@@ -364,15 +473,15 @@ module matrix_complex_to_quaternion
 !---------------------------------------------------------------------------------------------------------------------------------------------------
             
       subroutine complex_to_quaternion(exa_input,dm_mo_fort,dm_diracformat)
-         
-               use exacorr_global, only : get_nsolutions
+!               use exacorr_global, only : get_nsolutions
 
                !input variables
-               type(exacc_input),   intent(in)  :: exa_input
+               type(exacc_input),   intent(in)     :: exa_input
+               complex(8), pointer, intent(inout)  :: dm_mo_comple(:,:)
+               real(8),pointer,     intent(inout)  :: dm_mo_quater(:,:,:)
+
                !matrix dimensions
                integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
-               complex(8), pointer         :: dm_mo_fort(:,:)
-               real(8),pointer             :: dm_diracformat(:,:,:)
                !complete mo list
                integer, allocatable :: mo_list(:)
                !error code
@@ -389,39 +498,22 @@ module matrix_complex_to_quaternion
 !     set dims *
 !***************
  
-      nocc    = exa_input%nocc
-      nvir    = exa_input%nvir
-      nkr_occ = exa_input%nkr_occ
-      nkr_vir = exa_input%nkr_vir
-
-
-!*****************************************************************************************************************************
-!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
-!*****************************************************************************************************************************
-      if (debug) then
-        print *,'<<<<< DM, complete, before formatting to dirac'
-        k = 1
-        do i=1,(nocc+nvir)
-           do j=1,(nocc+nvir)
-              write(*,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_mo_fort(i,j),i,j
-              k = k + 1
-           end do
-         end do
-         print *,'>>>>> DM, complete, before formatting to dirac'
-      end if
-
+!      nocc    = exa_input%nocc
+!      nvir    = exa_input%nvir
+!      nkr_occ = exa_input%nkr_occ
+!      nkr_vir = exa_input%nkr_vir
 !      norbt = nkr_occ + nkr_vir
-      norbt = nkr_vir
-      print *,"norbt", norbt 
-      allocate(mo_list(norbt))
-      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
-      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
 
+      norbt = size(dm_mo_comple)/2
+      allocate(mo_list(norbt))
+      do i = 1, norbt
+            mo_list(i) = i
+      end do
+      
 !      nesh = get_nsolutions() / 2
       nesh = norbt
-      print *,"nesh", nesh 
-      allocate (dm_diracformat(nesh,nesh,4))
-      dm_diracformat = real(ZERO)
+      allocate (dm_mo_quater(nesh,nesh,4))
+      dm_mo_quater = real(ZERO)
       do j = 1, norbt
         j_unbar = 2*j-1
         j_bar   = 2*j
@@ -431,18 +523,48 @@ module matrix_complex_to_quaternion
           ! it would be good to test whether the Kramers-restricted assumption holds
           ! Or even to average over the two density matrices and enforce a Kramers-restricted density
           i_unbar = 2*i-1
-          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
-          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
-          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
-          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
+          dm_mo_quater(mo_list(i),mo_list(j),1) = real(dm_mo_comple(i_unbar,j_unbar))
+          dm_mo_quater(mo_list(i),mo_list(j),2) = imag(dm_mo_comple(i_unbar,j_unbar))
+          dm_mo_quater(mo_list(i),mo_list(j),3) = real(dm_mo_comple(i_unbar,j_bar))
+          dm_mo_quater(mo_list(i),mo_list(j),4) = imag(dm_mo_comple(i_unbar,j_bar))
         end do
       end do
 
-!      deallocate (dm_diracformat)
+!      deallocate (dm_mo_quater)
       deallocate (mo_list)
-!      deallocate (dm_mo_fort)
+!      deallocate (dm_mo_comple)
       end subroutine complex_to_quaternion
- !-------------------------------------------------------------------------------------------------
+
+ !-------------------------------------------------------------------------------------------------------------------------------
+
+      subroutine get_Cano_Orbital(orbital_noncano,orbital_cano,Fock_HF,new_energy,n_cano)
+         ! This subroutine is used for constructing the canonical orbital
+
+         !input variables
+         real(kind=8), pointer              :: orbital_noncano(:,:,:)             ! non-canonical orbital in HF mo basis
+         real(kind=8), pointer              :: orbital_cano(:,:,:)                ! canonical orbital in HF mo basis
+         real(kind=8), pointer              :: Fock_HF(:,:,:)                     ! v-v block of Fock matrix in HF mo basis
+         real(kind=8), pointer,intent(out)  :: New_energy(:)                      ! new orbital energy from qdia of Fock matrix in non-canonical orbital basis
+
+
+         real(kind=8), pointer              :: Fock_NO(:,:,:)                     ! v-v block of Fock matrix in non-canonical orbital basis
+         real(kind=8), pointer              :: Fock_NO_reduce(:,:,:)              ! reduced v-v block of Fock matrix 
+         real(kind=8), pointer              :: orbital_cano_basis_noncano(:,:,:)  ! canonical orbital in non-canonical orbital basis
+         character                          :: mat
+
+
+         ! Transform FM from HF orbital into new non-canonical orbital
+         mat = 'do matrix transform'
+         call basis_transform(Fock_HF, orbital_noncano, Fock_NO, mat)
+         ! Cut Fock matrix 
+         ! Diagonalize new FM to obtain the new canonical orbital 
+         call diagoanl_matrix_quater(Fock_NO_reduce, new_energy, orbital_cano_basis_noncano)
+         ! Transform the new canonical orbital from non-canonical orbital basis into HF mo basis
+         call basis_transform(orbital_cano_basis_noncano, orbital_noncano, orbital_cano)
+
+      end subroutine get_Cano_Orbital
+ !----------------------------------------------------------------------------------------------------------------------------------
+  
               
 end module matrix_complex_to_quaternion
 

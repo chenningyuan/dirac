@@ -53,7 +53,7 @@ module write_orbital_to_file
          integer                :: idim(3,2)
          real(8)                :: total_energy
          logical                :: tobe
-         integer                :: lucoef
+         integer, parameter     :: lucoef = 100
          integer                :: i, j, k, ishell, iprimstart, iprimend
          integer                :: nao, nao_bas, nshells, iao, ibas
          integer                :: nmo, npo, nto, npriexp, ncnt
@@ -248,7 +248,7 @@ module write_orbital_to_file
             integer                :: nsym
             real(8)                :: total_energy
             logical                :: tobe
-            integer                :: lucoef
+            integer, parameter     :: lucoef = 100
             integer                :: ishell
             integer                :: nshells, iao, ibas
             integer                :: npo, nto, npriexp, ncnt
@@ -355,7 +355,7 @@ module write_orbital_to_file
 !           construct the FM 
             Fock_HF = 0.0
 
-            if (fl == 1) then
+            if (flb == 1) then
                do i = 1, sz
                   Fock_HF(i,i,1) = qorbital%energy(i)
                end do
@@ -368,7 +368,7 @@ module write_orbital_to_file
          
 
 !          constrcut HF orbital matrix
-            if (fl == 1) then
+            if (flb == 1) then
                do i = 1, sz_total_ao
                   do j = 1, sz
                      HF_AO(i,j,1) = qorbital%coeff(i,j,1)
