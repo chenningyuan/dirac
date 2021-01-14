@@ -57,9 +57,9 @@ C     common block infpar
 #ifdef HAVE_OPENMP
       MAX_OMP_THREADS = omp_get_max_threads()
       write(lupri,'(//A,3I5)')
-      &' * openMP activated, '//
-      &' thread limit - # processes - # threads: ',
-      & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+     &' * openMP activated, '//
+     &' thread limit - # processes - # threads: ',
+     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
 !      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
 !     &' max # threads - current # threads - current thread: ',
