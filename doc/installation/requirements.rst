@@ -25,6 +25,20 @@ extracted path, respectively. Verify that your new CMake is recognized with
 ``cmake --version``.
 
 
+Requirements for building with the parallel library ExaTensor
+-------------------------------------------------------------
+
+* CMake 3.0 - or later
+* Python 3.6 - or later
+* GFortran/GCC/G++ 8 (9 has a bug and cannot be used) or Intel compilers 18 or later
+
+At runtime you need to set environment variables to inform the library about the optimal 
+parallel setup in both the installation as well as the execution stage. This is explained 
+in detail at the `ExaTensor website <https://github.com/ORNL-QCI/ExaTENSOR>`_. 
+The setup script of DIRAC should usually take care of the installation step, but the appropriate set up at
+runtime should be carefully considered by the user to obtain optimal performance. Examples of setup 
+for different architectures are given `here <http://github.com/ORNL-QCI/ExaTENSOR/blob/master/run.sh>`_.
+
 Supported, but optional dependencies
 ------------------------------------
 
