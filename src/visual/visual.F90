@@ -1733,6 +1733,9 @@ contains
                                                                    visual_cfg_ncube(2), &
                                                                    visual_cfg_ncube(3) 
         write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
+        write(lupri, *) 'Gauge origin is ', visual_cfg_gauge_origin(1), &
+                                            visual_cfg_gauge_origin(2), &
+                                            visual_cfg_gauge_origin(3)
      end if
      if (visual_cfg_3d_fast) then 
         write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &
