@@ -167,8 +167,8 @@ C     ajt This might come out with halved diagonal
 
 
       subroutine WRITE_HOTFCHT_SPECTRA(STRING,NATOMS)
-      use codata
 #include "hotfccom.h"
+#include "codata.h"
       CHARACTER STRING*(*)
       LOGICAL OptionA,ANGSTROM
       INTEGER IDUMMY,LUINFO,IPOS,IPOS2,numbertypes,atomtypes,J
@@ -177,7 +177,7 @@ C     ajt This might come out with halved diagonal
       CHARACTER(1) T1,ID3
       CHARACTER(15) T15
       DOUBLE PRECISION X,Y,Z,AC !AngstromConvert
-      
+C
       IF(HOTFC)WRITE(IHOTFC,'(A)')' '
       WRITE(IHOTFC,'(A,I5)')'NumberOfAtoms =',NATOMS
       WRITE(IHOTFC,'(A,A)')'SpectraType =',STRING

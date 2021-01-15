@@ -27,8 +27,8 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"

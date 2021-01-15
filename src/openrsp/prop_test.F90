@@ -11,7 +11,6 @@ module prop_test
    use dirac_interface
    use openrsp_interface_2el
    use openrsp_output
-   use codata
 #endif
 
    ! ajt LSDALTON has replaced the (global) quit(msg) with lsquit(msg,unit),
@@ -46,10 +45,6 @@ module prop_test
 #endif
 
    private
-
-   !physical constants for conversion to non-atomic units
-   real(8), parameter:: cm1 = 1/XTKAYS,     & !1 centimeter-to-minus-one in au
-                        nm  = 10/XTANG        !1 nanometer in au
 
    !field component lables for printing
    character*2:: fc(3) = (/'Fx','Fy','Fz'/), &

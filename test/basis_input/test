@@ -16,6 +16,7 @@ f.add(from_string = 'Atoms and basis sets',
 mol_files = []
 mol_files.append('ch4_temp.mol')
 mol_files.append('ch4_explicit.mol')
+mol_files.append('ch4_explicit_small.mol')
 mol_files.append('ch4_family.mol')
 mol_files.append('ch4_dualfamily.mol')
 mol_files.append('ch4_basis.mol')

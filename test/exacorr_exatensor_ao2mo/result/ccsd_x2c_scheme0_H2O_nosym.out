@@ -1,9 +1,9 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (h35n07) starts by allocating     1424000000 r*8 words (  10.610 GB) of memory
+DIRAC master    (f33n01) starts by allocating     1424000000 r*8 words (  10.610 GB) of memory
 DIRAC nodes 1 to 3 starts by allocating          1424000000 r*8 words (  10.610 GB) of memory
 DIRAC nodes 1 to 3 to allocate at most           2048000000 r*8 words (  15.259 GB) of memory
-DIRAC master    (h35n07) to allocate at most      2048000000 r*8 words (  15.259 GB) of memory
+DIRAC master    (f33n01) to allocate at most      2048000000 r*8 words (  15.259 GB) of memory
  
 Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
  
@@ -26,6 +26,9 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
  SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
  ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+
+
+ * openMP activated,  thread limit - # processes - # threads:   256   84   21
  S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
  (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
  $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
@@ -64,6 +67,9 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
  MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
  MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+
+
+ * openMP activated,  thread limit - # processes - # threads:   256   84   21
  MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
  MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
  MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
@@ -133,7 +139,7 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
  *    Marta L. Vidal           Technical University of Denmark   Denmark       *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
@@ -163,8 +169,9 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  *    M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen,         *
  *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
  *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,           *
- *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, M. L. Vidal, S. Villaume, *
- *    O. Visser, T. Winther, and S. Yamamoto (see http://diracprogram.org).    *
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *******************************************************************************
 
@@ -172,22 +179,22 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
 Version information
 -------------------
 
-Branch        | caar
-Commit hash   | ef45cee09
-Commit author | Dmitry I. Lyakh (Liakh)
-Commit date   | Mon May 25 17:15:15 2020 -0400
+Branch        | caar-cholesky
+Commit hash   | facc6eb8e
+Commit author | Johann Pototschnig
+Commit date   | Wed Oct 7 11:25:03 2020 +0200
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | div
-Compiled on server       | login2
+Who compiled             | jpoto
+Compiled on server       | login4
 Operating system         | Linux-4.14.0-115.21.2.el7a.ppc64le
-CMake version            | 3.15.2
+CMake version            | 3.18.2
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-05-25 23:58:26.717991
+Configuration time       | 2020-10-07 09:32:38.380800
 Python version           | 3.6.7
 Fortran compiler         | /autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/spectrum-mpi-10.3.1.2-20200121-chae23sgwacfeot7vxkpfboz6wao2c33/bin/mpif90
 Fortran compiler version | 8.1.1
@@ -202,11 +209,11 @@ Static linking           | False
 64-bit integers          | False
 MPI parallelization      | True
 MPI launcher             | /autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/spectrum-mpi-10.3.1.2-20200121-chae23sgwacfeot7vxkpfboz6wao2c33/bin/mpiexec
-Math libraries           | /autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/netlib-lapack-3.8.0-p74bsneivus4jck562lq7drw2s7i4ytd/lib64/liblapack.so;/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/netlib-lapack-3.8.0-p74bsneivus4jck562lq7drw2s7i4ytd/lib64/libblas.so
+Math libraries           | /autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/openblas-0.3.9-eb4rimg432tkzr727f2om76dwje6voh3/lib/libopenblas.so;/autofs/nccs-svm1_sw/summit/.swci/1-compute/opt/spack/20180914/linux-rhel7-ppc64le/gcc-8.1.1/openblas-0.3.9-eb4rimg432tkzr727f2om76dwje6voh3/lib/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 
  LAPACK integer*4/8 selftest passed
@@ -214,77 +221,269 @@ Compile definitions      | HAVE_SYSTEM_NATIVE_BLAS;HAVE_SYSTEM_NATIVE_LAPACK;HAV
  MPI selftest passed with MPI_INTEGER of the size 4 bytes
 
 
- * openMP activated, number of processes and number of threads in non-parallel region:   84    1
+ * openMP activated,  thread limit - # processes - # threads:   256   84   21
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    6
+ * openMP activated,  thread limit - # processes - # threads:   256   84   21
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    7
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   14
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   19
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   15
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    9
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    1
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    5
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    7
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   14
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   19
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   16
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   10
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   12
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   16
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   18
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   20
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   15
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    9
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   13
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    3
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    1
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   12
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    0
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    2
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   10
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   13
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    2
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   17
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   11
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    0
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   20
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   11
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    3
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    4
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    8
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    5
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21   17
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   18
 
 
- * openMP parallel region, max number of threads and current number of threads:                 256   21    4
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    8
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    6
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   12
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   13
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    4
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    6
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   20
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    9
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    2
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    1
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   14
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   18
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    7
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   10
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   16
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   19
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    3
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    0
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   11
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   17
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    5
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   15
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    8
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   10
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   11
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   12
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   14
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   13
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    4
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    1
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    7
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   15
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    5
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    6
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   18
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    2
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   19
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   20
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   16
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    3
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    0
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   17
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    8
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    9
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue May 26 11:49:23 2020
-     Host name              : h35n07                                  
+     Date and time (Linux)  : Wed Oct  7 08:51:37 2020
+     Host name              : f33n01                                  
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    4
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    5
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   12
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   10
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    9
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   13
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   11
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    6
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    8
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    7
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    1
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   20
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    2
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   14
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   19
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   16
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   15
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    3
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21    0
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   17
+
+
+ * openMP parallel region,  max # threads - current # threads - current thread:                   21   21   18
 
 
 Contents of the input file
@@ -372,10 +571,12 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+ The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)
+        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 
+        Database developed by J. Baker, M. Douma, and S. Kotochigova                       
+  Available at http://physics.nist.gov/constants                                           
+  National Institute of Standards and Technology, Gaithersburg, MD 20899                   
+ * The speed of light :        137.0359992
  * Running in two-component mode
  * Parallel run with 3 slaves.
  * Direct evaluation of the following two-electron integrals:
@@ -407,8 +608,8 @@ FINISH
 
   Water, explitcit basis, no symmetry used.                               
   cc-pVDZ basis (note that a tight p has NOT been added)                  
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631427636D+08
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248235902D+09
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248236111D+09
 
 
                           SYMGRP:Point group information
@@ -459,19 +660,6 @@ Point group: C1
 
   QM-QM nuclear repulsion energy :      9.055003146800
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           O          15.994915
-                           H           1.007825
-                           H           1.007825
-
-                       Total mass:    18.010565 amu
-                       Natural abundance:  99.730 %
-
- Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000  -0.099054326648403
 
 
   Atoms and basis sets
@@ -525,9 +713,9 @@ Point group: C1
 
     3
 
-O      0.0000000000   0.0000000000  -0.1190150726
-H      0.7685504811   0.0000000000   0.4760602904
-H     -0.7685504811   0.0000000000   0.4760602904
+O      0.0000000000   0.0000000000  -0.1190150732
+H      0.7685504848   0.0000000000   0.4760602927
+H     -0.7685504848   0.0000000000   0.4760602927
 
 
    Interatomic separations (in Angstroms):
@@ -561,6 +749,13 @@ H     -0.7685504811   0.0000000000   0.4760602904
 
 
    Nuclear repulsion energy :    9.055003146800 Hartree
+
+                       * Total mass:    18.010565 amu
+                       * Natural abundance:  99.730 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000  -0.099054326648403
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000  -0.052417292303677
 
 
                                 GETLAB: AO-labels
@@ -609,6 +804,11 @@ H     -0.7685504811   0.0000000000   0.4760602904
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
   - BSS with properties !
  * Print level:    0
  * Exact-Two-Component (X2C) Hamiltonian
@@ -627,8 +827,6 @@ H     -0.7685504811   0.0000000000   0.4760602904
    - LS-integrals:     0
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
 ===========================================================================
    Set-up for AMFI/RELSCF calculations
 ===========================================================================
@@ -668,8 +866,6 @@ H     -0.7685504811   0.0000000000   0.4760602904
  * Trial vectors read from file DFCOEF
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -720,8 +916,8 @@ H     -0.7685504811   0.0000000000   0.4760602904
 
   Water, explitcit basis, no symmetry used.                               
   cc-pVDZ basis (note that a tight p has NOT been added)                  
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631427636D+08
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248235902D+09
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248236111D+09
 
 
                           SYMGRP:Point group information
@@ -772,19 +968,6 @@ Point group: C1
 
   QM-QM nuclear repulsion energy :      9.055003146800
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           O          15.994915
-                           H           1.007825
-                           H           1.007825
-
-                       Total mass:    18.010565 amu
-                       Natural abundance:  99.730 %
-
- Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000  -0.099054326648403
 
 
   Atoms and basis sets
@@ -839,9 +1022,9 @@ Point group: C1
 
     3
 
-O      0.0000000000   0.0000000000  -0.1190150726
-H      0.7685504811   0.0000000000   0.4760602904
-H     -0.7685504811   0.0000000000   0.4760602904
+O      0.0000000000   0.0000000000  -0.1190150732
+H      0.7685504848   0.0000000000   0.4760602927
+H     -0.7685504848   0.0000000000   0.4760602927
 
 
    Interatomic separations (in Angstroms):
@@ -876,6 +1059,13 @@ H     -0.7685504811   0.0000000000   0.4760602904
 
    Nuclear repulsion energy :    9.055003146800 Hartree
 
+                       * Total mass:    18.010565 amu
+                       * Natural abundance:  99.730 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000  -0.099054326648403
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000  -0.052417292303677
+
 
                       Nuclear contribution to dipole moments
                       --------------------------------------
@@ -888,7 +1078,7 @@ H     -0.7685504811   0.0000000000   0.4760602904
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00804900s and (WALL)  0.00900000s
+Total time used in ONEGEN (CPU)  0.00795200s and (WALL)  0.01000000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1019,8 +1209,8 @@ Total time used in ONEGEN (CPU)  0.00804900s and (WALL)  0.00900000s
 
  >>> CPU  time used in mk_h2c is   0.11 seconds
  >>> WALL time used in mk_h2c is   0.08 seconds
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631427636D+08
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248235902D+09
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248236111D+09
 
 
                       Nuclear contribution to dipole moments
@@ -1034,7 +1224,7 @@ Total time used in ONEGEN (CPU)  0.00804900s and (WALL)  0.00900000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00176100s and (WALL)  0.00200000s
+Total time used in ONEGEN (CPU)  0.00175800s and (WALL)  0.00200000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1059,18 +1249,234 @@ Total no. of orbitals           (NORB):    40
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue May 26 11:49:23 2020
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: arXiv:2002.02587 (small GRASP fit)
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -76.0806180161827683
-* Heading :Water molecule. X2C Hamiltonian. CC energies.     Fri May 22 12:16:23 2020
+########## START ITERATION NO.   1 ##########   Wed Oct  7 08:51:38 2020
+
+E_HOMO...E_LUMO, symmetry 1:     5  -0.64359    6  -0.16454
+
+=> Calculating sum of orbital energies
+It.    1    -37.19007093556      0.00D+00  0.00D+00  0.00D+00               0.02119700s   Atom. scrpot   Wed Oct  7
+
+########## START ITERATION NO.   2 ##########   Wed Oct  7 08:51:38 2020
+
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12    0.00%   46.87%    0.00%    1.67%   6.27400000s
- >>> CPU  time used in SO Fock is   6.31 seconds
- >>> WALL time used in SO Fock is   6.31 seconds
-It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32425500s   LL             Tue May 26
+SOfock:LL  1.00D-12    0.00%   46.85%    0.00%    1.85%   0.04900000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.23209    6   0.21650
+>>> Total wall time:  0.16000000s, and total CPU time :  0.11451100s
+
+########## END ITERATION NO.   2 ##########   Wed Oct  7 08:51:38 2020
+
+It.    2    -75.83473710425      3.86D+01  5.34D+00  1.65D+00               0.16000000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   3 ##########   Wed Oct  7 08:51:38 2020
+
+    3 *** Differential density matrix. DCOVLP     = 0.9237
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   47.02%    0.00%    1.93%   0.02300000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.52137    6   0.17472
+>>> Total wall time:  0.08400000s, and total CPU time :  0.05587800s
+
+########## END ITERATION NO.   3 ##########   Wed Oct  7 08:51:38 2020
+
+It.    3    -76.00033119004      1.66D-01 -1.13D+00  7.32D-01   DIIS   2    0.08400000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   4 ##########   Wed Oct  7 08:51:38 2020
+
+    4 *** Differential density matrix. DCOVLP     = 0.9750
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   47.27%    0.00%    1.92%   0.02200000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49044    6   0.17978
+>>> Total wall time:  0.08000000s, and total CPU time :  0.05450800s
+
+########## END ITERATION NO.   4 ##########   Wed Oct  7 08:51:38 2020
+
+It.    4    -76.07879317140      7.85D-02  4.58D-01  1.09D-01   DIIS   3    0.08000000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   5 ##########   Wed Oct  7 08:51:38 2020
+
+    5 *** Differential density matrix. DCOVLP     = 1.0008
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   47.74%    0.00%    1.89%   0.02500000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49202    6   0.18038
+>>> Total wall time:  0.08200000s, and total CPU time :  0.05617300s
+
+########## END ITERATION NO.   5 ##########   Wed Oct  7 08:51:38 2020
+
+It.    5    -76.08060087743      1.81D-03 -5.89D-02  6.10D-03   DIIS   4    0.08200000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   6 ##########   Wed Oct  7 08:51:38 2020
+
+    6 *** Differential density matrix. DCOVLP     = 1.0002
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   48.32%    0.00%    1.78%   0.02500000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49281    6   0.18035
+>>> Total wall time:  0.08300000s, and total CPU time :  0.05616400s
+
+########## END ITERATION NO.   6 ##########   Wed Oct  7 08:51:38 2020
+
+It.    6    -76.08061618861      1.53D-05  5.82D-04  1.96D-03   DIIS   5    0.08300000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   7 ##########   Wed Oct  7 08:51:38 2020
+
+    7 *** Differential density matrix. DCOVLP     = 1.0002
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   48.70%    0.00%    1.88%   0.02400000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49286    6   0.18036
+>>> Total wall time:  0.08400000s, and total CPU time :  0.05598000s
+
+########## END ITERATION NO.   7 ##########   Wed Oct  7 08:51:38 2020
+
+It.    7    -76.08061799352      1.80D-06  2.70D-04  2.05D-04   DIIS   6    0.08400000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   8 ##########   Wed Oct  7 08:51:38 2020
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   49.89%    0.00%    1.76%   0.02400000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.08300000s, and total CPU time :  0.05609600s
+
+########## END ITERATION NO.   8 ##########   Wed Oct  7 08:51:38 2020
+
+It.    8    -76.08061801556      2.20D-08  2.98D-05  4.23D-05   DIIS   7    0.08300000s   LL             Wed Oct  7
+
+########## START ITERATION NO.   9 ##########   Wed Oct  7 08:51:38 2020
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   50.99%    0.00%    1.85%   0.02400000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.08300000s, and total CPU time :  0.05542800s
+
+########## END ITERATION NO.   9 ##########   Wed Oct  7 08:51:38 2020
+
+It.    9    -76.08061801661      1.05D-09 -4.97D-06  9.16D-06   DIIS   8    0.08300000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  10 ##########   Wed Oct  7 08:51:38 2020
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   53.13%    0.00%    1.73%   0.02300000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.08200000s, and total CPU time :  0.05502000s
+
+########## END ITERATION NO.  10 ##########   Wed Oct  7 08:51:38 2020
+
+It.   10    -76.08061801667      5.40D-11  2.27D-06  2.03D-06   DIIS   9    0.08200000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  11 ##########   Wed Oct  7 08:51:38 2020
+
+   11 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   55.08%    0.00%    1.87%   0.02400000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.08300000s, and total CPU time :  0.05538000s
+
+########## END ITERATION NO.  11 ##########   Wed Oct  7 08:51:38 2020
+
+It.   11    -76.08061801667      2.39D-12 -4.91D-07  2.26D-07   DIIS   9    0.08300000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  12 ##########   Wed Oct  7 08:51:38 2020
+
+   12 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   58.51%    0.02%    2.17%   0.02300000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.08200000s, and total CPU time :  0.05487300s
+
+########## END ITERATION NO.  12 ##########   Wed Oct  7 08:51:39 2020
+
+It.   12    -76.08061801667      2.84D-14 -3.35D-08  7.04D-08   DIIS   9    0.08200000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  13 ##########   Wed Oct  7 08:51:39 2020
+
+   13 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.00%   62.28%    0.31%    2.32%   0.02400000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.03300000s, and total CPU time :  0.03810500s
+
+########## END ITERATION NO.  13 ##########   Wed Oct  7 08:51:39 2020
+
+It.   13    -76.08061801667     -5.68D-13  1.84D-08  2.02D-08   DIIS   5    0.03300000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  14 ##########   Wed Oct  7 08:51:39 2020
+
+   14 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.02%   66.06%    1.12%    3.40%   0.02300000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.03200000s, and total CPU time :  0.03664600s
+
+########## END ITERATION NO.  14 ##########   Wed Oct  7 08:51:39 2020
+
+It.   14    -76.08061801667      1.14D-13 -6.73D-09  3.21D-09   DAMP 25%    0.03200000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  15 ##########   Wed Oct  7 08:51:39 2020
+
+   15 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.13%   75.88%    1.42%    4.10%   0.02200000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.03100000s, and total CPU time :  0.03583500s
+
+########## END ITERATION NO.  15 ##########   Wed Oct  7 08:51:39 2020
+
+It.   15    -76.08061801667     -2.37D-12  1.04D-09  3.57D-09   DAMP 25%    0.03100000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  16 ##########   Wed Oct  7 08:51:39 2020
+
+   16 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.55%   78.18%    2.44%    5.91%   0.02200000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.03100000s, and total CPU time :  0.03581300s
+
+########## END ITERATION NO.  16 ##########   Wed Oct  7 08:51:39 2020
+
+It.   16    -76.08061801666     -2.17D-12  7.03D-10  2.38D-09   DAMP 25%    0.03100000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  17 ##########   Wed Oct  7 08:51:39 2020
+
+   17 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    0.87%   80.59%    2.76%    5.66%   0.02200000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.03000000s, and total CPU time :  0.03597100s
+
+########## END ITERATION NO.  17 ##########   Wed Oct  7 08:51:39 2020
+
+It.   17    -76.08061801667      5.83D-13 -4.77D-10  1.60D-09   DAMP 25%    0.03000000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  18 ##########   Wed Oct  7 08:51:39 2020
+
+   18 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    1.14%   82.78%    2.98%    6.62%   0.02100000s
+E_HOMO...E_LUMO, symmetry 1:     5  -0.49287    6   0.18036
+>>> Total wall time:  0.03000000s, and total CPU time :  0.03539200s
+
+########## END ITERATION NO.  18 ##########   Wed Oct  7 08:51:39 2020
+
+It.   18    -76.08061801667      1.71D-12  5.28D-10  1.09D-09   DAMP 25%    0.03000000s   LL             Wed Oct  7
+
+########## START ITERATION NO.  19 ##########   Wed Oct  7 08:51:39 2020
+
+   19 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-12    1.35%   84.31%    2.95%    5.29%   0.02200000s
+>>> Total wall time:  0.07500000s, and total CPU time :  0.03919500s
+
+########## END ITERATION NO.  19 ##########   Wed Oct  7 08:51:39 2020
+
+It.   19    -76.08061801667      2.88D-12  5.51D-10  8.05D-10   DAMP 25%    0.07500000s   LL             Wed Oct  7
 
 
                                    SCF - CYCLE
@@ -1086,23 +1492,42 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32425500s   LL             Tue May 26
+It.    1    -37.19007093556      0.00D+00  0.00D+00  0.00D+00               0.02119700s   Atom. scrpot   Wed Oct  7
+It.    2    -75.83473710425      3.86D+01  5.34D+00  1.65D+00               0.16000000s   LL             Wed Oct  7
+It.    3    -76.00033119004      1.66D-01 -1.13D+00  7.32D-01   DIIS   2    0.08400000s   LL             Wed Oct  7
+It.    4    -76.07879317140      7.85D-02  4.58D-01  1.09D-01   DIIS   3    0.08000000s   LL             Wed Oct  7
+It.    5    -76.08060087743      1.81D-03 -5.89D-02  6.10D-03   DIIS   4    0.08200000s   LL             Wed Oct  7
+It.    6    -76.08061618861      1.53D-05  5.82D-04  1.96D-03   DIIS   5    0.08300000s   LL             Wed Oct  7
+It.    7    -76.08061799352      1.80D-06  2.70D-04  2.05D-04   DIIS   6    0.08400000s   LL             Wed Oct  7
+It.    8    -76.08061801556      2.20D-08  2.98D-05  4.23D-05   DIIS   7    0.08300000s   LL             Wed Oct  7
+It.    9    -76.08061801661      1.05D-09 -4.97D-06  9.16D-06   DIIS   8    0.08300000s   LL             Wed Oct  7
+It.   10    -76.08061801667      5.40D-11  2.27D-06  2.03D-06   DIIS   9    0.08200000s   LL             Wed Oct  7
+It.   11    -76.08061801667      2.39D-12 -4.91D-07  2.26D-07   DIIS   9    0.08300000s   LL             Wed Oct  7
+It.   12    -76.08061801667      2.84D-14 -3.35D-08  7.04D-08   DIIS   9    0.08200000s   LL             Wed Oct  7
+It.   13    -76.08061801667     -5.68D-13  1.84D-08  2.02D-08   DIIS   5    0.03300000s   LL             Wed Oct  7
+It.   14    -76.08061801667      1.14D-13 -6.73D-09  3.21D-09   DAMP 25%    0.03200000s   LL             Wed Oct  7
+It.   15    -76.08061801667     -2.37D-12  1.04D-09  3.57D-09   DAMP 25%    0.03100000s   LL             Wed Oct  7
+It.   16    -76.08061801666     -2.17D-12  7.03D-10  2.38D-09   DAMP 25%    0.03100000s   LL             Wed Oct  7
+It.   17    -76.08061801667      5.83D-13 -4.77D-10  1.60D-09   DAMP 25%    0.03000000s   LL             Wed Oct  7
+It.   18    -76.08061801667      1.71D-12  5.28D-10  1.09D-09   DAMP 25%    0.03000000s   LL             Wed Oct  7
+It.   19    -76.08061801667      2.88D-12  5.51D-10  8.05D-10   DAMP 25%    0.07500000s   LL             Wed Oct  7
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    1 iterations.
+* Convergence after   19 iterations.
 * Average elapsed time per iteration: 
-      LL           :    6.37500000s
+      No 2-ints    :    0.02800000s
+      LL           :    0.06933333s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -85.135621162984421
+   Electronic energy                        :    -85.135621163470205
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.055003146800487
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.080618016183934
+   Total energy                             :    -76.080618016669717
 
 
                                    Eigenvalues
@@ -1111,15 +1536,15 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -20.56489715439  ( 2)       -1.33252571090  ( 2)       -0.69277015032  ( 2)       -0.56459452085  ( 2)       -0.49287124388  ( 2)
+   -20.56489715453  ( 2)       -1.33252571091  ( 2)       -0.69277015032  ( 2)       -0.56459452085  ( 2)       -0.49287124388  ( 2)
   * Virtual eigenvalues, f = 0.0000
      0.18035984555  ( 2)        0.25130412389  ( 2)        0.66089631285  ( 2)        0.73710967714  ( 2)        1.07463066525  ( 2)
-     1.12297048546  ( 2)        1.19782178560  ( 2)        1.41466085600  ( 2)        1.47145549644  ( 2)        1.63534407591  ( 2)
-     1.66934487639  ( 2)        1.89241681941  ( 2)        2.31506926668  ( 2)        2.39594226095  ( 2)        3.27115078423  ( 2)
-     3.29852605720  ( 2)        3.32276170847  ( 2)        3.39980055775  ( 2)        3.52499634469  ( 2)        3.83221318437  ( 2)
-     4.12810705504  ( 2)        6.12206455319  ( 2)        6.55553466740  ( 2)        6.81985413714  ( 2)       13.05167016489  ( 2)
-    22.16800269630  ( 2)       22.33170317508  ( 2)       33.42012479086  ( 2)       33.66119266656  ( 2)       33.81882288062  ( 2)
-    61.53045790537  ( 2)      230.57019793761  ( 2)      851.99630215775  ( 2)     3409.90566004785  ( 2)    15466.31280371670  ( 2)
+     1.12297048546  ( 2)        1.19782178560  ( 2)        1.41466085599  ( 2)        1.47145549644  ( 2)        1.63534407590  ( 2)
+     1.66934487639  ( 2)        1.89241681940  ( 2)        2.31506926667  ( 2)        2.39594226095  ( 2)        3.27115078423  ( 2)
+     3.29852605720  ( 2)        3.32276170847  ( 2)        3.39980055775  ( 2)        3.52499634469  ( 2)        3.83221318436  ( 2)
+     4.12810705503  ( 2)        6.12206455316  ( 2)        6.55553466737  ( 2)        6.81985413711  ( 2)       13.05167016461  ( 2)
+    22.16800269613  ( 2)       22.33170317491  ( 2)       33.42012479007  ( 2)       33.66119266579  ( 2)       33.81882287988  ( 2)
+    61.53045790283  ( 2)      230.57019791433  ( 2)      851.99630191418  ( 2)     3409.90565706842  ( 2)    15466.31276734547  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.18035985 au (symmetry E1 )
@@ -1134,7 +1559,7 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
                     ***                                               ***
                     ***  Authors:         - Lucas Visscher            ***
                     ***                   - Anastasios Papadopoulos   ***
-                    ***  Contributors:    - Johann Potoschnig         ***
+                    ***  Contributors:    - Johann Pototschnig        ***
                     ***                   - Loic Halbert              ***
                     ***                   - Andre S. P. Gomes         ***
                     ***  Features:        - CCD/CC2/CCSD              ***
@@ -1147,13 +1572,14 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
                     *****************************************************
  
  
-  26 May 20 11:49:29 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Fri May 22 12:16:23 2020
-  26 May 20 11:49:29 retrieved basis set information
-  26 May 20 11:49:29 Initialized global data
-  26 May 20 11:49:29  Starting CC calculation with exatensor
-  26 May 20 11:49:29  Registered AO and MO spaces
-  26 May 20 11:49:29  Initialized and registered tensor methods
+   7 Oct 20 08:51:39 read from DFCOEF:Water molecule. X2C Hamiltonian. CC energies.     Wed Oct  7 08:51:39 2020
+   7 Oct 20 08:51:39 retrieved basis set information
+   7 Oct 20 08:51:39 Initialized global data
+   7 Oct 20 08:51:39  Starting CC calculation with exatensor
+   7 Oct 20 08:51:39  Registered AO and MO spaces
+   7 Oct 20 08:51:39  Initialized and registered tensor methods
  
+-----------------------------------------------
       Characteristics of this calculation      
 -----------------------------------------------
  - Solve CCD equations :                F
@@ -1179,16 +1605,18 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
  -- nvir ( scheme 4/42 ) :         0 GB
 -----------------------------------------------
  
-  26 May 20 11:50:42 allocated AO integral tensor
-  26 May 20 11:50:47 initalized all ao integrals to zero
-  26 May 20 11:50:47 initialized two electron integrals
+   7 Oct 20 08:52:17 -Start- Integral Transformation
+   7 Oct 20 08:52:17 allocated AO integral tensor
+   7 Oct 20 08:52:23 initalized all ao integrals to zero
+   7 Oct 20 08:52:23 -End- Integral Transformation
  
-    SCF energy ( read ) =     -76.080618016182768
+    SCF energy ( read ) =     -76.080618016666833
  
-  26 May 20 11:50:51 initialized Fock matrix
+   7 Oct 20 08:52:23 initialized Fock matrix
  
      MP2 energy =    0.0000000000000000     
  
+   7 Oct 20 08:52:31 -Start- CC Iterations
   ccdriver: allocated all tensors
  WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes
  
@@ -1199,117 +1627,123 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
  -----------------------------------------------
  
  
+   7 Oct 20 08:52:31 -End- CC Iterations
+   7 Oct 20 08:52:31 -Start- Triples
+   7 Oct 20 08:52:32   block     1 of    4 done, n=         1
+   7 Oct 20 08:52:32 -End- Triples
+ 
+-----------------------------------------------
      -     Final results from EXACORR     -    
 -----------------------------------------------
  Using the multi-node ExaTensor library (MPI) 
  
   MP2 energy :                         0.000000000000000
   Final CCSD energy :                  0.000000000000000
-  4th order triples correction :      -0.000000000000000
-  5th order triples (T) correction :  -0.000000000000000
-  5th order triples -T  correction :  -0.000000000000000
+  4th order triples correction :       0.000000000000000
+  5th order triples (T) correction :   0.000000000000000
+  5th order triples -T  correction :   0.000000000000000
   CCSD+T  correlation energy :         0.000000000000000
   CCSD(T) correlation energy :         0.000000000000000
   CCSD-T  correlation energy :         0.000000000000000
   T1 diagnostic      :                 0.000000000000000
  
-  SCF energy :                       -76.080618016182768
-  Total MP2 energy :                 -76.080618016182768
-  Total CCSD energy :                -76.080618016182768
-  Total CCSD+T  energy :             -76.080618016182768
-  Total CCSD(T) energy :             -76.080618016182768
-  Total CCSD-T  energy :             -76.080618016182768
+  SCF energy :                       -76.080618016666833
+  Total MP2 energy :                 -76.080618016666833
+  Total CCSD energy :                -76.080618016666833
+  Total CCSD+T  energy :             -76.080618016666833
+  Total CCSD(T) energy :             -76.080618016666833
+  Total CCSD-T  energy :             -76.080618016666833
  
 -----------------------------------------------
  
 #MSG(DSVP): Shut down DSVP      2: TAVP-MNG#0
-#MSG(DSVP): Counters: Recv    2203; Rtrd    2203; Crtd   16808; Fail    0: Time (s)     1207.198
-#MSG(TAL-SH): Device utilization statistics for MPI process      0:
+#MSG(DSVP): Counters: Recv     430; Rtrd     430; Crtd    4081; Fail    0: Time (s)       52.673
 #MSG(TAL-SH): Device utilization statistics for MPI process      1:
+#MSG(TAL-SH): Device utilization statistics for MPI process      0:
 
 #MSG(TAL-SH::NV-TAL): Statistics on GPU #0:
- Number of tasks submitted: 4968
- Number of tasks completed: 4968
+ Number of tasks submitted: 898
+ Number of tasks completed: 898
  Number of tasks deferred : 0
  Number of tasks failed   : 0
- Number of Flops processed: 3.83046E+08
- Number of Bytes to GPU   : 1.25377E+08
- Number of Bytes from GPU : 8.16248E+07
- Time active (sec)        : 5608.910000
+ Number of Flops processed: 1.96588E+08
+ Number of Bytes to GPU   : 5.31447E+07
+ Number of Bytes from GPU : 3.61585E+07
+ Time active (sec)        : 73.250000
 #END_MSG
 
 #MSG(TAL-SH::NV-TAL): Statistics on GPU #1:
- Number of tasks submitted: 3241
- Number of tasks completed: 3241
+ Number of tasks submitted: 632
+ Number of tasks completed: 632
  Number of tasks deferred : 0
  Number of tasks failed   : 0
- Number of Flops processed: 3.21684E+08
- Number of Bytes to GPU   : 9.56847E+07
- Number of Bytes from GPU : 5.59061E+07
- Time active (sec)        : 5610.250000
+ Number of Flops processed: 1.59718E+08
+ Number of Bytes to GPU   : 4.21457E+07
+ Number of Bytes from GPU : 2.48594E+07
+ Time active (sec)        : 74.600000
 #END_MSG
 
 #MSG(TAL-SH::NV-TAL): Statistics on GPU #2:
- Number of tasks submitted: 3243
- Number of tasks completed: 3243
+ Number of tasks submitted: 614
+ Number of tasks completed: 614
  Number of tasks deferred : 0
  Number of tasks failed   : 0
- Number of Flops processed: 3.31044E+08
- Number of Bytes to GPU   : 9.77754E+07
- Number of Bytes from GPU : 5.67797E+07
- Time active (sec)        : 5645.430000
+ Number of Flops processed: 1.46859E+08
+ Number of Bytes to GPU   : 3.86531E+07
+ Number of Bytes from GPU : 2.34608E+07
+ Time active (sec)        : 104.850000
 #END_MSG
 
 #MSG(TAL-SH::NV-TAL): Statistics across all GPU devices:
- Number of Flops processed   : 1.03577E+09
- Number of Bytes to GPUs     : 3.18837E+08
- Number of Bytes from GPUs   : 1.94311E+08
- Average arithmetic intensity: 2.01847
+ Number of Flops processed   : 5.03166E+08
+ Number of Bytes to GPUs     : 1.33944E+08
+ Number of Bytes from GPUs   : 8.44787E+07
+ Average arithmetic intensity: 2.30364
 #END_MSG
 #MSG(DSVP): Shut down DSVP      0: TAVP-WRK#0
-#MSG(DSVP): Counters: Recv    8237; Rtrd    8237; Crtd    5726; Fail    0: Time (s)     1234.423
+#MSG(DSVP): Counters: Recv    2061; Rtrd    2061; Crtd    1072; Fail    0: Time (s)       79.691
 
 #MSG(TAL-SH::NV-TAL): Statistics on GPU #0:
- Number of tasks submitted: 5368
- Number of tasks completed: 5368
+ Number of tasks submitted: 893
+ Number of tasks completed: 893
  Number of tasks deferred : 0
  Number of tasks failed   : 0
- Number of Flops processed: 3.83665E+08
- Number of Bytes to GPU   : 1.37203E+08
- Number of Bytes from GPU : 8.07905E+07
- Time active (sec)        : 5606.500000
+ Number of Flops processed: 1.9694E+08
+ Number of Bytes to GPU   : 5.79082E+07
+ Number of Bytes from GPU : 3.60087E+07
+ Time active (sec)        : 77.730000
 #END_MSG
 
 #MSG(TAL-SH::NV-TAL): Statistics on GPU #1:
- Number of tasks submitted: 3576
- Number of tasks completed: 3576
+ Number of tasks submitted: 623
+ Number of tasks completed: 623
  Number of tasks deferred : 0
  Number of tasks failed   : 0
- Number of Flops processed: 3.36052E+08
- Number of Bytes to GPU   : 1.05694E+08
- Number of Bytes from GPU : 5.77895E+07
- Time active (sec)        : 5607.840000
+ Number of Flops processed: 1.53118E+08
+ Number of Bytes to GPU   : 4.28302E+07
+ Number of Bytes from GPU : 2.39847E+07
+ Time active (sec)        : 79.110000
 #END_MSG
 
 #MSG(TAL-SH::NV-TAL): Statistics on GPU #2:
- Number of tasks submitted: 3428
- Number of tasks completed: 3428
+ Number of tasks submitted: 628
+ Number of tasks completed: 628
  Number of tasks deferred : 0
  Number of tasks failed   : 0
- Number of Flops processed: 3.22584E+08
- Number of Bytes to GPU   : 1.0184E+08
- Number of Bytes from GPU : 5.57453E+07
- Time active (sec)        : 5638.130000
+ Number of Flops processed: 1.55594E+08
+ Number of Bytes to GPU   : 4.31497E+07
+ Number of Bytes from GPU : 2.44853E+07
+ Time active (sec)        : 113.660000
 #END_MSG
 
 #MSG(TAL-SH::NV-TAL): Statistics across all GPU devices:
- Number of Flops processed   : 1.0423E+09
- Number of Bytes to GPUs     : 3.44737E+08
- Number of Bytes from GPUs   : 1.94325E+08
- Average arithmetic intensity: 1.93355
+ Number of Flops processed   : 5.05652E+08
+ Number of Bytes to GPUs     : 1.43888E+08
+ Number of Bytes from GPUs   : 8.44787E+07
+ Average arithmetic intensity: 2.21421
 #END_MSG
 #MSG(DSVP): Shut down DSVP      1: TAVP-WRK#1
-#MSG(DSVP): Counters: Recv    8817; Rtrd    8817; Crtd    6186; Fail    0: Time (s)     1234.350
+#MSG(DSVP): Counters: Recv    2064; Rtrd    2064; Crtd    1072; Fail    0: Time (s)       79.707
  
   Leaving cc_driver routine
 
@@ -1357,11 +1791,11 @@ It.    1    -76.08061801618      7.61D+01  0.00D+00  7.78D-10               6.32
 
 
  
-     Date and time (Linux)  : Tue May 26 12:10:04 2020
-     Host name              : h35n07                                  
+     Date and time (Linux)  : Wed Oct  7 08:52:59 2020
+     Host name              : f33n01                                  
 
->>>> Node 0, utime: 3001, stime: 2835, minflt: 237110173, majflt: 134, nvcsw: 139700440, nivcsw: 208030, maxrss: 207239040
->>>> Total WALL time used in DIRAC: 20min42s
+>>>> Node 0, utime: 217, stime: 85, minflt: 5819695, majflt: 44, nvcsw: 1822907, nivcsw: 5727, maxrss: 207540672
+>>>> Total WALL time used in DIRAC: 1min22s
   
   Dynamical Memory Usage Summary for Master
   

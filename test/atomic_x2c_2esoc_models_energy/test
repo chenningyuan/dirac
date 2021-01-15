@@ -3,9 +3,6 @@
 import os
 import sys
 import shutil
-if os.name=='posix':
-    import resource
-    resource.setrlimit(resource.RLIMIT_STACK,(resource.RLIM_INFINITY, resource.RLIM_INFINITY))
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
