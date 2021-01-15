@@ -1584,7 +1584,6 @@ C    MARTIN
           ENDDO
           WRITE(6,"(A22,I4)") "End output excitation ", IEXC
         ENDDO
-        deallocate(ECD)
       ENDIF
 C    MARTIN
 C     
@@ -1615,6 +1614,7 @@ C     Memory deallocation
         deallocate(GPOP)
         deallocate(XPOP)         
       ENDIF
+      deallocate(ECD)
       deallocate(TMOM)
       deallocate(OSC)
       deallocate(PRPINT)
