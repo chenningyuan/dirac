@@ -545,7 +545,7 @@ module fde_evaluators_dirac
          printlocal = .False.
       endif
 
-      allocate(dmat(n2bbasxq))
+      allocate(dmat(n2bbasxq*nfmat))
       dmat = 0.0d0
       allocate(cmo(ncmotq))
       cmo = 0.0d0
@@ -873,23 +873,27 @@ module fde_evaluators_dirac
 
       function fde_dirac_embpot_static_energy()
          real(8)         :: fde_dirac_embpot_static_energy
+         real(8)         :: fde_dirac_active_nr_electrons
          integer         :: i
 
 ! todo: generalize to other densities
          call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active_sv)
 
          fde_dirac_embpot_static_energy = 0.0d0
+         fde_dirac_active_nr_electrons = 0.0d0
 !        print *, "debug: number of points ",fde_grid_sv%npoints
          do i = 1, fde_grid_sv%npoints
             fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
                      + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
+            fde_dirac_active_nr_electrons = fde_dirac_active_nr_electrons + fde_grid_sv%w(i) * gf_active_sv%n(i)
 !           if ( i .eq. 5 ) then
 !              print *, "w: ",fde_grid_sv%w(i)
 !              print *, "n: ",gf_active_sv%n(i)
 !              print *, "v: ",fde_static_vemb(i)
 !           endif
          end do
-         print *, "debug, embpot energy: ",fde_dirac_embpot_static_energy
+         print *, "FDE excess energy (<0|v_emb(r)|0>) removed from SCF energy: ",fde_dirac_embpot_static_energy
+         print *, "Integrated number of electrons in active subsystem        : ",fde_dirac_active_nr_electrons
 
       end function
 

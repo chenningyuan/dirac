@@ -492,6 +492,7 @@ contains
          nz      = fde_nz
          nr_dmat = fde_nr_dmat
          nr_fmat = fde_nr_fmat
+         print *, 'debug: mat_dim,nz,nr_dmat,nr_fmat:',mat_dim,nz,nr_dmat,nr_fmat
       end if
 
 !     set defaults
