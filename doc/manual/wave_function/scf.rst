@@ -99,6 +99,12 @@ Occupation of MJ-splitted fermion irreps (only for the linear
 symmetry). Next line contains sequence of occupation numbers, see
 the SCF output for how many.
 
+keyword(KPSELE)
+
+Occupation of Kappa-splitted fermion irreps (only for the atomic
+symmetry). It can be combined with Ghost center, but cannot be
+combined with MJSELE.
+
 keyword(AOC)
 
 Average-of-configuration calculation (default for open-shell
