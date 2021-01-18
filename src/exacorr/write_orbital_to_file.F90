@@ -15,7 +15,18 @@ module write_orbital_to_file
 
         implicit none
 
-        public quater_read_from_dirac_all,quater_write_mos_to_dirac,quater_read_from_dirac_fock
+        interface quater_write
+            module procedure quater_write_orbital
+            module procedure quater_write_fock
+        end interface
+
+        interface quater_read
+            module procedure quater_read_orbital
+            module procedure quater_read_fock
+        end interface
+
+        public quater_read_from_dirac_all,quater_write_mos_to_dirac,quater_read_from_dirac_fock, &
+               quater_read_from_dirac_orbital, quater_write, quater_read
 
        contains
 
@@ -53,7 +64,7 @@ module write_orbital_to_file
          integer                :: idim(3,2)
          real(8)                :: total_energy
          logical                :: tobe
-         integer, parameter     :: lucoef = 100
+         integer                :: lucoef
          integer                :: i, j, k, ishell, iprimstart, iprimend
          integer                :: nao, nao_bas, nshells, iao, ibas
          integer                :: nmo, npo, nto, npriexp, ncnt
@@ -194,8 +205,8 @@ module write_orbital_to_file
          allocate(ao_basis%shell_indices(nao))
          iao = 0
          do ishell = 1, nshells
-            do ibas = 1,&
-       &       nfunctions(ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
+            do ibas = 1, &
+                   nfunctions(ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
                iao = iao + 1
                if (iao.gt.nao) then
                   ierr = INCONSIS
@@ -248,7 +259,7 @@ module write_orbital_to_file
             integer                :: nsym
             real(8)                :: total_energy
             logical                :: tobe
-            integer, parameter     :: lucoef = 100
+            integer                :: lucoef 
             integer                :: ishell
             integer                :: nshells, iao, ibas
             integer                :: npo, nto, npriexp, ncnt
@@ -332,25 +343,26 @@ module write_orbital_to_file
    
    !---------------------------------------------------------------------------------------------------------------------------------------
 
-        subroutine quater_read_from_dirac_fock(Fock_HF,HF_AO,sz,flb)
+        subroutine quater_read_from_dirac_fock(Fock_HF,sz,flb)
+         use exacorr_mo
+         use exacorr_datatypes
+         use exacorr_global,only: nfunctions
+         use exacorr_utils
+      !     routine for reading orbital energy and construting the diagonal Fock matrix 
 
-            real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)            ! Fock matrix 
-            real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)              ! new canonical orbital 
+            real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)          ! Fock matrix 
             integer, intent(inout)                  :: sz,flb                  ! size of matrix and flag for block
-            type(basis_set_info_t), intent(inout)   :: ao_basis
-            type(qumo), intent(inout)               :: qorbital
-            integer, intent(out)                    :: ierr
-            integer                                 :: i, j, k, sz_total_mo, sz_total_ao, sz_total_energy
+            type(qumo)                              :: qorbital
+            type(basis_set_info_t)                  :: ao_basis
+            integer                                 :: ierr
+            integer                                 :: i, k, sz_total_energy
 
 
 !           read information of from DFCOEF
             call quater_read_from_dirac_all(ao_basis,qorbital,'DFCOEF',ierr)
             sz_total_energy = size(qorbital%energy,1)
-            sz_total_ao = size(qorbital%coeff,1)
-            sz_total_mo = size(qorbital%coeff,2)
 
             allocate(Fock_HF(sz,sz,4))
-            allocate(HF_AO(sz_total_ao,sz,4))
 
 !           construct the FM 
             Fock_HF = 0.0
@@ -366,34 +378,234 @@ module write_orbital_to_file
                end do
             end if 
          
-
-!          constrcut HF orbital matrix
-            if (flb == 1) then
-               do i = 1, sz_total_ao
-                  do j = 1, sz
-                     HF_AO(i,j,1) = qorbital%coeff(i,j,1)
-                     HF_AO(i,j,2) = qorbital%coeff(i,j,2)
-                     HF_AO(i,j,3) = qorbital%coeff(i,j,3)
-                     HF_AO(i,j,4) = qorbital%coeff(i,j,4)
-                  end do
-               end do
-            else
-               k = sz_total_mo - sz
-               do i = 1, sz_total_ao
-                  do j = 1, sz
-                     HF_AO(i,i,1) = qorbital%coeff(i,k+j,1)
-                     HF_AO(i,j,2) = qorbital%coeff(i,k+j,2)
-                     HF_AO(i,j,3) = qorbital%coeff(i,k+j,3)
-                     HF_AO(i,j,4) = qorbital%coeff(i,k+j,4)
-                  end do
-               end do
-            end if 
-
-
         end subroutine quater_read_from_dirac_fock
 
 
-!--------------------------------------------------------------------------------------------------------------------------------------
+!-------------------------------------------------------------------------------------------------------------------------------------
+      subroutine quater_read_from_dirac_orbital(HF_AO,sz,flb)
+         use exacorr_mo
+         use exacorr_datatypes
+         use exacorr_global,only: nfunctions
+         use exacorr_utils
+
+         real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)            ! new canonical orbital 
+         integer, intent(inout)                  :: sz,flb                  ! size of matrix and flag for block
+         type(qumo)                              :: qorbital
+         type(basis_set_info_t)                  :: ao_basis
+         integer                                 :: ierr
+         integer                                 :: i, j, k, sz_total_mo, sz_total_ao
+
+
+!           read information of from DFCOEF
+         call quater_read_from_dirac_all(ao_basis,qorbital,'DFCOEF',ierr)
+         sz_total_ao = size(qorbital%coeff,1)
+         sz_total_mo = size(qorbital%coeff,2)
+
+         allocate(HF_AO(sz_total_ao,sz,4))
+      
+
+!          constrcut HF orbital matrix
+         if (flb == 1) then
+            do j = 1, sz
+               do  i = 1, sz_total_ao
+                  HF_AO(i,j,1) = qorbital%coeff(i,j,1)
+                  HF_AO(i,j,2) = qorbital%coeff(i,j,2)
+                  HF_AO(i,j,3) = qorbital%coeff(i,j,3)
+                  HF_AO(i,j,4) = qorbital%coeff(i,j,4)
+               end do
+            end do
+         else
+            k = sz_total_mo - sz
+            do j = 1, sz
+               do i = 1, sz_total_ao
+                  HF_AO(i,i,1) = qorbital%coeff(i,k+j,1)
+                  HF_AO(i,j,2) = qorbital%coeff(i,k+j,2)
+                  HF_AO(i,j,3) = qorbital%coeff(i,k+j,3)
+                  HF_AO(i,j,4) = qorbital%coeff(i,k+j,4)
+               end do
+            end do
+         end if 
+
+
+      end subroutine quater_read_from_dirac_orbital
+
+!-------------------------------------------------------------------------------------------------------------------------------------
+      subroutine  quater_write_orbital(orbital,eigenval,file_name)
+   !     input variables
+         real(kind=8), pointer              :: orbital(:,:,:)      ! natural orbital from qdia of DM
+         real(kind=8), pointer,intent(out)  :: eigenval(:)         ! occupation number from qdia of DM
+         character(len=*),intent(in)        :: file_name
+ 
+
+   !     loop variables
+         integer :: i, j, k, sz
+
+         integer, parameter :: write_orb = 10
+         logical :: debug=.false.
+
+         sz = size(orbital,1)
+         open (write_orb,file=file_name,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+         if (debug) then
+           print *,'<<<<< Start writing quater orbital and eigenval into the file.'
+           k = 1
+           do j=1,sz
+              do i=1,sz
+!                 write(write_orb,'(3X,I4,2x,2F28.10,2x,4I4)') k, orbital(i,j),i,j
+               if(j == i) then
+                  write(write_orb,'(3X,I4,2x,4F20.8,2x,2I4,2x,F20.8)') k, orbital(i,j,:),i,j,eigenval(i)
+                  k = k + 1
+               else 
+                  write(write_orb,'(3X,I4,2x,4F20.8,2x,4I4)') k, orbital(i,j,:),i,j
+                  k = k + 1
+               end if 
+              end do
+            end do
+            print *,'>>>>>  quater orbita, writing completed'
+         end if
+        close(write_orb,status='KEEP')
+
+      end subroutine quater_write_orbital
+!-------------------------------------------------------------------------------------------------------------------------------------
+
+      subroutine  quater_write_fock(matrix,file_name)
+   !     input variables
+         real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
+         character(len=*),intent(in)        :: file_name
+
+   !     loop variables
+         integer :: i, j, k, sz
+
+         integer, parameter :: write_mat = 10
+         logical :: debug=.false.
+
+         sz = size(matrix,1)
+         open (write_mat,file=file_name,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+         if (debug) then
+           print *,'<<<<< Start writing quater orbital and eigenval into the file.'
+           k = 1
+           do j=1,sz
+              do i=1,sz
+                  write(write_mat,'(3X,I4,2x,4F20.8,2x,4I4)') k, matrix(i,j,:),i,j
+                  k = k + 1
+              end do
+            end do
+            print *,'>>>>>  quater orbita, writing completed'
+         end if
+        close(write_mat,status='KEEP')      
+
+      end subroutine quater_write_fock
+
+!-------------------------------------------------------------------------------------------------------------------------------------
+      subroutine  quater_read_orbital(orbital,eigenval,threshold,n_orb,file_name)
+
+   !     input variables
+         real(kind=8), pointer              :: orbital(:,:,:)      ! natural orbital from qdia of DM
+         real(kind=8), pointer,intent(out)  :: eigenval(:)         ! occupation number from qdia of DM
+         integer,intent(inout)              :: n_orb
+         real(kind=8),intent(in)            :: threshold 
+         character(len=*),intent(in)        :: file_name
+
+
+         real(kind=8), pointer              :: orbital_all(:,:,:)      
+         real(kind=8), pointer              :: eigenval_all(:)         
+   !     loop variables
+         integer :: i, j, k, sz_all, sz, p, q, ierr
+
+         integer, parameter :: read_orb = 10
+         logical :: debug=.false.
+
+         open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+         if (debug) then
+           print *,'<<<<< Start writing quater orbital and eigenval into the file.'
+           do while(ierr==0)
+               read(read_orb,'(3X,I4)',iostat=ierr) k
+           end do
+         print *,'>>>>> read complex matrix'
+         end if
+        close(read_orb,status='KEEP')
+
+
+         sz_all = k
+         allocate(orbital_all(sz_all,sz_all,4))
+         allocate(eigenval_all(sz_all))
+         open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+         if (debug) then
+           print *,'<<<<< Start reading quater orbital and eigenval into the file.'
+           do j=1,sz
+              do i=1,sz
+               if(j == i) then
+                  read(read_orb,'(3X,I4,2x,4F20.8,2x,2I4,2x,F20.8)') k, orbital_all(i,j,:),p,q,eigenval_all(i)
+               else 
+                  read(read_orb,'(3X,I4,2x,4F20.8,2x,4I4)') k, orbital_all(i,j,:),p,q
+               end if 
+              end do
+            end do
+            print *,'>>>>>  quater orbita, reading completed'
+         end if
+        close(read_orb,status='KEEP')
+
+
+        n_orb = 0
+        do i=1,sz_all
+         if (eigenval_all(i) > threshold) then
+            n_orb = n_orb + 1
+         end if
+        end do
+       
+        sz = n_orb
+        allocate(eigenval(sz))
+        allocate(orbital(sz,sz,4))
+
+
+        do i=1, sz
+         eigenval(i) = eigenval_all(i)
+        end do
+
+
+        do j=1, sz
+            do i=1, sz
+               orbital(i,j,:) = orbital_all(i,j,:)
+            end do
+        end do
+
+
+        deallocate(orbital_all)
+        deallocate(eigenval_all)
+      end subroutine quater_read_orbital
+
+!-------------------------------------------------------------------------------------------------------------------------------------
+      subroutine  quater_read_fock(matrix,n_orb,file_name)
+
+   !     input variables
+         real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
+         integer,intent(inout)              :: n_orb
+         character(len=*),intent(in)        :: file_name
+
+         
+   !     loop variables
+         integer :: i, j, k, sz, p, q
+
+         integer, parameter :: read_mat = 10
+         logical :: debug=.false.
+
+         sz = n_orb
+         allocate(matrix(sz,sz,4))
+
+         open (read_mat,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+         if (debug) then
+           print *,'<<<<< Start reading fock matrix into the file.'
+           do j=1,sz
+              do i=1,sz
+                  read(read_mat,'(3X,I4,2x,4F20.8,2x,4I4)') k, matrix(i,j,:),p,q
+              end do
+            end do
+            print *,'>>>>>  quater fock matrix, reading completed'
+         end if
+        close(read_mat,status='KEEP')      
+
+      end subroutine quater_read_fock
+
+!-------------------------------------------------------------------------------------------------------------------------------------        
 
 end module write_orbital_to_file
 

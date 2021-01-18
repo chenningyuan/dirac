@@ -26,6 +26,9 @@ if(ENABLE_EXATENSOR)
    talsh_gradient.F90
    talsh_cc.F90
    talsh_mp2no.F90
+   matrix_complex_to_quaternion.F90
+   write_orbital_to_file.F90
+
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

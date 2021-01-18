@@ -37,10 +37,13 @@ module talsh_mp2no
 !       This  module  constructs  the  MP2  density  matrix  using  talsh.
 !       We will write the complex density matrix to file.  
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
+!       The natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new canonical orbitals are written into new file by Module3.
 !       Written by Xiang Yuan
         use exacorr_global
         type(exacc_input), intent(in) :: exa_input
+!        real(kind=8),intent(in)       :: threshold=0.0d-0
+
 
 !       Point connected with tensors 
         integer                :: ierr
@@ -48,12 +51,26 @@ module talsh_mp2no
         real(8),pointer        :: NOs_AO_quat(:,:,:)  ! new quaternion orbital in AO basis
         real(kind=8), pointer  :: NO_OCC_quat(:)      ! occupation number from qdia of DM
         real(kind=8), pointer  :: New_energy(:)       ! new orbital energy from qdia of Fock matrix in new orbital basis
+        logical                :: alive
         real(kind=8)           :: threshold=0.0d-0
+        integer                :: i
 
+        
 
-        call talsh_generate_MP2_VNO_MObasis (exa_input,NO_OCC_1)   
-        call obtain_new_cano_orbital_ao_basis (exa_input,threshold,NOs_AO_quat,NO_OCC_quat,New_energy,'DM_complex')
-        call write_to_newfile (exa_input,NOs_AO_quat,NO_OCC_quat,New_energy,'DFCOEF','MP2NOs_AO')
+        inquire(file="NOs_MO", exist=alive)
+        if (alive) then
+            call print_date('the file NOs_MO existed')
+            call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
+                                 New_energy,'NOs_MO','FM_in_NatOrb')
+            call write_to_newfile(exa_input,NOs_AO_quat,NO_OCC_quat,New_energy,'DFCOEF','MP2NOs_AO')
+        else
+            call print_date('file NOs_MO is not existed')
+            call talsh_generate_MP2_VNO_MObasis(exa_input,NO_OCC_1)   
+            call get_new_Fock_matrix(exa_input,'DM_complex')
+            call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
+                                 New_energy,'NOs_MO','FM_in_NatOrb')
+            call write_to_newfile(exa_input,NOs_AO_quat,NO_OCC_quat,New_energy,'DFCOEF','MP2NOs_AO')
+        end if 
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
         print *,'Occupation numbers of all natural orbital'
@@ -331,6 +348,7 @@ module talsh_mp2no
 !------------------------------------------------------------------------------------------------------------------------------------------------------
 
         subroutine write_matrix(exa_input,gamma,file_out)
+      ! Routine for writing complex density matrix into the file. 
 
          use exacorr_global, only : get_nsolutions
 
@@ -387,75 +405,109 @@ module talsh_mp2no
                if (debug) then
                  print *,'<<<<< DM, complete, before formatting to dirac'
                  k = 1
-                 do i=1,(nocc+nvir)
-                    do j=1,(nocc+nvir)
+                 do j=1,(nocc+nvir)
+                    do i=1,(nocc+nvir)
                        write(mp2dm,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_mo_fort(i,j),i,j
                        k = k + 1
                     end do
                   end do
                   print *,'>>>>> DM, complete, before formatting to dirac'
                end if
+              close(mp2dm,status='KEEP')
 
         end subroutine write_matrix
 
 
 !------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        subroutine obtain_new_cano_orbital_ao_basis (exa_input,threshold,NOs_AO_quat,NO_OCC_quat,New_energy,Matrix_name)
-         !        This routine is used for obtaining new canonical orbital in AO basis.
-         !        All the matrix computation is under quanternion.
-         !        Now theshold is 0
+        subroutine get_new_Fock_matrix (exa_input,Matrix_name)
 
                     use matrix_complex_to_quaternion 
                     use write_orbital_to_file
 
                     character(len=*),intent(in)        :: Matrix_name
                     type(exacc_input), intent(in)      :: exa_input
-                    real(kind=8), intent(in)           :: threshold
-                    real(kind=8), pointer,intent(out)  :: NOs_AO_quat(:,:,:)      ! new quaternion orbital in AO basis 
-                    real(kind=8), pointer,intent(out)  :: NO_OCC_quat(:)          ! occupation number from qdia of DM
-                    real(kind=8), pointer,intent(out)  :: New_energy(:)           ! new orbital energy from qdia of Fock matrix in new orbital basis
 
+                    real(kind=8), pointer              :: NOs_OCC_quat(:)          ! occupation number from qdia of DM
                     complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
                     real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
                     real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
-                    real(kind=8), pointer              :: NOs_MO_quat_red(:,:,:)  ! natural orbitals which have occ larger than threshold
-                    real(kind=8), pointer              :: NOs_MO_quat_cano(:,:,:) ! new canonical orbital 
                     real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-                    real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
+                    real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                     integer                            :: sz,flb                  ! size of matrix and flag for block
-                    integer                            :: n_cano                  ! number of new scanonical orbital
+                    character                          :: mat                     ! flag used for matrix basis transform
 
                                                         
                     call print_date('Read complex density matrix from DM_complex')
-                    call read_matrix(MP2_density_comp,Matrix_name)
+                    call read_matrix_comp(MP2_density_comp,Matrix_name)
 
-                    call print_date('Read Fock matrix and HF orbital in AO basis from DFCOEF')
+                    call print_date('Read Fock matrix from DFCOEF')
                     flb = 0                       ! we read vv block of Fock matrix
                     sz = size(MP2_density_comp,1) ! the size of the FM is the same as DM
-                    call quater_read_from_dirac_fock(Fock_HF,HF_AO,sz,flb)
+                    call quater_read_from_dirac_fock(Fock_HF,sz,flb)
 
                     call print_date('Transform DM from complex into quaternion')
                     call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
 
                     call print_date('Qdiag Density matrix')
-                    call diagoanl_matrix_quater(MP2_density_quat,NO_OCC_quat,NOs_MO_quat)
+                    call diagoanl_matrix_quater(MP2_density_quat,NOs_OCC_quat,NOs_MO_quat)
 
-                    call print_date('Sort and choose quaterbion natural orbital')
-                    call sort_values_vectors (NOs_OCC_quat,NOs_MO_quat,NOs_MO_quat_red,threshold,n_cano)
+                    call print_date('Sort quaterbion natural orbital')
+                    call sort_values_vectors (NOs_OCC_quat,NOs_MO_quat)
 
-                    call print_date('Get new Canonical orbital')
-                    call get_Cano_Orbital(NOs_MO_quat_red,NOs_MO_quat_cano,Fock_HF,New_energy,n_cano)
-
-                    call print_date('Get new orbital in AO basis')
-                    call basis_transform(NOs_MO_quat_red,HF_AO,NOs_AO_quat)
+                    call print_date('Write the all natural orbital and occupation number in file NOs_MO')
+                    call quater_write(NOs_MO_quat,NOs_OCC_quat,"NOs_MO")
+                    
+                    call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
+                    mat = 'Matrix'
+                    call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
+                    call quater_write(Fock_NO,"FM_in_NatOrb")
                         
-                                   
-         end subroutine obtain_new_cano_orbital_ao_basis
+         end subroutine get_new_Fock_matrix
 
          
-!-----------------------------------------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------------------------------------------------
+      subroutine get_new_orbital(exa_input,threshold,NOs_AO_quat,NOs_OCC_quat,New_energy,file_orb,file_fm)
 
+            use matrix_complex_to_quaternion 
+            use write_orbital_to_file
+
+
+            type(exacc_input), intent(in)      :: exa_input
+            real(kind=8),intent(in)            :: threshold
+            real(kind=8), pointer,intent(out)  :: NOs_AO_quat(:,:,:)      ! new quaternion orbital in AO basis 
+            real(kind=8), pointer,intent(out)  :: NOs_OCC_quat(:)          ! occupation number from qdia of DM
+            real(kind=8), pointer,intent(out)  :: New_energy(:)           ! new orbital energy from qdia of Fock matrix in new orbital basis
+            character(len=*),intent(in)        :: file_orb, file_fm
+
+
+            real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbitals which have occ larger than threshold
+            real(kind=8), pointer              :: New_cano_orb(:,:,:)     ! new canonical orbital 
+            real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
+            real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
+            integer                            :: sz,flb                  ! size of matrix and flag for block
+            integer                            :: n_cano                  ! number of new scanonical orbital
+
+
+            call print_date('Read quater Fock matrix, natural orbital as well as  occupation number from files')
+            call quater_read(NOs_MO_quat,NOs_OCC_quat,threshold,n_cano,'NOs_MO')
+            call quater_read(Fock_NO,n_cano,'FM_in_NatOrb')
+        
+            call print_date('Get new Canonical orbital in MO basis')
+            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
+
+            call print_date('Read HF orbital coefficient from DFCOEF')
+            flb = 0                       ! we read virtual orbital 
+            sz = exa_input%nvir           ! the number of virtual orbital 
+            call quater_read_from_dirac_orbital(HF_AO,sz,flb)
+
+            call print_date('Get new orbital in AO basis')
+            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat)
+
+      end subroutine
+
+
+!-----------------------------------------------------------------------------------------------------------------------------
 
       subroutine write_to_newfile (exa_input,orbital,occ_number,energy,file_old,file_new)
 
@@ -513,12 +565,12 @@ module talsh_mp2no
             qorbital%energy(i)=qorbital_hf%energy(i)
          end do
 
-         do i = nocc+1, qorbital_hf%nmo
+         do i = nocc+1, qorbital%nmo
             qorbital%energy(i)=energy(i-nocc)
          end do
 
-         do i = 1, qorbital%nao
-            do j = 1, nocc
+         do j = 1, nocc
+            do  i = 1, qorbital%nao
                   qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)
                   qorbital%coeff(i,j,2)=qorbital_hf%coeff(i,j,2)
                   qorbital%coeff(i,j,3)=qorbital_hf%coeff(i,j,3)
@@ -527,8 +579,8 @@ module talsh_mp2no
          enddo
 
 
-         do i = 1, qorbital%nao
-            do j = nocc+1, qorbital_hf%nmo
+         do  j = nocc+1, qorbital%nmo
+            do  i = 1, qorbital%nao
                   qorbital%coeff(i,j,1)=orbital(i,j-nocc,1)
                   qorbital%coeff(i,j,2)=orbital(i,j-nocc,2)
                   qorbital%coeff(i,j,3)=orbital(i,j-nocc,3)
@@ -538,8 +590,6 @@ module talsh_mp2no
 
 
          call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
-
-
 
         end subroutine write_to_newfile
 
