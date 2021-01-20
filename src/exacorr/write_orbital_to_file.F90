@@ -102,7 +102,7 @@ module write_orbital_to_file
             if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
          end if
   
-         print *,'print npo', npo
+!         print *,'print nto', nto
          allocate(coeff(nao,nto,nz))
          allocate(eig(nto))
          allocate(ibeig(nto))
@@ -358,7 +358,7 @@ module write_orbital_to_file
             integer                                 :: i, k, sz_total_energy
 
 
-!           read information of from DFCOEF
+!           read information from DFCOEF
             call quater_read_from_dirac_all(ao_basis,qorbital,'DFCOEF',ierr)
             sz_total_energy = size(qorbital%energy,1)
 
@@ -378,6 +378,12 @@ module write_orbital_to_file
                end do
             end if 
          
+            print *, "sz", sz
+            print *, "sz_total_energy", sz_total_energy
+            do i = 1, sz
+               print *, "Fock_HF", Fock_HF(i,i,1) 
+            end do
+
         end subroutine quater_read_from_dirac_fock
 
 
@@ -441,7 +447,7 @@ module write_orbital_to_file
          integer :: i, j, k, sz
 
          integer, parameter :: write_orb = 10
-         logical :: debug=.false.
+         logical :: debug=.true.
 
          sz = size(orbital,1)
          open (write_orb,file=file_name,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
@@ -476,12 +482,12 @@ module write_orbital_to_file
          integer :: i, j, k, sz
 
          integer, parameter :: write_mat = 10
-         logical :: debug=.false.
+         logical :: debug=.true.
 
          sz = size(matrix,1)
          open (write_mat,file=file_name,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
          if (debug) then
-           print *,'<<<<< Start writing quater orbital and eigenval into the file.'
+           print *,'<<<<< Start writing quater fock matrix into the file.'
            k = 1
            do j=1,sz
               do i=1,sz
@@ -489,7 +495,7 @@ module write_orbital_to_file
                   k = k + 1
               end do
             end do
-            print *,'>>>>>  quater orbita, writing completed'
+            print *,'>>>>>  quater FM, writing completed'
          end if
         close(write_mat,status='KEEP')      
 
@@ -509,30 +515,33 @@ module write_orbital_to_file
          real(kind=8), pointer              :: orbital_all(:,:,:)      
          real(kind=8), pointer              :: eigenval_all(:)         
    !     loop variables
-         integer :: i, j, k, sz_all, sz, p, q, ierr
+         integer :: i, j, k, sz_all, sz, p, q, ierr=0
+         real(kind=8) :: k_re
 
          integer, parameter :: read_orb = 10
-         logical :: debug=.false.
+         logical :: debug=.true.
 
          open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+
          if (debug) then
-           print *,'<<<<< Start writing quater orbital and eigenval into the file.'
+           print *,'<<<<< Start reading quater orbital size from the file.'
            do while(ierr==0)
                read(read_orb,'(3X,I4)',iostat=ierr) k
            end do
-         print *,'>>>>> read complex matrix'
+         print *,'>>>>> quater orbital size, reading completed'
          end if
         close(read_orb,status='KEEP')
 
+         k_re = real(k)
+         sz_all = int(sqrt(k_re))
 
-         sz_all = k
          allocate(orbital_all(sz_all,sz_all,4))
          allocate(eigenval_all(sz_all))
          open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
          if (debug) then
-           print *,'<<<<< Start reading quater orbital and eigenval into the file.'
-           do j=1,sz
-              do i=1,sz
+           print *,'<<<<< Start reading full quater orbital and eigenval from the file.'
+           do j=1,sz_all
+              do i=1,sz_all
                if(j == i) then
                   read(read_orb,'(3X,I4,2x,4F20.8,2x,2I4,2x,F20.8)') k, orbital_all(i,j,:),p,q,eigenval_all(i)
                else 
@@ -551,10 +560,15 @@ module write_orbital_to_file
             n_orb = n_orb + 1
          end if
         end do
+        print *, 'threshold', threshold
+        print *, 'n_orb', n_orb
        
+
+
         sz = n_orb
         allocate(eigenval(sz))
         allocate(orbital(sz,sz,4))
+
 
 
         do i=1, sz
@@ -586,10 +600,11 @@ module write_orbital_to_file
          integer :: i, j, k, sz, p, q
 
          integer, parameter :: read_mat = 10
-         logical :: debug=.false.
+         logical :: debug=.true.
 
          sz = n_orb
          allocate(matrix(sz,sz,4))
+
 
          open (read_mat,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
          if (debug) then

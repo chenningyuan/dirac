@@ -27,7 +27,7 @@ module matrix_complex_to_quaternion
 
         complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! complex matrix from DM_complex
         character(len=*), intent(in)             :: Matrix_name
-        logical :: debug=.false.
+        logical :: debug=.true.
 
         integer :: i, j, k, ierr
         integer, parameter :: cm = 10
@@ -41,9 +41,9 @@ module matrix_complex_to_quaternion
           do while(ierr==0)
                 read(cm,'(3X,I4,2x,2F28.10,2x,4I4)',iostat=ierr) k,a,b,i,j
           end do
-           print *,'>>>>> read complex matrix'
+           print *,'>>>>> read complex matrix index'
         end if
-        close(cm)
+        close(cm,status='KEEP')
 
         allocate(Matrix(i,j))
 
@@ -57,7 +57,8 @@ module matrix_complex_to_quaternion
           end do
            print *,'>>>>> read complex matrix'
         end if
-        close(cm)
+        close(cm,status='KEEP')
+
 
 
       end subroutine read_matrix_comp
@@ -145,7 +146,7 @@ module matrix_complex_to_quaternion
            call matrix_three_two(mat_basis1_in,B,re)
 
            fl = 0
-           call qua_mat_mulp(A,B,C,fl)
+           call qua_mat_mulp(A,B,C,fl,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
 
            re = -1
            allocate(mat_basis2_out(LRC,LCC,4))
@@ -177,6 +178,7 @@ module matrix_complex_to_quaternion
          real(kind=8), pointer                  :: aux(:,:)                 ! matrix used in qgemm
          integer                                :: LRA, LCA, NZA
          integer                                :: LRB, LCB, NZB
+         integer                                :: LR_au, LC_au, NZ_au
          integer                                :: LRC, LCC, NZC
 
 
@@ -184,33 +186,37 @@ module matrix_complex_to_quaternion
          LCA = size(basis2_in,2)
          LRB = size(mat_basis1_in,1)
          LCB = size(mat_basis1_in,2)
+         LR_au = size(basis2_in,1)
+         LC_au = size(mat_basis1_in,2)
          LRC = size(basis2_in,1)
-         LCC = size(mat_basis1_in,2)
+         LCC = size(basis2_in,1)
 
-         NZA = 4
-         NZB = 4
-         NZC = 4
+         NZA =   4
+         NZB =   4
+         NZ_au = 4 
+         NZC =   4
 
          allocate(A(LRA*LCA,NZA))
          allocate(B(LRB*LCB,NZB))
          allocate(C(LRC*LCC,NZC))
-         allocate(aux(LRC*LCC,NZC))
+         allocate(aux(LR_au*LC_au,NZ_au))
 
 
          re = 1
          call matrix_three_two(basis2_in,A,re)
          call matrix_three_two(mat_basis1_in,B,re)
          
-
+!         print *, "debug"
          fl = 0
-         call qua_mat_mulp(A,B,aux,fl)
+         call qua_mat_mulp(A,B,aux,fl,LRA,LCA,NZA,LRB,LCB,NZB,LR_au,LC_au,NZ_au)
          fl = 1
-         call qua_mat_mulp(aux,A,C,fl)     
+         call qua_mat_mulp(aux,A,C,fl,LR_au,LC_au,NZ_au,LRA,LCA,NZA,LRC,LCC,NZC)     
 
 
          re = -1
          allocate(mat_basis2_out(LRC,LCC,4))
          call matrix_three_two(mat_basis2_out,C,re)
+         print *, "debug"
 
          deallocate(A)
          deallocate(B)
@@ -222,37 +228,32 @@ module matrix_complex_to_quaternion
 
 !-----------------------------------------------------------------------------------------------------------------------------------
         
-      subroutine qua_mat_mulp (A,B,C,flag)
+      subroutine qua_mat_mulp (A,B,C,flag,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
 !        Routine to do quaternion matrix multiplication. We use qgemm routine from qalebra.F.
                          
          !input variables         
          real(kind=8), pointer, intent(inout)  :: A(:,:), B(:,:), C(:,:)               ! matrix used in qgemm
          integer, intent(in)                   :: flag
+         integer, intent(in)                   :: LRA, LCA, NZA
+         integer, intent(in)                   :: LRB, LCB, NZB
+         integer, intent(in)                   :: LRC, LCC, NZC 
 
 
          integer                   :: M, N, K                              !paramter for blas routine dgemm
-         integer                   :: LRA, LCA, NZA
-         integer                   :: LRB, LCB, NZB
-         integer                   :: LRC, LCC, NZC 
+
          integer, allocatable      :: IQPA(:), IQPB(:), IQPC(:)        
          real(kind=8)              :: ALPHA, BETA
          character                 :: FA, FB ,TA ,TB
+         integer                   :: i
+            
+         M = LRA
+         N = LCB
+         K = LCA
 
-   
-         LRA = size(A,1)
-         LCA = size(A,2)
-         LRB = size(B,1)
-         LCB = size(B,2)
-         LRC = size(C,1)
-         LCC = size(C,2)
+!         print *, "M", M 
+!         print *, "N", N 
+!         print *, "K", K 
          
-         M = size(A,1)
-         N = size(B,2)
-         K = size(A,2)
-         
-         NZA = 4
-         NZB = 4
-         NZC = 4
          
          FA = 'N'
          FB = 'N'
@@ -266,16 +267,22 @@ module matrix_complex_to_quaternion
          allocate(IQPA(NZA))
          allocate(IQPB(NZB))
          allocate(IQPC(NZC)) 
-         
+
+         do i = 1, NZA
+            IQPA(i) = i
+            IQPB(i) = i
+            IQPC(i) = i
+         end do            
+
 !       There three options: case1 does C=A*B; case2 does C=A*B^{dagger}
          if (flag == 1) then
             FB = 'H'
             call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
-                     FB,TB,IQPB,A,LRB,LCB,NZB,BETA, &
+                     FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                      IQPC,C,LRC,LCC,NZC)                     
          else 
             call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
-                       FB,TB,IQPB,A,LRB,LCB,NZB,BETA, &
+                       FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                        IQPC,C,LRC,LCC,NZC)    
          end if
 
@@ -353,7 +360,7 @@ module matrix_complex_to_quaternion
                  LCA = size(A,2)
                  LRV = LRA
                  LCV = LCA
-                 lwork = 10000000*LRA
+                 lwork = 1000000*LRA
                  NZ = 4
                  N = LRA
                  MATZ = 1
@@ -362,15 +369,16 @@ module matrix_complex_to_quaternion
                  allocate(work(MAX(1,LWORK)))
 
 
+
                  call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,WORK,LWORK,IERR)
 
-                  print *, "occupation number in quaternion"
+                  print *, "'Occupation numbers of all natural orbital in quater diag"
                   do i = 1, LRA
-                     print *, EIG(i)
+                     print "(4x,i4,a,2e14.6)",i,"    ", EIG(i)
                   end do
 
                   deallocate(work)
-                print *, "it works in quaternion_to_complex?"
+
 
       end subroutine diagoanl_matrix_quater
                 
@@ -395,7 +403,7 @@ module matrix_complex_to_quaternion
                integer :: i, j, norbt
                integer :: i_unbar, j_unbar, j_bar
                !debug
-               logical :: debug=.false.
+               logical :: debug=.true.
                integer :: k
 
 
@@ -409,7 +417,7 @@ module matrix_complex_to_quaternion
 !      nkr_vir = exa_input%nkr_vir
 !      norbt = nkr_occ + nkr_vir
 
-      norbt = size(dm_mo_complex)/2
+      norbt = size(dm_mo_complex,1)/2
       allocate(mo_list(norbt))
       do i = 1, norbt
             mo_list(i) = i

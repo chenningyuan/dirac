@@ -73,11 +73,11 @@ module talsh_mp2no
         end if 
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
-        print *,'Occupation numbers of all natural orbital'
-       do i = 1, size(NO_OCC_1,1)
-          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
-       end do
-       deallocate(NO_OCC_1)
+!        print *,'Occupation numbers of all natural orbital'
+!       do i = 1, size(NO_OCC_1,1)
+!          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
+!       end do
+!       deallocate(NO_OCC_1)
 
       end subroutine talsh_mp2no_driver
 
@@ -342,6 +342,11 @@ module talsh_mp2no
             deallocate(work)
             deallocate(rwork)
 
+            print *,'Occupation numbers of all natural orbital in complex diag'
+            do i = 1, size(eVal,2)
+                  print "(4x,i4,a,2e14.6)",i,"    ",eVal(1,i)
+            end do
+
             call print_date('After diagonal_matrix_complex')
          end subroutine diagoanl_matrix_complex
 
@@ -369,7 +374,7 @@ module talsh_mp2no
                integer :: i, j
                integer, parameter :: mp2dm = 10
          ! debug
-               logical :: debug=.false.
+               logical :: debug=.true.
                integer :: k
 
          
@@ -396,6 +401,7 @@ module talsh_mp2no
                ierr=talsh_tensor_get_body_access(gamma%prime_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
                call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
                dm_mo_fort(1:nvir,1:nvir) = dm_block
+!               print *, nvir
          
          !*****************************************************************************************************************************
          !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
@@ -411,7 +417,7 @@ module talsh_mp2no
                        k = k + 1
                     end do
                   end do
-                  print *,'>>>>> DM, complete, before formatting to dirac'
+                  print *,'>>>>> DM, complete, after formatting to dirac'
                end if
               close(mp2dm,status='KEEP')
 
@@ -442,8 +448,8 @@ module talsh_mp2no
                     call read_matrix_comp(MP2_density_comp,Matrix_name)
 
                     call print_date('Read Fock matrix from DFCOEF')
-                    flb = 0                       ! we read vv block of Fock matrix
-                    sz = size(MP2_density_comp,1) ! the size of the FM is the same as DM
+                    flb = 0                         ! we read vv block of Fock matrix
+                    sz = size(MP2_density_comp,1)/2 ! the size of the FM is the same as DM
                     call quater_read_from_dirac_fock(Fock_HF,sz,flb)
 
                     call print_date('Transform DM from complex into quaternion')
@@ -458,10 +464,11 @@ module talsh_mp2no
                     call print_date('Write the all natural orbital and occupation number in file NOs_MO')
                     call quater_write(NOs_MO_quat,NOs_OCC_quat,"NOs_MO")
                     
-                    call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
                     mat = 'Matrix'
                     call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
+                    call print_date('Get Fock matrix in natural orbital basis')
                     call quater_write(Fock_NO,"FM_in_NatOrb")
+                    call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
                         
          end subroutine get_new_Fock_matrix
 
@@ -498,7 +505,7 @@ module talsh_mp2no
 
             call print_date('Read HF orbital coefficient from DFCOEF')
             flb = 0                       ! we read virtual orbital 
-            sz = exa_input%nvir           ! the number of virtual orbital 
+            sz = exa_input%nvir/2         ! the number of virtual orbital 
             call quater_read_from_dirac_orbital(HF_AO,sz,flb)
 
             call print_date('Get new orbital in AO basis')
