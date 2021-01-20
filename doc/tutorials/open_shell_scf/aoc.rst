@@ -69,8 +69,8 @@ where we have introduced
 - the fractional occupation :math:`f_S=\frac{N_S}{M_S}` of shell :math:`S`
 - the coupling coefficient :math:`a_S`
 
-  - :math:`a_S=\frac{M_S\left(N_S-1\right)}{N_S\left(M_S-1\right)}` for :math:`f_s\ne 0` 
-  - :math:`a_S=1` for :math:`f_s = 0`
+  - :math:`a_S=\frac{M_S\left(N_S-1\right)}{N_S\left(M_S-1\right)}` for :math:`f_S\ne 0` 
+  - :math:`a_S=1` for :math:`f_S = 0`
 
 - two-electron contributions :math:`Q^S_{pq}=f_S\displaystyle{\sum_{r\in S}\langle pr||qr\rangle}`
 
@@ -124,20 +124,30 @@ These gradient elements allow the definition of the off-diagonal elements of the
 
 - inactive-secondary block:
 
-.. math:`\quad \mathbb{F}_{ia}=F^I_{ia}`
+.. math::
+
+   \mathbb{F}_{ia}=F^I_{ia}
 
 - active-secondary block:
 
-.. math:`\quad \mathbf{F}_{ua}=F^I_{ua}+(a_U-1)Q^U_{ua};\quad u\in U`
+.. math::
+
+   \mathbb{F}_{ua}=F^I_{ua}+(a_U-1)Q^U_{ua};\quad u\in U
 
 - inactive-active block:
 
-.. math:`\quad \mathbb{F}_{iu}=F^I_{iu}+f_U\alpha_UQ^U_{iu};\quad u\in U`
+.. math::
 
-- inter-shell active-active rotations :math:`U\ne V`:
+   \mathbb{F}_{iu}=F^I_{iu}+f_U\alpha_UQ^U_{iu};\quad u\in U
 
-.. math:`\quad \mathbb{F}_{uv}=F^I_{uv}-\frac{(a_U-1)}{(f_U-f_V)}Q^U_{uv}-\frac{(a_V-1)}{(f_V-f_U)}Q^V_{uv};\quad f_U\ne f_V`
-.. math:`\quad \mathbb{F}_{uv}=(a_U-1)Q^U_{uv}-(a_V-1)Q^V_{vu};\quad f_U = f_V`
+- inter-shell active-active rotations :math:`(U\ne V)`:
+
+.. math::
+
+   \mathbb{F}_{uv}=\left\{\begin{array}{ll}
+   F^I_{uv}+\frac{(a_U-1)}{(f_U-f_V)}Q^U_{uv}+\frac{(a_V-1)}{(f_V-f_U)}Q^V_{uv}&\mbox{for }f_U\ne f_V\\
+   (a_U-1)Q^U_{uv}+(a_V-1)Q^V_{uv}&\mbox{for }f_U = f_V\\\end{array}\right.
+
 
 Diagonal blocks of the Fock matrix
 ----------------------------------
