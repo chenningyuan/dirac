@@ -840,16 +840,17 @@ module fde_evaluators_dirac
          end subroutine fde_dirac_embpot_via_aoproper
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat,fmat)
+      subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat_0,fmat)
 !   ----------------------------------------------------------------------------
          integer, intent(in) :: mat_dim
-         real(kind=8), target, intent(in) :: dmat(*)
+         real(kind=8), target, intent(in) :: dmat_0(*)
          real(kind=8), target  :: fmat(*)
 
          call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = mat_dim, &
-                                  fde_nz        = nz,      &
-                                  fde_dmat_0    = dmat,    &
+!                                 fde_nz        = nz,      &
+                                  fde_nz        = 1,       &
+                                  fde_dmat_0    = dmat_0,  &
                                   fde_nr_dmat   = 0,       &
                                   fde_nr_fmat   = 1,       &
                                   fde_fmat      = fmat,    &
