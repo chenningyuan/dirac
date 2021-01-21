@@ -815,7 +815,7 @@ C&&& MAGCOR - print magnetic coordinates
          IF (SQHDOR) WRITE (LUPRI,'(10X,A)')
      &        '- Ket differentiated half-derivative overlap matrix'
          IF (NUCPOT) WRITE (LUPRI,'(10X,A)')
-     &            '- Potenial energy at the nuclei'
+     &    '- Potenial energy of interaction of electrons with a nucleus'
          IF (NPOTST) WRITE (LUPRI,'(10X,A)')
      &            '- Test of nuclear potential energy'
          IF (MGMO2T) WRITE (LUPRI,'(10X,A)')

@@ -107,6 +107,12 @@ hartree (a.u.) are included, this can be modified in the
 :ref:`**MOLTRA` section.
 
 
+keyword(EXACC)
+
+Activates the  :ref:`**EXACC` module, the new coupled cluster implementation
+based on the ExaTensor library.
+
+
 **Pre-SCF orbital manipulations**
 =================================
 

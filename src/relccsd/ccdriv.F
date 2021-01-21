@@ -5061,3 +5061,5 @@ C
 !     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
 !    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
+
+
