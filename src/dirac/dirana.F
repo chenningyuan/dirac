@@ -4302,7 +4302,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
-     &          NAO(MAXREF),WORK(*)
+     &          NAO(MAXREF),WORK(*),IDIM(3)
       DIMENSION IOFF(2)
       CHARACTER TEXT*74
       LOGICAL FNDLAB
@@ -4411,22 +4411,15 @@ C.........Read C1 coefficients and orbitalenergies
           ENDIF
           NTOT = NNEG+NPOS
           NQA  = NAO(IREFS)*NTOT*NZC1
+          IDIM(1) = NNEG
+          IDIM(2) = NPOS
+          IDIM(3) = NAO(IREFS)
           CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-          IF(FNDLAB('COEFS   ',LUCOEF)) THEN      
-            CALL READT(LUCOEF,NQA,WORK(KQA))
-          ELSE
-            WRITE(LUPRI,*) 'PRJAOB: error reading coefficients ', 
-     &                     REFFIL(IREFS) 
-            CALL QUIT('PRJAOB: Error reading coefficients')
-          ENDIF
+          CALL REACMO_coefficients(LUCOEF,WORK(KQA),NQA,1,NZC1,
+     &           NTOT,NAO(IREFS),NNEG,NPOS,IDIM)         
           CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
-          IF(FNDLAB('EVALS   ',LUCOEF)) THEN
-            CALL READT(LUCOEF,NTOT,WORK(KEA))
-          ELSE
-            WRITE(6,*) 'PRJAOB: not able to read eigenvalues ',
-     &       'from file ',REFFIL(IREFS)
-            CALL QUIT('PRJAOB: Error reading eigenvalues')
-          ENDIF
+          CALL REACMO_eigenvalues(LUCOEF,WORK(KEA),NTOT,1,NZC1,
+     &           NTOT,NNEG,NPOS,IDIM)         
           CLOSE(LUCOEF,STATUS='KEEP')
 C.........Make pointer array to selected reference orbitals
           NDIM = NTOT+1

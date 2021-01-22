@@ -5464,7 +5464,7 @@ C
 C.....Local variables
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
-      INTEGER NNEG,NPOS,NBAS
+      INTEGER NNEG,NPOS,NBAS,IDIM(3)
 C
       KFRSAV=KFREE
 C.....Say hello
@@ -5514,20 +5514,18 @@ C.......Read atomic coefficients in C1 format
           WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
           WRITE(LUPRI,*) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
         ENDIF
-        NAORB  = NNEG+NPOS
-        NACMO  = NBAS*NAORB
-        NACMOQ = NACMO*NZC1
-        NADEN  = NBAS*NBAS*NZC1
+        NAORB   = NNEG+NPOS
+        NACMO   = NBAS*NAORB
+        NACMOQ  = NACMO*NZC1
+        NADEN   = NBAS*NBAS*NZC1
+        IDIM(1) = NNEG
+        IDIM(2) = NPOS
+        IDIM(3) = NBAS
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','CMO ',KCMO,NACMOQ,WORK,KFREE,LFREE)
-        IF(FNDLAB('COEFS   ',LUATOM)) THEN      
-          CALL READT(LUATOM,NACMOQ,WORK(KCMO))
-       ELSE
-          WRITE(LUPRI,*) 'ATOMIC_START: error reading coefficients ',
-     &                    ATOMFIL(IATOM) 
-          CALL QUIT('ATOMIC_START: Error reading coefficients')
-        ENDIF
+        CALL REACMO_coefficients(LUATOM,WORK(KCMO),NACMOQ,1,NZC1,
+     &           NAORB,NBAS,NNEG,NPOS,IDIM)         
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
@@ -5653,6 +5651,7 @@ C
 #include "dgroup.h"
       LOGICAL FNDLAB
       CHARACTER TEXT*74
+      DIMENSION IDIM(3)
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
@@ -5738,23 +5737,16 @@ C.......Read C1 coefficients and orbitalenergies
           CALL QUIT('ADHOC2: Error reading info')
         ENDIF
         NTOT = NNEG+NPOS
+        IDIM(1) = NNEG
+        IDIM(2) = NPOS
+        IDIM(3) = NAO(ITYP)
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        IF(FNDLAB('COEFS   ',LUHOC)) THEN
-          CALL READT(LUHOC,NQA ,WORK(KQA))
-        ELSE
-          WRITE(6,*) 'ADHOC2: not able to read coefficients ',
-     &      'from file ',HOCFIL(ITYP)
-          CALL QUIT('ADHOC2: Error reading coefficients')
-        ENDIF
+        CALL REACMO_coefficients(LUHOC,WORK(KQA),NQA,1,4,
+     &           NTOT,NAO(ITYP),NNEG,NPOS,IDIM)         
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        IF(FNDLAB('EVALS   ',LUHOC)) THEN
-           CALL READT(LUHOC,NTOT,WORK(KEA))
-        ELSE
-           WRITE(6,*) 'ADHOC2: not able to read eigenvalues ',
-     &       'from file ',HOCFIL(ITYP)
-          CALL QUIT('ADHOC2: Error reading eigenvalues')
-        ENDIF
+        CALL REACMO_eigenvalues(LUHOC,WORK(KEA),NTOT,1,4,
+     &           NTOT,NNEG,NPOS,IDIM)         
         CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1

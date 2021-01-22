@@ -1480,7 +1480,7 @@ C
 C     Local variables
       LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION IDIM(3,2)
+      DIMENSION IDIM(3,2),JDIM(2,0:3)
       REAL*8 CMCSCF_MAGIC
 !
 !     flag for MCSCF coefficients on file CMOFIL
@@ -1531,6 +1531,10 @@ C
       NCDIM = 0
       NEDIM = 0
       DO IFRP = 1,NFSYM
+        JDIM(IFRP,1) = IDIM(1,IFRP)
+        JDIM(IFRP,2) = IDIM(2,IFRP)
+        JDIM(IFRP,0) = IDIM(1,IFRP) + IDIM(2,IFRP)
+        JDIM(IFRP,3) = IDIM(3,IFRP)                 
         NEDIM = NEDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))
         NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
       ENDDO
@@ -1540,33 +1544,24 @@ C     Read coefficients
 C     =================
 C    
       IF(LBIT(IOPT_TMP,2)) THEN
-        IF(FNDLAB('COEFS   ',IUNIT)) THEN               
-          CALL READT(IUNIT,NCDIM,CMO)
-        ELSE
-         CALL QUIT('SELOWN: Error reading coefficients')
-        ENDIF
+        CALL REACMO_coefficients(IUNIT,CMO,NCDIM,NFSYM,NZ,
+     &           JDIM(1,0),JDIM(1,3),JDIM(1,1),JDIM(1,2),IDIM)         
       ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT_TMP,3)) THEN
-        IF(FNDLAB('EVALS   ',IUNIT)) THEN                        
-          CALL READT(IUNIT,NEDIM,EIG)
-        ELSE
-          CALL QUIT('SELOWN: Error reading eigenvalues')
-        ENDIF
+        CALL REACMO_eigenvalues(IUNIT,EIG,NEDIM,NFSYM,NZ,
+     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
       ENDIF
 C
 C     Read boson irrep info
 C     =====================
 C
       IF(LBIT(IOPT_TMP,4)) THEN
-        IF(FNDLAB('SUPERSYM',IUNIT)) THEN
-          CALL READI(IUNIT,NEDIM,IBEIG)
-        ELSE
-          CALL QUIT('SELOWN: Error reading supersymmetry info')
-        ENDIF
+        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEDIM,NFSYM,NZ,
+     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
       ENDIF
 C
 C     Select and adjust format to molecular basis

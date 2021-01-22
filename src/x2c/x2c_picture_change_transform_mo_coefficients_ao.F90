@@ -582,16 +582,12 @@ contains
        info_text(51:74) = fdate()
        CALL NEWLAB('INFO    ',fh,6)
        write(fh) info_text,nfsym,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
-       CALL NEWLAB('COEFS   ',fh,6)             
-       write(fh) (mo_coeff_2c_ao(i),i=1,ndim_2c_mo_ao)
-       CALL NEWLAB('EVALS   ',fh,6)                   
-       write(fh) (eigen_values(i),i=1,ndim_2c_ev)
-       CALL NEWLAB('SUPERSYM',fh,6)                         
-       write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
+       CALL WRICMO_coefficients(fh,mo_coeff_2c_ao,ndim_2c_mo_ao)
+       CALL WRICMO_eigenvalues(fh,eigen_values,ndim_2c_ev)
+       CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)
 !      Add additional information about basis set to create a simple interface file
        !      for correlated calculations (like exacorr)
-       CALL NEWLAB('BASINFO ',fh,6)                               
-       call append_basisinfo_to_dfcoef (fh)
+       CALL WRICMO_basisinfo(fh)
        CALL NEWLAB('EOFLABEL',fh,6)                                     
        close(fh,status='keep')
 
