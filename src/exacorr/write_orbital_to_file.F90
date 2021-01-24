@@ -378,12 +378,6 @@ module write_orbital_to_file
                end do
             end if 
          
-
-            
-!            do i = 1, sz
-!               print *, "Fock_HF", Fock_HF(i,i,1) 
-!            end do
-
         end subroutine quater_read_from_dirac_fock
 
 

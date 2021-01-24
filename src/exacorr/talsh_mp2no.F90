@@ -503,9 +503,6 @@ module talsh_mp2no
 
             call print_date('Read natural orbital and occupation number from files')
             call quater_read(NOs_MO_quat,NOs_OCC_quat,threshold,n_cano,'NOs_MO')
-!            call quater_read(Fock_NO,n_cano,'FM_in_NatOrb')
-
-        
 
             call print_date('Read Fock matrix from DFCOEF')
             flb = 0                         ! we read vv block of Fock matrix
@@ -526,39 +523,9 @@ module talsh_mp2no
             sz = exa_input%nvir/2         ! the number of virtual orbital 
             call quater_read_from_dirac_orbital(HF_AO,sz,flb)
 
-
-!            do j=1, size(HF_AO,2)
-!                  do i=1, size(HF_AO,1)
-!                        print *, "HF_AO", HF_AO(i,j,1)
-!                  end do
-!            end do
-
-!            print *, 'new canonical orbital in MO basis'
-!            print *, 'size1 of HF_AO', size(HF_AO,1) 
-!            print *, 'size2 of HF_AO', size(HF_AO,2) 
-!            do j=1, size(New_cano_orb,2)
-!               print "(4x,a,$)", ""
-
-!            HF_AO = 0.0 
-!            do j = 1, size(HF_AO,2)
-!                  do i = 1, size(HF_AO,1)
-!                        HF_AO(i,j,1) = j+i*2
-!                  end do
-!            end do
-
-
             call print_date('Get new orbital in AO basis')
             fl = 0 
             call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
-
-
-!            do j=1, size(NOs_AO_quat,2)
-!                  do i=1, size(NOs_AO_quat,1)
-!                        print *, "diff", NOs_AO_quat(i,j,1)-HF_AO(i,j,1)
-!                        print *, "HF_AO", HF_AO(i,j,1)
-!                  end do
-!            end do
-
 
       end subroutine
 
@@ -639,8 +606,6 @@ module talsh_mp2no
          do  j = nocc+1, qorbital%nmo
             do  i = 1, qorbital%nao
                   qorbital%coeff(i,j,1)=orbital(i,j-nocc,1)
-!                  print *, "qorbital%coeff1", qorbital%coeff(i,j,1)
-!                  print *, "qorbital_hf%coeff1", j, qorbital_hf%coeff(i,j,1)
                   qorbital%coeff(i,j,2)=orbital(i,j-nocc,2)
                   qorbital%coeff(i,j,3)=orbital(i,j-nocc,3)
                   qorbital%coeff(i,j,4)=orbital(i,j-nocc,4)
