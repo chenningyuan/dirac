@@ -52,7 +52,7 @@ module talsh_mp2no
         real(kind=8), pointer  :: NO_OCC_quat(:)      ! occupation number from qdia of DM
         real(kind=8), pointer  :: New_energy(:)       ! new orbital energy from qdia of Fock matrix in new orbital basis
         logical                :: alive
-        real(kind=8)           :: threshold=0.0d-0
+        real(kind=8)           :: threshold=1.0d-5
         integer                :: i
 
         
@@ -342,10 +342,10 @@ module talsh_mp2no
             deallocate(work)
             deallocate(rwork)
 
-            print *,'Occupation numbers of all natural orbital in complex diag'
-            do i = 1, size(eVal,2)
-                  print "(4x,i4,a,2e14.6)",i,"    ",eVal(1,i)
-            end do
+!            print *,'Occupation numbers of all natural orbitals in complex diag'
+!            do i = 1, size(eVal,2)
+!                  print "(4x,i4,a,2e14.6)",i,"    ",eVal(1,i)
+!            end do
 
             call print_date('After diagonal_matrix_complex')
          end subroutine diagoanl_matrix_complex
@@ -447,11 +447,6 @@ module talsh_mp2no
                     call print_date('Read complex density matrix from DM_complex')
                     call read_matrix_comp(MP2_density_comp,Matrix_name)
 
-                    call print_date('Read Fock matrix from DFCOEF')
-                    flb = 0                         ! we read vv block of Fock matrix
-                    sz = size(MP2_density_comp,1)/2 ! the size of the FM is the same as DM
-                    call quater_read_from_dirac_fock(Fock_HF,sz,flb)
-
                     call print_date('Transform DM from complex into quaternion')
                     call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
 
@@ -464,9 +459,15 @@ module talsh_mp2no
                     call print_date('Write the all natural orbital and occupation number in file NOs_MO')
                     call quater_write(NOs_MO_quat,NOs_OCC_quat,"NOs_MO")
                     
+
+                    call print_date('Read Fock matrix from DFCOEF')
+                    flb = 0                         ! we read vv block of Fock matrix
+                    sz = exa_input%nvir/2 ! the size of the FM is the same as DM
+                    call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+
                     mat = 'Matrix'
                     call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
-                    call print_date('Get Fock matrix in natural orbital basis')
+                    call print_date('Get full vv Fock matrix in natural orbital basis')
                     call quater_write(Fock_NO,"FM_in_NatOrb")
                     call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
                         
@@ -491,15 +492,32 @@ module talsh_mp2no
             real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbitals which have occ larger than threshold
             real(kind=8), pointer              :: New_cano_orb(:,:,:)     ! new canonical orbital 
             real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
+            real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-            integer                            :: sz,flb                  ! size of matrix and flag for block
+            integer                            :: sz,flb, fl              ! size of matrix and flag for block
             integer                            :: n_cano                  ! number of new scanonical orbital
+            character                          :: mat                     ! flag used for matrix basis transform
+            integer                            :: i,j,k
 
 
-            call print_date('Read quater Fock matrix, natural orbital as well as  occupation number from files')
+
+            call print_date('Read natural orbital and occupation number from files')
             call quater_read(NOs_MO_quat,NOs_OCC_quat,threshold,n_cano,'NOs_MO')
-            call quater_read(Fock_NO,n_cano,'FM_in_NatOrb')
+!            call quater_read(Fock_NO,n_cano,'FM_in_NatOrb')
+
         
+
+            call print_date('Read Fock matrix from DFCOEF')
+            flb = 0                         ! we read vv block of Fock matrix
+            sz = exa_input%nvir/2 ! the size of the FM is the same as DM
+            call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+
+
+            mat = 'Matrix'
+            call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
+            call print_date('Get reduced vv Fock matrix in natural orbital basis')
+
+
             call print_date('Get new Canonical orbital in MO basis')
             call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
 
@@ -508,8 +526,39 @@ module talsh_mp2no
             sz = exa_input%nvir/2         ! the number of virtual orbital 
             call quater_read_from_dirac_orbital(HF_AO,sz,flb)
 
+
+!            do j=1, size(HF_AO,2)
+!                  do i=1, size(HF_AO,1)
+!                        print *, "HF_AO", HF_AO(i,j,1)
+!                  end do
+!            end do
+
+!            print *, 'new canonical orbital in MO basis'
+!            print *, 'size1 of HF_AO', size(HF_AO,1) 
+!            print *, 'size2 of HF_AO', size(HF_AO,2) 
+!            do j=1, size(New_cano_orb,2)
+!               print "(4x,a,$)", ""
+
+!            HF_AO = 0.0 
+!            do j = 1, size(HF_AO,2)
+!                  do i = 1, size(HF_AO,1)
+!                        HF_AO(i,j,1) = j+i*2
+!                  end do
+!            end do
+
+
             call print_date('Get new orbital in AO basis')
-            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat)
+            fl = 0 
+            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
+
+
+!            do j=1, size(NOs_AO_quat,2)
+!                  do i=1, size(NOs_AO_quat,1)
+!                        print *, "diff", NOs_AO_quat(i,j,1)-HF_AO(i,j,1)
+!                        print *, "HF_AO", HF_AO(i,j,1)
+!                  end do
+!            end do
+
 
       end subroutine
 
@@ -544,12 +593,13 @@ module talsh_mp2no
          integer,allocatable      :: index(:)
          integer                  :: i,j
          integer                  :: ierr
+         real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
 
 
 !        read information of from DFCOEF
          call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
 
-         nocc = exa_input%nocc
+         nocc = (exa_input%nocc)/2
          nao = qorbital_hf%nao
          nno = size(orbital,2)
          nmo = nocc+nno
@@ -589,11 +639,14 @@ module talsh_mp2no
          do  j = nocc+1, qorbital%nmo
             do  i = 1, qorbital%nao
                   qorbital%coeff(i,j,1)=orbital(i,j-nocc,1)
+!                  print *, "qorbital%coeff1", qorbital%coeff(i,j,1)
+!                  print *, "qorbital_hf%coeff1", j, qorbital_hf%coeff(i,j,1)
                   qorbital%coeff(i,j,2)=orbital(i,j-nocc,2)
                   qorbital%coeff(i,j,3)=orbital(i,j-nocc,3)
                   qorbital%coeff(i,j,4)=orbital(i,j-nocc,4)
             enddo
          enddo
+
 
 
          call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)

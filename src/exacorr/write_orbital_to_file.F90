@@ -378,11 +378,11 @@ module write_orbital_to_file
                end do
             end if 
          
-            print *, "sz", sz
-            print *, "sz_total_energy", sz_total_energy
-            do i = 1, sz
-               print *, "Fock_HF", Fock_HF(i,i,1) 
-            end do
+
+            
+!            do i = 1, sz
+!               print *, "Fock_HF", Fock_HF(i,i,1) 
+!            end do
 
         end subroutine quater_read_from_dirac_fock
 
@@ -424,7 +424,7 @@ module write_orbital_to_file
             k = sz_total_mo - sz
             do j = 1, sz
                do i = 1, sz_total_ao
-                  HF_AO(i,i,1) = qorbital%coeff(i,k+j,1)
+                  HF_AO(i,j,1) = qorbital%coeff(i,k+j,1)
                   HF_AO(i,j,2) = qorbital%coeff(i,k+j,2)
                   HF_AO(i,j,3) = qorbital%coeff(i,k+j,3)
                   HF_AO(i,j,4) = qorbital%coeff(i,k+j,4)
@@ -560,14 +560,11 @@ module write_orbital_to_file
             n_orb = n_orb + 1
          end if
         end do
-        print *, 'threshold', threshold
-        print *, 'n_orb', n_orb
-       
 
 
         sz = n_orb
         allocate(eigenval(sz))
-        allocate(orbital(sz,sz,4))
+        allocate(orbital(sz_all,sz,4))
 
 
 
@@ -577,7 +574,7 @@ module write_orbital_to_file
 
 
         do j=1, sz
-            do i=1, sz
+            do i=1, sz_all
                orbital(i,j,:) = orbital_all(i,j,:)
             end do
         end do

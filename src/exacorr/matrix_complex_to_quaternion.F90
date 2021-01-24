@@ -102,15 +102,16 @@ module matrix_complex_to_quaternion
 
 !-----------------------------------------------------------------------------------------------------------------------------------------
 
-        subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out)
+        subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out,fl)
 !        Routine to do basis transform by quaternion matrix multiplication(vectors).
 !        We follows V' = U * V.
 !        V': vectors in new basis;  V: vectors in old basis; U: transform matrix;        
                 
            !input variables
-           real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! target matrix in basis_1
-           real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! basis_2
-           real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! target matrix in basis_2
+           real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! vectors in old basis
+           real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! transform matrix
+           real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! tvectors in new basis
+           integer, intent(inout)                 :: fl
 
 
 
@@ -120,7 +121,7 @@ module matrix_complex_to_quaternion
            integer                   :: LRB, LCB, NZB
            integer                   :: LRC, LCC, NZC
 
-           integer                   :: re,fl
+           integer                   :: re
 
 
 
@@ -136,25 +137,27 @@ module matrix_complex_to_quaternion
            NZB = 4
            NZC = 4
 
-           allocate(A(LRA*LCA,NZA))
-           allocate(B(LRB*LCB,NZB))
-           allocate(C(LRC*LCC,NZC))
-
-
-           re = 1
-           call matrix_three_two(basis2_in,A,re)
-           call matrix_three_two(mat_basis1_in,B,re)
-
-           fl = 0
-           call qua_mat_mulp(A,B,C,fl,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
-
-           re = -1
+!           allocate(A(LRA*LCA,NZA))
+!           allocate(B(LRB*LCB,NZB))
+!           allocate(C(LRC*LCC,NZC))
            allocate(mat_basis2_out(LRC,LCC,4))
-           call matrix_three_two(mat_basis2_out,C,re)
 
-           deallocate(A)
-           deallocate(B)
-           deallocate(C)
+
+!           re = 1
+!           call matrix_three_two(basis2_in,A,re)
+!           call matrix_three_two(mat_basis1_in,B,re)
+
+!           fl = 1
+ !          call qua_mat_mulp(A,B,C,fl,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
+           call qua_mat_mulp(basis2_in,mat_basis1_in,mat_basis2_out,fl,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
+
+!           re = -1
+!           allocate(mat_basis2_out(LRC,LCC,4))
+!           call matrix_three_two(mat_basis2_out,C,re)
+
+!           deallocate(A)
+!           deallocate(B)
+!           deallocate(C)
 
                       
         end subroutine basis_transform_vector
@@ -164,18 +167,18 @@ module matrix_complex_to_quaternion
 
         subroutine basis_transform_matrix (mat_basis1_in,basis2_in,mat_basis2_out,mat)
 !        Routine to do basis transform by quaternion matrix multiplication(matrix).
-!        We follows C = ABA^{-1}
+!        We follows C = A^{-1}BA
 !        C: matrix in new basis;  B: matrix in old basis; A: change of basis matrix;       
                          
          !input variables
-         real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! target matrix in basis_1
-         real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! basis_2
-         real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! target matrix in basis_2
+         real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! matrix in old basis(matrix_B)
+         real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! change of basis matrix(matrix_A)
+         real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! matrix in new basis(matrix_C)
          character                              :: mat                     ! flag used for matrix basis transform
 
          integer                                :: re,fl
          real(kind=8), pointer                  :: A(:,:), B(:,:), C(:,:)  ! matrix used in qgemm
-         real(kind=8), pointer                  :: aux(:,:)                 ! matrix used in qgemm
+         real(kind=8), pointer                  :: aux(:,:,:)              ! matrix used in qgemm
          integer                                :: LRA, LCA, NZA
          integer                                :: LRB, LCB, NZB
          integer                                :: LR_au, LC_au, NZ_au
@@ -186,41 +189,41 @@ module matrix_complex_to_quaternion
          LCA = size(basis2_in,2)
          LRB = size(mat_basis1_in,1)
          LCB = size(mat_basis1_in,2)
-         LR_au = size(basis2_in,1)
+         LR_au = size(basis2_in,2)
          LC_au = size(mat_basis1_in,2)
-         LRC = size(basis2_in,1)
-         LCC = size(basis2_in,1)
+         LRC = size(basis2_in,2)
+         LCC = size(basis2_in,2)
 
          NZA =   4
          NZB =   4
          NZ_au = 4 
          NZC =   4
 
-         allocate(A(LRA*LCA,NZA))
-         allocate(B(LRB*LCB,NZB))
-         allocate(C(LRC*LCC,NZC))
-         allocate(aux(LR_au*LC_au,NZ_au))
+   !      allocate(A(LRA*LCA,NZA))
+   !      allocate(B(LRB*LCB,NZB))
+   !      allocate(C(LRC*LCC,NZC))
+         allocate(aux(LR_au,LC_au,NZ_au))
 
 
-         re = 1
-         call matrix_three_two(basis2_in,A,re)
-         call matrix_three_two(mat_basis1_in,B,re)
-         
-!         print *, "debug"
-         fl = 0
-         call qua_mat_mulp(A,B,aux,fl,LRA,LCA,NZA,LRB,LCB,NZB,LR_au,LC_au,NZ_au)
-         fl = 1
-         call qua_mat_mulp(aux,A,C,fl,LR_au,LC_au,NZ_au,LRA,LCA,NZA,LRC,LCC,NZC)     
-
-
-         re = -1
+   !      re = 1
+   !      call matrix_three_two(basis2_in,A,re)
+   !      call matrix_three_two(mat_basis1_in,B,re)
          allocate(mat_basis2_out(LRC,LCC,4))
-         call matrix_three_two(mat_basis2_out,C,re)
-         print *, "debug"
+         
+         fl = 1
+         call qua_mat_mulp(basis2_in,mat_basis1_in,aux,fl,LRA,LCA,NZA,LRB,LCB,NZB,LR_au,LC_au,NZ_au)
+         fl = 0
+         call qua_mat_mulp(aux,basis2_in,mat_basis2_out,fl,LR_au,LC_au,NZ_au,LRA,LCA,NZA,LRC,LCC,NZC) 
 
-         deallocate(A)
-         deallocate(B)
-         deallocate(C)
+
+
+   !     re = -1
+   !      allocate(mat_basis2_out(LRC,LCC,4))
+   !      call matrix_three_two(mat_basis2_out,C,re)
+
+   !      deallocate(A)
+   !      deallocate(B)
+   !      deallocate(C)
          deallocate(aux)
 
         end subroutine basis_transform_matrix
@@ -232,7 +235,7 @@ module matrix_complex_to_quaternion
 !        Routine to do quaternion matrix multiplication. We use qgemm routine from qalebra.F.
                          
          !input variables         
-         real(kind=8), pointer, intent(inout)  :: A(:,:), B(:,:), C(:,:)               ! matrix used in qgemm
+         real(kind=8), pointer, intent(inout)  :: A(:,:,:), B(:,:,:), C(:,:,:)               ! matrix used in qgemm
          integer, intent(in)                   :: flag
          integer, intent(in)                   :: LRA, LCA, NZA
          integer, intent(in)                   :: LRB, LCB, NZB
@@ -244,17 +247,13 @@ module matrix_complex_to_quaternion
          integer, allocatable      :: IQPA(:), IQPB(:), IQPC(:)        
          real(kind=8)              :: ALPHA, BETA
          character                 :: FA, FB ,TA ,TB
-         integer                   :: i
+         integer                   :: i, tem
             
          M = LRA
          N = LCB
          K = LCA
 
-!         print *, "M", M 
-!         print *, "N", N 
-!         print *, "K", K 
-         
-         
+
          FA = 'N'
          FB = 'N'
          TA = 'N'
@@ -274,12 +273,28 @@ module matrix_complex_to_quaternion
             IQPC(i) = i
          end do            
 
-!       There three options: case1 does C=A*B; case2 does C=A*B^{dagger}
+!       There three options: case1 does C=A^{dagger}*B; case2 does C=A*B
          if (flag == 1) then
-            FB = 'H'
+
+            FA = 'H'
+            tem = M
+            M = K
+            K = tem
+
             call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
                      FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
-                     IQPC,C,LRC,LCC,NZC)                     
+                     IQPC,C,LRC,LCC,NZC)      
+
+         else if (flag == -1) then            
+            FB = 'H'
+            tem = N
+            N = K
+            K = tem
+         
+            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
+                        FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
+                        IQPC,C,LRC,LCC,NZC)     
+
          else 
             call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
                        FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
@@ -294,54 +309,6 @@ module matrix_complex_to_quaternion
 
       end subroutine qua_mat_mulp
          
-
-!-----------------------------------------------------------------------------------------------------------------------------------   
-
-       subroutine matrix_three_two(matrix_three_dim,matrix_two_dim,re)
-!      This subroutine does arrangement on the quaternion matrix from three dimension array to two dimension array or the reverse.
-
-         real(kind=8), pointer, intent(inout)  :: matrix_three_dim(:,:,:)   
-         real(kind=8), pointer, intent(inout)  :: matrix_two_dim(:,:)  
-         integer, intent(in) ::   re           ! flag to determine three to two or two to three dimension transform. 
-
-         integer :: i, j, k, q, f, sz_1, sz_2, sz_3, sz_4
-
-         sz_1 = size(matrix_three_dim,1)
-         sz_2 = size(matrix_three_dim,2)
-         sz_3 = size(matrix_three_dim,3)
-         sz_4 = sz_1*sz_2
-         if (re == 1) then
-
-            do k = 1, sz_3
-               do j = 1, sz_2
-                  do i = 1, sz_1
-                     q = i + (j-1)*sz_1
-                     matrix_two_dim(q,k) = matrix_three_dim(i,j,k)
-                  end do
-               end do
-            end do
-
-         else
-            do k = 1, sz_3
-               do q = 1, sz_4
-                  j = q/sz_2+1
-                  f = mod(q,sz_2)
-                  if (f == 0) then
-                     i = sz_2
-                     j = j-1
-                  else
-                     i = f
-                  end if
-                  matrix_three_dim(i,j,k) = matrix_two_dim(q,k)
-               end do
-            end do
-
-         end if
-
-       end subroutine matrix_three_two
-
-
-
 !-----------------------------------------------------------------------------------------------------------------------------------                                                   
         subroutine diagoanl_matrix_quater(A,EIG,VEC)
 
@@ -372,10 +339,6 @@ module matrix_complex_to_quaternion
 
                  call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,WORK,LWORK,IERR)
 
-                  print *, "'Occupation numbers of all natural orbital in quater diag"
-                  do i = 1, LRA
-                     print "(4x,i4,a,2e14.6)",i,"    ", EIG(i)
-                  end do
 
                   deallocate(work)
 
@@ -448,27 +411,103 @@ module matrix_complex_to_quaternion
 !      deallocate (dm_mo_comple)
       end subroutine complex_to_quaternion
 
- !----------------------------------------------------------------------------------------------------------------------------------
-
+!------------------------------------------------------------------------------------------------------------------------------------------------------------------      
       subroutine get_Cano_Orbital(orbital_noncano,orbital_cano,Fock_NO,new_energy)
          ! This subroutine is used for constructing the canonical orbital
 
          !input variables
-         real(kind=8), pointer,intent(out)  :: orbital_noncano(:,:,:)             ! non-canonical orbital in HF mo basis
-         real(kind=8), pointer,intent(out)  :: orbital_cano(:,:,:)                ! canonical orbital in HF mo basis
-         real(kind=8), pointer,intent(out)  :: New_energy(:)                      ! new orbital energy from qdia of Fock matrix in non-canonical orbital basis
-         real(kind=8), pointer,intent(out)  :: Fock_NO(:,:,:)                     ! v-v block of Fock matrix in non-canonical orbital basis
+         real(kind=8), pointer,intent(inout)   :: orbital_noncano(:,:,:)             ! non-canonical orbital in HF mo basis
+         real(kind=8), pointer,intent(out)     :: orbital_cano(:,:,:)                ! canonical orbital in HF mo basis
+         real(kind=8), pointer,intent(out)     :: New_energy(:)                      ! new orbital energy from qdia of Fock matrix in non-canonical orbital basis
+         real(kind=8), pointer,intent(inout)   :: Fock_NO(:,:,:)                     ! v-v block of Fock matrix in non-canonical orbital basis
 
          real(kind=8), pointer              :: orbital_cano_basis_noncano(:,:,:)  ! canonical orbital in non-canonical orbital basis
+         integer                            :: fl, i, j
+
+
+!         print *, "orbital_noncano"
+!         do j=1, size(orbital_noncano,2)
+!            print "(4x,a,$)", ""
+!            do i=1, size(orbital_noncano,1)
+!               print *,  orbital_noncano(i,j,:)
+!            end do
+!         end do
 
 
          ! Diagonalize new FM to obtain the new canonical orbital 
          call diagoanl_matrix_quater(Fock_NO, new_energy, orbital_cano_basis_noncano)
+!         print *, "orbital_cano_basis_noncano"
+         print *, "new_energy"
+!         do j=1, size(orbital_cano_basis_noncano,2)
+!            print "(4x,a,$)", ""
+            do i=1, size(orbital_cano_basis_noncano,1)
+!               print *,  orbital_cano_basis_noncano(i,j,:)
+               print *,  new_energy(i)
+            end do
+!         end do
          ! Transform the new canonical orbital from non-canonical orbital basis into HF mo basis
-         call basis_transform(orbital_cano_basis_noncano, orbital_noncano, orbital_cano)
+         fl = 0
+         call basis_transform(orbital_cano_basis_noncano, orbital_noncano, orbital_cano, fl)
+!         call basis_transform(orbital_noncano, orbital_noncano, orbital_cano, fl)
+!         call basis_transform(orbital_cano_basis_noncano, orbital_cano_basis_noncano, orbital_cano, fl)
+
+
+         
 
       end subroutine get_Cano_Orbital
- !----------------------------------------------------------------------------------------------------------------------------------
-              
+ 
+      
+
+
+
+
+ 
+ !------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+      subroutine matrix_three_two(matrix_three_dim,matrix_two_dim,re)
+         !      This subroutine does arrangement on the quaternion matrix from three dimension array to two dimension array or the reverse.
+         
+                  real(kind=8), pointer, intent(inout)  :: matrix_three_dim(:,:,:)   
+                  real(kind=8), pointer, intent(inout)  :: matrix_two_dim(:,:)  
+                  integer, intent(in) ::   re           ! flag to determine three to two or two to three dimension transform. 
+         
+                  integer :: i, j, k, q, f, sz_1, sz_2, sz_3, sz_4
+         
+                  sz_1 = size(matrix_three_dim,1)
+                  sz_2 = size(matrix_three_dim,2)
+                  sz_3 = size(matrix_three_dim,3)
+                  sz_4 = sz_1*sz_2
+                  if (re == 1) then
+         
+                     do k = 1, sz_3
+                        do j = 1, sz_2
+                           do i = 1, sz_1
+                              q = i + (j-1)*sz_1
+                              matrix_two_dim(q,k) = matrix_three_dim(i,j,k)
+                           end do
+                        end do
+                     end do
+         
+                  else
+                     do k = 1, sz_3
+                        do q = 1, sz_4
+                           j = q/sz_2+1
+                           f = mod(q,sz_2)
+                           if (f == 0) then
+                              i = sz_2
+                              j = j-1
+                           else
+                              i = f
+                           end if
+                           matrix_three_dim(i,j,k) = matrix_two_dim(q,k)
+                        end do
+                     end do
+         
+                  end if
+         
+                end subroutine matrix_three_two
+      
+!-----------------------------------------------------------------------------------------------------------------------------------   
+
 end module matrix_complex_to_quaternion
 
