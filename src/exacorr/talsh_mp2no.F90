@@ -33,7 +33,7 @@ module talsh_mp2no
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
 
-       subroutine talsh_mp2no_driver (exa_input)
+       subroutine talsh_mp2no_driver (exa_input,n_cano)
 !       This module is used to construct the MP2 density matrix by talsh.
 !       The complex density matrix are saved on the 'file DM_complex'.  
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
@@ -42,6 +42,7 @@ module talsh_mp2no
 !       Written by Xiang Yuan
         use exacorr_global
         type(exacc_input), intent(in) :: exa_input
+        integer, intent(inout)           :: n_cano                  ! number of new scanonical orbital
 !        real(kind=8),intent(in)       :: threshold=0.0d-0
 
 
@@ -63,14 +64,14 @@ module talsh_mp2no
         if (alive) then
             call print_date('File NOs_MO existed')
             call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
-                                 New_energy,'NOs_MO','FM_in_NatOrb')
+                                 New_energy,'NOs_MO',n_cano)
             call write_to_newfile(exa_input,NOs_AO_quat,NO_OCC_quat,New_energy,'DFCOEF','MP2NOs_AO')
         else
             call print_date('File NOs_MO is not existed')
             call talsh_generate_MP2_VNO_MObasis(exa_input,NO_OCC_1)   
             call get_new_Fock_matrix(exa_input,'DM_complex')
             call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
-                                 New_energy,'NOs_MO','FM_in_NatOrb')
+                                 New_energy,'NOs_MO',n_cano)
             call write_to_newfile(exa_input,NOs_AO_quat,NO_OCC_quat,New_energy,'DFCOEF','MP2NOs_AO')
         end if 
 
@@ -80,7 +81,7 @@ module talsh_mp2no
 !          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
 !       end do
 !       deallocate(NO_OCC_1)
-
+        call print_date('Leave MP2_NO Module')
       end subroutine talsh_mp2no_driver
 
 
@@ -478,7 +479,7 @@ module talsh_mp2no
 
          
 !------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_new_orbital(exa_input,threshold,NOs_AO_quat,NOs_OCC_quat,New_energy,file_orb,file_fm)
+      subroutine get_new_orbital(exa_input,threshold,NOs_AO_quat,NOs_OCC_quat,New_energy,file_orb,n_cano)
 
             use matrix_complex_to_quaternion 
             use write_orbital_to_file
@@ -489,7 +490,8 @@ module talsh_mp2no
             real(kind=8), pointer,intent(out)  :: NOs_AO_quat(:,:,:)      ! new quaternion orbital in AO basis 
             real(kind=8), pointer,intent(out)  :: NOs_OCC_quat(:)          ! occupation number from qdia of DM
             real(kind=8), pointer,intent(out)  :: New_energy(:)           ! new orbital energy from qdia of Fock matrix in new orbital basis
-            character(len=*),intent(in)        :: file_orb, file_fm
+            character(len=*),intent(in)        :: file_orb
+            integer,intent(inout)              :: n_cano                  ! number of new scanonical orbital
 
 
             real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbitals which have occ larger than threshold
@@ -498,7 +500,6 @@ module talsh_mp2no
             real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
             integer                            :: sz,flb, fl              ! size of matrix and flag for block
-            integer                            :: n_cano                  ! number of new scanonical orbital
             character                          :: mat                     ! flag used for matrix basis transform
             integer                            :: i,j,k
 

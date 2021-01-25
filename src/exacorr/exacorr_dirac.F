@@ -162,6 +162,7 @@ C***********************************************************************
       implicit none
 
       integer              :: mytid                    ! MPI rank
+      integer              :: n_mp2no                 
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -202,9 +203,10 @@ C
 
       if (exa_input%talsh) then
          if (exa_input%mp2no) then
-              call talsh_mp2no_driver (exa_input)
+              call talsh_mp2no_driver (exa_input,n_mp2no)
 ! if we do MP2NOs we reinitialize global data, which in essence means to replace DFCOEF by the MP2NO file
               call initialize_global_data
+              exa_input%nvir = n_mp2no*2
          end if
          call talsh_cc_driver (exa_input)
       else

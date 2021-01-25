@@ -28,6 +28,7 @@
       integer              :: nesh, kvec
       integer              :: i
       integer              :: ialpha, ibeta
+      integer              :: n_mp2no
 
 !     Temporary hack to call the IAO code
 !      print*,'starting generate iao'
@@ -104,7 +105,8 @@
          if (exa_input%talsh) then
             if (mytid == 0) then
                   if (exa_input%mp2no) then
-                    call talsh_mp2no_driver (exa_input)
+                    call talsh_mp2no_driver (exa_input,n_mp2no)
+                    exa_input%nvir = n_mp2no*2
                   end if
                   call talsh_cc_driver (exa_input)
              end if

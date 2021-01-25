@@ -550,7 +550,7 @@ module write_orbital_to_file
 
         n_orb = 0
         do i=1,sz_all
-         if (eigenval_all(i) > threshold) then
+         if (eigenval_all(i) >= threshold) then
             n_orb = n_orb + 1
          end if
         end do
