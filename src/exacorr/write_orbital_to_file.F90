@@ -446,7 +446,7 @@ module write_orbital_to_file
          sz = size(orbital,1)
          open (write_orb,file=file_name,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
          if (debug) then
-           print *,'<<<<< Start writing quater orbital and eigenval into the file.'
+           print *,'<<<<< Quaternion orbital, Writing Begin.'
            k = 1
            do j=1,sz
               do i=1,sz
@@ -460,7 +460,7 @@ module write_orbital_to_file
                end if 
               end do
             end do
-            print *,'>>>>>  quater orbita, writing completed'
+            print *,'>>>>>  Quaternion orbital, Writing Completed.'
          end if
         close(write_orb,status='KEEP')
 
@@ -481,7 +481,7 @@ module write_orbital_to_file
          sz = size(matrix,1)
          open (write_mat,file=file_name,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
          if (debug) then
-           print *,'<<<<< Start writing quater fock matrix into the file.'
+           print *,'<<<<< Quaternion Fock Matrix, Writing Begin.'
            k = 1
            do j=1,sz
               do i=1,sz
@@ -489,7 +489,7 @@ module write_orbital_to_file
                   k = k + 1
               end do
             end do
-            print *,'>>>>>  quater FM, writing completed'
+            print *,'>>>>>  Quaternion Fock Matrix, Writing Completed'
          end if
         close(write_mat,status='KEEP')      
 
@@ -518,11 +518,11 @@ module write_orbital_to_file
          open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
 
          if (debug) then
-           print *,'<<<<< Start reading quater orbital size from the file.'
+           print *,'<<<<< Start reading the Number of orbital from the NOs_MO.'
            do while(ierr==0)
                read(read_orb,'(3X,I4)',iostat=ierr) k
            end do
-         print *,'>>>>> quater orbital size, reading completed'
+         print *,'>>>>> Orbital size, reading Completed'
          end if
         close(read_orb,status='KEEP')
 
@@ -533,7 +533,7 @@ module write_orbital_to_file
          allocate(eigenval_all(sz_all))
          open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
          if (debug) then
-           print *,'<<<<< Start reading full quater orbital and eigenval from the file.'
+           print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
            do j=1,sz_all
               do i=1,sz_all
                if(j == i) then
@@ -543,7 +543,7 @@ module write_orbital_to_file
                end if 
               end do
             end do
-            print *,'>>>>>  quater orbita, reading completed'
+            print *,'>>>>> All Orbitals, Read completed'
          end if
         close(read_orb,status='KEEP')
 
@@ -573,6 +573,8 @@ module write_orbital_to_file
             end do
         end do
 
+        print *,' Reduce Orbital space.'
+        print *,' Now', sz, 'Orbitals'
 
         deallocate(orbital_all)
         deallocate(eigenval_all)

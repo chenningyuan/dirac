@@ -36,27 +36,24 @@ module matrix_complex_to_quaternion
         ! first round for reading matrix size
         open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
         if (debug) then
-          print *,'<<<<< complex matrix existed '
+          print *,'<<<<< Complex Matrix Existed '
           ierr = 0
           do while(ierr==0)
                 read(cm,'(3X,I4,2x,2F28.10,2x,4I4)',iostat=ierr) k,a,b,i,j
           end do
-           print *,'>>>>> read complex matrix index'
+           print *,'>>>>> Read Matrix Index'
         end if
         close(cm,status='KEEP')
 
         allocate(Matrix(i,j))
 
         open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
-        if (debug) then
-          print *,'<<<<< complex matrix existed '
           ierr = 0
           do while(ierr==0)
                 read(cm,'(3X,I4,2x,2F28.10,2x,4I4)',iostat=ierr) k,a,b,i,j
                 Matrix(i,j) = cmplx(a,b)
           end do
-           print *,'>>>>> read complex matrix'
-        end if
+           print *,'>>>>> Read Matrix'
         close(cm,status='KEEP')
 
 
@@ -387,10 +384,6 @@ module matrix_complex_to_quaternion
 
          ! Diagonalize new FM to obtain the new canonical orbital 
          call diagoanl_matrix_quater(Fock_NO, new_energy, orbital_cano_basis_noncano)
-         print *, "new_energy"
-            do i=1, size(orbital_cano_basis_noncano,1)
-               print *,  new_energy(i)
-            end do
          ! Transform the new canonical orbital from non-canonical orbital basis into HF mo basis
          fl = 0
          call basis_transform(orbital_cano_basis_noncano, orbital_noncano, orbital_cano, fl)         

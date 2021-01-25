@@ -34,8 +34,8 @@ module talsh_mp2no
 !-------------------------------------------------------------------------------------------------------------------------------------
 
        subroutine talsh_mp2no_driver (exa_input)
-!       This  module  constructs  the  MP2  density  matrix  using  talsh.
-!       We will write the complex density matrix to file.  
+!       This module is used to construct the MP2 density matrix by talsh.
+!       The complex density matrix are saved on the 'file DM_complex'.  
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
 !       The natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new canonical orbitals are written into new file by Module3.
@@ -52,19 +52,21 @@ module talsh_mp2no
         real(kind=8), pointer  :: NO_OCC_quat(:)      ! occupation number from qdia of DM
         real(kind=8), pointer  :: New_energy(:)       ! new orbital energy from qdia of Fock matrix in new orbital basis
         logical                :: alive
-        real(kind=8)           :: threshold=1.0d-5
+        real(kind=8)           :: threshold=0.0d-5
         integer                :: i
 
         
+        threshold = exa_input%t_mp2no
+        print *, "MP2 occupation number Threshold: ", threshold
 
         inquire(file="NOs_MO", exist=alive)
         if (alive) then
-            call print_date('the file NOs_MO existed')
+            call print_date('File NOs_MO existed')
             call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
                                  New_energy,'NOs_MO','FM_in_NatOrb')
             call write_to_newfile(exa_input,NOs_AO_quat,NO_OCC_quat,New_energy,'DFCOEF','MP2NOs_AO')
         else
-            call print_date('file NOs_MO is not existed')
+            call print_date('File NOs_MO is not existed')
             call talsh_generate_MP2_VNO_MObasis(exa_input,NO_OCC_1)   
             call get_new_Fock_matrix(exa_input,'DM_complex')
             call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
@@ -157,8 +159,8 @@ module talsh_mp2no
          one_dims(1) = 1
          
 
-         print *,'number of virtual orbital', nvir
-         print *,'number of occupied orbital', nocc
+         print *,'Number of Virtual orbital', nvir
+         print *,'Number of Occupied orbital', nocc
          allocate(mo_occ(nocc))
          mo_occ = exa_input%mo_occ
 
@@ -409,7 +411,7 @@ module talsh_mp2no
 
                open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
                if (debug) then
-                 print *,'<<<<< DM, complete, before formatting to dirac'
+                 print *,'<<<<< DM, complete, before formatting to DM_complex'
                  k = 1
                  do j=1,(nocc+nvir)
                     do i=1,(nocc+nvir)
@@ -417,7 +419,7 @@ module talsh_mp2no
                        k = k + 1
                     end do
                   end do
-                  print *,'>>>>> DM, complete, after formatting to dirac'
+                  print *,'>>>>> DM, complete, after formatting to DM_complex'
                end if
               close(mp2dm,status='KEEP')
 
@@ -444,7 +446,7 @@ module talsh_mp2no
                     character                          :: mat                     ! flag used for matrix basis transform
 
                                                         
-                    call print_date('Read complex density matrix from DM_complex')
+                    call print_date('Read Density Matrix from DM_complex')
                     call read_matrix_comp(MP2_density_comp,Matrix_name)
 
                     call print_date('Transform DM from complex into quaternion')
@@ -468,8 +470,9 @@ module talsh_mp2no
                     mat = 'Matrix'
                     call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
                     call print_date('Get full vv Fock matrix in natural orbital basis')
-                    call quater_write(Fock_NO,"FM_in_NatOrb")
                     call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
+                    call quater_write(Fock_NO,"FM_in_NatOrb")
+                   
                         
          end subroutine get_new_Fock_matrix
 
@@ -501,8 +504,8 @@ module talsh_mp2no
 
 
 
-            call print_date('Read natural orbital and occupation number from files')
-            call quater_read(NOs_MO_quat,NOs_OCC_quat,threshold,n_cano,'NOs_MO')
+            call print_date('Read natural orbital and occupation number from NOs_MO')
+            call quater_read(NOs_MO_quat,NOs_OCC_quat,threshold,n_cano,file_orb)
 
             call print_date('Read Fock matrix from DFCOEF')
             flb = 0                         ! we read vv block of Fock matrix
@@ -512,11 +515,17 @@ module talsh_mp2no
 
             mat = 'Matrix'
             call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
-            call print_date('Get reduced vv Fock matrix in natural orbital basis')
+            call print_date('Get reduced vv Fock Matrix in Natural Orbital Basis')
 
 
             call print_date('Get new Canonical orbital in MO basis')
             call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
+
+            print *, "Print first 10 New orbital Energy"
+            do i=1, 10
+               print *, 'Orbital',i,':Energy: ', new_energy(i)
+            end do
+
 
             call print_date('Read HF orbital coefficient from DFCOEF')
             flb = 0                       ! we read virtual orbital 
