@@ -508,34 +508,36 @@ module talsh_mp2no
             call print_date('Read natural orbital and occupation number from NOs_MO')
             call quater_read(NOs_MO_quat,NOs_OCC_quat,threshold,n_cano,file_orb)
 
-            call print_date('Read Fock matrix from DFCOEF')
-            flb = 0                         ! we read vv block of Fock matrix
-            sz = exa_input%nvir/2 ! the size of the FM is the same as DM
-            call quater_read_from_dirac_fock(Fock_HF,sz,flb)
-
-
-            mat = 'Matrix'
-            call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
-            call print_date('Get reduced vv Fock Matrix in Natural Orbital Basis')
-
-
-            call print_date('Get new Canonical orbital in MO basis')
-            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
-
-            print *, "Print first 10 New orbital Energy"
-            do i=1, 10
-               print *, 'Orbital',i,':Energy: ', new_energy(i)
-            end do
-
 
             call print_date('Read HF orbital coefficient from DFCOEF')
             flb = 0                       ! we read virtual orbital 
             sz = exa_input%nvir/2         ! the number of virtual orbital 
             call quater_read_from_dirac_orbital(HF_AO,sz,flb)
 
+
+!            call print_date('Read Fock matrix from DFCOEF')
+!            flb = 0                         ! we read vv block of Fock matrix
+!            sz = exa_input%nvir/2 ! the size of the FM is the same as DM
+!            call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+
+!            mat = 'Matrix'
+!            call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
+!            call print_date('Get reduced vv Fock Matrix in Natural Orbital Basis')
+
+
+!            call print_date('Get new Canonical orbital in MO basis')
+!            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
+
+!            print *, "Print first 10 New orbital Energy"
+!            do i=1, 10
+!               print *, 'Orbital',i,':Energy: ', new_energy(i)
+!            end do
+
+
             call print_date('Get new orbital in AO basis')
             fl = 0 
-            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
+!            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
+            call basis_transform(NOs_MO_quat,HF_AO,NOs_AO_quat,fl)
 
       end subroutine
 
@@ -600,7 +602,8 @@ module talsh_mp2no
          end do
 
          do i = nocc+1, qorbital%nmo
-            qorbital%energy(i)=energy(i-nocc)
+!            qorbital%energy(i)=energy(i-nocc)
+            qorbital%energy(i)=qorbital_hf%energy(i)
          end do
 
          do j = 1, nocc
