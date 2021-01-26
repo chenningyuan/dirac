@@ -18,7 +18,7 @@ include(FindCompilerVersion)
 # Miro Ilias restored CMake printout, associated with build_info.h generation
 include(build_info)
 
-set(_lisd_of_executables)
+set(_list_of_executables)
 macro(compile_standalone _executable _source _list_of_executables)
     add_executable(
         ${_executable}
@@ -39,6 +39,11 @@ compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 
 #synchronize basis set directories of trunk/basis* into the installation directory
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
+
+# In the branch, we always want a stand-alone version of exacorr as well. Make this optional when merging into master
+if (ENABLE_EXATENSOR)
+   compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
+endif()
 
 option(ENABLE_UTILITIES "Enable utilities" ON)
 if(ENABLE_UTILITIES)
@@ -142,7 +147,18 @@ foreach(
         target_link_libraries(${_executable} -lC)
     endif()
 
+    if(ENABLE_EXATENSOR)
+        # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
+        target_link_libraries(objlib.${_executable} -lstdc++) 
+	target_link_libraries(${_executable} -lstdc++)
+    endif()
 endforeach()
+
+if(ENABLE_EXATENSOR)
+    #printout of all linked libraries to exacorr.x executable
+    get_target_property(OUT exacorr.x  LINK_LIBRARIES)
+    message(STATUS "For checking, linked libraries to exacorr.x: ${OUT} ")
+endif()
 
 #printout of all linked libraries to dirac.x executable
 get_target_property(OUT dirac.x  LINK_LIBRARIES)

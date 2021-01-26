@@ -41,6 +41,7 @@ Keyword reference
    - :doc:`*MVOCAL <wave_function/mvocal>` --- Modified virtual orbitals
    - :doc:`*MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
    - :doc:`*LAPLCE <wave_function/laplce>` --- Laplace transformation of orbital-energy denominators
+   - :doc:`**EXACC <wave_function/exacorr>` --- Parallel implementation of coupled cluster methods based on ExaTensor library.
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`*MULPOP <analyze/mulpop>` --- Mulliken population analysis

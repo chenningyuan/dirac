@@ -26,44 +26,45 @@ module dirac_MO
 ! In particular:  - Orbital energy
 !                 - Boson characterization (for spinfree runs)
 !                 - Coefficients of AO-functions
+!                 - Position in the full list of MO vectors
 
    implicit none
   
 !  Private
 
-  Public :: create, delete, set_coefficients, get_coefficients
+  Public :: create_qmo, delete_qmo, sync_qmo
 
   type MO
      
     integer ::  &
+      fermion_irrep, &     ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
       nao,      &          ! number of aos
       nmo,      &          ! number of mos
       nz                   ! number of active quaternion units
 
+    real(8) :: &
+      total_energy         ! total (SCF) energy as stored on the coefficient file
+
     real(8), pointer ::  &
-      energy    (:),     & ! energy
+      energy    (:),     & ! orbital energies
       coeff (:,:,:)        ! coefficients (AO,MO,IZ)
      
     integer, pointer ::  &
-      boson_irrep(:),    & ! for spinfree calculations: boson irrep to which the spinor belongs
-      fermion_irrep(:)     ! fermion irrep (1=gerade, 2=ungerade) to which the spinor belongs
+      index(:),          & ! index of the spinor in the full list of spinors for this fermion symmetry
+      boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
 
   end type MO
 
-  interface create
+  interface create_qmo
     module procedure AllocMO
   end interface  
 
-  interface delete
+  interface delete_qmo
     module procedure DeAllocMO
   end interface  
   
-  interface set_coefficients
-    module procedure SetMOcoefficients
-  end interface  
-
-  interface get_coefficients
-    module procedure GetMOcoefficients
+  interface sync_qmo
+    module procedure SyncMO
   end interface  
 
 contains
@@ -98,9 +99,9 @@ contains
     allocate (M%boson_irrep(M%nmo))
     M%boson_irrep = 0
 
-    nullify  (M%fermion_irrep)
-    allocate (M%fermion_irrep(M%nmo))
-    M%fermion_irrep = 0
+    nullify  (M%index)
+    allocate (M%index(M%nmo))
+    M%index = 0
     
   end subroutine AllocMO
 
@@ -119,32 +120,50 @@ contains
     deallocate (M%energy)
     deallocate (M%coeff)
     deallocate (M%boson_irrep)
-    deallocate (M%fermion_irrep)
+    deallocate (M%index)
     
   end subroutine DeAllocMO
 
-  subroutine SetMOcoefficients (M, coefficients)
+#if defined (VAR_MPI)
+
+  subroutine SyncMO (M,my_MPI_master)
    
-!   Fill the block of MOcoefficients with values
-!   Presently this is a simple copy, but more advanced routines that
-!   operate on subsets of coefficients are also conceivable
-!
-    type (MO), intent (inout) :: M
-    real(8), intent(in)       :: coefficients(M%nao,M%nmo,M%nz)
+    use interface_to_mpi
 
-    M%coeff = coefficients
-
-  end subroutine SetMOcoefficients
-
-  subroutine GetMOcoefficients (M, coefficients)
-   
-!   Get a block of MOcoefficients
+!   Synchronize and allocate (if not on master) a block of MOcoefficients
  
-    type (MO), intent (in)   :: M
-    real(8), intent(inout)   :: coefficients(M%nao,M%nmo,M%nz)
+    type (MO), intent (inout)   :: M
+    integer, intent(in)         :: my_MPI_master
+    integer                     :: my_MPI_rank
+    integer                     :: n_coef
 
-    coefficients = M%coeff
+    call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+    call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
+    if (my_MPI_rank /= my_MPI_master) then
+       call AllocMO (M,M%nao,M%nmo,M%nz)
+    end if
+    call interface_mpi_bcast (M%fermion_irrep,    1,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%boson_irrep,  M%nmo,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
+    call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
+    n_coef = M%nao * M%nmo * M%nz
+    call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
 
-  end subroutine GetMOcoefficients
+  end subroutine SyncMO
+
+#else
+
+  subroutine SyncMO (M,my_MPI_master)
+ 
+!   do nothing, makes it possible to call sync also in serial runs
+
+    type (MO), intent (inout)   :: M
+    integer, intent(in)         :: my_MPI_master
+
+  end subroutine SyncMO
+
+#endif
 
 end module dirac_MO

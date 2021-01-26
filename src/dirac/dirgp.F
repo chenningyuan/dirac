@@ -808,12 +808,12 @@ C
       NA = LEN(A)
 !     IF (NA.GT.80) NA = 80
       IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
-         call alloc(itm, IRNGE2-IRNGE1+1)
+         allocate(itm(IRNGE2-IRNGE1+1))
          CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
-         call dealloc(itm)
+         deallocate(itm)
       ELSE
-         call alloc(eig, norbt)
-         call alloc(ibg, norbt)
+         allocate(eig(norbt))
+         allocate(ibg(norbt))
 C
 C        Get eigenvalues from DFCOEF
 C
@@ -839,8 +839,8 @@ C
             IOFF = IORB(IFRP)+NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
          ENDIF
-         call dealloc(eig)
-         call dealloc(ibg)
+         deallocate(eig)
+         deallocate(ibg)
       ENDIF
 
       CALL QEXIT('NUMLST')

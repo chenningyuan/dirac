@@ -34,7 +34,7 @@
 
         PRIVATE
 
-        PUBLIC READ_XYZ
+        PUBLIC READ_XYZ, get_atoms, del_atoms
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
@@ -44,7 +44,7 @@
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
         INTEGER            :: i,ios
 
-        TYPE atom
+        TYPE,public :: atom
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
@@ -88,10 +88,15 @@
 !     The unit conversion global variable is used when reading/writing xyz files
        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
 
+       INTERFACE GET_ATOMS
+           module procedure READ_XYZ_ATOMS
+       END INTERFACE
+
 #ifdef HAS_PELIB 
 !     Variable for PElib (to ensure symmetry detection is disabled for xyz)
 LOGICAL, PUBLIC :: pelib_sym_xyz
 #endif 
+
       CONTAINS
 
         SUBROUTINE ADD_ATOM(latom, fatom, name,x)
@@ -1456,8 +1461,44 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
         CALL CLEAR_XYZ()
         CLOSE(inpfile)
 
-       END SUBROUTINE READ_XYZ
+        END SUBROUTINE READ_XYZ
 
+        SUBROUTINE READ_XYZ_ATOMS (molfile,atoms,luprint)
+
+!       Reads the coordinates from an XYZ-FILE and returns them as a linked list
+
+        INTEGER, INTENT(IN) :: molfile
+        INTEGER, INTENT(IN), optional  :: luprint
+        type(atom), pointer, intent(out) :: atoms
+
+        INTEGER             :: lupri
+        INTEGER             :: ios, i
+
+        if (present(luprint)) then
+           lupri = luprint
+        else
+           lupri = 6
+        end if 
+
+!       In the XYZ format coordinates are supposed to start at the third line
+        REWIND (molfile)
+!       Check whether the first line has a number that can be used to check the number of atoms
+        natoms_given = 0
+        READ (molfile,*,iostat=ios) natoms_given
+!       Skip the comment line
+        CALL RDLINE(molfile)
+        CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
+!       Check number of atoms
+        IF (natoms_given .NE. count_atoms(firstatom)) THEN
+          WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
+     &                   " but expected ",natoms_given," atoms"
+          CALL QUIT(' *** ERROR (READ_XYZ_COORDINATES) wrong number of atoms')
+        END IF
+
+        allocate(atoms)
+        atoms=>firstatom
+
+       END SUBROUTINE READ_XYZ_ATOMS
 
       END MODULE READ_XYZFILE
 !  -- End of abacus/hermodules.F90 --
