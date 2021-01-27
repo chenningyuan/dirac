@@ -1493,7 +1493,7 @@ C     Read title line
 C     ===============
 C
       IF(FNDLAB('INFO    ',IUNIT)) THEN      
-        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &          ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
       ELSE
          CALL QUIT('SELOWN: Error reading info')

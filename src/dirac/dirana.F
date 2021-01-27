@@ -1305,7 +1305,7 @@ C
       DO I = 1,NREFS
         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','ANAPRJ')
         IF(FNDLAB('INFO    ',LUCOEF)) THEN         
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &       (NSTR(J,2,I),NSTR(J,1,I),IDUM,J=1,NSYM),DUM
 C.............NPSH........NESH........NBAS...........TOTERG
        ELSE
@@ -4325,7 +4325,7 @@ C.........Find the total number of basis functions for this atom type
 C.........Read information from coefficient file
           CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
           IF(FNDLAB('INFO    ',LUCOEF)) THEN         
-            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &          NSTR(1,2,IREFS),NSTR(1,1,IREFS),NAO(IREFS),DUM
 C...............NPSH............NESH............NBAS.......TOTERG
           ELSE
@@ -4402,7 +4402,7 @@ C     ==========================
 C.........Read C1 coefficients and orbitalenergies
           CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
           IF(FNDLAB('INFO    ',LUCOEF)) THEN
-            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &        NNEG,NPOS,NAO(IREFS),DUM
           ELSE
             WRITE(LUPRI,*) 'PRJAOB: error reading coefficients ',

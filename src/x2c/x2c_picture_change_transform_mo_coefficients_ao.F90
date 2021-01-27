@@ -581,7 +581,7 @@ contains
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
        info_text(51:74) = fdate()
        CALL NEWLAB('INFO    ',fh,6)
-       write(fh) info_text,nfsym,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
+       write(fh) info_text,nfsym,nz,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
        CALL WRICMO_coefficients(fh,mo_coeff_2c_ao,ndim_2c_mo_ao)
        CALL WRICMO_eigenvalues(fh,eigen_values,ndim_2c_ev)
        CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)

@@ -139,7 +139,7 @@ C
       CALL GTINFO(TEXT(51:74))
       REWIND IUNIT     
       CALL NEWLAB('INFO    ',IUNIT,LUPRI)
-      WRITE(IUNIT) TEXT,NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM),
+      WRITE(IUNIT) TEXT,NFSYM,NZ*NKRBLK,((IDIM(I,J),I = 1,3),J=1,NFSYM),
      &     TOTERG
       CALL WRICMO_coefficients(IUNIT,CMO,NCMOTQ*NKRBLK)
       CALL WRICMO_eigenvalues(IUNIT,EIG,NORBT*NKRBLK)      
@@ -325,7 +325,7 @@ C     =============================
 C
       REWIND IUNIT
       IF(FNDLAB('INFO    ',IUNIT)) THEN
-        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
       ELSE
         GOTO 20        
@@ -342,6 +342,12 @@ C
          WRITE(LUPRI,'(/A/A,2I5)')
      &      'REACMO FATAL ERROR: Incompatible number of fermion ircops',
      &      ' from file and in this run:',NSYM,NFSYM
+      ELSEIF(NZBUF .NE. NZ*NKRBLK) THEN
+         IERR = IERR + 1
+         INFO = .TRUE.
+         WRITE(LUPRI,'(/A/A,2I5)')
+     &      'REACMO FATAL ERROR: Incompatible NZ parameter',
+     &      ' from file and in this run:',NZBUF/NKRBLK,NZ
       ELSE
          DO IFRP = 1,NFSYM
            IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) IERR = IERR + 1
@@ -1990,8 +1996,10 @@ C
       IDIM(3) = NTBAS(0)
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
-      CALL NEWLAB('INFO    ',LUCOEF,LUPRI)      
-      WRITE(LUCOEF) TEXT,1,(IDIM(I),I = 1,3),TOTERG
+      CALL NEWLAB('INFO    ',LUCOEF,LUPRI)
+      NSYM=1
+      NZBUF=4
+      WRITE(LUCOEF) TEXT,NSYM,NZBUF,(IDIM(I),I = 1,3),TOTERG
       CALL WRICMO_coefficients(LUCOEF,CAO,NTBAS(0)*NORBT*4)
       CALL WRICMO_eigenvalues(LUCOEF,EIG,NORBT)      
       CALL WRICMO_supersymmetry(LUCOEF,'SUPERSYM',IBEIG,NORBT)
@@ -3574,7 +3582,7 @@ C     ===============================================
 C
       CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
       IF(FNDLAB('INFO    ',LUCOEF)) THEN
-         READ(LUCOEF) TEXT,NSYM,(IDIM(I),I = 1,3),TOTERG
+         READ(LUCOEF) TEXT,NSYM,NZBUF,(IDIM(I),I = 1,3),TOTERG
       ELSE
          CALL QUIT('ACMOIN: Error reading info')
       ENDIF
@@ -3999,7 +4007,7 @@ C     Check for the presence of coefficient file
 C         IDIM(1,IFRP) - number of positronic solutions
 C         IDIM(2,IFRP) - number of electronic solutions
 C         IDIM(3,IFRP) - number of AO-basis functions
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &         ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
       ELSE
          CALL QUIT('RKBIMP: Error reading info')

@@ -5495,7 +5495,7 @@ C.......Read atomic coefficients in C1 format
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
         IF(FNDLAB('INFO    ',LUATOM)) THEN
-           READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+           READ(LUATOM) TEXT,NSYM,NZBUF,NNEG,NPOS,NBAS,TOTERG
         ELSE
            WRITE(LUPRI,*) 'ATOMIC_START: error reading info ',
      &                    ATOMFIL(IATOM) 
@@ -5674,7 +5674,7 @@ C.......Find the total number of basis functions for this atom type
 C.......Read information from coefficient file
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
         IF(FNDLAB('INFO    ',LUHOC)) THEN
-          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &          NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
         ELSE
           WRITE(6,*) 'ADHOC: not able to read info from file ',
@@ -5729,7 +5729,7 @@ C
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
         IF(FNDLAB('INFO    ',LUHOC)) THEN
-          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
+          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &          NNEG,NPOS,NAO(ITYP),DUM
         ELSE
           WRITE(6,*) 'ADHOC2: not able to read info from file ',
