@@ -2255,8 +2255,8 @@ subroutine eom_analysis_allirreps(davResults, eps)
    endif
    eigenvalues=0.0D0
    do state_sym = 1, nrep
-   if(nstate_sym(state_sym).gt.0) then
-      eigenvalues(1:RCW,ioff:ioff+relcc_eom_nroots(state_sym))=davResults(state_sym)%eValues(1:RCW,1:relcc_eom_nroots(state_sym))
+   if(relcc_eom_nroots(state_sym).gt.0) then
+     eigenvalues(1:RCW,ioff:ioff+relcc_eom_nroots(state_sym)-1)=davResults(state_sym)%eValues(1:RCW,1:relcc_eom_nroots(state_sym))
      ioff=ioff+relcc_eom_nroots(state_sym)
    endif
    enddo
