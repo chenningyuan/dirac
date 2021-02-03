@@ -605,7 +605,7 @@ C
             IO = 1
             JO = 1
             DO IFRP = 1,NFSYM
-              CALL ADAIBO(IBEIG(IC),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+              CALL ADAIBO(IBEIG(IO),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
      &              BUF(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
               IO = IO + NORB(IFRP)
               JO = JO + NORB2(IFRP)
@@ -4033,8 +4033,7 @@ C.........Read coefficients, eigenvalues and boson irreps
           allocate(ibeig(norbt))
           allocate(tmat(n2tmt))
 C
-          CALL REACMO(LUCOEF,'DFCOEF',cmo,eig,ibeig,
-     &                TOTERG,IOPT)
+          CALL REACMO(LUCOEF,'DFCOEF',cmo,eig,ibeig,TOTERG,IOPT)
 C.........Zero IBEIG if no subblocks; this allows to treat linear systems
 C         that are presently not handled in URKBAL
           IF(SUB_BL) THEN
