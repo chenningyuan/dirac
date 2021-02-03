@@ -69,6 +69,11 @@ module talsh_mp2no
         else
             call print_date('File NOs_MO is not existed')
             call talsh_generate_MP2_VNO_MObasis(exa_input,NO_OCC_1)   
+!                  print *,'Occupation numbers of all natural orbital in complex diago'
+!                    do i = 1, size(NO_OCC_1,1)
+!                        print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
+!                    end do
+                  deallocate(NO_OCC_1)
             call get_new_Fock_matrix(exa_input,'DM_complex')
             call get_new_orbital(exa_input,threshold,NOs_AO_quat,NO_OCC_quat, &
                                  New_energy,'NOs_MO',n_cano)
@@ -76,11 +81,7 @@ module talsh_mp2no
         end if 
 
 !--------------------------------------------Test part-------------------------------------------------------------------------------------------
-!        print *,'Occupation numbers of all natural orbital'
-!       do i = 1, size(NO_OCC_1,1)
-!          print "(4x,i4,a,2e14.6)",i,"    ",NO_OCC_1(i)
-!       end do
-!       deallocate(NO_OCC_1)
+
         call print_date('Leave MP2_NO Module')
       end subroutine talsh_mp2no_driver
 
@@ -416,8 +417,8 @@ module talsh_mp2no
                  k = 1
                  do j=1,(nocc+nvir)
                     do i=1,(nocc+nvir)
-                       write(mp2dm,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_mo_fort(i,j),i,j
-                       k = k + 1
+                       write(mp2dm,'(2x,2F28.10,2x,4I4)') dm_mo_fort(i,j),i,j
+!                       k = k + 1
                     end do
                   end do
                   print *,'>>>>> DM, complete, after formatting to DM_complex'
@@ -445,16 +446,25 @@ module talsh_mp2no
                     real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                     integer                            :: sz,flb                  ! size of matrix and flag for block
                     character                          :: mat                     ! flag used for matrix basis transform
+                    integer                            :: i
 
                                                         
                     call print_date('Read Density Matrix from DM_complex')
                     call read_matrix_comp(MP2_density_comp,Matrix_name)
 
+                    print *, "size1 of density_matrix", size(MP2_density_comp,1)
+                    print *, "size2 of density_matrix", size(MP2_density_comp,2)
                     call print_date('Transform DM from complex into quaternion')
                     call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
 
                     call print_date('Qdiag Density matrix')
                     call diagoanl_matrix_quater(MP2_density_quat,NOs_OCC_quat,NOs_MO_quat)
+
+!                    print *,'Occupation numbers of all natural orbital in quaternion diago'
+!                    do i = 1, size(NOs_OCC_quat,1)
+!                        print "(4x,i4,a,2e14.6)",i,"    ",NOs_OCC_quat(i)
+!                    end do
+            
 
                     call print_date('Sort quaterbion natural orbital')
                     call sort_values_vectors (NOs_OCC_quat,NOs_MO_quat)
@@ -496,12 +506,15 @@ module talsh_mp2no
 
             real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbitals which have occ larger than threshold
             real(kind=8), pointer              :: New_cano_orb(:,:,:)     ! new canonical orbital 
+            real(kind=8), pointer              :: New_cano_orb_aux(:,:,:)! new canonical orbital_aux
             real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
             real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
+            real(kind=8), pointer              :: tem_AO(:,:,:)            ! Hartree-Fock orbital 
             integer                            :: sz,flb, fl              ! size of matrix and flag for block
             character                          :: mat                     ! flag used for matrix basis transform
             integer                            :: i,j,k
+            
 
 
 
@@ -515,28 +528,63 @@ module talsh_mp2no
             call quater_read_from_dirac_orbital(HF_AO,sz,flb)
 
 
-!            call print_date('Read Fock matrix from DFCOEF')
-!            flb = 0                         ! we read vv block of Fock matrix
-!            sz = exa_input%nvir/2 ! the size of the FM is the same as DM
-!            call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+            call print_date('Read Fock matrix from DFCOEF')
+            flb = 0                         ! we read vv block of Fock matrix
+            sz = exa_input%nvir/2 ! the size of the FM is the same as DM
+            call quater_read_from_dirac_fock(Fock_HF,sz,flb)
 
-!            mat = 'Matrix'
-!            call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
-!            call print_date('Get reduced vv Fock Matrix in Natural Orbital Basis')
+            mat = 'Matrix'
+            call basis_transform(Fock_HF,NOs_MO_quat,Fock_NO,mat)
+            call print_date('Get reduced vv Fock Matrix in Natural Orbital Basis')
 
 
-!            call print_date('Get new Canonical orbital in MO basis')
-!            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
+            call print_date('Get new Canonical orbital in MO basis')
+!            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb_aux,Fock_NO,New_energy)
+            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
 
-!            print *, "Print first 10 New orbital Energy"
-!            do i=1, 10
-!               print *, 'Orbital',i,':Energy: ', new_energy(i)
+            print *, "Print all New orbital Energy"
+            do i=1, size(new_energy,1)
+               print *, 'Orbital',i,':Energy: ', new_energy(i)
+            end do
+
+!            fl = 1 
+!            call basis_transform(New_cano_orb_aux,New_cano_orb_aux,New_cano_orb,fl)
+!            call basis_transform(New_cano_orb_aux,NOs_MO_quat,New_cano_orb,fl)
+
+!            allocate(New_cano_orb(size(New_cano_orb_aux,1),size(New_cano_orb_aux,2),4))
+!            New_cano_orb = 0.0
+!            do j =1, size(New_cano_orb_aux,2)
+!              do i =1, size(New_cano_orb_aux,1)
+!                  if (i==j) then
+!                        New_cano_orb(i,j,1)=1.0
+!                  end if
+!              end do
 !            end do
+
+
+!            New_cano_orb(1,1,1)=0.0
+!            New_cano_orb(2,1,1)=1.0
+!            New_cano_orb(2,2,1)=0.0
+!            New_cano_orb(1,2,1)=1.0
 
 
             call print_date('Get new orbital in AO basis')
             fl = 0 
-!            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
+            call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
+!            allocate(NOs_AO_quat(size(HF_AO,1),size(HF_AO,2),4))
+!            NOs_AO_quat = 0
+!            allocate(tem_AO(size(HF_AO,1),1,4))
+!            tem_AO(:,1,:) = NOs_AO_quat(:,1,:)
+!            NOs_AO_quat(:,1,:) = NOs_AO_quat(:,2,:)
+!            NOs_AO_quat(:,2,:) = tem_AO(:,1,:)
+            
+
+!            Print *, "print HF orbital1 cofficient."
+!            do i =1, size(NOs_AO_quat,1)
+!                  print "(4x,I4,4F18.10)", i, NOs_AO_quat(i,1,1), NOs_AO_quat(i,1,2), NOs_AO_quat(i,1,3), NOs_AO_quat(i,1,4)
+!            end do 
+
+
             call basis_transform(NOs_MO_quat,HF_AO,NOs_AO_quat,fl)
 
       end subroutine
@@ -602,8 +650,8 @@ module talsh_mp2no
          end do
 
          do i = nocc+1, qorbital%nmo
-!            qorbital%energy(i)=energy(i-nocc)
-            qorbital%energy(i)=qorbital_hf%energy(i)
+            qorbital%energy(i)=energy(i-nocc)
+!            qorbital%energy(i)=qorbital_hf%energy(i)
          end do
 
          do j = 1, nocc
