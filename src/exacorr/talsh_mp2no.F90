@@ -506,7 +506,6 @@ module talsh_mp2no
 
             real(kind=8), pointer              :: NOs_MO_quat(:,:,:)      ! natural orbitals which have occ larger than threshold
             real(kind=8), pointer              :: New_cano_orb(:,:,:)     ! new canonical orbital 
-            real(kind=8), pointer              :: New_cano_orb_aux(:,:,:)! new canonical orbital_aux
             real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
             real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
@@ -539,7 +538,6 @@ module talsh_mp2no
 
 
             call print_date('Get new Canonical orbital in MO basis')
-!            call get_Cano_Orbital(NOs_MO_quat,New_cano_orb_aux,Fock_NO,New_energy)
             call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
 
             print *, "Print all New orbital Energy"
@@ -547,45 +545,10 @@ module talsh_mp2no
                print *, 'Orbital',i,':Energy: ', new_energy(i)
             end do
 
-!            fl = 1 
-!            call basis_transform(New_cano_orb_aux,New_cano_orb_aux,New_cano_orb,fl)
-!            call basis_transform(New_cano_orb_aux,NOs_MO_quat,New_cano_orb,fl)
-
-!            allocate(New_cano_orb(size(New_cano_orb_aux,1),size(New_cano_orb_aux,2),4))
-!            New_cano_orb = 0.0
-!            do j =1, size(New_cano_orb_aux,2)
-!              do i =1, size(New_cano_orb_aux,1)
-!                  if (i==j) then
-!                        New_cano_orb(i,j,1)=1.0
-!                  end if
-!              end do
-!            end do
-
-
-!            New_cano_orb(1,1,1)=0.0
-!            New_cano_orb(2,1,1)=1.0
-!            New_cano_orb(2,2,1)=0.0
-!            New_cano_orb(1,2,1)=1.0
-
-
             call print_date('Get new orbital in AO basis')
             fl = 0 
             call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
-!            allocate(NOs_AO_quat(size(HF_AO,1),size(HF_AO,2),4))
-!            NOs_AO_quat = 0
-!            allocate(tem_AO(size(HF_AO,1),1,4))
-!            tem_AO(:,1,:) = NOs_AO_quat(:,1,:)
-!            NOs_AO_quat(:,1,:) = NOs_AO_quat(:,2,:)
-!            NOs_AO_quat(:,2,:) = tem_AO(:,1,:)
-            
-
-!            Print *, "print HF orbital1 cofficient."
-!            do i =1, size(NOs_AO_quat,1)
-!                  print "(4x,I4,4F18.10)", i, NOs_AO_quat(i,1,1), NOs_AO_quat(i,1,2), NOs_AO_quat(i,1,3), NOs_AO_quat(i,1,4)
-!            end do 
-
-
-            call basis_transform(NOs_MO_quat,HF_AO,NOs_AO_quat,fl)
+!            call basis_transform(NOs_MO_quat,HF_AO,NOs_AO_quat,fl)
 
       end subroutine
 
