@@ -30,13 +30,6 @@
    OPEN(LU1,FILE=ARGC(1:JARG),STATUS='UNKNOWN',FORM='UNFORMATTED')
    OPEN(LU2,FILE=ARGC(1:JARG)//'.new',STATUS='NEW',FORM='UNFORMATTED')   
    READ(LU1,END=10,ERR=20) TEXT,NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM),TOTERG
-! We do not know NZ; use ftell to find out
-   NZ = ftell(LU1)   
-   READ(LU1)
-   NZ = (ftell(LU1)-NZ-8)/8/NC
-   BACKSPACE LU1
-   CALL NEWLAB('INFO    ',LU2,LUPRI)      
-   WRITE(LU2) TEXT,NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM),TOTERG
 ! Calculate dimensions of coeffcients and eigenvalues
    NC = 0
    NO = 0
@@ -44,8 +37,15 @@
      NORB = IDIM(1,IFRP)+IDIM(2,IFRP)
      NO   = NO + NORB
      NC   = NC + NORB*IDIM(3,IFRP)
-  ENDDO
-  NC = NC*NZ
+   ENDDO
+!  We do not know NZ; use ftell to find out
+   NZ = ftell(LU1)   
+   READ(LU1)
+   NZ = (ftell(LU1)-NZ-8)/8/NC
+   BACKSPACE LU1
+   CALL NEWLAB('INFO    ',LU2,LUPRI)      
+   WRITE(LU2) TEXT,NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM),TOTERG
+   NC = NC*NZ
 !  Coefficients  
    allocate(CMO(NC))
    CALL READT(LU1,NC,CMO)
@@ -67,10 +67,11 @@
    CALL NEWLAB('EOFLABEL',LU2,LUPRI)                              
    CLOSE(LU1)
    CLOSE(LU2)
-   RETURN
+   GOTO 30
 10 CONTINUE
    CALL QUIT('CF_ADDLABELS: END OF FILE reading TEXT')
 20 CONTINUE
    CALL QUIT('CF_ADDLABELS: ERROR reading TEXT')
+30 CONTINUE
    
  END PROGRAM CF_ADDLABELS
