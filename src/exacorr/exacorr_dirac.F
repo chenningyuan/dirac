@@ -339,7 +339,7 @@ C
        integer                :: lucoef
        integer                :: i, j, k, ishell, iprimstart, iprimend
        integer                :: nao, nao_bas, nshells, iao, ibas
-       integer                :: nmo, npo, nto, npriexp, ncnt
+       integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
        real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
        integer, allocatable   :: ibeig(:),index(:)
@@ -348,6 +348,8 @@ C
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
        complex(8), allocatable:: scoeff(:,:,:)
        integer, allocatable   :: ao_map(:,:)
+       character(8)           :: label(4)
+       logical                :: labeled
 
        ierr = NOERROR
 
@@ -361,8 +363,17 @@ C
           call get_free_fileunit(lucoef)
           open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',
      &     access='SEQUENTIAL')
-          read (lucoef,end=10,err=10) text,nsym,
+          read (lucoef) label
+          if (label(1) == '********') then
+             labeled = .true. ! new format
+             read (lucoef,end=10,err=10) text,nsym,nzbuf,
      &         ((idim(i,j),i=1,3),j=1,nsym),total_energy
+          else
+             labeled = .false.
+             backspace(lucoef) ! old format (DIRAC19 and earlier)
+             read (lucoef,end=10,err=10) text,nsym,
+     &         ((idim(i,j),i=1,3),j=1,nsym),total_energy
+          endif
        end if
 
        ! check symmetry and get dimensions of the coefficient array
@@ -384,8 +395,11 @@ C
        allocate(index(2*nmo))
         
        ! read the mo coefficients and orbital eigenvalues
+       if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) coeff
+       if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) eig
+       if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
        do i = 1, 2*nmo
@@ -414,6 +428,7 @@ C
        deallocate(scoeff)
 
        ! read the basis set information and check for consistency
+       if (labeled) read (lucoef) label
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
        if (nao < nao_bas) then
           ierr = INCONSIS

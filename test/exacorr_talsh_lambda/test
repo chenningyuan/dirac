@@ -18,12 +18,12 @@ f.add(from_string = 'Total contribution to principal components',
       rel_tolerance   = 1.0e-6)
 
 test.run(['ccsd_x2c.inp'], ['H2O_nosym.mol'], f)
-test.run(['ccsd_energy_large_cvalue.inp'], ['h2o.xyz'], f, args=' --incmo')
+test.run(['ccsd_energy_large_cvalue.inp'], ['h2o.xyz'], f)
 
 f = Filter()
 f.add(from_string = 'Individual (non-zero) components',
       to_string   = 'Total contribution to principal components',
       rel_tolerance   = 1.0e-6)
-test.run(['ccsd_energy_large_cvalue_relccsd.inp'], ['h2o.xyz'], f, args=' --incmo')
+test.run(['ccsd_energy_large_cvalue_relccsd.inp'], ['h2o.xyz'], f)
 
 sys.exit(test.return_code)
