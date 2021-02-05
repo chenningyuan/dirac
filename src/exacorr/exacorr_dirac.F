@@ -430,6 +430,7 @@ C
        cspinor%energy       = seig
        cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
 
+
        deallocate(coeff)
        deallocate(eig)
        deallocate(ibeig)
@@ -541,6 +542,7 @@ C
        close (lucoef,status='KEEP')
        return
 
+
        end subroutine read_from_dirac
 
        subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
@@ -548,6 +550,7 @@ C
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_utils
+
 
        implicit none
 
