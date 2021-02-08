@@ -235,13 +235,7 @@ C
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
       NBONDS = 0
-C     IF (NUCDEP .EQ. 1) RETURN !ayaki: modified for atomic symmetry
-      IF (NUCDEP .EQ. 1) THEN 
-         ATOMIC = .TRUE.
-         RETURN
-      ELSE
-         ATOMIC = .FALSE.
-      END IF 
+      IF (NUCDEP .EQ. 1) RETURN
 C
 C     set up bond vectors
 C

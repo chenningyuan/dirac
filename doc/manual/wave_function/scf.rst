@@ -112,20 +112,16 @@ is as follows. The formats of :ref:`SCF_.BOSONS` and :ref:`SCF_.MJSELE` are simi
 ::
    
    .KPSELEC
-   9                             # Number of the Kappa-splitted orbital
-   #s  d- d+ g- g+ p- p+ f- f+       
-    14 12 18  0  0 10 20  6  8    # Number of the electrons in the closed orbitals
-     0  0  0  0  0  0  0  6  8    # Number of the orbitals of the open shell 1 (5f^3)
-     0  4  6  0  0  0  0  0  0    # Number of the orbitals of the open shell 2 (6d^1)
+   9                   # Number of the Kappa-splitted orbital
+   #s   p-  p+  d-  d+  f-  f+
+    -1   1  -2   2  -3   3  -4    # Values of Kappa
+    14  10  20  12  18   6   8    # Number of the electrons in the closed orbitals
+     0   0   0   0   0   6   8    # Number of the orbitals of the open shell 1 (5f^3)
+     0   0   0   4   6   0   0    # Number of the orbitals of the open shell 2 (6d^1)
 
-The practical notations are as follows.
-
-- When your basis set includes high angular momentum functions (e.g., g,h,i...),
-  you must specify even if they are unoccupied.
-- The above example is the case of a single atom. When you work with ghost atom,
-  the order of the orbitals are changed as s, p-, p+, d-, d+...
-- The numbers of the electrons in the open shells are specified
-  by using :ref:`SCF_.OPEN SHELL`. In this above case, you should specify as follows.
+The practical notation is that the numbers of the electrons in the open shells
+are specified by using :ref:`SCF_.OPEN SHELL`. In this above case,
+you should specify as follows.
 
 ::
 

@@ -1927,7 +1927,6 @@ C initla setup
                  NSUBBL = (NHTYP-1)*2+1 
                ENDIF   
                KPBUF = NSUBBL/2+1
-!              KPBUF = int(NSUBBL/D2)+1
                IF(mod(KPBUF, 2).eq.0)THEN ! Max angular momentum (l) is s,d,g.. 
                  KPMAX(1) = KPBUF-1
                  KPMAX(2) = KPBUF
@@ -1936,10 +1935,6 @@ C initla setup
                  KPMAX(2) = KPBUF-1      
                ENDIF
                IF(NFSYM.EQ.1)KPMAX(1) = MAX(KPMAX(1),KPMAX(2))
-               WRITE(*,*)"NSUBBL",NSUBBL
-               WRITE(*,*)"NHTYP",NHTYP
-               WRITE(*,*)"MAX_BOS_BL",MAX_BOS_BL
-               WRITE(*,*)"KPMAX",KPMAX(1)
 C readling input             
                READ(LUCMD,*,IOSTAT=IOS) NKP
                IF (IOS.NE.0) THEN
@@ -1951,11 +1946,6 @@ C readling input
                READ(LUCMD,*,IOSTAT=IOS) (KP_NORB(I),   I=1,NKP)
                READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NKP)
                DO I =1,NKP
-                  write(*,*)"(KP_NORB(I)",KP_NORB(I),I
-                  write(*,*)"SEL_NORB(I)",SEL_NORB(I,0),I
-               ENDDO
-               write(*,*)"*********"
-               DO I =1,NKP
                  IF(mod(SEL_NORB(I,0),2).eq.1)THEN
                    WRITE(LUPRI,*) 'Error in reading .KPSELE !'
                    CALL QUIT('Number of electrons must be even!')                    
@@ -1963,44 +1953,24 @@ C readling input
                    KP = KP_NORB(I)
                    IF(NFSYM.EQ.1)THEN
                      J = ABS(KP)*2 + (KP-1)/2
-                     NISH_BOS(J) = SEL_NORB(I,0) 
+                     NISH_BOS(J) = SEL_NORB(I,0) /2
                    ELSE
-                     write(*,*)
-                     write(*,*)"I",I
                      IF(KP.LT.0)THEN
                        IF(mod(-KP,2).EQ.1)THEN
                          NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)/2
-                        write(*,*)"1"
                        ELSE
                          NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0)/2        
-                        write(*,*)"2"
                        ENDIF   
                      ELSE
                        IF(mod(KP,2).EQ.1)THEN
                          NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0)/2        
-                        write(*,*)"3"
                        ELSE
                          NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)/2
-                         write(*,*)"4"
                        ENDIF   
                      ENDIF 
-! 1000                NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)
-! 1010                NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0) 
-              write(*,*)"*********"
-              write(*,*)" NISH_BOS(ABS(KP)", NISH_BOS(ABS(KP))
-              write(*,*)" NISH_BOS(KP+KPMAX)",NISH_BOS(ABS(KP)+KPMAX(1))
                    ENDIF   
-!                   NISH_BOS(I) = SEL_NORB(I,0)/2                    
                  ENDIF
                ENDDO  
-               write(*,*)"*********"
-               write(*,*)"KPMAX",KPMAX(1)
-               DO I =1,NKP
-                  write(*,*)"I",I
-                  write(*,*)"KP", KP_NORB(I)
-                     write(*,*)" NISH_BOS(ABS(KP)", NISH_BOS(ABS(KP))
-                     write(*,*)" NISH_BOS(KP+KPMAX)", NISH_BOS(KP+KPMAX)
-               ENDDO               
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .KPSELE !'
@@ -2017,35 +1987,27 @@ C readling input
                      KP = KP_NORB(I)  
                      IF(NFSYM.EQ.1)THEN
                        J = ABS(KP)*2 + (KP-1)/2 
-                       NACSH_BOS(J,IOPEN) = SEL_NORB(I,IOPEN)
+                       NACSH_BOS(J,IOPEN) = SEL_NORB(I,IOPEN)/2
                      ELSE
                        IF(KP.LT.0)THEN
                          IF(mod(-KP,2).EQ.1)THEN
                            NACSH_BOS(ABS(KP)         ,IOPEN)
      &                     = SEL_NORB(I,IOPEN)/2
-                          write(*,*)"1"
                          ELSE
                            NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)
      &                     = SEL_NORB(I,IOPEN)/2        
-                          write(*,*)"2"
                          ENDIF   
                        ELSE
                          IF(mod(KP,2).EQ.1)THEN
                            NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)
      &                     = SEL_NORB(I,IOPEN)/2        
-                          write(*,*)"3"
                          ELSE
                            NACSH_BOS(ABS(KP)         ,IOPEN)
      &                     = SEL_NORB(I,IOPEN)/2
-                           write(*,*)"4"
                          ENDIF   
                        ENDIF 
                      ENDIF
                    ENDIF
-              write(*,*)"*********"
-              write(*,*)" NACSH_BOS(ABS(KP)", NACSH_BOS(ABS(KP),IOPEN)
-              write(*,*)" NACSH_BOS(KP+KPMAX)",
-     &         NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)                
                  ENDDO  
                  IF (IOS.NE.0) THEN
                    WRITE(LUPRI,*)
