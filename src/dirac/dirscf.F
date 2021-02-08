@@ -2150,8 +2150,6 @@ C     JOCC(I) = NPSH(I) + NISH(I) + NACSH(I,1:IOPEN-1)
         JOCC(I) = NPSH(I)
         IF(NISH_DHF(I).GT.0) THEN
           KOCC(I) = KOCC(I) + NISH_DHF(I)
-          DO III=1,20           
-          ENDDO   
           CALL BOSSE2(I,EIG(IORB(I)+1),IBEIG(IORB(I)+1),
      &         CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
           IF(JOCC(I).NE.KOCC(I)) THEN
