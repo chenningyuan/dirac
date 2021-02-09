@@ -2,8 +2,11 @@ $
 $ Elements Supported
 $ H  He Li Be Na Mg
 $ K  Ca Rb Sr Cs Ba Fr Ra 
-$ B  C  N  O  F  Ne Al Si P  S  Cl Ar
-$ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
+$ B  C  N  O  F  Ne
+$ Al Si P  S  Cl Ar
+$ Ga Ge As Se Br Kr
+$ In Sn Sb Te I  Xe
+$ Tl Pb Bi Po At Rn 
 $ Nh Fl Mc Lv Ts Og
 $ Sc Ti V  Cr Mn Fe Co Ni Cu Zn
 $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd
