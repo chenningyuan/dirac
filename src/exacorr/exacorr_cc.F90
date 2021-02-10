@@ -400,7 +400,7 @@ module exacorr_cc
          type(subspace_basis_t)     :: basis_ao, basis_occ, basis_vir
          integer(INTL)              :: nao_l ! (same as nao, as long integer)
          integer(INTD)              :: branch_factor, tavp_mng_depth
-         integer                    :: my_MPI_rank
+         integer                    :: my_MPI_rank, MPI_size
 
          ! variables for the definition of colors inside the spaces
          type(color_symmetry_t), allocatable    :: color(:)
@@ -408,10 +408,11 @@ module exacorr_cc
 
          ! Loop counters and error codes
          integer(INTD) :: ierr, lsh
-
-         integer:: l, nl
+         integer :: l, nl
+         integer :: num_blocks
 
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
+         call interface_mpi_comm_size(global_communicator,MPI_size)
 
          nao           = get_nao()   ! This is the total number of ao's
          nao_l         = int(nao,8)  ! we need this as a long int for exatensor
@@ -493,6 +494,7 @@ module exacorr_cc
          if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') &
            ' ExaCorr: Registered OCC vector space of dimension  ',nocc, &
            ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1))
+         num_blocks=(branch_factor*(2**(tavp_mng_depth-1)))**2
 
          !Register vir mo vector space:
          branch_factor = max(2, (int(get_num_segments(int(nvir,8),int(exa_input%exa_blocksize,8)),4) - 1)/tavp_mng_depth + 1)
@@ -501,6 +503,15 @@ module exacorr_cc
          if(exa_input%print_level.gt.8 .and. my_MPI_rank == 0) write (*,'(A,I3,A,I3)') &
            ' ExaCorr: Registered VIRT vector space of dimension ',nvir, &
            ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
+         num_blocks=num_blocks*(branch_factor*(2**(tavp_mng_depth-1)))**2
+         
+         if(exa_input%print_level.gt.-1) write (*,'(A,I9,A,I9)') &
+           'number of blocks = ',num_blocks,'; number of MPI processes =',MPI_size
+         
+         if(num_blocks<MPI_size) then
+            call quit('Not enough work for MPI processes')
+            write (*,'(A)') 'decrease number of MPI processes or .EXA_BLOCKSIZE'
+         end if
 
         end subroutine exacorr_cc_spaces
 
