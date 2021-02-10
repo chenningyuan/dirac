@@ -211,20 +211,7 @@ C
          call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
-         ! slaves need the same info to get started
-         call interface_mpi_bcast(exa_input%nkr_occ,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
-         call interface_mpi_bcast(exa_input%nkr_vir,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-         call interface_mpi_bcast(exa_input%nocc,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_occ(exa_input%nocc))
-         call interface_mpi_bcast(exa_input%nvir,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_vir(exa_input%nvir))
-         call exacc_sync_cw(0)
+         call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
          if (exa_input%lambda) then 
@@ -234,10 +221,7 @@ C
          call exacorr_cc_driver (exa_input)
       end if
 
-      deallocate (exa_input%mokr_occ)
-      deallocate (exa_input%mokr_vir)
-      deallocate (exa_input%mo_occ  )
-      deallocate (exa_input%mo_vir  )
+      call exacc_deallocate_cw()
 
       end
 
@@ -866,10 +850,6 @@ C
 
 !      read this "core" Hamiltonian
        read (luone,ERR=20,END=20) h_core
-!      For some vague historical reason hcore is not written in fortran order by MOLTRA but as its transpose
-!      In RELCCSD the complex conjugate is taken (quicker than doing the transpose) after the read, we do the same thing here
-!      but it would be good to fix this in MOLTRA and just write in fortran order (LV, 8-3-2019)
-       h_core = dconjg(h_core)
 
 !      reorder and store in the data type
        nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors
@@ -891,6 +871,91 @@ C
 
        end subroutine read_from_mrconee
 
+       subroutine read_mdprop (int_1el, ierr)
+
+       use exacorr_datatypes
+       use exacorr_utils, only: get_free_fileunit
+
+       implicit none
+
+!      routine to read property integrals and add these to the int_1el data
+
+       type(one_el_t), intent(inout) :: int_1el
+       integer, intent(out)   :: ierr
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+
+       integer, parameter     :: max_prop = 100 ! limit maximum of arrays to be read, should be high enough for the foreseeable future
+       integer :: nsp, nkr, n_prop, i_prop
+       complex(8), allocatable :: h_prop(:,:)
+
+       character*32           :: label
+       logical                :: tobe
+       integer                :: luone
+
+       ierr=NOERROR
+
+!      open file and read setup infromation
+       inquire (file='MDPROP',exist=tobe)
+       if (.not.tobe) then
+          print*, "error: file MDPROP not found"
+          ierr = NOTFOUND
+          return
+       else
+          call get_free_fileunit(luone)
+          open (luone,file='MDPROP',status='OLD',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+       end if
+!      set number of spinors
+       nsp=int_1el%n_spinor
+
+!      allocate auxilliary array to read in
+       allocate(h_prop(nsp, nsp))
+
+!      count the number of matrices that we need to store
+!      MDROP has a very simple format: record with label followed by record containing the data
+       n_prop = 0
+       do while (n_prop < max_prop)
+          read (luone,err=10,end=10) label
+          if (label(25:32) == 'EOFLABEL') exit
+          read (luone,err=10,end=10) h_prop
+          n_prop = n_prop + 1
+       end do
+       rewind (luone)
+
+!      store property integrals
+       nullify(int_1el%property_labels)
+       nullify(int_1el%h_prop)
+       allocate(int_1el%property_labels(n_prop))
+       allocate(int_1el%h_prop(nsp,nsp,n_prop))
+       int_1el%n_prop = n_prop
+       nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors
+       i_prop = 0
+       do while (i_prop < n_prop)
+          read (luone,err=10,end=10) label
+          i_prop = i_prop + 1
+          read (luone,err=10,end=10) h_prop
+        ! reorder and store in the data type
+          int_1el%property_labels(i_prop) = label(25:32)
+          int_1el%h_prop(1:nsp:2,1:nsp:2,i_prop)
+     &          = h_prop(1:nkr,1:nkr)     ! unbar-unbar
+          int_1el%h_prop(2:nsp:2,1:nsp:2,i_prop)
+     &         = h_prop(nkr+1:nsp,1:nkr)   ! bar-unbar
+          int_1el%h_prop(1:nsp:2,2:nsp:2,i_prop)
+     &         = h_prop(1:nkr,nkr+1:nsp)   ! unbar-bar
+          int_1el%h_prop(2:nsp:2,2:nsp:2,i_prop)
+     &         = h_prop(nkr+1:nsp,nkr+1:nsp) ! bar-bar
+       end do
+
+       close (luone,status='KEEP')
+       deallocate (h_prop)
+       return
+
+  10   ierr = CORRUPT
+       return
+
+       end subroutine read_mdprop
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE set_prop_flags()

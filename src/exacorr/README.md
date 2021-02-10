@@ -1,7 +1,7 @@
 General documentation for exacorr module
 
 Remarks:
-- To use the standalone version of ExaCorr use the exacorr.x executable i.c.w. exacorr.inp (only need to specify EXACC section)
+- To use the standalone version of ExaCorr use the exacorr.x executable in connection with exacorr.inp (only need to specify EXACC section)
 
 To Do:
 - [ ] Implement EOM (@stanpa)
@@ -14,7 +14,7 @@ To Do:
     <th>Input parameters</th><th>Comment</th>
   </tr>
   <tr>
-    <td>.PRINT</td><td>Print level, helpful for debbuging, be careful > 10 tensors are printed </td>
+    <td>.PRINT</td><td>Print level, helpful for debugging, be careful > 10 tensors are printed </td>
   </tr>       
   <tr>
   	<td>.OCCUPIED</td><td>As list of MOs or energy range  </td>
