@@ -509,8 +509,10 @@ module exacorr_cc
            'number of blocks = ',num_blocks,'; number of MPI processes =',MPI_size
          
          if(num_blocks<MPI_size) then
+            write (*,'(A)') 'In the current implementation there is a scaling limit.'
+            write (*,'(A)') 'Using your configuration there would be nodes doing no work.'
+            write (*,'(A)') 'Therefore decrease the number of MPI processes or .EXA_BLOCKSIZE'
             call quit('Not enough work for MPI processes')
-            write (*,'(A)') 'decrease number of MPI processes or .EXA_BLOCKSIZE'
          end if
 
         end subroutine exacorr_cc_spaces
