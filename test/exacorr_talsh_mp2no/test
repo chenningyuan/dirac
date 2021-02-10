@@ -9,9 +9,10 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Occupation number_order',
+f.add(from_string = 'Total CCSD energy :',
       rel_tolerance   = 1.0e-9)
 
-test.run(['mp2no.inp'], ['h2.xyz'], f)
+test.run(['ne_4.inp','ne_13.inp','ne_21.inp'], ['ne.xyz'], f)
+test.run(['bh_30.inp','bh_19.inp','bh_6.inp'], ['bh.xyz'], f)
 
 sys.exit(test.return_code)

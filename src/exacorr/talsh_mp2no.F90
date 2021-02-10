@@ -204,13 +204,14 @@ module talsh_mp2no
          call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
          call print_date('Diagonalizing MP2 VV density matrix')
 !        Diagoliazation of Density matrix
-         allocate(NO_OCC(2,size(MP2_density_tens,2)))
+!         allocate(NO_OCC(2,size(MP2_density_tens,2)))
          allocate(NO_OCC_1(size(MP2_density_tens,2)))
-         NO_OCC = 0.0d0
+!         NO_OCC = 0.0d0
 
-         call diagoanl_matrix_complex(MP2_density_tens,NO_OCC,NOs_MO)        
-         NO_OCC_1(:) = NO_OCC(1,:)
-         deallocate(NO_OCC)
+!         call diagoanl_matrix_complex(MP2_density_tens,NO_OCC,NOs_MO) 
+          NO_OCC_1 = 0
+!         NO_OCC_1(:) = NO_OCC(1,:)
+!         deallocate(NO_OCC)
 
         end subroutine talsh_generate_MP2_VNO_MObasis
 
@@ -540,8 +541,8 @@ module talsh_mp2no
             call print_date('Get new Canonical orbital in MO basis')
             call get_Cano_Orbital(NOs_MO_quat,New_cano_orb,Fock_NO,New_energy)
 
-            print *, "Print all New orbital Energy"
-            do i=1, size(new_energy,1)
+            print *, "Print the first 10 New orbital Energy"
+            do i=1, 10
                print *, 'Orbital',i,':Energy: ', new_energy(i)
             end do
 
