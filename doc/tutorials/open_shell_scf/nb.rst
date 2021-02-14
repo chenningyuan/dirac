@@ -12,8 +12,52 @@ electron occupations. As an example of such a calculation, showing in
 particular tricks to help convergence, we consider the Nb atom.
 
 The ground state configuration of Nb is
-[Kr].4d\ :sup:`4`\ .5s\ :sup:`1`\  and so a reasonable input for an
-average Hartree--Fock calculation would be::
+[Kr].4d\ :sup:`4`\ .5s\ :sup:`1`\
+
+------------------
+Example 1:  Specifying the occupation of Kappa values
+------------------
+
+From DIRAC21, the atomic calculation with some open shells at the same symmetry (gerade/ungerade)
+converges smoothly by using the keyword :ref:`SCF_.KPSELE`. For the Nb, the menu file would be::
+
+  **DIRAC
+  .WAVE FUNCTION
+  .ANALYZE
+  **HAMILTONIAN
+  .X2C
+  **INTEGRALS
+  *READIN
+  .UNCONTRACT
+  **WAVE FUNCTION
+  .SCF
+  *SCF
+  .CLOSED SHELL
+   18 18
+  .OPEN SHELL
+   2
+   4/10,0
+   1/2,0
+  .KPSELE                                                                                             
+   5                                                                                                   
+   -1  1 -2  2 -3                                                                                      
+    8  6 12  4  6                                                                                      
+    0  0  0  4  6                                                                                      
+    2  0  0  0  0   
+  **ANALYZE
+  .MULPOP
+  *MULPOP
+  .VECPOP
+   1..oo
+   1..oo
+  *END OF
+
+------------------
+Example 2:  Sorting the orbitals
+------------------
+
+ 
+A reasonable input for an average Hartree--Fock calculation would be::
 
   **DIRAC
   .WAVE FUNCTION

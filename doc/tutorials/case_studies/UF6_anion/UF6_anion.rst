@@ -62,19 +62,10 @@ The corresponding molecular input for the uranium atom is
 
 .. literalinclude:: U.mol
 
-For the uranium atom, as explained `here <../../analysis/projection_analysis.html#preparing-the-analysis>`_ 
-we have to proceed in two steps, first calculating the :math:`U^{3+}` cation using the menu file
+For the uranium atom, the calculation of the occupation easily converges by using the keyword :ref:`SCF_.KPSELE`
+from DIRAC21.
 
-.. literalinclude:: UIII.inp
-
-and the command::
-
-   pam --inp=UIII  --mol=U --outcmo 
-
-Then, after identification of the uranium :math:`6d` and :math:`7s` amongst the virtuals by Mulliken population 
-analysis we calculate the neutral atom after proper reordering of orbitals
-
-.. literalinclude:: U.inp
+.. literalinclude:: U_KPSELE.inp
 
 using the command::
 
