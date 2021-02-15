@@ -1027,12 +1027,12 @@ C
 
 C     * OMEGA
       allocate(OMEGA(MAXEXC))
-      CAll interface_mpi_BCAST(OMEGA,MAXEXC,MPARID,
+      CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
      &                  global_communicator)
 C     * ISSYM
 
       allocate(TMPISSYM(MAXEXC))
-      CAll interface_mpi_BCAST(TMPISSYM,MAXEXC,MPARID,
+      CAll interface_mpi_bcast_r1_work_f77(TMPISSYM,MAXEXC,MPARID,
      &                  global_communicator)
 C     * N2BBASXQ for Allocation of CMO
       call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
@@ -1882,10 +1882,10 @@ C       Sizes for OMEGA
         CAll interface_mpi_BCAST(NREDM,1,MPARID,
      &                    global_communicator)
 C       OMEGA      
-        CAll interface_mpi_BCAST(OMEGA,MAXEXC,MPARID,
+        CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
      &                    global_communicator)
 C       ISSYM
-        CAll interface_mpi_BCAST(ISSYM,MAXEXC,MPARID,
+        CAll interface_mpi_bcast_r1_work_f77(ISSYM,MAXEXC,MPARID,
      &                    global_communicator)
 C       Sizes for CMO and IBEIG
         call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
@@ -1958,7 +1958,7 @@ CCCC     ****************************************************
      &              global_communicator)
       call interface_mpi_bcast(NOP, 1,  MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(PBUF, 1*3*2,  MASTER,
+      call interface_mpi_bcast_r2_work_f77(PBUF, 3,2, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NPRPINT, 1, MASTER,
      &              global_communicator)
