@@ -14,9 +14,9 @@ particular tricks to help convergence, we consider the Nb atom.
 The ground state configuration of Nb is
 [Kr].4d\ :sup:`4`\ .5s\ :sup:`1`\
 
-------------------
+-----------------------------------------------------
 Example 1:  Specifying the occupation of Kappa values
-------------------
+-----------------------------------------------------
 
 From DIRAC21, the atomic calculation with some open shells at the same symmetry (gerade/ungerade)
 converges smoothly by using the keyword :ref:`SCF_.KPSELE`. For the Nb, the menu file would be::
@@ -52,9 +52,9 @@ converges smoothly by using the keyword :ref:`SCF_.KPSELE`. For the Nb, the menu
    1..oo
   *END OF
 
-------------------
+--------------------------------
 Example 2:  Sorting the orbitals
-------------------
+--------------------------------
 
  
 A reasonable input for an average Hartree--Fock calculation would be::

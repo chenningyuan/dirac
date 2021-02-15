@@ -24,18 +24,18 @@ strategy:
 The curium atom
 ~~~~~~~~~~~~~~~
 
+For ease of analysis we shall impose linear symmetry also in the atomic 
+calculation. We achieve this through the introduction of a ghost center
+
+.. literalinclude:: Cm.xyz
+
 The ground state configuration of curium (Cm, Z=96) is :math:`[Rn]5f^76d^17s^2` (see `here <https://www.webelements.com/curium/>`_ for general information 
 and `also here <http://physics.nist.gov/PhysRefData/Handbook/Tables/curiumtable5.htm>`_), 
 so with two open shells. We specify this configuration by using the keyword :ref:`SCF_.KPSELE`:
 
 .. literalinclude:: Cm_KPSELE.inp
 
-For ease of analysis we shall impose linear symmetry also in the atomic 
-calculation. We achieve this through the introduction of a ghost center
-
-.. literalinclude:: Cm.xyz
-
- We run the calculation using::
+We run the calculation using::
 
   pam --inp=Cm --mol=Cm.xyz --get "DFCOEF=cf.Cm"
 

@@ -15,9 +15,9 @@ available basis set by K.Dyall, *v2z*.
 Due to the covnergence problem of the standalone  AMFI atomic SCF code we keep the +4 charge (:ref:`AMFI_.AMFICH`) of W for mean-field
 orbitals.
 
-------------------
+----------------------------------------------------
 Example 1: Specifying the occupation of Kappa values
-------------------
+----------------------------------------------------
 We specify the number of the occupation by using the keyword :ref:`SCF_.KPSELE`,which is available from DIRAC21. 
 This is the simplest way. The snip of the menu file is,
 
@@ -35,9 +35,9 @@ This is the simplest way. The snip of the menu file is,
   12  8 16  8 12  6  8                                                                                
    0  0  0  4  6  0  0
  
-------------------
+-------------------------------
 Example 2: Sorting the orbitals
-------------------
+-------------------------------
 ----------------------------
 Starting with :math:`W^{4+}`
 ----------------------------

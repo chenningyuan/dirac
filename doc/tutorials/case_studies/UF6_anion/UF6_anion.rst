@@ -62,8 +62,7 @@ The corresponding molecular input for the uranium atom is
 
 .. literalinclude:: U.mol
 
-For the uranium atom, the calculation of the occupation easily converges by using the keyword :ref:`SCF_.KPSELE`
-from DIRAC21.
+For the uranium atom, the calculation of the occupation easily converges by using the keyword :ref:`SCF_.KPSELE` introduced in DIRAC21.
 
 .. literalinclude:: U_KPSELE.inp
 
