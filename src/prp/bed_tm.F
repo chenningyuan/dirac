@@ -92,7 +92,7 @@ C     Find what symmetries are available
 C
       allocate(IPSYM2INT(NBSYM,NOP))
       NCOMP=NPRPINT/2
-      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
+      CALL ICOPY(NOP*NBSYM,-1,0,IPSYM2INT,1)
       DO I = 1,NCOMP
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
@@ -200,7 +200,7 @@ C
 C       Length of wave vector
 C 
         FAC=OMEGA(IEXC)/CVAL
-        DO IOP = 1,2
+        DO IOP = 1,NOP
            WRITE(PRPNAM(NPRPS+IOP)(9:16),'(A4,I4)') '_exc',IEXC
            DO IMAT = 1,NMAT
               FACPRP(IMAT,NPRPS+IOP) = PBUF(IMAT,IOP)/FAC
@@ -266,7 +266,6 @@ C         ====================================
                 TMOM(IOP,IPAR,IEXC)=D2*
      &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
 CTROND
-              WRITE(6,*) 'TEST..',PRPNAM(INDXPR),'.e-e.',GPOE(1,1)
                 IF(IPRXPP.GE.3) THEN
                   WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
                   CALL PRINT_GP_XP(GPOE,XPOE,
@@ -864,17 +863,132 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck bedleb */                                                   C
+C     * This is the slave interface to the BEDLEB subroutine below     C
+C     * Will receive the necessary information to begin working        C
+C     * on the BEDLEB routine - allocating the needed arrays           C
+C     * for entering BEDLED                                            C
+      SUBROUTINE bedleb_launch_slave_procs()
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use memory_allocator                                 
+      use interface_to_mpi                                 
+#include "implicit.h"                                      
+C                                                          
+C                                                          
+c TODO added due to NESH
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "priunit.h"                                       
+#include "mxcent.h"                                        
+#include "maxorb.h"                                        
+
+#include "aovec.h"                                         
+C TODO commented out due to dcborb.h                                                          
+c#include "inforb.h"                                        
+#include "infpar.h"                                        
+#include "dcbxpp.h"
+#include "molinp.h"                                        
+#include "blocks.h"                                        
+#if defined (PRG_DIRAC)                                    
+#include "dcbgen.h"                                        
+#include "dcbgrd.h"                                        
+#else                                                      
+#include "gnrinf.h"                                        
+#include "energy.h"                                        
+#endif                                                     
+C
+C                                                          
+      DIMENSION DINTSKP(14*3*3)                            
+      INTEGER LWORK, NCOMP, NOPTP, MYPROC
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+C                                                          
+      real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
+      integer, allocatable :: IBEIG(:)
+      INTEGER MAXEXC, I
+      call legacy_lwork_get(LWORK)                         
+      call alloc(WORK,LWORK,id='WORK in BEDLEB')           
+#include "memint.h"
+
+      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+C                                                          
+      CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
+     &                  global_communicator)
+      CAll interface_mpi_BCAST(NREDM,1,MPARID,
+     &                  global_communicator)
+
+C     * OMEGA
+      allocate(OMEGA(MAXEXC))
+      CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
+     &                  global_communicator)
+C     * ISSYM
+
+      allocate(TMPISSYM(MAXEXC))
+      CAll interface_mpi_bcast_r1_work_f77(TMPISSYM,MAXEXC,MPARID,
+     &                  global_communicator)
+C     * N2BBASXQ for Allocation of CMO
+      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+     &              global_communicator)
+C     * IBEIG
+      call interface_mpi_bcast(NTBAS, 3, MPARID,
+     &              global_communicator)
+
+      allocate(CMO(N2BBASXQ))
+      allocate(IBEIG(NTBAS(0)))
+      CALL BEDLEB(OMEGA,TMPISSYM,CMO,IBEIG, EVECR, IBTYP,
+     &                  IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
+      deallocate(TMPISSYM)
+      deallocate(OMEGA)
+      deallocate(CMO)
+      deallocate(IBEIG)
+      RETURN
+
+      END
+C                                                                      C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      module shared_bedled_var_module   
+      LOGICAL NEWTASK
+
+      INTEGER LWORK, NCOMP, NOPTP,IIP
+      character (len=5)                 :: TPAR(3)
+      real(8)             :: BCPU, PBUF(3,2),EEWT(6), TMP
+      logical, allocatable              :: first(:)
+      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE         
+      integer  POINT_PER_PROC, MOD_POINT, ITASK, SNODE, PPPP, NPOINTS
+      integer  PSTART, PEND, PDIF, LINDX, MMAXEXC, MPIGO
+      LOGICAL DOINT(2,2)
+
+      integer, allocatable              :: POINTS(:)
+      real(8), allocatable              :: PRPINT(:,:),BBUF(:)
+      real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
+      character (len=8),  allocatable   :: LABINT(:)
+      integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
+      integer, allocatable              :: IVECS(:)
+      real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
+      real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
+      real(8), allocatable              :: X(:),Y(:),Z(:),WT(:)      
+      integer, allocatable :: norot(:)
+      LOGICAL GASWF
+      end module shared_bedled_var_module
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck bedleb */                                                   C
       SUBROUTINE BEDLEB(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C***********************************************************************
       use orbital_rotation_indices
+      use interface_to_mpi
+      use shared_bedled_var_module
+C
+C      use integer_kind_mpilib
 C     
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+#include "maxash.h"
+#include "dcborb.h"
+C
 #include "dcbgen.h"
 #include "chrxyz.h"
 #include "dcbbas.h"
@@ -887,32 +1001,58 @@ C
 #include "dcbprl.h"            
 #include "dcbibn.h"
 #include "dcbwav.h"
+#include "maxorb.h"
+#include "dcbidx.h"
+#include "mpif.h"
 C#include "cbiher.h"
-      LOGICAL DOINT(2,2)
+C     ************************************************************
+C     * Most variables have been moved to shared_bedled_var_module
+C     * for sharing with MPI slave processes
+C     ************************************************************
       CHARACTER*6 MXFORM, FMT
-      INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
-      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
-      real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
-      character (len=8),  allocatable   :: LABINT(:)
-      character (len=5)                 :: TPAR(3)
-      integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
-      integer, allocatable              :: IVECS(:)
-      real(8)             :: PBUF(3,2),EEWT(6),EVECR(NREDM,*)
+      CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12 
+      CHARACTER ALLCPUTID*12
+      INTEGER :: ISTAT(df_mpi_status_size)
+      INTEGER IBEIG(*)
+      DIMENSION CMO(*),WORK(*)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC)
+      real(8)             :: EVECR(NREDM,*), CPUTIME
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
-      real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
-      real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
-      real(8), allocatable              :: X(:),Y(:),Z(:),WT(:)      
-      logical, allocatable              :: first(:)
-      LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
+      integer   KFRSAV
 C
 #include "ibtfun.h"
+
+      CALL QENTER('BEDLEB')
+C
+#if defined (VAR_MPI)
+      MPARID = 0
+      MASTER = MPARID
+      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+      call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
+
+C     ****************************************************
+C     * All initialization will be performed by the 
+C     * master node from this point 
+C     ****************************************************     
+C     
+C     Setup timing of the BEDLEB routine 
+C
+      CPUTIME = 0
+      CALL GETTIM(BCPU,WALL1)
+      IF (MYPROC.eq.MASTER) THEN
+
+#else
+      MASTER = 0
+      MYPROC = 0
+      NMPROC = 1
+#endif
       NEXCNV = KEXCNV(JSYMOP)
       IF (NEXCNV .EQ. 0) RETURN
       NPOINTS = NLEB(NROTAV)
 C     
 C     Allocate placeholders for integral labels and irreps 
 C
+      NC = 2
       allocate(LABINT(8))
       allocate(INTREP(8))
       allocate(first(nz))
@@ -945,9 +1085,9 @@ C.....allocate array for holding integrals (on lower triangular form)
 C      
 C     Find what symmetries are available
 C
-      allocate(IPSYM2INT(NBSYM,2))
+      allocate(IPSYM2INT(NBSYM,NC))
       NCOMP=NPRPINT/2
-      CALL ICOPY(2*NBSYM,-1,0,IPSYM2INT,1)
+      CALL ICOPY(NC*NBSYM,-1,0,IPSYM2INT,1)
       DO I = 1,NCOMP
         ISYM = INTREP(I) + 1
         IPSYM2INT(ISYM,1) = I
@@ -968,7 +1108,7 @@ C
         CALL QUIT('BEDLEB: Too may properties !')
       ENDIF
       II = 0
-      DO IC = 1,2
+      DO IC = 1,NC
         DO IOP = 1,NOP
           II = II + 1
           IOPTYP = 1 + IOP
@@ -995,6 +1135,7 @@ C
       WRITE(6,*) 'BED rotational average. '
       WRITE(6,*) '  Lmax    = ',NROTAV
       WRITE(6,*) '  Npoints = ',NPOINTS
+      WRITE(6,*) '  Nprocs  = ',NMPROC
 C
 C     Prepare solution vectors
 C     ========================
@@ -1038,9 +1179,10 @@ C
 C     Loop over quadrature points
 C     =============================
 C
-      allocate(TMOM(NOP,2,NPAR,NEXCNV))
+      allocate(TMOM(NOP,NC,NPAR,NEXCNV))
       allocate(OSC(NPAR+1,NEXCNV))
       CALL DCOPY((NPAR+1)*NEXCNV,D0,0,OSC,1)
+
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       allocate( X(NPOINTS))
@@ -1049,8 +1191,36 @@ C
       allocate(WT(NPOINTS))
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
-      DO IP = 1,NPOINTS
-C.......Set up chi-average over polarization directions        
+
+      allocate(POINTS(NPOINTS))
+C    List of indicies
+      POINT_PER_PROC = NPOINTS
+      DO N = 1,NPOINTS
+        POINTS(N) = N
+      ENDDO
+
+#ifdef VAR_MPI
+C     ====================================================
+C     MPI : Call slaves and broadcast data to Slaves 
+C     ====================================================
+      ENDIF
+C     Initialize the Slaves (if there are any other than Master)
+      KFRSAV = KFREE
+      IF (NMPROC.gt.1) THEN
+        CALL bedleb_master_distr(NOP,NC,NPAR,
+     &       OMEGA,ISSYM,IBEIG,EVECR,IBTYP, IPRINT,
+     &       IBCVC,IBEVC,IBPVC, INTTYP, NBAST,
+     &       NELMNT,NPRPINT, CMO, WORK,KFREE,LFREE)
+      ENDIF
+#endif
+
+C     ====================================================
+C     LOOP OVER LEBDEV POINTS AND INTEGRATE 
+C     ====================================================
+      DO IIP = 1,POINT_PER_PROC
+        IP = POINTS(IIP)
+
+C.......Set up chi-average over polarization directions 
         EEWT(1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
         EEWT(2) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
         EEWT(3) = -X(IP)*Z(IP)                   ! (3,1) ! factor 0.5 cancelled by triangular sum
@@ -1069,7 +1239,7 @@ C         Length of wave vector
 C
           FAC=OMEGA(IEXC)/CVAL
           II = 0
-          DO IC = 1,2
+          DO IC = 1,NC
             DO IOP = 1,NOP
               II = II + 1
               WRITE(PRPNAM(NPRPS+II)(9:16),'(A4,I4)') '_exc',IEXC
@@ -1106,7 +1276,7 @@ C     ====================================
           IPAR = IPAR + 1
           II = 0
           TMP = D0
-          DO IC = 1,2
+          DO IC = 1,NC
             DO IOP = 1,NOP
               II = II + 1
               INDXPR = NPRPS+II
@@ -1115,6 +1285,7 @@ C     ====================================
      &              get_orbital_rotation_indices_pp(),
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
+
                 TMOM(IOP,IC,IPAR,IEXC)=D2*
      &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
               ELSE
@@ -1138,7 +1309,7 @@ C     ====================================
           IPAR = IPAR + 1
           II = 0
           TMP = D0
-          DO IC = 1,2
+          DO IC = 1,NC
             DO IOP = 1,NOP
               II = II + 1
               INDXPR = NPRPS+II
@@ -1147,6 +1318,7 @@ C     ====================================
      &              get_orbital_rotation_indices_pn(),
      &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
+
                 TMOM(IOP,IC,IPAR,IEXC)=D2*
      &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
               ELSE
@@ -1163,8 +1335,27 @@ C     ====================================
           ENDDO
           OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
         ENDIF
+CC      END OF if(NZXOPP.GT.0)
+
    10   CONTINUE
       ENDDO
+
+
+#ifdef VAR_MPI
+C     ********************************************************
+C     If running parallel MPI - gather all DATA here
+C     ********************************************************
+      IF (NMPROC.gt.1) THEN
+        call bedleb_gather_slave_data(NPAR, WORK,KFREE,LFREE,KFRSAV,
+     &                                CPUTIME)
+C       SLAVES WILL EXIT BEDLED HERE
+        IF (MYPROC.ne.MASTER) THEN
+          CALL QEXIT('BEDLEB')
+          RETURN
+        ENDIF
+      ENDIF
+C     ********************************************************
+#endif
 C
 C     Final values for oscillator strengths
 C
@@ -1187,6 +1378,25 @@ C
      &     IEXC,OMEGA(IEXC),
      &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
+
+C     
+C     End timing of the BEDLEB routine 
+C
+      CALL GETTIM(CPU2,WALL2)
+      CPU    = CPU2 - BCPU
+      WALL   = WALL2 - WALL1
+      TOTWAL = TOTWAL + WALL
+      CPUTIME = CPUTIME + CPU
+C
+      TOTTID = SECTID(TOTWAL)
+      WRITE(LUPRI,'(A,A12)')
+     &    '>>>> Total wall time used in BEDLEB           : ',
+     &       TOTTID
+      CPUTID = SECTID(CPU)
+      ALLCPUTID = SECTID(CPUTIME)
+      WRITE(LUPRI,'(A,A12,A1,A12)')
+     &    '>>>> Master CPU/Total CPU time used in BEDLEB : ',
+     &       CPUTID,'/',ALLCPUTID
 C            
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -1204,7 +1414,506 @@ C     Memory deallocation
       deallocate(INTREP)
       deallocate(IPSYM2INT)
       deallocate(first)
+      deallocate(POINTS)
+      deallocate(X)
+      deallocate(Y)
+      deallocate(Z)
+      deallocate(WT)
+      CALL QEXIT('BEDLEB')
 C     
+      RETURN
+      END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck bedleb */                                                   C
+C     * This master routine initially starts/calls all the slaves      C
+C     * by sending the iTask ID to main and then follows up            C
+C     * by broadcasting all the initial allocatable variables          C
+C                                                                      C
+      SUBROUTINE bedleb_gather_slave_data(NPAR,WORK,KFREE,LFREE,KFRSAV,
+     &                                    CPUTIME)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use orbital_rotation_indices
+      use interface_to_mpi
+      use shared_bedled_var_module
+C     
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+      real(8)             :: TMPCPU
+#include "maxash.h"
+#include "dcborb.h"
+C
+#include "dcbgen.h"
+#include "chrxyz.h"
+#include "dcbbas.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxpp.h"
+#include "orgcom.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"            
+#include "dcbibn.h"
+#include "dcbwav.h"
+#include "maxorb.h"
+#include "dcbidx.h"
+#include "mpif.h"
+      integer MPARID, MASTER, NMPROC, MYPROC
+C
+#include "ibtfun.h"
+
+      call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
+      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+
+      CALL GETTIM(CPU2,WALL2)
+      CPU    = CPU2 - BCPU
+
+      MPARID = 0
+      MASTER = MPARID
+C     Wait for all processes before doing any Send/Recv
+      call interface_mpi_barrier(global_communicator)
+
+C     If MPI - this remaining part will only be  done by master
+C     *********************************************************     
+C     * Send All Slave results back to the Master
+C     *********************************************************     
+      IF (MYPROC.ne.MASTER) THEN
+C       Send back the OSC Results
+        CALL interface_MPI_RECV(MPIGO, 1,
+     &                          MASTER, 27,global_communicator)
+C       *************** Sends OSC ***************
+        DO IPAR = 1,NPAR
+        DO IEXC = 1,NEXCNV
+          tmp = OSC(IPAR,IEXC)
+          CALL interface_MPI_SEND(tmp, 1,
+     &                            MASTER, 28,global_communicator)
+        ENDDO
+        ENDDO
+        CALL interface_MPI_SEND(CPU, 1,
+     &                          MASTER, 28,global_communicator)
+C       *************** Deallocate ***************
+
+C       Deallocate all data for the Slaves
+        deallocate(TMOM)
+        deallocate(OSC)
+        deallocate(X)
+        deallocate(Y)
+        deallocate(Z)
+        deallocate(WT)
+        deallocate(POINTS)
+        deallocate(PRPINT)
+        deallocate(INTREP)
+        deallocate(LABINT)
+        IF(NZXOPE.GT.0) THEN
+          deallocate(GPOE)
+          deallocate(XPOE)
+        ENDIF
+        IF(NZXOPP.GT.0) THEN
+          deallocate(GPOP)
+          deallocate(XPOP)
+        ENDIF
+C     *********************************************************     
+C     * Receive All Slave results
+C     *********************************************************     
+      ELSE
+C       Receive results from each Node
+C       And each IEXC
+C       ****************************************************
+C       * Same as splitting - now receiving OSC val from
+C       * each slave node
+C       ****************************************************     
+C       Offset by POINT_PER_PROC - since master will also work
+        PEND = POINT_PER_PROC 
+C
+        DO SNODE = 1, NMPROC-1
+C       ************ Send go to Slave ************
+        CALL interface_MPI_SEND(1, 1,
+     &                          SNODE, 27,global_communicator)
+C         ------------------------------
+C         Calc Point distrib
+C         ------------------------------
+C         Offset by POINT_PER_PROC - since master will also work
+          PSTART = 1 + PEND 
+          PEND   = PSTART + POINT_PER_PROC - 1
+
+C         Once the the remainder is equally divisible - make it so
+          if ((SNODE).eq.MOD_POINT) then
+              POINT_PER_PROC = POINT_PER_PROC - 1
+          endif
+
+C         Make sure that the 'end' is max the length if the list
+          if (PEND.gt.NPOINTS) PEND = NPOINTS
+
+C         ------------------------------
+C         Receive OSC results
+C         ------------------------------
+          DO IPAR = 1,NPAR
+          DO IEXC = 1,NEXCNV
+            CALL interface_MPI_RECV(TMP,1,
+     &                            SNODE, 28,global_communicator)
+            OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + TMP
+          ENDDO
+          ENDDO
+          CALL interface_MPI_RECV(TMPCPU, 1,
+     &                          SNODE, 28,global_communicator)
+          CPUTIME = CPUTIME + TMPCPU
+C       end SNODE
+        ENDDO
+      ENDIF
+c     ********************************************************** 
+c     * END OF GATHERING SLAVE DATA
+c     ********************************************************** 
+      call interface_mpi_barrier(global_communicator)
+
+      CALL MEMREL('BEDLEB',WORK,1,KFRSAV,KFREE,LFREE)
+c     ********************************************************** 
+c     * END OF MPI PART 
+c     ********************************************************** 
+      Return
+      END
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck bedleb */                                                   C
+C     * This master routine initially starts/calls all the slaves      C
+C     * by sending the iTask ID to main and then follows up            C
+C     * by broadcasting all the initial allocatable variables          C
+C                                                                      C
+      SUBROUTINE bedleb_master_distr(NOP,NC,NPAR,
+     &       OMEGA,ISSYM,IBEIG,EVECR,IBTYP, IPRINT,
+     &       IBCVC,IBEVC,IBPVC,INTTYP, NBAST,
+     &       NELMNT,NPRPINT, CMO, WORK,KFREE,LFREE)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use orbital_rotation_indices
+      use interface_to_mpi
+      use shared_bedled_var_module
+C     
+#include "implicit.h"
+#include "priunit.h"
+C
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+#include "maxash.h"
+#include "dcborb.h"
+C
+#include "dcbgen.h"
+#include "chrxyz.h"
+#include "dcbbas.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbxrs.h"
+#include "dcbxpp.h"
+#include "orgcom.h"
+#include "dcbxpr.h"
+#include "dcbprl.h"            
+#include "dcbibn.h"
+#include "dcbwav.h"
+#include "maxorb.h"
+#include "dcbidx.h"
+#include "mpif.h"
+      integer MPARID, MASTER, NMPROC, MYPROC
+C
+#include "ibtfun.h"
+
+      call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
+      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+
+      MPARID = 0
+      MASTER = MPARID
+C     * =================================================
+C     *       MASTER ONLY
+C     * =================================================
+      IF (MYPROC.eq.MASTER) THEN
+C       ****************************************************
+C       *     Scatter the points to calculate to the slaves
+C       ****************************************************     
+C       Reduce NPOINTS to the number of points per process
+C       Calculate the number of points per process 
+        POINT_PER_PROC = NPOINTS / NMPROC
+        MOD_POINT = DMOD(NPOINTS, NMPROC)
+        IF (MOD_POINT.gt.0) POINT_PER_PROC = POINT_PER_PROC + 1
+
+C       ****************************************************
+C       * Call upon the slaves in main/dirac.f (DIRNOD) 
+C       * and begin to distribute the data created    
+C       ****************************************************     
+        ITASK = 21  
+        DO SNODE = 1, NMPROC-1
+          CALL interface_MPI_SEND(ITASK, 1, SNODE, 27,
+     &                            global_communicator)
+        ENDDO
+C       ****************************************************
+C       * Distribute the data needed for the slaves to enter
+C       * BEDLED in the first place : 
+C       *     -> bedleb_launch_slave_procs() 
+C       ****************************************************     
+C       Sizes for OMEGA
+        
+        CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
+     &                    global_communicator)
+        CAll interface_mpi_BCAST(NREDM,1,MPARID,
+     &                    global_communicator)
+C       OMEGA      
+        CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
+     &                    global_communicator)
+C       ISSYM
+        CAll interface_mpi_bcast_r1_work_f77(ISSYM,MAXEXC,MPARID,
+     &                    global_communicator)
+C       Sizes for CMO and IBEIG
+        call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+     &                global_communicator)
+        call interface_mpi_bcast(NTBAS, 3, MPARID,
+     &                global_communicator)
+
+C       *****************************************************
+C       * Split and distribute the points to each slave 
+C       * process to calculate - each slave will receive
+C       * this information in below in the SLAVE ONLY SECTION
+C       *****************************************************     
+        PEND = POINT_PER_PROC 
+        PPPP = POINT_PER_PROC
+        DO SNODE = 1, NMPROC-1
+C         Offset by POINT_PER_PROC - since master will also work
+          PSTART = 1 + PEND 
+          PEND   = PSTART + POINT_PER_PROC - 1
+
+C         Once the the remainder is equally divisible - make it so
+          if ((SNODE).eq.MOD_POINT) POINT_PER_PROC = POINT_PER_PROC - 1
+
+C         Make sure that the 'end' is max the length if the list
+          if (PEND.gt.NPOINTS) PEND = NPOINTS
+
+          PDIF = PEND - PSTART + 1
+C         ----------------------------------------------------------- 
+C         - Send a sub array of points to the target slave node
+C         ----------------------------------------------------------- 
+          CALL interface_MPI_SEND(PDIF, 1, SNODE, 27,
+     &                            global_communicator)
+          CALL interface_MPI_SEND(POINTS(PSTART:PEND), 
+     &                            PDIF, SNODE, 27,global_communicator)
+        ENDDO
+C       If 1 was subtracted - put it back
+        POINT_PER_PROC = PPPP
+        POINTS = POINTS(1:POINT_PER_PROC)
+      ELSE
+C       * =================================================
+C       *       SLAVES ONLY
+C       * =================================================
+        CALL interface_MPI_RECV(POINT_PER_PROC,1,MASTER,27,
+     &                            global_communicator)
+        allocate(POINTS(POINT_PER_PROC))
+        CALL interface_MPI_RECV(POINTS,POINT_PER_PROC,MASTER,27,
+     &                            global_communicator)
+C       * =================================================
+      ENDIF
+
+
+CCCC     ****************************************************
+CCCC     * Broadcast all the information needed to 
+CCCC     * perform the BEDLEB integral for the Slaves 
+CCCC     ****************************************************
+      call interface_mpi_bcast(LFREE, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPOINTS, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NEXCNV, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPAR, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NELMNT, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NBAST, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NC, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NOP, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_r2_work_f77(PBUF, 3,2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPRPINT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NZXOPE, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NZXOPEQ, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NZXOPPQ, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NZXOPP, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NZHOPE, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(norbt, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(SKIPEE, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(SKIPEP, 1,  MASTER,
+     &              global_communicator)
+    
+      IF (MYPROC.ne.MASTER) THEN
+        KFREE = 1
+        CALL MEMGET2('REAL','LINDX',LINDX,NELMNT,
+     &               WORK,KFREE,LFREE)
+        
+        allocate(TMOM(NOP,NC,NPAR,NEXCNV))
+        allocate(OSC(1+NPAR,NEXCNV))
+        allocate(X(NPOINTS))
+        allocate(Y(NPOINTS))
+        allocate(Z(NPOINTS))
+        allocate(WT(NPOINTS))
+        allocate(PRPINT(NELMNT,NPRPINT))
+        allocate(INTREP(8))
+        allocate(LABINT(8))
+        IF(NZXOPE.GT.0) THEN
+          allocate(GPOE(NZXOPEQ,NOP))
+          allocate(XPOE(NZXOPEQ,NEXCNV))
+          call DZERO(GPOE, NZXOPEQ*NOP)
+        ENDIF
+        IF(NZXOPP.GT.0) THEN
+          allocate(GPOP(NZXOPPQ,NOP))      
+          allocate(XPOP(NZXOPPQ,NEXCNV))
+          call DZERO(GPOP, NZXOPPQ*NOP)
+        ENDIF
+      ENDIF
+
+      call DZERO(TMOM, NOP*NC*NPAR*NEXCNV)
+      call interface_mpi_bcast_r2_work_f77(OSC, (1+NPAR),NEXCNV, 
+     &             MASTER, global_communicator)
+      call interface_mpi_bcast_r1_work_f77(X, NPOINTS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_r1_work_f77(Y, NPOINTS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_r1_work_f77(Z, NPOINTS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_r1_work_f77(WT, NPOINTS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+     &              global_communicator)
+      call interface_mpi_bcast_r1_work_f77(CMO,N2BBASXQ, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NISH, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NFRO, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NASH, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NESH, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPSH, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(INTTYP, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPRPINT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(INTREP, 8*1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(ANTI, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(SQUARE, 1,  MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(LABINT, 8*8*1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(TRIANG, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(TRASPH, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(SOLVNT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(DOINT, 4*1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(DUMMY, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IPRINT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(JOPSY, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2BBASX, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NFBAS, 6, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NTBAS, 3, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NBBAS, 8*3, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IBBAS, 8*3, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(MXFBAS, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(CVAL, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPRPS, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IOBTYP, MXCORB, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IFSMO, MXCORB, MASTER,
+     &              global_communicator)
+C    ** bcast file name labels **
+      call interface_mpi_bcast(IPRPLBL, 3*MAXPRPS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(PRPLBL, 8*MAXPRPLBL, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(PRPNAM, 16*MAXPRPS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IPRPTYP, MAXPRPS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IPRPSYM, MAXPRPS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IPRPTIM, MAXPRPS, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IPRLTYP, MAXPRPLBL, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IPRLREP, MAXPRPLBL, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(PDOINT, 4*MAXPRPLBL, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPMO, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NORB, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(IORB, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NSTR, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPMOT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NNBBASX, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NPRPLBL, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(LU1INT, 1, MASTER,
+     &              global_communicator)
+
+      call interface_mpi_bcast(INDSTR(1,1), 1*72, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(INDSTR(2,1), 1*72, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(INDSTR(3,1), 1*72, MASTER,
+     &              global_communicator)
+
+C     All slaves must setup orbital informations
+      IF (MYPROC.ne.MASTER) THEN
+        allocate(norot(norbt*1))
+        call IZERO(norot, norbt*1)
+        GASWF = .FALSE.
+        CALL SETXOP(INDSTR,SKIPEE,SKIPEP,GASWF,JOPSY,NOROT,
+     &            NZXOPE,NZHOPE,NZXOPP,
+     &            IPRINT)
+        deallocate(norot)
+      ENDIF
+C
+      call interface_mpi_bcast(NZXOPP, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(XPOE, NZXOPEQ*NEXCNV, 
+     &             MASTER, global_communicator)
+      call interface_mpi_bcast(XPOP, NZXOPPQ*NEXCNV, 
+     &             MASTER, global_communicator)
+      IF(NZXOPP.GT.0) then
+      call interface_mpi_bcast(XPOP, NZXOPEQ*NEXCNV, 
+     &             MASTER, global_communicator)
+      endif
+      call interface_mpi_bcast(NZXOPE, 1, MASTER,
+     &              global_communicator)
+
+
       RETURN
       END
 CCCCCCCCCCCCCCCCCCCCCCCCC
