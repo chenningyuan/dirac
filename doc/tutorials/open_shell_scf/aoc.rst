@@ -203,6 +203,7 @@ convergence. More specifically, this happens when the orbitals of an open shell 
 However, such situations are often symptomatic for a wrong choice of partitioning of orbitals into closed and open shells. Furthermore, 
 the definition of the active-active block in pre-DIRAC12 versions tend to close the HOMO-LUMO gap which may hamper convergence.
 
+
 Level shift
 -----------
 
@@ -214,3 +215,12 @@ definition of diagonal blocks of the Fock matrix and introduce a *level shift* :
 
 The level shift of secondary (virtual) orbitals is controlled by the keyword :ref:`SCF_.LSHIFT`, whereas open shells can be shifted
 using the keyword :ref:`SCF_.OLEVEL`.
+
+Convergence issues
+==================
+
+Open-shell systems tend to be more difficult to converge than closed-shell ones, because of additional orbital classes and more possibilities of near-degeneracies between orbital classes. It is important to understand that DIRAC will generally order orbitals
+according to energy. Furthermore, DIRAC starts by filling closed-shell orbitals, then open-shell ones.
+In the case of Uranium (:math:`[Rn]5f^36d^17s^2`) the closed-shell :math:`7s` orbitals will have higher orbital energies than the
+:math:`6d` open-shell ones, and this may lead to convergence problems. Fortunately, since DIRAC21 convergence of open-shell atoms
+is unproblematic thanks to atomic supersymmetry, see keyword :ref:`SCF_.KPSELE`.      
