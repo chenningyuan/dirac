@@ -286,7 +286,8 @@ module matrix_complex_to_quaternion
                  LCA = size(A,2)
                  LRV = LRA
                  LCV = LCA
-                 lwork = 1000000*LRA
+                 !lwork = 1000000*LRA
+                 lwork = 10*LRA
                  NZ = 4
                  N = LRA
                  MATZ = 1
