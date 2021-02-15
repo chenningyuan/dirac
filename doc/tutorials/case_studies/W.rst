@@ -15,11 +15,35 @@ available basis set by K.Dyall, *v2z*.
 Due to the covnergence problem of the standalone  AMFI atomic SCF code we keep the +4 charge (:ref:`AMFI_.AMFICH`) of W for mean-field
 orbitals.
 
+------------------
+Example 1: Specifying the occupation of Kappa values
+------------------
+We specify the number of the occupation by using the keyword :ref:`SCF_.KPSELE`,which is available from DIRAC21. 
+This is the simplest way. The snip of the menu file is,
+
+::
+
+  *SCF                                                                                                
+  .CLOSED SHELL                                                                                       
+   32 38                                                                                               
+  .OPEN SHELL                                                                                         
+  1                                                                                                   
+  4/10,0                                                                                               
+  .KPSELE                                                                                             
+  7                                                                                                   
+  -1  1 -2  2 -3  3 -4                                                                                
+  12  8 16  8 12  6  8                                                                                
+   0  0  0  4  6  0  0
+ 
+------------------
+Example 2: Sorting the orbitals
+------------------
 ----------------------------
 Starting with :math:`W^{4+}`
 ----------------------------
 
-Based on experience with *d* open-shell systems, the first step is to obtain converged state of the (closest) closed-shell cation, :math:`W^{4+}`.
+It is a traditional way. Based on experience with *d* open-shell systems,
+the first step is to obtain converged state of the (closest) closed-shell cation, :math:`W^{4+}`.
 We do not lean on the program's auto-occupation scheme, rather we ensure proper spinors occupation of two fermion irreducible representations:
 
 ::

@@ -1952,8 +1952,8 @@ C readling input
                  ELSE
                    KP = KP_NORB(I)
                    IF(NFSYM.EQ.1)THEN
-                     J = ABS(KP)*2 + (KP-1)/2
-                     NISH_BOS(J) = SEL_NORB(I,0) /2
+                     J = ABS(KP)*2 + (KP/ABS(KP)-1)/2 !(KP,J)=(1,2)(-2,3)(2,4)etc
+                     NISH_BOS(J) = SEL_NORB(I,0)/2
                    ELSE
                      IF(KP.LT.0)THEN
                        IF(mod(-KP,2).EQ.1)THEN
@@ -1986,7 +1986,7 @@ C readling input
                    ELSE
                      KP = KP_NORB(I)  
                      IF(NFSYM.EQ.1)THEN
-                       J = ABS(KP)*2 + (KP-1)/2 
+                       J = ABS(KP)*2 + (KP/ABS(KP)-1)/2 
                        NACSH_BOS(J,IOPEN) = SEL_NORB(I,IOPEN)/2
                      ELSE
                        IF(KP.LT.0)THEN

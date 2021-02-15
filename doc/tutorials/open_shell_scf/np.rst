@@ -16,9 +16,49 @@ This is a tough cookie.  First we prepare the mol file::
   LARGE BASIS dyall.v2z
   FINISH
 
-The next step will be to remove the valence electrons
-and to compute the [Rn] configuration and to keep the DFCOEF
-file::
+------------------
+Example 1: Specifying the occupation of Kappa values
+------------------
+From DIRAC21, this kind of open-shell sysmtem converges smoothly by using the keyword :ref:`SCF_.KPSELE`.
+For Np atom, the menu file would be::
+  
+  **DIRAC                                                                                             
+  .WAVE FUNCTION                                                                                      
+  .ANALYZE                                                                                            
+  **HAMILTONIAN                                                                                       
+  .X2C                                                                                                
+  **INTEGRALS                                                                                     
+  *READIN                                                                                             
+  .UNCONTRACT                                                                                         
+  **WAVE FUNCTION                                                                                     
+  .SCF                                                                                                
+  *SCF                                                                                                
+  .CLOSED SHELL                                                                                       
+   44 44                                                                                              
+  .OPEN SHELL                                                                                         
+  2                                                                                                   
+  4/0,14                                                                                              
+  1/10,0                                                                                              
+  .KPSELE                                                                                             
+  7                                                                                                   
+  -1  1  -2  2 -3  3 -4                                                                               
+  14 10  20 12 18  6  8                                                                               
+   0  0   0  0  0  6  8                                                                               
+   0  0   0  4  6  0  0                                                                               
+  **ANALYZE                                                                                           
+  .MULPOP                                                                                             
+  *MULPOP                                                                                             
+  .VECPOP                                                                                             
+   1..oo                                                                                              
+   1..oo                                                                                              
+  *END OF    
+  
+Other closed shell cations, for example, :math:`Lu^{+}`, :math:`Hf^{2+}`, :math:`Ta^{3+}`, and :math:`W4+` would converge by specifying the occupation number by using  :ref:`SCF_.KPSELE`, although it was not easy in the tradiational way, as shown below.
+
+------------------
+Example 2: Sorting the orbitals
+------------------
+First, we remove the valence electrons and to compute the [Rn] configuration and to keep the DFCOEF file::
 
   **DIRAC
   .WAVE FUNCTION
