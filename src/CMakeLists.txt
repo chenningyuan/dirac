@@ -113,13 +113,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
 add_definitions(-DMOD_EXACORR)
 endif()
 
-# geniao as separate library
-if(ENABLE_GENIAO)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/geniao)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:geniao> ${EXTERNAL_OBJECTS})
-#add_definitions(-DMOD_GENIAO)
-endif()
-
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})

@@ -1545,94 +1545,67 @@
      real*8,intent(in)    :: eps(*)
 
 !---------------Local variables -----------------------------------
-      INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)  
-      INTEGER :: IERR, ISIZE, select_eom,dum2
-      REAL*8 :: IND(MXREP),dum1(rcw),eigenvalues_temp(1:rcw,0:(nroot+1))
+      INTEGER :: IERR, ISIZE, select_eom,iroot
       REAL*8 :: E_OFF
       INTEGER :: nstate_sym(nrep,4)
 !---------------Executable code--------------------------------------
 
-    dum1(1:rcw) = 0.0d0
-    dum2 = 0
-
-! Generate an array denoting number of states per symmetry...
-
    nstate_sym(1:nrep,1:4) = 0
+   CALL PRSYMB(iw,'=',80,0)
 
    select case(eomtype)
 
     case('IP')
 
       nstate_sym(state_sym,3) = nroot
+      WRITE(iw,'(/A,A4,A,I2,A/)') ' *** EXCITATIONS OF FERMION IRREP ',REPNA(irpoff+state_sym),"(",state_sym,") ***"
       select_eom = 3
-      ISIZE = nroot
 
     case('EA')
 
       nstate_sym(state_sym,2) = nroot
+      WRITE(iw,'(/A,A4,A,I2,A/)') ' *** EXCITATIONS OF FERMION IRREP ',REPNA(irpoff+state_sym),"(",state_sym,") ***"
       select_eom = 2
-      ISIZE = nroot 
 
     case('EE')
 
-     nstate_sym(state_sym,4) = nroot
-     select_eom = 4
-     ISIZE = nroot + 1 
+      nstate_sym(state_sym,4) = nroot
+      WRITE(iw,'(/A,A4,A,I2,A/)') ' *** EXCITATIONS OF BOSON IRREP ',REPNA(irpoff+state_sym),"(",state_sym,") ***"
+      select_eom = 4
 
   end select  
-
-!     ISIZE = nroot + 1 ! possibly correct
-      ALLOCATE (INDX_ALL(ISIZE),STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in INDX_ALL allocation !')
-      ENDIF
-      ALLOCATE (IRPS_ALL(ISIZE),STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in IRPS_ALL allocation !')
-      ENDIF
 
 !     Initialize the reference energy
 
       E_OFF = ESCF + ECCSD
 
 !     Print an ordered list of eigenvalues
+      CALL PRSYMB(iw,'-',80,0)
+       IF      (RCW.EQ.1) THEN
+          WRITE (iw,1005)
+          DO iroot = 1,nroot
+           WRITE(iw,1010)   &
+     &       iroot,eigenvalues(1,iroot),E_OFF+eigenvalues(1,iroot)
+         ENDDO
 
-      IF ((select_eom==2).OR.(select_eom==3)) THEN
-!        Odd electron case : fermion irreps
-         CALL PRT_EV (IW,NREP,nstate_sym(1,select_eom),REPNA(1), &
-     &                E_OFF,ECCSDIM,RCW, &
-     &                EIGENVALUES(1:RCW,1:ISIZE),ISIZE, &
-     &                INDX_ALL,IRPS_ALL,IND,dum1,dum2)
-      ELSE IF ((select_eom==4)) THEN 
-!        Add energy of (0,0) sector to list of printed energies for the (1,1) sector
-!        This makes the routine print excitation energies
-         nstate_sym(1,select_eom) = nstate_sym(1,select_eom) + 1
+       ELSE IF (RCW.EQ.2) THEN
+         WRITE (iw,1007)
+         DO iroot = 1,nroot
+           WRITE(iw,1015)   &
+     &       iroot,eigenvalues(1,iroot),E_OFF+eigenvalues(1,iroot),ECCSDIM+eigenvalues(2,iroot)
+         ENDDO
+       ELSE
+         call quit('eom_anaysis: Unknown algebra (RCW) !')
+       ENDIF
+      CALL PRSYMB(iw,'-',80,0)
+      
+      call evector_analysis (state_sym,select_eom,nstate_sym,eps,iprnt,e_off,eigenvalues(1:rcw,1:nroot),eigenvectors)
 
-         EIGENVALUES_temp(1:RCW,0:(nroot+1)) = 0.D0
-         EIGENVALUES_temp(1:RCW,1:nroot)=eigenvalues(1:RCW,1:nroot)
-
-!        Even electron case : boson irreps
-         CALL PRT_EV (IW,NREP,nstate_sym(1,select_eom),REPNA(NREP+1), &
-     &                E_OFF,ECCSDIM,RCW, &
-     &                EIGENVALUES_temp(1:RCW,0:ISIZE),ISIZE, &
-     &                INDX_ALL,IRPS_ALL,IND,dum1,dum2)
-!        One should not forget this line : the real dimension of the first irrep should be retained !
-         nstate_sym(1,select_eom) = nstate_sym(1,select_eom) - 1
-      ENDIF
-
-      call evector_analysis (state_sym,select_eom,nstate_sym,eps,iprnt,e_off,eigenvalues(1:rcw,1:isize),eigenvectors)
-
-      DEALLOCATE (INDX_ALL,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in INDX_ALL deallocation !')
-      ENDIF
-      DEALLOCATE (IRPS_ALL,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in IRPS_ALL deallocation !')
-      ENDIF
-
-!     deallocate(nstate_sym)
-
+      CALL PRSYMB(iw,'=',80,0)
+ 1005 FORMAT(//' Level   Abs eigenvalue      Total Energy   (atomic units)'/)
+ 1010 FORMAT(I5,F17.10,F20.12,'  ',F20.12)
+ 1007 FORMAT(//' Level   Abs eigenvalue      Total Energy       Total imag.ener.   (atomic units)'/)
+ 1015 FORMAT(I5,F17.10,F20.12,'  ',F20.12,' ',F20.15)
    end subroutine
 
 
@@ -2253,11 +2226,52 @@ subroutine eom_analysis_allirreps(davResults, eps)
 #include "complex.inc"
 #include "files.inc"
 #include "ccpar.inc"
+#include "results.inc"
 !--------------------------------------------------
    type(davidson_results), intent(inout) :: davResults(nrep)
    real(kind=8)                          :: eps(*)
-!--------------------------------------------------
-   write (iw,*) "Analysis of all EOM roots not implemented yet !"
+!---------------Local variables -----------------------------------
+   integer :: iroot,ioff,isize,dum2
+   real*8, allocatable  :: eigenvalues(:,:)
+   real*8               :: E_OFF,dum1(rcw)
+   integer, allocatable :: nstate_sym(:),ind(:),irps(:),indx(:)
+!---------------Executable code--------------------------------------
+   allocate(nstate_sym(nrep))
+   allocate(ind(nrep))   
+   nstate_sym(1:nrep)=relcc_eom_nroots(1:nrep)
+   if(eomtype.eq.'EE') then
+      isize=sum(relcc_eom_nroots)+1
+      allocate(indx(isize))
+      allocate(irps(isize))      
+      allocate(eigenvalues(rcw,isize))
+      nstate_sym(1)=nstate_sym(1)+1
+      ioff=2
+   else
+     isize=sum(relcc_eom_nroots)
+     allocate(indx(isize))
+     allocate(irps(isize))      
+     allocate(eigenvalues(rcw,isize))
+     ioff=1
+   endif
+   eigenvalues=0.0D0
+   do state_sym = 1, nrep
+   if(relcc_eom_nroots(state_sym).gt.0) then
+     eigenvalues(1:RCW,ioff:ioff+relcc_eom_nroots(state_sym)-1)=davResults(state_sym)%eValues(1:RCW,1:relcc_eom_nroots(state_sym))
+     ioff=ioff+relcc_eom_nroots(state_sym)
+   endif
+   enddo
+   dum1(1:rcw) = 0.0d0
+   dum2 = 0
+   E_OFF = ESCF + ECCSD
+   CALL PRT_EV (IW,NREP,nstate_sym,REPNA(1+irpoff), &
+     &                E_OFF,ECCSDIM,RCW, &
+     &                eigenvalues(1,1),isize, &
+     &                indx,irps,ind,dum1,dum2)
+   deallocate(nstate_sym)
+   deallocate(ind)   
+   deallocate(indx)
+   deallocate(irps)
+   deallocate(eigenvalues)
 end subroutine
 
 #if 0

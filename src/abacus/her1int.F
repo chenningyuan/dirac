@@ -1605,8 +1605,8 @@ C
             CALL HDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFOBX,DIFOBY,DIFOBZ)
 C
-C        Potential energy at the individual nuclei
-C        -----------------------------------------
+C        Potential energy of interaction of electrons with individual nuclei
+C        -------------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -2514,15 +2514,19 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
-      PARAMETER (ALPMVL = ALPHA2*0.125D0, ALPMV2 = ALPHA2*0.25D0)
+      DOUBLE PRECISION ALPMVL,ALPMV2
+
+      ALPMVL = ALPHA2*0.125D0
+      ALPMV2 = ALPHA2*0.25D0
+
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3792,7 +3796,7 @@ C  /* Deck npeint */
       SUBROUTINE NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
 C
-C     Potential energy at the nuclei
+C     Potential energy of interaction of electrons with individual nuclei
 C
 C     K.Ruud, July 1992
 C
@@ -4716,15 +4720,15 @@ C  /* Deck dwnint */
 C
 C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 C
       PARAMETER (D0 = 0.0D0)
-      PARAMETER (DWNFAC = 0.5D0*PI*ALPHA2)
+      DOUBLE PRECISION DWNFAC
       DIMENSION SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
@@ -4732,6 +4736,9 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+#include "pi.h"
+C
+      DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC
       INT = 0
       DO 100 ICOMPA = 1,KCKTA

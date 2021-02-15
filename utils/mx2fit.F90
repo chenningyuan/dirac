@@ -132,8 +132,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM = 2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -141,6 +140,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -297,8 +301,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -306,6 +309,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP),YB(MP),XB(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -447,8 +455,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI,CNV = PI/360.0D0)
@@ -456,6 +463,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2

@@ -203,12 +203,11 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
        use interface_grid
-       use codata
 
 #include "implicit.h" 
-#include "priunit.h" 
-
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "codata.h"
+#include "priunit.h"
+#include "consts.h"
 
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
@@ -242,6 +241,7 @@ C
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
 #include "ibtfun.h"
+C
       ADDSML = num_grid_cfg_force_4c_grid.OR.
      &         (MC.GT.1.AND.(.NOT.LEVYLE))
 C
@@ -997,9 +997,9 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "pi.h"
       PARAMETER(ACC=1.0D-5)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
-      PARAMETER (PI = 3.14159 26535 89793 D00)
       PARAMETER(MXIT=20)
       DIMENSION CF(4,0:4)
       DATA CF/0.91570D0,0.78806D-1,0.28056D-2,3.4197D-05,
@@ -1062,9 +1062,9 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
+#include "pi.h"
       PARAMETER(ACC=1.0D-6)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
-      PARAMETER (PI = 3.14159 26535 89793 D00)
       PARAMETER(MXIT=8)
 C
 C     Initialization
@@ -1240,11 +1240,10 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
-
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+#include "consts.h"
 #include "dcbbas.h"
 C
 #if defined (VAR_G77) || defined (SYS_SX)
@@ -1265,7 +1264,6 @@ C     Arrays for 2nd order polynomial fit:
 C
       DIMENSION A(3,3),B(3),COFF(3),D(3),X(3),Y(3)
 C
-
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(A,I2,A,I2,A)') '** Region of density minimum '//
      &      'for atom pair (', ICENTA,',', ICENTB,')'
@@ -1416,7 +1414,6 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"

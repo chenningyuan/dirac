@@ -61,9 +61,9 @@ C     common block infpar
      &' thread limit - # processes - # threads: ',
      & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
-     &' max # threads - current # threads - current thread: ',
-     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
@@ -1184,16 +1184,17 @@ C***********************************************************************
       
       if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
 
+! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
-      MAX_OMP_THREADS = omp_get_max_threads()
-      write(lupri,'(//A,3I5)')
-     &' * openMP activated, '//
-     &' thread limit - # processes - # threads: ',
-     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+!     MAX_OMP_THREADS = omp_get_max_threads()
+!     write(lupri,'(//A,3I5)')
+!    &' * openMP activated, '//
+!    &' thread limit - # processes - # threads: ',
+!    & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
-     &' max # threads - current # threads - current thread: ',
-     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
