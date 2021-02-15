@@ -29,7 +29,7 @@ extensions = ['sphinx.ext.autodoc',
 
 #ayaki
 extensions = ['sphinxcontrib.bibtex']
-bibtex_bibfiles = ['refs.bib']
+bibtex_bibfiles = ['references.bib']
 #ayaki
 
 # be safe about adding new extensions

@@ -95,24 +95,20 @@ symmetry there four occupation numbers in line.
 
 keyword(MJSELE)
 
-Occupation of MJ-splitted fermion irreps (only for the linear
-symmetry). Next line contains sequence of occupation numbers, see
-the SCF output for how many.
-
+In the case of linear supersymmetry give occupation for each :math:`M_J` value.
 keyword(KPSELE)
 
-Occupation of  Kappa-splitted fermion irreps (only for the atomic symmetry).
-It can be combined with Ghost atom at the linear symmetry,
-but cannot be combined with MJSELE.
+In the case of **atomic supersymmetry** give occupation for each :math:`\kappa` - value.
+This option also works in linear supersymmetry when a single atomic center is combined with a ghost atom.
 
-The format of :ref:`SCF_.KPSELE` in the case of Uranium (:math:`[Rn]5f^36d^17s^2`)
-is as follows. The formats of :ref:`SCF_.BOSONS` and :ref:`SCF_.MJSELE` are similar.
+The format of :ref:`SCF_.KPSELE` is illustrated for the case of Uranium (:math:`[Rn]5f^36d^17s^2`) below.
+The formats of :ref:`SCF_.BOSONS` and :ref:`SCF_.MJSELE` are similar.
 
 
 ::
    
    .KPSELEC
-   9                   # Number of the Kappa-splitted orbital
+   7                   # Number of the Kappa-splitted orbital
    #s   p-  p+  d-  d+  f-  f+
     -1   1  -2   2  -3   3  -4    # Values of Kappa
     14  10  20  12  18   6   8    # Number of the electrons in the closed orbitals
