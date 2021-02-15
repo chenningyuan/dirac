@@ -8,20 +8,20 @@
 **GENERAL
 .PCMOUT
 **HAMILTONIAN
-.NONREL
+.X2C
 **WAVE FUNCTION
 .SCF
 .EXACC
 *SCF
 .EVCCNV
-1.0E-9 1.0E-8 
+1.0E-9 1.0E-8
 **EXACC
 .OCCUPIED                                                                                           
 1..5                                                                                                
 .VIRTUAL                                                                                            
-5..26 
+5..26
 .MP2NO
-0.0d-3
+1.0d-4 
 **MOLECULE
 *SYMMETRY
 .NOSYM

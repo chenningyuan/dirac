@@ -5,23 +5,21 @@
  1
 *READIN                                                                                             
 .UNCONTRACT  
-**GENERAL
-.PCMOUT
 **HAMILTONIAN
-.NONREL
+.X2C
 **WAVE FUNCTION
 .SCF
 .EXACC
 *SCF
 .EVCCNV
-1.0E-9 1.0E-8 
+1.0E-9 1.0E-8  
 **EXACC
 .OCCUPIED                                                                                           
-1..5                                                                                                
+1..5 
 .VIRTUAL                                                                                            
-5..26 
+6..33    
 .MP2NO
-3.0d-3
+0.0d-3
 **MOLECULE
 *SYMMETRY
 .NOSYM
