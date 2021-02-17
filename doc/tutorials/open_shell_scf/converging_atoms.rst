@@ -1,8 +1,8 @@
 :orphan:
 
 
-Converging atoms   
-=======
+Converging atoms
+================
 
 DIRAC presently does not perform an open-shell Hartree--Fock in a strict sense,
 rather an average-of-configuration calculation, which amounts to the
@@ -10,9 +10,9 @@ optimization of the average energy of a set of configurations (or determinants)
 generated from the specification of a given number of open shells and their
 electron occupations. In the case of atoms, a convergence problem can occur when
 the inner open-shell orbitals are more stable than outer "closed" shell.
-From DIRAC21, we can specify the occupation number of each :math:`\kappa` value. by using the keyword :ref:`SCF_.KPSELE`. 
+From DIRAC21 onwards, we have atomic supersymmetry and can specify the occupation number of each :math:`\kappa` value. by using the keyword :ref:`SCF_.KPSELE`. 
 
-As an example of such a calculation, we consider the Nb and Np atom.
+As examples of such calculations, we consider the Nb and Np atoms.
 
 -----------------------------------------------------
 Example 1:  Nb [Kr]4d\ :sup:`4`\ 5s\ :sup:`1`\
@@ -50,9 +50,9 @@ Example 1:  Nb [Kr]4d\ :sup:`4`\ 5s\ :sup:`1`\
    1..oo
   *END OF
 
---------------------------------
+----------------------------------------------------------
 Example 2:  Np [Rn]5f\ :sup:`4`\6d\ :sup:`1`\7s\ :sup:`2`\
---------------------------------
+----------------------------------------------------------
 ::
 
   **DIRAC                                                                                             
@@ -86,9 +86,9 @@ Example 2:  Np [Rn]5f\ :sup:`4`\6d\ :sup:`1`\7s\ :sup:`2`\
    1..oo                                                                                              
   *END OF
 
---------------------------------
+---------------------------------------
 Example 3:  Sorting the orbitals for Np
---------------------------------
+---------------------------------------
 The above approach is better, but the below one is interesting as a tutorial.
 First, we remove the valence electrons and to compute the [Rn] configuration and to keep the DFCOEF file::
 
@@ -189,7 +189,7 @@ as they are, then to move 22-26 after 27.
 The empty line that is following means that ungerade
 orbitals should be kept as they are.
 
-Alright, we run this input, we keep the new DFCOEF
+We now run this input, we keep the new DFCOEF
 and in a final run we restart again, we remove reordering
 (because orbitals are already reordered) and we relax
 the overlap selection::
