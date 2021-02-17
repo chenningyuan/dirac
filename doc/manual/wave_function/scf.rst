@@ -123,9 +123,8 @@ giving the occupation in terms of :math:`\kappa` - values as shown below
 ::
    
    .KPSELEC
-   7                   # Number of the Kappa-splitted orbital
-   #s   p-  p+  d-  d+  f-  f+
-    -1   1  -2   2  -3   3  -4    # Values of Kappa
+   7                              # Number of the Kappa-splitted orbital
+    -1   1  -2   2  -3   3  -4    # Values of Kappa: s   p-  p+  d-  d+  f-  f+
     14  10  20  12  18   6   8    # Number of the electrons in the closed orbitals
      0   0   0   0   0   6   8    # Number of the orbitals of open shell 1 (5f^3)
      0   0   0   4   6   0   0    # Number of the orbitals of open shell 2 (6d^1)

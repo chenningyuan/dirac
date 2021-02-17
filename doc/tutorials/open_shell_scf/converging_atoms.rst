@@ -1,27 +1,60 @@
 :orphan:
 
 
-Np atom
+Converging atoms   
 =======
 
-In this tutorial we will try to get the :math:`[Rn] 5f^{4} 6d^{1} 7s^{2}` configuration of Np.
-This is a tough cookie.  First we prepare the mol file::
+DIRAC presently does not perform an open-shell Hartree--Fock in a strict sense,
+rather an average-of-configuration calculation, which amounts to the
+optimization of the average energy of a set of configurations (or determinants)
+generated from the specification of a given number of open shells and their
+electron occupations. In the case of atoms, a convergence problem can occur when
+the inner open-shell orbitals are more stable than outer "closed" shell.
+From DIRAC21, we can specify the occupation number of each :math:`\kappa` value. by using the keyword :ref:`SCF_.KPSELE`. 
 
-  DIRAC
+As an example of such a calculation, we consider the Nb and Np atom.
 
+-----------------------------------------------------
+Example 1:  Nb [Kr]4d\ :sup:`4`\ 5s\ :sup:`1`\
+-----------------------------------------------------
+::
 
-  C   1
-         93.    1
-  Np      0.0000000000        0.0000000000        0.0000000000
-  LARGE BASIS dyall.v2z
-  FINISH
+  **DIRAC
+  .WAVE FUNCTION
+  .ANALYZE
+  **HAMILTONIAN
+  .X2C
+  **INTEGRALS
+  *READIN
+  .UNCONTRACT
+  **WAVE FUNCTION
+  .SCF
+  *SCF
+  .CLOSED SHELL
+   18 18
+  .OPEN SHELL
+   2
+   4/10,0
+   1/2,0
+  .KPSELE                                                                                             
+   5                                                                                                   
+   -1  1 -2  2 -3                                                                                      
+    8  6 12  4  6                                                                                      
+    0  0  0  4  6                                                                                      
+    2  0  0  0  0   
+  **ANALYZE
+  .MULPOP
+  *MULPOP
+  .VECPOP
+   1..oo
+   1..oo
+  *END OF
 
-----------------------------------------------------
-Example 1: Specifying the occupation of Kappa values
-----------------------------------------------------
-From DIRAC21, this kind of open-shell sysmtem converges smoothly by using the keyword :ref:`SCF_.KPSELE`.
-For Np atom, the menu file would be::
-  
+--------------------------------
+Example 2:  Np [Rn]5f\ :sup:`4`\6d\ :sup:`1`\7s\ :sup:`2`\
+--------------------------------
+::
+
   **DIRAC                                                                                             
   .WAVE FUNCTION                                                                                      
   .ANALYZE                                                                                            
@@ -51,13 +84,12 @@ For Np atom, the menu file would be::
   .VECPOP                                                                                             
    1..oo                                                                                              
    1..oo                                                                                              
-  *END OF    
-  
-Other closed shell cations, for example, :math:`Lu^{+}`, :math:`Hf^{2+}`, :math:`Ta^{3+}`, and :math:`W4+` would converge by specifying the occupation number by using  :ref:`SCF_.KPSELE`, although it was not easy in the tradiational way, as shown below.
+  *END OF
 
--------------------------------
-Example 2: Sorting the orbitals
--------------------------------
+--------------------------------
+Example 3:  Sorting the orbitals for Np
+--------------------------------
+The above approach is better, but the below one is interesting as a tutorial.
 First, we remove the valence electrons and to compute the [Rn] configuration and to keep the DFCOEF file::
 
   **DIRAC
@@ -342,31 +374,3 @@ And here is the 5f4 shell::
   --------------------------------------------------------------------------------------------------------------------------------
    alpha    0.8571  |      0.0000         0.0000         0.0000         0.0000         0.2143         0.2143         0.4286
    beta     0.1429  |      0.0179         0.0536         0.0536         0.0179         0.0000         0.0000         0.0000
-
-
-Other similar cases:  :math:`Lu^{+}`, :math:`Hf^{2+}`, :math:`Ta^{3+}` and :math:`W4+` with broken orbital degeneracies
-========================================================================================================================
-
-The :math:`Lu^{+}`, :math:`Hf^{2+}`, :math:`Ta^{3+}`, and :math:`W4+` are closed shell cations with the electronic structure of the Yb atom (Z=70), 
-which are not converging in simple SCF procedure.
-
-In the SCF output one observes broken degeneracies of their atomic p,d,f... shells (using four- and two-component Hamiltonians), 
-even with spin-free and nonrelativistic Levy-Leblond Hamiltonians. 
-This is in contrast with the Yb closed shell atom, whose electronic structure is emulated, that comes out with proper spinor/orbital degeneracies.
-
-The reason for this problem is that the start guess for orbitals is based on a bare nucleus or other simple model Hamiltonian. 
-In the first diagonalization this Hamiltonian gives orbitals that do not have the expected order 4f, 6p but rather 6p, 4f. 
-The program then proceeds by occupying the three 6p orbitals, complemented by a remaining four 4f orbitals. 
-Thus resulting density does not have the correct spherical symmetry and offsets the SCF procedure yielding a symmetry-broken solution.
-
-The leading idea behind is to fix the wrong order of orbitals which is causing the degeneracy.
-
-The 'default' wrong order of forming molecular orbitals is for s-shell (LUMO) beeing inserted after the first d-shell (HOMO).
-The user has to apply the :math:`M_{J}`-selection for the linear symmetry, or the orbital reordering scheme to have s-orbitals separated from d-orbitals.
-In this way it is possible to get converged MOs not only for linear, but also for D2h and C2v symmetries. However, for the C2v it takes many more iterations.
-
-One could also experiment with providing a better starting guess of orbitals, e.g. by first calculating the highly-charged cation with a Xenon electronic configuration. 
-This gives a symmetric density that can be used as starting set of MOs (using the DFCOEF file) for the real calculation. 
-Some care is needed with this restart as also the orbitals for the Xe-like ion may have an undesired order. 
-Howver, this may require use of the MO-selection options of the program, as mentioned above.
-
