@@ -82,7 +82,10 @@ C
      &"J. Chem. Phys. 145 (2016) 184107."
      &/"  - EOM-IP/EA/EE energies  :",T30,
      &"A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, ",
-     &"J. Chem. Phys. 149 (2018) 174113.")
+     &"J. Chem. Phys. 149 (2018) 174113.",
+     &/"  - Core-valence separation (CVS-EOM) :",T30,
+     &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes, ",
+     &"arXiv:2011.08549")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
