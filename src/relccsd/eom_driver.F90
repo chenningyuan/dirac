@@ -2001,6 +2001,7 @@ subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
 #include "ccpar.inc"
    logical, intent(in) :: left_vectors
    logical, intent(in) :: right_vectors
+   logical, save :: davidson_splash = .true.
 ! 
 !  we set the state for the diagonalizer, as this should not change within a given type of calculation,
 ! e.g. excitation energies
@@ -2016,8 +2017,12 @@ subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
                         max_subspace_size = relcc_mfd_max_subspace_size, &
                         max_iterations = relcc_mfd_max_iterations, &
                         overlap_sorting = relcc_mfd_overlap_sorting, &
-                        energy_shift=relcc_mfd_eigenvalues_energy_shift)
-
+                        energy_shift=relcc_mfd_eigenvalues_energy_shift, &
+                        print_config=davidson_splash)
+! aspg: this is to silence davidson setup after the first call. we will know from the
+! rest of the output whether we are doing left or right, and all other variables will not
+! change for a given run, so we need to only print them once 
+    if (davidson_splash) davidson_splash = .false.
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
 
 end subroutine
