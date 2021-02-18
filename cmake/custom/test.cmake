@@ -29,7 +29,7 @@ endmacro()
 # activate ctest
 include(CTest)
 enable_testing()
-# these tests apeear are also in release-xx versions
+# these tests appear also in release-xx versions
 dirac_test(dft_alda_xcfun "long;dft" "")
 dirac_test(dft_alda "long;dft" "")
 dirac_test(stex "short;stex" "")
@@ -178,6 +178,7 @@ dirac_test(visual_elf "short;visual" "")
 dirac_test(visual_gamma5 "short;visual" "")
 dirac_test(visual_general "short;visual" "")
 dirac_test(symmetry_scf_energy "medium;scf" "")
+dirac_test(atomic_supersymmetry "short;scf" "")
 dirac_test(scf_levelshift "short;scf;levelshift" "")
 dirac_test(response_complex "short;response;complex" "")
 dirac_test(response_nonrel "short;response;nonrel" "")
