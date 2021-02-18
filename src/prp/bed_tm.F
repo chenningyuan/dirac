@@ -349,8 +349,10 @@ CTROND
             IF (BEDECD) THEN
               TMP =  (TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC) 
      &               - TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC))
-            ENDIF
-            OSC(IPAR,IEXC)   = D4*OMEGA(IEXC)*TMP
+              OSC(IPAR,IEXC) = D4*OMEGA(IEXC)*TMP
+            ELSE
+              OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
+            ENDIf
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
           ENDIF
 C
@@ -388,8 +390,10 @@ CTROND
             IF (BEDECD) THEN
               TMP =  (TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC)
      &               -TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC))
+              OSC(IPAR,IEXC) = D4*OMEGA(IEXC)*TMP
+            ELSE
+              OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
             ENDIF
-            OSC(IPAR,IEXC)   = D4*OMEGA(IEXC)*TMP
             OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
           ENDIF
         ENDDO
