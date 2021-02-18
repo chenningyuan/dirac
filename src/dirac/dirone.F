@@ -6136,10 +6136,20 @@ C  /* Deck atmsym */
       SUBROUTINE ATMSYM(TMAT,VMAT,TBUF,EIG,WORK,LWORK)
 C*****************************************************************************
 C
-C     Construct matrix Kappa and transform to eigenvectors of this operator
+C     Generate transformation to atomic supersymmetry
+C     This will lead to orbitals with well-defined kappa and m_j.
+C     The routine first builds the matrix representation of the kappa operator
+C     in orthonormal basis and the diagonalizes it.
+C     The transformation to orthonormal basis is then updated with the
+C     transformation to kappa blocks.
+C
+C     In a second step, for each kappa block, the matrix representation of the j_z operator
+C     is diagonalized. The transformation to orthonormal basis is then updated with the
+C     transformation to (kappa, mj) - blocks
+C
+C           
 C
 C     Routine based on LINSYM
-C     (LINSYM and ATMSYM have Some comments in common)
 C     
 C     Called from GLINSM, LOWD2C
 C
@@ -6155,11 +6165,6 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
 C
-C Used from COMMON blocks
-C  CBIPAM:
-C  DCBBAS:
-C  DCBORB:
-C  DGROUP:
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -6198,21 +6203,21 @@ C
       IOFV = 1
       N2TMT = 0
       N2TMOTQ = 0
-      DO 10 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 10
-        I2TMT(I)  = N2TMT
-        N2TMT     = N2TMT + NFBAS(I,0)*NORB(I)*NZT
-        I2TMOT(I) = N2TMOTQ
-        N2TMO(I)  = NTMO(I)*NTMO(I)
-        N2TMOTQ   = N2TMOTQ + N2TMO(I)*NZ
+      DO 10 IFRP = 1,NFSYM
+        IF(NORB(IFRP).EQ.0) GOTO 10
+        I2TMT(IFRP)  = N2TMT
+        N2TMT        = N2TMT + NFBAS(IFRP,0)*NORB(IFRP)*NZT
+        I2TMOT(IFRP) = N2TMOTQ
+        N2TMO(IFRP)  = NTMO(IFRP)*NTMO(IFRP)
+        N2TMOTQ      = N2TMOTQ + N2TMO(IFRP)*NZ
 C        
-        IOFTB = I2BASX(I,I) + 1        
-        CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
-     &            NORB(I),NORB(I),
+        IOFTB = I2BASX(IFRP,IFRP) + 1        
+        CALL QTRANS('AOMO','S',D0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &            NORB(IFRP),NORB(IFRP),
      &            TBUF(IOFTB),NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),
-     &            TMAT(IOFT),NORB(I),NORB(I),1,IPQTOQ(1,0),
-     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
-     &            VMAT(IOFV),NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),
+     &            TMAT(IOFT),NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),
+     &            VMAT(IOFV),NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),
+     &            VMAT(IOFV),NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRHAM)
 
         IF (IPRHAM.GE.12) THEN
@@ -6220,28 +6225,28 @@ C
          CALL HEADER(
      &    'ATMSYM: Entering AO->MO transformation matrix',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(VMAT(IOFV),NFBAS(I,0),NORB(I),
-     &   NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+         CALL PRQMAT(VMAT(IOFV),NFBAS(IFRP,0),NORB(IFRP),
+     &   NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
 
          CALL HEADER('ATMSYM: K matrix in AO basis',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IOFTB),NFBAS(I,0),NFBAS(I,0),
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFTB),NFBAS(IFRP,0),NFBAS(IFRP,0),
      &   NTBAS(0),NTBAS(0),1,IPQTOQ(1,0),LUPRI)
 
          CALL HEADER('ATMSYM: K matrix in MO basis',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TMAT(IOFT),NORB(I),NORB(I),
-     &   NORB(I),NORB(I),1,IPQTOQ(1,0),LUPRI)
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+         CALL PRQMAT(TMAT(IOFT),NORB(IFRP),NORB(IFRP),
+     &   NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
 
          CALL FLSHFO(LUPRI)
 
         ENDIF
 
-        IOFT = IOFT + NORB(I)*NORB(I)
-        IOFV = IOFV + NORB(I)*NFBAS(I,0)
+        IOFT = IOFT + NORB(IFRP)*NORB(IFRP)
+        IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
    10 CONTINUE
 
 C
@@ -6269,19 +6274,18 @@ C
       
 C
       IOFT = 1
-      DO 20 I = 1,NFSYM
-C
-        IF(NORB(I).EQ.0) GOTO 20
+      DO 20 IFRP = 1,NFSYM
+        IF(NORB(IFRP).EQ.0) GOTO 20
 C
 C       Set dimensions
 C
-        NL = NESH(I)
-        NS = NPSH(I)
-        NT = NORB(I)
+        NL = NESH(IFRP)
+        NS = NPSH(IFRP)
+        NT = NORB(IFRP)
         NLL = NL * NL
         NSS = NS * NS
         NTT = NT * NT
-        IEIGP = IORB(I) + 1
+        IEIGP = IORB(IFRP) + 1
         IEIGE = IEIGP + NS
         KPMAXL = 0
         KPMAXS = 0
@@ -6299,19 +6303,19 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C
 C       Extract LL block of Kappa matrix
 C
-        CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,1,1,1,NZ,
-     &               WORK(KFLL),NL,NL,1,
-     &               TMAT(IOFT),NT,NT,NZ)
+        CALL EXTRSB(1,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,0,0,1,1,1,NZ,
+     &              WORK(KFLL),NL,NL,1,
+     &              TMAT(IOFT),NT,NT,NZ)
 C
 C       Find eigenvalues of Kappa
 C
         IF (NL.GT.0) THEN
           IF (IPRHAM.GE.6) THEN
-           CALL HEADER('ATMSYM: Kappa_LL to be diagonalized',-1)
-           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
-           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
+            CALL HEADER('ATMSYM: Kappa_LL to be diagonalized',-1)
+            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',IFRP,'/',NFSYM
+            CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
 
@@ -6319,20 +6323,20 @@ C
 ! get the file name first, containing symmetry
             hfile_format="(A13,A7,I1,A1,I1)"
             write(hfile_name,hfile_format)
-     &       "Kappa_LL_matrix.","fermirp",I,"-",NFSYM
+     &       "Kappa_LL_matrix.","fermirp",IFRP,"-",NFSYM
 ! open the unique file and write the matrix
-             luhm=95
-             open(luhm,file=trim(hfile_name),access="sequential",
-     &         form="formatted",status="unknown")
-               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
-               ic=0
-               do ii=1,NL
-               do jj=1,NL
-                 write(luhm,*) ii,jj,WORK(KFLL+ic)
-                 ic = ic + 1
-               enddo
-               enddo
-             close(luhm,status="keep")
+            luhm=95
+            open(luhm,file=trim(hfile_name),access="sequential",
+     &          form="formatted",status="unknown")
+            write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+            ic=0
+            do ii=1,NL
+              do jj=1,NL
+                write(luhm,*) ii,jj,WORK(KFLL+ic)
+                ic = ic + 1
+              enddo
+            enddo
+            close(luhm,status="keep")
           ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -6360,13 +6364,13 @@ C
             DO II=1,NL
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
-         ENDIF
-         KPMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
+          ENDIF
+          KPMAXL = NINT(MAX(ABS(EIG(IEIGE)),ABS(EIG(IEIGE+NL-1))))
 #endif
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_LL eigenvalues',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
+     &       '*** Fermion corep ',IFRP,'/',NFSYM
             WRITE(LUPRI,'(A,I2)') ' * Max ABS(kappa_large):', KPMAXL
             DO II = 1,NL
               WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
@@ -6376,9 +6380,9 @@ C
           IF (IPRHAM.GE.5) THEN
             CALL HEADER('ATMSYM: Kappa_LL eigenvectors',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
+     &      '*** Fermion corep ',IFRP,'/',NFSYM
             CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
-     &           IPQTOQ(1,0),LUPRI)
+     &                  IPQTOQ(1,0),LUPRI)
             CALL FLSHFO(LUPRI)
           ENDIF
         ENDIF  ! IF (NL.GT.0) THEN
@@ -6388,39 +6392,39 @@ CCCCCCCCCCCCCCCCCCCCCCC
 C     
 C       Extract SS block of Kappa matrix
 C
-        CALL EXTRSB (1,I,NBORB,4,NBRP,NBORB,4,NBRP,0,0,2,2,1,NZ,
+        CALL EXTRSB (1,IFRP,NBORB,4,NBRP,NBORB,4,NBRP,0,0,2,2,1,NZ,
      &               WORK(KFSS),NS,NS,1,
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
           IF (IPRHAM.GE.6) THEN
-           CALL HEADER('ATMSYM: Kappa_SS to be diagonalized',-1)
-           WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
-           WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
-           CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
-     &          IPQTOQ(1,0),LUPRI)
+            CALL HEADER('ATMSYM: Kappa_SS to be diagonalized',-1)
+            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &      '*** Fermion corep ',IFRP,'/',NFSYM
+            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
+     &                  IPQTOQ(1,0),LUPRI)
  9        ENDIF
 
           IF (WRITE_K_MATRIX) THEN
 ! get the file name first, containing symmetry
             hfile_format="(A13,A7,I1,A1,I1)"
             write(hfile_name,hfile_format)
-     &       "Kappa_SS_matrix.","fermirp",I,"-",NFSYM
-             print *,trim(hfile_name)
+     &      "Kappa_SS_matrix.","fermirp",IFRP,"-",NFSYM
+            print *,trim(hfile_name)
 ! open the unique file and write the matrix
-             luhm=95
-             open(luhm,file=trim(hfile_name),access="sequential",
-     &         form="formatted",status="unknown")
-               write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
-               ic=0
-               do ii=1,NS
-               do jj=1,NS
-                 write(luhm,*) ii,jj,WORK(KFSS+ic)
-                 ic = ic + 1
-               enddo
-               enddo
-             close(luhm,status="keep")
+            luhm=95
+            open(luhm,file=trim(hfile_name),access="sequential",
+     &        form="formatted",status="unknown")
+            write(luhm,*) NL,1 ! this is pure real matrix (NZ=1)
+            ic=0
+            do ii=1,NS
+              do jj=1,NS
+                write(luhm,*) ii,jj,WORK(KFSS+ic)
+                ic = ic + 1
+              enddo
+            enddo
+            close(luhm,status="keep")
           ENDIF
 #ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
@@ -6453,7 +6457,7 @@ C
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_SS eigenvalues',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &           '*** Fermion corep ',I,'/',NFSYM
+     &           '*** Fermion corep ',IFRP,'/',NFSYM
             WRITE(LUPRI,'(A,I2)') ' * Max ABS(kappa_small):', KPMAXS
             DO II = 1,NS
               WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
@@ -6463,7 +6467,7 @@ C
           IF (IPRHAM.GE.5) THEN
             CALL HEADER('ATMSYM: Kappa_SS eigenvectors',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &           '*** Fermion corep ',I,'/',NFSYM
+     &           '*** Fermion corep ',IFRP,'/',NFSYM
             CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &           IPQTOQ(1,0),LUPRI)
             CALL FLSHFO(LUPRI)
@@ -6473,20 +6477,19 @@ C
 C       Count the kappa-values.
 C       We will either find a negative or a positive value for each k.
 C
-        KPMAX(I) = MAX(KPMAXL,KPMAXS)
-!        WRITE(LUPRI,'(A,I2)') ' * Max ABS(Kappa):', KPMAX
+        KPMAX(IFRP) = MAX(KPMAXL,KPMAXS)
         IF(NFSYM.EQ.2)THEN
-          MAXSUB = KPMAX(I)*(KPMAX(I)+1)/2
+          MAXSUB = KPMAX(IFRP)*(KPMAX(IFRP)+1)/2
         ELSE
-          MAXSUB = KPMAX(I)*(KPMAX(I)+1) - KPMAX(I)
+          MAXSUB = KPMAX(IFRP)*KPMAX(IFRP)
         ENDIF         
         IF (MAXSUB.GT.MAX_SUB_BL) THEN
           write(lupri,*) 'MAX_SUB_BL:',MAX_SUB_BL,
-     &       ' max value of Kappa:',KPMAX(I),
+     &       ' max value of Kappa:',KPMAX(IFRP),
      &       ' increase max_sub_bl to ', MAXSUB        
           CALL QUIT ("increase max_sub_bl")
         ENDIF      
-        N_SUB_BL(I) = MAXSUB
+        N_SUB_BL(IFRP) = MAXSUB
 CCCCCCCCCCCCCCCCCCCCCCC
 C LL counting and sorting
 CCCCCCCCCCCCCCCCCCCCCCC
@@ -6503,10 +6506,10 @@ CCCCCCCCCCCCCCCCCCCCCCC
                  KPADD = KPABS*(KPABS-1) + 1
                  IF(KP.GT.0) KPADD = KPADD + KP
               ENDIF
-              ID_SUB_BL(KPADD,I) = KP
+              ID_SUB_BL(KPADD,IFRP) = KP
            ENDIF
-           NORB_SUB(KPADD,I,1) = NORB_SUB(KPADD,I,1) + 1
-           NORB_SUB(KPADD,I,0) = NORB_SUB(KPADD,I,0) + 1
+           NORB_SUB(KPADD,IFRP,1) = NORB_SUB(KPADD,IFRP,1) + 1
+           NORB_SUB(KPADD,IFRP,0) = NORB_SUB(KPADD,IFRP,0) + 1
         ENDDO
 C
 C       Same thing for the positive energy solutions
@@ -6525,7 +6528,7 @@ C       The part is needed when NFSYM=1
         CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
         KP = 0
         CALL ICOPY (NL,KP,0,WORK(KIBEI),1)
-        CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
+        CALL SELBOS (IFRP,NL,WORK(KINDX),EIG(IEIGE),
      &               WORK(KIBEI),WORK(KVLL),
      &               WORK(KFLL),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
@@ -6546,10 +6549,10 @@ CCCCCCCCCCCCCCCCCCCCCCC
                  KPADD = KPABS*(KPABS-1) + 1
                  IF(KP.GT.0) KPADD = KPADD + KP
               ENDIF  
-              ID_SUB_BL(KPADD,I) = KP
+              ID_SUB_BL(KPADD,IFRP) = KP
            ENDIF
-           NORB_SUB(KPADD,I,2) = NORB_SUB(KPADD,I,2) + 1
-           NORB_SUB(KPADD,I,0) = NORB_SUB(KPADD,I,0) + 1
+           NORB_SUB(KPADD,IFRP,2) = NORB_SUB(KPADD,IFRP,2) + 1
+           NORB_SUB(KPADD,IFRP,0) = NORB_SUB(KPADD,IFRP,0) + 1
         ENDDO
 C     
 C       We need to be careful now. In making NORB_SUB we chose to
@@ -6578,7 +6581,7 @@ C
         CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
         KP = 0
         CALL ICOPY (NS,KP,0,WORK(KIBEI),1)
-        CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
+        CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
      &               WORK(KIBEI),WORK(KVSS),
      &               WORK(KFSS),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
@@ -6587,8 +6590,8 @@ C     Write information to output
 C
       IF (IPRHAM.GE.2) THEN
         DO KPADD = 1, MAXSUB
-           WRITE (LUPRI,1010) 3-2*I,ID_SUB_BL(KPADD,I),
-     &                       (NORB_SUB(KPADD,I,IC),IC=0,2)
+           WRITE (LUPRI,1010) 3-2*IFRP,ID_SUB_BL(KPADD,IFRP),
+     &                       (NORB_SUB(KPADD,IFRP,IC),IC=0,2)
         ENDDO
       ENDIF  
 C            
@@ -6602,8 +6605,8 @@ C       give an ordering on KP values.
 C        
         CALL DZERO(TBUF(IOFT),NT*NT)
 
-        CALL EXTRSB (2,I,NBORB,4,NBRP,
-     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,1,1,1,1,
+        CALL EXTRSB (2,IFRP,NBORB,4,NBRP,
+     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(IFRP),0,0,1,1,1,1,
      &               WORK(KVLL),NL,NL,1,
      &               TBUF(IOFT),NT,NT,1)
 
@@ -6614,28 +6617,28 @@ C
         IF (IPRHAM.GE.5) THEN
          CALL HEADER('ATMSYM: MO vectors in TBUF,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
          CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
      &   IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
 
          CALL HEADER('ATMSYM: MO vectors in buffer space,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
          CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &   IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
 
-        CALL EXTRSB (2,I,NBORB,4,NBRP,
-     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(I),0,0,2,2,1,1,
+        CALL EXTRSB (2,IFRP,NBORB,4,NBRP,
+     &               NORB_SUB,MAX_SUB_BL,N_SUB_BL(IFRP),0,0,2,2,1,1,
      &               WORK(KVSS),NS,NS,1,
      &               TBUF(IOFT),NT,NT,1)
 
         IF (IPRHAM.GE.5) THEN
          CALL HEADER('ATMSYM: MO vectors in TBUF,SS',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
          CALL PRQMAT(TBUF(IOFT),NT,NT,NT,NT,1,
      &   IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
@@ -6647,9 +6650,9 @@ C
 C
 C       Update offset
 C
-        IOFT = IOFT + NORB(I)*NORB(I)
+        IOFT = IOFT + NORB(IFRP)*NORB(IFRP)
 C        
- 20   CONTINUE
+ 20   CONTINUE ! DO 20 IFRP = 1,NFSYM
 C         
 
       if(do4c2c)then ! x2c-mmf approach
@@ -6662,26 +6665,26 @@ C
       IOFT = 1
       IOFU = 1
       IOFV = 1
-      DO 30 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 30
+      DO 30 IFRP = 1,NFSYM
+        IF(NORB(IFRP).EQ.0) GOTO 30
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
      &'ATMSYM: Transformation matrix in orthon. basis (MO->MO),TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TBUF(IOFU),NORB(I),NORB(I),NORB(I),
-     &                 NORB(I),1,IPQTOQ(1,0),LUPRI)
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+         CALL PRQMAT(TBUF(IOFU),NORB(IFRP),NORB(IFRP),NORB(IFRP),
+     &                 NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
 C
 C       Backtransform all solutions
 C       ===========================
 C
-        CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB(I),
-     &              TBUF(IOFU),NORB(I),NORB(I),
-     &              NORB(I),1,
-     &              NORB(I),1,NFBAS(I,0),
-     &              VMAT(IOFV),NFBAS(I,0),NORB(I),1,
+        CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
+     &              TBUF(IOFU),NORB(IFRP),NORB(IFRP),
+     &              NORB(IFRP),1,
+     &              NORB(IFRP),1,NFBAS(IFRP,0),
+     &              VMAT(IOFV),NFBAS(IFRP,0),NORB(IFRP),1,
      &              IPRHAM)
 C
         IF (IPRHAM.GE.5) THEN
@@ -6689,9 +6692,9 @@ C
      &'ATMSYM: TMAT (symm.blocked) transformation'//
      &' matrix (AO->MO),TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TMAT(IOFT),NFBAS(I,0),NORB(I),
-     &         NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+         CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
+     &         NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
 C
@@ -6700,40 +6703,40 @@ C
      &'ATMSYM: TMAT (symm.blocked) transformation'//
      &' matrix (AO->MO),TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',I,'/',NFSYM
-         CALL PRQMAT(TMAT(IOFT),NFBAS(I,0),NORB(I),
-     &         NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+         CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
+     &         NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
          CALL FLSHFO(LUPRI)
         ENDIF
 
-        IOFT = IOFT + NFBAS(I,0)*NORB(I)
-        IOFU = IOFU + NORB(I)*NORB(I)
-        IOFV = IOFV + NORB(I)*NFBAS(I,0)
- 30   CONTINUE
+        IOFT = IOFT + NFBAS(IFRP,0)*NORB(IFRP)
+        IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
+        IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
+ 30   CONTINUE !  DO 30 IFRP = 1,NFSYM
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
-      CALL DCOPY(N2TMT,TMAT(1),1,VMAT(1),1)
-         IF(IPRHAM.GE.5) THEN
-          CALL HEADER(
+      CALL DCOPY(N2TMT,TMAT,1,VMAT,1)
+      IF(IPRHAM.GE.5) THEN
+        CALL HEADER(
      &    'dcopy: AFTER LINSYM final transformation'//
      &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-          IMAT = 1
-          IBUF = 1
-          DO I = 1,NFSYM
-            IF(NORB(I).GT.0) THEN
-              WRITE(LUPRI,'(A,I1,A,I1)')
-     &        '* Fermion ircop no.',I,'/',NFSYM
-              CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-              WRITE(LUPRI,'(A,I1,A,I1)')
-     &        '* Fermion ircop no.',I,'/',NFSYM
-              CALL PRQMAT(VMAT(IMAT),NFBAS(I,0),NORB(I),
-     &                    NFBAS(I,0),NORB(I),1,IPQTOQ(1,0),LUPRI)
-              WRITE(LUPRI,'(/5X,A/)')
-              IMAT = IMAT + NFBAS(I,0)*NORB(I)*1
-              IBUF = IBUF + NORB(I)*NORB(I)*1
-            ENDIF
-          ENDDO
-       ENDIF
+        IMAT = 1
+        IBUF = 1
+        DO IFRP = 1,NFSYM
+          IF(NORB(IFRP).GT.0) THEN
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',IFRP,'/',NFSYM
+            CALL PRQMAT(TMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
+     &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
+            WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',IFRP,'/',NFSYM
+            CALL PRQMAT(VMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
+     &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
+            WRITE(LUPRI,'(/5X,A/)')
+            IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
+            IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
+          ENDIF
+        ENDDO
+      ENDIF
 C       
 CCCCCCCCCCCCCCCCCC
 C.....Here we start MJ-part
@@ -6753,45 +6756,46 @@ C
       IOFT    = 1
       IOFVS   = 1
       IOFVL   = 1
-      DO 40 I = 1,NFSYM
+      DO 40 IFRP = 1,NFSYM
 C
 C        output for ABS(Kappa)=1,
-C        which is NOT included in the below loop (IKAP = 2,KPMAX(I))
+C        which is NOT included in the below loop (IKAP = 2,KPMAX(IFRP))
 C
          IF(NFSYM.EQ.2)THEN
-            WRITE (LUPRI,1020) 3-2*I,(-1)**I,1,(NORB_SUB(1,I,IC),IC=0,2)
+            WRITE (LUPRI,1020) 3-2*IFRP,(-1)**IFRP,1,
+     &            (NORB_SUB(1,IFRP,IC),IC=0,2)
          ELSE
-            WRITE (LUPRI,1020) 3-2*I,-1,1,(NORB_SUB(1,I,IC),IC=0,2)
-            WRITE (LUPRI,1020) 3-2*I, 1,1,(NORB_SUB(2,I,IC),IC=0,2)
+           WRITE (LUPRI,1020) 3-2*IFRP,-1,1,(NORB_SUB(1,IFRP,IC),IC=0,2)
+           WRITE (LUPRI,1020) 3-2*IFRP, 1,1,(NORB_SUB(2,IFRP,IC),IC=0,2)
          ENDIF
 C        
          IF(NFSYM.eq.2)THEN
-            NORB1 = NFBAS(I,0)*NORB_SUB(1,I,0)
-            IOFVS = IOFVS + NORB1
-            IOFVL = IOFVL + NORB1
-            IOFT  = IOFT  + NORB1
+           NORB1 = NFBAS(IFRP,0)*NORB_SUB(1,IFRP,0)
+           IOFVS = IOFVS + NORB1
+           IOFVL = IOFVL + NORB1
+           IOFT  = IOFT  + NORB1
          ELSE
-            NORB1 = NFBAS(I,0)*(NORB_SUB(1,I,0)+NORB_SUB(2,I,0))
-            IOFVS = IOFVS + NORB1
-            IOFVL = IOFVL + NORB1
-            IOFT  = IOFT  + NORB1
+           NORB1 = NFBAS(IFRP,0)*(NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0))
+           IOFVS = IOFVS + NORB1
+           IOFVL = IOFVL + NORB1
+           IOFT  = IOFT  + NORB1
          ENDIF
-         IF(NORB(I).EQ.0) GOTO 40
+         IF(NORB(IFRP).EQ.0) GOTO 40
          NLL=0
          NSS=0
-         DO IKAP = 2,KPMAX(I)
-            IF(NFSYM.EQ.2)THEN
-               KPADD = IKAP*(IKAP-1)/2 + 1
-               NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
-               NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))
+         DO IKAP = 2,KPMAX(IFRP)
+           IF(NFSYM.EQ.2)THEN
+              KPADD = IKAP*(IKAP-1)/2 + 1
+              NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
+              NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
             ELSE
-               KPADD = IKAP*(IKAP-1) + 1
-               NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
-               NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))
-               KPADD = IKAP*(IKAP-1) + 1 + IKAP
-               NLL=MAX(NLL,NORB_SUB(KPADD,I,1)*NORB_SUB(KPADD,I,1))
-               NSS=MAX(NSS,NORB_SUB(KPADD,I,2)*NORB_SUB(KPADD,I,2))
-            ENDIF   
+              KPADD = IKAP*(IKAP-1) + 1
+              NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
+              NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
+              KPADD = IKAP*(IKAP-1) + 1 + IKAP
+              NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
+              NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
+           ENDIF   
          ENDDO
 C
 C........allocate KFLL,KVLL,KFSS,KVSS once and for all
@@ -6801,34 +6805,34 @@ C
          CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 C         
-C........Here we tranaform the MJ-matrix for particular kappa; look TSUBBL
+C........Here we transform the MJ-matrix for particular kappa; look TSUBBL
          NL = 0  
          NS = 0
          INVMAX=1
-         DO IKAP = 2,KPMAX(I)
+         DO IKAP = 2,KPMAX(IFRP)
            IF(NFSYM.EQ.2)THEN
              KPADD = IKAP*(IKAP-1)/2 + 1
            ELSE
              KPADD = IKAP*(IKAP-1)   + 1
            ENDIF
 C
-C     IF (NFSYM.EQ.1), the roop "DO IKAP = 2,KPMAX(I)" is rotated twice.
+C     IF (NFSYM.EQ.1), the loop "DO IKAP = 2,KPMAX(IFRP)" is rotated twice.
 C     This part is needed for atomic calculation with Coo symmetry.
 C           
            IF(NFSYM.EQ.1) INVMAX=2
            DO INV=1,INVMAX
            IF(INV.EQ.2) KPADD=KPADD+IKAP
 C           
-           NL = NORB_SUB(KPADD,I,1)
-           NS = NORB_SUB(KPADD,I,2)
-           IEIGP = IORB(I) + 1
+           NL = NORB_SUB(KPADD,IFRP,1)
+           NS = NORB_SUB(KPADD,IFRP,2)
+           IEIGP = IORB(IFRP) + 1
            IEIGE = IEIGP + NS
 C           
 CCCCCCCCCCCCCCCCCC         
 C Large AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
            IF (NL.GT.0) THEN
-             CALL TSBBL2(I,1,KPADD,TBUF,WORK(KFLL),VMAT,VMAT,
+             CALL TSBBL2(IFRP,1,KPADD,TBUF,WORK(KFLL),VMAT,VMAT,
      &                    WORK(KFREE),LFREE,IPRHAM)
 CCCCCCCCCCCCCCCCCC         
 C Large diagonalization
@@ -6838,7 +6842,7 @@ C
               CALL HEADER('ATMSYM: Mj_LL to be diagonalized',-1)
               WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
               WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &        '*** Fermion corep ',I,'/',NFSYM
+     &        '*** Fermion corep ',IFRP,'/',NFSYM
               CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
      &                    IPQTOQ(1,0),LUPRI)
             ENDIF
@@ -6873,9 +6877,9 @@ C
 #endif
            IF (IPRHAM.GE.3) THEN
              CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
-             WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
+             WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,IFRP)
              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &       '*** Fermion corep ',I,'/',NFSYM
+     &       '*** Fermion corep ',IFRP,'/',NFSYM
              DO II = 1,NL
                WRITE(LUPRI,*) II,EIG(IEIGE+II-1)
              ENDDO
@@ -6884,7 +6888,7 @@ C
            IF (IPRHAM.GE.5) THEN
              CALL HEADER('ATMSYM: Mj_LL eigenvectors',-1)
              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &       '*** Fermion corep ',I,'/',NFSYM
+     &       '*** Fermion corep ',IFRP,'/',NFSYM
              CALL PRQMAT(WORK(KVLL),NL,NL,NL,NL,1,
      &            IPQTOQ(1,0),LUPRI)
              CALL FLSHFO(LUPRI)
@@ -6895,7 +6899,7 @@ CCCCCCCCCCCCCCCCCC
 C Small AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
        IF (NS.GT.0) THEN
-         CALL TSBBL2(I,2,KPADD,TBUF,WORK(KFSS),VMAT,VMAT,
+         CALL TSBBL2(IFRP,2,KPADD,TBUF,WORK(KFSS),VMAT,VMAT,
      &                WORK(KFREE),LFREE,IPRHAM)
 CCCCCCCCCCCCCCCCCC         
 C Small diagonalization
@@ -6905,7 +6909,7 @@ C
            CALL HEADER('ATMSYM: Mj_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &     '*** Fermion corep ',I,'/',NFSYM
+     &     '*** Fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(WORK(KFSS),NS,NS,NS,NS,1,
      &                  IPQTOQ(1,0),LUPRI)
          ENDIF
@@ -6940,9 +6944,9 @@ C
 #endif
          IF (IPRHAM.GE.3) THEN
            CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
-           WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,I)
+           WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,IFRP)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &          '*** Fermion corep ',I,'/',NFSYM
+     &          '*** Fermion corep ',IFRP,'/',NFSYM
            DO II = 1,NS
              WRITE(LUPRI,*) II,EIG(IEIGP+II-1)
            ENDDO
@@ -6951,7 +6955,7 @@ C
          IF (IPRHAM.GE.5) THEN
            CALL HEADER('ATMSYM: Mj_SS eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &          '*** Fermion corep ',I,'/',NFSYM
+     &          '*** Fermion corep ',IFRP,'/',NFSYM
            CALL PRQMAT(WORK(KVSS),NS,NS,NS,NS,1,
      &          IPQTOQ(1,0),LUPRI)
              CALL FLSHFO(LUPRI)
@@ -6965,11 +6969,11 @@ C
              MJBUF = MJ
              MJABS = (ABS(MJ)+1)/2
              IF(NFSYM.EQ.2)THEN
-                ID_SUB_BL(KPADD+MJABS-1,I)
-     &                 = (-1)**(I+1) * (KPADD +MJABS-1)
+                ID_SUB_BL(KPADD+MJABS-1,IFRP)
+     &                 = (-1)**(IFRP+1) * (KPADD +MJABS-1)
              ELSE
                 KPADD2 = IKAP*(IKAP-1)/2 + 1            
-                ID_SUB_BL(KPADD+MJABS-1,I)
+                ID_SUB_BL(KPADD+MJABS-1,IFRP)
      &               = (-1)**INV * (KPADD2+MJABS-1)
              ENDIF   
           ENDIF
@@ -6990,7 +6994,7 @@ C
        CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
        MJ = 0
        CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
-       CALL SELBOS (I,NS,WORK(KINDX),EIG(IEIGP),
+       CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
      &               WORK(KIBEI),WORK(KVSS),
      &               WORK(KFSS),WORK(KIDUM),IPRHAM)
        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
@@ -7004,11 +7008,11 @@ C
              MJBUF = MJ
              MJABS = (ABS(MJ)+1)/2
              IF(NFSYM.EQ.2)THEN
-                ID_SUB_BL(KPADD+MJABS-1,I)
-     &                 = (-1)**(I+1) * (KPADD +MJABS-1)
+                ID_SUB_BL(KPADD+MJABS-1,IFRP)
+     &                 = (-1)**(IFRP+1) * (KPADD +MJABS-1)
              ELSE
                 KPADD2 = IKAP*(IKAP-1)/2 + 1            
-                ID_SUB_BL(KPADD+MJABS-1,I)
+                ID_SUB_BL(KPADD+MJABS-1,IFRP)
      &                 = (-1)**INV * (KPADD2+MJABS-1)
              ENDIF
           ENDIF
@@ -7022,15 +7026,15 @@ C
        CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
        MJ = 0
        CALL ICOPY (NL,MJ,0,WORK(KIBEI),1)
-       CALL SELBOS (I,NL,WORK(KINDX),EIG(IEIGE),
+       CALL SELBOS (IFRP,NL,WORK(KINDX),EIG(IEIGE),
      &               WORK(KIBEI),WORK(KVLL),
      &               WORK(KFLL),WORK(KIDUM),IPRHAM)
        CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C       
        DO IC = 0,2
-          NDIM = NORB_SUB(KPADD,I,IC)/IKAP 
+          NDIM = NORB_SUB(KPADD,IFRP,IC)/IKAP 
           DO IK = 1,IKAP
-             NORB_SUB(KPADD+IK-1,I,IC) = NDIM
+             NORB_SUB(KPADD+IK-1,IFRP,IC) = NDIM
           ENDDO
        ENDDO
 C
@@ -7042,49 +7046,51 @@ C
          INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
        ENDDO   
        DO IK = 1,IKAP
-         ID     = ID_SUB_BL(KPADD+IK-1,I)
+         ID     = ID_SUB_BL(KPADD+IK-1,IFRP)
          INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
          INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
          MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
-         IF(NORB_SUB(KPADD+IK-1,I,0).NE.0) THEN
+         IF(NORB_SUB(KPADD+IK-1,IFRP,0).NE.0) THEN
            WRITE (LUPRI,1020) 3-2*I,KP,MJ,
-     &           (NORB_SUB(KPADD+IK-1,I,IC),IC=0,2)
+     &           (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,2)
          ENDIF  
        ENDDO       
 C
        IOFS = 0
        IOFL = 0
-       IOFVL = IOFVL + NFBAS(I,0)*NS
+       IOFVL = IOFVL + NFBAS(IFRP,0)*NS
        DO IK = 1,IKAP
          IF(NS.GT.0)THEN  
-           CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,2),
-     &                  WORK(KVSS+IOFS),NS,NORB_SUB(KPADD+IK-1,I,2),
+            CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
+     &                  NORB_SUB(KPADD+IK-1,IFRP,2),
+     &                  WORK(KVSS+IOFS),NS,NORB_SUB(KPADD+IK-1,IFRP,2),
      &                  NS,1,
-     &                  NORB_SUB(KPADD+IK-1,I,2),1,NFBAS(I,0),
-     &                  VMAT(IOFVS),NFBAS(I,0),NS,1,
+     &                  NORB_SUB(KPADD+IK-1,IFRP,2),1,NFBAS(IFRP,0),
+     &                  VMAT(IOFVS),NFBAS(IFRP,0),NS,1,
      &                  IPRHAM)
          ENDIF           
 C...  Update small here: : WORK(KVSS+IOFS),VMAT(IOFV),TMAT(IOFV)
-         IOFS = IOFS + NS*NORB_SUB(KPADD+IK-1,I,2)
-         IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,2)
-         CALL BCKTRA(TMAT(IOFT),NFBAS(I,0),NORB_SUB(KPADD+IK-1,I,1),
-     &                WORK(KVLL+IOFL),NL,NORB_SUB(KPADD+IK-1,I,1),
-     &                NL,1,
-     &                NORB_SUB(KPADD+IK-1,I,1),1,NFBAS(I,0),
-     &                VMAT(IOFVL),NFBAS(I,0),NL,1,
-     &                IPRHAM)
+         IOFS = IOFS + NS*NORB_SUB(KPADD+IK-1,IFRP,2)
+         IOFT = IOFT + NFBAS(IFRP,0)*NORB_SUB(KPADD+IK-1,IFRP,2)
+         CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
+     &               NORB_SUB(KPADD+IK-1,IFRP,1),
+     &               WORK(KVLL+IOFL),NL,NORB_SUB(KPADD+IK-1,IFRP,1),
+     &               NL,1,
+     &               NORB_SUB(KPADD+IK-1,IFRP,1),1,NFBAS(IFRP,0),
+     &               VMAT(IOFVL),NFBAS(IFRP,0),NL,1,
+     &               IPRHAM)
 C...  Update large here: : WORK(KVLL+IOFL),VMAT(IOFV),TMAT(IOFV)
-         IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,I,1)
-         IOFT = IOFT + NFBAS(I,0)*NORB_SUB(KPADD+IK-1,I,1)
+         IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,IFRP,1)
+         IOFT = IOFT + NFBAS(IFRP,0)*NORB_SUB(KPADD+IK-1,IFRP,1)
        ENDDO  ! IK = 1,IKAP
-       IOFVS = IOFVS + NFBAS(I,0)*(NL+NS)
+       IOFVS = IOFVS + NFBAS(IFRP,0)*(NL+NS)
        IF(NS.NE.0)THEN 
-         IOFVL = IOFVL + NFBAS(I,0)*NS
+         IOFVL = IOFVL + NFBAS(IFRP,0)*NS
        ELSE
-         IOFVL = IOFVL + NFBAS(I,0)*NORB_SUB(KPADD,I,1)*IKAP
+         IOFVL = IOFVL + NFBAS(IFRP,0)*NORB_SUB(KPADD,IFRP,1)*IKAP
        ENDIF   
       ENDDO                     ! INV=1,INVMAX
-      ENDDO                     ! IKAP = 2,KPMAX(I)
+      ENDDO                     ! IKAP = 2,KPMAX(IFRP)
 C        
       CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
 C         
