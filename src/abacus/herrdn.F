@@ -5904,6 +5904,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "consts.h"
+#include "pi.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
@@ -6701,7 +6702,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"

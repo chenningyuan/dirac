@@ -8,8 +8,7 @@ Kohn-Sham calculations are activated by invoking the keyword
 :ref:`HAMILTONIAN_.DFT` under :ref:`**HAMILTONIAN`.
 
 Open-shell calculations correspond to either
-average-of-configurations (:ref:`SCF_.AOC`) or fractional
-occupation (:ref:`SCF_.FOCC`).
+average-of-configurations (:ref:`SCF_.AOC`) (see :ref:`aoc` for theory) or fractional occupation (:ref:`SCF_.FOCC`).
 The former is the default for
 Hartree-Fock calculations, whereas the latter is default for
 Kohn-Sham calculations. Note that average-of-configurations
@@ -501,18 +500,14 @@ example}.
 
 keyword(OPENFACTOR)
 
-Change the default factor on an open-shell diagonal contribution to the Fock matrix.
-The default factor of one corresponds to a Koopmans interpretation of the orbital energies,
-however, experience shows that one in many case get better convergence without this term,
-so if your open-shell calculation does not converge it can often help to try again with
-a factor of zero on this term (or even e.g. -0.20).
+Change the default factor on an open-shell diagonal contribution to the Fock matrix (see :ref:`aoc` for theory). A factor of one corresponds to a Koopmans interpretation of the orbital energies. However, experience shows convergence can be improved by tuning this factor. DIRAC therefore presently employs a default factor of 1/2.
 
 *Default:*
 
 ::
 
     .OPENFAC
-     1.00
+     0.5
 
 2nd-order optimization
 ======================

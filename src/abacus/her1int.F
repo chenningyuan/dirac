@@ -4736,6 +4736,7 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+#include "pi.h"
 C
       DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC

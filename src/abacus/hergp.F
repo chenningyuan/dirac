@@ -514,6 +514,7 @@ C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
 #include "implicit.h"
 #include "codata.h"
+#include "pi.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
       PARAMETER (THRESH = 1.0D-10)
