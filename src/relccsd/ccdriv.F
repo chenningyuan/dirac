@@ -65,15 +65,15 @@ C
      &/"  - Initial implementation :",T30,
      &"L. Visscher, T.J. Lee and K.G. Dyall, ",
      &"J. Chem. Phys. 105 (1996) 8769."
-     &/"  - Fock Space (FSCC):",T30,
+     &/"  - Fock Space (FSCC)      :",T30,
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
-     &/"  - Intermediate Hamiltonian FSCC :",T30,
-     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
-     &"J. Chem. Phys. 122 (2005) 224113.",
-     &/"  - Parallelization :",T30,
+     &/"  - Parallelization        :",T30,
      &"M. Pernpointner and L. Visscher, ",
      &"J. Comp. Chem. 24 (2003) 754.",
+     &/"  - Intermediate Hamilt. FS:",T30,
+     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
+     &"J. Chem. Phys. 122 (2005) 224113.",
      &/"  - MP2 expectation values :",T30,
      &"J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen,",
      &" Chem. Phys. 311 (2005) 81."
@@ -83,9 +83,9 @@ C
      &/"  - EOM-IP/EA/EE energies  :",T30,
      &"A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, ",
      &"J. Chem. Phys. 149 (2018) 174113.",
-     &/"  - Core-valence separation (CVS-EOM) :",T30,
-     &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes, ",
-     &"arXiv:2011.08549")
+     &/"  - Core spectra (CVS-EOM) :",T30,
+     &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
+     &" arXiv:2011.08549")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
