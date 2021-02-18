@@ -6147,8 +6147,27 @@ C     In a second step, for each kappa block, the matrix representation of the j
 C     is diagonalized. The transformation to orthonormal basis is then updated with the
 C     transformation to (kappa, mj) - blocks
 C
-C           
+C     The kappa quantum number can be expressed as
+C       kappa = a(j+1/2), a = 2(l-j)
+C     The degeneracy of mj-values is therefore
+C       2j+1 = 2|kappa|
+C     However, since we do Kramers-restricted calculations, we only keep one value of mj for each |mj|
+C     and so we need to reserve |kappa| mj-values for each kappa.      
 C
+C     Note that large component functions partner with small component functions of opposite sign of kappa.
+C
+C     In the normal atomic case, that is, with inversion symmetry (NFSYM=2), the kappa values will be ordered as
+C         gerade: -1,+2,-3,...
+C       ungerade: +1,-2,+3,-4 ,...
+C     and so for each inversion symmetry the offset to the subblocks associated with a given kappa will be |kappa|(|kappa|-1)/2.
+C
+C     Atomic supersymmetry is also activated in the presence of one or more ghost atoms lowering symmetry to linear.
+C     In that case, inversion symmetry is lost, and kappa values will be ordered as
+C       -1,+1,-2,+2,-3,+3,-4....
+C     Offsets are then
+C       |kappa|(|kappa|-1) for negative kappa
+C       |kappa|x|kappa|    for positive kappa    
+C             
 C     Routine based on LINSYM
 C     
 C     Called from GLINSM, LOWD2C
