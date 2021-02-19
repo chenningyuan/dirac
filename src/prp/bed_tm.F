@@ -1862,7 +1862,7 @@ C       ****************************************************
 C       Reduce NPOINTS to the number of points per process
 C       Calculate the number of points per process 
         POINT_PER_PROC = NPOINTS / NMPROC
-        MOD_POINT = DMOD(NPOINTS, NMPROC)
+        MOD_POINT = MOD(NPOINTS, NMPROC)
         IF (MOD_POINT.gt.0) POINT_PER_PROC = POINT_PER_PROC + 1
 
 C       ****************************************************
