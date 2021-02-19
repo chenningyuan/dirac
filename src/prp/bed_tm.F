@@ -331,7 +331,6 @@ C         ====================================
                 TMOM(IOP,IPAR,IEXC)=D2*
      &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
 CTROND
-              WRITE(6,*) 'TEST..',PRPNAM(INDXPR),'.e-e.',GPOE(1,1)
                 IF(IPRXPP.GE.3) THEN
                   WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
                   CALL PRINT_GP_XP(GPOE,XPOE,
@@ -1632,7 +1631,7 @@ C     Memory deallocation
       deallocate(Z)
       deallocate(WT)
       CALL QEXIT('BEDLEB')
-C     
+C
       RETURN
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
