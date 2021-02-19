@@ -1750,7 +1750,8 @@ C
       integer :: dlength
 C---------------Executable code--------------------------------------
  
-      WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
+      WRITE (LUPRI,*) "Storing ",WF," density matrix for state",STATE,
+     &                " on file"
 
 C     Write the correlated density to file
 C     Code should be replaced by proper storage routine, this just adds to the end of a file 
