@@ -6511,7 +6511,9 @@ C
         N_SUB_BL(IFRP) = MAXSUB
 CCCCCCCCCCCCCCCCCCCCCCC
 C LL counting and sorting
-CCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCC        
+C      (KPABS,KPADD)=(1,1),(2,2),(3,4),(4,7)
+C       Discrete KPASS is needed to allocate the corresponding Mj           
         KPBUF = 0
         KPADD = 0
         DO IX = IEIGE, IEIGE+NL-1
@@ -6780,94 +6782,94 @@ C
 C        output for ABS(Kappa)=1,
 C        which is NOT included in the below loop (IKAP = 2,KPMAX(IFRP))
 C
+       IF(NFSYM.EQ.2)THEN
+          WRITE (LUPRI,1020) 3-2*IFRP,(-1)**IFRP,1,
+     &          (NORB_SUB(1,IFRP,IC),IC=0,2)
+       ELSE
+         WRITE (LUPRI,1020) 3-2*IFRP,-1,1,(NORB_SUB(1,IFRP,IC),IC=0,2)
+         WRITE (LUPRI,1020) 3-2*IFRP, 1,1,(NORB_SUB(2,IFRP,IC),IC=0,2)
+       ENDIF
+C       
+       IF(NFSYM.eq.2)THEN
+         NORB1 = NFBAS(IFRP,0)*NORB_SUB(1,IFRP,0)
+         IOFVS = IOFVS + NORB1
+         IOFVL = IOFVL + NORB1
+         IOFT  = IOFT  + NORB1
+       ELSE
+         NORB1 = NFBAS(IFRP,0)*(NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0))
+         IOFVS = IOFVS + NORB1
+         IOFVL = IOFVL + NORB1
+         IOFT  = IOFT  + NORB1
+       ENDIF
+       IF(NORB(IFRP).EQ.0) GOTO 40
+       NLL=0
+       NSS=0
+       DO IKAP = 2,KPMAX(IFRP)
          IF(NFSYM.EQ.2)THEN
-            WRITE (LUPRI,1020) 3-2*IFRP,(-1)**IFRP,1,
-     &            (NORB_SUB(1,IFRP,IC),IC=0,2)
-         ELSE
-           WRITE (LUPRI,1020) 3-2*IFRP,-1,1,(NORB_SUB(1,IFRP,IC),IC=0,2)
-           WRITE (LUPRI,1020) 3-2*IFRP, 1,1,(NORB_SUB(2,IFRP,IC),IC=0,2)
-         ENDIF
-C        
-         IF(NFSYM.eq.2)THEN
-           NORB1 = NFBAS(IFRP,0)*NORB_SUB(1,IFRP,0)
-           IOFVS = IOFVS + NORB1
-           IOFVL = IOFVL + NORB1
-           IOFT  = IOFT  + NORB1
-         ELSE
-           NORB1 = NFBAS(IFRP,0)*(NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0))
-           IOFVS = IOFVS + NORB1
-           IOFVL = IOFVL + NORB1
-           IOFT  = IOFT  + NORB1
-         ENDIF
-         IF(NORB(IFRP).EQ.0) GOTO 40
-         NLL=0
-         NSS=0
-         DO IKAP = 2,KPMAX(IFRP)
-           IF(NFSYM.EQ.2)THEN
-              KPADD = IKAP*(IKAP-1)/2 + 1
-              NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
-              NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
-            ELSE
-              KPADD = IKAP*(IKAP-1) + 1
-              NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
-              NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
-              KPADD = IKAP*(IKAP-1) + 1 + IKAP
-              NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
-              NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
-           ENDIF   
-         ENDDO
+            KPADD = IKAP*(IKAP-1)/2 + 1
+            NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
+          NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
+          ELSE
+            KPADD = IKAP*(IKAP-1) + 1
+            NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
+            NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
+            KPADD = IKAP*(IKAP-1) + 1 + IKAP
+            NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
+            NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
+         ENDIF   
+       ENDDO
 C
 C........allocate KFLL,KVLL,KFSS,KVSS once and for all
 C
-         CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
+       CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 C         
 C........Here we transform the MJ-matrix for particular kappa; look TSUBBL
-         NL = 0  
-         NS = 0
-         INVMAX=1
-         DO IKAP = 2,KPMAX(IFRP)
-           IF(NFSYM.EQ.2)THEN
-             KPADD = IKAP*(IKAP-1)/2 + 1
-           ELSE
-             KPADD = IKAP*(IKAP-1)   + 1
-           ENDIF
+       NL = 0  
+       NS = 0
+       INVMAX=1
+       DO IKAP = 2,KPMAX(IFRP)
+         IF(NFSYM.EQ.2)THEN
+           KPADD = IKAP*(IKAP-1)/2 + 1
+         ELSE
+           KPADD = IKAP*(IKAP-1)   + 1
+         ENDIF
 C
 C     IF (NFSYM.EQ.1), the loop "DO IKAP = 2,KPMAX(IFRP)" is rotated twice.
 C     This part is needed for atomic calculation with Coo symmetry.
 C           
-           IF(NFSYM.EQ.1) INVMAX=2
-           DO INV=1,INVMAX
-           IF(INV.EQ.2) KPADD=KPADD+IKAP
+       IF(NFSYM.EQ.1) INVMAX=2
+       DO INV=1,INVMAX
+         IF(INV.EQ.2) KPADD=KPADD+IKAP
 C           
-           NL = NORB_SUB(KPADD,IFRP,1)
-           NS = NORB_SUB(KPADD,IFRP,2)
-           IEIGP = IORB(IFRP) + 1
-           IEIGE = IEIGP + NS
+         NL = NORB_SUB(KPADD,IFRP,1)
+         NS = NORB_SUB(KPADD,IFRP,2)
+         IEIGP = IORB(IFRP) + 1
+         IEIGE = IEIGP + NS
 C           
 CCCCCCCCCCCCCCCCCC         
 C Large AO-MO transformation
 CCCCCCCCCCCCCCCCCC         
-           IF (NL.GT.0) THEN
+         IF (NL.GT.0) THEN
              CALL TSBBL2(IFRP,1,KPADD,TBUF,WORK(KFLL),VMAT,VMAT,
      &                    WORK(KFREE),LFREE,IPRHAM)
 CCCCCCCCCCCCCCCCCC         
 C Large diagonalization
 CCCCCCCCCCCCCCCCCC         
 C
-            IF (IPRHAM.GE.6) THEN
-              CALL HEADER('ATMSYM: Mj_LL to be diagonalized',-1)
-              WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
-              WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &        '*** Fermion corep ',IFRP,'/',NFSYM
-              CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
-     &                    IPQTOQ(1,0),LUPRI)
-            ENDIF
+           IF (IPRHAM.GE.6) THEN
+             CALL HEADER('ATMSYM: Mj_LL to be diagonalized',-1)
+             WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
+             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
+     &       '*** Fermion corep ',IFRP,'/',NFSYM
+             CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
+     &                   IPQTOQ(1,0),LUPRI)
+           ENDIF
 C        
 #ifdef MOD_UNRELEASED
-            IF (.NOT.DOQJACO) THEN
+           IF (.NOT.DOQJACO) THEN
 #endif
               IF(DOJACO) THEN
                 CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
@@ -6885,7 +6887,7 @@ C
                 ENDIF
               ENDIF
 #ifdef MOD_UNRELEASED
-            ELSE
+           ELSE
               CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                     IDUMMY,.TRUE.,IPRHAM)
               DO II=1,NL
@@ -7059,26 +7061,22 @@ C
 C
 C     Write information to output
 C
-       KP = IKAP * (-1)**INV
-       DO ID = 1,10
-         INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-         INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-       ENDDO   
-       DO IK = 1,IKAP
-         ID     = ID_SUB_BL(KPADD+IK-1,IFRP)
-         INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-         INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-         MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
-         IF(NORB_SUB(KPADD+IK-1,IFRP,0).NE.0) THEN
-           WRITE (LUPRI,1020) 3-2*I,KP,MJ,
+        KP = IKAP * (-1)**INV
+        DO IK = 1,IKAP
+          ID     = ID_SUB_BL(KPADD+IK-1,IFRP)
+          INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+          INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
+          MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
+          IF(NORB_SUB(KPADD+IK-1,IFRP,0).NE.0) THEN
+            WRITE (LUPRI,1020) 3-2*I,KP,MJ,
      &           (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,2)
-         ENDIF  
-       ENDDO       
+          ENDIF  
+        ENDDO       
 C
-       IOFS = 0
-       IOFL = 0
-       IOFVL = IOFVL + NFBAS(IFRP,0)*NS
-       DO IK = 1,IKAP
+        IOFS = 0
+        IOFL = 0
+        IOFVL = IOFVL + NFBAS(IFRP,0)*NS
+        DO IK = 1,IKAP
          IF(NS.GT.0)THEN  
             CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
      &                  NORB_SUB(KPADD+IK-1,IFRP,2),
@@ -7101,15 +7099,15 @@ C...  Update small here: : WORK(KVSS+IOFS),VMAT(IOFV),TMAT(IOFV)
 C...  Update large here: : WORK(KVLL+IOFL),VMAT(IOFV),TMAT(IOFV)
          IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,IFRP,1)
          IOFT = IOFT + NFBAS(IFRP,0)*NORB_SUB(KPADD+IK-1,IFRP,1)
-       ENDDO  ! IK = 1,IKAP
-       IOFVS = IOFVS + NFBAS(IFRP,0)*(NL+NS)
-       IF(NS.NE.0)THEN 
-         IOFVL = IOFVL + NFBAS(IFRP,0)*NS
-       ELSE
-         IOFVL = IOFVL + NFBAS(IFRP,0)*NORB_SUB(KPADD,IFRP,1)*IKAP
-       ENDIF   
-      ENDDO                     ! INV=1,INVMAX
-      ENDDO                     ! IKAP = 2,KPMAX(IFRP)
+        ENDDO  ! IK = 1,IKAP
+        IOFVS = IOFVS + NFBAS(IFRP,0)*(NL+NS)
+        IF(NS.NE.0)THEN 
+          IOFVL = IOFVL + NFBAS(IFRP,0)*NS
+        ELSE
+          IOFVL = IOFVL + NFBAS(IFRP,0)*NORB_SUB(KPADD,IFRP,1)*IKAP
+        ENDIF   
+       ENDDO                     ! INV=1,INVMAX
+       ENDDO                     ! IKAP = 2,KPMAX(IFRP)
 C        
       CALL MEMREL('ATMSYM',WORK,KFLL,KFLL,KFREE,LFREE)      
 C         

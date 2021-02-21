@@ -2168,6 +2168,7 @@ C
      &                   CFU(I2ORBT(I)+1),NORB(I),JOCC(I),IBUF)
             IF(JOCC(I).NE.KOCC(I)) THEN
               WRITE(LUPRI,1000)
+              write(*,*)"(JOCC(I),KOCC(I)",JOCC(I),KOCC(I)
               CALL QUIT('Check the number of open-shell electrons !')
             ENDIF            
           ENDIF  
@@ -2177,9 +2178,8 @@ C
       RETURN
  1000 FORMAT
      & (/'Please check the below points in input',  
-     & /'You must write non-occupied orbital for all of the basis set',
-     & /'e.g. Write d+ f+ etc even if the occupation is zero',
-     & /'e.g. Write g,h etc, if your basis set includes them')   
+     & /'e.g. The basis set is too small 
+     &   compared with the occupation number')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bosse2 */

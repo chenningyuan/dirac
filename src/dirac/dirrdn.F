@@ -1948,7 +1948,8 @@ C readling input
                DO I =1,NKP
                  IF(mod(SEL_NORB(I,0),2).eq.1)THEN
                    WRITE(LUPRI,*) 'Error in reading .KPSELE !'
-                   CALL QUIT('Number of electrons must be even!')                    
+                   CALL QUIT
+     &             ('Number of electrons (closed shell) must be even!')                    
                  ELSE
                    KP = KP_NORB(I)
                    IF(NFSYM.EQ.1)THEN
@@ -1982,7 +1983,8 @@ C readling input
                  DO I =1,NKP
                    IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
                      WRITE(LUPRI,*) 'Error in reading .KPSELE !'
-                     CALL QUIT('Number of electrons must be even!')   
+                   CALL QUIT
+     &             ('Number of orbitals (open shell) must be even!')                    
                    ELSE
                      KP = KP_NORB(I)  
                      IF(NFSYM.EQ.1)THEN
@@ -2467,8 +2469,10 @@ C
                  IF(mod(NISH_BOS(IKAP*INVMAX+IOFKV),IKAP).eq.0)THEN
                    KCBUF = NISH_BOS(IKAP*INVMAX+IOFKV)/IKAP
                  ELSE
-                   WRITE(LUPRI,'(A,3I3,A)')
-     &             'Number of electrons must be ',IKAP*2,IKAP*4,IKAP*6,
+                   WRITE(LUPRI,'(2A,I2,A,3I3,A)')
+     &              'Number of electrons in the closed shell',
+     &              ' ABS(Kappa) =',IKAP,
+     &              " should be",IKAP*2,IKAP*4,IKAP*6,
      &              " etc."
                    CALL QUIT('Number of elec. of closed shell is wrong') 
                  ENDIF
@@ -2481,10 +2485,13 @@ C
      &              .eq.0)THEN
                      KOBUF = NACSH_BOS(IKAP*INVMAX+IOFKV,IOPEN)/IKAP
                    ELSE
-                     WRITE(LUPRI,'(A,3I3,A)')
-     &              'Number of electrons must be ',IKAP*2,IKAP*4,IKAP*6,
-     &                " etc."
-                     CALL QUIT('Number of elec. of open shell is wrong')   
+                     WRITE(LUPRI,'(A,I2,A,I1,A,3I3,A)')
+     &              'Number of orbitals in ABS(Kappa) =',IKAP,
+     &               " of open-shell No. ",IOPEN,
+     &               " should be",IKAP*2,IKAP*4,IKAP*6,
+     &               " etc."
+                     CALL QUIT
+     &                ('Number of orbitals of open-shell is wrong')   
                    ENDIF                  
                    DO IK = IKAP, 1, -1  
                      NACSH_BOS(KPADD+IK-1+IOFM,IOPEN) = KOBUF
