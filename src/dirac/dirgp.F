@@ -294,11 +294,12 @@ C***********************************************************************
 C
 C     Read SCF-coefficients and eigenvalues from unformatted file
 C     Read option is provided from bit-packed IOPT:
-C       0001 - give restart info
-C       0010 - read coefficients
-C       0100 - read eigenvalues
-C       1000 - read boson irrep identification
-C
+C      00001 - give restart info
+C      00010 - read coefficients
+C      00100 - read eigenvalues
+C      01000 - read boson irrep identification
+C      10000 - read second supersymmetry id (kappa atomic symmetry)
+C     
 C     IDIM(1,IFRP) - number of positronic solutions
 C     IDIM(2,IFRP) - number of electronic solutions
 C     IDIM(3,IFRP) - number of AO-basis functions
@@ -315,7 +316,8 @@ C
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
+      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
+     &          IBEIG(NORBT*NKRBLK,2)
       DIMENSION IDIM(3,2)
 C
       IF(IOPT.EQ.0) RETURN
@@ -402,6 +404,15 @@ C
         NEIG=NORBT*NKRBLK
         CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEIG,NFSYM,NZ,
      &       NORB,NPSH,NESH,IDIM)
+      ENDIF
+C
+C     Read second supersymmetry info (kappa atomic)
+C     =============================================
+C
+      IF(LBIT(IOPT,5)) THEN
+        NEIG=NORBT*NKRBLK
+        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG(1,2),
+     &       NEIG,NFSYM,NZ,NORB,NPSH,NESH,IDIM)
       ENDIF
 C
       RETURN
