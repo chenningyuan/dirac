@@ -921,6 +921,7 @@ C
      &          WORK(LWORK)
 
       real(8) :: TIMSTR(2), TIMEND(2), TIMSTR_save(2)
+      integer, allocatable :: IBEIG2(:,:)
 C
 #include "memint.h"
 
@@ -1082,8 +1083,10 @@ C     Write untransformed coefficients
       REWIND LUCMOS
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
-      CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
-C
+C      IF(ATOMIC) THEN
+C      ELSE
+        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
+C      ENDIF   
 C
 C     Dynamic update of overlap selection matrix, if not converged
 C     (note that DMAT is destroyed)
@@ -1645,76 +1648,6 @@ C          reset intbuf so no old Fock matrices are used :
         END IF
 C
         IF(DHFEXIT) GOTO 30
-        IF (.FALSE.) THEN
-C     Comments on open shell convergence. Feb. 2013 hjaaj.
-C          ====================================================
-C          Some authors have put forward that OPEN_FAC = 1.0D0 is the best choice,
-C          for interpretation of results as ionization potentials.
-C          In Odense, we have often observed divergence in our EPR work with OPEN_FAC = 1.0D0
-C          As a compromise so that we not many times get non-convergence and then remember
-C          "Oh, now we again forgot .OPENFAC 0.0D0 in input" I this week implemented
-C          optimization with OPEN_FAC < 1.0D0, and then at the end we recalculate
-C          orbital energies with OPEN_FAC = 1.0D0.
-C
-C          I ended up with only printing for information and not changing the MOs.
-C          Reason:
-C          I used a simple molecule as H2O+ as test. Non-convergence with OPEN_FAC=1.0D0,
-C          convergence in 13 iterations with OPEN_FAC=0.0D0. My new code to redo orbitals with
-C          OPEN_FAC=1.0D0 revealed that changing from 0.0 to 1.0 SWITCHED HOMO and SOMO:
-C          with OPEN_FAC = 0.0D0: E_HOMO=-1.06615, E_SOMO=-0.69465, E_LUMO=-0.13895
-C          with OPEN_FAC = 1.0D0: E_HOMO=-1.06615, E_SOMO=-1.11543, E_LUMO=-0.13895
-C          And with energy selection, HOMO and SOMO switched places. No wonder there
-C          is non-convergence for OPEN_FAC=1.0D0. I have therefore disabled this again
-C          concluding that in spite of all good arguments, OPEN_FAC=1.0 is not a good
-C          default. I have now implemented OPEN_FAC = 0.5D0 as a compromise default ;-)
-C          In fact, with 0.5 H2O+ converged in 12 iterations. Nice.
-C
-C          (By the way, we know from TM chemistry that high spin can have lower
-C          energy than low spin, and this is indeed also what happens for H2O++,
-C          in agreement with the interpretration of the OPEN_FAC = 1.0 eigenvalues
-C          as IPs, i.e. the triplet state from ionizing from HOMO and HOMO-1 for
-C          neutral water has lower energy than the singlet energy from ionizing both
-C          electrons from HOMO. This was tested with MCSCF calculations with DALTON.
-C          This gives a physical explanation why OPEN_FAC = 1.0 often is a bad
-C          idea for convergence.)
-
-           IF (NOPEN .eq. 0 .OR. OPEN_FAC .ge. 0.0D0) GOTO 30
-
-           WRITE(LUPRI,'(///A/)') ' * Converged. '//
-     &        'Redoing orbital energy calculation with .OPENFAC 1.0D0'
-           OPEN_FAC = 1.0D0
-C          do continue even though converged :
-           DHFEXIT = .FALSE.
-           DODIIS  = .FALSE.
-C          restore density matrix and  total Fock matrices (have been destroyed in DFSOLV)
-           CALL READNS(LUDENS,DMAT)
-           CALL REAFCK(LUFCKT,FOCK,.FALSE.,NFMAT)
-           CALL DFSOLV(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,
-     &                 ICHKCNV,OVLSEL ,DOLEVEL,WORK(KFREE),LFREE)
-C          Read CMO coefficients and boson identification, but not orbital energies in EIG (code 10)
-C          Rewrite CMO, now with corrected orbital energies just calculated in DFSOLV
-
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,10)
-           CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
-           WRITE(LUPRI,'(/A/A/A/)')
-     &' * Open-shell orbital energies recalculated with .OPENFAC 1.0,',
-     &'   corresponding to interpretation as Ionization Potentials.',
-     &'   NB! Only for information, orbitals are not modified.'
-           DO I = 1,NFSYM
-              IF (NISH(I) .EQ. 0) THEN
-                 JHOMO = IORB(I)+NPSH(I)+1
-                 JLUMO = JHOMO + NASH(I)
-              ELSE
-                 JHOMO = IORB(I)+NPSH(I)+NISH(I)
-                 JLUMO = JHOMO + NASH(I) + 1
-              END IF
-              WRITE(LUPRI,'(/A,I2,A/,8(I5,F10.5))')
-     &        '   E_HOMO, E_OPEN..., E_LUMO in Hartree, symmetry',I,':',
-     &        (J, EIG(J), J = JHOMO,JLUMO)
-           END DO
-           GOTO 30
-
-        END IF    ! if (DHFEXIT) THEN
  10   CONTINUE    ! DO 10 ITER = 2,MAXITR
 
       WRITE(LUPRI,'(/A)')
@@ -3298,7 +3231,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-2.0D0,D2=2.0D0)
 C
 #include "dcbbas.h"
@@ -3436,13 +3368,6 @@ C
           ICC = ICC + NCMO(I)
           IDD = IDD + NFBAS(I,0)*NSSH(I)
         ENDDO
-C
-C       Insert dummy eigenvalues...
-C       7-mar-2008: NO! We want these eigenvalues for
-C                   active space selection in LUCITA, LUCIAREL etc.
-C                   Stefan and Hans Joergen.
-C
-CSK+HJAaJ   CALL DCOPY(NSSH(I),DUMMY,0,EIG(IE(I)),1)
       END IF
       END DO
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
