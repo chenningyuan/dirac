@@ -6167,7 +6167,9 @@ C       -1,+1,-2,+2,-3,+3,-4....
 C     Offsets are then
 C       |kappa|(|kappa|-1) for negative kappa
 C       |kappa|x|kappa|    for positive kappa    
-C             
+C
+C     With atomic supersymmetry each symmetry subblock are characterized by a double index. They will be packed as a single superindex.
+C      
 C     Routine based on LINSYM
 C     
 C     Called from GLINSM, LOWD2C
@@ -6213,10 +6215,6 @@ C
 C
 C     Transform to MO-basis
 C     =====================
-C
-C Note : It's tempting to use I2ORBT to find the start of a block, but this is not
-C possible as this array is not yet set (is done in dirset). Took me half an hour to
-C figure this one out (LV).
 C
       IOFT = 1
       IOFV = 1
@@ -6298,14 +6296,14 @@ C
 C
 C       Set dimensions
 C
-        NL = NESH(IFRP)
-        NS = NPSH(IFRP)
-        NT = NORB(IFRP)
-        NLL = NL * NL
-        NSS = NS * NS
-        NTT = NT * NT
-        IEIGP = IORB(IFRP) + 1
-        IEIGE = IEIGP + NS
+        NL     = NESH(IFRP)
+        NS     = NPSH(IFRP)
+        NT     = NORB(IFRP)
+        NLL    = NL * NL
+        NSS    = NS * NS
+        NTT    = NT * NT
+        IEIGP  = IORB(IFRP) + 1
+        IEIGE  = IEIGP + NS
         KPMAXL = 0
         KPMAXS = 0
 C
@@ -6316,9 +6314,9 @@ C
         CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
-CCCCCCCCCCCCCCCCCCCCCCC
-C LL Extract and Diagonalization
-CCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C       LL Extract and Diagonalization
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C       Extract LL block of Kappa matrix
 C
@@ -6405,9 +6403,9 @@ C
             CALL FLSHFO(LUPRI)
           ENDIF
         ENDIF  ! IF (NL.GT.0) THEN
-CCCCCCCCCCCCCCCCCCCCCCC
-C SS Extract and Diagonalization
-CCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C       SS Extract and Diagonalization
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C     
 C       Extract SS block of Kappa matrix
 C
@@ -6493,8 +6491,9 @@ C
           ENDIF
         ENDIF  !IF (NS.GT.0) THEN
 C        
-C       Count the kappa-values.
-C       We will either find a negative or a positive value for each k.
+C       Find maximal kappa value
+C       This determines the number of sub-blocks for this fermion irrep
+C       Note that we already anticipating the further division into mj-blocks for each kappa        
 C
         KPMAX(IFRP) = MAX(KPMAXL,KPMAXS)
         IF(NFSYM.EQ.2)THEN
@@ -6509,15 +6508,26 @@ C
           CALL QUIT ("increase max_sub_bl")
         ENDIF      
         N_SUB_BL(IFRP) = MAXSUB
-CCCCCCCCCCCCCCCCCCCCCCC
-C LL counting and sorting
-CCCCCCCCCCCCCCCCCCCCCCC        
+C
+C       We now have kappa eigenvalues and corresponding eigenvectors
+C       However, since the diagonalization routines orders on
+C       increasing eigenvalue, we shall use SELBOS to get the right ordering
+C     Note how eigenvalues are modified to get the desired ordering
+C        
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C       LL counting and sorting
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC        
 C      (KPABS,KPADD)=(1,1),(2,2),(3,4),(4,7)
 C       Discrete KPASS is needed to allocate the corresponding Mj           
         KPBUF = 0
         KPADD = 0
         DO IX = IEIGE, IEIGE+NL-1
            KP = NINT(EIG(IX))
+           IF (EIG(IX).GT.0) THEN
+              EIG(IX) = EIG(IX)**D2 + EIG(IX)
+           ELSE
+              EIG(IX) = EIG(IX)**D2
+           ENDIF
            IF(KP.NE.KPBUF) THEN
               KPBUF = KP
               KPABS = ABS(KP)
@@ -6532,35 +6542,28 @@ C       Discrete KPASS is needed to allocate the corresponding Mj
            NORB_SUB(KPADD,IFRP,1) = NORB_SUB(KPADD,IFRP,1) + 1
            NORB_SUB(KPADD,IFRP,0) = NORB_SUB(KPADD,IFRP,0) + 1
         ENDDO
-C
-C       Same thing for the positive energy solutions
-C
-C       This part is only for sorting, so we can change EIG(IX).
-C       The part is needed when NFSYM=1
-        DO IX = IEIGE, IEIGE+NL-1
-           IF (EIG(IX).GT.0) THEN
-              EIG(IX) = EIG(IX)**D2 + EIG(IX)
-           ELSE
-              EIG(IX) = EIG(IX)**D2
-           ENDIF
-        ENDDO
         CALL MEMGET('INTE',KINDX,NL,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIDUM,NL,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBEI,NL,WORK,KFREE,LFREE)
         KP = 0
-        CALL ICOPY (NL,KP,0,WORK(KIBEI),1)
+        CALL ICOPY (NL,KP,0,WORK(KIBEI),1) ! IBEIG is formally not needed, but initialized to avoid problems
         CALL SELBOS (IFRP,NL,WORK(KINDX),EIG(IEIGE),
      &               WORK(KIBEI),WORK(KVLL),
      &               WORK(KFLL),WORK(KIDUM),IPRHAM)
         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
 C
-CCCCCCCCCCCCCCCCCCCCCCC
-C SS counting and sorting
-CCCCCCCCCCCCCCCCCCCCCCC        
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C       SS counting and sorting
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         KPBUF = 0
         KPADD = 0
         DO IX = IEIGP, IEIGP+NS-1
-           KP = -NINT(EIG(IX))
+           KP = -NINT(EIG(IX))     ! Note the opposite sign of kappa 
+           IF (EIG(IX).GT.0) THEN
+              EIG(IX) = EIG(IX)**D2
+           ELSE
+              EIG(IX) = EIG(IX)**D2 - EIG(IX) ! Notice sign change to get right ordering
+           ENDIF
            IF(KP.NE.KPBUF) THEN
               KPBUF = KP
               KPABS = ABS(KP)
@@ -6575,33 +6578,11 @@ CCCCCCCCCCCCCCCCCCCCCCC
            NORB_SUB(KPADD,IFRP,2) = NORB_SUB(KPADD,IFRP,2) + 1
            NORB_SUB(KPADD,IFRP,0) = NORB_SUB(KPADD,IFRP,0) + 1
         ENDDO
-C     
-C       We need to be careful now. In making NORB_SUB we chose to
-C       use the absolute value of K because this gives the most logical
-C       block structure. The eigenvectors and solutions are, however,
-C       still ordered by the signed value. Reorder them first before
-C       continuing.
-C
-        DO IX = IEIGP, IEIGP+NS-1
-           IF (EIG(IX).GT.0) THEN
-              EIG(IX) = EIG(IX)**D2
-           ELSE
-              EIG(IX) = EIG(IX)**D2 - EIG(IX)
-C       Note the sign of Kappa at small
-           ENDIF
-        ENDDO
-C
-C       The SELBOS routine does just the reordering that we want,
-C       use work(kfss) as scratch, and allocate a few other small
-C       scratch arrays. The IBEIG part will not be used but we will
-C       initialize it to prevent problems with uninitialized data while
-C       sorting it.
-C
         CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
         KP = 0
-        CALL ICOPY (NS,KP,0,WORK(KIBEI),1)
+        CALL ICOPY (NS,KP,0,WORK(KIBEI),1) ! IBEIG is formally not needed, but initialized to avoid problems
         CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
      &               WORK(KIBEI),WORK(KVSS),
      &               WORK(KFSS),WORK(KIDUM),IPRHAM)

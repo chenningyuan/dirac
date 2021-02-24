@@ -108,7 +108,7 @@ C     KCMO is N2BBASXQ because it is used for Fock matrix in PREDHF.
 C
       CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBE ,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 C
 C     Solve DHF-equations
@@ -137,7 +137,7 @@ CMI   starting Fock-Dirac MO matrix for the DC-SCF
 
       ENDIF
 
-      CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+      CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFOCK),
      &            WORK(KFREE),LFREE)
 
       !> in the hypothetical case that we run a property calculation for a one-electron system 
@@ -151,14 +151,14 @@ C     Memory deallocation of the Fock matrix only...
 C
 C     Output section
 C
-      CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+      CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFREE),
      &            LFREE,IPRSCF)
 CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
       IF (DO2C4C.AND.(INI2C.EQ.3.OR.INI2C.EQ.4)) THEN
         CALL MEMGET2('REAL','TBUF',K1,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','TMAT',K2,N2BBASXQ,WORK,KFREE,LFREE)
         CALL CMOTR4C(WORK(K1),WORK(K2),WORK(KCMO),WORK(KEIG),
-     &       WORK(KIBRP),WORK(KFREE),LFREE)
+     &       WORK(KIBE),WORK(KFREE),LFREE)
         CALL MEMREL('PSISCF.CMOTR4C',WORK,KWORK,K1,KFREE,LFREE)
       ENDIF
 C
@@ -3081,7 +3081,7 @@ C***********************************************************************
        DO J=1,NO
         write(lupri,'(I3,a,f18.10,a,i2,a)')
      &  J,'. eigval=',EIG(J),' boson irrep=',IBEIG(J),
-     &  ' correspoding eigenvector:'
+     &  ' corresponding eigenvector:'
         write(lupri,'(5f16.8)') (EVEC(K,J),K=1,NO)
        ENDDO
       ENDIF
@@ -3263,7 +3263,7 @@ C
 C
       CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-      CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBE,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','DMAT ',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
@@ -3276,7 +3276,7 @@ C
          KPOS = KFREE
       endif
 C
-      CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBRP),
+      CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KPOS),WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -6002,10 +6002,10 @@ C       .... prepare the DFCOEF file with staring MOs
         CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','TMAT ',K1   ,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBEIG',KIBE,NTBAS(0),WORK,KFREE,LFREE)
 
         CALL CMOINI4C(WORK(KCMO),WORK(K1),WORK(KEIG),
-     &                  WORK(KIBRP),WORK(KFREE),LFREE)
+     &                  WORK(KIBE),WORK(KFREE),LFREE)
 
         CALL MEMREL('FDTR4C',WORK,KWORK,KCMO,KFREE,LFREE)
       ENDIF
@@ -6053,7 +6053,7 @@ C       .... prepare the DFCOEF file with staring MOs
 
       CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBE,NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
       CALL SETDHF(IPRSCF)
@@ -6065,9 +6065,9 @@ C       .... prepare the DFCOEF file with staring MOs
 
 CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
       IF (MAXITR.GT.0) THEN
-       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+       CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFOCK),
      &        WORK(KFREE),LFREE)
-       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+       CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFREE),
      &            LFREE,IPRSCF)
       ELSE
         DHFCONV(1)=.TRUE.
@@ -6144,16 +6144,16 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
      &               WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),
      &               WORK,KFREE,LFREE)
-        CALL MEMGET2('INTE','IBEIG',KIBRP,NTBAS(0),
+        CALL MEMGET2('INTE','IBEIG',KIBE,NTBAS(0),
      &               WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,
      &               WORK,KFREE,LFREE)
 
         RESTFCK = .TRUE.
-        CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFOCK),
+        CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFOCK),
      &         WORK(KFREE),LFREE)
 
-        CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBRP),WORK(KFREE),
+        CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFREE),
      &              LFREE,IPRSCF)
 
         CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
