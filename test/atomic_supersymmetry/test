@@ -15,5 +15,6 @@ f.add(from_string  = '   Electronic energy',
       rel_tolerance    = 1.0e-10)
 
 test.run(['Nb.inp'], ['Nb.xyz'], f)
+test.run(['Nblin.inp'], ['Nblin.xyz'], f)
 
 sys.exit(test.return_code)
