@@ -535,9 +535,10 @@ module fde_evaluators_dirac
       logical, intent(in), optional :: myprint
       logical :: printlocal
 ! internal variables
-      INTEGER :: ierr
+      INTEGER :: ierr, i, j
       real(kind=8), allocatable :: cmo(:)
       real(8) :: dummy
+      real(kind=8), allocatable :: dmat2(:)
 
       if (present(myprint)) then
          printlocal = myprint
@@ -545,10 +546,13 @@ module fde_evaluators_dirac
          printlocal = .False.
       endif
 
-      allocate(dmat(n2bbasxq*nfmat))
-      dmat = 0.0d0
+      allocate(dmat2(n2bbasxq*nfmat))
+      dmat2 = 0.0d0
       allocate(cmo(ncmotq))
       cmo = 0.0d0
+
+      allocate(dmat(n2bbasxq))
+      dmat = 0.0d0
 
       select case(level)
       case('MP2','CCSD')
@@ -570,7 +574,15 @@ module fde_evaluators_dirac
                              dummy,     &
                              2)
 !     SCF construct density matrix
-      call denmat(dmat,cmo,0)
+         call denmat(dmat2,cmo,0)
+         do j = 1, n2bbasxq 
+            dmat(j) = dmat(j) + dmat2(j)
+         end do
+!        do j = 1, n2bbasxq 
+!           dmat(j) = dmat(j) + 0.5*dmat2(n2bbasxq + j)
+!        end do
+
+         deallocate(dmat2)
       end select
 
       deallocate(cmo)
@@ -838,6 +850,7 @@ module fde_evaluators_dirac
             call fde_quit('Vemb2AOPROPER: Not able to read COMB')
 
          end subroutine fde_dirac_embpot_via_aoproper
+
 
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat_0,fmat)

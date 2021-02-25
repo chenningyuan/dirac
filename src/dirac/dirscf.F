@@ -1802,6 +1802,8 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
+      real(8), allocatable :: vemb_mat(:,:)
+      real(8) :: fde_e_s
       REAL(8) :: PE_TOT_NRG, PE_EL_NRG
       REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
       type(fde_import) :: itmp
@@ -1819,7 +1821,19 @@ C
       E1PART  = D0
       E2PART  = D0
 C
-C
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+         fde_s_e = 0.0d0
+         if (itmp%im_vemb) then
+             allocate(vemb_mat(N2BBASX,NZ))
+             print *,'debug, before get_vemb_mat'
+             call get_vemb_mat(vemb_mat)
+             print *,'debug, after get_vemb_mat'
+         end if
+      end if
+
+
       IF(AOC) THEN
         ITOP = NOPEN
       ELSE
@@ -1840,6 +1854,10 @@ C...     Intra-shell contributions
          DO IZ = 1,NZ
             E(IZ,1,ISHELL) =
      &         DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,ISHELL+1),1,F1(1,IZ),1)
+               print *,'before fde_e_s',fde_e_s,'nz',nz,'dfrac1',dfrac1,'ishell',ishell
+            fde_e_s = fde_e_s + 
+     &         -DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,ISHELL+1),1,vemb_mat(1,iz))
+            print *,'after fde_e_s',fde_e_s
             E(IZ,2,ISHELL) =
      &         DFRAC2*DDOT(N2BBASX,DMAT(1,IZ,ISHELL+1),1,
      &                               F2(1,IZ,ISHELL+1),1)
@@ -1932,7 +1950,9 @@ C
              elergy = elergy - fde_get_embpot_energy()
          else if (itmp%im_vemb) then
              elergy = elergy - fde_dirac_embpot_static_energy()
+             print *,'fde_e_s:',fde_e_s
          end if
+         deallocate(vemb_mat)
       end if
 
       DHFERG = DHFERG + ELERGY
