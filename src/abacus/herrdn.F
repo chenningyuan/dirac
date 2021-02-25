@@ -748,7 +748,7 @@ C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
-     &            DOOWN,blk)
+     &     DOOWN,blk)
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
@@ -4128,7 +4128,7 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
      &    ATOMIC = .TRUE.
       ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
-C
+C     
 C     Nuclear repulsion energy
 C     ========================
 C

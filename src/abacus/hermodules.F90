@@ -1237,7 +1237,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
-      IF (LINEAR .EQV. .TRUE. .and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
+      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****

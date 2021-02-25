@@ -1,4 +1,4 @@
-!dirac_copyright_start
+ !dirac_copyright_start
 !      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -268,7 +268,7 @@ C
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
      &          NPOS(*),WORK(LWORK),
      &          DVOVLP(MXOPEN)
-
+      integer, allocatable :: IBEIG2(:,:)
 #ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
@@ -360,8 +360,16 @@ C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
-        IOPT = 15
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+        IF(ATOMIC) THEN
+           allocate(IBEIG2(NORBT,2))
+           IOPT = 31
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG2,TOTERG,IOPT)
+           CALL ATOMIC_ID_REDUCE(IBEIG2,IBEIG,N)
+           deallocate(IBEIG2)
+        ELSE
+          IOPT = 15
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+        ENDIF
 C
 C       Generate untransformed coefficients (MO basis)
 C       and prepare for overlap selection
@@ -886,7 +894,7 @@ C
 C     On input:
 C    ===========
 C       FAO   - Fock-matrix in AO-basis
-C       IBEIG - boson specification of molecular spinors
+C       IBEIG - super symmetry information
 C       DMAT  - Density matrix in AO-basis
 C
 C     On output:
@@ -1083,10 +1091,16 @@ C     Write untransformed coefficients
       REWIND LUCMOS
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
-C      IF(ATOMIC) THEN
-C      ELSE
-        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
-C      ENDIF   
+      IF(ATOMIC) THEN
+        allocate(IBEIG2(NORBT,2))
+        DO I = 1,NORBT
+           CALL ATOMIC_ID_MIN(IBEIG(I),IBEIG2(I,2),IBEIG2(I,1),INDJ)
+        ENDDO
+        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG2,DHFERG,.TRUE.)        
+        deallocate(IBEIG2) 
+      ELSE
+        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG,.FALSE.)
+      ENDIF   
 C
 C     Dynamic update of overlap selection matrix, if not converged
 C     (note that DMAT is destroyed)
@@ -2190,9 +2204,9 @@ C***********************************************************************
 C
 C     Select vectors based on overlap.
 C     Input is
-C       CFU - coefficients in MO-basis
-C       EIG - corresponding eigenvalues
-C       IBEIG - corresponding boson info
+C       CFU   - coefficients in MO-basis
+C       EIG   - eigenvalues
+C       IBEIG - supersymmetry info
 C
 C     Written by T.Saue Nov 11 1995
 C     Last revision May 2002 hjaaj: include EIG and IBEIG
@@ -4167,17 +4181,12 @@ C       modified large component block
 C
       SPECIAL = (ZORA.OR.SUB_BL)
       CALL DZERO(FAO,N2BBASXQ)
+      CALL ICOPY (NORBT,0,0,IBEIG,1)
       NBRP = 4 / NZ
 C
       DO 30 I = 1,NFSYM
 C
         IF(NTMO(I).EQ.0) GOTO 30
-C
-C       The next array is used in subblock calcs, initialize to zero.
-C
-        DO J = 1, NORB(I)
-          IBEIG(IORB(I)+J) = 0
-        ENDDO
          iprham_save = iprham
 !        iprham = 5
 C ... control print out of the matrix to be diagonalized

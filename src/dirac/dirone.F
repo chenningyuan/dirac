@@ -2439,6 +2439,7 @@ C         2) do picture change transformation of integrals on AOPROPER
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
+          if(spinfr .and. atomic) atomic = .false.          
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2531,6 +2532,7 @@ C
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
+          if(spinfr .and. atomic) atomic = .false.          
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2831,6 +2833,7 @@ C
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
+          if(spinfr .and. atomic) atomic = .false.          
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -5584,6 +5587,7 @@ C*****************************************************************************
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
+         ATOMIC = .FALSE.
          CALL QEXIT('GATMSM')
          RETURN
       ENDIF
@@ -5591,6 +5595,7 @@ C
       IF (SPINFR) THEN
          WRITE (LUPRI,1000) "spinfree"
          LINEAR = .FALSE.
+         ATOMIC = .FALSE.
          CALL QEXIT('GATMSM')
          RETURN
       ENDIF
@@ -5598,6 +5603,7 @@ C
       IF (ZORA) THEN
          WRITE (LUPRI,1000) "ZORA"
          LINEAR = .FALSE.
+         ATOMIC = .FALSE.
          CALL QEXIT('GATMSM')
          RETURN
       ENDIF
@@ -8582,69 +8588,4 @@ C***********************************************************************
       close (lupot, STATUS = 'KEEP')
 
       end
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck atomicid */
-      SUBROUTINE ATOMIC_ID(ID,KP,J,MJ,LL)
-C***********************************************************************
-C
-C     Extract atomic quantum numbers from sub_block ID
-C
-C     m_j can be expressed as (2I-1)/2 * (-1)**(I-1)
-C
-C     The pair (I,J) is packed as a superindex IJ = J(J-1)/2 + I
-C     where I = |kappa|
-C     The final sub_block identification is then given as
-C       ID = sgn(kappa)*IJ      
-C
-C     Written by Trond Saue Feb 25 2021
-C
-C***********************************************************************
-      implicit none
-      integer,intent(in)  :: ID
-      integer,intent(out) :: KP,J,MJ,LL
-      integer             :: INDI,INDJ
-      INDJ = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-      INDI = ABS(ID) - INDJ*(INDJ-1)/2
-      KP   = INDJ * ID/ABS(ID)
-      MJ   = (2*INDI - 1) * (-1)**(INDI+1)
-      J    = 2*INDJ - 1
-      IF(KP.GT.0)THEN
-        LL = INDJ
-      ELSE   
-        LL = INDJ-1
-      ENDIF
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck kptomj */
-      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
-C***********************************************************************
-C
-C     Converting IBEIG in Kappa with MJ to that in MJ
-C
-C     last revison: Oct, 2018 A.Sunaga
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dgroup.h"
-#include "dcborb.h"
-C
-      DIMENSION IBEIG(*)
-      IF (IPRINT.GE.2) THEN
-        CALL HEADER('KPTOMJ: IBEIG before transformation',-1)
-        WRITE(LUPRI,'(A)')'Before After  J'
-      ENDIF
-C
-      DO J = 1,NORB(IFRP)
-        INDEX1   = INT(SQRT(dble(2*ABS(IBEIG(J))) + 0.25D0) + 0.4999D0)
-        INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
-        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
-        IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(I5,I5,I5)') IBEIG(J),MJ,J
-        ENDIF         
-        IBEIG(J) = MJ
-      ENDDO
-C      
-      RETURN
-      END
 ! -- end of dirone.F --

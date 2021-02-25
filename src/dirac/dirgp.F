@@ -108,10 +108,16 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wricmo */
-      SUBROUTINE WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
+      SUBROUTINE WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG,SSYM)
 C*****************************************************************************
 C
-C     Write SCF-coefficients and eigenvalues to unformatted file
+C     Write to file:
+C       CMO    - coefficients
+C       EIG    - eigenvalues    
+C       IBEIG  - supersymmetry information 
+C       TOTERG - total energy
+C
+C     SSYM = T activates writing of second array of supersymmetry information
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -127,8 +133,10 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbgen.h"
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
+      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
+     &          IBEIG(NORBT*NKRBLK,2)
       DIMENSION IDIM(3,2)
+      LOGICAL   SSYM
 C
       DO I = 1,NFSYM
         IDIM(1,I) = NPSH(I)
@@ -142,8 +150,10 @@ C
       WRITE(IUNIT) TEXT,NFSYM,NZ*NKRBLK,((IDIM(I,J),I = 1,3),J=1,NFSYM),
      &     TOTERG
       CALL WRICMO_coefficients(IUNIT,CMO,NCMOTQ*NKRBLK)
-      CALL WRICMO_eigenvalues(IUNIT,EIG,NORBT*NKRBLK)      
+      CALL WRICMO_eigenvalues(IUNIT,EIG,NORBT*NKRBLK)
       CALL WRICMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NORBT*NKRBLK)
+      IF(SSYM) CALL WRICMO_supersymmetry(IUNIT,'KAPPA   ',
+     &  IBEIG(1,2),NORBT*NKRBLK)
 !     Add additional information about basis set to create a simple interface file
 !     for correlated calculations (like exacorr)
       CALL WRICMO_basisinfo(IUNIT)
@@ -411,7 +421,7 @@ C     =============================================
 C
       IF(LBIT(IOPT,5)) THEN
         NEIG=NORBT*NKRBLK
-        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG(1,2),
+        CALL REACMO_supersymmetry(IUNIT,'KAPPA   ',IBEIG(1,2),
      &       NEIG,NFSYM,NZ,NORB,NPSH,NESH,IDIM)
       ENDIF
 C
@@ -634,10 +644,10 @@ C
 
       RETURN
  10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading supersymmetry'
+      CALL QUIT('REACMO: END OF FILE reading supersymmetry '
      &  //LABEL)
  20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading irrep supersymmetry'
+      CALL QUIT('REACMO: ERROR reading irrep supersymmetry '
      &  //LABEL)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4657,6 +4667,115 @@ C
             IOFF = IOFF + NSTR(IFRP,0,IFRAG)
          ENDDO
       ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck atomic_id */
+      SUBROUTINE ATOMIC_ID(ID,KP,J,MJ,LL)
+C***********************************************************************
+C
+C     Extract atomic quantum numbers from sub_block ID
+C
+C     m_j can be expressed as (2I-1)/2 * (-1)**(I-1)
+C
+C     The pair (I,J) is packed as a superindex IJ = J(J-1)/2 + I
+C     where I = |kappa|
+C     The final sub_block identification is then given as
+C       ID = sgn(kappa)*IJ      
+C
+C     Written by Trond Saue Feb 25 2021
+C
+C***********************************************************************
+      implicit none
+      integer,intent(in)  :: ID
+      integer,intent(out) :: KP,J,MJ,LL
+      integer             :: INDI,INDJ
+      CALL ATOMIC_ID_MIN(ID,KP,INDI,INDJ)
+      MJ   = (2*INDI - 1) * (-1)**(INDI+1)
+      J    = 2*INDJ - 1
+      IF(KP.GT.0)THEN
+        LL = INDJ
+      ELSE   
+        LL = INDJ-1
+      ENDIF
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck atomic_id_min */
+      SUBROUTINE ATOMIC_ID_MIN(ID,KP,INDI,INDJ)
+C***********************************************************************
+C
+C     Extract minimal atomic quantum numbers from sub_block ID
+C
+C     The pair (I,J) is packed as a superindex IJ = J(J-1)/2 + I
+C     where J = |kappa|
+C     m_j can be expressed as (2I-1)/2 * (-1)**(I-1)
+C     The final sub_block identification is then given as
+C       ID = sgn(kappa)*IJ      
+C
+C     Written by Trond Saue Feb 25 2021
+C
+C***********************************************************************
+      implicit none
+      integer,intent(in)  :: ID
+      integer,intent(out) :: KP,INDI,INDJ
+      INDJ = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+      INDI = ABS(ID) - INDJ*(INDJ-1)/2
+      KP   = INDJ * ID/ABS(ID)
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck atomic_id_reduce */
+      SUBROUTINE ATOMIC_ID_REDUCE(IBEIG2,IBEIG,N)
+C***********************************************************************
+C
+C     Starting from a double atomic supersymmetry array, form
+C     a single one
+C
+C     Written by Trond Saue Feb 25 2021      
+C***********************************************************************
+      implicit none
+      integer,intent(in)  :: IBEIG2(N,2),N
+      integer,intent(out) :: IBEIG(N)
+      integer             :: I,KP,KPABS,KPOFF,INDI,ISKP
+      DO I = 1,N
+        INDI     = IBEIG2(I,1)
+        KP       = IBEIG2(I,2)
+        KPABS    = ABS(KP)
+        ISKP     = KP/KPABS
+        KPOFF=KPABS*(KPABS-1)/2
+        IBEIG(I) = ISKP*(KPOFF+INDI)
+      ENDDO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck kptomj */
+      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
+C***********************************************************************
+C
+C     Converting IBEIG in Kappa with MJ to that in MJ
+C
+C     last revison: Oct, 2018 A.Sunaga
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcborb.h"
+C
+      DIMENSION IBEIG(*)
+      IF (IPRINT.GE.2) THEN
+        CALL HEADER('KPTOMJ: IBEIG before transformation',-1)
+        WRITE(LUPRI,'(A)')'Before After  J'
+      ENDIF
+C
+      DO J = 1,NORB(IFRP)
+        INDEX1   = INT(SQRT(dble(2*ABS(IBEIG(J))) + 0.25D0) + 0.4999D0)
+        INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
+        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
+        IF (IPRINT.GE.2) THEN
+          WRITE(LUPRI,'(I5,I5,I5)') IBEIG(J),MJ,J
+        ENDIF         
+        IBEIG(J) = MJ
+      ENDDO
+C      
       RETURN
       END
 ! -- end of dirgp.F --

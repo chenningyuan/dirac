@@ -996,7 +996,6 @@ C
      &          IFIRST(NORBT),NMULT(NORBT)
       CHARACTER FMTE*6,FMTP*6,MXFORM*6, TLINE*(5*NCOL+5),
      &          TLINE2*(6*NCOL+5),TLINE3*(6*NCOL+5)
-      CHARACTER*3 NAME_SUB (-MAX_SUB_BL:MAX_SUB_BL)
       CHARACTER*5 NAME_SUB2(-MAX_SUB_BL:MAX_SUB_BL),
      &            NAME_SUB3(-MAX_SUB_BL:MAX_SUB_BL)! for MJ of ATOMIC
       CHARACTER SPDCAR*1 ! type declaration for external function
@@ -1088,8 +1087,8 @@ C
             ID = ID_SUB_BL(ISUB,IFSYM)
             IF (SPINFR) THEN     ! Spinfree case
               WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
-              NAME_SUB(ID) = REP(ID)
-           ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
+              NAME_SUB2(ID) = '  '//REP(ID)
+            ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
               CALL ATOMIC_ID(ID,KP,J,MJ,LL)
 C
               WRITE(LUPRI,'(/A,I4,4A,I2,2A,I3,A)')
