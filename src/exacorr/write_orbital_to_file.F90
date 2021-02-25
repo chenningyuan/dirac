@@ -463,10 +463,10 @@ module write_orbital_to_file
               do i=1,sz
 !                 write(write_orb,'(3X,I4,2x,2F28.10,2x,4I4)') k, orbital(i,j),i,j
                if(j == i) then
-                  write(write_orb,'(1X,I8,2x,4F20.8,2x,2I4,2x,F20.8)') k, orbital(i,j,:),i,j,eigenval(i)
+                  write(write_orb,'(1X,I8,2x,4F28.16,2x,2I4,2x,F28.16)') k, orbital(i,j,:),i,j,eigenval(i)
                   k = k + 1
                else 
-                  write(write_orb,'(1X,I8,2x,4F20.8,2x,2I4)') k, orbital(i,j,:),i,j
+                  write(write_orb,'(1X,I8,2x,4F28.16,2x,2I4)') k, orbital(i,j,:),i,j
                   k = k + 1
                end if 
               end do
@@ -496,7 +496,7 @@ module write_orbital_to_file
            k = 1
            do j=1,sz
               do i=1,sz
-                  write(write_mat,'(1X,I8,2x,4F20.8,2x,2I4)') k,matrix(i,j,:),i,j
+                  write(write_mat,'(1X,I8,2x,4F28.16,2x,2I4)') k,matrix(i,j,:),i,j
                   k = k + 1
               end do
             end do
@@ -548,9 +548,9 @@ module write_orbital_to_file
            do j=1,sz_all
               do i=1,sz_all
                if(j == i) then
-                  read(read_orb,'(1X,I8,2x,4F20.8,2x,2I4,2x,F20.8)') k,orbital_all(i,j,:),p,q,eigenval_all(i)
+                  read(read_orb,'(1X,I8,2x,4F28.16,2x,2I4,2x,F28.16)') k,orbital_all(i,j,:),p,q,eigenval_all(i)
                else 
-                  read(read_orb,'(1X,I8,2x,4F20.8,2x,2I4)') k,orbital_all(i,j,:),p,q
+                  read(read_orb,'(1X,I8,2x,4F28.16,2x,2I4)') k,orbital_all(i,j,:),p,q
                end if 
               end do
             end do
@@ -615,7 +615,7 @@ module write_orbital_to_file
            print *,'<<<<< Start reading fock matrix into the file.'
            do j=1,sz
               do i=1,sz
-                  read(read_mat,'(2x,4F20.8,2x,4I4)') matrix(i,j,:),p,q
+                  read(read_mat,'(2x,4F28.16,2x,2I4)') matrix(i,j,:),p,q
               end do
             end do
             print *,'>>>>>  quater fock matrix, reading completed'

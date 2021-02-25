@@ -418,7 +418,7 @@ module talsh_mp2no
                  k = 1
                  do j=1,(nocc+nvir)
                     do i=1,(nocc+nvir)
-                       write(mp2dm,'(2x,2F28.10,2x,4I4)') dm_mo_fort(i,j),i,j
+                       write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
 !                       k = k + 1
                     end do
                   end do

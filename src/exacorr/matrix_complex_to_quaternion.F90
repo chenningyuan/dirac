@@ -39,7 +39,7 @@ module matrix_complex_to_quaternion
           print *,'<<<<< Complex Matrix Existed '
           ierr = 0
           do while(ierr==0)
-                read(cm,'(2x,2F28.10,2x,4I4)',iostat=ierr) a,b,i,j
+                read(cm,'(2x,2F28.16,2x,2I4)',iostat=ierr) a,b,i,j
           end do
            print *,'>>>>> Read Matrix Index'
         end if
@@ -50,7 +50,7 @@ module matrix_complex_to_quaternion
         open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
           ierr = 0
           do while(ierr==0)
-                read(cm,'(2x,2F28.10,2x,4I4)',iostat=ierr) a,b,i,j
+                read(cm,'(2x,2F28.16,2x,2I4)',iostat=ierr) a,b,i,j
                 Matrix(i,j) = cmplx(a,b)
           end do
            print *,'>>>>> Read Matrix'
