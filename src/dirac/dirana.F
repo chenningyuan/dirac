@@ -730,19 +730,7 @@ C             ... CI-NOs, MP2-NOs,...
               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
             ELSEIF(ATOMIC) THEN
               ID = IBEIG(II)
-              INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-              INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-              KP     = INDEX1         * (-1)**(IFRP+INDEX1+1)
-              IF(NFSYM.EQ.1)THEN
-                KP = ABS(KP) * ID/ABS(ID)
-              ENDIF
-              MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
-              J      = 2*ABS(KP) - 1
-              IF(KP.GT.0)THEN
-                 LL = ABS(KP)
-              ELSE   
-                 LL = ABS(KP)-1
-              ENDIF
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
               WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
             ELSEIF(LINEAR) THEN
               ID = IBEIG(II)
@@ -773,19 +761,7 @@ C
               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
             ELSEIF(ATOMIC) THEN
               ID = IBEIG(II)
-              INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-              INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-              KP     = INDEX1         * (-1)**(IFRP+INDEX1+1)
-              IF(NFSYM.EQ.1)THEN
-                KP = ABS(KP) * ID/ABS(ID)
-              ENDIF
-              MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
-              J      = 2*ABS(KP) - 1
-              IF(KP.GT.0)THEN
-                 LL = ABS(KP)
-              ELSE   
-                 LL = ABS(KP)-1
-              ENDIF
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
               WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
             ELSEIF(LINEAR) THEN
               ID = IBEIG(II)

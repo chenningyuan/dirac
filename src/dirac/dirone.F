@@ -6169,7 +6169,32 @@ C       |kappa|(|kappa|-1) for negative kappa
 C       |kappa|x|kappa|    for positive kappa    
 C
 C     With atomic supersymmetry each symmetry subblock are characterized by a double index. They will be packed as a single superindex.
-C      
+C     We recall that a superindex IJ refers to upper triangular matrices, that is
+C     (1,1)  (1,2) (1,3) (1,4) ..
+C            (2,2) (2,3) (2,4) ..       
+C                  (3,3) (3,4) ..
+C                        (4,4) ..
+C                              ..
+C     From this it will be seen that a superindex may be expressed as
+C       IJ = J(J-1)/2 + I
+C
+C     In the atomic case we have
+C       |kappa|   1    2    3    4
+C                1/2  1/2  1/2  1/2
+C                    -3/2 -3/2 -3/2      
+C                          5/2  5/2
+C                              -7/2
+C
+C     In the above matrix, |kappa| is the column index, whereas rows relate to m_j.
+C     It will be noted that m_j has alternating sign; this is a consequence of the quaternion
+C     symmetry scheme of DIRAC. We may encode m_j with respect to the row index as
+C
+C             m_j = (1/2)(2I-1)(-1)^(I+1)
+C
+C     For kappa, we note that in the usual atomic case, the kappa values are distributed as
+C       IFRP=1 (gerade  ):  -1,+2,-3,...
+C       IFRP=2 (ungerade):  +1,-2,+3,...
+C
 C     Routine based on LINSYM
 C     
 C     Called from GLINSM, LOWD2C
@@ -6758,67 +6783,59 @@ C
       IOFT    = 1
       IOFVS   = 1
       IOFVL   = 1
+      INVMAX  = 3-NFSYM  ! INV=2 for NFSYM=1 and INV=1 for NFSYM=2
       DO 40 IFRP = 1,NFSYM
 C
 C        output for ABS(Kappa)=1,
 C        which is NOT included in the below loop (IKAP = 2,KPMAX(IFRP))
 C
        IF(NFSYM.EQ.2)THEN
-          WRITE (LUPRI,1020) 3-2*IFRP,(-1)**IFRP,1,
+         WRITE (LUPRI,1020) 3-2*IFRP,(-1)**IFRP,1,
      &          (NORB_SUB(1,IFRP,IC),IC=0,2)
+         KPADD = 2
+         NORB1 = NFBAS(IFRP,0)*NORB_SUB(1,IFRP,0)
        ELSE
          WRITE (LUPRI,1020) 3-2*IFRP,-1,1,(NORB_SUB(1,IFRP,IC),IC=0,2)
          WRITE (LUPRI,1020) 3-2*IFRP, 1,1,(NORB_SUB(2,IFRP,IC),IC=0,2)
+         KPADD = 3
+         NORB1 = NFBAS(IFRP,0)*(NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0))
        ENDIF
 C       
-       IF(NFSYM.eq.2)THEN
-         NORB1 = NFBAS(IFRP,0)*NORB_SUB(1,IFRP,0)
-         IOFVS = IOFVS + NORB1
-         IOFVL = IOFVL + NORB1
-         IOFT  = IOFT  + NORB1
-       ELSE
-         NORB1 = NFBAS(IFRP,0)*(NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0))
-         IOFVS = IOFVS + NORB1
-         IOFVL = IOFVL + NORB1
-         IOFT  = IOFT  + NORB1
-       ENDIF
+       IOFVS = IOFVS + NORB1
+       IOFVL = IOFVL + NORB1
+       IOFT  = IOFT  + NORB1
        IF(NORB(IFRP).EQ.0) GOTO 40
-       NLL=0
-       NSS=0
-       DO IKAP = 2,KPMAX(IFRP)
-         IF(NFSYM.EQ.2)THEN
-            KPADD = IKAP*(IKAP-1)/2 + 1
-            NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
-          NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
-          ELSE
-            KPADD = IKAP*(IKAP-1) + 1
-            NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
-            NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
-            KPADD = IKAP*(IKAP-1) + 1 + IKAP
-            NLL=MAX(NLL,NORB_SUB(KPADD,IFRP,1)*NORB_SUB(KPADD,IFRP,1))
-            NSS=MAX(NSS,NORB_SUB(KPADD,IFRP,2)*NORB_SUB(KPADD,IFRP,2))
-         ENDIF   
-       ENDDO
 C
 C........allocate KFLL,KVLL,KFSS,KVSS once and for all
 C
+       NLL=0
+       NSS=0
+       KPBUF = KPADD
+       DO IKAP = 2,KPMAX(IFRP)
+       DO INV=1,INVMAX          
+         NLL   = MAX(NLL,NORB_SUB(KPBUF,IFRP,1)*NORB_SUB(KPBUF,IFRP,1))
+         NSS   = MAX(NSS,NORB_SUB(KPBUF,IFRP,2)*NORB_SUB(KPBUF,IFRP,2))
+         KPBUF = KPBUF + IKAP      
+       ENDDO
+       ENDDO
        CALL MEMGET('REAL',KFLL,NLL,WORK,KFREE,LFREE)
        CALL MEMGET('REAL',KFSS,NSS,WORK,KFREE,LFREE)
        CALL MEMGET('REAL',KVLL,NLL,WORK,KFREE,LFREE)
        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 C         
 C........Here we transform the MJ-matrix for particular kappa; look TSUBBL
-       NL = 0  
-       NS = 0
-       INVMAX=3-NFSYM           ! INV=2 for NFSYM=1 and INV=1 for NFSYM=2
-       KPADD=2
-       IF(NFSYM.EQ.1) KPADD=3
        DO IKAP = 2,KPMAX(IFRP)
+       KPOFF=IKAP*(IKAP-1)/2
        DO INV=1,INVMAX ! IF (NFSYM.EQ.1) we cycle twice to get both signs of kappa
          NL = NORB_SUB(KPADD,IFRP,1)
          NS = NORB_SUB(KPADD,IFRP,2)
          IEIGP = IORB(IFRP) + 1
          IEIGE = IEIGP + NS
+         IF(NFSYM.EQ.2)THEN
+           ISKP = (-1)**(IKAP+IFRP+1)
+         ELSE
+           ISKP = (-1)**INV
+         ENDIF
 C           
 CCCCCCCCCCCCCCCCCC         
 C Large AO-MO transformation
@@ -6960,14 +6977,7 @@ C
            IF(MJ.NE.MJBUF) THEN
              MJBUF = MJ
              MJABS = (ABS(MJ)+1)/2
-             IF(NFSYM.EQ.2)THEN
-               ID_SUB_BL(KPADD+MJABS-1,IFRP)
-     &               = (-1)**(IFRP+1) * (KPADD +MJABS-1)
-             ELSE
-               KPADD2 = IKAP*(IKAP-1)/2 + 1            
-               ID_SUB_BL(KPADD+MJABS-1,IFRP)
-     &             = (-1)**INV * (KPADD2+MJABS-1)
-             ENDIF   
+             ID_SUB_BL(KPADD+MJABS-1,IFRP)=ISKP*(KPOFF+MJABS)
            ENDIF
          ENDDO        
 C
@@ -6999,14 +7009,7 @@ C
            IF(MJ.NE.MJBUF) THEN
              MJBUF = MJ
              MJABS = (ABS(MJ)+1)/2
-             IF(NFSYM.EQ.2)THEN
-               ID_SUB_BL(KPADD+MJABS-1,IFRP)
-     &               = (-1)**(IFRP+1) * (KPADD +MJABS-1)
-             ELSE
-               KPADD2 = IKAP*(IKAP-1)/2 + 1            
-               ID_SUB_BL(KPADD+MJABS-1,IFRP)
-     &               = (-1)**INV * (KPADD2+MJABS-1)
-             ENDIF
+             ID_SUB_BL(KPADD+MJABS-1,IFRP)=ISKP*(KPOFF+MJABS)             
            ENDIF
          ENDDO        
 C
@@ -7031,14 +7034,11 @@ C
          ENDDO
 C
 C     Write information to output
-C        KP = IKAP * (-1)**INV
          DO IK = 1,IKAP
-           ID     = ID_SUB_BL(KPADD+IK-1,IFRP)
-           INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-           INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-           MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
+           ID = ID_SUB_BL(KPADD+IK-1,IFRP)
            IF(NORB_SUB(KPADD+IK-1,IFRP,0).NE.0) THEN
-             WRITE (LUPRI,1020) 3-2*I,KP,MJ,
+             CALL ATOMIC_ID(ID,KP,J,MJ,LL)
+             WRITE (LUPRI,1020) 3-2*IFRP,KP,MJ,
      &             (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,2)
            ENDIF  
          ENDDO       
@@ -8582,6 +8582,38 @@ C***********************************************************************
       close (lupot, STATUS = 'KEEP')
 
       end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck atomicid */
+      SUBROUTINE ATOMIC_ID(ID,KP,J,MJ,LL)
+C***********************************************************************
+C
+C     Extract atomic quantum numbers from sub_block ID
+C
+C     m_j can be expressed as (2I-1)/2 * (-1)**(I-1)
+C
+C     The pair (I,J) is packed as a superindex IJ = J(J-1)/2 + I
+C     where I = |kappa|
+C     The final sub_block identification is then given as
+C       ID = sgn(kappa)*IJ      
+C
+C     Written by Trond Saue Feb 25 2021
+C
+C***********************************************************************
+      implicit none
+      integer,intent(in)  :: ID
+      integer,intent(out) :: KP,J,MJ,LL
+      integer             :: INDI,INDJ
+      INDJ = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+      INDI = ABS(ID) - INDJ*(INDJ-1)/2
+      KP   = INDJ * ID/ABS(ID)
+      MJ   = (2*INDI - 1) * (-1)**(INDI+1)
+      J    = 2*INDJ - 1
+      IF(KP.GT.0)THEN
+        LL = INDJ
+      ELSE   
+        LL = INDJ-1
+      ENDIF
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck kptomj */
       SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)

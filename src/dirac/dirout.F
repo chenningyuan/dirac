@@ -1089,20 +1089,8 @@ C
             IF (SPINFR) THEN     ! Spinfree case
               WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
               NAME_SUB(ID) = REP(ID)
-            ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
-              INDEX1 = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-              INDEX2 = ABS(ID) - INDEX1*(INDEX1-1)/2
-              KP     = INDEX1          * (-1)**(IFSYM+INDEX1+1)
-              IF(NFSYM.EQ.1)THEN
-                KP = ABS(KP) * ID/ABS(ID)
-              ENDIF
-              MJ     = (2*INDEX2 - 1) * (-1)**(INDEX2+1)
-              J      = 2*ABS(KP) - 1
-              IF(KP.GT.0)THEN
-                 LL = ABS(KP)
-              ELSE   
-                 LL = ABS(KP)-1
-              ENDIF
+           ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
 C
               WRITE(LUPRI,'(/A,I4,4A,I2,2A,I3,A)')
      &            '* Block',ISUB,' in ',FREP(IFSYM),
