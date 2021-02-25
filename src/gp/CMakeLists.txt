@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_BINARY_DIR}/src/gp
     ${PROJECT_BINARY_DIR}
     )
 
@@ -32,8 +33,6 @@ set(FIXED_GP_FORTRAN_SOURCES
    qpack.F
    spline.F
    time.F
-   # gpsaue.F needs disotp
-   ${PROJECT_SOURCE_DIR}/src/abacus/hergp.F
 )
 
 set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
@@ -126,6 +125,4 @@ add_library(
 add_dependencies(gp interface_mpi)
 add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
-
 generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
-add_dependencies(gp git_info)

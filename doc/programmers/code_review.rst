@@ -55,11 +55,11 @@ Then you cannot push directly but do not worry and follow these steps:
 * Create a new branch from the branch that you changed and tried to push.
 * Push the newly created branch to https://gitlab.com/dirac/dirac.
 * Create a merge request and point it to the branch you originally meant to modify.
-* Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``::
+* Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``  ::
 
-  $ git checkout master
-  # WARNING! next step will delete commits that came after origin/master
-  $ git reset --hard origin/master
+   $ git checkout master
+   #WARNING! next step will delete commits that came after origin/master
+   $ git reset --hard origin/master
 
 If you do not clean up your local master or release branch, it can start to diverge next time you pull
 since your local history may be different from remote history.

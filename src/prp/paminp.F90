@@ -361,8 +361,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG rotational g-tensor
-!MI ... at present it is not implemented
+!&&&& ROTG - rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100
@@ -466,25 +465,10 @@
       DO I = 1, NPRP_WF
          WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
-
+!
 !=========================================================================
-!iaa  Set the molecular CM as gauge origin (origin of L angular moment)
-!     for spin-rotations and rotational molecular g-tensors
-!=========================================================================
-      if (spinro.or.rotg) then
-! ... make the center of mass the gauge and dipole origin (default in dalton)
-! ... call the routine in abacus/hergp.F
-        CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
-        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-        CALL DCOPY(3,GAGORG,1,DIPORG,1)
-        write(LUPRI,'(//,1X,A)')                                        &
-     &'Gauge & dipole origin are changed to the molecular CM position'
-        write(LUPRI,'(/A,9X,3F20.15)')                                  &
-     &  ' Gauge & dipole origin (a.u.):',(GAGORG(I), I = 1, 3)
-      end if
-!=========================================================================
-!MI   For magnetic susceptibilities, NMR shielding constants, rotational
-!MI   g-tensors and spin-rotation tensors operator centers might be changed
+!MI   For magnetic susceptibilities, NMR shielding constants and rotational
+!MI   g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -593,13 +577,14 @@
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 !MI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
+
 !gosia: i have to reset these variables once again...
 !or always remember to put *NMR .LONDON in the input...
       if (bxlao .or. bylao .or. bzlao) then
         london = .true.
         doxlr  = .true.
       end if
-!
+
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
@@ -618,10 +603,9 @@
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.                        &
      &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
-         WRITE (LUPRI,'(1X,A,3F18.10)')                                 &
-     &     '* Operator center:', (ORIGIN(I),I=1,3),                     &
-     &     '* Gauge origin   :', (GAGORG(I),I=1,3),                     &
-     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+         WRITE (LUPRI,'(A/A,3F18.10)')                                  &
+     &     '   Gauge origin has been changed:',                         &
+     &     ' * Gauge origin   :', (GAGORG(I),I=1,3)
       ENDIF
 
 !     consistency checks

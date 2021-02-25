@@ -865,7 +865,7 @@ C?    WRITE(6,*) ' GASANAS : NBLOCK = ',NBLOCK
 *. Read in a Type-Type-symmetry block
           CALL IFRMDS(IDET,1,-1,LUC)
           CALL FRMDSC(C,IDET,-1,LUC,IMZERO,IAMPACK)
-C?        WRITE(6,*) ' Number of elements readin ',IDET
+C?        WRITE(6,*) ' Number of elements read in ',IDET
           IDET = 0
         END IF
         IF(IMZERO.NE.1) THEN
@@ -1395,7 +1395,7 @@ C         IF(IPACK.EQ.0.OR.IMZERO.EQ.0) THEN
 C           READ(LUC)
 C         END IF
         END DO
-*. and : READIN !!!
+*. and : READ IN !!!
         CALL IFRMDS(LBL,1,-1,LUC)
         CALL FRMDSC(CTTS(IOFFO),LBL,-1,LUC,IMZERO,IAMPACK)
 C?      WRITE(6,*) ' GET_TTS, JJBLK,IOFFO LBL ', JJBLK,IOFFO,LBL

@@ -15,12 +15,9 @@ test = TestRun(__file__, sys.argv)
 #      rel_tolerance   = 1.0e-9)
 
 f2 = Filter()
-f2.add(from_string = 'Final CCSD energy',
-      num_lines   = 1,
-      rel_tolerance   = 5.0e-9)
-f2.add(from_string = 'SCF energy (',
-      num_lines   = 1,
-      rel_tolerance   = 5.0e-9)
+f2.add(from_string = 'Final results from EXACORR',
+      num_lines   = 8,
+      abs_tolerance   = 1.0e-6)
 f2.add(from_string = 'Norm of Fock matrix (OO',
       num_lines   = 1,
       abs_tolerance   = 1.0e-4)

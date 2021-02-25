@@ -744,12 +744,13 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Electronic angular momentum around the origin
-C     ---------------------------------------------
+C     Electronic angular momentum around the molecular center of mass
+C     ---------------------------------------------------------------
 C
  20   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
-     &      ' Calculation of angular momentum around the gauge origin'
+     &     ' Calculation of angular momentum around the molecular'//
+     &     ' center of mass'
          INTTYP = 18
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -965,7 +966,7 @@ C
       GOTO 200
 C
 C     Electric field at the individual nuclei
-C     --------------------------------------
+C     ---------------------------------------
 C
  31   CONTINUE
          INTTYP = 29
@@ -1053,23 +1054,24 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Potential energy at the nuclei
-C     -----------------------------
+C     Potential energy from interaction of electrons with individual nuclei
+C     ---------------------------------------------------------------------
 C
  37   CONTINUE
          INTTYP = 35
          IF (MAXREP .GT. 0) THEN
             WRITE (LUPRI,'(/A/)')
-     &           ' Program cannot calculate potential energy '//
-     &           'with symmetry'
+     &       ' Program cannot calculate potential energy with symmetry'
             CALL QUIT('Cannot calculate potential energy with symmetry')
          ELSE
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &           ' Calculation of the potential energy at the nuclei'
+     &       ' Calculation of the potential energy of the interaction'/
+     &      /' of electrons with individual nuclei'
             CALL SETATM(DOATOM,NATOM,INTTYP)
             CALL NPETYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
             ANTI = .FALSE.
          END IF
+      GOTO 200
 C
 C     Half B-differentiated overlap matrix
 C     ------------------------------------
@@ -3092,7 +3094,7 @@ C  /* Deck npetyp */
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -3105,12 +3107,11 @@ C
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
-            NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
             DO 200 IREP = 0, MAXREP
                IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
                   ITYP = ITYP + 1
                   NPETBL(IATOM,IREP) = ITYP
-                  LABINT(ITYP) = 'POT.E '//NAME
+                  LABINT(ITYP) = 'POT.E '//NAMDEP(NUCPRE(IATOM)+1)(1:2)
                   INTREP(ITYP) = IREP
                END IF
  200        CONTINUE
@@ -3239,7 +3240,7 @@ C
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"

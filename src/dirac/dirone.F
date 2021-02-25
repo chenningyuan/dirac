@@ -7396,25 +7396,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &     FIT_EXP,FIT_COEF)
 C***********************************************************************      
       implicit none
-      logical newel, early_exit
       integer,intent (in)    :: n_charge
       integer,intent (inout) :: n_exp
       real*8,intent (out)    :: fit_exp(*),fit_coef(*)
-      integer                :: i,intorb,intisg
-      integer, parameter     :: lupot=91, iprint=0
 
+      integer                :: i,intorb,intisg, lupot, lu_not_used
+      logical                :: newel, early_exit, emsl_type
+      integer, parameter     :: iprint=0
+
+      lupot  = lu_not_used(91)
       early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
-      call findel ('SCRPOT',n_charge,lupot)
-      call finpos (newel,n_exp,intorb,intisg,lupot,iprint)
-      if (early_exit) then
-         rewind (lupot)
-         return
+      call find_element ('SCRPOT',n_charge,lupot,iprint,emsl_type)
+      call find_pos (newel,n_exp,intorb,intisg,lupot,iprint)
+
+      if (.not. early_exit) then
+         do i = 1, n_exp
+            read (lupot,*) fit_exp(i),fit_coef(i)
+         end do
       end if
-      
-      do i = 1, n_exp
-         read (lupot,*) fit_exp(i),fit_coef(i)
-      end do
-      rewind (lupot)
+
+      close (lupot, STATUS = 'KEEP')
 
       end
 ! -- end of dirone.F --

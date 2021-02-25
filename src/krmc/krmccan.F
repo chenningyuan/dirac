@@ -1582,14 +1582,13 @@ C         Introduced .NMQM flag programmed by MKN
 C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
-      use codata
       use memory_allocator
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
 C
-#include "propconst.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
@@ -1620,6 +1619,7 @@ CMKN     &                   NPROP_KRCI,MZ)
       integer, intent(in)  :: mz
 C
 #include "memint.h"
+C
       CALL QENTER('XKRCIPRPANA')
 C
       IZERO = 0

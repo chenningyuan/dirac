@@ -40,14 +40,9 @@ compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 #synchronize basis set directories of trunk/basis* into the installation directory
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
-# In the branch, we always want a stand-alone version of exacorr as well. Make this optional when merging into master
+# If exatensor is enabled we also make a stand-alone binary for convenience.
 if (ENABLE_EXATENSOR)
    compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
-endif()
-
-if (ENABLE_GENIAO)
-   compile_standalone(geniao.x src/geniao/generate_iao.F90   "${_list_of_executables}")
-   compile_standalone(avas.x src/geniao/generate_avas.F90   "${_list_of_executables}")
 endif()
 
 option(ENABLE_UTILITIES "Enable utilities" ON)
