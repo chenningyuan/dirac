@@ -296,8 +296,6 @@ C         ====================================
      &               WORK,KFREE,LFREE,IPRXPP)
                 TMOM(IOP,IPAR,IEXC)=D2*
      &               DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-CTROND
-              WRITE(6,*) 'TEST..',PRPNAM(INDXPR),'.e-p.',GPOP(1,1)
                 IF(IPRXPP.GE.3) THEN
                   WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-p) part'
                   CALL PRINT_GP_XP(GPOP,XPOP,
@@ -1004,6 +1002,7 @@ C
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
+#include "infpar.h"
 C#include "cbiher.h"
 C     ************************************************************
 C     * Most variables have been moved to shared_bedled_var_module
@@ -1881,14 +1880,8 @@ C    ** bcast file name labels **
      &              global_communicator)
       call interface_mpi_bcast(LU1INT, 1, MASTER,
      &              global_communicator)
-
-      call interface_mpi_bcast(INDSTR(1,1), 1*72, MASTER,
+      call interface_mpi_bcast(INDSTR(1,1),6*72, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(INDSTR(2,1), 1*72, MASTER,
-     &              global_communicator)
-      call interface_mpi_bcast(INDSTR(3,1), 1*72, MASTER,
-     &              global_communicator)
-
 C     All slaves must setup orbital informations
       IF (MYPROC.ne.MASTER) THEN
         allocate(norot(norbt*1))

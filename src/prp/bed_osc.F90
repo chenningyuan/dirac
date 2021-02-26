@@ -21,7 +21,9 @@
 !.....Accumulate oscillator strengths
       FOSC=0.0D0
       IF(K.EQ.0) THEN
+        allocate(indices(1))
         call rotfac_bed(indices,0,iterm,jterm,FOSC,ATMPPF,OMEGA)
+        deallocate(indices)
       ELSE
         allocate(indices(k2))
         call bedloop(1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
@@ -166,7 +168,9 @@
 !.....Accumulate oscillator strengths
       FOSC=0.0D0
       IF(K.EQ.0) THEN
+        allocate(indices(1))
         call rotfac_mpol(indices,0,iterm,jterm,FOSC,ATMPPF,OMEGA)
+        deallocate(indices)
       ELSE
         allocate(indices(k2))
         call mpolloop(1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
