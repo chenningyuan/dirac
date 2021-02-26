@@ -3683,7 +3683,7 @@ C     about linear or boson symmetry, and the reduction of the variational
 C     space will not work in the default case. This needs some thinking; for 
 C     now I simply set IBEIG1 to zero.
       CALL ICOPY (NORBT,0,0,IBEIG1,1) 
-      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
+      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG,ATOMIC)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     De-allocate arrays
