@@ -575,33 +575,11 @@ module fde_evaluators_dirac
                              2)
 !     SCF construct density matrix
          if (nfmat.gt.1) then 
-! debugging
-!           print *,'Info: open-shell case, nr. density matrices:',nfmat
-! debugging
             allocate(dmat2(mat_dim_quat_as_1d*nfmat))
             dmat2 = 0.0d0
             call denmat(dmat2,cmo,1)
-! debugging
-!           do i = 1, nfmat
-!              ia = 1 + (i-1)*mat_dim_quat_as_1d
-!              ib = mat_dim_quat_as_1d*i 
-!           print *,'debug, before gtdoav',i,ia,ib,dot_product(dmat2(ia:ib),dmat2(ia:ib))
-!           end do 
-!           print *,'nba,nba*nba',nba,nba*nba,nba*nba*nz,mat_dim_quat_as_1d
-! debugging
             call gtdoav(nba, nz, nfmat, dmat2, 1)
-! debugging
-!           do i = 1, nfmat
-!              ia = 1 + (i-1)*mat_dim_quat_as_1d
-!              ib = mat_dim_quat_as_1d*i 
-!           print *,'debug, after  gtdoav #1',i,ia,ib,dot_product(dmat2(ia:ib),dmat2(ia:ib))
-!           end do 
-!           print *,'debug, after  gtdoav #2',mat_dim_quat_as_1d,n2bbasxq
-! debugging
             dmat = dmat2(1:mat_dim_quat_as_1d)
-! debugging
-!           print *,'debug, after  gtdoav #3',dot_product(dmat,dmat)
-! debugging
             deallocate(dmat2)
          else
             call denmat(dmat,cmo,0)
