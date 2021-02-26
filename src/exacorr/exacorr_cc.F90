@@ -15,7 +15,7 @@ module exacorr_cc
 
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0), &
-                                 ONE_QUARTER=(0.25D0,0.D0), &
+                                 ONE_QUARTER=(0.25D0,0.D0), MINUS_ONE_QUARTER=(-0.25D0,0.D0),  &
                                  MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0), &
                                  THREE=(3.D0,0.D0),SIX=(6.D0,0.D0)
         type(tens_rcrsv_t),public :: one_tensor
@@ -961,8 +961,18 @@ module exacorr_cc
          type(denom_t)        :: denom
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
+
 !        intermediary tensor for handling permutation symmetry
          type(tens_rcrsv_t) :: intm_p2_tensor, intm_vvvv_tensor
+
+! 260221 Ajout des tenseurs intermediaires pour remplacer tau_CC2
+         type(tens_rcrsv_t) :: Hovvv_tensor,Hvovv_tensor
+         type(tens_rcrsv_t) :: Hvvov_tensor,Hvvvo_tensor
+         type(tens_rcrsv_t) :: Hooov_tensor,Hoovo_tensor
+         type(tens_rcrsv_t) :: Hvooo_tensor,Hovoo_tensor
+!! fin 260221
+
+
 !        intermediate
 !!         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
          type(tens_rcrsv_t) :: t1t1_tensor, tauCC2_tensor
@@ -980,6 +990,18 @@ module exacorr_cc
          integer(INTL),dimension(2) :: oo_root,ov_root,vo_root
          integer(INTL),dimension(4) :: ovoo_root,vvoo_root,vvvo_root
          integer(INTL),dimension(4) :: vvvv_root, oooo_root
+
+! 260221 Ajout des dimesions supplementaires pour les tenseurs intermediairres
+         integer(INTD),dimension(4) :: ovvv_id , vovv_id
+         integer(INTD),dimension(4) :: vvov_id 
+         integer(INTD),dimension(4) :: oovo_id , ooov_id 
+         integer(INTD),dimension(4) :: vooo_id
+
+         integer(INTL),dimension(4) :: ovvv_root , vovv_root
+         integer(INTL),dimension(4) :: vvov_root 
+         integer(INTL),dimension(4) :: oovo_root , ooov_root
+         integer(INTL),dimension(4) :: vooo_root
+! fin 260221
 
          real(8) :: t_convergence
 
@@ -1014,6 +1036,21 @@ module exacorr_cc
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
          oooo_root = (/occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
 
+! Modification au 260221
+! Creation des dimensions supplémetaires pour les intermediaires
+         ovvv_id   = (/occ_space_id,vir_space_id,vir_space_id,vir_space_id/)
+         vovv_id   = (/vir_space_id,occ_space_id,vir_space_id,vir_space_id/)
+         vvov_id   = (/vir_space_id,vir_space_id,occ_space_id,vir_space_id/)
+         oovo_id   = (/occ_space_id,occ_space_id,vir_space_id,occ_space_id/)
+         ooov_id   = (/occ_space_id,occ_space_id,occ_space_id,vir_space_id/)
+         vooo_id   = (/vir_space_id,occ_space_id,occ_space_id,occ_space_id/)
+         ovvv_root   = (/occ_space_root,vir_space_root,vir_space_root,vir_space_root/)
+         vovv_root   = (/vir_space_root,occ_space_root,vir_space_root,vir_space_root/)
+         vvov_root   = (/vir_space_root,vir_space_root,occ_space_root,vir_space_root/)
+         oovo_root   = (/occ_space_root,occ_space_root,vir_space_root,occ_space_root/)
+         ooov_root   = (/occ_space_root,occ_space_root,occ_space_root,vir_space_root/)
+         vooo_root   = (/vir_space_root,occ_space_root,occ_space_root,occ_space_root/)
+! Fin 260221
 
 !        Initialize scalar that are to be used as tensors in contractions
          ierr=exatns_tensor_create(result_t_tensor,"result_t",EXA_DATA_KIND_C8)
@@ -1039,6 +1076,19 @@ module exacorr_cc
 
          ierr=exatns_tensor_create(Wabef_CC2_tensor,"Wabef_CC2",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(Wmnij_CC2_tensor,"Wmnij_CC2",oooo_id,oooo_root,EXA_DATA_KIND_C8)
+
+! 260221 Creation des tenseurs auxiliaires
+         ierr=exatns_tensor_create(Hovvv_tensor,"Hovvv",ovvv_id,ovvv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvovv_tensor,"Hvovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvvov_tensor,"Hvvov",vvov_id,vvov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvvvo_tensor,"Hvvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hooov_tensor,"Hooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hoovo_tensor,"Hoovo",oovo_id,oovo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvooo_tensor,"Hvooo",vooo_id,vooo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hovoo_tensor,"Hovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
+! Fin 260221
+
+
 
 ! resorted integrals nedded below
 
@@ -1130,7 +1180,30 @@ module exacorr_cc
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-          Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+                  Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+          print*, "norm Wmnij_CC2_Tensor",print_tensornorm2(Wmnij_CC2_tensor)
+
+          ierr=exatns_tensor_init(Wmnij_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
+          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
+          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
+!          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
+!                  Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+
+          ierr=exatns_tensor_init(Hoovo_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hoovo(m,n,e,j)+=V(m,n,e,f)*T(f,j)",&
+                &       Hoovo_tensor,int_t%oovv,comm_t%t1)
+          ierr=exatns_tensor_contract("Wmnij(m,n,i,j)+=Hoovo(m,n,e,j)*T(e,i)",&
+                &       Wmnij_CC2_tensor,Hoovo_tensor,comm_t%t1,ONE_QUARTER)
+          ierr=exatns_tensor_init(Hooov_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hooov(m,n,j,f)+=V(m,n,e,f)*T(e,j)",&
+                &       Hooov_tensor,int_t%oovv,comm_t%t1)
+          ierr=exatns_tensor_contract("Wmnij(m,n,i,j)+=Hooov(m,n,j,f)*T(f,i)",&
+                &       Wmnij_CC2_tensor,Hooov_tensor,comm_t%t1,MINUS_ONE_QUARTER)
+
+          print*, "OPERATION norm Wmnij",print_tensornorm2(Wmnij_CC2_tensor)
+
+          print*, "norm Wmnij_CC2_Tensor",print_tensornorm2(Wmnij_CC2_tensor)
 
 !         b.\W abef= \V abef -\Pm ab \ts bm \V amef +\unquart \Pm ab \ts am \ts bn \Vmnef
           ierr=exatns_tensor_init(intm_vvvv_tensor,'ZERO')
@@ -1141,7 +1214,9 @@ module exacorr_cc
           ierr=exatns_tensor_contract("W(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-          Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+                  Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+          print*, "norm Wabef_CC2_Tensor",print_tensornorm2(Wabef_CC2_tensor)  
+
 
 
 !         Diagrams using the CC2 W intermediates above
