@@ -858,88 +858,6 @@ C
       RETURN
       END
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck bedleb */                                                   C
-C     * This is the slave interface to the BEDLEB subroutine below     C
-C     * Will receive the necessary information to begin working        C
-C     * on the BEDLEB routine - allocating the needed arrays           C
-C     * for entering BEDLED                                            C
-      SUBROUTINE bedleb_launch_slave_procs()
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use memory_allocator                                 
-      use interface_to_mpi                                 
-#include "implicit.h"                                      
-C                                                          
-C                                                          
-c TODO added due to NESH
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "priunit.h"                                       
-#include "mxcent.h"                                        
-#include "maxorb.h"                                        
-
-#include "aovec.h"                                         
-C TODO commented out due to dcborb.h                                                          
-c#include "inforb.h"                                        
-#include "infpar.h"                                        
-#include "dcbxpp.h"
-#include "molinp.h"                                        
-#include "blocks.h"                                        
-#if defined (PRG_DIRAC)                                    
-#include "dcbgen.h"                                        
-#include "dcbgrd.h"                                        
-#else                                                      
-#include "gnrinf.h"                                        
-#include "energy.h"                                        
-#endif                                                     
-C
-C                                                          
-      DIMENSION DINTSKP(14*3*3)                            
-      INTEGER LWORK, NCOMP, NOPTP, MYPROC
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
-C                                                          
-      real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
-      integer, allocatable :: IBEIG(:)
-      INTEGER MAXEXC, I
-      call legacy_lwork_get(LWORK)                         
-      call alloc(WORK,LWORK,id='WORK in BEDLEB')           
-#include "memint.h"
-
-      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
-C                                                          
-      CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
-     &                  global_communicator)
-      CAll interface_mpi_BCAST(NREDM,1,MPARID,
-     &                  global_communicator)
-
-C     * OMEGA
-      allocate(OMEGA(MAXEXC))
-      CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
-     &                  global_communicator)
-C     * ISSYM
-
-      allocate(TMPISSYM(MAXEXC))
-      CAll interface_mpi_bcast_r1_work_f77(TMPISSYM,MAXEXC,MPARID,
-     &                  global_communicator)
-C     * N2BBASXQ for Allocation of CMO
-      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
-     &              global_communicator)
-C     * IBEIG
-      call interface_mpi_bcast(NTBAS, 3, MPARID,
-     &              global_communicator)
-
-      allocate(CMO(N2BBASXQ))
-      allocate(IBEIG(NTBAS(0)))
-      CALL BEDLEB(OMEGA,TMPISSYM,CMO,IBEIG, EVECR, IBTYP,
-     &                  IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
-      deallocate(TMPISSYM)
-      deallocate(OMEGA)
-      deallocate(CMO)
-      deallocate(IBEIG)
-      RETURN
-
-      END
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       module shared_bedled_var_module   
@@ -1001,8 +919,10 @@ C
 #include "dcbwav.h"
 #include "maxorb.h"
 #include "dcbidx.h"
+#if defined (VAR_MPI)
 #include "mpif.h"
 #include "infpar.h"
+#endif
 C#include "cbiher.h"
 C     ************************************************************
 C     * Most variables have been moved to shared_bedled_var_module
@@ -1011,7 +931,9 @@ C     ************************************************************
       CHARACTER*6 MXFORM, FMT
       CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12 
       CHARACTER ALLCPUTID*12
+#if defined (VAR_MPI)
       INTEGER :: ISTAT(df_mpi_status_size)
+#endif
       INTEGER IBEIG(*)
       DIMENSION CMO(*),WORK(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC)
@@ -1353,6 +1275,24 @@ C       SLAVES WILL EXIT BEDLED HERE
           RETURN
         ENDIF
       ENDIF
+C     
+C     End timing of the BEDLEB routine 
+C
+      CALL GETTIM(CPU2,WALL2)
+      CPU    = CPU2 - BCPU
+      WALL   = WALL2 - WALL1
+      TOTWAL = TOTWAL + WALL
+      CPUTIME = CPUTIME + CPU
+C
+      TOTTID = SECTID(TOTWAL)
+      WRITE(LUPRI,'(A,A12)')
+     &    '>>>> Total wall time used in BEDLEB           : ',
+     &       TOTTID
+      CPUTID = SECTID(CPU)
+      ALLCPUTID = SECTID(CPUTIME)
+      WRITE(LUPRI,'(A,A12,A1,A12)')
+     &    '>>>> Master CPU/Total CPU time used in BEDLEB : ',
+     &       CPUTID,'/',ALLCPUTID
 C     ********************************************************
 #endif
 C
@@ -1378,24 +1318,6 @@ C
      &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
 
-C     
-C     End timing of the BEDLEB routine 
-C
-      CALL GETTIM(CPU2,WALL2)
-      CPU    = CPU2 - BCPU
-      WALL   = WALL2 - WALL1
-      TOTWAL = TOTWAL + WALL
-      CPUTIME = CPUTIME + CPU
-C
-      TOTTID = SECTID(TOTWAL)
-      WRITE(LUPRI,'(A,A12)')
-     &    '>>>> Total wall time used in BEDLEB           : ',
-     &       TOTTID
-      CPUTID = SECTID(CPU)
-      ALLCPUTID = SECTID(CPUTIME)
-      WRITE(LUPRI,'(A,A12,A1,A12)')
-     &    '>>>> Master CPU/Total CPU time used in BEDLEB : ',
-     &       CPUTID,'/',ALLCPUTID
 C            
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -1421,6 +1343,89 @@ C     Memory deallocation
       CALL QEXIT('BEDLEB')
 C     
       RETURN
+      END
+#if defined (VAR_MPI)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck bedleb */                                                   C
+C     * This is the slave interface to the BEDLEB subroutine below     C
+C     * Will receive the necessary information to begin working        C
+C     * on the BEDLEB routine - allocating the needed arrays           C
+C     * for entering BEDLED                                            C
+      SUBROUTINE bedleb_launch_slave_procs()
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use memory_allocator                                 
+      use interface_to_mpi                                 
+#include "implicit.h"                                      
+C                                                          
+C                                                          
+c TODO added due to NESH
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "priunit.h"                                       
+#include "mxcent.h"                                        
+#include "maxorb.h"                                        
+
+#include "aovec.h"                                         
+C TODO commented out due to dcborb.h                                                          
+c#include "inforb.h"                                        
+#include "infpar.h"                                        
+#include "dcbxpp.h"
+#include "molinp.h"                                        
+#include "blocks.h"                                        
+#if defined (PRG_DIRAC)                                    
+#include "dcbgen.h"                                        
+#include "dcbgrd.h"                                        
+#else                                                      
+#include "gnrinf.h"                                        
+#include "energy.h"                                        
+#endif                                                     
+C
+C                                                          
+      DIMENSION DINTSKP(14*3*3)                            
+      INTEGER LWORK, NCOMP, NOPTP, MYPROC
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+C                                                          
+      real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
+      integer, allocatable :: IBEIG(:)
+      INTEGER MAXEXC, I
+      call legacy_lwork_get(LWORK)                         
+      call alloc(WORK,LWORK,id='WORK in BEDLEB')           
+#include "memint.h"
+
+      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+C                                                          
+      CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
+     &                  global_communicator)
+      CAll interface_mpi_BCAST(NREDM,1,MPARID,
+     &                  global_communicator)
+
+C     * OMEGA
+      allocate(OMEGA(MAXEXC))
+      CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
+     &                  global_communicator)
+C     * ISSYM
+
+      allocate(TMPISSYM(MAXEXC))
+      CAll interface_mpi_bcast_r1_work_f77(TMPISSYM,MAXEXC,MPARID,
+     &                  global_communicator)
+C     * N2BBASXQ for Allocation of CMO
+      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+     &              global_communicator)
+C     * IBEIG
+      call interface_mpi_bcast(NTBAS, 3, MPARID,
+     &              global_communicator)
+
+      allocate(CMO(N2BBASXQ))
+      allocate(IBEIG(NTBAS(0)))
+      CALL BEDLEB(OMEGA,TMPISSYM,CMO,IBEIG, EVECR, IBTYP,
+     &                  IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
+      deallocate(TMPISSYM)
+      deallocate(OMEGA)
+      deallocate(CMO)
+      deallocate(IBEIG)
+      RETURN
+
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -1909,4 +1914,5 @@ C
 
       RETURN
       END
+#endif      
 CCCCCCCCCCCCCCCCCCCCCCCCC
