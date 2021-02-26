@@ -328,14 +328,14 @@ module write_orbital_to_file
             write (lucoef) priccf
    
    
-            open (mp2dm,file='Orbital_check',status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
-            Print *, "write HF orbital cofficient into file Orbital_check."
-              do j=1,size(qorbital%coeff,2)
-                 do i=1,size(qorbital%coeff,1)
-                    write(mp2dm,'(2x,4F28.10,2x,4I4)') qorbital%coeff(i,j,:),i,j
-                 end do
-               end do
-           close(mp2dm,status='KEEP')
+!            open (mp2dm,file='Orbital_check',status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+!            Print *, "write HF orbital cofficient into file Orbital_check."
+!              do j=1,size(qorbital%coeff,2)
+!                 do i=1,size(qorbital%coeff,1)
+!                    write(mp2dm,'(2x,4F28.10,2x,4I4)') qorbital%coeff(i,j,:),i,j
+!                 end do
+!               end do
+!           close(mp2dm,status='KEEP')
 
 
             deallocate(jstrt)
