@@ -21,6 +21,7 @@ Revised features:
 
 - Gauge origin (.GAUGEO and .GO ANG) now can only be set under \*\*HAMILTONIAN.
 - Phase and dipole origins (.PHASEO and .DIPORG, respectively) now can only be set under \*\*HAMILTONIAN.
+- EOM-CC excitation energies collected for all symmetries and summarized at the end  
 
 New defaults:
 
