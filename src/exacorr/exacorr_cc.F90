@@ -1175,13 +1175,13 @@ module exacorr_cc
 !         additional CC2 W intermediates
 !
 !         a.\W mnij = \V mnij +\Pm ij \ts ej \V mnie +\unquart \Pm ij \ts ei \ts fj \V mnef
-          ierr=exatns_tensor_init(Wmnij_CC2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-                  Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
-          print*, "norm Wmnij_CC2_Tensor",print_tensornorm2(Wmnij_CC2_tensor)
+!          ierr=exatns_tensor_init(Wmnij_CC2_tensor,'ZERO')
+!          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
+!          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
+!          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
+!          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
+!                  Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+!          print*, "norm Wmnij_CC2_Tensor old method",print_tensornorm2(Wmnij_CC2_tensor)
 
           ierr=exatns_tensor_init(Wmnij_CC2_tensor,'ZERO')
           ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
@@ -1201,36 +1201,94 @@ module exacorr_cc
           ierr=exatns_tensor_contract("Wmnij(m,n,i,j)+=Hooov(m,n,j,f)*T(f,i)",&
                 &       Wmnij_CC2_tensor,Hooov_tensor,comm_t%t1,MINUS_ONE_QUARTER)
 
-          print*, "OPERATION norm Wmnij",print_tensornorm2(Wmnij_CC2_tensor)
+!          print*, "OPERATION norm Wmnij",print_tensornorm2(Wmnij_CC2_tensor)
 
-          print*, "norm Wmnij_CC2_Tensor",print_tensornorm2(Wmnij_CC2_tensor)
+          if (debug_local) print*, "norm Wmnij_CC2_Tensor new method",print_tensornorm2(Wmnij_CC2_tensor)
 
 !         b.\W abef= \V abef -\Pm ab \ts bm \V amef +\unquart \Pm ab \ts am \ts bn \Vmnef
+
+!! Ne pas efface
           ierr=exatns_tensor_init(intm_vvvv_tensor,'ZERO')
           ierr=exatns_tensor_contract("I(a,b,e,f)+=V(a,m,e,f)*T(b,m)",intm_vvvv_tensor,int_t%vovv,comm_t%t1)
+!!!!!
 
+! debut modif vieille version
+!          ierr=exatns_tensor_init(Wabef_CC2_tensor,'ZERO')
+!          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
+!          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
+!          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
+!          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
+!                  Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+!          print*, "Wabef_CC2_Tensor old",print_tensornorm2(Wabef_CC2_tensor)  
+
+!debut MOdif
           ierr=exatns_tensor_init(Wabef_CC2_tensor,'ZERO')
           ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
           ierr=exatns_tensor_contract("W(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-                  Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
-          print*, "norm Wabef_CC2_Tensor",print_tensornorm2(Wabef_CC2_tensor)  
+!          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
+!                  Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+       !!!  Ici il faut déclarer un intermédiaire H
+          ierr=exatns_tensor_init(Hvovv_tensor,'ZERO')
+          ierr=exatns_tensor_init(Hovvv_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hvovv(a,n,e,f)+=V(m,n,e,f)*T(a,m)",&
+                & Hvovv_tensor,int_t%oovv,comm_t%t1,ONE)        !Operation cost : v^3*o^2
+          ierr=exatns_tensor_contract("Wabef(a,b,e,f)+=Hvovv(a,n,e,f)*T(b,n)",&
+                & Wabef_CC2_tensor,Hvovv_tensor,comm_t%t1,ONE_QUARTER)!Operation cost : v^4*o
+        !!!  Ici il faut déclarer un intermédiaire H
+          ierr=exatns_tensor_contract("Hovvv(m,a,e,f)+=V(m,n,e,f)*T(a,n)",&
+                & Hovvv_tensor,int_t%oovv,comm_t%t1,ONE)        !Operation cost :v^3*o^2
+          ierr=exatns_tensor_contract("Wabef(a,b,e,f)+=Hovvv(m,a,e,f)*T(b,m)",&
+                & Wabef_CC2_tensor,Hovvv_tensor,comm_t%t1,MINUS_ONE_QUARTER) ! Operation cost : v^4*o
+          if (debug_local) print*, "norm Wabef",print_tensornorm2(Wabef_CC2_tensor)
+
+          print*, "LHOPER Wabef_CC2_Tensornew",print_tensornorm2(Wabef_CC2_tensor)  
+! fin modification
 
 
 
 !         Diagrams using the CC2 W intermediates above
 !
 !         Diagram 21XX : \Sd abij = \undemi \Pm ab \ts am \ts bn \W mnij
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
-          s2_tensor,Wmnij_CC2_tensor,tauCC2_tensor,ONE_HALF)
+
+!          ierr=exatns_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
+!          s2_tensor,Wmnij_CC2_tensor,tauCC2_tensor,ONE_HALF)
+!          if (debug_local) print*, "norm s2 tensor after diagram 21",print_tensornorm2(s2_tensor)
+
+          ierr=exatns_tensor_init(Hvooo_tensor)
+          ierr=exatns_tensor_contract("H(a,n,i,j)+=Wmnij(m,n,i,j)*T(a,m)",&
+                & Hvooo_tensor,Wmnij_CC2_tensor,comm_t%t1,ONE)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(a,n,i,j)*T(b,n)",&
+                & s2_tensor,Hvooo_tensor,comm_t%t1,ONE_HALF)
+          ierr=exatns_tensor_init(Hovoo_tensor)
+          ierr=exatns_tensor_contract("H(m,a,i,j)+=Wmnij(m,n,i,j)*T(a,n)",&
+                &      Hovoo_tensor,Wmnij_CC2_tensor,comm_t%t1,ONE)
+          ierr=exatns_tensor_contract("S(a,b,i,j)+=H(m,a,i,j)*T(b,m)",&
+                & s2_tensor,Hovoo_tensor,comm_t%t1,MINUS_ONE_HALF)
           if (debug_local) print*, "norm s2 tensor after diagram 21",print_tensornorm2(s2_tensor)
 
-!         Diagram 22XX : \Sd abij = \undemi \Pm ij \ts ei \ts fj \W abef 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
-          s2_tensor,Wabef_CC2_tensor,tauCC2_tensor,ONE_HALF)
-          if (debug_local) print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
 
+
+!         Diagram 22XX : \Sd abij = \undemi \Pm ij \ts ei \ts fj \W abef 
+
+! Ici on enleve l'ancien S=Wmnij*tau_CC2
+!          ierr=exatns_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
+!          s2_tensor,Wabef_CC2_tensor,tauCC2_tensor,ONE_HALF)
+!          if (debug_local) print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
+
+!!!!
+          ierr=exatns_tensor_init(Hvvov_tensor,'ZERO')
+          ierr=exatns_tensor_init(Hvvvo_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hvvov(a,b,i,f)+=Wabef(a,b,e,f)*T(e,i)",&
+                 & Hvvov_tensor,Wabef_CC2_tensor,comm_t%t1,ONE)    ! Operationcost : v^4*o
+          ierr=exatns_tensor_contract("S(a,b,i,j)+= Hvvov(a,b,i,f)*T(f,j)",&
+                 & s2_tensor,Hvvov_tensor,comm_t%t1,ONE_HALF)    !Operation cost : v^3*o^2
+        !!!  Ici il faut déclarer un intermédiaire H
+          ierr=exatns_tensor_contract("Hvvvo(a,b,e,i)+=Wabef(a,b,e,f)*T(f,i)",&
+                 & Hvvvo_tensor,Wabef_CC2_tensor,comm_t%t1,ONE)  !Operation cost : v^4*o
+          ierr=exatns_tensor_contract("S(a,b,i,j)+= Hvvvo(a,b,e,i)*T(e,j)",&
+                 & s2_tensor,Hvvvo_tensor,comm_t%t1,MINUS_ONE_HALF)     !  Operation cost : v^3*o^2
+         if (debug_local)  print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
 
 ! Always check that the Fock matrix is called before, in comm_t 
 
