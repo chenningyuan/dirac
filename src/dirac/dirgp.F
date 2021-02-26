@@ -4094,7 +4094,7 @@ C.........Backtransform UKB complement
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
             ENDIF
           ENDDO
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,ATOMIC)
 
           deallocate(buf)
           deallocate(cmo)
