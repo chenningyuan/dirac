@@ -1094,7 +1094,7 @@ C     Write transformed coefficients
       IF(ATOMIC) THEN
         allocate(IBEIG2(NORBT,2))
         DO I = 1,NORBT
-           CALL ATOMIC_ID_MIN(IBEIG(I),IBEIG2(I,2),IBEIG2(I,1),INDJ)
+           CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
         ENDDO
         CALL WRICMO(LUCOEF,FMO,EIG,IBEIG2,DHFERG,.TRUE.)        
         deallocate(IBEIG2) 

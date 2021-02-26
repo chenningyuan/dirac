@@ -4690,7 +4690,9 @@ C***********************************************************************
       integer,intent(in)  :: ID
       integer,intent(out) :: KP,J,MJ,LL
       integer             :: INDI,INDJ
-      CALL ATOMIC_ID_MIN(ID,KP,INDI,INDJ)
+      INDJ = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
+      INDI = ABS(ID) - INDJ*(INDJ-1)/2
+      KP   = INDJ * ID/ABS(ID)
       MJ   = (2*INDI - 1) * (-1)**(INDI+1)
       J    = 2*INDJ - 1
       IF(KP.GT.0)THEN
@@ -4698,29 +4700,6 @@ C***********************************************************************
       ELSE   
         LL = INDJ-1
       ENDIF
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck atomic_id_min */
-      SUBROUTINE ATOMIC_ID_MIN(ID,KP,INDI,INDJ)
-C***********************************************************************
-C
-C     Extract minimal atomic quantum numbers from sub_block ID
-C
-C     The pair (I,J) is packed as a superindex IJ = J(J-1)/2 + I
-C     where J = |kappa|
-C     m_j can be expressed as (2I-1)/2 * (-1)**(I-1)
-C     The final sub_block identification is then given as
-C       ID = sgn(kappa)*IJ      
-C
-C     Written by Trond Saue Feb 25 2021
-C
-C***********************************************************************
-      implicit none
-      integer,intent(in)  :: ID
-      integer,intent(out) :: KP,INDI,INDJ
-      INDJ = INT(SQRT(dble(2*ABS(ID)) + 0.25D0) + 0.4999D0)
-      INDI = ABS(ID) - INDJ*(INDJ-1)/2
-      KP   = INDJ * ID/ABS(ID)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck atomic_id_reduce */
@@ -4735,47 +4714,14 @@ C***********************************************************************
       implicit none
       integer,intent(in)  :: IBEIG2(N,2),N
       integer,intent(out) :: IBEIG(N)
-      integer             :: I,KP,KPABS,KPOFF,INDI,ISKP
+      integer             :: I,KP,KPABS,KPOFF,MJABS,ISKP
       DO I = 1,N
-        INDI     = IBEIG2(I,1)
+        MJABS    = (ABS(IBEIG2(I,1))+1)/2
         KP       = IBEIG2(I,2)
         KPABS    = ABS(KP)
         ISKP     = KP/KPABS
         KPOFF=KPABS*(KPABS-1)/2
-        IBEIG(I) = ISKP*(KPOFF+INDI)
+        IBEIG(I) = ISKP*(KPOFF+MJABS)
       ENDDO
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck kptomj */
-      SUBROUTINE KPTOMJ(IFRP,IBEIG,IPRINT)
-C***********************************************************************
-C
-C     Converting IBEIG in Kappa with MJ to that in MJ
-C
-C     last revison: Oct, 2018 A.Sunaga
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "dgroup.h"
-#include "dcborb.h"
-C
-      DIMENSION IBEIG(*)
-      IF (IPRINT.GE.2) THEN
-        CALL HEADER('KPTOMJ: IBEIG before transformation',-1)
-        WRITE(LUPRI,'(A)')'Before After  J'
-      ENDIF
-C
-      DO J = 1,NORB(IFRP)
-        INDEX1   = INT(SQRT(dble(2*ABS(IBEIG(J))) + 0.25D0) + 0.4999D0)
-        INDEX2   = ABS(IBEIG(J)) - INDEX1*(INDEX1-1)/2
-        MJ       = (2*INDEX2 - 1) * (-1)**(INDEX2+1)         
-        IF (IPRINT.GE.2) THEN
-          WRITE(LUPRI,'(I5,I5,I5)') IBEIG(J),MJ,J
-        ENDIF         
-        IBEIG(J) = MJ
-      ENDDO
-C      
-      RETURN
       END
 ! -- end of dirgp.F --
