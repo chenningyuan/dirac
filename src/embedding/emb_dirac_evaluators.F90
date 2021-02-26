@@ -88,6 +88,7 @@ module fde_evaluators_dirac
    integer, save :: nba, nba_orb, nba_aux
    integer, save :: dfcoef_unit
    integer, save :: nz = 4
+   integer, save :: mat_dim_quat_as_1d
    integer, parameter :: fde_max_nr_mat = 10
    integer, save :: isymop(fde_max_nr_mat)
    integer, save :: ihrmop(fde_max_nr_mat)
@@ -539,6 +540,7 @@ module fde_evaluators_dirac
       real(kind=8), allocatable :: cmo(:)
       real(8) :: dummy
       real(kind=8), allocatable :: dmat2(:)
+      integer :: ia, ib
 
       if (present(myprint)) then
          printlocal = myprint
@@ -546,12 +548,7 @@ module fde_evaluators_dirac
          printlocal = .False.
       endif
 
-      allocate(dmat2(n2bbasxq*nfmat))
-      dmat2 = 0.0d0
-      allocate(cmo(ncmotq))
-      cmo = 0.0d0
-
-      allocate(dmat(n2bbasxq))
+      allocate(dmat(mat_dim_quat_as_1d))
       dmat = 0.0d0
 
       select case(level)
@@ -564,6 +561,9 @@ module fde_evaluators_dirac
          end if
       case default
 !     HF density used
+         allocate(cmo(ncmotq))
+         cmo = 0.0d0
+
          if (printlocal) write(lupri,*) 'Reading DFCOEF'
          call opnfil(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
          call reacmo(lucoef,    &
@@ -574,18 +574,40 @@ module fde_evaluators_dirac
                              dummy,     &
                              2)
 !     SCF construct density matrix
-         call denmat(dmat2,cmo,0)
-         do j = 1, n2bbasxq 
-            dmat(j) = dmat(j) + dmat2(j)
-         end do
-!        do j = 1, n2bbasxq 
-!           dmat(j) = dmat(j) + 0.5*dmat2(n2bbasxq + j)
-!        end do
-
-         deallocate(dmat2)
+         if (nfmat.gt.1) then 
+! debugging
+!           print *,'Info: open-shell case, nr. density matrices:',nfmat
+! debugging
+            allocate(dmat2(mat_dim_quat_as_1d*nfmat))
+            dmat2 = 0.0d0
+            call denmat(dmat2,cmo,1)
+! debugging
+!           do i = 1, nfmat
+!              ia = 1 + (i-1)*mat_dim_quat_as_1d
+!              ib = mat_dim_quat_as_1d*i 
+!           print *,'debug, before gtdoav',i,ia,ib,dot_product(dmat2(ia:ib),dmat2(ia:ib))
+!           end do 
+!           print *,'nba,nba*nba',nba,nba*nba,nba*nba*nz,mat_dim_quat_as_1d
+! debugging
+            call gtdoav(nba, nz, nfmat, dmat2, 1)
+! debugging
+!           do i = 1, nfmat
+!              ia = 1 + (i-1)*mat_dim_quat_as_1d
+!              ib = mat_dim_quat_as_1d*i 
+!           print *,'debug, after  gtdoav #1',i,ia,ib,dot_product(dmat2(ia:ib),dmat2(ia:ib))
+!           end do 
+!           print *,'debug, after  gtdoav #2',mat_dim_quat_as_1d,n2bbasxq
+! debugging
+            dmat = dmat2(1:mat_dim_quat_as_1d)
+! debugging
+!           print *,'debug, after  gtdoav #3',dot_product(dmat,dmat)
+! debugging
+            deallocate(dmat2)
+         else
+            call denmat(dmat,cmo,0)
+         end if
+         deallocate(cmo)
       end select
-
-      deallocate(cmo)
 
       end subroutine fde_dirac_get_dmat_from_dfcoef 
 
@@ -895,16 +917,10 @@ module fde_evaluators_dirac
 
          fde_dirac_embpot_static_energy = 0.0d0
          fde_dirac_active_nr_electrons = 0.0d0
-!        print *, "debug: number of points ",fde_grid_sv%npoints
          do i = 1, fde_grid_sv%npoints
             fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
                      + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
             fde_dirac_active_nr_electrons = fde_dirac_active_nr_electrons + fde_grid_sv%w(i) * gf_active_sv%n(i)
-!           if ( i .eq. 5 ) then
-!              print *, "w: ",fde_grid_sv%w(i)
-!              print *, "n: ",gf_active_sv%n(i)
-!              print *, "v: ",fde_static_vemb(i)
-!           endif
          end do
          print *, "FDE excess energy (<0|v_emb(r)|0>) removed from SCF energy: ",fde_dirac_embpot_static_energy
          print *, "Integrated number of electrons in active subsystem        : ",fde_dirac_active_nr_electrons
@@ -1202,13 +1218,15 @@ module fde_evaluators_dirac
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
-         integer :: mat_dim_quat_as_1d
 
          nba_orb = ntbas(0)
          nba = nba_orb
          dfcoef_unit   = LUCOEF
          mat_dim_quat_as_1d = n2bbasxq
          nr_boson_irreps = nbsym
+
+!        call fde_dirac_set_nz(nz)
+
 
       end subroutine fde_dirac_data_interface
 
