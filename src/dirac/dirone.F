@@ -5580,6 +5580,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GATMSM')
 
@@ -5608,16 +5610,25 @@ C
          RETURN
       ENDIF
 C
+      DO IATOM = 1, NUCIND
+        IF(NINT(CHARGE(IATOM)).EQ.0)THEN
+        IF(NOORBT(IATOM).EQV. .FALSE.)THEN
+          ATOMIC = .FALSE.         
+        ENDIF
+        ENDIF
+      ENDDO   
       IF(ATOMIC)THEN
-         CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+       CALL ATMSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+       IF (IPRHAM.GE.1) THEN
+        WRITE(LUPRI,'(/2X,A/)')
+     &'* TMAT and Saomo were adapted for the Atomic symmetry in GATMSM.'
+       ENDIF
+      ELSE
+         CALL LINSYM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)         
       ENDIF
 C
       SUB_BL = .TRUE.
 
-      IF (IPRHAM.GE.1) THEN
-        WRITE(LUPRI,'(/2X,A/)')
-     &'* TMAT and Saomo were adapted for the Atomic symmetry in GATMSM.'
-      ENDIF
       CALL FLSHFO(LUPRI)
 
       CALL QEXIT('GATMSM')

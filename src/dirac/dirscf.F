@@ -2125,8 +2125,10 @@ C
       RETURN
  1000 FORMAT
      & (/'Please check the below points in input',  
-     & /'e.g. The basis set is too small 
-     &   compared with the occupation number')
+     & /'e.g. The basis set is too small ', 
+     &   'compared with the occupation number',
+     & /'e.g. The sign of kappa is wrong: 2 is for d_3/2, while ', 
+     &   '-2 is for p_3/2')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bosse2 */
