@@ -1819,7 +1819,12 @@ C
       E1PART  = D0
       E2PART  = D0
 C
-C
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+      end if
+
+
       IF(AOC) THEN
         ITOP = NOPEN
       ELSE
@@ -1933,6 +1938,7 @@ C
          else if (itmp%im_vemb) then
              elergy = elergy - fde_dirac_embpot_static_energy()
          end if
+!        deallocate(vemb_mat)
       end if
 
       DHFERG = DHFERG + ELERGY
