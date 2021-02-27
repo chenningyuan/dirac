@@ -948,7 +948,7 @@ module exacorr_cc
          use exacorr_tensor_methods
 
          logical :: debug_local = .false.
-         logical :: old_tau_cc2 = .false.  
+         logical :: old_tau_cc2 = .true.  
 
 !        Input
          type(exatns_comm_tens), intent(inout) :: comm_t
@@ -1186,12 +1186,12 @@ module exacorr_cc
 !
 !         a.\W mnij = \V mnij +\Pm ij \ts ej \V mnie +\unquart \Pm ij \ts ei \ts fj \V mnef
           ierr=exatns_tensor_init(Wmnij_CC2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
 
           if (old_tau_cc2) then
-              ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
+              ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
                     Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
               if (debug_local) print*, "norm WmnijCC2 old method",print_tensornorm2(Wmnij_CC2_tensor)
           else
@@ -1214,12 +1214,12 @@ module exacorr_cc
           ierr=exatns_tensor_contract("I(a,b,e,f)+=V(a,m,e,f)*T(b,m)",intm_vvvv_tensor,int_t%vovv,comm_t%t1)
 
           ierr=exatns_tensor_init(Wabef_CC2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
 
           if (old_tau_cc2) then
-                  ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
+                  ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
                           Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
                   if (debug_local) print*, "Wabef_CC2_Tensor old",print_tensornorm2(Wabef_CC2_tensor)  
           else
@@ -1243,7 +1243,7 @@ module exacorr_cc
 !         Diagram 21XX : \Sd abij = \undemi \Pm ab \ts am \ts bn \W mnij
 
           if (old_tau_cc2) then
-                  ierr=exatns_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
+                  ierr=exatns_tensor_contract("S(a,b,i,j)+=Wmnij_CC2(m,n,i,j)*T(a,b,m,n)",&
                       & s2_tensor,Wmnij_CC2_tensor,tauCC2_tensor,ONE_HALF)
                   if (debug_local) print*, "norm s2 tensor after diagram 21",print_tensornorm2(s2_tensor)
           else
@@ -1264,7 +1264,7 @@ module exacorr_cc
 !         Diagram 22XX : \Sd abij = \undemi \Pm ij \ts ei \ts fj \W abef 
 
           if (old_tau_cc2) then  
-                  ierr=exatns_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
+                  ierr=exatns_tensor_contract("S(a,b,i,j)+=Wabef_CC2(a,b,e,f)*T(e,f,i,j)",&
                         &  s2_tensor,Wabef_CC2_tensor,tauCC2_tensor,ONE_HALF)
                   if (debug_local) print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
           else
