@@ -861,8 +861,7 @@ module fde_evaluators_dirac
 
          call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = mat_dim, &
-!                                 fde_nz        = nz,      &
-                                  fde_nz        = 1,       &
+                                  fde_nz        = nz,      &
                                   fde_dmat_0    = dmat_0,  &
                                   fde_nr_dmat   = 0,       &
                                   fde_nr_fmat   = 1,       &
