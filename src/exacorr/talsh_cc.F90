@@ -610,6 +610,8 @@ module talsh_cc
          type(talsh_tens_t) :: Wabef_tensor,Wmnij_tensor     !L
          type(talsh_tens_t) :: Wabej_tensor,Wmbij_tensor     !L
 
+         logical :: old_tau_CC2 = .false.
+
 !! Modification 250221
          type(talsh_tens_t) :: Hovvv_tensor,Hvovv_tensor     !L
          type(talsh_tens_t) :: Hvvov_tensor,Hvvvo_tensor     !L
@@ -621,7 +623,7 @@ module talsh_cc
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: t1t1_tensor, tauCC2_tensor
          type(talsh_tens_t) :: cint_ovoo_tensor
-	 type(talsh_tens_t) :: cint_vvvo_tensor
+         type(talsh_tens_t) :: cint_vvvo_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
@@ -653,11 +655,8 @@ module talsh_cc
          logical, intent(in) :: CCD
          integer :: ierr
 
-
          logical :: MethodContract= .true.
 
-         logical :: NoTauInWabef= .true.
-         logical :: NoTauInWmnij= .true.
 
          if (print_level.gt.8) debug_local = .true.
 
@@ -708,32 +707,29 @@ module talsh_cc
          end if       
 
 !! Modification 250221
-! Creation de 4 intermediaires Hvovv , Hovvv, Hvvov, Hvvvo        
-         vovv_dims(1:4) = nvir
-         vovv_dims(2)   = nocc
-         ovvv_dims(1:4) = nvir
-         ovvv_dims(1)   = nocc
-!         vvvo_dims(1:4) = nvir
-!         vvvo_dims(4)   = nocc
-         vvov_dims(1:4) = nvir
-         vvov_dims(3)   = nocc
-         ierr=talsh_tensor_construct(Hovvv_tensor,C8,ovvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Hvovv_tensor,C8,vovv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Hvvvo_tensor,C8,vvvo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Hvvov_tensor,C8,vvov_dims,init_val=ZERO)
-         ooov_dims(1:4) = nocc
-         ooov_dims(4)   = nvir
-         oovo_dims(1:4) = nocc
-         oovo_dims(3)   = nvir
-         vooo_dims(1:4) = nocc
-         vooo_dims(1)   = nvir
-!         ovoo_dims(1:4) = nocc
-!         ovoo_dims(2)   = nvir
-         ierr=talsh_tensor_construct(Hooov_tensor,C8,ooov_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Hoovo_tensor,C8,oovo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Hovoo_tensor,C8,ovoo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(Hvooo_tensor,C8,vooo_dims,init_val=ZERO)
-  
+! Creation de 4 intermediaires Hvovv , Hovvv, Hvvov, Hvvvo
+         if (.not.old_tau_CC2) then        
+          vovv_dims(1:4) = nvir
+          vovv_dims(2)   = nocc
+          ovvv_dims(1:4) = nvir
+          ovvv_dims(1)   = nocc
+          vvov_dims(1:4) = nvir
+          vvov_dims(3)   = nocc
+          ierr=talsh_tensor_construct(Hovvv_tensor,C8,ovvv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(Hvovv_tensor,C8,vovv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(Hvvvo_tensor,C8,vvvo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(Hvvov_tensor,C8,vvov_dims,init_val=ZERO)
+          ooov_dims(1:4) = nocc
+          ooov_dims(4)   = nvir
+          oovo_dims(1:4) = nocc
+          oovo_dims(3)   = nvir
+          vooo_dims(1:4) = nocc
+          vooo_dims(1)   = nvir
+          ierr=talsh_tensor_construct(Hooov_tensor,C8,ooov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(Hoovo_tensor,C8,oovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(Hovoo_tensor,C8,ovoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(Hvooo_tensor,C8,vooo_dims,init_val=ZERO)
+         end if 
 
  !! Fin 250221
 
@@ -820,149 +816,98 @@ module talsh_cc
                   ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE) 
                   ierr=talsh_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=ONE)
          end if
-!         else
-!                  print *, "Contracted approximated methode 290420 for CC2"
-!                  ierr=talsh_tensor_init(Wabej_tensor,ZERO)
-!                  ierr=talsh_tensor_init(Wmbij_tensor,ZERO)           
-!
-!
-!                  ierr=talsh_tensor_add("W(a,b,e,j)+=C(a,b,e,j)",Wabej_tensor,cint_vvvo_tensor,scale=ONE)
-!                  ierr=talsh_tensor_contract("W(a,b,e,j)+=T(a,m)*V(b,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=ONE)!_HALF)
-!!                  ierr=talsh_tensor_contract("W(a,b,e,j)+=T(b,m)*V(a,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE_HALF)
-!       
-!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,scale=ONE) 
-!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(e,j)*W(a,b,e,i)",s2_tensor,comm_t%t1,Wabej_tensor,scale=MINUS_ONE)
-! 
-!         
-!                  ierr=talsh_tensor_add("W(m,b,i,j)+=C(m,b,i,j)",Wmbij_tensor,cint_ovoo_tensor,scale=ONE)
-!                  ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,i)*V(b,m,e,j)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=MINUS_ONE)!_HALF)
-!!                  ierr=talsh_tensor_contract("W(m,b,i,j)+=T(e,j)*V(b,m,e,i)",Wmbij_tensor,comm_t%t1,int_t%vovo,scale=ONE_HALF)
-!       
-!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=MINUS_ONE) 
-!                  ierr=talsh_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,scale=ONE)
-!
-!         end if
-
-
-
-
 
 !         additional CC2 W intermediates
 !
 !         a. W_{ij}^{mn} = V_{ij}^{mn} + P\_(ij)\sum_{e} t^e_i V_{ej}^{mn} + \frac{1}{4}P\_(ij)\sum_{ef} t^e_i t^f_j V_{ef}^{mn}
-!          ierr=talsh_tensor_init(Wmnij_tensor)
-!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_tensor,int_t%oooo,one_tensor)
-!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_tensor,int_t%ooov,comm_t%t1)
-!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_tensor,int_t%ooov,comm_t%t1,scale=MINUS_ONE)
-!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-!    &                                 Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
-
-! Operation sur Wmnij
-!          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-!    & Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
-!          print*, "OPERATION norm Wmnij",tensor_norm2(Wmnij_tensor)
-
           ierr=talsh_tensor_init(Wmnij_tensor)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_tensor,int_t%oooo,one_tensor)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_tensor,int_t%ooov,comm_t%t1)
           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_tensor,int_t%ooov,comm_t%t1,scale=MINUS_ONE)
-      
-          ierr=talsh_tensor_init(Hoovo_tensor)
-          ierr=talsh_tensor_contract("Hoovo(m,n,e,j)+=V(m,n,e,f)*T(f,j)",& 
+          
+          if (old_tau_CC2) then
+           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
+                &       Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
+           print*, "norm Wmnij_CC2 old",tensor_norm2(Wmnij_tensor)
+          else
+           ierr=talsh_tensor_init(Hoovo_tensor)
+           ierr=talsh_tensor_contract("Hoovo(m,n,e,j)+=V(m,n,e,f)*T(f,j)",& 
                 &       Hoovo_tensor,int_t%oovv,comm_t%t1)
-          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hoovo(m,n,e,j)*T(e,i)",&
+           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hoovo(m,n,e,j)*T(e,i)",&
                 &       Wmnij_tensor,Hoovo_tensor,comm_t%t1,scale=ONE_QUARTER)
-          ierr=talsh_tensor_init(Hooov_tensor)
-          ierr=talsh_tensor_contract("Hooov(m,n,j,f)+=V(m,n,e,f)*T(e,j)",& 
+           ierr=talsh_tensor_init(Hooov_tensor)
+           ierr=talsh_tensor_contract("Hooov(m,n,j,f)+=V(m,n,e,f)*T(e,j)",& 
                 &       Hooov_tensor,int_t%oovv,comm_t%t1)
-          ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hooov(m,n,j,f)*T(f,i)",&
+           ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hooov(m,n,j,f)*T(f,i)",&
                 &       Wmnij_tensor,Hooov_tensor,comm_t%t1,scale=MINUS_ONE_QUARTER)
-          print*, "OPERATION norm Wmnij",tensor_norm2(Wmnij_tensor)
-
-
-
+           print*, "norm Wmnij_CC2 new ",tensor_norm2(Wmnij_tensor)
+          end if
 
 !         b. W_{ij}^{ab} = V_{ef}^{ab} - P\_(ab)\sum_{m} t_m^b V_{ef}^{am} + \frac{1}{4}P\_(ab)\sum_{ef} t^e_i t^f_j V_{ef}^{mn}
+          ierr=talsh_tensor_init(Wabef_tensor)
+          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_tensor,int_t%vvvv,one_tensor)
+          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_tensor,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
+          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_tensor,int_t%vovv,comm_t%t1)
 
-
-
-
-
-!operation1 !          ierr=talsh_tensor_init(Wabef_tensor)
-!operation1 !          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_tensor,int_t%vvvv,one_tensor)
-!operation1 !          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_tensor,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
-!operation1 !          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_tensor,int_t%vovv,comm_t%t1)
-!! LE 250221 Remplacement des lignes !operation1!
-!operation1 !          ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-!operation1 !    &                                 Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
-!operation1 !         ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-!operation1 !                        &               Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
-!operation1 !         print*, "OPERATION 0 sur WABEF",tensor_norm2(Wabef_tensor)
-         ierr=talsh_tensor_init(Wabef_tensor)
-         ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_tensor,int_t%vvvv,one_tensor)
-         ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(a,m,e,f)*T(b,m)",Wabef_tensor,int_t%vovv,comm_t%t1,scale=MINUS_ONE)
-         ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(b,m,e,f)*T(a,m)",Wabef_tensor,int_t%vovv,comm_t%t1)
-        !!!  Ici il faut déclarer un intermédiaire H
-         ierr=talsh_tensor_init(Hvovv_tensor)
-         ierr=talsh_tensor_init(Hovvv_tensor)
-         ierr=talsh_tensor_contract("Hvovv(a,n,e,f)+=V(m,n,e,f)*T(a,m)",& 
+          if (old_tau_CC2) then
+           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
+                 & Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
+           if (debug_local) print*, "norm Wabef_CC2 old",tensor_norm2(Wabef_tensor)
+          else
+           ierr=talsh_tensor_init(Hvovv_tensor)
+           ierr=talsh_tensor_init(Hovvv_tensor)
+           ierr=talsh_tensor_contract("Hvovv(a,n,e,f)+=V(m,n,e,f)*T(a,m)",& 
                 & Hvovv_tensor,int_t%oovv,comm_t%t1,scale=ONE)        !Operation cost : v^3*o^2
-         ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hvovv(a,n,e,f)*T(b,n)",& 
+           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hvovv(a,n,e,f)*T(b,n)",& 
                 & Wabef_tensor,Hvovv_tensor,comm_t%t1,scale=ONE_QUARTER)  !Operation cost : v^4*o
-        !!!  Ici il faut déclarer un intermédiaire H
-         ierr=talsh_tensor_contract("Hovvv(m,a,e,f)+=V(m,n,e,f)*T(a,n)",& 
+           ierr=talsh_tensor_contract("Hovvv(m,a,e,f)+=V(m,n,e,f)*T(a,n)",& 
                 & Hovvv_tensor,int_t%oovv,comm_t%t1,scale=ONE)        ! Operation cost :v^3*o^2
-         ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hovvv(m,a,e,f)*T(b,m)",& 
+           ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=Hovvv(m,a,e,f)*T(b,m)",& 
                 & Wabef_tensor,Hovvv_tensor,comm_t%t1,scale=MINUS_ONE_QUARTER)  ! Operation cost : v^4*o
-         if (debug_local) print*, "norm Wabef",tensor_norm2(Wabef_tensor)
-!! fin operation1
+           if (debug_local) print*, "norm Wabefi_CC2 new",tensor_norm2(Wabef_tensor)
+          end if
 
 
-!         Diagrams using the CC2 W intermediates above
-!
 !         Diagram 21 : s2_{ij}^{ab} += \frac{1}{2}\sum_{mn} tauCC2^{mn}_{ab} W_{ij}^{mn}
 
-! Modification 250221
-
-!          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
-!    &                                s2_tensor,Wmnij_tensor,tauCC2_tensor,scale=ONE_HALF)
-!          if (debug_local) print*, "norm s2 tensor after diagram 21 ",tensor_norm2(s2_tensor)
-
-          ierr=talsh_tensor_init(Hvooo_tensor)
-          ierr=talsh_tensor_contract("H(a,n,i,j)+=Wmnij(m,n,i,j)*T(a,m)",&
-    &                                Hvooo_tensor,Wmnij_tensor,comm_t%t1,scale=ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,n,i,j)*T(b,n)",&
-    &                                 s2_tensor,Hvooo_tensor,comm_t%t1,scale=ONE_HALF)
-          ierr=talsh_tensor_init(Hovoo_tensor)
-          ierr=talsh_tensor_contract("H(m,a,i,j)+=Wmnij(m,n,i,j)*T(a,n)",&
-    &                                Hovoo_tensor,Wmnij_tensor,comm_t%t1,scale=ONE)
-          ierr=talsh_tensor_contract("S(a,b,i,j)+=H(m,a,i,j)*T(b,m)",&
-    &                                 s2_tensor,Hovoo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)
-     
-   
-          if (debug_local) print*, "norm s2 tensor after diagram 21 ",tensor_norm2(s2_tensor)
-
+          if (old_tau_CC2) then
+           ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
+                & s2_tensor,Wmnij_tensor,tauCC2_tensor,scale=ONE_HALF)
+          if (debug_local) print*, "norm s2 tensor after diagram 21 old ",tensor_norm2(s2_tensor)
+          else
+           ierr=talsh_tensor_init(Hvooo_tensor)
+           ierr=talsh_tensor_contract("H(a,n,i,j)+=Wmnij(m,n,i,j)*T(a,m)",&
+                & Hvooo_tensor,Wmnij_tensor,comm_t%t1,scale=ONE)
+           ierr=talsh_tensor_contract("S(a,b,i,j)+=H(a,n,i,j)*T(b,n)",&
+                & s2_tensor,Hvooo_tensor,comm_t%t1,scale=ONE_HALF)
+           ierr=talsh_tensor_init(Hovoo_tensor)
+           ierr=talsh_tensor_contract("H(m,a,i,j)+=Wmnij(m,n,i,j)*T(a,n)",&
+                & Hovoo_tensor,Wmnij_tensor,comm_t%t1,scale=ONE)
+           ierr=talsh_tensor_contract("S(a,b,i,j)+=H(m,a,i,j)*T(b,m)",&
+                & s2_tensor,Hovoo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)
+          if (debug_local) print*, "norm s2 tensor after diagram 21 new ",tensor_norm2(s2_tensor)
+          end if
 
 !         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}  
 
-! Modification 25022021
+          if (old_tau_CC2) then
+           ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
+                & s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
+           if (debug_local) print*, "norm s2 tensor after diagram 22 old",tensor_norm2(s2_tensor)
+          else
+           ierr=talsh_tensor_init(Hvvov_tensor)
+           ierr=talsh_tensor_init(Hvvvo_tensor)
+           ierr=talsh_tensor_contract("Hvvov(a,b,i,f)+=Wabef(a,b,e,f)*T(e,i)",& 
+                & Hvvov_tensor,Wabef_tensor,comm_t%t1,scale=ONE)    ! Operationcost : v^4*o
+           ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvov(a,b,i,f)*T(f,j)",& 
+                & s2_tensor,Hvvov_tensor,comm_t%t1,scale=ONE_HALF)    !  Operation cost : v^3*o^2
+           ierr=talsh_tensor_contract("Hvvvo(a,b,e,i)+=Wabef(a,b,e,f)*T(f,i)",& 
+                & Hvvvo_tensor,Wabef_tensor,comm_t%t1,scale=ONE)                  !Operation cost : v^4*o
+           ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvvo(a,b,e,i)*T(e,j)",& 
+                & s2_tensor,Hvvvo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)     ! Operation cost : v^3*o^2
+           if (debug_local) print*, "norm s2 tensor after diagram 22 new ",tensor_norm2(s2_tensor)
+          end if
 
-!operation 2 !          ierr=talsh_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
-!operation 2 !    &                                 s2_tensor,Wabef_tensor,tauCC2_tensor,scale=ONE_HALF)
-        !!!  Ici il faut déclarer un intermédiaire H
-          ierr=talsh_tensor_init(Hvvov_tensor)
-          ierr=talsh_tensor_init(Hvvvo_tensor)
-          ierr=talsh_tensor_contract("Hvvov(a,b,i,f)+=Wabef(a,b,e,f)*T(e,i)",& 
-                 & Hvvov_tensor,Wabef_tensor,comm_t%t1,scale=ONE)    ! Operationcost : v^4*o
-          ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvov(a,b,i,f)*T(f,j)",& 
-                 & s2_tensor,Hvvov_tensor,comm_t%t1,scale=ONE_HALF)    !  Operation cost : v^3*o^2
-        !!!  Ici il faut déclarer un intermédiaire H
-          ierr=talsh_tensor_contract("Hvvvo(a,b,e,i)+=Wabef(a,b,e,f)*T(f,i)",& 
-                 & Hvvvo_tensor,Wabef_tensor,comm_t%t1,scale=ONE)                  !Operation cost : v^4*o
-          ierr=talsh_tensor_contract("S(a,b,i,j)+= Hvvvo(a,b,e,i)*T(e,j)",& 
-                 & s2_tensor,Hvvvo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)     ! Operation cost : v^3*o^2
-! fin modification
-          if (debug_local) print*, "norm s2 tensor after diagram 22 ",tensor_norm2(s2_tensor)
 
 !         Diagram 23 : s2_{ij}^{ab} +=  P\_(ab)\sum_{e} f_e^b t_{ij}^{ae} ! Use of the Fock matrix 
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(b,e)*T(a,e,i,j)",s2_tensor,comm_t%fvv,comm_t%t2)
@@ -1039,6 +984,18 @@ module talsh_cc
          ierr=talsh_tensor_destruct(t1t1_tensor)
          ierr=talsh_tensor_destruct(cint_ovoo_tensor)
          ierr=talsh_tensor_destruct(cint_vvvo_tensor)
+
+         if(.not.old_tau_CC2) then
+          ierr=talsh_tensor_destruct(Hvvov_tensor)
+          ierr=talsh_tensor_destruct(Hvvvo_tensor)
+          ierr=talsh_tensor_destruct(Hovvv_tensor)
+          ierr=talsh_tensor_destruct(Hvovv_tensor)
+          ierr=talsh_tensor_destruct(Hooov_tensor)
+          ierr=talsh_tensor_destruct(Hoovo_tensor)
+          ierr=talsh_tensor_destruct(Hovoo_tensor)
+          ierr=talsh_tensor_destruct(Hvooo_tensor)
+         end if
+
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(hoo_aux_tensor)
             ierr=talsh_tensor_destruct(hov_aux_tensor)
