@@ -136,20 +136,30 @@ CTROND  Check out active ones...
       ENDIF
       NCI = 0
       N2PPF  = NPPAPT*NEXCF*(1+NEE+NEP+NCI)
-      CALL MEMGET('REAL',KPPF,N2PPF,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ATMPPF',KPPF,N2PPF,WORK,KFREE,LFREE)
 C     ... ATMPPF: "A" transition moment for each excitation
-      CALL MEMGET('REAL',KCNV,NEXCF,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL','RCNV',KCNV,NEXCF,WORK,KFREE,LFREE)
 C     ... RCNV: residual error for each excitation
-      CALL MEMGET('REAL',KOMEGA,NEXCF,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL','OMEGA',KOMEGA,NEXCF,WORK,KFREE,LFREE)
 C     ... OMEGA: excitation energies
-      CALL MEMGET('INTE',KSSYM,NEXCF,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE','ISSYM',KSSYM,NEXCF,WORK,KFREE,LFREE)
 C     ... SYM: supersymmetry (if known)
+      N2BED  = NBED*NEXCF*(1+NEE+NEP+NCI)
+      CALL MEMGET('REAL','OSCBED',KBED,N2BED,WORK,KFREE,LFREE)
+C     ... OSCBED: oscillator strengths for each excitation
+      IF(DOBED) THEN
+         NBED=1
+         IF(ORIENTED) THEN
+           NBED = NBED+1
+         ENDIF
+      ELSE
+      ENDIF   
 C
 C     Initialize:
       CALL DZERO(WORK(KPPF),N2PPF)
       CALL DZERO(WORK(KOMEGA),NEXCF)
       CALL PRPXP1(WORK(KPPF),WORK(KOMEGA),WORK(KCNV),WORK(KPPO),
-     &            WORK(KSSYM),WORK,KFREE,LFREE)
+     &            WORK(KSSYM),WORK(KBED),WORK,KFREE,LFREE)
 C
  10   CONTINUE
       IF (XPPANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXPP)
@@ -162,7 +172,8 @@ C         routine in WORK(KPPO), WORK(KPPF), WORK(KCNV), WORK(KOMEGA)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXP1 */
-      SUBROUTINE PRPXP1(ATMPPF,OMEGA,RCNV,IORBCL,ISSYM,WORK,KFREE,LFREE)
+      SUBROUTINE PRPXP1(ATMPPF,OMEGA,RCNV,IORBCL,ISSYM,OSCBED,
+     &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Calculate excitation energies and transition moments.
@@ -173,6 +184,7 @@ C     OMEGA  : calculated excitation energies
 C     RCNV   : residual error for each excitation
 C     IORBCL : for orbital analysis
 C     ISSYM  : supersymmetry
+C     OSCBED : Oscillator strengths Beyond the Electric Dipole approximation      
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -194,7 +206,8 @@ C
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
      &          OMEGA(MAXEXC,NBSYM),
      &          RCNV(MAXEXC,NBSYM), IORBCL(4,*),
-     &          ISSYM(MAXEXC,NBSYM),WORK(*)
+     &          ISSYM(MAXEXC,NBSYM),OSCBED(MAXEXC,NBED,NBSYM,*),
+     &          WORK(*)
       CHARACTER TTYP(-1:1)*2
       SAVE TTYP
       DATA TTYP /'T-','T0','T+'/
@@ -321,7 +334,7 @@ C
 C
 C     Final print section
 C
-      CALL XPPOUT(ATMPPF,OMEGA,RCNV,ISSYM,WORK,KFREE,LFREE)
+      CALL XPPOUT(ATMPPF,OSCBED,OMEGA,RCNV,ISSYM,WORK,KFREE,LFREE)
       CALL MEMREL('PRPXP1',WORK,1,KFRSAV,KFREE,LFREE)
 C
       CALL QEXIT('PRPXP1')
@@ -426,6 +439,7 @@ C
       XPPFIL     = 'NORXVC'
       ORBXPP     = .FALSE.
       DOBED      = .FALSE.
+      NBED       = 1
       ORIENTED   = .FALSE.
       BEDCHK     = .FALSE.
       GNOISE     = .FALSE.
@@ -601,8 +615,8 @@ C&&&& ACTIVE: String of active orbitals in XPP module
  20            CONTINUE
 C&&&& ORIENT: Specify fixed experimental orientation (no rotational average)
                ORIENTED=.TRUE.
+               NBED=NBED+1
                READ(LUCMD,*) W1,W2,W3
-CTROND               CALL ANGLES(W1,W2,W3,UWAVE,UPOL)
                GO TO 100
  21            CONTINUE
 C&&& ITRINT: Number of iterations before adding SL- and SS-integrals
@@ -1026,7 +1040,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck GETPPF */
-      SUBROUTINE GETPPF(ATMPPF,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
+      SUBROUTINE GETPPF(ATMPPF,OSCBED,IBTYP,IBCVC,IBEVC,IBPVC,RCNV,
      &                  OMEGA,EVECR,ISSYM,IORBCL,EIG,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1054,7 +1068,9 @@ Chj: MAXRM, MXLOAD
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL FIRST
-      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),RCNV(*),ISSYM(*),
+      DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
+     &          OSCBED(MAXEXC,NBED,NBSYM,*),
+     &          RCNV(*),ISSYM(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),IORBCL(4,*),
      &          OMEGA(*),EVECR(NREDM,*),EIG(*),WORK(*)
 C
@@ -1327,12 +1343,6 @@ C
             IF (KTIMOP .EQ. ITIM) THEN
               ATMPPF(IEXC,INDAP,JSYMOP,1)  =
      &        D2*DDOT(NBDIM,GPO,1,XPO(1,1,IEXC),1)
-CTROND
-      IF (PRPNAM(INDPRA)(1:5).EQ.'BEDcZ'.AND.
-     &    PRPNAM(INDPRA)(8:10).EQ.'X00' .AND.
-     &    PRPNAM(INDPRA)(14:16).EQ.'Z00') THEN
-              WRITE(6,*) 'TEST..',PRPNAM(INDPRA),'..',GPO(1,1)
-      ENDIF
               IF(ORBXPP) THEN
                 DO IZ = 1,NZ
                   DO I = 1,NXPAR
@@ -1978,7 +1988,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck XPPOUT */
-      SUBROUTINE XPPOUT(ATMPPF,OMEGA,RCNV,ISSYM,
+      SUBROUTINE XPPOUT(ATMPPF,OSCBED,OMEGA,RCNV,ISSYM,
      &                  WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1988,6 +1998,7 @@ C     - ATMPPF(exc,opA,bsym,nvar) - transition moment associated with
 C       operator opA, excitation exc in boson symmetry sym;
 C       nvar=1 gives the total value, the following ones refer to
 C       values associated with specific variables: e-e, e-p, CI
+C     - BEDOSC - oscillator strengths beyond the electric dipole approximation
 C     - OMEGA(exc,bsym) - excitation energy exc of boson symmetry sym
 C     - ISSYM(exc,bsym) - supersymmetry of excited state
 C     - RCNV(exc,bsym) - convergence of solution vector of excitation exc
@@ -2015,6 +2026,7 @@ C
       PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
      &          D1=1.0D0,D0=0.0D0)
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
+     &          OSCBED(MAXEXC,NBED,NBSYM,*),
      &          OMEGA(MAXEXC,NBSYM),RCNV(MAXEXC,NBSYM),
      &          ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
@@ -2227,47 +2239,6 @@ C.......Make an extra empty symmetry label to use below
         SYMLAB(IFOO) = '    '
         CALL ICOPY(MEXC,IFOO,0,ISSYM,1)
       ENDIF
-C
-C     T R A N S I T I O N   M O M E N T S
-C     ===================================
-C
-      IF (NPPAPT .EQ. 0) GOTO 10
-      DO IFRP = 1,NFSYM
-        DO IBF = 1,NBF
-          ISYM = JFSYM(IBF,IFRP)
-          MEXC = KEXCNV(ISYM)
-          IF(MEXC.EQ.0) CYCLE
-          IREP = ISYM-1
-          NOPA   = NPPAP(ISYM) ! number of transition moment operators in this symmetry
-          JOPA   = JPPAP(ISYM) ! offset to complete list of transition moment operators
-          DO IOPA = 1,NOPA
-            INDAP  = LPPAPS(JOPA+IOPA)
-            INDPRA = LPPAPU(INDAP)
-            IREPA  = IPRPSYM(INDPRA)-1
-            ITIMA  = IPRPTIM(INDPRA)
-            NTMOM = 0
-            WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
-     &      '*** Transition moments of operator ',
-     &      PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA)
-            WRITE(LUPRI,'(80A1)') ('=',I=1,80)
-            WRITE(LUPRI,'(3X,A,5X,A,10X,A)') 'eigenvalue (au)',
-     &        '<0|A|n>','Higher symmetry (if detected)'
-            DO IEXC = 1,MEXC
-            IF(ABS(ATMPPF(IEXC,INDAP,ISYM,1)).GT.TTOL) THEN
-              NTMOM=NTMOM+1
-              ILAB = ISSYM(IEXC,ISYM)
-              WRITE(LUPRI,'(F18.10,3X,ES18.10,5X,A4)')
-     &          OMEGA(IEXC,ISYM), ATMPPF(IEXC,INDAP,ISYM,1), 
-     &          SYMLAB(ILAB)
-            ENDIF
-            ENDDO
-            IF(NTMOM.EQ.0) THEN
-              WRITE(LUPRI,'(A,E9.4)')
-     &           '* No values above threshold : ',TTOL
-            ENDIF
-          ENDDO          
-        ENDDO
-      ENDDO    
 C
 C     O S C I L L A T O R    S T R E N G T H S
 C     ========================================
@@ -2582,6 +2553,47 @@ C.......Generalized length gauge
           WRITE(LUPRI,'(A)') ' * Length representation not active.'
         ENDIF
       ENDIF
+C
+C     T R A N S I T I O N   M O M E N T S
+C     ===================================
+C
+      IF (NPPAPT .EQ. 0) GOTO 10
+      DO IFRP = 1,NFSYM
+        DO IBF = 1,NBF
+          ISYM = JFSYM(IBF,IFRP)
+          MEXC = KEXCNV(ISYM)
+          IF(MEXC.EQ.0) CYCLE
+          IREP = ISYM-1
+          NOPA   = NPPAP(ISYM) ! number of transition moment operators in this symmetry
+          JOPA   = JPPAP(ISYM) ! offset to complete list of transition moment operators
+          DO IOPA = 1,NOPA
+            INDAP  = LPPAPS(JOPA+IOPA)
+            INDPRA = LPPAPU(INDAP)
+            IREPA  = IPRPSYM(INDPRA)-1
+            ITIMA  = IPRPTIM(INDPRA)
+            NTMOM = 0
+            WRITE(LUPRI,'(/A,A16,5X,A3,2X,A2)')
+     &      '*** Transition moments of operator ',
+     &      PRPNAM(INDPRA),REP(IREPA),TTYP(ITIMA)
+            WRITE(LUPRI,'(80A1)') ('=',I=1,80)
+            WRITE(LUPRI,'(3X,A,5X,A,10X,A)') 'eigenvalue (au)',
+     &        '<0|A|n>','Higher symmetry (if detected)'
+            DO IEXC = 1,MEXC
+            IF(ABS(ATMPPF(IEXC,INDAP,ISYM,1)).GT.TTOL) THEN
+              NTMOM=NTMOM+1
+              ILAB = ISSYM(IEXC,ISYM)
+              WRITE(LUPRI,'(F18.10,3X,ES18.10,5X,A4)')
+     &          OMEGA(IEXC,ISYM), ATMPPF(IEXC,INDAP,ISYM,1), 
+     &          SYMLAB(ILAB)
+            ENDIF
+            ENDDO
+            IF(NTMOM.EQ.0) THEN
+              WRITE(LUPRI,'(A,E9.4)')
+     &           '* No values above threshold : ',TTOL
+            ENDIF
+          ENDDO          
+        ENDDO
+      ENDDO    
  10   CONTINUE
       deallocate(symlab)
       deallocate(excerg)

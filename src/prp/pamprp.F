@@ -50,20 +50,24 @@ C
       WRITE(LUPRI,9000)
  9000 FORMAT(//,
      &     3X,'This is output from the Dirac property module:',/,
-     &    /3X,'HF & DFT first order properties',/,
+     &    /3X,'* HF & DFT first order properties',/,
      &     6X,'Trond Saue',//,
-     &     3X,'First-order ESR properties',/,
+     &     3X,'* First-order ESR properties',/,
      &     6X,'Hans Joergen Aa. Jensen et al.',//,
-     &     3X,'MP2 first order properties:',/,
+     &     3X,'* MP2 first order properties:',/,
      &     6X,'J. N. P. van Stralen, L. Visscher, C. V. Larsen' 
      &       ,' and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.',//
-     &     3X,'KR-RPA second-order properties',/,
+     &     3X,'* KR-RPA second-order properties',/,
      &     6X,'Hans Joergen Aa. Jensen and Trond Saue',//,
-     &     3X,'KR-QR third order properties',/,
+     &     3X,'* KR-QR third order properties',/,
      &     6X,'Patrick Norman and Hans Joergen Aa. Jensen',//,
-     &     3X,'Molecular gradient',/,
+     &     3X,'* Oscillator strengths beyond the electric '
+     &        'dipole approximation',/,
+     &     6X,'N.H. List, T.R.L Melin, M. van Horn, T. Saue, '
+     &        'J. Chem. Phys. 152 (2020) 184110'//
+     &     3X,'* Molecular gradient',/,
      &     6X,'Joern Thyssen',//,
-     &     3X,'Additional contributions from:',/,
+     &     3X,'* Additional contributions from:',/,
      &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
 C
 
