@@ -1,0 +1,39 @@
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.PROPERTIES                                                                                         
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONT                                                                                             
+*TWOINT                                                                                             
+.SCREEN                                                                                             
+-1.0D-16                                                                                            
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+6 6                                                                                                 
+.EVCCNV                                                                                             
+1.0D-9
+**PROPERTIES                                                                                        
+*EXCITATION ENERGIES                                                                                
+.OCCUP                                                                                              
+1                                                                                                   
+
+.THRESH                                                                                             
+1.0D-8                                                                                              
+.EXCITATION ! B3u                                                                                   
+2 6                                                                                                 
+.BED                                                                                                
+.ROTAV                                                                                              
+12                                                                                                  
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+1..oo                                                                                               
+1..oo                                                                                               
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+dyall.ae2z                                                                                          
+**END OF                                                                                            

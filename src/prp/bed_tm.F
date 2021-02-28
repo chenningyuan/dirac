@@ -1202,6 +1202,7 @@ C     ====================================
               II = II + 1
               INDXPR = NPRPS+II
               IF(IPRPTYP(INDXPR).NE.-1) THEN
+            
                 CALL GPGET(INDXPR,GPOE(1,IOP),
      &              get_orbital_rotation_indices_pp(),
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
@@ -1780,19 +1781,43 @@ CCCC     ****************************************************
       ENDIF
 
       call DZERO(TMOM, NOP*NC*NPAR*NEXCNV)
-      call interface_mpi_bcast_r2_work_f77(OSC, (1+NPAR),NEXCNV, 
+      call interface_mpi_bcast(OSC(1,1), (1+NPAR)*NEXCNV, 
      &             MASTER, global_communicator)
-      call interface_mpi_bcast_r1_work_f77(X, NPOINTS, MASTER,
+      call interface_mpi_bcast(X(1), NPOINTS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_r1_work_f77(Y, NPOINTS, MASTER,
+      call interface_mpi_bcast(Y(1), NPOINTS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_r1_work_f77(Z, NPOINTS, MASTER,
+      call interface_mpi_bcast(Z(1), NPOINTS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_r1_work_f77(WT, NPOINTS, MASTER,
+      call interface_mpi_bcast(WT(1), NPOINTS, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
      &              global_communicator)
       call interface_mpi_bcast_r1_work_f77(CMO,N2BBASXQ, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(ICMOQ, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(I2BASX(1,1), 2*2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(I2BAST, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(ICMO, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMOTQ, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMOT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMOQ, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMO, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2ORB, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NORBT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2ORBT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2ORBX, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NISH, 2, MASTER,
      &              global_communicator)
@@ -1814,7 +1839,7 @@ CCCC     ****************************************************
      &              global_communicator)
       call interface_mpi_bcast_l0(SQUARE, 1,  MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(LABINT, 8*8*1, MASTER,
+      call interface_mpi_bcast(LABINT(1), 8*8, MASTER,
      &              global_communicator)
       call interface_mpi_bcast_l0(TRIANG, 1, MASTER,
      &              global_communicator)
@@ -1822,7 +1847,7 @@ CCCC     ****************************************************
      &              global_communicator)
       call interface_mpi_bcast_l0(SOLVNT, 1, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_l0(DOINT, 4*1, MASTER,
+      call interface_mpi_bcast_l1(DOINT, 4*1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(DUMMY, 1, MASTER,
      &              global_communicator)
@@ -1851,11 +1876,11 @@ CCCC     ****************************************************
       call interface_mpi_bcast(IFSMO, MXCORB, MASTER,
      &              global_communicator)
 C    ** bcast file name labels **
-      call interface_mpi_bcast(IPRPLBL, 3*MAXPRPS, MASTER,
+      call interface_mpi_bcast(IPRPLBL(1,1), 3*MAXPRPS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(PRPLBL, 8*MAXPRPLBL, MASTER,
+      call interface_mpi_bcast(PRPLBL(1), 8*MAXPRPLBL, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(PRPNAM, 16*MAXPRPS, MASTER,
+      call interface_mpi_bcast(PRPNAM(1), 16*MAXPRPS, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(IPRPTYP, MAXPRPS, MASTER,
      &              global_communicator)
@@ -1875,7 +1900,7 @@ C    ** bcast file name labels **
      &              global_communicator)
       call interface_mpi_bcast(IORB, 2, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(NSTR, 2, MASTER,
+      call interface_mpi_bcast(NFSYM, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NPMOT, 1, MASTER,
      &              global_communicator)
@@ -1900,17 +1925,16 @@ C     All slaves must setup orbital informations
 C
       call interface_mpi_bcast(NZXOPP, 1, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(XPOE, NZXOPEQ*NEXCNV, 
-     &             MASTER, global_communicator)
-      call interface_mpi_bcast(XPOP, NZXOPPQ*NEXCNV, 
-     &             MASTER, global_communicator)
       IF(NZXOPP.GT.0) then
-      call interface_mpi_bcast(XPOP, NZXOPEQ*NEXCNV, 
+        call interface_mpi_bcast(XPOP(1,1), NZXOPPQ*NEXCNV, 
      &             MASTER, global_communicator)
       endif
       call interface_mpi_bcast(NZXOPE, 1, MASTER,
      &              global_communicator)
-
+      if (NZXOPE.GT.0) then
+        call interface_mpi_bcast(XPOE(1,1), NZXOPEQ*NEXCNV, 
+     &             MASTER, global_communicator)
+      endif
 
       RETURN
       END
