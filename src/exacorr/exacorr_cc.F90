@@ -1915,11 +1915,6 @@ module exacorr_cc
          write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
          write(*,'(A)')"*******************************************************************************"
          write(*,*) ""
-         write(*,*) ""
-         write(*,'(A)')"*******************************************************************************"
-         write(*,'(A)') "**********************         CC2 Methode 3            **********************"
-         write(*,'(A)')"*******************************************************************************"
-         write(*,*) ""
 
          if (.not.present(l1_tensor)) CCD = .true.
 
@@ -1953,61 +1948,34 @@ module exacorr_cc
          vvvo_root = (/vir_space_root, vir_space_root, vir_space_root, occ_space_root/)
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
-   print *,'aaa'
-
 
 !***************************************
 !        construct fixed intermediates *
 !***************************************
-
          ierr=exatns_tensor_create(lambda_t%fbar_oo,"fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-print *,'aab',ierr
          ierr=exatns_tensor_create(lambda_t%fbar_ov,"fbar_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
-print *,'aac',ierr
          ierr=exatns_tensor_create(lambda_t%fbar_vv,"fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-print *,'aad',ierr
          ierr=exatns_tensor_create(lambda_t%w_oooo,"w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
-print *,'aae',ierr
          ierr=exatns_tensor_create(lambda_t%w_ovoo,"w_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
-print *,'aaf',ierr
          ierr=exatns_tensor_create(lambda_t%w_ooov,"w_ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
-print *,'aag',ierr
          ierr=exatns_tensor_create(lambda_t%w_vovo,"w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
-print *,'aah',ierr
          ierr=exatns_tensor_create(lambda_t%wbar_vovo,"wbar_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
-print *,'aai',ierr
          ierr=exatns_tensor_create(lambda_t%w_vvvo,"w_vvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
-print *,'aaj',ierr
          ierr=exatns_tensor_create(lambda_t%w_vovv,"w_vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
-print *,'aak',ierr
          ierr=exatns_tensor_create(lambda_t%w_vvvv,"w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-print *,'aal',ierr
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 
 !***
 ! List of NEW INTERMEDIATES for the CC2 Method
 !***
          ierr=exatns_tensor_create(lambda_t_CC2%fbar_oo,"cc2_fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)  
-print *,'aba',ierr
-!         ierr=exatns_tensor_create(lambda_t_CC2%fbar_ov,"fbar_ov",oo_id,oo_root,EXA_DATA_KIND_C8) 
          ierr=exatns_tensor_create(lambda_t_CC2%fbar_vv,"cc2_fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-print *,'abb',ierr
          ierr=exatns_tensor_create(lambda_t_CC2%w_oooo,"cc2_w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8) 
-print *,'abc',ierr
 !!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same
 !as in    CCSD and for \Lambda_1 either : 
          ierr=exatns_tensor_create(lambda_t_CC2%w_vovo,"cc2_w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)! Usefull in CC2 - Same part as h_int
-print *,'abd',ierr
 !!!!!!
          ierr=exatns_tensor_create(lambda_t_CC2%w_vvvv,"cc2_w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-print *,'abe',ierr
-!*
-! End of list
-!*
-
-
-
-
 !******************************************
 !        obtain intermediates from CC(S)D *
 !******************************************
@@ -2020,11 +1988,6 @@ print *,'abe',ierr
          call get_hov(comm_t,int_t%oovv,one_tensor)
          call get_a(comm_t,int_t,CCD,one_tensor)
          call print_date("Finished calculating common blocks")
-
-
-
-
-
 
 !*********************************
 !        get fixed intermediates *
@@ -2044,14 +2007,10 @@ print *,'abe',ierr
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD,one_tensor)
          call print_date('Finished calculating fixed intermediates')
 
-!        if (print_level > 0) then
+         if (print_level > 0) then
            if (.not.CCD) print*, "T1amp      = ", print_tensornorm2(comm_t%t1)
            print*, "T2amp      = ", print_tensornorm2(comm_t%t2)*0.25D0
-           ! print*, "Tau        = ", print_tensornorm2(comm_t%tau)*0.25D0
-           ! print*, "Fbar_oo    = ", print_tensornorm2(lambda_t%fbar_oo)*0.5D0
            print*, "Fbar_ov    = ", print_tensornorm2(lambda_t%fbar_ov)
-           ! print*, "Fbar_vv    = ", print_tensornorm2(lambda_t%fbar_vv)*0.5D0
-           ! print*, "w_vvvv     = ", print_tensornorm2(lambda_t%w_vvvv)*0.25D0
            print*, "wbar_vovo  = ", print_tensornorm2(lambda_t%wbar_vovo)
            print*, "w_vvvo     = ", print_tensornorm2(lambda_t%w_vvvo)*0.5D0
            print*, "w_vovv     = ", print_tensornorm2(lambda_t%w_vovv)*0.5D0
@@ -2059,7 +2018,7 @@ print *,'abe',ierr
            print*, "w_ovoo     = ", print_tensornorm2(lambda_t%w_ovoo)*0.5D0
            print*, "w_ooov     = ", print_tensornorm2(lambda_t%w_ooov)*0.5D0
            print*, "w_oooo     = ", print_tensornorm2(lambda_t%w_oooo)*0.25D0
-!        end if
+         end if
 
 !****************************************
 !        get CC2 Specific Intermediates *
@@ -2069,9 +2028,7 @@ print *,'abe',ierr
          vvoo_id = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
          vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
 
-!ierr=exatns_tensor_create(lambda_t%fbar_ov,"fbar_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
-
-         ! comm_t_CC2 t1 and t2 = comm_t  L! :maybe clean
+         ! comm_t_CC2 t1 and t2 = comm_t  
          ierr=exatns_tensor_create(comm_t_CC2%t1,"cc2_t1",vo_id,vo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(comm_t_CC2%t2,"cc2_t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(comm_t_CC2%tau,"cc2_tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
@@ -2083,7 +2040,6 @@ print *,'abe',ierr
          ierr=exatns_tensor_init(comm_t_CC2%h_int,'ZERO')
 
          ! Copy of t1, t2, foo, fov and fvv from comm_t to comm_t_CC2   L! :
-         ! maybe clean
          ierr=exatns_tensor_contract("H(a,i)+=T(a,i)*K()",comm_t_CC2%t1,comm_t%t1,one_tensor,ONE)
          ierr=exatns_tensor_contract("H(a,b,i,j)+=T(a,b,i,j)*K()",comm_t_CC2%t2,comm_t%t2,one_tensor,ONE)
          ierr=exatns_tensor_contract("H(a,i)+=F(a,i)*K()",comm_t_CC2%fov,comm_t%fov,one_tensor,ONE)
@@ -2104,9 +2060,6 @@ print *,'abe',ierr
 
          call get_fbar_vv_CC2(lambda_t_CC2%fbar_vv,comm_t_CC2,int_t,one_tensor) ! for CCSD: fbar_vv = gvv  (L! : change ?)
          call get_fbar_oo_CC2(lambda_t_CC2%fbar_oo,comm_t_CC2,int_t,one_tensor)
-!        fov_CC2 equal fov : calculated here just to check equation and
-!        variables L : to kill         
-!         call get_fbar_ov_CC2(lambda_t_CC2%fbar_ov,comm_t_CC2,int_t)
 
          call get_w_vovo_CC2(lambda_t_CC2%w_vovo,comm_t_CC2,int_t%oovv,vvoo_id,vvoo_root,one_tensor)
          call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t,one_tensor)
@@ -2117,8 +2070,6 @@ print *,'abe',ierr
           print*, "fvv bar commt  CC2    = ", print_tensornorm2(lambda_t_CC2%fbar_vv)
           print*, "foo bar commt         = ", print_tensornorm2(lambda_t%fbar_oo)
           print*, "foo bar commt  CC2    = ", print_tensornorm2(lambda_t_CC2%fbar_oo)
-!          print*, "fov bar commt         = ", print_tensornorm2(lambda_t%fbar_ov)
-!          print*, "fov bar commt  CC2    = ", print_tensornorm2(lambda_t_CC2%fbar_ov)
           print*, "wvovo commt         = ", print_tensornorm2(lambda_t%w_vovo)
           print*, "wvovo commt  CC2    = ", print_tensornorm2(lambda_t_CC2%w_vovo)
           print*, "woooo commt         = ", print_tensornorm2(lambda_t%w_oooo)
@@ -2126,9 +2077,6 @@ print *,'abe',ierr
           print*, "wvvvv commt         = ", print_tensornorm2(lambda_t%w_vvvv)
           print*, "wvvvv commt  CC2    = ", print_tensornorm2(lambda_t_CC2%w_vvvv)
          end if
-
-
-
 
 !************************************
 !        construct solution tensors *
