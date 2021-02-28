@@ -610,18 +610,17 @@ module talsh_cc
          type(talsh_tens_t) :: Wabef_tensor,Wmnij_tensor     !L
          type(talsh_tens_t) :: Wabej_tensor,Wmbij_tensor     !L
 
+! choose old_tau_CC2 for old method with v^4*O^2 contraction
          logical :: old_tau_CC2 = .false.
 
-!! Modification 250221
+! Add tensor usefull to avoid tauCC2_tensor 
          type(talsh_tens_t) :: Hovvv_tensor,Hvovv_tensor     !L
          type(talsh_tens_t) :: Hvvov_tensor,Hvvvo_tensor     !L
          type(talsh_tens_t) :: Hooov_tensor,Hoovo_tensor
          type(talsh_tens_t) :: Hvooo_tensor,Hovoo_tensor
-!! fin 250221
-
-
-         !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
+! Tensor for tauCC2 old method
          type(talsh_tens_t) :: t1t1_tensor, tauCC2_tensor
+         
          type(talsh_tens_t) :: cint_ovoo_tensor
          type(talsh_tens_t) :: cint_vvvo_tensor
 !        auxilliary tensors for t1 equation
@@ -638,10 +637,9 @@ module talsh_cc
          integer, dimension(4) :: vvvv_dims, oooo_dims    !L
          integer, dimension(4) :: vvvo_dims    !L
 
-! Le 250221
+! new dims for Hxxxx 
          integer, dimension(4) :: vovv_dims, ovvv_dims, vvov_dims !, vvov_dims
          integer, dimension(4) :: ooov_dims, oovo_dims, vooo_dims !, vvov_dims !, vvov_dims
-! fin le 250221
 
          logical :: debug_local = .false.
 
@@ -668,20 +666,24 @@ module talsh_cc
 
          
          oo_dims = nocc
-         ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
          ov_dims(1) = nocc
          ov_dims(2) = nvir
-         ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
          vo_dims(1) = nvir
          vo_dims(2) = nocc
+
+         if (.not.CCD) then
+          ierr=talsh_tensor_construct(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
+         end if
+
          ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
 
-
-         ierr=talsh_tensor_construct(tauCC2_tensor,C8,vvoo_dims,init_val=ZERO)
-
+         if (old_tau_CC2) then
+          ierr=talsh_tensor_construct(tauCC2_tensor,C8,vvoo_dims,init_val=ZERO)
+         end if
         
          vvvv_dims(1:4) = nvir  !L
          oooo_dims(1:4) = nocc  !L
@@ -698,16 +700,15 @@ module talsh_cc
          ierr=talsh_tensor_construct(cint_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
 
          if (.not.MethodContract) then 
-                 print *, "Not Contracted Method -  CC2 t2"
+                 if (debug_local) print *, "Not with Wabej/Wmnij intermediates"
                  ierr=talsh_tensor_construct(t1t1_tensor,C8,vvoo_dims,init_val=ZERO)
          else
-                 print *, "Contracted Method - CC2 t2"
+                 if (debug_local) print *, "With Wabej/Wmnij intermediates"
                  ierr=talsh_tensor_construct(Wabej_tensor,C8,vvvo_dims,init_val=ZERO)
                  ierr=talsh_tensor_construct(Wmbij_tensor,C8,ovoo_dims,init_val=ZERO)
          end if       
 
-!! Modification 250221
-! Creation de 4 intermediaires Hvovv , Hovvv, Hvvov, Hvvvo
+! Creation of the 4 intermediaires tensor : Hvovv , Hovvv, Hvvov, Hvvvo
          if (.not.old_tau_CC2) then        
           vovv_dims(1:4) = nvir
           vovv_dims(2)   = nocc
@@ -731,8 +732,6 @@ module talsh_cc
           ierr=talsh_tensor_construct(Hvooo_tensor,C8,vooo_dims,init_val=ZERO)
          end if 
 
- !! Fin 250221
-
 ! resorted integrals nedded below
 
          ierr=talsh_tensor_init(cint_vvvo_tensor)
@@ -741,6 +740,11 @@ module talsh_cc
          ierr=talsh_tensor_init(cint_ovoo_tensor)
          ierr=talsh_tensor_contract("C(k,a,i,j)+=V+(i,j,k,a)*K()",cint_ovoo_tensor,int_t%ooov,one_tensor) !Inversion, warning : no more + in +=
 
+         if (old_tau_CC2) then
+            print *, "METHOD with TAU_CC2"
+         else
+            print *, "METHOD without TAU_CC2"
+         end if
 
          do iccsd = 1, ncycles
 
@@ -748,26 +752,32 @@ module talsh_cc
           ierr=talsh_tensor_init(s2_tensor)
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2 ",tensor_norm2(s2_tensor)
 
-          if (iccsd==1) then  ! Condition added not to calculate tau and tauCC2 twice
- !         creation of tau-like intermediates for cc2
- !
- !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
-           ierr=talsh_tensor_init(tauCC2_tensor)
-           ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
-           ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
-           if (debug_local) print*, "norm contraction tauCC2 ",tensor_norm2(tauCC2_tensor)
+          if (old_tau_CC2) then
+                    if (iccsd==1) then  ! Condition added not to calculate tau and tauCC2 twice
+           !         creation of tau-like intermediates for cc2
+                     if (debug_local) print *, " Creation of tau like intermediate "
+           !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
+                     ierr=talsh_tensor_init(tauCC2_tensor)
+                     ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
+                     ierr=talsh_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,scale=MINUS_ONE)
+                     if (debug_local) print*, "norm contraction tauCC2 ",tensor_norm2(tauCC2_tensor)
 
-           ierr=talsh_tensor_init(comm_t%tau,ZERO)
-           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",comm_t%tau,tauCC2_tensor)
-           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",comm_t%tau,comm_t%t2)
-          else
-           ierr=talsh_tensor_init(tauCC2_tensor)
-           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%tau)
-           ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%t2,scale=MINUS_ONE)
+                     ierr=talsh_tensor_init(comm_t%tau,ZERO)
+                     ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",comm_t%tau,tauCC2_tensor)
+                     ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",comm_t%tau,comm_t%t2)
+                    else
+                     ierr=talsh_tensor_init(tauCC2_tensor)
+                     ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%tau)
+                     ierr=talsh_tensor_add("T(a,b,i,j)+=H(a,b,i,j)",tauCC2_tensor,comm_t%t2,scale=MINUS_ONE)
+                    end if
           end if
 
-!         t2 equation contraction
-!
+          if ((iccsd==1).and.(.not.old_tau_CC2)) then
+                 call get_tau(comm_t,CCD)
+                 if (debug_local) print *, " call get_tau "
+          end if
+
+!  Start s2_tensor
 !         Diagram 15 : s2_{ij}^{ab} += < ab || ij >
           ierr=talsh_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
           if (debug_local) print*, "norm s2 tensor after diagram 15 ",tensor_norm2(s2_tensor)
@@ -828,19 +838,25 @@ module talsh_cc
           if (old_tau_CC2) then
            ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
                 &       Wmnij_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
-           print*, "norm Wmnij_CC2 old",tensor_norm2(Wmnij_tensor)
+           if (debug_local) print*, "norm Wmnij_CC2 with tauCC2",tensor_norm2(Wmnij_tensor)
           else
            ierr=talsh_tensor_init(Hoovo_tensor)
+           if (debug_local) print*, "Wmnij ierr init",ierr
            ierr=talsh_tensor_contract("Hoovo(m,n,e,j)+=V(m,n,e,f)*T(f,j)",& 
                 &       Hoovo_tensor,int_t%oovv,comm_t%t1)
+           if (debug_local) print*, "Wmnij ierr 1",ierr
            ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hoovo(m,n,e,j)*T(e,i)",&
                 &       Wmnij_tensor,Hoovo_tensor,comm_t%t1,scale=ONE_QUARTER)
+           if (debug_local) print*, "Wmnij ierr 2",ierr
            ierr=talsh_tensor_init(Hooov_tensor)
+           if (debug_local) print*, "Wmnij ierr b",ierr
            ierr=talsh_tensor_contract("Hooov(m,n,j,f)+=V(m,n,e,f)*T(e,j)",& 
                 &       Hooov_tensor,int_t%oovv,comm_t%t1)
+           if (debug_local) print*, "Wmnij ierr 3",ierr
            ierr=talsh_tensor_contract("Wmnij(m,n,i,j)+=Hooov(m,n,j,f)*T(f,i)",&
                 &       Wmnij_tensor,Hooov_tensor,comm_t%t1,scale=MINUS_ONE_QUARTER)
-           print*, "norm Wmnij_CC2 new ",tensor_norm2(Wmnij_tensor)
+           if (debug_local) print*, "norm Wmnij_CC2 new ",tensor_norm2(Wmnij_tensor)
+           if (debug_local) print*, "Wmnij ierr 4",ierr
           end if
 
 !         b. W_{ij}^{ab} = V_{ef}^{ab} - P\_(ab)\sum_{m} t_m^b V_{ef}^{am} + \frac{1}{4}P\_(ab)\sum_{ef} t^e_i t^f_j V_{ef}^{mn}
@@ -852,7 +868,7 @@ module talsh_cc
           if (old_tau_CC2) then
            ierr=talsh_tensor_contract("Wabef(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
                  & Wabef_tensor,int_t%oovv,tauCC2_tensor,scale=ONE_QUARTER)
-           if (debug_local) print*, "norm Wabef_CC2 old",tensor_norm2(Wabef_tensor)
+           if (debug_local) print*, "norm Wabef_CC2 with tauCC2",tensor_norm2(Wabef_tensor)
           else
            ierr=talsh_tensor_init(Hvovv_tensor)
            ierr=talsh_tensor_init(Hovvv_tensor)
@@ -873,7 +889,7 @@ module talsh_cc
           if (old_tau_CC2) then
            ierr=talsh_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
                 & s2_tensor,Wmnij_tensor,tauCC2_tensor,scale=ONE_HALF)
-          if (debug_local) print*, "norm s2 tensor after diagram 21 old ",tensor_norm2(s2_tensor)
+           if (debug_local) print*, "norm s2 tensor after diagram 21 old ",tensor_norm2(s2_tensor)
           else
            ierr=talsh_tensor_init(Hvooo_tensor)
            ierr=talsh_tensor_contract("H(a,n,i,j)+=Wmnij(m,n,i,j)*T(a,m)",&
@@ -885,7 +901,7 @@ module talsh_cc
                 & Hovoo_tensor,Wmnij_tensor,comm_t%t1,scale=ONE)
            ierr=talsh_tensor_contract("S(a,b,i,j)+=H(m,a,i,j)*T(b,m)",&
                 & s2_tensor,Hovoo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)
-          if (debug_local) print*, "norm s2 tensor after diagram 21 new ",tensor_norm2(s2_tensor)
+           if (debug_local) print*, "norm s2 tensor after diagram 21 new ",tensor_norm2(s2_tensor)
           end if
 
 !         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}  
@@ -919,6 +935,8 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,i)*T(a,b,j,m)",s2_tensor,comm_t%foo,comm_t%t2)
           if (debug_local) print*, "norm s2 tensor after diagram 24 ",tensor_norm2(s2_tensor)
 
+          if (debug_local) print*, "Norm s2 before s1",tensor_norm2(s2_tensor)
+
 !        done with cc2 t2 equation, now cc2 t1 equation, which is exactly the same as the ccsd t1 equation
 
           ! Call F intermediates - used in \Ss ai
@@ -929,6 +947,7 @@ module talsh_cc
             ierr=talsh_tensor_init(hov_aux_tensor)
             ierr=talsh_tensor_add("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
             ierr=talsh_tensor_add("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
+            if (debug_local) print *, "In .not.CCD check for hov"
           end if
 
 !         calculate s1 tensor
@@ -936,7 +955,7 @@ module talsh_cc
 
 !           Diagramme b1  :   \Ss ai= \f ai         
           ierr=talsh_tensor_contract("S(a,i)+=F+(i,a)*K()",s1_tensor,comm_t%fov,one_tensor)
-
+          if (debug_local) print*, "s1 - first step with \F ia ",tensor_norm2(s1_tensor)
 !           
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,d)*T(c,d,i,k)",s1_tensor,int_t%vovv,comm_t%tau,scale=ONE_HALF) !validated o(2)v(3)
           ierr=talsh_tensor_contract("S(a,i)+=H(a,c)*T(c,i)",s1_tensor,comm_t%hvv,comm_t%t1)                     !validated o(1)v(2)
@@ -948,6 +967,8 @@ module talsh_cc
           ierr=talsh_tensor_contract("S(a,i)+=V(k,l,i,c)*T(c,a,k,l)",s1_tensor,int_t%ooov,comm_t%tau,scale=ONE_HALF) !validated o(3)v(2)
           ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
 
+          if (debug_local) print*, "Norm s1 before Energy",tensor_norm2(s1_tensor)
+      
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
@@ -970,6 +991,8 @@ module talsh_cc
 !         Update tau
           call get_tau(comm_t,CCD)
 
+          if (debug_local) print*, "Check for tau from get_tau", tensor_norm2(comm_t%tau)
+
           ierr=talsh_tensor_init(result_tensor)
           ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
@@ -980,25 +1003,49 @@ module talsh_cc
 
          end do
 
+
+! Clean tensor
+         ierr=talsh_tensor_destruct(s1_tensor)
          ierr=talsh_tensor_destruct(s2_tensor)
-         ierr=talsh_tensor_destruct(t1t1_tensor)
          ierr=talsh_tensor_destruct(cint_ovoo_tensor)
          ierr=talsh_tensor_destruct(cint_vvvo_tensor)
 
          if(.not.old_tau_CC2) then
           ierr=talsh_tensor_destruct(Hvvov_tensor)
+          if (debug_local) print*, "Destruct 1",ierr
           ierr=talsh_tensor_destruct(Hvvvo_tensor)
+          if (debug_local) print*, "Destruct 2",ierr
           ierr=talsh_tensor_destruct(Hovvv_tensor)
+          if (debug_local) print*, "Destruct 3",ierr
           ierr=talsh_tensor_destruct(Hvovv_tensor)
+          if (debug_local) print*, "Destruct 4",ierr
           ierr=talsh_tensor_destruct(Hooov_tensor)
+          if (debug_local) print*, "Destruct 5",ierr
           ierr=talsh_tensor_destruct(Hoovo_tensor)
+          if (debug_local) print*, "Destruct 6",ierr
           ierr=talsh_tensor_destruct(Hovoo_tensor)
+          if (debug_local) print*, "Destruct 7",ierr
           ierr=talsh_tensor_destruct(Hvooo_tensor)
+          if (debug_local) print*, "Destruct 8",ierr
+         else
+          ierr=talsh_tensor_destruct(tauCC2_tensor)
          end if
+
+         ierr=talsh_tensor_destruct(Wabef_tensor)
+         ierr=talsh_tensor_destruct(Wmnij_tensor) 
+
+         if (.not.MethodContract) then 
+                 ierr=talsh_tensor_destruct(t1t1_tensor)
+         else
+                 ierr=talsh_tensor_destruct(Wabej_tensor)
+                 ierr=talsh_tensor_destruct(Wmbij_tensor)
+         end if       
 
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(hoo_aux_tensor)
+            if (debug_local) print*,"Destruct hoo_aux_tensor", ierr
             ierr=talsh_tensor_destruct(hov_aux_tensor)
+            if (debug_local) print*,"Destruct hov_aux_tensor",ierr
          end if
          ierr=talsh_tensor_destruct(result_tensor)
 
