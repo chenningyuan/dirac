@@ -145,6 +145,7 @@ print *, '*    Young Choon Park         KAIST, Daejeon                    South 
 print *, '*    Jesper K. Pedersen       University of Southern Denmark    Denmark       *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany       *'
 print *, '*    Roberto Di Remigio       UiT The Arctic University of      Norway        *'
+print *, '*    Michal Repisky           UiT The Arctic University of      Norway        *'
 print *, '*    Kenneth Ruud             UiT The Arctic University of      Norway        *'
 print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *'

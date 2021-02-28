@@ -76,6 +76,7 @@ module exacorr_utils
       print*, "                   ***  Contributors:    - Johann Pototschnig        ***"
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Andre S. P. Gomes         ***"
+      print*, "                   ***                   - Michal Repisky            ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
       print*, "                   ***                   - 1DM                       ***"
       print*, "                   ***                   - ReSpect interface         ***"
