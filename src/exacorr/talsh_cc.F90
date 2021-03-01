@@ -45,7 +45,7 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017
 
          use exacorr_global
-         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
+         use talsh_ao_to_mo, only       : tensor_norm2
          use talsh_gradient
 
          type(exacc_input), intent(in) :: exa_input
