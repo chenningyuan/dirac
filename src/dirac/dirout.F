@@ -1361,12 +1361,6 @@ C
           ENDDO !IFSYM
         WRITE(LUPRI,'(/)')
 
-C     ... do the consistency check with the NORB_SUB(MJABS,IFSYM,IC) variable
-C     sunaga
-C        DO I=1,NFSYM
-C           CALL KPTOMJ(I,IBEIG(IORB(I)+1),2)
-C        ENDDO   
-Csunaga        
         IC =1
         IF (PRPOS) IC=0
         DO IFSYM=1, NFSYM 
