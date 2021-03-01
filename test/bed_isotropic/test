@@ -4,24 +4,6 @@ import os
 import sys
 import subprocess
 
-# ----------------------------------
-# find mpirun
-# -------------------------
-p = subprocess.Popen(["which", "mpirun"], stdout=subprocess.PIPE)
-mpirun = p.stdout.read().strip()
-
-
-# ----------------------------------
-# Set required Environment variables
-# ----------------------------------
-if not 'DIRAC_MPI_COMMAND' in os.environ:
-    os.environ['DIRAC_MPI_COMMAND'] = "mpirun -np 6"
-
-os.environ['OMP_NUM_THREADS'] = "1"
-os.environ['MKL_NUM_THREADS'] = "1"
-os.environ['MKL_DYNAMIC'] = "FALSE"
-
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
 
@@ -34,6 +16,6 @@ f.add(from_string = 'Exc. Frequency (au)        e-e              e-p            
       ignore_sign = True,
       rel_tolerance   = 1.0e-6)
 
-test.run(['BED_Mg.inp'], ['BED_Mg.xyz'], f, args='--mb=50 --mpirun={}'.format(mpirun))
+test.run(['BED_Mg.inp'], ['BED_Mg.xyz'], f, args='--mb=50')
 
 sys.exit(test.return_code)

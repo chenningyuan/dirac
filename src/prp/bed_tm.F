@@ -8,10 +8,8 @@ C     Scalar integrals are sorted on symmetries (max. 8)
 C
 C     Upon entering this routine solution vectors have been written
 C     to unformatted file PAMXVC, to be opened with unit number LUXVC
-C     References are:
-C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
-C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
-C                               
+C     Reference:
+C       N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
 C                                                                      
 C***********************************************************************
       use orbital_rotation_indices
@@ -33,23 +31,18 @@ C
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
-      CHARACTER*6 MXFORM, FMT
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:),OSC(:,:)
+      real(8), allocatable              :: TMOM(:,:,:),OSC(:)
       character (len=8),  allocatable   :: LABINT(:)
       character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
-      real(8)             :: PBUF(3,2),EVECR(NREDM,*)
-      integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
+      real(8)                   :: PBUF(3,2),EVECR(NREDM,*)
+      integer                   :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
-      real(8), allocatable              :: TMOM_P(:,:),TMOM_DER(:,:,:,:)
-      real(8), allocatable              :: TMOM_DE(:,:),TMOM_DOM(:,:)
-      real(8), allocatable              :: OSC_P(:),OSC_DER(:,:,:)
-      real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
@@ -137,6 +130,7 @@ C
         ENDIF
       ENDDO
       CALL PRSYMB(LUPRI,'=',80,0)
+      CALL HEADER('Full light-matter interaction: Anisotropic case',-1)
       WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
 C
@@ -183,12 +177,9 @@ C     Loop over excitation energies
 C     =============================
 C
       allocate(TMOM(NOP,NPAR+1,NEXCNV))
-      allocate(OSC(NPAR+1,NEXCNV))
+      allocate(OSC(NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      IH = 0
-      WRITE(6,'(A18,10X,A9,8X,A5)')
-     &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,NEXCNV
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -222,120 +213,117 @@ C
             ENDIF
           ENDDO
         ENDIF
-        DO K = -IH,IH
 C     
 C         Generate integrals
 C
-          IF(BEDCHK) THEN
-             CALL DCOPY(3,D0,0,WAVEVEC,1)
-          ELSE
-            DO I = 1,3
-              WAVEVEC(I) = FAC*UWAVE(I)
-            ENDDO
-          ENDIF
+        IF(BEDCHK) THEN
+           CALL DCOPY(3,D0,0,WAVEVEC,1)
+        ELSE
+          DO I = 1,3
+            WAVEVEC(I) = FAC*UWAVE(I)
+          ENDDO
+        ENDIF
 C       
-          CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
-     &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
-     &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
-     &       0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
-          IF(IPRXPP.GE.5) THEN
-            DO ICOMP = 1,NPRPINT
-              WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
-     &        '. Symmetry: ',REP(INTREP(ICOMP))
-              CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
-            ENDDO
-          ENDIF
+        CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
+     &     NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &     TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
+     &     0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+        IF(IPRXPP.GE.5) THEN
+          DO ICOMP = 1,NPRPINT
+            WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+     &      '. Symmetry: ',REP(INTREP(ICOMP))
+            CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
+          ENDDO
+        ENDIF
 C
-          OSC(NPAR+1,IEXC)    = D0
-          TMOM(1,NPAR+1,IEXC) = D0
-          TMOM(2,NPAR+1,IEXC) = D0
-          IPAR = 0
+        OSC(IEXC)           = D0
+        TMOM(1,NPAR+1,IEXC) = D0
+        TMOM(2,NPAR+1,IEXC) = D0
+        IPAR = 0
 C
-C         Gradient - orbital (e-e) part
-C         ====================================
-          IF(NZXOPE.GT.0) THEN
-            IPAR = IPAR + 1
-            TMP = D0
-            DO IOP = 1,NOP
-              INDXPR = NPRPS+IOP
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOE(1,IOP),
-     &               get_orbital_rotation_indices_pp(),
-     &               NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
-     &               WORK,KFREE,LFREE,IPRXPP)
-                TMOM(IOP,IPAR,IEXC)=D2*
-     &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-CTROND
-                IF(IPRXPP.GE.3) THEN
-                  WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
-                  CALL PRINT_GP_XP(GPOE,XPOE,
-     &               get_orbital_rotation_indices_pp(),NZXOPE,NZ)
-                ENDIF
-              ELSE
-                TMOM(IOP,IPAR,IEXC)=D0
+C       Gradient - orbital (e-e) part
+C       ====================================
+        IF(NZXOPE.GT.0) THEN
+          IPAR = IPAR + 1
+          DO IOP = 1,NOP
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+              CALL GPGET(INDXPR,GPOE(1,IOP),
+     &             get_orbital_rotation_indices_pp(),
+     &             NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
+     &             WORK,KFREE,LFREE,IPRXPP)
+              TMOM(IOP,IPAR,IEXC)=D2*
+     &             DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+              IF(IPRXPP.GE.3) THEN
+                WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
+                CALL PRINT_GP_XP(GPOE,XPOE,
+     &             get_orbital_rotation_indices_pp(),NZXOPE,NZ)
               ENDIF
-              TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
-     &                             +TMOM(IOP,IPAR,IEXC)
-              TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-            ENDDO
-            OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
-            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-          ENDIF
+            ELSE
+              TMOM(IOP,IPAR,IEXC)=D0
+            ENDIF
+            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                           +TMOM(IOP,IPAR,IEXC)
+          ENDDO
+        ENDIF
 C
-C         Gradient - orbital (e-p) part
-C         ====================================
-          IF(NZXOPP.GT.0) THEN       
-            IPAR = IPAR + 1
-            TMP = D0
-            DO IOP = 1,NOP
-              INDXPR = NPRPS+IOP
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOP(1,IOP),
-     &               get_orbital_rotation_indices_pn(),
-     &               NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
-     &               WORK,KFREE,LFREE,IPRXPP)
-                TMOM(IOP,IPAR,IEXC)=D2*
-     &               DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-                IF(IPRXPP.GE.3) THEN
-                  WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-p) part'
-                  CALL PRINT_GP_XP(GPOP,XPOP,
-     &               get_orbital_rotation_indices_pn(),NZXOPP,NZ)
-                ENDIF
-              ELSE
-                TMOM(IOP,IPAR,IEXC)=D0
+C       Gradient - orbital (e-p) part
+C       ====================================
+        IF(NZXOPP.GT.0) THEN       
+          IPAR = IPAR + 1
+          DO IOP = 1,NOP
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+              CALL GPGET(INDXPR,GPOP(1,IOP),
+     &             get_orbital_rotation_indices_pn(),
+     &             NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &             WORK,KFREE,LFREE,IPRXPP)
+              TMOM(IOP,IPAR,IEXC)=D2*
+     &             DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+              IF(IPRXPP.GE.3) THEN
+                WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-p) part'
+                CALL PRINT_GP_XP(GPOP,XPOP,
+     &             get_orbital_rotation_indices_pn(),NZXOPP,NZ)
               ENDIF
-              TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
-     &                             +TMOM(IOP,IPAR,IEXC)
-              TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-            ENDDO
-            OSC(IPAR,IEXC)   = D2*OMEGA(IEXC)*TMP
-            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-          ENDIF
+            ELSE
+              TMOM(IOP,IPAR,IEXC)=D0
+            ENDIF
+            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                           +TMOM(IOP,IPAR,IEXC)
+          ENDDO
+        ENDIF
+C
+C       Oscillator strength
+C
+        TMP = D0
+        DO IOP = 1,NOP
+          TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
         ENDDO
+        OSC(IEXC)   = D2*OMEGA(IEXC)*TMP
  10   CONTINUE
 C
 C     Print section
 C
-       WRITE(6,*) '* Transition moments:'
-       WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
+      WRITE(LUPRI,'(3X,A,3F18.10)')                                    
+     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  
+     &     '* Polarization vector:', (UPOL(I),I=1,3)                   
+      WRITE(6,'(/A)') '* Transition moments:'
+      WRITE(6,'(/A4,5X,A18,19X,3(3X,A5,9X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
        DO IEXC = 1,NEXCNV
-         TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
-         FMT=MXFORM(TMP,14)
-         WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
-     &   IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
+         WRITE(6,'(I4,1X,F18.10,A,3(3X,ES18.10))')
+     &   IEXC,OMEGA(IEXC),' real part (sin[kr]) : ',
      &   (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-         WRITE(6,'(23X,A,3(3X,'//FMT//'))')
-     &   ' imag. part (cos[kr]) : ',
+         WRITE(6,'(23X,A,3(3X,ES18.10))')
+     &   ' imag part (cos[kr]) : ',
      &   (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
-      WRITE(6,*) '* Oscillator strengths:'
-      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+      WRITE(6,'(/A)') '* Oscillator strengths:'
+      WRITE(6,'(/A4,1X,A18)')     
+     &  'Exc.','Frequency (au)    '
       DO IEXC = 1,NEXCNV
-        WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &   IEXC,OMEGA(IEXC),
-     &   (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
+        WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
+     &   IEXC,OMEGA(IEXC),OSC(IEXC)
       ENDDO
 C     
 C     Memory deallocation
@@ -515,7 +503,7 @@ C     =============================
 C     
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      WRITE(6,'(A18,10X,A9,8X,A5)')
+      WRITE(6,'(/A18,10X,A9,8X,A5)')
      &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
@@ -765,7 +753,7 @@ C     =============================
 C     
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      WRITE(6,'(A18,10X,A9,8X,A5)')
+      WRITE(6,'(/A18,10X,A9,8X,A5)')
      &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
@@ -874,7 +862,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       integer, allocatable              :: POINTS(:)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
+      real(8), allocatable              :: TMOM(:,:,:),OSC(:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
@@ -1051,6 +1039,7 @@ C
         ENDDO
       ENDDO 
       CALL PRSYMB(LUPRI,'=',80,0)
+      CALL HEADER('Full light-matter interaction: Isotropic case',-1)
       WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
       WRITE(6,*) 'BED rotational average. '
@@ -1100,9 +1089,10 @@ C
 C     Loop over quadrature points
 C     =============================
 C
-      allocate(TMOM(NOP,NC,NPAR,NEXCNV))
-      allocate(OSC(NPAR+1,NEXCNV))
-      CALL DCOPY((NPAR+1)*NEXCNV,D0,0,OSC,1)
+      allocate(TMOM(NOP,NC,NEXCNV))
+      allocate(OSC(NEXCNV))
+      CALL DCOPY(NOP*NC*NEXCNV,D0,0,TMOM,1)
+      CALL DCOPY(NEXCNV,D0,0,OSC,1)
 
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
@@ -1189,78 +1179,68 @@ C
             ENDDO
           ENDIF
 C
-       IPAR = 0
+C         Accumulate transition moments
+C         ============================= 
 C
-C     Gradient - orbital (e-e) part
-C     ====================================
-       IF(NZXOPE.GT.0) THEN
-          IPAR = IPAR + 1
-          II = 0
-          TMP = D0
-          DO IC = 1,NC
-            DO IOP = 1,NOP
-              II = II + 1
-              INDXPR = NPRPS+II
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
+C         
+C         - orbital (e-e) part
+C         ====================================
+          IF(NZXOPE.GT.0) THEN
+            II = 0
+            DO IC = 1,NC
+              DO IOP = 1,NOP
+                II = II + 1
+                INDXPR = NPRPS+II
+                IF(IPRPTYP(INDXPR).NE.-1) THEN
             
-                CALL GPGET(INDXPR,GPOE(1,IOP),
+                  CALL GPGET(INDXPR,GPOE(1,IOP),
      &              get_orbital_rotation_indices_pp(),
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
 
-                TMOM(IOP,IC,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-              ELSE
-                TMOM(IOP,IC,IPAR,IEXC) = D0
-              ENDIF
+                  TMOM(IOP,IC,IEXC)=TMOM(IOP,IC,IEXC)
+     &                + D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+                ENDIF
+              ENDDO
             ENDDO
-            TMP = TMP
-     &     + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &     + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &     + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &     + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &     + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
-          ENDDO
-          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-       ENDIF
+          ENDIF ! IF(NZXOPE.GT.0) THEN
 C
-C     Gradient - orbital (e-p) part
-C     ====================================
-       IF(NZXOPP.GT.0) THEN
-          IPAR = IPAR + 1
-          II = 0
+C          - orbital (e-p) part
+C         ====================================
+          IF(NZXOPP.GT.0) THEN
+            II = 0
+            DO IC = 1,NC
+              DO IOP = 1,NOP
+                II = II + 1
+                INDXPR = NPRPS+II
+                IF(IPRPTYP(INDXPR).NE.-1) THEN
+                  CALL GPGET(INDXPR,GPOP(1,IOP),
+     &               get_orbital_rotation_indices_pn(),
+     &               NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &               WORK,KFREE,LFREE,IPRXPP)
+                  TMOM(IOP,IC,IEXC)=TMOM(IOP,IC,IEXC)
+     &              +D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+                ENDIF
+              ENDDO
+            ENDDO
+          ENDIF ! IF(NZXOPP.GT.0) THEN
+C
+C         Accumulate oscillator strengths
+C         ===============================
+C
           TMP = D0
           DO IC = 1,NC
-            DO IOP = 1,NOP
-              II = II + 1
-              INDXPR = NPRPS+II
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOP(1,IOP),
-     &              get_orbital_rotation_indices_pn(),
-     &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
-     &              WORK,KFREE,LFREE,IPRXPP)
-
-                TMOM(IOP,IC,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-              ELSE
-                TMOM(IOP,IC,IPAR,IEXC) = D0
-              ENDIF
-            ENDDO
-            TMP = TMP
-     &     + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &     + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &     + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &     + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &     + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &     + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
+             TMP = TMP
+     &     + EEWT(1)*TMOM(1,IC,IEXC)*TMOM(1,IC,IEXC)
+     &     + EEWT(2)*TMOM(2,IC,IEXC)*TMOM(1,IC,IEXC)
+     &     + EEWT(3)*TMOM(3,IC,IEXC)*TMOM(1,IC,IEXC)
+     &     + EEWT(4)*TMOM(2,IC,IEXC)*TMOM(2,IC,IEXC)
+     &     + EEWT(5)*TMOM(3,IC,IEXC)*TMOM(2,IC,IEXC)
+     &     + EEWT(6)*TMOM(3,IC,IEXC)*TMOM(3,IC,IEXC)
           ENDDO
-          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-        ENDIF
-CC      END OF if(NZXOPP.GT.0)
-
-   10   CONTINUE
-      ENDDO
+          OSC(IEXC) = OSC(IEXC) + WT(IP)*TMP
+   10   CONTINUE ! DO 10 IEXC = 1,NEXCNV
+      ENDDO ! DO IIP = 1,POINT_PER_PROC
 
 
 #ifdef VAR_MPI
@@ -1300,25 +1280,20 @@ C
 C     Final values for oscillator strengths
 C
       DO IEXC = 1,NEXCNV
-         OSC(NPAR+1,IEXC) = D0
-         DO IPAR = 1,NPAR
-           OSC(IPAR  ,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
-           OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-        ENDDO
+        OSC(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC)
       ENDDO
 C
 C     Print section
 C
-      WRITE(6,*) '* Isotropic oscillator strengths:'
+      WRITE(6,'(/A)') '* Oscillator strengths:'
       WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+     &  'Exc.','Frequency (au)    '
+      WRITE(6,'(/A4,1X,A18)')     
+     &  'Exc.','Frequency (au)    '
       DO IEXC = 1,NEXCNV
-         FMT=MXFORM(OSC(NPAR+1,IEXC),14)
-         WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &     IEXC,OMEGA(IEXC),
-     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
+        WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
+     &   IEXC,OMEGA(IEXC),OSC(IEXC)
       ENDDO
-
 C            
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
