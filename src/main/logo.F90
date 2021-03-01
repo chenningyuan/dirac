@@ -124,7 +124,7 @@ print *, '*    Timo Fleig               Universite Toulouse III           France
 print *, '*    Olav Fossgaard           UiT The Arctic University of      Norway        *'
 print *, '*    Loic Halbert             Universite de Lille               France        *'
 print *, '*    Martin van Horn          Universite Toulouse III           France        *'
-print *, '*    Erik D. Hedegaard        Lund University                   Sweden        *'
+print *, '*    Erik D. Hedegaard        University of Southern Denmark    Denmark       *'
 print *, '*    Trygve Helgaker          University of Oslo                Norway        *'
 print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
