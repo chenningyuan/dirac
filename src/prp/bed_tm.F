@@ -1091,7 +1091,6 @@ C     =============================
 C
       allocate(TMOM(NOP,NC,NEXCNV))
       allocate(OSC(NEXCNV))
-      CALL DCOPY(NOP*NC*NEXCNV,D0,0,TMOM,1)
       CALL DCOPY(NEXCNV,D0,0,OSC,1)
 
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
@@ -1138,6 +1137,7 @@ C.......Set up chi-average over polarization directions
         EEWT(4) =  DP5*(X(IP)*X(IP)+Z(IP)*Z(IP)) ! (2,2)
         EEWT(5) = -Y(IP)*Z(IP)                   ! (3,2) ! factor 0.5 cancelled by triangular sum
         EEWT(6) =  DP5*(X(IP)*X(IP)+Y(IP)*Y(IP)) ! (3,3)
+        CALL DCOPY(NOP*NC*NEXCNV,D0,0,TMOM,1)
         DO 10 IEXC = 1,NEXCNV
           IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
              WRITE(LUPRI,*)
@@ -1239,7 +1239,7 @@ C
      &     + EEWT(6)*TMOM(3,IC,IEXC)*TMOM(3,IC,IEXC)
           ENDDO
           OSC(IEXC) = OSC(IEXC) + WT(IP)*TMP
-   10   CONTINUE ! DO 10 IEXC = 1,NEXCNV
+ 10    CONTINUE                 ! DO 10 IEXC = 1,NEXCNV
       ENDDO ! DO IIP = 1,POINT_PER_PROC
 
 
