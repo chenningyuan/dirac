@@ -951,6 +951,10 @@ module exacorr_cc
 ! choose old_tau_CC2 for old method with v^4*O^2 contraction
          logical :: old_tau_CC2 = .false.  
 
+! choose Wabej / Wmbij
+         logical :: MethodContract= .true.
+
+
 !        Input
          type(exatns_comm_tens), intent(inout) :: comm_t
          type(exatns_intg_tens), intent(inout) :: int_t
@@ -979,6 +983,7 @@ module exacorr_cc
 
          type(tens_rcrsv_t) :: cint_vvvo_tensor, cint_ovoo_tensor
          type(tens_rcrsv_t) :: Wabef_CC2_tensor, Wmnij_CC2_tensor
+         type(tens_rcrsv_t) :: Wabej_tensor, Wmbij_tensor
 !        auxiliary tensors
          type(tens_rcrsv_t) :: hov_aux_tensor, hoo_aux_tensor
 !        result tensor
@@ -1052,6 +1057,14 @@ module exacorr_cc
           vooo_root   = (/vir_space_root,occ_space_root,occ_space_root,occ_space_root/)
          end if
 
+         if (MethodContract) then
+          ierr=exatns_tensor_create(Wabej_tensor,"Wabej",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_create(Wmbij_tensor,"Wmbij",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
+         else
+          ierr=exatns_tensor_create(t1t1_tensor,"t1t1",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         end if
+
+
 !        Initialize scalar that are to be used as tensors in contractions
          ierr=exatns_tensor_create(result_t_tensor,"result_t",EXA_DATA_KIND_C8)
 
@@ -1067,7 +1080,6 @@ module exacorr_cc
          ierr=exatns_tensor_create(cint_vvvo_tensor,"cint_vvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(cint_ovoo_tensor,"cint_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
-         ierr=exatns_tensor_create(t1t1_tensor,"t1t1",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
 
          if (old_tau_CC2) then
             ierr=exatns_tensor_create(tauCC2_tensor,"tauCC2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
@@ -1154,36 +1166,65 @@ module exacorr_cc
            if (debug_local) print*, "norm contraction tauCC2",print_tensornorm2(tauCC2_tensor)
           end if
 
- !         b. t1t1 = \ts ai \ts bj 
-          ierr=exatns_tensor_init(t1t1_tensor,'ZERO')
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,i,j)*K()",t1t1_tensor,intm_p2_tensor,one_tensor)
-          if (debug_local) print*, "norm t1t1_tensor ",print_tensornorm2(t1t1_tensor)
 
-!         Diagramme 15 \Sd abij = \V abij   ! Inversion 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
-          if (debug_local) print*, "norm s2 tensor after diagram 15 ",print_tensornorm2(s2_tensor)
 
-!         Diagramme 16 \Sd abij = - \Pm ij \Pm ab \ts ei \ts am \V mbej
-!         store term that will contribute the four permutations on intm_p2_tensor: \ts ei \ts am \V mbej
-          ierr=exatns_tensor_init(intm_p2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("I(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",intm_p2_tensor,int_t%vovo,t1t1_tensor)
+      !         Diagramme 15 \Sd abij = \V abij   ! Inversion 
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
+         if (debug_local) print*, "norm s2 tensor after diagram 15 ",print_tensornorm2(s2_tensor)
 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor)
 
-          if (debug_local) print*, "norm s2 tensor after diagram 16 ",print_tensornorm2(s2_tensor)
+          if (.not.MethodContract) then
+                !!!! Pour l instant je laisse ce diagramme en dehors mais il faudra voir
+                !         b. t1t1 = \ts ai \ts bj 
+                  ierr=exatns_tensor_init(t1t1_tensor,'ZERO')
+                  ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,i,j)*K()",t1t1_tensor,intm_p2_tensor,one_tensor)
+                  if (debug_local) print*, "norm t1t1_tensor ",print_tensornorm2(t1t1_tensor)
+                !!!! Fin du diagramme a voir
+                !         Diagramme 16 \Sd abij = - \Pm ij \Pm ab \ts ei \ts am \V mbej
+                !         store term that will contribute the four permutations on intm_p2_tensor: \ts ei \ts am \V mbej
+                ierr=exatns_tensor_init(intm_p2_tensor,'ZERO')
+                ierr=exatns_tensor_contract("I(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",intm_p2_tensor,int_t%vovo,t1t1_tensor) !v3o3
 
-!         Diagram 19 : \Sd abij = + \Pm ij \ts ei \V abej
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,MINUS_ONE)
-          if (debug_local) print*, "norm s2 tensor after diagram 19",print_tensornorm2(s2_tensor)
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)    ! v2o2
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE) !v2o2
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE) !v2o2
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor)  !v2o2
+                if (debug_local) print*, "norm s2 tensor after diagram 16 ",print_tensornorm2(s2_tensor)
 
-!         Diagram 20 : \Sdabij = - \Pm ab \ts am \V mbij 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
-          if (debug_local) print*, "norm s2 tensor after diagram 20",print_tensornorm2(s2_tensor)
+                !         Diagram 19 : \Sd abij = + \Pm ij \ts ei \V abej
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)  !v3o2
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,MINUS_ONE) !v3o2
+                if (debug_local) print*, "norm s2 tensor after diagram 19",print_tensornorm2(s2_tensor)
+
+                !         Diagram 20 : \Sdabij = - \Pm ab \ts am \V mbij 
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,MINUS_ONE) !v2o3
+                ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1) !v2o3
+                if (debug_local) print*, "norm s2 tensor after diagram 20",print_tensornorm2(s2_tensor)
+        else
+                ierr=exatns_tensor_init(Wabej_tensor,'ZERO')
+                ierr=exatns_tensor_init(Wmbij_tensor,'ZERO')
+                ierr=exatns_tensor_contract("W(a,b,e,j)+=C(a,b,e,j)*K()",Wabej_tensor,cint_vvvo_tensor,one_tensor,ONE)   !v3o
+
+                ierr=exatns_tensor_contract("W(a,b,e,j)+=T(a,m)*V(b,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,ONE_HALF)  !v3o2
+                ierr=exatns_tensor_contract("W(a,b,e,j)+=T(b,m)*V(a,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,MINUS_ONE_HALF) !v3o2
+                if (debug_local) print *, "Wabej : norm " ,print_tensornorm2(Wabej_tensor)
+
+                ierr=exatns_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,ONE)  !v3o2
+                ierr=exatns_tensor_contract("S(a,b,i,j)=T(e,j)*W(a,b,e,i)",s2_tensor,comm_t%t1,Wabej_tensor,MINUS_ONE) !v3o2
+
+                ierr=exatns_tensor_contract("W(m,b,i,j)+=C(m,b,i,j)*K()",Wmbij_tensor,cint_ovoo_tensor,one_tensor,ONE)  !vo3
+
+                ierr=exatns_tensor_contract("W(m,b,i,j)+=T(e,i)*V(b,m,e,j)",Wmbij_tensor,comm_t%t1,int_t%vovo,MINUS_ONE_HALF) !v2o3
+                ierr=exatns_tensor_contract("W(m,b,i,j)+=T(e,j)*V(b,m,e,i)",Wmbij_tensor,comm_t%t1,int_t%vovo,ONE_HALF) !v2o3
+                if (debug_local) print *, "Wmbij : norm ",print_tensornorm2(Wmbij_tensor)
+
+                ierr=exatns_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,MINUS_ONE) !v2o3
+                ierr=exatns_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,ONE) !v2o3
+         end if
+
+
+
+
 
 !         additional CC2 W intermediates
 !
@@ -1424,16 +1465,23 @@ module exacorr_cc
          if (.not.CCD) ierr=exatns_tensor_destroy(s1_tensor)
          ierr=exatns_tensor_destroy(s2_tensor)
                 if (debug_local) print*, "Destroy a",ierr
-         ierr=exatns_tensor_destroy(t1t1_tensor)
-                if (debug_local) print*, "Destroy b",ierr
          ierr=exatns_tensor_destroy(cint_ovoo_tensor)
                 if (debug_local) print*, "Destroy d",ierr
          ierr=exatns_tensor_destroy(cint_vvvo_tensor)
-                if (debug_local) print*, "Destroy e",ierr
+               if (debug_local) print*, "Destroy e",ierr
          ierr=exatns_tensor_destroy(Wmnij_CC2_tensor)
-                if (debug_local) print*, "Destroy f",ierr
+                        if (debug_local) print*, "Destroy Wmnij",ierr
          ierr=exatns_tensor_destroy(Wabef_CC2_tensor)
-                if (debug_local) print*, "Destroy g",ierr
+                        if (debug_local) print*, "Destroy Wabef",ierr
+         if (MethodContract) then
+                 ierr=exatns_tensor_destroy(Wmbij_tensor)
+                        if (debug_local) print*, "Destroy Wmbij",ierr
+                 ierr=exatns_tensor_destroy(Wabej_tensor)
+                        if (debug_local) print*, "Destroy Wabej",ierr
+         else
+                ierr=exatns_tensor_destroy(t1t1_tensor)
+                        if (debug_local) print*, "Destroy b",ierr
+         end if
          ierr=exatns_tensor_destroy(intm_p2_tensor)
                 if (debug_local) print*, "Destroy h",ierr
          ierr=exatns_tensor_destroy(intm_vvvv_tensor)
@@ -1465,6 +1513,10 @@ module exacorr_cc
          end if
          ierr=exatns_tensor_destroy(result_t_tensor)
 
+         if (.not.MethodContract) then
+            ierr=exatns_tensor_destroy(Wabej_tensor)
+            ierr=exatns_tensor_destroy(Wmbij_tensor)
+         end if
 
         end subroutine solve_CC2_t_equations
 
@@ -1918,6 +1970,11 @@ module exacorr_cc
          write(*,*) ""
          write(*,'(A)')"*******************************************************************************"
          write(*,'(A)') "**********************         CC2 Methode 3            **********************"
+         write(*,'(A)')"*******************************************************************************"
+         write(*,*) ""
+         write(*,*) ""
+         write(*,'(A)')"*******************************************************************************"
+         write(*,'(A)') "**********************  No scaling improvement          **********************"
          write(*,'(A)')"*******************************************************************************"
          write(*,*) ""
 
