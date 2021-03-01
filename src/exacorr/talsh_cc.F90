@@ -259,7 +259,7 @@ module talsh_cc
          ! end finite field loop
          end do
 
-         if (lambda) then
+         if (lambda.and..not.CC2) then
           call print_date('-Start- Lambda Equations')
 !         Construct lambda tensor
           if (.not.CCD) ierr=talsh_tensor_construct(l1_tensor,C8,ov_dims,init_val=ZERO)
@@ -290,6 +290,8 @@ module talsh_cc
           if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
           ierr=talsh_tensor_destruct(l2_tensor)
           call print_date('-End- Lambda Equations')
+         else
+            write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
          end if
 
 !        Destruct tensors and shut down library

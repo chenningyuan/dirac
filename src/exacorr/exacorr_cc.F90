@@ -292,7 +292,7 @@ module exacorr_cc
                 call diis(comm_t%t2,mode=2)
             end if
 
-            if (lambda ) then
+            if (lambda.and..not.CC2) then
              call print_date('-Start- Lambda Equations')
 !            construct lambda tensors + initialize with t-amplitudes
              if (.not.CCD) then
@@ -325,6 +325,8 @@ module exacorr_cc
              if (.not.CCD) ierr=exatns_tensor_destroy(l1_tensor)
              ierr=exatns_tensor_destroy(l2_tensor)
              call print_date('-End- Lambda Equations')
+            else
+               write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release'
             end if
 
             ierr=exatns_tensor_destroy(int_t%oooo)
