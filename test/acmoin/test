@@ -14,7 +14,7 @@ f.add(string = '* Electronic eigenvalue',
       rel_tolerance = 1.0e-7)
 
 # run calculation for hydrogen in linear symmetry
-test.run(['H_lin.inp'], ['H_lin.mol'], f, '--get=DFACMO')
+test.run(['H.inp'], ['H.mol'], f, '--get=DFACMO')
 
 # export coefficients to cs symmetry
 test.run(['H_Cs.inp'], ['H_Cs.mol'], f, '--get=DFCOEF --put=DFACMO')
@@ -23,7 +23,7 @@ shutil.copy('DFCOEF', 'DFHAT2')
 shutil.copy('DFCOEF', 'DFHAT3')
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N_lin.inp'], ['N_lin.mol'], f, '--get="DFCOEF DFACMO" --put="DFPCMO.N=DFPCMO"')
+test.run(['N.inp'], ['N.mol'], f, '--get="DFCOEF DFACMO" --put="DFPCMO.N=DFPCMO"')
 shutil.copy('DFCOEF', 'DFCAT')
 
 # export coefficients to cs symmetry
@@ -45,7 +45,7 @@ os.unlink('DFHAT3')
 ### run spinfree version of the test ###
 
 # run calculation for hydrogen in linear symmetry
-test.run(['H_lin_sf.inp'], ['H_lin.mol'], f, '--get=DFACMO')
+test.run(['H_sf.inp'], ['H.mol'], f, '--get=DFACMO')
 
 # export coefficients to cs symmetry
 test.run(['H_Cs_sf.inp'], ['H_Cs.mol'], f, '--get=DFCOEF --put=DFACMO')
@@ -54,7 +54,7 @@ shutil.copy('DFCOEF', 'DFHAT2')
 shutil.copy('DFCOEF', 'DFHAT3')
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N_lin_sf.inp'], ['N_lin.mol'], f, '--get="DFCOEF DFACMO" --put="DFPCMO.N.sf=DFPCMO" ')
+test.run(['N_sf.inp'], ['N.mol'], f, '--get="DFCOEF DFACMO" --put="DFPCMO.N.sf=DFPCMO" ')
 shutil.copy('DFCOEF', 'DFCAT')
 
 # export coefficients to cs symmetry
