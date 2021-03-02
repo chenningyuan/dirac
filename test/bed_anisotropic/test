@@ -11,15 +11,17 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(from_string = 'Exc. Frequency (au)                                e-e                  e-p                 Total',
-      num_lines   = 4,
-      ignore_sign = True,
-      abs_tolerance   = 1.0e-11)
+f.add(from_string = ' Energy eigenvalues in atomic units',
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance   = 2.0e-5)
 
-f.add(from_string = 'Exc. Frequency (au)',
-      num_lines   = 2,
-      ignore_sign = True,
-      abs_tolerance   = 1.0e-11)
+f.add(from_string = 'Isotropic oscillator strengths (full light-matter interaction) above threshold',
+      to_string   = 'Sum of oscillator strengths (general length) :',
+      rel_tolerance   = 2.0e-4)
+
+f.add(from_string = 'Anisotropic oscillator strengths (full light-matter interaction) above threshold',
+      to_string   = 'Sum of oscillator strengths (general length) :',
+      rel_tolerance   = 2.0e-4)
 
 test.run(['AnisotropicKedge.inp'], ['H2O.xyz'], f)
 

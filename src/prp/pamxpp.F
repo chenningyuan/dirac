@@ -2253,6 +2253,15 @@ C
 C     O S C I L L A T O R    S T R E N G T H S
 C     ========================================
 C
+      IF(KVAL_OSC.GE.0) THEN
+        IF(MOD(KVAL_OSC,2).EQ.0) THEN
+          K2ORD = KVAL_OSC/2
+        ELSE
+          K2ORD = (KVAL_OSC-1)/2
+        ENDIF
+        WRITE(FMT,'(I2)') K2ORD+2
+      ENDIF
+C      
       CALL HEADER('Isotropic oscillator strengths',-1)
 C
 C     Full interaction
@@ -2262,7 +2271,7 @@ C
         WRITE(LUPRI,'(/A,ES8.2)')
      &       '* Isotropic oscillator strengths '//
      &        '(full light-matter interaction) above threshold :', TTOL
-        NLIN=48
+        NLIN=90
         CALL PRSYMB(LUPRI,'=',NLIN,0)
         WRITE(LUPRI,'(/A)')
      &       'Level    Frequency (eV) Symmetry    f(total)        '
@@ -2282,144 +2291,13 @@ C
         CALL PRSYMB(LUPRI,'-',NLIN,0)
         NDIM = MAXEXC*NBSYM
         TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
-        WRITE(LUPRI,'(A,F12.5)') 'Sum of oscillator strengths '//
+        WRITE(LUPRI,'(A,ES12.5)') 'Sum of oscillator strengths '//
      &       '(full light-matter interaction) : ',TOT
       ENDIF
 C      
-C.....Zeroth order in the wave vector
+C     Truncated interaction
 C     ------------------------------
-      IF(KVAL_OSC.GE.0) THEN
-        IEVAL = 1
-        IBVAL = 0 
-        NDEG=(IEVAL+2)*(IEVAL+1)/2
-        IOFF  = IEPOFF(IEVAL)
-C.......All crossterms
-        DO IDEGA = 1,NDEG
-          INDAP   = IOFF+IDEGA
-          INDPRA  = LPPAPU(IOFF+IDEGA)
-          ISYM    = IPRPSYM(INDPRA)
-          IREP    = ISYM - 1
-          ITIMA   = IPRPTIM(INDPRA)
-          DO IDEGB = 1,IDEGA
-            INDBP   = IOFF+IDEGB
-            INDPRB  = LPPAPU(IOFF+IDEGB)
-            ISYM2   = IPRPSYM(INDPRB)
-            ITIMB   = IPRPTIM(INDPRB)
-            IF(ISYM2.EQ.ISYM) THEN
-              WRITE(LUPRI,'(/A,2(3X,A16,2X,A3,2X,A2))')
-     &        '*** Oscillator strengths of operators ',
-     &        PRPNAM(INDPRA),REP(IREP),TTYP(ITIMA),
-     &        PRPNAM(INDPRB),REP(IREP),TTYP(ITIMB)
-              WRITE(LUPRI,'(80A1)') ('=',I=1,80)
-              WRITE(LUPRI,'(3X,A,9X,A,11X,A)') 'eigenvalue (au and eV)',
-     &        'f','Higher symmetry (if detected)'
-              NTMOM = 0
-              MEXC = KEXCNV(ISYM)
-              DO IEXC = 1,MEXC
-                AMOM = ATMPPF(IEXC,INDAP,ISYM,1)
-                IF(ABS(AMOM).GT.TTOL) THEN
-                  BMOM = ATMPPF(IEXC,INDBP,ISYM,1)
-                  IF(ABS(BMOM).GT.TTOL) THEN
-                    NTMOM=NTMOM+1
-                    ILAB = ISSYM(IEXC,ISYM)
-                    OSCIL = D2*AMOM*BMOM*OMEGA(IEXC,ISYM)
-                    WRITE(LUPRI,'(F13.6,F12.5,F17.10,5X,A4)')
-     &              OMEGA(IEXC,ISYM), OMEGA(IEXC,ISYM)*XTEV,
-     &              OSCIL, SYMLAB(ILAB)
-                  ENDIF
-                ENDIF
-              ENDDO
-              IF(NTMOM.EQ.0) THEN
-                WRITE(LUPRI,'(A,1P,E9.2)')
-     &            '* No values above threshold : ',TTOL
-              ENDIF
-            ENDIF
-          ENDDO
-        ENDDO
-C.......Isotropic contribution
-        allocate(fval(MAXEXC,NBSYM,2))
-        NDIM= MAXEXC*NBSYM
-        CALL DCOPY(NDIM*2,D0,0,FVAL,1)
-C..........length gauge        
-        NDEG=(IEVAL+2)*(IEVAL+1)/2
-        IOFF  = IEPOFF(IEVAL)
-        DO IDEGA = 1,NDEG
-          INDAP   = IOFF+IDEGA
-          INDPRA  = LPPAPU(IOFF+IDEGA)
-          ISYM    = IPRPSYM(INDPRA)
-          ITIMA   = IPRPTIM(INDPRA)
-          MEXC=KEXCNV(ISYM)
-          DO IEXC = 1,MEXC
-            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
-            FVAL(IEXC,ISYM,1) = FVAL(IEXC,ISYM,1) 
-     &                      + XMOM*XMOM*OMEGA(IEXC,ISYM)
-          ENDDO
-        ENDDO
-C..........velocity gauge        
-        NDEG=3*(IBVAL+2)*(IBVAL+1)/2
-        IOFF  = IBDOFF(IBVAL)
-        DO IDEGA = 1,NDEG
-          INDAP   = IOFF+IDEGA
-          INDPRA  = LPPAPU(IOFF+IDEGA)
-          ISYM    = IPRPSYM(INDPRA)
-          ITIMA   = IPRPTIM(INDPRA)
-          MEXC=KEXCNV(ISYM)
-          DO IEXC = 1,MEXC
-            XMOM = ATMPPF(IEXC,INDAP,ISYM,1)
-            FVAL(IEXC,ISYM,2) = FVAL(IEXC,ISYM,2) 
-     &                      + XMOM*XMOM/OMEGA(IEXC,ISYM)
-          ENDDO
-        ENDDO
-C.......
-        CALL DSCAL(NDIM*2,D2R3,FVAL,1)
-        WRITE(LUPRI,'(/A,ES8.2)')
-     &  '* Isotropic oscillator strengths (f) above threshold: ', TTOL
-        CALL PRSYMB(LUPRI,'=',62,0)
-        WRITE(LUPRI,'(A)') 'DL = dipole length'
-        WRITE(LUPRI,'(A)') 'DV = dipole velocity'        
-        WRITE(LUPRI,'(A)') 'Rate = Dipole radiation rate (s-1)'
-        WRITE(LUPRI,'(A)') 
-     &      'Lifetime = corresponding radiation lifetime (s)'
-        WRITE(LUPRI,'(/A)')
-     &       'Level    Frequency (eV) Symmetry    '//
-     &       'f(DL-DL)        Rate           Lifetime       '//
-     &       'f(DV-DV)        Rate           Lifetime       '
-        CALL PRSYMB(LUPRI,'-',125,0)
-        DO JEXC = 2,NEXC ! skip reference state
-          II = INDX(JEXC)
-          IEXC = IEERG(1,II)
-          ISYM = IEERG(2,II)
-          OSCIL1 = FVAL(IEXC,ISYM,1)
-          OSCIL2 = FVAL(IEXC,ISYM,2)
-          OSCIL  = MAX(OSCIL1,OSCIL2)
-          IF(OSCIL .GT. TTOL) THEN
-            ILAB  = ISSYM(IEXC,ISYM)
-            RATE1 = D2*ALPHAC**3*OSCIL1*OMEGA(IEXC,ISYM)**2/AUTIME
-            RATE2 = D2*ALPHAC**3*OSCIL2*OMEGA(IEXC,ISYM)**2/AUTIME            
-            WRITE(LUPRI,
-     &           '(I5,1X,F16.5,2X,A3,1X,A4,2(2X,ES14.6,2ES15.5))')
-     &           JEXC-1,OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),
-     &           OSCIL1,RATE1,D1/RATE1,OSCIL2,RATE2,D1/RATE2
-          ENDIF
-        ENDDO
-        CALL PRSYMB(LUPRI,'-',125,0)
-        TOT = DSUM(NDIM,FVAL(1,1,1),1)
-        WRITE(LUPRI,'(A,F12.5)')
-     &     'Sum of oscillator strengths (DL) : ',TOT
-        TOT = DSUM(NDIM,FVAL(1,1,2),1)
-        WRITE(LUPRI,'(A,F12.5)')
-     &     'Sum of oscillator strengths (DV) : ',TOT
-        deallocate(fval)
-      ENDIF
-C
-C     Oscillator strengths: general order
-C      
-      IF(MOD(KVAL_OSC,2).EQ.0) THEN
-        K2ORD = KVAL_OSC/2
-      ELSE
-        K2ORD = (KVAL_OSC-1)/2
-      ENDIF
-      WRITE(FMT,'(I2)') K2ORD+2
+      IF(KVAL_OSC.LT.0) GOTO 10
 C.....Oscillator strenghts: general velocity gauge: rotational average
       IF(DOVELR) THEN
         allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
@@ -2432,6 +2310,8 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
         WRITE(LUPRI,'(/A,ES8.2)')
      &       '* Isotropic oscillator strengths '//
      &       '(generalized velocity gauge) above threshold :', TTOL
+        WRITE(LUPRI,'(3X,A)')
+     &     '- [f( 0) corresponds to the electric dipole approximation]'
         CALL PRSYMB(LUPRI,'=',NLIN,0)
         WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &       'Level    Frequency (eV) Symmetry    f(total)        ',
@@ -2452,7 +2332,7 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
         TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
-        WRITE(LUPRI,'(A,F12.5)')
+        WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general velocity) : ',TOT
         deallocate(fosc)
       ELSE
@@ -2471,6 +2351,8 @@ C.....Oscillator strenghts: general length gauge
         WRITE(LUPRI,'(/A,ES8.2)')
      &       '* Isotropic oscillator strengths '//
      &       '(generalized length gauge) above threshold :', TTOL
+        WRITE(LUPRI,'(3X,A)')
+     &     '- [f( 0) corresponds to the electric dipole approximation]'
         CALL PRSYMB(LUPRI,'=',NLIN,0)
         WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &     'Level    Frequency (eV) Symmetry    f(total)        ',
@@ -2497,44 +2379,49 @@ C.....Oscillator strenghts: general length gauge
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
         TOT = DSUM(NDIM,FOSC(1,1,1,-1),4)
-        WRITE(LUPRI,'(A,F12.5)')
+        WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general length) : ',TOT
         deallocate(fosc)
       ELSE
         WRITE(LUPRI,'(A)') ' * Length representation not active.'
       ENDIF
+ 10   CONTINUE
 C.....Anisotropic oscillator strenghts
       IF(ORIENTED) THEN
-        CALL HEADER('Anisotropic oscillator strengths',-1)         
+C         
+        CALL HEADER('Anisotropic oscillator strengths',-1)
+C         
         WRITE (LUPRI,'(1X,A,3F18.10)')                                    &
-     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
+     &       '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
      &       '* Polarization vector:', (UPOL(I),I=1,3)
 C.......Full light-matter interaction
-        WRITE(LUPRI,'(/A,ES8.2)')
-     &       '* Anisotropic oscillator strengths '//
-     &        '(full light-matter interaction) above threshold :', TTOL
-        NLIN=48
-        CALL PRSYMB(LUPRI,'=',NLIN,0)
-        WRITE(LUPRI,'(/A)')
-     &       'Level    Frequency (eV) Symmetry    f(total)        '
-        CALL PRSYMB(LUPRI,'-',NLIN,0)
-        DO JEXC = 2,NEXC          ! skip reference state
-          II = INDX(JEXC)
-          IEXC  = IEERG(1,II)
-          ISYM  = IEERG(2,II)
-          OSCIL = OSCBED(IEXC,ISYM,2)
-          IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
-            ILAB  = ISSYM(IEXC,ISYM)
-            WRITE(LUPRI,
+        IF(DOBED) THEN
+          WRITE(LUPRI,'(/A,ES8.2)')
+     &      '* Anisotropic oscillator strengths '//
+     &      '(full light-matter interaction) above threshold :', TTOL
+          NLIN=90
+          CALL PRSYMB(LUPRI,'=',NLIN,0)
+          WRITE(LUPRI,'(/A)')
+     &         'Level    Frequency (eV) Symmetry    f(total)        '
+          CALL PRSYMB(LUPRI,'-',NLIN,0)
+          DO JEXC = 2,NEXC          ! skip reference state
+            II = INDX(JEXC)
+            IEXC  = IEERG(1,II)
+            ISYM  = IEERG(2,II)
+            OSCIL = OSCBED(IEXC,ISYM,2)
+            IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
+              ILAB  = ISSYM(IEXC,ISYM)
+              WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,2X,ES14.6)') JEXC-1,
      &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL
-          ENDIF
-        ENDDO
-        CALL PRSYMB(LUPRI,'-',NLIN,0)
-        NDIM = MAXEXC*NBSYM
-        TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
-        WRITE(LUPRI,'(A,F12.5)') 'Sum of oscillator strengths '//
-     &       '(full light-matter interaction) : ',TOT
+            ENDIF
+          ENDDO
+          CALL PRSYMB(LUPRI,'-',NLIN,0)
+          NDIM = MAXEXC*NBSYM
+          TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
+          WRITE(LUPRI,'(A,ES12.5)') 'Sum of oscillator strengths '//
+     &         '(full light-matter interaction) : ',TOT
+        ENDIF  
 C.......Generalized velocity gauge        
         IF(DOVELR) THEN
           allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
@@ -2548,6 +2435,8 @@ C.......Generalized velocity gauge
           WRITE(LUPRI,'(/A,ES8.2)')
      &       '* Anisotropic oscillator strengths '//
      &       '(generalized velocity gauge) above threshold :', TTOL
+          WRITE(LUPRI,'(3X,A)')
+     &     '- [f( 0) corresponds to the electric dipole approximation]'
           CALL PRSYMB(LUPRI,'=',NLIN,0)
           WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &       'Level    Frequency (eV) Symmetry    f(total)        ',
@@ -2568,7 +2457,7 @@ C.......Generalized velocity gauge
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
           TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
-          WRITE(LUPRI,'(A,F12.5)')
+          WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general velocity) : ',TOT
           deallocate(fosc)
         ELSE
@@ -2587,6 +2476,8 @@ C.......Generalized length gauge
           WRITE(LUPRI,'(/A,ES8.2)')
      &       '* Anisotropic oscillator strengths '//
      &       '(generalized length gauge) above threshold :', TTOL
+          WRITE(LUPRI,'(3X,A)')
+     &     '- [f( 0) corresponds to the electric dipole approximation]'
           CALL PRSYMB(LUPRI,'-',NLIN,0)
           WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
      &       'Level    Frequency (eV) Symmetry    f(total)        ',
@@ -2613,13 +2504,14 @@ C.......Generalized length gauge
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
           TOT = DSUM(NDIM,FOSC(1,1,1,-1),4)
-          WRITE(LUPRI,'(A,F12.5)')
+          WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general length) : ',TOT
           deallocate(fosc)
         ELSE
           WRITE(LUPRI,'(A)') ' * Length representation not active.'
         ENDIF
       ENDIF
+ 20   CONTINUE
 C
 C     T R A N S I T I O N   M O M E N T S
 C     ===================================
@@ -2662,7 +2554,6 @@ C
           ENDDO          
         ENDDO
       ENDDO    
- 10   CONTINUE
       deallocate(symlab)
       deallocate(excerg)
       deallocate(indx)

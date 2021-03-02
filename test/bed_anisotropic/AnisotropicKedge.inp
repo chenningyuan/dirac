@@ -1,8 +1,6 @@
 **DIRAC                                                                                             
-#.INPTES                                                                                            
 .WAVE FUNCTION                                                                                     
 .PROPERTIES                                                                                         
-#.ANALYZE                                                                                            
 **INTEGRALS                                                                                         
 *READIN                                                                                             
 .UNCONT                                                                                             
@@ -22,26 +20,15 @@
 1                                                                                                    
 .THRESH                                                                                             
 5.0D-6                                                                                              
-#.ANALYZE                                                                                            
 .EXCITATION ! A1                                                                                  
 1 2                                                                                                
-.EXCITATION ! A2                                                                                   
-2 2                                                                                                
-.EXCITATION ! B1                                                                                  
-3 2                                                                                               
 .EXCITATION ! B2                                                                                  
-4 2                                                                                                
+3 2                                                                                                
 .ORIENT
 0.0 90.0 0.0
 .BED
 .INTENS
 4
-**ANALYZE                                                                                           
-.MULPOP                                                                                             
-*MULPOP                                                                                             
-.VECPOP                                                                                             
-1..oo                                                                                               
-1..oo                                                                                               
 **MOLECULE                                                                                          
 *BASIS                                                                                              
 .DEFAULT                                                                                            

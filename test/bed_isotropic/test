@@ -11,11 +11,14 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(from_string = 'Exc. Frequency (au)',
-      num_lines   = 6,
-      ignore_sign = True,
-      rel_tolerance   = 1.0e-6)
+f.add(from_string = ' Energy eigenvalues in atomic units',
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance   = 2.0e-5)
 
-test.run(['BED_Mg.inp'], ['BED_Mg.xyz'], f, args='--mb=50')
+f.add(from_string = 'Isotropic oscillator strengths (full light-matter interaction) above threshold',
+      to_string   = 'Sum of oscillator strengths (general length) :',
+      rel_tolerance   = 2.0e-4)
+
+test.run(['bed.inp'], ['Mg.xyz'], f)
 
 sys.exit(test.return_code)
