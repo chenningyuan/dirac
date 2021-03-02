@@ -181,6 +181,7 @@ C***********************************************************************
          print*, "Attempting to use exatensor with a non MPI version"
          call quit ("error in setup: exatensor requires MPI")
       end if
+      call print_exacorr_logo
 #endif
 C
       call set_talsh_only(exa_input%talsh)

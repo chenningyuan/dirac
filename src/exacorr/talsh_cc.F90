@@ -132,7 +132,7 @@ module talsh_cc
          else if (exa_input%moint_scheme.eq.42) then
            call get_CC_integrals_chol_all (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
          else
-           call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)
+           call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%moint_scheme,exa_input%print_level)
          end if
          call print_date('-End- Integral Transformation')
 
@@ -2409,7 +2409,7 @@ module talsh_cc
          if (exa_input%print_level >0) call print_date('Fock matrix initialized')
         end subroutine init_fock_talsh
 
-        subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
+        subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,moint_scheme,print_level)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -2425,6 +2425,7 @@ module talsh_cc
 !        target integral tensors to be filled and given back to the caller
          type(talsh_intg_tens),intent(inout)  :: int_t
          integer, intent(in)                  :: print_level
+         integer, intent(in)                  :: moint_scheme
 
          integer(INTD) :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
@@ -2456,6 +2457,7 @@ module talsh_cc
             print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
             call quit ('error constructing aoint_tensor')
          end if
+
          call print_date('allocated AO integral tensor')
 !        Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
          ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
@@ -2469,30 +2471,34 @@ module talsh_cc
          oovv_dims(3:4) = nvir
          ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
 !        whereas the dimensions for the mo lists in the index transform are in mullikens notation (13||24)
-         allocate (mo_list(2*nocc+2*nvir))
-         nmo(1) = nocc
-         nmo(2) = nvir
-         nmo(3) = nocc
-         nmo(4) = nvir
-         mo_list(1:nocc)                      = mo_occ(1:nocc)
-         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-         mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nocc)
-         mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,int_t%oovv,12,nmo,mo_list)
-         deallocate (mo_list)
+         if (moint_scheme<5) then
+            allocate (mo_list(2*nocc+2*nvir))
+            nmo(1) = nocc
+            nmo(2) = nvir
+            nmo(3) = nocc
+            nmo(4) = nvir
+            mo_list(1:nocc)                      = mo_occ(1:nocc)
+            mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
+            mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nocc)
+            mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
+            call get_integral_tensor (aoint_tensor,int_t%oovv,12,nmo,mo_list)
+            deallocate (mo_list)
+         end if
          call print_date('finished oovv integrals')
 
 !        Get antisymmetric oooo tensor
          oooo_dims = nocc
          ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-         allocate (mo_list(4*nocc))
-         nmo = nocc
-         mo_list(1:nocc)          = mo_occ(1:nocc)
-         mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
-         mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
-         mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
-         deallocate (mo_list)
+         if (moint_scheme<5) then
+            allocate (mo_list(4*nocc))
+            nmo = nocc
+            mo_list(1:nocc)          = mo_occ(1:nocc)
+            mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
+            mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
+            mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
+            call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
+            deallocate (mo_list)
+         end if
          call print_date('finished oooo integrals')
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
@@ -2502,65 +2508,71 @@ module talsh_cc
          vovo_dims(3) = nvir
          vovo_dims(4) = nocc
          ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-         allocate (mo_list(2*nvir+2*nocc))
-         nmo(1:2) = nvir
-         nmo(3:4) = nocc
-         mo_list(1:nvir)                      = mo_vir(1:nvir)
-         mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
-         mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
-         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
-         deallocate (mo_list)
-!        Get ovvo tensor
-         ovvo_dims(1) = nocc
-         ovvo_dims(2) = nvir
-         ovvo_dims(3) = nvir
-         ovvo_dims(4) = nocc
-         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-         allocate (mo_list(2*nvir+2*nocc))
-         nmo(1) = nocc
-         nmo(2) = nvir
-         nmo(3) = nvir
-         nmo(4) = nocc
-         mo_list(1:nocc)                      = mo_occ(1:nocc)
-         mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-         mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
-         mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-         call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
-         deallocate (mo_list)
-!        Make anti-symmetrized vovo tensor
-         minusone_dims(1) = 1
-         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
-         ierr=talsh_tensor_destruct(ovvo_tensor)
+         if (moint_scheme<5) then
+            allocate (mo_list(2*nvir+2*nocc))
+            nmo(1:2) = nvir
+            nmo(3:4) = nocc
+            mo_list(1:nvir)                      = mo_vir(1:nvir)
+            mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
+            mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
+            mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
+            call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
+            deallocate (mo_list)
+!           Get ovvo tensor
+            ovvo_dims(1) = nocc
+            ovvo_dims(2) = nvir
+            ovvo_dims(3) = nvir
+            ovvo_dims(4) = nocc
+            ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
+            allocate (mo_list(2*nvir+2*nocc))
+            nmo(1) = nocc
+            nmo(2) = nvir
+            nmo(3) = nvir
+            nmo(4) = nocc
+            mo_list(1:nocc)                      = mo_occ(1:nocc)
+            mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
+            mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
+            mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
+            call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
+            deallocate (mo_list)
+!           Make anti-symmetrized vovo tensor
+            minusone_dims(1) = 1
+            ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+            ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
+            ierr=talsh_tensor_destruct(ovvo_tensor)
+         end if
          call print_date('finished vovo integrals')
 
 !        Get vvvv tensor
          vvvv_dims = nvir
          ierr=talsh_tensor_construct(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
-         allocate (mo_list(4*nvir))
-         nmo = nvir
-         mo_list(1:nvir)          = mo_vir(1:nvir)
-         mo_list(nvir+1:2*nvir)   = mo_vir(1:nvir)
-         mo_list(2*nvir+1:3*nvir) = mo_vir(1:nvir)
-         mo_list(3*nvir+1:4*nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,int_t%vvvv,12,nmo,mo_list)
-         deallocate (mo_list)
+         if (moint_scheme<5) then
+            allocate (mo_list(4*nvir))
+            nmo = nvir
+            mo_list(1:nvir)          = mo_vir(1:nvir)
+            mo_list(nvir+1:2*nvir)   = mo_vir(1:nvir)
+            mo_list(2*nvir+1:3*nvir) = mo_vir(1:nvir)
+            mo_list(3*nvir+1:4*nvir) = mo_vir(1:nvir)
+            call get_integral_tensor (aoint_tensor,int_t%vvvv,12,nmo,mo_list)
+            deallocate (mo_list)
+         end if
          call print_date('finished vvvv integrals')
 
 !        Get ooov tensor
          ooov_dims(1:3) = nocc
          ooov_dims(4)   = nvir
          ierr=talsh_tensor_construct(int_t%ooov,C8,ooov_dims,init_val=ZERO)
-         allocate (mo_list(3*nocc+nvir))
-         nmo(1:3) = nocc
-         nmo(4)   = nvir
-         mo_list(1:nocc)               = mo_occ(1:nocc)
-         mo_list(nocc+1:2*nocc)        = mo_occ(1:nocc)
-         mo_list(2*nocc+1:3*nocc)      = mo_occ(1:nocc)
-         mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,int_t%ooov,12,nmo,mo_list)
-         deallocate (mo_list)
+         if (moint_scheme<5) then
+            allocate (mo_list(3*nocc+nvir))
+            nmo(1:3) = nocc
+            nmo(4)   = nvir
+            mo_list(1:nocc)               = mo_occ(1:nocc)
+            mo_list(nocc+1:2*nocc)        = mo_occ(1:nocc)
+            mo_list(2*nocc+1:3*nocc)      = mo_occ(1:nocc)
+            mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
+            call get_integral_tensor (aoint_tensor,int_t%ooov,12,nmo,mo_list)
+            deallocate (mo_list)
+         end if
          call print_date('finished ooov integrals')
 
 !        Get vovv tensor
@@ -2568,17 +2580,19 @@ module talsh_cc
          vovv_dims(2)   = nocc
          vovv_dims(3:4) = nvir
          ierr=talsh_tensor_construct(int_t%vovv,C8,vovv_dims,init_val=ZERO)
-         allocate (mo_list(3*nvir+nocc))
-         nmo(1)   = nvir
-         nmo(2)   = nvir
-         nmo(3)   = nocc
-         nmo(4)   = nvir
-         mo_list(1:nvir)                    = mo_vir(1:nvir)
-         mo_list(nvir+1:2*nvir)             = mo_vir(1:nvir)
-         mo_list(2*nvir+1:2*nvir+nocc)      = mo_occ(1:nocc)
-         mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
-         call get_integral_tensor (aoint_tensor,int_t%vovv,34,nmo,mo_list)
-         deallocate (mo_list)
+         if (moint_scheme<5) then
+            allocate (mo_list(3*nvir+nocc))
+            nmo(1)   = nvir
+            nmo(2)   = nvir
+            nmo(3)   = nocc
+            nmo(4)   = nvir
+            mo_list(1:nvir)                    = mo_vir(1:nvir)
+            mo_list(nvir+1:2*nvir)             = mo_vir(1:nvir)
+            mo_list(2*nvir+1:2*nvir+nocc)      = mo_occ(1:nocc)
+            mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
+            call get_integral_tensor (aoint_tensor,int_t%vovv,34,nmo,mo_list)
+            deallocate (mo_list)
+         end if
          call print_date('finished vovv integrals')
 
 !        Clean-up

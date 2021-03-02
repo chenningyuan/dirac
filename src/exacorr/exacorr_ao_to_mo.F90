@@ -3,13 +3,15 @@ module exacorr_ao_to_mo
 !This module drives the index transformation of two electron integrals
 !integrating the ExaTensor library with the DIRAC code.
 
-        use exatensor
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
-
+#if defined (VAR_MPI)
+        use exatensor
+#endif
         implicit none
         private
         public exacorr_compute_mo_integrals
+
 #if defined (VAR_MPI)
 
         interface get_integral_tensor
@@ -2042,10 +2044,11 @@ module exacorr_ao_to_mo
 
        contains
 
-        subroutine exacorr_compute_mo_integrals (nmo, mo_list)
+        subroutine exacorr_compute_mo_integrals (nmo, mo_list, print_level)
          implicit none
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+         integer, intent(in) :: print_level
          print*,  'called exatensor version of compute_mo_integrals in a serial version'
          print*,  'this functionality only works with MPI, we need to stop here'
          stop ' activate MPI'
