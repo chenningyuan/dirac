@@ -1286,8 +1286,6 @@ C
 C     Print section
 C
       WRITE(6,'(/A)') '* Oscillator strengths:'
-      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    '
       WRITE(6,'(/A4,1X,A18)')     
      &  'Exc.','Frequency (au)    '
       DO IEXC = 1,NEXCNV
@@ -1464,12 +1462,10 @@ C       Send back the OSC Results
         CALL interface_MPI_RECV(MPIGO, 1,
      &                          MASTER, 27,global_communicator)
 C       *************** Sends OSC ***************
-        DO IPAR = 1,NPAR
         DO IEXC = 1,NEXCNV
-          tmp = OSC(IPAR,IEXC)
+          tmp = OSC(IEXC)
           CALL interface_MPI_SEND(tmp, 1,
      &                            MASTER, 28,global_communicator)
-        ENDDO
         ENDDO
         CALL interface_MPI_SEND(CPU, 1,
      &                          MASTER, 28,global_communicator)
@@ -1529,12 +1525,10 @@ C         Make sure that the 'end' is max the length if the list
 C         ------------------------------
 C         Receive OSC results
 C         ------------------------------
-          DO IPAR = 1,NPAR
           DO IEXC = 1,NEXCNV
             CALL interface_MPI_RECV(TMP,1,
      &                            SNODE, 28,global_communicator)
-            OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + TMP
-          ENDDO
+            OSC(IEXC) = OSC(IEXC) + TMP
           ENDDO
           CALL interface_MPI_RECV(TMPCPU, 1,
      &                          SNODE, 28,global_communicator)
@@ -1734,8 +1728,8 @@ CCCC     ****************************************************
         CALL MEMGET2('REAL','LINDX',LINDX,NELMNT,
      &               WORK,KFREE,LFREE)
         
-        allocate(TMOM(NOP,NC,NPAR,NEXCNV))
-        allocate(OSC(1+NPAR,NEXCNV))
+        allocate(TMOM(NOP,NC,NEXCNV))
+        allocate(OSC(NEXCNV))
         allocate(X(NPOINTS))
         allocate(Y(NPOINTS))
         allocate(Z(NPOINTS))
@@ -1755,8 +1749,8 @@ CCCC     ****************************************************
         ENDIF
       ENDIF
 
-      call DZERO(TMOM, NOP*NC*NPAR*NEXCNV)
-      call interface_mpi_bcast(OSC(1,1), (1+NPAR)*NEXCNV, 
+      call DZERO(TMOM, NOP*NC*NEXCNV)
+      call interface_mpi_bcast(OSC(1), NEXCNV, 
      &             MASTER, global_communicator)
       call interface_mpi_bcast(X(1), NPOINTS, MASTER,
      &              global_communicator)
