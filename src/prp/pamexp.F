@@ -156,7 +156,7 @@ C.........accumulate all density into one matrix
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MP2')
 C
-C        Get relaxed density matrix computed by RELCCSD.
+C        Get relaxed density matrix computed by RELCCSD or EXACORR.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
 
@@ -169,7 +169,7 @@ C
 
 C        Get relaxed density matrix computed for excited states
 
-         write(*,*)'# of statets',state
+         write(*,*)' Number of EOM states',state
 
          CALL GET_EOM_DENSITY ('AO',STATE,DMAT,IERR)
 

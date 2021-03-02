@@ -261,3 +261,45 @@ Maximum number of electrons in RAS3 spinors.
 ::
 
     MAXE3=0
+
+
+&CIFOPR -- Specify different options in CI Property Module
+==========================================================
+
+PROPER
+------
+
+Activate the property module to evaluate expectation values of :ref:`one_electron_operators` defined inside
+
+**PRPTRA** under **MOLTRA**, over the DIRRCI wavefunction :cite:`Nayak2006`, :cite:`Nayak2007`, :cite:`Nayak2009`.
+
+*Default:*
+
+::
+
+     PROPER=F
+
+NEOPER
+------
+
+Define the number of property operators one needs to calculate expectation values.
+
+
+*Default:*
+
+::
+
+     NEOPER=0
+
+NAMEE
+-----
+
+Mention the names of :ref:`one_electron_operators` as defined inside **PRPTRA**.
+
+For example, Electric dipole moment and magnetic hyperfine structure constants
+
+can be defined as follows. Of coures, the given names are users own choice.
+
+::
+
+     NAMEE='Z-DIP','X1-HYP','Y1-HYP','Z1-HYP'

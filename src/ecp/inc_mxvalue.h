@@ -3,8 +3,8 @@
 !          also change recp_lnk.F line 145 for local definition of msup
 !        number of centers after symmetry operations  
       integer    msup
-!     parameter (msup=203)
-      parameter (msup=1000) ! PSB 05/03/20
+      parameter (msup=203)
+!      parameter (msup=1000) ! PSB 05/03/20
 
 !     # mstu   = max number of irreps.
       integer    mstup
@@ -22,8 +22,8 @@
 !     mcup increased to 200 to allow for large number of PCs (PSB 05/03/20)
 !        number of centers before symmetry operations  
       integer    mcup
-!     parameter (mcup=50)   !v2 12->50
-      parameter (mcup=200)  ! PSB 05/03/20
+      parameter (mcup=50)   !v2 12->50
+!      parameter (mcup=200)  ! PSB 05/03/20
 
 !     # mconsu = max number of contraction sets.
       integer    mconsp
@@ -67,12 +67,12 @@
 !     # msfru  = max number of so sets.
 !     msfru increased to 4000 max for large component bfs (PSB 05/03/20)
       integer    msfrup
-!     parameter (msfrup=1000) !312,500
-      parameter (msfrup=4000) ! PSB 05/03/20  
+      parameter (msfrup=1000) !312,500
+!      parameter (msfrup=4000) ! PSB 05/03/20  
 
 !     # mnrup  = max number of charge dists. from a function set pair.
       integer    mnrup  ! used only to dimension three arrays (1 dimension)
 !                         mau(mnrup) in recp1.F & maxics and maxjcs in recp_socfpd.F90
-!     parameter (mnrup=5000) !576->1000 - PSB(06/19/17) to 5000
-      parameter (mnrup=10000) !576->1000 - PSB(05/04/20) to 10000
+      parameter (mnrup=5000) !576->1000 - PSB(06/19/17) to 5000
+!     parameter (mnrup=10000) !576->1000 - PSB(05/04/20) to 10000
 

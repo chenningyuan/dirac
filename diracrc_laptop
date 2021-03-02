@@ -1,0 +1,28 @@
+#start of .diracrc file
+--scratch=/tmp/dirac_tmp
+--noarch
+
+#exatensor environment variables (for a laptop /desktop)
+--env='QF_PROCS_PER_NODE=4'             #number of MPI processes per node
+--env='QF_CORES_PER_PROCESS=1'          #number of cores per MPI process
+--env='QF_MEM_PER_PROCESS=1576'         #host memory limit per MPI process in MB
+--env='QF_NVMEM_PER_PROCESS=0'          #non-volatile memory limit per MPI process in MB
+--env='QF_HOST_BUFFER_SIZE=1576'        #non-volatile memory limit per MPI process in MB
+
+#OpenMP:
+--env='OMP_DYNAMIC=false'               #no OpenMP dynamic threading
+--env='OMP_NESTED=true'                 #OpenMP nested parallelism is mandatory
+--env='OMP_MAX_ACTIVE_LEVELS=3'         #max number of OpenMP nesting levels (at least 3)
+--env='OMP_THREAD_LIMIT=256'            #max total number of OpenMP threads per process
+--env='OMP_WAIT_POLICY=PASSIVE'         #idle thread behavior
+--env='OMP_STACKSIZE=200M'              #stack size needed to avoid segmentation fault
+
+#OpenMP thread binding:
+--env='OMP_PLACES=threads'            #default thread binding to CPU logical cores
+--env='OMP_PROC_BIND=close,spread,spread'  #nest1: Functional threads (DSVU)
+                                           #nest2: TAVP-WRK:Dispatcher spawns coarse-grain Executors
+#MKL specific:
+--env='MKL_NUM_THREADS_DEFAULT=1'       #keep consistent with chosen OMP_PLACES!
+--env='MKL_DYNAMIC=false'
+
+# end of .diracrc file
