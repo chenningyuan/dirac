@@ -1204,21 +1204,9 @@
 !--------------------------------------------------
 ! what is ndt here should be the dimension of t1+t2 for the irrep in question
    type(intermediates) :: B
-   real*8, allocatable :: sigma1(:,:),sigma2(:,:),sigma(:,:) 
-   real*8, allocatable :: R1(:,:),R2(:,:)
-   real*8, pointer :: r(:,:) 
-   real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
-   real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
-   integer :: ndimr1,ndimr2
-   integer :: AllocateStatus
-
    type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
-   logical :: left_vectors, right_vectors
-   integer :: N, N1, N2 ! size of determinantal space 
-   type(Offset)         :: e
-   real*8               :: overlap 
+   integer :: irp
 
 !memory allocation
 !------------------
@@ -1231,12 +1219,6 @@
   integer                :: nbuf3
   integer                :: state
   integer*8              :: nv5irp,nv6irp,nvirp
-  real*8,allocatable     :: dmo(:) 
-  real*8,allocatable     :: l1_temp(:),l2_temp(:) 
-
-  real*8 :: difference_in_evalue
-  real*8 :: rhs_lhs_evalue(2)
-  real*8 :: threshold
 
     call allocator_get_words_inuse(start_mem_use)
     call legacy_lwork_get(work_memsize)
@@ -1402,9 +1384,8 @@ subroutine eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
    integer, intent(in) :: state_sym
 
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
+   integer :: iroot, i, j, irep
    integer :: ndimr1,ndimr2
-   integer :: AllocateStatus
 
    integer :: N, N1, N2 ! size of determinantal space 
    type(Offset)         :: e
@@ -1509,7 +1490,7 @@ subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
    type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
    type(intermediates), intent(inout) :: B
 
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
+   integer :: iroot, i, j, irep
    integer :: ndimr1,ndimr2,sym
    integer :: N, N1, N2 ! size of determinantal space 
    type(Offset)         :: e
