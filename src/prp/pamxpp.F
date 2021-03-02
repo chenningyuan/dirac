@@ -2253,6 +2253,7 @@ C
 C     O S C I L L A T O R    S T R E N G T H S
 C     ========================================
 C
+      NEXCF  = MAXEXC*NBSYM
       IF(KVAL_OSC.GE.0) THEN
         IF(MOD(KVAL_OSC,2).EQ.0) THEN
           K2ORD = KVAL_OSC/2
@@ -2289,8 +2290,7 @@ C
           ENDIF
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
-        NDIM = MAXEXC*NBSYM
-        TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
+        TOT  = DSUM(NEXCF,OSCBED(1,1,1),1)
         WRITE(LUPRI,'(A,ES12.5)') 'Sum of oscillator strengths '//
      &       '(full light-matter interaction) : ',TOT
       ENDIF
@@ -2331,7 +2331,7 @@ C.....Oscillator strenghts: general velocity gauge: rotational average
           ENDIF
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
-        TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
+        TOT = DSUM(NEXCF,FOSC(1,1,-1,1),1)
         WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general velocity) : ',TOT
         deallocate(fosc)
@@ -2378,7 +2378,7 @@ C.....Oscillator strenghts: general length gauge
           ENDIF
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
-        TOT = DSUM(NDIM,FOSC(1,1,1,-1),4)
+        TOT = DSUM(NEXCF,FOSC(1,1,1,-1),4)
         WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general length) : ',TOT
         deallocate(fosc)
@@ -2417,8 +2417,7 @@ C.......Full light-matter interaction
             ENDIF
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
-          NDIM = MAXEXC*NBSYM
-          TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
+          TOT  = DSUM(NEXCF,OSCBED(1,1,1),1)
           WRITE(LUPRI,'(A,ES12.5)') 'Sum of oscillator strengths '//
      &         '(full light-matter interaction) : ',TOT
         ENDIF  
@@ -2456,7 +2455,7 @@ C.......Generalized velocity gauge
             ENDIF
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
-          TOT = DSUM(NDIM,FOSC(1,1,-1,1),1)
+          TOT = DSUM(NEXCF,FOSC(1,1,-1,1),1)
           WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general velocity) : ',TOT
           deallocate(fosc)
@@ -2503,7 +2502,7 @@ C.......Generalized length gauge
             ENDIF
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
-          TOT = DSUM(NDIM,FOSC(1,1,1,-1),4)
+          TOT = DSUM(NEXCF,FOSC(1,1,1,-1),4)
           WRITE(LUPRI,'(A,ES12.5)')
      &     'Sum of oscillator strengths (general length) : ',TOT
           deallocate(fosc)
