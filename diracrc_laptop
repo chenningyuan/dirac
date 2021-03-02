@@ -15,6 +15,7 @@
 --env='OMP_MAX_ACTIVE_LEVELS=3'         #max number of OpenMP nesting levels (at least 3)
 --env='OMP_THREAD_LIMIT=256'            #max total number of OpenMP threads per process
 --env='OMP_WAIT_POLICY=PASSIVE'         #idle thread behavior
+--env='OMP_STACKSIZE=200M'              #stack size needed to avoid segmentation fault
 
 #OpenMP thread binding:
 --env='OMP_PLACES=threads'            #default thread binding to CPU logical cores
