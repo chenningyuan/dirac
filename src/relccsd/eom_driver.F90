@@ -1204,21 +1204,9 @@
 !--------------------------------------------------
 ! what is ndt here should be the dimension of t1+t2 for the irrep in question
    type(intermediates) :: B
-   real*8, allocatable :: sigma1(:,:),sigma2(:,:),sigma(:,:) 
-   real*8, allocatable :: R1(:,:),R2(:,:)
-   real*8, pointer :: r(:,:) 
-   real*8, allocatable :: ev(:),evec(:,:) 
    real*8, allocatable, target :: buf1(:),buf2(:),buf3(:) ! may be not all of them are necessary. 
-   real*8, allocatable:: sub_H(:,:) ! sub_H(nroot,nroot)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
-   integer :: ndimr1,ndimr2,sym
-   integer :: AllocateStatus
-
    type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
-   logical :: left_vectors, right_vectors
-   integer :: N, N1, N2 ! size of determinantal space 
-   type(Offset)         :: e
-   real*8               :: overlap 
+   integer :: irp
 
 !memory allocation
 !------------------
@@ -1231,13 +1219,6 @@
   integer                :: nbuf3
   integer                :: state
   integer*8              :: nv5irp,nv6irp,nvirp
-  real*8,allocatable     :: dmo(:) 
-  real*8,allocatable     :: l1_temp(:),l2_temp(:) 
-
-  real*8 :: difference_in_evalue
-  real*8 :: rhs_lhs_evalue(2)
-  real*8 :: threshold
-  double precision dznrm2
 
     call allocator_get_words_inuse(start_mem_use)
     call legacy_lwork_get(work_memsize)
@@ -1312,51 +1293,115 @@
     call IM_container(eomtype,B)
     call free_buffers(buf1,buf2,buf3)
 
-    right_vectors = .true.
-    left_vectors =  .false.
-    call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+    do state_sym = 1, nrep ! 16 
+       call eom_solve_for_left_or_right(state_sym, .false., .true., davResultsL, davResultsR, B, eps)
 
-    if (relcc_do_eomprop) then
+       if (relcc_do_eomprop) then
+          call eom_solve_for_left_or_right(state_sym, .true., .false., davResultsL, davResultsR, B, eps)
+          call eom_check_left_right_roots(state_sym, davResultsL,davResultsR)
+          call eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
+        endif ! relcc_do_eomprop
+   end do
 
-       right_vectors = .false.
-       left_vectors =  .true.
-       call eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+! if the analysis is only being performed for the eigenvalues, and from above we ensured the RHS and LHS 
+! have the same energy and are biorthogonal, we only need to get the energies from one, so we use the RHS
+   write (iw,*) ""
+   write (iw,'(2x,A)') "Final results for EOM-"//eomtype(1:2)
+   write (iw,*) ""
+   call eom_analysis_allirreps(davResultsR, eps)
 
-!!!!!
-! turn the loops below into a separare routine ?
-!      call eom_check_left_right_roots(davResultsL,davResultsR)
-       do sym = 1, nrep  
-           if (relcc_eom_nroots(sym) <= 0) cycle
-           write (iw,*) " "
-           do iroot = 1, relcc_eom_nroots(sym)
-               rhs_lhs_evalue(1) = davResultsR(sym)%eValues(1,iroot) - davResultsL(sym)%eValues(1,iroot)
-               rhs_lhs_evalue(2) = davResultsR(sym)%eValues(2,iroot) - davResultsL(sym)%eValues(2,iroot)
-               difference_in_evalue = dznrm2(1,rhs_lhs_evalue,1)
-               write (iw,'(2X,A,I4,A,I3,2X,A,2X,E16.8)') &
-                      "INFO: difference between RHS and LHS eigenvalues for root ",iroot,&
-     &                " irrep ",sym,":",difference_in_evalue
-               write (iw,'(2X,A)') "INFO:              Re                  Im"
-               write (iw,'(2X,A,2X,E16.8,4X,E16.8)') "INFO: E(RHS)   ",davResultsR(sym)%eValues(:,iroot)
-               write (iw,'(2X,A,2X,E16.8,4X,E16.8)') "INFO: E(LHS)   ",davResultsL(sym)%eValues(:,iroot)
-           write (iw,*) " "
-           end do  
-       end do  
-!!!!!
-       write (iw,*) "Determining EOM density matrices"
+! now we calculate all density and transition density matrices with the states at our disposal ?
+   if (relcc_do_eomprop) call eom_calculate_store_density_matrices(B, davResultsL, davResultsR) 
 
-       allocate(dmo(norbt*norbt*nz))
+   do state_sym = 1, nrep 
+      if (relcc_eom_nroots(state_sym) <= 0) cycle
+      call davidson_cleanup(davResultsR(state_sym))
+      if (relcc_do_eomprop)  call davidson_cleanup(davResultsL(state_sym))
+   end do
 
-       dmo =0.0d0
-       state =1
-       do sym = 1, nrep  
+ 451 continue
 
-           if (relcc_eom_nroots(sym) <= 0) cycle
+!
+! final cleanup
+!
+     call free_intermediates(B)
+     if (icalc.eq.1) then
+        call free_buffers(buf1,buf2,buf3)
+     end if
 
-           do iroot = 1, relcc_eom_nroots(sym)
+1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
+   end subroutine
+
+   subroutine eom_check_left_right_roots(state_sym,davResultsL,davResultsR)
+! calculate density matrices of sym target symmetry. which combinations of L and R ?
+      use davidson
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dgroup.h"
+!--------------------------------------------------
+      integer :: iroot, i
+      integer, intent(in) :: state_sym
+      type(davidson_results) :: davResultsR(nrep), davResultsL(nrep)
+      real*8 :: difference_in_evalue
+      real*8 :: rhs_lhs_evalue(2)
+      real*8 :: threshold
+      double precision dznrm2
+
+
+      if (relcc_eom_nroots(state_sym) <= 0) return
+
+      write (iw,*) " "
+      do iroot = 1, relcc_eom_nroots(state_sym)
+         rhs_lhs_evalue(1) = davResultsR(state_sym)%eValues(1,iroot) - davResultsL(state_sym)%eValues(1,iroot)
+         rhs_lhs_evalue(2) = davResultsR(state_sym)%eValues(2,iroot) - davResultsL(state_sym)%eValues(2,iroot)
+         difference_in_evalue = dznrm2(1,rhs_lhs_evalue,1)
+         write (iw,'(2X,A,I4,A,I3,2X,A,2X,E16.8)') &
+                "INFO: difference between RHS and LHS eigenvalues for root ",iroot,&
+     &          " irrep ",state_sym,":",difference_in_evalue
+         write (iw,'(2X,A)') "INFO:              Re                  Im"
+         write (iw,'(2X,A,2X,E16.8,4X,E16.8)') "INFO: E(RHS)   ",davResultsR(state_sym)%eValues(:,iroot)
+         write (iw,'(2X,A,2X,E16.8,4X,E16.8)') "INFO: E(LHS)   ",davResultsL(state_sym)%eValues(:,iroot)
+         write (iw,*) " "
+      end do
+   end subroutine
+
+subroutine eom_renormalize_birthogonal(state_sym, davResultsL, davResultsR)
+! calculate density matrices of sym target symmetry. which combinations of L and R ?
+   use davidson
+   use memory_allocator
+   use allocator_parameters, only : klongint
+   use eom_density
+   use symmetry_offset
+
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dgroup.h"
+!--------------------------------------------------
+   type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
+   integer, intent(in) :: state_sym
+
+   integer :: iroot, i, j, irep
+   integer :: ndimr1,ndimr2
+
+   integer :: N, N1, N2 ! size of determinantal space 
+   type(Offset)         :: e
+   real*8               :: overlap
+
+!memory allocation
+!------------------
+  real*8,allocatable     :: l1_temp(:),l2_temp(:)
+
+           if (relcc_eom_nroots(state_sym) <= 0) return 
+
+           do iroot = 1, relcc_eom_nroots(state_sym)
                select case(eomtype)
                   case ('IP')
-!                    call set_continuous_orbital(sym)
-                     ndimr1 = 0     
+!                    call set_continuous_orbital(state_sym)
+                     ndimr1 = 0
 
                      do irep = 1, nrep
                          ndimr1 = ndimr1 + ncont(irep)*no(irep)
@@ -1364,8 +1409,8 @@
 
                      call alloc_array(e,nrep)
                      call auto_symmetry_offset(e,ncont,nv,.false.,.false.)
-     
-                     ndimr2 = 0     
+
+                     ndimr2 = 0
 
                      do irep = 1, nrep
                          ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
@@ -1378,24 +1423,119 @@
                      allocate(l1_temp(N1))
                      allocate(l2_temp(N2))
 
-                     call srt1c1(nrep,no,ncont,davResultsL(sym)%eVectorsL(1:N1,iroot),l1_temp)
-                     call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(sym)%eVectorsL(1+N1:N,iroot),l2_temp)
+                     call srt1c1(nrep,no,ncont,davResultsL(state_sym)%eVectorsL(1:N1,iroot),l1_temp)
+                     call srt1c1(nrep,noot,e%oneNonDirac,davResultsL(state_sym)%eVectorsL(1+N1:N,iroot),l2_temp)
 
                      call dealloc_array(e)
 
-!                    overlap = dot_product(davResultsL(sym)%eVectorsL(1:N1,iroot),davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
-!   &                          dot_product(davResultsL(sym)%eVectorsL(1+N1:N,iroot),davResultsR(sym)%eVectorsR(1+N1:N,iroot))
-
-                     overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
-    &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
+                     overlap = dot_product(l1_temp,davResultsR(state_sym)%eVectorsR(1:N1,iroot)) + &
+    &                          dot_product(l2_temp,davResultsR(state_sym)%eVectorsR(1+N1:N,iroot))
 
                      overlap = 1.0d0/overlap
 
-                     call dscal(N,overlap,davResultsL(sym)%eVectorsL(:,iroot),1)  
-                     call dscal(N1,overlap,l1_temp,1)  
-                     call dscal(N2,overlap,l2_temp,1)  
+                     call dscal(N,overlap,davResultsL(state_sym)%eVectorsL(:,iroot),1)
+                     call dscal(N1,overlap,l1_temp,1)
+                     call dscal(N2,overlap,l2_temp,1)
 
                      deallocate(l1_temp,l2_temp)
+
+                  case ('EE')
+
+                     ndimr1 = ndimt1
+                     ndimr2 = ndimt2
+
+                     N1 = ndimr1*rcw
+                     N2 = ndimr2*rcw
+                     N  = N1 + N2
+
+                     allocate(l1_temp(N1))
+                     allocate(l2_temp(N2))
+
+                     call srt1c1(nrep,no,nv,davResultsL(state_sym)%eVectorsL(1:N1,iroot),l1_temp)
+                     call srt1c1(nrep,noot,nvvt,davResultsL(state_sym)%eVectorsL(1+N1:N,iroot),l2_temp)
+
+                     overlap = dot_product(l1_temp,davResultsR(state_sym)%eVectorsR(1:N1,iroot)) + &
+    &                          dot_product(l2_temp,davResultsR(state_sym)%eVectorsR(1+N1:N,iroot))
+
+                     overlap = 1.0d0/overlap
+
+                     call dscal(N,overlap,davResultsL(state_sym)%eVectorsL(1:N,iroot:iroot),1)
+                     call dscal(N1,overlap,l1_temp,1)
+                     call dscal(N2,overlap,l2_temp,1)
+
+                     deallocate(l1_temp,l2_temp)
+
+                 case ('EA')
+                    call quit ('LHS EOM-EA Not yet implemented')
+
+               end select
+
+           enddo ! loop over roots 
+   end subroutine
+
+subroutine eom_calculate_store_density_matrices(B, davResultsL, davResultsR)
+! calculate density matrices of sym target symmetry. which combinations of L and R ?
+   use davidson
+   use memory_allocator
+   use allocator_parameters, only : klongint
+   use eom_density
+   use symmetry_offset
+
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "ccpar.inc"
+#include "dgroup.h"
+!--------------------------------------------------
+   type(davidson_results), intent(inout) :: davResultsR(nrep), davResultsL(nrep)
+   type(intermediates), intent(inout) :: B
+
+   integer :: iroot, i, j, irep
+   integer :: ndimr1,ndimr2,sym
+   integer :: N, N1, N2 ! size of determinantal space 
+   type(Offset)         :: e
+
+!memory allocation
+!------------------
+  integer                :: state
+  real*8,allocatable     :: dmo(:)
+
+!!!!!
+       write (iw,*) ""
+       write (iw,*) "Determining EOM density matrices"
+       write (iw,*) ""
+
+       allocate(dmo(norbt*norbt*nz))
+
+       dmo =0.0d0
+       state =1
+       do sym = 1, nrep
+
+           if (relcc_eom_nroots(sym) <= 0) cycle
+
+           do iroot = 1, relcc_eom_nroots(sym)
+               select case(eomtype)
+                  case ('IP')
+!                    call set_continuous_orbital(state_sym)
+                     ndimr1 = 0
+
+                     do irep = 1, nrep
+                         ndimr1 = ndimr1 + ncont(irep)*no(irep)
+                     enddo
+
+                     call alloc_array(e,nrep)
+                     call auto_symmetry_offset(e,ncont,nv,.false.,.false.)
+
+                     ndimr2 = 0
+
+                     do irep = 1, nrep
+                         ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
+                     enddo
+                     call dealloc_array(e)
+
+                     N1 = ndimr1*rcw
+                     N2 = ndimr2*rcw
+                     N  = N1 + N2
 
                      call density_IP(davResultsL(sym)%eVectorsL(1:N1,iroot),&
   &                                  davResultsL(sym)%eVectorsL(1+N1:N,iroot), &
@@ -1410,23 +1550,6 @@
                      N1 = ndimr1*rcw
                      N2 = ndimr2*rcw
                      N  = N1 + N2
-
-                     allocate(l1_temp(N1))
-                     allocate(l2_temp(N2))
-
-                     call srt1c1(nrep,no,nv,davResultsL(sym)%eVectorsL(1:N1,iroot),l1_temp)
-                     call srt1c1(nrep,noot,nvvt,davResultsL(sym)%eVectorsL(1+N1:N,iroot),l2_temp)
-
-                     overlap = dot_product(l1_temp,davResultsR(sym)%eVectorsR(1:N1,iroot)) + &
-    &                          dot_product(l2_temp,davResultsR(sym)%eVectorsR(1+N1:N,iroot))
-
-                     overlap = 1.0d0/overlap
-
-                     call dscal(N,overlap,davResultsL(sym)%eVectorsL(1:N,iroot:iroot),1)  
-                     call dscal(N1,overlap,l1_temp,1)  
-                     call dscal(N2,overlap,l2_temp,1)  
-
-                     deallocate(l1_temp,l2_temp)
 
                      call density_EE(davResultsL(sym)%eVectorsL(1:N1,iroot),&
   &                                  davResultsL(sym)%eVectorsL(1+N1:N,iroot), &
@@ -1444,29 +1567,7 @@
            enddo ! loop over roots 
        enddo ! loop over symmetries
        deallocate(dmo)
-   endif ! relcc_do_eomprop
-
-     do sym = 1, nrep 
-
-         if (relcc_eom_nroots(sym) <= 0) cycle
-
-          if (right_vectors) call davidson_cleanup(davResultsR(sym))
-          if (left_vectors)  call davidson_cleanup(davResultsL(sym))
-     end do
-
- 451 continue
-
-!
-! final cleanup
-!
-     call free_intermediates(B)
-     if (icalc.eq.1) then
-        call free_buffers(buf1,buf2,buf3)
-     end if
-
-1001  FORMAT (" Core used for ",A," :",T50,I15," 8-byte words")
    end subroutine
-
 
    subroutine number_of_states(state)
 #include "symm.inc"
@@ -1922,33 +2023,18 @@
   end subroutine
 
 
-
-subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+subroutine eom_set_davidson_mode_energies(left_vectors, right_vectors)
    use davidson
    use allocator_parameters, only : klongint
    use symmetry_offset
-
 #include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
 #include "inpt.inc"
 #include "ccpar.inc"
-!--------------------------------------------------
-   type(davidson_results), intent(inout) :: davResultsL(nrep)
-   type(davidson_results), intent(inout) :: davResultsR(nrep)
-   type(intermediates), intent (inout)   :: B
-   real(kind=8)                          :: eps(*)
-   logical, intent(in)                   :: left_vectors
-   logical, intent(in)                   :: right_vectors
-!--------------------------------------------------
-   real*8, pointer :: trial_vector(:,:)
-   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
-   integer :: ndimr1,ndimr2
-   integer :: AllocateStatus
-   integer :: N, N1, N2 ! size of determinantal space 
-   character(len=3) :: left_or_right
-   type(Offset) :: e,f,g,h
-   logical, pointer :: projector(:) => NULL()
+   logical, intent(in) :: left_vectors
+   logical, intent(in) :: right_vectors
+   logical, save :: davidson_splash = .true.
 ! 
 !  we set the state for the diagonalizer, as this should not change within a given type of calculation,
 ! e.g. excitation energies
@@ -1964,9 +2050,45 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
                         max_subspace_size = relcc_mfd_max_subspace_size, &
                         max_iterations = relcc_mfd_max_iterations, &
                         overlap_sorting = relcc_mfd_overlap_sorting, &
-                        energy_shift=relcc_mfd_eigenvalues_energy_shift)
-
+                        energy_shift=relcc_mfd_eigenvalues_energy_shift, &
+                        print_config=davidson_splash)
+! aspg: this is to silence davidson setup after the first call. we will know from the
+! rest of the output whether we are doing left or right, and all other variables will not
+! change for a given run, so we need to only print them once 
+    if (davidson_splash) davidson_splash = .false.
     if (left_vectors .and. right_vectors) call quit('EOM does left OR right vectors for now')
+
+end subroutine
+
+subroutine eom_solve_for_left_or_right(state_sym, left_vectors, right_vectors, davResultsL, davResultsR, B, eps)
+   use davidson
+   use allocator_parameters, only : klongint
+   use symmetry_offset
+
+#include "symm.inc"
+#include "complex.inc"
+#include "files.inc"
+#include "inpt.inc"
+#include "ccpar.inc"
+!--------------------------------------------------
+   integer, intent(in) :: state_sym
+   type(davidson_results), intent(inout) :: davResultsL(nrep)
+   type(davidson_results), intent(inout) :: davResultsR(nrep)
+   type(intermediates), intent (inout)   :: B
+   real(kind=8)                          :: eps(*)
+   logical, intent(in)                   :: left_vectors
+   logical, intent(in)                   :: right_vectors
+!--------------------------------------------------
+   real*8, pointer :: trial_vector(:,:)
+   integer :: irp,iroot,jroot,i,j,irep,jrep,ijrep
+   integer :: ndimr1,ndimr2
+   integer :: AllocateStatus
+   integer :: N, N1, N2 ! size of determinantal space 
+   character(len=3) :: left_or_right
+   type(Offset) :: e,f,g,h
+   logical, pointer :: projector(:) => NULL()
+
+   call eom_set_davidson_mode_energies(left_vectors, right_vectors)
 
     if (right_vectors) then
         left_or_right = "RHS"
@@ -1976,229 +2098,215 @@ subroutine eom_solve_for_left_or_right(left_vectors, right_vectors, davResultsL,
 !
 ! be very careful with state_sym and nroot, now these are global variables in this module !!
 !
-    do state_sym = 1, nrep ! 16 
-       call create_eom_ndet(2)
-       nroot = relcc_eom_nroots(state_sym)
+    call create_eom_ndet(2)
+    nroot = relcc_eom_nroots(state_sym)
 
-       if (nroot.ne.0) then
-          write (iw,*) ""
-          write (iw,'(2x,A,2x,A4,A1,I2,A5)') "<<< SOLVING "//left_or_right(1:3)//" EOM-"//eomtype(1:2)// &
-          &   " EQUATIONS FOR SYMMETRY",REPNA(irpoff+state_sym),"(",state_sym,") >>>"
-          write (iw,*) ""
+    if (nroot.ne.0) then
+       write (iw,*) ""
+       write (iw,'(2x,A,2x,A4,A1,I2,A5)') "<<< SOLVING "//left_or_right(1:3)//" EOM-"//eomtype(1:2)// &
+       &   " EQUATIONS FOR SYMMETRY",REPNA(irpoff+state_sym),"(",state_sym,") >>>"
+       write (iw,*) ""
 
 ! setting up information for continuous orbital. this is a trick to perform
 ! EOM-IP and EOM-EA calculations within the same framework as EOM-EE 
-       call set_continuous_orbital(state_sym)
+     call set_continuous_orbital(state_sym)
 
-       select case (eomtype)
+     select case (eomtype)
 
-          case ('EE')
+        case ('EE')
 
-      call alloc_array(e,nrep,f,g,h)
-      call auto_symmetry_offset(e,nv,no,.false.,.false.)
-      call auto_symmetry_offset_triangular(f,nv,nv)
-      call auto_symmetry_offset_triangular(g,no,no)
-      call auto_symmetry_offset(h,f%oneNonDirac,g%oneNonDirac,.true.,.true.)
+    call alloc_array(e,nrep,f,g,h)
+    call auto_symmetry_offset(e,nv,no,.false.,.false.)
+    call auto_symmetry_offset_triangular(f,nv,nv)
+    call auto_symmetry_offset_triangular(g,no,no)
+    call auto_symmetry_offset(h,f%oneNonDirac,g%oneNonDirac,.true.,.true.)
 
-         ndimr1 = e%oneNonDirac(state_sym)
-         ndimr2 = h%oneNonDirac(state_sym)
+       ndimr1 = e%oneNonDirac(state_sym)
+       ndimr2 = h%oneNonDirac(state_sym)
  
-      call dealloc_array(e,f,g,h)
+    call dealloc_array(e,f,g,h)
 
-             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
+           if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
-             N1 = ndimr1*rcw
-             N2 = ndimr2*rcw
-             N =  N1 + N2 
-             call set_eom_ndet(1, N1)
-             call set_eom_ndet(2, N2)
+           N1 = ndimr1*rcw
+           N2 = ndimr2*rcw
+           N =  N1 + N2 
+           call set_eom_ndet(1, N1)
+           call set_eom_ndet(2, N2)
 
-             call set_eom_ndet(1, N1)
-             call set_eom_ndet(2, N2)
+           call set_eom_ndet(1, N1)
+           call set_eom_ndet(2, N2)
 
-             allocate (trial_vector(N,nroot), stat = AllocateStatus)
-             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-             allocate (B%H_II(N),  stat = AllocateStatus)
-             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+           allocate (trial_vector(N,nroot), stat = AllocateStatus)
+           IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+           allocate (B%H_II(N),  stat = AllocateStatus)
+           IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
 
-             trial_vector = 0.0d0
-             call eom_initialize_HII(B%H_II)
-!            B%H_II = 1.0d0
+           trial_vector = 0.0d0
+           call eom_initialize_HII(B%H_II)
+!          B%H_II = 1.0d0
 
-             if (right_vectors.and..not.left_vectors) then
-                 call input_processor_right(B%Fbar_mi, &
-      &                               B%Fbar_ae, &
-      &                               B%W_mbej,  &
-      &                               trial_vector(1:N1,:), &
-      &                               trial_vector(N1+1:N,:),  &
-      &                               B%H_II)
-             else if (left_vectors.and..not.right_vectors) then    
-                 call input_processor_left(B%Fbar_mi, &
-      &                               B%Fbar_ae, &
-      &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
-      &                               trial_vector(1:N1,:), &
-      &                               trial_vector(N1+1:N,:),  &
-      &                               B%H_II)
+           if (right_vectors.and..not.left_vectors) then
+               call input_processor_right(B%Fbar_mi, &
+    &                               B%Fbar_ae, &
+    &                               B%W_mbej,  &
+    &                               trial_vector(1:N1,:), &
+    &                               trial_vector(N1+1:N,:),  &
+    &                               B%H_II)
+           else if (left_vectors.and..not.right_vectors) then    
+               call input_processor_left(B%Fbar_mi, &
+    &                               B%Fbar_ae, &
+    &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
+    &                               trial_vector(1:N1,:), &
+    &                               trial_vector(N1+1:N,:),  &
+    &                               B%H_II)
  
-             end if
-             if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
-                projector => NULL()
-             else
-                projector => create_projector(4, (ndimr1 + ndimr2), state_sym, eps)
-             end if
+           end if
+           if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+              projector => NULL()
+           else
+              projector => create_projector(4, (ndimr1 + ndimr2), state_sym, eps)
+           end if
 
-          case ('IP')
+        case ('IP')
 
-             ndimr2 = 0
-             ndimr1 = 0
-       
-             call alloc_array(e,nrep)
-             call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
+           ndimr2 = 0
+           ndimr1 = 0
+     
+           call alloc_array(e,nrep)
+           call auto_symmetry_offset(e,nv,ncont,.false.,.false.)
 
-             do irep = 1, nrep
-                if (iprnt.ge.3) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
-                ndimr1 = ndimr1 + ncont(irep)*no(irep)
-             enddo
+           do irep = 1, nrep
+              if (iprnt.ge.3) write(*,*)'continuous orbital ',irep,ncont(irep),nroot
+              ndimr1 = ndimr1 + ncont(irep)*no(irep)
+           enddo
 
-             do irep = 1, nrep
-                 ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
-             enddo
-            call dealloc_array(e)
+           do irep = 1, nrep
+               ndimr2 = ndimr2 + e%oneNonDirac(irep)*noot(irep)
+           enddo
+          call dealloc_array(e)
 
-             N1 = ndimr1*rcw
-             N2 = ndimr2*rcw
-             N = N1 + N2 
+           N1 = ndimr1*rcw
+           N2 = ndimr2*rcw
+           N = N1 + N2 
 
-             call set_eom_ndet(1, N1)
-             call set_eom_ndet(2, N2)
+           call set_eom_ndet(1, N1)
+           call set_eom_ndet(2, N2)
 
-             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
+           if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
-             allocate (trial_vector(N,nroot), stat = AllocateStatus)
-             IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-             allocate (B%H_II(N)) 
-       
-             trial_vector = 0.0d0
-             call eom_initialize_HII(B%H_II)
- !           B%H_II = 1.0d0
+           allocate (trial_vector(N,nroot), stat = AllocateStatus)
+           IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
+           allocate (B%H_II(N)) 
+     
+           trial_vector = 0.0d0
+           call eom_initialize_HII(B%H_II)
+ !         B%H_II = 1.0d0
 
-             if (right_vectors.and..not.left_vectors) then
-                 call input_processor_right(B%Fbar_mi, &
-      &                               B%Fbar_ae, &
-      &                               B%W_mbej,  &
-      &                               trial_vector(1:N1,:), &
-      &                               trial_vector(N1+1:N,:),  &
-      &                               B%H_II)
-             else if (left_vectors.and..not.right_vectors) then    
-                 call input_processor_left(B%Fbar_mi, &
-      &                               B%Fbar_ae, &
-      &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
-      &                               trial_vector(1:N1,:), &
-      &                               trial_vector(N1+1:N,:),  &
-      &                               B%H_II)
+           if (right_vectors.and..not.left_vectors) then
+               call input_processor_right(B%Fbar_mi, &
+    &                               B%Fbar_ae, &
+    &                               B%W_mbej,  &
+    &                               trial_vector(1:N1,:), &
+    &                               trial_vector(N1+1:N,:),  &
+    &                               B%H_II)
+           else if (left_vectors.and..not.right_vectors) then    
+               call input_processor_left(B%Fbar_mi, &
+    &                               B%Fbar_ae, &
+    &                               B%W_mbej,davResultsR(state_sym)%eVectorsR(1:N,:),  &
+    &                               trial_vector(1:N1,:), &
+    &                               trial_vector(N1+1:N,:),  &
+    &                               B%H_II)
 
-             end if
+           end if
 
-             if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
-                projector => NULL()
-             else
-                projector => create_projector(3, (ndimr1 + ndimr2), state_sym, eps)
-             end if
+           if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+              projector => NULL()
+           else
+              projector => create_projector(3, (ndimr1 + ndimr2), state_sym, eps)
+           end if
 
-          case('EA')
+        case('EA')
 
-             ndimr2 = 0
-             ndimr1 = 0
+           ndimr2 = 0
+           ndimr1 = 0
 
-             call alloc_array(f,nrep)
-             call auto_symmetry_offset(f,no,ncont,.false.,.false.)
+           call alloc_array(f,nrep)
+           call auto_symmetry_offset(f,no,ncont,.false.,.false.)
 
-
-              do irep = 1, nrep
-               ndimr1 = ndimr1 + ncont(irep)*nv(irep)
-              enddo
 
             do irep = 1, nrep
-                ndimr2 = ndimr2 + f%oneNonDirac(irep)*nvvt(irep)
+             ndimr1 = ndimr1 + ncont(irep)*nv(irep)
             enddo
 
-            call dealloc_array(f)
+          do irep = 1, nrep
+              ndimr2 = ndimr2 + f%oneNonDirac(irep)*nvvt(irep)
+          enddo
 
-             N1 = ndimr1*rcw
-             N2 = ndimr2*rcw
-             N = N1 + N2
+          call dealloc_array(f)
 
-             call set_eom_ndet(1, N1)
-             call set_eom_ndet(2, N2)
+           N1 = ndimr1*rcw
+           N2 = ndimr2*rcw
+           N = N1 + N2
 
-             if (nroot.eq.-1) nroot = ndimr1 + ndimr2
+           call set_eom_ndet(1, N1)
+           call set_eom_ndet(2, N2)
 
-             allocate (trial_vector(N,nroot))
-             allocate (B%H_II(N)) 
-       
-             trial_vector = 0.0d0
+           if (nroot.eq.-1) nroot = ndimr1 + ndimr2
 
-             call eom_initialize_HII(B%H_II)
-!            B%H_II = 1.0d0
+           allocate (trial_vector(N,nroot))
+           allocate (B%H_II(N)) 
+     
+           trial_vector = 0.0d0
 
-             if (right_vectors.and..not.left_vectors) then 
-                 call input_processor_right(B%Fbar_mi, &
-      &                               B%Fbar_ae, &
-      &                               B%W_mbej,  &
-      &                               trial_vector(1:N1,:), &
-      &                               trial_vector(N1+1:N,:),  &
-      &                               B%H_II)
-             else if (left_vectors.and..not.right_vectors) then 
-                 call input_processor_left(B%Fbar_mi, &
-      &                               B%Fbar_ae, &
-      &                               B%W_mbej,davResultsR(state_sym)%eVectorsR,  &
-      &                               trial_vector(1:N1,:), &
-      &                               trial_vector(N1+1:N,:),  &
-      &                               B%H_II)
+           call eom_initialize_HII(B%H_II)
+!          B%H_II = 1.0d0
+
+           if (right_vectors.and..not.left_vectors) then 
+               call input_processor_right(B%Fbar_mi, &
+    &                               B%Fbar_ae, &
+    &                               B%W_mbej,  &
+    &                               trial_vector(1:N1,:), &
+    &                               trial_vector(N1+1:N,:),  &
+    &                               B%H_II)
+           else if (left_vectors.and..not.right_vectors) then 
+               call input_processor_left(B%Fbar_mi, &
+    &                               B%Fbar_ae, &
+    &                               B%W_mbej,davResultsR(state_sym)%eVectorsR,  &
+    &                               trial_vector(1:N1,:), &
+    &                               trial_vector(N1+1:N,:),  &
+    &                               B%H_II)
  
-             end if
-             
-             if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
-                projector => NULL()
-             else
-                projector => create_projector(2, (ndimr1 + ndimr2), state_sym, eps)
-             end if
+           end if
+           
+           if (.not.(relcc_projectors_do_core_valence_separation.or.relcc_projectors_do_restricted_excitation_window)) then
+              projector => NULL()
+           else
+              projector => create_projector(2, (ndimr1 + ndimr2), state_sym, eps)
+           end if
 
-         end select 
+       end select 
 
-         if (right_vectors) then
-             call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector,state_sym,projector)
-             call eom_analysis(davResultsR(state_sym)%eValues(1:rcw,:),davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
+       if (right_vectors) then
+           call davidson_driver(nroot, B, davResultsR(state_sym), trial_vector,state_sym,projector)
+           call eom_analysis(davResultsR(state_sym)%eValues(1:rcw,:),davResultsR(state_sym)%eVectorsR,eps) ! Fock-Space like output for EA, EE and IP
 
-         else if (left_vectors) then
+       else if (left_vectors) then
 
-             call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector,state_sym,projector)
+           call davidson_driver(nroot, B, davResultsL(state_sym), trial_vector,state_sym,projector)
 
-         end if
+       end if
 
-         call free_eom_ndet()
+       call free_eom_ndet()
 
-         if (allocated(B%H_II)) deallocate(B%H_II)
-         if (associated(projector)) deallocate(projector)
+       if (allocated(B%H_II)) deallocate(B%H_II)
+       if (associated(projector)) deallocate(projector)
 ! aspg: trial_vector should have been nullified inside davidson_driver, check
 ! why this crashes
 !        if (associated(trial_vector)) deallocate(trial_vector)
 
       end if ! this ends the if checking whether there are any roots required for this symmetry
-   end do    ! this ends the loop over symmetries
 
-   if (right_vectors) then
-       write (iw,*) ""
-       write (iw,'(2x,A)') "Final results for "//left_or_right//" EOM-"//eomtype(1:2)
-       write (iw,*) ""
-       call eom_analysis_allirreps(davResultsR, eps)
-   else if (left_vectors) then
-       write (iw,*) ""
-       write (iw,'(2x,A)') "Final results for "//left_or_right//" EOM-"//eomtype(1:2)
-       write (iw,*) ""
-       call eom_analysis_allirreps(davResultsL, eps)
-   end if
-   
 end subroutine
 
 subroutine eom_initialize_HII(H_II)
@@ -2263,6 +2371,7 @@ subroutine eom_analysis_allirreps(davResults, eps)
    dum1(1:rcw) = 0.0d0
    dum2 = 0
    E_OFF = ESCF + ECCSD
+
    CALL PRT_EV (IW,NREP,nstate_sym,REPNA(1+irpoff), &
      &                E_OFF,ECCSDIM,RCW, &
      &                eigenvalues(1,1),isize, &

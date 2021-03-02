@@ -69,6 +69,7 @@ logical, save      :: davidson_overlap_sorting
 logical, save      :: davidson_debug = .false.
 logical, save      :: davidson_use_preconditioner = .true.
 logical, save      :: davidson_refresh_trial_vectors = .false.
+logical, save      :: davidson_print_config = .true.
 
 ! 
 ! variables for controlling i/o
@@ -207,7 +208,8 @@ contains
                               save_results,      &
                               save_sigmas,       &
                               save_subspaces,    &
-                              energy_shift)
+                              energy_shift,      &
+                              print_config)
 
         real(kind=8), intent(in), optional :: convergence_threshold
         real(kind=8), intent(in), optional :: energy_shift(2)
@@ -229,9 +231,15 @@ contains
         logical, optional :: save_results
         logical, optional :: complex_mode
         logical, optional :: use_preconditioner
+        logical, optional :: print_config
 
         call set_safe_minimum() 
 
+        if (present(print_config)) then
+            davidson_print_config = print_config
+        else
+            davidson_print_config = .true.
+        end if
         if (present(convergence_threshold)) then
             davidson_convergence_threshold = convergence_threshold
         else
@@ -373,7 +381,7 @@ contains
             davidson_results_file_unit = 138
         end if
 
-        call davidson_show_configurations()
+        if (davidson_print_config) call davidson_show_configurations()
     end subroutine
 
 
