@@ -5954,7 +5954,7 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
             GO TO 100
   164     CONTINUE
 C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
-            MDIRAC=.TRUE.
+            CALL QUIT('.MDIRAC option not implemented => STOP!')
             GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE

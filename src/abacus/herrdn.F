@@ -905,7 +905,6 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-! dcbham.h : MDIRAC
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -1570,18 +1569,11 @@ C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
-                  IF(MDIRAC) THEN
-                    CALL RKBBAS(I,IBLOCK(1),IBLOCK(2),
-     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                   NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                   CNTBAS)
-                  ELSE
-                    CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                   NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                   CNTBAS)
-                    BASREF(1,I,2) = ' Derived from large component'
-                  ENDIF
+                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                 CNTBAS)
+                  BASREF(1,I,2) = ' Derived from large component'
 C
                ENDIF
                NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0

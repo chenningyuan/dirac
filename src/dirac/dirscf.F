@@ -1768,7 +1768,12 @@ C
       E1PART  = D0
       E2PART  = D0
 C
-C
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+      end if
+
+
       IF(AOC) THEN
         ITOP = NOPEN
       ELSE
@@ -1882,6 +1887,7 @@ C
          else if (itmp%im_vemb) then
              elergy = elergy - fde_dirac_embpot_static_energy()
          end if
+!        deallocate(vemb_mat)
       end if
 
       DHFERG = DHFERG + ELERGY
@@ -3587,7 +3593,8 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
      &  " rules) as start potential."
             IF (BNSPON) WRITE(LUPRI,'(A/)')
      &    " Using sum of fitted atomic potentials as start potential.",
-     &    " Reference: arXiv:2002.02587 (small GRASP fit)"
+     &    " Reference: S. Lehtola, L. Visscher, E. Engel, "//
+     &    " J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)"
           ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
