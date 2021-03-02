@@ -1,5 +1,5 @@
-C  /* Deck getbedf */                                                  
-      SUBROUTINE GET_BED(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+C  /* Deck getbed */                                                  
+      SUBROUTINE GET_BED(OSCBED,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -32,9 +32,10 @@ C
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
-      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
+     &          WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:),OSC(:)
+      real(8), allocatable              :: TMOM(:,:,:)
       character (len=8),  allocatable   :: LABINT(:)
       character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
@@ -177,7 +178,6 @@ C     Loop over excitation energies
 C     =============================
 C
       allocate(TMOM(NOP,NPAR+1,NEXCNV))
-      allocate(OSC(NEXCNV))
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
       DO 10 IEXC = 1,NEXCNV
@@ -236,7 +236,7 @@ C
           ENDDO
         ENDIF
 C
-        OSC(IEXC)           = D0
+        OSCBED(IEXC)        = D0
         TMOM(1,NPAR+1,IEXC) = D0
         TMOM(2,NPAR+1,IEXC) = D0
         IPAR = 0
@@ -299,7 +299,7 @@ C
         DO IOP = 1,NOP
           TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
         ENDDO
-        OSC(IEXC)   = D2*OMEGA(IEXC)*TMP
+        OSCBED(IEXC) = D2*OMEGA(IEXC)*TMP
  10   CONTINUE
 C
 C     Print section
@@ -308,13 +308,13 @@ C
      &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  
      &     '* Polarization vector:', (UPOL(I),I=1,3)                   
       WRITE(6,'(/A)') '* Transition moments:'
-      WRITE(6,'(/A4,5X,A18,19X,3(3X,A5,9X))')     
+      WRITE(6,'(/A4,1X,A18,24X,3(3X,A5,13X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
        DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,A,3(3X,ES18.10))')
+         WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &   IEXC,OMEGA(IEXC),' real part (sin[kr]) : ',
      &   (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-         WRITE(6,'(23X,A,3(3X,ES18.10))')
+         WRITE(6,'(23X,A23,3(3X,ES18.10))')
      &   ' imag part (cos[kr]) : ',
      &   (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
       ENDDO
@@ -323,7 +323,7 @@ C
      &  'Exc.','Frequency (au)    '
       DO IEXC = 1,NEXCNV
         WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
-     &   IEXC,OMEGA(IEXC),OSC(IEXC)
+     &   IEXC,OMEGA(IEXC),OSCBED(IEXC)
       ENDDO
 C     
 C     Memory deallocation
@@ -336,7 +336,6 @@ C     Memory deallocation
         deallocate(XPOP)         
       ENDIF
       deallocate(TMOM)
-      deallocate(OSC)
       deallocate(PRPINT)
       deallocate(LABINT)
       deallocate(INTREP)
@@ -875,7 +874,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck bedleb */                                                   C
-      SUBROUTINE BEDLEB(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+      SUBROUTINE BEDLEB(OSCBED,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -924,7 +923,7 @@ C     ************************************************************
 #endif
       INTEGER IBEIG(*)
       DIMENSION CMO(*),WORK(*)
-      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),OSCBED(MAXEXC)
       real(8)             :: EVECR(NREDM,*), CPUTIME
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       integer   KFRSAV
@@ -1280,7 +1279,7 @@ C
 C     Final values for oscillator strengths
 C
       DO IEXC = 1,NEXCNV
-        OSC(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC)
+        OSCBED(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC)
       ENDDO
 C
 C     Print section
@@ -1290,7 +1289,7 @@ C
      &  'Exc.','Frequency (au)    '
       DO IEXC = 1,NEXCNV
         WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
-     &   IEXC,OMEGA(IEXC),OSC(IEXC)
+     &   IEXC,OMEGA(IEXC),OSCBED(IEXC)
       ENDDO
 C            
 C     Memory deallocation

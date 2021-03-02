@@ -207,7 +207,7 @@ C
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
      &          OMEGA(MAXEXC,NBSYM),
      &          RCNV(MAXEXC,NBSYM), IORBCL(4,*),
-     &          ISSYM(MAXEXC,NBSYM),OSCBED(MAXEXC,NBED,NBSYM,*),
+     &          ISSYM(MAXEXC,NBSYM),OSCBED(MAXEXC,NBSYM,NBED),
      &          WORK(*)
       CHARACTER TTYP(-1:1)*2
       SAVE TTYP
@@ -1070,7 +1070,7 @@ Chj: MAXRM, MXLOAD
 #include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
-     &          OSCBED(MAXEXC,NBED,NBSYM,*),
+     &          OSCBED(MAXEXC,NBSYM,NBED),
      &          RCNV(*),ISSYM(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),IORBCL(4,*),
      &          OMEGA(*),EVECR(NREDM,*),EIG(*),WORK(*)
@@ -1191,12 +1191,12 @@ C
 C     BED: Beyond Electric Dipole Approximation
 C
       IF(DOBED) THEN
-         CALL BEDLEB(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+         CALL BEDLEB(OSCBED(1,JSYMOP,1),OMEGA,ISSYM,WORK(KCMO),
+     &        WORK(KIBRP),EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
         IF(ORIENTED) THEN
-           CALL GET_BED(OMEGA,ISSYM,WORK(KCMO),WORK(KIBRP),
-     &        EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+           CALL GET_BED(OSCBED(1,JSYMOP,2),OMEGA,ISSYM,WORK(KCMO),
+     &        WORK(KIBRP),EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)
         ENDIF
       ENDIF
@@ -2036,7 +2036,7 @@ C
       PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
      &          D1=1.0D0,D0=0.0D0)
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
-     &          OSCBED(MAXEXC,NBED,NBSYM,*),
+     &          OSCBED(MAXEXC,NBSYM,NBED),
      &          OMEGA(MAXEXC,NBSYM),RCNV(MAXEXC,NBSYM),
      &          ISSYM(MAXEXC,NBSYM),WORK(*)
       character (len=4),  allocatable   :: symlab(:)
@@ -2253,7 +2253,39 @@ C
 C     O S C I L L A T O R    S T R E N G T H S
 C     ========================================
 C
-      IF(KVAL_OSC.LT.0) GOTO 10
+      CALL HEADER('Isotropic oscillator strengths',-1)
+C
+C     Full interaction
+C     ----------------
+C
+      IF(DOBED) THEN
+        WRITE(LUPRI,'(/A,ES8.2)')
+     &       '* Isotropic oscillator strengths '//
+     &        '(full light-matter interaction) above threshold :', TTOL
+        NLIN=48
+        CALL PRSYMB(LUPRI,'=',NLIN,0)
+        WRITE(LUPRI,'(/A)')
+     &       'Level    Frequency (eV) Symmetry    f(total)        '
+        CALL PRSYMB(LUPRI,'-',NLIN,0)
+        DO JEXC = 2,NEXC          ! skip reference state
+          II = INDX(JEXC)
+          IEXC  = IEERG(1,II)
+          ISYM  = IEERG(2,II)
+          OSCIL = OSCBED(IEXC,ISYM,1)
+          IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
+            ILAB  = ISSYM(IEXC,ISYM)
+            WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,2X,ES14.6)') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL
+          ENDIF
+        ENDDO
+        CALL PRSYMB(LUPRI,'-',NLIN,0)
+        NDIM = MAXEXC*NBSYM
+        TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
+        WRITE(LUPRI,'(A,F12.5)') 'Sum of oscillator strengths '//
+     &       '(full light-matter interaction) : ',TOT
+      ENDIF
+C      
 C.....Zeroth order in the wave vector
 C     ------------------------------
       IF(KVAL_OSC.GE.0) THEN
@@ -2382,7 +2414,6 @@ C.......
 C
 C     Oscillator strengths: general order
 C      
-      CALL HEADER('Isotropic oscillator strengths',-1)
       IF(MOD(KVAL_OSC,2).EQ.0) THEN
         K2ORD = KVAL_OSC/2
       ELSE
@@ -2477,7 +2508,33 @@ C.....Anisotropic oscillator strenghts
         CALL HEADER('Anisotropic oscillator strengths',-1)         
         WRITE (LUPRI,'(1X,A,3F18.10)')                                    &
      &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
-     &     '* Polarization vector:', (UPOL(I),I=1,3)                   
+     &       '* Polarization vector:', (UPOL(I),I=1,3)
+C.......Full light-matter interaction
+        WRITE(LUPRI,'(/A,ES8.2)')
+     &       '* Anisotropic oscillator strengths '//
+     &        '(full light-matter interaction) above threshold :', TTOL
+        NLIN=48
+        CALL PRSYMB(LUPRI,'=',NLIN,0)
+        WRITE(LUPRI,'(/A)')
+     &       'Level    Frequency (eV) Symmetry    f(total)        '
+        CALL PRSYMB(LUPRI,'-',NLIN,0)
+        DO JEXC = 2,NEXC          ! skip reference state
+          II = INDX(JEXC)
+          IEXC  = IEERG(1,II)
+          ISYM  = IEERG(2,II)
+          OSCIL = OSCBED(IEXC,ISYM,2)
+          IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
+            ILAB  = ISSYM(IEXC,ISYM)
+            WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,2X,ES14.6)') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL
+          ENDIF
+        ENDDO
+        CALL PRSYMB(LUPRI,'-',NLIN,0)
+        NDIM = MAXEXC*NBSYM
+        TOT  = DSUM(NDIM,OSCBED(1,1,1),1)
+        WRITE(LUPRI,'(A,F12.5)') 'Sum of oscillator strengths '//
+     &       '(full light-matter interaction) : ',TOT
 C.......Generalized velocity gauge        
         IF(DOVELR) THEN
           allocate(fosc(MAXEXC,NBSYM,-1:K2ORD,1))
@@ -2568,6 +2625,7 @@ C     T R A N S I T I O N   M O M E N T S
 C     ===================================
 C
       IF (NPPAPT .EQ. 0) GOTO 10
+      CALL HEADER('Transition moments',-1)
       DO IFRP = 1,NFSYM
         DO IBF = 1,NBF
           ISYM = JFSYM(IBF,IFRP)
