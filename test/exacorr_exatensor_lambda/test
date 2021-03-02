@@ -18,6 +18,7 @@ f.add(from_string = 'Individual (non-zero) components',
       rel_tolerance   = 1.0e-6)
 
 test.run(['ccsd_x2c.inp'], ['H2O_nosym.mol'], f)
-test.run(['ccsd_energy_large_cvalue_exacorr.inp'], ['h2o.xyz'], f, args=' --incmo')
+#The next run works (LV, Feb 12 2021) but takes too long to be useful
+#test.run(['ccsd_energy_large_cvalue_exacorr.inp'], ['h2o.xyz'], f, args=' --incmo')
 
 sys.exit(test.return_code)
