@@ -1,7 +1,9 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
+#if defined (VAR_MPI)
         use exatensor
+#endif
         use talsh
         use, intrinsic:: ISO_C_BINDING
 
@@ -61,6 +63,7 @@
             character(8), allocatable :: ff_names(:)            ! property labels
         end type exacc_input
 
+#if defined (VAR_MPI)
 !       All two electron integral tensors
         type, public :: exatns_intg_tens
          type(tens_rcrsv_t) :: oooo
@@ -99,6 +102,7 @@
          integer       :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root,vir_space_root
         end type space_dims
+#endif
 
 !       All two electron integral tensors
         type, public :: talsh_intg_tens

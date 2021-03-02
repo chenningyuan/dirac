@@ -507,7 +507,7 @@ module exacorr_cc
            ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
          num_blocks=num_blocks*(branch_factor*(2**(tavp_mng_depth-1)))**2
          
-         if(exa_input%print_level.gt.-1) write (*,'(A,I9,A,I9)') &
+         if(exa_input%print_level.gt.-1 .and. my_MPI_rank == 0) write (*,'(A,I9,A,I9)') &
            'number of blocks = ',num_blocks,'; number of MPI processes =',MPI_size
          
          if(num_blocks<MPI_size) then
@@ -2295,7 +2295,7 @@ module exacorr_cc
          ierr=exatns_tensor_init(int_t%vvvv,'ZERO')
 
 !        Get tensor with AO integrals
-         if (moint_scheme /= 4) then
+         if (moint_scheme < 4 ) then
             ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             call print_date('allocated AO integral tensor')
@@ -2491,7 +2491,7 @@ module exacorr_cc
          end if
 
 !        Clean-up
-         if (moint_scheme /= 4) then
+         if (moint_scheme < 4) then
             ierr=exatns_tensor_destroy(aoint_tensor)
          end if
 
@@ -3453,7 +3453,7 @@ module exacorr_cc
                   ierr=exatns_tensor_destroy(f_i)
                   ierr=exatns_tensor_destroy(P_i)
 
-                  if (exa_input%moint_scheme==0) exit
+                  if (exa_input%moint_scheme==5) exit
 
                 end do
 
@@ -3467,7 +3467,7 @@ module exacorr_cc
                 ierr=exatns_tensor_destroy(f_j)
                 ierr=exatns_tensor_destroy(P_j)
 
-                if (exa_input%moint_scheme==0) exit
+                if (exa_input%moint_scheme==5) exit
 
               end do
 
@@ -3483,7 +3483,7 @@ module exacorr_cc
               end if
               if (exa_input%print_level > 0) write (*,*)  'after this block, t3 = ',t_energy
 
-              if (exa_input%moint_scheme==0) exit
+              if (exa_input%moint_scheme==5) exit
 
             end do
 

@@ -37,7 +37,7 @@ Options:
   --check                                Enable runtime checking of compiled executables [default: False]
   --int64                                Enable 64bit integers [default: False].
   --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
-  --exatensor=<ENABLE_EXATENSOR>         Toggle use of ExaTensor <ON/OFF> [default: OFF].
+  --exatensor=<ENABLE_EXATENSOR>         Toggle use of ExaTensor <ON/OFF> [default: ON].
   --pcmsolver=<ENABLE_PCMSOLVER>         Toggle use of PCMSolver <ON/OFF> [default: ON].
   --pcmsolver-dir=<PCMSOLVER_ROOT>       The PCMSolver module location. [default: ''].
   --type=<TYPE>                          Set the CMake build type (debug, release, relwithdebinfo, minsizerel) [default: release].

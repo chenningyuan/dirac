@@ -19,9 +19,9 @@ f.add(from_string = 'Eigenvalues',
       num_lines   = 32,
       rel_tolerance   = 1.0e-5)
 
+test.run(['cc2_energy.inp'], ['LiH'], f)
+# LV: These remaining tests work for LiH and H2O (Feb 4, 2021) but are too long to be used as standard test
 #test.run(['cc2_energy.inp'], ['LiH', 'h2o.xyz', 'sf6.xyz'], f)
 #test.run(['cc2_energy_large_cvalue.inp'], ['LiH', 'h2o.xyz', 'sf6.xyz'], f)
-test.run(['cc2_energy.inp'], ['LiH', 'h2o.xyz'], f)
-test.run(['cc2_energy_large_cvalue.inp'], ['LiH', 'h2o.xyz'], f)
 
 sys.exit(test.return_code)

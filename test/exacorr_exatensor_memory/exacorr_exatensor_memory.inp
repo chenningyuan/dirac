@@ -21,5 +21,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 6..17
 .EXATENSOR
 .MOINT_SCHEME
-0
+5
+.TALSH_BUFF
+50
 *END OF
