@@ -112,7 +112,7 @@ print *, '*    Radovan Bast             UiT The Arctic University of      Norway
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
-print *, '*    Ignacio Agustin Aucar    Northeast National University     Argentina     *'
+print *, '*    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *'
 print *, '*    Vebjoern Bakken          University of Oslo                Norway        *'
 print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *'
 print *, '*    Sebastien Dubillard      University of Strasbourg          France        *'
