@@ -111,7 +111,7 @@ C  /* Deck wricmo */
       SUBROUTINE WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
 C*****************************************************************************
 C
-C     Write DHF-coefficients and eigenvalues to unformatted file
+C     Write SCF-coefficients and eigenvalues to unformatted file
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -137,16 +137,73 @@ C
       ENDDO
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
-      REWIND IUNIT
-      WRITE(IUNIT) TEXT,NFSYM,((IDIM(I,J),I = 1,3),J=1,NFSYM),
-     &             TOTERG
-      WRITE(IUNIT) CMO
-      WRITE(IUNIT) EIG
-      WRITE(IUNIT) IBEIG
+      REWIND IUNIT     
+      CALL NEWLAB('INFO    ',IUNIT,LUPRI)
+      WRITE(IUNIT) TEXT,NFSYM,NZ*NKRBLK,((IDIM(I,J),I = 1,3),J=1,NFSYM),
+     &     TOTERG
+      CALL WRICMO_coefficients(IUNIT,CMO,NCMOTQ*NKRBLK)
+      CALL WRICMO_eigenvalues(IUNIT,EIG,NORBT*NKRBLK)      
+      CALL WRICMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NORBT*NKRBLK)
 !     Add additional information about basis set to create a simple interface file
 !     for correlated calculations (like exacorr)
-      call append_basisinfo_to_dfcoef (IUNIT)
+      CALL WRICMO_basisinfo(IUNIT)
+      CALL NEWLAB('EOFLABEL',IUNIT,LUPRI)                              
 C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck WRICMO_coeffcients */
+      SUBROUTINE WRICMO_coefficients(IUNIT,CMO,NCMO)
+C***********************************************************************
+C     Write SCF-coefficients to unformatted file
+C     Written by Trond Saue Jan 2021      
+C***********************************************************************
+#include "priunit.h"
+      INTEGER IUNIT,NCMO
+      REAL*8 CMO(NCMO)
+      CALL NEWLAB('COEFS   ',IUNIT,LUPRI)      
+      WRITE(IUNIT) CMO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck WRICMO_eigenvalues */
+      SUBROUTINE WRICMO_eigenvalues(IUNIT,EIG,NEIG)
+C***********************************************************************
+C     Write SCF-orbital energies to unformatted file
+C     Written by Trond Saue Jan 2021      
+C***********************************************************************
+#include "priunit.h"
+      INTEGER IUNIT,NEIG
+      REAL*8 EIG(NEIG)
+      CALL NEWLAB('EVALS   ',IUNIT,LUPRI)            
+      WRITE(IUNIT) EIG
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck WRICMO_supersymmetry */
+      SUBROUTINE WRICMO_supersymmetry(IUNIT,LABEL,IBEIG,NEIG)
+C***********************************************************************
+C     Write SCF-supersymmetry string to unformatted file
+C     Written by Trond Saue Jan 2021      
+C***********************************************************************
+#include "priunit.h"
+      INTEGER IUNIT,NEIG,IBEIG(NEIG)
+      CHARACTER*8 LABEL
+      CALL NEWLAB(LABEL,IUNIT,LUPRI)                  
+      WRITE(IUNIT) IBEIG
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck WRICMO_basisinfo */
+      SUBROUTINE WRICMO_basisinfo(IUNIT)
+C***********************************************************************
+C     Write SCF-coefficients to unformatted file
+C     Written by Trond Saue Jan 2021      
+C***********************************************************************
+#include "priunit.h"
+      INTEGER IUNIT
+      CALL NEWLAB('BASINFO ',IUNIT,LUPRI)                        
+      call append_basisinfo_to_dfcoef (IUNIT)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -191,7 +248,7 @@ C  /* Deck wripcmo */
       SUBROUTINE WRIPCMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
 C*****************************************************************************
 C
-C     Write DHF-coefficients and eigenvalues to unformatted file
+C     Write SCF-coefficients and eigenvalues to unformatted file
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -235,7 +292,7 @@ C  /* Deck reacmo */
       SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
 C***********************************************************************
 C
-C     Read DHF-coefficients and eigenvalues from unformatted file
+C     Read SCF-coefficients and eigenvalues from unformatted file
 C     Read option is provided from bit-packed IOPT:
 C       0001 - give restart info
 C       0010 - read coefficients
@@ -256,23 +313,23 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL INFO,LBIT,TEST
+      LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
       DIMENSION IDIM(3,2)
-      real(8), allocatable :: kc(:)
-      real(8), allocatable :: ko(:)
-      integer, allocatable :: ki(:)
 C
       IF(IOPT.EQ.0) RETURN
+C
+C     Read title line - always done
+C     =============================
+C
       REWIND IUNIT
-C
-C     Read title line
-C     ===============
-C
-      READ (IUNIT,END=10,ERR=20) TEXT,NSYM,
+      IF(FNDLAB('INFO    ',IUNIT)) THEN
+        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-
+      ELSE
+        GOTO 20        
+      ENDIF
       IF(IOPT.EQ.-1) RETURN
 C
 C     Compatibility check for NFSYM and NFBAS
@@ -285,6 +342,12 @@ C
          WRITE(LUPRI,'(/A/A,2I5)')
      &      'REACMO FATAL ERROR: Incompatible number of fermion ircops',
      &      ' from file and in this run:',NSYM,NFSYM
+      ELSEIF(NZBUF .NE. NZ*NKRBLK) THEN
+         IERR = IERR + 1
+         INFO = .TRUE.
+         WRITE(LUPRI,'(/A/A,2I5)')
+     &      'REACMO FATAL ERROR: Incompatible NZ parameter',
+     &      ' from file and in this run:',NZBUF/NKRBLK,NZ
       ELSE
          DO IFRP = 1,NFSYM
            IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) IERR = IERR + 1
@@ -314,86 +377,31 @@ C
 C
       IF(IOPT.LT.2) RETURN
 C
-C     Compatibility tests for number of orbitals
-C     ==========================================
-C
-      TEST = .FALSE.
-      NC = 0
-      NO = 0
-      DO IFRP = 1,NFSYM
-        IDIM(3,IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-        IF(IDIM(3,IFRP).NE.NORB(IFRP)) TEST=.TRUE.
-        NC = NC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
-        NO = NO + IDIM(3,IFRP)
-      ENDDO
-C
 C     Read coefficients
 C     =================
 C
       IF(LBIT(IOPT,2)) THEN
-        IF(TEST) THEN
-          call alloc(kc, nc)
-          CALL READT(IUNIT,NC, kc)
-          JC = 1
-          DO IFRP = 1,NFSYM
-            CALL ADACMO(NFBAS(IFRP,0),NZ,
-     &         CMO(ICMOQ(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         kc(JC),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JC = JC + IDIM(3,IFRP)*NFBAS(IFRP,0)*NZ
-          ENDDO
-          call dealloc(kc)
-        ELSE
-          READ (IUNIT,END=30,ERR=40) CMO
-        ENDIF
-        IF(IOPT.LT.4) RETURN
-      ELSE
-        READ(IUNIT)
+        NCMO=NCMOTQ*NKRBLK
+        CALL REACMO_coefficients(IUNIT,CMO,NCMO,NFSYM,NZ,
+     &           NORB,NFBAS(1,0),NPSH,NESH,IDIM)         
       ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
       IF(LBIT(IOPT,3)) THEN
-        IF(TEST) THEN
-          call alloc(ko, no)
-          CALL READT(IUNIT,NO,ko)
-          JO = 1
-          DO IFRP = 1,NFSYM
-            CALL ADAEIG(
-     &         EIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         ko(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
-          ENDDO
-          call dealloc(ko)
-        ELSE
-          READ (IUNIT,END=50,ERR=60) EIG
-        ENDIF
-        IF(IOPT.LT.8) RETURN
-      ELSE
-        READ(IUNIT)
+        NEIG=NORBT*NKRBLK
+        CALL REACMO_eigenvalues(IUNIT,EIG,NEIG,NFSYM,NZ,
+     &           NORB,NPSH,NESH,IDIM)         
       ENDIF
 C
 C     Read supersymmetry info
 C     =======================
 C
       IF(LBIT(IOPT,4)) THEN
-        IF(TEST) THEN
-          call alloc(ki, no)
-          CALL READI(IUNIT,NO,ki)
-          JO = 1
-          DO IFRP = 1,NFSYM
-            CALL ADAIBO(
-     &         IBEIG(IORB(IFRP)+1),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         ki(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            JO = JO + IDIM(1,IFRP)+IDIM(2,IFRP)
-          ENDDO
-          call dealloc(ki)
-        ELSE
-          READ (IUNIT,END=70,ERR=80) IBEIG
-        ENDIF
-        IF(IOPT.LT.16) RETURN
-      ELSE
-        READ(IUNIT)
+        NEIG=NORBT*NKRBLK
+        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEIG,NFSYM,NZ,
+     &       NORB,NPSH,NESH,IDIM)
       ENDIF
 C
       RETURN
@@ -414,26 +422,219 @@ C
      &      ' 32-bit integer Dirac version.',
      &   '        This Dirac is compiled with 64 bit integers.'
       CALL QUIT('REACMO: ERROR reading first record')
- 30   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading coefficients')
- 40   CONTINUE
-      CALL QUIT('REACMO: ERROR reading coefficients')
- 50   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading eigenvalues')
- 60   CONTINUE
-      CALL QUIT('REACMO: ERROR reading eigenvalues')
- 70   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading irrep identification')
- 80   CONTINUE
-      CALL QUIT('REACMO: ERROR reading irrep identification')
       RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck reacmo_coefficients */
+      SUBROUTINE REACMO_coefficients(IUNIT,CMO,NCMO,NFSYM,NZ,
+     &           NORB,NFBAS,NPSH,NESH,IDIM)
+C***********************************************************************
+C
+C     Read coefficients from unformatted file
+C
+C     IDIM(1,IFRP) - number of positronic solutions
+C     IDIM(2,IFRP) - number of electronic solutions
+C     IDIM(3,IFRP) - number of AO-basis functions
+C
+C     Written by T.Saue Jan 2021
+C
+C***********************************************************************
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION CMO(NCMO)
+      DIMENSION NORB(NFSYM),NFBAS(NFSYM),NPSH(NFSYM),NESH(NFSYM)
+      DIMENSION IDIM(3,NFSYM),NORB2(NFSYM)
+      real(8), allocatable :: buf(:)
+      LOGICAL TEST,FNDLAB
+      IF(FNDLAB('COEFS   ',IUNIT)) THEN
+C
+C     Compatibility tests for number of orbitals
+C
+        TEST = .FALSE.
+        NC = 0
+        DO IFRP = 1,NFSYM
+          NORB2(IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
+          IF(NORB2(IFRP).NE.NORB(IFRP)) TEST=.TRUE.
+          NC = NC + NORB2(IFRP)*NFBAS(IFRP)*NZ
+       ENDDO
+       IF(TEST) THEN
+C
+C         If dimensions do not fit, then the coefficients are read
+C         into a buffer and adapted for the correct dimensions    
+C
+          call alloc(BUF,NC)
+          CALL READT(IUNIT,NC,BUF)
+          IC = 1
+          JC = 1
+          DO IFRP = 1,NFSYM
+            CALL ADACMO(NFBAS(IFRP),NZ,
+     &         CMO(IC),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &         BUF(JC),NORB2(IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+            IC = IC + NORB(IFRP) *NFBAS(IFRP)*NZ
+            JC = JC + NORB2(IFRP)*NFBAS(IFRP)*NZ
+          ENDDO
+          call dealloc(buf)
+        ELSE
+C
+C         Default case
+C           
+          READ (IUNIT,END=10,ERR=20) CMO
+       ENDIF
+      ELSE
+        GOTO 20 
+      ENDIF
+
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading coefficients')
+ 20   CONTINUE
+      CALL QUIT('REACMO: ERROR reading coefficients')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck reacmo_eigenvalues */
+      SUBROUTINE REACMO_eigenvalues(IUNIT,EIG,NEIG,NFSYM,NZ,
+     &           NORB,NPSH,NESH,IDIM)
+C***********************************************************************
+C
+C     Read eigenvalues from unformatted file
+C
+C     IDIM(1,IFRP) - number of positronic solutions
+C     IDIM(2,IFRP) - number of electronic solutions
+C     IDIM(3,IFRP) - number of AO-basis functions
+C
+C     Written by T.Saue Jan 2021
+C
+C***********************************************************************
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION EIG(NEIG)
+      DIMENSION NORB(NFSYM),NPSH(NFSYM),NESH(NFSYM)
+      DIMENSION IDIM(3,NFSYM),NORB2(NFSYM)
+      real(8), allocatable :: buf(:)
+      LOGICAL TEST,FNDLAB
+      IF(FNDLAB('EVALS   ',IUNIT)) THEN         
+C
+C     Compatibility tests for number of orbitals
+C
+        TEST = .FALSE.
+        NO = 0
+        DO IFRP = 1,NFSYM
+          NORB2(IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
+          IF(NORB2(IFRP).NE.NORB(IFRP)) TEST=.TRUE.
+          NO = NO + NORB2(IFRP)
+        ENDDO
+        IF(TEST) THEN
+C
+C         If dimensions do not fit, then the eigenvalues are read
+C         into a buffer and adapted for the correct dimensions    
+C
+            call alloc(BUF,NO)
+            CALL READT(IUNIT,NO,BUF)
+            IO = 1
+            JO = 1
+            DO IFRP = 1,NFSYM
+              CALL ADAEIG(EIG(IO),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &              BUF(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+              IO = IO + NORB(IFRP)
+              JO = JO + NORB2(IFRP)
+            ENDDO
+            call dealloc(BUF)
+        ELSE
+C
+C         Default case
+C           
+          READ (IUNIT,END=10,ERR=20) EIG
+        ENDIF
+      ELSE
+        GOTO 20 
+      ENDIF
+
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading eigenvalues')
+ 20   CONTINUE
+      CALL QUIT('REACMO: ERROR reading eigenvalues')
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck reacmo_supersymmetry */
+      SUBROUTINE REACMO_supersymmetry(IUNIT,LABEL,IBEIG,NEIG,NFSYM,NZ,
+     &           NORB,NPSH,NESH,IDIM)
+C***********************************************************************
+C
+C     Read supersymmetry information from unformatted file
+C
+C     IDIM(1,IFRP) - number of positronic solutions
+C     IDIM(2,IFRP) - number of electronic solutions
+C     IDIM(3,IFRP) - number of AO-basis functions
+C
+C     Written by T.Saue Jan 2021
+C
+C***********************************************************************
+         use memory_allocator
+#include "implicit.h"
+#include "priunit.h"
+C
+      DIMENSION IBEIG(NEIG)
+      CHARACTER*8 LABEL   
+      DIMENSION NORB(NFSYM),NPSH(NFSYM),NESH(NFSYM)
+      DIMENSION IDIM(3,NFSYM),NORB2(NFSYM)
+      integer, allocatable :: buf(:)
+      LOGICAL TEST,FNDLAB
+      IF(FNDLAB(LABEL,IUNIT)) THEN         
+C
+C     Compatibility tests for number of orbitals
+C
+        TEST = .FALSE.
+        NO = 0
+        DO IFRP = 1,NFSYM
+          NORB2(IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
+          IF(NORB2(IFRP).NE.NORB(IFRP)) TEST=.TRUE.
+          NO = NO + NORB2(IFRP)
+        ENDDO
+        IF(TEST) THEN
+C
+C         If dimensions do not fit, then the eigenvalues are read
+C         into a buffer and adapted for the correct dimensions    
+C
+            call alloc(BUF,NO)
+            CALL READI(IUNIT,NO,BUF)
+            IO = 1
+            JO = 1
+            DO IFRP = 1,NFSYM
+              CALL ADAIBO(IBEIG(IO),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
+     &              BUF(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
+              IO = IO + NORB(IFRP)
+              JO = JO + NORB2(IFRP)
+            ENDDO
+            call dealloc(BUF)
+        ELSE
+C
+C         Default case
+C           
+          READ (IUNIT,END=10,ERR=20) IBEIG
+        ENDIF
+      ELSE
+        GOTO 20 
+      ENDIF
+
+      RETURN
+ 10   CONTINUE
+      CALL QUIT('REACMO: END OF FILE reading supersymmetry'
+     &  //LABEL)
+ 20   CONTINUE
+      CALL QUIT('REACMO: ERROR reading irrep supersymmetry'
+     &  //LABEL)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmoin_1 */
       SUBROUTINE PCMOIN_1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
-C     Read DHF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
+C     Read SCF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
 C
 C     Written by T.Saue Feb 1997
 C     extended for KRMC modules - S. Knecht Nov 2008
@@ -528,7 +729,7 @@ C  /* Deck pcmout_1 */
       SUBROUTINE PCMOUT_1(CMO,EIG,IBEIG)
 C*****************************************************************************
 C
-C     Write DHF/KRMCSCF-coefficients and eigenvalues to FORMATTED file
+C     Write SCF/KRMCSCF-coefficients and eigenvalues to FORMATTED file
 C
 C     Written by T.Saue Feb 1997
 C     extended for KRMC modules - S. Knecht Nov 2008
@@ -808,12 +1009,12 @@ C
       NA = LEN(A)
 !     IF (NA.GT.80) NA = 80
       IF (INDEX(A(1:NA),'energy') .EQ. 0) THEN
-         call alloc(itm, IRNGE2-IRNGE1+1)
+         allocate(itm(IRNGE2-IRNGE1+1))
          CALL NUMLS1(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,ITM)
-         call dealloc(itm)
+         deallocate(itm)
       ELSE
-         call alloc(eig, norbt)
-         call alloc(ibg, norbt)
+         allocate(eig(norbt))
+         allocate(ibg(norbt))
 C
 C        Get eigenvalues from DFCOEF
 C
@@ -839,8 +1040,8 @@ C
             IOFF = IORB(IFRP)+NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
          ENDIF
-         call dealloc(eig)
-         call dealloc(ibg)
+         deallocate(eig)
+         deallocate(ibg)
       ENDIF
 
       CALL QEXIT('NUMLST')
@@ -1795,14 +1996,18 @@ C
       IDIM(3) = NTBAS(0)
       TEXT(1:50) = TITLE
       CALL GTINFO(TEXT(51:74))
-      WRITE(LUCOEF) TEXT,1,(IDIM(I),I = 1,3),TOTERG
-      NDIM = NTBAS(0)*NORBT*4
-      CALL WRITT(LUCOEF,NDIM,CAO)
-      CALL WRITT(LUCOEF,NORBT,EIG)
-      CALL WRITI(LUCOEF,NORBT,IBEIG)
+      CALL NEWLAB('INFO    ',LUCOEF,LUPRI)
+      NSYM=1
+      NZBUF=4
+      WRITE(LUCOEF) TEXT,NSYM,NZBUF,(IDIM(I),I = 1,3),TOTERG
+      CALL WRICMO_coefficients(LUCOEF,CAO,NTBAS(0)*NORBT*4)
+      CALL WRICMO_eigenvalues(LUCOEF,EIG,NORBT)      
+      CALL WRICMO_supersymmetry(LUCOEF,'SUPERSYM',IBEIG,NORBT)
 !     Add additional information about basis set to create a simple interface file
 !     for correlated calculations (like exacorr)
+      CALL NEWLAB('BASINFO ',LUCOEF,LUPRI)                              
       call append_basisinfo_to_dfcoef (LUCOEF)
+      CALL NEWLAB('EOFLABEL',LUCOEF,LUPRI)                                    
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -3342,7 +3547,7 @@ C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "nuclei.h"
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3376,11 +3581,18 @@ C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
       CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
-      READ(LUCOEF) TEXT,NSYM,(IDIM(I),I = 1,3),TOTERG
+      IF(FNDLAB('INFO    ',LUCOEF)) THEN
+         READ(LUCOEF) TEXT,NSYM,NZBUF,(IDIM(I),I = 1,3),TOTERG
+      ELSE
+         CALL QUIT('ACMOIN: Error reading info')
+      ENDIF
       NDIM = NTBAS(0)*NORBT*4
-      CALL READT(LUCOEF,NDIM,CMO2)
-      CALL READT(LUCOEF,NORBT,EIG2)
-      CALL READI(LUCOEF,NORBT,IBEIG2)
+      CALL REACMO_coefficients(LUCOEF,CMO2,NDIM,1,4,
+     &           NORBT,NTBAS(0),NPSHT,NESHT,IDIM)         
+      CALL REACMO_eigenvalues(LUCOEF,EIG2,NORBT,1,4,
+     &           NORBT,NPSHT,NESHT,IDIM)         
+C      CALL REACMO_supersymmetry(LUCOEF,'SUPERSYM',IBEIG2,NORBT,
+C     &     1,4,NORBT,NPSHT,NESHT,IDIM)
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -3771,7 +3983,7 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       DIMENSION IDIM(3,2)
 
@@ -3791,11 +4003,16 @@ C     Check for the presence of coefficient file
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(TOBE) THEN
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RKBIMP')
-C       IDIM(1,IFRP) - number of positronic solutions
-C       IDIM(2,IFRP) - number of electronic solutions
-C       IDIM(3,IFRP) - number of AO-basis functions
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
-     &       ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+        IF(FNDLAB('INFO    ',LUCOEF)) THEN         
+C         IDIM(1,IFRP) - number of positronic solutions
+C         IDIM(2,IFRP) - number of electronic solutions
+C         IDIM(3,IFRP) - number of AO-basis functions
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
+     &         ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+      ELSE
+         CALL QUIT('RKBIMP: Error reading info')
+      ENDIF
+        
 C.......Check that the number of negative energy solutions is smaller than UKB
 C.......and calculate space needed to store UKB complement in orthonormal basis
         NBUF = 0
@@ -3816,8 +4033,7 @@ C.........Read coefficients, eigenvalues and boson irreps
           allocate(ibeig(norbt))
           allocate(tmat(n2tmt))
 C
-          CALL REACMO(LUCOEF,'DFCOEF',cmo,eig,ibeig,
-     &                TOTERG,IOPT)
+          CALL REACMO(LUCOEF,'DFCOEF',cmo,eig,ibeig,TOTERG,IOPT)
 C.........Zero IBEIG if no subblocks; this allows to treat linear systems
 C         that are presently not handled in URKBAL
           IF(SUB_BL) THEN

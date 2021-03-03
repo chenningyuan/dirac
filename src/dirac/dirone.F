@@ -663,9 +663,6 @@ C*****************************************************************************
       use x2cmod_cfg
       use x2c_utils, only:
      &    read_1fock_x2c
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -731,17 +728,9 @@ C     ************************************************
 C     ****** Construct one-electron Fock matrix ******
 C     ************************************************
 C
-       IF(MDIRAC) THEN
-#ifdef MOD_INTEREST
-         fock(1:n2bbasxq) = 0.0d0
-         call process_kinetic_energy_integrals_4comp( Fock )
-         call process_nuclear_attraction_integrals_4comp( Fock )
-#endif
-       ELSE
-         CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
-         CALL ONEFC1(FOCK,WORK(KFREE),LFREE)
-         CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
-       ENDIF
+       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+       CALL ONEFC1(FOCK,WORK(KFREE),LFREE)
+       CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
 
       end if
 C
@@ -3164,28 +3153,6 @@ C       ============================================================
 C
         CALL LL_EQ(TMAT,TBUF,VMAT)
 
-      ELSE IF(MDIRAC)THEN
-
-C       The modified Dirac equation at the integral level (InteRest):
-C       =============================================================
-        NZT = 1
-
-        imat = 1
-        DO IFRP = 1,NFSYM
-          NESH(IFRP)  = NFORB(IFRP,1)
-!         NPSH(IFRP)  = NFORB(IFRP,1)
-!         NORB(IFRP)  = NESH(IFRP)    * 2
-          NPSH(IFRP)  = NFORB(IFRP,2)
-          NORB(IFRP)  = NESH(IFRP)    + NPSH(IFRP)
-          NTMO(IFRP)  = NORB(IFRP)
-          call resort_mdirac_vmat(tmat(imat),vmat(imat),
-     &                            nfbas(ifrp,0),norb(ifrp),
-     &                            ifrp,nborb,nz)
-          iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
-        END DO
-
-        print_header = .false.
-
       ELSE
 C
 C       The modified Dirac equation at the matrix level (Hermit):
@@ -3484,9 +3451,6 @@ C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
       use memory_allocator
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3501,18 +3465,6 @@ C
       real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLX')
 C
-      IF(MDIRAC) THEN
-        IF(NBSYM.GT.1) THEN
-          CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
-        ENDIF
-#ifdef MOD_INTEREST
-        if(mc == 1 .and. ntbas(2) == 0)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
-          call process_overlap_integrals_2comp( smat )
-        else ! any other case including also an X2C run prior to the 4c->2c transformation
-          call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
-        end if
-#endif
-      ELSE
 C
 C       Allocate integral buffer
 C       ========================
@@ -3555,7 +3507,6 @@ C
              ENDDO
           ENDDO
         ENDIF
-      ENDIF
 C
       CALL QEXIT('GTOVLX')
       RETURN
@@ -3575,9 +3526,6 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3603,18 +3551,6 @@ C
       CALL DZERO(SMAT,N2BAST)
       NBRP = 4/NZ
 
-      IF(MDIRAC) THEN
-        IF(NBSYM.GT.1) THEN
-          CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
-        ENDIF
-#ifdef MOD_INTEREST
-        if(mc == 1 .and. ntbas(2) == 0)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
-          call process_overlap_integrals_2comp( smat )
-        else ! any other case including also an X2C run prior to the 4c->2c transformation
-          call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
-        end if
-#endif
-      ELSE
         allocate(sbuf(n2bbasx))
         allocate(stri(nnbbasx))
 C
@@ -3663,7 +3599,6 @@ C
 
         deallocate(stri)
         deallocate(sbuf)
-      END IF
 C
 C     Scale SS-block
 C     ==============

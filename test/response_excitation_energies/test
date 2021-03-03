@@ -13,7 +13,7 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
       to_re       = 'Relative real eigenvalues in other units;',
       rel_tolerance   = 2.0e-5)
 
-f.add(from_string = 'Isotropic oscillator strengths (f) above threshold',
+f.add(from_string = 'Isotropic oscillator strengths (generalized velocity gauge) above threshold',
       to_string   = 'Sum of oscillator strengths (general length) :',
       rel_tolerance   = 2.0e-4)
 

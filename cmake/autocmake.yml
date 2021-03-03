@@ -71,6 +71,7 @@ modules:
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
     - 'custom/pcm.cmake'
+    - 'custom/exatensor.cmake'
     - 'custom/gen1int.cmake'
     - 'custom/pelib.cmake'
 - subdirectories:

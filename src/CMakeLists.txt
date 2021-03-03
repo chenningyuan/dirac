@@ -106,6 +106,13 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
 
+# exacorr as separate library
+if(ENABLE_EXATENSOR)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
+add_definitions(-DMOD_EXACORR)
+endif()
+
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
@@ -273,11 +280,10 @@ endif()
 if(ENABLE_INTEREST)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-    dirac_test(mdirac_closed-shell_dft "interest" "")
 else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
 endif()
-message(STATUS "Interest library: ${ENABLE_INTEREST}")
+message(STATUS "InteRest library: ${ENABLE_INTEREST}")
 
 #   krcc as separate library
 if(ENABLE_KRCC)

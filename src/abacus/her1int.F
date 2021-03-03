@@ -1609,8 +1609,8 @@ C
             CALL HDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFOBX,DIFOBY,DIFOBZ)
 C
-C        Potential energy at the individual nuclei
-C        -----------------------------------------
+C        Potential energy of interaction of electrons with individual nuclei
+C        -------------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -3806,7 +3806,7 @@ C  /* Deck npeint */
       SUBROUTINE NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
 C
-C     Potential energy at the nuclei
+C     Potential energy of interaction of electrons with individual nuclei
 C
 C     K.Ruud, July 1992
 C
@@ -4746,6 +4746,7 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+#include "pi.h"
 C
       DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC

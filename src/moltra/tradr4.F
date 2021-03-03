@@ -50,7 +50,6 @@ C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
 C       LMP2  = .TRUE. - evaluate MP2 energy
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIGn           - eigenvalues (for  MP2 calculation)
 C       ANTIS = .TRUE. - anti-symmetrize integrals
 C       INTFLG - flag of what integral types to transform
@@ -265,7 +264,7 @@ C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
       IF (.NOT. NOMDCINT) THEN
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       ELSE
          CALL INI4INDINFO
       END IF
@@ -1209,7 +1208,7 @@ C
 C
 C        Initialize MOLFDIR integral file on slave
 C
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       END IF
 C
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')
