@@ -360,14 +360,10 @@ C
 C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
+        IOPT = 15
         IF(ATOMIC) THEN
-           allocate(IBEIG2(NORBT,2))
-           IOPT = 31
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG2,TOTERG,IOPT)
-           CALL ATOMIC_ID_REDUCE(IBEIG2,IBEIG,N)
-           deallocate(IBEIG2)
+          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
         ELSE
-          IOPT = 15
           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
         ENDIF
 C

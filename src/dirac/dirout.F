@@ -957,9 +957,9 @@ C
 #include "memint.h"
 C
 C     Memory allocation
-      CALL MEMGET('INTE',KFIRST,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KNMULT,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIGBF,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IFIRST',KFIRST,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NMULT' ,KNMULT,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIGBUF',KEIGBF,NORBT,WORK,KFREE,LFREE)
       CALL PREIGN1(EIG,WORK(KEIGBF),IBEIG,
      &   WORK(KFIRST),WORK(KNMULT),PRPOS)
 C
@@ -1004,7 +1004,6 @@ C
 C     
 C
 C     Closed shell eigenvalues
-C
 C
       CALL HEADER('Eigenvalues',-1)
 C.....Common format for all electron eigenvalues
@@ -1090,7 +1089,6 @@ C
               NAME_SUB2(ID) = '  '//REP(ID)
             ELSEIF(ATOMIC) THEN  ! Atomic supersymmetry
               CALL ATOMIC_ID(ID,KP,J,MJ,LL)
-C
               WRITE(LUPRI,'(/A,I4,4A,I2,2A,I3,A)')
      &            '* Block',ISUB,' in ',FREP(IFSYM),
      &            ':  ',SPDCAR(LL),J,'/2',';',MJ,'/2'
