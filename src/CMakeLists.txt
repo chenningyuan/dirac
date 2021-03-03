@@ -280,11 +280,10 @@ endif()
 if(ENABLE_INTEREST)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-    dirac_test(mdirac_closed-shell_dft "interest" "")
 else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
 endif()
-message(STATUS "Interest library: ${ENABLE_INTEREST}")
+message(STATUS "InteRest library: ${ENABLE_INTEREST}")
 
 #   krcc as separate library
 if(ENABLE_KRCC)

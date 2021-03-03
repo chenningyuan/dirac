@@ -93,8 +93,7 @@ Solve Lambda-equations, needs to be activated in order to compute the one partic
 
 ::
 
-    .LAMBDA
-     FALSE
+    Lambda equations are not solved
 
 keyword(NOTRIPLES)
 
@@ -105,6 +104,17 @@ Deactivates computation of triples energy corrections (useful for ExaTENSOR as t
 ::
 
     Triples are done
+
+keyword(CC2)
+
+Performs a CC2 calculation instead of the default CCSD. Currently supported only for energies.
+
+*Default:*
+
+::
+
+    CC2 is not activated
+
 
 keyword(MOINT_SCHEME)
 
@@ -149,14 +159,13 @@ NB: alpha and beta are used in a loose sense in relativistic calculations to ind
 
 keyword(CCDOUBLES)
 
-Perform CCD calculation (switch off the contributions of single excitations).
+Performs a CCD calculation instead of the default CCSD (switch off the contributions of single excitations).
 
 *Default:*
 
 ::
 
-    .CCDOUBLES
-     FALSE
+    CCDOUBLES is not activated
 
 keyword(EXA_BLOCKSIZE)
 

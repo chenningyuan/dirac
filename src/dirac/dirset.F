@@ -36,9 +36,6 @@ C***********************************************************************
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #ifdef MOD_CAP
       use memory
 #endif
@@ -96,9 +93,6 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-#ifdef MOD_INTEREST
-      IF(MDIRAC) call initialize_interest
-#endif
 C     Start RECP integral     
 C     ===================
       IF (ECPCALC) CALL RECP
