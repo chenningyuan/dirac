@@ -285,7 +285,7 @@ C***********************************************************************
       IF (DOIMPMOS) CALL IMPMOS()
 
 C     Attempt read of formatted MO coefficients
-      CALL PCMOIN()
+      IF(DOPCIN) CALL PCMOIN()
 
 C     Read C1 MO coefficients
       IF(DOACIN) CALL ACMOIN()

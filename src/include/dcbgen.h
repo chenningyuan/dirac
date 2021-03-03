@@ -40,7 +40,7 @@
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
      &        DOANA, DOPRP,          DOHRM, DOJACO,                     &
-     &        DOPUT,DORKBIMP,                                           &
+     &        DOPUT,DOPCIN,DORKBIMP,                                    &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
@@ -54,7 +54,7 @@
      &                FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA,    DOHRM, DOJACO,            &
      &                DOFCK3,                 DORKBIMP,                 & 
-     &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
+     &                DOPUT, DOPCIN, OPTIMI, HRINPC, RDINPC,            &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG, TWOCOMP,                  &

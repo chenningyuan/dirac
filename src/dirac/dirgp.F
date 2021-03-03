@@ -40,29 +40,91 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbimp.h"
+#include "dgroup.h"
 C
-      real(8), allocatable :: a_CMO(:),a_EIG(:)
-      integer, allocatable :: a_IBG(:)
-      logical :: file_is_there
+      real(8), allocatable :: CMO(:),EIG(:)
+      integer, allocatable :: IBEIG(:,:)
+      integer              :: IDIM(3,2)
+      logical              :: TOBE
+      character            :: LABEL*8,TEXT*74
 
       CALL QENTER('PCMOIN')
-
-      ! check whether DFPCMO is there, if not, simply return quietly
-      inquire(file='DFPCMO', exist=file_is_there)
-      if (.not. file_is_there) then
-         call qexit('PCMOIN')
-         return
-      end if
-
-      call alloc(a_CMO, N2BBASXQ*NKRBLK, id="CMO in PCMOIN")
-      call alloc(a_EIG, NORBT*NKRBLK,    id="EIG in PCMOIN")
-      call alloc(a_IBG, NORBT*NKRBLK,    id="IBG in PCMOIN")
-
-      CALL PCMOIN_1(a_CMO, a_EIG, a_IBG)
-
-      call dealloc(a_EIG)
-      call dealloc(a_CMO)
-      call dealloc(a_IBG)
+C
+C     Get coefficients from DFPCMO
+C
+      INQUIRE(FILE='DFPCMO',EXIST=TOBE)
+      IF(.NOT.TOBE) THEN
+          WRITE(LUPRI,'(A)') 
+     &      'PCMOIN: Formatted file DFPCMO not found !'
+          CALL QUIT('PCMOIN: Formatted file DFPCMO not found !')
+      ENDIF
+      OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
+     +     ACCESS='SEQUENTIAL')
+C
+      allocate(CMO(NCMOTQ*NKRBLK))
+      NEIG=NORBT*NKRBLK
+      allocate(EIG(NEIG))
+      allocate(IBEIG(NEIG,2))
+      REWIND LUCOEF
+ 10   CONTINUE
+      READ(LUCOEF,END=20,'(A8)') LABEL
+      SELECT CASE (LABEL)
+        CASE('INFO    ')
+          READ(LUCOEF,'(A74)',iostat=ierr) TEXT
+          IF (IERR /= 0) CALL QUIT('error reading DFPCMO: title line')
+          READ(LUCOEF,*,iostat=ierr) NFSYM,
+     &                             ((IDIM(I,J),I = 1,3),J=1,NFSYM)
+          IF (IERR /= 0) CALL 
+     &      QUIT('error reading DFPCMO: symmetry information')
+          READ(LUCOEF,'(E24.16)',iostat=ierr) TOTERG
+          IF (IERR /= 0) CALL QUIT('error reading DFPCMO: energy')
+          GOTO 10
+      CASE('COEFS   ')
+        READ(LUCOEF,'(6F22.16)',iostat=ierr) CMO
+        IF (IERR /= 0) CALL QUIT('error reading DFPCMO: coefficients')
+        GOTO 10
+      CASE('EVALS   ')
+        READ(LUCOEF,'(6E22.12)',iostat=ierr) EIG
+        IF (IERR /= 0) CALL QUIT('error reading DFPCMO: eigenvalues')
+        GOTO 10
+      CASE('SUPERSYM')
+        READ(LUCOEF,*,iostat=ierr) (IBEIG(I,1),I=1,NEIG)
+        IF (IERR /= 0) CALL QUIT('error reading DFPCMO: ibeig')
+      CASE('KAPPA   ')
+        READ(LUCOEF,*,iostat=ierr) (IBEIG(I,2),I=1,NEIG)
+        IF (IERR /= 0) CALL QUIT('error reading DFPCMO: ibeig2')
+      END SELECT
+ 20   CONTINUE
+      CLOSE(LUCOEF,STATUS='KEEP')
+C
+C     Write coefficients to either KRMCOLD or DFCOEF
+C
+      IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
+        CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
+        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ*NKRBLK)
+        CLOSE (LUKRMC,STATUS='KEEP')
+        IWRTMO = 1
+      ELSE
+        CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        CLOSE(LUCOEF,STATUS='KEEP')
+        IWRTMO = 2
+      END IF
+C
+      CALL PRSYMB(LUPRI,'=',75,0)
+      IF( IWRTMO .eq. 1 )THEN
+        WRITE(LUPRI,'(A)')
+     &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
+     &      '          and written to unformatted KRMCOLD'
+      ELSE IF( IWRTMO .eq. 2 )THEN
+        WRITE(LUPRI,'(A)')
+     &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
+     &      '          and written to unformatted DFCOEF'
+      END IF
+      CALL PRSYMB(LUPRI,'=',75,0)
+      deallocate(CMO)
+      deallocate(EIG)
+      deallocate(IBEIG)
 
       CALL QEXIT('PCMOIN')
 C
@@ -649,101 +711,6 @@ C
  20   CONTINUE
       CALL QUIT('REACMO: ERROR reading irrep supersymmetry '
      &  //LABEL)
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck pcmoin_1 */
-      SUBROUTINE PCMOIN_1(CMO,EIG,IBEIG)
-C*****************************************************************************
-C
-C     Read SCF/KRMCSCF-coefficients and eigenvalues from FORMATTED file
-C
-C     Written by T.Saue Feb 1997
-C     extended for KRMC modules - S. Knecht Nov 2008
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgen.h"
-#include "dcbpsi.h"
-#include "dcbdhf.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-      LOGICAL TOBE
-      CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),IBEIG(NORBT*NKRBLK)
-      DIMENSION IDIM(3,2)
-
-      integer :: itest, ierr
-
-C
-C     Get coefficients from DFPCMO
-C
-      INQUIRE(FILE='DFPCMO',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'PCMOIN: Formatted file DFPCMO not found !'
-          CALL QUIT('PCMOIN: Formatted file DFPCMO not found !')
-      ENDIF
-
-      WRITE(LUPRI,'(2X,A,$)') 'Reading formatted DFPCMO file...'
-      CALL FLUSH(LUPRI)
-
-      OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
-     +     ACCESS='SEQUENTIAL')
-
-      REWIND LUCOEF
-
-      READ(LUCOEF,'(A74)',iostat=ierr) TEXT
-      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: title line')
-
-      READ(LUCOEF,*,iostat=ierr) NFSYM,
-     &                             ((IDIM(I,J),I = 1,3),J=1,NFSYM)
-      IF (IERR /= 0) CALL 
-     & QUIT('error reading DFPCMO: symmetry information')
-
-      READ(LUCOEF,'(E24.16)',iostat=ierr) TOTERG
-      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: energy')
-
-      READ(LUCOEF,'(6F22.16)',iostat=ierr) CMO
-      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: coefficients')
-
-      READ(LUCOEF,'(6E22.12)',iostat=ierr) EIG
-      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: eigenvalues')
-
-      READ(LUCOEF,*,iostat=ierr) IBEIG
-      IF (IERR /= 0) CALL QUIT('error reading DFPCMO: ibeig')
-
-      CLOSE(LUCOEF,STATUS='KEEP')
-      WRITE(LUPRI,'(A)') 'Done.'
-C
-C     Write coefficients to either KRMCOLD or DFCOEF
-C
-      IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
-        CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
-        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ*NKRBLK)
-        CLOSE (LUKRMC,STATUS='KEEP')
-        IWRTMO = 1
-      ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
-        CLOSE(LUCOEF,STATUS='KEEP')
-        IWRTMO = 2
-      END IF
-C
-      CALL PRSYMB(LUPRI,'=',75,0)
-      IF( IWRTMO .eq. 1 )THEN
-        WRITE(LUPRI,'(A)')
-     &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
-     &      '          and written to unformatted KRMCOLD'
-      ELSE IF( IWRTMO .eq. 2 )THEN
-        WRITE(LUPRI,'(A)')
-     &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
-     &      '          and written to unformatted DFCOEF'
-      END IF
-      CALL PRSYMB(LUPRI,'=',75,0)
-C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmout_1 */
