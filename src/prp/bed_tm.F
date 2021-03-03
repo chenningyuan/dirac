@@ -1360,6 +1360,7 @@ C
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
 C                                                          
       real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
+      real(8), allocatable :: TMPOSCBED(:)
       integer, allocatable :: IBEIG(:)
       INTEGER MAXEXC, I
       call legacy_lwork_get(LWORK)                         
@@ -1370,6 +1371,7 @@ C
 C                                                          
       CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
      &                  global_communicator)
+      allocate(TMPOSCBED(MAXEXC))
       CAll interface_mpi_BCAST(NREDM,1,MPARID,
      &                  global_communicator)
 
@@ -1391,12 +1393,13 @@ C     * IBEIG
 
       allocate(CMO(N2BBASXQ))
       allocate(IBEIG(NTBAS(0)))
-      CALL BEDLEB(OMEGA,TMPISSYM,CMO,IBEIG, EVECR, IBTYP,
-     &                  IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
+      CALL BEDLEB(TMPOSCBED,OMEGA,TMPISSYM,CMO,IBEIG,EVECR,IBTYP,
+     &            IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
       deallocate(TMPISSYM)
       deallocate(OMEGA)
       deallocate(CMO)
       deallocate(IBEIG)
+      deallocate(TMPOSCBED)
       RETURN
 
       END
