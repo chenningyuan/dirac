@@ -23,7 +23,7 @@ shutil.copy('DFCOEF', 'DFHAT2')
 shutil.copy('DFCOEF', 'DFHAT3')
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N.inp'], ['N.mol'], f, '--get="DFCOEF DFACMO" --put="DFPCMO.N=DFPCMO"')
+test.run(['N.inp'], ['N.mol'], f, '--get="DFCOEF DFACMO"')
 shutil.copy('DFCOEF', 'DFCAT')
 
 # export coefficients to cs symmetry
@@ -31,7 +31,7 @@ test.run(['N_Cs.inp'], ['N_Cs.mol'], f, '--get=DFCOEF --put=DFACMO')
 shutil.copy('DFCOEF', 'DFNNNN')
 
 # run calculation for ammonia; note that it is flat ...
-test.run(['NH3.inp'], ['NH3.mol'], f, '--put="DFNNNN DFHAT1 DFHAT2 DFHAT3 DFPCMO.NH3=DFPCMO" ')
+test.run(['NH3.inp'], ['NH3.mol'], f, '--put="DFNNNN DFHAT1 DFHAT2 DFHAT3" ')
 
 # cleanup
 os.unlink('DFCOEF')
@@ -54,7 +54,7 @@ shutil.copy('DFCOEF', 'DFHAT2')
 shutil.copy('DFCOEF', 'DFHAT3')
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N_sf.inp'], ['N.mol'], f, '--get="DFCOEF DFACMO" --put="DFPCMO.N.sf=DFPCMO" ')
+test.run(['N_sf.inp'], ['N.mol'], f, '--get="DFCOEF DFACMO"')
 shutil.copy('DFCOEF', 'DFCAT')
 
 # export coefficients to cs symmetry
@@ -62,7 +62,7 @@ test.run(['N_Cs_sf.inp'], ['N_Cs.mol'], f, '--get=DFCOEF --put=DFACMO')
 shutil.copy('DFCOEF', 'DFNNNN')
 
 # run calculation for ammonia; note that it is flat ...
-test.run(['NH3_sf.inp'], ['NH3.mol'], f, '--put="DFNNNN DFHAT1 DFHAT2 DFHAT3 DFPCMO.NH3.sf=DFPCMO"')
+test.run(['NH3_sf.inp'], ['NH3.mol'], f, '--put="DFNNNN DFHAT1 DFHAT2 DFHAT3"')
 
 # cleanup
 os.unlink('DFCOEF')
