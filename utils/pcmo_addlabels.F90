@@ -44,8 +44,8 @@
      NC   = NC + NORB*IDIM(3,IFRP)
    ENDDO
 !  We do not know NZ; ask user
-   WRITE(5,*) 'Give parameter NZ'
-   READ(6,*) NZ
+   WRITE(6,*) 'Give parameter NZ'
+   READ(5,*) NZ
 !
    WRITE(LU2,'(A8)') 'INFO    '   
    WRITE(LU2,'(A74)') TEXT
@@ -74,6 +74,6 @@
    WRITE(LU2,'(66(X,I0))') IBEIG
    CLOSE(LU1)
    CLOSE(LU2)
-   WRITE(5,*) 'In the atomic case KAPPA-information must be added.'
+   WRITE(6,*) 'In the atomic case KAPPA-information must be added.'
    WRITE(6,*) 'The easiest solution in this case is to regenerate DFPCMO from scratch.'
  END PROGRAM PCMO_ADDLABELS
