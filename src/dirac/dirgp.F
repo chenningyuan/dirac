@@ -54,14 +54,13 @@ C
 
       CALL QENTER('PCMOIN')
 C
-C     Get coefficients from DFPCMO
+C     Get coefficients from DFPCMO;
+C     If file is not there, return quietly      
 C
       INQUIRE(FILE='DFPCMO',EXIST=TOBE)
       IF(.NOT.TOBE) THEN
-          WRITE(LUPRI,'(A)') 
-     &      'PCMOIN: Formatted file DFPCMO not found !'
-          CALL QUIT('PCMOIN: Formatted file DFPCMO not found !')
-      ENDIF
+        CALL QEXIT('PCMOIN')
+        RETURN
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
 C

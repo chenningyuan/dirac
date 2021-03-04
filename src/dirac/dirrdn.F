@@ -390,7 +390,7 @@ C
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
      &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
-     &             '.PCMOIN','.XXXXXX','.XXXXXX','.XXXXXX'/
+     &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
 C     NOGENINP is set, if there is no **GENERAL
@@ -576,8 +576,6 @@ C&&&& CODATA: Choose between CODATA sets
             END IF
             GO TO 100
   121    CONTINUE
-C&&&& PCMOIN: Read formatted coefficients
-         DOPCIN=.TRUE.
             GO TO 100
   122    CONTINUE
 C&&&& XXXXXX
@@ -5071,7 +5069,6 @@ C
       DOHRM    = .FALSE.
       DOJACO   = .FALSE.
       DOPUT    = .FALSE.
-      DOPCIN   = .FALSE.
       DOACUT   = .FALSE.
       DOACIN   = .FALSE.
       DORKBIMP = .FALSE.

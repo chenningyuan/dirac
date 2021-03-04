@@ -1084,6 +1084,7 @@ C
 C         Write identification of the blocks. 
 C
             ID = ID_SUB_BL(ISUB,IFSYM)
+            WRITE(0,*) 'TEST..',IFSYM,ISUB,ID 
             IF (SPINFR) THEN     ! Spinfree case
               WRITE(LUPRI,'(/2A)') '* Boson symmetry ',REP(ID)
               NAME_SUB2(ID) = '  '//REP(ID)
