@@ -17,6 +17,7 @@ f.add(from_string = ' Energy eigenvalues in atomic units',
 
 f.add(from_string = 'Isotropic oscillator strengths (full light-matter interaction) above threshold',
       to_string   = 'Sum of oscillator strengths (general length) :',
+      ignore_below = 1.0e-12,
       rel_tolerance   = 2.0e-4)
 
 test.run(['bed.inp'], ['Mg.xyz'], f)
