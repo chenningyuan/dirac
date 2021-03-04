@@ -30,7 +30,6 @@ Options:
   --lapack=<LAPACK>                      Detect and link LAPACK library (auto or off) [default: auto].
   --mkl=<MKL>                            Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
   --mpi                                  Enable MPI parallelization [default: False].
-  --omp                                  Enable OpenMP parallelization [default: False].
   --coverage                             Enable code coverage [default: False].
   --static                               Enable static linking [default: False].
   --profile                              Enable profiling [default: False]
@@ -69,7 +68,7 @@ def gen_cmake_command(options, arguments):
     command.append('-DBLAS_LANG=Fortran')
     command.append('-DLAPACK_LANG=Fortran')
     command.append('-DENABLE_MPI={0}'.format(arguments['--mpi']))
-    command.append('-DENABLE_OPENMP={0}'.format(arguments['--omp']))
+    command.append('-DENABLE_OPENMP=True')
     command.append('-DENABLE_CODE_COVERAGE={0}'.format(arguments['--coverage']))
     command.append('-DENABLE_STATIC_LINKING={0}'.format(arguments['--static']))
     command.append('-DENABLE_PROFILING={0}'.format(arguments['--profile']))
