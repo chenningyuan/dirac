@@ -80,9 +80,9 @@ contains
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(*),NVECS(2), &
                 CSEL(*),ESEL(*),IBSEL(*),IOFF(2)
 !     Local variables
-      LOGICAL LBIT
+      LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION IDIM(3,2)
+      DIMENSION IDIM(3,2),JDIM(2,0:3)
       REAL*8 CMCSCF_MAGIC
 !
       INTEGER, ALLOCATABLE :: KBAS(:)
@@ -93,17 +93,17 @@ contains
 !     Check if the file is in formatted or unformatted form
 !     =====================================================
 !
-      KEYFORM = 2
-      OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
-      READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
-      READ(IUNIT,*,IOSTAT=IER) IDUM
-!
-      IF(IER /= 0)THEN
-        CLOSE(IUNIT,STATUS='KEEP')
+!      KEYFORM = 2
+!      OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
+!      READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
+!      READ(IUNIT,*,IOSTAT=IER) IDUM
+
+!      IF(IER /= 0)THEN
+!        CLOSE(IUNIT,STATUS='KEEP')
         OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='UNFORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
         IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while opening file')
         KEYFORM = 1
-      ENDIF
+!      ENDIF
 !
       REWIND IUNIT
 !
@@ -111,7 +111,12 @@ contains
 !     ===============
 !
       IF(KEYFORM == 1)THEN
-        READ(IUNIT,END=10,ERR=20) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+        IF(FNDLAB('INFO    ',IUNIT)) THEN      
+          READ (IUNIT,END=10,ERR=20) TEXT,NSYM,NZBUF,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+        ELSE
+           CALL QUIT('SELOWN: Error reading info')
+        ENDIF
+!        READ(IUNIT,END=10,ERR=20) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
       ELSEIF(KEYFORM == 2)THEN
         READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
         IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while reading TEXT')
@@ -152,6 +157,10 @@ contains
       NCDIM = 0
       NEDIM = 0
       DO IFRP = 1,NFSYM
+        JDIM(IFRP,1) = IDIM(1,IFRP)
+        JDIM(IFRP,2) = IDIM(2,IFRP)
+        JDIM(IFRP,0) = IDIM(1,IFRP) + IDIM(2,IFRP)
+        JDIM(IFRP,3) = IDIM(3,IFRP)                 
         NEDIM = NEDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))
         NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
       ENDDO
@@ -161,31 +170,43 @@ contains
 !     =================
 !    
       IF(LBIT(IOPT_TMP,2)) THEN
-        CALL READT_MOD(IUNIT,NCDIM,CMO,KEYFORM)
-      ELSE
-        IF(KEYFORM == 1) READ(IUNIT)
-        IF(KEYFORM == 2) READ(IUNIT,*)
+        CALL REACMO_coefficients(IUNIT,CMO,NCDIM,NFSYM,NZ,    &
+     &           JDIM(1,0),JDIM(1,3),JDIM(1,1),JDIM(1,2),IDIM)         
       ENDIF
+!      IF(LBIT(IOPT_TMP,2)) THEN
+!        CALL READT_MOD(IUNIT,NCDIM,CMO,KEYFORM)
+!      ELSE
+!        IF(KEYFORM == 1) READ(IUNIT)
+!        IF(KEYFORM == 2) READ(IUNIT,*)
+!      ENDIF
 !
 !     Read eigenvalues
 !     ================
 !
       IF(LBIT(IOPT_TMP,3)) THEN
-        CALL READT_MOD(IUNIT,NEDIM,EIG,KEYFORM)
-      ELSE
-        IF(KEYFORM == 1) READ(IUNIT)
-        IF(KEYFORM == 2) READ(IUNIT,*)
+        CALL REACMO_eigenvalues(IUNIT,EIG,NEDIM,NFSYM,NZ, &
+     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
       ENDIF
+!      IF(LBIT(IOPT_TMP,3)) THEN
+!        CALL READT_MOD(IUNIT,NEDIM,EIG,KEYFORM)
+!      ELSE
+!        IF(KEYFORM == 1) READ(IUNIT)
+!        IF(KEYFORM == 2) READ(IUNIT,*)
+!      ENDIF
 !
 !     Read boson irrep info
 !     =====================
 !
       IF(LBIT(IOPT_TMP,4)) THEN
-        CALL READI_MOD(IUNIT,NEDIM,IBEIG,KEYFORM)
-      ELSE
-        IF(KEYFORM == 1) READ(IUNIT)
-        IF(KEYFORM == 2) READ(IUNIT,*)
+        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEDIM,NFSYM,NZ, &
+     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
       ENDIF
+!      IF(LBIT(IOPT_TMP,4)) THEN
+!        CALL READI_MOD(IUNIT,NEDIM,IBEIG,KEYFORM)
+!      ELSE
+!        IF(KEYFORM == 1) READ(IUNIT)
+!        IF(KEYFORM == 2) READ(IUNIT,*)
+!      ENDIF
 !
 !     Select and adjust format to molecular basis
 !     ===========================================
