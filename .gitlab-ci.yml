@@ -51,7 +51,7 @@ ubuntu_gnu_parallel32-check:
     - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
     - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker
     - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
-    - ./setup --mpi --omp --check --cmake-options="-D ENABLE_UNIT_TESTS=ON" build_parallel32
+    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build_parallel32
     #setting up ExaCorr environment
     - cd build_parallel32
     - make -j $N_PROC
@@ -79,6 +79,7 @@ ubuntu_intel_mkl_int64-check:
     - set -e
   script:
     - export TOOLKIT="INTEL"
+    - ulimit -s unlimited
     - uname -a
     - lscpu
     - free -h -g
@@ -91,7 +92,7 @@ ubuntu_intel_mkl_int64-check:
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --cmake-options="-D ENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=parallel  build_serial_intel
+    - ./setup --cmake-options="-DENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=parallel  build_serial_intel
     - cd build_serial_intel
     - make -j $N_PROC
     - ldd dirac.x
