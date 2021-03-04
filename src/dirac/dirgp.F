@@ -458,10 +458,10 @@ C
       WRITE(IUNIT,'(A8)') 'EVALS   '            
       WRITE(IUNIT,'(6E22.12)') EIG
       WRITE(IUNIT,'(A8)') 'SUPERSYM'
-      WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT)
+      WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT*NKRBLK)
       IF(SSYM) THEN
         WRITE(IUNIT,'(A8)') 'KAPPA   '
-        WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,2),I=1,NORBT)
+        WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,2),I=1,NORBT*NKRBLK)
       ENDIF
 C
       RETURN
