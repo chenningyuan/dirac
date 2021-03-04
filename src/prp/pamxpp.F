@@ -813,6 +813,14 @@ C.....Magnetic multipoles
         NPPAPT = NPPAPT + NDEG
       ENDDO
 C
+C     Consistency check
+C      
+      IF(DOBED) THEN
+        IF(ECPCALC.OR.BSS.OR.X2C) THEN
+          CALL QUIT('BED not implemented for 2c calculations !')
+        ENDIF
+      ENDIF
+C
 C     Print section
 C     =============
 C
