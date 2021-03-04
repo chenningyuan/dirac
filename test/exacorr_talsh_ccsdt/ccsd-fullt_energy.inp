@@ -22,14 +22,15 @@ X2C Hamiltonian. CC2 energies.
 30
 **EXACC
 .OCCUPIED
-energy -10000.0 0.0 0.001
+energy -5.0 0.0 0.001
 .VIRTUAL
-energy -1.0 1000000000. 0.001
-.CCSDfullT
+energy -1.0 5. 0.001
+#.CCSDfullT
+.CCSDT1
 .PRINT
 2
 .TALSH_BUFF
-200
+400
 **MOLECULE
 *COORDINATES
 .UNITS
@@ -38,5 +39,5 @@ AU
 .NOSYM
 *BASIS
 .DEFAULT
-cc-pVDZ
+STO-3G
 *END OF

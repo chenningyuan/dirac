@@ -19,6 +19,6 @@ f.add(from_string = 'Eigenvalues',
       num_lines   = 32,
       rel_tolerance   = 1.0e-5)
 
-test.run(['ccsdt-full_energy.inp'], ['LiH', 'h2o.xyz'], f)
+test.run(['ccsd-fullt_energy.inp'], ['LiH', 'h2o.xyz'], f)
 
 sys.exit(test.return_code)
