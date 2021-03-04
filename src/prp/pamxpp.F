@@ -2369,12 +2369,14 @@ C.....Oscillator strenghts: general length gauge
      &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
      &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
      &         (FOSC(1,IEXC,ISYM,IK),IK=0,K2ORD)
-            WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
+            IF(KVAL_OSC.GT.0) THEN
+               WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'Q-Q',(FOSC(2,IEXC,ISYM,IK),IK=0,K2ORD)
-            WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
+               WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'M-Q',(FOSC(3,IEXC,ISYM,IK),IK=0,K2ORD)
-            WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
+               WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
      &         'M-M',(FOSC(4,IEXC,ISYM,IK),IK=0,K2ORD)
+             ENDIF
           ENDIF
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
