@@ -1113,19 +1113,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !           set from kinetic balance.
 !           =======================================================
 !
-            IF(MDIRAC) THEN
-              CALL RKBBAS(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &                    IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,           &
-     &                    NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,             &
-     &                    CNTBAS)
-            ELSE
-              CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &             IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &             NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &             INPTST,CNTBAS)
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &           INPTST,CNTBAS)
 
-              BASREF(1,basindex,2) = ' Derived from large component'
-            END IF
+            BASREF(1,basindex,2) = ' Derived from large component'
 
           ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN

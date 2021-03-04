@@ -13,9 +13,10 @@ module exacc_cfg
   character(LENGTH), public :: string_occupied, string_virtual, string_occ_beta, string_vir_beta
   type(exacc_input), public :: exa_input
 
+contains
+
 #ifdef VAR_MPI
 
-contains
   subroutine exacc_sync_cw(exa_MPI_rank,my_MPI_rank)
 !
 ! please add bcast here if a new variable has been added to the list above

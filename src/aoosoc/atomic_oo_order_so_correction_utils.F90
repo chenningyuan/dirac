@@ -31,9 +31,9 @@
 module atomic_oo_order_so_correction_utils
 
   use picture_change_operations
-#ifdef MOD_INTEREST
-  use module_interest_interface
-#endif
+!#ifdef MOD_INTEREST
+!  use module_interest_interface
+!#endif
   use x2c_utils, only: print_x2cmat
 
 
@@ -251,12 +251,13 @@ contains
       !         we will thus do it differently for the time being...
       ! g[(ll|ss)+(ss|ss)] = gg[(ll|ll)+(ll|ss)+(ss|ss)] - g[(ll|ll)]
 
-      call process_two_electron_integrals_4comp(               &
-                                                fmat(1,1,1,1), &
-                                                dmat(1,1,1,1), &
-                                                intflg_local,  & !all classes by default
-                                                hfxfac         &
-                                               )
+      call quit( 'aoosoc module is not currently supported by InteRest' )
+      !all process_two_electron_integrals_4comp(               &
+      !                                         fmat(1,1,1,1), &
+      !                                         dmat(1,1,1,1), &
+      !                                         intflg_local,  & !all classes by default
+      !                                         hfxfac         &
+      !                                        )
 #ifdef OLD_VERSION_AOOSOC
       allocate(fmat_local(nrows,ncols,nz,1))
       fmat_local = 0

@@ -15,7 +15,7 @@ module exacorr_cc
 
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0), &
-                                 ONE_QUARTER=(0.25D0,0.D0), &
+                                 ONE_QUARTER=(0.25D0,0.D0), MINUS_ONE_QUARTER=(-0.25D0,0.D0),  &
                                  MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0), &
                                  THREE=(3.D0,0.D0),SIX=(6.D0,0.D0)
         type(tens_rcrsv_t),public :: one_tensor
@@ -292,7 +292,7 @@ module exacorr_cc
                 call diis(comm_t%t2,mode=2)
             end if
 
-            if (lambda ) then
+            if (lambda.and..not.CC2) then
              call print_date('-Start- Lambda Equations')
 !            construct lambda tensors + initialize with t-amplitudes
              if (.not.CCD) then
@@ -325,6 +325,8 @@ module exacorr_cc
              if (.not.CCD) ierr=exatns_tensor_destroy(l1_tensor)
              ierr=exatns_tensor_destroy(l2_tensor)
              call print_date('-End- Lambda Equations')
+            else
+               write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release'
             end if
 
             ierr=exatns_tensor_destroy(int_t%oooo)
@@ -505,7 +507,7 @@ module exacorr_cc
            ': Number of segments = ', branch_factor*(2**(tavp_mng_depth-1)) !debug
          num_blocks=num_blocks*(branch_factor*(2**(tavp_mng_depth-1)))**2
          
-         if(exa_input%print_level.gt.-1) write (*,'(A,I9,A,I9)') &
+         if(exa_input%print_level.gt.-1 .and. my_MPI_rank == 0) write (*,'(A,I9,A,I9)') &
            'number of blocks = ',num_blocks,'; number of MPI processes =',MPI_size
          
          if(num_blocks<MPI_size) then
@@ -961,13 +963,23 @@ module exacorr_cc
          type(denom_t)        :: denom
 !        solution tensors
          type(tens_rcrsv_t) :: s1_tensor, s2_tensor
+
 !        intermediary tensor for handling permutation symmetry
          type(tens_rcrsv_t) :: intm_p2_tensor, intm_vvvv_tensor
-!        intermediate
-!!         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
+
+! Add tensor usefull to avoid tauCC2_tensor 
+         type(tens_rcrsv_t) :: Hovvv_CC2_tensor,Hvovv_CC2_tensor
+         type(tens_rcrsv_t) :: Hvvov_CC2_tensor,Hvvvo_CC2_tensor
+         type(tens_rcrsv_t) :: Hooov_CC2_tensor,Hoovo_CC2_tensor
+         type(tens_rcrsv_t) :: Hvooo_CC2_tensor,Hovoo_CC2_tensor
+
+        
+! Intermediate for old tauCC2 method
          type(tens_rcrsv_t) :: t1t1_tensor, tauCC2_tensor
+
          type(tens_rcrsv_t) :: cint_vvvo_tensor, cint_ovoo_tensor
          type(tens_rcrsv_t) :: Wabef_CC2_tensor, Wmnij_CC2_tensor
+         type(tens_rcrsv_t) :: Wabej_tensor, Wmbij_tensor
 !        auxiliary tensors
          type(tens_rcrsv_t) :: hov_aux_tensor, hoo_aux_tensor
 !        result tensor
@@ -980,6 +992,17 @@ module exacorr_cc
          integer(INTL),dimension(2) :: oo_root,ov_root,vo_root
          integer(INTL),dimension(4) :: ovoo_root,vvoo_root,vvvo_root
          integer(INTL),dimension(4) :: vvvv_root, oooo_root
+
+! Add new dims for Hxxxx 
+         integer(INTD),dimension(4) :: ovvv_id , vovv_id
+         integer(INTD),dimension(4) :: vvov_id 
+         integer(INTD),dimension(4) :: oovo_id , ooov_id 
+         integer(INTD),dimension(4) :: vooo_id
+
+         integer(INTL),dimension(4) :: ovvv_root , vovv_root
+         integer(INTL),dimension(4) :: vvov_root 
+         integer(INTL),dimension(4) :: oovo_root , ooov_root
+         integer(INTL),dimension(4) :: vooo_root
 
          real(8) :: t_convergence
 
@@ -1014,6 +1037,22 @@ module exacorr_cc
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
          oooo_root = (/occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
 
+! New dims for Hxxxx
+         ovvv_id   = (/occ_space_id,vir_space_id,vir_space_id,vir_space_id/)
+         vovv_id   = (/vir_space_id,occ_space_id,vir_space_id,vir_space_id/)
+         vvov_id   = (/vir_space_id,vir_space_id,occ_space_id,vir_space_id/)
+         oovo_id   = (/occ_space_id,occ_space_id,vir_space_id,occ_space_id/)
+         ooov_id   = (/occ_space_id,occ_space_id,occ_space_id,vir_space_id/)
+         vooo_id   = (/vir_space_id,occ_space_id,occ_space_id,occ_space_id/)
+         ovvv_root   = (/occ_space_root,vir_space_root,vir_space_root,vir_space_root/)
+         vovv_root   = (/vir_space_root,occ_space_root,vir_space_root,vir_space_root/)
+         vvov_root   = (/vir_space_root,vir_space_root,occ_space_root,vir_space_root/)
+         oovo_root   = (/occ_space_root,occ_space_root,vir_space_root,occ_space_root/)
+         ooov_root   = (/occ_space_root,occ_space_root,occ_space_root,vir_space_root/)
+         vooo_root   = (/vir_space_root,occ_space_root,occ_space_root,occ_space_root/)
+
+         ierr=exatns_tensor_create(Wabej_tensor,"Wabej",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Wmbij_tensor,"Wmbij",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
 !        Initialize scalar that are to be used as tensors in contractions
          ierr=exatns_tensor_create(result_t_tensor,"result_t",EXA_DATA_KIND_C8)
@@ -1026,19 +1065,22 @@ module exacorr_cc
          end if
          ierr=exatns_tensor_create(s2_tensor,"s2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(intm_p2_tensor,"cc2_intm_p2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-!!         ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-!!         ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
          ierr=exatns_tensor_create(cint_vvvo_tensor,"cint_vvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(cint_ovoo_tensor,"cint_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
-
-         ierr=exatns_tensor_create(t1t1_tensor,"t1t1",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(tauCC2_tensor,"tauCC2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-
          ierr=exatns_tensor_create(intm_vvvv_tensor,"cc2_intm_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-
          ierr=exatns_tensor_create(Wabef_CC2_tensor,"Wabef_CC2",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(Wmnij_CC2_tensor,"Wmnij_CC2",oooo_id,oooo_root,EXA_DATA_KIND_C8)
+
+! Create intermediaites tensor 
+         ierr=exatns_tensor_create(Hovvv_CC2_tensor,"Hovvv_CC2",ovvv_id,ovvv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvovv_CC2_tensor,"Hvovv_CC2",vovv_id,vovv_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvvov_CC2_tensor,"Hvvov_CC2",vvov_id,vvov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvvvo_CC2_tensor,"Hvvvo_CC2",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hooov_CC2_tensor,"Hooov_CC2",ooov_id,ooov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hoovo_CC2_tensor,"Hoovo_CC2",oovo_id,oovo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hvooo_CC2_tensor,"Hvooo_CC2",vooo_id,vooo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(Hovoo_CC2_tensor,"Hovoo_CC2",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
 
 ! resorted integrals nedded below
 
@@ -1050,110 +1092,118 @@ module exacorr_cc
 
          do iccsd = 1, ncycles
 
-!          call get_tau(comm_t,CCD,one_tensor) !L : See : is it usefull for CC2
-!          if (debug_local) print*, "Tau    = ", print_tensornorm2(comm_t%tau)*ONE_QUARTER
-!          if (debug_local) print*, "t1    = ",print_tensornorm2(comm_t%t1)
-!          if (debug_local) print*, "t2    = ",print_tensornorm2(comm_t%t2)
+          ierr=exatns_tensor_init(s2_tensor,'ZERO')
+          if (debug_local) print*, "norm s2 tensor at the start of CC2 t2",print_tensornorm2(s2_tensor)
 
           if (iccsd==1) then
- !         creation of tau-like intermediates for cc2
- !
- !         a. tau_CC2 = t^a_i t^b_j - t^a_j t^b_i
-           ierr=exatns_tensor_init(tauCC2_tensor,'ZERO')
-           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,i)*T(b,j)",tauCC2_tensor,comm_t%t1,comm_t%t1)
-           ierr=exatns_tensor_contract("T(a,b,i,j)+=T(a,j)*T(b,i)",tauCC2_tensor,comm_t%t1,comm_t%t1,MINUS_ONE)
-
-           ierr=exatns_tensor_init(comm_t%tau,'ZERO')
-           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",comm_t%tau,tauCC2_tensor,one_tensor)
-           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",comm_t%tau,comm_t%t2,one_tensor)
-          else
-           ierr=exatns_tensor_init(tauCC2_tensor,'ZERO')
-           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",tauCC2_tensor,comm_t%tau,one_tensor)
-           ierr=exatns_tensor_contract("T(a,b,i,j)+=H(a,b,i,j)*K()",tauCC2_tensor,comm_t%t2,one_tensor,MINUS_ONE)
+                 call get_tau(comm_t,CCD,one_tensor)
+                 if (debug_local) print *, " call get_tau "
           end if
-
 
           ierr=exatns_tensor_init(s2_tensor,'ZERO')
           if (debug_local) print*, "norm s2 tensor at the start of CC2 t2",print_tensornorm2(s2_tensor)
 
 !         creation of tau like intermediates for CC2
-!
+
 !         create \ts ai \ts bj in intermediate storage
           ierr=exatns_tensor_init(intm_p2_tensor,'ZERO')
           ierr=exatns_tensor_contract("I(a,b,i,j)+=T(a,i)*T(b,j)",intm_p2_tensor,comm_t%t1,comm_t%t1) 
 
-!         a. tau_CC2=\ts ai \ts bj -\ts aj \ts bi 
-          ierr=exatns_tensor_init(tauCC2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,i,j)*K()",tauCC2_tensor,intm_p2_tensor,one_tensor)
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,j,i)*K()",tauCC2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
-          if (debug_local) print*, "norm contraction tauCC2",print_tensornorm2(tauCC2_tensor)
+      !         Diagramme 15 \Sd abij = \V abij   ! Inversion 
+         ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
+         if (debug_local) print*, "norm s2 tensor after diagram 15 ",print_tensornorm2(s2_tensor)
 
-!         b. t1t1 = \ts ai \ts bj 
-          ierr=exatns_tensor_init(t1t1_tensor,'ZERO')
-          ierr=exatns_tensor_contract("T(a,b,i,j)+=I(a,b,i,j)*K()",t1t1_tensor,intm_p2_tensor,one_tensor)
-          if (debug_local) print*, "norm t1t1_tensor ",print_tensornorm2(t1t1_tensor)
+         ierr=exatns_tensor_init(Wabej_tensor,'ZERO')
+         ierr=exatns_tensor_init(Wmbij_tensor,'ZERO')
+         ierr=exatns_tensor_contract("W(a,b,e,j)+=C(a,b,e,j)*K()",Wabej_tensor,cint_vvvo_tensor,one_tensor,ONE)   !v3o
 
+         ierr=exatns_tensor_contract("W(a,b,e,j)+=T(a,m)*V(b,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,ONE_HALF)  !v3o2
+         ierr=exatns_tensor_contract("W(a,b,e,j)+=T(b,m)*V(a,m,e,j)",Wabej_tensor,comm_t%t1,int_t%vovo,MINUS_ONE_HALF) !v3o2
+         if (debug_local) print *, "Wabej : norm " ,print_tensornorm2(Wabej_tensor)
 
-!         Diagramme 15 \Sd abij = \V abij   ! Inversion 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=V+(i,j,a,b)*K()",s2_tensor,int_t%oovv,one_tensor)
-          if (debug_local) print*, "norm s2 tensor after diagram 15 ",print_tensornorm2(s2_tensor)
+         ierr=exatns_tensor_contract("S(a,b,i,j)=T(e,i)*W(a,b,e,j)",s2_tensor,comm_t%t1,Wabej_tensor,ONE)  !v3o2
+         ierr=exatns_tensor_contract("S(a,b,i,j)=T(e,j)*W(a,b,e,i)",s2_tensor,comm_t%t1,Wabej_tensor,MINUS_ONE) !v3o2
 
-!         Diagramme 16 \Sd abij = - \Pm ij \Pm ab \ts ei \ts am \V mbej
-!         store term that will contribute the four permutations on intm_p2_tensor: \ts ei \ts am \V mbej
-          ierr=exatns_tensor_init(intm_p2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("I(a,b,i,j)+=V(b,m,e,j)*T(e,a,i,m)",intm_p2_tensor,int_t%vovo,t1t1_tensor)
+         ierr=exatns_tensor_contract("W(m,b,i,j)+=C(m,b,i,j)*K()",Wmbij_tensor,cint_ovoo_tensor,one_tensor,ONE)  !vo3
 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=I(b,a,j,i)*K()",s2_tensor,intm_p2_tensor,one_tensor)
+         ierr=exatns_tensor_contract("W(m,b,i,j)+=T(e,i)*V(b,m,e,j)",Wmbij_tensor,comm_t%t1,int_t%vovo,MINUS_ONE_HALF) !v2o3
+         ierr=exatns_tensor_contract("W(m,b,i,j)+=T(e,j)*V(b,m,e,i)",Wmbij_tensor,comm_t%t1,int_t%vovo,ONE_HALF) !v2o3
+         if (debug_local) print *, "Wmbij : norm ",print_tensornorm2(Wmbij_tensor)
 
-          if (debug_local) print*, "norm s2 tensor after diagram 16 ",print_tensornorm2(s2_tensor)
-
-!         Diagram 19 : \Sd abij = + \Pm ij \ts ei \V abej
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,j)*T(e,i)",s2_tensor,cint_vvvo_tensor,comm_t%t1)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(a,b,e,i)*T(e,j)",s2_tensor,cint_vvvo_tensor,comm_t%t1,MINUS_ONE)
-          if (debug_local) print*, "norm s2 tensor after diagram 19",print_tensornorm2(s2_tensor)
-
-!         Diagram 20 : \Sdabij = - \Pm ab \ts am \V mbij 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,b,i,j)*T(a,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1,MINUS_ONE)
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=C(m,a,i,j)*T(b,m)",s2_tensor,cint_ovoo_tensor,comm_t%t1)
-          if (debug_local) print*, "norm s2 tensor after diagram 20",print_tensornorm2(s2_tensor)
+         ierr=exatns_tensor_contract("S(a,b,i,j)=T(a,m)*W(m,b,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,MINUS_ONE) !v2o3
+         ierr=exatns_tensor_contract("S(a,b,i,j)=T(b,m)*W(m,a,i,j)",s2_tensor,comm_t%t1,Wmbij_tensor,ONE) !v2o3
 
 !         additional CC2 W intermediates
 !
 !         a.\W mnij = \V mnij +\Pm ij \ts ej \V mnie +\unquart \Pm ij \ts ei \ts fj \V mnef
           ierr=exatns_tensor_init(Wmnij_CC2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
-          ierr=exatns_tensor_contract("W(m,n,i,j)+=V(m,n,e,f)*T(e,f,i,j)",&
-          Wmnij_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,i,j)*K()",Wmnij_CC2_tensor,int_t%oooo,one_tensor)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,i,e)*T(e,j)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=V(m,n,j,e)*T(e,i)",Wmnij_CC2_tensor,int_t%ooov,comm_t%t1,MINUS_ONE)
+
+          ierr=exatns_tensor_init(Hoovo_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hoovo_CC2(m,n,e,j)+=V(m,n,e,f)*T(f,j)",&
+              &       Hoovo_CC2_tensor,int_t%oovv,comm_t%t1)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=Hoovo_CC2(m,n,e,j)*T(e,i)",&
+              &       Wmnij_CC2_tensor,Hoovo_CC2_tensor,comm_t%t1,ONE_QUARTER)
+          ierr=exatns_tensor_init(Hooov_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hooov_CC2(m,n,j,f)+=V(m,n,e,f)*T(e,j)",&
+              &       Hooov_CC2_tensor,int_t%oovv,comm_t%t1)
+          ierr=exatns_tensor_contract("Wmnij_CC2(m,n,i,j)+=Hooov_CC2(m,n,j,f)*T(f,i)",&
+              &       Wmnij_CC2_tensor,Hooov_CC2_tensor,comm_t%t1,MINUS_ONE_QUARTER)
+          if (debug_local) print*, "norm WmnijCC2 new method",print_tensornorm2(Wmnij_CC2_tensor)
 
 !         b.\W abef= \V abef -\Pm ab \ts bm \V amef +\unquart \Pm ab \ts am \ts bn \Vmnef
+
           ierr=exatns_tensor_init(intm_vvvv_tensor,'ZERO')
           ierr=exatns_tensor_contract("I(a,b,e,f)+=V(a,m,e,f)*T(b,m)",intm_vvvv_tensor,int_t%vovv,comm_t%t1)
 
           ierr=exatns_tensor_init(Wabef_CC2_tensor,'ZERO')
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
-          ierr=exatns_tensor_contract("W(a,b,e,f)+=V(m,n,e,f)*T(a,b,m,n)",&
-          Wabef_CC2_tensor,int_t%oovv,tauCC2_tensor,ONE_QUARTER)
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=V(a,b,e,f)*K()",Wabef_CC2_tensor,int_t%vvvv,one_tensor)
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=I(a,b,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor,MINUS_ONE)
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=I(b,a,e,f)*K()",Wabef_CC2_tensor,intm_vvvv_tensor,one_tensor)
 
+          ierr=exatns_tensor_init(Hvovv_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_init(Hovvv_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hvovv_CC2(a,n,e,f)+=V(m,n,e,f)*T(a,m)",&
+                & Hvovv_CC2_tensor,int_t%oovv,comm_t%t1,ONE)        !Operation cost : v^3*o^2
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=Hvovv_CC2(a,n,e,f)*T(b,n)",&
+                & Wabef_CC2_tensor,Hvovv_CC2_tensor,comm_t%t1,ONE_QUARTER)!Operation cost : v^4*o
+          ierr=exatns_tensor_contract("Hovvv_CC2(m,a,e,f)+=V(m,n,e,f)*T(a,n)",&
+                & Hovvv_CC2_tensor,int_t%oovv,comm_t%t1,ONE)        !Operation cost :v^3*o^2
+          ierr=exatns_tensor_contract("Wabef_CC2(a,b,e,f)+=Hovvv_CC2(m,a,e,f)*T(b,m)",&
+                & Wabef_CC2_tensor,Hovvv_CC2_tensor,comm_t%t1,MINUS_ONE_QUARTER) ! Operation cost : v^4*o
+          if (debug_local) print*, "norm Wabef",print_tensornorm2(Wabef_CC2_tensor)
 
 !         Diagrams using the CC2 W intermediates above
 !
 !         Diagram 21XX : \Sd abij = \undemi \Pm ab \ts am \ts bn \W mnij
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=Wmnij(m,n,i,j)*T(a,b,m,n)",&
-          s2_tensor,Wmnij_CC2_tensor,tauCC2_tensor,ONE_HALF)
-          if (debug_local) print*, "norm s2 tensor after diagram 21",print_tensornorm2(s2_tensor)
+
+           ierr=exatns_tensor_init(Hvooo_CC2_tensor,'ZERO')
+           ierr=exatns_tensor_contract("Hvooo_CC2(a,n,i,j)+=Wmnij_CC2(m,n,i,j)*T(a,m)",&
+               & Hvooo_CC2_tensor,Wmnij_CC2_tensor,comm_t%t1,ONE)
+           ierr=exatns_tensor_contract("S(a,b,i,j)+=Hvooo_CC2(a,n,i,j)*T(b,n)",&
+               & s2_tensor,Hvooo_CC2_tensor,comm_t%t1,ONE_HALF)
+           ierr=exatns_tensor_init(Hovoo_CC2_tensor,'ZERO')
+           ierr=exatns_tensor_contract("Hovoo_CC2(m,a,i,j)+=Wmnij_CC2(m,n,i,j)*T(a,n)",&
+               & Hovoo_CC2_tensor,Wmnij_CC2_tensor,comm_t%t1,ONE)
+           ierr=exatns_tensor_contract("S(a,b,i,j)+=Hovoo_CC2(m,a,i,j)*T(b,m)",&
+               & s2_tensor,Hovoo_CC2_tensor,comm_t%t1,MINUS_ONE_HALF)
+           if (debug_local) print*, "norm s2 tensor after diagram 21",print_tensornorm2(s2_tensor)
 
 !         Diagram 22XX : \Sd abij = \undemi \Pm ij \ts ei \ts fj \W abef 
-          ierr=exatns_tensor_contract("S(a,b,i,j)+=Wabef(a,b,e,f)*T(e,f,i,j)",&
-          s2_tensor,Wabef_CC2_tensor,tauCC2_tensor,ONE_HALF)
-          if (debug_local) print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
 
+          ierr=exatns_tensor_init(Hvvov_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_init(Hvvvo_CC2_tensor,'ZERO')
+          ierr=exatns_tensor_contract("Hvvov_CC2(a,b,i,f)+=Wabef_CC2(a,b,e,f)*T(e,i)",&
+                & Hvvov_CC2_tensor,Wabef_CC2_tensor,comm_t%t1,ONE)    ! Operationcost : v^4*o
+          ierr=exatns_tensor_contract("S(a,b,i,j)+= Hvvov_CC2(a,b,i,f)*T(f,j)",&
+                & s2_tensor,Hvvov_CC2_tensor,comm_t%t1,ONE_HALF)    !Operation cost : v^3*o^2
+          ierr=exatns_tensor_contract("Hvvvo_CC2(a,b,e,i)+=Wabef_CC2(a,b,e,f)*T(f,i)",&
+                & Hvvvo_CC2_tensor,Wabef_CC2_tensor,comm_t%t1,ONE)  !Operation cost : v^4*o
+          ierr=exatns_tensor_contract("S(a,b,i,j)+= Hvvvo_CC2(a,b,e,i)*T(e,j)",&
+                & s2_tensor,Hvvvo_CC2_tensor,comm_t%t1,MINUS_ONE_HALF)     !  Operation cost : v^3*o^2
+          if (debug_local)  print*, "norm s2 tensor after diagram 22",print_tensornorm2(s2_tensor)
 
 ! Always check that the Fock matrix is called before, in comm_t 
 
@@ -1173,7 +1223,6 @@ module exacorr_cc
           ierr=exatns_tensor_contract("S(a,b,i,j)+=I(a,b,i,j)*K()",s2_tensor,intm_p2_tensor,one_tensor)
           if (debug_local) print*, "norm s2 tensor after diagram 24",print_tensornorm2(s2_tensor)
 
-! Clean LH 170420
 !         vv
           call get_hvv(comm_t,int_t%oovv,one_tensor)
           call get_gvv(comm_t,int_t%vovv,CCD,one_tensor)
@@ -1216,7 +1265,6 @@ module exacorr_cc
              write(*,'(A7,E20.15)') "hint  = ",print_tensornorm2 (comm_t%h_int)
           end if
 
-!End clean LH 170420
 
 !         calculate s1 tensor
           if (.not.CCD) then
@@ -1294,18 +1342,30 @@ module exacorr_cc
          if (t_convergence .gt. t_target_precision) print*, "WARNING: Non-converged amplitudes!"
          write(*,*) ""
 
+
          if (.not.CCD) ierr=exatns_tensor_destroy(s1_tensor)
          ierr=exatns_tensor_destroy(s2_tensor)
-!!         ierr=exatns_tensor_destroy(tau2_tensor)
-!!         ierr=exatns_tensor_destroy(cint_tensor)
-         ierr=exatns_tensor_destroy(t1t1_tensor)
-         ierr=exatns_tensor_destroy(tauCC2_tensor)
+
          ierr=exatns_tensor_destroy(cint_ovoo_tensor)
          ierr=exatns_tensor_destroy(cint_vvvo_tensor)
          ierr=exatns_tensor_destroy(Wmnij_CC2_tensor)
          ierr=exatns_tensor_destroy(Wabef_CC2_tensor)
+         ierr=exatns_tensor_destroy(Wmbij_tensor)
+         ierr=exatns_tensor_destroy(Wabej_tensor)
+
          ierr=exatns_tensor_destroy(intm_p2_tensor)
+                if (debug_local) print*, "Destroy h",ierr
          ierr=exatns_tensor_destroy(intm_vvvv_tensor)
+
+         ierr=exatns_tensor_destroy(Hooov_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hoovo_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hovoo_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hvooo_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hvvov_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hvvvo_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hovvv_CC2_tensor)
+         ierr=exatns_tensor_destroy(Hvovv_CC2_tensor)
+
          if (.not.CCD) then
             ierr=exatns_tensor_destroy(hoo_aux_tensor)
             ierr=exatns_tensor_destroy(hov_aux_tensor)
@@ -1757,14 +1817,9 @@ module exacorr_cc
          integer(INTD) :: ierr
 
          write(*,*) ""
-         write(*,'(A)') "*******************************************************************************"
+         write(*,'(A)')"*******************************************************************************"
          write(*,'(A)') "********************** Solving Left Eigenvector Equation **********************"
-         write(*,'(A)') "*******************************************************************************"
-         write(*,*) ""
-         write(*,*) ""
-         write(*,'(A)') "*******************************************************************************"
-         write(*,'(A)') "**********************         CC2 Methode 3             **********************"
-         write(*,'(A)') "*******************************************************************************"
+         write(*,'(A)')"*******************************************************************************"
          write(*,*) ""
 
          if (.not.present(l1_tensor)) CCD = .true.
@@ -1799,61 +1854,34 @@ module exacorr_cc
          vvvo_root = (/vir_space_root, vir_space_root, vir_space_root, occ_space_root/)
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
-   print *,'aaa'
-
 
 !***************************************
 !        construct fixed intermediates *
 !***************************************
-
          ierr=exatns_tensor_create(lambda_t%fbar_oo,"fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-print *,'aab',ierr
          ierr=exatns_tensor_create(lambda_t%fbar_ov,"fbar_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
-print *,'aac',ierr
          ierr=exatns_tensor_create(lambda_t%fbar_vv,"fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-print *,'aad',ierr
          ierr=exatns_tensor_create(lambda_t%w_oooo,"w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8)
-print *,'aae',ierr
          ierr=exatns_tensor_create(lambda_t%w_ovoo,"w_ovoo",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
-print *,'aaf',ierr
          ierr=exatns_tensor_create(lambda_t%w_ooov,"w_ooov",ooov_id,ooov_root,EXA_DATA_KIND_C8)
-print *,'aag',ierr
          ierr=exatns_tensor_create(lambda_t%w_vovo,"w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
-print *,'aah',ierr
          ierr=exatns_tensor_create(lambda_t%wbar_vovo,"wbar_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)
-print *,'aai',ierr
          ierr=exatns_tensor_create(lambda_t%w_vvvo,"w_vvvo",vvvo_id,vvvo_root,EXA_DATA_KIND_C8)
-print *,'aaj',ierr
          ierr=exatns_tensor_create(lambda_t%w_vovv,"w_vovv",vovv_id,vovv_root,EXA_DATA_KIND_C8)
-print *,'aak',ierr
          ierr=exatns_tensor_create(lambda_t%w_vvvv,"w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-print *,'aal',ierr
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
 
 !***
 ! List of NEW INTERMEDIATES for the CC2 Method
 !***
          ierr=exatns_tensor_create(lambda_t_CC2%fbar_oo,"cc2_fbar_oo",oo_id,oo_root,EXA_DATA_KIND_C8)  
-print *,'aba',ierr
-!         ierr=exatns_tensor_create(lambda_t_CC2%fbar_ov,"fbar_ov",oo_id,oo_root,EXA_DATA_KIND_C8) 
          ierr=exatns_tensor_create(lambda_t_CC2%fbar_vv,"cc2_fbar_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-print *,'abb',ierr
          ierr=exatns_tensor_create(lambda_t_CC2%w_oooo,"cc2_w_oooo",oooo_id,oooo_root,EXA_DATA_KIND_C8) 
-print *,'abc',ierr
 !!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same
 !as in    CCSD and for \Lambda_1 either : 
          ierr=exatns_tensor_create(lambda_t_CC2%w_vovo,"cc2_w_vovo",vovo_id,vovo_root,EXA_DATA_KIND_C8)! Usefull in CC2 - Same part as h_int
-print *,'abd',ierr
 !!!!!!
          ierr=exatns_tensor_create(lambda_t_CC2%w_vvvv,"cc2_w_vvvv",vvvv_id,vvvv_root,EXA_DATA_KIND_C8)
-print *,'abe',ierr
-!*
-! End of list
-!*
-
-
-
-
 !******************************************
 !        obtain intermediates from CC(S)D *
 !******************************************
@@ -1866,11 +1894,6 @@ print *,'abe',ierr
          call get_hov(comm_t,int_t%oovv,one_tensor)
          call get_a(comm_t,int_t,CCD,one_tensor)
          call print_date("Finished calculating common blocks")
-
-
-
-
-
 
 !*********************************
 !        get fixed intermediates *
@@ -1890,14 +1913,10 @@ print *,'abe',ierr
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD,one_tensor)
          call print_date('Finished calculating fixed intermediates')
 
-!        if (print_level > 0) then
+         if (print_level > 0) then
            if (.not.CCD) print*, "T1amp      = ", print_tensornorm2(comm_t%t1)
            print*, "T2amp      = ", print_tensornorm2(comm_t%t2)*0.25D0
-           ! print*, "Tau        = ", print_tensornorm2(comm_t%tau)*0.25D0
-           ! print*, "Fbar_oo    = ", print_tensornorm2(lambda_t%fbar_oo)*0.5D0
            print*, "Fbar_ov    = ", print_tensornorm2(lambda_t%fbar_ov)
-           ! print*, "Fbar_vv    = ", print_tensornorm2(lambda_t%fbar_vv)*0.5D0
-           ! print*, "w_vvvv     = ", print_tensornorm2(lambda_t%w_vvvv)*0.25D0
            print*, "wbar_vovo  = ", print_tensornorm2(lambda_t%wbar_vovo)
            print*, "w_vvvo     = ", print_tensornorm2(lambda_t%w_vvvo)*0.5D0
            print*, "w_vovv     = ", print_tensornorm2(lambda_t%w_vovv)*0.5D0
@@ -1905,7 +1924,7 @@ print *,'abe',ierr
            print*, "w_ovoo     = ", print_tensornorm2(lambda_t%w_ovoo)*0.5D0
            print*, "w_ooov     = ", print_tensornorm2(lambda_t%w_ooov)*0.5D0
            print*, "w_oooo     = ", print_tensornorm2(lambda_t%w_oooo)*0.25D0
-!        end if
+         end if
 
 !****************************************
 !        get CC2 Specific Intermediates *
@@ -1915,9 +1934,7 @@ print *,'abe',ierr
          vvoo_id = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
          vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
 
-!ierr=exatns_tensor_create(lambda_t%fbar_ov,"fbar_ov",ov_id,ov_root,EXA_DATA_KIND_C8)
-
-         ! comm_t_CC2 t1 and t2 = comm_t  L! :maybe clean
+         ! comm_t_CC2 t1 and t2 = comm_t  
          ierr=exatns_tensor_create(comm_t_CC2%t1,"cc2_t1",vo_id,vo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(comm_t_CC2%t2,"cc2_t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_create(comm_t_CC2%tau,"cc2_tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
@@ -1929,7 +1946,6 @@ print *,'abe',ierr
          ierr=exatns_tensor_init(comm_t_CC2%h_int,'ZERO')
 
          ! Copy of t1, t2, foo, fov and fvv from comm_t to comm_t_CC2   L! :
-         ! maybe clean
          ierr=exatns_tensor_contract("H(a,i)+=T(a,i)*K()",comm_t_CC2%t1,comm_t%t1,one_tensor,ONE)
          ierr=exatns_tensor_contract("H(a,b,i,j)+=T(a,b,i,j)*K()",comm_t_CC2%t2,comm_t%t2,one_tensor,ONE)
          ierr=exatns_tensor_contract("H(a,i)+=F(a,i)*K()",comm_t_CC2%fov,comm_t%fov,one_tensor,ONE)
@@ -1950,9 +1966,6 @@ print *,'abe',ierr
 
          call get_fbar_vv_CC2(lambda_t_CC2%fbar_vv,comm_t_CC2,int_t,one_tensor) ! for CCSD: fbar_vv = gvv  (L! : change ?)
          call get_fbar_oo_CC2(lambda_t_CC2%fbar_oo,comm_t_CC2,int_t,one_tensor)
-!        fov_CC2 equal fov : calculated here just to check equation and
-!        variables L : to kill         
-!         call get_fbar_ov_CC2(lambda_t_CC2%fbar_ov,comm_t_CC2,int_t)
 
          call get_w_vovo_CC2(lambda_t_CC2%w_vovo,comm_t_CC2,int_t%oovv,vvoo_id,vvoo_root,one_tensor)
          call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t,one_tensor)
@@ -1963,8 +1976,6 @@ print *,'abe',ierr
           print*, "fvv bar commt  CC2    = ", print_tensornorm2(lambda_t_CC2%fbar_vv)
           print*, "foo bar commt         = ", print_tensornorm2(lambda_t%fbar_oo)
           print*, "foo bar commt  CC2    = ", print_tensornorm2(lambda_t_CC2%fbar_oo)
-!          print*, "fov bar commt         = ", print_tensornorm2(lambda_t%fbar_ov)
-!          print*, "fov bar commt  CC2    = ", print_tensornorm2(lambda_t_CC2%fbar_ov)
           print*, "wvovo commt         = ", print_tensornorm2(lambda_t%w_vovo)
           print*, "wvovo commt  CC2    = ", print_tensornorm2(lambda_t_CC2%w_vovo)
           print*, "woooo commt         = ", print_tensornorm2(lambda_t%w_oooo)
@@ -1972,20 +1983,6 @@ print *,'abe',ierr
           print*, "wvvvv commt         = ", print_tensornorm2(lambda_t%w_vvvv)
           print*, "wvvvv commt  CC2    = ", print_tensornorm2(lambda_t_CC2%w_vvvv)
          end if
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 !************************************
 !        construct solution tensors *
@@ -1995,6 +1992,7 @@ print *,'abe',ierr
             ierr=exatns_tensor_create(s1_tensor,"s1",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(s1_tensor,'ZERO')
          end if 
+
          ierr=exatns_tensor_create(s2_tensor,"s2",oovv_id,oovv_root,EXA_DATA_KIND_C8)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
          ierr=exatns_tensor_init(s2_tensor,'ZERO')
@@ -2138,13 +2136,6 @@ print *,'abe',ierr
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(j,m,e,b)*W(e,i,a,m)",s2_tensor,l2_tensor,lambda_t%w_vovo)
 
 !-------------------------------------------------------
-!         term 6: S(ij,ab) += P(a,b) V(ij,ae) * G(e,b) |    NOT Calculated in CC2
-!-------------------------------------------------------
-
-!          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,a,e)*G(e,b)",s2_tensor,int_t%oovv,lambda_t%gvv)
-!          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,j,e,b)*G(e,a)",s2_tensor,int_t%oovv,lambda_t%gvv)
-
-!-------------------------------------------------------
 !         term 7: S(ij,ab) -= P(a,b) L(m,a) * W(,j,mb) |
 !-------------------------------------------------------
 
@@ -2152,13 +2143,6 @@ print *,'abe',ierr
             ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,a)*W(j,i,m,b)",s2_tensor,l1_tensor,lambda_t%w_ooov)
             ierr=exatns_tensor_contract("S(i,j,a,b)+=L(m,b)*W(i,j,m,a)",s2_tensor,l1_tensor,lambda_t%w_ooov)
           end if
-
-!-------------------------------------------------------
-!         term 8: S(ij,ab) -= P(i,j) V(im,ab) * G(j,m) |    ! Not Calculates in CC2
-!-------------------------------------------------------
-
-!          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(i,m,b,a)*G(j,m)",s2_tensor,int_t%oovv,lambda_t%goo)
-!          ierr=exatns_tensor_contract("S(i,j,a,b)+=V(j,m,a,b)*G(i,m)",s2_tensor,int_t%oovv,lambda_t%goo)
 
 !----------------------------------------------------------
 !         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |
@@ -2185,6 +2169,9 @@ print *,'abe',ierr
 !-----------------------------------------------------
 
           ierr=exatns_tensor_contract("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t%w_vvvv,ONE_HALF)
+
+!!! L! End of S1 construction
+
 
           if (ierr.ne.EXA_SUCCESS) then
             write(*,*) " ccdriver: error in evaluation of lambda equations, code=",ierr
@@ -2308,7 +2295,7 @@ print *,'abe',ierr
          ierr=exatns_tensor_init(int_t%vvvv,'ZERO')
 
 !        Get tensor with AO integrals
-         if (moint_scheme /= 4) then
+         if (moint_scheme < 4 ) then
             ierr=exatns_tensor_create(aoint_tensor,'aotensor',(/(ao_space_id,i=1,4)/),(/(ao_space_root,i=1,4)/),EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             call print_date('allocated AO integral tensor')
@@ -2504,7 +2491,7 @@ print *,'abe',ierr
          end if
 
 !        Clean-up
-         if (moint_scheme /= 4) then
+         if (moint_scheme < 4) then
             ierr=exatns_tensor_destroy(aoint_tensor)
          end if
 
@@ -3466,7 +3453,7 @@ print *,'abe',ierr
                   ierr=exatns_tensor_destroy(f_i)
                   ierr=exatns_tensor_destroy(P_i)
 
-                  if (exa_input%moint_scheme==0) exit
+                  if (exa_input%moint_scheme==5) exit
 
                 end do
 
@@ -3480,7 +3467,7 @@ print *,'abe',ierr
                 ierr=exatns_tensor_destroy(f_j)
                 ierr=exatns_tensor_destroy(P_j)
 
-                if (exa_input%moint_scheme==0) exit
+                if (exa_input%moint_scheme==5) exit
 
               end do
 
@@ -3496,7 +3483,7 @@ print *,'abe',ierr
               end if
               if (exa_input%print_level > 0) write (*,*)  'after this block, t3 = ',t_energy
 
-              if (exa_input%moint_scheme==0) exit
+              if (exa_input%moint_scheme==5) exit
 
             end do
 

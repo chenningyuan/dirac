@@ -449,7 +449,7 @@
             GO TO 100
   141    CONTINUE
 ! quick hack to read CC density matrix without the need to run CC as wavefunction
-            call set_prop_flags()
+            call set_prop_flags_ccsd()
             GO TO 100
 !
       ELSE IF (PROMPT .EQ. '*') THEN

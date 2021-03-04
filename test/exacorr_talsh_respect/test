@@ -27,11 +27,12 @@ test.run(['cc_respect_2c.inp'], ['h2o.xyz'], f, args=' --put=RSD_MOS ')
 test.run(['cc_exacorr_x2cmmf.inp'], ['h2o.xyz'], f, args="--get='DFCOEF X2CMAT'")
 test.run(['cc_exacorr_nonrel.inp'], ['h2o.xyz'], f)
 
-f1 = Filter()
-f1.add(from_string = 'Overview of calculated energies',
-      num_lines   = 7,
-      rel_tolerance   = 1.0e-6)
-
-test.run(['cc_relcc_x2cmmf.inp'], ['h2o.xyz'], f1, args="--put='DFCOEF X2CMAT'")
+#LV: deactivated this RELCCSD run as it does not test exacorr (works, but it does not belong here and takes too long)
+#f1 = Filter()
+#f1.add(from_string = 'Overview of calculated energies',
+#      num_lines   = 7,
+#      rel_tolerance   = 1.0e-6)
+#
+#test.run(['cc_relcc_x2cmmf.inp'], ['h2o.xyz'], f1, args="--put='DFCOEF X2CMAT'")
 
 sys.exit(test.return_code)

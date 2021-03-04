@@ -19,7 +19,6 @@ module talsh_ao_to_mo
         public ao2mo_ind
         public ao2mo_vec
         public mulliken_to_dirac_sort
-        public compute_nelectrons
         public decompose_cholesky_talsh_vec
         public decompose_cholesky_talsh_all
 
@@ -94,7 +93,7 @@ module talsh_ao_to_mo
          call print_date('Initialized talsh library')
          write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
          call interest_initialize(.true.)
-         call print_date('Initialized interest library')
+         call print_date('Initialized InteRest library')
 
 !        Retrieve basis set information
          nao = get_nao()
@@ -325,9 +324,7 @@ module talsh_ao_to_mo
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
          integer :: li,lj,lk,ll,ni,nj,nk,nl
          real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
-         real(8) :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
-!lv      code marked lv is tested and functional but not needed yet as we don't have the code to transform the additional integral classes
-!lv      real(8) :: gout2(21*21*5*21*21*5) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
+         real(8) :: gout(21*21*21*21)
          real(8), parameter :: fijkl = 1.0
          integer            :: nshells                    ! number of AO shells
          type(basis_func_info_t), allocatable :: gto(:)   ! array with basis function information
@@ -383,7 +380,7 @@ module talsh_ao_to_mo
                      zi   =  gto(ish)%coord(3)
                      ci   =  gto(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
-!                    call interest and get only the (LL|LL) type integrals
+!                    call interest and get the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
 
                      ![eric]
@@ -394,13 +391,6 @@ module talsh_ao_to_mo
                                   li,ei,xi,yi,zi,ci,&
                                   lj,ej,xj,yj,zj,cj )
 
-!lv                  call interest and get (LL|LL), (SS|LL) and (SS|SS)  type integrals
-!lv                  output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-!lv                  call interest_eri_rkb('ssss',fijkl,gout2,&
-!lv                               lk,ek,xk,yk,zk,ck,&
-!lv                               ll,el,xl,yl,zl,cl,&
-!lv                               li,ei,xi,yi,zi,ci,&
-!lv                               lj,ej,xj,yj,zj,cj )
                      ijkl = 0
                      ijkl2 = 1
                      do l = 1, nl
@@ -649,106 +639,6 @@ module talsh_ao_to_mo
          ierr=talsh_tensor_destruct(result_tensor)
 
         end function tensor_norm2
-
-        subroutine compute_nelectrons(mo_occ)
-
-          use exacorr_datatypes
-          use exacorr_mo
-          use exacorr_respect
-
-          ! input variables
-          integer, intent(in) :: mo_occ(:)
-          ! local variables
-          type(cmo)              :: cspinor
-          type(basis_set_info_t) :: ao_basis
-
-          integer :: ksh, lsh,koff, loff
-          integer :: lk,ll,nk,nl,k,l,kl
-          real(8) :: ek,el,ck,cl,xk,yk,zk,xl,yl,zl
-
-          integer :: nrkb
-          real(8) :: skl(21*21) ! hardwired for maximum  l-value of 5 (s=1,p=3,d=6,f=10,g=15,h=21)
-          real(8), parameter :: fijkl = 1.0
-          integer :: ncentr=1
-          real(8) :: atomic_data(5) = (/0.0,0.0,0.0,0.0,0.0/)
-
-          integer :: nocc
-          complex(8), allocatable :: s_ao(:,:), s_c(:,:), s_mo(:,:)
-          real(8) :: nelec
-
-          logical :: tobe
-
-          integer :: ierr
-
-          ! read MO coefficients and ao basis set information
-          inquire (file='DFCOEF',exist=tobe)
-          if (tobe) then
-             call read_from_dirac (ao_basis,cspinor,'DFCOEF',ierr)
-          else
-             inquire (file='RSD_MOS',exist=tobe)
-             if (tobe) then
-                call read_from_respect (ao_basis,cspinor,ierr)
-             end if
-          end if
-
-          allocate(s_ao(ao_basis%nao,ao_basis%nao))
-
-!         AO overlap
-          loff = 0
-          do lsh = 1, ao_basis%nshells
-            ll   =  ao_basis%gtos(lsh)%orb_momentum
-            el   =  ao_basis%gtos(lsh)%exponent(1)
-            xl   =  ao_basis%gtos(lsh)%coord(1)
-            yl   =  ao_basis%gtos(lsh)%coord(2)
-            zl   =  ao_basis%gtos(lsh)%coord(3)
-            cl   =  ao_basis%gtos(lsh)%coefficient(1)
-            koff = 0
-            do ksh = 1, ao_basis%nshells
-              lk   =  ao_basis%gtos(ksh)%orb_momentum
-              ek   =  ao_basis%gtos(ksh)%exponent(1)
-              xk   =  ao_basis%gtos(ksh)%coord(1)
-              yk   =  ao_basis%gtos(ksh)%coord(2)
-              zk   =  ao_basis%gtos(ksh)%coord(3)
-              ck   =  ao_basis%gtos(ksh)%coefficient(1)
-              call  interest_overlap(.false.,   &
-                              skl,nk,nl,nrkb,   &
-                              lk,ek,xk,yk,zk,ck,&
-                              ll,el,xl,yl,zl,cl,&
-                              ncentr,atomic_data)
-              kl = 1
-              do l = 1, nl
-                do k = 1, nk
-                  s_ao(koff+k,loff+l) = dcmplx(skl(kl),0.D0)
-                  kl = kl + 1
-                end do
-              end do
-
-              koff = koff + nk
-            end do
-            loff = loff + nl
-          end do
-
-          nocc = size(mo_occ)
-          allocate(s_c (cspinor%nao,nocc))
-          allocate(s_mo(nocc,       nocc))
-
-          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,1))
-          s_mo = matmul(conjg(transpose(cspinor%coeff(:,mo_occ,1))),s_c)
-          s_c  = matmul(s_ao,cspinor%coeff(:,mo_occ,2))
-          s_mo = s_mo + matmul(conjg(transpose(cspinor%coeff(:,mo_occ,2))),s_c)
-
-!         take trace of matrix
-          nelec = 0
-          do k = 1, nocc
-            nelec = nelec + real(s_mo(k,k),8)
-            print*, "nelec : ", nelec
-          end do
-
-          deallocate(s_ao)
-          deallocate(s_c)
-          deallocate(s_mo)
-
-        end subroutine compute_nelectrons
 
         subroutine ao2mo_ind(ao_tensor,mo_tensor,nmo,mo_list,ind)
 !         Transform integral tensor from ao-basis to mo-basis
