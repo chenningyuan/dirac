@@ -1008,18 +1008,23 @@ C
       CALL HEADER('Eigenvalues',-1)
 C.....Common format for all electron eigenvalues
       EIGMAX = D0
+C
       DO IFSYM = 1,NFSYM
-        DO I = 1,NESH(IFSYM)
-          EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+NPSH(IFSYM)+I)))
-        ENDDO
+        IF(NESH(IFSYM).GT.0)THEN 
+          DO I = 1,NESH(IFSYM)
+            EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+NPSH(IFSYM)+I)))
+          ENDDO
+        ENDIF
       END DO
       FMTE = MXFORM(EIGMAX,18)
 C.....Common format for all positron eigenvalues
       EIGMAX = D0
       DO IFSYM = 1,NFSYM
-        DO I = 1,NPSH(IFSYM)
-          EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+I)))
-        ENDDO
+        IF(NPSH(IFSYM).GT.0)THEN 
+          DO I = 1,NPSH(IFSYM)
+            EIGMAX = MAX(EIGMAX,ABS(EIG(IORB(IFSYM)+I)))
+          ENDDO
+        ENDIF
       END DO
       FMTP = MXFORM(EIGMAX,18)
 C
@@ -1079,6 +1084,7 @@ C     Supersymmetry: linear/atomic symmetry and/or spinfree case
 C     ===================================================
 C
         DO IFSYM = 1, NFSYM
+          IF(N_SUB_BL(IFSYM).GT.0)THEN 
           DO ISUB = 1, N_SUB_BL(IFSYM)
 C
 C         Write identification of the blocks. 
@@ -1159,6 +1165,7 @@ C...........No eigenvalues
               WRITE(LUPRI,'(2X,A)') '* No eigenvalues.'
             ENDIF
           END DO
+          ENDIF
         END DO
 C     
 C       Print occupation string for each fermion symmetry
@@ -1267,6 +1274,7 @@ C
         WRITE(LUPRI,'(/A)') '* Occupation of subblocks' 
         DO IFSYM=1,NFSYM
           TLINE = ' '
+          IF(NORB(IFSYM).GT.0)THEN
           IF(ATOMIC)THEN
              WRITE(TLINE2,'(A3,A2)') FREP(IFSYM),': '
              WRITE(TLINE3,'(A)') ' Mj: '
@@ -1356,13 +1364,15 @@ C
             ILOW = ITOP
             ITOP = N_SUB_BL(IFSYM)-ITOP
             IF(ITOP.GT.0) GOTO 10
-          ENDIF !ATOMIC  
-          ENDDO !IFSYM
+          ENDIF !ATOMIC
+          ENDIF !NORB(IFSYM).GT.0
+        ENDDO !IFSYM
         WRITE(LUPRI,'(/)')
 
         IC =1
         IF (PRPOS) IC=0
-        DO IFSYM=1, NFSYM 
+        DO IFSYM=1, NFSYM
+          IF(NORB(IFSYM).GT.0)THEN 
           DO ISUB=1,N_SUB_BL(IFSYM)
 C.........closed shells
             ISUM = ISHEL_SUB(1,ISUB,IFSYM)
@@ -1384,6 +1394,7 @@ C.........note: IC=0 when print of positr. shells desired
      &          NORB_SUB(ISUB,IFSYM,IC)
            ENDIF
           ENDDO
+          ENDIF !NORB(IFSYM).GT.0        
         ENDDO
       ENDIF
 

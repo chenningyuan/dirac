@@ -6268,6 +6268,7 @@ C
       
 C
       IOFT = 1
+      CALL IZERO (N_SUB_BL,2)
       DO 20 IFRP = 1,NFSYM
         IF(NORB(IFRP).EQ.0) GOTO 20
 C
