@@ -371,7 +371,9 @@ contains
          if(prop_op_triang(i)) then
            op_mat_dim = naosh_ls*(naosh_ls+1)/2
            call prpmao(int1_4c_file,                         &
-                       i,                                    & 
+                       i,                                    &
+                       .true.,                               &
+                       scr_mat1,                             &
                        prop_op_triang(i),                    &
                        op_mat_dim,                           &
                        scr_mat2,                             &
@@ -383,6 +385,8 @@ contains
            op_mat_dim = naosh_ls**2
            call prpmao(int1_4c_file,                         &
                        i,                                    & 
+                       .true.,                               &
+                       scr_mat1,                             &
                        prop_op_triang(i),                    &
                        op_mat_dim,                           &
                        scr_mat2,                             &

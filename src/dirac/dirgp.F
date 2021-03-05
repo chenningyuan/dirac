@@ -4811,4 +4811,55 @@ C***********************************************************************
         IBEIG(I) = ISKP*(KPOFF+MJABS)
       ENDDO
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CMOCLEAN(CMO,NBAS,NORB,NZ,FACTOR)
+C***********************************************************************
+C
+C     Input is CMO-coefficients. 
+C     The routine sets coefficients with norm below the 
+C     threshold FACTOR to zero.
+C
+C     Written by Trond Saue Nov 13 2019
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: NBAS,NORB,NZ
+      real*8, intent(in)    :: FACTOR
+      real*8, intent(inout) :: CMO(NBAS,NORB,NZ)
+      real*8, allocatable   :: BUF(:)
+      real*8                :: TMP
+      integer               :: IORB,IBAS,IZ
+
+CTROND
+      WRITE(6,*) 'Enter CMOCLEAN..',NBAS,NORB,NZ,FACTOR
+      IF(NZ.EQ.1) THEN
+        DO IORB = 1,NORB
+          DO IBAS = 1,NBAS
+          IF(ABS(CMO(IBAS,IORB,1)).LT.FACTOR) THEN
+            CMO(IBAS,IORB,1) = 0.0D0
+          ENDIF
+          ENDDO
+        ENDDO
+      ELSE
+        allocate(buf(nbas))
+        DO IORB = 1,NORB
+          BUF = 0.0D0
+          DO IZ = 1,NZ
+            DO IBAS = 1,NBAS
+              BUF(IBAS) = BUF(IBAS) + CMO(IBAS,IORB,IZ)**2
+            ENDDO
+          ENDDO
+          TMP = FACTOR*FACTOR
+          DO IZ = 1,NZ
+            DO IBAS = 1,NBAS
+              IF(BUF(IBAS).LT.FACTOR) THEN
+                CMO(IBAS,IORB,IZ)=0.0D0
+              ENDIF
+            ENDDO
+          ENDDO
+        ENDDO
+        deallocate(buf)
+      ENDIF
+      RETURN
+      END
 ! -- end of dirgp.F --
