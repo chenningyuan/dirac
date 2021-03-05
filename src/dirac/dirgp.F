@@ -4759,8 +4759,8 @@ C***********************************************************************
 #include "implicit.h"
 #include "dcborb.h"      
       DIMENSION CMO(*),EIG(*),IBEIG(NORBT)
-      real*8, allocatable :: IBEIG2(:,:)
-      character           :: FILNAM*6
+      integer, allocatable :: IBEIG2(:,:)
+      character            :: FILNAM*6
       allocate(IBEIG2(NORBT,2))
       IOPT2 = IOPT+16
       CALL REACMO(IUNIT,FILNAM,CMO,EIG,IBEIG2,TOTERG,IOPT2)
@@ -4769,7 +4769,7 @@ C***********************************************************************
       END     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck atomic_reacmo */
-      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,DHFERG)
+      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
 C***********************************************************************
 C
 C     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
@@ -4779,13 +4779,13 @@ C***********************************************************************
 #include "implicit.h"
 #include "dcborb.h"      
       DIMENSION CMO(*),EIG(*),IBEIG(NORBT)
-      real*8, allocatable :: IBEIG2(:,:)
-      character           :: FILNAM*6
+      integer, allocatable :: IBEIG2(:,:)
+      character            :: FILNAM*6
       allocate(IBEIG2(NORBT,2))
       DO I = 1,NORBT
          CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
       ENDDO
-      CALL WRICMO(IUNIT,FMO,EIG,IBEIG2,DHFERG,.TRUE.)        
+      CALL WRICMO(IUNIT,CMO,EIG,IBEIG2,TOTERG,.TRUE.)        
       deallocate(IBEIG2) 
       END     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4830,8 +4830,6 @@ C***********************************************************************
       real*8                :: TMP
       integer               :: IORB,IBAS,IZ
 
-CTROND
-      WRITE(6,*) 'Enter CMOCLEAN..',NBAS,NORB,NZ,FACTOR
       IF(NZ.EQ.1) THEN
         DO IORB = 1,NORB
           DO IBAS = 1,NBAS

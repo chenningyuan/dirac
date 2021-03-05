@@ -7260,7 +7260,7 @@ C     Get integrals of component of the Spin-orbit operatar
 C
       FIRST = .TRUE.
       IOP =  IPSPNORB
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &        OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
 C
@@ -7269,7 +7269,7 @@ C     ===============================================
 C
       FIRST = .TRUE.
       IOP =  IPOVRLAP
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &         OP1INT,FIRST,IPRHAM)
       CALL MEMGET('REAL',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))

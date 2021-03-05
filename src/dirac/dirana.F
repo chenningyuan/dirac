@@ -495,7 +495,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 C
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IBEIG(*),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),
+     &          EIG(NORBT),IBEIG(NORBT),
      &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),OCC(*),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
