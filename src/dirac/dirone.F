@@ -6313,7 +6313,6 @@ C
             CALL PRQMAT(WORK(KFLL),NL,NL,NL,NL,1,
      &          IPQTOQ(1,0),LUPRI)
           ENDIF
-
           IF (WRITE_K_MATRIX) THEN
 ! get the file name first, containing symmetry
             hfile_format="(A13,A7,I1,A1,I1)"

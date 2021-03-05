@@ -1,4 +1,4 @@
- !dirac_copyright_start
+ !Dirac_copyright_start
 !      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -335,7 +335,7 @@ C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF(ATHUCK) THEN
         DHF_INTTYP = 'Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,.FALSE.) ! CTROND: check
         GOTO 100
 C
 C     2) - atomic start
@@ -693,7 +693,11 @@ C
           DO I = 1,NFSYM
             CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
           ENDDO
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+          IF(ATOMIC) THEN
+            CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
+          ELSE
+            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,.FALSE.)
+          ENDIF   
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
         CLOSE(LUFCK1,STATUS='KEEP')
@@ -1074,7 +1078,7 @@ C
            JLUMO = JHOMO + NASH(I) + 1
            IF (NISH(I) .EQ. 0) JHOMO = JHOMO + 1 ! e.g. fsym 2, oxygen atom
            IF (NSSH(I) .EQ. 0) JLUMO = JLUMO - 1 ! very small test basis sets
-           WRITE(LUPRI,'(A,I2,A,(T30,5(I5,F10.5)))')
+           WRITE(LUPRI,'(A,I2,A,(30X,5(I5,F10.5)))')
      &     'E_HOMO...E_LUMO, symmetry',I,':',
      &     (J, EIG(J), J = JHOMO,JLUMO)
         END DO
@@ -1088,12 +1092,7 @@ C     Write untransformed coefficients
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
       IF(ATOMIC) THEN
-        allocate(IBEIG2(NORBT,2))
-        DO I = 1,NORBT
-           CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
-        ENDDO
-        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG2,DHFERG,.TRUE.)        
-        deallocate(IBEIG2) 
+        CALL ATOMIC_WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
       ELSE
         CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG,.FALSE.)
       ENDIF   
@@ -3285,7 +3284,12 @@ C
          CALL QUIT('MVOGEN: No MO coefficients !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+         IOPT=14
+         IF(ATOMIC) THEN
+           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
+         ELSE
+           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+         ENDIF
       ENDIF
       IF(IONMVO) THEN
 C
@@ -3388,7 +3392,11 @@ C
         ENDDO
       END IF
       END DO
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      IF(ATOMIC) THEN
+        CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      ELSE
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+      ENDIF   
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL QEXIT('MVOGEN')

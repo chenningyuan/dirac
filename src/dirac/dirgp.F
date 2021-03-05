@@ -2534,6 +2534,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbreo.h"
+#include "dgroup.h"
 #include "dcbrot.h"
       LOGICAL TOBE
       real(8), allocatable :: cmo(:)
@@ -2553,8 +2554,12 @@ C
 C     Read coefficients, eigenvalues and irrep identification 
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREORB')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &            IBEIG,TOTERG,14)
+      IOPT=14
+      IF(ATOMIC) THEN
+        CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
+      ELSE
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+      ENDIF
 C
 C     Reorder orbitals
 C
@@ -2567,7 +2572,11 @@ C
 C
 C     Write new coefficients
 C
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      IF(ATOMIC) THEN
+        CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      ELSE
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+      ENDIF   
       CLOSE(LUCOEF,STATUS='KEEP')
 
 !     Memory deallocation
@@ -2722,7 +2731,12 @@ C     ====================================
         CLOSE (LUKRMC,STATUS='DELETE')
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSTOR1')
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
+        IOPT=14
+        IF(ATOMIC) THEN
+          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
+        ELSE
+          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+        ENDIF
       END IF
 C
 C     Reorder orbitals
@@ -2765,7 +2779,11 @@ C
         end if
         close(LUKRMC,status='keep')
       else
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        IF(ATOMIC) THEN
+          CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        ELSE
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+        ENDIF   
         CLOSE(LUCOEF,STATUS='KEEP')
       end if
 C
@@ -4748,6 +4766,27 @@ C***********************************************************************
       CALL REACMO(IUNIT,FILNAM,CMO,EIG,IBEIG2,TOTERG,IOPT2)
       CALL ATOMIC_ID_REDUCE(IBEIG2,IBEIG,NORBT)
       deallocate(IBEIG2)
+      END     
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck atomic_reacmo */
+      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,DHFERG)
+C***********************************************************************
+C
+C     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
+C
+C     Written by Trond Saue March 3 2021
+C***********************************************************************
+#include "implicit.h"
+#include "dcborb.h"      
+      DIMENSION CMO(*),EIG(*),IBEIG(NORBT)
+      real*8, allocatable :: IBEIG2(:,:)
+      character           :: FILNAM*6
+      allocate(IBEIG2(NORBT,2))
+      DO I = 1,NORBT
+         CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
+      ENDDO
+      CALL WRICMO(IUNIT,FMO,EIG,IBEIG2,DHFERG,.TRUE.)        
+      deallocate(IBEIG2) 
       END     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck atomic_id_reduce */

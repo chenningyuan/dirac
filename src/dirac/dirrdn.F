@@ -5371,7 +5371,6 @@ C ... get integral flags in advance
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
       WRITE_K_MATRIX = .FALSE. 
-
       NOINPUT   = .FALSE.
 C
 C     Read menu file
