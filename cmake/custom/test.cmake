@@ -171,5 +171,7 @@ dirac_test(spinorbit-from-spinfree "short;scf;resolve" "")
 dirac_test(spinrot "medium;response" "")
 dirac_test(rotg "medium;response" "")
 dirac_test(molecular_mean_field_restart "short;x2c;mp2" "")
+dirac_test(bed_isotropic "short;response;bed" "")
+dirac_test(bed_anisotropic "short;response;bed" "")
 # disabled some tests waiting for code verification/efficiency improvement
 #dirac_test(eomcc_expval "short;cc" "")

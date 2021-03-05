@@ -474,7 +474,8 @@ C
 C     Operator to be read from file
 C     =============================
 C
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C     
 C
  90   CONTINUE     
