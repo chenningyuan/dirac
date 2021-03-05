@@ -83,7 +83,6 @@ module talsh_cc
          integer :: ncycles, print_level
 
          logical :: CCD, lambda, eom
-         character(len=2) :: eom_flavour
          logical :: debug_eom = .false.
 
 !        Make some noise so that we know we are here
@@ -115,7 +114,6 @@ module talsh_cc
          CCD = exa_input%ccd
          lambda = exa_input%lambda
          eom = exa_input%eom
-         eom_flavour = exa_input%eom_flavour
          ncycles = exa_input%ncycles
          print_level = exa_input%print_level
 
@@ -318,7 +316,7 @@ module talsh_cc
             call get_CC_fockmatrix (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir, &
                                  comm_t%foo,comm_t%fov,comm_t%fvv, int_t, print_level, exa_input%level_shift,keep_diagonal=.true.)
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
-            if (exa_input%eom_properties) then
+            if (exa_input%eom_input(0)%do_expval) then
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
             else
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
@@ -332,13 +330,13 @@ module talsh_cc
                print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
             end if
 
-            if (exa_input%eom_flavour.eq."EE" .and. exa_input%eom_properties .and. .not.lambda) then
+            if (exa_input%eom_input(0)%flavor.eq."EE" .and. exa_input%eom_input(0)%do_expval.and..not.lambda) then
                call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
             end if
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances
-           call talsh_eom_eigval_driver(eom_results_t,exa_input,eps_occ,eps_vir,interm_t,int_t)
+           call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(0),interm_t,int_t)
 ! TODO: if we want properties etc, now we call other drivers
 
          end if

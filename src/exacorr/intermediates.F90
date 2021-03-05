@@ -1393,6 +1393,10 @@ module intermediates
          vovo_dims = (/nvir,nocc,nvir,nocc/)
          vvoo_dims = (/nvir,nvir,nocc,nocc/)
 
+         interm_t%nocc = nocc
+         interm_t%nvir = nvir
+         interm_t%ccd  = ccd
+
          print*, "foo_tensor norm ", tensor_norm2(comm_t%foo)
          print*, "fov_tensor norm ", tensor_norm2(comm_t%fov)
          print*, "fvv_tensor norm ", tensor_norm2(comm_t%fvv)

@@ -1549,10 +1549,9 @@ contains
    end subroutine 
 
 
-   subroutine create_sigma_right(exa_input,int_t,interm_t,workspace_t)
+   subroutine create_sigma_right(int_t,interm_t,workspace_t)
       use talsh_sigma_eomccsd
 !     use talsh_sigma_eomccsd, only : sigma_eomccsd_right_ip, sigma_eomccsd_right_ea, sigma_eomccsd_right_ee
-      type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
@@ -1637,7 +1636,7 @@ contains
 ! aspg
 
 
-         call interm_t%sigma_rhs_p(exa_input,int_t,interm_t, &
+         call interm_t%sigma_rhs_p(int_t,interm_t, &
    &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
    &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
 
@@ -1768,9 +1767,8 @@ contains
 ! aspg, 16/04/2019
 ! for the moment we have a long argument list to get it going, later we try to shorten in
 !   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
-   subroutine talsh_get_values_vectors_davidson(results_t,exa_input,int_t,interm_t, workspace_t, projector_t)
+   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t)
       type(talsh_davidson_results_tens_t) :: results_t
-      type(exacc_input),     intent(in   ) :: exa_input
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(talsh_projectors_tens_t), intent(inout) :: projector_t
@@ -1825,7 +1823,7 @@ contains
 
             if (davidson_solve_rhs) then
                if (associated(interm_t%sigma_rhs_p)) then
-                  call create_sigma_right(exa_input,int_t,interm_t,workspace_t)
+                  call create_sigma_right(int_t,interm_t,workspace_t)
                   call create_subspace_matrix_right(M_small,workspace_t) 
                else
                   stop 'RHS sigma vector routine has not been defined prior to calling the solver'  

@@ -36,15 +36,26 @@
            real(8), allocatable    :: eps_occ(:), eps_vir(:) ! orbital energies
         end type spinor_info_t
 
+        type, public :: eom_config_t
+           integer             :: nroots
+           character(len=8)    :: flavor
+           logical             :: do_cvs_prj
+           logical             :: do_expval
+           logical             :: do_linrsp
+           logical             :: do_quarsp
+           logical             :: do_cubrsp
+           integer             :: rhs_expval_states
+           integer             :: lhs_expval_states
+           character(len=8)    :: properties
+           complex(8), pointer :: rsp_pert_freqs(:)
+        end type eom_config_t
+
 !       Input parameter
         type, public :: exacc_input
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: lambda = .false.
             logical                 :: noints = .false.
-            logical                 :: eom = .false.
-            logical                 :: eom_properties = .false.
-            character(len=2)        :: eom_flavour = "  "
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
 
@@ -62,6 +73,12 @@
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
+
+! this just signals we should handle *EOMCC inputs under **EXACC
+            logical                 :: eom = .false.
+            integer                 :: current_eom_input = -1
+! handle one or more *EOMCC blocks 
+            type(eom_config_t), allocatable :: eom_input(:)
         end type exacc_input
 
 !       All two electron integral tensors
@@ -148,6 +165,8 @@
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
         type, extends(talsh_lambda_tens_t), public :: talsh_intermediates_tens_t
+           logical :: ccd = .false.! aspg: having this here is a hack, in reality the sigma routines should be created by composing with more primitive collections of contractions (so ccsd collects "ccs+ccd+whatever") and then specialized routines pick and choose which approximated contractions to use.
+           integer :: nocc, nvir
            type(talsh_tens_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
                                          ! but could be pointers to that storage as well. but the point of keeping them here is to keep everything 
                                          ! in one placewe make a copy of what may be pointers to what is  
@@ -157,13 +176,12 @@
         end type talsh_intermediates_tens_t
 
         abstract interface       
-           subroutine sigma_vector(exa_input, int_t, interm_t, r1, r2, s1, s2)
+           subroutine sigma_vector(int_t, interm_t, r1, r2, s1, s2)
            import :: exacc_input
            import :: talsh_intg_tens_t
            import :: talsh_intermediates_tens_t
            import :: talsh_tens_t
 
-              type(exacc_input),     intent(in   ) :: exa_input
               type(talsh_intg_tens_t), intent(inout) :: int_t
               type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
               type(talsh_tens_t),    intent(inout) :: r1

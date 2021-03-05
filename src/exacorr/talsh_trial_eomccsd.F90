@@ -61,74 +61,76 @@ module talsh_trial_eomccsd
         ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
-              call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
-              call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+        call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+        call c_f_pointer(hdiag2_body_p,hdiag2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-              if (enable_double_manifold) then
-                 allocate(diagonal(workspace%N(1) + workspace%N(2)))
-              else
-                 allocate(diagonal(workspace%N(1)))
-              end if
-              diagonal = 0.0d0
+        if (workspace%nroots.le.workspace%N(1)) enable_double_manifold = .false.
 
-              do i = 1, workspace%tens1_dims(1) 
-                 diagonal(i) = real(hdiag1_h_p_tens(i))
-              end do
+        if (enable_double_manifold) then
+           allocate(diagonal(workspace%N(1) + workspace%N(2)))
+        else
+           allocate(diagonal(workspace%N(1)))
+        end if
+        diagonal = 0.0d0
+
+        do i = 1, workspace%tens1_dims(1) 
+           diagonal(i) = real(hdiag1_h_p_tens(i))
+        end do
 
 ! aspg: have to still figure out how to handle the single and double manifolds handled separately
 ! and find which are the workspace%nroots lowest roots more generally (i.e. when some of the trials
 ! belong to single and some to double
 !
-              if (enable_double_manifold) then
-                  b = workspace%N(1)
-                  do i = 1, workspace%tens2_dims(3)
-                     do j = 1, workspace%tens2_dims(2)
-                        do a = 1, workspace%tens2_dims(1)
-                           b = b + 1
-                           diagonal(b) = realpart(hdiag2_h_p_tens(a,j,i))
-                        end do
-                     end do
+        if (enable_double_manifold) then
+            b = workspace%N(1)
+            do i = 1, workspace%tens2_dims(3)
+               do j = 1, workspace%tens2_dims(2)
+                  do a = 1, workspace%tens2_dims(1)
+                     b = b + 1
+                     diagonal(b) = realpart(hdiag2_h_p_tens(a,j,i))
                   end do
-               end if
+               end do
+            end do
+         end if
 
-              if (debug_trial) then
-                 do i = 1, size(diagonal,1)
-                     write (6,*) 'H_II(',i,'):',diagonal(i)
-                 end do
-              end if
+        if (debug_trial) then
+           do i = 1, size(diagonal,1)
+               write (6,*) 'H_II(',i,'):',diagonal(i)
+           end do
+        end if
 
 ! now set up the initial trial vectors, as unit matrices (or the equivalent for higher-dimensional tensors)
 
         if (debug_trial) then 
-                 do iroot = 1, workspace%nroots
+           do iroot = 1, workspace%nroots
    
-                    ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
-                    call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
-                    call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
+              ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
+              ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+              call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
+              call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
-                    write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
-!                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                    do i = 1, workspace%tens1_dims(1) 
-                        write (6,*) i, trial1_h_p_tens(i)
+              write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
+!             call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+              do i = 1, workspace%tens1_dims(1) 
+                  write (6,*) i, trial1_h_p_tens(i)
+              end do
+              write (6,*) 'debug <<< t1_h_p_tens <<<'
+
+              write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
+              call talsh_tensor_print_info(workspace%trial2(iroot))
+
+!             call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+              b = 0
+              do i = 1, workspace%tens2_dims(3)
+                 do j = 1, workspace%tens2_dims(2)
+                    do a = 1, workspace%tens2_dims(1)
+                       b = b + 1
+                       write (6,*) b, a, j, i, trial2_h_p_tens(a,j,i)
                     end do
-                    write (6,*) 'debug <<< t1_h_p_tens <<<'
-
-                    write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
-                    call talsh_tensor_print_info(workspace%trial2(iroot))
-
-!                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                    b = 0
-                    do i = 1, workspace%tens2_dims(3)
-                       do j = 1, workspace%tens2_dims(2)
-                          do a = 1, workspace%tens2_dims(1)
-                             b = b + 1
-                             write (6,*) b, a, j, i, trial2_h_p_tens(a,j,i)
-                          end do
-                       end do
-                    end do
-                    write (6,*) 'debug <<< t2_h_p_tens <<<'
                  end do
+              end do
+              write (6,*) 'debug <<< t2_h_p_tens <<<'
+           end do
 
            write (6,*) 'debug >>> real part of hdiag1_h_p_tens >>>'
            write (6,*) diagonal

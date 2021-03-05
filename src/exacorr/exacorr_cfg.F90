@@ -21,12 +21,10 @@ contains
 !
   use interface_to_mpi
 
-  integer :: exa_MPI_rank
+  integer :: exa_MPI_rank, i, j
 
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%eom,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%eom_properties,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%eom_flavour,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%noints,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
@@ -46,7 +44,24 @@ contains
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
-  
+
+  do i = 1, size(exa_input%eom_input)  
+     call interface_mpi_bcast(exa_input%eom_input(i)%nroots,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%eom_input(i)%flavor,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast_l0(exa_input%eom_input(i)%do_cvs_prj,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast_l0(exa_input%eom_input(i)%do_expval,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast_l0(exa_input%eom_input(i)%do_linrsp,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast_l0(exa_input%eom_input(i)%do_quarsp,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast_l0(exa_input%eom_input(i)%do_quarsp,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%eom_input(i)%rhs_expval_states,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%eom_input(i)%lhs_expval_states,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%eom_input(i)%properties,1,exa_MPI_RANK,global_communicator)
+     do j = 1, size(exa_input%eom_input(i)%rsp_pert_freqs)
+! this requires extension of bcast to complex types, if the frequencies are complex numbers
+!    call interface_mpi_bcast(exa_input%eom_input(i)%rsp_pert_freqs(j),1,exa_MPI_RANK,global_communicator)
+     end do
+  end do
+
   end subroutine exacc_sync_cw
 #endif
 
