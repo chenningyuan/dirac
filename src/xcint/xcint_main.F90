@@ -277,6 +277,7 @@ contains
          nz      = xc_nz
          nr_dmat = xc_nr_dmat
          nr_fmat = xc_nr_fmat
+         print *,'debug in xcint: mat_dim,nz,nr_dmat,nr_fmat ',mat_dim,nz,nr_dmat,nr_fmat
       end if
 
 !     set defaults
@@ -529,7 +530,10 @@ contains
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
          end if
 
+         print *,'nr_mo_gerade_positive_active #1',nr_mo_gerade_positive_active
+         print *,'nr_mo_ungerade_positive_active #1',nr_mo_ungerade_positive_active
 !        get average density from open shells
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #1'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 #ifdef PRG_DIRAC
@@ -674,9 +678,12 @@ contains
          call scale_density_matrices(0.5d0)
 #endif
 
+         print *,'nr_mo_gerade_positive_active #2',nr_mo_gerade_positive_active
+         print *,'nr_mo_ungerade_positive_active #2',nr_mo_ungerade_positive_active
 !        get average density from open shells
+         if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #2'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
-
+ 
 !        symmetrize matrices
          if (use_blas3_scheme .or. (use_gga                         &
                                    .and. .not. do_london_rhs_direct_der1 &
@@ -897,9 +904,6 @@ contains
     integer              :: derv_length, im, i
     real(8), allocatable :: derv(:, :)
     real(8), allocatable :: derv_nadd(:, :)
-
-    logical :: print_data_at_point
-
     real(8) :: n_b(3)
     real(8) :: gnn_b(3)
     real(8) :: gn_b(3, 3)
@@ -1068,8 +1072,6 @@ contains
       ao = 0.0d0
       allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
       buffer = 0.0d0
-
-   print_data_at_point = .true.
 
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
@@ -2704,6 +2706,7 @@ contains
     real(8)                :: y_b(3)
 
     integer                :: k_start, k, im, im_off, j, ioff, i
+    integer                :: irep(nr_fmat)
     type(omega_prefactor) :: u
 
     real(8) :: temp(pertden_nr_columns)
@@ -2713,6 +2716,7 @@ contains
 !   s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
     s_b_lao = 0.0d0
     gs_b_lao = 0.0d0
+    irep = 0 ! irep of unperturbed dmat_0 (totally symmetric)
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -2729,7 +2733,7 @@ contains
 
       call get_gs_lao(s_b_lao,    &
                      gs_b_lao,    &
-                     (/0/),       & ! irep of unperturbed dmat_0 (totally symmetric)
+                     irep,        &
                      mat_dim,     &
                      dmat_full,   & ! this is the unperturbed dmat_0
                      ao,          &
@@ -2744,7 +2748,7 @@ contains
       !                          (/px, py, pz/))
 
       call get_s_lao(s_b_lao,      &
-                     (/0/),        & ! irep of unperturbed dmat_0 (totally symmetric)
+                     irep,         &
                      mat_dim,      &
                      dmat_full,    & ! this is the unperturbed dmat_0
                      ao,           & 

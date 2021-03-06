@@ -35,6 +35,7 @@
 #include "dcbpsi.h"
 #include "dcbgen.h"
 #include "dcbmp2no.h"
+#include "../moltra/dcbtra.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
@@ -56,10 +57,6 @@
       IN = LUCMD
       IW = LUPRI
 !
-! iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-      print*,' Current Dirac interface: ',INTFCE
 !
 !  determine condition when we have complex arithmetic !
 !
@@ -80,16 +77,24 @@
 !  Do a "wake up" with the correct ITASK in order to guide the slaves
 !  to the corresponding POLPRP section.
 !
-!
-!     ITASK = POLPRP_PAR
-!
       IF (PARCAL) CALL DIRAC_PARCTL( POLPRP_PAR )
+
+! iface for integral reading taken from common block dcbtra.h
+      IF ( ISTRAT .eq. 4 ) THEN
+          INTFCE = 'DIRAC     '
+      ELSEIF ( ISTRAT .eq. 6 ) THEN
+          INTFCE = 'DIRAC6    '
+      ELSE
+          CALL QUIT ('Unknown DIRAC MO integrals interface')
+      END IF
 
 #if defined (VAR_MPI)
       IF (NMPROC .GT. 1) THEN
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
          call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
      &                  global_communicator)
+        call interface_mpi_BCAST(ISTRAT,1,MASTER,
+     &                 global_communicator)
       END IF
 !
 !     if MP2-NO is enabled, tell the slaves about the correct interface
@@ -97,7 +102,6 @@
       IF( MP2_DENRUN )THEN
         call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
      &                 global_communicator)
-        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
         call interface_mpi_BCAST(INFO_STRING(1),62,MASTER,
      &                 global_communicator)
         call interface_mpi_BCAST(INFO_STRING(2),62,MASTER,
@@ -106,6 +110,11 @@
      &                 global_communicator)
       END IF
 #endif
+      IF (ISTRAT /= IAOMOSCHEME) THEN
+         print*,"WARNING: fixed incompatible schemes for MP2 and MOLTRA"
+         print*,' Dirac MO integrals interface used: ',INTFCE
+         IAOMOSCHEME = ISTRAT
+      END IF
 !
 !     Enter the generic POLPRP_MAIN routine (master becomes now primus inter pares)
 !
@@ -155,6 +164,7 @@
 #include "implicit.h"
 #include "maxorb.h"
 #include "dcbham.h"
+#include "../moltra/dcbtra.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
@@ -181,12 +191,6 @@ C     Add the master node
       NMPROC = 1
 #endif
 
-C aspg 20080903
-C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
-!     MP2_DENRUN = .FALSE.
-      print*,'+++++ current (node) interface: ',INTFCE
 C
 C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)
 C
@@ -195,13 +199,22 @@ C
          call interface_mpi_BCAST_l0(CA,1,MASTER,global_communicator)
          call interface_mpi_BCAST_l0(MP2_DENRUN,1,MASTER,
      &                  global_communicator)
+        call interface_mpi_BCAST(ISTRAT,1,MASTER,
+     &                 global_communicator)
       END IF
       IF( MP2_DENRUN )THEN
         call interface_mpi_BCAST(IAOMOSCHEME,1,MASTER,
      &                  global_communicator)
-        IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
       END IF
 #endif
+! iface for integral reading is now communicated from master, set the string as well
+      IF ( ISTRAT .eq. 4 ) THEN
+          INTFCE = 'DIRAC     '
+      ELSEIF ( ISTRAT .eq. 6 ) THEN
+          INTFCE = 'DIRAC6    '
+      ELSE
+          CALL QUIT ('Unknown DIRAC MO integrals interface')
+      END IF
 C
 C     create a node-unique filename as output file. Important on
 C     shared file systems. Otherwise all the output gets mingled in one
@@ -226,6 +239,7 @@ C
       CCFILN    = CCBASF
       LCCFIL    = 11
 #endif
+
 C
 C
 C     open the local input file and the node specific output file.

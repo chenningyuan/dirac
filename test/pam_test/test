@@ -50,13 +50,6 @@ if os.environ.get('DIRAC_MPI_COMMAND'):
             input_files=['inptest.inp','CN.sto2g.mol'],
             extra_args='--noarch',
             filters={'out': f1})
-# go ahead with 2 CPU run when in the parallel mode
-  print('\nRunning pam in parallel, but with own parameter, --mpi=2:')
-  ierr += run(options,
-            configure,
-            input_files=['CN.x2c.scf.inp','CN.sto2g.mol'],
-            extra_args='--noarch --mpi=2 --mpiarg="--allow-run-as-root" --ag=0.6 --gb=0.5', # each parallel run must have at leat 2 threads
-            filters={'out': f2})
 
 else:
 # go ahead with the serial run, with checking output numbers

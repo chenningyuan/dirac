@@ -169,7 +169,7 @@ C
 
 C        Get relaxed density matrix computed for excited states
 
-         write(*,*)'# of statets',state
+         write(*,*)' Number of EOM states',state
 
          CALL GET_EOM_DENSITY ('AO',STATE,DMAT,IERR)
 
@@ -474,7 +474,8 @@ C
 C     Operator to be read from file
 C     =============================
 C
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C     
 C
  90   CONTINUE     

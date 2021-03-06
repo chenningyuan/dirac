@@ -1,4 +1,14 @@
 
+
+.. raw:: html
+
+  <a class="btn btn-info"
+     href="http://diracprogram.org"
+     data-mode="1"
+     style="margin-bottom: 50px"
+     target="_blank">Project website: http://diracprogram.org</a>
+
+
 Setting up DIRAC
 ================
 
@@ -118,7 +128,8 @@ Tutorials and walkthrus
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
-  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>`
+  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
+  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |

@@ -15,7 +15,6 @@ module exacorr_global
         type(cmo):: cspinor_all ! Stores all MO-coefficients and energies obtained from the parent code
         type(one_el_t)  :: int_1el ! stores 1 electron integrals
         logical :: TALSH_ONLY = .TRUE. ! use single-node TALSH library instead of the full EXATENSOR library
-        logical, public, parameter :: debug_exa = .false. ! switch on and off debug
         logical :: one_el_exist=.FALSE. ! logical if MRCONEE is available or not
 
 !       Functions and routines to interact with these data
@@ -32,9 +31,14 @@ module exacorr_global
         public get_eps
         public exist_one_el
         public get_one_el
+        public add_finitefield
+        public get_ff_ind
+        public get_ff_mat
         public get_shell_index
         public get_shell_size
+        public get_shell_offset
         public make_spinor_list
+        public get_scf
 
        contains
 
@@ -85,11 +89,6 @@ module exacorr_global
              if (tobe) then
                 scf_file = 0
                 call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
-                if (exa_input%beta_occ .and. (.not.TALSH_ONLY)) then
-                  if (exa_input%level_shift.lt.1.0D-10) then
-                    call quit ('Open shell computations with DIRAC and EXACORR require level shift (LSHIFT)')
-                  end if
-               end if
              else
                 inquire (file='RSD_MOS',exist=tobe)
                 if (tobe) then
@@ -118,9 +117,28 @@ module exacorr_global
                 end if
              else
                one_el_exist = .FALSE.
-               if (exa_input%beta_occ) then
-                 if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA)')
+               if (exa_input%beta_occ .and. exa_input%level_shift.lt.1.0D-14) then
+                 if (scf_file == 0) call quit ('One electron integrals required in the open shell case (MOLTRA) or LSHIFT')
                end if
+             end if
+
+             ! read property integrals (requires also readding of nsp from mrconee, so testing for this as well)
+             if (exa_input%nff(1)>0) then
+               inquire (file='MDPROP',exist=tobe)
+             else
+              exa_input%nff(2)=1
+              tobe=.FALSE.
+             end if
+             if (tobe.and.one_el_exist) then
+                call read_mdprop (int_1el, ierr)
+                if (ierr == 0) then
+                  call print_date("read property integrals from MDPROP")
+                else
+                  call print_date("could not read property integrals from MDPROP")
+                  int_1el%n_prop = 0
+                endif
+             else
+               int_1el%n_prop = 0
              end if
 
              call synchronize_global_data
@@ -194,6 +212,20 @@ module exacorr_global
 
                call interface_mpi_bcast (int_1el%h_core,2*nsp*nsp,my_MPI_master,global_communicator)
              end if
+
+!            Property integrals
+             call interface_mpi_bcast (int_1el%n_prop,1,my_MPI_master,global_communicator)
+             if (int_1el%n_prop>0) then
+                if (my_MPI_rank /= my_MPI_master) then
+                   nullify  (int_1el%h_prop)
+                   allocate (int_1el%h_prop(nsp,nsp,int_1el%n_prop))
+                   nullify  (int_1el%property_labels)
+                   allocate (int_1el%property_labels(int_1el%n_prop))
+                end if
+                call interface_mpi_bcast (int_1el%h_prop,2*nsp*nsp*int_1el%n_prop,my_MPI_master,global_communicator)
+                call interface_mpi_bcast(int_1el%property_labels,len(int_1el%property_labels(1))*int_1el%n_prop, &
+                                            my_MPI_master,global_communicator)
+             end if
 #else
              return ! For running a serial version no action is required.
 #endif
@@ -207,6 +239,11 @@ module exacorr_global
              call dealloc_mo (cspinor_all)
              if(one_el_exist) then
                deallocate(int_1el%h_core)
+             end if
+             if(int_1el%n_prop>0) then
+               deallocate(int_1el%h_prop)
+               deallocate(int_1el%property_labels)
+               int_1el%n_prop=0
              end if
          end subroutine delete_global_data
 
@@ -234,6 +271,19 @@ module exacorr_global
              il=ao_basis%gtos(ish)%orb_momentum
              get_shell_size = nfunctions(il,ao_basis%basis_angular)
          end function get_shell_size
+
+         subroutine get_shell_offset(l,l0)
+
+             integer, intent(in)  :: l
+             integer, intent(out) :: l0
+             integer :: i, lshells
+
+             lshells=get_shell_index(l)
+             l0=0
+             do i = 1,lshells-1
+               l0=l0+get_shell_size(i)
+             end do
+         end subroutine get_shell_offset
 
          type(basis_func_info_t) function get_gto(ish)
              integer, intent(in) :: ish
@@ -343,7 +393,85 @@ module exacorr_global
           end do
         end do
 
-     end subroutine get_one_el
+      end subroutine get_one_el
+
+      subroutine add_finitefield (h,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+
+        complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
+        type(exacc_input), intent(in) :: exa_input   ! field strength and label
+        integer, intent(in)           :: iff
+        integer, intent(in)           :: nmo1          ! the length of the mo basis
+        integer, intent(in)           :: mo1_list(:)   ! and their indices
+        integer, intent(in)           :: nmo2          ! the length of the mo basis
+        integer, intent(in)           :: mo2_list(:)   ! and their indices
+        integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+
+        integer :: pmo, qmo, i_prop, i
+
+        if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
+        if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MRCONEE (MOLTRA)')
+
+        do i=1,exa_input%nff(1)
+
+          call get_ff_ind (i_prop,exa_input%ff_names(i))
+
+          do qmo = 1, nmo2
+            do pmo = 1, nmo1
+              h(pmo, qmo) = h(pmo, qmo) + &
+              int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop) * exa_input%ff(i,iff)
+            end do
+          end do
+        end do
+
+      end subroutine add_finitefield
+
+      subroutine get_ff_ind (i_prop,p_label)
+
+        character(8), intent(in)      :: p_label   ! label
+        integer,intent(out)           :: i_prop
+
+        logical :: found
+
+        found = .false.
+        do i_prop = 1, int_1el%n_prop
+          !print*,int_1el%property_labels(i_prop),'=?=',p_label
+          if (int_1el%property_labels(i_prop) == p_label) then
+            found = .true.
+            exit
+          end if
+        end do
+
+        if (.not.found) then
+          print*, " ERROR: property ",p_label," not found on property integrals file"
+          stop "property to be added not found"
+          i_prop=-1
+        end if
+
+      end subroutine get_ff_ind
+
+      subroutine get_ff_mat (h,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+
+        complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
+        integer, intent(in)           :: i_prop
+        integer, intent(in)           :: nmo1          ! the length of the mo basis
+        integer, intent(in)           :: mo1_list(:)   ! and their indices
+        integer, intent(in)           :: nmo2          ! the length of the mo basis
+        integer, intent(in)           :: mo2_list(:)   ! and their indices
+        integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+
+        integer :: pmo, qmo
+
+        if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
+        if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
+
+        do qmo = 1, nmo2
+          do pmo = 1, nmo1
+            h(pmo, qmo) = h(pmo, qmo) + &
+            int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
+          end do
+        end do
+
+      end subroutine get_ff_mat
 
       subroutine string2mo ( inp_str, a_or_b, nmo, mo_list)
 
@@ -437,7 +565,7 @@ module exacorr_global
           allocate(dist_a(sl))
 
           dist_a=eps-e_min
-          where(dist_a<0) dist_a=1000
+          where(dist_a<0) dist_a=1000000
           j=minloc(abs(dist_a),1)
           mo1=1
           do i=j-1,1,-1
@@ -448,7 +576,7 @@ module exacorr_global
           end do
 
           dist_a=eps-e_max
-          where(dist_a>0) dist_a=1000
+          where(dist_a>0) dist_a=1000000
           j=minloc(abs(dist_a),1)
           mo2=sl
           do i=j,sl-1
@@ -633,7 +761,7 @@ module exacorr_global
               write(*,*) "core orbital need to be closed shell"
               call quit ("change .OCC_BETA in EXACORR")
             end if
-
+            
             exa_input%nocc=nmo(1)+nmo(2)
             exa_input%nvir=nmo(3)+nmo(4)
             allocate (exa_input%mo_occ(exa_input%nocc))
@@ -746,18 +874,23 @@ module exacorr_global
         type(exacc_input), intent(inout) :: exa_input
         integer                          :: i
 
-        write(*,*) ' --- active occupied spinors --- '
+        write(*,*) ' --- read active occupied spinors --- '
         write(*,*) '   #             E   '
         do i=1,exa_input%nocc
           write(*,'(I8,E18.9)') exa_input%mo_occ(i), cspinor_all%energy(exa_input%mo_occ(i))
         end do 
         
-        write(*,*) ' --- active virtual spinors --- '
+        write(*,*) ' --- read active virtual spinors --- '
         write(*,*) '   #             E   '
         do i=1,exa_input%nvir
           write(*,'(I8,E18.9)') exa_input%mo_vir(i), cspinor_all%energy(exa_input%mo_vir(i))
         end do 
 
       end subroutine print_orbitals
+
+      subroutine get_scf ( scf_energy )
+        real(8), intent(out) :: scf_energy
+        scf_energy=cspinor_all%total_energy
+      end subroutine get_scf 
 
 end module exacorr_global

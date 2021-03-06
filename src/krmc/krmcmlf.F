@@ -507,7 +507,7 @@ C
      $                          + VMUUUU(J,ITR,LTR,K,1)
      $                          + VMUUUU(K,LTR,ITR,J,1)
      $                          + VMUUUU(ITR,J,K,LTR,1)
-                        ELSE
+                        ELSE ! not KSYMM
 C
 C                          (1) Symm. transition density matrix
 C                          (2) Do particle symmetrization
@@ -526,11 +526,11 @@ C
      &                          + VMUUUU(I,JTR,KTR,L,1)
      &                          + VMUUUU(JTR,I,L,KTR,1)
                         END IF
-                     ELSE
+                     ELSE ! not PSYMM
                         IF (KSYMM) THEN
 C
 C                          (1) Symm. transition density matrix
-C                          (2) Kramers symmetrization
+C                          (3) Kramers symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      &                          VMUUUU(K,L,I,J,1)
@@ -559,7 +559,7 @@ C
      $                          - VMUUUU(L,KTR,ITR,J,1)
      $                          + VMUUUU(LTR,K,J,ITR,1)
      $                          + VMUUUU(K,LTR,ITR,J,1)
-                        ELSE
+                        ELSE ! not KSYMM
 C
 C                          (1) Symm. transition density matrix
 C
@@ -573,12 +573,12 @@ C
      &                          + VMUUUU(L,KTR,JTR,I,1)
                         END IF
                      END IF
-                  ELSE
+                  ELSE ! not TSYMM
                      IF (PSYMM) THEN
                         IF (KSYMM) THEN
 C
-C                          (1) Particle symmetrization
-C                          (2) Kramers symmetrization
+C                          (2) Particle symmetrization
+C                          (3) Kramers symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      $                          VMUUUU(K,L,I,J,1)
@@ -607,9 +607,9 @@ C
      $                          - VMUUUU(J,ITR,KTR,L,1)
      $                          + VMUUUU(LTR,K,J,ITR,1)
      $                          + VMUUUU(J,ITR,LTR,K,1)
-                        ELSE
+                        ELSE ! not KSYMM
 C
-C                          (1) Particle symmetrization
+C                          (2) Particle symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      $                          VMUUUU(K,L,I,J,1)
@@ -621,27 +621,27 @@ C
      $                          VMUUUU(KTR,L,I,JTR,1)
      $                          + VMUUUU(I,JTR,KTR,L,1)
                         END IF
-                     ELSE
+                     ELSE ! not PSYMM
                         IF (KSYMM) THEN
 C
-C                          (1) Kramers symmetrization
+C                          (3) Kramers symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      $                          VMUUUU(K,L,I,J,1)
-     $                          + VMUUUU(LTR,KTR,I,J,1)
-     $                          + VMUUUU(K,L,JTR,ITR,1)
-     $                          + VMUUUU(LTR,KTR,JTR,ITR,1)
+     $                        + VMUUUU(LTR,KTR,I,J,1)
+     $                        + VMUUUU(K,L,JTR,ITR,1)
+     $                        + VMUUUU(LTR,KTR,JTR,ITR,1)
                            VDUUUU(KK,LL,IJ,1,2) =
      $                          VMUUUU(K,LTR,I,JTR,1)
-     $                          - VMUUUU(L,KTR,I,JTR,1)
-     $                          - VMUUUU(K,LTR,J,ITR,1)
-     $                          + VMUUUU(L,KTR,J,ITR,1)
+     $                        - VMUUUU(L,KTR,I,JTR,1)
+     $                        - VMUUUU(K,LTR,J,ITR,1)
+     $                        + VMUUUU(L,KTR,J,ITR,1)
                            VDUUUU(KK,LL,IJ,1,3) =
      $                          VMUUUU(KTR,L,I,JTR,1)
-     $                          - VMUUUU(LTR,K,I,JTR,1)
-     $                          - VMUUUU(KTR,L,J,ITR,1)
-     $                          + VMUUUU(LTR,K,J,ITR,1)
-                        ELSE
+     $                        - VMUUUU(LTR,K,I,JTR,1)
+     $                        - VMUUUU(KTR,L,J,ITR,1)
+     $                        + VMUUUU(LTR,K,J,ITR,1)
+                        ELSE ! not KSYMM
 C
 C                          No symmetrization
 C
@@ -655,6 +655,8 @@ C
 C                 Complex point groups
 C                 --------------------
 C
+                  IF (.NOT.spinfr .AND. .NOT.levyle) THEN
+                  ! all IZ =2,3,4 terms are zero
                   IF (NZ .GE. 2) THEN
                      IF (TSYMM) THEN
                         IF (PSYMM) THEN
@@ -824,13 +826,13 @@ C                            (1) Particle symmetrization
 C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
-     $                             + VMUUUU(I,J,K,L,2)
+     $                           + VMUUUU(I,J,K,L,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      $                             VMUUUU(K,LTR,I,JTR,2)
-     $                             + VMUUUU(I,JTR,K,LTR,2)
+     $                           + VMUUUU(I,JTR,K,LTR,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      $                             VMUUUU(KTR,L,I,JTR,2)
-     $                             + VMUUUU(I,JTR,KTR,L,2)
+     $                           + VMUUUU(I,JTR,KTR,L,2)
                            END IF
                         ELSE
                            IF (KSYMM) THEN
@@ -839,19 +841,19 @@ C                            (1) Kramers symmetrization
 C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
-     $                             + VMUUUU(LTR,KTR,I,J,2)
-     $                             + VMUUUU(K,L,JTR,ITR,2)
-     $                             + VMUUUU(LTR,KTR,JTR,ITR,2)
+     $                           + VMUUUU(LTR,KTR,I,J,2)
+     $                           + VMUUUU(K,L,JTR,ITR,2)
+     $                           + VMUUUU(LTR,KTR,JTR,ITR,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      $                             VMUUUU(K,LTR,I,JTR,2)
-     $                             - VMUUUU(L,KTR,I,JTR,2)
-     $                             - VMUUUU(K,LTR,J,ITR,2)
-     $                             + VMUUUU(L,KTR,J,ITR,2)
+     $                           - VMUUUU(L,KTR,I,JTR,2)
+     $                           - VMUUUU(K,LTR,J,ITR,2)
+     $                           + VMUUUU(L,KTR,J,ITR,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      $                             VMUUUU(KTR,L,I,JTR,2)
-     $                             - VMUUUU(LTR,K,I,JTR,2)
-     $                             - VMUUUU(KTR,L,J,ITR,2)
-     $                             + VMUUUU(LTR,K,J,ITR,2)
+     $                           - VMUUUU(LTR,K,I,JTR,2)
+     $                           - VMUUUU(KTR,L,J,ITR,2)
+     $                           + VMUUUU(LTR,K,J,ITR,2)
                            ELSE
 C
 C                             No symmetrization
@@ -865,7 +867,7 @@ C
                            END IF
                         END IF
                      END IF
-                  END IF
+                  END IF ! NZ .GE. 2
 C
                   IF (NZ .EQ. 4) THEN
                      CALL QUIT('*** ERROR in M2DNZ3 ***'
@@ -892,7 +894,9 @@ C
                         VDUUUU(KK,LL,IJ,3,3) = VMUUUU(KTR,L,I,J,1)
                         VDUUUU(KK,LL,IJ,4,3) = VMUUUU(KTR,L,I,J,2)
                      ENDIF
-                  END IF
+                  END IF ! NZ .eq. 4
+                  END IF ! (.NOT.spinfr .AND. .NOT.levyle)
+                         ! for which all IZ = 2,3,4 terms are zero
                END DO
             END DO
          END DO

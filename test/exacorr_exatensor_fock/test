@@ -14,31 +14,25 @@ f1.add(from_string = 'Total energy',
       num_lines   = 1,
       rel_tolerance   = 1.0e-9)
 
-f = Filter()
-f.add(from_string = 'Final CCSD energy',
+f2 = Filter()
+f2.add(from_string = 'Final results from EXACORR',
+      num_lines   = 8,
+      abs_tolerance   = 1.0e-5)
+f2.add(from_string = 'Norm of Fock matrix (OO',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
-f.add(from_string = 'Energy of reference wave function (HF single determinant)',
+      abs_tolerance   = 1.0e-4)
+f2.add(from_string = 'Norm of Fock matrix (OV',
       num_lines   = 1,
-      rel_tolerance   = 1.0e-9)
-f.add(from_string = 'Norm of OO part Fock matrix ',
+      abs_tolerance   = 1.0e-3)
+f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
-      abs_tolerance   = 1.0e-9)
-f.add(from_string = 'Norm of OV part Fock matrix ',
-      num_lines   = 1,
-      abs_tolerance   = 1.0e-9)
-f.add(from_string = 'Norm of VV part Fock matrix ',
-      num_lines   = 1,
-      abs_tolerance   = 1.0e-9)
-
-if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==''):
-    os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n 4 "
+      abs_tolerance   = 1.0e-2)
 
 os.system('ulimit -s unlimited')
 
 test.run(['scf_h2o.inp'], ['H2O_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
 
-test.run(['cc_h2o.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
-test.run(['cc_h2o_core.inp'], ['H2O_nosym.mol'], f, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_h2o.inp'], ['H2O_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
+test.run(['cc_h2o_core.inp'], ['H2O_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
 
 sys.exit(test.return_code)

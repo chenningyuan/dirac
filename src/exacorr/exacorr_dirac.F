@@ -30,12 +30,17 @@ C***********************************************************************
 ! we need to broadcast tra4_indstr
 #include "dcborb.h"
 ! to access nesh (number of positive energy "electronlike" orbitals)
+#include "dgroup.h"
+#include "dcbham.h"
+!information about the group
 
       character (len=72)   :: orbital_string(4) ! String with range of MO's to be transformed for each index
       integer              :: kvec              ! Dummy variable needed in first call to numlst
       integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
-      integer              :: i, j, imo, jmo, ntmo
+      integer              :: i, j, imo, jmo, ntmo, rcw
+
+      exa_input%print_level=IPRTRA
 
 #if defined (VAR_MPI)
       ! parallel version of DIRAC
@@ -107,9 +112,15 @@ C     Convert to Kramers unrestricted picture
       end if
 #endif
 C
+      IF (SPINFR.OR.NZ.EQ.1) THEN
+         rcw = 1
+      ELSE
+         rcw = 2
+      ENDIF
+
       if (.true.) then !Always use talsh for now
         call talsh_compute_mo_integrals(nmo,mo_list,
-     &      exa_input%talsh_buff)
+     &      exa_input%talsh_buff,exa_input%print_level,rcw,TH_CHOLESKY)
       else
 #if defined (VAR_MPI)
          !slaves need the same info to get started
@@ -119,7 +130,8 @@ C
          call interface_mpi_bcast(mo_list,ntmo,mparid,
      &                            global_communicator)
 #endif
-         call exacorr_compute_mo_integrals (nmo, mo_list)
+         call exacorr_compute_mo_integrals (nmo,mo_list,
+     &                            exa_input%print_level)
       end if
 C
       !Only master should deallocate, since only master completes talsh
@@ -169,6 +181,7 @@ C***********************************************************************
          print*, "Attempting to use exatensor with a non MPI version"
          call quit ("error in setup: exatensor requires MPI")
       end if
+      call print_exacorr_logo
 #endif
 C
       call set_talsh_only(exa_input%talsh)
@@ -191,33 +204,17 @@ C
          call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
-         ! slaves need the same info to get started
-         call interface_mpi_bcast(exa_input%nkr_occ,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_occ(exa_input%nkr_occ))
-         call interface_mpi_bcast(exa_input%nkr_vir,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-         call interface_mpi_bcast(exa_input%nocc,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_occ(exa_input%nocc))
-         call interface_mpi_bcast(exa_input%nvir,1,0,
-     &                              global_communicator)
-         if (mytid /= 0) allocate(exa_input%mo_vir(exa_input%nvir))
-         call exacc_sync_cw(0)
+         call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
          if (exa_input%lambda) then 
-           if (mytid == 0) call set_prop_flags()
+           if (mytid == 0) call set_prop_flags_ccsd()
          end if
 
          call exacorr_cc_driver (exa_input)
       end if
 
-      deallocate (exa_input%mokr_occ)
-      deallocate (exa_input%mokr_vir)
-      deallocate (exa_input%mo_occ  )
-      deallocate (exa_input%mo_vir  )
+      call exacc_deallocate_cw()
 
       end
 
@@ -343,7 +340,7 @@ C
        integer                :: lucoef
        integer                :: i, j, k, ishell, iprimstart, iprimend
        integer                :: nao, nao_bas, nshells, iao, ibas
-       integer                :: nmo, npo, nto, npriexp, ncnt
+       integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
        real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
        integer, allocatable   :: ibeig(:),index(:)
@@ -351,6 +348,9 @@ C
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
        complex(8), allocatable:: scoeff(:,:,:)
+       integer, allocatable   :: ao_map(:,:)
+       character(8)           :: label(4)
+       logical                :: labeled
 
        ierr = NOERROR
 
@@ -364,8 +364,17 @@ C
           call get_free_fileunit(lucoef)
           open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',
      &     access='SEQUENTIAL')
-          read (lucoef,end=10,err=10) text,nsym,
+          read (lucoef) label
+          if (label(1) == '********') then
+             labeled = .true. ! new format
+             read (lucoef,end=10,err=10) text,nsym,nzbuf,
      &         ((idim(i,j),i=1,3),j=1,nsym),total_energy
+          else
+             labeled = .false.
+             backspace(lucoef) ! old format (DIRAC19 and earlier)
+             read (lucoef,end=10,err=10) text,nsym,
+     &         ((idim(i,j),i=1,3),j=1,nsym),total_energy
+          endif
        end if
 
        ! check symmetry and get dimensions of the coefficient array
@@ -387,8 +396,11 @@ C
        allocate(index(2*nmo))
         
        ! read the mo coefficients and orbital eigenvalues
+       if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) coeff
+       if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) eig
+       if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
        do i = 1, 2*nmo
@@ -417,12 +429,18 @@ C
        deallocate(scoeff)
 
        ! read the basis set information and check for consistency
+       if (labeled) read (lucoef) label
        read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
-       if (nao /= nao_bas) then
+       if (nao < nao_bas) then
           ierr = INCONSIS
-          print*,"Inconsistency: use NONREL, X2C, or X2CMMF Hamiltonian"
           close (lucoef,status='KEEP')
           return
+       elseif (nao > nao_bas) then
+          print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+          print*,"Reading fewer basis functions than MO-coefficients"
+          allocate (ao_map(2,nao_bas))
+          forall (i=1:nao_bas) ao_map(:,i)=i
+          call compress_mo (cspinor,ao_map)
        end if
 
        ! allocate the arrays to read the basis set information in DIRAC format
@@ -448,7 +466,7 @@ C
 
        ! put in gtos
        ao_basis%nshells       = nshells
-       ao_basis%nao           = nao
+       ao_basis%nao           = nao_bas
        ao_basis%basis_angular = 1
        nullify(ao_basis%gtos)
        allocate(ao_basis%gtos(nshells))
@@ -666,7 +684,7 @@ C
        
        end subroutine write_mos_to_dirac_formatted
 
-       subroutine Write_To_Mdcint (nmo,mo_tens)
+       subroutine Write_To_Mdcint (nmo,mo_tens,rcw)
 
 !      Utility routine to write to the DIRAC moltra format, makes it easier to test the index transform
  
@@ -686,7 +704,6 @@ C
        iprint = 0
        irepij = 1
        nkr = nmo / 2 ! go to Kramers restricted
-       rcw = 2       ! We have no symmetry or spinfree options yet, so this is always 2
        nclass = 8    ! write the standard classes used in MOLTRA as well
 
 !      Open the MDCINT file
@@ -758,7 +775,7 @@ C
                   do kk = 1, nkr(3)
                      k = (kk-1)*2 + bar(iclass,3) ! Spinor index 3
                      fmat(kk,ll,1) = mo_tens(1,k,l,i,j)
-                     fmat(kk,ll,2) = mo_tens(2,k,l,i,j)
+                     if (rcw.gt.1) fmat(kk,ll,2) = mo_tens(2,k,l,i,j)
                   end do
                end do
 
@@ -839,10 +856,6 @@ C
 
 !      read this "core" Hamiltonian
        read (luone,ERR=20,END=20) h_core
-!      For some vague historical reason hcore is not written in fortran order by MOLTRA but as its transpose
-!      In RELCCSD the complex conjugate is taken (quicker than doing the transpose) after the read, we do the same thing here
-!      but it would be good to fix this in MOLTRA and just write in fortran order (LV, 8-3-2019)
-       h_core = dconjg(h_core)
 
 !      reorder and store in the data type
        nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors
@@ -864,49 +877,89 @@ C
 
        end subroutine read_from_mrconee
 
+       subroutine read_mdprop (int_1el, ierr)
 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE set_prop_flags()
-C
-C---------------Description--------------------------------------------
-C
-C   set flags to perform property computations if lambda is activated
-C
-C   Johann Pototschnig, Fall 2019
+       use exacorr_datatypes
+       use exacorr_utils, only: get_free_fileunit
 
-C---------------Common Blocks--------------------------------------
-C
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
+       implicit none
 
-      character(4)  :: WF
-C
-      WF='CCSD'
-C     Switch on evaluation of property output
-      DOEXP = .TRUE.
-C     Add this density matrix to the list to be evaluated
-      IPRP_WF = 0
-      DO I = 1, NPRP_WF
-         IF (PRP_WF(I).EQ.WF) IPRP_WF = I
-      END DO
-      IF (IPRP_WF.EQ.0) THEN
-         IF (NPRP_WF .GE. MXPRP_WF) THEN
-             IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
-         ELSE
-             NPRP_WF = NPRP_WF + 1
-             IPRP_WF = NPRP_WF
-         END IF
-         PRP_WF(IPRP_WF) = WF
-      END IF
+!      routine to read property integrals and add these to the int_1el data
 
-      END
+       type(one_el_t), intent(inout) :: int_1el
+       integer, intent(out)   :: ierr
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
 
+       integer, parameter     :: max_prop = 100 ! limit maximum of arrays to be read, should be high enough for the foreseeable future
+       integer :: nsp, nkr, n_prop, i_prop
+       complex(8), allocatable :: h_prop(:,:)
 
+       character*32           :: label
+       logical                :: tobe
+       integer                :: luone
 
+       ierr=NOERROR
+
+!      open file and read setup infromation
+       inquire (file='MDPROP',exist=tobe)
+       if (.not.tobe) then
+          print*, "error: file MDPROP not found"
+          ierr = NOTFOUND
+          return
+       else
+          call get_free_fileunit(luone)
+          open (luone,file='MDPROP',status='OLD',FORM='UNFORMATTED',
+     &     access='SEQUENTIAL')
+       end if
+!      set number of spinors
+       nsp=int_1el%n_spinor
+
+!      allocate auxilliary array to read in
+       allocate(h_prop(nsp, nsp))
+
+!      count the number of matrices that we need to store
+!      MDROP has a very simple format: record with label followed by record containing the data
+       n_prop = 0
+       do while (n_prop < max_prop)
+          read (luone,err=10,end=10) label
+          if (label(25:32) == 'EOFLABEL') exit
+          read (luone,err=10,end=10) h_prop
+          n_prop = n_prop + 1
+       end do
+       rewind (luone)
+
+!      store property integrals
+       nullify(int_1el%property_labels)
+       nullify(int_1el%h_prop)
+       allocate(int_1el%property_labels(n_prop))
+       allocate(int_1el%h_prop(nsp,nsp,n_prop))
+       int_1el%n_prop = n_prop
+       nkr = nsp / 2 ! number of Kramers pairs is always half the number of spinors
+       i_prop = 0
+       do while (i_prop < n_prop)
+          read (luone,err=10,end=10) label
+          i_prop = i_prop + 1
+          read (luone,err=10,end=10) h_prop
+        ! reorder and store in the data type
+          int_1el%property_labels(i_prop) = label(25:32)
+          int_1el%h_prop(1:nsp:2,1:nsp:2,i_prop)
+     &          = h_prop(1:nkr,1:nkr)     ! unbar-unbar
+          int_1el%h_prop(2:nsp:2,1:nsp:2,i_prop)
+     &         = h_prop(nkr+1:nsp,1:nkr)   ! bar-unbar
+          int_1el%h_prop(1:nsp:2,2:nsp:2,i_prop)
+     &         = h_prop(1:nkr,nkr+1:nsp)   ! unbar-bar
+          int_1el%h_prop(2:nsp:2,2:nsp:2,i_prop)
+     &         = h_prop(nkr+1:nsp,nkr+1:nsp) ! bar-bar
+       end do
+
+       close (luone,status='KEEP')
+       deallocate (h_prop)
+       return
+
+  10   ierr = CORRUPT
+       return
+
+       end subroutine read_mdprop
 

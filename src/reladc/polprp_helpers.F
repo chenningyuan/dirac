@@ -748,37 +748,34 @@ C
       endif
 
       Do irp = 1,nrep
-
-        istart = 0
-        mint = nvvt(irp)  !maximum number of batches in this irrep
-        nbatch = idist(2,1,irp) - idist(1,1,irp) !current batches on this node
-        n2 = nbatch * nvvt(irp) ! number of VVVV integrals on this node
-
-        allocate(bufr(n2*rcw))
-        CALL GETVVVV (irp,istart,nint,done,bufr,mint)
-        if(nint.ne.nbatch.or.(.not.done)) then
-          write(*,*) 'Serious batch distribution error!'
-          write(*,*) 'Contact programmer of the module.'
-          call quit()
-        else
-          if(deb) write(*,*) 'Node',myproc,' local VVVV checksum:',
-     &      dot_product(bufr,bufr)
-        endif
-
-        m = nvvt(irp)
+        m = nvvt(irp)  !maximum number of batches in this irrep
         n = noot(irp)
-        k = nbatch
-        localstart = idist(1,1,irp)
-        off1 = 1
-        off2 = (ivvoott(irp) + localstart)*rcw + 1
-        off3 = ivvoott(irp)*rcw + 1
-        CALL XGEMM ('N','N',m,n,k,cone,bufr(off1),m,
+        IF(m*n.GT.0) THEN
+          istart = 0
+          nbatch = idist(2,1,irp) - idist(1,1,irp) !current batches on this node
+          n2 = nbatch * nvvt(irp) ! number of VVVV integrals on this node
+
+          allocate(bufr(n2*rcw))
+          CALL GETVVVV (irp,istart,nint,done,bufr,m)
+          if(nint.ne.nbatch.or.(.not.done)) then
+            write(*,*) 'Serious batch distribution error!'
+            write(*,*) 'Contact programmer of the module.'
+            call quit()
+          else
+            if(deb) write(*,*) 'Node',myproc,' local VVVV checksum:',
+     &        dot_product(bufr,bufr)
+          endif
+          localstart = idist(1,1,irp)
+          off1 = 1
+          off2 = (ivvoott(irp) + localstart)*rcw + 1
+          off3 = ivvoott(irp)*rcw + 1
+          CALL XGEMM ('N','N',m,n,nbatch,cone,bufr(off1),m,
      &              vvoo_in(off2),m,cone,vvoo_ou(off3),m)
 
-        deallocate(bufr)
-        if(deb) write(*,*) 'Node',myproc,'$$ loc. precon checksum:',
-     &     dot_product(vvoo_ou,vvoo_ou)
-
+          deallocate(bufr)
+          if(deb) write(*,*) 'Node',myproc,'$$ loc. precon checksum:',
+     &       dot_product(vvoo_ou,vvoo_ou)
+        ENDIF
       Enddo  !irp
 
       return

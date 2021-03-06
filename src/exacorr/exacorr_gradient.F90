@@ -7,7 +7,6 @@ module exacorr_gradient
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
   use exacorr_datatypes
-  use exacorr_global,    only : debug_exa
   use exacorr_utils,     only : print_date
   use, intrinsic:: ISO_C_BINDING
 
@@ -86,9 +85,9 @@ module exacorr_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -117,7 +116,7 @@ module exacorr_gradient
 
     end subroutine exacorr_dm_driver
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(exatns_dm_tens_t), intent(inout) :: gamma
@@ -125,6 +124,7 @@ module exacorr_gradient
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
       type(space_dims),     intent(in   ) :: dims
       logical,              intent(in   ) :: CCD
+      integer,              intent(in   ) :: print_level
 !     auxiliary tensors
       type(tens_rcrsv_t) :: one_dm_tensor
       type(tens_rcrsv_t) :: tau2_tensor
@@ -166,14 +166,14 @@ module exacorr_gradient
 !----------------------------------------------------------------
 !     oo: g'(j,i) = - 1/2 t(ef,im) * l(jm,ef) - t(e,i) * l(j,e) |
 !----------------------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%prime_oo,ZERO)
       ierr=exatns_tensor_contract("G(j,i)+=T(e,f,i,m)*L(m,j,e,f)",gamma%prime_oo,t2_tensor,l2_tensor,ONE_HALF)
       if (.not.CCD) ierr=exatns_tensor_contract("G(j,i)+=T(e,i)*L(j,e)",gamma%prime_oo,t1_tensor,l1_tensor,MINUS_ONE)
 
 !--------------------------------------------------------------
 !     vv: g'(a,b) = 1/2 t(ae,mn) * l(mn,be) + t(a,m) * l(m,b) |
 !--------------------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%prime_vv,ZERO)
       ierr=exatns_tensor_contract("G(a,b)+=T(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,t2_tensor,l2_tensor,ONE_HALF)
       if (.not.CCD) ierr=exatns_tensor_contract("G(a,b)+=T(a,m)*L(m,b)",gamma%prime_vv,t1_tensor,l1_tensor)
 
@@ -182,13 +182,13 @@ module exacorr_gradient
 !----------------------------
 !     vo: g'(a,i) += t(a,i) |
 !----------------------------
-
+        ierr=exatns_tensor_init(gamma%prime_vo,ZERO)
         ierr=exatns_tensor_contract("G(a,i)+=T(a,i)*K()",gamma%prime_vo,t1_tensor,one_dm_tensor)
 
 !-----------------------------------------------------------
 !     vo: g'(a,i) += l(m,e) * (t(ae,im) - t(e,i) * t(a,m)) |
 !-----------------------------------------------------------
-
+        ierr=exatns_tensor_init(tau2_tensor,ZERO)
         ierr=exatns_tensor_contract("T(a,e,i,m)+=R(a,e,i,m)*K()",tau2_tensor,t2_tensor,one_dm_tensor)
         ierr=exatns_tensor_contract("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,MINUS_ONE)
         ierr=exatns_tensor_contract("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
@@ -196,7 +196,8 @@ module exacorr_gradient
 !----------------------------------------------------------------------------
 !     vo: g'(a,i) -= 1/2 l(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
 !----------------------------------------------------------------------------
-
+        ierr=exatns_tensor_init(oo_aux_tensor,ZERO) 
+        ierr=exatns_tensor_init(vv_aux_tensor,ZERO) 
         ierr=exatns_tensor_contract("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
         ierr=exatns_tensor_contract("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,MINUS_ONE_HALF)
         ierr=exatns_tensor_contract("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
@@ -205,41 +206,40 @@ module exacorr_gradient
 !---------------------------
 !     ov: g'(i,a) = l(i,a) |
 !---------------------------
-
+        ierr=exatns_tensor_init(gamma%prime_ov,ZERO)
         ierr=exatns_tensor_contract("G(i,a)+=L(i,a)*K()",gamma%prime_ov,l1_tensor,one_dm_tensor)
 
 !--------------------------------------------------
 !       ov symm: g(i,a) = 1/2 (g'(i,a) + g'(a,i)) |
 !--------------------------------------------------
-
+        ierr=exatns_tensor_init(gamma%symm_ov,ZERO)
         ierr=exatns_tensor_contract("G(i,a)+=X(i,a)*K()",gamma%symm_ov,gamma%prime_ov,one_dm_tensor,ONE_HALF)
         ierr=exatns_tensor_contract("G(i,a)+=X+(a,i)*K()",gamma%symm_ov,gamma%prime_vo,one_dm_tensor,ONE_HALF)
 
 !--------------------------------------------------
-!       vo symm: g(a,i) = 1/2 (g'(a,i) + g'(i,a)) |
+!       vo symm: g(a,i) = symmetrized c.c. g(i,a)
 !--------------------------------------------------
-
-        ierr=exatns_tensor_contract("G(a,i)+=X(a,i)*K()",gamma%symm_vo,gamma%prime_vo,one_dm_tensor,ONE_HALF)
-        ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%prime_ov,one_dm_tensor,ONE_HALF)
+         ierr=exatns_tensor_init(gamma%symm_vo,ZERO)
+         ierr=exatns_tensor_contract("G(a,i)+=X+(i,a)*K()",gamma%symm_vo,gamma%symm_ov,one_dm_tensor)
 
       end if
 
 !------------------------------------------------
 !     vv symm: g(b,a) = 1/2 (g'(b,a) + g'(a,b)) |
 !------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%symm_vv,ZERO)
       ierr=exatns_tensor_contract("G(b,a)+=X(b,a)*K()",gamma%symm_vv,gamma%prime_vv,one_dm_tensor,ONE_HALF)
-      ierr=exatns_tensor_contract("G(b,a)+=X(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(b,a)+=X+(a,b)*K()",gamma%symm_vv,gamma%prime_vv,one_dm_tensor,ONE_HALF)
 
 !------------------------------------------------
 !     oo symm: g(j,i) = 1/2 (g'(j,i) + g'(i,j)) |
 !------------------------------------------------
-
+      ierr=exatns_tensor_init(gamma%symm_oo,ZERO)
       ierr=exatns_tensor_contract("G(j,i)+=X(j,i)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
-      ierr=exatns_tensor_contract("G(j,i)+=X(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
+      ierr=exatns_tensor_contract("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_dm_tensor,ONE_HALF)
 
 !     debug_exa
-      if (debug_exa) then
+      if (print_level.gt.8) then
         print*, "gprime_oo  = ", print_tensornorm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", print_tensornorm2(gamma%prime_ov)
@@ -301,6 +301,7 @@ module exacorr_gradient
       integer :: ierr
 !     loop variables
       integer :: i, j, norbt
+      integer :: i_unbar, j_unbar, j_bar
 !     variables for talsh, density matrix needs to be smaller than buffer size 
       integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
       integer(C_INT)                  :: host_arg_max
@@ -390,11 +391,18 @@ module exacorr_gradient
       allocate (dm_diracformat(nesh,nesh,4))
       dm_diracformat = ZERO
       do j = 1, norbt
+        j_unbar = 2*j-1
+        j_bar   = 2*j
         do i = 1, norbt
-          ! We copy the unbar-unbar part of the density matrix, would be good to test whether the Kramers-restricted assumption holds
+          ! We copy the unbar-unbar part of the density matrix, as well as the unbar-bar part
+          ! This follows from eq. 27 of Shee, Visscher, Saue JCP 145 184107, 2016
+          ! it would be good to test whether the Kramers-restricted assumption holds
           ! Or even to average over the two density matrices and enforce a Kramers-restricted density
-          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(2*i-1,2*j-1))
-          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(2*i-1,2*j-1))
+          i_unbar = 2*i-1
+          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
+          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
+          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
         end do
       end do
 

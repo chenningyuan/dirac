@@ -1,6 +1,40 @@
 :orphan:
 
 
+20.0 (planned for 2021-01-31)
+-----------------------------
+
+New features:
+
+- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig,A. Papadopoulos,
+   D. I. Lyakh, M. Repisky,L.Halbert,A.S.P. Gomes,H.J.Aa. Jensen, and L. Visscher.
+   To be published.
+- Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
+   S. Lehtola,  L. Visscher and  E. Engel.
+   Efficient implementation of the superposition of atomic potentials initial guess for electronic structure calculations in Gaussian basis sets.
+   J. Chem. Phys. 152, 144105 (2020); http://dx.doi.org/10.1063/5.0004046 doi: 10.1063/5.0004046
+- Calculation of Rotational Molecular g-tensors. Activated with ".ROTG". Contributor: I. Agustín Aucar.
+   I. A. Aucar, S. S. Gómez, C. G. Giribet and M. C. Ruiz de Azúa.
+   Theoretical study of the relativistic molecular rotational g-tensor.
+   J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
+- Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
+- "make latex" for making a latex version of the documenation in "build/latex", used e.g. pdflatex to make a pdf version of the manual. Contributor: Hans Joergen Aa. Jensen
+
+Revised features:
+
+- Gauge origin (.GAUGEO and .GO ANG) now can only be set under \*\*HAMILTONIAN.
+- Phase and dipole origins (.PHASEO and .DIPORG, respectively) now can only be set under \*\*HAMILTONIAN.
+- EOM-CC excitation energies collected for all symmetries and summarized at the end  
+
+New defaults:
+
+- One-electron operator ANGMOM's origin was moved from the gauge-origin to the molecular center of mass.
+- The CODATA2018 set of physical constants is now used as default (taken from http://physics.nist.gov/constants). Before this version, CODATA1998 was default.
+- Non-relativistic and relativistic effective core-potential calculations (".NONREL" and ".ECP") now have nuclear point nucleus as default.
+  For non-relativistic calculations this makes it easier to compare to other codes, and for RECP this is the intended behavior which by mistake was not activated.
+
+-----------------------------------------------------------------------------------------------------
+
 19.0 (2019-12-12)
 -----------------
 
@@ -18,7 +52,7 @@ New features:
    T. Fleig, M. K. Nayak and M. G. Kozlov.
    TaN, a molecular system for probing P,T-violating hadron physics.
    Phys. Rev. A 93, 012505, 2016; http://dx.doi.org/10.1103/PhysRevA.93.012505 doi: 10.1103/PhysRevA.93.012505
-   
+
 Revised features:
 
 - Maximum number of basis functions increased from 30k to 40k.
@@ -46,6 +80,7 @@ Documentation:
 
 - Restore local build of Sphinx documentation.
 
+-----------------------------------------------------------------------------------------------------
 
 18.0 (2018-12-13)
 -----------------
@@ -94,7 +129,7 @@ New features:
 - Polarizable embedding using PElib (https://gitlab.com/pe-software/pelib-public). Activated with ".PEQM", additional options under \*PEQM.
 
  Reference:
- E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jense:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
+ E. D. Hedegård, R. Bast, J. Kongsted, J. M. H. Olsen, and H. J. Aa. Jensen:  Relativistic Polarizable Embedding., J. Chem. Theory Comput. 13, 2870-2880 (2017); http://doi.org/10.1021/acs.jctc.7b00162
 
 - New and numerically stable procedure for elimination/freezing of orbitals at SCF level. Author: T. Saue.
 - New ".MVOFAC" option in \*KRMC input section. Author: H. J. Aa. Jensen.
@@ -183,6 +218,7 @@ Bug fixes:
 - Bugfix: restored "make install" target.
 - Bugfix: Test reladc_fano does not report failure if Stieltjes is deactivated.
 
+-----------------------------------------------------------------------------------------------------
 
 15.0 (2015-12-16)
 -----------------
@@ -212,6 +248,7 @@ Bug fixes:
 - Fixed plotting of the electrostatic potential (electronic part was factor 2 too large).
 - Configuration framework uses [Autocmake](http://autocmake.org).
 
+-----------------------------------------------------------------------------------------------------
 
 14.1 (2015-07-20)
 -----------------

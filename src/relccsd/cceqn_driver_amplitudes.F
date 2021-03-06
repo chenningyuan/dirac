@@ -52,7 +52,7 @@ C---------------Local variables--------------------------------------
       CHARACTER*2 DELS1                      ! specifies S1 blocks to be deleted in denomf
       CHARACTER*4 DELS2                      ! specifies S2 blocks to be deleted in denomf
       REAL*8 DDOT
-      Complex(8) ZDOTU
+      Complex(8) ZDOTC
       INTEGER it,itc,nit,IERR
 
 !     Arrays needed by DIIS routine
@@ -93,16 +93,16 @@ C
 C  EVALUATE T1 EQUATIONS
 C  CHECK FOR CASES WITH NO NON_ZERO T1s TO AVOID CRASHES
 C
-c     print*,"T1 amplitudes ",zdotu(ndimt1,t1,1,t1,1)
-c     print*,"T2 amplitudes ",zdotu(ndimt2,t2,1,t2,1)
       CALL XTIME(5,1,'- T1 equations                  ')
       CALL HOINTM (FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
-c     print*,"HO intermediate ",zdotu(nfoo,ho,1,ho,1)
       CALL HVINTM (FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
-c     print*,"HV intermediate ",zdotu(nfvv,hv,1,hv,1)
+C      print*,"T1 amplitudes ",zdotc(ndimt1,t1,1,t1,1)
+C      print*,"T2 amplitudes ",zdotc(ndimt2,t2,1,t2,1)
+C      print*,"TAU intermediate ",zdotc(NO(1)*NVVOT(1),BUF2,1,BUF2,1)
            
       IF (NDIMT1.GT.0) THEN
           CALL HOVINTM (FVO,T1,BUF1,BUF2,HOV)
+C          print*,"HOV intermediate ",zdotc(nfvo,hov,1,hov,1)
           CALL amplitude_equation_T1 (FVO,T1,T2,HO,HV,HOV,
      &                 BUF1,BUF2,BUF3,NBUF3,S1)
       ENDIF
@@ -158,7 +158,8 @@ C
 C
       IF (FOCKSP) THEN
 C       Adding folded diagrams
-        CALL FOLDED(ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,S1,S2)
+        CALL FOLDED(ICURFSS,T1,T2,EPS,FVO,
+     &              BUF1,BUF2,BUF3,S1,S2)
       ENDIF
 C
 C  Make new T1s and T2 by dividing S1s and S2 by eigenvalues

@@ -65,15 +65,15 @@ C
      &/"  - Initial implementation :",T30,
      &"L. Visscher, T.J. Lee and K.G. Dyall, ",
      &"J. Chem. Phys. 105 (1996) 8769."
-     &/"  - Fock Space (FSCC):",T30,
+     &/"  - Fock Space (FSCC)      :",T30,
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
-     &/"  - Intermediate Hamiltonian FSCC :",T30,
-     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
-     &"J. Chem. Phys. 122 (2005) 224113.",
-     &/"  - Parallelization :",T30,
+     &/"  - Parallelization        :",T30,
      &"M. Pernpointner and L. Visscher, ",
      &"J. Comp. Chem. 24 (2003) 754.",
+     &/"  - Intermediate Hamilt. FS:",T30,
+     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
+     &"J. Chem. Phys. 122 (2005) 224113.",
      &/"  - MP2 expectation values :",T30,
      &"J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen,",
      &" Chem. Phys. 311 (2005) 81."
@@ -82,7 +82,10 @@ C
      &"J. Chem. Phys. 145 (2016) 184107."
      &/"  - EOM-IP/EA/EE energies  :",T30,
      &"A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, ",
-     &"J. Chem. Phys. 149 (2018) 174113.")
+     &"J. Chem. Phys. 149 (2018) 174113.",
+     &/"  - Core spectra (CVS-EOM) :",T30,
+     &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
+     &" arXiv:2011.08549")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -170,6 +173,7 @@ C
 #include "complex.inc"
 #include "symm.inc"
 #include "mxcent.h"
+#include "dcbprp.h"
 #include "dcbmp2no.h"
 #include "dcbham.h"
 C
@@ -273,6 +277,59 @@ C
       MAXDIM    = relcc_fopr_max_dimension_diis
       MAXIT     = relcc_fopr_max_iterations
       NTOL      = relcc_fopr_desired_convergence
+C     Switch on evaluation of property output if necessary
+      IF (DOMP2G) THEN
+          DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'MP2 ') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'MP2 '
+          END IF
+      END IF
+
+!     following section is for switching on coupled cluster property evaluation.
+      IF (DOCCSDG) THEN
+          DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'CCSD') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'CCSD'
+          END IF
+      END IF
+! the following section is to activate excited state property evaluation module
+
+      if (relcc_do_eomprop) then
+        DOEXP = .TRUE.
+          IPRP_WF = 0
+          DO I = 1, NPRP_WF
+             IF (PRP_WF(I).EQ.'EOM ') IPRP_WF = I
+          END DO
+          IF (IPRP_WF.EQ.0) THEN
+             IF (NPRP_WF .GE. MXPRP_WF) THEN
+                IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+             ELSE
+                NPRP_WF = NPRP_WF + 1
+                IPRP_WF = NPRP_WF
+             END IF
+             PRP_WF(IPRP_WF) = 'EOM '
+          END IF
+      END IF
 
       MXDIMGR = MAXDIM
       MXITGR = MAXIT
@@ -379,6 +436,10 @@ CMI     ...default maximum number iterations per sector
       DO I = 1, 16
         NINACT(I) = NELEC(I) - NACTH(I)
         NACT(I) = NACTH(I) + NACTP(I)
+        IF (.not.FirstCall.and.NINACT(I).LT.0) THEN
+           WRITE (IW,*) "more holes than electrons in input"
+           CALL QUIT ("Input error")
+        END IF
       ENDDO
 CMI   ... translate MAXITxy easy input to MAXIT_SECT type input ...
       IF (MAXIT02.NE.-1) MAXIT_SECT(5) = MAXIT02
@@ -999,6 +1060,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   NSP,EPS1,EPS,IREPSP,IREPSPI,
      &                   FOCKSP,REPORT,NELEC_F1,NELEC_F2)
 C
+      use spinor_indexing
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------
@@ -2061,6 +2123,10 @@ CMI ..... write only active irreps
        ENDIF
 
       ENDIF
+
+!     initialize module needed to reorder matrix elements read from MRCONEE or MDPROP
+      call init_index (focksp,nsp,irepsp,irepspi)
+
 C
  1000 FORMAT (/' Configuration in highest pointgroup'//T40,16(1X,A4))
  1001 FORMAT (/' Configuration in abelian subgroup'//T40,8(1X,A4))
@@ -2121,7 +2187,7 @@ C
 Caspg, replacing memget
       integer,       allocatable, target :: a_kr(:),
      &                              a_indk(:),   a_indl(:),
-     &                              a_ibuf(:),   a_index(:)
+     &                              a_ibuf(:)
       real (kind=kreal), allocatable, target :: a_cbuf(:),
      &                              a_buf1(:),
      &                              a_buf2(:),   a_foo(:),
@@ -2147,11 +2213,6 @@ C
 C  Allocate core for integral sorting step
 C
       call alloc(a_kr,2*NSP+2, id="kr")
-      IF (EQNS.EQ.'FOCKSP') THEN
-         call alloc(a_INDEX,NSP*NSP*16, id="index")
-      ELSE
-         call alloc(a_INDEX,NSP*NSP*4, id="index")
-      ENDIF
       call alloc(a_INDK,NSP*NSP    , id="indk")
       call alloc(a_INDL,NSP*NSP    , id="indl")
       call alloc(a_CBUF,NSP*NSP*RCW, id="cbuf")
@@ -2233,16 +2294,15 @@ C
       IF (EQNS.NE.'FOCKSP') SRTALL = DOCCSD.OR.DOMP2GOLD
       IF (EQNS.EQ.'RELADC') SRTALL = .TRUE.
 C
-      CALL RDINTS(IPRNT,NSP,a_INDEX,a_KR,a_INDK,a_INDL,
-     &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,IREPSP,
-     &            IREPSPI,a_V1,a_V1A,
+      CALL RDINTS(IPRNT,NSP,a_KR,a_INDK,a_INDL,
+     &            a_CBUF,a_IBUF,NVT,a_BUF1,a_BUF2,
+     &            a_V1,a_V1A,
      &            a_V2,a_V2A,a_V3,a_V3A,a_V4,a_V4A,
      &            a_VT,a_VTA,a_VT,a_VTA,EPS,a_FOO,a_FVO,
      &            a_FVV,BREIT,SRTALL,INTERFACE)
 
  450  CONTINUE
       call dealloc(a_kr, id="kr" )
-      call dealloc(a_INDEX, id="index" )
       call dealloc(a_INDK, id="indk" )
       call dealloc(a_INDL, id="indl" )
       call dealloc(a_CBUF, id="cbuf" )
@@ -2305,7 +2365,7 @@ C
 #include "eqns.inc"
 #include "results.inc"
 #include "complex.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
@@ -2686,7 +2746,6 @@ C
 #include "diis.inc"
 #include "inpt.inc"
 #include "eqns.inc"
-#include "results.inc"
 #include "symm.inc"
 #include "dgroup.h"
 #include "complex.inc"
@@ -5005,3 +5064,5 @@ C
 !     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
 !    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
+
+

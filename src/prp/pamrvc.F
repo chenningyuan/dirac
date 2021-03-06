@@ -1882,7 +1882,7 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
@@ -1901,7 +1901,7 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(INDR,IFREQ)).GT.DTOL) THEN
@@ -1966,8 +1966,10 @@ C
 #include "dcbxrs.h"
 #include "dcbibn.h"
       DIMENSION BEPVC(NZXOPEQ,*),BEMVC(NZXOPEQ,*),BEBUF(NZXOPEQ,NDAMP),
-     &          BPPVC(NZXOPPQ,*),BPMVC(NZXOPPQ,*),BPBUF(NZXOPPQ,NDAMP),
-     &          BCPVC(NZCONFQ,*),BCMVC(NZCONFQ,*),BCBUF(NZCONFQ),
+     &    BPPVC(max(1,NZXOPPQ),*),BPMVC(max(1,NZXOPPQ),*),
+     &    BPBUF(max(1,NZXOPPQ),NDAMP),
+     &    BCPVC(max(1,NZCONFQ),*),BCMVC(max(1,NZCONFQ),*),
+     &    BCBUF(max(1,NZCONFQ)),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),
      &          EVECR(NEVEC,MFREQ),EVALR(MFREQ),WORK(*)
 C

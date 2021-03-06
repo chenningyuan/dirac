@@ -903,7 +903,6 @@ C     *** Calculate active density matrices *************
 C     ***************************************************
 C
       IF (NASHT .NE. 0) THEN
-!SK      print*,'RGRAD calling ...'
          CALL RMAKDM(.TRUE.,.TRUE.,DV,PV,CREF,WORK,KFREE,LFREE)
       END IF
 C

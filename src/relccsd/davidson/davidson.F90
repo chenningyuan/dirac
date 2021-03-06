@@ -69,6 +69,7 @@ logical, save      :: davidson_overlap_sorting
 logical, save      :: davidson_debug = .false.
 logical, save      :: davidson_use_preconditioner = .true.
 logical, save      :: davidson_refresh_trial_vectors = .false.
+logical, save      :: davidson_print_config = .true.
 
 ! 
 ! variables for controlling i/o
@@ -207,7 +208,8 @@ contains
                               save_results,      &
                               save_sigmas,       &
                               save_subspaces,    &
-                              energy_shift)
+                              energy_shift,      &
+                              print_config)
 
         real(kind=8), intent(in), optional :: convergence_threshold
         real(kind=8), intent(in), optional :: energy_shift(2)
@@ -229,9 +231,15 @@ contains
         logical, optional :: save_results
         logical, optional :: complex_mode
         logical, optional :: use_preconditioner
+        logical, optional :: print_config
 
         call set_safe_minimum() 
 
+        if (present(print_config)) then
+            davidson_print_config = print_config
+        else
+            davidson_print_config = .true.
+        end if
         if (present(convergence_threshold)) then
             davidson_convergence_threshold = convergence_threshold
         else
@@ -373,7 +381,7 @@ contains
             davidson_results_file_unit = 138
         end if
 
-        call davidson_show_configurations()
+        if (davidson_print_config) call davidson_show_configurations()
     end subroutine
 
 
@@ -644,67 +652,35 @@ contains
  
 
     subroutine gram_schmidt_projection_R(projection, u, v)
+
+!LV     NB: we assume that all vectors are already normalized
+!LV     because normalizing here is order N^2 in the number of trial vectors
+
         real(kind=8), intent(inout) :: projection(:)
         real(kind=8), intent(in) :: u(:)
         real(kind=8), intent(in) :: v(:)
         real(kind=8) :: numerator, denominator, factor
-        real(kind=8) :: norm_denominator
         integer :: N, N_complex
         double precision ddot, dznrm2
-        real(kind=8) :: numerator_complex(2), denominator_complex(2), factor_complex(2)
+        real(kind=8) :: factor_complex(2)
 
         N = size(u,1)
 
         projection = 0.0d0 
 
-!       if (davidson_debug) then
-!           call davidson_print_vectors(u, label="U in GS projection            ")
-!           call davidson_print_vectors(v, label="V in GS projection            ")
-!       end if
-
         if (davidson_complex_mode_with_reals) then
             N_complex = N / 2
-
-            if (davidson_debug) print *,'denominator complex before xdotc',denominator_complex
-            if (davidson_debug) print *,'  numerator complex before xdotc',numerator_complex
-
-            call xdotc(denominator_complex,N_complex, u, 1, u, 1) 
-            call xdotc(numerator_complex,N_complex, u, 1, v, 1) 
-
-            if (davidson_debug) print *,'denominator complex  after xdotc',denominator_complex
-            if (davidson_debug) print *,'  numerator complex  after xdotc',numerator_complex
-
-            norm_denominator = dznrm2(N_complex, u, 1)
-
-            if (davidson_debug) print *,'  norm denominator',norm_denominator
-            if (norm_denominator .gt. safe_minimum) then
-                call dladiv(numerator_complex(1),numerator_complex(2), &
-                            denominator_complex(1),denominator_complex(2), &
-                            factor_complex(1), factor_complex(2))
-                if (davidson_debug) print *,'  factor_complex from zladiv',factor_complex
-            else
-                factor_complex(1) = 0.0d0
-                factor_complex(2) = 0.0d0
-            end if
+            call xdotc(factor_complex,N_complex, u, 1, v, 1)
             projection = u
             call zscal(N_complex, factor_complex, projection, 1)
             if (davidson_debug) print *, "GS projection, factor: ",factor_complex
 
         else
-            denominator = ddot(N, u, 1, u, 1) 
-            numerator   = ddot(N, v, 1, u, 1) 
-            if (denominator .gt. safe_minimum) then
-                factor = numerator/denominator
-            else
-                factor = 0.0d0
-            end if
+            factor   = ddot(N, v, 1, u, 1)
             projection = u
             call dscal(N, factor, projection, 1)
             if (davidson_debug) print *, "GS projection, factor: ",factor
         end if
-
-!       if (davidson_debug) &
-!           call davidson_print_vectors(projection, label="GS projection                 ")
 
     end subroutine 
 
@@ -715,7 +691,7 @@ contains
 
         real(kind=8), allocatable   :: projection(:)
         integer :: vectors_L, vectors_N
-        integer :: i, j, k
+        integer :: i, j, k, igs
         logical :: verbose_local
         real(kind=8) :: norm, vr, vi, pr, pi
 
@@ -735,22 +711,6 @@ contains
             if (verbose_local) then
                 if (davidson_debug) print *, "debug, Gram-Schmidt orthogonalization"
                 print *, "  renormalizing vector v(",j,") : (norm = ",norm,")"
-                if (davidson_complex_mode_with_reals) then
-                    do k = 1, vectors_N, 2
-                        vr = vectors(k,j)
-                        vi = vectors(k+1,j)
-                        if (vi < 0.0d0) then
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
-                        else
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
-                        end if
-                    end do
-                else
-                    do k = 1, vectors_N
-                        vr = vectors(k,j)
-                        print "(4x,1e14.6)", vr
-                    end do
-                end if
                 print *, ""
             end if 
             if (norm .ge. safe_minimum ) then
@@ -758,65 +718,23 @@ contains
             else
                 stop ('division by zero in orthogonalization') 
             end if
-            if (verbose_local) then
-                print *, "renormalized  vector v(",j,") : "
-                if (davidson_complex_mode_with_reals) then
-                    do k = 1, vectors_N, 2
-                        vr = vectors(k,j)
-                        vi = vectors(k+1,j)
-                        if (vi < 0.0d0) then
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i"
-                        else
-                            print "(4x,1e14.6,a,1e13.6,a)", vr," +",vi," i"
-                        end if
-                    end do
-                else
-                    do k = 1, vectors_N
-                        vr = vectors(k,j)
-                        print "(4x,1e14.6)", vr
-                    end do
-                end if
-                print *, ""
-            end if
-            do i = 1, j-1
-                call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
-                if (verbose_local) then
-                    print *," projection of v(",i,") onto v(",j,"):"
-                    if (davidson_complex_mode_with_reals) then
-                        do k = 1, vectors_N, 2
-                            vr = vectors(k,j)
-                            vi = vectors(k+1,j)
-    
-                            pr = projection(k)
-                            pi = projection(k+1)
-
-                            if (vi < 0.0d0) then
-                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," -",abs(vi)," i", pr, " -",abs(pi)," i"
-                            else
-                                print "(4x,1e14.6,a,1e13.6,a,4x,1e14.6,a,1e13.6,a)", vr," +", vi," i", pr," +", pi," i"
-                            end if
-                        end do
-                    else
-                        do k = 1, vectors_N
-                            vr = vectors(k,j)
-                            pr = projection(k)
-                            print "(4x,1e14.6)", vr
-                        end do
-                    end if
-                    print *, ""
-                end if
-                vectors(:,j) = vectors(:,j) - projection(:)
+            do igs = 1, 2 ! Gram-Schmidt needs to be done twice for numerical stability
+               do i = 1, j-1
+                   call gram_schmidt_projection_R(projection, vectors(:,i),vectors(:,j))
+                   vectors(:,j) = vectors(:,j) - projection(:)
+               end do
+               norm = vector_norm(vectors(:,j))
+               if (norm .ge. safe_minimum ) then
+                   vectors(:,j) = vectors(:,j) / norm
+               else
+                   stop ('division by zero in orthogonalization')
+               end if
             end do
-            norm = vector_norm(vectors(:,j))
-            if (norm .ge. safe_minimum ) then
-                vectors(:,j) = vectors(:,j) / norm
-            else
-                stop ('division by zero in orthogonalization')
-            end if
-            if (verbose_local) then
-                call davidson_print_vectors(vectors, label="all vectors                   ")
-            end if
         end do
+
+        if (verbose_local) then
+            call davidson_print_vectors(vectors, label="all vectors                   ")
+        end if
 
         deallocate(projection)
     end subroutine 
@@ -1410,6 +1328,7 @@ contains
             call dgeev (do_left, do_right, vectors_L, M, vectors_L,      &
                         eValues(1,:), eValues(2,:), eVectorsL, vectors_L, eVectorsR, &
                         vectors_L, WORK, LWORK, INFO)
+            call check_for_complex_values_vectors(left, vectors_N, vectors_L, eValues, eVectorsL, eVectorsR)
         end if
 !       print *, 'in small_solve_eigenvalue: info',info
         if (info .gt. 0) then
@@ -1421,8 +1340,75 @@ contains
         end if
         deallocate(work)
 
+        call renormalize_evectors(left, vectors_L, eVectorsR, eVectorsL)
+
     end subroutine
+
+! for the moment this routine only checks whether we found a complex conjugate pair
+! of eigenvalues and prints a warning. still to thing about how to handle the complex
+! eigenvectors if we are in real algebra.
+    subroutine check_for_complex_values_vectors(left,nrows,nvectors,eV,vL,vR)
+        logical, intent(in) :: left
+        integer, intent(in) :: nrows, nvectors
+        real(kind=8), intent(inout) :: vR(:,:), vL(:,:), eV(:,:)
+        integer :: i, j
+        real(kind=8) :: norm, tolerance = 1.0d-10
+        real(kind=8), allocatable :: complex_eigenvectors(:,:)
+        integer, allocatable :: complex_eigenvalue_pairs(:)
+
+        allocate(complex_eigenvalue_pairs(nvectors))
+        complex_eigenvalue_pairs = 0
+
+!       allocate(complex_eigenvectors(nrows,2))
+!       complex_eigenvectors = 0.0d0
+
+! expected results from dgeev: 
+! If the j-th eigenvalue is real, then v(j) = VR(:,j), the j-th column of VR.
+! If the j-th and (j+1)-st eigenvalues form a complex conjugate pair, then 
+!   v(j)   = VR(:,j) + i*VR(:,j+1) 
+!   v(j+1) = VR(:,j) - i*VR(:,j+1).
+
+        do i = 1, nvectors - 1
+           j = i + 1
+           if ((dabs(eV(2,i)).gt.tolerance).and.(complex_eigenvalue_pairs(j).ne.0)) then
+              complex_eigenvalue_pairs(i) = j
+              complex_eigenvalue_pairs(j) = i
+              write (davidson_output_file_unit,'(a,1i4,a,1i4,a,2e14.6,a,2e14.6,a)') &
+              "Warning! Eigenvalues",i," and ",j," form c.c. pair: (", &
+              eV(1,i),eV(2,i),"), (",eV(1,j),eV(2,j),")"
+           end if
+        end do
+
+        deallocate(complex_eigenvalue_pairs)
+    end subroutine 
  
+    subroutine renormalize_evectors(left, nvectors, vR, vL)
+        logical, intent(in) :: left
+        integer, intent(in) :: nvectors
+        real(kind=8), intent(inout) :: vR(:,:), vL(:,:) 
+        integer :: vectors_L, i
+        real(kind=8) :: norm, tolerance = 1.0d-10
+
+        do i = 1, nvectors
+           if (left) then
+              norm = vector_norm(vL(:,i))
+              if (dabs(norm - 1.0d0).gt.tolerance) then
+                 write (davidson_output_file_unit,'(a,1i4,a,1e14.6,a)') &
+                 "Warning! LHS subspace eigenvector",i," not normalized(",norm,"), normalizing it."
+                 if (norm.gt.safe_minimum) norm = 1.0d0/norm 
+                 vL(:,i) = norm*vL(:,i)
+              end if
+           else
+              norm = vector_norm(vR(:,i))
+              if (dabs(norm - 1.0d0).gt.tolerance) then
+                 write (davidson_output_file_unit,'(a,1i4,a,1e14.6,a)') &
+                 "Warning! RHS subspace eigenvector",i," not normalized(",norm,"), normalizing it."
+                 if (norm.gt.safe_minimum) norm = 1.0d0/norm
+                 vR(:,i) = norm*vR(:,i)
+              end if
+           end if
+        end do
+    end subroutine
 
     subroutine get_values_vectors_davidson(nroots, A, results, b_guess, state_sym, projector)
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
@@ -1767,7 +1753,8 @@ contains
         else
             if (davidson_debug) print *, "not following overlap !"
             call sort_values_vectors(sorting_order_local, eValues, eVectorsR, eVectorsL, &
-                                     right_local, left_local, apply_evalues_shift, eValuesShift)
+                                     right_local, left_local, apply_evalues_shift, eValuesShift, &
+                                     debug=davidson_debug)
         end if
 
         if (davidson_verbose) then 
@@ -1912,30 +1899,46 @@ contains
         end if
     end function
 
-    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift) 
+    subroutine sort_values_vectors(order, e_small, c_small_r, c_small_l, right, left, apply_shift, energy_shift, debug) 
         integer, intent(in) :: order ! 1: ascending, -1: descending
         logical, intent(in) :: right ! if true, sort also the right eigenvectors
         logical, intent(in) :: left  ! if true, sort also the left eigenvectors
         logical, intent(in) :: apply_shift ! if true, sort values of |e_small - energy_shift| instead of e_small
+        logical, intent(in), optional :: debug
         real(kind=8), intent(inout) :: e_small(:,:)
         real(kind=8), intent(inout) :: c_small_r(:,:)
         real(kind=8), intent(inout) :: c_small_l(:,:)
         real(kind=8), intent(in) :: energy_shift(2)
 
-        real(kind=8), allocatable :: temp_vector(:,:)
+        real(kind=8), allocatable :: temp_vector(:,:), e_ascending(:,:)
         real(kind=8) :: temp
-        integer, allocatable :: indices_sorted_array(:)
-        integer :: vectors_N, vectors_L, i_sorted, i
+        integer, allocatable :: indices_sorted_array(:), i_ascending(:)
+        integer :: vectors_N, vectors_L, i_sorted, i, j
+        logical :: debug_local
 
         vectors_L = size(e_small,2)
         allocate(indices_sorted_array(vectors_L))
+
+        if (present(debug)) debug_local = debug
+
+        if (abs(order).ne.1) then
+           print *,"In sort_values_vectors: variable order given a value of ",order
+           print *,"  allowed values:   1 for sort to ascending order"
+           print *,"                   -1 for sort to descending order"
+           stop "Unknown ordering requested in sort_values_vectors"
+        end if
+
+!       all the sort routines sort in ascending order, which is almost always what we want. 
+!       when we want descending order, we will proceed with sorting in ascending order, and then
+!       just inverse the final arrays, for the energies and indices
+
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
         end do
 
-        if (davidson_debug) print *, "debug sort_values_vectors, L ",vectors_L
+        if (debug_local) print *, "debug sort_values_vectors, L ",vectors_L
 
-        if (davidson_debug) call davidson_print_vectors(e_small, label="debug, e_small before sort    ")
+        if (debug_local) call davidson_print_vectors(e_small, label="debug, e_small before sort    ")
 
         if (davidson_complex_mode_with_reals) then
             vectors_N = 2*vectors_L
@@ -1944,6 +1947,7 @@ contains
             else
                call quicksort_vector_complex_as_real(e_small, indices_sorted_array, 1, vectors_L)
             end if
+
         else
             vectors_N = vectors_L
             if (apply_shift) then
@@ -1961,31 +1965,64 @@ contains
                 e_small(2,i_sorted) = temp
             end do
         end if
-        if (davidson_debug) call davidson_print_vectors(e_small, label="debug, e_small  after sort    ")
-        if (davidson_debug) print *, "indices, sorted",indices_sorted_array
+        if (debug_local) call davidson_print_vectors(e_small, label="debug, e_small  after sort    ")
+        if (debug_local) print *, "indices, sorted",indices_sorted_array
+
+        if (order.eq.-1) then
+
+           if (debug_local) then
+              print *, "ascending order"
+              print *, " indices ",indices_sorted_array
+              print *, " evalues ",e_small
+           end if
+
+           allocate(i_ascending(vectors_L))
+           allocate(e_ascending(2,vectors_L))
+
+           i_ascending = indices_sorted_array
+           e_ascending = e_small
+
+           indices_sorted_array = i_ascending(vectors_L:1:-1)
+
+           do i = 1, vectors_L
+              j = vectors_L - i + 1 
+              e_small(1,j) = e_ascending(1,i)
+              e_small(2,j) = e_ascending(2,i)
+           end do
+
+           deallocate(i_ascending)
+           deallocate(e_ascending)
+
+           if (debug_local) then
+              print *, "descending order"
+              print *, " indices ",indices_sorted_array
+              print *, " evalues ",e_small
+          end if
+
+        end if
 
         allocate(temp_vector(vectors_N,vectors_L))
         temp_vector = 0.0d0
 
         if (right) then
-            if (davidson_debug) call davidson_print_vectors(c_small_r,   label="debug, c_small_r before sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_r,   label="debug, c_small_r before sort  ")
             do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
              temp_vector(:,i) = c_small_r(:,i_sorted)
             end do
-            if (davidson_debug) call davidson_print_vectors(temp_vector, label="debug, temp_vector            ")
+            if (debug_local) call davidson_print_vectors(temp_vector, label="debug, temp_vector            ")
             c_small_r = temp_vector
-            if (davidson_debug) call davidson_print_vectors(c_small_r, label="debug, c_small_r  after sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_r, label="debug, c_small_r  after sort  ")
         end if
 
         if (left) then
-            if (davidson_debug) call davidson_print_vectors(c_small_l, label="debug, c_small_l before sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_l, label="debug, c_small_l before sort  ")
             do i = 1, vectors_L
              i_sorted = indices_sorted_array(i)
              temp_vector(:,i) = c_small_l(:,i_sorted)
             end do
             c_small_l = temp_vector
-            if (davidson_debug) call davidson_print_vectors(c_small_l, label="debug, c_small_l  after sort  ")
+            if (debug_local) call davidson_print_vectors(c_small_l, label="debug, c_small_l  after sort  ")
         end if
         deallocate(temp_vector)
         deallocate(indices_sorted_array)

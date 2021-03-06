@@ -12,7 +12,7 @@ module exacorr_mo
 
     private
 
-    public :: alloc_mo, dealloc_mo, sync_mo
+    public :: alloc_mo, dealloc_mo, sync_mo, compress_mo
     public :: convert_quaternion_to_complex,convert_complex_to_quaternion,apply_Kramers_operator
 
     type  :: mo_root
@@ -86,6 +86,10 @@ module exacorr_mo
     interface sync_mo
       module procedure sync_mo_complex
       module procedure sync_mo_quaternion
+    end interface
+
+    interface compress_mo
+      module procedure compress_mo_complex
     end interface
 
     contains
@@ -213,6 +217,7 @@ module exacorr_mo
       call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
       call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%total_energy,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo (M,M%nao,M%nmo)
          M%allocated = .true.
@@ -240,6 +245,7 @@ module exacorr_mo
       call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
       call interface_mpi_bcast (M%nao,1,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%nmo,1,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%total_energy,1,my_MPI_master,global_communicator) 
       call interface_mpi_bcast (M%nz ,1,my_MPI_master,global_communicator)
       if (my_MPI_rank /= my_MPI_master) then
          call alloc_mo(M,M%nao,M%nmo,M%nz)
@@ -275,6 +281,100 @@ module exacorr_mo
      end subroutine sync_mo_quaternion
 
 #endif
+
+     subroutine compress_mo_complex(M,ao_map,mo_map)
+
+!     Reduce or reorder MO coefficients based on AO and MO compression maps
+
+      type(cmo), intent(inout) :: M
+      integer,   intent(in), optional   :: ao_map(:,:)
+      integer,   intent(in), optional   :: mo_map(:,:)
+
+      integer, allocatable :: map_ao(:,:), map_mo(:,:)
+      integer :: i, j, nao_new, nmo_new
+      real(8), allocatable    :: energy(:)
+      complex(8), allocatable :: coeff(:,:,:)
+      integer, allocatable    :: index(:), boson_irrep(:)
+
+      ! start by allocating local copies of the ao and mo maps (with a sanity check)
+      if (present(ao_map)) then
+         nao_new = size(ao_map,2)
+         if (size(ao_map,1) /= 2 .or. nao_new > M%nao) stop 'compress_mo: inconsistent ao_map'
+         allocate (map_ao(2,nao_new))
+         map_ao = ao_map
+      else
+         nao_new = M%nao
+         allocate (map_ao(2,nao_new))
+         forall (i=1:nao_new) map_ao(1:2,i) = i
+      end if
+
+      if (present(mo_map)) then
+         nmo_new = size(mo_map,2)
+         if (size(mo_map,1) /= 2 .or. nmo_new > M%nmo) stop 'compress_mo: inconsistent mo_map'
+         allocate (map_mo(2,nmo_new))
+         map_mo = mo_map
+      else
+         nmo_new = M%nmo
+         allocate (map_mo(2,nmo_new))
+         forall (i=1:nmo_new) map_mo(1:2,i) = i
+      end if
+
+      ! additional sanity checks
+      if (any(map_ao<1))            stop 'compress_mo: corrupt ao_map'
+      if (any(map_ao(1,:)>M%nao))   stop 'compress_mo: corrupt ao_map'
+      if (any(map_ao(2,:)>nao_new)) stop 'compress_mo: corrupt ao_map'
+      if (any(map_mo<1))            stop 'compress_mo: corrupt mo_map'
+      if (any(map_mo(1,:)>M%nmo))   stop 'compress_mo: corrupt mo_map'
+      if (any(map_mo(2,:)>nmo_new)) stop 'compress_mo: corrupt mo_map'
+
+      ! resort and store the MO information in the object
+      ! we only need to change this if we reorder MOs
+
+      if (present(mo_map)) then
+
+         allocate (energy(nmo_new))
+         allocate (boson_irrep(nmo_new))
+         allocate (index(nmo_new))
+
+         do i = 1, nmo_new
+            energy(map_mo(2,i))      = M%energy(map_mo(1,i))
+            boson_irrep(map_mo(2,i)) = M%boson_irrep(map_mo(1,i))
+            index(map_mo(2,i))       = M%index(map_mo(1,i))
+         enddo
+
+         deallocate (M%energy)
+         allocate (M%energy(nmo_new))
+         M%energy = energy
+
+         deallocate  (M%boson_irrep)
+         allocate (M%boson_irrep(nmo_new))
+         M%boson_irrep = boson_irrep
+
+         deallocate (M%index)
+         allocate (M%index(nmo_new))
+         M%index = index
+
+      end if
+
+      ! resort the coefficients
+      allocate (coeff(nao_new,nmo_new,2))
+      do j = 1, nmo_new
+         do i = 1, nao_new
+            coeff(map_ao(2,i),map_mo(2,j),1) = M%coeff(map_ao(1,i),map_mo(1,j),1)
+            coeff(map_ao(2,i),map_mo(2,j),2) = M%coeff(map_ao(1,i),map_mo(1,j),2)
+         end do
+      end do
+
+      ! store the resorted coefficients in the spinor object
+      deallocate  (M%coeff)
+      allocate (M%coeff(nao_new,nmo_new,2))
+      M%coeff = coeff
+
+      ! we can now update the dimension information
+      M%nao = nao_new
+      M%nmo = nmo_new
+
+     end subroutine compress_mo_complex
 
      subroutine convert_quaternion_to_complex(coeff,scoeff,eig,seig,nao,nmo,npo)
 

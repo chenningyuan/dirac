@@ -1267,16 +1267,13 @@ C     ***********************************
 C     ***** Perform SCF-iterations ******
 C     ***********************************
 C
-      OPEN_FAC_save = OPEN_FAC
       DODIIS_save   = DODIIS
 C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
       CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
-      OPEN_FAC = OPEN_FAC_save
       IF(DHFEXIT) GOTO 30
 C
 C     Start cycle
@@ -1729,7 +1726,6 @@ C
 
       CALL FLSHFO(LUPRI)
 
-      OPEN_FAC = OPEN_FAC_save
       DODIIS   = DODIIS_save
 C
 C     Close necessary files
@@ -1823,7 +1819,12 @@ C
       E1PART  = D0
       E2PART  = D0
 C
-C
+
+      if (dirac_cfg_fde) then
+         call fde_get_import_info(itmp)
+      end if
+
+
       IF(AOC) THEN
         ITOP = NOPEN
       ELSE
@@ -1937,6 +1938,7 @@ C
          else if (itmp%im_vemb) then
              elergy = elergy - fde_dirac_embpot_static_energy()
          end if
+!        deallocate(vemb_mat)
       end if
 
       DHFERG = DHFERG + ELERGY
@@ -3606,14 +3608,13 @@ CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
           IF(ATHUCK) THEN
             WRITE(LUPRI,'(A)') ' Using atomic Huckel start.'
           ELSEIF(BARNUC) THEN
-            WRITE(LUPRI,'(A)')
-     &    ' Using bare nucleus approximation for initial trial vectors.'
             IF (BNCRON) WRITE(LUPRI,'(A/)')
-     &    "             Improved by an "//
-     &    "estimate of the electronic screening (Slater's rules)."
+     &  " Using bare nucleus plus electronic screening (Slater's"//
+     &  " rules) as start potential."
             IF (BNSPON) WRITE(LUPRI,'(A/)')
-     &    "             Improved by a sum of "//
-     &    "atomic screening potentials."
+     &    " Using sum of fitted atomic potentials as start potential.",
+     &    " Reference: S. Lehtola, L. Visscher, E. Engel, "//
+     &    " J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)"
           ENDIF
           TRIVEC = .FALSE.
 !         do not use density-based atomic size adjustments in this case
@@ -5468,9 +5469,9 @@ C
 #include "dgroup.h"
       DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
 C.....Local variables
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
-      INTEGER NNEG,NPOS,NBAS
+      INTEGER NNEG,NPOS,NBAS,IDIM(3)
 C
       KFRSAV=KFREE
 C.....Say hello
@@ -5500,7 +5501,13 @@ C.......Read atomic coefficients in C1 format
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
-        READ(LUATOM) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
+        IF(FNDLAB('INFO    ',LUATOM)) THEN
+           READ(LUATOM) TEXT,NSYM,NZBUF,NNEG,NPOS,NBAS,TOTERG
+        ELSE
+           WRITE(LUPRI,*) 'ATOMIC_START: error reading info ',
+     &                    ATOMFIL(IATOM) 
+          CALL QUIT('ATOMIC START: Error reading info')
+        ENDIF
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5514,14 +5521,18 @@ C.......Read atomic coefficients in C1 format
           WRITE(LUPRI,*) NAMN(ICENT),ATOMFIL(IATOM)
           WRITE(LUPRI,*) TEXT,NSYM,NNEG,NPOS,NBAS,TOTERG
         ENDIF
-        NAORB  = NNEG+NPOS
-        NACMO  = NBAS*NAORB
-        NACMOQ = NACMO*NZC1
-        NADEN  = NBAS*NBAS*NZC1
+        NAORB   = NNEG+NPOS
+        NACMO   = NBAS*NAORB
+        NACMOQ  = NACMO*NZC1
+        NADEN   = NBAS*NBAS*NZC1
+        IDIM(1) = NNEG
+        IDIM(2) = NPOS
+        IDIM(3) = NBAS
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','CMO ',KCMO,NACMOQ,WORK,KFREE,LFREE)
-        CALL READT(LUATOM,NACMOQ,WORK(KCMO))
+        CALL REACMO_coefficients(LUATOM,WORK(KCMO),NACMOQ,1,NZC1,
+     &           NAORB,NBAS,NNEG,NPOS,IDIM)         
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
@@ -5645,7 +5656,9 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+      LOGICAL FNDLAB
       CHARACTER TEXT*74
+      DIMENSION IDIM(3)
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
@@ -5666,9 +5679,15 @@ C     INDEP runs over symmetry dependent centers
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
-        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')        
-        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
-     &        NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
+        IF(FNDLAB('INFO    ',LUHOC)) THEN
+          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
+     &          NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
+        ELSE
+          WRITE(6,*) 'ADHOC: not able to read info from file ',
+     &                HOCFIL(ITYP)
+          CALL QUIT('ADHOC: Error reading info')
+        ENDIF
 C.............NPSH............NESH............NBAS...........TOTERG
         CLOSE(LUHOC,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
@@ -5716,14 +5735,25 @@ C
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
-        READ (LUHOC,END=10,ERR=20) TEXT,NSYM,
-     &        NNEG,NPOS,NAO(ITYP),DUM
+        IF(FNDLAB('INFO    ',LUHOC)) THEN
+          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
+     &          NNEG,NPOS,NAO(ITYP),DUM
+        ELSE
+          WRITE(6,*) 'ADHOC2: not able to read info from file ',
+     &                HOCFIL(ITYP)
+          CALL QUIT('ADHOC2: Error reading info')
+        ENDIF
         NTOT = NNEG+NPOS
+        IDIM(1) = NNEG
+        IDIM(2) = NPOS
+        IDIM(3) = NAO(ITYP)
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL READT(LUHOC,NQA ,WORK(KQA))
+        CALL REACMO_coefficients(LUHOC,WORK(KQA),NQA,1,4,
+     &           NTOT,NAO(ITYP),NNEG,NPOS,IDIM)         
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL READT(LUHOC,NTOT,WORK(KEA))
+        CALL REACMO_eigenvalues(LUHOC,WORK(KEA),NTOT,1,4,
+     &           NTOT,NNEG,NPOS,IDIM)         
         CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1

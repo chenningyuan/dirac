@@ -39,9 +39,6 @@ module x2c_pct_ao
       make_two_e_fock_so_exclusive,      &
       get_2e_fock_matrix_x2c,            &
       print_x2cmat
-#ifdef MOD_INTEREST
-  use module_interest_interface
-#endif
 
 ! general dirac module
   use picture_change_operations
@@ -374,7 +371,9 @@ contains
          if(prop_op_triang(i)) then
            op_mat_dim = naosh_ls*(naosh_ls+1)/2
            call prpmao(int1_4c_file,                         &
-                       i,                                    & 
+                       i,                                    &
+                       .true.,                               &
+                       scr_mat1,                             &
                        prop_op_triang(i),                    &
                        op_mat_dim,                           &
                        scr_mat2,                             &
@@ -386,6 +385,8 @@ contains
            op_mat_dim = naosh_ls**2
            call prpmao(int1_4c_file,                         &
                        i,                                    & 
+                       .true.,                               &
+                       scr_mat1,                             &
                        prop_op_triang(i),                    &
                        op_mat_dim,                           &
                        scr_mat2,                             &
@@ -547,19 +548,10 @@ contains
 !      -------------------------------------------------------------------
        call reset_x2c_cb_onefck(.false.)
 
-       if(mdirac)then
-#ifdef MOD_INTEREST
-         scr_mat1(1:naosh_ls**2*nz) = 0.0d0
-         call process_kinetic_energy_integrals_4comp( scr_mat1 )
-         call process_nuclear_attraction_integrals_4comp( scr_mat1 ) 
-#endif
-         allocate(wrk(lwrk))
-       else
 #ifdef PRG_DIRAC
-         allocate(wrk(lwrk))
-         call onefck(scr_mat1,print_lvl,wrk,lwrk)
+       allocate(wrk(lwrk))
+       call onefck(scr_mat1,print_lvl,wrk,lwrk)
 #endif
-       end if
 
 !      possibly add correction
        if(dobncorr) call bncorr(scr_mat1,wrk,lwrk,print_lvl)

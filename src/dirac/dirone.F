@@ -663,9 +663,6 @@ C*****************************************************************************
       use x2cmod_cfg
       use x2c_utils, only:
      &    read_1fock_x2c
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -731,17 +728,9 @@ C     ************************************************
 C     ****** Construct one-electron Fock matrix ******
 C     ************************************************
 C
-       IF(MDIRAC) THEN
-#ifdef MOD_INTEREST
-         fock(1:n2bbasxq) = 0.0d0
-         call process_kinetic_energy_integrals_4comp( Fock )
-         call process_nuclear_attraction_integrals_4comp( Fock )
-#endif
-       ELSE
-         CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
-         CALL ONEFC1(FOCK,WORK(KFREE),LFREE)
-         CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
-       ENDIF
+       CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+       CALL ONEFC1(FOCK,WORK(KFREE),LFREE)
+       CALL MEMREL('ONEFCK.ONEFC1',WORK,KWORK,KWORK,KFREE,LFREE)
 
       end if
 C
@@ -856,7 +845,8 @@ C     Nuclear attraction integrals
 C     ============================
 C
       IOP = IPMOLFLD
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,OP1INT,FIRST,IPRHAM)
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,OP1INT,
+     &            FIRST,IPRHAM)
       IF (SMLV1C) THEN
          CALL CATCORR(FTRI,DUMMY,DUMMY,WORK,LFREE,IPRHAM)
          CALL PR1CEX1 (FTRI,FIRST,FOCK,WORK,KFREE,LFREE,IPRHAM)
@@ -872,7 +862,7 @@ C       the one-electron matrix prior to the scf...
          call fde_get_import_info(itmp)
          if (itmp%im_vemb) then
             IOP = IPVEMB0
-            CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+            CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &      OP1INT,FIRST,IPRHAM)
          endif
       ENDIF
@@ -884,7 +874,7 @@ C
 CMI/Febr.2006 For TWOCOMP=.true. this is the exact nonrelativistic kinetic energy
 C
       IOP = IPKINERG
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            OP1INT,FIRST,IPRHAM)
 
 C
@@ -895,7 +885,7 @@ CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mod
 
       IF (.NOT.TWOCOMP) THEN
         IOP = IPBETAMT
-        CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+        CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &              OP1INT,FIRST,IPRHAM)
       ENDIF
 
@@ -912,8 +902,8 @@ C     ...skip Fock-matrices for now ...
 C.........Fock matrix
           TOBE = .TRUE.
         ELSE
-          CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,OP1INT,FIRST,
-     &                IPRHAM)
+           CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
+     &                 OP1INT,FIRST,IPRHAM)
         ENDIF
       ENDDO
 C
@@ -932,7 +922,7 @@ c
       if (ECPCALC) then
          allocate(op1int(n2bbasx))
          IOP = IPSOPP
-         CALL PRPMAO(LU1INT,IOP,.FALSE.,N2BBASX,FOCK,
+         CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.FALSE.,N2BBASX,FOCK,
      &          OP1INT,FIRST,IPRHAM)
          deallocate(op1int)
       endif
@@ -978,13 +968,14 @@ C
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpmao */
-      SUBROUTINE PRPMAO(LU1INT,IOP,TRIANG,NDIM,PMAT,OP1INT,FIRST,IPRINT)
+      SUBROUTINE PRPMAO(LU1INT,IOP,ONFILE,PRPINT,TRIANG,NDIM,PMAT,
+     &                  OP1INT,FIRST,IPRINT)
 C*****************************************************************************
 C
 C     Generates  lower triangular/square  matrix of one-electron integrals
 C     corresponding to property IOP of COMMON block XCBPRP
 C
-C     On input:  LU1INT  - lu of integral file
+C     On input:  LU1INT    - ONFILE: lu of integral file; CACHE: offset
 C                IOP     - index of the property
 C                NDIM    - dimension of array (either triangular or square)
 C                FIRST   - array, must be set to true
@@ -1009,8 +1000,8 @@ C
 #include "dcbprl.h"
 C
       CHARACTER MXFORM*6, FMT*6, RTNLBL(2)*8,JCHR*1
-      LOGICAL FIRST(*), DOINT(4), TRIANG
-      DIMENSION PMAT(NDIM,*),OP1INT(NDIM),IDOINT(4)
+      LOGICAL FIRST(*), DOINT(4), TRIANG, ONFILE
+      DIMENSION PMAT(NDIM,*),OP1INT(NDIM),PRPINT(NDIM,*),IDOINT(4)
 C
 C     Extract information about property
 C     ==================================
@@ -1019,6 +1010,8 @@ C
       IF(IOPTYP.EQ.0) THEN
         CALL QUIT('PRPMAO: No Fock matrix read here !')
       ENDIF
+      IHREF = 1
+      IF(.NOT.TRIANG) IHREF = 0
       IF(IPRINT.GE.5) THEN
         CALL HEADER('Output from PRPMAO',-1)
         WRITE(LUPRI,*)
@@ -1029,11 +1022,6 @@ C
           WRITE(LUPRI,*) '.... it is a SQUARE matrix '
         ENDIF
       ENDIF
-      IF(TRIANG) THEN
-        IHREF = 1
-      ELSE
-        IHREF = 0
-      ENDIF
 C
 C     Loop over components
 C     ====================
@@ -1042,7 +1030,7 @@ C
       NCMP   = MCMP(IOPTYP)
       DO 10 I = 1,NCMP
         PFAC  = FACPRP(I,IOP)
-        IF(ABS(PFAC).LT.PTOL) GOTO 10
+        IF(ABS(PFAC).LT.PTOL) GOTO 10 ! Skip this component of factor is very small
 C
 C       Extract information about component
 C
@@ -1065,7 +1053,7 @@ C
         KLBL = IPRPLBL(I,IOP)
         IH   = IPRLTYP(KLBL)
         IF(IABS(IH).NE.IHREF) THEN
-          WRITE(6,*) 'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
+           WRITE(6,*) 'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
           CALL QUIT('PRPMAO: mismatch square/triangular')
         ENDIF
 C
@@ -1131,9 +1119,14 @@ C       Is this a LL+SS operator (IC=1) or a LS+SL operator (IC=2) ?
         ENDIF
 C =============================================================
 C               Get integrals from the AOPROPER file
-C =============================================================
-        CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
-     &              OP1INT,NDIM,IPRINT)
+C     =============================================================
+        IF(ONFILE) THEN
+          CALL PRPREA(LU1INT,PRPLBL(KLBL),RTNLBL,PDOINT(KLBL),
+     &          OP1INT,NDIM,IPRINT)
+        ELSE
+           IINT=KLBL-NPRPLBL
+           CALL DCOPY(NDIM,PRPINT(1,IINT),1,OP1INT,1)
+        ENDIF  
         IF(IPRINT.GE.10) THEN
           WRITE(LUPRI,'(A,I3)')
      &    '* Integrals from AOPROPER, size of matrix ',NTBAS(0)
@@ -1245,7 +1238,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE PRPMSAO(INDXPR,PRPAO,FIRST,WORK,LWORK,IPRINT)
+      SUBROUTINE PRPMSAO(INDXPR,PRPAO,ONFILE,PRPINT,FIRST,
+     &                   WORK,LWORK,IPRINT)
 C*****************************************************************************
 C
 C     PURPOSE: Get 2c/4c SA-AO matrix of one-electron operator
@@ -1286,8 +1280,8 @@ C
 #include "dcbprl.h"
 #include "dummy.h"
 C
-      LOGICAL TRIANGULAR,TOBE,YESPCTRA, MAKEPCTRA,FIRST(NZ)
-      DIMENSION PRPAO(N2BBASX,NZ),WORK(LWORK)
+      LOGICAL TRIANGULAR,TOBE,YESPCTRA, MAKEPCTRA,FIRST(NZ),ONFILE
+      DIMENSION PRPAO(N2BBASX,NZ),PRPINT(*),WORK(LWORK)
       CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
       CALL QENTER('PRPMSAO')
@@ -1296,12 +1290,12 @@ C
 C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================
 C
-      IOPTYP = IPRPTYP(INDXPR)
-      ISYM = IPRPSYM(INDXPR)
-      IREP = ISYM - 1
-      ITIM = IPRPTIM(INDXPR)
-      IPRINT2 = MAX(IPRPRP,IPRINT)
-      KLBL = IPRPLBL(1,INDXPR)
+      IOPTYP     = IPRPTYP(INDXPR)
+      ISYM       = IPRPSYM(INDXPR)
+      IREP       = ISYM - 1
+      ITIM       = IPRPTIM(INDXPR)
+      IPRINT2    = MAX(IPRPRP,IPRINT)
+      KLBL       = IPRPLBL(1,INDXPR)
       TRIANGULAR = ABS(IPRLTYP(KLBL)).EQ.1
       IF (IPRINT2.GE.10) THEN
        CALL HEADER('*** Output from PRPMSAO ***',-1)
@@ -1325,6 +1319,7 @@ C     X2C module: picture change transformed property integrals reside
 C                 on file X2CMAT
 C ========================================================================================
       IF((TWOCOMP.AND.BSS).or.x2c) THEN
+        IF(.NOT.ONFILE) CALL QUIT('PRPMSAO:2c not implemented yet !')
         IPRINT2 = MAX(IPRHAM,IPRINT)
         IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
           write(lupri,*) 'PRPMSAO error output:'
@@ -1378,14 +1373,14 @@ C     ... do resort PBUF to DIRAC sorting
         IF (TRIANGULAR) THEN
           IDIMENS=NNBBASX
           CALL MEMGET('REAL',KPBUF  ,NZ*IDIMENS,WORK,KFREE,LFREE)
-          CALL PRPMAO(LU1INT,INDXPR,TRIANGULAR,IDIMENS,
+          CALL PRPMAO(LU1INT,INDXPR,ONFILE,PRPINT,TRIANGULAR,IDIMENS,
      &                WORK(KPBUF),PRPAO,FIRST,IPRINT2)
           CALL TRI2SQ(PRPAO,WORK(KPBUF),FIRST,IREP,ITIM)
           CALL MEMREL('PRPMSAO.tri2sq',WORK,KWORK,KPBUF,KFREE,LFREE)
         ELSE
           IDIMENS=N2BBASX
           CALL MEMGET('REAL',KONEIN,N2BBASX,WORK,KFREE,LFREE)
-          CALL PRPMAO(LU1INT,INDXPR,TRIANGULAR,IDIMENS,
+          CALL PRPMAO(LU1INT,INDXPR,ONFILE,PRPINT,TRIANGULAR,IDIMENS,
      &                PRPAO,WORK(KONEIN),FIRST,IPRINT2)
           CALL MEMREL('PRPMSAO.prpmao',WORK,KWORK,KONEIN,KFREE,LFREE)
           DO IZ = 1,NZ
@@ -1399,6 +1394,7 @@ C     ... do resort PBUF to DIRAC sorting
         ENDDO
 CMI   ----  Do the picture change transformation -----
         IF (BSS) THEN
+         IF(.NOT.ONFILE) CALL QUIT('PRPMSAO: BSS not implemented yet !')
          IPRINT1 = MAX(IPRHAM,IPRPRP)
 C     ... decide if the picture change transformation is needed
          CALL DECIDEPCTR(YESPCTRA,PRPNAM(INDXPR),IPRINT1)
@@ -1772,7 +1768,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetint */
-      SUBROUTINE RGETINT(WORD,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
+      SUBROUTINE RGETINT(CLASLB,OP1INT,DOINT,NCOMP,IORDER,NPQUAD,
      &                  MXFORM,TOFILE,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -1791,14 +1787,14 @@ C
 #include "symmet.h"
 #include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
-      CHARACTER WORD*7,MXFORM*6,LABINT(3*MXCOOR)*8
+      CHARACTER CLASLB*7,MXFORM*6,LABINT(3*MXCOOR)*8
       LOGICAL DOINT(2,2),PROPRI,TRIANG,TOFILE
 C
       CALL QENTER('RGETINT')
 #include "memint.h"
 C
       MAXTYP = 3*MXCOOR
-      IF ((WORD.EQ.'ELFGRDC').OR.(WORD.EQ.'ELFGRDS')) THEN
+      IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASLB.EQ.'ELFGRDS')) THEN
          NINTAD = 9*NUCIND*(MAXREP+1)
       ELSE
          NINTAD = MAXTYP
@@ -1814,7 +1810,7 @@ C
 C     Calculate integrals in abacus part
 C
       CALL PR1INT_1(WORK(KFREE),LFREE,WORK(KINTRP),WORK(KINTAD),
-     &            LABINT,WORD,IORDER,NPQUAD,TRIANG,
+     &            LABINT,CLASLB,IORDER,NPQUAD,TRIANG,
      &            PROPRI,IPRINT,OP1INT,NCOMP,TOFILE,MXFORM,DOINT)
 C
 C     Memory deallocation
@@ -2019,14 +2015,14 @@ C     Beta matrix (FOCK is used as scratch space)
 C     ===========
 C
       IOP = IPBETAMT
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            FOCK,FIRST,IPRHAM)
 C
 C     Kinetic energy (FOCK is used as scratch space)
 C     ==============
 C
       IOP = IPKINERG
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &            FOCK,FIRST,IPRHAM)
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -3157,28 +3153,6 @@ C       ============================================================
 C
         CALL LL_EQ(TMAT,TBUF,VMAT)
 
-      ELSE IF(MDIRAC)THEN
-
-C       The modified Dirac equation at the integral level (InteRest):
-C       =============================================================
-        NZT = 1
-
-        imat = 1
-        DO IFRP = 1,NFSYM
-          NESH(IFRP)  = NFORB(IFRP,1)
-!         NPSH(IFRP)  = NFORB(IFRP,1)
-!         NORB(IFRP)  = NESH(IFRP)    * 2
-          NPSH(IFRP)  = NFORB(IFRP,2)
-          NORB(IFRP)  = NESH(IFRP)    + NPSH(IFRP)
-          NTMO(IFRP)  = NORB(IFRP)
-          call resort_mdirac_vmat(tmat(imat),vmat(imat),
-     &                            nfbas(ifrp,0),norb(ifrp),
-     &                            ifrp,nborb,nz)
-          iMAT        = imat + NFBAS(ifrp,0)*NORB(ifrp)*NZ
-        END DO
-
-        print_header = .false.
-
       ELSE
 C
 C       The modified Dirac equation at the matrix level (Hermit):
@@ -3477,9 +3451,6 @@ C     Last revision: Jan 20 1998 - L. Visscher
 C
 C*****************************************************************************
       use memory_allocator
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3494,18 +3465,6 @@ C
       real(8), allocatable :: sbuf(:)
       CALL QENTER('GTOVLX')
 C
-      IF(MDIRAC) THEN
-        IF(NBSYM.GT.1) THEN
-          CALL QUIT('GTOVLX: Do not know how to handle symmetry yet...')
-        ENDIF
-#ifdef MOD_INTEREST
-        if(mc == 1 .and. ntbas(2) == 0)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
-          call process_overlap_integrals_2comp( smat )
-        else ! any other case including also an X2C run prior to the 4c->2c transformation
-          call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
-        end if
-#endif
-      ELSE
 C
 C       Allocate integral buffer
 C       ========================
@@ -3548,7 +3507,6 @@ C
              ENDDO
           ENDDO
         ENDIF
-      ENDIF
 C
       CALL QEXIT('GTOVLX')
       RETURN
@@ -3568,9 +3526,6 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3596,18 +3551,6 @@ C
       CALL DZERO(SMAT,N2BAST)
       NBRP = 4/NZ
 
-      IF(MDIRAC) THEN
-        IF(NBSYM.GT.1) THEN
-          CALL QUIT('GTOVLT: Do not know how to handle symmetry yet...')
-        ENDIF
-#ifdef MOD_INTEREST
-        if(mc == 1 .and. ntbas(2) == 0)then ! 2-component mode after X2C transformation from 4c->2c or LL-nonrel
-          call process_overlap_integrals_2comp( smat )
-        else ! any other case including also an X2C run prior to the 4c->2c transformation
-          call process_overlap_integrals_4comp( smat, ss_scaling=SSmetr)
-        end if
-#endif
-      ELSE
         allocate(sbuf(n2bbasx))
         allocate(stri(nnbbasx))
 C
@@ -3656,7 +3599,6 @@ C
 
         deallocate(stri)
         deallocate(sbuf)
-      END IF
 C
 C     Scale SS-block
 C     ==============
@@ -6135,7 +6077,7 @@ C     quantize on.
 C
       FIRST = .TRUE.
       IOP =  IPANGMOM
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &         OP1INT,FIRST,IPRHAM)
       CALL DSPTSI(NTBAS(0),FTRI,FOCK)
 C
@@ -6144,7 +6086,7 @@ C     ===============================================
 C
       FIRST = .TRUE.
       IOP =  IPSPNMOM
-      CALL PRPMAO(LU1INT,IOP,.TRUE.,NNBBASX,FTRI,
+      CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &        OP1INT,FIRST,IPRHAM)
       CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
       CALL DSPTSI(NTBAS(0),FTRI,WORK(KBUF))
@@ -7308,7 +7250,6 @@ c        ... Get charges and exponents for the electrons in this group
             n_exp = -1 ! signal the routine to provide the number of exponents only
             CALL Read_screening_parameters
      &           (n_charge,n_exp,DUMMY,DUMMY)
-!    &           (n_charge,n_exp,fit_exp,fit_coef)
             Allocate (fit_exp(n_exp))
             Allocate (fit_coef(n_exp))
             CALL Read_screening_parameters 
@@ -7397,25 +7338,26 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &     FIT_EXP,FIT_COEF)
 C***********************************************************************      
       implicit none
-      logical newel, early_exit
       integer,intent (in)    :: n_charge
       integer,intent (inout) :: n_exp
       real*8,intent (out)    :: fit_exp(*),fit_coef(*)
-      integer                :: i,intorb,intisg
-      integer, parameter     :: lupot=91, iprint=0
 
+      integer                :: i,intorb,intisg, lupot, lu_not_used
+      logical                :: newel, early_exit, emsl_type
+      integer, parameter     :: iprint=0
+
+      lupot  = lu_not_used(91)
       early_exit = n_exp .eq. -1 ! Use this to query the number of exponents
-      call findel ('SCRPOT',n_charge,lupot)
-      call finpos (newel,n_exp,intorb,intisg,lupot,iprint)
-      if (early_exit) then
-         rewind (lupot)
-         return
+      call find_element ('SCRPOT',n_charge,lupot,iprint,emsl_type)
+      call find_pos (newel,n_exp,intorb,intisg,lupot,iprint)
+
+      if (.not. early_exit) then
+         do i = 1, n_exp
+            read (lupot,*) fit_exp(i),fit_coef(i)
+         end do
       end if
-      
-      do i = 1, n_exp
-         read (lupot,*) fit_exp(i),fit_coef(i)
-      end do
-      rewind (lupot)
+
+      close (lupot, STATUS = 'KEEP')
 
       end
 ! -- end of dirone.F --

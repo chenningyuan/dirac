@@ -32,7 +32,17 @@
 #endif
 
 #include <math.h>
-#include "fortran_interface.h"
+typedef int64_t fortran_int8_t;
+typedef int32_t fortran_int4_t;
+#ifdef INT_STAR8
+  typedef fortran_int8_t fortran_int_t;
+#else
+  typedef fortran_int4_t fortran_int_t;
+#endif
+
+#if defined (VAR_MPI)
+#include <mpi.h>
+#endif
 
 void printaddr_(void *p)
 {
@@ -170,7 +180,6 @@ void distribute_env(const char* name, int mytid)
 #if !defined (VAR_MPI)
   return;
 #else
-#include <mpi.h>
   char *env_local, *env_master, *newname;
   int len_local, len_master, len_name;
 
@@ -200,7 +209,6 @@ void distribute_env(const char* name, int mytid)
     putenv(newname);
     free(env_master);
   }
-
 #endif
 }
 

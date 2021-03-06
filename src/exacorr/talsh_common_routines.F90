@@ -18,8 +18,10 @@ module talsh_common_routines
     public get_orbital_energies
     public scale_with_denominators
     public print_tensor
-    public print_tensor_real
+    public get_element
     public Pair_correlation_energies
+    public talsh_init_R8
+    public talsh_init_C8
 
     contains
 
@@ -146,37 +148,115 @@ module talsh_common_routines
 
       subroutine print_tensor(h_tensor, acc, t_name)
 
+        !routine for printing talsh tensors
+
         implicit none
 
         type(talsh_tens_t), intent(inout)    :: h_tensor
         real(8), intent(in)                  :: acc
         character(LEN=*), intent(in)         :: t_name
 
+        integer(INTD)  ::  dims1(1)
         integer(INTD)  ::  dims2(1:2)
         integer(INTD)  ::  dims3(1:3)
         integer(INTD)  ::  dims4(1:4)
-        integer(INTD)  ::  ierr
+        integer(C_INT) ::  ierr
         integer(INTD)  ::  rank, rrank
-        integer  ::  i, j, k, l
+        integer        ::  i, j, k, l
         type(C_PTR)         :: body_p
+        complex(8), pointer :: tens1(:)
         complex(8), pointer :: tens2(:, :)
         complex(8), pointer :: tens3(:, :, :)
         complex(8), pointer :: tens4(:, :, :, :)
+        real(8), pointer    :: tensR1(:)
+        real(8), pointer    :: tensR2(:, :)
+        real(8), pointer    :: tensR3(:, :, :)
+        real(8), pointer    :: tensR4(:, :, :, :)
+        integer             :: DataKind(1),nData
+
+        ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
+        if (ierr.ne.0) stop 'error in getting DataKind'
 
         rank=talsh_tensor_rank(h_tensor)
+        if (rank.eq.0) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-        if (rank.eq.2) then
+          print *, "print 0D tensor: ", t_name, " (shape:", dims1,")"
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          select case (DataKind(1))
+          case (C8)
+            call c_f_pointer(body_p,tens1,dims1)
+          case (R8)
+             call c_f_pointer(body_p,tensR1,dims1)
+           case default
+            stop "wrong datakind in print_tensor"
+          end select
+
+          do i = 1, dims1(1)
+            if (DataKind(1)==C8) then
+              if(abs(tens1(i)).gt.acc) then
+                print *, i, tens1(i)
+              end if
+            else
+              if(abs(tensR1(i)).gt.acc) then
+                print *, i, tensR1(i)
+              end if
+            end if
+          end do
+          print *, " end print 0D tensor ", t_name
+        else if (rank.eq.1) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+
+          print *, "print 1D tensor: ", t_name, " (shape:", dims1,")"
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          select case (DataKind(1))
+          case (C8)
+            call c_f_pointer(body_p,tens1,dims1)
+          case (R8)
+             call c_f_pointer(body_p,tensR1,dims1)
+           case default
+            stop "wrong datakind in print_tensor"
+          end select
+          
+          do i = 1, dims1(1)
+            if (DataKind(1)==C8) then
+              if(abs(tens1(i)).gt.acc) then
+                print *, i, tens1(i)
+              end if
+            else
+              if(abs(tensR1(i)).gt.acc) then
+                print *, i, tensR1(i)
+              end if
+            end if
+          end do
+          print *, " end print 1D tensor ", t_name
+        else if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-          call c_f_pointer(body_p,tens2,dims2)
-
           print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          select case (DataKind(1))
+          case (C8)
+            call c_f_pointer(body_p,tens2,dims2)
+          case (R8)
+             call c_f_pointer(body_p,tensR2,dims2)
+           case default
+            stop "wrong datakind in print_tensor"
+          end select
+
           do i = 1, dims2(1)
             do j = 1, dims2(2)
-              if(abs(tens2(i,j)).gt.acc) then
-                print *, i, j, tens2(i,j)
+              if (DataKind(1)==C8) then
+                if(abs(tens2(i,j)).gt.acc) then
+                  print *, i, j, tens2(i,j)
+                end if
+              else
+                if(abs(tensR2(i,j)).gt.acc) then
+                  print *, i, j, tensR2(i,j)
+                end if
               end if
             end do
           end do
@@ -186,16 +266,29 @@ module talsh_common_routines
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-          call c_f_pointer(body_p,tens3,dims3)
-
           print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          select case (DataKind(1))
+          case (C8)
+            call c_f_pointer(body_p,tens3,dims3)
+          case (R8)
+             call c_f_pointer(body_p,tensR3,dims3)
+           case default
+            stop "wrong datakind in print_tensor"
+          end select
+
           do i = 1, dims3(1)
             do j = 1, dims3(2)
               do k = 1, dims3(3)
+                if (DataKind(1)==C8) then
                   if(abs(tens3(i,j,k)).gt.acc) then
-                    print *, i, j, k, tens3(i, j, k)
+                    print *, i, j, k, tens3(i,j,k)
                   end if
+                else
+                  if(abs(tensR3(i,j,k)).gt.acc) then
+                    print *, i, j, k, tensR3(i,j,k)
+                  end if
+                end if
               end do
             end do
           end do
@@ -205,16 +298,29 @@ module talsh_common_routines
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-          call c_f_pointer(body_p,tens4,dims4)
-
           print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          select case (DataKind(1))
+          case (C8)
+            call c_f_pointer(body_p,tens4,dims4)
+          case (R8)
+             call c_f_pointer(body_p,tensR4,dims4)
+           case default
+            stop "wrong datakind in print_tensor"
+          end select
+
           do i = 1, dims4(1)
             do j = 1, dims4(2)
               do k = 1, dims4(3)
                 do l = 1, dims4(4)
-                  if(abs(tens4(i,j,k,l)).gt.acc) then
-                    print *, i, j, k, l, tens4(i, j, k, l)
+                  if (DataKind(1)==C8) then
+                    if(abs(tens4(i,j,k,l)).gt.acc) then
+                      print *, i, j, k, l, tens4(i,j,k,l)
+                    end if
+                  else
+                    if(abs(tensR4(i,j,k,l)).gt.acc) then
+                      print *, i, j, k, l, tensR4(i,j,k,l)
+                    end if
                   end if
                 end do
               end do
@@ -223,94 +329,89 @@ module talsh_common_routines
           print *, " end print 4D tensor: ", t_name
 
         else
-          stop 'error in print_tensor: only ranks 2,3 and 4 implemented'
+          stop 'error in print_tensor: only ranks 0 to 4 implemented'
         end if
 
       end subroutine print_tensor
+      
+      function get_element(h_tensor, dims) result(val)
 
-      subroutine print_tensor_real(h_tensor, acc, t_name)
+        !routine to get an element 
 
         implicit none
 
         type(talsh_tens_t), intent(inout)    :: h_tensor
-        real(8), intent(in)                  :: acc
-        character(LEN=*), intent(in)         :: t_name
+        integer(INTD), intent(in)            :: dims(:)
+        complex(8)                           :: val
 
+        integer(C_INT) ::  ierr
+        integer(INTD)  ::  rank, rrank, ldims
+        integer        ::  i, j, k, l
+        integer(INTD)  ::  dims1(1)
         integer(INTD)  ::  dims2(1:2)
         integer(INTD)  ::  dims3(1:3)
         integer(INTD)  ::  dims4(1:4)
-        integer(INTD)  ::  ierr
-        integer(INTD)  ::  rank, rrank
-        integer  ::  i, j, k, l
         type(C_PTR)         :: body_p
-        real(8), pointer :: tens2(:, :)
-        real(8), pointer :: tens3(:, :, :)
-        real(8), pointer :: tens4(:, :, :, :)
+        complex(8), pointer :: tens1(:)
+        complex(8), pointer :: tens2(:, :)
+        complex(8), pointer :: tens3(:, :, :)
+        complex(8), pointer :: tens4(:, :, :, :)
+        integer             :: DataKind(1)
+
+        DataKind(1)=C8
 
         rank=talsh_tensor_rank(h_tensor)
+        ldims=size(dims)
+        if (rank.ne.ldims) stop 'error in get_element: wrong number of indices'
 
-        if (rank.eq.2) then
+        if (rank.eq.1) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in get_element: wrong rank'
+
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens1,dims1)
+          i=dims(1)
+          val=tens1(i)
+
+        else if (rank.eq.2) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,int(0,C_INT),DEV_HOST)
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens2,dims2)
-
-          print *, "print 2D tensor: ", t_name, " (shape:", dims2,")"
-          do i = 1, dims2(1)
-            do j = 1, dims2(2)
-              if(abs(tens2(i,j)).gt.acc) then
-                print *, i, j, tens2(i,j)
-              end if
-            end do
-          end do
-          print *, " end print 2D tensor ", t_name
+          i=dims(1)
+          j=dims(2)
+          val=tens2(i,j)
 
         else if (rank.eq.3) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,int(0,C_INT),DEV_HOST)
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens3,dims3)
-
-          print *, "print 3D tensor: ", t_name, " (shape:", dims3,")"
-          do i = 1, dims3(1)
-            do j = 1, dims3(2)
-              do k = 1, dims3(3)
-                  if(abs(tens3(i,j,k)).gt.acc) then
-                    print *, i, j, k, tens3(i, j, k)
-                  end if
-              end do
-            end do
-          end do
-          print *, " end print 3D tensor: ", t_name
+          i=dims(1)
+          j=dims(2)
+          k=dims(3)
+          val=tens3(i,j,k)
 
         else if (rank.eq.4) then
           ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
           if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
 
-          ierr=talsh_tensor_get_body_access(h_tensor,body_p,R8,int(0,C_INT),DEV_HOST)
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
           call c_f_pointer(body_p,tens4,dims4)
-
-          print *, "print 4D tensor: ", t_name, " (shape:", dims4, ")"
-          do i = 1, dims4(1)
-            do j = 1, dims4(2)
-              do k = 1, dims4(3)
-                do l = 1, dims4(4)
-                  if(abs(tens4(i,j,k,l)).gt.acc) then
-                    print *, i, j, k, l, tens4(i, j, k, l)
-                  end if
-                end do
-              end do
-            end do
-          end do
-          print *, " end print 4D tensor: ", t_name
+          i=dims(1)
+          j=dims(2)
+          k=dims(3)
+          l=dims(4)
+          val=tens4(i,j,k,l)
 
         else
-          stop 'error in print_tensor: only ranks 2,3 and 4 implemented'
+          stop 'error in get_element: only ranks 0 to 4 implemented'
         end if
 
-      end subroutine print_tensor_real
+      end function get_element
+
 
      subroutine Pair_correlation_energies( t2_amp, int_oovv, nocc, nvir )
 
@@ -369,5 +470,178 @@ module talsh_common_routines
         deallocate(tens_E_pair_corr)
 
       end subroutine Pair_correlation_energies
+
+      subroutine talsh_init_C8(h_tensor, val)
+
+        !routine for initializing a tensor
+
+        implicit none
+
+        type(talsh_tens_t), intent(inout)    :: h_tensor
+        complex(8), intent(in)               :: val
+
+        integer(INTD)  ::  dims1(1)
+        integer(INTD)  ::  dims2(1:2)
+        integer(INTD)  ::  dims3(1:3)
+        integer(INTD)  ::  dims4(1:4)
+        integer(INTD)  ::  dims5(1:5)
+        integer(INTD)  ::  dims6(1:6)
+        integer(C_INT) ::  ierr
+        integer(INTD)  ::  rank, rrank
+        type(C_PTR)         :: body_p
+        complex(8), pointer :: tens1(:)
+        complex(8), pointer :: tens2(:, :)
+        complex(8), pointer :: tens3(:, :, :)
+        complex(8), pointer :: tens4(:, :, :, :)
+        complex(8), pointer :: tens5(:, :, :, :, :)
+        complex(8), pointer :: tens6(:, :, :, :, :, :)
+        integer             :: DataKind(1),nData
+
+        ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
+        if (ierr.ne.0) stop 'error in getting DataKind'
+        if (DataKind(1).ne.C8) stop 'wrong DataKind'
+
+        rank=talsh_tensor_rank(h_tensor)
+        if (rank.eq.0) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens1,dims1)
+          tens1=val
+
+        else if (rank.eq.1) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens1,dims1)
+          tens1=val
+        
+        else if (rank.eq.2) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens2,dims2)
+          tens2=val
+
+        else if (rank.eq.3) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens3,dims3)
+          tens3=val
+
+        else if (rank.eq.4) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens4,dims4)
+          tens4=val
+
+        else if (rank.eq.5) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens5,dims5)
+          tens5=val
+
+        else if (rank.eq.6) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens6,dims6)
+          tens6=val
+
+        else
+          stop 'error in talsh_init: only ranks 0 to 6 implemented'
+        end if
+
+      end subroutine talsh_init_C8
+
+
+      subroutine talsh_init_R8(h_tensor, val)
+
+        !routine for initializing a tensor
+
+        implicit none
+
+        type(talsh_tens_t), intent(inout)    :: h_tensor
+        real(8), intent(in)               :: val
+
+        integer(INTD)  ::  dims1(1)
+        integer(INTD)  ::  dims2(1:2)
+        integer(INTD)  ::  dims3(1:3)
+        integer(INTD)  ::  dims4(1:4)
+        integer(INTD)  ::  dims5(1:5)
+        integer(INTD)  ::  dims6(1:6)
+        integer(C_INT) ::  ierr
+        integer(INTD)  ::  rank, rrank
+        type(C_PTR)         :: body_p
+        real(8), pointer :: tens1(:)
+        real(8), pointer :: tens2(:, :)
+        real(8), pointer :: tens3(:, :, :)
+        real(8), pointer :: tens4(:, :, :, :)
+        real(8), pointer :: tens5(:, :, :, :, :)
+        real(8), pointer :: tens6(:, :, :, :, :, :)
+        integer             :: DataKind(1),nData
+
+        ierr=talsh_tensor_data_kind(h_tensor,nData,DataKind)
+        if (ierr.ne.0) stop 'error in getting DataKind'
+        if (DataKind(1).ne.R8) stop 'wrong DataKind'
+
+        rank=talsh_tensor_rank(h_tensor)
+        if (rank.eq.0) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens1,dims1)
+          tens1=val
+
+        else if (rank.eq.1) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims1)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens1,dims1)
+          tens1=val
+        
+        else if (rank.eq.2) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims2)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens2,dims2)
+          tens2=val
+
+        else if (rank.eq.3) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims3)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens3,dims3)
+          tens3=val
+
+        else if (rank.eq.4) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims4)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens4,dims4)
+          tens4=val
+
+        else if (rank.eq.5) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims5)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in talsh_init: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens5,dims5)
+          tens5=val
+
+        else if (rank.eq.6) then
+          ierr = talsh_tensor_dimensions(h_tensor,rrank,dims6)
+          if (ierr.ne.0 .or. rrank.ne.rank) stop 'error in print_tensor: wrong rank'
+          ierr=talsh_tensor_get_body_access(h_tensor,body_p,DataKind(1),int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,tens6,dims6)
+          tens6=val
+
+        else
+          stop 'error in talsh_init: only ranks 0 to 6 implemented'
+        end if
+
+      end subroutine talsh_init_R8
 
 end module talsh_common_routines

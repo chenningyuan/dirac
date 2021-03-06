@@ -371,6 +371,7 @@ C
          IF (INDEX(TRA_CORSTR2(IFRP),'not specified').EQ.0) THEN
              WRITE(LUPRI,'(/A)') '* frozen open-shell added'
              Allocate (IBEIG(NR(IFRP)))
+             NSPC2(IFRP,0)=1
              CALL NUMLST(TRA_CORSTR2(IFRP),IBEIG,
      &                  NR(IFRP),IR(1,IFRP),IR(2,IFRP),
      &                  IFRP,NSPC2(IFRP,0))
