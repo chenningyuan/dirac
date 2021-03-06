@@ -6,6 +6,7 @@ module talsh_cc
         use exacorr_datatypes
         use exacorr_utils
         use intermediates
+        use intermediates_eom_ccsd
         use talsh_common_routines
         use, intrinsic:: ISO_C_BINDING
 

@@ -15,6 +15,7 @@ if(ENABLE_EXATENSOR)
    exacorr_utils.F90
    exacorr_tensor_methods.F90
    intermediates.F90
+   intermediates_eom.F90
    exacorr_ao_to_mo.F90
    exacorr_gradient.F90
    exacorr_mo.F90
