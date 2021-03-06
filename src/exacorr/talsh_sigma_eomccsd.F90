@@ -4,7 +4,6 @@ module talsh_sigma_eomccsd
   use tensor_algebra
   use exacorr_datatypes
   use talsh_ao_to_mo, only : tensor_norm2
-  use exacorr_global, only : debug_exa
   use exacorr_utils,  only : print_date
 
   implicit none
@@ -139,7 +138,7 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_destruct(v_aux)
 
       ! debug
-      if (debug_exa) then
+      if (.true.) then
         print*, "norm r1_sigma", tensor_norm2(sigma1_tensor)
         print*, "norm r2_sigma", tensor_norm2(sigma2_tensor),tensor_norm2(sigma2_tensor)*ONE_QUARTER
         print*, "norm r_sigma ", (tensor_norm2(sigma1_tensor) + tensor_norm2(sigma2_tensor))
@@ -321,7 +320,7 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_destruct(o_aux)
 
       ! debug
-      if (debug_exa) then
+      if (.true.) then
         print*, "r1_sigma", tensor_norm2(sigma1_tensor)
         print*, "r2_sigma", tensor_norm2(sigma2_tensor)*ONE_QUARTER
       end if

@@ -1225,7 +1225,7 @@ module exacorr_ao_to_mo
         integer(INTD),intent(in)              :: ao_id
         class(h_space_t), pointer, intent(in) :: ao_space
 !       target integral tensors to be filled and given back to the caller
-        type(exatns_intg_tens), intent(inout) :: int_t
+        type(exatns_intg_tens_t), intent(inout) :: int_t
         integer                               :: moint_scheme ! (41: fully pvotised, 42: using shells)
         integer, intent(in)                   :: print_level, exa_blocksize
         real(8),intent(in)                    :: t_cholesky

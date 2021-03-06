@@ -5,7 +5,6 @@ module talsh_trial_eomccsd
   use exacorr_datatypes
   use intermediates
   use talsh_ao_to_mo, only : tensor_norm2
-  use exacorr_global, only : debug_exa
   use exacorr_utils,  only : print_date
   use talsh_davidson
 

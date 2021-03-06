@@ -112,8 +112,6 @@ module talsh_dm_eomccsd
 
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,t1_tensor,l1_tensor,r1_tensor,r2_tensor)
 
-      use exacorr_global, only : debug_exa
-
 !     input variables
       type(talsh_dm_tens), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
@@ -268,7 +266,7 @@ module talsh_dm_eomccsd
 
 
 !     debug
-      if (debug_exa) then
+      if (.true.) then
         print*, "gprime_oo  = ", tensor_norm2(gamma%prime_oo)
         if (.not.CCD) then
           print*, "gprime_ov  = ", tensor_norm2(gamma%prime_ov)
