@@ -425,6 +425,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #include "codata.h"
 #include "infpar.h"
 #include "cbirea.h"
+#include "dgroup.h" 
 
 ! using OPTIMI
 #include "dcbgen.h"
@@ -510,7 +511,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #ifdef HAS_PELIB
               pelib_sym_xyz = .false.
 #endif
-
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -915,7 +915,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
 
       katom=count_types(firstatomtype)
@@ -1199,6 +1199,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,                     &
@@ -1229,6 +1230,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
+      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****

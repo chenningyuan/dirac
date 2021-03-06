@@ -398,8 +398,14 @@ C            occupancies
       ELSE
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,14)
+         IOPT=14
+         IF(ATOMIC) THEN
+           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &          WORK(KBEIG),TOTERG,IOPT)           
+         ELSE
+           CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                 WORK(KBEIG),TOTERG,IOPT)
+         ENDIF
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        check for energy 137.0D0 - if found we are doing a Mulliken
@@ -489,7 +495,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 C
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IBEIG(*),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),
+     &          EIG(NORBT),IBEIG(NORBT),
      &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),OCC(*),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
@@ -652,7 +659,8 @@ C
 #else
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
-      CHARACTER FMT*6,MXFORM*6,SYMLAB*9
+      CHARACTER FMT*6,MXFORM*6,SYMLAB*9,SYMLAB2*11
+      CHARACTER SPDCAR*1 ! type declaration for external function      
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
      &          CMO(NCBAS,NPVECS+NEVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
@@ -724,18 +732,30 @@ C             ... CI-NOs, MP2-NOs,...
               END IF
             END IF
           ELSE
-             IF(SPINFR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
-             ELSEIF(LINEAR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
-             ENDIF
-             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
-     &          '* Electronic eigenvalue no.',JVEC(I),': ',
-     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
-     &          SYMLAB
-          END IF
+            IF(SPINFR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+            ELSEIF(ATOMIC) THEN
+              ID = IBEIG(II)
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
+              WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
+            ELSEIF(LINEAR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            ENDIF
+C           
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A11)')
+     &           '* Electronic eigenvalue no.',JVEC(I),': ',
+     &           EIG(II),'   (Occupation : f = ',OCC2(I),')',
+     &           SYMLAB2
+            ELSE
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
+     &           '* Electronic eigenvalue no.',JVEC(I),': ',
+     &           EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &           SYMLAB
+            ENDIF   
+          END IF   !  IF (KRMC_FLG.gt.0 )
         ELSE ! Positronic eigenvalues
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
@@ -743,17 +763,28 @@ C             ... CI-NOs, MP2-NOs,...
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             IF(SPINFR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
-             ELSEIF(LINEAR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
-             ENDIF
-             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
+            IF(SPINFR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+            ELSEIF(ATOMIC) THEN
+              ID = IBEIG(II)
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
+              WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
+            ELSEIF(LINEAR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            ENDIF
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A11)')
+     &          '* Positronic eigenvalue no.',II,': ',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &          SYMLAB2
+            ELSE
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
      &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
+            ENDIF   
           END IF
         END IF
         CALL PRSYMB(LUPRI,'=',92,0)
@@ -1254,7 +1285,7 @@ C     &                WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),
 C     &                WORK(KVEC(IFRP,0)),NSTR(IFRP,2,0),NSTR(IFRP,1,0))
 C        ENDDO
 C        REWIND LUCOEF
-C        CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBE),TOTERG)
+C        CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBE),TOTERG,.FALSE.)
 C        CLOSE(LUCOEF,STATUS='KEEP')
 C      ENDIF
 C
@@ -2076,8 +2107,14 @@ C
 C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,14)
+      IOPT=14
+      IF(ATOMIC) THEN
+        CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                     WORK(KBEIG),TOTERG,IOPT)           
+      ELSE
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
+     &              TOTERG,IOPT)
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       IF (NTESTL.GE.10) THEN

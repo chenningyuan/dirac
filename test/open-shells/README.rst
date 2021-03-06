@@ -6,43 +6,40 @@ This test is dedicated to demonstrate Dirac HF-SCF open-shell capabilities.
 We get converged ground and first excited states of 
 several open-shell atoms and molecules.
 
+We use .KPSELE for atoms.
+
 For the sake of quick performance we use the STO-2G uncontracted basis sets and 
 the 2-component (X2C+AMFI) Hamiltonian.
 
 B 
 --
 
-The ground atomic state (^2P_1/2) is obtained by distributing 1 electron over 2 2p_12 spinors.
-The reordering of valence spinors and distributing 1 electron over 4 2p_32 shells ensures converging to the first excited state ^2P_32.
+^2P_1/2 (ground state)......2p_1/2(1)2p_3/2(0)
+^2P_3/2 (excited state)......2p_1/2(0)2p_3/2(1)
 
 C 
 ---
 
-We obtained the high spin state [He] 2s(2) 2p12(1) 2p32(1) by placing one open-shell electron into the 2p_12 shell and
-the second into the 2p_32 spinor. The spinors SCF convergence with two open-shells 
-and the proper degeneracy of the two 2p_32 shells was ensured by selecting proper ".OLEVEL" values for OpenFactor=1.0.
-It also converges with the default OpenFactor setting in the SCF procedure.
+LS(low spin).....2p_1/2(2)2p_3/2(0)
+HS(high spin)......2p_1/2(1)2p_3/2(1)
 
 N
 ---
 
-The nitrogen atom...
+LS(low spin).....2p_1/2(2)2p_3/2(1)
+HS(high spin)......2p_1/2(1)2p_3/2(2)
 
 O
 --
 
-For oxygen with four electrons in the 2p shell we show two open-shell configurations.
-The first configuration of [He] 2s(2) 2p12(2) 2p32(2) has 2p12 shell doubly occupied (closed) 
-and remaining two unpaired electrons are distributed over four  2p32 spinors.
-The second configuration [He] 2s(2) 2p12(1) 2p32(3) has two open-shells with one unpaired electron averaged over
-two 2p12 shells and three electron over four 2p32 shells.
+LS(low spin).....2p_1/2(2)2p_3/2(2)
+HS(high spin)......2p_1/2(1)2p_3/2(3)
 
 F
 --
 
-The converged ground state X ^2P_3/2 is achieved with the help of the .OLEVEL keyword.
-To get the first excited state ^2P_1/2 one resorts to the reordering of the valence molecular spinors,
-where we obtain the desired occupation with swapped p12,p32 molecular spinors : 1s(2) 2s(2) 2p32(4) 2p12(1).
+^2P_3/2 (ground state)......2p_1/2(2)2p_3/2(3)
+^2P_1/2 (excited state)......2p_1/2(1)2p_3/2(4)
 
 CH (^2Pi)
 ---------
