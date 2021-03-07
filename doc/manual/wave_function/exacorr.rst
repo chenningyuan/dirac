@@ -9,7 +9,7 @@ Highly parallelised relativistic Coupled Cluster Code
 starstar(EXACC)
 
 Highly parallelised relativistic Coupled Cluster Code. 
-In this release only computations using the X2C Hamiltonian are possible. 
+In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
 
 **Mandatory keywords**

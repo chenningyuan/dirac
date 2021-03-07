@@ -63,6 +63,19 @@ In two-component infinite-order relativistic calculations (with :ref:`HAMILTONIA
 of four-component property operators to avoid the picture change transformation.
 Experimental option, use with care.
 
+keyword(RDCCDM)
+
+Activates the reading in of a coupled cluster density matrix (in AO basis), obtained from a previous 
+calculation with either the :ref:`WAVE_FUNCTION_.RELCCSD` or with :ref:`WAVE_FUNCTION_.EXACC` modules. 
+
+It is not necessary to use this keyword in runs in which both the coupled cluster and property modules
+are activated; rather, it is recommended to avoid redoing an expensive coupled cluster                 
+calculation, such as in restarts, or if properties other than those previously specified in the original
+run are sought.
+
+The density matrix should be stored in a file named CCDENS, and placed in the scratch directory. 
+
+
 
 Predefined electric properties
 ==============================
