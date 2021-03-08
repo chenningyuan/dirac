@@ -99,7 +99,7 @@
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
 !                    41        42        43        44
-     &             '.RDCCDM'/
+     &             '.RDCCDE'/
 
 !
       CALL QENTER('PRPINP')
