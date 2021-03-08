@@ -67,7 +67,7 @@ keyword(RDCCDENS)
 
 Activates the reading of the file CCDENS obtained from a previous CC calculation with either the 
 :ref:`WAVE_FUNCTION_.RELCCSD` or with :ref:`WAVE_FUNCTION_.EXACC` modules.  It is not necessary to 
-use this keyword in runs in which the correlated and  property modules
+use this keyword in runs in which the correlated and  property modules are both activated.
 
 CCDENS is not saved by pam, so unless the scratch directory from the previous calculation is
 kept (see --keep_scratch in pam), you should retrieve it after a correlated calculation, e.g. ::
