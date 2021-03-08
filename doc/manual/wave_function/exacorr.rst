@@ -9,7 +9,7 @@ Highly parallelised relativistic Coupled Cluster Code
 starstar(EXACC)
 
 Highly parallelised relativistic Coupled Cluster Code. 
-In this release only computations using the X2C Hamiltonian are possible. 
+In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
 
 **Mandatory keywords**
@@ -88,6 +88,14 @@ will make use of GPUs (if available and suitable).
 keyword(LAMBDA)
 
 Solve Lambda-equations, needs to be activated in order to compute the one particle density matrix and molecular properties.
+
+This calculation generates the file CCDENS, which contains the CC ground-state density
+matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
+ground-state expectation values.
+
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+without the need to invoke this module.
+
 
 *Default:*
 
