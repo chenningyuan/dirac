@@ -1,5 +1,5 @@
-C  /* Deck getbedf */                                                  
-      SUBROUTINE GET_BED(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+C  /* Deck getbed */                                                  
+      SUBROUTINE GET_BED(OSCBED,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -8,10 +8,8 @@ C     Scalar integrals are sorted on symmetries (max. 8)
 C
 C     Upon entering this routine solution vectors have been written
 C     to unformatted file PAMXVC, to be opened with unit number LUXVC
-C     References are:
-C     1. Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
-C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
-C                               
+C     Reference:
+C       N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
 C                                                                      
 C***********************************************************************
       use orbital_rotation_indices
@@ -33,23 +31,19 @@ C
 #include "dcbwav.h"
 C#include "cbiher.h"
       LOGICAL DOINT(2,2)
-      CHARACTER*6 MXFORM, FMT
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
-      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
+     &          WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:),OSC(:,:)
+      real(8), allocatable              :: TMOM(:,:,:)
       character (len=8),  allocatable   :: LABINT(:)
       character (len=5)                 :: TPAR(3)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
-      real(8)             :: PBUF(3,4),EVECR(NREDM,*)
-      integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
+      real(8)                           :: PBUF(3,4),EVECR(NREDM,*)
+      integer              :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       real(8), allocatable              :: GPOE(:,:),GPOP(:,:)
       real(8), allocatable              :: XPOE(:,:),XPOP(:,:)
-      real(8), allocatable              :: TMOM_P(:,:),TMOM_DER(:,:,:,:)
-      real(8), allocatable              :: TMOM_DE(:,:),TMOM_DOM(:,:)
-      real(8), allocatable              :: OSC_P(:),OSC_DER(:,:,:)
-      real(8), allocatable              :: OSC_DE(:),OSC_DOM(:)
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 
@@ -187,21 +181,21 @@ c               of e2
            IPRPTYP(NPRPS+IOP) = IOPTYP
         ENDIF
       ENDDO
-
-
       CALL PRSYMB(LUPRI,'=',80,0)
+      CALL HEADER('Full light-matter interaction: Anisotropic case',-1)
+      IF (BEDECD) THEN
+        WRITE(LUPRI,'(A)') 'Circularly polarized light'
+      ELSE  
+        WRITE(LUPRI,'(A)') 'Linearly polarized light'
+      ENDIF  
       WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
-
-
 C
 C     Prepare solution vectors
 C     ========================
 C
 C      - orbital (e-e) part      
 C
-      
-
       NPAR = 0
       IF(NZXOPE.GT.0) THEN
          allocate(XPOE(NZXOPEQ,NEXCNV))
@@ -240,13 +234,8 @@ C     Loop over excitation energies
 C     =============================
 C
       allocate(TMOM(NOP,NPAR+1,NEXCNV))
-      allocate(OSC(NPAR+1,NEXCNV))
-
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      IH = 0
-      WRITE(6,'(A18,10X,A9,8X,A5)')
-     &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,NEXCNV
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
            WRITE(LUPRI,*)
@@ -282,174 +271,156 @@ C
             ENDIF
           ENDDO
         ENDIF
-        DO K = -IH,IH
 C     
 C         Generate integrals
 C
-          IF(BEDCHK) THEN
-             CALL DCOPY(3,D0,0,WAVEVEC,1)
-          ELSE
-            DO I = 1,3
-              WAVEVEC(I) = FAC*UWAVE(I)
-            ENDDO
-          ENDIF
+        IF(BEDCHK) THEN
+           CALL DCOPY(3,D0,0,WAVEVEC,1)
+        ELSE
+          DO I = 1,3
+            WAVEVEC(I) = FAC*UWAVE(I)
+          ENDDO
+        ENDIF
 C       
-          CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
-     &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
-     &       TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
-     &       0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
-          IF(IPRXPP.GE.5) THEN
-            DO ICOMP = 1,NPRPINT
-              WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
-     &        '. Symmetry: ',REP(INTREP(ICOMP))
-              CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
-            ENDDO
-          ENDIF
+        CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
+     &     NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
+     &     TRASPH,.FALSE.,SOLVNT,0,0,DUMMY,
+     &     0,NBAST,NELMNT,IPRINT,DOINT,.FALSE.)
+        IF(IPRXPP.GE.5) THEN
+          DO ICOMP = 1,NPRPINT
+            WRITE(6,*) '* Integrals of ',LABINT(ICOMP),
+     &      '. Symmetry: ',REP(INTREP(ICOMP))
+            CALL OUTPAK(PRPINT(1,ICOMP),NBAST,1,LUPRI)
+          ENDDO
+        ENDIF
 C
-
-          TMOM(1,NPAR+1,IEXC) = D0
-          TMOM(2,NPAR+1,IEXC) = D0
-          IF (BEDECD) THEN
-            TMOM(3,NPAR+1,IEXC) = D0
-            TMOM(4,NPAR+1,IEXC) = D0
-          ENDIF
-          OSC(NPAR+1,IEXC)    = D0
-          IPAR = 0
+        OSCBED(IEXC)        = D0
+        TMOM(1,NPAR+1,IEXC) = D0
+        TMOM(2,NPAR+1,IEXC) = D0
+        IF (BEDECD) THEN
+          TMOM(3,NPAR+1,IEXC) = D0
+          TMOM(4,NPAR+1,IEXC) = D0
+        ENDIF
+        IPAR = 0
 C
-C         Gradient - orbital (e-e) part
-C         ====================================
-          IF(NZXOPE.GT.0) THEN
-            IPAR = IPAR + 1
-            TMP = D0
-            DO IOP = 1,NOP
-              INDXPR = NPRPS+IOP      
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOE(1,IOP),
-     &               get_orbital_rotation_indices_pp(),
-     &               NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
-     &               WORK,KFREE,LFREE,IPRXPP)          
-                TMOM(IOP,IPAR,IEXC)=D2*
-     &               DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-CTROND
-                IF(IPRXPP.GE.3) THEN
-                  WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
-                  CALL PRINT_GP_XP(GPOE,XPOE,
-     &               get_orbital_rotation_indices_pp(),NZXOPE,NZ)
-                ENDIF
-              ELSE
-                TMOM(IOP,IPAR,IEXC)=D0
+C       Gradient - orbital (e-e) part
+C       ====================================
+        IF(NZXOPE.GT.0) THEN
+          IPAR = IPAR + 1
+          DO IOP = 1,NOP
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+              CALL GPGET(INDXPR,GPOE(1,IOP),
+     &             get_orbital_rotation_indices_pp(),
+     &             NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
+     &             WORK,KFREE,LFREE,IPRXPP)
+              TMOM(IOP,IPAR,IEXC)=D2*
+     &             DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+              IF(IPRXPP.GE.3) THEN
+                WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-e) part'
+                CALL PRINT_GP_XP(GPOE,XPOE,
+     &             get_orbital_rotation_indices_pp(),NZXOPE,NZ)
               ENDIF
-              TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
-     &                             +TMOM(IOP,IPAR,IEXC)
-              IF (.NOT.BEDECD) THEN
-              TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-              ENDIF
-            ENDDO
-            IF (BEDECD) THEN
-              TMP =  (TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC) 
-     &               - TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC))
-              OSC(IPAR,IEXC) = D4*OMEGA(IEXC)*TMP
             ELSE
-              OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
-            ENDIf
-            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-          ENDIF
-C
-C         Gradient - orbital (e-p) part
-C         ====================================
-          IF(NZXOPP.GT.0) THEN       
-            IPAR = IPAR + 1
-            TMP = D0
-            DO IOP = 1,NOP
-              INDXPR = NPRPS+IOP
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOP(1,IOP),
-     &               get_orbital_rotation_indices_pn(),
-     &               NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
-     &               WORK,KFREE,LFREE,IPRXPP)
-                TMOM(IOP,IPAR,IEXC)=D2*
-     &               DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-CTROND
-              WRITE(6,*) 'TEST..',PRPNAM(INDXPR),'.e-p.',GPOP(1,1)
-                IF(IPRXPP.GE.3) THEN
-                  WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-p) part'
-                  CALL PRINT_GP_XP(GPOP,XPOP,
-     &               get_orbital_rotation_indices_pn(),NZXOPP,NZ)
-                ENDIF
-              ELSE
-                TMOM(IOP,IPAR,IEXC)=D0
-              ENDIF
-              TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
-     &                             +TMOM(IOP,IPAR,IEXC)
-              IF (.NOT.BEDECD) THEN
-                TMP = TMP + TMOM(IOP,IPAR,IEXC)*TMOM(IOP,IPAR,IEXC)
-
-              ENDIF
-            ENDDO
-            IF (BEDECD) THEN
-              TMP =  (TMOM(2,IPAR,IEXC)*TMOM(3,IPAR,IEXC)
-     &               -TMOM(4,IPAR,IEXC)*TMOM(1,IPAR,IEXC))
-              OSC(IPAR,IEXC) = D4*OMEGA(IEXC)*TMP
-            ELSE
-              OSC(IPAR,IEXC) = D2*OMEGA(IEXC)*TMP
+              TMOM(IOP,IPAR,IEXC)=D0
             ENDIF
-            OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-          ENDIF
-        ENDDO
+            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                           +TMOM(IOP,IPAR,IEXC)
+          ENDDO
+        ENDIF
+C
+C       Gradient - orbital (e-p) part
+C       ====================================
+        IF(NZXOPP.GT.0) THEN       
+          IPAR = IPAR + 1
+          DO IOP = 1,NOP
+            INDXPR = NPRPS+IOP
+            IF(IPRPTYP(INDXPR).NE.-1) THEN
+              CALL GPGET(INDXPR,GPOP(1,IOP),
+     &             get_orbital_rotation_indices_pn(),
+     &             NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &             WORK,KFREE,LFREE,IPRXPP)
+              TMOM(IOP,IPAR,IEXC)=D2*
+     &             DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+              IF(IPRXPP.GE.3) THEN
+                WRITE(6,'(A16,2X,A/)') PRPNAM(INDXPR),' (e-p) part'
+                CALL PRINT_GP_XP(GPOP,XPOP,
+     &             get_orbital_rotation_indices_pn(),NZXOPP,NZ)
+              ENDIF
+            ELSE
+              TMOM(IOP,IPAR,IEXC)=D0
+            ENDIF
+            TMOM(IOP,NPAR+1,IEXC)=TMOM(IOP,NPAR+1,IEXC)
+     &                           +TMOM(IOP,IPAR,IEXC)
+          ENDDO
+        ENDIF
+C
+C       Oscillator strength
+C
+        IF (BEDECD) THEN
+          OSCBED(IEXC) =  D4*OMEGA(IEXC)*
+     &                   (TMOM(2,NPAR+1,IEXC)*TMOM(3,NPAR+1,IEXC) 
+     &                  - TMOM(4,NPAR+1,IEXC)*TMOM(1,NPAR+1,IEXC))
+        ELSE
+          TMP = D0
+          DO IOP = 1,NOP
+            TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
+          ENDDO
+          OSCBED(IEXC) = D2*OMEGA(IEXC)*TMP
+        ENDIF
  10   CONTINUE
 C
 C     Print section
-C           
+C
+      IF (BEDECD) THEN
+        WRITE(LUPRI,'(3X,A,3F18.10)')                                    
+     &     '* Unit wave vector   :', (UWAVE(I),I=1,3)
+      ELSE
+        WRITE(LUPRI,'(3X,A,3F18.10)')                                    
+     &       '* Unit wave vector   :', (UWAVE(I),I=1,3),                  
+     &       '* Polarization vector:', (UPOL(I,1),I=1,3)       
+      ENDIF            
+      WRITE(6,'(/A)') '* Transition moments:'
+      WRITE(6,'(/A4,1X,A18,24X,3(3X,A5,13X))')     
+     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
 
       IF (BEDECD) THEN
-         TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
-         FMT=MXFORM(TMP,14)
-         WRITE(LUPRI,*) '* Transition moments:'
-         WRITE(LUPRI,'(A4,1X,A18,14X,3(3X,A5,9X))')     
-     &   'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-         DO IEXC = 1,NEXCNV
-           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+        DO IEXC = 1,NEXCNV
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e1cos [kr]): ',
      &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
-           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e1sin [kr]): ',
      &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e2cos [kr]): ',
      &     (-TMOM(3,IPAR,IEXC),IPAR = 1,NPAR+1)
-           WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e2sin [kr]): ',
      &     (TMOM(4,IPAR,IEXC),IPAR = 1,NPAR+1)
-         ENDDO      
-           WRITE(6,*) '* Anisotropic circular dichroism:'
-           WRITE(6,'(A4,1X,A18,3(3X,A5,9X))') 
-     &      'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-         DO IEXC = 1,NEXCNV
-            WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &      IEXC,OMEGA(IEXC),
-     &      (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
-         ENDDO
+        ENDDO      
+        WRITE(6,'(/A)') '* Differential Oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')     
+     &    'Exc.','Frequency (au)    '
+        DO IEXC = 1,NEXCNV
+          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
+     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
+        ENDDO   
       ELSE
-        WRITE(6,*) '* Transition moments:'
-        WRITE(6,'(A4,1X,A18,14X,3(3X,A5,9X))')     
-     &   'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
         DO IEXC = 1,NEXCNV
-          TMP=MAX(ABS(TMOM(1,NPAR+1,IEXC)),ABS(TMOM(2,NPAR+1,IEXC)))
-          FMT=MXFORM(TMP,14)
-          WRITE(6,'(I4,1X,F18.10,A,3(3X,'//FMT//'))')
-     &    IEXC,OMEGA(IEXC),' real part (sin [kr]): ',
-     &    (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-          WRITE(6,'(23X,A,3(3X,'//FMT//'))')
-     &    ' imag. part (cos[kr]) : ',
-     &    (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
+     &     IEXC,OMEGA(IEXC),' real part (sin[kr]) : ',
+     &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(23X,A23,3(3X,ES18.10))')
+     &     ' imag part (cos[kr]) : ',
+     &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
         ENDDO
-        WRITE(6,*) '* Oscillator strengths:'
-        WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &    'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
+        WRITE(6,'(/A)') '* Oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')     
+     &    'Exc.','Frequency (au)    '
         DO IEXC = 1,NEXCNV
-          WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &     IEXC,OMEGA(IEXC),
-     &     (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
+          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
+     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
         ENDDO
       ENDIF
 C     
@@ -462,7 +433,6 @@ C     Memory deallocation
         deallocate(GPOP)
         deallocate(XPOP)         
       ENDIF
-      deallocate(OSC)
       deallocate(TMOM)
       deallocate(PRPINT)
       deallocate(LABINT)
@@ -630,7 +600,7 @@ C     =============================
 C     
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      WRITE(6,'(A18,10X,A9,8X,A5)')
+      WRITE(6,'(/A18,10X,A9,8X,A5)')
      &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
@@ -880,7 +850,7 @@ C     =============================
 C     
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
-      WRITE(6,'(A18,10X,A9,8X,A5)')
+      WRITE(6,'(/A18,10X,A9,8X,A5)')
      &   'Transition moments','Freq(au)','Value'
       DO 10 IEXC = 1,KEXCNV(JSYMOP)
         IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
@@ -973,90 +943,6 @@ C
       RETURN
       END
 C
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C                                                                      C
-C  /* Deck bedleb */                                                   C
-C     * This is the slave interface to the BEDLEB subroutine below     C
-C     * Will receive the necessary information to begin working        C
-C     * on the BEDLEB routine - allocating the needed arrays           C
-C     * for entering BEDLED                                            C
-      SUBROUTINE bedleb_launch_slave_procs()
-CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use memory_allocator                                 
-      use interface_to_mpi                                 
-#include "implicit.h"                                      
-C                                                          
-C                                                          
-c TODO added due to NESH
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "priunit.h"                                       
-#include "mxcent.h"                                        
-#include "maxorb.h"                                        
-
-#include "aovec.h"                                         
-C TODO commented out due to dcborb.h                                                          
-c#include "inforb.h"                                        
-#include "infpar.h"                                        
-#include "dcbxpp.h"
-#include "molinp.h"                                        
-#include "blocks.h"                                        
-#if defined (PRG_DIRAC)                                    
-#include "dcbgen.h"                                        
-#include "dcbgrd.h"                                        
-#else                                                      
-#include "gnrinf.h"                                        
-#include "energy.h"                                        
-#endif                                                     
-C
-C                                                          
-      DIMENSION DINTSKP(14*3*3)                            
-      INTEGER LWORK, NCOMP, NOPTP, MYPROC
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
-C                                                          
-      real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
-      integer, allocatable :: IBEIG(:)
-      INTEGER MAXEXC, I
-      call legacy_lwork_get(LWORK)                         
-      call alloc(WORK,LWORK,id='WORK in BEDLEB')           
-#include "memint.h"
-
-      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
-C                                                          
-      CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
-     &                  global_communicator)
-      CAll interface_mpi_BCAST(NREDM,1,MPARID,
-     &                  global_communicator)
-
-C     * OMEGA
-      allocate(OMEGA(MAXEXC))
-      CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
-     &                  global_communicator)
-C     * ISSYM
-
-      allocate(TMPISSYM(MAXEXC))
-      CAll interface_mpi_bcast_r1_work_f77(TMPISSYM,MAXEXC,MPARID,
-     &                  global_communicator)
-C     * N2BBASXQ for Allocation of CMO
-      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
-     &              global_communicator)
-      call interface_mpi_bcast_l0(BEDECD, 1,  MPARID,
-     &              global_communicator)
-C     * IBEIG
-      call interface_mpi_bcast(NTBAS, 3, MPARID,
-     &              global_communicator)
-
-      allocate(CMO(N2BBASXQ))
-      allocate(IBEIG(NTBAS(0)))
-      CALL BEDLEB(OMEGA,TMPISSYM,CMO,IBEIG, EVECR, IBTYP,
-     &                  IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
-      deallocate(TMPISSYM)
-      deallocate(OMEGA)
-      deallocate(CMO)
-      deallocate(IBEIG)
-      RETURN
-
-      END
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       module shared_bedled_var_module   
@@ -1073,7 +959,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       integer, allocatable              :: POINTS(:)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:,:),OSC(:,:)
+      real(8), allocatable              :: TMOM(:,:,:),OSC(:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
@@ -1087,7 +973,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck bedleb */                                                   C
-      SUBROUTINE BEDLEB(OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+      SUBROUTINE BEDLEB(OSCBED,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1119,7 +1005,10 @@ C
 #include "dcbwav.h"
 #include "maxorb.h"
 #include "dcbidx.h"
+#if defined (VAR_MPI)
 #include "mpif.h"
+#include "infpar.h"
+#endif
 C#include "cbiher.h"
 C     ************************************************************
 C     * Most variables have been moved to shared_bedled_var_module
@@ -1128,10 +1017,12 @@ C     ************************************************************
       CHARACTER*6 MXFORM, FMT
       CHARACTER SECTID*12, TOTTID*12, WALLTID*12, CPUTID*12 
       CHARACTER ALLCPUTID*12
+#if defined (VAR_MPI)
       INTEGER :: ISTAT(df_mpi_status_size)
+#endif
       INTEGER IBEIG(*)
       DIMENSION CMO(*),WORK(*)
-      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC)
+      DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),OSCBED(MAXEXC)
       real(8)             :: EVECR(NREDM,*), CPUTIME
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       integer   KFRSAV
@@ -1246,6 +1137,7 @@ C
         ENDDO
       ENDDO 
       CALL PRSYMB(LUPRI,'=',80,0)
+      CALL HEADER('Full light-matter interaction: Isotropic case',-1)
       WRITE(LUPRI,'(/A,I2,A,A3/)')
      &     ' *** Excitations of boson symmetry',JSYMOP,' : ',REP(IREP)
       WRITE(6,*) 'BED rotational average. '
@@ -1295,9 +1187,9 @@ C
 C     Loop over quadrature points
 C     =============================
 C
-      allocate(TMOM(NOP,NC,NPAR,NEXCNV))
-      allocate(OSC(NPAR+1,NEXCNV))
-      CALL DCOPY((NPAR+1)*NEXCNV,D0,0,OSC,1)
+      allocate(TMOM(NOP,NC,NEXCNV))
+      allocate(OSC(NEXCNV))
+      CALL DCOPY(NEXCNV,D0,0,OSC,1)
 
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
@@ -1305,10 +1197,8 @@ C
       allocate( Y(NPOINTS))
       allocate( Z(NPOINTS))
       allocate(WT(NPOINTS))
-c    MARTIN
       allocate(ECD(NPOINTS,NEXCNV))
       CALL DZERO(ECD,NPOINTS*NEXCNV)
-C    MARTIN
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
 
@@ -1356,6 +1246,7 @@ C.......Set up chi-average over polarization directions
           EEWT(5) = -Y(IP)*Z(IP)                   ! (3,2) ! factor 0.5 cancelled by triangular sum
           EEWT(6) =  DP5*(X(IP)*X(IP)+Y(IP)*Y(IP)) ! (3,3)
         ENDIF
+        CALL DCOPY(NOP*NC*NEXCNV,D0,0,TMOM,1)
         DO 10 IEXC = 1,NEXCNV
           IF(ABS(OMEGA(IEXC)).LT.1.0D-3) THEN
              WRITE(LUPRI,*)
@@ -1397,141 +1288,85 @@ C
             ENDDO
           ENDIF
 C
-       IPAR = 0 
-
-C     Gradient - orbital (e-e) part
-C     ====================================
-       IF(NZXOPE.GT.0) THEN
-          IPAR = IPAR + 1
-          II = 0
-          TMP = D0
-          DO IC = 1,NC
-            DO IOP = 1,NOP
-              II = II + 1
-              INDXPR = NPRPS+II
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOE(1,IOP),
+C         Accumulate transition moments
+C         ============================= 
+C
+C         
+C         - orbital (e-e) part
+C         ====================================
+          IF(NZXOPE.GT.0) THEN
+            II = 0
+            DO IC = 1,NC
+              DO IOP = 1,NOP
+                II = II + 1
+                INDXPR = NPRPS+II
+                IF(IPRPTYP(INDXPR).NE.-1) THEN
+            
+                  CALL GPGET(INDXPR,GPOE(1,IOP),
      &              get_orbital_rotation_indices_pp(),
      &              NZXOPE,CMO,IBEIG,JBENDX,.FALSE.,PRPINT,
      &              WORK,KFREE,LFREE,IPRXPP)
-
-                TMOM(IOP,IC,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
-              ELSE
-                TMOM(IOP,IC,IPAR,IEXC) = D0
-              ENDIF
+                  TMOM(IOP,IC,IEXC)=TMOM(IOP,IC,IEXC)
+     &                + D2*DDOT(NZXOPEQ,GPOE(1,IOP),1,XPOE(1,IEXC),1)
+                ENDIF
+              ENDDO
             ENDDO
+          ENDIF ! IF(NZXOPE.GT.0) THEN
 C
-            IF (.NOT.BEDECD) THEN
-             TMP = TMP
-     &           + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &           + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &           + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &           + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &           + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &           + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
-            ENDIF
-          ENDDO
+C          - orbital (e-p) part
+C         ====================================
+          IF(NZXOPP.GT.0) THEN
+            II = 0
+            DO IC = 1,NC
+              DO IOP = 1,NOP
+                II = II + 1
+                INDXPR = NPRPS+II
+                IF(IPRPTYP(INDXPR).NE.-1) THEN
+                  CALL GPGET(INDXPR,GPOP(1,IOP),
+     &               get_orbital_rotation_indices_pn(),
+     &               NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
+     &               WORK,KFREE,LFREE,IPRXPP)
+                  TMOM(IOP,IC,IEXC)=TMOM(IOP,IC,IEXC)
+     &              +D2*DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
+                ENDIF
+              ENDDO
+            ENDDO
+          ENDIF ! IF(NZXOPP.GT.0) THEN
 C
-          IF (BEDECD) THEN
-             TMP = TMP  !   sine                cosine
-     &           + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
-     &           + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
-     &           + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
-     &           + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
-     &           + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
-     &           + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
-          ENDIF
-C         CALC OSC fpr (e-e)
-          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-C         CALC ECD FOR (e-e)
-          IF (ANGPLOT.AND.CHIAVG) THEN
-           ECD(IP,IEXC) =       
-     &     + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
-     &     + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
-     &     + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
-     &     + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
-     &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
-     &     + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
-          ELSEIF (ANGPLOT) THEN
-           ECD(IP,IEXC) = 
-           !e-e part
-     &     -4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
-     &     -TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC))  
-     &     +4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
-     &     -TMOM(3,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC)) 
-     &     -4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(2,2,IPAR,IEXC)
-     &     -TMOM(2,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC))
-          ENDIF
-       ENDIF
-
-C
-C     Gradient - orbital (e-p) part
-C     ====================================
-       IF(NZXOPP.GT.0) THEN
-          IPAR = IPAR + 1
-          II = 0
-          TMP = D0
+C         Accumulate oscillator strengths
+C         ===============================
+        TMP = D0
+        IF (BEDECD) THEN
+          TMP = TMP !   sine                cosine
+     &        + EEWT(1)*TMOM(2,2,IEXC)*TMOM(3,1,IEXC) ! (x,y,z)  
+     &        + EEWT(2)*TMOM(3,2,IEXC)*TMOM(1,1,IEXC) ! (y,z,x)
+     &        + EEWT(3)*TMOM(1,2,IEXC)*TMOM(2,1,IEXC) ! (z,x,y)
+     &        + EEWT(4)*TMOM(3,2,IEXC)*TMOM(2,1,IEXC) ! (x,z,y)
+     &        + EEWT(5)*TMOM(1,2,IEXC)*TMOM(3,1,IEXC) ! (y,x,z)
+     &        + EEWT(6)*TMOM(2,2,IEXC)*TMOM(1,1,IEXC) ! (z,y,x)
+          IF (ANGPLOT) THEN
+            ECD(IP,IEXC) = ECD(IP,IEXC)
+     &    - 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IEXC)*TMOM(3,2,IEXC)
+     &    - TMOM(2,2,IEXC)*TMOM(3,1,IEXC))  
+     &    + 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IEXC)*TMOM(3,2,IEXC)
+     &    - TMOM(3,1,IEXC)*TMOM(1,2,IEXC)) 
+     &    - 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IEXC)*TMOM(2,2,IEXC)
+     &    - TMOM(2,1,IEXC)*TMOM(1,2,IEXC))
+          ENDIF    
+        ELSE
           DO IC = 1,NC
-            DO IOP = 1,NOP
-              II = II + 1
-              INDXPR = NPRPS+II
-              IF(IPRPTYP(INDXPR).NE.-1) THEN
-                CALL GPGET(INDXPR,GPOP(1,IOP),
-     &              get_orbital_rotation_indices_pn(),
-     &              NZXOPP,CMO,IBEIG,JBPNDX,.FALSE.,PRPINT,
-     &              WORK,KFREE,LFREE,IPRXPP)
-
-                TMOM(IOP,IC,IPAR,IEXC)=D2*
-     &              DDOT(NZXOPPQ,GPOP(1,IOP),1,XPOP(1,IEXC),1)
-              ELSE
-                TMOM(IOP,IC,IPAR,IEXC) = D0
-              ENDIF
-            ENDDO
-            IF (.NOT.BEDECD) THEN
-              TMP = TMP
-     &            + EEWT(1)*TMOM(1,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &            + EEWT(2)*TMOM(2,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &            + EEWT(3)*TMOM(3,IC,IPAR,IEXC)*TMOM(1,IC,IPAR,IEXC)
-     &            + EEWT(4)*TMOM(2,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &            + EEWT(5)*TMOM(3,IC,IPAR,IEXC)*TMOM(2,IC,IPAR,IEXC)
-     &            + EEWT(6)*TMOM(3,IC,IPAR,IEXC)*TMOM(3,IC,IPAR,IEXC)
-            ENDIF
+            TMP = TMP
+     &       + EEWT(1)*TMOM(1,IC,IEXC)*TMOM(1,IC,IEXC)
+     &       + EEWT(2)*TMOM(2,IC,IEXC)*TMOM(1,IC,IEXC)
+     &       + EEWT(3)*TMOM(3,IC,IEXC)*TMOM(1,IC,IEXC)
+     &       + EEWT(4)*TMOM(2,IC,IEXC)*TMOM(2,IC,IEXC)
+     &       + EEWT(5)*TMOM(3,IC,IEXC)*TMOM(2,IC,IEXC)
+     &       + EEWT(6)*TMOM(3,IC,IEXC)*TMOM(3,IC,IEXC)
           ENDDO
-          IF (BEDECD) THEN
-            TMP = TMP !   sine                cosine
-     &          + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
-     &          + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
-     &          + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
-     &          + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
-     &          + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
-     &          + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
-          ENDIF
-C         CALC OSC fpr (e-p)
-          OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + WT(IP)*TMP
-C         CALC ECD FOR (e-p)
-          IF (ANGPLOT.AND.CHIAVG) THEN
-           ECD(IP,IEXC) = ECD(IP,IEXC)
-     &     + EEWT(1)*TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (x,y,z)  
-     &     + EEWT(2)*TMOM(3,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (y,z,x)
-     &     + EEWT(3)*TMOM(1,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (z,x,y)
-     &     + EEWT(4)*TMOM(3,2,IPAR,IEXC)*TMOM(2,1,IPAR,IEXC) ! (x,z,y)
-     &     + EEWT(5)*TMOM(1,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC) ! (y,x,z)
-     &     + EEWT(6)*TMOM(2,2,IPAR,IEXC)*TMOM(1,1,IPAR,IEXC) ! (z,y,x)
-          ELSEIF (ANGPLOT) THEN
-           ECD(IP,IEXC) = ECD(IP,IEXC)
-     &    - 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
-     &    - TMOM(2,2,IPAR,IEXC)*TMOM(3,1,IPAR,IEXC))  
-     &    + 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(3,2,IPAR,IEXC)
-     &    - TMOM(3,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC)) 
-     &    - 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IPAR,IEXC)*TMOM(2,2,IPAR,IEXC)
-     &    - TMOM(2,1,IPAR,IEXC)*TMOM(1,2,IPAR,IEXC))
-          ENDIF
         ENDIF
-CC      END OF if(NZXOPP.GT.0)
-
-   10   CONTINUE
-      ENDDO
+        OSC(IEXC) = OSC(IEXC) + WT(IP)*TMP
+ 10   CONTINUE                 ! DO 10 IEXC = 1,NEXCNV
+      ENDDO ! DO IIP = 1,POINT_PER_PROC
 
 #ifdef VAR_MPI
 C     ********************************************************
@@ -1607,6 +1442,24 @@ C
       WRITE(LUPRI,'(A,A12,A1,A12)')
      &    '>>>> Master CPU/Total CPU time used in BEDLEB : ',
      &       CPUTID,'/',ALLCPUTID
+C     ********************************************************
+#endif
+C
+C     Final values for oscillator strengths
+C
+      DO IEXC = 1,NEXCNV
+        OSCBED(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC)
+      ENDDO
+C
+C     Print section
+C
+      WRITE(6,'(/A)') '* Oscillator strengths:'
+      WRITE(6,'(/A4,1X,A18)')     
+     &  'Exc.','Frequency (au)    '
+      DO IEXC = 1,NEXCNV
+        WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
+     &   IEXC,OMEGA(IEXC),OSCBED(IEXC)
+      ENDDO
 C            
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -1633,6 +1486,94 @@ C     Memory deallocation
       CALL QEXIT('BEDLEB')
 C
       RETURN
+      END
+#if defined (VAR_MPI)
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C                                                                      C
+C  /* Deck bedleb */                                                   C
+C     * This is the slave interface to the BEDLEB subroutine below     C
+C     * Will receive the necessary information to begin working        C
+C     * on the BEDLEB routine - allocating the needed arrays           C
+C     * for entering BEDLED                                            C
+      SUBROUTINE bedleb_launch_slave_procs()
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use memory_allocator                                 
+      use interface_to_mpi                                 
+#include "implicit.h"                                      
+C                                                          
+C                                                          
+c TODO added due to NESH
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "priunit.h"                                       
+#include "mxcent.h"                                        
+#include "maxorb.h"                                        
+
+#include "aovec.h"                                         
+C TODO commented out due to dcborb.h                                                          
+c#include "inforb.h"                                        
+#include "infpar.h"                                        
+#include "dcbxpp.h"
+#include "molinp.h"                                        
+#include "blocks.h"                                        
+#if defined (PRG_DIRAC)                                    
+#include "dcbgen.h"                                        
+#include "dcbgrd.h"                                        
+#else                                                      
+#include "gnrinf.h"                                        
+#include "energy.h"                                        
+#endif                                                     
+C
+C                                                          
+      DIMENSION DINTSKP(14*3*3)                            
+      INTEGER LWORK, NCOMP, NOPTP, MYPROC
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+C                                                          
+      real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
+      real(8), allocatable :: TMPOSCBED(:)
+      integer, allocatable :: IBEIG(:)
+      INTEGER MAXEXC, I
+      call legacy_lwork_get(LWORK)                         
+      call alloc(WORK,LWORK,id='WORK in BEDLEB')           
+#include "memint.h"
+
+      call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
+C                                                          
+      CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
+     &                  global_communicator)
+      allocate(TMPOSCBED(MAXEXC))
+      CAll interface_mpi_BCAST(NREDM,1,MPARID,
+     &                  global_communicator)
+
+C     * OMEGA
+      allocate(OMEGA(MAXEXC))
+      CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
+     &                  global_communicator)
+C     * ISSYM
+
+      allocate(TMPISSYM(MAXEXC))
+      CAll interface_mpi_bcast_r1_work_f77(TMPISSYM,MAXEXC,MPARID,
+     &                  global_communicator)
+C     * N2BBASXQ for Allocation of CMO
+      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+     &              global_communicator)
+      call interface_mpi_bcast_l0(BEDECD, 1,  MPARID,
+     &              global_communicator)
+C     * IBEIG
+      call interface_mpi_bcast(NTBAS, 3, MPARID,
+     &              global_communicator)
+
+      allocate(CMO(N2BBASXQ))
+      allocate(IBEIG(NTBAS(0)))
+      CALL BEDLEB(TMPOSCBED,OMEGA,TMPISSYM,CMO,IBEIG,EVECR,IBTYP,
+     &            IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
+      deallocate(TMPISSYM)
+      deallocate(OMEGA)
+      deallocate(CMO)
+      deallocate(IBEIG)
+      deallocate(TMPOSCBED)
+      RETURN
+
       END
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
@@ -1705,12 +1646,10 @@ C       *************** Sends ECD ***************
         ENDDO
         ENDDO
 C       *************** Sends OSC ***************
-        DO IPAR = 1,NPAR
         DO IEXC = 1,NEXCNV
-          tmp = OSC(IPAR,IEXC)
+          tmp = OSC(IEXC)
           CALL interface_MPI_SEND(tmp, 1,
      &                            MASTER, 28,global_communicator)
-        ENDDO
         ENDDO
         CALL interface_MPI_SEND(CPU, 1,
      &                          MASTER, 28,global_communicator)
@@ -1781,12 +1720,10 @@ C         ------------------------------
 C         ------------------------------
 C         Receive OSC results
 C         ------------------------------
-          DO IPAR = 1,NPAR
           DO IEXC = 1,NEXCNV
             CALL interface_MPI_RECV(TMP,1,
      &                            SNODE, 28,global_communicator)
-            OSC(IPAR,IEXC) = OSC(IPAR,IEXC) + TMP
-          ENDDO
+            OSC(IEXC) = OSC(IEXC) + TMP
           ENDDO
           CALL interface_MPI_RECV(TMPCPU, 1,
      &                          SNODE, 28,global_communicator)
@@ -1987,8 +1924,8 @@ CCCC     ****************************************************
         CALL MEMGET2('REAL','LINDX',LINDX,NELMNT,
      &               WORK,KFREE,LFREE)
         
-        allocate(TMOM(NOP,NC,NPAR,NEXCNV))
-        allocate(OSC(1+NPAR,NEXCNV))
+        allocate(TMOM(NOP,NC,NEXCNV))
+        allocate(OSC(NEXCNV))
         allocate(X(NPOINTS))
         allocate(Y(NPOINTS))
         allocate(Z(NPOINTS))
@@ -2009,22 +1946,46 @@ CCCC     ****************************************************
         ENDIF
       ENDIF
 
-      call DZERO(TMOM, NOP*NC*NPAR*NEXCNV)
-      call interface_mpi_bcast_r2_work_f77(OSC, (1+NPAR),NEXCNV, 
+      call DZERO(TMOM, NOP*NC*NEXCNV)
+      call interface_mpi_bcast(OSC(1), NEXCNV, 
      &             MASTER, global_communicator)
-      call interface_mpi_bcast_r1_work_f77(X, NPOINTS, MASTER,
+      call interface_mpi_bcast(X(1), NPOINTS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_r1_work_f77(Y, NPOINTS, MASTER,
+      call interface_mpi_bcast(Y(1), NPOINTS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_r1_work_f77(Z, NPOINTS, MASTER,
+      call interface_mpi_bcast(Z(1), NPOINTS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_r1_work_f77(WT, NPOINTS, MASTER,
+      call interface_mpi_bcast(WT(1), NPOINTS, MASTER,
      &              global_communicator)
       call interface_mpi_bcast_r2_work_f77(ECD,NPOINTS,NEXCNV, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
      &              global_communicator)
       call interface_mpi_bcast_r1_work_f77(CMO,N2BBASXQ, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(ICMOQ, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(I2BASX(1,1), 2*2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(I2BAST, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(ICMO, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMOTQ, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMOT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMOQ, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NCMO, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2ORB, 2, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(NORBT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2ORBT, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(N2ORBX, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NISH, 2, MASTER,
      &              global_communicator)
@@ -2050,7 +2011,7 @@ CCCC     ****************************************************
      &              global_communicator)
       call interface_mpi_bcast_l0(SQUARE, 1,  MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(LABINT, 8*8*1, MASTER,
+      call interface_mpi_bcast(LABINT(1), 8*8, MASTER,
      &              global_communicator)
       call interface_mpi_bcast_l0(TRIANG, 1, MASTER,
      &              global_communicator)
@@ -2058,7 +2019,7 @@ CCCC     ****************************************************
      &              global_communicator)
       call interface_mpi_bcast_l0(SOLVNT, 1, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast_l0(DOINT, 4*1, MASTER,
+      call interface_mpi_bcast_l1(DOINT, 4*1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(DUMMY, 1, MASTER,
      &              global_communicator)
@@ -2087,11 +2048,11 @@ CCCC     ****************************************************
       call interface_mpi_bcast(IFSMO, MXCORB, MASTER,
      &              global_communicator)
 C    ** bcast file name labels **
-      call interface_mpi_bcast(IPRPLBL, 3*MAXPRPS, MASTER,
+      call interface_mpi_bcast(IPRPLBL(1,1), 3*MAXPRPS, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(PRPLBL, 8*MAXPRPLBL, MASTER,
+      call interface_mpi_bcast(PRPLBL(1), 8*MAXPRPLBL, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(PRPNAM, 16*MAXPRPS, MASTER,
+      call interface_mpi_bcast(PRPNAM(1), 16*MAXPRPS, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(IPRPTYP, MAXPRPS, MASTER,
      &              global_communicator)
@@ -2111,7 +2072,7 @@ C    ** bcast file name labels **
      &              global_communicator)
       call interface_mpi_bcast(IORB, 2, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(NSTR, 2, MASTER,
+      call interface_mpi_bcast(NFSYM, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NPMOT, 1, MASTER,
      &              global_communicator)
@@ -2121,14 +2082,8 @@ C    ** bcast file name labels **
      &              global_communicator)
       call interface_mpi_bcast(LU1INT, 1, MASTER,
      &              global_communicator)
-
-      call interface_mpi_bcast(INDSTR(1,1), 1*72, MASTER,
+      call interface_mpi_bcast(INDSTR(1,1),6*72, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(INDSTR(2,1), 1*72, MASTER,
-     &              global_communicator)
-      call interface_mpi_bcast(INDSTR(3,1), 1*72, MASTER,
-     &              global_communicator)
-
 C     All slaves must setup orbital informations
       IF (MYPROC.ne.MASTER) THEN
         allocate(norot(norbt*1))
@@ -2142,17 +2097,18 @@ C     All slaves must setup orbital informations
 C
       call interface_mpi_bcast(NZXOPP, 1, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(XPOE, NZXOPEQ*NEXCNV, 
-     &             MASTER, global_communicator)
-      call interface_mpi_bcast(XPOP, NZXOPPQ*NEXCNV, 
-     &             MASTER, global_communicator)
       IF(NZXOPP.GT.0) then
-      call interface_mpi_bcast(XPOP, NZXOPEQ*NEXCNV, 
+        call interface_mpi_bcast(XPOP(1,1), NZXOPPQ*NEXCNV, 
      &             MASTER, global_communicator)
       endif
       call interface_mpi_bcast(NZXOPE, 1, MASTER,
      &              global_communicator)
-
+      if (NZXOPE.GT.0) then
+        call interface_mpi_bcast(XPOE(1,1), NZXOPEQ*NEXCNV, 
+     &             MASTER, global_communicator)
+      endif
 
       RETURN
       END
+#endif      
+CCCCCCCCCCCCCCCCCCCCCCCCC

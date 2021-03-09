@@ -218,6 +218,7 @@ C
 C
 #include "nuclei.h"
 #include "symmet.h"
+#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),

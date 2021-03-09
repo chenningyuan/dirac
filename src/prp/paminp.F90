@@ -51,7 +51,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 40)
+      PARAMETER (NDIR = 10, NTABLE = 41)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -97,7 +97,10 @@
 !                    33        34        35        36
      &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
+     &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
+!                    41        42        43        44
+     &             '.RDCCDE'/
+
 !
       CALL QENTER('PRPINP')
 #include "memint.h"
@@ -209,7 +212,8 @@
      &                109,110,111,112,113,114,115,116,                  &
      &                117,118,119,120,121,122,123,124,                  &
      &                125,126,127,128,129,130,131,132,                  &
-     &                133,134,135,136,137,138,139,140), I
+     &                133,134,135,136,137,138,139,140,                  &
+     &                141), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -444,6 +448,11 @@
 ! i will have to fix that...
 #endif
             GO TO 100
+  141    CONTINUE
+! quick hack to read CC density matrix without the need to run CC as wavefunction
+            call set_prop_flags_ccsd()
+            GO TO 100
+!
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE

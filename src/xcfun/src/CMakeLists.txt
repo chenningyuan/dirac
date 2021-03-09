@@ -17,7 +17,7 @@ set(FUNCTIONAL_SRCS
     functionals/beckex.cpp
     functionals/brx.cpp
     functionals/ktx.cpp
-    functionals/lb94.cpp
+#    functionals/lb94.cpp
     functionals/ldaerfc.cpp
     functionals/ldaerfc_jt.cpp
     functionals/ldaerfx.cpp

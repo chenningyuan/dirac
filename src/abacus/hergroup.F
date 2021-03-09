@@ -201,6 +201,7 @@ C
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+#include "dgroup.h"  ! ATOMIC
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -248,7 +249,7 @@ C
         JSOP(IND) = 7
         NINVC       = 1
       ENDIF
-C
+C     
 C     Reflections
 C
       NREFL = 0
@@ -474,7 +475,7 @@ C
         FREP(1) = 'E1g'
         FREP(2) = 'E1u'
       ENDIF
-C
+C     
 C     Determine NZ - parameter
 C     ========================
 C       NZ = 4  quaternionic group        no    totally symmetric rotations
@@ -763,7 +764,7 @@ C
           IQTOPQ(IQ,IREP) = IPQ
         ENDDO
       ENDDO
-C
+C     
 C     Assign JQBAS - gives quaternion vector for given
 C     component and bosonirrep
 C     ================================================

@@ -61,9 +61,9 @@ C     common block infpar
      &' thread limit - # processes - # threads: ',
      & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
-     &' max # threads - current # threads - current thread: ',
-     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
@@ -124,6 +124,7 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 
+      logical run_pamset
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
@@ -139,11 +140,13 @@ C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
 C***********************************************************************
-      CALL PAMSET()
-!     write info to files
-!     this is used in dft and visualization
-      call interface_ao_write()
-      call interface_mo_write()
+      IF (RUN_PAMSET()) THEN
+         CALL PAMSET()
+!        write info to files
+!        this is used in dft and visualization
+         call interface_ao_write()
+         call interface_mo_write()
+      END IF
 
 #ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
@@ -1134,9 +1137,7 @@ C***********************************************************************
 
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
-     &    only: initialize_interest_herd,                               &
-     &          process_two_electron_integrals_4comp_slaves,            &
-     &          process_two_electron_integrals_2comp_slaves 
+     &    only: initialize_interest_herd
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
@@ -1181,16 +1182,17 @@ C***********************************************************************
       
       if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
 
+! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
-      MAX_OMP_THREADS = omp_get_max_threads()
-      write(lupri,'(//A,3I5)')
-     &' * openMP activated, '//
-     &' thread limit - # processes - # threads: ',
-     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+!     MAX_OMP_THREADS = omp_get_max_threads()
+!     write(lupri,'(//A,3I5)')
+!    &' * openMP activated, '//
+!    &' thread limit - # processes - # threads: ',
+!    & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
-     &' max # threads - current # threads - current thread: ',
-     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
@@ -1342,8 +1344,6 @@ C
 C        start the InteRest two-electron MPI calculation (4-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_4comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
       ELSE IF (ITASK .EQ. 10) THEN
@@ -1351,8 +1351,6 @@ C
 C        start the InteRest two-electron MPI calculation (2-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_2comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
@@ -1803,3 +1801,24 @@ C
       CALL QEXIT('TKRCCORB')
       END
 #endif /* MOD_KRCC */
+      LOGICAL FUNCTION RUN_PAMSET()
+!     Checks whether the time-consuming set up is really needed.
+!     Avoids the complicated X2C procedure if we just want to start a CC calculation with EXACC
+!     using already available MO coefficients
+#ifdef MOD_EXACORR
+      use dirac_cfg
+      if (dirac_cfg_exacc) then
+         if (dirac_cfg_scf_calculation.or.
+     &       dirac_cfg_dft_calculation.or.
+     &      dirac_cfg_mcsrdft_calculation) then
+            RUN_PAMSET = .TRUE.
+         else
+            RUN_PAMSET = .FALSE.
+         end if
+      else
+         RUN_PAMSET = .TRUE.
+      end if
+#else
+      RUN_PAMSET = .TRUE.
+#endif
+      END

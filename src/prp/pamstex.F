@@ -248,46 +248,38 @@ C
          CALL QUIT('NFSYM > 1 not yet supported in STEX, run in C1')
       ENDIF
 
-C     See if a separate reference state will be used.
-      INQUIRE(FILE='DFCOEF.ION',EXIST=LION)
-      IF (LION) THEN
-         WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
-         WRITE(LUPRI,*) 'for STEX calculation'
-C     Move groundstate DFCOEF to DFCOEF.GS
-#if defined SYS_WINDOWS
-         ISYS1 = SYSTEM('move /Y DFCOEF DFCOEF.GS')
-         ISYS2 = SYSTEM('move /Y DFCOEF.ION DFCOEF')
-#else
-         ISYS1 = SYSTEM('mv DFCOEF DFCOEF.GS')
-         ISYS2 = SYSTEM('mv DFCOEF.ION DFCOEF')
-#endif
-C         PRINT *,'Debug: mv/move return codes',ISYS1,ISYS2
-         STEX_COFACTOR = .TRUE.
-      ELSE
-         WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
-         WRITE(LUPRI,*) 'using groundstate as STEX reference state.'
-         STEX_COFACTOR = .FALSE.
-      ENDIF
+C     Save ground state energy
+      GSERG = DHFERG
 
-C     Read reference state to WORK(KCMO)
+C     Check for existence of DFCOEF (should always be present)
       INQUIRE(FILE='DFCOEF',EXIST=LTOBE)
       IF(.NOT.LTOBE) THEN
          WRITE(LUPRI,*) 'Missing DFCOEF'
          CALL QUIT('File DFCOEF missing')
       ENDIF
-C     Save ground state energy
-      GSERG = DHFERG
-C     Read reference orbitals and eigenvalues
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KBREP,NORBT,WORK,KFREE,LFREE)
       LUBUF=22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
       IOPT = 2+4+8
-      CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &     WORK(KBREP),TOTERG,IOPT)
+C     See if a separate reference state will be used and read reference orbitals and eigenvalues
+      INQUIRE(FILE='DFCOEF.ION',EXIST=LION)
+      IF (LION) THEN
+         WRITE(LUPRI,*) 'DFCOEF.ION found, using it as reference state'
+         WRITE(LUPRI,*) 'for STEX calculation'
+         STEX_COFACTOR = .TRUE.
+         CALL OPNFIL(LUBUF,'DFCOEF.ION','OLD','STEX  ')
+         CALL REACMO(LUBUF,'DFCOEF.ION',WORK(KCMO),WORK(KEIG),
+     &        WORK(KBREP),TOTERG,IOPT)
+      ELSE
+         WRITE(LUPRI,*) 'No separate reference state (DFCOEF.ION) found'
+         WRITE(LUPRI,*) 'using groundstate as STEX reference state.'
+         STEX_COFACTOR = .FALSE.
+         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
+         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &        WORK(KBREP),TOTERG,IOPT)
+      ENDIF
       CLOSE(LUBUF,STATUS='KEEP')
-
 
 C     Set up cutoff and indices
       STEX_NVIR(2) = 0
@@ -344,9 +336,9 @@ C     property gradients are complex, so *2 size of double.
       IF (STEX_COFACTOR) THEN         
          ERGION = TOTERG
          CALL MEMGET('REAL',KCMOGS,NCMOTQ,WORK,KFREE,LFREE)
-         CALL OPNFIL(LUBUF,'DFCOEF.GS','OLD','STEX  ')
+         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
          IOPT = 2+8
-         CALL REACMO(LUBUF,'DFCOEF.GS',WORK(KCMOGS),DUM,
+         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMOGS),DUM,
      &        WORK(KBREP),TOTERG,IOPT)
          CALL COF_PRPGRAD(WORK(KPRP),WORK(KCMOGS),WORK(KBREP)
      $        ,WORK(KCMO),REFGSOVL,WORK(KFREE),LFREE)

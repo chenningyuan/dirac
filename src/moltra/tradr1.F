@@ -305,7 +305,7 @@ c     ENDIF
 C
 C     Initialize MOLFDIR integral file
 C
-      CALL MDINTI(NSTR,IPRINT)
+      CALL MDINTI(IPRINT)
 C
 C     Number of boson symmetry for each fermion irrep (parity)
 C

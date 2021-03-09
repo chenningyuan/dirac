@@ -538,7 +538,7 @@ C     JHS The following variables come from a common block and are thus kept in 
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
 #include "dgroup.h"
 #include "memint.h"
@@ -720,6 +720,7 @@ C     *************************************************
 C
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          IF (IPREAD .GE. 3) THEN
@@ -747,8 +748,7 @@ C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
-     &            DOOWN,blk)
-
+     &     DOOWN,blk)
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
@@ -905,7 +905,6 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-! dcbham.h : MDIRAC
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -1570,18 +1569,11 @@ C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
-                  IF(MDIRAC) THEN
-                    CALL RKBBAS(I,IBLOCK(1),IBLOCK(2),
-     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                   NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                   CNTBAS)
-                  ELSE
-                    CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                   NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                   CNTBAS)
-                    BASREF(1,I,2) = ' Derived from large component'
-                  ENDIF
+                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                 CNTBAS)
+                  BASREF(1,I,2) = ' Derived from large component'
 C
                ENDIF
                NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0
@@ -4048,7 +4040,8 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
-C
+#include "dgroup.h"
+C     
 C
 C
 C     Statement function to "convert" 0 - 7 to a printable
@@ -4122,8 +4115,12 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
+      IF (LINEAR .EQV. .TRUE.) THEN
+        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
+     &    ATOMIC = .TRUE.
+      ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
-C
+C     
 C     Nuclear repulsion energy
 C     ========================
 C
@@ -5899,6 +5896,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "consts.h"
+#include "pi.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
@@ -6696,7 +6694,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"

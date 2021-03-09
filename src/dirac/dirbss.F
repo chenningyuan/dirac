@@ -8282,7 +8282,7 @@ C     ... do read the DFCOEF file from previous iterations ...
 C ===================================================
 C   Write 2c->4c transformed coefficients ()
 C ===================================================
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE (LUPRI,'(/2X,A/)')
      & '>>> The DFCOEF file was renewed for restarting 4c SCF'//

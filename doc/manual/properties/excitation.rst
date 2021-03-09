@@ -68,13 +68,14 @@ orbital level.
 
 keyword(INTENS)
 
-Invoke calculation of oscillator strengths. Followed by oscillator strengths to order k in the wave vector, which must be zero.
-Presently, only :math:`O(k^0)` is available, corresponding to the electric dipole approximation.
+Invoke calculation of oscillator strengths to order k in the wave vector.
+Default order is zero, which corresponds to the widely used electric-dipole approximation. By default results are given both in the length and the velocity representation, but a selection can be made using keywords :ref:`EXCITATION_ENERGIES_.NOLENR` and :ref:`EXCITATION_ENERGIES_.NOVELR`. Only even orders contribute. For further details, see :cite:`List_JCP2020`
 
 *Example:* ::
 
      .INTENS
-     0
+     2
+
 
 keyword(BED)
 
@@ -145,6 +146,8 @@ since only the polarization vectors depend on the angle :math:`\chi`. The averag
   \left\langle\epsilon_{\alpha}\epsilon_{\beta}\right\rangle _{\chi}=\frac{1}{2}\left(\delta_{\alpha\beta}-m_{\alpha}m_{\beta}\right),
 
 whereas the average over angles :math:`\theta` and :math:`\phi` is handled by `Lebedev quadrature <https://en.wikipedia.org/wiki/Lebedev_quadrature>`_ .
+
+A full account is given in :cite:`List_JCP2020`
 
 keyword(ORIENT)
 
