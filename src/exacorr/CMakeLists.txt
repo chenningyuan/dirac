@@ -32,6 +32,14 @@ if(ENABLE_EXATENSOR)
     set_source_files_properties(${FIXED_EXACORR_FORTRAN_SOURCES} EXACORR COMPILE_FLAGS "-qfixed")
   endif()
 
+  if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel" AND "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "20")
+    if (CMAKE_BUILD_TYPE MATCHES "release") 
+      set_source_files_properties(${PROJECT_SOURCE_DIR}/src/exacorr/exacorr_cc.F90 PROPERTY COMPILE_FLAGS "-O0")
+      message(STATUS "src/exacorr/exacorr_cc.F90: disabling inteprocedural optimization for Intel compiler")
+    endif()
+  endif()
+
+
   add_library(
     exacorr
     OBJECT
