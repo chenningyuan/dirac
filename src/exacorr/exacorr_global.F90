@@ -73,7 +73,7 @@ module exacorr_global
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
-             integer :: ierr, scf_file
+             integer :: ierr, scf_file, nmo_original
              logical :: tobe, tobe_mp2no, tobe_dfcoef, tobe_respect
 
 #if defined (VAR_MPI)
@@ -89,10 +89,13 @@ module exacorr_global
              inquire (file='DFCOEF',exist=tobe_dfcoef)
              inquire (file='RSD_MOS',exist=tobe_respect)
              ierr = -1
+             call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
+             nmo_original = cspinor_all%nmo
              if (tobe_mp2no) then
                scf_file = 2
                call print_date ("Found Dirac MP2 natural orbitals file. using it.")
                call read_from_dirac (ao_basis,cspinor_all,'MP2NOs_AO',ierr)
+               cspinor_all%nmo = nmo_original !to be consistent with other routine reading from DFCOEF
              else if (tobe_dfcoef) then
              ! read MO coefficients and ao basis set information
                 scf_file = 0

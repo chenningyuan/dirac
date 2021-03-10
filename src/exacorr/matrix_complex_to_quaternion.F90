@@ -27,14 +27,19 @@ module matrix_complex_to_quaternion
 
         complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! complex matrix from DM_complex
         character(len=*), intent(in)             :: Matrix_name
-        logical :: debug=.true.
+        logical :: debug=.false.
 
-        integer :: i, j, k, ierr
+        integer :: i, j, k, ierr, sz_all
         integer, parameter :: cm = 10
         real(kind=8)       :: a,b
 
         ! first round for reading matrix size
-        open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+        open (cm,file=Matrix_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+        read(cm) sz_all
+        allocate(Matrix(sz_all,sz_all))
+        ! read density matrix element 
+        read(cm) Matrix
+
         if (debug) then
           print *,'<<<<< Complex Matrix Existed '
           ierr = 0
@@ -43,18 +48,17 @@ module matrix_complex_to_quaternion
           end do
            print *,'>>>>> Read Matrix Index'
         end if
+
         close(cm,status='KEEP')
 
-        allocate(Matrix(i,j))
-
-        open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
-          ierr = 0
-          do while(ierr==0)
-                read(cm,'(2x,2F28.16,2x,2I4)',iostat=ierr) a,b,i,j
-                Matrix(i,j) = cmplx(a,b)
-          end do
-           print *,'>>>>> Read Matrix'
-        close(cm,status='KEEP')
+!        open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
+!          ierr = 0
+!          do while(ierr==0)
+!                read(cm,'(2x,2F28.16,2x,2I4)',iostat=ierr) a,b,i,j
+!                Matrix(i,j) = cmplx(a,b)
+!          end do
+!           print *,'>>>>> Read Matrix'
+!        close(cm,status='KEEP')
 
 
 

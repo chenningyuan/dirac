@@ -379,7 +379,7 @@ module talsh_mp2no
                integer :: i, j
                integer, parameter :: mp2dm = 10
          ! debug
-               logical :: debug=.true.
+               logical :: debug=.false.
                integer :: k
 
          
@@ -412,18 +412,23 @@ module talsh_mp2no
          !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
          !*****************************************************************************************************************************
 
-               open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+               open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
+                  ! write dimension of the matrix 
+                  write(mp2dm) nocc+nvir
+                  ! write matrix element 
+                  write(mp2dm) dm_mo_fort
+
                if (debug) then
                  print *,'<<<<< DM, complete, before formatting to DM_complex'
                  k = 1
                  do j=1,(nocc+nvir)
                     do i=1,(nocc+nvir)
                        write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
-!                       k = k + 1
                     end do
                   end do
                   print *,'>>>>> DM, complete, after formatting to DM_complex'
                end if
+
               close(mp2dm,status='KEEP')
 
         end subroutine write_matrix
@@ -546,6 +551,10 @@ module talsh_mp2no
                print *, 'Orbital',i,':Energy: ', new_energy(i)
             end do
 
+!            New_cano_orb = 0.0
+!            do i=1, size(New_cano_orb,2)
+!                  New_cano_orb(i,i,1) = 1.0
+!            end do 
             call print_date('Get new orbital in AO basis')
             fl = 0 
             call basis_transform(New_cano_orb,HF_AO,NOs_AO_quat,fl)
