@@ -1,8 +1,9 @@
 module matrix_complex_to_quaternion
-!This module contains the routines needed to calculate the mp2 natural orbitals 
+! This module contains the routines needed to calculate the mp2 natural orbitals 
+! Including quaternion matrix digonalization and multiplication
+! Written by Xiang Yuan.
 
         use exacorr_datatypes
-        use exacorr_utils
         use intermediates
         use exacorr_mo
         use exacorr_global,only: nfunctions
@@ -22,19 +23,22 @@ module matrix_complex_to_quaternion
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
  
-       subroutine read_matrix_comp(Matrix, Matrix_name)
-!       Written by Xiang Yuan, Dec 2020.
+       subroutine read_matrix_comp(Matrix, Matrix_file)
+!       read complex density matrix from 'DM_complex' 
+      use exacorr_utils
 
         complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! complex matrix from DM_complex
-        character(len=*), intent(in)             :: Matrix_name
+        character(len=*), intent(in)             :: Matrix_file
         logical :: debug=.false.
 
         integer :: i, j, k, ierr, sz_all
-        integer, parameter :: cm = 10
+        integer :: cm 
         real(kind=8)       :: a,b
 
+        call get_free_fileunit(cm)
         ! first round for reading matrix size
-        open (cm,file=Matrix_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+        open (cm,file=Matrix_file,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+        ! read dimension of density matrix 
         read(cm) sz_all
         allocate(Matrix(sz_all,sz_all))
         ! read density matrix element 
@@ -67,14 +71,12 @@ module matrix_complex_to_quaternion
 
  !-----------------------------------------------------------------------------------------------------------------------------------------------
 
-      subroutine sort_values_vectors (NOs_OCC_quat,NOs_MO_quat)
-
-!       This subroutine sorts the natural orbital based on occupation number 
-!       Written by Xiang Yuan, July 2020
+      subroutine sort_values_vectors (N_OCCUPATION,NOs_MO)
+!     This subroutine sorts the natural orbital based on occupation number in descending order.  
 
          !input variables
-         real(kind=8), pointer, intent(inout)       :: NOs_OCC_quat(:)          ! occupation number from qdia of DM
-         real(kind=8), pointer, intent(inout)       :: NOs_MO_quat(:,:,:)      ! natural orbital from qdia of DM
+         real(kind=8), pointer, intent(inout)       :: N_OCCUPATION(:)         ! occupation number from qdia of DM
+         real(kind=8), pointer, intent(inout)       :: NOs_MO(:,:,:)      ! natural orbital from qdia of DM
 
 
          real(kind=8)      :: temp
@@ -82,21 +84,21 @@ module matrix_complex_to_quaternion
          integer           :: i,j,sz
 
 
-         sz = size(NOs_OCC_quat,1)
+         sz = size(N_OCCUPATION,1)
          allocate(temp_arr(sz,1,4))
 
          ! sorting occupation number in descending order 
          do i = 1, sz/2
-            temp = NOs_OCC_quat(i)
-            NOs_OCC_quat(i) = NOs_OCC_quat(sz+1-i)
-            NOs_OCC_quat(sz+1-i) = temp
+            temp = N_OCCUPATION(i)
+            N_OCCUPATION(i) = N_OCCUPATION(sz+1-i)
+            N_OCCUPATION(sz+1-i) = temp
          end do
 
          ! sorting natural orbital in descending order 
          do i = 1, sz/2
-            temp_arr(:,1,:) = NOs_MO_quat(:,i,:)
-            NOs_MO_quat(:,i,:) = NOs_MO_quat(:,sz+1-i,:)
-            NOs_MO_quat(:,sz+1-i,:) = temp_arr(:,1,:)
+            temp_arr(:,1,:) = NOs_MO(:,i,:)
+            NOs_MO(:,i,:) = NOs_MO(:,sz+1-i,:)
+            NOs_MO(:,sz+1-i,:) = temp_arr(:,1,:)
          end do
          
         end subroutine sort_values_vectors
@@ -114,15 +116,11 @@ module matrix_complex_to_quaternion
            real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! tvectors in new basis
            integer, intent(inout)                 :: fl
 
-
-
            integer                   :: LRA, LCA, NZA
            integer                   :: LRB, LCB, NZB
            integer                   :: LRC, LCC, NZC
 
            integer                   :: re
-
-
 
            LRA = size(basis2_in,1)
            LCA = size(basis2_in,2)
@@ -130,7 +128,6 @@ module matrix_complex_to_quaternion
            LCB = size(mat_basis1_in,2)
            LRC = size(basis2_in,1)
            LCC = size(mat_basis1_in,2)
-
 
            NZA = 4
            NZB = 4
@@ -146,8 +143,8 @@ module matrix_complex_to_quaternion
 !-----------------------------------------------------------------------------------------------------------------------------------
 
         subroutine basis_transform_matrix (mat_basis1_in,basis2_in,mat_basis2_out,mat)
-!        Routine to do basis transform by quaternion matrix multiplication(matrix).
-!        We follows C = A^{-1}BA
+!        Routine to do basis transform by quaternion matrix multiplication(matrix). 
+!        We do similar Transform follows C = A^{-1}BA
 !        C: matrix in new basis;  B: matrix in old basis; A: change of basis matrix;       
                          
          !input variables
@@ -195,7 +192,8 @@ module matrix_complex_to_quaternion
 !-----------------------------------------------------------------------------------------------------------------------------------
         
       subroutine qua_mat_mulp (A,B,C,flag,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
-!        Routine to do quaternion matrix multiplication. We use qgemm routine from qalebra.F.
+!        Routine to do quaternion matrix multiplication. 
+!        Use qgemm routine from qalebra.F.
                          
          !input variables         
          real(kind=8), pointer, intent(inout)  :: A(:,:,:), B(:,:,:), C(:,:,:)               ! matrix used in qgemm
@@ -236,8 +234,9 @@ module matrix_complex_to_quaternion
             IQPC(i) = i
          end do            
 
-!       There three options: case1 does C=A^{dagger}*B; case2 does C=A*B
-         if (flag == 1) then
+!       There three options: 
+!       Case_1 does C=A^{dagger}*B; Case_2 does C=A*B; Case_3: C=A*B^{dagger}
+         if (flag == 1) then ! Case_1
 
             FA = 'H'
             tem = M
@@ -248,7 +247,7 @@ module matrix_complex_to_quaternion
                      FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                      IQPC,C,LRC,LCC,NZC)      
 
-         else if (flag == -1) then            
+         else if (flag == -1) then ! Case_3           
             FB = 'H'
             tem = N
             N = K
@@ -258,7 +257,7 @@ module matrix_complex_to_quaternion
                         FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                         IQPC,C,LRC,LCC,NZC)     
 
-         else 
+         else ! Case_2
             call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
                        FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                        IQPC,C,LRC,LCC,NZC)    
@@ -274,36 +273,32 @@ module matrix_complex_to_quaternion
          
 !-----------------------------------------------------------------------------------------------------------------------------------                                                   
         subroutine diagoanl_matrix_quater(A,EIG,VEC)
-
-         ! Set parameter needed in qdiag
+! Set parameter needed in qdiag
                  
-                 real(kind=8), intent(in), pointer :: A(:,:,:)
-                 real(kind=8), pointer :: EIG(:)
-                 real(kind=8), pointer :: VEC(:,:,:)                 
-                 integer :: LRA, LCA, LRV, LCV
-                 integer :: NZ, N, MATZ, LWORK, IERR
-                 integer :: i, j
-                 real(kind=8), allocatable :: WORK(:)
+            real(kind=8), intent(in), pointer :: A(:,:,:)
+            real(kind=8), pointer :: EIG(:)
+            real(kind=8), pointer :: VEC(:,:,:)                 
+            integer :: LRA, LCA, LRV, LCV
+            integer :: NZ, N, MATZ, LWORK, IERR
+            integer :: i, j
+            real(kind=8), allocatable :: WORK(:)
                  
                
-                 LRA = size(A,1)
-                 LCA = size(A,2)
-                 LRV = LRA
-                 LCV = LCA
-                 !lwork = 1000000*LRA
-                 lwork = 10*LRA
-                 NZ = 4
-                 N = LRA
-                 MATZ = 1
-                 allocate(EIG(N))
-                 allocate(VEC(LRV,LCV,NZ))
-                 allocate(work(MAX(1,LWORK)))
+            LRA = size(A,1)
+            LCA = size(A,2)
+            LRV = LRA
+            LCV = LCA
+            lwork = 10*LRA
+            NZ = 4
+            N = LRA
+            MATZ = 1
+            allocate(EIG(N))
+            allocate(VEC(LRV,LCV,NZ))
+            allocate(work(MAX(1,LWORK)))
 
+            call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,WORK,LWORK,IERR)
 
-                 call qdiag (NZ,N,A,LRA,LCA,EIG,MATZ,VEC,LRV,LCV,WORK,LWORK,IERR)
-
-
-               deallocate(work)
+            deallocate(work)
 
 
       end subroutine diagoanl_matrix_quater
@@ -312,46 +307,37 @@ module matrix_complex_to_quaternion
 !---------------------------------------------------------------------------------------------------------------------------------------------------
             
       subroutine complex_to_quaternion(exa_input,dm_mo_complex,dm_mo_quater)
-!               use exacorr_global, only : get_nsolutions
+!    use exacorr_global, only : get_nsolutions
+!    refer to routine 'talsh_dm_form_ao_diracformat_from_dm_mo' of talsh_gradient.F90 
 
-               !input variables
-               type(exacc_input),   intent(in)     :: exa_input
-               complex(8), pointer, intent(inout)  :: dm_mo_complex(:,:)
-               real(8),pointer,     intent(inout)  :: dm_mo_quater(:,:,:)
+      !input variables
+      type(exacc_input),   intent(in)     :: exa_input
+      complex(8), pointer, intent(inout)  :: dm_mo_complex(:,:)
+      real(8),pointer,     intent(inout)  :: dm_mo_quater(:,:,:)
 
-               !matrix dimensions
-               integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
-               !complete mo list
-               integer, allocatable :: mo_list(:)
-               !error code
-               integer :: ierr
-               !loop variables
-               integer :: i, j, norbt
-               integer :: i_unbar, j_unbar, j_bar
-               !debug
-               logical :: debug=.true.
-               integer :: k
+      !complete mo list
+      integer, allocatable :: mo_list(:)
+      !error code
+      integer :: ierr
+      !loop variables
+      integer :: i, j, norbt
+      integer :: i_unbar, j_unbar, j_bar
+      !debug
+      logical :: debug=.true.
+      integer :: k
 
 
 !***************
 !     set dims *
 !***************
  
-!      nocc    = exa_input%nocc
-!      nvir    = exa_input%nvir
-!      nkr_occ = exa_input%nkr_occ
-!      nkr_vir = exa_input%nkr_vir
-!      norbt = nkr_occ + nkr_vir
-
       norbt = size(dm_mo_complex,1)/2
       allocate(mo_list(norbt))
       do i = 1, norbt
             mo_list(i) = i
       end do
       
-!      nesh = get_nsolutions() / 2
-      nesh = norbt
-      allocate (dm_mo_quater(nesh,nesh,4))
+      allocate (dm_mo_quater(norbt,norbt,4))
       dm_mo_quater = 0
       do j = 1, norbt
         j_unbar = 2*j-1
@@ -371,24 +357,24 @@ module matrix_complex_to_quaternion
 
 !      deallocate (dm_mo_quater)
       deallocate (mo_list)
-!      deallocate (dm_mo_comple)
+      deallocate (dm_mo_complex)
       end subroutine complex_to_quaternion
 
 !------------------------------------------------------------------------------------------------------------------------------------------------------------------      
-      subroutine get_Cano_Orbital(orbital_noncano,orbital_cano,Fock_NO,new_energy)
-         ! This subroutine is used for constructing the canonical orbital
+      subroutine get_Cano_Orbital(orbital_noncano,orbital_cano,Fock_NO,New_orbital_energy)
+! This subroutine is used for constructing the canonical orbital
 
          !input variables
-         real(kind=8), pointer,intent(inout)   :: orbital_noncano(:,:,:)             ! non-canonical orbital in HF mo basis
-         real(kind=8), pointer,intent(out)     :: orbital_cano(:,:,:)                ! canonical orbital in HF mo basis
-         real(kind=8), pointer,intent(out)     :: New_energy(:)                      ! new orbital energy from qdia of Fock matrix in non-canonical orbital basis
-         real(kind=8), pointer,intent(inout)   :: Fock_NO(:,:,:)                     ! v-v block of Fock matrix in non-canonical orbital basis
+         real(kind=8), pointer,intent(inout)   :: orbital_noncano(:,:,:)          ! non-canonical orbital in HF mo basis
+         real(kind=8), pointer,intent(out)     :: orbital_cano(:,:,:)             ! canonical orbital in HF mo basis
+         real(kind=8), pointer,intent(out)     :: New_orbital_energy(:)           ! new orbital energy from qdia of Fock matrix in non-canonical orbital basis
+         real(kind=8), pointer,intent(inout)   :: Fock_NO(:,:,:)                  ! v-v block of Fock matrix in non-canonical orbital basis
 
          real(kind=8), pointer              :: orbital_cano_basis_noncano(:,:,:)  ! canonical orbital in non-canonical orbital basis
          integer                            :: fl, i, j
 
          ! Diagonalize new FM to obtain the new canonical orbital 
-         call diagoanl_matrix_quater(Fock_NO, new_energy, orbital_cano_basis_noncano)
+         call diagoanl_matrix_quater(Fock_NO, New_orbital_energy, orbital_cano_basis_noncano)
          ! Transform the new canonical orbital from non-canonical orbital basis into HF mo basis
          fl = 0
          call basis_transform(orbital_cano_basis_noncano, orbital_noncano, orbital_cano, fl)         
