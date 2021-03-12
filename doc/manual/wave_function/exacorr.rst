@@ -9,8 +9,11 @@ Highly parallelised relativistic Coupled Cluster Code
 starstar(EXACC)
 
 Highly parallelised relativistic Coupled Cluster Code. 
-In this release only computations using the X2C Hamiltonian are possible. 
+In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
+This code is based on the math libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh. The tensors are kept in working memeory, sufficent RAM needs to be available. In order to test memory requirements instructions can be found in the ``exacorr_talsh_memory`` and ``exacorr_exatensor_memory`` tests. TAL-SH runs on a single node which has to have enough memory (:ref:`EXACC_.TALSH_BUFF`). In ExaTENSOR the memory is distributed, so each additional node will contribute its memory to the memory pool accessible by the library. Currently, it is recommended to use enough nodes that the tensors fit, but not substantially more. 
+
+In the current release, if the library runs out of memory the code will not stop but enter a blocked state and calculations will not advance. So carefully control the advancement of your calculations, stopping them if they appear to hang.
 
 **Mandatory keywords**
 ======================
@@ -89,12 +92,19 @@ keyword(LAMBDA)
 
 Solve Lambda-equations, needs to be activated in order to compute the one particle density matrix and molecular properties.
 
+This calculation generates the file CCDENS, which contains the CC ground-state density
+matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
+ground-state expectation values.
+
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+without the need to invoke this module.
+
+
 *Default:*
 
 ::
 
-    .LAMBDA
-     FALSE
+    Lambda equations are not solved
 
 keyword(NOTRIPLES)
 
@@ -105,6 +115,17 @@ Deactivates computation of triples energy corrections (useful for ExaTENSOR as t
 ::
 
     Triples are done
+
+keyword(CC2)
+
+Performs a CC2 calculation instead of the default CCSD. Currently supported only for energies.
+
+*Default:*
+
+::
+
+    CC2 is not activated
+
 
 keyword(MOINT_SCHEME)
 
@@ -149,14 +170,13 @@ NB: alpha and beta are used in a loose sense in relativistic calculations to ind
 
 keyword(CCDOUBLES)
 
-Perform CCD calculation (switch off the contributions of single excitations).
+Performs a CCD calculation instead of the default CCSD (switch off the contributions of single excitations).
 
 *Default:*
 
 ::
 
-    .CCDOUBLES
-     FALSE
+    CCDOUBLES is not activated
 
 keyword(EXA_BLOCKSIZE)
 

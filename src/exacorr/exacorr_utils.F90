@@ -10,7 +10,9 @@ module exacorr_utils
   public get_free_fileunit
   public print_exacorr_logo
   public print_iteration
+#ifdef VAR_MPI
   public write_tensor
+#endif
   public quicksort
   public print_exainput
   public print_exaoutput
@@ -244,6 +246,7 @@ module exacorr_utils
 
     end subroutine print_iteration
 
+#ifdef VAR_MPI
     subroutine write_tensor(exa_tensor, i_dims)
 
       use exatensor
@@ -281,6 +284,7 @@ module exacorr_utils
       ierr = talsh_shutdown()
       
     end subroutine write_tensor
+#endif
 
     recursive subroutine quicksort(mo_list, i_beg, i_end)
 

@@ -12,7 +12,7 @@
      &        S1MAGR, HDOBR, S1MLT, S1MRT, HDOBRT, NPOTST, MGMO2T, HBDO,&
      &        SUSCGO, NSTCGO, EXPIKR, DIRAC, DARWIN, MASSVL, CM1, CM2,  &
      &        NOTWO, SQHDOL, SQHDOR, S1ELE, S1ELB, ONEELD, GFACDI,      &
-     &        THETA
+     &        THETA, CXIKR
       COMMON /CBIHER/ EXPKR,  THRESH, PRTHRS,                           & ! real*8
      &                IPRDEF, IORCAR, IORSPH, NPQUAD, NPATOM, IPATOM,   & ! integers
      &                SKIP, TSTINP, HAMILT, DIPLEN, SPNORB,             & ! LOGICALS
@@ -27,5 +27,5 @@
      &                S1MRT, HDOBRT, NPOTST, MGMO2T, HBDO,              &
      &                SUSCGO, NSTCGO, EXPIKR, DIRAC, DARWIN, MASSVL,    &
      &                CM1, CM2, NOTWO, SQHDOL, SQHDOR, S1ELE, S1ELB,    &
-     &                ONEELD, GFACDI, THETA, MGCOOR
+     &                ONEELD, GFACDI, THETA, MGCOOR, CXIKR
 ! -- end of include/cbiher.h --

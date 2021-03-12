@@ -280,11 +280,11 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 96)
+      PARAMETER (NTABLE = 97)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
-     &          EFDIR*1
+     &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
 #include "shells.h"
@@ -339,7 +339,9 @@ C
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
-     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx'/
+     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx',
+!                  97
+     &            'CXIKR  '/
 C
 #include "ibtfun.h"
 C
@@ -377,8 +379,8 @@ C
      &              81, 82, 83, 84,
      &              85, 86, 87, 88,
      &              89, 90, 91, 92,
-     &              93, 94, 95, 96
-     &            ), I
+     &              93, 94, 95, 96,
+     &              97), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -2233,7 +2235,23 @@ C
       GOTO 200
 
  96   continue
-      go to 200
+C
+C     EXPIKR integrals CXIKR
+C     -------------------------
+C     NOTE: Computes all eight terms in the expansion of exp(ikr)
+C           i.e. real and imaginary components are contained in separate
+C           terms. Integrals 1-4 are the real and 5-8 the imaginary.
+C           The k-vector needs to be specified. 
+C
+  97  CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of expikr integrals'
+         INTTYP = 106
+         CALL CEXPINT_INFO(NOPTYP,INTREP,LABINT)
+         CALL NTYPTS(NOPTYP)
+         ANTI   = .FALSE.
+         SQUARE = .FALSE.       !.TRUE. CHECK THIS
+         GO TO 200
 
   200 CONTINUE
 C
@@ -4253,6 +4271,34 @@ C  /* Deck effdentyp */
   200    CONTINUE
   100 CONTINUE
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CEXPINT_INFO(NINTS,INTREP,LABINT)
+C***********************************************************************
+#include "implicit.h"
+#include "pgroup.h"
+#include "dgroup.h"
+      DIMENSION INTREP(8)
+      CHARACTER*8 LABINT(8)
+      NFC = NBSYM/NFSYM
+C.....Real part of exponential
+      NINTS = 0
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP  = JFSYM(IS,1) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPR'//REP(IREP)
+      ENDDO
+C.....Imaginary part of exponential
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP   = JFSYM(IS,2) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPI'//REP(IREP)
+      ENDDO
+      NINTS = 2*NFC
+C
       RETURN
       END
 C --- end of her1pro.F ---

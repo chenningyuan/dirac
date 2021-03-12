@@ -228,6 +228,8 @@ contains
       call prpmat(indxpr,        &
                   iopsy(icomp),  &
                   tb,            &
+                  .true.,        &
+                  work,           &
                   cmo,           &
                   ibeig,         &
                   icmoq,         &
@@ -804,6 +806,8 @@ contains
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
+                  .true.,           &
+                  work,             &
                   cmo,              &
                   ibeig,            &
                   icmoq,            &

@@ -91,7 +91,7 @@ module talsh_mp2no
 
 
          use exacorr_global
-         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
+!         use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
          use talsh_gradient
 
 

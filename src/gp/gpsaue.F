@@ -4123,7 +4123,7 @@ C
 C     This subroutine goes through an integer array IARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
 C
-C     The array ARR is not touched.
+C     The array IARR is not touched.
 C
 C***********************************************************************
       INTEGER N,INDX(N),M,NSTACK,IARR(N)
@@ -4379,6 +4379,51 @@ C***********************************************************************
       ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LEVI_CEVITA(I,J,K,IJK)
+C***********************************************************************
+C
+C     Given indices i and j, give k and e_ijk
+C
+C     Written by Trond Saue Oct 25 2018      
+C***********************************************************************
+      implicit none
+      integer, intent(in)  :: I,J
+      integer, intent(out) :: K,IJK
+      INTEGER :: IJKTAB(3,3),KTAB(3,3)
+      SAVE IJKTAB,KTAB
+      DATA IJKTAB/ 0,-1, 1, 1, 0,-1,-1, 1, 0/
+      DATA   KTAB/ 0, 3, 2, 3, 0, 1, 2, 1, 0/
+      IF(I.LT.1.OR.I.GT.3) CALL QUIT('LEVI-CEVITA: Not valid I!')
+      IF(J.LT.1.OR.J.GT.3) CALL QUIT('LEVI-CEVITA: Not valid J!')
+      K   = KTAB(I,J)
+      IJK = IJKTAB(I,J)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NOISE(A,N,FACTOR)
+C***********************************************************************
+C
+C     Input is an array A of length N. On output noise has been added.
+C     FACTOR controls the magnitude of the noise ("noise level")
+C     Since RANDOM_NUMBER returns numbers in the interval (0,1],
+C     we extend to (-1,1].      
+C
+C     Written by Trond Saue Nov 7 2019
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: N
+      real*8, intent(in)    :: factor
+      real*8, intent(inout) :: A(N)
+      integer               :: I
+      real*8                :: R
+
+      DO I = 1,N
+        CALL RANDOM_NUMBER(r)
+        A(I) = A(I) + FACTOR*(2.0D00*R-1.0D00)
+      ENDDO
+      RETURN
+      END
 C/* Deck Usym */
       SUBROUTINE USYM(A,LDA,N)
 C***********************************************************************
@@ -4410,3 +4455,4 @@ C***********************************************************************
           ENDDO
        ENDDO
        END
+

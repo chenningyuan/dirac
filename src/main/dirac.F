@@ -1137,9 +1137,7 @@ C***********************************************************************
 
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
-     &    only: initialize_interest_herd,                               &
-     &          process_two_electron_integrals_4comp_slaves,            &
-     &          process_two_electron_integrals_2comp_slaves 
+     &    only: initialize_interest_herd
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
@@ -1346,8 +1344,6 @@ C
 C        start the InteRest two-electron MPI calculation (4-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_4comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
       ELSE IF (ITASK .EQ. 10) THEN
@@ -1355,8 +1351,6 @@ C
 C        start the InteRest two-electron MPI calculation (2-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_2comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
@@ -1448,6 +1442,11 @@ C
 #else
          call exa_cc()
 #endif
+      ELSE IF (ITASK .EQ. 21) THEN
+C
+C        start BEDLEB MPI calculation
+C
+         call bedleb_launch_slave_procs()
 
       ELSE
 C
