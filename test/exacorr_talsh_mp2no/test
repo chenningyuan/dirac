@@ -12,7 +12,6 @@ f = Filter()
 f.add(from_string = 'Total CCSD energy :',
       rel_tolerance   = 1.0e-9)
 
-test.run(['ne_mp2_4.inp','ne_mp2_13.inp','ne_mp2_all.inp'], ['ne.xyz'], f)
-test.run(['hf_mp2_9.inp','hf_mp2_21.inp','hf_mp2_all.inp'], ['hf.xyz'], f)
+test.run(['hf_energy_ccpvdz_2.0d-5.inp','hf_energy_ccpvdz_0.0d.inp',], ['hf.xyz'], f)
 
 sys.exit(test.return_code)

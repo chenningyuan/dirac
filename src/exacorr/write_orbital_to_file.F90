@@ -431,9 +431,7 @@ module write_orbital_to_file
          real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
          character(len=*),intent(in)        :: file_name
  
-
-   !     loop variables
-         integer :: i, j, k, sz
+         integer :: sz
 
          integer :: write_orb
          logical :: debug=.true.
@@ -449,20 +447,6 @@ module write_orbital_to_file
            write(write_orb) orbital_eigenval
            ! write orbitals coeffcient 
            write(write_orb) orbital_coeff
-
-!           k = 1
-!           do j=1,sz
-!              do i=1,sz
-!               if(j == i) then
-!                  write(write_orb,'(1X,I8,2x,4F28.16,2x,2I4,2x,F28.16)') k, orbital(i,j,:),i,j,eigenval(i)
-!                  k = k + 1
-!               else 
-!                  write(write_orb,'(1X,I8,2x,4F28.16,2x,2I4)') k, orbital(i,j,:),i,j
-!                  k = k + 1
-!               end if 
-!              end do
-!            end do
-
             print *,'>>>>>  Quaternion orbital, Writing Completed.'
          end if
         close(write_orb,status='KEEP')
@@ -478,7 +462,7 @@ module write_orbital_to_file
          character(len=*),intent(in)        :: file_name
 
    !     loop variables
-         integer :: i, j, k, sz
+         integer :: sz
 
          integer :: write_mat
          logical :: debug=.true.
@@ -486,21 +470,13 @@ module write_orbital_to_file
          call get_free_fileunit(write_mat)
          sz = size(matrix,1)
          open (write_mat,file=file_name,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
+
          if (debug) then
            print *,'<<<<< Quaternion Fock Matrix, Writing Begin.'
            ! write dimension of the matrix 
            write(write_mat) sz
            ! write eigenvalues 
            write(write_mat) matrix
-
-!           k = 1
-!           do j=1,sz
-!              do i=1,sz
-!                  write(write_mat,'(1X,I8,2x,4F28.16,2x,2I4)') k,matrix(i,j,:),i,j
-!                  k = k + 1
-!              end do
-!            end do
-
             print *,'>>>>>  Quaternion Fock Matrix, Writing Completed'
          end if
         close(write_mat,status='KEEP')      
@@ -523,10 +499,11 @@ module write_orbital_to_file
          real(kind=8), pointer              :: orbital_coeff_all(:,:,:)      
          real(kind=8), pointer              :: orbital_eigenval_all(:)         
    !     loop variables
-         integer :: i, j, k, sz_all, sz, p, q, ierr=0
-         real(kind=8) :: k_re
+         integer :: i, j
 
-         integer :: read_orb
+         integer :: sz_all, sz
+         integer :: read_orb, ierr=0
+
          logical :: debug=.true.
 
          call get_free_fileunit(read_orb)
@@ -552,28 +529,6 @@ module write_orbital_to_file
            print *,'>>>>> All Orbitals, Read completed'
          end if
         close(read_orb,status='KEEP')
-
-!         k_re = real(k)
-!         sz_all = int(sqrt(k_re))
-
-!         allocate(orbital_all(sz_all,sz_all,4))
-!         allocate(eigenval_all(sz_all))
-!         open (read_orb,file=file_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
-!         if (debug) then
-!           print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
-!           do j=1,sz_all
-!              do i=1,sz_all
-!               if(j == i) then
-!                  read(read_orb,'(1X,I8,2x,4F28.16,2x,2I4,2x,F28.16)') k,orbital_all(i,j,:),p,q,eigenval_all(i)
-!               else 
-!                  read(read_orb,'(1X,I8,2x,4F28.16,2x,2I4)') k,orbital_all(i,j,:),p,q
-!               end if 
-!              end do
-!            end do
-!            print *,'>>>>> All Orbitals, Read completed'
-!         end if
-!        close(read_orb,status='KEEP')
-
 
         n_orb_trunca = 0
         do i=1,sz_all
@@ -617,13 +572,14 @@ module write_orbital_to_file
 
          
    !     loop variables
-         integer :: i, j, k, sz, p, q
+         integer :: sz
 
          integer :: read_mat 
          logical :: debug=.true.
 
          call get_free_fileunit(read_mat)
          open (read_mat,file=file_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+
          if (debug) then
            print *,'<<<<< Start reading fock matrix into the file.'
            ! read dimension of the matrix 
@@ -631,13 +587,6 @@ module write_orbital_to_file
            allocate(matrix(sz,sz,4))
            ! read matrix
            read(read_mat) matrix
-
-!          do j=1,sz
-!              do i=1,sz
-!                  read(read_mat,'(2x,4F28.16,2x,2I4)') matrix(i,j,:),p,q
-!              end do
-!            end do
-
             print *,'>>>>>  quater fock matrix, reading completed'
          end if
         close(read_mat,status='KEEP')      

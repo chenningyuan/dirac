@@ -31,9 +31,8 @@ module matrix_complex_to_quaternion
         character(len=*), intent(in)             :: Matrix_file
         logical :: debug=.false.
 
-        integer :: i, j, k, ierr, sz_all
+        integer :: sz_all
         integer :: cm 
-        real(kind=8)       :: a,b
 
         call get_free_fileunit(cm)
         ! first round for reading matrix size
@@ -44,27 +43,7 @@ module matrix_complex_to_quaternion
         ! read density matrix element 
         read(cm) Matrix
 
-        if (debug) then
-          print *,'<<<<< Complex Matrix Existed '
-          ierr = 0
-          do while(ierr==0)
-                read(cm,'(2x,2F28.16,2x,2I4)',iostat=ierr) a,b,i,j
-          end do
-           print *,'>>>>> Read Matrix Index'
-        end if
-
         close(cm,status='KEEP')
-
-!        open (cm,file=Matrix_name,status='OLD',FORM='FORMATTED',access='SEQUENTIAL')
-!          ierr = 0
-!          do while(ierr==0)
-!                read(cm,'(2x,2F28.16,2x,2I4)',iostat=ierr) a,b,i,j
-!                Matrix(i,j) = cmplx(a,b)
-!          end do
-!           print *,'>>>>> Read Matrix'
-!        close(cm,status='KEEP')
-
-
 
       end subroutine read_matrix_comp
 
