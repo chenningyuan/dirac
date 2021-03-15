@@ -11,7 +11,10 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Total CCSD energy :',
       rel_tolerance   = 1.0e-9)
+f.add(from_string = 'Orbital           1',
+      num_lines   = 10,
+      rel_tolerance   = 1.0e-9)
 
-test.run(['hf_energy_ccpvdz_2.0d-5.inp','hf_energy_ccpvdz_0.0d.inp',], ['hf.xyz'], f)
+test.run(['hf_energy_ccpvdz_1.0d-4.inp','hf_energy_ccpvdz_0.0d.inp',], ['hf.xyz'], f)
 
 sys.exit(test.return_code)

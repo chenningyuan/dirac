@@ -19,7 +19,8 @@
 .VIRTUAL                                                                                            
 6..33    
 .MP2NO
-2.0d-5
+1.0d-4
+.LAMBDA
 **MOLECULE
 *SYMMETRY
 .NOSYM

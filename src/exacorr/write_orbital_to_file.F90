@@ -61,14 +61,17 @@ module write_orbital_to_file
          integer                :: lucoef
          integer                :: i, j, k, ishell, iprimstart, iprimend
          integer                :: nao, nao_bas, nshells, iao, ibas
-         integer                :: nmo, npo, nto, npriexp, ncnt
+         integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
          integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
          integer, allocatable   :: jstrt(:), numcf(:)
          real(8), allocatable   :: coeff(:,:,:),eig(:)
          integer, allocatable   :: ibeig(:),index(:)
          integer, allocatable   :: ncent(:),nhkt(:),nuco(:)
          real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
+         character(8)           :: label(4)
+         logical                :: labeled
   
+
          ierr = NOERROR
   
          ! open file and read dimension info
@@ -80,7 +83,18 @@ module write_orbital_to_file
          else
             call get_free_fileunit(lucoef)
             open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-            read (lucoef,end=10,err=10) text,nsym,((idim(i,j),i=1,3),j=1,nsym),total_energy
+          read (lucoef) label
+!          print *, "label(1)_1st", label(1), "laberl(2)_1st", label(2),&
+!          "label(3)_1st", label(3), "laberl(4)_1st", label(4) 
+          if (label(1) == '********') then
+             labeled = .true. ! new format
+             read (lucoef,end=10,err=10) text,nsym,nzbuf,((idim(i,j),i=1,3),j=1,nsym),total_energy
+!             print *, "nzbuf", nzbuf
+          else
+             labeled = .false.
+             backspace(lucoef) ! old format (DIRAC19 and earlier)
+             read (lucoef,end=10,err=10) text,nsym,((idim(i,j),i=1,3),j=1,nsym),total_energy
+          endif
          end if
   
          ! check symmetry and get dimensions of the coefficient array
@@ -103,8 +117,17 @@ module write_orbital_to_file
          allocate(index(nmo))
                
          ! read the mo coefficients and orbital eigenvalues
+         if (labeled) read (lucoef) label
+!         print *, "label(1)_2nd", label(1), "laberl(2)_2nd", label(2),&
+!         "label(3)_2nd", label(3), "laberl(4)_2nd", label(4) 
          read (lucoef,end=10,err=10) coeff
+         if (labeled) read (lucoef) label
+!         print *, "label(1)_3rd", label(1), "laberl(2)_3rd", label(2),&
+!         "label(3)_3rd", label(3), "laberl(4)_3rd", label(4)
          read (lucoef,end=10,err=10) eig
+         if (labeled) read (lucoef) label
+!         print *, "label(1)_4th", label(1), "laberl(2)_4th", label(2),&
+!         "label(3)_4th", label(3), "laberl(4)_4th", label(4)
          read (lucoef,end=10,err=10) ibeig
          ! fill in index values
          do i = 1, nmo
@@ -127,6 +150,9 @@ module write_orbital_to_file
 
 
          ! read the basis set information and check for consistency
+         if (labeled) read (lucoef) label
+!         print *, "label(1)_5th", label(1), "laberl(2)_5th", label(2),&
+!         "label(3)_5th", label(3), "laberl(4)_5th", label(4)
          read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
          if (nao < nao_bas) then
             ierr = INCONSIS
@@ -255,19 +281,23 @@ module write_orbital_to_file
             integer                :: lucoef 
             integer                :: ishell
             integer                :: nshells, iao, ibas
-            integer                :: npo, nto, npriexp, ncnt
+            integer                :: npo, nto, npriexp, ncnt, nzbuf
             integer                :: nao, nmo, nno ! number of atomic orbital; molecular orbital; natural orbital
             integer, allocatable   :: numcf(:),jstrt(:)
             integer,allocatable    :: index(:)
             real(8), allocatable   :: priexp(:),priccf(:)
             integer                :: i,j
             integer                :: mp2dm
+            character(8)           :: label(4)
+            character(len=10) :: datex
+            character(len=8)  :: timex
      
    
      !      switch to Kramers-restricted format
             text = "MO coefficients produced by geniao "
             npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
             nsym = 1 ! we do not use symmetry, so nsym is always 1
+            nzbuf = 4
    
 
    !        print warning in case we overwrite a file and open the file
@@ -300,15 +330,56 @@ module write_orbital_to_file
       
    
             ! write the header
-            write (lucoef) text,nsym,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
+            label(1) = '********'
+            call daytime(datex,timex)
+            label(2) = datex
+            label(3) = timex
+            label(4) = 'INFO    '
+            write (lucoef) label
+            write (lucoef) text,nsym,nzbuf,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
+
+
+   
             ! write the mo-coefficients
+            call daytime(datex,timex)
+            label(2) = datex
+            label(3) = timex
+            label(4) = 'COEFS   '
+            write (lucoef) label
             write (lucoef) qorbital%coeff
+
+
+
             ! write the orbital energies
+            call daytime(datex,timex)
+            label(2) = datex
+            label(3) = timex
+            label(4) = 'EVALS   '           
+            write (lucoef) label
             write (lucoef) qorbital%energy
+
+
+
             ! write the boson symnmetry information
+            call daytime(datex,timex)
+            label(2) = datex
+            label(3) = timex
+            label(4) = 'SUPERSYM' 
+            write (lucoef) label
             write (lucoef) qorbital%boson_irrep
+
+
+
             ! write the ao basis information header
+            call daytime(datex,timex)
+            label(2) = datex
+            label(3) = timex
+            label(4) = 'BASINFO ' 
+            write (lucoef) label
             write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
+
+
+
      !      orb_momentum, atom_number, n_primives for all shells
             write (lucoef) ao_basis%gtos(:)%orb_momentum,ao_basis%gtos(:)%atom_number,ao_basis%gtos(:)%n_primitives
      !      start of exponent values, number of contracted for all shells
