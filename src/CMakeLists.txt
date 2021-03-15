@@ -29,11 +29,6 @@ endif()
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
-# interest as separate library
-cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
-if(ENABLE_INTEREST)
-    add_definitions(-DMOD_INTEREST)
-endif()
 option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
@@ -277,13 +272,8 @@ else()
 endif()
 
 # interest as separate library
-if(ENABLE_INTEREST)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
-endif()
-message(STATUS "InteRest library: ${ENABLE_INTEREST}")
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
 
 #   krcc as separate library
 if(ENABLE_KRCC)
