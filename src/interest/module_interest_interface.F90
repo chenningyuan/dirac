@@ -37,8 +37,6 @@
 !                            
 ! ------------------------------------------------------------------------------------
 
-#ifdef MOD_INTEREST
-
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
 
@@ -311,5 +309,3 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 END MODULE
-
-#endif
