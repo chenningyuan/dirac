@@ -56,10 +56,14 @@ if(ENABLE_EXATENSOR)
     endif()
 
     #If the compiler is mpif90 this is mpich, ExaTensor assumes this is located in PATH_MPICH/bin, get that directory
-    if (${MPI_Fortran_COMPILER} MATCHES "mpif90")
+    if (${MPI_Fortran_COMPILER} MATCHES "mpif90" OR ${MPI_Fortran_COMPILER} MATCHES "mpiifort")
        get_filename_component(MPIDIR ${MPI_Fortran_COMPILER} DIRECTORY)
        get_filename_component(PATH_MPI ${MPIDIR} DIRECTORY)
        set(EXATENSOR_MPIENV "MPILIB=MPICH PATH_MPICH=${PATH_MPI}")
+      if (${MPI_Fortran_COMPILER} MATCHES "mpiifort")
+         message(FATAL_ERROR "Intel MPI compilers are not yet supported by exatensor")
+#         set(EXATENSOR_MPIENV APPEND " MPICH_FLAVOR=INTELMPI ")
+      endif()
     endif()
     #If the compiler is mpifort this is openmpi, ExaTensor assumes this is located in PATH_OPENMPI/bin, get that directory
     if (${MPI_Fortran_COMPILER} MATCHES "mpifort")
