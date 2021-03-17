@@ -9,11 +9,12 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'Total CCSD energy :',
-      rel_tolerance   = 1.0e-9)
+f.add(from_string = '    -     Final results from EXACORR     -    ',
+      num_lines   = 8,
+      rel_tolerance   = 5.0e-9)
 f.add(from_string = 'Orbital           1',
       num_lines   = 10,
-      rel_tolerance   = 1.0e-9)
+      rel_tolerance   = 5.0e-8)
 
 test.run(['hf_energy_ccpvdz_1.0d-4.inp','hf_energy_ccpvdz_0.0d.inp',], ['hf.xyz'], f)
 
