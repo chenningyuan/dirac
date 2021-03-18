@@ -1,7 +1,7 @@
 module write_orbital_to_file
-!This module contains the routines needed to read and write.
-!In principle, people could add more routines to read or write the information that they need
-! Written by Xiang Yuan.
+!This module contains the routines needed to do read and write.
+!In principle, people could add more routines to read or write the information that they want
+!Written by Xiang Yuan.
 
         use exacorr_datatypes
         use intermediates
@@ -27,13 +27,12 @@ module write_orbital_to_file
        contains
 
 !-------------------------------------------------------------------------------------------------------------------------------------------
-
         subroutine quater_read_from_dirac_all (ao_basis,qorbital,file_name,ierr)
   !      we need information of ao_basis
   !      read all positive energy mo coefficients presented on DFCOEF file
   !      check for imcompatibiklities (use of symmetry) as well and continue
   !      by reading also the basis set information into gtos
-  !      This subroutine is same as routine read_from_dirac of exacorr_dirac.F except ignoring quaternion-complex transform
+  !      This subroutine is same as routine 'read_from_dirac' of exacorr_dirac.F but ignoring quaternion-complex transform
 
          use exacorr_mo
          use exacorr_datatypes
@@ -84,12 +83,9 @@ module write_orbital_to_file
             call get_free_fileunit(lucoef)
             open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
           read (lucoef) label
-!          print *, "label(1)_1st", label(1), "laberl(2)_1st", label(2),&
-!          "label(3)_1st", label(3), "laberl(4)_1st", label(4) 
           if (label(1) == '********') then
              labeled = .true. ! new format
              read (lucoef,end=10,err=10) text,nsym,nzbuf,((idim(i,j),i=1,3),j=1,nsym),total_energy
-!             print *, "nzbuf", nzbuf
           else
              labeled = .false.
              backspace(lucoef) ! old format (DIRAC19 and earlier)
@@ -118,16 +114,10 @@ module write_orbital_to_file
                
          ! read the mo coefficients and orbital eigenvalues
          if (labeled) read (lucoef) label
-!         print *, "label(1)_2nd", label(1), "laberl(2)_2nd", label(2),&
-!         "label(3)_2nd", label(3), "laberl(4)_2nd", label(4) 
          read (lucoef,end=10,err=10) coeff
          if (labeled) read (lucoef) label
-!         print *, "label(1)_3rd", label(1), "laberl(2)_3rd", label(2),&
-!         "label(3)_3rd", label(3), "laberl(4)_3rd", label(4)
          read (lucoef,end=10,err=10) eig
          if (labeled) read (lucoef) label
-!         print *, "label(1)_4th", label(1), "laberl(2)_4th", label(2),&
-!         "label(3)_4th", label(3), "laberl(4)_4th", label(4)
          read (lucoef,end=10,err=10) ibeig
          ! fill in index values
          do i = 1, nmo
@@ -151,8 +141,6 @@ module write_orbital_to_file
 
          ! read the basis set information and check for consistency
          if (labeled) read (lucoef) label
-!         print *, "label(1)_5th", label(1), "laberl(2)_5th", label(2),&
-!         "label(3)_5th", label(3), "laberl(4)_5th", label(4)
          read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
          if (nao < nao_bas) then
             ierr = INCONSIS
@@ -243,7 +231,7 @@ module write_orbital_to_file
   
          close (lucoef,status='KEEP')
   
-         call print_date("read from DFCOEF:"//text)
+!         call print_date("read from DFCOEF:"//text)
          return
   
     10   ierr = CORRUPT
@@ -257,11 +245,10 @@ module write_orbital_to_file
          end subroutine quater_read_from_dirac_all
 
                 
-!-----------------------------------------------------------------------------------------------------------------------------------------------
-
+!-------------------------------------------------------------------------------------------------------------------------------------------
          subroutine quater_write_mos_to_dirac (ao_basis,qorbital,file_out_name)
      !      write mo coefficients in dirac format
-     !      same as subroutine write_mos_to_dirac of exacorr_dirac.F
+     !      refer to subroutine write_mos_to_dirac of exacorr_dirac.F
 
             use exacorr_mo
             use exacorr_datatypes
@@ -338,7 +325,6 @@ module write_orbital_to_file
             write (lucoef) label
             write (lucoef) text,nsym,nzbuf,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
 
-
    
             ! write the mo-coefficients
             call daytime(datex,timex)
@@ -347,7 +333,6 @@ module write_orbital_to_file
             label(4) = 'COEFS   '
             write (lucoef) label
             write (lucoef) qorbital%coeff
-
 
 
             ! write the orbital energies
@@ -359,7 +344,6 @@ module write_orbital_to_file
             write (lucoef) qorbital%energy
 
 
-
             ! write the boson symnmetry information
             call daytime(datex,timex)
             label(2) = datex
@@ -367,7 +351,6 @@ module write_orbital_to_file
             label(4) = 'SUPERSYM' 
             write (lucoef) label
             write (lucoef) qorbital%boson_irrep
-
 
 
             ! write the ao basis information header
@@ -395,17 +378,14 @@ module write_orbital_to_file
             deallocate(numcf)
             deallocate(priexp)
             deallocate(priccf)
-
-            
-            close (lucoef,status='KEEP')
-   
+           
+            close (lucoef,status='KEEP')   
             return
    
            end subroutine quater_write_mos_to_dirac
    
-      
-!----------------------------------------------------------------------------------------------------------------------
 
+!----------------------------------------------------------------------------------------------------------------------
       subroutine quater_read_from_dirac_fock(Fock_HF,sz,flb)
 !     routine for only reading orbital energy from DFCOEF and construting the diagonal Fock matrix 
 !     flb =1 we construt the oo block otherwise we build vv block. 
@@ -446,6 +426,7 @@ module write_orbital_to_file
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine quater_read_from_dirac_orbital(HF_AO,sz,flb)
 !     routine for only reading HF orbital coefficient from DFCOEF.
+!     flb =1 we read occupied orbital otherwise we read virtual orbital 
  
          use exacorr_mo
          use exacorr_datatypes
@@ -467,7 +448,6 @@ module write_orbital_to_file
 
          allocate(HF_AO(sz_total_ao,sz,4))
       
-
 !     constrcut HF orbital matrix
          if (flb == 1) then
             do j = 1, sz
@@ -496,7 +476,7 @@ module write_orbital_to_file
       subroutine  quater_write_orbital(orbital_coeff,orbital_eigenval,file_name)
 !     routine for writing new orbital coefficient and eigenvalue into the file.
 
-         use exacorr_utils
+      use exacorr_utils
 !     input variables
          real(kind=8), pointer              :: orbital_coeff(:,:,:)      ! new orbital coefficient
          real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
@@ -511,14 +491,14 @@ module write_orbital_to_file
          sz = size(orbital_coeff,2)
          open (write_orb,file=file_name,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
          if (debug) then
-           print *,'<<<<< Quaternion orbital, Writing Begin.'
+!           print *,'<<<<< Quaternion orbital, Writing Begin.'
            ! write dimension of the matrix 
            write(write_orb) sz
            ! write eigenvalues 
            write(write_orb) orbital_eigenval
            ! write orbitals coeffcient 
            write(write_orb) orbital_coeff
-            print *,'>>>>>  Quaternion orbital, Writing Completed.'
+!            print *,'>>>>>  Quaternion orbital, Writing Completed.'
          end if
         close(write_orb,status='KEEP')
 
@@ -543,12 +523,12 @@ module write_orbital_to_file
          open (write_mat,file=file_name,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
 
          if (debug) then
-           print *,'<<<<< Quaternion Fock Matrix, Writing Begin.'
+!           print *,'<<<<< Quaternion Fock Matrix, Writing Begin.'
            ! write dimension of the matrix 
            write(write_mat) sz
            ! write eigenvalues 
            write(write_mat) matrix
-            print *,'>>>>>  Quaternion Fock Matrix, Writing Completed'
+!            print *,'>>>>>  Quaternion Fock Matrix, Writing Completed'
          end if
         close(write_mat,status='KEEP')      
 
@@ -581,23 +561,19 @@ module write_orbital_to_file
          open (read_orb,file=file_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
 
          if (debug) then
-            print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
+!            print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
            ! read orbital matrix size
            read(read_orb) sz_all
 
-           allocate(orbital_coeff_all(sz_all,sz_all,4))
            allocate(orbital_eigenval_all(sz_all))
-
+           allocate(orbital_coeff_all(sz_all,sz_all,4))
+           
            ! read eigenvalue
            read(read_orb) orbital_eigenval_all
            ! read orbitals 
            read(read_orb) orbital_coeff_all
 
-!           do while(ierr==0)
-!            read(read_orb,'(3X,I8)',iostat=ierr) k
-!           end do
-
-           print *,'>>>>> All Orbitals, Read completed'
+!           print *,'>>>>> All Orbitals, Read completed'
          end if
         close(read_orb,status='KEEP')
 
@@ -625,8 +601,6 @@ module write_orbital_to_file
             end do
         end do
 
-        print *,' Reduced Orbital.'
-        print *,' Now we have', sz, 'Orbitals'
 
         deallocate(orbital_coeff_all)
         deallocate(orbital_eigenval_all)
@@ -663,8 +637,6 @@ module write_orbital_to_file
         close(read_mat,status='KEEP')      
 
       end subroutine quater_read_fock
-
-!-------------------------------------------------------------------------------------------------------------------------------------        
 
 end module write_orbital_to_file
 

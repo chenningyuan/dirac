@@ -21,8 +21,7 @@ module matrix_complex_to_quaternion
                complex_to_quaternion,get_Cano_Orbital
 
        contains
-!-------------------------------------------------------------------------------------------------------------------------------------
- 
+!------------------------------------------------------------------------------------------------------------------------------------- 
        subroutine read_matrix_comp(Matrix, Matrix_file)
 !       read complex density matrix from 'DM_complex' 
       use exacorr_utils
@@ -47,14 +46,12 @@ module matrix_complex_to_quaternion
 
       end subroutine read_matrix_comp
 
-
- !-----------------------------------------------------------------------------------------------------------------------------------------------
-
+!-------------------------------------------------------------------------------------------------------------------------------------
       subroutine sort_values_vectors (N_OCCUPATION,NOs_MO)
 !     This subroutine sorts the natural orbital based on occupation number in descending order.  
 
          !input variables
-         real(kind=8), pointer, intent(inout)       :: N_OCCUPATION(:)         ! occupation number from qdia of DM
+         real(kind=8), pointer, intent(inout)       :: N_OCCUPATION(:)    ! occupation number from qdia of DM
          real(kind=8), pointer, intent(inout)       :: NOs_MO(:,:,:)      ! natural orbital from qdia of DM
 
 
@@ -82,8 +79,7 @@ module matrix_complex_to_quaternion
          
         end subroutine sort_values_vectors
 
-!-----------------------------------------------------------------------------------------------------------------------------------------
-
+!-------------------------------------------------------------------------------------------------------------------------------------
         subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out,fl)
 !        Routine to do basis transform by quaternion matrix multiplication(vectors).
 !        We follows V' = U * V.
@@ -98,7 +94,6 @@ module matrix_complex_to_quaternion
            integer                   :: LRA, LCA, NZA
            integer                   :: LRB, LCB, NZB
            integer                   :: LRC, LCC, NZC
-
            integer                   :: re
 
            LRA = size(basis2_in,1)
@@ -120,11 +115,10 @@ module matrix_complex_to_quaternion
 
 
 !-----------------------------------------------------------------------------------------------------------------------------------
-
         subroutine basis_transform_matrix (mat_basis1_in,basis2_in,mat_basis2_out,mat)
 !        Routine to do basis transform by quaternion matrix multiplication(matrix). 
 !        We do similar Transform follows C = A^{-1}BA
-!        C: matrix in new basis;  B: matrix in old basis; A: change of basis matrix;       
+!        C: matrix in new basis;  B: matrix in old basis; A: change of basis matrix, A should be a unitary matrix;       
                          
          !input variables
          real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! matrix in old basis(matrix_B)
@@ -133,7 +127,7 @@ module matrix_complex_to_quaternion
          character                              :: mat                     ! flag used for matrix basis transform
 
          integer                                :: re,fl
-         real(kind=8), pointer                  :: aux(:,:,:)              ! matrix used in qgemm
+         real(kind=8), pointer                  :: aux(:,:,:)              ! auxilary matrix used in qgemm
          integer                                :: LRA, LCA, NZA
          integer                                :: LRB, LCB, NZB
          integer                                :: LR_au, LC_au, NZ_au
@@ -162,14 +156,12 @@ module matrix_complex_to_quaternion
          fl = 0
          call qua_mat_mulp(aux,basis2_in,mat_basis2_out,fl,LR_au,LC_au,NZ_au,LRA,LCA,NZA,LRC,LCC,NZC) 
 
-
          deallocate(aux)
 
         end subroutine basis_transform_matrix
 
 
-!-----------------------------------------------------------------------------------------------------------------------------------
-        
+!-------------------------------------------------------------------------------------------------------------------------------------            
       subroutine qua_mat_mulp (A,B,C,flag,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
 !        Routine to do quaternion matrix multiplication. 
 !        Use qgemm routine from qalebra.F.
@@ -214,7 +206,7 @@ module matrix_complex_to_quaternion
          end do            
 
 !       There three options: 
-!       Case_1 does C=A^{dagger}*B; Case_2 does C=A*B; Case_3: C=A*B^{dagger}
+!       Case_1 does C=A^{dagger}*B; Case_2 C=A*B^{dagger}; Case_3 does C=A*B
          if (flag == 1) then ! Case_1
 
             FA = 'H'
@@ -226,7 +218,7 @@ module matrix_complex_to_quaternion
                      FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                      IQPC,C,LRC,LCC,NZC)      
 
-         else if (flag == -1) then ! Case_3           
+         else if (flag == -1) then ! Case_2           
             FB = 'H'
             tem = N
             N = K
@@ -236,7 +228,7 @@ module matrix_complex_to_quaternion
                         FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                         IQPC,C,LRC,LCC,NZC)     
 
-         else ! Case_2
+         else ! Case_3
             call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
                        FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
                        IQPC,C,LRC,LCC,NZC)    
@@ -250,7 +242,7 @@ module matrix_complex_to_quaternion
 
       end subroutine qua_mat_mulp
          
-!-----------------------------------------------------------------------------------------------------------------------------------                                                   
+!-------------------------------------------------------------------------------------------------------------------------------------                                                   
         subroutine diagoanl_matrix_quater(A,EIG,VEC)
 ! Set parameter needed in qdiag
                  
@@ -283,10 +275,8 @@ module matrix_complex_to_quaternion
       end subroutine diagoanl_matrix_quater
                 
                
-!---------------------------------------------------------------------------------------------------------------------------------------------------
-            
+!-------------------------------------------------------------------------------------------------------------------------------------
       subroutine complex_to_quaternion(exa_input,dm_mo_complex,dm_mo_quater)
-!    use exacorr_global, only : get_nsolutions
 !    refer to routine 'talsh_dm_form_ao_diracformat_from_dm_mo' of talsh_gradient.F90 
 
       !input variables
@@ -339,7 +329,7 @@ module matrix_complex_to_quaternion
       deallocate (dm_mo_complex)
       end subroutine complex_to_quaternion
 
-!------------------------------------------------------------------------------------------------------------------------------------------------------------------      
+!-------------------------------------------------------------------------------------------------------------------------------------     
       subroutine get_Cano_Orbital(orbital_noncano,orbital_cano,Fock_NO,New_orbital_energy)
 ! This subroutine is used for constructing the canonical orbital
 
@@ -360,7 +350,5 @@ module matrix_complex_to_quaternion
 
       end subroutine get_Cano_Orbital
  
-!-----------------------------------------------------------------------------------------------------------------------------------   
-
 end module matrix_complex_to_quaternion
 
