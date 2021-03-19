@@ -479,7 +479,7 @@ module write_orbital_to_file
       use exacorr_utils
 !     input variables
          real(kind=8), pointer              :: orbital_coeff(:,:,:)      ! new orbital coefficient
-         real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
+         real(kind=8), pointer,intent(in)   :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
          character(len=*),intent(in)        :: file_name
  
          integer :: sz
