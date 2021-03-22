@@ -1,2 +1,2 @@
-! testing the lambda vector computation in the talsh cc2 implementation
+! testing frozen mp2 natural orbital computation in the talsh mp2no implementation
 ! requirements: talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP

@@ -16,6 +16,22 @@ f.add(from_string = 'Orbital           1',
       num_lines   = 10,
       rel_tolerance   = 5.0e-8)
 
-test.run(['hf_energy_ccpvdz_1.0d-4.inp','hf_energy_ccpvdz_0.0d.inp',], ['hf.xyz'], f)
+test.run(['hf_energy_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="CCDENS=CCDENS_all-active_hf-ccpvdz_1.0d-4 \
+         MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
+test.run(['hf_energy_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="CCDENS=CCDENS_all-active_hf-ccpvdz_0.0d \
+         MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
+
+f = Filter()
+f.add(from_string = '* Dipole moment:',
+      num_lines   = 9,
+      rel_tolerance   = 1.0e-6)
+f.add(from_string = '* Electric field gradients :',
+      num_lines   = 20,
+      rel_tolerance   = 1.0e-6)
+
+test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="CCDENS_all-active_hf-ccpvdz_0.0d=CCDENS \
+         MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
+test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="CCDENS_all-active_hf-ccpvdz_1.0d-4=CCDENS \
+         MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
 
 sys.exit(test.return_code)
