@@ -1382,48 +1382,6 @@ C       SLAVES WILL EXIT BEDLED HERE
         ENDIF
       ENDIF
 C     ********************************************************
-#endif
-C
-C     Final values for oscillator strengths or circular dichroism
-C
-      DO IEXC = 1,NEXCNV
-        OSC(NPAR+1,IEXC) = D0
-        DO IPAR = 1,NPAR
-          OSC(IPAR  ,IEXC) = D2*OMEGA(IEXC)*OSC(IPAR,IEXC)
-          OSC(NPAR+1,IEXC) = OSC(NPAR+1,IEXC) + OSC(IPAR,IEXC)
-        ENDDO
-      ENDDO
-C
-C     Print section
-C
-      IF (BEDECD) THEN
-        WRITE(6,*) '* Isotropic circular dichroism'
-      ELSE
-        WRITE(6,*) '* Isotropic oscillator strengths:'
-      ENDIF
-C
-      WRITE(6,'(A4,1X,A18,3(3X,A5,9X))')     
-     &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-      DO IEXC = 1,NEXCNV
-        FMT=MXFORM(OSC(NPAR+1,IEXC),14)
-        WRITE(6,'(I4,1X,F18.10,3(3X,'//FMT//'))')
-     &       IEXC,OMEGA(IEXC),
-     &       (OSC(IPAR,IEXC),IPAR = 1,NPAR+1)
-      ENDDO
-
-C    MARTIN
-      IF (ANGPLOT) THEN
-        DO IEXC = 1,NEXCNV
-          WRITE(6,"(A24, I4)") "Angular plot excitation hoihoi ", IEXC
-          WRITE(6,*) "X      Y       Z       ECD"
-          DO IP = 1,NPOINTS
-             WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP)
-     &        , ECD(IP,IEXC)
-          ENDDO
-          WRITE(6,"(A22,I4)") "End output excitation ", IEXC
-        ENDDO
-      ENDIF
-C    MARTIN
 C     
 C     End timing of the BEDLEB routine 
 C
@@ -1445,7 +1403,7 @@ C
 C     ********************************************************
 #endif
 C
-C     Final values for oscillator strengths
+C     Final values for oscillator strengths or circular dichroism
 C
       DO IEXC = 1,NEXCNV
         OSCBED(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC)
@@ -1453,13 +1411,28 @@ C
 C
 C     Print section
 C
-      WRITE(6,'(/A)') '* Oscillator strengths:'
-      WRITE(6,'(/A4,1X,A18)')     
+      IF (BEDECD) THEN
+        WRITE(6,*) '* Isotropic circular dichroism'
+      ELSE
+        WRITE(6,*) '* Isotropic oscillator strengths:'
+      ENDIF
+      WRITE(6,'(/A4,1X,A18)')
      &  'Exc.','Frequency (au)    '
       DO IEXC = 1,NEXCNV
-        WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
+         WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
      &   IEXC,OMEGA(IEXC),OSCBED(IEXC)
       ENDDO
+      IF (ANGPLOT) THEN
+        DO IEXC = 1,NEXCNV
+          WRITE(6,"(A24, I4)") "Angular plot excitation hoihoi ", IEXC
+          WRITE(6,*) "X      Y       Z       ECD"
+          DO IP = 1,NPOINTS
+             WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP)
+     &        , ECD(IP,IEXC)
+          ENDDO
+          WRITE(6,"(A22,I4)") "End output excitation ", IEXC
+        ENDDO
+      ENDIF
 C            
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
