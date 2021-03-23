@@ -13,7 +13,7 @@ if(ENABLE_EXATENSOR)
 endif()
 
 if (NOT (${MPI_Fortran_COMPILER} MATCHES "mpif90" OR ${MPI_Fortran_COMPILER} MATCHES "mpifort"))
-   message("This MPI compiler is not supported by ExaTENSOR, ExaCorr is switched off")
+   message(STATUS "This MPI compiler is not supported by ExaTENSOR, ExaCorr is switched off")
    set(ENABLE_EXATENSOR OFF)
 endif()
 
