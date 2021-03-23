@@ -193,6 +193,8 @@ print *, '*    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,
 print *, '*    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *'
 print *, '*    (see http://diracprogram.org).                                           *'
 print *, '*                                                                             *'
+print *, '*    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *'
+print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end
 
