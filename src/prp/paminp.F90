@@ -98,7 +98,8 @@
      &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
-     &             '.RDCCDM'/
+!                    41        42        43        44
+     &             '.RDCCDE'/
 
 !
       CALL QENTER('PRPINP')
@@ -881,7 +882,8 @@
 !  An operator in 4-component theory is a linear combination
 !  of products of a 4x4 matrix and some scalar operator P.
 !  The 4x4 matrices are the alpha matrices and the identity.
-!  XPRINP recognizes eighteen different kinds of operators:
+!  Generic one-electron operators are defined in subroutine MOPDEF
+!  XPRINP recognizes the following different kinds of operators:
 !
 !    1. DIAGONAL
 !       P             * scalar operator
@@ -2100,6 +2102,9 @@
 !    original  e_EDM operator of Flambaum
       ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
         CLASLB = 'E_EDM'
+!    complex exponential operator
+      ELSE IF(LABINT(1:4).EQ.'CEXP') THEN
+        CLASLB = 'CXIKR'
 !
 !     Unknown LABINT
 !   
@@ -2715,6 +2720,12 @@
 !
 !     Sort a list of operators in symmetries
 !
+!        IPOP1U - input list of operators
+!        IPOP1S - output list of operators sorted on symmetries        
+!        NOP1T  - total number of operators
+!        NOP1   - number of operators in ISYM
+!        JOP1   - offset to operators in ISYM        
+!      
 !     Written by T.Saue June 28 1996
 !     Last revision - June 26 1996 - tsaue
 !

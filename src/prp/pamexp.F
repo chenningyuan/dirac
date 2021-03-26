@@ -474,7 +474,8 @@ C
 C     Operator to be read from file
 C     =============================
 C
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C     
 C
  90   CONTINUE     
@@ -974,7 +975,7 @@ C
 C     Write new coefficients
       IUNIT = 2
       CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG)
+      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG,.FALSE.)
       CLOSE(IUNIT,STATUS='KEEP')
 C     Read old coefficients
       REWIND LUCOEF

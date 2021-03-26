@@ -63,6 +63,22 @@ In two-component infinite-order relativistic calculations (with :ref:`HAMILTONIA
 of four-component property operators to avoid the picture change transformation.
 Experimental option, use with care.
 
+keyword(RDCCDENS)
+
+Activates the reading of the file CCDENS obtained from a previous CC calculation with either the 
+:ref:`WAVE_FUNCTION_.RELCCSD` or with :ref:`WAVE_FUNCTION_.EXACC` modules.  It is not necessary to 
+use this keyword in runs in which the correlated and  property modules are both activated.
+
+CCDENS is not saved by pam, so unless the scratch directory from the previous calculation is
+kept (see --keep_scratch in pam), you should retrieve it after a correlated calculation, e.g. ::
+
+   pam --get=CCDENS ...
+
+and then copy it back for the property calculation e.g. ::
+
+   pam --put=CCDENS ...
+
+
 
 Predefined electric properties
 ==============================

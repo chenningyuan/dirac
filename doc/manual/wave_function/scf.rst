@@ -94,10 +94,41 @@ symmetry there four occupation numbers in line.
 
 keyword(MJSELE)
 
-Occupation of MJ-splitted fermion irreps (only for the linear
-symmetry). Next line contains sequence of occupation numbers, see
-the SCF output for how many.
+In the case of linear supersymmetry give occupation for each :math:`M_J` value.
 
+keyword(KPSELE)
+
+In the case of **atomic supersymmetry** give occupation for each :math:`\kappa` - value.
+This option also works in linear supersymmetry when a single atomic center is combined with a ghost atom.
+
+The format of :ref:`SCF_.KPSELE` is illustrated for the case of Uranium (:math:`[Rn]5f^36d^17s^2`). We first provide the
+usual specification of closed and open shells
+
+::
+
+  .CLOSED SHELL
+  44 44
+  .OPEN SHELL
+   2
+   3/0,14
+   1/10,0
+
+The closed shells are those of Radon as well as the outer :math:`7s` shell of Uranium. However, their presence will
+lead to convergence problems because by default orbitals are ordered according to energy, but also with closed shells
+before open ones. This means that the outer :math:`7s` shell of Uranium will end up amongst the open-shell orbitals, whereas
+some :math:`6d` orbitals end up being defined as closed shell, thus creating havoc. This is completely avoided by in addition
+giving the occupation in terms of :math:`\kappa` - values as shown below
+
+::
+   
+   .KPSELEC
+   7                              # Number of the Kappa-splitted orbital
+    -1   1  -2   2  -3   3  -4    # Values of Kappa: s   p-  p+  d-  d+  f-  f+
+    14  10  20  12  18   6   8    # Number of the electrons in the closed orbitals
+     0   0   0   0   0   6   8    # Number of the orbitals of open shell 1 (5f^3)
+     0   0   0   4   6   0   0    # Number of the orbitals of open shell 2 (6d^1)
+
+   
 keyword(AOC)
 
 Average-of-configuration calculation (default for open-shell

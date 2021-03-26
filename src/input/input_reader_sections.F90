@@ -199,7 +199,7 @@
 !     --------------------------------------------------------------------------
       integer                          :: i, j
       integer                          :: isym, istart, iend
-      real(8)                          :: f, s, v_12(3), v_13(3)
+      real(8)                          :: f, s, v(3), v_12(3), v_13(3)
       integer                          :: nr_lines
       character(100)                   :: line
       character(80), allocatable       :: word_array(:)
@@ -407,6 +407,17 @@
       end if
       if (kw_matches(word, '.BDIPZ ')) then
          call read_input_visual_helper(iq_bdipz)
+      end if
+
+      if (kw_matches(word, '.BEDCOS')) then
+         call read_input_visual_helper(iq_tcos)
+      end if
+      if (kw_matches(word, '.BEDSIN')) then
+         call read_input_visual_helper(iq_tsin)
+      end if
+      if (kw_matches(word, '.BEDFIX')) then
+         call kw_read(word, v(1),v(2),v(3),visual_cfg_freq)
+         CALL ANGLES(v(1),v(2),v(3),visual_cfg_wave_vector,visual_cfg_pol_vector)
       end if
 
       if (kw_matches(word, '.NDIPX ')) then

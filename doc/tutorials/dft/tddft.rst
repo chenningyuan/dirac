@@ -311,9 +311,11 @@ The calculation of oscillator strengths is invoked through::
    .INTENS
    0
 
-which means that we ask for oscillator strengths to order zero in the wave vector. So far only the zeroth-order, corresponding to 
-the electric dipole approximation, has been implemented in DIRAC. The isotropic dipole length-dipole length oscillator strenghts 
-are given as
+which means that we ask for oscillator strengths to order zero in the wave vector. This corresponds to the electric dipole approximation.
+Starting from DIRAC21, oscillator strengths have been implemented to *arbitrary* order in the wave vector, in both the length and velocity
+representation, see :cite:`List_JCP2020`. In addition DIRAC also allows the use of the *full* semi-classical light-matter interaction.
+Presently, we limit ourselves to the electric-dipole approximation.
+The isotropic dipole length-dipole length oscillator strenghts are given as
 
 .. math::
 
@@ -323,11 +325,11 @@ and are found to be
 
 .. literalinclude:: TDDFT_CO_spf_exc6
 
-DIRAC will also list the corresponding rate of spontaneous emission
+Corresponding rates of spontaneous emission are given by
 
-.. math:: A_{0n} = \frac{2e^2\omega_{0n}^2}{4\pi\varepsilon_0 mc^3}f_{0n}
+.. math:: A_{0n} = \frac{2e^2\omega_{0n}^2}{4\pi\varepsilon_0 mc^3}f_{0n} .
 
-and lifetime. This is a spin-orbit free calculation and so we only see oscillator strength to 
+This is a spin-orbit free calculation and so we only see oscillator strength to 
 singlet states (clearly dominated by :math:`C\ ^{1}\Sigma^{+}`). Things change is we 
 activate spin-orbit interaction (that is, remove the :ref:`HAMILTONIAN_.SPINFREE` keyword). 
 We see that the energy levels split up
