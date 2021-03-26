@@ -116,11 +116,11 @@ module exacorr_mp2no
    
             ! variables for the definition of spaces (AO and 2 different MO spaces)
             integer(INTL)              :: ao_space_root, occ_space_root, vir_space_root
-            integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
+            integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root             
             integer(INTL),dimension(4) :: oovv_root
             integer(INTD),dimension(2) :: oo_id, ov_id, vo_id, vv_id 
             integer(INTD),dimension(4) :: oovv_id
-            integer(INTD)              :: ao_space_id, occ_space_id, vir_space_id
+            integer(INTD)              :: ao_space_mp2no_id, occ_space_mp2no_id, vir_space_mp2no_id
    
             integer :: ncycles
    
@@ -136,15 +136,15 @@ module exacorr_mp2no
 
          !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-         if (my_MPI_rank == 0) call print_date(" Starting CC calculation with exatensor")
+         if (my_MPI_rank == 0) call print_date(" Starting MP2NO calculation with exatensor")
 
 !        Initialize and register AO and MO spaces and get their IDs for further reference
-         call exacorr_mp2no_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+         call exacorr_mp2no_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_mp2no_id,occ_space_mp2no_id,vir_space_mp2no_id)
          if (my_MPI_rank == 0) call print_date(" Registered AO and MO spaces")
 
 !        Register and initialize user defined methods needed in the CC calculation
 
-         call exacorr_mp2no_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, &
+         call exacorr_mp2no_methods (exa_input,ao_space_mp2no_id,occ_space_mp2no_id,vir_space_mp2no_id, &
                                   f_delta,orb_set,denom,denom3,j_chol,ff_set)
          if (my_MPI_rank == 0) call print_date(" Initialized and registered tensor methods")
 
@@ -155,28 +155,23 @@ module exacorr_mp2no
          ncycles = exa_input%ncycles
 
 
-         if (my_MPI_rank == 0) then
-            call print_exainput(exa_input,int(ao_space%get_root_id(ierr)))
-         end if
-
-
          !Create id and root arrays, neccessary for exatns_tensor_create
          ao_space_root=ao_space%get_root_id(ierr)
          occ_space_root=occ_space%get_root_id(ierr)
          vir_space_root=vir_space%get_root_id(ierr)
-         dims%occ_space_id=occ_space_id
-         dims%vir_space_id=vir_space_id
+         dims%occ_space_id=occ_space_mp2no_id
+         dims%vir_space_id=vir_space_mp2no_id
          dims%occ_space_root=occ_space_root
          dims%vir_space_root=vir_space_root
-         oo_id = (/occ_space_id, occ_space_id/)
-         ov_id = (/occ_space_id, vir_space_id/)
-         vo_id = (/vir_space_id, occ_space_id/)
-         vv_id = (/vir_space_id, vir_space_id/)
+         oo_id = (/occ_space_mp2no_id, occ_space_mp2no_id/)
+         ov_id = (/occ_space_mp2no_id, vir_space_mp2no_id/)
+         vo_id = (/vir_space_mp2no_id, occ_space_mp2no_id/)
+         vv_id = (/vir_space_mp2no_id, vir_space_mp2no_id/)
          oo_root = (/occ_space_root, occ_space_root/)
          ov_root = (/occ_space_root, vir_space_root/)
          vo_root = (/vir_space_root, occ_space_root/)
          vv_root = (/vir_space_root, vir_space_root/)
-         oovv_id = (/occ_space_id, occ_space_id, vir_space_id, vir_space_id/)
+         oovv_id = (/occ_space_mp2no_id, occ_space_mp2no_id, vir_space_mp2no_id, vir_space_mp2no_id/)
          oovv_root = (/occ_space_root, occ_space_root, vir_space_root, vir_space_root/)
 
 
@@ -204,7 +199,7 @@ module exacorr_mp2no
             ierr=exatns_tensor_create(int_t%oovv,"oovv",oovv_id,oovv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             end if
-            call get_MP2_integrals (ao_space_id,ao_space,int_t,exa_input%moint_scheme,exa_input%print_level)
+            call get_MP2_integrals (ao_space_mp2no_id,ao_space,int_t,exa_input%moint_scheme,exa_input%print_level)
             call print_date('-End- Integral Transformation')
 
             ! If we have the 1-body integrals we rebuild the Fock matrix and check consistency, otherwise we use the orbital energies
@@ -219,7 +214,6 @@ module exacorr_mp2no
 
 
 !        Make some noise so that we know we are proceeding 
-         call print_date('Forming VV block of MP2 density matrix')
 !        Initialize t2 amplitudes with the MP2 values
          ierr=exatns_tensor_transform(int_t%oovv,denom)
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv
@@ -228,11 +222,13 @@ module exacorr_mp2no
          ierr=exatns_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv,&
                                     int_t%oovv,int_t%oovv,ONE_HALF) ! o(2)v(2) 
 
+         call print_date('Forming VV block of MP2 density matrix')
 
 !        Make some noise so that we know we are proceeding 
-         call print_date('Save complex non-digonal DM to file DM_complex')
+         print *, "is a bug?"
          call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
-
+         call print_date('Save complex non-digonal DM to file DM_complex')
+        
         end subroutine exacorr_generate_MP2_VNO_MObasis
 
 !------------------------------------------------------------------------------------------------------------------------------------
@@ -303,9 +299,11 @@ module exacorr_mp2no
       use exacorr_global,         only : get_nsolutions
       use talsh
       use tensor_algebra
+      use exacorr_utils
       use talsh_common_routines,  only : print_tensor
 #if defined (VAR_MPI)
       use interface_to_mpi
+      
 
 !     variables for mpi
       integer(C_INT)    :: read_node
@@ -331,7 +329,11 @@ module exacorr_mp2no
          integer :: ierr
 ! loop variables
          integer :: i, j, k
+
          integer :: mp2dm
+! variables for talsh, density matrix needs to be smaller than buffer size
+         integer(C_SIZE_T)      :: buf_size=1024_8*1024_8*1024_8
+         integer(C_INT)         :: host_arg_max
 ! debug
          logical :: debug=.false.
 
@@ -344,30 +346,37 @@ module exacorr_mp2no
       !***************
             nocc    = 0
             nvir    = exa_input%nvir
-         
       !***************************************
       !     copy DM blocks into one large DM *
       !***************************************
          
             allocate (dm_mo_fort(nvir,nvir))
             dm_mo_fort = ZERO
-         
+            buf_size=exa_input%talsh_buff*buf_size
+            ierr=talsh_init(buf_size,host_arg_max)
+            print *, "ierr= ", ierr
+            call print_date('Initialized talsh library')
+            write(*,'(" Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
       !-----------
       !| OO | OV |
       !-----------
       !| VO | VV |
       !-----------
-                  
+
       !vv
             h_dims=nvir
             ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-            ierr=exatns_tensor_get_slice(gamma%symm_vv,tensor_slice)
+            print *, "ierr= ", ierr 
+            ierr=exatns_tensor_get_slice(gamma%prime_vv,tensor_slice)
+            print *, "ierr= ", ierr
             ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,int(0,C_INT),DEV_HOST)
+            print *, "ierr= ", ierr
             call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
             dm_mo_fort(1:nvir,1:nvir) = dm_block
             ierr=talsh_tensor_destruct(tensor_slice)
+            print *, "ierr= ", ierr
             ierr = talsh_shutdown()
-         
+            print *, "ierr= ", ierr
 
             call get_free_fileunit(mp2dm)
             open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
