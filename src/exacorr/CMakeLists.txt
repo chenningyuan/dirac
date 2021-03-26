@@ -21,6 +21,7 @@ if(ENABLE_EXATENSOR)
    exacorr_respect.F90
    exacorr_cholesky.F90
    exacorr_cc.F90
+   exacorr_mp2no.F90
    talsh_ao_to_mo.F90
    talsh_common_routines.F90
    talsh_gradient.F90

@@ -152,6 +152,7 @@ C***********************************************************************
       use talsh_cc,only             : talsh_cc_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
       use exacorr_utils, only       : print_date
@@ -225,6 +226,18 @@ C
            if (mytid == 0) call set_prop_flags_ccsd()
          end if
 
+         if (exa_input%mp2no) then
+              call exacorr_mp2no_driver (exa_input,n_mp2no)
+! using exacorr lib to do mp2no
+              call initialize_global_data
+              exa_input%nvir = n_mp2no*2
+              exa_input%nkr_vir = n_mp2no
+              deallocate(exa_input%mokr_vir)
+              allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+              do i = 1, size(exa_input%mokr_vir)
+                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
+              end do
+         end if
          call exacorr_cc_driver (exa_input)
       end if
 

@@ -25,11 +25,6 @@ module talsh_mp2no
 
         public talsh_mp2no_driver
 
-!        interface scale_with_denominators
-!           module procedure scale_with_denominators
-!        end interface
-!
-
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
        subroutine talsh_mp2no_driver (exa_input,n_cano)
@@ -100,7 +95,6 @@ module talsh_mp2no
 
 !        Point connected with tensors 
          integer(C_INT)              :: ierr
-         complex(8), pointer         :: MP2_density_tens(:,:)
          integer                     :: initialize_talsh
 
          type(C_PTR):: body_p
@@ -141,7 +135,6 @@ module talsh_mp2no
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
          ierr=talsh_tensor_construct(MP2_density_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_get_body_access(MP2_density_tensor%prime_vv,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,MP2_density_tens,vv_dims)
          call print_date("Getting orbital energies")
 
 
@@ -364,7 +357,7 @@ module talsh_mp2no
                   call print_date('Write the all natural orbital and occupation number in file NOs_MO')
                     
                   flb = 0                     ! we read vv block of Fock matrix
-                  sz = exa_input%nvir/2       ! the size of the FM is the same as DM
+                  sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
                   call quater_read_from_dirac_fock(Fock_HF,sz,flb)
                   call print_date('Read Fock matrix from DFCOEF')
 
@@ -413,13 +406,13 @@ module talsh_mp2no
 
 
             flb = 0                       ! we only read virtual orbital 
-            sz = exa_input%nvir/2         ! the number of virtual orbital 
+            sz = exa_input%nkr_vir        ! the number of virtual orbital 
             call quater_read_from_dirac_orbital(HF_AO,sz,flb)
             call print_date('Read HF orbital coefficient from DFCOEF')
 
             
             flb = 0                         ! we read vv block of Fock matrix
-            sz = exa_input%nvir/2           ! the size of the FM is the same as DM
+            sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
             call quater_read_from_dirac_fock(Fock_HF,sz,flb)
             call print_date('Read Fock matrix from DFCOEF')
 
@@ -496,7 +489,7 @@ module talsh_mp2no
 !        read information of from DFCOEF
          call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
 
-         nocc = (exa_input%nocc)/2
+         nocc = exa_input%nkr_occ
          nao = qorbital_hf%nao
          nno = size(NOs_AO,2)
          nmo = nocc+nno
