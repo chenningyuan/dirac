@@ -4286,7 +4286,6 @@ C
         WRITE(6,*) ' =================='
         WRITE(6,*)
 *
-C?    WRITE(6,*) ' NTEST ,LU1,LU2,LU3 = ', NTEST,LU1,LU2,LU3
       END IF
       CONVER = .FALSE.
       ITER = 1

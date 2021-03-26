@@ -37,8 +37,8 @@
 
 
 !     Do NOT add any variables after the end tag !
-      LOGICAL LINEAR
-      COMMON /DGRPL/ LINEAR
+      LOGICAL LINEAR, ATOMIC
+      COMMON /DGRPL/ LINEAR, ATOMIC
 
 ! =========================================================
 ! ... number of operator types in DIRAC is now in NOPTYP

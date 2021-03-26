@@ -63,7 +63,7 @@
 !     but can be generalized to eliminate couplings between orbital spaces.
 
       INTEGER MAX_SUB_BL
-      PARAMETER (MAX_SUB_BL = 16)
+      PARAMETER (MAX_SUB_BL = 72)
 
       INTEGER N_SUB_BL(2), ID_SUB_BL(MAX_SUB_BL, 2),                    &
      &        NORB_SUB(MAX_SUB_BL,2,0:2),NTMO_SUB(MAX_SUB_BL,2,0:2)
