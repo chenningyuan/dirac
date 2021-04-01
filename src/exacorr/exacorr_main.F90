@@ -133,6 +133,8 @@
                exa_input%mokr_vir(i) = exa_input%nkr_occ +i
             end do
             end if
+            call exacc_deallocate_cw()
+            call exacc_sync_cw(0,mytid)
             call exacorr_cc_driver (exa_input)
          end if
       end if
