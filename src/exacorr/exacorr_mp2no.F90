@@ -349,13 +349,13 @@ module exacorr_mp2no
             use talsh
             use tensor_algebra
             use talsh_common_routines,  only : print_tensor
-      #if defined (VAR_MPI)
+#if defined (VAR_MPI)
             use interface_to_mpi
       
       !     variables for mpi
             integer(C_INT)    :: read_node
             integer           :: my_MPI_rank
-      #endif
+#endif
             
             ! input variables
                   type(exacc_input),   intent(in   )  :: exa_input
