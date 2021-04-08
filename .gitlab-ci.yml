@@ -14,44 +14,60 @@ variables:
   GIT_SSL_NO_VERIFY: "true"
   GIT_STRATEGY: "clone"
   GIT_SUBMODULE_STRATEGY: "recursive"
+  DEBIAN_FRONTEND: "noninteractive"
+# exatensor stuff
+  WRAP: "NOWRAP"
+  BUILD_TYPE: "OPT"
+  BLASLIB: "NONE"
+  GPU_CUDA: "NOCUDA"
+  EXA_OS: "LINUX"  
+  MPILIB: "MPICH"
 
 ubuntu_gnu_parallel32-check:
   only:
     - merge_requests
-  image: ubuntu:18.04
+  image: ubuntu:20.04
   before_script:
     - apt-get -qq update
+    - apt-get -qq -y install git
     - apt-get -qq -y install cmake
-    - apt-get -qq -y install gfortran
-    - apt-get -qq -y install gcc
-    - apt-get -qq -y install g++
-    - apt-get -qq -y install openmpi-bin libopenmpi-dev openssh-client openssh-server
+    - apt-get -qq -y install gfortran-8
+    - apt-get -qq -y install gcc-8
+    - apt-get -qq -y install g++-8
+    - apt-get -qq -y install libomp-dev
+    - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
     - apt-get -qq -y install python
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 700
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
+    - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 800
   script:
 #   do the parallel buildup here
 #    ...determine number of processors
+    - export TOOLKIT="GNU"
+    - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)"
     - gfortran --version
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the build step is N_PROC=$N_PROC"
     - let "TEST_N_PROC=$(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2)" || TEST_N_PROC=1 # if only 1CPU on worker
     - echo "Number of processors/jobs for parallel test step is TEST_N_PROC=$TEST_N_PROC"
-    - ./setup --mpi --check --cmake-options="-D ENABLE_UNIT_TESTS=ON" build_parallel32
+    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build_parallel32
+    #setting up ExaCorr environment
     - cd build_parallel32
     - make -j $N_PROC
     - ldd dirac.x
-    - export DIRAC_MPI_COMMAND="mpirun --allow-run-as-root -np 2"
+    - export DIRAC_MPI_COMMAND="mpiexec -n 4"
     - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
-    - ctest -VV -j $TEST_N_PROC -E "(basis_input_scripted|polprp_ph|dft_overlap_diagnostic)" -L short
+    - ctest -VV -E "(basis_input_scripted|polprp_ph|dft_overlap_diagnostic|eomcc_long)" -L short
 
 ubuntu_intel_mkl_int64-check:
   only:
     - merge_requests
-  image: ubuntu:18.04
+  image: ubuntu:20.04
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install cmake git
-    - apt-get -qq -y install python python-pip
+    - apt-get -qq -y install python python3-pip
     - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
     - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
     - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
@@ -62,6 +78,8 @@ ubuntu_intel_mkl_int64-check:
     - . /opt/intel/oneapi/setvars.sh
     - set -e
   script:
+    - export TOOLKIT="INTEL"
+    - ulimit -s unlimited
     - uname -a
     - lscpu
     - free -h -g
@@ -74,8 +92,9 @@ ubuntu_intel_mkl_int64-check:
     - echo "The shell is $SHELL"
     - let "N_PROC=$(cat /proc/cpuinfo | grep processor | wc -l)"
     - echo "Number of processors/jobs for the serial build step is $N_PROC"
-    - ./setup --cmake-options="-D ENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=sequential  build_serial_intel
+    - ./setup --cmake-options="-DENABLE_UNIT_TESTS=ON" --int64 --fc=ifort --cc=icx --cxx=icpx --mkl=parallel  build_serial_intel
     - cd build_serial_intel
     - make -j $N_PROC
     - ldd dirac.x
     - ctest -VV -j $N_PROC -E basis_input_scripted -L short # exclude long (failing) test
+

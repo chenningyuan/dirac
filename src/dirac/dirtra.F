@@ -1701,6 +1701,10 @@ C
                 DO IREP = 0,MAXREP
                   IUOFF = JUOFF + ICOS (IREP+1,IC)
                   ISOFF = JSOFF + IBBAS(IREP  ,IC)
+!                  write(*,*)""
+!                  write(*,*)"IREP", IREP
+!                  write(*,*)"IUOFF",IUOFF
+!                  write(*,*)"ISOFF",ISOFF
                   IF(NBBAS(IREP,IC).GT.0) 
      &              CALL DCOPY(NBBAS(IREP,IC),WORK(KBUF+IUOFF),1,
      &                                        AMAT(ISOFF+1,IZ)   ,1)
@@ -2907,14 +2911,16 @@ C
      &          TMAT(LR1,LC1,NZT)
 
 C   ...Define internal print level 
-      IBPRNT = 12 
+      IBPRNT = 12
 C
       IF(NVEC.EQ.0) RETURN
       IF(IPRINT.GE.IBPRNT) THEN
         CALL HEADER('BCKTRA: Nontransformed coefficients',-1)
         WRITE(LUPRI,'(2(3X,A,I5))')
      +    'Start index: ',JVEC,'No. of vectors:',NVEC
-        CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        IF(ATOMIC .eqv. .FALSE.)THEN   !ayaki  Error appear in PRQMAT for ATOMIC
+          CALL PRQMAT(COFU,NORB,NORB,LRU,LCU,NZC,IPQTOQ(1,0),LUPRI)
+        ENDIF   
         CALL HEADER('BCKTRA: Transformation matrix:',-1)
         CALL PRQMAT(TMAT,NBAS,NORB,LR1,LC1,NZT,IPQTOQ(1,0),LUPRI)
       ENDIF
@@ -3320,6 +3326,7 @@ C
         IAO = I2BASX(IFRP,IFRP)+1
         IMO = I2TMOT(IFRP) + (NTMO(IFRP)+1)*IBORB + 1
         ITM = I2TMT(IFRP)  + NFBAS(IFRP,0)*IBORB + 1
+
         CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
      &         NTMO_SUB(ISUB,IFRP,0),NTMO_SUB(ISUB,IFRP,0),
      &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
@@ -3330,6 +3337,59 @@ C
           IBORB = IBORB + NTMO_SUB(ISUB,IFRP,0)
       ENDIF
       ENDDO
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck tsbbl2 */
+      SUBROUTINE TSBBL2(IFRP,IC,ISUB,FAO,FMO,TM1,TM2,BUF,LBUF,IPRINT)
+C***********************************************************************
+C 
+C     Perform AO->MO transformation separatly Large and Small
+C     (TSUBBL can transoform only total  )
+C
+C     Modified from TSUBBL
+C     A Sunaga 2018
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+C      
+#include "dcbbas.h"
+#include "dcborb.h"  
+#include "dcbdhf.h"  
+#include "dgroup.h" 
+      DIMENSION FAO(*),FMO(*),TM1(*),TM2(*),BUF(LBUF)
+C
+      IF(ISUB.GE.1)THEN
+        IBORB = 0 
+        DO IS = 1, ISUB-1
+           IBORB = IBORB + NTMO_SUB(IS,IFRP,0)
+        ENDDO   
+      ELSE
+        IBORB = 0
+      ENDIF
+C      
+      IF(NTMO_SUB(ISUB,IFRP,IC).GT.0) THEN
+        IF(IC.EQ.1)THEN
+          NTMO_BUF = NTMO_SUB(ISUB,IFRP,2)
+        ELSEIF(IC.EQ.2)THEN
+          NTMO_BUF = 0
+        ENDIF
+        IAO = I2BASX(IFRP,IFRP)+1
+        IMO = 1
+        ITM = I2TMT(IFRP)  +
+     &        NFBAS(IFRP,0)*(IBORB+NTMO_BUF) + 1
+C
+        CALL QTRANS('AOMO','S',0.0d0,NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &         NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
+     &         FAO(IAO),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
+     &         FMO(IMO),NTMO_SUB(ISUB,IFRP,IC),NTMO_SUB(ISUB,IFRP,IC),
+     &         1,IPQTOQ(1,0),
+     &         TM1(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         TM2(ITM),NFBAS(IFRP,0),NTMO(IFRP),NZT,IPQTOQ(1,0),
+     &         BUF,LBUF,IPRINT)
+      ENDIF
 C
       RETURN
       END

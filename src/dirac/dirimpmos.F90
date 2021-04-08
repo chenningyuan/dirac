@@ -239,7 +239,7 @@ subroutine impmos()
  ibeig(:) = 0
 
  lucmo = open_seq("DFPCMO",cform="FORMATTED")
- call wripcmo(lucmo,cmocar,eig,ibeig,toterg)
+ call wripcmo(lucmo,cmocar,eig,ibeig,toterg,atomic)
  call releaseunit(lucmo)
 
  ! clean up

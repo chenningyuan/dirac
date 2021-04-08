@@ -419,7 +419,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 3, NTABLE = 28)
+      PARAMETER (NDIR = 3, NTABLE = 29)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -440,11 +440,11 @@ C
       DATA TABDIR /'*END OF','*PRPTRA','*HSCC  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
-     &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
+     &            '.EXACOR','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.ASCII ','.MOFILE','.CORE2 '/
+     &            '.ASCII ','.MOFILE','.CORE2 ','.CHOLES'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
@@ -505,9 +505,8 @@ c
         ENDDO
       ENDDO
       TRA_ANTIS  = .FALSE.
-C     TRA_MSOUT  = .FALSE.
-      TRA_MSOUT  = .TRUE.
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
+      TRA_EXACORR = .FALSE.
+      TH_CHOLESKY = -1.0D0
       TRA_ASCII = .FALSE.
       NO2IND = .FALSE.
       NO4IND = .FALSE.
@@ -567,8 +566,8 @@ C         if reading input from a terminal
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25,26,27,28), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+     &                      17,18,19,20,21,22,23,24,25,26,27,28,29), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -669,9 +668,9 @@ C
                   ENDDO
                GO TO 100
     6          CONTINUE
-C&&&& "MSOUT " - Write 4-index transformed integrals to file
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
-                  TRA_MSOUT = .TRUE.
+C&&&& Use exacorr transformation routine
+                  TRA_EXACORR = .TRUE.
+                  ISTRAT = 4 ! This corresponds to non-distributed integrals
                GO TO 100
     7          CONTINUE
 C&&&& POSITRONS - allow positronic solutions
@@ -853,6 +852,10 @@ C&&&& "CORE2 " - Range of open shell CORE orbitals in 2-index transformation mod
                      READ(LUCMD,'(A)') TRA_CORSTR2(I)
                      WRITE (LUPRI,'(A)') TRA_CORSTR2(I)
                   ENDDO
+               GO TO 100
+   29          CONTINUE
+C&&&& ."CHOLES" - CHOLESKY threshold
+                  READ(LUCMD,*) TH_CHOLESKY
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1107,8 +1110,6 @@ C
      +     '* Gaunt Integrals not transformed.'
       IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)')
      +     '* Calculating Anti-symmetrized integrals.'
-      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)')
-     +     '* 4-index transformed integrals written to file.'
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,4)
       DO I = 1,NFSYM

@@ -521,6 +521,48 @@ contains
                end if
             end if
 
+!           full light-matter interaction: cosine part
+            if (visual_cfg_property(imat) == iq_tcos) then
+
+               call get_j(v,            &
+                          cval,         &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+
+               f = (visual_cfg_wave_vector(1)*px+   &
+                    visual_cfg_wave_vector(2)*py+   &
+                    visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+               result(0) = result(0) - &
+                    (v(1)*visual_cfg_pol_vector(1)+  &
+                     v(2)*visual_cfg_pol_vector(2)+  &
+                     v(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
+
+            end if
+
+!           full light-matter interaction: sine part
+            if (visual_cfg_property(imat) == iq_tsin) then
+
+               call get_j(v,            &
+                          cval,         &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+
+               f = (visual_cfg_wave_vector(1)*px+   &
+                    visual_cfg_wave_vector(2)*py+   &
+                    visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+               result(0) = result(0) - &
+                    (v(1)*visual_cfg_pol_vector(1)+  &
+                     v(2)*visual_cfg_pol_vector(2)+  &
+                     v(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
+
+            end if
+
 !           responding operator is nuclear magnetic dipole
             if ((visual_cfg_property(imat) == iq_ndipx) .or. &
                 (visual_cfg_property(imat) == iq_ndipy) .or. &

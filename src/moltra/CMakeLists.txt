@@ -26,7 +26,6 @@ set(FREE_MOLTRA_FORTRAN_SOURCES
     dcbtra_h.F90
     tradr3.F90
     tradr5.F90
-    moltra_mocoefficients.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -53,4 +52,7 @@ add_library(
 add_dependencies(moltra main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
+if(ENABLE_EXATENSOR)
+add_dependencies(moltra exacorr)
+endif()
 add_dependencies(moltra interface_mpi)

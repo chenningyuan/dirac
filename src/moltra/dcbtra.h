@@ -3,9 +3,11 @@
 ! Adapted for include-into-Fortran90 form by Miro Ilias
 !
 !     Length of common block : keep up to date !!
-      LOGICAL TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
+      LOGICAL TRA_ANTIS,TRA_EXACORR,TRA_MSOUT
+      LOGICAL NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS
       LOGICAL FKRMC, MDCSCAT, TRA_ASCII, PRPSYA
       LOGICAL NOMDCINT, NOMDCINT_TRAINP
+
 !     aspg, 20090424, for fine-sort of 1HT
       logical do_finesort,set_auto_finesort
 !
@@ -20,7 +22,7 @@
 !     with MPI.
 !     NBNBNB! THEY MUST BE UPDATED IF YOU CHANGE THE COMMON BLOCKS!!!!
       INTEGER NDCBTRI,NDCBTRR,NDCBTRL
-      PARAMETER (NDCBTRI=284,NDCBTRR=258,NDCBTRL=14)
+      PARAMETER (NDCBTRI=284,NDCBTRR=259,NDCBTRL=16)
 ! ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
       COMMON/DCBTC/TRA_INDSTR(2),TRA2_INDSTR(2,2),TRA4_INDSTR(4,2),     &
@@ -37,13 +39,15 @@
      &              IFPCK12(2,2),IFPCK34(2,2),N2EFIL,NTKL,IPAR4BS,      &
      &              NCORE2
 
-      COMMON/DCBTRL/TRA_ANTIS,TRA_MSOUT,NOPAIR,NO2IND,NO4IND,PRPTRA,    &
-     &              RCORBS,FKRMC,NOMDCINT,MDCSCAT,TRA_ASCII,            &
-     &              do_finesort,set_auto_finesort, PRPSYA,              &
-     &              NOMDCINT_TRAINP
+      COMMON/DCBTRL/TRA_ANTIS,TRA_EXACORR,TRA_MSOUT,                              &
+     &              NOPAIR,NO2IND,NO4IND,PRPTRA,RCORBS,                 &
+     &              FKRMC, MDCSCAT, TRA_ASCII, PRPSYA,                  &
+     &              NOMDCINT,NOMDCINT_TRAINP,                           &
+     &              do_finesort,set_auto_finesort
 
-      REAL*8 THROUT,SCRTRA,RINVICLARR
-      COMMON/DCBTRR/THROUT,SCRTRA,RINVICLARR(4,4,16)
+
+      REAL*8 THROUT,SCRTRA,RINVICLARR,TH_CHOLESKY
+      COMMON/DCBTRR/THROUT,SCRTRA,RINVICLARR(4,4,16),TH_CHOLESKY
 
 !     Unit for ASCII interface file
       INTEGER LUASCII

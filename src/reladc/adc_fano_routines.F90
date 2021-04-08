@@ -181,7 +181,7 @@ CONTAINS
           END IF
         END DO
       CASE (2) 
-        DO row = start, length
+        DO row = 1, (length - start + 1)
           aabs   = bigicra(7,row)
           kabs   = bigicra(8,row)
           labs   = bigicra(9,row)

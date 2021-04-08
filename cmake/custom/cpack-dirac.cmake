@@ -45,7 +45,6 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Linux" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin"
         COMMAND rm -f  ${EXPORT_DIR}/external/unit-tests/.git
         COMMAND rm -f  ${EXPORT_DIR}/external/stieltjes/.git
         COMMAND rm -f  ${EXPORT_DIR}/external/laplace-minimax/.git
-        COMMAND rm -rf ${EXPORT_DIR}/src/interest/
         COMMAND rm -rf ${EXPORT_DIR}/src/openrsp/
         COMMAND rm -rf ${EXPORT_DIR}/src/x-amfi/
         COMMAND rm -rf ${EXPORT_DIR}/src/eri/

@@ -45,6 +45,7 @@ set(FREE_GP_FORTRAN_SOURCES
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
+    dirac_mocoefficients.F90
     dynamic_string.F90
     electrostatic_potential.F90
     exception_handling.F90
