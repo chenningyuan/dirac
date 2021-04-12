@@ -237,8 +237,9 @@ C
               do i = 1, size(exa_input%mokr_vir)
                      exa_input%mokr_vir(i) = exa_input%nkr_occ +i
               end do
+          else
+             call exacorr_cc_driver (exa_input)
          end if
-         call exacorr_cc_driver (exa_input)
       end if
 
       call exacc_deallocate_cw()
