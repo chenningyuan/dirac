@@ -37,9 +37,6 @@ module xamfi_utils
                                        lutmat_aoo, N2BBASXQ_dim_aoo,            &
                                        ioff_tmot, ioff_tmt, nzt_aoo
   
-#ifdef MOD_INTEREST
-  use module_interest_interface
-#endif
 #ifdef DEBUG_SOC
   use x2c_utils, only: print_x2cmat
 #endif
@@ -50,6 +47,7 @@ module xamfi_utils
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public read_normalized_2e_soc
+  public xamfi_get_energy_correction
   public hello_xamfi
   public goodbye_xamfi
 
@@ -258,6 +256,24 @@ contains
      close(fh,status='keep')
 
   end subroutine read_normalized_2e_soc
+!----------------------------------------------------------------------
+  function xamfi_get_energy_correction(DMAT,XAMFI_FMAT,      &
+                                       DFRAC2,JSHELL,ISHELL, &
+                                       NZ,N2BBASX,NFMAT) result(e2tmp)
+  
+    real*8,  intent(in) :: DMAT(N2BBASX,NZ,NFMAT),XAMFI_FMAT(N2BBASX,NZ,1)
+    real*8,  intent(in) :: DFRAC2
+    integer, intent(in) :: JSHELL, ISHELL, NZ, N2BBASX, NFMAT                                  
+    real*8              :: e2tmp
+    real*8,  external   :: ddot
+    integer             :: iz
+
+    e2tmp = 0.0d0
+    DO iz = 1,NZ
+      e2tmp = e2tmp + DFRAC2*DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,XAMFI_FMAT(1,IZ,ISHELL+1),1)
+    END DO
+
+  end function xamfi_get_energy_correction
 !----------------------------------------------------------------------
 
   subroutine hello_xamfi()

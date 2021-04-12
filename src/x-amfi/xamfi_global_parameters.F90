@@ -43,4 +43,7 @@ module xamfi_global_parameters
   integer, public :: aoo_prt                                =  0 ! print level
   integer, public :: aoo_soc_order                          =  2 ! default: spin-same orbit contributions
 
+! real*8 block
+  real*8, public :: xamfi_energy_contributions              = 0.0d0
+
 end module

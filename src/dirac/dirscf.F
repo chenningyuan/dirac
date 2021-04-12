@@ -1735,6 +1735,9 @@ C*****************************************************************************
 
       use dirac_cfg
       use fde_mod
+      use xamfi_global_parameters, only: aoomod, 
+     &                             xamfi_energy_contributions
+      use xamfi_utils, only: xamfi_get_energy_correction
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -1755,7 +1758,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-      LOGICAL LVCON
+      LOGICAL LVCON, XAMFI_CORRECTIONS
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
@@ -1769,6 +1772,7 @@ c     besterg is the lowest energy we encountered so far
 #endif
       REAL(8) :: PE_TOT_NRG, PE_EL_NRG
       REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
+      REAL(8), DIMENSION(:), ALLOCATABLE :: XAMFI_FMAT
       type(fde_import) :: itmp
       data besterg /1.0D100/
       save besterg
@@ -1789,6 +1793,16 @@ C
          call fde_get_import_info(itmp)
       end if
 
+      inquire(file='XAMFI-ss-soc-contributions',
+     &        exist=XAMFI_CORRECTIONS)
+      if(XAMFI_CORRECTIONS.and.aoomod)then
+        open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &     form='unformatted',
+     &     access='sequential',action="readwrite",position='rewind')
+        allocate(XAMFI_FMAT(ntbas(0)**2*nz))
+        read(99) XAMFI_FMAT(1:ntbas(0)**2*nz)
+        close(99,status='keep')
+      end if
 
       IF(AOC) THEN
         ITOP = NOPEN
@@ -1821,16 +1835,27 @@ C           The factor is 0.5 * (2*f_{o1})*(2*f_{o2})
 C           Divide by 2 (from TWOFCK)
 C           Total factor is DF(ISHELL)*DF(JSHELL)
 C
-            DFRAC1 = DF(ISHELL)*DF(JSHELL)
+            DFRAC2 = DF(ISHELL)*DF(JSHELL)
             DO IZ = 1,NZ
                ETEMP =
-     &            DFRAC1*DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
+     &            DFRAC2*DDOT(N2BBASX,DMAT(1,IZ,JSHELL+1),1,
      &                                  F2(1,IZ,ISHELL+1),1)
                E(IZ,2,ISHELL) = E(IZ,2,ISHELL) + ETEMP
                E(IZ,2,JSHELL) = E(IZ,2,JSHELL) + ETEMP
             END DO
          END DO
       END DO
+      !> calculate contribution to 2-e energy from X-AMFI correction
+      if(XAMFI_CORRECTIONS.and.aoomod)then
+        !> only the 0th intra-shell contribution is needed
+        DFRAC2 = DP25*D2*DF(0)*D2*DF(0)*DA(0)
+        xamfi_energy_contributions =  
+     &  xamfi_get_energy_correction(DMAT,XAMFI_FMAT,
+     &                              DFRAC2,0,0,
+     &                              NZ,N2BBASX,NFMAT)
+        deallocate(XAMFI_FMAT)
+      end if
+
 !     correct for contribution from ks potential to two-electron energy
       if (dirac_cfg_dft_calculation) then
 !Miro: separate this contribution into own variable, xcint_xc_energy
@@ -1944,6 +1969,9 @@ CMI      ... print out matrixes ...
             WRITE(LUPRI,'(A,'//FMT//')')
      +       'Total electronic energy            :  ',ELERGY,
      +       'Nuclear potential energy           :  ',POTNUC
+         IF(XAMFI_CORRECTIONS) WRITE(LUPRI,'(A,'//FMT//')')
+     +       '... with X-AMFI contr. to 2e-energy:  ',
+     +        xamfi_energy_contributions
          IF(LVCON) WRITE(LUPRI,'(A,'//FMT//')')
      +       'SS Coulombic correction            :  ',CORRLV
          IF(SOLVEN) WRITE(LUPRI,'(A,'//FMT//')')
