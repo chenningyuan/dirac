@@ -18,7 +18,7 @@ module write_orbital_to_file
 
         interface quater_read
             module procedure quater_read_orbital
-            module procedure quater_read_fock
+            module procedure quater_read_matrix
         end interface
 
         public quater_read_from_dirac_all,quater_write_mos_to_dirac,quater_read_from_dirac_fock, &
@@ -607,13 +607,13 @@ module write_orbital_to_file
       end subroutine quater_read_orbital
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine  quater_read_fock(matrix,file_name)
+      subroutine  quater_read_matrix(NORBT,matrix)
    !     routine for reading the fock matrix from the file.
          use exacorr_utils
 
    !     input variables
          real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
-         character(len=*),intent(in)        :: file_name
+         integer,intent(in)                 :: NORBT
 
          
    !     loop variables
@@ -623,20 +623,11 @@ module write_orbital_to_file
          logical :: debug=.true.
 
          call get_free_fileunit(read_mat)
-         open (read_mat,file=file_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+         open (read_mat,file='CWDENS',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+         CALL READT(read_mat,NORBT*NORBT*4,matrix)
+         close(read_mat,status='KEEP')      
 
-         if (debug) then
-           print *,'<<<<< Start reading fock matrix into the file.'
-           ! read dimension of the matrix 
-           read(read_mat) sz
-           allocate(matrix(sz,sz,4))
-           ! read matrix
-           read(read_mat) matrix
-            print *,'>>>>>  quater fock matrix, reading completed'
-         end if
-        close(read_mat,status='KEEP')      
-
-      end subroutine quater_read_fock
+      end subroutine quater_read_matrix
 
 end module write_orbital_to_file
 
