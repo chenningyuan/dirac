@@ -219,27 +219,35 @@ C
          call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
-         call exacc_sync_cw(0,mytid)
+       call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
-         if (exa_input%lambda) then 
-           if (mytid == 0) call set_prop_flags_ccsd()
-         end if
+       if (exa_input%lambda) then 
+              if (mytid == 0) call set_prop_flags_ccsd()
+       end if
 
-         if (exa_input%mp2no) then
+       if (exa_input%mp2no) then
               call exacorr_mp2no_driver (exa_input,n_mp2no)
 ! using exacorr lib to do mp2no
               call initialize_global_data
-              exa_input%nvir = n_mp2no*2
-              exa_input%nkr_vir = n_mp2no
-              deallocate(exa_input%mokr_vir)
-              allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-              do i = 1, size(exa_input%mokr_vir)
+              if (mytid == 0) then
+                exa_input%nvir = n_mp2no*2
+                exa_input%nkr_vir = n_mp2no
+                deallocate(exa_input%mokr_vir)
+                allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+                deallocate(exa_input%mo_vir)
+                allocate(exa_input%mo_vir(exa_input%nvir))
+                do i = 1, size(exa_input%mokr_vir)
                      exa_input%mokr_vir(i) = exa_input%nkr_occ +i
-              end do
-          else
-             call exacorr_cc_driver (exa_input)
-         end if
+                end do
+                do i = 1, size(exa_input%mo_vir)
+                     exa_input%mo_vir(i) = exa_input%nocc +i
+                end do
+              end if
+           call exacc_sync_cw_mp2no(0,mytid)
+       end if
+
+             call exacorr_cc_driver (exa_input) 
       end if
 
       call exacc_deallocate_cw()
@@ -448,7 +456,6 @@ C
        cspinor%coeff        = scoeff
        cspinor%energy       = seig
        cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
-
 
        deallocate(coeff)
        deallocate(eig)

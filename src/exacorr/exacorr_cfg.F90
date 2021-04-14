@@ -5,7 +5,7 @@ module exacc_cfg
   implicit none
 
 #ifdef VAR_MPI
-  public exacc_sync_cw
+  public exacc_sync_cw, exacc_sync_cw_mp2no
 #endif
   public exacc_deallocate_cw
 
@@ -92,7 +92,7 @@ subroutine exacc_sync_cw_mp2no(exa_MPI_rank,my_MPI_rank)
     call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
   
     end subroutine exacc_sync_cw_mp2no
-  #endif
+
 
 
   subroutine exacc_deallocate_cw()

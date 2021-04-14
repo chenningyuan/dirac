@@ -153,13 +153,6 @@ module exacorr_mp2no
                                        vvoo_id, vovv_id, vvvv_id
          integer(INTD)              :: ao_space_id, occ_space_id, vir_space_id
 
-         integer :: ncycles
-
-         !CCD
-         logical :: CCD, lambda
-
-         !CC2
-         logical :: CC2         !L
 
          !methods
          type(delta_t)      :: f_delta
@@ -174,12 +167,12 @@ module exacorr_mp2no
          if (my_MPI_rank == 0) call print_date(" Starting MP2NO calculation with exatensor")
 
 !        Initialize and register AO and MO spaces and get their IDs for further reference
-         call exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+         call exacorr_mp2no_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
          if (my_MPI_rank == 0) call print_date(" Registered AO and MO spaces")
 
 !        Register and initialize user defined methods needed in the CC calculation
 
-         call exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, &
+         call exacorr_mp2no_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, &
                                   f_delta,orb_set,denom,denom3,j_chol,ff_set)
          if (my_MPI_rank == 0) call print_date(" Initialized and registered tensor methods")
 
@@ -187,10 +180,7 @@ module exacorr_mp2no
          nocc = exa_input%nocc
          nvir = exa_input%nvir
          t_target_precision = exa_input%t_econv
-         CCD = exa_input%ccd
-         CC2= exa_input%CC2     !L
-         lambda = exa_input%lambda
-         ncycles = exa_input%ncycles
+
 
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
@@ -299,7 +289,7 @@ module exacorr_mp2no
             ierr=exatns_tensor_destroy(comm_t%fvv)
             ierr=exatns_tensor_destroy(comm_t%tau)
             ierr=exatns_tensor_destroy(comm_t%hoo)
-            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%hov)
+            ierr=exatns_tensor_destroy(comm_t%hov)
             ierr=exatns_tensor_destroy(comm_t%hvv)
             ierr=exatns_tensor_destroy(comm_t%goo)
             ierr=exatns_tensor_destroy(comm_t%gvv)
@@ -308,7 +298,7 @@ module exacorr_mp2no
             ierr=exatns_tensor_destroy(result_tensor)
             ierr=exatns_tensor_destroy(MP2_density_tensor%prime_vv)
             ierr=exatns_tensor_destroy(one_tensor)
-            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%t1)
+            ierr=exatns_tensor_destroy(comm_t%t1)
             ierr=exatns_tensor_destroy(comm_t%t2)
 
             !Stop ExaTENSOR runtime
@@ -326,7 +316,7 @@ module exacorr_mp2no
 
 !        Clean up global data used to interact with DIRAC/Interest
          
-!         call delete_global_data
+         call delete_global_data
 
 !        Make some noise so that we know we are leaving
          if (my_MPI_rank == 0) then
@@ -442,7 +432,7 @@ module exacorr_mp2no
 
 !-------------------------------------------------------------------------------------------------------------------
 
-        subroutine exacorr_cc_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
+        subroutine exacorr_mp2no_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
 
 !        This subroutine defines and registers all spaces for ExaTensor
 
@@ -587,10 +577,10 @@ module exacorr_mp2no
             call quit('Not enough work for MPI processes')
          end if
 
-        end subroutine exacorr_cc_spaces
+        end subroutine exacorr_mp2no_spaces
 
 
-        subroutine exacorr_cc_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, &
+        subroutine exacorr_mp2no_methods (exa_input,ao_space_id,occ_space_id,vir_space_id, &
                                        f_delta,orb_set,denom,denom3,j_chol, ff_set)
 
 !        This subroutine initalizes and registers all user-defined methods for ExaTensor
@@ -695,11 +685,6 @@ module exacorr_mp2no
          !if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(AointSegment) failed!')
 
          !Register the denominator initializer as a method
-         print *, "mo_occ", mo_occ
-         print *, "mo_vir", mo_vir
-         print *, "nocc", nocc
-         print *, "nvir", nvir
-         print *, "exa_input%level_shift", exa_input%level_shift
          call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift,occ_space_id)
          ierr=exatns_method_register('Denominate_mp2',denom)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
@@ -752,7 +737,7 @@ module exacorr_mp2no
 !         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(imag_zero) failed!')
 
 
-        end subroutine exacorr_cc_methods
+        end subroutine exacorr_mp2no_methods
 
 
 
@@ -1324,7 +1309,6 @@ module exacorr_mp2no
                call print_date('Get the truncated the natural orbital and occupation number from NOs_MO')
                write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
                write(*,"(A15,2X,I4,2X,A15)") 'Now we have', N_reduced, 'New Orbitals'
-               print *, "natural orbital", NOs_MO_reduced
    
    
                flb = 0                       ! we only read virtual orbital 
