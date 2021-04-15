@@ -1167,7 +1167,7 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 c     call memchk('prpesr1 2',work,1)
-C          CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,IBEIG,IPCMO,NASH,
+C          CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,IBEIG,IPCMO,NASH,
 C     &                WORK,KFREE,LFREE,IPRESR)
 c    &                WORK,KFREE,LFREE,10)
 C      call memchk('prpesr1 3',work,1)
@@ -1390,8 +1390,8 @@ C
       CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
       CLOSE(LUCOEF,status='KEEP')
-      CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,WORK(KIBEIG),IPCMO,NASH,
-     &            WORK,KFREE,LFREE,IPRESR)
+      CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,WORK(KIBEIG),
+     &            IPCMO,NASH,WORK,KFREE,LFREE,IPRESR)
       CALL MEMREL('after PRPMAT',WORK,1,KIBEIG,KFREE,LFREE)
 c    &            WORK,KFREE,LFREE,10)
 !d    call memchk('esrTRANS 3',work,1)
@@ -1694,9 +1694,8 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-CMI   CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-      CALL PRPMAO(LU1INT,INDXPR,NNBBASX,
-     &             PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,.TRUE.,NNBBASX,
+     &             PTRI,OP1INT,FIRST,IPRINT)
 C
 C     Get expectation value, using only the matrices containing
 C     integrals

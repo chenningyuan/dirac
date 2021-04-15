@@ -1,8 +1,7 @@
-DIRAC pam run in /home/saue/Dirac/build_norecalc/test/acmoin
-DIRAC serial starts by allocating 64000000 words (488 MB) of memory
-             out of the allowed maximum of 2147483648 words (16384 MB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
-Note: maximum allocatable memory for serial run can be set by pam --aw
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
  *******************************************************************************
  *                                                                             *
@@ -81,56 +80,64 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
- *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
- *    Trond Saue               Universite Toulouse III           France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    Northeast National University     Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           UiT The Arctic University of      Norway        *
+ *    Elke Fasshauer           University of Aarhus              Denmark       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        Lund University                   Sweden        *
  *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
  *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
- *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
  *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Bruno Senjean            University of Leiden              Netherlands   *
+ *    Avijit Shee              University of Michigan            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Technical University of Denmark   Denmark       *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
  *                                                                             *
- *    For the complete list of contributors to the DIRAC code see our          *
- *    website http://www.diracprogram.org                                      *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
@@ -143,17 +150,19 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC17 (2017),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
- *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
- *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
- *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
- *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
- *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
- *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
+ *    Release DIRAC19 (2019), written by                                       *
+ *    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,     *
+ *    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *
+ *    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *
+ *    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *
+ *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
+ *    M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen,         *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, M. Repisky,  *
+ *    K. Ruud, P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,  *
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *******************************************************************************
 
@@ -161,10 +170,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Version information
 -------------------
 
-Branch        | norecalc
-Commit hash   | 120e19c
+Branch        | ayaki_atmsym
+Commit hash   | 0d8497cb9
 Commit author | Trond Saue
-Commit date   | Fri Mar 10 19:54:13 2017 +0100
+Commit date   | Wed Mar 3 18:58:48 2021 +0100
 
 
 Configuration and build information
@@ -172,39 +181,46 @@ Configuration and build information
 
 Who compiled             | saue
 Compiled on server       | dirac
-Operating system         | Linux-4.4.0-34-generic
-CMake version            | 3.5.1
+Operating system         | Linux-5.4.0-65-generic
+CMake version            | 3.10.2
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2017-03-16 20:41:26.640514
-Python version           | 2.7.1
+Configuration time       | 2021-03-03 20:18:02.495905
+Python version           | 3.6.9
 Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 5.4.0
-Fortran compiler flags   |   -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+Fortran compiler version | 7.5.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
 C compiler               | /usr/bin/gcc
-C compiler version       | 5.4.0
-C compiler flags         |   -g
+C compiler version       | 7.5.0
+C compiler flags         |  -g -g
 C++ compiler             | /usr/bin/g++
-C++ compiler version     | 5.4.0
-C++ compiler flags       |   -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+C++ compiler version     | 7.5.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-base/atlas/liblapack.so;/usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-base/libcblas.so;/usr/lib/atlas-base/libatlas.so
+Math libraries           | /usr/lib/x86_64-linux-gnu/libatlas.so;/usr/lib/x86_64-linux-gnu/atlas/liblapack.so;/usr/lib/x86_64-linux-gnu/libf77blas.so;/usr/lib/x86_64-linux-gnu/libcblas.so;/usr/lib/x86_64-linux-gnu/libatlas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_ATLAS_BLAS;HAVE_ATLAS_LAPACK;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
+ LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Mar 17 08:05:43 2017
+     Date and time (Linux)  : Wed Mar  3 21:33:52 2021
      Host name              : dirac                                   
 
 
@@ -282,10 +298,12 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+ The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)
+        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 
+        Database developed by J. Baker, M. Douma, and S. Kotochigova                       
+  Available at http://physics.nist.gov/constants                                           
+  National Institute of Standards and Technology, Gaithersburg, MD 20899                   
+ * The speed of light :        137.0359992
    * The speed of light scaled by  1.46D-01 to :  20.0000000000
  * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -306,7 +324,7 @@ FINISH
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Gaussian charge distribution.
+ Using default nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -338,7 +356,7 @@ FINISH
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
 
-  Nuclear Gaussian exponent for atom of charge   7.000 :    6.2865615725D+08
+  Nuclear Gaussian exponent for atom of charge   7.000 :    6.2865606673D+08
 
 
   Symmetry Operations
@@ -412,17 +430,6 @@ Point group: Cs
 
 
 
-                                 Isotopic Masses
-                                 ---------------
-
-                           N          14.003074
-
-                       Total mass:    14.003074 amu
-                       Natural abundance:  99.630 %
-
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
-
-
   Atoms and basis sets
   --------------------
 
@@ -487,6 +494,13 @@ N      0.0000000000   0.0000000000   0.0000000000
 
   This is an atomic calculation.
 
+                       * Total mass:    14.003074 amu
+                       * Natural abundance:  99.630 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
 
                                 GETLAB: AO-labels
                                 -----------------
@@ -538,6 +552,11 @@ N      0.0000000000   0.0000000000   0.0000000000
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * One-step Infinite-Order Two-component Hamiltonian
    Reference: 
@@ -562,8 +581,6 @@ N      0.0000000000   0.0000000000   0.0000000000
    - LS-integrals:     0
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
 ===========================================================================
    Set-up for AMFI/RELSCF calculations
 ===========================================================================
@@ -608,8 +625,6 @@ N      0.0000000000   0.0000000000   0.0000000000
  * Trial vectors read from file DFCOEF
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -677,7 +692,7 @@ N      0.0000000000   0.0000000000   0.0000000000
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
 
-  Nuclear Gaussian exponent for atom of charge   7.000 :    6.2865615725D+08
+  Nuclear Gaussian exponent for atom of charge   7.000 :    6.2865606673D+08
 
 
   Symmetry Operations
@@ -751,17 +766,6 @@ Point group: Cs
 
 
 
-                                 Isotopic Masses
-                                 ---------------
-
-                           N          14.003074
-
-                       Total mass:    14.003074 amu
-                       Natural abundance:  99.630 %
-
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
-
-
   Atoms and basis sets
   --------------------
 
@@ -827,6 +831,13 @@ N      0.0000000000   0.0000000000   0.0000000000
 
   This is an atomic calculation.
 
+                       * Total mass:    14.003074 amu
+                       * Natural abundance:  99.630 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
 
                       Nuclear contribution to dipole moments
                       --------------------------------------
@@ -837,6 +848,8 @@ N      0.0000000000   0.0000000000   0.0000000000
                     y      0.00000000      0.00000000
 
                         1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.00146600s and (WALL)  0.00100000s
 
 
                        Generating Lowdin canonical matrix:
@@ -939,7 +952,7 @@ N      0.0000000000   0.0000000000   0.0000000000
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
 
-  Nuclear Gaussian exponent for atom of charge   7.000 :    6.2865615725D+08
+  Nuclear Gaussian exponent for atom of charge   7.000 :    6.2865606673D+08
 
 
                       Nuclear contribution to dipole moments
@@ -951,6 +964,8 @@ N      0.0000000000   0.0000000000   0.0000000000
                     y      0.00000000      0.00000000
 
                         1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.00030800s and (WALL)  0.00000000s
 
 
                        Generating Lowdin canonical matrix:
@@ -976,16 +991,16 @@ Total no. of orbitals           (NORB):    26
 
   GETH2CAO: asked for 2c Hamiltonian (param.I2COFK=7):H2CAO_LL
 
-########## START ITERATION NO.   1 ##########   Fri Mar 17 08:05:43 2017
+########## START ITERATION NO.   1 ##########   Wed Mar  3 21:33:52 2021
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -55.7409586021774217
-* Heading :DIRAC: No title specified !!!                     Fri Mar 17 08:05:43 2017
+* REACMO: Coefficients read from file DFCOEF - Total energy: -55.7409586021796102
+* Heading :DIRAC: No title specified !!!                     Wed Mar  3 21:33:52 2021
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.15%   35.17%   28.68%   38.48%   0.00400000s
-It.    1    -55.74095860218      5.57D+01  0.00D+00  8.36D-08               0.01200000s   LL             Fri Mar 17
+SOfock:LL  1.00D-12   10.15%   35.17%   28.68%   38.48%   0.00201000s
+It.    1    -55.74095860218      5.57D+01  0.00D+00  3.00D-08               0.00532100s   LL             Wed Mar  3
 
 
                                    SCF - CYCLE
@@ -1001,23 +1016,23 @@ It.    1    -55.74095860218      5.57D+01  0.00D+00  8.36D-08               0.01
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -55.74095860218      5.57D+01  0.00D+00  8.36D-08               0.01200000s   LL             Fri Mar 17
+It.    1    -55.74095860218      5.57D+01  0.00D+00  3.00D-08               0.00532100s   LL             Wed Mar  3
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.01200000s
+      LL           :    0.00600000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -55.740958602181536
+   Electronic energy                        :    -55.740958602179539
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      0.000000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -55.740958602181536
+   Total energy                             :    -55.740958602179539
 
 
                                    Eigenvalues
@@ -1026,19 +1041,19 @@ It.    1    -55.74095860218      5.57D+01  0.00D+00  8.36D-08               0.01
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-  -16.071631467319  ( 2)      -1.008512656539  ( 2)
+  -16.071631479129  ( 2)      -1.008512656775  ( 2)
   * Open shell #1, f = 0.5000
-   -0.508546830133  ( 2)      -0.478062253168  ( 4)
+   -0.351204110694  ( 2)      -0.322899564238  ( 4)
   * Virtual eigenvalues, f = 0.0000
-    0.872991292611  ( 2)       0.903432117191  ( 4)       0.908417605780  ( 2)       2.042719167033  ( 4)       2.048407955108  ( 6)
-    4.559750874269  ( 2)       4.686355661243  ( 4)       8.898810486804  ( 2)      23.179459566506  ( 2)      24.197239261248  ( 4)
-   41.107276019584  ( 2)     133.608942238064  ( 2)     371.739710790629  ( 2)     964.362955498736  ( 2)    2632.010300232014  ( 2)
+    0.872991274563  ( 2)       0.903432120975  ( 4)       0.908417606155  ( 2)       2.042719163425  ( 4)       2.048407952575  ( 6)
+    4.559750861922  ( 2)       4.686355657234  ( 4)       8.898810482489  ( 2)      23.179459554920  ( 2)      24.197239251944  ( 4)
+   41.107276008996  ( 2)     133.608942220505  ( 2)     371.739710765232  ( 2)     964.362955467306  ( 2)    2632.010300198437  ( 2)
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.87299129 au (symmetry E1 )
-  - E(HOMO) :    -0.47806225 au (symmetry E1 )
+    E(LUMO) :     0.87299127 au (symmetry E1 )
+  - E(HOMO) :    -0.32289956 au (symmetry E1 )
   ------------------------------------------
-    gap     :     1.35105355 au
+    gap     :     1.19589084 au
 
 
 
@@ -1057,8 +1072,8 @@ It.    1    -55.74095860218      5.57D+01  0.00D+00  8.36D-08               0.01
                                  ----------------
 
 
-* Electronic eigenvalue no.  1: -16.071631633507       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   1: -16.071631479129       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1067,8 +1082,8 @@ Gross     Total   |    L A' N  s
  alpha    1.0000  |      1.0000
  beta     0.0000  |      0.0000
 
-* Electronic eigenvalue no.  2: -1.0085127237522       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   2: -1.0085126567748       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1077,8 +1092,8 @@ Gross     Total   |    L A' N  s
  alpha    1.0000  |      1.0000
  beta     0.0000  |      0.0000
 
-* Electronic eigenvalue no.  3: -0.3512041625403       (Occupation : f = 0.5000)           
-==========================================================================================
+* Electronic eigenvalue no.   3: -0.3512041106942       (Occupation : f = 0.5000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1087,8 +1102,8 @@ Gross     Total   |    L A' N  px     L A' N  py     L A" N  pz
  alpha    0.6667  |      0.3333         0.3333         0.0000
  beta     0.3333  |      0.0000         0.0000         0.3333
 
-* Electronic eigenvalue no.  4: -0.3228996161992       (Occupation : f = 0.5000)           
-==========================================================================================
+* Electronic eigenvalue no.   4: -0.3228995642375       (Occupation : f = 0.5000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1097,8 +1112,8 @@ Gross     Total   |    L A' N  px     L A' N  py     L A" N  pz
  alpha    0.3333  |      0.1667         0.1667         0.0000
  beta     0.6667  |      0.0000         0.0000         0.6667
 
-* Electronic eigenvalue no.  5: -0.3228996161992       (Occupation : f = 0.5000)           
-==========================================================================================
+* Electronic eigenvalue no.   5: -0.3228995642375       (Occupation : f = 0.5000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1120,15 +1135,15 @@ Gross      Total    |    L A' N  s      L A' N  px     L A' N  py     L A" N  pz
 
 
  
-     Date and time (Linux)  : Fri Mar 17 08:05:43 2017
+     Date and time (Linux)  : Wed Mar  3 21:33:52 2021
      Host name              : dirac                                   
 
->>>> Node 0, utime: 0, stime: 0, minflt: 1393, majflt: 0, nvcsw: 1, nivcsw: 3, maxrss: 79880
+>>>> Node 0, utime: 0, stime: 0, minflt: 4124, majflt: 0, nvcsw: 1, nivcsw: 0, maxrss: 26788
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       139.57
+  Mean allocation size (Mb) :       154.26
   
   Largest          10  allocations
   
@@ -1143,10 +1158,12 @@ Gross      Total    |    L A' N  s      L A' N  px     L A' N  py     L A" N  pz
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
   
-  Peak memory usage    (Mb) :       488.00
+  Peak memory usage:       488.29 MB
+  Peak memory usage:        0.477 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+DIRAC pam run in /home/saue/Dirac/build_atmsym/test/acmoin

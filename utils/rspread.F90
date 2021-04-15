@@ -31,16 +31,16 @@
       INTEGER   NARG,IARG,JARG
       CHARACTER*80 ARGC
 !
-      NARG = IARGC()
+      NARG = command_argument_count()
       IF (NARG .EQ. 0) THEN
-         CALL GETARG(0,ARGC)
-         JARG = LNBLNK(ARGC)
+         CALL get_command_argument(0,ARGC)
+         JARG = LEN_TRIM(ARGC)
          WRITE(6,'(/3A/)') 'Usage: ',ARGC(1:JARG),' file1 file2 ...'
          STOP ' '
       END IF
       DO IARG = 1,NARG
-         CALL GETARG(IARG,ARGC)
-         JARG = LNBLNK(ARGC)
+         CALL get_command_argument(IARG,ARGC)
+         JARG = LEN_TRIM(ARGC)
          WRITE (LUPRI, '(/2A/)')                                        &
        ' Solution vectors found on file : ',ARGC(1:JARG)
 !

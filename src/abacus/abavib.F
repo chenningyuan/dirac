@@ -1280,6 +1280,7 @@ C  /* Deck prtfun */
      &                  LINEAR,NCORD,NUMMOD)
 #include "implicit.h"
 #include "codata.h"
+#include "pi.h"
 C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
@@ -3181,6 +3182,7 @@ C
 #include "cbilnr.h"
 #include "nuclei.h"
 #include "codata.h"
+#include "pi.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),
@@ -4027,6 +4029,7 @@ C
 #include "cbivib.h"
 #include "nuclei.h"
 #include "codata.h"
+#include "pi.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
      &          WW(3), ZZ(3), UV(12),

@@ -488,8 +488,8 @@ C --------------------------------------------
            IREP = ISYM - 1
            IOPSY = JBTOF(ISYM-1,1)
            CALL DZERO(CONMAT,N2ORBXQ)
-           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,.TRUE.,WORK,WORK(KCMO),
+     &                 WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 C --------------------------------------------------------------------
 C ...  calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
 C    as expectation value
@@ -510,14 +510,16 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 #ifdef MOD_LAO_REARRANGED
 !            gosia:
              if (lao_lr_rearrange) then
-               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
 #endif
-             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
@@ -694,8 +696,8 @@ C --------------------------------------------
            IREP = ISYM - 1
            IOPSY = JBTOF(ISYM-1,1)
            CALL DZERO(CONMAT,N2ORBXQ)
-           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,.TRUE.,WORK,WORK(KCMO),
+     &                 WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
            IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(2A)')
      &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
@@ -722,23 +724,19 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !            gosia:
 #ifdef MOD_LAO_REARRANGED
              if (lao_lr_rearrange) then
-               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
 #endif
-             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-CTROND
-            IF(FULMAT) THEN
-              CALL FULMAT2('S',NORBT,NORBT,WORK(KTMAT))
-            ENDIF
-!            WRITE(LUPRI,'(2A,I5)')
-!     &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR2),IREP2
-!            CALL PRQMAT(WORK(KTMAT),NORBT,NORBT,NORBT,
-!     &              NORBT,NZ,IPQTOQ(1,IREP2),LUPRI )
-CTROND
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
+                IF(FULMAT) THEN
+                  CALL FULMAT2('S',NORBT,NORBT,WORK(KTMAT))
+                ENDIF
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
 #endif
@@ -1140,8 +1138,8 @@ C Allocate memory for storing components of dh(B)/dB_c
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
          IREP   = IPRPSYM(INDXPR) - 1
-         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),CMO,
-     &      IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),.TRUE.,WORK,
+     &               CMO,IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
          IF (IPRPRP.GE.5) THEN
            WRITE(LUPRI,'(/A,A16)') 
      &     'ONELON: *MO-matrix of property ',
@@ -2390,8 +2388,8 @@ C ....  DO NOT PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
        IREP   = ISYM - 1
        CALL DZERO(WORK(KT2MAT),N2ORBXQ)
 C    --- Get the T(2) symm.connection matrix in MO basis ---
-       CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),CMO,IBEIG,
-     &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+       CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),.TRUE.,WORK,
+     &             CMO,IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
 C ... Call TTRA 
         AH = .FALSE. ! S(2) is hermitian ...
@@ -2571,7 +2569,7 @@ C DO NOT PERFORM THE PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
 C    --- Get the S(1) connection matrix in MO basis ---
        IF (ITIM1.NE.-1)
      &  CALL QUIT('LORDRNT:Wrong TRsymm. of S(1)!')
-       CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+       CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
        DO IW1 = 1, 3
@@ -2585,7 +2583,7 @@ C ... it's the natural connection
          IREP2   = ISYM2 - 1 ! 0-7
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis ---
-         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ... it's the symmetric connection
@@ -2597,7 +2595,7 @@ C ... it's the symmetric connection
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the S(1) connection matrix in MO basis ---
          IF (ITIM2.NE.-1) CALL QUIT('LORDRNT: Wrong TR symm. of S(1)!')
-         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 C  ... make a product of operators S(1)_ir1 W(1)/S(1)_ir2 - 
@@ -2705,7 +2703,7 @@ C     ====   Get F(1)=h(1)+u(1) MO terms ====
         IREP2   = ISYM2 - 1
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
-        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ELSE
         INDXPR2 = IPCON21(IW1) ! Get index of +S(1)
@@ -2716,7 +2714,7 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         IF (ITIM2.NE.-1) CALL QUIT('LORDRNT:Wron TR of s(1)!')
-        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
@@ -2813,7 +2811,7 @@ C ...  get W(1)_icomp(I1) into WORK(KSMAT)
         IREP1   = ISYM1 - 1 ! 0-7
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KSMAT) ---
-        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ...  get S(1)_icomp(I1) into WORK(KSMAT)
@@ -2825,7 +2823,7 @@ C ...  get S(1)_icomp(I1) into WORK(KSMAT)
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
         IF (ITIM1.NE.-1) CALL QUIT('LORDRNT: Wrong TR symm. of S(1)!')
-        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 

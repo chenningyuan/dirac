@@ -88,6 +88,7 @@ module fde_evaluators_dirac
    integer, save :: nba, nba_orb, nba_aux
    integer, save :: dfcoef_unit
    integer, save :: nz = 4
+   integer, save :: mat_dim_quat_as_1d
    integer, parameter :: fde_max_nr_mat = 10
    integer, save :: isymop(fde_max_nr_mat)
    integer, save :: ihrmop(fde_max_nr_mat)
@@ -535,9 +536,11 @@ module fde_evaluators_dirac
       logical, intent(in), optional :: myprint
       logical :: printlocal
 ! internal variables
-      INTEGER :: ierr
+      INTEGER :: ierr, i, j
       real(kind=8), allocatable :: cmo(:)
       real(8) :: dummy
+      real(kind=8), allocatable :: dmat2(:)
+      integer :: ia, ib
 
       if (present(myprint)) then
          printlocal = myprint
@@ -545,10 +548,8 @@ module fde_evaluators_dirac
          printlocal = .False.
       endif
 
-      allocate(dmat(n2bbasxq))
+      allocate(dmat(mat_dim_quat_as_1d))
       dmat = 0.0d0
-      allocate(cmo(ncmotq))
-      cmo = 0.0d0
 
       select case(level)
       case('MP2','CCSD')
@@ -560,6 +561,9 @@ module fde_evaluators_dirac
          end if
       case default
 !     HF density used
+         allocate(cmo(ncmotq))
+         cmo = 0.0d0
+
          if (printlocal) write(lupri,*) 'Reading DFCOEF'
          call opnfil(LUCOEF,'DFCOEF','UNKNOWN','EMBDRV')
          call reacmo(lucoef,    &
@@ -570,10 +574,18 @@ module fde_evaluators_dirac
                              dummy,     &
                              2)
 !     SCF construct density matrix
-      call denmat(dmat,cmo,0)
+         if (nfmat.gt.1) then 
+            allocate(dmat2(mat_dim_quat_as_1d*nfmat))
+            dmat2 = 0.0d0
+            call denmat(dmat2,cmo,1)
+            call gtdoav(nba, nz, nfmat, dmat2, 1)
+            dmat = dmat2(1:mat_dim_quat_as_1d)
+            deallocate(dmat2)
+         else
+            call denmat(dmat,cmo,0)
+         end if
+         deallocate(cmo)
       end select
-
-      deallocate(cmo)
 
       end subroutine fde_dirac_get_dmat_from_dfcoef 
 
@@ -839,17 +851,18 @@ module fde_evaluators_dirac
 
          end subroutine fde_dirac_embpot_via_aoproper
 
+
 !   ----------------------------------------------------------------------------
-      subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat,fmat)
+      subroutine fde_dirac_embpot_via_integrator(mat_dim,dmat_0,fmat)
 !   ----------------------------------------------------------------------------
          integer, intent(in) :: mat_dim
-         real(kind=8), target, intent(in) :: dmat(*)
+         real(kind=8), target, intent(in) :: dmat_0(*)
          real(kind=8), target  :: fmat(*)
 
          call fde_dirac_emb_matrices_via_integration(      &
                                   fde_mat_dim   = mat_dim, &
                                   fde_nz        = nz,      &
-                                  fde_dmat_0    = dmat,    &
+                                  fde_dmat_0    = dmat_0,  &
                                   fde_nr_dmat   = 0,       &
                                   fde_nr_fmat   = 1,       &
                                   fde_fmat      = fmat,    &
@@ -873,23 +886,21 @@ module fde_evaluators_dirac
 
       function fde_dirac_embpot_static_energy()
          real(8)         :: fde_dirac_embpot_static_energy
+         real(8)         :: fde_dirac_active_nr_electrons
          integer         :: i
 
 ! todo: generalize to other densities
          call fde_dirac_get_density_from_dfcoef('DHF ',fde_grid_sv,gf_active_sv)
 
          fde_dirac_embpot_static_energy = 0.0d0
-!        print *, "debug: number of points ",fde_grid_sv%npoints
+         fde_dirac_active_nr_electrons = 0.0d0
          do i = 1, fde_grid_sv%npoints
             fde_dirac_embpot_static_energy = fde_dirac_embpot_static_energy &
                      + fde_grid_sv%w(i) * gf_active_sv%n(i) * fde_static_vemb(i) 
-!           if ( i .eq. 5 ) then
-!              print *, "w: ",fde_grid_sv%w(i)
-!              print *, "n: ",gf_active_sv%n(i)
-!              print *, "v: ",fde_static_vemb(i)
-!           endif
+            fde_dirac_active_nr_electrons = fde_dirac_active_nr_electrons + fde_grid_sv%w(i) * gf_active_sv%n(i)
          end do
-         print *, "debug, embpot energy: ",fde_dirac_embpot_static_energy
+         print *, "FDE excess energy (<0|v_emb(r)|0>) removed from SCF energy: ",fde_dirac_embpot_static_energy
+         print *, "Integrated number of electrons in active subsystem        : ",fde_dirac_active_nr_electrons
 
       end function
 
@@ -1184,13 +1195,15 @@ module fde_evaluators_dirac
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
-         integer :: mat_dim_quat_as_1d
 
          nba_orb = ntbas(0)
          nba = nba_orb
          dfcoef_unit   = LUCOEF
          mat_dim_quat_as_1d = n2bbasxq
          nr_boson_irreps = nbsym
+
+!        call fde_dirac_set_nz(nz)
+
 
       end subroutine fde_dirac_data_interface
 

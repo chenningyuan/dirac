@@ -1882,7 +1882,7 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
@@ -1901,7 +1901,7 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(INDR,IFREQ)).GT.DTOL) THEN

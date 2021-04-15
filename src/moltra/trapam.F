@@ -36,6 +36,9 @@ C***********************************************************************
 
       Use memory_allocator
       Use moltra_labeling
+#ifdef MOD_EXACORR
+      Use exacorr_ao_to_mo
+#endif
 
 #include "implicit.h"
 #include "priunit.h"
@@ -132,7 +135,7 @@ C
         ENDDO
       ENDDO
 C
-C
+ 
       CALL Make_Kramer_to_SpinorIndex (NFSYM,NSTR)
 
       KFRSAV = KFREE
@@ -145,6 +148,7 @@ C
          CALL TRAPRI(4,I,WORK(KVEC(I,1)),WORK(KVEC(I,2)),
      &                 WORK(KVEC(I,3)),WORK(KVEC(I,4)),NSTR)
       ENDDO
+
 C
 C     Calculate dimensions of coefficient arrays
 C     The coefficients are stored as 4 arrays of two matrices each
@@ -531,6 +535,17 @@ C
       ENDIF
 C
       CALL FLSHFO(LUPRI)
+
+      if (tra_exacorr) then
+#ifndef MOD_EXACORR
+          call quit(
+     &    'moltra error: tra_exacorr not included in this version')
+#else
+          call exa_moltra()
+          no4ind = .true. ! skip conventional 4-index transformation
+#endif
+      end if
+
 C
 C     Call driver for 4-index transformation
 C     --------------------------------------
@@ -538,7 +553,7 @@ C
       IF (.NOT.NO4IND)
      &   CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &               NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
-     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &               TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
 C
@@ -872,7 +887,7 @@ C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRMP2,KQ,KE,KIBE,
      &            NDMOQR,ICMOQR,NSTR,.TRUE.,EMP2,
-     &            MP2_MSOUT,MP2_ANTIS,MP2_INTFLG)
+     &            MP2_ANTIS,MP2_INTFLG)
 C
 C     Print MP2 energy
 C     ----------------
@@ -1209,7 +1224,7 @@ C
       IF (.NOT.NO4IND)
      &   CALL LAGTAU1(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRTRA,KQ,KE,
      &               KIBE,NDMOQR,ICMOQR,NSTR,
-     &               TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &               TRA_ANTIS,ITRA_INTFL4)
 C
 C      Print timing information
 C
@@ -1353,7 +1368,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck PAMTR1 */
       SUBROUTINE PAMTR1(WORK,KFREE,LFREE,IPRINT,KQ,KE,KIBE,
-     &           NDMOQR,ICMOQR,NSTR,LMP2,EMP2,MSOUT,ANTIS,INTFLG)
+     &           NDMOQR,ICMOQR,NSTR,LMP2,EMP2,ANTIS,INTFLG)
 C***********************************************************************
 C
 C     Subdriver for 4index transformation.
@@ -1365,8 +1380,6 @@ C     NSTR(ifrp,0,i) - total number of orbitals for index i
 C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
 C     LMP2  = .TRUE. - evaluate MP2 energy
-C     MSOUT = .TRUE. - write transformed integrals to file
-C     note TODO: choice of MSOUT is not implemented!
 C     ANTIS = .TRUE. - anti-symmetrize integrals
 C     note TODO: ANTIS is not implemented!
 C     INTFLG - flag of what integral types to transform
@@ -1388,7 +1401,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      LOGICAL MSOUT,ANTIS,LMP2
+      LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),DINTSKP(4,2),WORK(*)
 C
@@ -1455,29 +1468,21 @@ C
          CALL QUIT('PAMTR1: .ANTIS is not implemented!')
       ENDIF
       IF (ISTRAT.EQ.1) THEN
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 1')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 1')
           CALL TRDR1T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.2) THEN
-          IF (MSOUT)
-     &    CALL QUIT('PAMTR1: MSOUT not implemented for strategy 2')
           IF (.NOT.LMP2)
      &    CALL QUIT('PAMTR1: Only MP2 implemented for strategy 2')
           CALL TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOQR,ICMOQR,NSTR,
      &                ANTIS,LMP2,EMP2,KINDX,KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.3) THEN
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 3')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 3')
           CALL TRDR3T(WORK,KFREE,LFREE,IPRINT,INTFLG,NSTR,
      &                ANTIS,LMP2,WORK(KINDX),KQ,KE,KIBE,DINTSKP)
       ELSEIF (ISTRAT.EQ.4) THEN
-          IF (.NOT.MSOUT)
-     &    CALL QUIT('PAMTR1: not MSOUT not implemented for strategy 4')
           IF (LMP2)
      &    CALL QUIT('PAMTR1: MP2 not implemented for strategy 4')
           CALL TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,
@@ -1486,7 +1491,6 @@ C
       ELSEIF (ISTRAT.EQ.5) THEN
           CALL QUIT('PAMTR1: strategy 5 can only do lagrangians')
       ELSEIF (ISTRAT.EQ.6) THEN
-c..not yet activated
           CALL TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,
      &                KGAB,KDRIJ,NSTR,
      &                ANTIS,LMP2,KINDX,KQ,KE,KIBE,DINTSKP)
@@ -1505,7 +1509,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lagtau1 */
       SUBROUTINE LAGTAU1(XMO,TMATRX1,TMATRX2,WORK,KFREE,LFREE,IPRINT,KQ,
-     &                   KE,KIBE,NDMOQR,ICMOQR,NSTR,MSOUT,ANTIS,INTFLG)
+     &                   KE,KIBE,NDMOQR,ICMOQR,NSTR,ANTIS,INTFLG)
 C***********************************************************************
 C       
 C     Subdriver for 4index transformation.
@@ -1516,8 +1520,6 @@ C     KIBE(ifrp,n)   - adresses of single group identification (for spinfree cal
 C     NSTR(ifrp,0,i) - total number of orbitals for index i
 C     NSTR(ifrp,1,i) - number of electronic orbitals for index i
 C     NSTR(ifrp,2,i) - number of positronic orbitals for index i
-C     MSOUT = .TRUE. - write transformed integrals to file
-C     note TODO: choice of MSOUT is not implemented!
 C     ANTIS = .TRUE. - anti-symmetrize integrals
 C     note TODO: ANTIS is not implemented!
 C     INTFLG - flag of what integral types to transform
@@ -1539,7 +1541,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      LOGICAL MSOUT,ANTIS
+      LOGICAL ANTIS
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION XMO(*)
       DIMENSION NSTR(2,0:2,4),NDMOQR(2,2,4),ICMOQR(2,4),
@@ -4129,7 +4131,7 @@ C       --------------------------------------
 C
         CALL PAMTR1(WORK,KFREE,LFREE,IPRRES,KQ,KE,KIBE,
      &              NDMOQR,ICMOQR,NSTR,.FALSE.,DUMMY,
-     &              .TRUE.,.FALSE.,INTRES)
+     &              .FALSE.,INTRES)
 C
 C        Print timing information
 C
@@ -5063,9 +5065,11 @@ C
 C
       CALL QENTER('TRANOD')
       call legacy_lwork_get(LWORK)
-      call alloc(WORK,LWORK,id='WORK in TRANOD')
 #include "memint.h"
+      call alloc(WORK,LWORK,id='WORK in TRANOD')
       KFRSAV = KFREE
+      CALL DZERO(DINTSKP,8)
+
 C
 C     Initialize the common blocks.
 C
@@ -5074,7 +5078,6 @@ C
       CALL TRAPARI(WORK,KFREE,LFREE,KQ,KE,KIBE,
      &             KINDX,KGAB,KDRIJ,
      &             INTFLG,NSTR,ANTIS,LMP2)
-      CALL DZERO(DINTSKP,8)
 C
       IF (ISTRAT.EQ.1) THEN
          WRITE(LUPRI,'(A)')

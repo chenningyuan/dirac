@@ -81,7 +81,7 @@ contains
   ! Internal variables
 
   logical :: tobe, twocomp, x2c
-  integer :: i, ifrp, idum, ier, nloc, nmax, iunit
+  integer :: i, ifrp, idum, ier, nloc, nmax, iunit, iopt,ioer
   real*8  :: toterg, second
   character*8  :: chdum
   character*72 :: selmos
@@ -252,17 +252,22 @@ contains
   keyform = 0
   inquire(file='DFCOEF',exist=tobe)
   if(tobe) keyform = 1
-  inquire(file='DFPCMO',exist=tobe)
-  if(tobe) keyform = 2
+!  inquire(file='DFPCMO',exist=tobe)
+!  if(tobe) keyform = 2
   if(keyform == 0)then
     write(var%lupri,'(a)') 'init_func: Coefficient file not found!'
-    write(var%lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
+!    write(var%lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
     call quit('init_func: Coefficients not found !')
   endif
 
   ! Read coefficients
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
-
+  !  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
+  open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
+  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
+  iopt = 2
+  call REACMO(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,iopt)
+  close(var%lucoef,status='keep')
+  
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
   call selcfs_mod(cmo,ifrp,scoef,nloc,isel,0,nloc,var%nfbas(ifrp,0),var%norb(ifrp))
@@ -1615,7 +1620,7 @@ contains
 
    ! Internal variables
    integer :: ifrp, nz, no, nb, nloc, ier
-   integer :: i, ii, iz, ioff
+   integer :: i, ii, iz, ioff,iopt,ioer
    real*8  :: toterg
 
    integer, allocatable :: ibeig(:)
@@ -1634,7 +1639,11 @@ contains
   allocate( ibeig(var%norbt), stat=ier ); call errall(ier,'wcmo2file','ibeig')
 
   ! read EIG, IBEIG and TOTERG
-  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
+  !  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
+  open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
+  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
+  iopt = 14
+  call REACMO(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,iopt)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1651,7 +1660,9 @@ contains
   endif
 
   ! write MO to file and close him
-  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
+  !  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
+  call WRICMO(var%lucoef,CMO,EIG,IBEIG,TOTERG,.FALSE.) ! SSYM=F in C1
+  close(var%lucoef,status='keep')
 
   ! deallocate arrays
   deallocate( cmo   )
