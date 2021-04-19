@@ -483,6 +483,7 @@ module talsh_mp2no
          integer,allocatable      :: index(:)
          integer                  :: i,j
          integer                  :: ierr
+         integer                  :: nmo_hf
          real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
 
 
@@ -493,26 +494,27 @@ module talsh_mp2no
          nao = qorbital_hf%nao
          nno = size(NOs_AO,2)
          nmo = nocc+nno
+         nmo_hf = qorbital_hf%nmo
          allocate(index(nmo))
          do i = 1, nmo
             index(i) = i ! we set the index compatible with the fact that we store all mo's
          end do
 
-         call alloc_mo(qorbital,nao,nmo,4)
-         qorbital%allocated = qorbital_hf%allocated
+         call alloc_mo(qorbital,nao,nmo_hf,4)
          qorbital%restricted = qorbital_hf%restricted
          qorbital%complex_algebra = qorbital_hf%complex_algebra
          qorbital%total_energy = qorbital_hf%total_energy
          qorbital%fermion_irrep = qorbital_hf%fermion_irrep
          qorbital%boson_irrep = 0
          qorbital%index = index
+         
 
 
          do i = 1, nocc
             qorbital%energy(i)=qorbital_hf%energy(i)
          end do
 
-         do i = nocc+1, qorbital%nmo
+         do i = nocc+1, nmo
             qorbital%energy(i)=New_orbital_energy(i-nocc)
 !            qorbital%energy(i)=qorbital_hf%energy(i)
          end do
@@ -527,7 +529,7 @@ module talsh_mp2no
          enddo
 
 
-         do  j = nocc+1, qorbital%nmo
+         do  j = nocc+1, nmo
             do  i = 1, qorbital%nao
                   qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
                   qorbital%coeff(i,j,2)=NOs_AO(i,j-nocc,2)

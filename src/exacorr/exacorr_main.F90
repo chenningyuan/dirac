@@ -107,15 +107,16 @@
             if (mytid == 0) then
                   if (exa_input%mp2no) then
                     call talsh_mp2no_driver (exa_input,n_mp2no)
-                    exa_input%nvir = n_mp2no*2
-                    exa_input%nkr_vir = n_mp2no
-                    deallocate(exa_input%mokr_vir)
-                    allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-                    do i = 1, size(exa_input%mokr_vir)
-                           exa_input%mokr_vir(i) = exa_input%nkr_occ +i
-                    end do
-                  end if
-                  call talsh_cc_driver (exa_input)
+!                    exa_input%nvir = n_mp2no*2
+!                    exa_input%nkr_vir = n_mp2no
+!                    deallocate(exa_input%mokr_vir)
+!                    allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+!                    do i = 1, size(exa_input%mokr_vir)
+!                           exa_input%mokr_vir(i) = exa_input%nkr_occ +i
+!                    end do
+                  else
+                    call talsh_cc_driver (exa_input)
+                  end if                  
              end if
  
          else
