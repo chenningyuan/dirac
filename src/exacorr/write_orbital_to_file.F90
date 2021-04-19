@@ -323,7 +323,6 @@ module write_orbital_to_file
             label(3) = timex
             label(4) = 'INFO    '
             write (lucoef) label
-            print *, "qorbital%nmo", qorbital%nmo
             write (lucoef) text,nsym,nzbuf,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
 
    

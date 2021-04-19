@@ -5,7 +5,7 @@ module exacc_cfg
   implicit none
 
 #ifdef VAR_MPI
-  public exacc_sync_cw, exacc_sync_cw_mp2no
+  public exacc_sync_cw
 #endif
   public exacc_deallocate_cw
 
@@ -70,29 +70,6 @@ contains
 
   end subroutine exacc_sync_cw
 #endif
-
-
-subroutine exacc_sync_cw_mp2no(exa_MPI_rank,my_MPI_rank)
-  !
-  ! please add bcast here if a new variable has been added to the list above
-  !
-    use interface_to_mpi
-  
-    integer :: exa_MPI_rank,my_MPI_rank
-  
-    if (my_MPI_rank /= exa_MPI_rank) deallocate(exa_input%mokr_vir)
-    if (my_MPI_rank /= exa_MPI_rank) deallocate(exa_input%mo_vir)
-
-    call interface_mpi_bcast(exa_input%nkr_vir,1,exa_MPI_rank,global_communicator)
-    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-    call interface_mpi_bcast(exa_input%nvir,1,exa_MPI_rank,global_communicator)
-    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%mo_vir(exa_input%nvir))
-    
-    call interface_mpi_bcast(exa_input%mokr_vir,exa_input%nkr_vir,exa_MPI_RANK,global_communicator)
-    call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
-  
-    end subroutine exacc_sync_cw_mp2no
-
 
 
   subroutine exacc_deallocate_cw()
