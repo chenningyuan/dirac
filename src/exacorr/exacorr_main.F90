@@ -136,12 +136,13 @@
 !                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
 !                  end do
 !                  call exacc_sync_cw_mp2no(0,mytid)
-            end if 
-#if defined (VAR_MPI)
+            
+!#if defined (VAR_MPI)
       !           slaves need the same info to get started
-      call exacc_sync_cw(0,mytid)
-#endif
-            call exacorr_cc_driver (exa_input)  
+!      call exacc_sync_cw(0,mytid)
+!#endif
+               call exacorr_cc_driver (exa_input) 
+            end if  
          end if
       end if
 
