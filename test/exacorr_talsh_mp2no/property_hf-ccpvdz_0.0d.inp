@@ -5,22 +5,28 @@
 .NUCMOD
  1
 *READIN                                                                                             
-.UNCONTRACT 
-**GENERAL
-.PCMOUT 
+.UNCONTRACT  
 **HAMILTONIAN
 .X2C
 **WAVE FUNCTION
 .SCF
-*SCF                                                                                                
-.MAXITR                                                                                             
-1                                                                                                   
-.EVCCNV                                                                                             
-1.0E-9 1.0E-8
-**PROPERTIES
-.DIPOLE
-.EFG
-.RDCCDM
+.EXACC
+*SCF
+.EVCCNV
+1.0E-9 1.0E-8 
+.MAXITR
+1
+**GENERAL
+.PCMOUT 
+**EXACC
+.OCCUPIED                                                                                           
+1..5 
+.VIRTUAL                                                                                            
+6..33   
+.LAMBDA
+**PROPERTIES                                                                                        
+.DIPOLE                                                                                             
+.EFG                                                                                                
 **MOLECULE
 *SYMMETRY
 .NOSYM
