@@ -1,6 +1,5 @@
 **DIRAC
 .WAVE FUNCTION
-.PROPERTIES
 **INTEGRALS
 .NUCMOD
  1
@@ -13,23 +12,20 @@
 .EXACC
 *SCF
 .EVCCNV
-1.0E-9 1.0E-8 
-.MAXITR
-1
+1.0E-9 1.0E-8  
 **EXACC
 .OCCUPIED                                                                                           
 1..5 
 .VIRTUAL                                                                                            
-6..14
-.LAMBDA
+6..33   
+.MP2NO
+0.0d-3
 .EXATENSOR
-**PROPERTIES                                                                                        
-.DIPOLE                                                                                             
-.EFG    
+.NOTRIPLES
 **MOLECULE
 *SYMMETRY
 .NOSYM
 *BASIS
 .DEFAULT 
-cc-pVTZ
+cc-pVDZ
 *END OF 

@@ -11,16 +11,16 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Orbital           1',
       num_lines   = 9,
-      rel_tolerance   = 5.0e-8)
+      rel_tolerance   = 1.0e-7)
 
-test.run(['hf_get_no_ccpvtz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvtz_0.0d_exatensor"')
-test.run(['hf_get_no_ccpvtz_1.0d-3.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=\
-MP2NOs_AO_all-active_hf-ccpvtz_1.0d-3_exatensor"')
+test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_exatensor"')
+test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=\
+MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4_exatensor"')
 
 f = Filter()
 f.add(from_string = '    -     Final results from EXACORR     -    ',
       num_lines   = 8,
-      rel_tolerance   = 5.0e-9)
+      rel_tolerance   = 1.0e-8)
 f.add(from_string = '* Dipole moment:',
       num_lines   = 9,
       rel_tolerance   = 1.0e-6)
@@ -28,9 +28,9 @@ f.add(from_string = '* Electric field gradients :',
       num_lines   = 20,
       rel_tolerance   = 1.0e-6)
 
-test.run(['hf_canonical_ccpvtz_0.0_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvtz_0.0d_exatensor=\
+test.run(['hf_canonical_ccpvdz_0.0_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_exatensor=\
 DFCOEF"')
-test.run(['hf_canonical_ccpvtz_9_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvtz_1.0d-3_exatensor=\
+test.run(['hf_canonical_ccpvdz_16_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4_exatensor=\
 DFCOEF"')
 
 sys.exit(test.return_code)
