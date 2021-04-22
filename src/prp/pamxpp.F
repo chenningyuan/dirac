@@ -145,7 +145,6 @@ C     ... OMEGA: excitation energies
       CALL MEMGET2('INTE','ISSYM',KSSYM,NEXCF,WORK,KFREE,LFREE)
 C     ... SYM: supersymmetry (if known)
       N2BED  = NBED*NEXCF
-      WRITE(6,*) 'TESTBED..',N2BED,NBED
       CALL MEMGET2('REAL','OSCBED',KBED,N2BED,WORK,KFREE,LFREE)
 C     ... OSCBED: oscillator strengths for each excitation
       IF(DOBED) THEN

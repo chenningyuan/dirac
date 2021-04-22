@@ -147,7 +147,6 @@ C
         CALL QUIT('GET_BED: Too may properties !')
       ENDIF
       DO IOP = 1,NOP
-        WRITE(LUPRI,*) IOP
         WRITE(PRPNAM(NPRPS+IOP)(1:8),'(A3,I1,A1,A3)')
      &        'BED',IOP,'_',REP(IREP)
         IPRPSYM(NPRPS+IOP) = JSYMOP ! Total symmetry of operator
