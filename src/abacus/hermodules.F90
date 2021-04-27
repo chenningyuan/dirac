@@ -92,6 +92,11 @@
            module procedure READ_XYZ_ATOMS
        END INTERFACE
 
+#ifdef HAS_PELIB 
+!     Variable for PElib (to ensure symmetry detection is disabled for xyz)
+LOGICAL, PUBLIC :: pelib_sym_xyz
+#endif 
+
       CONTAINS
 
         SUBROUTINE ADD_ATOM(latom, fatom, name,x)
@@ -420,6 +425,7 @@
 #include "codata.h"
 #include "infpar.h"
 #include "cbirea.h"
+#include "dgroup.h" 
 
 ! using OPTIMI
 #include "dcbgen.h"
@@ -467,7 +473,9 @@
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
           KCHARG=0
-
+#ifdef HAS_PELIB 
+          pelib_sym_xyz = .true.
+#endif 
           DO
             read(tmp_file,*,iostat=ios) str
 
@@ -500,7 +508,9 @@
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
-
+#ifdef HAS_PELIB
+              pelib_sym_xyz = .false.
+#endif
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -905,7 +915,7 @@
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
 
       katom=count_types(firstatomtype)
@@ -1103,19 +1113,12 @@
 !           set from kinetic balance.
 !           =======================================================
 !
-            IF(MDIRAC) THEN
-              CALL RKBBAS(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &                    IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,           &
-     &                    NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,             &
-     &                    CNTBAS)
-            ELSE
-              CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &             IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &             NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &             INPTST,CNTBAS)
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &           INPTST,CNTBAS)
 
-              BASREF(1,basindex,2) = ' Derived from large component'
-            END IF
+            BASREF(1,basindex,2) = ' Derived from large component'
 
           ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN
@@ -1196,6 +1199,7 @@
 
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,                     &
@@ -1226,6 +1230,7 @@
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
+      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****

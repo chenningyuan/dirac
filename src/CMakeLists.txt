@@ -113,13 +113,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
 add_definitions(-DMOD_EXACORR)
 endif()
 
-# geniao as separate library
-if(ENABLE_GENIAO)
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/geniao)
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:geniao> ${EXTERNAL_OBJECTS})
-#add_definitions(-DMOD_GENIAO)
-endif()
-
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:moltra> ${EXTERNAL_OBJECTS})
@@ -287,11 +280,10 @@ endif()
 if(ENABLE_INTEREST)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-    dirac_test(mdirac_closed-shell_dft "interest" "")
 else()
     set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
 endif()
-message(STATUS "Interest library: ${ENABLE_INTEREST}")
+message(STATUS "InteRest library: ${ENABLE_INTEREST}")
 
 #   krcc as separate library
 if(ENABLE_KRCC)

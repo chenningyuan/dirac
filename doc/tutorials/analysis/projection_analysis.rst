@@ -269,20 +269,11 @@ Using the molecular input ``U.mol``
 
 .. literalinclude:: U.mol
 
-we first calculate the :math:`U^{3+}` cation with configuration :math:`[Rn]5f^3` ::
+and the inp file ``U.inp``
 
-   pam --inp=UIII --mol=U --outcmo
+.. literalinclude:: U_KPSELE.inp
 
-which converges easily using the menu file ``UIII.inp``
-
-.. literalinclude:: UIII.inp
-
-Note that we ask for a Mulliken population analysis of all positive-energy orbitals. This is in order to find the *6d* and *7s* orbitals.
-Once identified, we bring them into correct position using reordering and keep them there using static overlap selection as shown in 
-the menu file ``U.inp``
-
-.. literalinclude:: U.inp
-
+Note that :ref:`SCF_.KPSELE` is needed for getting the convergence in this case.
 Convergence is now straightforward ::
 
    pam --incmo --inp=U --mol=U --get "DFCOEF=cf.U"

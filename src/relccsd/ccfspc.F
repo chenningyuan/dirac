@@ -72,8 +72,8 @@ C  For each term we also indicate which part of the array needs to be extracted 
 C  second class of virtual indices which are the inactive virtuals).
 C
 C--------------------------------------------------------------------
-      allocate (ds1(ndimt1))
-      allocate (ds2(ndimt2))
+      allocate (ds1(RCW*ndimt1))
+      allocate (ds2(RCW*ndimt2))
       CALL XCOPY (NDIMT1,A0,0,DS1,1)
       CALL XCOPY (NDIMT2,A0,0,DS2,1)
 C--------------------------------------------------------------------
@@ -313,6 +313,7 @@ C---------------Local variables -----------------------------------
      &                             EIGENVECTORS_LEFT(:),
      &                             EIGENVECTORS_RIGHT(:)
 
+      IF (ICURFSS.NE.1) THEN
            call alloc (HEFF, RCW*IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (EIGENVALUES,  RCW*(IFS_HE(NREP+1,ICURFSS)+1),
      &                 id="eigenvalues" )
@@ -320,6 +321,7 @@ C---------------Local variables -----------------------------------
      &                 id="eigenvectors_left" )
            call alloc (EIGENVECTORS_RIGHT, RCW*IFS_HE2(NREP+1,ICURFSS),
      &                 id="eigenvectors_right" )
+      END IF
 
 C---------------Executable code--------------------------------------
       IF (ICURFSS.EQ.1) THEN
