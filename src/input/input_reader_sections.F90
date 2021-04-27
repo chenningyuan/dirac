@@ -895,7 +895,7 @@
          exa_input%ccd = .true.
       end if
 
-      if (kw_matches(word, '.CC2         ')) then 		!L
+      if (kw_matches(word, '.CC2         ')) then
          exa_input%cc2 = .true.
       end if
 

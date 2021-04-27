@@ -190,8 +190,10 @@ print *, '*    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,     
 print *, '*    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *'
 print *, '*    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*'
 print *, '*    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *'
-print *,' *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *'
+print *, '*    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *'
 print *, '*    (see http://diracprogram.org).                                           *'
+print *, '*                                                                             *'
+print *, '*    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *'
 print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end
