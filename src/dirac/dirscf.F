@@ -4296,9 +4296,7 @@ C
 C
 C             Diagonalize the isub'th block of parity i
 C
-#ifdef MOD_UNRELEASED
               IF (.NOT.DOQJACO) THEN
-#endif
                 IF (DOJACO) THEN
                   CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
      &                      EIG(IEIG),1,1,0,FAO(IMAT))
@@ -4307,7 +4305,6 @@ C
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
      &                   WORK(KFREE),LFREE,IERR)
                 ENDIF
-#ifdef MOD_UNRELEASED
               ELSE
                 CALL MEMGET2('REAL','FMO',KFMO,NBO*NBO,WORK,KFREE,LFREE)
                 CALL MEMGET2('REAL','FA ',KFA, NBO*NBO,WORK,KFREE,LFREE)
@@ -4331,7 +4328,6 @@ C
                 ENDDO
                 CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
               ENDIF
-#endif
 
               IF (DODBG) THEN
                 IF (IPRHAM.GE.3) THEN
