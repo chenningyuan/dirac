@@ -62,7 +62,7 @@ module exacorr_mp2no
     
             inquire(file="NOs_MO", exist=alive)
             if (alive) then
-                call print_date('File NOs_MO existed')
+                call print_date(" File NOs_MO existed") 
             else
                 call print_date('File NOs_MO is not existed. Start constructing MP2 density matrix')
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
@@ -76,17 +76,17 @@ module exacorr_mp2no
             if (my_MPI_rank == 0) call print_date(" Leave MP2_NO Module")
 
             ierr=exatns_method_unregister('ZERO')
-            print *, "unregister method ierr", ierr
+      !      print *, "unregister method ierr", ierr
             ierr=exatns_method_unregister('Aoint_calculator_mp2')
-            print *, "unregister method ierr Aoint_calculator", ierr
+      !      print *, "unregister method ierr Aoint_calculator", ierr
       !      ierr=exatns_method_unregister('AointSegment_mp2')
       !      print *, "unregister method ierr AointSegment", ierr
             ierr=exatns_method_unregister('Denominate_mp2')
-            print *, "unregister method ierr Denominate", ierr
+      !      print *, "unregister method ierr Denominate", ierr
       !      ierr=exatns_method_unregister('PrintTensor_mp2')
       !      print *, "unregister method ierr PrintTensor", ierr
             ierr=exatns_method_unregister('Unity_mp2')
-            print *, "unregister method ierr Unity", ierr
+      !      print *, "unregister method ierr Unity", ierr
 
             
 
@@ -250,25 +250,25 @@ module exacorr_mp2no
 
 
 !           Initialize t2 amplitudes with the MP2 values
-            ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            ierr=exatns_tensor_init(comm_t%t2,ZERO)
-            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
-            ierr=exatns_tensor_transform(comm_t%t2,denom)
+      !      ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+      !      if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+      !      ierr=exatns_tensor_init(comm_t%t2,ZERO)
+      !      ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
+      !      ierr=exatns_tensor_transform(comm_t%t2,denom)
 
 !           Calculate and print the MP2 energy
-            ierr=exatns_tensor_init(result_tensor,ZERO)
-            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
-            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-            mp2_energy=real(result_val,8)
-            ierr=exatns_tensor_init(result_tensor,ZERO)
-            ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
-            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-            mp2_energy=mp2_energy+real(result_val,8)
+      !      ierr=exatns_tensor_init(result_tensor,ZERO)
+      !      ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
+      !      ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+      !      mp2_energy=real(result_val,8)
+      !      ierr=exatns_tensor_init(result_tensor,ZERO)
+      !      ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+      !      ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+      !      mp2_energy=mp2_energy+real(result_val,8)
          
-            write(*,*) ""
-            write(*,*) "    MP2 energy = ", mp2_energy
-            write(*,*) ""
+      !      write(*,*) ""
+      !      write(*,*) "    MP2 energy = ", mp2_energy
+      !      write(*,*) ""
 
 
             ierr=exatns_tensor_transform(int_t%oovv,denom)
@@ -1392,6 +1392,7 @@ module exacorr_mp2no
             integer,allocatable      :: index(:)
             integer                  :: i,j
             integer                  :: ierr
+            integer                  :: nmo_hf
             real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
             integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
    
@@ -1405,12 +1406,13 @@ module exacorr_mp2no
             nao = qorbital_hf%nao
             nno = size(NOs_AO,2)
             nmo = nocc+nno
+            nmo_hf = qorbital_hf%nmo
             allocate(index(nmo))
             do i = 1, nmo
                index(i) = i ! we set the index compatible with the fact that we store all mo's
             end do
    
-            call alloc_mo(qorbital,nao,nmo,4)
+            call alloc_mo(qorbital,nao,nmo_hf,4)
             qorbital%allocated = qorbital_hf%allocated
             qorbital%restricted = qorbital_hf%restricted
             qorbital%complex_algebra = qorbital_hf%complex_algebra
@@ -1424,7 +1426,7 @@ module exacorr_mp2no
                qorbital%energy(i)=qorbital_hf%energy(i)
             end do
    
-            do i = nocc+1, qorbital%nmo
+            do i = nocc+1, nmo
                qorbital%energy(i)=New_orbital_energy(i-nocc)
    !            qorbital%energy(i)=qorbital_hf%energy(i)
             end do
@@ -1439,7 +1441,7 @@ module exacorr_mp2no
             enddo
    
    
-            do  j = nocc+1, qorbital%nmo
+            do  j = nocc+1, nmo
                do  i = 1, qorbital%nao
                      qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
                      qorbital%coeff(i,j,2)=NOs_AO(i,j-nocc,2)

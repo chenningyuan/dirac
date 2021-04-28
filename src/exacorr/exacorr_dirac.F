@@ -207,16 +207,17 @@ C
          if (exa_input%mp2no) then
               call talsh_mp2no_driver (exa_input,n_mp2no)
 ! if we do MP2NOs we reinitialize global data, which in essence means to replace DFCOEF by the MP2NO file
-              call initialize_global_data
-              exa_input%nvir = n_mp2no*2
-              exa_input%nkr_vir = n_mp2no
-              deallocate(exa_input%mokr_vir)
-              allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-              do i = 1, size(exa_input%mokr_vir)
-                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
-              end do
+!              call initialize_global_data
+!              exa_input%nvir = n_mp2no*2
+!              exa_input%nkr_vir = n_mp2no
+!              deallocate(exa_input%mokr_vir)
+!              allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+!              do i = 1, size(exa_input%mokr_vir)
+!                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
+!              end do
+         else
+             call talsh_cc_driver (exa_input)
          end if
-         call talsh_cc_driver (exa_input)
       else
 #if defined (VAR_MPI)
        call exacc_sync_cw(0,mytid)
@@ -229,25 +230,25 @@ C
        if (exa_input%mp2no) then
               call exacorr_mp2no_driver (exa_input,n_mp2no)
 ! using exacorr lib to do mp2no
-              call initialize_global_data
-              if (mytid == 0) then
-                exa_input%nvir = n_mp2no*2
-                exa_input%nkr_vir = n_mp2no
-                deallocate(exa_input%mokr_vir)
-                allocate(exa_input%mokr_vir(exa_input%nkr_vir))
-                deallocate(exa_input%mo_vir)
-                allocate(exa_input%mo_vir(exa_input%nvir))
-                do i = 1, size(exa_input%mokr_vir)
-                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
-                end do
-                do i = 1, size(exa_input%mo_vir)
-                     exa_input%mo_vir(i) = exa_input%nocc +i
-                end do
-              end if
-           call exacc_sync_cw_mp2no(0,mytid)
-       end if
-
-             call exacorr_cc_driver (exa_input) 
+!              call initialize_global_data
+!              if (mytid == 0) then
+!                exa_input%nvir = n_mp2no*2
+!                exa_input%nkr_vir = n_mp2no
+!                deallocate(exa_input%mokr_vir)
+!                allocate(exa_input%mokr_vir(exa_input%nkr_vir))
+!                deallocate(exa_input%mo_vir)
+!                allocate(exa_input%mo_vir(exa_input%nvir))
+!                do i = 1, size(exa_input%mokr_vir)
+!                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
+!                end do
+!                do i = 1, size(exa_input%mo_vir)
+!                     exa_input%mo_vir(i) = exa_input%nocc +i
+!                end do
+!              end if
+!           call exacc_sync_cw_mp2no(0,mytid)
+       else
+              call exacorr_cc_driver (exa_input) 
+       end if 
       end if
 
       call exacc_deallocate_cw()
