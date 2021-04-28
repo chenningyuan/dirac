@@ -184,7 +184,11 @@ module talsh_trial_eomccsd
 !                      print *,'b'
 ! translate j into the spinor indexes:w
                           call from_linear_to_indexes_oov(i-workspace%N(1),i1,j1,a1,workspace%tens2_dims(3),workspace%tens2_dims(1))
-                          trial2_h_p_tens(a1,j1,i1) = ONE
+!                         if (j1 == i1) then
+!                            trial2_h_p_tens(a1,j1,i1) = ZERO 
+!                         else
+                             trial2_h_p_tens(a1,j1,i1) = ONE
+!                         end if
                        end if
                     else
 !                      print *,'c'

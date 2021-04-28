@@ -255,7 +255,7 @@ contains
         if (present(convergence_threshold)) then
             davidson_convergence_threshold = convergence_threshold
         else
-            davidson_convergence_threshold = 1.0d-8 
+            davidson_convergence_threshold = 1.0d-5 
         end if
 
         if (present(energy_shift)) then
@@ -1021,8 +1021,10 @@ contains
            end if
         end do
         write (davidson_output_file_unit,*) " "
+        print *,'debug: after norm, before determining corrections'
 
         if (any(correction_to_vectors)) then
+           print *,'debug: entering corrections'
            if (correct_all_local) then
                unconverged_roots = nroots
                correction_to_vectors = .true. 
@@ -1030,6 +1032,7 @@ contains
 ! forms delta (the correction vectors which will serve to create new trial vectors
 ! note here that, as seen above, workspace_t%delta{1,2,..} have been used to accumulate r(i,k) 
            do k = 1, nroots
+              print *,'debug: before calculating corrections for root ',k
               if (correction_to_vectors(k)) then
                  call multiply_tensor_elements(workspace_t%delta1(k), workspace_t%precond1(k))
                  call multiply_tensor_elements(workspace_t%delta2(k), workspace_t%precond2(k))
@@ -1037,6 +1040,7 @@ contains
                  ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
                  ierr=talsh_tensor_init(workspace_t%delta2(k), ZERO)
               end if
+              print *,'debug: after  calculating corrections for root ',k
 
               if (debug_correction_vectors) then
                  write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
@@ -1052,6 +1056,7 @@ contains
             deallocate(correction_to_vectors)
             correction_to_vectors => NULL()
         end if
+        print *,'debug: leaving corrections'
 
     end function
 
@@ -1569,7 +1574,7 @@ contains
       type(C_PTR):: s2_body_p
 
       integer :: ierr, iroot, i, j, a, b
-      logical :: debug_sigma_right = .false.
+      logical :: debug_sigma_right = .true.
 
       do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
 
@@ -1595,42 +1600,56 @@ contains
             write (6,*) 't2_body_p',t2_body_p
             call c_f_pointer(t2_body_p,t2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
 
-            write (6,*) 'debug >>> t1_tens before sigma, root',iroot,' >>>'
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            do i = 1, workspace_t%tens1_dims(1)
-               write (6,*) i, t1_h_p_p(i)
-            end do
-            write (6,*) 'debug <<< t1_tens before sigma <<<'
-            write (6,*) 'debug >>> t2_tens before sigma, root',iroot,' >>>'
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            do i = 1, workspace_t%tens2_dims(3)
-               do j = 1, workspace_t%tens2_dims(2)
-                  do a = 1, workspace_t%tens2_dims(1)
-                     write (6,*) a, j, i, t2_h_p_p(a,j,i)
-                  end do
-               end do
-            end do
-            write (6,*) 'debug <<< t2_tens before sigma <<<'
-
-            write (6,*) 'debug >>> s1_tens before sigma, root',iroot,' >>>'
+            if (.false.) then
+            write (6,*) 'debug >>> t_tens before sigma, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             b = 0
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
             do i = 1, workspace_t%tens1_dims(1)
                b = b + 1
-               write (6,*) b, s1_h_p_p(i)
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(t1_h_p_p(i))
+               print *, ""
             end do
-            write (6,*) 'debug <<< s1_tens before sigma <<<'
-            write (6,*) 'debug >>> s2_tens before sigma, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             do i = 1, workspace_t%tens2_dims(3)
                do j = 1, workspace_t%tens2_dims(2)
                   do a = 1, workspace_t%tens2_dims(1)
                      b = b + 1
-                     write (6,*) b, a, j, i, s2_h_p_p(a,j,i)
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(t2_h_p_p(a,j,i))
+                     print *, ""
                   end do
                end do
             end do
-            write (6,*) 'debug <<< s2_tens before sigma <<<'
+            write (6,*) 'debug <<< t_tens before sigma <<<'
+
+            write (6,*) 'debug >>> s_tens before sigma, root',iroot,' >>>'
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
+            b = 0
+            do i = 1, workspace_t%tens1_dims(1)
+               b = b + 1
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(s1_h_p_p(i))
+               print *, ""
+            end do
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            do i = 1, workspace_t%tens2_dims(3)
+               do j = 1, workspace_t%tens2_dims(2)
+                  do a = 1, workspace_t%tens2_dims(1)
+                     b = b + 1
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(s2_h_p_p(a,j,i))
+                     print *, ""
+                  end do
+               end do
+            end do
+            write (6,*) 'debug <<< s_tens before sigma <<<'
+            else
+               write (6,*) 'debug <<< silenced printout prior to calculation >>>'  
+            end if ! silencing printout prior to calculated vectors
+
          end if
 ! debug info     
 ! aspg
@@ -1643,45 +1662,51 @@ contains
 ! aspg
 ! debug info     
          if (debug_sigma_right) then
-            write (6,*) 'debug >>> t1_tens, root',iroot,' >>>'
+            write (6,*) 'debug >>> t_tens, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             b = 0
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
             do i = 1, workspace_t%tens1_dims(1)
                b = b + 1
-               write (6,*) b, t1_h_p_p(i)
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(t1_h_p_p(i))
+               print *, ""
             end do
-            write (6,*) 'debug <<< t1_tens <<<'
-            write (6,*) 'debug >>> t2_tens, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             do i = 1, workspace_t%tens2_dims(3)
                do j = 1, workspace_t%tens2_dims(2) 
                   do a = 1, workspace_t%tens2_dims(1)
                      b = b + 1
-                     write (6,*) b, a, j, i, t2_h_p_p(a,j,i)
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(t2_h_p_p(a,j,i))
+                     print *, ""
                   end do
                end do
             end do
-            write (6,*) 'debug <<< t2_tens <<<'
+            write (6,*) 'debug <<< t_tens <<<'
 
-            write (6,*) 'debug >>> s1_tens, root',iroot,' >>>'
+            write (6,*) 'debug >>> s_tens, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             b = 0
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
             do i = 1, workspace_t%tens1_dims(1)
                b = b + 1
-               write (6,*) b, s1_h_p_p(i)
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(s1_h_p_p(i))
+               print *, ""
             end do
-            write (6,*) 'debug <<< s1_tens <<<'
-            write (6,*) 'debug >>> s2_tens, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             do i = 1, workspace_t%tens2_dims(3)
                do j = 1, workspace_t%tens2_dims(2)
                   do a = 1, workspace_t%tens2_dims(1)
                      b = b + 1
-                     write (6,*) b, a, j, i, s2_h_p_p(a,j,i)
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(s2_h_p_p(a,j,i))
+                     print *, ""
                   end do
                end do
             end do
-            write (6,*) 'debug <<< s2_tens <<<'
+            write (6,*) 'debug <<< s_tens <<<'
          end if
 ! debug info     
 ! aspg
@@ -1750,18 +1775,57 @@ contains
 
       M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
 
-      if (debug_subspace_matrix) then
+!     if (debug_subspace_matrix) then
+      if (.true.) then
          write (6,*) 'debug, M small'
          do i = 1, workspace_t%L
-            do j = 1, workspace_t%L
-               write (6,*) M_small(i,j)
-            end do
+           print "(2x,i6,$)", i
+           do j = 1, workspace_t%L
+               call print_complex_vector_element(M_small(i,j))
+               if (mod(j,4) == 0) then 
+                  print *, "  "
+!                 print "(8x,$)",""
+               end if
+           end do
+           print *, ""
          end do
       end if
+      if (.true.) call dump_to_file(2222, "M_small_EXACC.bin", M_small)
 
 !      call quit('bb')
 
     end
+    
+    subroutine print_complex_vector_element(ve)
+       complex(8), intent(in) :: ve
+
+       real(8) :: threshold = 1.0d-10
+       real(8) :: vr, vi
+
+       vr = real(ve)
+       vi = aimag(ve)
+
+       if (abs(vi).lt.threshold) vi = 0.0d0
+       if (abs(vr).lt.threshold) vr = 0.0d0
+       if (vi < 0.0d0) then
+           print "(4x,1e14.6,a,1e13.6,a,$)", vr," -",abs(vi)," i"
+       else
+           print "(4x,1e14.6,a,1e13.6,a,$)", vr," +",abs(vi)," i"
+       end if
+
+    end subroutine
+
+    subroutine dump_to_file(fileno, filename, matrix)
+        integer, intent(in) :: fileno
+        character(len=*), intent(in) :: filename
+        complex(kind=8) :: matrix(:,:)
+        integer :: irec
+
+        inquire (iolength = irec) matrix
+        open (unit=fileno, file=filename, form="unformatted", access="direct", recl=irec)
+        write(unit=fileno, rec=1) matrix
+        close(unit=fileno)
+    end subroutine
 
 
 ! aspg, 16/04/2019
@@ -1863,28 +1927,36 @@ contains
                 c_small_l_old = c_small_l
             end if
  
+            print *,'debug : before forming preconditioner'
             call form_preconditioner(workspace_t, e_small)
+            print *,'debug : after  forming preconditioner'
 
+            print *,'debug : before correcting vectors'
             if (associated(delta)) deallocate(delta)
             if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
                                                                    e_small, c_small_r, workspace_t)
 
+            print *,'debug : after  correcting vectors'
             if (.not.associated(delta)) then
-                write(davidson_output_file_unit,*) "All roots converged."
+                write(davidson_output_file_unit,*) "All roots converged, stopping."
+                exit
             end if
 
+            print *,'debug : before updating trial vectors'
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
             if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
             else
                call update_trial_vectors(delta,workspace_t)
             end if
+            print *,'debug : after  updating trial vectors'
  
             if (workspace_t%L .ge. workspace_t%Lmax) then
                write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
                exit
             end if
         end do ! davidson iterations
+        print *,'debug : after  davidson iterations'
 
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
@@ -2048,8 +2120,8 @@ contains
 ! debug, print eigenvecturs and eigenvalues from subspace
 !       if (.false.) & 
         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-                                    .false., .false., nroots=nroots_to_print)
-!                                   .true., .true., nroots=nroots_to_print)
+!                                   .false., .false., nroots=nroots_to_print)
+                                    left_local, right_local, nroots=nroots_to_print)
 
     end subroutine
 

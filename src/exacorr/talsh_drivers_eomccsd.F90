@@ -139,6 +139,8 @@ module talsh_eom
 !     EOM calculation: IP, EA or EE *
 !************************************
 
+      print *,'debug: eom_input%flavor is__',eom_config%flavor,'___'
+      print *,'debug: eom_input%flavor is__',eom_config%flavor(1:2),'___'
       select case(eom_config%flavor)
          case("IP")
             call eom_ccsd_eigenvalue_ip(results_t,interm_t,int_t)
