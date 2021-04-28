@@ -906,6 +906,10 @@
          exa_input%lambda = .true.
       end if
 
+      if (kw_matches(word, '.DONATORB')) then
+         exa_input%do_no = .true.
+      end if
+
       if (kw_matches(word, '.NOTRIPLES')) then
          exa_input%do_triples = .false.
       end if

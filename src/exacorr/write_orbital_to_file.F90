@@ -623,6 +623,7 @@ module write_orbital_to_file
    !     input variables
          real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
          integer,intent(in)                 :: NORBT
+         character(8)           :: label(4)
 
          
    !     loop variables
@@ -632,8 +633,9 @@ module write_orbital_to_file
          logical :: debug=.true.
 
          call get_free_fileunit(read_mat)
-         open (read_mat,file='CWDENS',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-         CALL READT(read_mat,NORBT*NORBT*4,matrix)
+         open (read_mat,file='CCDENS',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+         read (read_mat) label
+         read(read_mat) matrix
          close(read_mat,status='KEEP')      
 
       end subroutine quater_read_matrix

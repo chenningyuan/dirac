@@ -37,18 +37,27 @@ module talsh_no
         use exacorr_global
         type(exacc_input), intent(in) :: exa_input
 
-        integer                       :: NORBT
+        integer                :: NORBT
+        real(8),pointer        :: NOs_AO(:,:,:)           ! new quaternion orbital in AO basis
+        real(kind=8), pointer  :: N_OCCUPATION(:)         ! occupation number from qdia of DM
+        logical                :: alive
       
 
-        NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
-        call get_transform_Fock(NORBT)
-
-        call print_date('Leave MP2_NO Module')
+        inquire(file="CCDENS", exist=alive)
+        if (alive) then
+            call print_date('File CCDENS existed')
+            NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
+            call get_transform_Fock(NORBT,NOs_AO,N_OCCUPATION)
+            call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','GENOS')
+            call print_date('Generated Natural orbital')
+        else
+            stop "Error: density matrix File CCDENS not found" 
+        end if 
       end subroutine talsh_no_driver
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_Fock (NORBT)
+      subroutine get_transform_Fock (NORBT,NOs_AO,N_OCCUPATION)
          ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
          ! The new basis set comes from the digonalization of density matrix.
          ! The all natural orbitals and occupation numbers are saved in file NOs_MO 
@@ -73,14 +82,17 @@ module talsh_no
 !                  real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
 !                  integer                            :: sz,flb                  ! size of matrix and flag for block
 !                  character                          :: mat                     ! flag used for matrix basis transform
-!                  integer                            :: i
+                  integer                            :: i
 
-                                                        
+                                                
+                  allocate(density_quat(NORBT,NORBT,4))
                   call quater_read(NORBT,density_quat)
                   call print_date('Read Quaternion Density matrix')
+                  
 
                   flb = 2                                      ! we read all orbital 
-                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
+!                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
+                  sz = NORBT
                   call quater_read_from_dirac_orbital(HF_AO,sz,flb)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
@@ -94,9 +106,15 @@ module talsh_no
                   call basis_transform(NOs_MO,HF_AO,NOs_AO,fl)
                   call print_date('Get new orbital in AO basis')
 
-                  call write_to_newfile(NOs_AO,N_OCCUPATION,'NOs_MO_dirac_form')
-                  call print_date('Write the all natural orbital and occupation number in file NOs_MO_dirac_form')
-
+                  print *, " Print several orbitals' occupation number"
+                        do i=1, size(N_OCCUPATION)
+                              !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
+                              print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+                        end do
+!                        do i=1, 10
+                              !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
+!                              print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+!                        end do
                     
 !                  flb = 0                     ! we read vv block of Fock matrix
 !                  sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
@@ -113,6 +131,80 @@ module talsh_no
       end subroutine get_transform_Fock
 
 !-----------------------------------------------------------------------------------------------------------------------------
+      subroutine write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,file_old,file_new)
+            !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
+            !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
+            !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
+          
+                   use exacorr_mo
+                   use exacorr_datatypes
+                   use exacorr_utils
+                   use write_orbital_to_file
+            
+                   implicit none
+              
+                   type(exacc_input), intent(in)         :: exa_input
+                   character(len=*),intent(in)           :: file_old,file_new
+                   real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
+                   real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
+!                   real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
+          
+          
+                   type(basis_set_info_t)   :: ao_basis
+                   type(qumo)               :: qorbital        ! save the new canonical orbital 
+                   type(qumo)               :: qorbital_hf     ! save the original HF canonical orbital 
+          
+                   integer                  :: nocc            ! occupied orbital 
+                   integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
+                   integer,allocatable      :: index(:)
+                   integer                  :: i,j
+                   integer                  :: ierr
+                   integer                  :: nmo_hf
+                   real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
+          
+          
+          !        read information of from DFCOEF
+                   call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
+          
+                   nocc = exa_input%nkr_occ
+                   nao = qorbital_hf%nao
+                   nno = size(NOs_AO,2)
+                   nmo = nocc+nno
+                   nmo_hf = qorbital_hf%nmo
+                   allocate(index(nmo))
+                   do i = 1, nmo
+                      index(i) = i ! we set the index compatible with the fact that we store all mo's
+                   end do
+          
+                   call alloc_mo(qorbital,nao,nmo_hf,4)
+                   qorbital%restricted = qorbital_hf%restricted
+                   qorbital%complex_algebra = qorbital_hf%complex_algebra
+                   qorbital%total_energy = qorbital_hf%total_energy
+                   qorbital%fermion_irrep = qorbital_hf%fermion_irrep
+                   qorbital%boson_irrep = 0
+                   qorbital%index = index
+                   
+                   
+                   do i = 1, nocc
+                      qorbital%energy(i)=N_OCCUPATION(i) !we use occupation number to replace the orbital energy
+                   end do
+ 
+                             
+                   do  j = 1, nmo
+                      do  i = 1, qorbital%nao
+                            qorbital%coeff(i,j,1)=NOs_AO(i,j,1)
+                            qorbital%coeff(i,j,2)=NOs_AO(i,j,2)
+                            qorbital%coeff(i,j,3)=NOs_AO(i,j,3)
+                            qorbital%coeff(i,j,4)=NOs_AO(i,j,4)
+                      enddo
+                   enddo
+          
+          
+                   call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
+                   call print_date('Write natural orbitals into DFNOSAO file like GENOS')
+          
+      end subroutine write_no_to_newfile
+!----------------------------------------------------------------------------------------------------------
 
 end module talsh_no
 

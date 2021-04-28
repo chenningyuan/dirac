@@ -10,6 +10,7 @@
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use talsh_cc,only             : talsh_cc_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
+      use talsh_no,only             : talsh_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacc_cfg
@@ -116,7 +117,10 @@
 !                    end do
                   else
                     call talsh_cc_driver (exa_input)
-                  end if                  
+                  end if   
+                  if (exa_input%do_no) then
+                        call talsh_no_driver (exa_input)
+                  end if       
              end if
  
          else

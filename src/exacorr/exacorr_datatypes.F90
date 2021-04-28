@@ -42,6 +42,7 @@
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             logical                 :: do_triples = .true.
+            logical                 :: do_no = .false.          ! if true, generate natural orbital
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
