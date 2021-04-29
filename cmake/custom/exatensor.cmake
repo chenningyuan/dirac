@@ -99,6 +99,7 @@ if(ENABLE_EXATENSOR)
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 
     #Add also the tests (weird to do this here, but this whole test set up needs an overhaul).
+    #disabled some tests waiting for code verification/efficiency improvement
     dirac_test(exacorr_talsh_debug "cc;talsh;short" "")
     dirac_test(exacorr_talsh_standalone "cc;talsh;short" "")
     dirac_test(exacorr_talsh_lambda "cc;talsh" "")
@@ -108,6 +109,8 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_spinfree "cc;talsh" "")
     dirac_test(exacorr_talsh_respect "cc;talsh;respect" "")
     dirac_test(exacorr_talsh_memory "cc;talsh;short" "")
+    #dirac_test(exacorr_talsh_cholesky "cc;talsh" "")
+    #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
     if (ENABLE_MPI)
         dirac_test(exacorr_exatensor_debug "cc;exatensor" "")
         dirac_test(exacorr_exatensor_fock "cc;exatensor" "")
@@ -115,14 +118,10 @@ if(ENABLE_EXATENSOR)
         dirac_test(exacorr_exatensor_lambda "cc;exatensor" "")
         dirac_test(exacorr_exatensor_cc2 "cc;exatensor" "")
 	dirac_test(exacorr_exatensor_memory "cc;exatensor;short" "")
+	dirac_test(exacorr_exatensor_spinfree "cc;exatensor" "")
+	dirac_test(exacorr_exatensor_ao2mo "cc;exatensor;long" "")
+	#dirac_test(exacorr_exatensor_cholesky "cc;exatensor" "")
     endif()
-#   disabled some tests waiting for code verification/efficiency improvement
-#   dirac_test(exacorr_talsh_cholesky "cc;talsh" "")
-#   dirac_test(exacorr_exatensor_cholesky "cc;exatensor" "")
-#   dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
-#   dirac_test(exacorr_exatensor_ao2mo "cc;exatensor" "")
-#   dirac_test(exacorr_exatensor_spinfree "cc;exatensor" "")
-
 
 endif()
 
