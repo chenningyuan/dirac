@@ -1495,6 +1495,7 @@ C
      &        'INFO: Only ',NZCONF,' determinants in this symmetry',
      %        'INFO: Number of CI roots therefore reduced to ',NZCONF
            NCIROOT = NZCONF
+           NKRCI_CIROOTS(IOPT_SYMMETRY) = NCIROOT
         END IF
 C
 C       ***************************************************
