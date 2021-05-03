@@ -6,8 +6,8 @@
 
 New features:
 
-- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig,A. Papadopoulos,
-   D. I. Lyakh, M. Repisky,L.Halbert,A.S.P. Gomes,H.J.Aa. Jensen, and L. Visscher.
+- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig, A. Papadopoulos,
+   D. I. Lyakh, M. Repisky, L.Halbert, A.S.P. Gomes, H.J.Aa. Jensen, and L. Visscher.
    To be published.
 - Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
    S. Lehtola,  L. Visscher and  E. Engel.
