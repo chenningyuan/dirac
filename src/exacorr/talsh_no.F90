@@ -83,39 +83,49 @@ module talsh_no
 !                  integer                            :: sz,flb                  ! size of matrix and flag for block
 !                  character                          :: mat                     ! flag used for matrix basis transform
                   integer                            :: i
+                  real                               :: trace
 
                                                 
                   allocate(density_quat(NORBT,NORBT,4))
                   call quater_read(NORBT,density_quat)
                   call print_date('Read Quaternion Density matrix')
-                  print *, "print DM in talsh_no", density_quat
+                  trace = 0
+      !            do i=1, size(density_quat,1)
+      !                  trace = trace+density_quat(i,i,1)
+      !            end do
+
+      !            print *, "print DM_trace in talsh_no", trace
                   
 
                   flb = 2                                      ! we read all orbital 
 !                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
                   sz = NORBT
+                  print *, "NORBT", sz
                   call quater_read_from_dirac_orbital(HF_AO,sz,flb)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
                   call diagoanl_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
                   call print_date('Qdiag Density matrix')       
 
-                  call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                  call print_date('Sort quaterbion natural orbital')
+!                  call sort_values_vectors (N_OCCUPATION,NOs_MO)
+!                  call print_date('Sort quaterbion natural orbital')
 
                   fl = 0 
                   call basis_transform(NOs_MO,HF_AO,NOs_AO,fl)
                   call print_date('Get new orbital in AO basis')
 
                   print *, " Print several orbitals' occupation number"
+                  trace = 0.0
                   do i=1, size(N_OCCUPATION)
-                        !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
+                        if (N_OCCUPATION(i) < 0.0) then 
+                              N_OCCUPATION(i) = N_OCCUPATION(i) + 2.0
+                        end if 
+                        trace = trace + N_OCCUPATION(i)
                         print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
                   end do
-!                        do i=1, 10
-                              !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
-!                              print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
-!                        end do
+
+                  print *, "Sum of occupation number which should be the same as total electron number", trace
+
                     
 !                  flb = 0                     ! we read vv block of Fock matrix
 !                  sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
