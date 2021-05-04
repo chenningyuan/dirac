@@ -635,7 +635,7 @@ module write_orbital_to_file
          call get_free_fileunit(read_mat)
          open (read_mat,file='CCDENS',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
          read (read_mat) label
-         read(read_mat) matrix
+         read (read_mat) matrix
          close(read_mat,status='KEEP')      
 
       end subroutine quater_read_matrix

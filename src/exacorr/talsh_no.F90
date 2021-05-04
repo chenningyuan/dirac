@@ -88,6 +88,7 @@ module talsh_no
                   allocate(density_quat(NORBT,NORBT,4))
                   call quater_read(NORBT,density_quat)
                   call print_date('Read Quaternion Density matrix')
+                  print *, "print DM in talsh_no", density_quat
                   
 
                   flb = 2                                      ! we read all orbital 
@@ -107,10 +108,10 @@ module talsh_no
                   call print_date('Get new orbital in AO basis')
 
                   print *, " Print several orbitals' occupation number"
-                        do i=1, size(N_OCCUPATION)
-                              !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
-                              print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
-                        end do
+                  do i=1, size(N_OCCUPATION)
+                        !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
+                        print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+                  end do
 !                        do i=1, 10
                               !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
 !                              print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
