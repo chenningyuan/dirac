@@ -151,7 +151,7 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
-      use talsh_no,only             : talsh_no_driver
+      use get_natural_orbital,only  : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacorr_global
@@ -220,7 +220,7 @@ C
              call talsh_cc_driver (exa_input)
          end if
          if (exa_input%do_no) then
-           call talsh_no_driver (exa_input)
+           call get_no_driver (exa_input)
          end if
       else
 #if defined (VAR_MPI)
@@ -253,6 +253,9 @@ C
        else
               call exacorr_cc_driver (exa_input) 
        end if 
+       if (exa_input%do_no) then 
+              if (mytid == 0) call get_no_driver (exa_input)
+       end if
       end if
 
       call exacc_deallocate_cw()

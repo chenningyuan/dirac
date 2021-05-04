@@ -1,4 +1,4 @@
-module talsh_no
+module get_natural_orbital
 !This module contains the routines needed to calculate the frozen mp2 natural orbitals 
 
         use tensor_algebra
@@ -23,11 +23,11 @@ module talsh_no
 
         private
 
-        public talsh_no_driver
+        public get_no_driver
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
-       subroutine talsh_no_driver (exa_input)
+       subroutine get_no_driver (exa_input)
 !       This module is used to construct the MP2 density matrix by talsh.
 !       The complex density matrix are saved on the file 'DM_complex'.  
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
@@ -53,7 +53,7 @@ module talsh_no
         else
             stop "Error: density matrix File CCDENS not found" 
         end if 
-      end subroutine talsh_no_driver
+      end subroutine get_no_driver
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
@@ -100,7 +100,6 @@ module talsh_no
                   flb = 2                                      ! we read all orbital 
 !                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
                   sz = NORBT
-                  print *, "NORBT", sz
                   call quater_read_from_dirac_orbital(HF_AO,sz,flb)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
@@ -217,5 +216,5 @@ module talsh_no
       end subroutine write_no_to_newfile
 !----------------------------------------------------------------------------------------------------------
 
-end module talsh_no
+end module get_natural_orbital
 
