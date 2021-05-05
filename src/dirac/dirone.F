@@ -6366,8 +6366,8 @@ C
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-          KPMAXL = NINT(MAX(ABS(EIG(IEIGE)),ABS(EIG(IEIGE+NL-1))))
 #endif
+          KPMAXL = NINT(MAX(ABS(EIG(IEIGE)),ABS(EIG(IEIGE+NL-1))))
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_LL eigenvalues',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6453,8 +6453,8 @@ C
               EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
          ENDIF
-         KPMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
 #endif
+          KPMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_SS eigenvalues',-1)
             WRITE(LUPRI,'(3X,A,I1,A,I1/)')

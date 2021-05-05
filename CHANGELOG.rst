@@ -1,13 +1,13 @@
 :orphan:
 
 
-20.0 (planned for 2021-01-31)
------------------------------
+21.0 (2021-04-27)
+-----------------
 
 New features:
 
-- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig,A. Papadopoulos,
-   D. I. Lyakh, M. Repisky,L.Halbert,A.S.P. Gomes,H.J.Aa. Jensen, and L. Visscher.
+- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig, A. Papadopoulos,
+   D. I. Lyakh, M. Repisky, L.Halbert, A.S.P. Gomes, H.J.Aa. Jensen, and L. Visscher.
    To be published.
 - Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
    S. Lehtola,  L. Visscher and  E. Engel.
@@ -19,6 +19,7 @@ New features:
    J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
 - Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
 - "make latex" for making a latex version of the documenation in "build/latex", used e.g. pdflatex to make a pdf version of the manual. Contributor: Hans Joergen Aa. Jensen
+- Efficient parallel diagonalization of quaternion Fock matrices using openMP. Contributor: Hans Joergen Aa. Jensen.
 
 Revised features:
 

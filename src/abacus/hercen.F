@@ -21,6 +21,8 @@
 
 ! FILE    : hercen.F
 !
+! NB!!! Nothing in this file is used in current Dirac /28-apr-2021
+!
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
       SUBROUTINE CENINP(LUINFO,WORK,LWORK,IQM,NBLCK,                       &
