@@ -22,6 +22,9 @@ f.add(from_string = 'Eigenvalues',
 #      num_lines   = 12,
 #      rel_tolerance   = 1.0e-6)
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 test.run(['ccsd_x2c.inp'], ['H2O_nosym.mol'], f,"--outcmo")
 #test.run(['cc.inp'], ['C2H4Cl2.mol'], f)
 

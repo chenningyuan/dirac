@@ -28,8 +28,8 @@ f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
 
+os.environ["OMP_STACKSIZE"] = "200M"
 os.system('ulimit -s unlimited')
-
 
 #test.run(['ccsd_li2.inp'], ['Li2_nosym.mol'], f1, " ")
 test.run(['ccsd_lio.inp'], ['LiO_nosym.mol'], f1, " ")

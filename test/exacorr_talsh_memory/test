@@ -17,6 +17,9 @@ f.add(from_string = 'Final CCSD energy',
       num_lines   = 4,
       abs_tolerance   = 1.0e-6)
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 test.run(['exacorr_talsh_memory.inp'], ['H2O_nosym.mol'], f)
 
 sys.exit(test.return_code)
