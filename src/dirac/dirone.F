@@ -193,500 +193,6 @@ C
       CALL QEXIT('ONEGEN')
       RETURN
       END
-c$$$C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-c$$$C     /* Deck numint_ang */
-c$$$      SUBROUTINE NUMINT_ANGOLD(IOP,COMB,IPRINT)
-c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-c$$$C$$$C It is ported from ayaki_qedgrid
-c$$$C      
-c$$$C On iuput: IOP   ... Index of operator: e.g. CLSINT(IOP)='UEHLING'
-c$$$C           IXYZ  ... Index of XYZ, which is used in angular roop
-c$$$C                     ( WT8 = WT8 * ANG(IY,IXYZ) )
-c$$$C      
-c$$$C The numerical integration for constructing AO basis matrix
-c$$$C
-c$$$C Called from: ONEGEN
-c$$$C
-c$$$C A. Sunaga Nov. 2018
-c$$$C
-c$$$CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-c$$$      use num_grid_cfg
-c$$$      
-c$$$#include "implicit.h" 
-c$$$#include "priunit.h" 
-c$$$#include "pi.h"
-c$$$#include "maxaqn.h"
-c$$$#include "maxorb.h"
-c$$$#include "mxcent.h"
-c$$$C
-c$$$#include "nuclei.h"      
-c$$$#include "ibtfun.h"
-c$$$#include "dcbbas.h"
-c$$$#include "cbiwlk.h"
-c$$$#include "dcbham.h"
-c$$$#include "dcbgen.h"
-c$$$#include "ccom.h" 
-c$$$#include "symmet.h"
-c$$$#include "dcbcls.h"
-c$$$C      
-c$$$      LOGICAL ADDSML
-c$$$      CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4 !check
-c$$$      CHARACTER RADC*2,ANGC*2,RADANGC*6 !sunaga      
-c$$$      PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
-c$$$      real(8), allocatable :: ZAN(:),C(:,:)
-c$$$      real(8), allocatable :: ANG(:,:),GAO(:), BUFGAO(:)
-c$$$      real(8), allocatable :: WT8G(:),BUF(:,:),TC(:),TD(:,:)
-c$$$      real(8), allocatable :: NUMIR(:),R(:),W(:),INTAO(:),INTAOBUF(:)
-c$$$      DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
-c$$$
-c$$$      CALL QENTER('NUMINT_ANG')
-c$$$      write(*,*)"****************"
-c$$$      write(*,*)"NUMINT_ANGOLD"
-c$$$      write(*,*)"****************"
-c$$$      write(*,*)"IOP",IOP
-c$$$      write(*,*)"CLSINT",CLSINT(IOP)
-c$$$C
-c$$$C     Making ZAN and C 
-c$$$C     ZAN... Nuclear charge
-c$$$C     C  ... atomic center
-c$$$C     ===================
-c$$$C      
-c$$$      allocate(ZAN(nucdep))
-c$$$      allocate(C(3,nucdep))
-c$$$      CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
-c$$$C
-c$$$C     Get information about basis sets
-c$$$C
-c$$$      CALL NUCBAS(NUCORB,AA,IPRINT)
-c$$$C     
-c$$$C The values of ultrafine (.ULTRAF) at DFT input-reader section.      
-c$$$!num_grid_cfg_ANGINT !64
-c$$$      INTANG=num_grid_cfg_ANGMIN
-c$$$      
-c$$$      m = NLEB(INTANG) ! num_grid_cfg_ANGINT
-c$$$      NDIM2 = NTBAS(0)*NTBAS(0)
-c$$$! LABEL is defined below. This part is different from NUMINT      
-c$$$      allocate( ANG   (m,4)      )
-c$$$      allocate( GAO   (NTBAS(0)) )
-c$$$      allocate( BUFGAO(NTBAS(0)) )
-c$$$      allocate( TC    (NDIM2)    )
-c$$$      allocate( INTAO (NDIM2)    )
-c$$$C      
-c$$$      CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
-c$$$      CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
-c$$$! DSCAl is corresponding to the below part in SLEB/dftgrf.F
-c$$$!      DO J=1,NCOUNT
-c$$$!         WT(J)=WT(J)*4.0D0*PI
-c$$$!     ENDDO
-c$$$C
-c$$$      write(*,*)'NUCIND,PI',NUCIND,PI
-c$$$      write(*,*)'INTAMG,m',INTANG,m
-c$$$      DO 5 IJXYZ = 1, 3
-c$$$         IXYZ = 4 - IJXYZ
-c$$$      CALL DZERO(INTAO,NDIM2)
-c$$$      DO 10 IATOM = 1, NUCIND !change
-c$$$!      DO 10 ISYMOP = 0, MXOPR
-c$$$!      What is this roop? MXOPR=0 in dftgrd.F
-c$$$       IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN 
-c$$$!        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN
-c$$$!        IBTAND=IAND, but I am not sure what is it.     
-c$$$         IF(NOORBT(IATOM)) GOTO 10 
-c$$$         IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
-c$$$         GEXP = GNUEXP(IATOM)
-c$$$         write(*,*)'AT3 NO correction'         
-c$$$!         AT3 =  (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0)
-c$$$!         RFM = 0.836D00*AT3+0.570D00
-c$$$!         PARM1 = RFM*1.88972598858D-5
-c$$$!         GEXP = 1.5D0/(PARM1*PARM1)
-c$$$!         write(*,*)'AT3 correction for Ne'
-c$$$         NDEG = MULT(ISTBNU(IATOM))
-c$$$C         
-c$$$C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
-c$$$C
-c$$$         MXNP = 4000            !same to GRASP
-c$$$         NUCTYP = 0
-c$$$         IF(GAUNUC) NUCTYP = 3
-c$$$         write(*,*)"NUCTYP,IXYZ",NUCTYP,IXYZ
-c$$$         CALL MEMSET_NUM(ZAN(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
-c$$$     &                    num_grid_cfg_grasp,IPRINT)
-c$$$         write(*,*)'HH2',H
-c$$$C         
-c$$$C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
-c$$$C We do not have to use it for the Gaussian nucleus.
-c$$$C         
-c$$$C        CALL NUCPRM(ZAN(IATOM),GEXP,NNUC,RNT,EPH,NUCTYP)
-c$$$C         
-c$$$         write(*,*)"MXNP",MXNP
-c$$$         allocate( NUMIR(MXNP) )
-c$$$         allocate( R(MXNP)     )
-c$$$         allocate( W(MXNP)     )           
-c$$$C         
-c$$$         IF(num_grid_cfg_grasp)THEN
-c$$$           allocate( TD(NDIM2,MXNP) )         
-c$$$           allocate( INTAOBUF(NDIM2) )         
-c$$$           allocate( BUF(NDIM2,m)    )
-c$$$           allocate( WT8G    (m) )         
-c$$$           CALL DZERO(TD,NDIM2*MXNP)
-c$$$           CALL DZERO(INTAOBUF,NDIM2)
-c$$$C           
-c$$$           R(1) = RNT
-c$$$           DO J = 2,MXNP
-c$$$              R(J) = R(J-1)*EPH
-c$$$           ENDDO
-c$$$C         
-c$$$           CALL INTMG(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP)
-c$$$!!! debug           
-c$$$!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-c$$$!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-c$$$!           DO  J = 1,MXNP
-c$$$!             WRITE(20,*)NUMIR(J)          !sunaga
-c$$$!           ENDDO
-c$$$!           DO  J = 1,MXNP
-c$$$!             WRITE(*,*)NUMIR(J),J          !sunaga
-c$$$!           ENDDO
-c$$$!           CLOSE(20,STATUS='KEEP')
-c$$$!!! debug           
-c$$$         
-c$$$!     change for debug sentense
-c$$$           write(*,*)"R(1),R(MAX),Z",R(1),R(MXNP),ZAN(IATOM) 
-c$$$           write(*,*)"J,NUMIR"
-c$$$           DO IRP=1,MAXREP+1
-c$$$           DO IC =1,MC
-c$$$              write(*,*)'NCOS,ICOS',NCOS(IRP,IC),ICOS(IRP,IC),IRP,IC
-c$$$           ENDDo
-c$$$           ENDDo
-c$$$           DO 20 IR = 1, MXNP
-c$$$C
-c$$$C     1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
-c$$$C     Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2 * r
-c$$$C     Meaning:   1/r * NUMIR(IR) *   wavefunction     * Radial int * Needed in QUAD.
-c$$$C     Finally,    We multiply R(IR)*R(IR).
-c$$$C
-c$$$             RFAC = R(IR)*R(IR)*R(IR) * NUMIR(IR)
-c$$$             CALL DZERO(TC,NDIM2)
-c$$$             CALL DZERO(BUF,NDIM2*m) 
-c$$$C           
-c$$$C            loop over angular points
-c$$$C            ========================
-c$$$C
-c$$$             DO 30 iy = 1, m
-c$$$               X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
-c$$$               Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
-c$$$               Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
-c$$$C               WT8 = ANG(iy,4)*RFAC
-c$$$C               WT8 = ANG(iy,4) !*RFAC
-c$$$C
-c$$$C     GET AO's
-c$$$C 
-c$$$               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
-c$$$     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-c$$$               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
-c$$$C     
-c$$$C     Get "overlap" matrix
-c$$$C
-c$$$CCCCC
-c$$$C sym
-c$$$CCCCC
-c$$$               IREPOP = ISYMAX(IXYZ,1)
-c$$$               DO ISYM = 1, MAXREP + 1
-c$$$                  IREP = ISYM - 1
-c$$$!                  write(*,*)
-c$$$!                  write(*,*)'Next'
-c$$$!                  write(*,*)
-c$$$                 DO JSYM = 1,ISYM
-c$$$                    JREP = JSYM - 1
-c$$$!                    write(*,*)'IREP,JREP,IBT,IREPOP',
-c$$$!     &                         IREP,JREP,IBTXOR(IREP,JREP),IREPOP
-c$$$                   IF(IBTXOR(IREP,JREP).EQ.IREPOP) THEN
-c$$$C** SL - block
-c$$$                     IOFF = ICOS(ISYM,2)
-c$$$                     JOFF = ICOS(JSYM,1)
-c$$$                     IJOFF = IOFF*(IOFF+1)/2 
-c$$$                     IADD = JOFF
-c$$$                     IJ = 0
-c$$$                     DO I = 1,NCOS(ISYM,2)
-c$$$                      DO J = 1,NCOS(JSYM,1)
-c$$$                       IJ = IJ + 1  
-c$$$C                        BUF(IJ+IJOFF+IADD)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
-c$$$                       BUF(IJ+IJOFF+IADD,iy)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
-c$$$     &                                        *ANG(iy,IXYZ)*ANG(iy,4)
-c$$$C
-c$$$C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
-c$$$C
-c$$$                      ENDDO
-c$$$                      IADD = IADD + JOFF + IOFF - ICOS(JSYM,2) + I
-c$$$                     ENDDO
-c$$$C** LS - block
-c$$$                     IF(IREP.NE.JREP) THEN
-c$$$                       IOFF = ICOS(ISYM,1)
-c$$$                       JOFF = ICOS(JSYM,2)
-c$$$                       IJOFF = IOFF*(IOFF+1)/2 
-c$$$                       IADD = JOFF
-c$$$                       IJ = 0
-c$$$                       DO I = 1,NCOS(ISYM,1)
-c$$$                         DO J = 1,NCOS(JSYM,2)
-c$$$                           IJ = IJ + 1  
-c$$$C                           BUF(IJ+IJOFF+IADD)=GAO(I+IOFF)*GAO(J+JOFF)
-c$$$                           BUF(IJ+IJOFF+IADD,iy)=GAO(I+IOFF)*GAO(J+JOFF)
-c$$$     &                                           *ANG(iy,IXYZ)*ANG(iy,4)
-c$$$!                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
-c$$$!     &                                                   I+IOFF,J+JOFF
-c$$$!                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
-c$$$!     &                          IJOFF,IOFF,JOFF,IADD
-c$$$!                           write(*,*)
-c$$$                         ENDDO
-c$$$                         IADD = IADD + JOFF + IOFF - ICOS(JSYM+1,1) + I
-c$$$                       ENDDO
-c$$$                     ENDIF !(IREP.NE.JREP)
-c$$$                   ENDIF   !(IBTXOR(IREP,JREP).EQ.IREPOP)
-c$$$                 ENDDO
-c$$$               ENDDO
-c$$$               WT8G(iy) = D1
-c$$$C               WT8G(iy) = ANG(iy,IXYZ)*ANG(iy,4)
-c$$$               IBUG = 138*139/2 + 1
-c$$$C               IBUG =  1
-c$$$C               CALL DAXPY(NDIM2,WT8G(iy),BUF(1,iy),1,TC,1)
-c$$$C               IF(IR.EQ.5)THEN
-c$$$C            write(*,*)'TC(ibug),BUF,WT8,iy',TC(ibug),BUF(ibug,iy),WT8,iy
-c$$$C               ENDIF
-c$$$ 30          CONTINUE
-c$$$             CALL DSCAL(NDIM2*m,RFAC,BUF,1)
-c$$$             CALL DGEMV('N',NDIM2,m,D1,BUF,NDIM2,WT8G,1,D0,TC,1)
-c$$$C             DO iy=1,m
-c$$$C                DO IJ=1,NDIM2
-c$$$C                   TC(IJ)=BUF(IJ,iy)*WT8G(iy)+TC(IJ)
-c$$$C                ENDDO   
-c$$$C             ENDDO   
-c$$$C             CALL DSCAL(NDIM2,RFAC,TC,1)
-c$$$             CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-c$$$ 20        CONTINUE
-c$$$           CALL QUAD2(INTAOBUF,TD,MXNP,NDIM2)
-c$$$C           write(*,*)'INTAOBUF2'
-c$$$C     CALL OUTPAK(INTAOBUF,NTBAS(0),-1,LUPRI)           
-c$$$           CALL DAXPY(NDIM2,D1,INTAOBUF,1,INTAO,1)
-c$$$           write(*,*)'INTAO,IBUG',INTAO(IBUG),IBUG
-c$$$           write(*,*)'INTAO,IBUG+1',INTAO(IBUG+1),IBUG+1
-c$$$C
-c$$$          write(*,*)'IBUG',IBUG
-c$$$          DO IR=1,MXNP
-c$$$             write(*,*)'TD,R,IR',TD(IBUG,IR),R(IR),IR
-c$$$          ENDDO   
-c$$$          write(*,*)
-c$$$          write(*,*)'IBUG+1',IBUG+2
-c$$$          DO IR=1,MXNP
-c$$$             write(*,*)'TD,R,IR',TD(IBUG+2,IR),R(IR),IR
-c$$$          ENDDO              
-c$$$           deallocate(INTAOBUF)
-c$$$           deallocate(WT8G)
-c$$$         ELSE  ! num_grid_cfg_grasp
-c$$$C           allocate( TD (NDIM2,1) )         
-c$$$           allocate( BUF(NDIM2,1)    )
-c$$$C           CALL DZERO(TD,NDIM2*1) 
-c$$$!     The grids are calculated at MEMSET routine.           
-c$$$           R(1) = RNT
-c$$$           W(1)  = (RNT+GRDC)*H 
-c$$$C R(IR)**2 is multiplized in RFAC, later          
-c$$$             write(*,*)'H,EPH,RL,GRDC',H,EPH,RNT,GRDC
-c$$$             write(*,*)'R,W',R(1),W(1)
-c$$$           DO IR = 2,MXNP
-c$$$             R(IR) = (R(IR-1)+GRDC)*EPH-GRDC
-c$$$             W(IR) = (R(IR)+GRDC)*H
-c$$$           ENDDO
-c$$$           write(*,*)
-c$$$           write(*,*)"***************"
-c$$$           write(*,*)
-c$$$           CALL INTMG(NUMIR,R,ZAN(IATOM),GEXP,MXNP,NUCTYP)
-c$$$C
-c$$$C  This minus DSCAL is due to Beta Alpha, although we use Alpha. 
-c$$$C
-c$$$           write(*,*)'magnetic'
-c$$$           DO J = 1,MXNP
-c$$$!              NUMIR(J)=D1
-c$$$              write(*,*)R(J),NUMIR(J)
-c$$$           ENDDO
-c$$$!           OPEN(20,FILE='LOG_DIRAC',STATUS='REPLACE',          
-c$$$!     &          FORM='FORMATTED',ACCESS='SEQUENTIAL')  
-c$$$!           DO  J = 1,MXNP
-c$$$!             WRITE(*,*)R(J),NUMIR(J)          !sunaga
-c$$$!           ENDDO
-c$$$!           CLOSE(20,STATUS='KEEP')
-c$$$           DO IRP=1,MAXREP
-c$$$              write(*,*)'NCOS',NCOS(IRP,1),IRP        !sunagatest
-c$$$              write(*,*)'NCOS',NCOS(IRP,2),IRP        !sunagatest
-c$$$           ENDDO
-c$$$!     change for debug sentense
-c$$$           write(*,*)"R(1),R(MAX),Z",R(1),R(MXNP),ZAN(IATOM) 
-c$$$           write(*,*)"J,NUMIR"
-c$$$           DO 40 IR = 1, MXNP
-c$$$C
-c$$$C       1/r in Eq. (2), (4),and (6) of Rinker's paper is NOT calculated in VCMPOL.
-c$$$C       Integrand = 1/r * VP(r) * (Large*Large + Small*Small) * r^2
-c$$$C       Meaning:   1/r * NUMIR(IR) *   wavefunction     * Radial int.
-c$$$C       Finally,    We multiply R(IR).
-c$$$C
-c$$$             RFAC = R(IR)*R(IR) * NUMIR(IR)
-c$$$             CALL DZERO(TC,NDIM2)
-c$$$C            
-c$$$C            loop over angular points
-c$$$C            ========================
-c$$$C
-c$$$             DO 50 iy = 1, m
-c$$$               X8  = ANG(iy,1)*R(IR)+C(1,IATOM)
-c$$$               Y8  = ANG(iy,2)*R(IR)+C(2,IATOM)
-c$$$               Z8  = ANG(iy,3)*R(IR)+C(3,IATOM)
-c$$$               WT8 = ANG(iy,4)*RFAC
-c$$$C
-c$$$C     GET AO's
-c$$$C
-c$$$               CALL GETAOS(BUFGAO,TEMP,TEMP,TEMP,TEMP,
-c$$$     &                      X8,Y8,Z8,NTBAS(0),0,.FALSE.,0) !The last is IPRINT
-c$$$               CALL WTAOSO(BUFGAO,GAO,NTBAS(0),1,IPRINT)
-c$$$!               CALL VTBUBS(BUFGAO,GAO,1)
-c$$$C     
-c$$$C     Get "overlap" matrix
-c$$$C
-c$$$CCCCC
-c$$$C sym
-c$$$CCCCC
-c$$$               IREPOP = ISYMAX(IXYZ,1)
-c$$$               DO ISYM = 1, MAXREP + 1
-c$$$                  IREP = ISYM - 1
-c$$$!                  write(*,*)
-c$$$!                  write(*,*)'Next'
-c$$$!                  write(*,*)
-c$$$                 DO JSYM = 1,ISYM
-c$$$                    JREP = JSYM - 1
-c$$$!                    write(*,*)'IREP,JREP,IBT,IREPOP',
-c$$$!     &                         IREP,JREP,IBTXOR(IREP,JREP),IREPOP
-c$$$                   IF(IBTXOR(IREP,JREP).EQ.IREPOP) THEN
-c$$$C** SL - block
-c$$$                     IOFF = ICOS(ISYM,2)
-c$$$                     JOFF = ICOS(JSYM,1)
-c$$$                     IJOFF = IOFF*(IOFF+1)/2 
-c$$$                     IADD = JOFF
-c$$$                     IJ = 0
-c$$$                     DO I = 1,NCOS(ISYM,2)
-c$$$                       DO J = 1,NCOS(JSYM,1)
-c$$$                        IJ = IJ + 1  
-c$$$                        BUF(IJ+IJOFF+IADD,1)=DM1*GAO(I+IOFF)*GAO(J+JOFF)
-c$$$!                         write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
-c$$$!     &                                                 I+IOFF,J+JOFF
-c$$$!                         write(*,*)'IJOFF,IOFF,JOFF,IADD',
-c$$$!     &                        IJOFF,IOFF,JOFF,IADD
-c$$$!                         write(*,*)
-c$$$                       ENDDO
-c$$$                       IADD = IADD + JOFF + IOFF - ICOS(JSYM,2) + I
-c$$$                     ENDDO
-c$$$C** LS - block
-c$$$                     IF(IREP.NE.JREP) THEN
-c$$$                       IOFF = ICOS(ISYM,1)
-c$$$                       JOFF = ICOS(JSYM,2)
-c$$$                       IJOFF = IOFF*(IOFF+1)/2 
-c$$$                       IADD = JOFF
-c$$$                       IJ = 0
-c$$$                       DO I = 1,NCOS(ISYM,1)
-c$$$                         DO J = 1,NCOS(JSYM,2)
-c$$$                          IJ = IJ + 1  
-c$$$                          BUF(IJ+IJOFF+IADD,1)=GAO(I+IOFF)*GAO(J+JOFF)
-c$$$!                           write(*,*)'IJ+IJOFF+IADD,I,J',IJ+IJOFF+IADD,
-c$$$!     &                                                   I+IOFF,J+JOFF
-c$$$!                           write(*,*)'IJOFF,IOFF,JOFF,IADD',
-c$$$!     &                          IJOFF,IOFF,JOFF,IADD
-c$$$!                           write(*,*)
-c$$$                         ENDDO
-c$$$                         IADD = IADD + JOFF + IOFF - ICOS(JSYM+1,1) + I
-c$$$                       ENDDO
-c$$$                     ENDIF !(IREP.NE.JREP)
-c$$$                   ENDIF   !(IBTXOR(IREP,JREP).EQ.IREPOP)
-c$$$                 ENDDO
-c$$$               ENDDO
-c$$$               WT8 = WT8 * ANG(iy,IXYZ) 
-c$$$               CALL DAXPY(NDIM2,WT8,BUF,1,TC,1)
-c$$$ 50         CONTINUE
-c$$$C
-c$$$C  This minus DSCAL is due to Beta Alpha, although we use Alpha.
-c$$$C
-c$$$!             CALL DSCAL(NDIM2,DM1,TC,1)
-c$$$             CALL DAXPY(NDIM2,W(IR),TC,1,INTAO,1)
-c$$$ 40        CONTINUE
-c$$$         ENDIF   !num_grid_cfg_grasp
-c$$$C
-c$$$         CALL HEADER('Numerical ovelap integral',-1)
-c$$$C         
-c$$$         CALL OUTPAK(INTAO,NTBAS(0),-1,LUPRI)
-c$$$        Endif        !(IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0)
-c$$$        deallocate(BUF)
-c$$$        deallocate(TD)
-c$$$        deallocate(NUMIR)
-c$$$        deallocate(R)
-c$$$        deallocate(W)
-c$$$10    CONTINUE   !IATOM
-c$$$C      
-c$$$      IF(NDEG.GT.0) THEN
-c$$$C       Scale weights with multiplicity of center
-c$$$        FAC = dble(NDEG) 
-c$$$        CALL DSCAL(NDIM2,FAC,INTAO,1)
-c$$$      ENDIF
-c$$$C      
-c$$$C     Generate integral labels
-c$$$C
-c$$$      CALL GETDAT(RTNLBL(1),RTNLBL(2))
-c$$$      RTNLBL(2)(1:2) = 'AN'
-c$$$      WRITE(RTNLBL(2)(3:4),'(I2)') ISYMAX(IXYZ,1)+1
-c$$$      RTNLBL(2)(5:8) = COMB
-c$$$C
-c$$$C     Write integrals to file
-c$$$C
-c$$$      LABEL(2:8) = CLSINT(IOP)
-c$$$!     It is important, because LABEL must be 8, while CLSINT(IOP) is 7      
-c$$$      IF(IXYZ.EQ.1)THEN
-c$$$        LABEL(1:1) = 'X'
-c$$$      ELSEIF(IXYZ.EQ.2)THEN
-c$$$        LABEL(1:1) = 'Y'
-c$$$      ELSEIF(IXYZ.EQ.3)THEN
-c$$$        LABEL(1:1) = 'Z'
-c$$$      ELSE
-c$$$        CALL QUIT('NUMINT_ANG: The initial character of LABEL' //
-c$$$     &            'should be X/Y/Z')
-c$$$      ENDIF   
-c$$$      CALL WRTPRO(INTAO,NNBBASX,LABEL,RTNLBL,IPRINT)      
-c$$$CCCCCCCCCCC      
-c$$$C     sunaga
-c$$$      NRAD = int(-log10(num_grid_cfg_RADINT))
-c$$$      write(*,*)"NRAD",NRAD
-c$$$      write(RADC,'(I2)')NRAD
-c$$$      write(ANGC,'(I2)')INTANG
-c$$$      write(*,*)"RADC,ANGC",RADC,ANGC
-c$$$      RADANGC(1:2) = RADC
-c$$$      RADANGC(3:3) = '.'
-c$$$      RADANGC(4:5) = ANGC
-c$$$      RADANGC(6:6) = LABEL(1:1)
-c$$$      write(*,*)RADANGC
-c$$$C      OPEN(30,FILE=RADANGC,STATUS='NEW',  
-c$$$C     &     FORM='FORMATTED',ACCESS='SEQUENTIAL')
-c$$$      OPEN(30,FILE=RADANGC,STATUS='REPLACE')
-c$$$      DO I = 1,NDIM2
-c$$$         write(30,*)INTAO(I)
-c$$$      ENDDO   
-c$$$      write(30,*)'INTAO,RADC,ANGC',RADC,ANGC
-c$$$      CLOSE(30,STATUS='KEEP')
-c$$$C      write(*,*) "RADINT,log,NRAD",num_grid_cfg_RADINT,
-c$$$C     &  log10(num_grid_cfg_RADINT),NRAD
-c$$$
-c$$$C      sunaga
-c$$$CCCCCCCCCCC
-c$$$C     
-c$$$ 5    CONTINUE !IXYZ
-c$$$      deallocate(ZAN)
-c$$$      deallocate(C)
-c$$$      deallocate(ANG)
-c$$$      deallocate(GAO)
-c$$$C      deallocate(BUF)
-c$$$      deallocate(BUFGAO)
-c$$$      deallocate(INTAO)
-c$$$      CALL QEXIT('NUMINT_ANG')
-c$$$      RETURN         
-c$$$      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck numint_ang */
       SUBROUTINE NUMINT(IOP,COMB,NXYZ,MATINF,IPRINT)
@@ -728,39 +234,27 @@ C
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2
-      CHARACTER RADC*2,ANGC*2,RADANGC*6 
+      CHARACTER RADC*2,ANGC*2,RADANGC*6
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,DM1=-1.0D0)      
       real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:),BUFGAO(:,:)
       real(8), allocatable :: BUF(:),TC(:), NUMIR(:),R(:)
       real(8), allocatable :: INTAO(:),INTAOTRI(:)
-C      real(8), allocatable :: ZAN(:),C(:,:)
-
+C
+      CHARACTER CPUTID*12, WALLTID*12, SECTID*12, TITLE_PRINT*50      
+C
       CALL QENTER('NUMINT')
-      write(*,*)"****************"
-      write(*,*)"NUMINT_NEW"
-      write(*,*)"****************"
-      write(*,*)"IOP",IOP
-      write(*,*)"CLSINT",CLSINT(IOP)
-C
-C     Making ZAN and C 
-C     ZAN... Nuclear charge
-C     C  ... atomic center
-C     ===================
+      CALL GETTIM(CPU0,WALL0)
 C      
-C      allocate(ZAN(nucdep))
-C      allocate(C(3,nucdep))
-C      CALL SET_GRID_INFO(NAT,NUM,ZAN,C)
-C
       NCUTZ = num_grid_cfg_minz
       INTANG=num_grid_cfg_ANGMIN
       m = NLEB(INTANG)
       NDIM2 = NTBAS(0)*NTBAS(0)
-      allocate( ANG      (m,4)    )
+      allocate( ANG      (m,4)   )
       allocate( TC       (NDIM2) )
       allocate( INTAO    (NDIM2) )
       allocate( INTAOTRI (NDIM2) )
 C      
-      CALL DZERO(TC,      NDIM2)
+      CALL DZERO(TC,NDIM2)
 C      
       CALL LEBEDEV(INTANG,ANG(1,1),ANG(1,2),ANG(1,3),ANG(1,4),n)
       CALL DSCAL(m,4.0D0*PI,ANG(1,4),1)
@@ -769,9 +263,6 @@ C
 !         WT(J)=WT(J)*4.0D0*PI
 !     ENDDO
 C
-      write(*,*)"NCUTZ"
-      write(*,*)'NUCIND,NUCDEP,MAXOPR',NUCIND,NUCDEP,MAXOPR
-      write(*,*)'test,test3'
       DO II=1,NUCIND
          write(*,*)'CHARGE=,II',CHARGE(II),II
       ENDDO
@@ -787,7 +278,28 @@ C
       ENDIF
 C      
       DO 5 IXYZ = INIXYZ, MAXXYZ
-C         IXYZ = 4-IMXYZ
+C
+C     Label for the operator
+C         
+      IF(IXYZ.EQ.0)THEN
+!     This transformation is important, because LABEL must be 8, while CLSINT(IOP) is 7
+        LABEL = CLSINT(IOP)
+        WRITE(RTNLBL(2)(3:4),'(I2)') 1
+      ELSE   
+        LABEL(2:8) = CLSINT(IOP)
+        WRITE(RTNLBL(2)(3:4),'(I2)') ISYMAX(IXYZ,1)+1
+        IF(IXYZ.EQ.1)THEN
+          LABEL(1:1) = 'X'
+        ELSEIF(IXYZ.EQ.2)THEN
+          LABEL(1:1) = 'Y'
+        ELSEIF(IXYZ.EQ.3)THEN
+          LABEL(1:1) = 'Z'
+        ELSE
+          CALL QUIT('NUMINT_ANG: The initial character of LABEL' //
+     &               'should be X/Y/Z')
+        ENDIF
+      ENDIF 
+C         
       CALL DZERO(INTAO   ,NDIM2)
       CALL DZERO(INTAOTRI,NDIM2)
       NAT = 0
@@ -798,26 +310,12 @@ C     IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
      &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
-!     ayaki   IBTAND=IAND, but I am not sure what is it.     
+!     ayaki   IBTAND=IAND, but I am not sure what it is.     
          IF(NOORBT(IATOM)) GOTO 10 
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
          NAT = NAT + 1
-C         Z = ZAN(IATOM)
-C         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-C         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-C         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM) !change
          GEXP = GNUEXP(IATOM)
-!         AT3 =  (DBLE(20)-7.5609D-003) **  (1.0D0/3.0D0)
-!         RFM = 0.836D00*AT3+0.570D00
-!         PARM1 = RFM*1.88972598858D-5
-!         GEXP = 1.5D0/(PARM1*PARM1)
          NDEG = MULT(ISTBNU(IATOM))
-         DO II2=1,2
-          DO III=1,3
-             write(*,*)'ISYMAX(I,J),I,J',ISYMAX(III,II2),III,II2
-          ENDDO
-         ENDDO 
-         write(*,*)'NDEG,IATOM,ISYMOP',NDEG,IATOM,ISYMOP
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
@@ -827,9 +325,6 @@ C
          write(*,*)"NUCTYP,IATOM",NUCTYP,IATOM
          CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
-C         CALL MEMSET_NUM(ZAN(NAT),IATOM,MXNP,RNT,H,EPH,GRDC,
-C     &                    num_grid_cfg_grasp,IPRINT)
-         write(*,*)'H,INTANG,m_ang',H,INTANG,m
 C         
 C NUCPRM is for making nuclear parameter of Fermi and Uniform nucleus. 
 C We do not have to use it for the Gaussian nucleus.
@@ -881,13 +376,16 @@ C
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
          CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
-     &                 CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IPRINT)
+     &    CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IATOM,LABEL,IPRINT)
 C     writing the matrix in output
-         IF(IPRINT.GE.4)THEN
-           CALL HEADER('Numerical ovelap integral',-1)
+         IF(IPRINT.GE.6)THEN
+           WRITE(TITLE_PRINT,'(5A)')
+     &       'NUMINT: ',LABEL,'Symmetrized AO-matrix of ',
+     &       NAMN(IATOM),"atom"
+           CALL HEADER(TITLE_PRINT,-1)
            CALL OUTPUT(INTAOTRI,1,NTBAS(0),1,NTBAS(0),
-     &                   NTBAS(0),NTBAS(0),-1,LUPRI)
-         ENDIF !debug   
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
+         ENDIF   
 !         IF(NDEG.GT.0) THEN
 C       Scale weights with multiplicity of center
 !           FAC = dble(NDEG) 
@@ -910,12 +408,19 @@ C     deallocate(W)
         ENDIF                   !IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)  
         ENDIF !    (IBTAND(0,ISTBNU(IATOM)).EQ.0)
 10    CONTINUE   ! IATOM = 1, NUCIND, ISYMOP = 0, MXOPR 
-C      
+C
+      IF(IPRINT.GE.6)THEN
+        WRITE(TITLE_PRINT,'(5A)')
+     &    'NUMINT: ',LABEL,'Total AO-matrix'
+        CALL HEADER(TITLE_PRINT,-1)
+        CALL OUTPUT(INTAO,1,NTBAS(0),1,NTBAS(0),
+     &              NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
+      ENDIF  
 C
 C    Transformation from full-matrix to triangle-matrix
 C      
       CALL MTFULTRI(INTAO,INTAOTRI,NTBAS(0),IPRINT)
-C      
+C     
 C     Generate integral labels
 C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
@@ -925,24 +430,6 @@ C
 C
 C     Write integrals to file
 C
-      IF(IXYZ.EQ.0)THEN
-!     This transformation is important, because LABEL must be 8, while CLSINT(IOP) is 7
-        LABEL = CLSINT(IOP)
-        WRITE(RTNLBL(2)(3:4),'(I2)') 1
-      ELSE   
-        LABEL(2:8) = CLSINT(IOP)
-        WRITE(RTNLBL(2)(3:4),'(I2)') ISYMAX(IXYZ,1)+1
-        IF(IXYZ.EQ.1)THEN
-          LABEL(1:1) = 'X'
-        ELSEIF(IXYZ.EQ.2)THEN
-          LABEL(1:1) = 'Y'
-        ELSEIF(IXYZ.EQ.3)THEN
-          LABEL(1:1) = 'Z'
-        ELSE
-          CALL QUIT('NUMINT_ANG: The initial character of LABEL' //
-     &               'should be X/Y/Z')
-        ENDIF
-      ENDIF 
       CALL WRTPRO(INTAOTRI,NNBBASX,LABEL,RTNLBL,IPRINT)
 C      
 C     debug print
@@ -966,12 +453,16 @@ C
       CLOSE(30,STATUS='KEEP')
       ENDIF
  5    CONTINUE !IXYZ
-C      deallocate(ZAN)
-C      deallocate(C)
       deallocate(ANG)
       deallocate(INTAO)
       deallocate(INTAOTRI)
-!      stop 
+C
+      CALL GETTIM(CPUE,WALLE)
+      CPUTID  = SECTID(CPUE-CPU0)
+      WALLTID = SECTID(WALLE-WALL0)
+      WRITE(LUPRI,'(6A)')
+     &     'Total time used in ',CLSINT(IOP),' (CPU) ',CPUTID,
+     &     ' and (WALL) ',WALLTID    
       CALL QEXIT('NUMINT')
       RETURN         
       END
@@ -1345,7 +836,7 @@ C      ENDIF                   !debug
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck intsum */
       SUBROUTINE INTSUM(INTSO,NDIM2,VWRR,R,MXNP,ANG,m,IXYZ,C,
-     &                   GRASP,MAT,IPRINT)
+     &                   GRASP,MAT,IATOM,LABEL,IPRINT)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     The integration of radial and angular integral   
@@ -1403,9 +894,11 @@ C
 #include "dcbham.h"
 C      
 #include "shells.h"
+#include "nuclei.h"
       REAL*8 R(MXNP), ANG(m,4), INTSO(NDIM2), VWRR(MXNP), C(3,1)
 C
-      CHARACTER*2 MAT
+      CHARACTER MAT*2, LABEL*8
+      CHARACTER TITLE_PRINT*100
       LOGICAL GRASP,TRIMAT,ANTI
       PARAMETER (D0=0.0D0,D1=1.0D0,DM1=-1.0D0,D2=2.0D0)      
       REAL*8    ALPHA(2)
@@ -1430,10 +923,7 @@ C
 C
       call dirac_ao_eval_init(0,0,.FALSE.)       
       allocate( GMAX(0:nr_boson_ireps-1, nr_shells) )
-C      allocate( GMAX(0:MAXOPR, 100) )
-C     same to allocate( GMAX(0:nr_boson_ireps-1, nr_shells) )
 C
-C      write(*,*)'KHKT',KHKT
       CALL DZERO(INTAOBUF,NDIM2)
       write(*,*)'C1,C2,C3',C(1,1),C(2,1),C(3,1)
       write(*,*)'MAT,SCREEN ',MAT,SCREEN
@@ -1498,10 +988,6 @@ C
       write(*,*)'NTBAS(1)',NTBAS(1)
       write(*,*)'nr_shells, nr_boson_ireps',nr_shells, nr_boson_ireps
       write(*,*)'KMAX,MAXOPR+1,',KMAX,MAXOPR+1
-C
-CCCCCCC
-C test         do IR = MXNP, 1, -1    !change
-CCCCCCC
 C
 C     Determination of the maximum value for each (isym,ishell)
 C     for cutoff of the numerical integration 
@@ -1689,8 +1175,6 @@ C
      &                 m,D0,TC(ITC(IC)),NTBAS(0))
           ENDDO 
           CALL DCOPY(NDIM2,TC,1,TD(1,IR),1)
-C          write(*,*)'TD,IR',TD(9,IR),IR
-C             IR = IR + 1
           deallocate(GAO)
           deallocate(BUFGAO)
         end do                ! IR
@@ -1714,7 +1198,6 @@ C
           CALL DZERO(BUFGAO,m*NTBAS(0))
 C
           call dirac_ao_eval_init(0,0,.FALSE.) 
-C          write(*,*)'nr_shells',nr_shells
 C
 C    GET AO's
 C
@@ -1810,7 +1293,11 @@ C sum  weight*r^2*V(r)*Basis^2
           deallocate(BUFGAO)
         end do                ! IR
       ENDIF                     ! GRASP or DIRAC
-      IF(IPRINT.GE.2)THEN
+      IF(IPRINT.GE.6)THEN
+        WRITE(TITLE_PRINT,'(5A)')
+     &     'INTSUM: ',LABEL,'Before-symmetrized AO-matrix of ',
+     &     NAMN(IATOM),"atom"
+           CALL HEADER(TITLE_PRINT,-1)
         CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
      &               NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
       ENDIF   

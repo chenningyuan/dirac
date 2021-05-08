@@ -144,7 +144,7 @@
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
-     &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C,
+     &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C,          &
      &        DOEFFQED, DOASHIFT
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
@@ -158,7 +158,7 @@
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
      &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
      &                WRITE_K_MATRIX,FAKE2C,I2_DCLHAM,                  &
-     &    	      DOEFFQED, DOASHIFT,
+     &    	      DOEFFQED, DOASHIFT
 
 !    Do NOT add any variables after the end tag !!!
 !

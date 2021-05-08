@@ -6030,13 +6030,7 @@ C..TODO: check for inconsistencies and add stops
 !&&&& .KOUT : save Kappa_MO matrices into formatted files for analysis
             WRITE_K_MATRIX = .TRUE.
           GO TO 100
-  174     CONTINUE
-          GO TO 100
-  175     CONTINUE
-          GO TO 100
-  176     CONTINUE
-          GO TO 100
-  173     CONTINUE
+ 174      CONTINUE
 !&&&& EFFQED: include effective QED potential
           DOEFFQED=.TRUE.
           ICHANG = ICHANG + 1
@@ -6064,7 +6058,7 @@ C..TODO: check for inconsistencies and add stops
             ENDDO
           ENDDO  
           GOTO 100
- 174      CONTINUE
+ 175      CONTINUE
 !&&&& ASHIFT: include atomic projectors
           DOASHIFT=.TRUE.
           ICHANG = ICHANG + 1
@@ -6090,6 +6084,8 @@ C..TODO: check for inconsistencies and add stops
               READ(LUCMD,'(A72)') AVECREF(IVAL,ITYP)
             ENDDO
           ENDDO  
+          GOTO 100
+ 176      CONTINUE
           GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300

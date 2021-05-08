@@ -5486,9 +5486,9 @@ C
       REAL*8       SHELLFAC(MSHEL,MATOM)
       DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
 C.....Local variables
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
-      INTEGER NNEG,NPOS,NBAS
+      INTEGER NNEG,NPOS,NBAS,IDIM(3)
 C
       KFRSAV=KFREE
 C.....Initialize buffer density matrix
