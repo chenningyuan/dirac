@@ -782,8 +782,8 @@ contains
         label = "Eigenvalues"
 
         do i = 1, nroots_local 
-            vr = realpart(eValues(i))
-            vi = imagpart(eValues(i))
+            vr = real(eValues(i))
+            vi = aimag(eValues(i))
             if (abs(vi).lt.print_values_threshold) vi = 0.0d0
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
@@ -2291,8 +2291,8 @@ contains
         allocate(indices_sorted_array(vectors_L))
         do i = 1, vectors_L 
             indices_sorted_array(i) = i 
-            e_small_real(1,i) = realpart(e_small(i))
-            e_small_real(2,i) = imagpart(e_small(i))
+            e_small_real(1,i) = real(e_small(i))
+            e_small_real(2,i) = aimag(e_small(i))
         end do
 
         if (apply_shift) then
@@ -2362,8 +2362,8 @@ contains
          
           do i = 1, vectors_L 
               indices_sorted_array_temp(i) = i
-              overlap_copy(1,i) = realpart(overlap(iroot,i))
-              overlap_copy(2,i) = imagpart(overlap(iroot,i))
+              overlap_copy(1,i) = real(overlap(iroot,i))
+              overlap_copy(2,i) = aimag(overlap(iroot,i))
           end do
           call davidson_print_vectors(overlap_copy,   label="copy of overlap matrix before  ")
           call quicksort_vector_complex_as_real(overlap_copy, indices_sorted_array_temp, 1, vectors_L)
