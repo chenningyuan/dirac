@@ -112,6 +112,7 @@ logical, save      :: davidson_apply_eigenvalues_shift
 logical, save      :: davidson_solve_rhs 
 logical, save      :: davidson_solve_lhs 
 logical, save      :: davidson_solve_values
+logical, save      :: davidson_solve_linear_system
 logical, save      :: davidson_verbose 
 logical, save      :: davidson_symmetric 
 logical, save      :: davidson_complex_mode_with_reals 
@@ -214,6 +215,7 @@ contains
                               unit_subspaces,    &
                               unit_results,      &
                               solve_values,      &
+                              solve_linear_sys,  &
                               solve_right,       &
                               solve_left,        &
                               symmetric,         &
@@ -239,6 +241,7 @@ contains
         integer, intent(in), optional :: overlap_sorting_scheme
         integer, intent(in), optional :: refresh_trial_rate
         logical, optional :: solve_values
+        logical, optional :: solve_linear_sys
         logical, optional :: solve_right
         logical, optional :: solve_left
         logical, optional :: verbose
@@ -294,6 +297,16 @@ contains
         else
             davidson_solve_values = .true. 
         end if
+
+        if (present(solve_linear_sys)) then
+            davidson_solve_linear_system = solve_linear_sys
+        else
+            davidson_solve_linear_system = .true. 
+        end if
+        if (davidson_solve_linear_system.and.davidson_solve_values) then
+           call quit('inconsistent setup. cannot calculate eigenvalues and solve linear system')
+        endif
+ 
 
         if (present(solve_left)) then
             davidson_solve_lhs = solve_left 
@@ -1827,16 +1840,34 @@ contains
         close(unit=fileno)
     end subroutine
 
-
-! aspg, 16/04/2019
-! for the moment we have a long argument list to get it going, later we try to shorten in
-!   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
-   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t)
+   subroutine talsh_solve_linear_system_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t)
       type(talsh_davidson_results_tens_t) :: results_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(talsh_projectors_tens_t), intent(inout) :: projector_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
+
+      type(talsh_tens_t), intent(inout) :: prop_gradient_t
+      complex(kind=8), intent(in) :: frequency
+
+      call talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t)
+
+   end subroutine
+
+
+
+! aspg, 16/04/2019
+! for the moment we have a long argument list to get it going, later we try to shorten in
+!   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
+   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t)
+      type(talsh_davidson_results_tens_t) :: results_t
+      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+      type(talsh_projectors_tens_t), intent(inout) :: projector_t
+      type(talsh_intg_tens_t), intent(inout) :: int_t
+
+      type(talsh_tens_t), intent(inout), optional :: prop_gradient_t
+      complex(kind=8), intent(in), optional :: frequency  
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
 
@@ -1846,7 +1877,7 @@ contains
 !
 ! nullifying all pointers at the start to give them a state, see discussion on http://www.cs.rpi.edu/~szymansk/OOF90/bugs.html
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
-! 
+
         complex(kind=8), pointer, contiguous :: M_small(:,:)        => NULL()
         complex(kind=8), pointer, contiguous :: c_small_r(:,:)      => NULL()
         complex(kind=8), pointer, contiguous :: c_small_l(:,:)      => NULL()
@@ -1856,11 +1887,25 @@ contains
         complex(kind=8), pointer, contiguous :: c_small_l_old(:,:)  => NULL()
         logical, pointer :: delta(:) => NULL()
 
+        complex(kind=8) :: frequency_local
+        logical :: solve_linear = .false.
+        logical :: solve_eigen  = .true.
+
         integer :: niter
         integer :: i, j, k
         integer :: nroots, ierr
 
         nroots    = workspace_t%nroots
+
+        if (davidson_solve_linear_system.and..not.present(prop_gradient_t)) then
+            call quit('bla') 
+        end if
+
+        if (present(frequency)) then
+           frequency_local = frequency
+        else
+           frequency_local = (0.0d0,0.0d0) 
+        end if
 !
 ! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
 ! 
