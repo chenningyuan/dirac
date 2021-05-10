@@ -1596,21 +1596,21 @@ contains
 ! aspg
 ! debug info
             ierr = talsh_tensor_get_body_access(workspace_t%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
-            write (6,*) 's1_body_p',s1_body_p
+!           write (6,*) 's1_body_p',s1_body_p
             ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
             call c_f_pointer(s1_body_p,s1_h_p_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
 
             ierr = talsh_tensor_get_body_access(workspace_t%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
-            write (6,*) 't1_body_p',t1_body_p
+!           write (6,*) 't1_body_p',t1_body_p
             call c_f_pointer(t1_body_p,t1_h_p_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
 
             ierr = talsh_tensor_get_body_access(workspace_t%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
-            write (6,*) 's2_body_p',s2_body_p
+!           write (6,*) 's2_body_p',s2_body_p
            ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
             call c_f_pointer(s2_body_p,s2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
 
             ierr = talsh_tensor_get_body_access(workspace_t%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
-            write (6,*) 't2_body_p',t2_body_p
+!           write (6,*) 't2_body_p',t2_body_p
             call c_f_pointer(t2_body_p,t2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
 
             if (.false.) then
@@ -2302,7 +2302,7 @@ contains
         end if
 
         do i = 1, vectors_L
-            e_small(i) = complex(e_small_real(1,i), e_small_real(2,i))
+            e_small(i) = cmplx(e_small_real(1,i), e_small_real(2,i))
         end do
 
         allocate(temp_vector(vectors_L,vectors_L))
