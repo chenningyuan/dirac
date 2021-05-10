@@ -419,8 +419,7 @@ C
 #include "dcbopt.h"
 C
       CALL QENTER('PRPESR')
-      MZ = MIN(2,NZ)
-!d    write (lupri,*) 'DEBUG 1 NZ, MZ',NZ,MZ
+!d    write (lupri,*) 'DEBUG 1 NZ, NZ_in_CI',NZ,NZ_in_CI
 C
       KFRSAV = KFREE
 !d    print *,'PRPESR  KFREE,LFREE',KFREE,LFREE
@@ -468,7 +467,7 @@ C
 C
 C **  Solve ESR CI problem
 C     on exit: WORK(KEIGVL) - N_CIESR CI eigenvalues
-C              WORK(KEIGVC) - N_CIESR CI eigenvectors (NZCONF,N_CIESR,MZ)
+C              WORK(KEIGVC) - N_CIESR CI eigenvectors (NZCONF,N_CIESR,NZ_in_CI)
 C
       CALL ESR_RESOLVE(WORK(KCMO),IPRESR,N_CIESR,MAX_CIESR_IT,
      &                 THR_CIESR,WORK,KEIGVL,KEIGVC,KFREE,LFREE)
@@ -482,8 +481,8 @@ C     Make CI Hamiltonian matrix (diagonal now, but it may be made
 C     non-diagonal in ESRPHASE)
 C
       CALL MEMGET2('REAL','H_CI',KHCI,
-     &   MZ*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KHCI),MZ*MULTIPESR*MULTIPESR)
+     &   NZ_in_CI*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
+      CALL DZERO(WORK(KHCI),NZ_in_CI*MULTIPESR*MULTIPESR)
       DO I = 1, MULTIPESR
          II = KHCI + (I-1)*MULTIPESR + (I-1)
          WORK(II) = WORK(KEIGVL-1 + I)
@@ -508,7 +507,7 @@ C
      &   'PRPESR: Real part of the N_CIESR CI vectors'
        CALL OUTPUT(WORK(KEIGVC),1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
-       IF (MZ .EQ. 2) THEN
+       IF (NZ_in_CI .EQ. 2) THEN
           WRITE(LUPRI,*)
      &      'PRPESR: Imag part of the N_CIESR CI vectors'
           KEIGVC_I = KEIGVC + NZCONF*N_CIESR
@@ -517,9 +516,9 @@ C
        END IF
 #endif
       CALL ESRPHASE(ESRVAL,WORK(KCMO), WORK(KPMAT),
-     &              WORK(KHCI),WORK(KEIGVC),MZ,WORK,KFREE,LFREE)
+     &              WORK(KHCI),WORK(KEIGVC),WORK,KFREE,LFREE)
 C     CALL ESRPHASE(ESRVAL,CMO,PMAT,
-C    &              HCI,CIEVEC,MZ,WORK,KFREE,LFREE)
+C    &              HCI,CIEVEC,WORK,KFREE,LFREE)
 C
 C     Memory allocation for PRPESR1
 C
@@ -540,9 +539,9 @@ C
       END IF
 C
       CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
-     &             WORK(KEIGVC),MZ,WORK,KFREE,LFREE)
+     &             WORK(KEIGVC),WORK,KFREE,LFREE)
 C     CALL PRPESR1(ESRVAL,LESRST,CMO,PMAT,
-C    &             CIEVEC,MZ,WORK,KFREE,LFREE)
+C    &             CIEVEC,WORK,KFREE,LFREE)
 C
       IF (IPRESR .GT. 1) THEN
         CALL HEADER('PRPESR results in CI eigenvector basis'//
@@ -859,7 +858,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ESRPHASE(ESRVAL,CMO,PMAT,HCI,CIEVEC,MZ,
+      SUBROUTINE ESRPHASE(ESRVAL,CMO,PMAT,HCI,CIEVEC,
      &                    WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -880,7 +879,7 @@ C
 C
       LOGICAL   REAL_PMLF
       DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,4),CMO(*),PMAT(*),
-     &          HCI(MULTIPESR,MULTIPESR,MZ), CIEVEC(NZCONF,N_CIESR,MZ),
+     &          HCI(MULTIPESR,MULTIPESR,NZ_in_CI), CIEVEC(NZCONF,N_CIESR,NZ_in_CI),
      &          WORK(*)
       CHARACTER MXFORM*6,FMT*6
       INTEGER   IPCMO(2)
@@ -888,6 +887,7 @@ C
 C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
+C  dgroup : NZ,NZ_in_CI
 C
 #include "dcbgen.h"
 #include "dcbopt.h"
@@ -926,19 +926,19 @@ C
      &   'ESRPHASE: Real part of the N_CIESR CI vectors'
        CALL OUTPUT(CIEVEC(1,1,1),1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
-       IF (MZ .EQ. 2) THEN
+       IF (NZ_in_CI .EQ. 2) THEN
           WRITE(LUPRI,*)
      &      'ESRPHASE: Imag part of the N_CIESR CI vectors'
           CALL OUTPUT(CIEVEC(1,1,2),1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
        END IF
 #endif
-      CALL ESRTRANS(INDXPR,ESRVAL,CMO,PMAT,CIEVEC,MZ,
+      CALL ESRTRANS(INDXPR,ESRVAL,CMO,PMAT,CIEVEC,
      &              WORK,KFREE,LFREE)
 C       temp. use ESRVAL(...,2:3) for eigenvalues and eigenvectors
-C       note: using MZ in QDIAG and not 2 because we know Sigma_z
+C       note: using NZ_in_CI in QDIAG and not 2 because we know Sigma_z
 C             is a real operator
-      CALL QDIAG(MZ,MULTIPESR,ESRVAL,MULTIPESR,MULTIPESR,
+      CALL QDIAG(NZ_in_CI,MULTIPESR,ESRVAL,MULTIPESR,MULTIPESR,
      &           ESRVAL(1,1,1,2),1,ESRVAL(1,1,1,3),
      &           MULTIPESR,MULTIPESR,WORK(KFREE),LFREE,IERR)
       ! Change order in S_Z to decreasing instead of increasing value
@@ -948,7 +948,7 @@ C             is a real operator
          TEMP = ESRVAL(I,1,1,2)
          ESRVAL(I,1,1,2) = ESRVAL(J,1,1,2)
          ESRVAL(J,1,1,2) = TEMP
-         DO K = 1,MZ
+         DO K = 1,NZ_in_CI
             CALL DSWAP(MULTIPESR,ESRVAL(1,J,K,3),1,ESRVAL(1,I,K,3),1)
          END DO
       END DO
@@ -959,42 +959,42 @@ C             is a real operator
      &     ' test output after qdiag for S_z; ESRVAL matrix',I,
      &     ' (2 ~ eigenvalues, 3 ~ eigenvectors)'
           CALL PRQMAT(ESRVAL(1,1,1,I),MULTIPESR,MULTIPESR,
-     &                MULTIPESR,MULTIPESR,MZ,IQINDX,LUPRI)
+     &                MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,LUPRI)
         END DO
       END IF
 
 C
 C     Transform the first HCI matrix to the new CI basis
 C
-      CALL DCOPY(N2MULT*MZ,HCI,1,ESRVAL,1)
+      CALL DCOPY(N2MULT*NZ_in_CI,HCI,1,ESRVAL,1)
       CALL QTRANS('AOMO','S',D0,MULTIPESR,MULTIPESR,MULTIPESR,MULTIPESR,
-     &        ESRVAL,         MULTIPESR,MULTIPESR,MZ,IQINDX,
-     &        HCI,            MULTIPESR,MULTIPESR,MZ,IQINDX,
-     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,IQINDX,
-     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,IQINDX,
+     &        ESRVAL,         MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
+     &        HCI,            MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
+     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
+     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
      &        WORK(KFREE),LFREE,-1)
       IF (IPRESR .GT. 3) THEN
         write (lupri,*) ' H_CI matrix after transform. to S_z basis'
         CALL PRQMAT(HCI,MULTIPESR,MULTIPESR,
-     &              MULTIPESR,MULTIPESR,MZ,IQINDX,LUPRI)
+     &              MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,LUPRI)
       END IF
 C
 C     Transform the first MULTIPESR CI eigenvectors to S_z basis
 C
-      L_CIVEC2 = NZCONF * N_CIESR * MZ
+      L_CIVEC2 = NZCONF * N_CIESR * NZ_in_CI
       CALL MEMGET2('REAL','CIVEC2',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
       CALL DCOPY(L_CIVEC2,CIEVEC,1,WORK(KCIVEC2),1)
       CALL QGEMM(NZCONF,MULTIPESR,MULTIPESR,D1,
      &           'N','N',IQINDX,
-     &           WORK(KCIVEC2),NZCONF,N_CIESR,MZ,
+     &           WORK(KCIVEC2),NZCONF,N_CIESR,NZ_in_CI,
      &           'N','N',IQINDX,
-     &           ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,MZ,
-     &           D0,IQINDX, CIEVEC,NZCONF,N_CIESR,MZ)
+     &           ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,NZ_in_CI,
+     &           D0,IQINDX, CIEVEC,NZCONF,N_CIESR,NZ_in_CI)
       CALL MEMREL('ESRPHASE-1',WORK,1,KCIVEC2,KFREE,LFREE)
       IF (IPRESR .GT. 10) THEN
         write (lupri,*) ' CIEVEC after transform. to S_z basis'
         CALL PRQMAT(CIEVEC,NZCONF,MULTIPESR,
-     &              NZCONF,N_CIESR,MZ,IQINDX,LUPRI)
+     &              NZCONF,N_CIESR,NZ_in_CI,IQINDX,LUPRI)
       END IF
 C
 C     Calculate S_x, S_y, S_z matrices in CIEVEC basis,
@@ -1016,7 +1016,7 @@ C
           END IF
 C
           CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
-     &                  CIEVEC,MZ,WORK,KFREE,LFREE)
+     &                  CIEVEC,WORK,KFREE,LFREE)
         ENDDO
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -1108,7 +1108,7 @@ C       ... here PHASE is new phase of vector MJ+1
 C
       WRITE (LUPRI,'(A,2I3,2F15.10)')
      &   ' J, JP1, Phase factors',J,JP1,PHASE_J_R, PHASE_J_I
-        IF (MZ .EQ. 2) THEN
+        IF (NZ_in_CI .EQ. 2) THEN
            SX_R = ESRVAL(JP1,J,1,1)
 !          SX_I = ESRVAL(JP1,J,2,1)
 !          SY_R = ESRVAL(JP1,J,1,2)
@@ -1127,7 +1127,7 @@ C
            IF (PHASE_J_R .LT. 0) THEN
            ESRVAL(JP1,J,1,1) = -ESRVAL(JP1,J,1,1)
            ESRVAL(JP1,J,2,2) = -ESRVAL(JP1,J,2,2)
-           DO IZ = 1,MZ
+           DO IZ = 1,NZ_in_CI
               CALL DSCAL(NZCONF,-1.0d0,CIEVEC(1,JP1,IZ),1)
            END DO
            END IF
@@ -1165,7 +1165,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesr1 */
       SUBROUTINE PRPESR1(ESRVAL,LESRST,CMO,PMAT,
-     &                   CIEVEC,MZ,WORK,KFREE,LFREE)
+     &                   CIEVEC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIESR/
@@ -1238,11 +1238,11 @@ c       WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
 c       CALL PRSYMB(LUPRI,'-',76,0)
 C
 C       Allocate memory for property matrix in molfdir format:
-C        MZ = MIN(2,NZ)
-C        CALL MEMGET('REAL',KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
+C        NZ_in_CI = MIN(2,NZ)
+C        CALL MEMGET('REAL',KPMLF  ,NZ_in_CI*(2*NASHT)**2,WORK,KFREE,LFREE)
 C        CALL MEMGET('REAL',KMUUUU ,0              ,WORK,KFREE,LFREE)
 C        LPCI = N2CIESR
-C        IF (MZ .EQ. 2) LPCI = 2*LPCI
+C        IF (NZ_in_CI .EQ. 2) LPCI = 2*LPCI
 C        CALL MEMGET('REAL',KPR    ,LPCI           ,WORK,KFREE,LFREE)
 C        KPI = KPR + N2CIESR
 C
@@ -1268,7 +1268,7 @@ chj       IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
           END IF
 C
           CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
-     &                  CIEVEC,MZ,WORK,KFREE,LFREE)
+     &                  CIEVEC,WORK,KFREE,LFREE)
 C
 c
 c      print *, ' ..... test output of property matrix in MO basis ...'
@@ -1313,7 +1313,7 @@ c               WORK(JPR) = WORK(JPR) + PCORE
 c            END DO
 C          END IF
 c         IF (IPRESR .GT. 5) THEN
-C             IF (MZ .EQ. 2) THEN
+C             IF (NZ_in_CI .EQ. 2) THEN
 C                WRITE (LUPRI,'(/A)')
 C     &          ' Real part of det-CI property matrix'
 C             ELSE IF (REAL_PMLF) THEN
@@ -1325,7 +1325,7 @@ C     &          ' Imaginary det-CI property matrix'
 C             END IF
 C             CALL OUTPUT(WORK(KPR),1,N_CIESR,1,N_CIESR,
 C     &           N_CIESR,N_CIESR,1,LUPRI)
-C             IF (MZ .EQ. 2) THEN
+C             IF (NZ_in_CI .EQ. 2) THEN
 C                WRITE (LUPRI,'(/A)')
 C     &          ' Imag part of det-CI property matrix'
 C                CALL OUTPUT(WORK(KPI),1,N_CIESR,1,N_CIESR,
@@ -1335,7 +1335,7 @@ c         END IF
 C
 C         Transform to eigenvector basis
 C
-C          IF (MZ .EQ. 2) THEN
+C          IF (NZ_in_CI .EQ. 2) THEN
 C             JZ = 1
 C          ELSE IF (REAL_PMLF) THEN
 C             JZ = 1
@@ -1346,10 +1346,10 @@ Cunoedvendig CALL DZERO(ESRVAL(1,1,1,I),N2CIESR)
 C          END IF
 C
 C          CALL QTRANS('AOMO','S',D0,N_CIESR,N_CIESR,N_CIESR,N_CIESR,
-C     &        WORK(KPR),N_CIESR,N_CIESR,MZ,IQINDX(JZ),
+C     &        WORK(KPR),N_CIESR,N_CIESR,NZ_in_CI,IQINDX(JZ),
 C     &        ESRVAL(1,1,1,I),N_CIESR,N_CIESR,2,IQINDX,
-C     &        CIEVEC,N_CIESR,N_CIESR,MZ,IQINDX,
-C     &        CIEVEC,N_CIESR,N_CIESR,MZ,IQINDX,
+C     &        CIEVEC,N_CIESR,N_CIESR,NZ_in_CI,IQINDX,
+C     &        CIEVEC,N_CIESR,N_CIESR,NZ_in_CI,IQINDX,
 C     &        WORK(KFREE),LFREE,-1)
 C
 ccc       IF ( MOD(NAELEC,2) .EQ. 1) THEN
@@ -1386,7 +1386,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ESRTRANS(INDXPR,ESRVAL,CMO,PMAT,CIEVEC,MZ,
+      SUBROUTINE ESRTRANS(INDXPR,ESRVAL,CMO,PMAT,CIEVEC,
      &                    WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1397,7 +1397,6 @@ C     Input:
 C       INDXPR : index of property operator
 C       CMO    : MO coefficients
 C       CIEVEC : CI vectors
-C       MZ     : = 1 if CI vectors real, =2 if complex
 C
 C     Output:
 C       ESRVAL : Property matrix elements in CI basis
@@ -1429,6 +1428,7 @@ C
 C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
+C  dgroup : NZ, NZ_in_CI (NZ_in_CI = 1 if CI vectors real, =2 if complex)
 C
 #include "dcbgen.h"
 #include "dcbopt.h"
@@ -1455,7 +1455,7 @@ C
       CALL DZERO(ESRVAL,(MULTIPESR**2)*2)
 C     Allocate memory for property matrix in molfdir format:
       CALL MEMGET2('REAL','PMLF ',
-     &   KPMLF  ,MZ*(2*NASHT)**2,WORK,KFREE,LFREE)
+     &   KPMLF  ,NZ_in_CI*(2*NASHT)**2,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','MUUUU',
      &   KMUUUU ,0,WORK,KFREE,LFREE)
 
@@ -1535,7 +1535,7 @@ C
 C     In which component of ESRVAL (real or imaginary) should the
 C     property matrix be ?
 
-      IF (MZ .EQ. 2) THEN
+      IF (NZ_in_CI .EQ. 2) THEN
          JZ = 1
       ELSE IF (REAL_PMLF) THEN
          JZ = 1
@@ -1546,7 +1546,7 @@ C     property matrix be ?
       IF (MAX_CIESR_IT .GT. 0) THEN
 C
 C         Make property matrix in ESRVAL directly from the MULTIPESR first CI vectors
-C           CIEVEC(NZCONF, N_CIESR, MZ)
+C           CIEVEC(NZCONF, N_CIESR, NZ_in_CI)
 C           ESRVAL(MULTIPESR, MULTIPESR, 2)
 C
 
@@ -1585,13 +1585,13 @@ C         Construct complete property matrix over determinants
 C         and transform to the desired property matrix in ESRVAL from
 C         the MULTIPESR first CI vectors with QTRANS afterwards.
 C
-         LPCI = MZ*NZCONF*NZCONF
+         LPCI = NZ_in_CI*NZCONF*NZCONF
          CALL MEMGET2('REAL','PR',KPR,LPCI,WORK,KFREE,LFREE)
          KPI  = KPR + NZCONF*NZCONF
          CALL GASCIP_MAKEH(.FALSE.,IHRM,NZCONF,WORK(KZCONF),
      &         WORK(KPR),WORK(KPI),WORK(KPMLF),WORK(KMUUUU))
          IF (IPRESR .GT. 10) THEN
-            IF (MZ .EQ. 2) THEN
+            IF (NZ_in_CI .EQ. 2) THEN
                WRITE (LUPRI,'(/A)')
      &          ' Real part of det-CI property matrix'
             ELSE IF (REAL_PMLF) THEN
@@ -1603,7 +1603,7 @@ C
             END IF
             CALL OUTPUT(WORK(KPR),1,NZCONF,1,NZCONF,
      &           NZCONF,NZCONF,1,LUPRI)
-            IF (MZ .GT. 1) THEN
+            IF (NZ_in_CI .GT. 1) THEN
                WRITE (LUPRI,'(/A)')
      &          ' Imag part of det-CI property matrix'
                CALL OUTPUT(WORK(KPI),1,NZCONF,1,NZCONF,
@@ -1615,10 +1615,10 @@ C        Transform to eigenvector basis
 C
 
          CALL QTRANS('AOMO','S',D0,NZCONF,NZCONF,MULTIPESR,MULTIPESR,
-     &        WORK(KPR),NZCONF,NZCONF,MZ,IQINDX(JZ),
+     &        WORK(KPR),NZCONF,NZCONF,NZ_in_CI,IQINDX(JZ),
      &        ESRVAL,   MULTIPESR,MULTIPESR, 2,IQINDX,
-     &        CIEVEC,   NZCONF,N_CIESR,     MZ,IQINDX,
-     &        CIEVEC,   NZCONF,N_CIESR,     MZ,IQINDX,
+     &        CIEVEC,   NZCONF,N_CIESR,     NZ_in_CI,IQINDX,
+     &        CIEVEC,   NZCONF,N_CIESR,     NZ_in_CI,IQINDX,
      &        WORK(KFREE),LFREE,-1)
        END IF
 C
@@ -1662,6 +1662,7 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
+C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1674,12 +1675,11 @@ C
          print *,'N_CIESR,NASHT',N_CIESR,NASHT
          stop 'PRPESRODD error'
       end if
-      MZ = MIN(2,NZ)
-      N = N_CIESR*N_CIESR*MZ
-      IF (MZ .EQ. 2) THEN
+      N = N_CIESR*N_CIESR*NZ_in_CI
+      IF (NZ_in_CI .EQ. 2) THEN
          call dcopy(N,PMLF,1,ESRVAL,1)
       ELSE
-C        ... real group, MZ = NZ = 1
+C        ... real group, NZ_in_CI = NZ = 1
 C        Find out if matrix is pure real or pure imaginary
 C        (See QFC2MFC)
          JQ = IPQTOQ(1,IREP)
@@ -1735,6 +1735,7 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
+C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1744,12 +1745,12 @@ C
 C
       CALL QUIT(
      &'ESR only implemented for odd number of active electrons')
-      MZ = MIN(2,NZ)
-      N = N_CIESR*N_CIESR*MZ
-      IF (MZ .EQ. 2) THEN
+      N = N_CIESR*N_CIESR*NZ_in_CI
+      IF (NZ_in_CI .EQ. 2) THEN
+         call quit('PRPESREVEN: NZ_in_CI=2 not implemented.')
 C
       ELSE
-C        ... real group, MZ = NZ = 1
+C        ... real group, NZ_in_CI = NZ = 1
 C        Find out if matrix is pure real or pure imaginary
 C        (See QFC2MFC)
          JQ = IPQTOQ(1,IREP)
