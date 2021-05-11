@@ -19,6 +19,9 @@ f.add(from_string = 'Eigenvalues',
       num_lines   = 32,
       rel_tolerance   = 1.0e-5)
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 # these are longer tests
 #test.run(['cc2_energy.inp'], ['LiH', 'h2o.xyz'], f)
 #test.run(['cc2_energy_large_cvalue.inp'], ['LiH', 'h2o.xyz'], f)

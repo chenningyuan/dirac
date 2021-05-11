@@ -42,6 +42,7 @@ os.environ["OMP_PROC_BIND"] = "close,spread,spread"
 os.environ["MKL_NUM_THREADS_DEFAULT"] = "1"
 os.environ["MKL_DYNAMIC"] = "false"
 
+os.environ["OMP_STACKSIZE"] = "200M"
 os.system('ulimit -s unlimited')
 
 test.run(['exacc.inp'], ['H2O_nosym.mol'], f,"--put='X2CMAT AOMOMAT DFCOEF'")

@@ -17,6 +17,9 @@ f.add(from_string = 'Final CCSD energy',
       num_lines   = 4,
       abs_tolerance   = 1.0e-6)
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 test.run(['ccsd_x2c_scheme1.inp'], ['H2O_nosym.mol'], f)
 test.run(['ccsd_x2c_scheme2.inp'], ['H2O_nosym.mol'], f)
 test.run(['ccsd_x2c_scheme3.inp'], ['H2O_nosym.mol'], f)

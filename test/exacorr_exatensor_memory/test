@@ -34,6 +34,9 @@ os.environ["OMP_PROC_BIND"] = "close,spread,spread"
 os.environ["MKL_NUM_THREADS_DEFAULT"] = "1"
 os.environ["MKL_DYNAMIC"] = "false"
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 test.run(['exacorr_exatensor_memory.inp'], ['H2O_nosym.mol'], f)
 
 sys.exit(test.return_code)

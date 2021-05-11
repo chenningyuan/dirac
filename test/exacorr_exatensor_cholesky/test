@@ -14,8 +14,11 @@ f.add(from_string = 'Final results from EXACORR',
       num_lines   = 8,
       abs_tolerance   = 1.0e-5)
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 test.run(['exat_ccsd_h2O.inp'], ['H2O_nosym.mol'], f)
-test.run(['exat_cholesky_li2.inp'], ['Li2_nosym.mol'], f)
-test.run(['exat_cholesky_lio.inp'], ['LiO_nosym.mol'], f)
+#test.run(['exat_cholesky_li2.inp'], ['Li2_nosym.mol'], f)
+#test.run(['exat_cholesky_lio.inp'], ['LiO_nosym.mol'], f)
 
 sys.exit(test.return_code)

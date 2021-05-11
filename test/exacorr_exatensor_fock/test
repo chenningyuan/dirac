@@ -28,6 +28,7 @@ f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
 
+os.environ["OMP_STACKSIZE"] = "200M"
 os.system('ulimit -s unlimited')
 
 test.run(['scf_h2o.inp'], ['H2O_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")

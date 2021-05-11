@@ -19,6 +19,9 @@ f.add(from_string = 'Eigenvalues',
       num_lines   = 32,
       rel_tolerance   = 1.0e-5)
 
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
 test.run(['exat_cc_cf_x2c_spinfree.inp'], ['CF_nosym.mol'], f)
 #test.run(['exat_cc_rbh.inp'], ['RbH_nosym.mol'], f)
 #test.run(['exat_cc_srh.inp'], ['SrH_nosym.mol'], f)
