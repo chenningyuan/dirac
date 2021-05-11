@@ -1494,7 +1494,7 @@ C
 C        Calculate total energy
 C        ======================
          inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
-         write(lupri,*) 'tobe = ',tobe
+         !write(lupri,*) 'tobe = ',tobe
          if(tobe)then
            open(99,file='XAMFI-ss-soc-contributions',status='old',
      &     form='unformatted',

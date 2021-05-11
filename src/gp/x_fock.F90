@@ -28,6 +28,9 @@
 !
 module x_fock
 
+  use num_grid_gen
+  use interface_mo_specific
+
   implicit none
 
   public get_scso_2e_fock
@@ -59,6 +62,7 @@ contains
                              ioff_tmt,               &
                              ioff_aomat_x,           &
                              myAOMOMAT,              &
+                             isDFT,                  &
                              lwork_ext,              &
                              print_lvl               &
                              )
@@ -104,6 +108,7 @@ contains
      integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
      character(len=10), intent(in)      :: myAOMOMAT
+     logical, intent(in)                :: isDFT
 !----------------------------------------------------------------------
      integer                            :: i, npos, local_lwork, j, kwork, kfree, lfree
      integer                            :: kdtemp, kdevec, kfmo, kfao, ktmat, ksaomo, islutmat
@@ -112,6 +117,12 @@ contains
      logical, allocatable               :: saveflags(:)
      logical                            :: parcal
 !----------------------------------------------------------------------
+
+       parcal = .false.
+#ifdef VAR_MPI
+       call mpi_initialized(parcal,i)
+#endif
+       call SetIntTaskArrayDimension(npos,parcal)
 
        local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices - 10000
        allocate(work(local_lwork))
@@ -135,14 +146,8 @@ contains
        end do
 
        allocate(saveflags(4))
-
        call SaveTaskDistribFlags(saveflags)
        call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-       parcal = .false.
-#ifdef VAR_MPI
-       call mpi_initialized(parcal,i)
-#endif
-       call SetIntTaskArrayDimension(npos,parcal)
        allocate(pos(npos))
 
 
@@ -205,6 +210,19 @@ contains
        fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)
 
 9999   deallocate(work)
+
+       if(isDFT)then
+          !print *, 'blubb DFT on'
+          call interface_mo_write()
+          call generate_num_grid(dmat)
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( XCINT_PAR )
+#endif
+          call xcint_potential_rks(       &
+                                   nrows, &
+                                   dmat,  &
+                                   fmat)
+       end if 
 
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------

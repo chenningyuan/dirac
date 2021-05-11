@@ -2129,6 +2129,7 @@ C*****************************************************************************
       use interface_mo_specific
       use interface_ao_specific
       use x_fock
+      use dirac_cfg, only: dirac_cfg_dft_calculation
 #ifdef MOD_XAMFI
       use xamfi_global_parameters
       use xamfi_internal_parameters
@@ -2815,6 +2816,7 @@ C     Write transformation matrices
      &                                cmo_aoosoc,
      &                                pctm_aoosoc,
      &                                no1esystem_aoosoc,
+     &                                dirac_cfg_dft_calculation,
      &                                lwork_local,
      &                                iprham
      &                               )
@@ -3033,6 +3035,8 @@ C
      &                          ioff_tmt              = i2tmt,
      &                          ioff_aomat_x          = i2basx,
      &                          myAOMOMAT             = 'AOMOMAT   ',
+     &                          isDFT                 = 
+     &                          dirac_cfg_dft_calculation,
      &                          lwork_ext             = lfree,
      &                          print_lvl             = iprham
      &                         )

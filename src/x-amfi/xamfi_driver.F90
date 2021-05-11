@@ -55,6 +55,7 @@ contains
                                   cmo,        &
                                   pct_mat,    &
                                   calc_2esoc, &
+                                  isDFT,      &
                                   lwork_ext,  &
                                   print_lvl   &
                                   )
@@ -63,6 +64,7 @@ contains
      real(8), intent(inout)             :: cmo(*)
      real(8), intent(in)                :: pct_mat(*)
      logical, intent(in)                :: calc_2esoc
+     logical, intent(in)                :: isDFT
      integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
@@ -99,6 +101,7 @@ contains
                             ioff_tmt              = ioff_tmt,             &
                             ioff_aomat_x          = ioff_aomat_x,         &
                             myAOMOMAT             = 'AOMOMATaoo',         &
+                            isDFT                 = isDFT,                &
                             lwork_ext             = lwork_ext,            &
                             print_lvl             = print_lvl             &
                            )
