@@ -5,6 +5,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -16,41 +19,6 @@ f.add(from_string = 'MP2 energy =',
 f.add(from_string = 'Final CCSD energy',
       num_lines   = 4,
       abs_tolerance   = 1.0e-6)
-
-#set environment for testing
-if os.environ.get("QF_PROCS_PER_NODE") is None:
-    os.environ["QF_PROCS_PER_NODE"] = "4"
-if os.environ.get("QF_CORES_PER_PROCESS") is None:
-    os.environ["QF_CORES_PER_PROCESS"] = "1"
-if os.environ.get("QF_MEM_PER_PROCESS") is None:
-    os.environ["QF_MEM_PER_PROCESS"] = "1500"
-if os.environ.get("QF_NVMEM_PER_PROCESS") is None:
-    os.environ["QF_NVMEM_PER_PROCESS"] = "0"
-if os.environ.get("QF_HOST_BUFFER_SIZE") is None:
-    os.environ["QF_HOST_BUFFER_SIZE"] = "1400"
-if os.environ.get("OMP_NUM_THREADS") is None:
-    os.environ["OMP_NUM_THREADS"] = "1"
-if os.environ.get("OMP_NESTED") is None:
-    os.environ["OMP_NESTED"] = "true"
-if os.environ.get("OMP_MAX_ACTIVE_LEVELS") is None:
-    os.environ["OMP_MAX_ACTIVE_LEVELS"] = "3"
-if os.environ.get("OMP_THREAD_LIMIT") is None:
-    os.environ["OMP_THREAD_LIMIT"] = "256"
-if os.environ.get("OMP_WAIT_POLICY") is None:
-    os.environ["OMP_WAIT_POLICY"] = "PASSIVE"
-if os.environ.get("OMP_STACKSIZE") is None:
-    os.environ["OMP_STACKSIZE"] = "200M"
-if os.environ.get("OMP_PLACES") is None:
-    os.environ["OMP_PLACES"] = "threads"
-if os.environ.get("OMP_PROC_BIND") is None:
-    os.environ["OMP_PROC_BIND"] = "close,spread,spread"
-if os.environ.get("MKL_NUM_THREADS_DEFAULT") is None:
-    os.environ["MKL_NUM_THREADS_DEFAULT"] = "1"
-if os.environ.get("MKL_NUM_THREADS") is None:
-    os.environ["MKL_NUM_THREADS"] = "1"
-os.environ["MKL_DYNAMIC"] = "false"
-os.environ["OMP_DYNAMIC"] = "false"
-os.system('ulimit -s unlimited')
 
 test.run(['ccsd_x2c_scheme1.inp'], ['H2O_nosym.mol'], f)
 test.run(['ccsd_x2c_scheme2.inp'], ['H2O_nosym.mol'], f)
