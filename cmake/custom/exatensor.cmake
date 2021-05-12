@@ -148,7 +148,8 @@ if(ENABLE_EXATENSOR)
 	dirac_test(exacorr_exatensor_memory "cc;exatensor;short" "")
 	dirac_test(exacorr_exatensor_spinfree "cc;exatensor" "")
 	dirac_test(exacorr_exatensor_ao2mo "cc;exatensor;long" "")
-	dirac_test(exacorr_exatensor_cholesky "cc;exatensor;long" "")
+	#works 05.2021, but maximum search is very slow
+	#dirac_test(exacorr_exatensor_cholesky "cc;exatensor;long" "")
     endif()
 
 endif()
