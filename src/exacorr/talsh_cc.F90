@@ -218,7 +218,9 @@ module talsh_cc
          ! begin finite field loop (nff(2) gives number of field strengths, nff(1) gives number of fields)
          ! in case no finite field is specified nff(2)=1 and nff(1)=0
          do iff=1,exa_input%nff(2)
-!        Add finite field to the Fock matrix (LV: this code should be checked and refactored)
+         ! re-initialize Fock matrix for next finite field loop
+         if (iff>1) call define_H0 (eps_occ,eps_vir,int_t,comm_t,exa_input%level_shift,exa_input%print_level)
+         !        Add finite field to the Fock matrix (LV: this code should be checked and refactored)
          if (exa_input%nff(1)>0) call fock_finite_field (exa_input,mo_occ,mo_vir,comm_t,iff)
 
 !        Start CCSD iterations

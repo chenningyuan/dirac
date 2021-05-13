@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final results from EXACORR',
+      num_lines   = 8,
+      abs_tolerance   = 1.0e-5)
+f.add(from_string = 'Final CCSD energy',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-7)
+f.add(from_string = 'Norm of Fock matrix (OO',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-4)
+f.add(from_string = 'Norm of Fock matrix (OV',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-3)
+f.add(from_string = 'Norm of Fock matrix (VV',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-2)
+
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
+
+test.run(['talsh_ccsd_x2c_zdip.inp'], ['MgF_nosym.mol'], f)
+test.run(['talsh_ccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f)
+
+f1 = Filter()
+f1.add(from_string = 'Eigenvalues',
+      num_lines   = 32,
+      rel_tolerance   = 1.0e-5)
+f1.add(from_string = ' Overview of calculated energies',
+      num_lines   = 12,
+      abs_tolerance   = 2.0e-5)
+f1.add(from_string = 'Total CCSD energy',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-7)
+
+#test.run(['relccsd_x2c.inp'], ['MgF_nosym.mol'], f1 )
+#test.run(['relccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f1 )
+#test.run(['relccsd_x2c_zdip.inp'], ['MgF_nosym.mol'], f1 )
+
+
+sys.exit(test.return_code)
