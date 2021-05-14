@@ -32,6 +32,11 @@ os.system('ulimit -s unlimited')
 test.run(['talsh_ccsd_x2c_zdip.inp'], ['MgF_nosym.mol'], f)
 test.run(['talsh_ccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f)
 
+# dipole moments is close to the HF value
+# eEDM seems reasonable
+
+# RELCCSD test works, but the numbers are different to TALSH and not really meaningfull
+
 f1 = Filter()
 f1.add(from_string = 'Eigenvalues',
       num_lines   = 32,
