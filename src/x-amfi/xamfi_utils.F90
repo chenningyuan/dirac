@@ -247,7 +247,7 @@ contains
        call quit( 'read_normalized_2e_soc: col dimension does not fit' )
      end if
      if(nz_tmp   /= nz   )then
-       print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp
+       print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp,nz
        call quit( 'read_normalized_2e_soc: nz  dimension does not fit' )
      end if
 

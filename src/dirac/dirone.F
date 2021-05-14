@@ -6268,7 +6268,7 @@ C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
- 1000 FORMAT
+ 1000 FORMAT 
      & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
       END
@@ -6824,6 +6824,14 @@ C
 C         
 
       if(do4c2c)then ! x2c-mmf approach
+        open(95,file='AOMOatm',status='replace',form='unformatted',
+     &     access='sequential',action='readwrite',
+     &     position='rewind')
+        ISIZE2 = NORB(1)*NORB(1)*NZ
+        IF (NFSYM.EQ.2) ISIZE2 = ISIZE2 + NORB(2)*NORB(2)*NZ
+        call writt(95,ISIZE2,TBUF)
+        close(95,status='keep')
+      
         close(13,status='keep')
       end if
 C

@@ -648,7 +648,7 @@ contains
                                    nr_ao_L,        &
                                    nrows_frag,     &
                                    ncols_frag,     &
-                                   4,              &
+                                   nz,             &
                                    i,              &
                                    center_total,   &
                                    print_lvl       &
@@ -676,10 +676,10 @@ contains
          iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
          ipq   = iqp_off_in(iq,0)
          call mtaoso(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
-                       scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
-                       nr_ao_L,                                  &
-                       irepd,                                    &
-                       print_lvl)
+                     scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
+                     nr_ao_L,                                  &
+                     irepd,                                    &
+                     print_lvl)
        end do
 
 !      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
