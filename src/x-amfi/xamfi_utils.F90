@@ -165,7 +165,7 @@ contains
 !    purpose: dump two-electron spin-orbit corrections (normalized)
 !
 !----------------------------------------------------------------------
-     real(8), intent(inout)        :: Gmat(nrow,ncol,4)
+     real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
      integer, intent(in)           :: nz
@@ -210,7 +210,7 @@ contains
 !    purpose: read two-electron spin-orbit corrections (normalized)
 !
 !----------------------------------------------------------------------
-     real(8), intent(inout)        :: Gmat(nrow,ncol,4)
+     real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
      integer, intent(in)           :: nz

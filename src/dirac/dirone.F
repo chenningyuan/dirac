@@ -2748,8 +2748,6 @@ C     Write transformation matrices
 #ifdef MOD_XAMFI
           if(nucdep == 1 .and. nucind == 1)then ! generate 2e-SO+scalar corrections in an atomic run
 
-            if(nz/=4) call quit('C1 symmetry required for X-AMFI')
-
 !           release memory
             CALL MEMREL('GMOTRA - aoosoc',WORK,KWORK,KWORK,KFREE,LFREE)
             call dealloc(work)

@@ -598,7 +598,15 @@ contains
 
 
        call x2c_write(flabel,lowd_mat,nlowdmat,x2c_file_glb)
-
+       
+      ! debug print
+       if(print_lvl > 2)then
+         ilowdmat = 1
+         do i = 1, nfsym
+           call print_x2cmat(lowd_mat(ilowdmat),naosh_all(i),nesh_dim(i),nz,ipq_off_in(1,0),'lowd-2cG',6)
+           ilowdmat     = ilowdmat     + naosh_all(i)*nesh_dim(i)
+         end do
+       end if
 
 !      step 4: transform 2c-adapted Lowdin matrix in AO2MO basis to account for linear symmetry
 !      ----------------------------------------------------------------------------------------
