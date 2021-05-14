@@ -84,6 +84,7 @@ contains
 !**********************************************************************
 #ifdef VAR_MPI
 #include "mpif.h"
+#include "dirac_partask.h"
 #endif
      real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
      real(8), intent(inout)             :: cmo(*)
