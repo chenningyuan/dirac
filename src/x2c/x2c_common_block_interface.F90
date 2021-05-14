@@ -214,6 +214,7 @@ contains
 
 !        initialize logicals
          x2c_linsym       = linear
+         x2c_atomic       = atomic
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
          x2c_mdirac       = mdirac
