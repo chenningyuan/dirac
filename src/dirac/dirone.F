@@ -239,6 +239,7 @@ C
       real(8), allocatable :: ANG(:,:),GAO(:,:),GAO2(:,:),BUFGAO(:,:)
       real(8), allocatable :: BUF(:),TC(:), NUMIR(:),R(:)
       real(8), allocatable :: INTAO(:),INTAOTRI(:)
+      real(8) C(3,MXCENT)
 C
       CHARACTER CPUTID*12, WALLTID*12, SECTID*12, TITLE_PRINT*50      
 C
@@ -316,6 +317,9 @@ C     IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN
          NAT = NAT + 1
          GEXP = GNUEXP(IATOM)
          NDEG = MULT(ISTBNU(IATOM))
+         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)          
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
@@ -376,7 +380,7 @@ C
 C     Numerical integration
 C     Here, INTAOTRI is a buffer
          CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
-     &    CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IATOM,LABEL,IPRINT)
+     &    C(1,IATOM),num_grid_cfg_grasp,MATINF,IATOM,LABEL,IPRINT)
 C     writing the matrix in output
          IF(IPRINT.GE.12)THEN
            WRITE(TITLE_PRINT,'(5A)')
