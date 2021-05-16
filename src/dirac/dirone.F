@@ -305,7 +305,7 @@ C
       NAT = 0
       DO 10 IATOM = 1, NUCIND !change
       DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
-!ayaki  What is this roop? MXOPR=0 in dftgrd.F
+! ayaki  What is this roop? MXOPR=0 in dftgrd.F
 C     IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN         
        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
@@ -378,7 +378,7 @@ C     Here, INTAOTRI is a buffer
          CALL INTSUM(INTAOTRI,NDIM2,NUMIR,R,MXNP,ANG,m,IXYZ,
      &    CORD(1,IATOM),num_grid_cfg_grasp,MATINF,IATOM,LABEL,IPRINT)
 C     writing the matrix in output
-         IF(IPRINT.GE.6)THEN
+         IF(IPRINT.GE.12)THEN
            WRITE(TITLE_PRINT,'(5A)')
      &       'NUMINT: ',LABEL,'Symmetrized AO-matrix of ',
      &       NAMN(IATOM),"atom"
@@ -1293,7 +1293,7 @@ C sum  weight*r^2*V(r)*Basis^2
           deallocate(BUFGAO)
         end do                ! IR
       ENDIF                     ! GRASP or DIRAC
-      IF(IPRINT.GE.6)THEN
+      IF(IPRINT.GE.1)THEN
         WRITE(TITLE_PRINT,'(5A)')
      &     'INTSUM: ',LABEL,'Before-symmetrized AO-matrix of ',
      &     NAMN(IATOM),"atom"
