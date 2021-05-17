@@ -37,7 +37,7 @@ module get_natural_orbital
         use exacorr_global, only : get_nsolutions
         type(exacc_input), intent(in) :: exa_input
 
-        integer                :: NORBT
+        integer                :: NORBT, NROOT
         real(8),pointer        :: NOs_AO(:,:,:)           ! new quaternion orbital in AO basis
         real(kind=8), pointer  :: N_OCCUPATION(:)         ! occupation number from qdia of DM
         logical                :: alive
@@ -46,9 +46,9 @@ module get_natural_orbital
         inquire(file="CCDENS", exist=alive)
         if (alive) then
             call print_date('File CCDENS existed')
-            !NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
-            NORBT = get_nsolutions() / 2
-            call get_transform_Fock(NORBT,NOs_AO,N_OCCUPATION)
+            NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
+            NROOT = get_nsolutions() / 2
+            call get_transform_Fock(NROOT,NORBT,NOs_AO,N_OCCUPATION)
             call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','GENOS')
             call print_date('Generated Natural orbital')
         else
@@ -58,7 +58,7 @@ module get_natural_orbital
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_Fock (NORBT,NOs_AO,N_OCCUPATION)
+      subroutine get_transform_Fock (NROOT,NORBT,NOs_AO,N_OCCUPATION)
          ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
          ! The new basis set comes from the digonalization of density matrix.
          ! The all natural orbitals and occupation numbers are saved in file NOs_MO 
@@ -70,9 +70,10 @@ module get_natural_orbital
             use matrix_complex_to_quaternion 
             use write_orbital_to_file
 
-                  integer, intent(in)                :: NORBT
+                  integer, intent(in)                :: NROOT,NORBT
 
                   real(kind=8), pointer              :: N_OCCUPATION(:)         ! occupation number from qdia of DM
+                  real(8), pointer                   :: density_quat_read(:,:,:)! quaternion MP2 density matrix read from CCDENS 
                   real(8), pointer                   :: density_quat(:,:,:)     ! quaternion MP2 density matrix 
                   real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
                   real(kind=8), pointer              :: NOs_AO(:,:,:)           ! new canonical orbital in AO basis
@@ -83,12 +84,13 @@ module get_natural_orbital
 !                  real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
 !                  integer                            :: sz,flb                  ! size of matrix and flag for block
 !                  character                          :: mat                     ! flag used for matrix basis transform
-                  integer                            :: i
-                  real                               :: trace
+                  integer                            :: i,j,k
+                  real                               :: trace,compact
 
                                                 
                   allocate(density_quat(NORBT,NORBT,4))
-                  call quater_read(NORBT,density_quat)
+                  allocate(density_quat_read(NROOT,NROOT,4))
+                  call quater_read(NROOT,density_quat_read)
                   call print_date('Read Quaternion Density matrix')
                   trace = 0
       !            do i=1, size(density_quat,1)
@@ -97,6 +99,14 @@ module get_natural_orbital
 
       !            print *, "print DM_trace in talsh_no", trace
                   
+                  do i=1, NORBT
+                     do j =1, NORBT
+                        density_quat(i,j,1) = density_quat_read(i,j,1)
+                        density_quat(i,j,2) = density_quat_read(i,j,2)
+                        density_quat(i,j,3) = density_quat_read(i,j,3)
+                        density_quat(i,j,4) = density_quat_read(i,j,4)
+                     end do
+                  end do
 
                   flb = 2                                      ! we read all orbital 
 !                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
@@ -116,15 +126,18 @@ module get_natural_orbital
 
                   print *, " Print several orbitals' occupation number"
                   trace = 0.0
+                  compact = 0.0 
                   do i=1, size(N_OCCUPATION)
                         if (N_OCCUPATION(i) < 0.0) then 
                               N_OCCUPATION(i) = N_OCCUPATION(i) + 2.0
+                              compact = compact + N_OCCUPATION(i)
                         end if 
                         trace = trace + N_OCCUPATION(i)
                         print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
                   end do
 
                   print *, "Sum of occupation number which should be the same as total electron number", trace
+                  print *, "Sum of large component of occupation number", compact
 
                     
 !                  flb = 0                     ! we read vv block of Fock matrix
