@@ -590,11 +590,13 @@ contains
      integer                         :: center_total
      integer                         :: lwrk
      integer                         :: wf_components
+     INTEGER, PARAMETER              :: nzc1 = 4
      character (len=12)              :: flabel
 !**********************************************************************
  
 !      allocate scratch space
-       allocate(scr1_mat(naosh_ls*naosh_ls*4),scr2_mat(naosh_ls*naosh_ls*4),scr3_mat(nr_ao_L*nr_ao_L*4))
+       allocate(scr1_mat(naosh_ls*naosh_ls*nzc1),scr2_mat(naosh_ls*naosh_ls*nzc1),&
+                scr3_mat(nr_ao_L*nr_ao_L*nzc1))
        scr1_mat = 0; scr2_mat = 0; scr3_mat = 0
 
 !      -------------------------------------------------------------------------------
@@ -643,12 +645,13 @@ contains
          nrows_frag = ncols_frag
 
 #ifdef MOD_XAMFI
+         !> read X-AMFI contributions (assumed to be exported in C1 symmetry)
          call put_xamfi_correction(                &
                                    scr1_mat,       &
                                    nr_ao_L,        &
                                    nrows_frag,     &
                                    ncols_frag,     &
-                                   nz,             &
+                                   nzc1,           &
                                    i,              &
                                    center_total,   &
                                    print_lvl       &
@@ -666,12 +669,12 @@ contains
        CALL SETDC1(IPREAD)
        call getlab(ipread)
 
-!      b. transform from AO-basis to SO-AO basis
-!      -----------------------------------------
+!      b. transform from AO-basis (C1* symm sorted) to SO-AO basis (symmetry-ordered)
+!      ------------------------------------------------------------------------------
 !        in : xamfi_AO    -> scr1_mat
 !        out: xamfi-SO-AO -> scr3_mat
        i = op_bs_to_fs(0,1)
-       do iz = 1, 4
+       do iz = 1, nzc1
          irepd = bs_irrep_mat(iz,0)
          iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
          ipq   = iqp_off_in(iq,0)

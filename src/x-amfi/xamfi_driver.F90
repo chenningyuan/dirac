@@ -34,7 +34,7 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
 #undef DEBUG_SOC
@@ -105,10 +105,10 @@ contains
                             lwork_ext             = lwork_ext,            &
                             print_lvl             = print_lvl             &
                            )
-
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
       !> debug print
-      if(print_lvl > 5)then
+      if(print_lvl > 0)then
         call print_x2cmat(                             &
                           fmat,                        &
                           nr_ao_total_aoo,             &
@@ -119,6 +119,7 @@ contains
                           6                            &
                          )
       end if
+#undef DEBUG_SOC
 #endif
 
       !> normalize (picture-change transform) 2e-SO-fock matrix
@@ -138,7 +139,7 @@ contains
                                  print_lvl             &
                                 )
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
         !> debug print
         call print_x2cmat(                             &
@@ -160,7 +161,8 @@ contains
                                   nr_quat,                    &
                                   file_name_aoo_contributions,&
                                   nint(atom(1)%charge),       &
-                                  aoo_fsoc                    &
+                                  aoo_fsoc,                   &
+                                  .false.                     &
                                  )
 
       deallocate(fmat)
@@ -181,7 +183,7 @@ contains
                                   print_lvl                    &
                                  )
 !**********************************************************************
-     real(8), optional, intent(inout)   :: Gmat(*)
+     real(8), intent(inout)             :: Gmat(*)
      integer, intent(in)                :: naosh_l
      integer, intent(in)                :: nrows_ext
      integer, intent(in)                :: ncols_ext
@@ -195,18 +197,19 @@ contains
      real(8), allocatable               :: cbuf(:)
      real(8), allocatable               :: ibuf(:)
      real(8), allocatable               :: jbuf(:)
+     INTEGER, parameter                 :: nzc1 = 4
 !----------------------------------------------------------------------
 
 
       if(nint(atom(center_total)%charge) > 1)then
 
-        allocate(Gmat_frag(nrows_ext*ncols_ext*4)); Gmat_frag = 0
+        allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
 !       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
         call read_normalized_2e_soc(                                 &
                                     Gmat_frag,                       &
                                     nrows_ext,                       &
                                     ncols_ext,                       &
-                                    nr_quat_ext,                     &
+                                    nzc1,                            &
                                     file_name_aoo_contributions,     &
                                     nint(atom(center_total)%charge), &
                                     aoo_fsoc                         &
@@ -219,7 +222,7 @@ contains
                           Gmat_frag,                             &
                           nrows_ext,                             &
                           ncols_ext,                             &
-                          nr_quat_ext,                           &
+                          nzc1,                                  &
                           aoo_cb_pq_to_uq(1,0),                  &
                           'X-AMFI - corrections from file',      &
                           6                                      &
@@ -244,7 +247,7 @@ contains
                          center_total,                    &
                          aoo_nont(center_id),             &
                          aoo_nucdeg(center_total),        &
-                         4,                               &
+                         nzc1,                            &
                          Gmat_frag,                       &
                          nrows_ext,                       &
                          nrows_ext,                       &

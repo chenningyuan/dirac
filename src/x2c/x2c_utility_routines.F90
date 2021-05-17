@@ -690,7 +690,7 @@ contains
      integer, intent(in)           :: ndim_x
      integer, intent(in)           :: ndim_y
      integer, intent(in)           :: nz
-     integer, intent(in)           :: ipq_off(4,*)
+     integer, intent(in)           :: ipq_off(1:4, 0:7)
      integer, intent(in)           :: prntunit
      logical, optional, intent(in) :: lrlc_equal
      character(*), intent(in)      :: title
@@ -699,10 +699,10 @@ contains
          call header2(title,-1,prntunit)
          if(.not.present(lrlc_equal))then
            call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
-                       ipq_off,prntunit)
+                       ipq_off(1,0),prntunit)
          else
            call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
-                       ipq_off,prntunit)
+                       ipq_off(1,0),prntunit)
          end if
 
   end subroutine print_x2cmat

@@ -158,13 +158,20 @@ contains
                                     nz,                         &
                                     file_base,                  &
                                     element,                    &
-                                    fh                          &
+                                    fh,                         &
+                                    final_dump                  &
                                    )
 !----------------------------------------------------------------------
 !
 !    purpose: dump two-electron spin-orbit corrections (normalized)
 !
 !----------------------------------------------------------------------
+     use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
+                                          aoo_bs_irrep_mat, aoo_pointer_quat,&
+                                          aoo_iqmult_trip_q, aoo_cb_uq_to_pq
+!#ifdef DEBUG_SOC
+     use x2c_utils, only: print_x2cmat
+!#endif
      real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
@@ -172,26 +179,110 @@ contains
      integer, intent(in)           :: fh
      integer, intent(in)           :: element
      character (len=8), intent(in) :: file_base
+     logical, intent(in)           :: final_dump
 !----------------------------------------------------------------------
-     integer                       :: i
+     integer                       :: i, irep, iz, iq, ipar, irepd, ipq, j, k
      character (len=3)             :: file_extension
      character (len=12)            :: file_name
+     real*8, ALLOCATABLE           :: Gmat_c1(:,:,:)
+     integer, PARAMETER            :: nzc1 = 4
 !----------------------------------------------------------------------
 
-!    determine full file name
-     write(file_extension,'(i3)') element
-     do i = 1, 3
+!   determine full file name
+    write(file_extension,'(i3)') element
+    do i = 1, 3
         if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
-     end do
-     write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
+    end do
+    write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
 
-!    dump 2e-soc on file
-     open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
-          access='sequential',action="readwrite",position='rewind')
+!   dump 2e-soc on file
+    open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
+         access='sequential',action="readwrite",position='rewind')
 
-     write(fh) nrow, ncol, nz
-     write(fh) Gmat
-     close(fh,status='keep')
+    if(final_dump)then
+        allocate(Gmat_c1(nrow,ncol,nzc1)); Gmat_c1 = 0  
+!#ifdef DEBUG_SOC
+        call print_x2cmat(Gmat, &
+        nrow,                   &
+        ncol,                   &
+        nz,                     &
+        aoo_cb_pq_to_uq(1,0),   &
+        'aoosoc - 2e-SOC 0',    &
+        6                       &
+       )
+!#endif
+        ! a. insert phases
+        IREP=0
+        IF (NZ < 4) THEN
+            DO  IZ = 1, NZ                                                 
+                IQ = aoo_cb_pq_to_uq(IZ,IREP)                                       
+                CALL Q2BPHASE('F',IQ,1,Gmat(1,1,iz))
+            END DO            
+        END IF
+!#ifdef DEBUG_SOC
+       call print_x2cmat(Gmat,                  &
+                        nrow,                   &
+                        ncol,                   &
+                        nz,                     &
+                        aoo_cb_pq_to_uq(1,0),   &
+                        'aoosoc - 2e-SOC a',    &
+                        6                       &
+                       )
+!#endif       
+  
+        ! b. transform to unsorted SO-AO basis
+        call bstobu_no_work(Gmat,nz)
+
+!#ifdef DEBUG_SOC
+        call print_x2cmat(Gmat, &
+        nrow,                   &
+        ncol,                   &
+        nz,                     &
+        aoo_cb_pq_to_uq(1,0),   &
+        'aoosoc - 2e-SOC b',    &
+        6                       &
+       )
+!#endif 
+        ! c. transform from unsorted SO-AO basis to AO (C1* symmetry) basis
+        IPAR = aoo_bs_to_fs(IREP,1)
+        DO IZ = 1, nzc1
+           IREPD = aoo_bs_irrep_mat(IZ,IREP)
+           IQ    = aoo_iqmult_trip_q(1,aoo_pointer_quat(IREPD,IPAR),IZ)
+           IPQ   = aoo_cb_uq_to_pq(IQ,IREP)
+           CALL MTSOAO(Gmat(1,1,IPQ),     &
+                       Gmat_c1(1,1,IZ),   &
+                       nrow,IREPD,0)
+        END DO
+
+
+        ! get rid of numerical noise
+        do iz = 1, nzc1
+          do k = 1, ncol
+            do j= 1, nrow
+              if(abs(Gmat_c1(j,k,iz)) < 1.0d-12) Gmat_c1(j,k,iz) = 0.0d0
+            end do
+          end do
+        end do
+
+!#ifdef DEBUG_SOC
+        call print_x2cmat(Gmat_c1, &
+        nrow,                      &
+        ncol,                      &
+        nzc1,                      &
+        aoo_cb_pq_to_uq(1,0),      &
+        'aoosoc - 2e-SOC c',       &
+        6                          &
+       )
+!#endif
+
+        write(fh) nrow, ncol, nzc1
+        write(fh) Gmat_c1
+        DEALLOCATE(Gmat_c1)
+    else
+        write(fh) nrow, ncol, nz
+        write(fh) Gmat
+    end if
+    close(fh,status='keep')
 
   end subroutine dump_normalized_2e_soc
 !----------------------------------------------------------------------
@@ -200,7 +291,7 @@ contains
                                     Gmat,                       &
                                     nrow,                       &
                                     ncol,                       &
-                                    nz,                         &
+                                    nzc1,                       &
                                     file_base,                  &
                                     element,                    &
                                     fh                          &
@@ -210,10 +301,10 @@ contains
 !    purpose: read two-electron spin-orbit corrections (normalized)
 !
 !----------------------------------------------------------------------
-     real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
+     real(8), intent(inout)        :: Gmat(nrow,ncol,nzc1)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
-     integer, intent(in)           :: nz
+     integer, intent(in)           :: nzc1
      integer, intent(in)           :: fh
      integer, intent(in)           :: element
      character (len=8), intent(in) :: file_base
@@ -246,8 +337,8 @@ contains
        print *, 'read_normalized_2e_soc: col dimension does not fit',ncol_tmp,ncol
        call quit( 'read_normalized_2e_soc: col dimension does not fit' )
      end if
-     if(nz_tmp   /= nz   )then
-       print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp,nz
+     if(nz_tmp   /= nzc1   )then
+       print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp,nzc1
        call quit( 'read_normalized_2e_soc: nz  dimension does not fit' )
      end if
 

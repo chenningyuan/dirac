@@ -3128,7 +3128,7 @@ C
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - 2e-normalized (final)',-1)
@@ -3144,7 +3144,8 @@ C
      &                                  nz,
      &                                  'aoo2esoc',
      &                                  nint(charge(1)),
-     &                                  lux2c
+     &                                  lux2c,
+     &                                  .true.
      &                                 )
             call goodbye_xamfi(atom(1)%charge)
             
