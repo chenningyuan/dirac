@@ -220,6 +220,7 @@ C
              call talsh_cc_driver (exa_input)
          end if
          if (exa_input%do_no) then
+           call initialize_global_data   
            call get_no_driver (exa_input)
          end if
       else

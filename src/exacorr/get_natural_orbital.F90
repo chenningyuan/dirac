@@ -34,7 +34,7 @@ module get_natural_orbital
 !       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
 !       Written by Xiang Yuan
-        use exacorr_global
+        use exacorr_global, only : get_nsolutions
         type(exacc_input), intent(in) :: exa_input
 
         integer                :: NORBT
@@ -46,7 +46,8 @@ module get_natural_orbital
         inquire(file="CCDENS", exist=alive)
         if (alive) then
             call print_date('File CCDENS existed')
-            NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
+            !NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
+            NORBT = get_nsolutions() / 2
             call get_transform_Fock(NORBT,NOs_AO,N_OCCUPATION)
             call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','GENOS')
             call print_date('Generated Natural orbital')
