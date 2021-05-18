@@ -1,5 +1,5 @@
 module get_natural_orbital
-!This module contains the routines needed to calculate the frozen mp2 natural orbitals 
+!This module contains the routines needed to calculate the natural orbitals, provided quaternion density matrix.  
 
         use tensor_algebra
         use talsh
@@ -12,14 +12,6 @@ module get_natural_orbital
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-        real(8), parameter    :: ONE_QUARTER=0.25D0
-
-        type(talsh_tens_t) :: one_tensor
 
         private
 
@@ -28,11 +20,9 @@ module get_natural_orbital
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
        subroutine get_no_driver (exa_input)
-!       This module is used to construct the MP2 density matrix by talsh.
-!       The complex density matrix are saved on the file 'DM_complex'.  
+!       This module is used to construct the natural orbital based on quaternion density matrix.
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
-!       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
-!       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
+!       The natural orbitals and occupation numbers are written into 'DFNOSAO' by Module3.
 !       Written by Xiang Yuan
         use exacorr_global, only : get_nsolutions
         type(exacc_input), intent(in) :: exa_input
@@ -48,23 +38,22 @@ module get_natural_orbital
             call print_date('File CCDENS existed')
             NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
             NROOT = get_nsolutions() / 2
-            call get_transform_Fock(NROOT,NORBT,NOs_AO,N_OCCUPATION)
-            call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','GENOS')
+            call get_transform_NO(NROOT,NORBT,NOs_AO,N_OCCUPATION)
+            call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','DFNOSAO')
             call print_date('Generated Natural orbital')
         else
             stop "Error: density matrix File CCDENS not found" 
         end if 
+        call print_date('Leave get natural orbital driver')
       end subroutine get_no_driver
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_Fock (NROOT,NORBT,NOs_AO,N_OCCUPATION)
-         ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
-         ! The new basis set comes from the digonalization of density matrix.
-         ! The all natural orbitals and occupation numbers are saved in file NOs_MO 
-         ! The transformed Fock matrix are saved in file FM_in_NatOrb
-         ! In principle, this routine is general. Any type complex matrix could be used for getting the new basis and transformed Fock matrix. 
-         ! This routine doesn't truncate the new basis set.    
+      subroutine get_transform_NO (NROOT,NORBT,NOs_AO,N_OCCUPATION)
+         ! This routine read the quternion density matrix and do diagonalization.
+         ! Then do basis transform to go to atomic basis set.  
+         ! NROOT used in dimension of ccden file and norbt is the total correlated orbital number. 
+         ! NROOT is always lager than NORBT 
          ! Written by Xiang Yuan   
 
             use matrix_complex_to_quaternion 
@@ -151,13 +140,15 @@ module get_natural_orbital
 
 !                  call quater_write(Fock_NO,"FM_in_NatOrb")
 !                  call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
+                  deallocate(density_quat_read)
                         
-      end subroutine get_transform_Fock
+      end subroutine get_transform_NO
 
 !-----------------------------------------------------------------------------------------------------------------------------
       subroutine write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,file_old,file_new)
-            !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
-            !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
+            !      write new orbital information into new file 'DFNOSAO', which is similar to DFCOEF 
+            !      copy the basis information from DFCOEF and use new occupation number and orbital coefficient 
+            !      to replace the old orbital. 
             !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
           
                    use exacorr_mo
@@ -225,7 +216,7 @@ module get_natural_orbital
           
           
                    call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
-                   call print_date('Write natural orbitals into DFNOSAO file like GENOS')
+                   call print_date('Write natural orbitals into DFNOSAO file like DFCOEF')
           
       end subroutine write_no_to_newfile
 !----------------------------------------------------------------------------------------------------------
