@@ -2175,7 +2175,7 @@ C   PAMIOU: LUTMAT
       logical, intent(in)  :: GOFAST
 !     local scratch
       logical              :: TOBE, FNDLAB, FNDLAB12, gmotra_case3
-      logical              :: is_2c_rel_run
+      logical              :: is_2c_rel_run, lsymad
       integer              :: is_defining_h1mat
       integer              :: ndim_lowmat,idum
       integer              :: lulmat = 99
@@ -2592,6 +2592,8 @@ C.........do canonical orthonormalization
 !       defining h1 matrix control variable (in the X2C module) -
 !       set here for consistency to the maximum value
         is_defining_h1mat = 4
+        lsymad = .false.
+        if(linear.or.atomic) lsymad = .true.
 
 !        in: LOWDIN matrix                   --> KVMAT
 
@@ -2599,7 +2601,8 @@ C.........do canonical orthonormalization
 !       out: AO2MO SL resorted               --> KVMAT
 !       out: MO2MO linear symmetry adapted   --> KTBUF (if linear == .true.; nothing otherwise)
         CALL MODHAM(WORK(KTMAT),WORK(KVMAT),WORK(KTBUF),WORK(KEIG),
-     &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),linear,
+     &              .not.(VEXTPJ.OR.FREEPJ.OR.LEVYLE),
+     &              lsymad,
      &              is_defining_h1mat,.true.,WORK(KFREE),LFREE)
 
         CALL MEMREL('MODHAM',WORK,KEIG,KEIG,KFREE,LFREE)
@@ -2680,12 +2683,48 @@ C.......SUB_BL will be set true if linear symmetry works
           call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
           close(lux2c,status='keep')
         else
+          write(lupri,*) 'hooray'  
           open(99,file='AOMOlin',status='old',form='unformatted',
      &         access='sequential',action='readwrite',
      &         position='rewind')
-!         skip rec # 1
+          !> rec # 1: U 
           read(99)
+          !> rec # 2: VU
           call readt(99,N2TMT,work(KTMAT))
+          !> rec # 3: V
+          !> ...
+
+          !> SK: DEBUG FOR ATOMIC
+          CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','TBUF3',KTBUF3,N2BBASXQ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','TBUF4',KTBUF4,N2BBASXQ,WORK,KFREE,LFREE)
+          
+          !> get V in KTBUF2
+          call readt(99,N2TMT,work(KTBUF2))
+
+          !> get V(dagger)S in KTBUF3
+          call MKSMOAO(work(KTBUF3),work(KTBUF2),11,WORK(KFREE),LFREE)
+
+          call get_umomo(work(KTBUF3),work(KTBUF2),
+     &                    work(KTBUF4),iprham)
+
+          if(atomic)then
+            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I (see test above)
+            call get_umomo(work(KTBUF3),work(KTMAT),
+     &                    work(KTBUF4),iprham)
+            rewind(99)
+
+            !> U
+            call writt(99,N2TMT,work(KTBUF4))
+            !> VU
+            call writt(99,N2TMT,work(KTMAT))
+            !> V
+            call writt(99,N2TMT,work(KTBUF2))
+
+          end if
+          CALL MEMREL('MODHAM',WORK,KTBUF2,KTBUF2,KFREE,LFREE)
+
+
 !         file is needed in the 4c-2c transformation after the 4c-SCF
 !         in order to ensure numerical stability (avoiding double
 !         diagonalization, etc.)
@@ -2697,11 +2736,11 @@ C.......SUB_BL will be set true if linear symmetry works
         end if
       end if
 C
-C     Construct right index transformed overlap matrix Saomo = Sao T
-C     Since T(dagger) Sao T = I, Saomo is the inverse of T(dagger)
+C     Construct right index transformed overlap matrix Saomo = Sao V
+C     Since V(dagger) Sao V = I, Saomo is the inverse of V(dagger)
 C
-!      in: AO2MO (linear symmetry adapted if linsym = T)--> KTMAT
-!     out: right index transformed overlap matrix Saomo --> KTBUF
+!      in: AO2MO (linear symmetry adapted if linsym == true) --> KTMAT
+!     out: right index transformed overlap matrix Saomo      --> KTBUF
       CALL MKSAOMO(WORK(KTBUF),WORK(KTMAT),.FALSE.,
      &             IPRHAM,WORK(KFREE),LFREE)
 C
@@ -3282,7 +3321,7 @@ C  DGROUP:
 #include "cbihr1.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
-      LOGICAL SLGROUP,LSYMAD
+      LOGICAL, intent(in) :: SLGROUP,LSYMAD
       logical, intent(in) :: print_header
       integer is_defining_h1mat
       CALL QENTER('MODHAM')
@@ -3387,7 +3426,8 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       is_defining_h1mat is the control variable for the defining h1
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
-!       print *,'is_defining_h1mat is...',is_defining_h1mat
+        write(lupri,*) 'is_defining_h1mat is...',is_defining_h1mat,
+     &  LSYMAD
         open(99,file='AOMOSLR',status='replace',form='unformatted',
      &       access='sequential',action='readwrite',
      &       position='rewind')
@@ -3400,6 +3440,7 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !              AO2MO transformation matrix SL resorted --> WORK(KBUF)
           CALL SLSORT(TMAT,WORK(KBUF),IPRHAM,WORK(KFREE),LFREE)
           call writt(99,ISIZE, WORK(KBUF))
+          !> keep KBUF as we will need it later...
 !CTROND
         else
           call dzero(VMAT,n2bbasxq)
@@ -3456,12 +3497,15 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 
 !       in:  VMAT
 
+        IF(ATOMIC)THEN
+!       out: AO2MO atomic symmetry adapted (kappa/mj) --> TMAT
+!       out: AO2MO atomic symmetry adapted (kappa   ) --> VMAT
+!       out: MO2MO atomic symmetry adapted WRONG .... --> TBUF (discarded if not x2c-mmf)
+          CALL GATMSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
+        ELSE
 !       out: AO2MO linear symmetry adapted --> TMAT
 !       out: AO2MO                         --> VMAT
 !       out: MO2MO linear symmetry adapted --> TBUF (discarded if not x2c-mmf)
-        IF(ATOMIC)THEN
-          CALL GATMSM(TMAT,VMAT,TBUF, EIG,WORK(KFREE),LFREE)
-        ELSE
           CALL GLINSM(TMAT,VMAT,TBUF,EIG,WORK(KFREE),LFREE)
         ENDIF
 !       save matrices on file to be re-used in the x2c-module
@@ -3471,20 +3515,20 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !         AO2MO lin
           call writt(99,ISIZE, TMAT)
         end if
-!       AO2MO
+!       AO2MO (on backup buffer space)
         call writt(99,ISIZE, WORK(KBUF1))
 
 !       by default: return the unmodified AO2MO transformation matrix
         CALL DCOPY(ISIZE,WORK(KBUF1),1,TMAT,1)
 
         IF(IPRHAM.GE.5) THEN
-          CALL HEADER(
-     &    'MODHAM: AFTER LINSYM final transformation'//
-     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
           IMAT = 1
           IBUF = 1
           DO I = 1,NFSYM
             IF(NORB(I).GT.0) THEN
+                  CALL HEADER(
+     &    'MODHAM: AFTER LINSYM final transformation'//
+     &    ' matrix 4c AO->MO, TMAT(output)',-1)
               WRITE(LUPRI,'(A,I1,A,I1)')
      &        '* Fermion ircop no.',I,'/',NFSYM
               CALL PRQMAT(TMAT(IMAT),NFBAS(I,0),NORB(I),
@@ -5735,6 +5779,10 @@ C
          RETURN
       ENDIF
 C
+      IF(IPRHAM == 6 .and. atomic)THEN
+        ATOMIC = .FALSE.
+        IPRHAM = 5
+      END IF
       DO IATOM = 1, NUCIND
         IF(NINT(CHARGE(IATOM)).EQ.0)THEN
         IF(NOORBT(IATOM).EQV. .FALSE.)THEN
@@ -5922,7 +5970,7 @@ C
 C       Find eigenvalues of Jz
 C
         IF (NL.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('LINSYM: Jz_LL to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -5976,7 +6024,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -5996,7 +6044,7 @@ C
      &               TMAT(IOFT),NT,NT,NZ)
 C
         IF (NS.GT.0) THEN
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('LINSYM: Jz_SS to be diagonalized',-1)
            WRITE(LUPRI,'(2X,A,L1)') 'DOJACO=',DOJACO
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6053,7 +6101,7 @@ C
             ENDDO
           ENDIF
 #endif
-          IF (IPRHAM.GE.5) THEN
+          IF (IPRHAM.GE.6) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &          '*** Fermion corep ',I,'/',NFSYM
@@ -6176,7 +6224,7 @@ C
           call writt(13,NL**2,WORK(KVLL))
         end if
 
-        IF (IPRHAM.GE.5) THEN
+        IF (IPRHAM.GE.6) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,LL',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6197,7 +6245,7 @@ C
      &               WORK(KVSS),NS,NS,1,
      &               TBUF(IOFT),NT,NT,1)
 
-        IF (IPRHAM.GE.5) THEN
+        IF (IPRHAM.GE.6) THEN
          CALL HEADER('LINSYM: MO vectors in TBUF,SS',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',I,'/',NFSYM
@@ -6269,8 +6317,8 @@ C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LINSYM')
       RETURN
- 1000 FORMAT 
-     & (/' Parity   MJ  Functions(total) Functions(LC) Functions(SC)')
+ 1000 FORMAT (/' Parity   MJ  Functions(total) Functions(LC)'//
+     &         ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,'/2',T20,I5,T33,I5,T46,I5)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6281,11 +6329,11 @@ C
 C     Generate transformation to atomic supersymmetry
 C     This will lead to orbitals with well-defined kappa and m_j.
 C     The routine first builds the matrix representation of the kappa operator
-C     in orthonormal basis and the diagonalizes it.
+C     in orthonormal basis and diagonalizes it in a second step.
 C     The transformation to orthonormal basis is then updated with the
 C     transformation to kappa blocks.
 C
-C     In a second step, for each kappa block, the matrix representation of the j_z operator
+C     In the ensuing step, for each kappa block, the matrix representation of the j_z operator
 C     is diagonalized. The transformation to orthonormal basis is then updated with the
 C     transformation to (kappa, mj) - blocks
 C
@@ -6343,10 +6391,11 @@ C     Called from GLINSM, LOWD2C
 C
 C     On input:  VMAT 4c AO-MO RKB transformation matrix
 C
-C     On output: TMAT - new 4c AO-MO RKB transf.matrix adapted for the linear symmetry
-C                TBUF - MO to MO transformation matrix adapted for linear symmetry...
+C     On output: TMAT - new 4c AO-MO RKB transf.matrix adapted for atomic supersymmetry
+C                TBUF - MO to MO transformation matrix adapted for atomic supersymmetry
 C
 C     Written by A.Sunaga, July 2018
+C     Bugfixes by S. Knecht, May 2021
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -6835,6 +6884,8 @@ C
       
         close(13,status='keep')
       end if
+
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
 C
 C     Generate transformation matrix in non-orthogonal basis
 C     ======================================================
@@ -6867,18 +6918,7 @@ C
         IF (IPRHAM.GE.5) THEN
          CALL HEADER(
      &'ATMSYM: TMAT (symm.blocked) transformation'//
-     &' matrix (AO->MO),TMAT',-1)
-         WRITE(LUPRI,'(3X,A,I1,A,I1)')
-     &   '*** Fermion corep ',IFRP,'/',NFSYM
-         CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
-     &         NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-         CALL FLSHFO(LUPRI)
-        ENDIF
-C
-        IF (IPRHAM.GE.5) THEN
-         CALL HEADER(
-     &'ATMSYM: TMAT (symm.blocked) transformation'//
-     &' matrix (AO->MO),TMAT',-1)
+     &' matrix (AO->MO) aka VU/kappa,TMAT',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
      &   '*** Fermion corep ',IFRP,'/',NFSYM
          CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
@@ -6890,36 +6930,16 @@ C
         IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
         IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
  30   CONTINUE !  DO 30 IFRP = 1,NFSYM
-      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
+
+      !> copy kappa-adapted 4c AO->atomic MO transformation matrix from TMAT to VMAT
+      !> so that VMAT becomes VU, i.e. V => VU
       CALL DCOPY(N2TMT,TMAT,1,VMAT,1)
-      IF(IPRHAM.GE.5) THEN
-        CALL HEADER(
-     &    'dcopy: AFTER LINSYM final transformation'//
-     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
-        IMAT = 1
-        IBUF = 1
-        DO IFRP = 1,NFSYM
-          IF(NORB(IFRP).GT.0) THEN
-            WRITE(LUPRI,'(A,I1,A,I1)')
-     &      '* Fermion ircop no.',IFRP,'/',NFSYM
-            CALL PRQMAT(TMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
-     &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(A,I1,A,I1)')
-     &      '* Fermion ircop no.',IFRP,'/',NFSYM
-            CALL PRQMAT(VMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
-     &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-            WRITE(LUPRI,'(/5X,A/)')
-            IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
-            IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
-          ENDIF
-        ENDDO
-      ENDIF
 C       
 CCCCCCCCCCCCCCCCCCCCCCCCCCC
 C.....Here we start MJ-part
 CCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
-      CALL DZERO (TBUF,N2TMT)
+      CALL DZERO (TBUF,N2TMT) !> this kills the unitary matrix U stored in TBUF 
 C
 C     Construct mj matrix in AO basis
 C
@@ -6988,7 +7008,7 @@ C........Here we transform the MJ-matrix for particular kappa; look TSUBBL
          ENDIF
 C           
 CCCCCCCCCCCCCCCCCC         
-C Large AO-MO transformation
+C Large AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCC         
          IF (NL.GT.0) THEN
            CALL TSBBL2(IFRP,1,KPADD,TBUF,WORK(KFLL),VMAT,VMAT,
@@ -7055,7 +7075,7 @@ C
          ENDIF !NL.GT.0
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
-C Small AO-MO transformation
+C Small AO-MO transformation (diagonal in kappa because of VMAT => VU)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCC         
          IF (NS.GT.0) THEN
            CALL TSBBL2(IFRP,2,KPADD,TBUF,WORK(KFSS),VMAT,VMAT,
@@ -7236,12 +7256,28 @@ C
 C.....Also initialize NTMO_SUB which will be the number of orbitals
 C      in each subblock in orthonormal basis      
       CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)
+
+      IOFT = 1
+      DO IFRP = 1,NFSYM
+            IF(NORB(IFRP) == 0) CYCLE
+            IF (IPRHAM.GE.5) THEN
+                  CALL HEADER(
+     &   'ATMSYM: FINAL (symm.blocked) transformation'//
+     &   ' matrix (AO->MO) aka VU/kappa/mj,TMAT',-1)
+                  WRITE(LUPRI,'(3X,A,I1,A,I1)')
+     &   '*** Fermion corep ',IFRP,'/',NFSYM
+            CALL PRQMAT(TMAT(IOFT),NFBAS(IFRP,0),NORB(IFRP),
+     &         NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
+            CALL FLSHFO(LUPRI)
+            ENDIF
+            IOFT = IOFT + NFBAS(IFRP,0)*NORB(IFRP)
+      END DO 
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('ATMSYM')
       RETURN
- 1000 FORMAT
-     & (/' Parity  Kappa  Functions(total) Functions(LC) Functions(SC)')
+ 1000 FORMAT (/' Parity  Kappa  Functions(total) Functions(LC)'//
+     &       ' Functions(SC)')
  1010 FORMAT (T5,I2,T9,I3,T20,I5,T33,I5,T46,I5)
  1020 FORMAT (T5,I2,T9,I3,T13,I4,'/2',T25,I5,T39,I5,T53,I5)
       END

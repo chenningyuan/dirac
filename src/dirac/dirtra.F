@@ -3394,6 +3394,56 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C  /* Deck GET_UMOMO */
+      SUBROUTINE GET_UMOMO(SMOAO,TMAT,UMOMO,IPRINT)
+C**********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+            PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcbbas.h"
+#include "dcbham.h"
+#include "dcborb.h"
+#include "dgroup.h"
+
+            DIMENSION SMOAO(*),TMAT(*),UMOMO(*)
+
+            CALL QENTER('GETUMOMO')
+
+            ISIZE = 0
+            DO I = 1,NFSYM
+               ISIZE = ISIZE + NZ*NORB(I)*NORB(I)
+            END DO
+            CALL DZERO(UMOMO,ISIZE)
+
+            IOFF  = 1
+            IOFF2 = 1
+            DO I = 1,NFSYM
+               IF ( NORB(I) .GT. 0 ) THEN
+                  CALL QGEMM(NORB(I),NORB(I),NFBAS(I,0),D1,
+     &         'N','N',IPQTOQ(1,0),SMOAO(I2TMT(I)+1),
+     &         NORB(I),NFBAS(I,0),NZT,
+     &         'N','N',IPQTOQ(1,0),TMAT(I2TMT(I)+1),
+     &         NFBAS(I,0),NORB(I),1,
+     &         D0,IPQTOQ(1,0),UMOMO(IOFF2),
+     &         NORB(I),NORB(I),NZ)
+      
+                  IF ( IPRINT .GE. 5 ) THEN
+                     CALL HEADER('GETUMOMO: identity matrix '//
+     &            ' matrix momo',-1)
+                     CALL PRQMAT(UMOMO(IOFF2),NORB(I),NORB(I),
+     &            NORB(I),NORB(I),NZ,IPQTOQ(1,0),LUPRI)
+                     CALL FLSHFO(LUPRI)
+                  END IF
+               END IF
+            IOFF  = IOFF  + NZ*NORB(I)*NFBAS(I,0)
+            IOFF2 = IOFF2 + NZ*NORB(I)*NORB(I)
+            END DO
+            CALL QEXIT('GETUMOMO')
+            RETURN
+            END      
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck MKSMOAO */
       SUBROUTINE MKSMOAO(SMOAO,TMAT,IPRINT,WORK,LWORK)
 C**********************************************************************

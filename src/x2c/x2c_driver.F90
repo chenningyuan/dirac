@@ -659,23 +659,15 @@ contains
               access='sequential',action="readwrite",position='rewind')
 
          if(linear_sym)then
-           if(atomic_sym)then
-               read(11)
-               open(12,file='AOMOatm',status='old',form='unformatted', &
-               access='sequential',action="readwrite",position='rewind')
-               ! MO2MO atomic symmetry --> nonatomic symmetry transformation matrix
-               call readt(12,fullmo2momat_dim,A%scr2mat)
-               close(12,status='delete')
-           else
-             ! MO2MO linear symmetry --> nonlinear symmetry transformation matrix
+             ! MO2MO linear symmetry --> nonlinear symmetry transformation matrix aka "U"
              call readt(11,fullmo2momat_dim,A%scr2mat)
-           end if
-!          AO2MO linear symmetry --> nonlinear symmetry transformation matrix
-!          skip the record as it is not needed here
-           read(11)
+
+             ! AO2MO linear symmetry --> nonlinear symmetry transformation matrix aka "VU"
+!             skip the record as it is not needed here
+             read(11)
          end if
 
-!        AO2MO transformation matrix
+         ! AO2MO transformation matrix aka "V"
          call readt(11,fullao2momat_dim,A%scr1mat)
 
          close(11,status='delete')
