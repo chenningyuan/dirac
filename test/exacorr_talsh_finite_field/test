@@ -2,12 +2,12 @@
 
 import os
 import sys
-from exacorr_environment import set_exacorr_environment
-
-set_exacorr_environment()
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -27,9 +27,6 @@ f.add(from_string = 'Norm of Fock matrix (OV',
 f.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
-
-os.environ["OMP_STACKSIZE"] = "200M"
-os.system('ulimit -s unlimited')
 
 test.run(['talsh_ccsd_x2c_zdip.inp'], ['MgF_nosym.mol'], f)
 test.run(['talsh_ccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f)
@@ -53,6 +50,5 @@ f1.add(from_string = 'Total CCSD energy',
 #test.run(['relccsd_x2c.inp'], ['MgF_nosym.mol'], f1 )
 #test.run(['relccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f1 )
 #test.run(['relccsd_x2c_zdip.inp'], ['MgF_nosym.mol'], f1 )
-
 
 sys.exit(test.return_code)
