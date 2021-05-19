@@ -2682,8 +2682,7 @@ C.......SUB_BL will be set true if linear symmetry works
      &         position='rewind')
           call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
           close(lux2c,status='keep')
-        else
-          write(lupri,*) 'hooray'  
+        else  
           open(99,file='AOMOlin',status='old',form='unformatted',
      &         access='sequential',action='readwrite',
      &         position='rewind')
@@ -2691,29 +2690,27 @@ C.......SUB_BL will be set true if linear symmetry works
           read(99)
           !> rec # 2: VU
           call readt(99,N2TMT,work(KTMAT))
-          !> rec # 3: V
-          !> ...
-
-          !> SK: DEBUG FOR ATOMIC
-          CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL MEMGET2('REAL','TBUF3',KTBUF3,N2BBASXQ,WORK,KFREE,LFREE)
-          CALL MEMGET2('REAL','TBUF4',KTBUF4,N2BBASXQ,WORK,KFREE,LFREE)
-          
-          !> get V in KTBUF2
-          call readt(99,N2TMT,work(KTBUF2))
-
-          !> get V(dagger)S in KTBUF3
-          call MKSMOAO(work(KTBUF3),work(KTBUF2),11,WORK(KFREE),LFREE)
-
-          call get_umomo(work(KTBUF3),work(KTBUF2),
-     &                    work(KTBUF4),iprham)
-
+ 
+          !> SK: DEBUG FOR ATOMIC - CAN BE REMOVED ONCE ATMSYM WORKS CORRECTLY
           if(atomic)then
-            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I (see test above)
-            call get_umomo(work(KTBUF3),work(KTMAT),
-     &                    work(KTBUF4),iprham)
-            rewind(99)
 
+            CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,
+     &                   KFREE,LFREE)
+            CALL MEMGET2('REAL','TBUF3',KTBUF3,N2BBASXQ,WORK,
+     &                   KFREE,LFREE)
+            CALL MEMGET2('REAL','TBUF2',KTBUF4,N2BBASXQ,WORK,
+     &                   KFREE,LFREE)
+
+            !> get V in KTBUF2
+            call readt(99,N2TMT,work(KTBUF2))
+
+            !> get V(dagger)S in KTBUF3
+            call MKSMOAO(WORK(KTBUF3),WORK(KTBUF2),IPRHAM,
+     &                   WORK(KFREE),LFREE)
+            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I (see test above)
+            call get_umomo(WORK(KTBUF3),WORK(KTMAT),
+     &                     WORK(KTBUF4),IPRHAM)
+            rewind(99)
             !> U
             call writt(99,N2TMT,work(KTBUF4))
             !> VU
@@ -2721,9 +2718,8 @@ C.......SUB_BL will be set true if linear symmetry works
             !> V
             call writt(99,N2TMT,work(KTBUF2))
 
+            CALL MEMREL('MODHAM',WORK,KTBUF2,KTBUF2,KFREE,LFREE)
           end if
-          CALL MEMREL('MODHAM',WORK,KTBUF2,KTBUF2,KFREE,LFREE)
-
 
 !         file is needed in the 4c-2c transformation after the 4c-SCF
 !         in order to ensure numerical stability (avoiding double
@@ -3167,7 +3163,7 @@ C
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - 2e-normalized (final)',-1)

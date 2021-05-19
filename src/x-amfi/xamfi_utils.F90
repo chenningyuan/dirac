@@ -169,9 +169,9 @@ contains
      use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
                                           aoo_bs_irrep_mat, aoo_pointer_quat,&
                                           aoo_iqmult_trip_q, aoo_cb_uq_to_pq
-!#ifdef DEBUG_SOC
+#ifdef DEBUG_SOC
      use x2c_utils, only: print_x2cmat
-!#endif
+#endif
      real(8), intent(inout)        :: Gmat(nrow,ncol,nz)
      integer, intent(in)           :: nrow
      integer, intent(in)           :: ncol
@@ -201,7 +201,7 @@ contains
 
     if(final_dump)then
         allocate(Gmat_c1(nrow,ncol,nzc1)); Gmat_c1 = 0  
-!#ifdef DEBUG_SOC
+#ifdef DEBUG_SOC
         call print_x2cmat(Gmat, &
         nrow,                   &
         ncol,                   &
@@ -210,7 +210,7 @@ contains
         'aoosoc - 2e-SOC 0',    &
         6                       &
        )
-!#endif
+#endif
         ! a. insert phases
         IREP=0
         IF (NZ < 4) THEN
@@ -219,7 +219,7 @@ contains
                 CALL Q2BPHASE('F',IQ,1,Gmat(1,1,iz))
             END DO            
         END IF
-!#ifdef DEBUG_SOC
+#ifdef DEBUG_SOC
        call print_x2cmat(Gmat,                  &
                         nrow,                   &
                         ncol,                   &
@@ -228,12 +228,12 @@ contains
                         'aoosoc - 2e-SOC a',    &
                         6                       &
                        )
-!#endif       
+#endif       
   
         ! b. transform to unsorted SO-AO basis
         call bstobu_no_work(Gmat,nz)
 
-!#ifdef DEBUG_SOC
+#ifdef DEBUG_SOC
         call print_x2cmat(Gmat, &
         nrow,                   &
         ncol,                   &
@@ -242,7 +242,7 @@ contains
         'aoosoc - 2e-SOC b',    &
         6                       &
        )
-!#endif 
+#endif 
         ! c. transform from unsorted SO-AO basis to AO (C1* symmetry) basis
         IPAR = aoo_bs_to_fs(IREP,1)
         DO IZ = 1, nzc1
@@ -264,7 +264,7 @@ contains
           end do
         end do
 
-!#ifdef DEBUG_SOC
+#ifdef DEBUG_SOC
         call print_x2cmat(Gmat_c1, &
         nrow,                      &
         ncol,                      &
@@ -273,7 +273,7 @@ contains
         'aoosoc - 2e-SOC c',       &
         6                          &
        )
-!#endif
+#endif
 
         write(fh) nrow, ncol, nzc1
         write(fh) Gmat_c1
