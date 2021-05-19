@@ -2,7 +2,9 @@
 
 import os
 import sys
+from exacorr_environment import set_exacorr_environment
 
+set_exacorr_environment()
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
