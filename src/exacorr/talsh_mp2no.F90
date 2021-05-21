@@ -336,7 +336,7 @@ module talsh_mp2no
                   real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
                   real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-                  integer                            :: sz,flb                  ! size of matrix and flag for block
+                  integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
                   character                          :: mat                     ! flag used for matrix basis transform
                   integer                            :: i
 
@@ -358,7 +358,8 @@ module talsh_mp2no
                     
                   flb = 0                     ! we read vv block of Fock matrix
                   sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
-                  call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+                  sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
+                  call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
                   call print_date('Read Fock matrix from DFCOEF')
 
                   mat = 'Matrix'
@@ -394,7 +395,7 @@ module talsh_mp2no
             real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
             real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-            integer                            :: sz,flb, fl              ! size of matrix and flag for block
+            integer                            :: sz,flb,fl,sz_occ        ! size of matrix and flag for block
             character                          :: mat                     ! flag used for matrix basis transform
             integer                            :: i,j,k
             
@@ -407,13 +408,15 @@ module talsh_mp2no
 
             flb = 0                       ! we only read virtual orbital 
             sz = exa_input%nkr_vir        ! the number of virtual orbital 
-            call quater_read_from_dirac_orbital(HF_AO,sz,flb)
+            sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
+            call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
             call print_date('Read HF orbital coefficient from DFCOEF')
 
             
             flb = 0                         ! we read vv block of Fock matrix
             sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
-            call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+            sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
+            call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
             call print_date('Read Fock matrix from DFCOEF')
 
 
@@ -490,7 +493,7 @@ module talsh_mp2no
 !        read information of from DFCOEF
          call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
 
-         nocc = exa_input%nkr_occ
+         nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
          nao = qorbital_hf%nao
          nno = size(NOs_AO,2)
          nmo = nocc+nno

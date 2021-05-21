@@ -386,7 +386,7 @@ module write_orbital_to_file
    
 
 !----------------------------------------------------------------------------------------------------------------------
-      subroutine quater_read_from_dirac_fock(Fock_HF,sz,flb)
+      subroutine quater_read_from_dirac_fock(Fock_HF,sz,k,flb)
 !     routine for only reading orbital energy from DFCOEF and construting the diagonal Fock matrix 
 !     flb =1 we construt the oo block otherwise we build vv block. 
          use exacorr_mo
@@ -394,11 +394,11 @@ module write_orbital_to_file
          use exacorr_global,only: nfunctions
 
             real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)          ! Fock matrix 
-            integer, intent(inout)                  :: sz,flb                  ! size of matrix and flag for block
+            integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
             type(qumo)                              :: qorbital
             type(basis_set_info_t)                  :: ao_basis
             integer                                 :: ierr
-            integer                                 :: i, k, sz_total_energy
+            integer                                 :: i,sz_total_energy
 
 
 !     read information from DFCOEF
@@ -414,7 +414,7 @@ module write_orbital_to_file
                   Fock_HF(i,i,1) = qorbital%energy(i)
                end do
             else
-               k = sz_total_energy - sz
+   !            k = sz_total_energy - sz
                do i = 1, sz
                   Fock_HF(i,i,1) = qorbital%energy(k+i)
                end do
@@ -424,7 +424,7 @@ module write_orbital_to_file
 
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine quater_read_from_dirac_orbital(HF_AO,sz,flb)
+      subroutine quater_read_from_dirac_orbital(HF_AO,sz,k,flb)
 !     routine for only reading HF orbital coefficient from DFCOEF.
 !     flb =1 we read occupied orbital otherwise we read virtual orbital 
  
@@ -434,11 +434,11 @@ module write_orbital_to_file
          use exacorr_utils
 
          real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)            ! new canonical orbital 
-         integer, intent(inout)                  :: sz,flb                  ! size of matrix and flag for block
+         integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
          type(qumo)                              :: qorbital
          type(basis_set_info_t)                  :: ao_basis
          integer                                 :: ierr
-         integer                                 :: i, j, k, sz_total_mo, sz_total_ao
+         integer                                 :: i, j, sz_total_mo, sz_total_ao
 
 
 !     read information of from DFCOEF
@@ -459,7 +459,7 @@ module write_orbital_to_file
                end do
             end do
          else
-            k = sz_total_mo - sz
+!            k = sz_total_mo - sz
             do j = 1, sz
                do i = 1, sz_total_ao
                   HF_AO(i,j,1) = qorbital%coeff(i,k+j,1)
