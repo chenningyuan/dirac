@@ -86,16 +86,22 @@ module talsh_mp2no
 
 !        Intermediate tensors (same notation as in relccsd)
          type(talsh_dm_tens)         :: MP2_density_tensor
+         type(talsh_tens_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims
          integer(INTD), dimension(2) :: vv_dims
          integer(C_INT)              :: one_dims(1)
+
+!        Common tensors
+         type(talsh_comm_tens) :: comm_t
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(talsh_intg_tens)       :: int_t
 
 !        Point connected with tensors 
          integer(C_INT)              :: ierr
+         complex(8), pointer         :: result_tens(:)
          integer                     :: initialize_talsh
+         real(8)                     :: mp2_energy
 
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -153,6 +159,24 @@ module talsh_mp2no
 !        Initialize scale with denominators of oovv integrals
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
+
+         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,result_tens,one_dims)
+!        Initialize t2 amplitudes with the MP2 values
+         ierr=talsh_tensor_init(comm_t%t2)
+         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
+         call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
+!        Calculate and print the MP2 energy
+!        Note: here we don't consider the t1 amplitude that is different with excorr_mp2no case. 
+         ierr=talsh_tensor_init(result_tensor)
+         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
+         mp2_energy=result_tens(1)*ONE_QUARTER
+         write(*,*) ""
+         write(*,*) "    MP2 energy = ", mp2_energy
+         write(*,*) ""
+
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 

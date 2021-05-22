@@ -1,0 +1,29 @@
+**DIRAC
+.WAVE FUNCTION
+**INTEGRALS
+.NUCMOD
+ 1
+*READIN                                                                                             
+.UNCONTRACT  
+**HAMILTONIAN
+.X2C
+**WAVE FUNCTION
+.SCF
+.EXACC
+*SCF
+.EVCCNV
+1.0E-9 1.0E-8  
+**EXACC
+.OCCUPIED                                                                                           
+2..5 
+.VIRTUAL                                                                                            
+6..20   
+.MP2NO
+0.0d-4
+**MOLECULE
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT 
+cc-pVDZ
+*END OF 

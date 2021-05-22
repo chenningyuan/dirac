@@ -249,26 +249,26 @@ module exacorr_mp2no
             call print_date('initialized Fock matrix')
 
 
-!           Initialize t2 amplitudes with the MP2 values
-      !      ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-      !      if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-      !      ierr=exatns_tensor_init(comm_t%t2,ZERO)
-      !      ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
-      !      ierr=exatns_tensor_transform(comm_t%t2,denom)
+      !     Initialize t2 amplitudes with the MP2 values
+            ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+            ierr=exatns_tensor_init(comm_t%t2,ZERO)
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
+            ierr=exatns_tensor_transform(comm_t%t2,denom)
 
-!           Calculate and print the MP2 energy
-      !      ierr=exatns_tensor_init(result_tensor,ZERO)
-      !      ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
-      !      ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-      !      mp2_energy=real(result_val,8)
-      !      ierr=exatns_tensor_init(result_tensor,ZERO)
-      !      ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
-      !      ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-      !      mp2_energy=mp2_energy+real(result_val,8)
+      !     Calculate and print the MP2 energy
+            ierr=exatns_tensor_init(result_tensor,ZERO)
+            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            mp2_energy=real(result_val,8)
+            ierr=exatns_tensor_init(result_tensor,ZERO)
+            ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            mp2_energy=mp2_energy+real(result_val,8)
          
-      !      write(*,*) ""
-      !      write(*,*) "    MP2 energy = ", mp2_energy
-      !      write(*,*) ""
+            write(*,*) ""
+            write(*,*) "    MP2 energy = ", mp2_energy
+            write(*,*) ""
 
 
             ierr=exatns_tensor_transform(int_t%oovv,denom)
