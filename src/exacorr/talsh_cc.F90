@@ -2234,7 +2234,10 @@ module talsh_cc
          integer                         :: i
          integer(C_INT), dimension(2)    :: dimA, dimB, dimC
          
-         write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
+         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
+
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
@@ -2464,7 +2467,9 @@ module talsh_cc
          integer, allocatable         :: mo_list(:)
          
 
-         write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
+         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
