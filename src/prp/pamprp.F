@@ -8121,7 +8121,6 @@ C
        IPTYP     = 10   ! Sigma_x
        NPCOMP    = 1    ! one component
        PFAC(1)   = DS   ! factor
-C
        PLABEL(1) = 'OVERLAP'
        CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -8663,10 +8662,6 @@ C
             WRITE (LUPRI,'(/,1X,A)')' London orbitals used.'
          END IF
       END IF
-C
-      IF(LEVYLE)  WRITE(LUPRI,'(A)') 'NOTE: Remember that in the ' //
-     & 'NR framework g^LR-S(e-e), g^LR-L(e-p) and g^LR-S(e-p) are '//
-     & 'identically zero.'
 C
       IF (IPRINT .GE. 0) THEN
         CALL HEADER('Molecular g-tensor',-1)
@@ -11129,10 +11124,6 @@ C
         END IF
        END IF
       END IF
-C
-      IF(LEVYLE)  WRITE(LUPRI,'(A)') 'NOTE: Remember that in the ' //
-     & 'NR framework M^LR-S(e-e), M^LR-L(e-p) and M^LR-S(e-p) are '// 
-     & 'identically zero.'
 C
 C    Print spin-rotation constants or tensors
 C
