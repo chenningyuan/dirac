@@ -6,6 +6,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -27,9 +30,6 @@ f2.add(from_string = 'Norm of Fock matrix (OV',
 f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
-
-os.environ["OMP_STACKSIZE"] = "200M"
-os.system('ulimit -s unlimited')
 
 #test.run(['scf_beh.inp'], ['BeH_nosym.mol'], f1,"--get='X2CMAT AOMOMAT DFCOEF'")
 test.run(['talsh_cc_beh.inp'], ['BeH_nosym.mol'], f2, "--put='X2CMAT AOMOMAT DFCOEF'")
