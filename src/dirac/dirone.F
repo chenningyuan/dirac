@@ -2707,7 +2707,7 @@ C.......SUB_BL will be set true if linear symmetry works
             !> get V(dagger)S in KTBUF3
             call MKSMOAO(WORK(KTBUF3),WORK(KTBUF2),IPRHAM,
      &                   WORK(KFREE),LFREE)
-            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I (see test above)
+            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I
             call get_umomo(WORK(KTBUF3),WORK(KTMAT),
      &                     WORK(KTBUF4),IPRHAM)
             rewind(99)
