@@ -20,34 +20,41 @@ wrong.
 Sphinx installation
 -------------------
 
-We recommend to install the required packages using virtualenv and not using
-standard packages (you may need to install python-pip and python-virtualenv)::
+We recommend to install the required packages using
+either `virtualenv <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__
+or `Conda <https://docs.conda.io/>`__
+but not using standard packages.
+Possibly the only packages that you may need to install system-wide are
+python-pip and python-virtualenv).
 
-  $ virtualenv venv
+Now you can set up a virtual environment (the last argument is its name/location
+and you can change it)::
 
-This will create a directory called ``venv`` in your current working directory.
+  $ python -m venv venv
+
+On some systems, instead of the above, you need::
+
+  $ python3 -m venv venv
+
+This will create a folder called ``venv`` in your current working directory.
 You can create it in another place and you can give it a different name.
-It may make sense to install it into ``~/venv``. It is no problem to have
-20 different virtual environments on your computer.
+It is a good practice to have separate environments for separate projects.
 Once you have set it up, you need to activate it::
 
   $ source venv/bin/activate
 
-Next time you log on, you do not need to install it again, you just activate it
-like above.  Once activated, you can install Python packages into the virtual
+Once activated, you can install Python packages into the virtual
 environment::
 
-  $ pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+  $ python -m pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+
+Again, on some systems you need ``python3 -m pip ...`` instead.
+Next time you log on, you do not need to install it again, you just activate (source) it
+like above, you do not need to install the dependencies again.
 
 The advantage of using virtualenv is that it is cross-platform,
 you get the latest packages, you get an isolated and disposable
 environment, and you do not require sudo permissions.
-
-If you do not like the virtual environment anymore, you just delete it - it does
-not pollute your system installation.
-
-To learn more about virtual environments, see:
-http://docs.python-guide.org/en/latest/dev/virtualenvs/.
 
 
 Generation of html pages
