@@ -13,7 +13,7 @@ operating system, and uses MPI for parallel calculations.  Optionally DIRAC can
 Minimum requirements
 --------------------
 
-* CMake 3.0 - 3.11
+* CMake 3.7 - or later
 * Python 2.6 - 2.7
 * GFortran/GCC/G++ 4.9 - 5.2 or Intel compilers 13.0 - 15.0.6
 
@@ -28,7 +28,7 @@ extracted path, respectively. Verify that your new CMake is recognized with
 Requirements for building with the parallel library ExaTensor
 -------------------------------------------------------------
 
-* CMake 3.0 - or later
+* CMake 3.7 - or later
 * Python 3.6 - or later
 * GFortran/GCC/G++ 8 (9 has a bug and cannot be used) or Intel compilers 18 or later
 
