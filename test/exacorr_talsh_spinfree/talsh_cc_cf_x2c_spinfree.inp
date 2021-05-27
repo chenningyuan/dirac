@@ -37,4 +37,6 @@ energy -5.0 -0.02 0.001
 energy -0.02 1.0 0.001
 .PRINT
 4
+.TALSH_BUFF
+3
 *END OF
