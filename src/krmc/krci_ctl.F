@@ -979,10 +979,59 @@ C
       IF (IKWSET(22).LE.1 .AND. (SPINFR.or.levyle)) THEN
          KRCI_UCIBOS = .TRUE.
       END IF
-c     krci_ucibos = .false.
 C
+      if(.not.linear)then
+
+        allocate(multb_tmp(64,64))
+        IF (SPINFR.or.levyle) THEN
+              CALL GMULTSF(NREP,REPNA,MULTB_TMP)
+        ELSE
+              CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
+        ENDIF
+        deallocate(multb_tmp)
+
+        !> check consistency of input symmetries
+        !> input order in KRCI:   boson   boson   ... fermion fermion
+        !> input order in GMULTA: fermion fermion ... boson   boson
+
+        !> odd number of electrons: "fermion" case / the only nonzero roots are in fermion irreps
+        IF(MOD(NKRCIAELEC, 2) .NE. 0)THEN
+          !> user has requested roots in KRCI boson irreps but should have done so in fermion ones - fix it
+          DO IKRCI_SYMMETRY = 1, NREP
+
+            IF(NKRCI_CIROOTS(IKRCI_SYMMETRY) < 1) CYCLE
+
+            IRRP = NREP + IKRCI_SYMMETRY
+
+            IF(NKRCI_CIROOTS(IKRCI_SYMMETRY) > 0)THEN
+               NKRCI_CIROOTS(IRRP) = NKRCI_CIROOTS(IKRCI_SYMMETRY)
+               NKRCI_CIROOTS(IKRCI_SYMMETRY)  = -1
+               NKRCI_MAX_SYM = MIN(2*NREP,IRRP)
+
+            END IF
+
+          END DO
+        ELSE  !> even number of electrons: "boson" case / the only nonzero roots are in boson irreps
+          !> user has requested roots in KRCI fermion irreps but should have done so in boson ones - fix it
+          DO IKRCI_SYMMETRY = NREP+1,2*NREP
+
+            IF(NKRCI_CIROOTS(IKRCI_SYMMETRY) < 1) CYCLE
+
+            IRRP = IKRCI_SYMMETRY - NREP
+
+            IF(NKRCI_CIROOTS(IKRCI_SYMMETRY) > 0)THEN
+               NKRCI_CIROOTS(IRRP) = NKRCI_CIROOTS(IKRCI_SYMMETRY)
+               NKRCI_CIROOTS(IKRCI_SYMMETRY)  = -1
+               NKRCI_MAX_SYM = MIN(2*NREP,IRRP)
+            END IF
+
+          END DO
+
+        END IF
+
+      end if !> not for linear symmetry
+
 C     Default: one CI root in symmetry 1
-C
       IF (NKRCI_MAX_SYM .EQ. -1) THEN
          NKRCI_MAX_SYM    = 1
          NKRCI_CIROOTS(1) = 1
@@ -1104,38 +1153,28 @@ C     ... next symmetry
      &        ' for MJ-value (doubled): ',
      &          adjustr(xrepeig(ikrci_symmetry)),ferm_lab
          else
-           allocate(multb_tmp(64,64))
-           IF (SPINFR.or.levyle) THEN
-              CALL GMULTSF(NREP,REPNA,MULTB_TMP)
-           ELSE
-              CALL GMULTA(NZ,NFSYM,NREP,REPNA,MULTB_TMP)
-           ENDIF
-           deallocate(multb_tmp)
-           IF(MOD(NKRCIAELEC, 2) .EQ. 0)THEN
-             IRRP = NREP + IKRCI_SYMMETRY
-             WRITE(LUPRI,'(A,I3,2A)')
-     &       '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
-     &       ' in symmetry (boson):',REPNA(IRRP)
-C            store on common block in krciprop.h
-             XREPEIG(IKRCI_SYMMETRY) = REPNA(IRRP)
-             IF (NKRCI_MAX_SYM .GT. NREP) THEN
-                WRITE(LUPRI,'(/A//A,2I5)')
-     &          ' INPUT ERROR, requested symmetry (boson) in .CIROOTS'//
-     &          ' is non-existent!',
-     &          ' Symmetry, max value of symmetry = ',
-     &            NKRCI_MAX_SYM, NREP
-                CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
-             END IF
-C
-           ELSE
-              WRITE(LUPRI,'(A,I3,2A)')
-     &        '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
-     &        ' in symmetry (fermion):',REPNA(IKRCI_SYMMETRY)
-C               store on common block in krciprop.h
-                XREPEIG(IKRCI_SYMMETRY) = REPNA(IKRCI_SYMMETRY)
-C
-C           FIXME: check proper abort criterion
+
+           IF (NKRCI_MAX_SYM .GT. 2*NREP) THEN
+              WRITE(LUPRI,'(/A//A,2I5)')
+     &        ' INPUT ERROR, requested symmetry in .CIROOTS'//
+     &        ' is non-existent!',
+     &        ' Symmetry, max value of symmetry = ',
+     &          NKRCI_MAX_SYM, 2*NREP
+              CALL QUIT('INPUT ERROR for *KRCICALC .CIROOTS')
            END IF
+
+           !> set the actual irrep to be used for printing
+           !> note that the order boson/fermion irreps is reversed
+           !> hence: to not confuse the user we inserted a logical check above.
+           IRRP = NREP + IKRCI_SYMMETRY
+           IF(MOD(NKRCIAELEC, 2) .NE. 0) IRRP = IKRCI_SYMMETRY - NREP
+
+           WRITE(LUPRI,'(A,I3,2A)')
+     &     '    ** ',NKRCI_CIROOTS(IKRCI_SYMMETRY),' eigenstate(s)'//
+     &     ' in symmetry:',REPNA(IRRP)
+C          store on common block in krciprop.h
+           XREPEIG(IKRCI_SYMMETRY) = REPNA(IRRP)
+
          end if
          WRITE(LUPRI,'(A,I4,A,I3)')
      &     '    -- Allowed interval of 2 * MK :',
