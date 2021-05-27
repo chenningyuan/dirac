@@ -4,7 +4,7 @@ module exacorr_cc
 !almost everything requires MPI, but we provide a stub function to make compilation of 
 !non-MPI versions of DIRAC possible.
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
         use exatensor
         use exacorr_datatypes

@@ -4,7 +4,7 @@ module exacc_cfg
 
   implicit none
 
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
   public exacc_sync_cw
 #endif
   public exacc_deallocate_cw
@@ -15,7 +15,7 @@ module exacc_cfg
 
 contains
 
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
   subroutine exacc_sync_cw(exa_MPI_rank,my_MPI_rank)
 !
