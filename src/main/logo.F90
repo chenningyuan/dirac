@@ -129,7 +129,7 @@ print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. German
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
-print *, '*    Stefan Knecht            ETH Zuerich                       Switzerland   *'
+print *, '*    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *'
 print *, '*    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *'
 print *, '*    Ossama Kullie            University of Kassel              Germany       *'
 print *, '*    Jon K. Laerdahl          University of Oslo                Norway        *'
