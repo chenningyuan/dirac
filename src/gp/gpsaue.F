@@ -3232,7 +3232,7 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.12) THEN
             CALL HEADER('QTRANS: MO-to-AO-transformation',-1)
 
             WRITE(LUPRI,'(2X,A,4I2)')
@@ -3257,7 +3257,7 @@ C
      &       'H','N',IQTM2,TM2,LR2,LC2,NZTM2,
      &       D0,IQW,BUF,NRMO,NCAO,NZW)
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.13) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &      'QTRANS: First part transformation matrix W, W=F(C+);'//
      &      ' IQW=',(IQW(IZ),IZ=1,NZW)
@@ -3280,7 +3280,7 @@ C
              CALL QUIT('ERROR: need more work space')
           ENDIF
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.12) THEN
             CALL HEADER('QTRANS: bbb MO-to-AO-transformation',-1)
 
             WRITE(LUPRI,'(2X,A,4I2)')
@@ -3305,7 +3305,7 @@ C
      &       'N','N',IQMO,FMO,LRMO,LCMO,NZMO,
      &       D0,IQW,BUF,NRAO,NCMO,NZW)
 
-          IF (IPRINT.GE.IPRLIM) THEN
+          IF (IPRINT.GE.13) THEN
             WRITE(LUPRI,'(/2X,A,4I2)')
      &      'QTRANS: First part transformation matrix W, W=CF ;'//
      &      ' IQW=',(IQW(IZ),IZ=1,NZW)
