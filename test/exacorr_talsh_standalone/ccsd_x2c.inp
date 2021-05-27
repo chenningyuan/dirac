@@ -23,6 +23,8 @@ Water molecule. X2C Hamiltonian. CC energies.
 3..5
 .VIRTUAL
 6..17
+.TALSH_BUFF
+3
 **RELCCSD
 .TIMING
 .INTERFACE

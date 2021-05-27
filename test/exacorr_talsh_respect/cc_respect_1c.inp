@@ -13,6 +13,8 @@ H2O, Test ReSpect reader
 6..17
 .PRINT
 4
+.TALSH_BUFF
+3
 **MOLECULE
 *SYMMETRY
 .NOSYM
