@@ -5,8 +5,8 @@ star(KRCI)
 
 or the (deprecated) \*KRCICALC.
 
-*2- and 4-component relativistic GASCI module*
-==============================================
+**2- and 4-component relativistic GASCI module**
+================================================
 Written by Timo Fleig, 
 based on LUCIA by Jeppe Olsen, parallelization by Stefan Knecht and Hans Joergen Aagaard Jensen.
 
@@ -53,19 +53,23 @@ Two choices: LUCIAREL and GASCIP
 
 keyword(CIROOTS)
 
-number of states (roots) in symmetry X to optimize on. This keyword may be
+specifies the number of states (roots) *Y* in irrep *X* to optimize on. This keyword may be
 repeated several times for multi-root multi-symmetry calculations
 step-by-step. *default:* none.
 
-example for 5 roots in (boson/fermion) irrep 1:
+Example for calculating *Y* = 5 roots in irrep *X* = 1:
 
 ::
 
     .CIROOTS
     1 5
 
+The KRCI module exploits the character tables for the Abelian double groups handled by DIRAC as detailed here
+:ref:`Symmetry-handling at the correlated level`. In contrast to other correlation
+modules,  in KRCI the order is reversed that is boson irreps come **before** fermion irreps.
+
 If you run the calculation in **linear symmetry** you have to specify the **2 x OMEGA** value
-of the state to optimize on. The doubling (*2 x*) stems from the fact
+of the state to optimize on, and the .CI PROGRAM must be LUCIAREL. The doubling (*2 x*) stems from the fact
 that we want to avoid non-integer input, e.g. in case of an odd number
 of electrons we might have :math:`\Omega` = 1/2, 3/2, 5/2, etc. values and the
 corresponding input for one root with the :math:`\Omega` =1/2 would then read as
@@ -88,7 +92,7 @@ keyword(GAS SHELLS)
 Specification of CI calculation with electron distribution in orbital (GAS) spaces. 
 The first line contains the number of GA spaces to be used (1-7), 
 followed by one line per GAS with a separation by a "/" of the min/max number of electrons in each GAS and the 
-number of orbitals per fermion correp (either one (no inversion symmetry) or two (inversion
+number of orbitals per fermion corep (either one (no inversion symmetry) or two (inversion
 symmetry: *gerade* *ungerade*) entries per line). 
 
 The first entry before the "/" gives the minimal number of accumulated (!) electrons
@@ -97,7 +101,7 @@ number, separated by blanks. The minimum and maximum accumulated
 occupations allow for a very flexible parameterization of the wave
 function. All determinants fulfilling the occupation constraints will be
 constructed. The second entry after the "/" gives  the 
-number of orbitals per fermion correp. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
+number of orbitals per fermion corep. See also the open-shell input in :ref:`*SCF` which is similar to the syntax used
 here. The design of a GAS scheme is non-trivial and should be motivated by the electronic structure of the system (e.g.
 inner core, outer core, valence, virtual space). Sometimes it is useful to subdivide the valence space, for scientific reasons, or/and the
 virtual space, for technical reasons (save core memory). See reference :cite:`Fleig2006a`,
@@ -126,7 +130,7 @@ if all remaining orbitals (fullCI) should be included in the last GAS space, use
 
 keyword(INACTIVE)
 
-Inactive orbitals per fermion correp. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
+Inactive orbitals per fermion corep. *default*: all orbitals active. example for 4 *gerade*  and 2 *ungerade* orbitals frozen in a molecule with inversion center:
 
 ::
 
@@ -300,21 +304,99 @@ The KR-CI property module :cite:`Knecht2009` takes
 advantage of the 2- and 4-component KRCI module. It can be used for the
 computation of:
 
-::
+   - permanent dipole moments in ground and excited states,
 
-    - permanent dipole moments in ground and excited states,
+   - transition dipole moments
 
-::
-
-    - transition dipole moments
-
-::
-
-    - computation of :math:`\hat{l}_z`, :math:`\hat{s}_z` and :math:`\hat{j}_z (\Omega)` expectation values (only for linear molecules).
+   - computation of :math:`\hat{l}_z`, :math:`\hat{s}_z` and :math:`\hat{j}_z (\Omega)` expectation values (only for linear molecules).
 
 Upon request the analysis of other one-electron properties may also be
 implemented. The module could in principle be used for each one-electron
 operator that is specified in :ref:`one_electron_operators`.
+
+keyword(OPERATOR)
+
+Further modification by Malaya K. Nayak for the proper functioning of .OPERATOR keyword
+
+Here is some specific examples of :ref:`one_electron_operators` using .OPERATOR keyword.
+
+For the electron electric dipole moment (eEDM) effective electric field one can use
+
+::
+
+ .OPERATOR
+  'A2-EDM'
+  iBETAGAM
+  EDM
+
+The nucleus-electron scalar-pseudoscalar (Ne-SPS) interaction in BeH can be defined as 
+
+::
+
+ .OPERATOR
+  'A1-SPS'
+  iBETAGAM
+  'PVCBe 01'        for the first atom (as specied in .mol file) Be in BeH molecule
+ .OPERATOR
+  'A2-SPS'
+  iBETAGAM
+  'PVCH  02'        for the second atom (as specied in .mol file) H in BeH molecule
+
+Similarly, the magnetic hyperfine-structure constants in BeH can be defined as follows
+
+::
+
+ .OPERATOR
+  'X1-HYP'     (X1-HYP, Y1-HYP and Z1-HYP are for the first atom as specied in .mol file)
+  XAVECTOR
+  'NEF 001'
+  'NEF 005'
+ .OPERATOR
+  'Y1-HYP'
+  YAVECTOR
+  'NEF 003'
+  'NEF 001'
+ .OPERATOR
+  'Z1-HYP'
+  ZAVECTOR
+  'NEF 005'
+  'NEF 003'
+ .OPERATOR
+  'X2-HYP'     (X2-HYP, Y2-HYP and Z2-HYP are for second atom as specied in the .mol file)
+  XAVECTOR
+  'NEF 002'
+  'NEF 006'
+ .OPERATOR
+  'Y2-HYP'
+  YAVECTOR
+  'NEF 004'
+  'NEF 002'
+ .OPERATOR
+  'Z2-HYP'
+  ZAVECTOR
+  'NEF 006'
+  'NEF 004'
+
+The nuclear Magnetic-Quadrupole-Moment (MQM) constants in BeH can be defined by defination as
+
+::
+
+ .OPERATOR
+  'Z1-MQM'    (Z1-MQM, for the first atom as specified in the .mol file)
+  ZAVECTOR
+  YZEFG011
+  XZEFG011
+  COMFACTOR
+  -0.333333333D0
+ .OPERATOR
+  'Z2-MQM'    (Z2-MQM, for the second atom as specfied in the .mol file)
+  ZAVECTOR
+  YZEFG021
+  XZEFG021
+  COMFACTOR
+  -0.333333333D0
+
+One can define many more :ref:`one_electron_operators` as per their requirements.
 
 keyword(DIPMOM)
 
@@ -333,3 +415,37 @@ operator in z-direction and print the total
 :math:`\hat{j}_z` = :math:`\hat{s}_z` + :math:`\hat{l}_z` 
 expectation value (:math:`\Omega` value) for each electronic state.
 
+keyword(MHYP)
+
+compute magnetic hyperfine interaction constants as expectation values over
+Fermi's four-component operator (Z. Phys. 60 (1930) 332).
+Example for the hydrogen atom (proton nucleus):
+ 
+ ::
+ 
+  .MHYP
+   0.5       nuclear spin quantum number I
+   2.793     nuclear magnetic moment \mu
+   
+In the molecular case add a column with I and :math:`\mu` for every atom in
+the order given by the basis file. Reference: :cite:`Fleig2014`
+
+keyword(EEDM)
+
+compute electron electric dipole moment effective electric field as an
+expectation value over the effective one-electron momentum-form operator
+(J. Phys. B: At. Mol. Opt. Phys. 22 (1989) 559, stratagem II). Reference:
+:cite:`Fleig2013`
+
+keyword(ENSPS)
+
+compute nucleon-electron scalar-pseudoscalar interaction constant as an
+expectation value over the corresponding effective four-fermion operator
+in the limit for an infinitely heavy nucleon (Sov. Phys. JETP 62 (1985) 872).
+Reference: :cite:`Fleig2015`
+
+keyword(NMQM)
+
+compute nuclear Magnetic-Quadrupole-Moment (MQM) Interaction constatn as an
+expectation value over the corresponding effective four-component operator
+(Sov. Phys. JETP 60 (1984) 873), Reference: :cite:`Fleig2016` 

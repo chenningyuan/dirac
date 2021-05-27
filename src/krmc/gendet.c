@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2015 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -172,7 +172,7 @@ cgendet1( unsigned long long int anStr[], integer n, integer m,
        }
      }
      else {
-         printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
+//       printf("GAS :(, bit string: %64s \n", lli_to_b_format(prefix,pos));
      }
    }
    else {
@@ -276,7 +276,7 @@ getnbitscalls ( integer *fReset, long long int *nCN, long long int *nFN ) {
 
 const char *lli_to_b_format ( unsigned long long int x , integer bits)
 {
-    // Oct 2010 Hans Jørgen Aa. Jensen
+    // Oct 2010 Hans Joergen Aa. Jensen
     // based of code by EviTeach on
     // http://stackoverflow.com/questions/111928/is-there-a-printf-converter-to-print-in-binary-format
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -256,13 +256,12 @@ C     in two parts (the first part performs an implicit cast).
       use interface_to_mpi
       IMPLICIT NONE
       INTEGER N, SOURCE_NODE, TARGET_NODE, IBUF
-      REAL*8 RGBUF
-      INTEGER IGBUF, istat(df_MPI_STATUS_SIZE)
+      INTEGER istat(df_MPI_STATUS_SIZE)
 
 #include "bucket_sort.h"
 
-      DIMENSION RGBUF(NGBFSZ)
-      DIMENSION IGBUF(2,NGBFSZ)
+      REAL*8  RGBUF(NGBFSZ)
+      INTEGER IGBUF(2,NGBFSZ)
       INTEGER PREV_REC, THIS_REC, INCOUNT, POSITION, IERR
       INTEGER(KIND=df_MPI_OFFSET_KIND) RECORD_OFFSET
 
@@ -479,7 +478,7 @@ C     ... IBMs GPFS specific file hint - SK Aug 2008
       CHARACTER LF_RECBUF(GF_RECLEN)
       INTEGER SOURCE_NODE,LOCAL_RECORD
       INTEGER I
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       INTEGER NUMREAD
       INTEGER IERR
 

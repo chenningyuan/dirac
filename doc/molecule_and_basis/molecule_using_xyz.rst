@@ -7,7 +7,7 @@ How to specify the molecule and basis set using xyz files
 =========================================================
 
 The actual xyz file only contains the number of centers, the atoms, and the
-corresponding coordinates.  It could look like this one::
+corresponding coordinates (by default in angstroms).  It could look like this one::
 
   6
   Methanol, identifying the alcoholic proton as H1
@@ -114,3 +114,50 @@ detection off and to force C1 symmetry use::
 
   *SYMMETRY
   .NOSYM
+
+Including ghost centers and point charges
+=========================================
+
+In some situations you may want to add a ghost center, for instance in
+counterpoise calculations (see :ref:`bsse`) or to lower the symmetry detected by
+DIRAC (see :ref:`case_CmF`).  An example of the latter case is to take out inversion
+symmetry for an atom::
+
+   2
+   
+   Ne    0.0 0.0 0.0
+   foo   0.0 0.0 10.0
+
+We give a non-standard name to the ghost center, so that DIRAC does not find a nuclear charge.
+This has to be accompanied by telling DIRAC not to add a basis to the ghost center::
+
+  **MOLECULE
+  *BASIS
+  .DEFAULT
+  dyall.2zp
+  .SPECIAL
+  foo NOBASIS
+
+In a counterpoise calculation, on the other hand, you want the center to carry a basis set. For a ghost neon atom you would then specify::
+
+  **MOLECULE
+  *CENTERS
+  .NUCLEUS
+  foo 0.0 10.0
+
+As already explained, the first number on the last line is the charge of the center, and the second the nuclear charge used to find the basis.
+If you actually want to add a point charge, let us say of charge -2.3, you can use the xyz-file above, but now you want charge, but not basis, and write::
+
+  **MOLECULE
+  *BASIS
+  .DEFAULT
+  dyall.2zp
+  .SPECIAL
+  foo NOBASIS
+  *CENTERS
+  .NUCLEUS
+  foo -2.3
+
+
+.. include:: ../../../test/xyz_symmetry_recognition/README.rst
+  

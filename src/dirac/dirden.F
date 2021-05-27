@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -382,9 +382,12 @@ C/* Deck Denmat */
       SUBROUTINE DENMAT(DMAT,CMO,IPRINT)
 C***********************************************************************
 C
-C     Generate density matrix for SCF calculations
+C     Generate density matrix for SCF calculations both for closed-
+C     and open-shell systems.
 C
 C     Entering CMO - MO coefficients, on output - DMAT, density matrix
+C
+C     Calls GENDEN, ACTDEN
 C
 C     Written by T. Saue Nov 23 2004
 C
@@ -437,6 +440,17 @@ C.......Fractional Occupation
         DO IOPEN = 1,NOPEN
           CALL ACTDEN(DMAT,DF(IOPEN),D1,CMO,IOPEN,IPRINT)
         END DO
+        IF (IPRINT.GE.8) THEN
+          WRITE(LUPRI,"(2X,A)")
+     &    'DENMAT: Total density matrix, open-shell fract. occupation'
+          DO IFRP = 1, NFSYM
+            WRITE(LUPRI,'(/A,A3)')
+     &        '* Fermion ircop ',FREP(IFRP)
+            CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
+     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
+     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
+          ENDDO
+        ENDIF
       ENDIF
 C
       CALL QEXIT('DENMAT')
@@ -502,6 +516,10 @@ C*****************************************************************************
 C
       DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ),IQ(4)
       DATA IQ/1,2,3,4/
+      IF(NVEC.LT.0) THEN
+        WRITE(6,*) 'DENST1: Negative number of vectors: ', NVEC
+        CALL QUIT('DENST1: Negative number of vectors !')
+      ENDIF
       CALL QGEMM(NBAS,NBAS,NVEC,ALPHA,
      &     'N','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,
      &     'H','N',IQ,CMO(1,JVEC,1),LRC,LCC,NZ,

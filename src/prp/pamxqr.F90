@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
       SUBROUTINE XQRINP(WORD,RESET)
 !*****************************************************************************
@@ -63,9 +66,7 @@
       DATA SET/.FALSE./
 !
 #include "ibtfun.h"
-!
-      LFREE = LWRK
-      KFREE = 1
+
 !
       NEWDEF = (WORD .EQ. '*QUADRA')
       IF (SET) THEN
@@ -495,12 +496,10 @@
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPXQR')
       IF(SPINFR) THEN
         allocate(ibeig(ntbas(0)))
-        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,          &
-               TOTERG,11,WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,TOTERG,11)
       ELSE
         allocate(ibeig(1))
-        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3,        &
-               WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 !
@@ -516,18 +515,13 @@
       CALL QRVEC(WORK(KFREE),LFREE)
 
 
-      if (mzyee*nz > 0) then
-         allocate(vecaee(mzyee*nz))
-         allocate(vecbee(mzyee*nz))
-         allocate(veccee(mzyee*nz))
-      end if
+      allocate(vecaee(max(1,mzyee*nz)))
+      allocate(vecbee(max(1,mzyee*nz)))
+      allocate(veccee(max(1,mzyee*nz)))
 
-      if (mzyep*nz > 0) then
-         allocate(vecaep(mzyep*nz))
-         allocate(vecbep(mzyep*nz))
-         allocate(veccep(mzyep*nz))
-      end if
-
+      allocate(vecaep(max(1,mzyep*nz)))
+      allocate(vecbep(max(1,mzyep*nz)))
+      allocate(veccep(max(1,mzyep*nz)))
 
 !     Perform the vector dot product to obtain the linear
 !     response function values.
@@ -545,12 +539,12 @@
 
       deallocate(cmo)
       deallocate(ibeig)
-      if (allocated(vecaee)) deallocate(vecaee)
-      if (allocated(vecaep)) deallocate(vecaep)
-      if (allocated(vecbee)) deallocate(vecbee)
-      if (allocated(vecbep)) deallocate(vecbep)
-      if (allocated(veccee)) deallocate(veccee)
-      if (allocated(veccep)) deallocate(veccep)
+      deallocate(vecaee)
+      deallocate(vecaep)
+      deallocate(vecbee)
+      deallocate(vecbep)
+      deallocate(veccee)
+      deallocate(veccep)
 !
 !     Formatted print out of result
 !
@@ -615,7 +609,7 @@
          XQR_SKIPEP = .TRUE.
       END IF
 !
-      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,WORK,KFREE,LFREE)
+      CALL OSTRING(XQR_INDSTR,XQR_SKIPEE,XQR_SKIPEP,IPRXQR,WORK,KFREE,LFREE)
 !
       NQROP  = 0
       NQRHYP = 0
@@ -1406,8 +1400,8 @@
 !     Get the A operator matrix in MO basis
 !
             CALL MEMGET('REAL',KA,N2ORBXQ,WORK,KFREE,LFREE)
-            CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,IBEIG,ICMOQ,NORB,       &
-            WORK,KFREE,LFREE,IPRXQR)
+            CALL PRPMAT(IAPT,IFERA,WORK(KA),.TRUE.,WORK,CMO,            &
+            IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRXQR)
 !
 !     Get the A operator gradient:  / g*\
 !                                   \ g /
@@ -1793,8 +1787,8 @@
 !
 !     Get the A operator matrix in MO basis
 !
-      CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,IBEIG,ICMOQ,NORB,             &
-             WORK,KFREE,LFREE,IPRXQR)
+      CALL PRPMAT(IAPT,IFERA,WORK(KA),.TRUE.,WORK,CMO,                  &
+             IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRXQR)
 !
 !     Unpack the C vector into a matrix
 !
@@ -1873,8 +1867,8 @@
 !
 !     Get the B operator matrix in MO basis
 !
-      CALL PRPMAT(IBPT,IFERB,WORK(KB),CMO,IBEIG,ICMOQ,NORB,             &
-             WORK,KFREE,LFREE,IPRXQR)
+      CALL PRPMAT(IBPT,IFERB,WORK(KB),.TRUE.,WORK,CMO,                  &
+             IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRXQR)
 !
       IF(IPRXQR.GE.10) THEN
          WRITE(LUPRI,'(A)')                                             &
@@ -2415,7 +2409,7 @@
 
          call generate_num_grid(work(kdmat))
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
          call integrate_xc(xc_mat_dim           = ntbas(0),             &
                        xc_nz                = nz,                       &
@@ -2634,8 +2628,8 @@
 !
       CALL QENTER('QDENS1')
 !
-      KFREE = 1
-      LFREE = LWRK
+      !KFREE = 1
+      !LFREE = LWRK
 !
 !     D_{ab} = C_{ai} W1_{iu} C+_{bu} - C_{au} W1_{ui} C+_{bi}
 !
@@ -2685,9 +2679,6 @@
       DIMENSION CMO(*)
 !
       CALL QENTER('QDEN1')
-!
-      KFREE = 1
-      LFREE = LWRK
 !
       IF (ITIM1.EQ.1) THEN
          T='S'
@@ -2789,9 +2780,7 @@
 !
 !
       CALL QENTER('QDENS2')
-!
-      KFREE = 1
-      LFREE = LWRK
+
 !
 !     D_{ab} = C_{ai} W1_{iu} W2_{uv} C+_{bv}
 !            + C_{av} W2_{vu} W1_{ui} C+_{bi}
@@ -2860,9 +2849,6 @@
       DIMENSION T(-1:1),IQBF(4),CMO(*)
 !
       CALL QENTER('QDEN2')
-!
-      KFREE = 1
-      LFREE = LWRK
 !
 !     Zero temporary storage DTMP
 !

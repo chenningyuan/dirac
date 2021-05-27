@@ -24,7 +24,8 @@
 # export DIRAC_MPI_COMMAND
 export DIRAC_MPI_COMMAND="mpirun -np 2"
 
-export CTEST_PROJECT_NAME="DIRACext"
+#export CTEST_PROJECT_NAME="DIRACext"
+export CTEST_PROJECT_NAME="DIRAC"
 
 # show system info (processors, disks, memory)
 lscpu
@@ -36,13 +37,6 @@ ompi_info
 # **Note**
 # It is not possible to install packages with "sudo apt-get install".
 # In case some package is missing you can write a message to codeship maintainers.
-# install python packages (must be without sudo)
-# note: these packages are probably already installed
-pip install matplotlib
-pip install sphinx==1.2.3
-pip install sphinxcontrib-bibtex
-pip install sphinx_rtd_theme
-pip install hieroglyph
 
 # install most recent CMake
 wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
@@ -55,15 +49,11 @@ which git
 whereis git
 git --version
 
-# documentation generators whereabouts
-sphinx-build --version
-doxygen --version
-
 #update submodules
 git submodule update --init --recursive
 
 # configure Dirac with Open MPI in 64-bit mode
-python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --blas=off --lapack=off --int64 --mpi --cmake-options="-D BUILDNAME='open_mpi.i8-codeship-ci' -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_openmpi_i8
+python ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx --blas=off --lapack=off --int64 --mpi --cmake-options="-D BUILDNAME='openmpi.i8.codeshipCI' -D DART_TESTING_TIMEOUT=99999  -D ENABLE_BUILTIN_BLAS=ON -D ENABLE_BUILTIN_LAPACK=ON -D ENABLE_UNIT_TESTS=ON" build_openmpi_i8
 cd build_openmpi_i8
 ctest -D ExperimentalConfigure
 # build
@@ -71,17 +61,7 @@ ctest -j $(cat /proc/cpuinfo | grep processor | wc -l) -D ExperimentalBuild
 # show linked libraries
 ldd dirac.x
 # run ctest (note: (ctest ..) || echo "CTest end." makes possible to continue after some tests inside ctest command fail)
-(ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 4) -D ExperimentalTest) || echo "CTest end."
+(ctest -j $(expr $(cat /proc/cpuinfo | grep processor | wc -l) / 2) -D ExperimentalTest) || echo "CTest end."
 # submit to CDash board
 ctest -D ExperimentalSubmit
 
-cd ..
-
-# finally build the documentation
-#make html
-#make slides
-# for doxygen encompass the building command into echo so that the build does not stop in the case of error
-# **Note**
-# Using echo command like in this case is not enough for ctest because it can happen that command prints no output
-# for long time and build is stopped.
-##echo "$(make doxygen)"

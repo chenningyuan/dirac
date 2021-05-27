@@ -99,30 +99,11 @@ contains
 !          X_2c = pctmat+ * X_4c * pctmat
 !          scr_mat1 = pctmat+ * op_matrix_2c_ll * pctmat
            call qtrans90('AOMO','S',0.0d0,                       &
-                         nbas1_f_i,                              &
-                         nbas1_f_ik,                             &
-                         nbasL_f_i,                              &
-                         nbasL_f_ik,                             &
-                         op_matrix_2c_ll(1+ioff_aomx(i,ik),1),   &
-                         naosh_ls,                               &
-                         naosh_ls,                               &
-                         nz,                                     &
-                         ipq_off_in(1,op_fer_rep),               &
-                         scr_mat1(1+ioff_aomx(i,ik),1),          &
-                         naosh_ls,                               &
-                         naosh_ls,                               &
-                         nz,                                     &
-                         ipq_off_in(1,op_fer_rep),               &
-                         pctmat(ioff_pct_mat_dag),               &
-                         nbas1_f_i,                              &
-                         nbasL_f_i,                              &
-                         nz,                                     &
-                         ipq_off_in(1,0),                        &
-                         pctmat(ioff_pct_mat),                   &
-                         nbas1_f_ik,                             &
-                         nbasL_f_ik,                             &
-                         nz,                                     &
-                         ipq_off_in(1,0),                        &
+                         nbas1_f_i,nbas1_f_ik,nbasL_f_i,nbasL_f_ik,   &
+                         op_matrix_2c_ll(1+ioff_aomx(i,ik),1), naosh_ls , naosh_ls , nz, ipq_off_in(1,op_fer_rep),   & ! parent matrix
+                         scr_mat1(1+ioff_aomx(i,ik),1)       , naosh_ls , naosh_ls , nz, ipq_off_in(1,op_fer_rep),   & ! transformed matrix
+                         pctmat(ioff_pct_mat_dag)            , nbas1_f_i, nbasL_f_i, nz, ipq_off_in(1,0),            & ! left transformation
+                         pctmat(ioff_pct_mat),nbas1_f_ik,nbasL_f_ik,nz,ipq_off_in(1,0),                              & ! right transformation
                          print_lvl)
           
          end if

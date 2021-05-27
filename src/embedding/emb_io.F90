@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,18 +23,25 @@ module fde_io
 
    use fde_cfg
       
-   private
+   implicit none
 
    public fde_open_file
    public fde_close_file
    public read_grid
+   public read_grid_dim_only
+
 
    interface read_grid
       module procedure read_grid_onecol
       module procedure read_grid_manycol
+      module procedure read_grid_proponly
    end interface read_grid
 
    real(kind=8) :: threshold = 1.0d-18
+
+!  pertden info
+   integer, public :: fde_pertden_ncol
+   integer, public :: fde_pertden_nrow
 
    contains
 
@@ -51,6 +58,7 @@ module fde_io
                  FORM   = 'FORMATTED',   &
                  STATUS = 'UNKNOWN',     &
                  ACCESS = 'SEQUENTIAL',  &
+                 POSITION = 'REWIND',    &
                  FILE   =  name)
          else
             write (errmsg,'(a60)') "FDE-related file: "//name(1:10)//" not found. Stopping now!"
@@ -122,7 +130,7 @@ module fde_io
     REAL(kind=8),POINTER :: points(:,:), ptmp_many(:,:)
     REAL(kind=8),pointer :: properties(:,:)
     INTEGER              :: file
-    INTEGER              :: i,npoints, nprop
+    INTEGER              :: i,npoints, nprop, ierr
    
     REWIND(file)
     READ(file,*) npoints, nprop
@@ -133,10 +141,38 @@ module fde_io
     allocate(properties(nprop,npoints))
 
     DO i=1,npoints
-       READ(file,*) points(:,i),properties(:,i)
+       READ(file,*, IOSTAT=ierr) points(:,i),properties(:,i)
+       if (ierr .ne. 0) write(*,*) 'error ierr in point', ierr, i
     END DO
 
   END SUBROUTINE READ_GRID_manycol
   
+  SUBROUTINE READ_GRID_proponly(file,npoints,nprop,properties)
+    REAL(kind=8),pointer :: properties(:,:)
+    REAL(kind=8)         :: dummy(4)
+    INTEGER              :: file
+    INTEGER              :: i,npoints, nprop, ierr
+   
+    REWIND(file)
+    if (associated(properties)) nullify(properties)
+    allocate(properties(nprop,npoints))
+
+    DO i=1,npoints
+       READ(file,*, IOSTAT=ierr) dummy(:), properties(:,i)
+       if (ierr .ne. 0) write(*,*) 'error ierr in point', ierr, i
+    END DO
+
+  END SUBROUTINE READ_GRID_proponly
+
+   subroutine read_grid_dim_only(file,nr_points, nr_cols)
+    integer    :: nr_points, nr_cols
+    integer    :: file
+
+    rewind(file)
+    read(file,*) nr_points, nr_cols
+
+  end subroutine
+
 
 end module fde_io
+

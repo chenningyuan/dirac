@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,7 +44,7 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "ipoist8.inc"
@@ -119,7 +119,10 @@ C     memory pointer for C2 vector block
 #endif /* VAR_MPI2 */
       integer(8)             :: NCALC_MAX_BLK, IGET_MY_T_LEN
       integer*8              :: keci_start
+
+      character*12 SECTID ! external function
 C
+      CALL GETTIM(CPU0,WALL0)
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'GASCI ')
 C
@@ -347,7 +350,7 @@ csk        CALL IWRTMAMN8(IT_TTOL,1,MY_TTOL_LEN,1,MY_TTOL_LEN,LUWRT)
         END IF
 #endif
 C
-C       transfer IS_LENGHT_TT to common block LUCIPAR_I8
+C       transfer IS_LENGTH_TT to common block LUCIPAR_I8
 C       == max. T block length
 C
         IS_LENGTH_TT = 0
@@ -714,7 +717,7 @@ C
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,
      &                      WORK(KBLOCKLIST),WORK(KNODELIST),
-     &                      IPROCLIST,IGROUPLIST,eci_start
+     &                      IPROCLIST,IGROUPLIST,eci_start,ITERSEOUT
 #if defined (VAR_MPI2)
      &                      ,WORK(KILU1LIST),WORK(KILU2LIST),
      &                      WORK(KILU3LIST),WORK(KILU4LIST),
@@ -1398,8 +1401,12 @@ C     (*_MS2 arrays are in CSTATE )
      &                 IBAT_MS2,IDUMMY,.FALSE.,0,0,IDUMMY)
 C
 #endif
-      if(CIRUN /= 'REFVEC') 
-     &write(LUWRT,'(/2A/)') '  I have completed task  ',CIRUN
+      if (CIRUN /= 'REFVEC') THEN
+         CALL GETTIM(CPU1,WALL1)
+         WALL1 = WALL1 - WALL0
+         write(LUWRT,'(/5A/)') '  I have completed task ',CIRUN,
+     &      ' in ',SECTID(WALL1),' (wall time)'
+      END IF
 
 C     release memory
       IDUM = 0

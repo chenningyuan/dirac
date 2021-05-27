@@ -90,6 +90,43 @@ The keyword ensures the diagonalization of the bare nuclei Hamiltonian
 matrix without proceeding to the iterative SCF method.
 
 
+keyword(PHASEORIGIN)
+
+Origin appearing in the London atomic orbital phase-factors. Default::
+
+  .PHASEORIGIN
+   0.0 0.0 0.0
+
+.. warning::
+
+  This is the text from the DALTON manual. We wonder if it is used for
+  other integrals, in the code in her1int.F it is the final "else" option.
+
+
+keyword(GAUGEORIGIN)
+
+Set the gauge origin (in bohr) for an external magnetic field, e.g. for NMR shielding calculations.
+To set the gauge origin in angstrom use :ref:`HAMILTONIAN_.GO ANG`.
+By default gauge origin is set to the coordinate origin::
+
+  .GAUGEORIGIN
+   0.0 0.0 0.0
+
+keyword(GO ANG)
+
+Same as :ref:`HAMILTONIAN_.GAUGEORIGIN` but
+reads gauge origin coordinates in angstrom instead of bohr.
+
+keyword(DIPORG)
+
+Origin for all moment integrals, including the dipole (dipole is independent of
+origin only for neutral systems). By default it is set to the coordinate
+origin::
+
+  .DIPORG
+   0.0 0.0 0.0
+
+
 **4-component Hamiltonians**
 ============================
 
@@ -111,12 +148,12 @@ Hartree--Fock and DFT. For using Gaunt in combination with DFT see the
 :ref:`*DFT` section of the
 manual. Transformation of the Gaunt part of the two electron operator to
 the MO basis is not yet implemented, for this purpose we recommend the
-use of the molecular mean field approximation. This can be used for
+use of a molecular mean field approximation. This can be used for
 example in MP2/CC/FSCC/IHFSCC calculations with RELCCSD by means of the
-:ref:`HAMILTONIAN_.X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages)
+:ref:`HAMILTONIAN_.X2Cmmf` Hamiltonian (see also our FAQ/Tutorial pages).
 
 For the relativistic two-component mode (see :ref:`HAMILTONIAN_.X2C` keyword)
-with AMFI contributions it uses both spin-same and spin-other orbit
+with AMFI contributions it uses both the spin-same and the spin-other orbit
 mean-field parts.
 
 
@@ -222,12 +259,14 @@ keyword(SPINF2)
 
 keyword(FREEPJ)
 
-Project out all negative-energy solutions of the free-particle Dirac Hamiltonian from the MO space.
+Project out all negative-energy solutions of the free-particle one-electron Dirac Hamiltonian from the MO space.
+This corresponds to the Feynmann (1948) basis for QED and no-pair Hamiltonians.
 
 
 keyword(VEXTPJ)
 
-Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian from the MO space.
+Project out all negative-energy solutions of the bare-nucleus one-electron Dirac Hamiltonian from the MO space.
+This corresponds to the Furry (1951) basis for QED and no-pair Hamiltonians.
 
 
 **Exact 2-component (X2C) Hamiltonians**
@@ -235,16 +274,19 @@ Project out all negative-energy solutions of the bare-nucleus Dirac Hamiltonian 
 
 keyword(X2C)
 
-This keyword activates the Exact 2-Component
+This keyword activates the Exact 2-Component one-electron
 Hamiltonian :cite:`Ilias2007` based on its implementation in the module X2Cmod, Refs. :cite:`Knecht2010` and :cite:`Knecht2014`.
+It yields exactly the same energies as the 4-component one-electron Hamiltonian in the same large component basis set with restricted
+kinetic balance, and it yields the same division in spinfree (scalar relativistic) and spin-orbit like contributions as the
+4-component one-electron Hamiltonian. The two-electron part of the Hamiltonian is treated on a non-relativistic level.
 
-In the default spin-orbit case one should combine this option with an
-AMFI correction to the unscreened one-electron spin-orbit operator. This is the
-default in Dirac unless :ref:`HAMILTONIAN_.NOAMFI` is specified which will turn off any two-electron spin-orbit corrections.
-To use the spinfree version of X2C (which numerically yields the same numbers as in the quantum chemistry packages CFour, Turbomole and Molcas) 
-one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE`.
+One should therefore combine X2C with a correction to the unscreened one-electron spin-orbit operator.
+It is default with .X2C to include the atomic mean field two-electron spin-orbit correction "AMFI", 
+unless :ref:`HAMILTONIAN_.NOAMFI` is specified.
+To use the spinfree version of X2C with only scalar relativistic terms
+one needs to add the keyword :ref:`HAMILTONIAN_.SPINFREE` (.SPINFREE implies .NOAMFI).
+The spinfree X2C is equivalent to and numerically yields the same numbers as X2C in the quantum chemistry packages CFour, Turbomole, and Molcas. 
 
-See this documentation for more options, including a local X2C scheme. 
 An overview of the (local) X2C approach is given in the corresponding tutorial 
 section :ref:`X2Clocal`.
 
@@ -266,7 +308,7 @@ section :ref:`mmf_X2C`, for further information.
 keyword(BSS)
 
 Use the 2-component relativistic Hamiltonian obtained after the
-Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite`
+Barysz--Sadlej--Snijders transformation of the Dirac Hamiltonian in the finite
 basis set, see Ref. :cite:`Ilias2005`. Calculations using the 2-component BSS
 Hamiltonian are running only with large component basis functions.
 
@@ -324,10 +366,12 @@ because it redefines the metric used in the calculation.
 keyword(NONREL)
 
 Standard nonrelativistic calculation based on the Schrodinger equation.  Should
-give identical energy results as with the :ref:`HAMILTONIAN_.LEVY-LEBLOND` keyword.
+give identical energy results as with the :ref:`HAMILTONIAN_.LEVY-LEBLOND` keyword,
+if same nucleus model is chosen.
+Point nucleus model is default for NONREL.
 
 DIRAC runs in the 2-component spin-free mode, which in fact represents the
-traditional one-component mode.
+traditional one-component mode (Pauli Hamiltonian).
 
 
 **Effective core potentials**
@@ -335,11 +379,12 @@ traditional one-component mode.
 
 keyword(ECP)
 
-Perform an effective core potential calculation. The ECP parameters should be set
+Perform a relativistic effective core potential calculation. The ECP parameters should be set
 in the MOL file. Both spin-orbit and spin-free calculations are available by
 specifying spin-orbit (SO) parameters in the MOL file. With SO parameters,
 the 2-component spin-orbit calculation is conducted, whereas the spin-free
 (1-component) calculation is performed by omitting the SO part in the ECP parameter.
+Point nucleus model is default for ECP.
 (See :ref:`ecp_input`)
 
 
@@ -383,6 +428,9 @@ ADF code (see the developer's website http://www.scm.com for further information
 or via the PyADF scripting framework (see :cite:`Jacob2011` or visit the developer's website http://pyadf.org 
 for further information).
 
+keyword(PEQM)
+
+Activates the polarizable embedding model. Options can be specified under the :ref:`\*PEQM` menu.
 
 keyword(CAP)
 
@@ -574,6 +622,7 @@ AMFI is the default. This holds also for keywords :ref:`HAMILTONIAN_.X2C` and
 default.
 
 .. warning:: 
+
  missing AMFI contribution (for :ref:`HAMILTONIAN_.X2C`, :ref:`HAMILTONIAN_.X2C4` and 
  :ref:`HAMILTONIAN_.BSS` keywords)
  may lead to overestimation of spin-orbit effects since these would be represented by

@@ -1,3 +1,7 @@
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 module dirac_interface
 
    use memory_allocator
@@ -133,7 +137,7 @@ contains
 
       call generate_num_grid(D%elms)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
       call integrate_xc(xc_mat_dim           = ntbas(0), &
                          xc_nz                = nz,       &
@@ -162,7 +166,7 @@ contains
 
       call generate_num_grid(D%elms)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
       call integrate_xc(xc_mat_dim           = ntbas(0),    &
                          xc_nz                = nz,          &
@@ -192,7 +196,7 @@ contains
 
       call generate_num_grid(D%elms)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
       call integrate_xc(xc_mat_dim           = ntbas(0),             &
                          xc_nz                = nz,                   &
@@ -222,7 +226,7 @@ contains
 
       call generate_num_grid(D%elms)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
       call integrate_xc(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
@@ -257,7 +261,7 @@ contains
 
       call generate_num_grid(D%elms)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
       call integrate_xc(xc_mat_dim      = ntbas(0),    &
                          xc_nz           = nz,          &
@@ -595,7 +599,7 @@ contains
     if (dirac_cfg_dft_calculation) then
         call generate_num_grid(D%elms)
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl(4)
+        if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
         call integrate_xc(xc_mat_dim      = ntbas(0), &
                            xc_nz           = nz,       &
@@ -665,7 +669,7 @@ contains
 
       call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
 
-      call reacmo_no_work(file_unit, &
+      call reacmo(file_unit, &
                           'DFCOEF',  &
                           (/0.0d0/), &
                           (/0.0d0/), &
@@ -688,7 +692,7 @@ contains
 
       call opnfil(file_unit, 'DFCOEF', 'OLD', 'read_mo_coef')
 
-      call reacmo_no_work(file_unit, &
+      call reacmo(file_unit, &
                           'DFCOEF',  &
                           mo_coef,   &
                           (/0.0d0/), &

@@ -41,7 +41,12 @@ find_package(Sphinx QUIET)
 if(SPHINX_FOUND)
     add_custom_target(
         html
-        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/preprocess_sphinx ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR}
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/preprocess_sphinx ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR} html
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+        )
+    add_custom_target(
+        latex
+        COMMAND ${PYTHON_EXECUTABLE} ${PROJECT_SOURCE_DIR}/doc/preprocess_sphinx ${PROJECT_SOURCE_DIR}/doc ${PROJECT_BINARY_DIR} latex
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
     add_custom_target(
@@ -52,7 +57,7 @@ if(SPHINX_FOUND)
 else()
     add_custom_target(
         html
-        COMMAND echo error: please install python-sphinx and python-matplotlib first
+        COMMAND echo error: please install Sphinx, see http://diracprogram.org/doc/master/programmers/documentation_howto.html
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
 endif()

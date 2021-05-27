@@ -1,6 +1,6 @@
       SUBROUTINE amplitude_equation_mp2 (EPS,FVO,T1,S1,T2,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -42,6 +42,8 @@ C
       CALL GETVVOO (T2)
       CALL DENOM (EPS,T1,T2,T1,T2)
       CALL ZCORE (T1,T2)
+      !mlv
+      CALL FCORE(T1,T2,EPS)
 C
 C  EVALUATE CORRELATION ENERGY
 C

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -471,7 +471,7 @@ C***********************************************************************
 #include "oper.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
 #if defined (INT_STAR8)
       INTEGER(KIND=df_MPI_OFFSET_KIND)  IWRITE_BYTE
@@ -479,7 +479,7 @@ C***********************************************************************
       INTEGER IWRITE_BYTE
 #endif
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
-      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGHT8
+      INTEGER(KIND=df_MPI_OFFSET_KIND) IS_LENGTH8
 #endif
 #include "parluci.h"
 #include "typesz_mpi2.h"
@@ -488,7 +488,7 @@ C***********************************************************************
 C
 
       IS_BYTE8   = 0
-      IS_LENGHT8 = 0
+      IS_LENGTH8 = 0
 C     local memory
       IDUM = 0
       call memmar(KDUM,  IDUM,    'MARK  ',IDUM,'T_DIAG')
@@ -527,9 +527,9 @@ C
       IWRITE_BYTE = 0 
       IOFFSET     = IOFF_T_IJKL
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB
+      IS_LENGTH8  = NTOOB
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB
 #endif
@@ -542,9 +542,9 @@ C     CALL WRTMAT(WORK(KLH1DA),1,NTOOB,1,NTOOB)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB
+      IS_LENGTH8  = NTOOB
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB
 #endif
@@ -557,9 +557,9 @@ C     CALL WRTMAT(WORK(KLH1DB),1,NTOOB,1,NTOOB)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB**2
+      IS_LENGTH8  = NTOOB**2
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
@@ -571,9 +571,9 @@ C     CALL WRTMAT(WORK(KLJ),1,NTOOB**2,1,NTOOB**2)
 C
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB**2
+      IS_LENGTH8  = NTOOB**2
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
@@ -582,9 +582,9 @@ C
 C     
       IOFFSET     = IOFFSET + IWRITE_BYTE
       IS_BYTE8    = ISIZE_dp
-      IS_LENGHT8  = NTOOB**2
+      IS_LENGTH8  = NTOOB**2
 #if defined (INT_STAR8)
-      IWRITE_BYTE = IS_BYTE8 * IS_LENGHT8
+      IWRITE_BYTE = IS_BYTE8 * IS_LENGTH8
 #else
       IWRITE_BYTE = ISIZE_dp * NTOOB**2
 #endif
@@ -619,7 +619,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
       INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
@@ -869,7 +869,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
       INTEGER(KIND=df_MPI_OFFSET_KIND) IWRITE_MAX,IMOD_WRITE
@@ -976,7 +976,7 @@ C
       IOFFSET     = IOFFSET + IWRITE_BYTE
 C
 C     check for total number of elements - do not write more than 
-C     1.0*10⁸ elements at each cycle
+C     1.0*10^8 elements at each cycle
 C
       IWRITE_MAX  = 100 000 000
       ILOOP_WRITE = 1
@@ -1063,7 +1063,7 @@ C***********************************************************************
       IMPLICIT REAL*8 (A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
       INTEGER(KIND=df_MPI_OFFSET_KIND) IREAD_ELM,IOFF_ADD
@@ -1176,7 +1176,7 @@ C         modus
 C     ... old-school way of integral handling
 C
 C       check for total number of elements - do not read more than 
-C       1.0*10⁸ elements at each cycle
+C       1.0*10^8 elements at each cycle
 C
         IREAD_MAX  = 100 000 000
         ILOOP_READ = 1
@@ -1306,7 +1306,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       use interface_to_mpi
       IMPLICIT REAL*8 (A-H,O-Z)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 C information for property run
 #include "krciprop.h"

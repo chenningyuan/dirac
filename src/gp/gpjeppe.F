@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -512,7 +512,7 @@ C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
         WRITE(6,1010) I,(A(J),J=JSTART,JSTOP)
   100 CONTINUE
       RETURN
- 1010 FORMAT(1H0,2X,I3,5(1X,E13.7),/,(1H ,5X,5(1X,E13.7)))
+ 1010 FORMAT(/I6,1P,5(E14.7),/,(6X,5(E14.7)))
       END
 C  /* Deck iswpve */
       SUBROUTINE ISWPVE(IVEC1,IVEC2,NDIM)
@@ -542,7 +542,7 @@ C
      &  (A((J-1)*NDIM-J*(J-1)/2+I),J=1,I)
   100 CONTINUE
       RETURN
- 1010 FORMAT(1H0,2X,I3,5(1X,E13.7),/,(1H ,5X,5(1X,E13.7)))
+ 1010 FORMAT(/I6,1P,5(E14.7),/,(6X,5(E14.7)))
       END
 C  /* Deck prsbl3 */
       SUBROUTINE PRSBL3(A,NRC,LRC,NCC,LCC,IBLK)

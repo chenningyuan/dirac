@@ -12,6 +12,22 @@ molecular structure. For calculations with the .mol input format, basis set info
 is to be specified together with the atomic coordinates.
 
 
+star(CHARGE)
+
+Molecular charge
+==================
+Allows explicit specification of the molecular charge.
+
+keyword(CHARGE)
+Sets the value of the molecular charge. For example:: 
+
+  .CHARGE
+  -2
+
+
+will set the molecular charge to -2. The default value is 0.
+
+
 star(SYMMETRY)
 
 Molecular symmetry

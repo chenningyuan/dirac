@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -41,7 +41,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
       DIMENSION IT_TTPL(*) 
@@ -99,7 +99,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
 #include "mxdim_mpi2.h"
@@ -137,7 +137,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -176,7 +176,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -215,7 +215,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -250,7 +250,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -284,7 +284,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
@@ -316,7 +316,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
 C
@@ -347,7 +347,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
 C
@@ -378,7 +378,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
 C
@@ -404,7 +404,7 @@ C
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
 C

@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2015 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -172,9 +172,9 @@ becke_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
       asha = asinh(alpha);
       asha2= asha*asha;
       alpha10 = -4.0/3.0*alpha/dp->rhoa;   /* dalpha/drhoa   */
-      alpha20 = -7.0/3.0*alpha10/dp->rhoa; /* d²alpha/drhoa² */
+      alpha20 = -7.0/3.0*alpha10/dp->rhoa; /* d^2alpha/drhoa^2 */
       alpha01 = pow(dp->rhoa,-4.0/3.0);    /* dalpha/dgrho  */
-      alpha11 = -4.0/3.0*alpha01/dp->rhoa; /* d²alpha/(drho dgrho) */
+      alpha11 = -4.0/3.0*alpha01/dp->rhoa; /* d^2alpha/(drho dgrho) */
       alpha10_2 = alpha10*alpha10;
       sq1a2 = sqrt(1 + a2);
       denom= 1 + 6*alpha*BETA*asha;
@@ -252,18 +252,18 @@ becke_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
    The functional derivatives are expressed through the partial derivatives.
    For example (g==grho):
    df/drho   = g df/dalpha * dalpha/drho
-   d²f/drho² = g(d²f/dalpha² * (dalpha/drho)² + df/dalpha * d²alpha/drho²)
-   d³f/drho³ = g(d³f/dalpha³ * (dalpha/drho)³ 
-             + 3d²f/dalpha²*(dalpha/drho)*d²alpha/drho²
-             + df/dalpha * d³alpha/drho³)
+   d^2f/drho^2 = g(d^2f/dalpha^2 * (dalpha/drho)^2 + df/dalpha * d^2alpha/drho^2)
+   d^3f/drho^3 = g(d^3f/dalpha^3 * (dalpha/drho)^3
+             + 3d^2f/dalpha^2*(dalpha/drho)*d^2alpha/drho^2
+             + df/dalpha * d^3alpha/drho^3)
 
    The derivatives with respect to grho==g are:
    df/dgrho  = f + g df/dalpha * dalpha/dgrho
-   d²f/dgrho²= 2*df/dalpha*dalpha/dg + g(d²f/dalpha²(dalpha/dg)²)
+   d^2f/dgrho^2= 2*df/dalpha*dalpha/dg + g(d^2f/dalpha^2(dalpha/dg)^2)
 
-   NOTE that d²alpha/dg² = 0, and some terms are missing above.
-   d³f/dgrho³= 3*d²f/dalpha²*(dalpha/dg)² (+0)
-             + (+0)+ g(d³f/dalpha³(dalpha/dg)³ (+0))
+   NOTE that d^2alpha/dg^2 = 0, and some terms are missing above.
+   d^3f/dgrho^3= 3*d^2f/dalpha^2*(dalpha/dg)^2 (+0)
+             + (+0)+ g(d^3f/dalpha^3(dalpha/dg)^3 (+0))
 
    NOTE: it adds to ds, not sets it.
    This routine has unrestricted interface but works only for
@@ -287,11 +287,11 @@ becke_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
       asha = asinh(alpha);
       asha2= asha*asha;
       alpha10 = -4.0/3.0*alpha/dp->rhoa;   /* dalpha/drhoa   */
-      alpha20 = -7.0/3.0*alpha10/dp->rhoa; /* d²alpha/drhoa² */
-      alpha30 = -10./3.0*alpha20/dp->rhoa; /* d³alpha/drho³ */
+      alpha20 = -7.0/3.0*alpha10/dp->rhoa; /* d^2alpha/drhoa^2 */
+      alpha30 = -10./3.0*alpha20/dp->rhoa; /* d^3alpha/drho^3 */
       alpha01 = pow(dp->rhoa,-4.0/3.0);    /* dalpha/dgrho  */
-      alpha11 = -4.0/3.0*alpha01/dp->rhoa; /* d²alpha/(drho dgrho) */
-      alpha21 = alpha20/dp->grada;         /* d³alpha/(drho² dgrho) */
+      alpha11 = -4.0/3.0*alpha01/dp->rhoa; /* d^2alpha/(drho dgrho) */
+      alpha21 = alpha20/dp->grada;         /* d^3alpha/(drho^2 dgrho) */
       alpha10_2 = alpha10*alpha10;
       sq1a2 = sqrt(1 + a2);
       denom= 1 + 6*alpha*BETA*asha;
@@ -346,11 +346,11 @@ becke_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
       asha = asinh(alpha);
       asha2= asha*asha;
       alpha10 = -4.0/3.0*alpha/dp->rhob;   /* dalpha/drhoa   */
-      alpha20 = -7.0/3.0*alpha10/dp->rhob; /* d²alpha/drhoa² */
-      alpha30 = -10./3.0*alpha20/dp->rhob; /* d³alpha/drho³ */
+      alpha20 = -7.0/3.0*alpha10/dp->rhob; /* d^2alpha/drhoa^2 */
+      alpha30 = -10./3.0*alpha20/dp->rhob; /* d^3alpha/drho^3 */
       alpha01 = pow(dp->rhob,-4.0/3.0);    /* dalpha/dgrho  */
-      alpha11 = -4.0/3.0*alpha01/dp->rhob; /* d²alpha/(drho dgrho) */
-      alpha21 = alpha20/dp->gradb;         /* d³alpha/(drho² dgrho) */
+      alpha11 = -4.0/3.0*alpha01/dp->rhob; /* d^2alpha/(drho dgrho) */
+      alpha21 = alpha20/dp->gradb;         /* d^3alpha/(drho^2 dgrho) */
       alpha10_2 = alpha10*alpha10;
       sq1a2 = sqrt(1 + a2);
       denom= 1 + 6*alpha*BETA*asha;

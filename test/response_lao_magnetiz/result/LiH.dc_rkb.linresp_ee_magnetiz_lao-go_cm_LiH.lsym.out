@@ -2652,7 +2652,7 @@ Cpu time       0.2880Wall time       0.0000in call to TWOINT(SUSC2EL).
   London atomic orbitals used in calculations.
 
 
-  Magnetizabilities                    au          SI         cgs
+  Magnetizabilities                     au                       SI                      cgs
   ---------------------------------------------------------------
 
   Isotropic magnetizability:      -2.4839   -196.0080    -11.8039

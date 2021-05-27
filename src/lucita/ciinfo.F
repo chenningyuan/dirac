@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -264,7 +264,7 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
           WRITE(6,*) '  ITYP KTYP LTYP JTYP '
           WRITE(6,*) '  ===================='
           DO  IDX = 1,NDXTP
-            WRITE(6,'(1H ,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
+            WRITE(6,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
           END DO
         END IF
       END IF
@@ -1406,7 +1406,7 @@ C?    write(6,*) ' LCISPC : NICISP ', NICISP
 *
         DO 200 ICI = 1, NCMBSPC
             WRITE(6,*) ' CI space ', ICI
-            WRITE(6,'(1H , 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
+            WRITE(6,'(1X, 4E22.15)') (XISPSM(II,ICI),II=1,NSMCI)
 C           CALL WRTMAT(XISPSM(1,ICI),1,NSMCI,1,NSMCI)
   200   CONTINUE
        if (NTEST.ge.1) then
@@ -2357,12 +2357,12 @@ CMI     IF(INCLUDE.EQ.1) THEN
           WRITE(LUOUT,*) ' Number of orbitals per symmetry :'
           WRITE(LUOUT,*) ' ================================='
           WRITE(LUOUT,*)
-          WRITE(LUOUT,'(1H ,A,10I4,A)')
+          WRITE(LUOUT,'(1X,A,10I4,A)')
      &    '            Symmetry  ',(I,I = 1,NSMOB)
-          WRITE(LUOUT,'(1H ,A,2X,10A)')
+          WRITE(LUOUT,'(1X,A,2X,10A)')
      &    '           ========== ',('====',I = 1,NSMOB)
           DO IGAS = 1, NGAS
-            WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
+            WRITE(LUOUT,'(1X,A,I3,7X,A,10I4,8X,I3)')
      &      '   GAS',IGAS,'      ',(NGSOB(I,IGAS),I=1,NSMOB),
      &      NGSOBT(IGAS)
           END DO
@@ -2984,7 +2984,7 @@ C?    CALL IWRTMA(NO4PS,1,NSMOB,1,NSMOB)
               IOFF=  IOFF+ N12*(N12-1)/2
             END IF
 C?          WRITE(6,*) ' I1SM I2SM I3SM I4SM    IOFF'
-C?          WRITE(6,'(1H ,4I4,I9)')   I1SM,I2SM,I3SM,I4SM,IOFF
+C?          WRITE(6,'(1X,4I4,I9)')   I1SM,I2SM,I3SM,I4SM,IOFF
    30       CONTINUE
    20     CONTINUE
    10   CONTINUE
@@ -3164,7 +3164,7 @@ C           I1BATCH(NBATCH+1) = IBLOCK
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = IOFF, IOFF+LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO

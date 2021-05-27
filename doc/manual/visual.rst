@@ -11,9 +11,12 @@
 
 starstar(VISUAL)
 
+Sampling
+========
+
 keyword(LIST)
 
-Calculate various densities in few points. Example (3 points; coordinates in
+Calculate various densities in few points. Scalar and vector densities are written to the standard output file. Example (3 points; coordinates in
 bohr)::
 
   .LIST
@@ -41,8 +44,28 @@ and should be saved after calculation, e.g. ::
 The first three columns of the output files gives the coordinates (x, y, z) of the point. 
 It is then followed by one/three columns giving the value of the scalar/vector density in that point.
 
+keyword(RADIAL)
 
+Compute radial distributions
 
+.. math::
+
+   f(r) = \int_{0}^{2\pi}\int_{0}^{\pi}f(\mathbf{r})r^2\sin\theta d\theta d\phi
+
+by performing Lebedev angular integration over a specified number of even-spaced radial shells out to some specified distance
+from a specified initial point. Example (coordinates and distance in bohr)::
+
+   .RADIAL
+   0.0 0.0 0.0
+   10.0
+   200
+
+The first line after the keyword specifies the initial point, here chosen to be the origin.
+The second and third line is the distance and step size, respectively.
+Scalar and vector densities are written to files ``plot.radial.scalar`` and ``plot.radial.vector``, respectively, 
+and should be saved after calculation, e.g. ::
+
+   pam --get=plot.radial.scalar ...
 
 keyword(2D)
 
@@ -57,6 +80,9 @@ Example (coordinates in bohr)::
    0.0 10.0  0.0     !"top"
    200               !nr of points origin-"top"
 
+Scalar and vector densities are written to files ``plot.2d.scalar`` and ``plot.2d.vector``, respectively, and should be saved after calculation, e.g. ::
+
+   pam --get=plot.2d.scalar ...
 
 keyword(2D_INT)
 
@@ -82,6 +108,11 @@ Example (coordinates in bohr)::
   .3D
    40 40 40          ! 40 x 40 x 40 points
 
+Scalar and vector densities are written to files ``plot.3d.scalar`` and ``plot.3d.vector``, respectively, and should be saved after calculation, e.g. ::
+
+   pam --get=plot.3d.scalar ...
+   
+Scalar densities are also written to a Gaussian cube file ``plot.3d.cube``.
 
 keyword(3DFAST)
 
@@ -101,10 +132,33 @@ Default (coordinates in bohr)::
    4.0
 
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid (does not have to be regular)
+Example::
+
+  .3D_IMP
+   grid_file        ! a file with x,y,z-coordinates of grid points
+
+
 keyword(3D_INT)
 
 Integrate densities in 3D.
 
+Modification of densities
+=========================
+
+keyword(CARPOW)
+
+Scale densities by Cartesian product :math:`x^iy^jz^k`. The keyword is followed by three integers specifying the exponents :math:`(i,j,k)`. Example::
+
+  .DENSITY
+  .CARPOW
+  1 0 0
+
+is equivalent to the specification::
+
+   .EDIPX
 
 keyword(SCALE)
 
@@ -114,10 +168,20 @@ Default::
   .SCALE
    1.0
 
+keyword(DSCALE)
 
+Scale densities *down* by a factor.
+Default::
+
+  .DSCALE
+   1.0
+
+Densities
+=========   
+   
 keyword(DENSITY)
 
-Compute density.
+Compute number density :math:`n(\mathbf{r})` .
 Example (unperturbed density)::
 
   .DENSITY
@@ -145,6 +209,13 @@ Compute the electron chirality density. Example::
    DFCOEF
 
 
+keyword(J)
+
+Compute the current density :math:`\mathbf{j}(\mathbf{r})=-e\psi_{i}^{\ast}c\boldsymbol{\alpha}\psi_{i}`. Example (use first response vector)::
+
+  .J
+   PAMXVC 1
+
 keyword(JDIA)
 
 Compute the nonrelativistic diamagnetic current density. Example::
@@ -153,13 +224,26 @@ Compute the nonrelativistic diamagnetic current density. Example::
    DFCOEF
 
 
-keyword(J)
+keyword(JX)
 
-Compute the current density. Example (use first response vector)::
+Compute the x-component :math:`j_{x}(\mathbf{r})=-e\psi_{i}^{\ast}c\alpha_{x}\psi_{i}` of the current density. Example (use first response vector)::
 
-  .J
+  .JX
    PAMXVC 1
 
+keyword(JY)
+
+Compute the y-component :math:`j_{y}(\mathbf{r})=-e\psi_{i}^{\ast}c\alpha_{y}\psi_{i}` of the current density. Example (use first response vector)::
+
+  .JY
+   PAMXVC 1
+
+keyword(JZ)
+
+Compute the z-component :math:`j_{z}(\mathbf{r})=-e\psi_{i}^{\ast}c\alpha_{z}\psi_{i}` of the current density. Example (use first response vector)::
+
+  .JZ
+   PAMXVC 1
 
 keyword(DIVJ)
 
@@ -176,6 +260,76 @@ Compute the curl of the current density. Example (use first response vector)::
   .ROTJ
    PAMXVC 1
 
+keyword(BDIPX)
+
+Compute the x-component :math:`m^{[1]}_{x}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\times\mathbf{j})_{x}` of the magnetic dipole operator. Example (use first response vector)::
+
+  .BDIPX
+   PAMXVC 1
+
+keyword(BDIPY)
+
+Compute the y-component :math:`m^{[1]}_{y}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\times\mathbf{j})_{y}` of the magnetic dipole operator. Example (use first response vector)::
+
+  .BDIPY
+   PAMXVC 1
+
+keyword(BDIPZ)
+
+Compute the z-component :math:`m^{[1]}_{z}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\times\mathbf{j})_{z}` of the magnetic dipole operator. Example (use first response vector)::
+
+  .BDIPZ
+   PAMXVC 1
+
+keyword(BEDCOS)
+
+Compute the Hermitian part of the full effective light-matter interaction
+
+.. math::
+   \hat{T}_{H}\left(\omega\right)=\frac{e}{\omega}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\cos\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. In accordance with the quaternion symmetry scheme of DIRAC an imaginary :math:`i` will be inserted in the Hermitian part to make it time-symmetric. It should be noted that this is an *ungerade* operator.
+
+keyword(BEDSIN)
+
+Compute the anti-Hermitian part of the full effective light-matter interaction
+
+.. math::
+
+    \hat{T}_{A}\left(\omega\right)=\frac{e}{\omega}\left(ic\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\sin\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. It should be noted that this is a *gerade* operator.
+
+keyword(BEDFIX)
+
+Specify the wave vector :math:`\mathbf{k}` and the polarization vector :math:`\boldsymbol{\epsilon}` when using the full light-matter interaction.
+The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the :ref:`EXCITATION_ENERGIES_.BED` keyword for more details. In addition the user has to specify the angular frequency $\omega$ which fixes the length of the wave vector :math:`\mathbf{k}` since we have
+
+.. math::
+
+   k=\frac{\omega}{c}={2\pi}{\lambda}
+
+For instance, to specify that the wave vector is along the :math:`z` -axis, the polarization vector along the :math:`x` - axis for an excitation energy at :math:`\omega=49.138` a.u. we set
+
+::
+
+    .BEDFIX
+    0.0 0.0 0.0 49.138
+   
+
+keyword(EDIPX)
+
+Compute the x-component :math:`Q^{[1]}_{x}(\mathbf{r})=xn(\mathbf{r})` of the electric dipole.
+
+keyword(EDIPY)
+
+Compute the y-component :math:`Q^{[1]}_{y}(\mathbf{r})=yn(\mathbf{r})` of the electric dipole.
+
+keyword(EDIPZ)
+
+Compute the z-component :math:`Q^{[1]}_{z}(\mathbf{r})=zn(\mathbf{r})` of the electric dipole.
 
 keyword(ESP)
 
@@ -210,17 +364,40 @@ keyword(ESPNRHO)
 Compute the nuclear part of the electrostatic potential times density.
 
 
-keyword(GAUGE)
+keyword(NDIPX)
 
-Specify gauge origin. Example::
+Compute the NMR shielding density, with the "X"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
 
-  .GAUGE
-   0.0 0.0 0.0
+keyword(NDIPY)
+
+Compute the NMR shielding density, with the "Y"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NDIPZ)
+
+Compute the NMR shielding density, with the "Z"-component of the nuclear magnetic dipole moment and
+the selected component of the magnetically-induced current density (by the chosen record on PAMXVC file) as perturbing operators.
+
+keyword(NICS )
+
+Compute the NMR shielding density in a selected point in space. Is used to calculate NICS.
+Example::
+
+  .NICS
+   1.2 -1.0 2.0
+
+will calculate the NMR shielding in point (1.2, -1.0, 2.0). This keyword can be used only with one of: NDIPX, NDIPY, NDIPZ keywords.
 
 
-keyword(RADIAL)
+keyword(READJB)
 
-Compute radial densities.
+Use the grid and the magnetically-induced current density (jB) from a file to calculate the jB-dependent densities,
+e.g. the NMR shielding density or the magnetizability density. 
+Example::
+
+  .READJB
+   file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
 
 
 keyword(SMALLAO)
@@ -261,6 +438,11 @@ Another example (nitrogen atom)::
 keyword(LONDON)
 
 Activate LAO contribution.
+This keyword is followed by a letter "X", "Y" or "Z" indicating the component of an external perturbing magnetic field.
+For example::
+
+  .LONDON
+   X
 
 
 keyword(NONE)

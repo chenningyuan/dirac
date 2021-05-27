@@ -7,7 +7,7 @@ RELADC, FANOADC and LANCZOS
 ===========================
 
 This section lists the available keywords for RELADC, FanoADC and the closely connected
-iterative LANCZOS diagonalizer in the new input format maintained in DIRAC.
+iterative LANCZOS diagonalizer in DIRAC.
 
 If you want to perform RELADC/LANCZOS calculations for the one- and two-particle
 propagator or a FanoADC calculation you invoke all of them by setting the
@@ -20,7 +20,7 @@ The RELADC/LANCZOS calculation is then individually controlled in the
 The FanoADC calculation is a special case of a one-particle propagator
 calculation. Therefore the keywords are part of the \*\*RELADC section.
 
-star(RELADC)
+starstar(RELADC)
 
 keyword(DOSIPS)
 
@@ -115,18 +115,6 @@ Lanczos is automatically invoked in a single and double ionization calculation. 
 invoke an additional full diagonalizer set this keyword. Attention: ADC matrices can become very large. A full
 diagonalization is therefore supported only for matrix dimensions up to 5000 x 5000 and is useful
 for test purposes only.
-
-keyword(DOLANC)
-
-Additionally invoke a Lanczos diagonalizer in the excitation calculation
-(not recommended because Davidson is superior in this case). Lanczos is automatically invoked in SIP/DIP runs.
-
-keyword(DODAVI)
-
-Activate the Davidson diagonalizer in the excitation run. At the moment Davidson is only effective in combination 
-with DOEXCI. If not specified, Davidson will not start in the excitation run.
-In the next release the user has to activate the desired diagonalizer explicitly because the then available lifetime 
-calculations do not require a complete diagonalization of the ADC matrix.
 
 keyword(DODIPS)
 
@@ -311,59 +299,24 @@ calculation of the one-particle propagator.
 
     False
 
-keyword(DOEXCI)
-
-Activate calculation of excited energies and states using the four-component 
-polarization propagator. An excited state has even number of electrons and is 
-therefore classified according to the bosonic irreducible representations of the 
-corresponding molecular point group. If only one or a few final states should be 
-calculated use the following keyword:
-
-keyword(EXCREPS)
-
-Integer array of length 32. Specifies the symmetries of the excited
-final states to be calculated. If you do not enter this array
-all symmetries are checked for the occurrence of possible final states and those are
-calculated in the respective perturbational order.
-
-*Default:*
-
-::
-
-    EXCREPS(1:32) = 0  (no symmetries preselected, all are calculated)
-
-*Input example:*
-
-::
-
-   .EXCREPS
-   4
-   1,3,17,19
-
-keyword(DOXEXT)
-
-Logical variable. If set true extended ADC(2) calculations will be performed (default = .false.).
-
-star(LANCZOS)
+starstar(LANCZOS)
 
 Once the ADC matrices are stored in packed form on disk they are diagonalized
 by the iterative Lanczos algorithm. The spectral information is written to
-the files SSPEC.#irrep (SIPs), DSPEC.#irrep (DIPs) and XSPEC.#irrep (EXC).
+the files SSPEC.#irrep (SIPs) and DSPEC.#irrep (DIPs).
 Hereby the ionization potential, the pole strength
 and the error estimate are written in a line terminated by the '@' for
 grep purposes. Immediately after this line follows the (indented)
 configuration information belonging to this final state. This is
-imaginable as a one-hole, two-hole or hole-particle Slater-determinant forming this
+imaginable as a one-hole or two-hole Slater-determinant forming this
 state in zeroth order. Strictly speaking, the configuration coefficients
-refer to the intermediate state basis.
-Note: For excitation calculations Lanczos is not the first choice. Better to activate Davidson via the
-kayword .DODAVI
+refer to the intermediate state irepresentation basis.
 
-.SIPITER, .DIPITER, .EXCITER
-----------------------------
+.SIPITER, .DIPITER
+------------------
 
-Determines the number of Lanczos iterations in a SIP,
-DIP or EXC calculation for all symmetries.
+Determines the number of Lanczos iterations in a SIP or
+DIP calculation for all symmetries.
 There is no need to specify the number of iterations
 per symmetry because the convergence behaviour is similar within a
 specific ionization class. However, DIP calculations can require
@@ -373,13 +326,13 @@ very fast and some may be reproduced if SIPITER or DIPITER are set to
 high values. These reproduced eigenvalues are spurious and will be
 projected out from the final result. If one observes very many spurious
 solutions (mainly in the SIP case) it is recommended to reduce SIPITER
-accordingly. Note that Lanczos is not activated automatically in EXC runs.
+accordingly.
 
 *Default:*
 
 ::
 
-    SIPITER = 500, DIPITER = 500, EXCITER = 500.
+    SIPITER = 500, DIPITER = 500.
 
 
 *Input example:*
@@ -390,23 +343,21 @@ accordingly. Note that Lanczos is not activated automatically in EXC runs.
     1000
     .DIPITER
     2500
-    .EXCITER
-    1500
 
-.SIPPRNT, .DIPPRNT, .EXCPRNT
-----------------------------
+.SIPPRNT, .DIPPRNT
+------------------
 
 Real values. These two variables only control screen output of the
 calculated eigenvalues and have no influence on the results in the
-(SDX)SPEC files. You can enter the threshold in eV up to which computed
-IPs (SIPs, DIPs or EXCs) will be printed on screen. Sometimes one is only
+(SD)SPEC files. You can enter the threshold in eV up to which computed
+IPs (SIPs, DIPs) will be printed on screen. Sometimes one is only
 interested in a few lowest IPs and the screen output suffices.
 
 *Default:*
 
 ::
 
-    SIPPRNT = 50.0, DIPPRNT = 50.0, EXCPRNT = 20.0.
+    SIPPRNT = 50.0, DIPPRNT = 50.0.
 
 
 *Input example:*
@@ -417,11 +368,9 @@ interested in a few lowest IPs and the screen output suffices.
     20.0
     .DIPPRNT
     100.0
-    .EXCPRNT
-    50.0
 
-.SIPEIGV, .DIPEIGV, .EXCEIGV
-----------------------------
+.SIPEIGV, .DIPEIGV
+------------------
 
 For each chosen symmetry selected by the XXXREPS array a lower and upper energy boundary
 value for the corresponding method are specified. 
@@ -439,7 +388,7 @@ user-friendly since one can not anticipate the number of eigenvectors to be expe
 
 ::
 
-    .SIPEIGV   #(same for .DIPEIGV and EXCEIGV)
+    .SIPEIGV   #(same for .DIPEIGV)
     4 # number of lines of ranges to follow
     10.0 20.0
     20.0 30.0
@@ -457,35 +406,3 @@ If there is not enough physical memory the OS starts to swap portions of the mem
 You have to avoid this situation since your job will not terminate in time. Check carefully that
 the memory you request is physically available!
 
-keyword(DVXXXXX)
-
-The following keywords all start with DV and control the iterative Davidson diagonalizer effective in the
-excitation module.
-
-.DVROOTS
---------
-
-This is the main keyword that tells the diagonalizer how many of the lowest roots you wish to calculate. 
-Be aware that for higher roots convergence is harder to achieve and therefore requires more Davidson
-iterations.
-
-.DVMAXSP
---------
-
-Here you define the maximum size of the Krylov space that is generated. In general, this number is ten to twenty 
-times the number of requested roots in order to achieve convergence of approximately 1.0E-06 which is perfectly
-sufficient. The algortihm performs so-called microiterations up to the size of DVMAXSP. Then one macroiteration
-has terminated. The resulting vectors then serve as start vectors for the next set of microiterations leading
-to considerably improved excited eigenstates. (Default = 50). The number of macroiterations is fixed by the keyword
-
-.DVMAXIT
---------
-
-This number normally ranges between 5 and 20 for harder cases. Default value is 5.
-
-.DVCONV
--------
-
-Here you determine the convergence of the eigenvalues (default = 1.0E-05). Sometimes a bit tighter
-values are desired. You can choose that but be aware that very tight thresholds lead to many
-iterations and sometimes to instabilities of the algorithm.

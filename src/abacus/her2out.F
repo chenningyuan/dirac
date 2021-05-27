@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -51,8 +51,6 @@ C
 #include "twocom.h"
 #include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
-C
-#include "ibtfun.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -106,7 +104,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
                INT = 0
@@ -256,7 +254,6 @@ C  /* Deck un2wrt */
 #include "hrunit.h"
 #include "nuclei.h"
       SAVE NBUF
-#include "ibtfun.h"
 C
       IF (ITYPE .EQ. -1) THEN
          REWIND LUINTA
@@ -274,15 +271,15 @@ C
             IBIT1 = 2**NBITS - 1
             DO 100 INT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
-                  I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-                  J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-                  K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-                  L = IBTAND(       IBUF(INT,1),         IBIT1)
+                  I = IAND(ISHFT(IBUF(INT,1),-3*NBITS),IBIT1)
+                  J = IAND(ISHFT(IBUF(INT,1),-2*NBITS),IBIT1)
+                  K = IAND(ISHFT(IBUF(INT,1),  -NBITS),IBIT1)
+                  L = IAND(      IBUF(INT,1),          IBIT1)
                ELSE
-                  I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-                  J = IBTAND(       IBUF(INT,1),       IBIT1)
-                  K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-                  L = IBTAND(       IBUF(INT,2),       IBIT1)
+                  I = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+                  J = IAND(      IBUF(INT,1),        IBIT1)
+                  K = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
+                  L = IAND(      IBUF(INT,2),        IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                      ' ## ', I, J, K, L, BUF(INT)
@@ -307,15 +304,15 @@ C
                IBIT1 = 2**NBITS - 1
                DO 200 INT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
-                     I = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-                     J = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-                     K = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-                     L = IBTAND(       IBUF(INT,1),         IBIT1)
+                     I = IAND(ISHFT(IBUF(INT,1),-3*NBITS),IBIT1)
+                     J = IAND(ISHFT(IBUF(INT,1),-2*NBITS),IBIT1)
+                     K = IAND(ISHFT(IBUF(INT,1),  -NBITS),IBIT1)
+                     L = IAND(      IBUF(INT,1),          IBIT1)
                   ELSE
-                     I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-                     J = IBTAND(       IBUF(INT,1),       IBIT1)
-                     K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-                     L = IBTAND(       IBUF(INT,2),       IBIT1)
+                     I = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+                     J = IAND(      IBUF(INT,1),        IBIT1)
+                     K = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
+                     L = IAND(      IBUF(INT,2),        IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
      &                         ' ## ', I, J, K, L, BUF(INT)
@@ -437,8 +434,6 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GE. 6) CALL HEADER('Subroutine FCKOU1',-1)
       IF (IPRINT .GE. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
@@ -497,11 +492,11 @@ C Largest exchange contribution
         NSTRND = IPNTNO(4,I)
         IREPA  = IPNTRP(1,I)
         IREPB  = IPNTRP(2,I)
-        IREPAB = IBTXOR(IREPA,IREPB)
+        IREPAB = IEOR(IREPA,IREPB)
         IREPC  = IPNTRP(3,I)
-        IREPD  = IBTXOR(IREPAB,IREPC)
-        IREPAC = IBTXOR(IREPA,IREPC)
-        IREPAD = IBTXOR(IREPA,IREPD)
+        IREPD  = IEOR(IREPAB,IREPC)
+        IREPAC = IEOR(IREPA,IREPC)
+        IREPAD = IEOR(IREPA,IREPD)
         IF(NOTEST) THEN
           INT = 0
           SOMAX = D0
@@ -643,7 +638,7 @@ C             G = 0 Coulomb
 C             G = 1 Gaunt
 C
         DO 400 K = 1,NDMAT
-          IF(IFCTYP(K). EQ. 0) GOTO 400
+          IF(IFCTYP(K) .EQ. 0) GOTO 400
 C         Unpack the bitcode
           IX = IFCTYP(K)/10
           IY = MOD(IFCTYP(K),10)
@@ -707,7 +702,6 @@ C           =============================
 C           F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
             IF(IY.EQ.3) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -733,7 +727,6 @@ C           =========================================
 C           F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
             ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -752,7 +745,6 @@ C           Coulomb contributions only
 C           ==========================
 C
             ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -781,7 +773,6 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             IF(IY.EQ.3) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -813,7 +804,6 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -837,7 +827,6 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
               DO INT = 1,NBUF
                 A = IBUF(1,INT)
                 B = IBUF(2,INT)
@@ -896,8 +885,6 @@ C
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
 C
       IF (FIRST) CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,-1,
@@ -908,11 +895,11 @@ C
       IF (DOXYZ(ICOOR)) THEN
          DO 200 IREPE = 0,MAXREP
             IF (SPNORB) THEN
-             IRPXYZ=IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
-             IF (IREPE .NE. IBTXOR(ISYMAX(ICOOR,1),IRPXYZ)) GOTO 200
+             IRPXYZ=IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
+             IF (IREPE .NE. IEOR(ISYMAX(ICOOR,1),IRPXYZ)) GOTO 200
             ELSE
              IF(.NOT.DOREPS(IREPE)) GO TO 200
-             IF(IBTAND(MULE,IBTXOR(IREPE,ISYMAX(ICOOR,1))).NE.0)GOTO 200
+             IF(IAND(MULE,IEOR(IREPE,ISYMAX(ICOOR,1))).NE.0)GOTO 200
             END IF
             CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,2,SPNORB,
      &                  IPRINT)
@@ -927,7 +914,7 @@ C
                IREPA  = IPNTRP(1,I,IREPX)
                IREPB  = IPNTRP(2,I,IREPX)
                IREPC  = IPNTRP(3,I,IREPX)
-               IREPD  = IBTXOR(IBTXOR(IBTXOR(IREPA,IREPB),IREPC),IREPE)
+               IREPD  = IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
                IF (NOTEST) THEN
                   INT = 0
                   DO 400 IAB = 1, NORBAB
@@ -1058,8 +1045,6 @@ C
 #include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
-#include "ibtfun.h"
-C
 C     Initialization
 C     ==============
 C
@@ -1175,18 +1160,17 @@ C  /* Deck dr2pri */
       DIMENSION BUF(600), IBUF(600)
 #include "chrxyz.h"
       SAVE IATOM, ICOOR, IREPE
-#include "ibtfun.h"
       WRITE(LUPRI,'(2X,A,I5,A/)')
      &   'Integral buffer #',NBUF + 1,' has been written.'
       DO 100 INT = 1, ICOUNT
-         I = IBTAND(IBTSHR(IBUF(INT),24),IBT08)
-         J = IBTAND(IBTSHR(IBUF(INT),16),IBT08)
-         K = IBTAND(IBTSHR(IBUF(INT),8), IBT08)
-         L = IBTAND(       IBUF(INT),    IBT08)
+         I = IAND(ISHFT(IBUF(INT),-24),IBT08)
+         J = IAND(ISHFT(IBUF(INT),-16),IBT08)
+         K = IAND(ISHFT(IBUF(INT),-8), IBT08)
+         L = IAND(      IBUF(INT),     IBT08)
          IF (L .EQ. 0) THEN
-            ICOOR = IBTAND(IBTSHR(IBUF(INT), 8),IBT08)
-            IREPE = IBTAND(IBTSHR(IBUF(INT),16),IBT08)
-            IATOM = IBTAND(IBTSHR(IBUF(INT),24),IBT08)
+            ICOOR = IAND(ISHFT(IBUF(INT), -8),IBT08)
+            IREPE = IAND(ISHFT(IBUF(INT),-16),IBT08)
+            IATOM = IAND(ISHFT(IBUF(INT),-24),IBT08)
          ELSE
             WRITE (LUPRI,'(10X,A,2X,4I4,5X,I2,A,I2,5X,1P,D16.8)')
      &         ' ## ',I,J,K,L,IATOM,CHRXYZ(ICOOR),IREPE,BUF(INT)
@@ -1217,8 +1201,6 @@ C
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
 C
       IATOM = 0
@@ -1244,7 +1226,7 @@ C
             IREPA  = IPNTRP(1,I,IREPX)
             IREPB  = IPNTRP(2,I,IREPX)
             IREPC  = IPNTRP(3,I,IREPX)
-            IREPD  = IBTXOR(IBTXOR(IBTXOR(IREPA,IREPB),IREPC),IREPE)
+            IREPD  = IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
             IF (NOTEST) THEN
                INT = 0
                DO 400 IAB = 1, NORBAB
@@ -1410,8 +1392,6 @@ C
 #include "twocom.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
@@ -1472,7 +1452,7 @@ C
          IREPA  = IPNTRP(1,I)
          IREPB  = IPNTRP(2,I)
          IREPC  = IPNTRP(3,I)
-         IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+         IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
                INT = 0
@@ -1700,8 +1680,6 @@ C*****************************************************************************
 #include "blocks.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
@@ -1737,7 +1715,7 @@ C     Check whether we have Gaunt or Coulomb integrals
            IREPA  = IPNTRP(1,I)
            IREPB  = IPNTRP(2,I)
            IREPC  = IPNTRP(3,I)
-           IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+           IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
            INT = 0
            DO IAB = 1, NORBAB
              IA = KHKTA*(NINDAB(IAB,1) - 1)
@@ -1782,7 +1760,7 @@ C     Check whether we have Gaunt or Coulomb integrals
            IREPA  = IPNTRP(1,I)
            IREPB  = IPNTRP(2,I)
            IREPC  = IPNTRP(3,I)
-           IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+           IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
            DCMPAB = IPNTLG(1,I)
            DRALTB = IREPA .LT. IREPB
            INT = 0
@@ -1873,8 +1851,6 @@ C*****************************************************************************
 #include "blocks.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
          WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
@@ -1910,7 +1886,7 @@ C     Check whether we have Gaunt or Coulomb integrals
            IREPA  = IPNTRP(1,I)
            IREPB  = IPNTRP(2,I)
            IREPC  = IPNTRP(3,I)
-           IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+           IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
            INT = 0
            DO IAB = 1, NORBAB
              IA = KHKTA*(NINDAB(IAB,1) - 1)
@@ -1983,7 +1959,7 @@ C
            IREPA  = IPNTRP(1,I)
            IREPB  = IPNTRP(2,I)
            IREPC  = IPNTRP(3,I)
-           IREPD  = IBTXOR(IBTXOR(IREPA,IREPB),IREPC)
+           IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
            DCMPAB = IPNTLG(1,I)
            DRALTB = IREPA .LT. IREPB
            INT = 0

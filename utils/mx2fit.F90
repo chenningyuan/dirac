@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -51,7 +51,7 @@
       IUNIT = 1
       ILOGG = 2
       WRITE(LUPRI,'(A)') '* Name output file (A6)'
-      READ(LUCMD,'(A6)') RESFIL
+      READ(LUSTDIN,'(A6)') RESFIL
       OPEN(ILOGG,FILE=RESFIL,STATUS='UNKNOWN',FORM='FORMATTED',         &
       ACCESS='SEQUENTIAL')
 !
@@ -64,10 +64,10 @@
    'Select one of the following:',                                      &
    '  1. Select masses of the most abundant isotopes.',                 &
    '  2. Employ user-defined atomic masses.'
-      READ(LUCMD,*) I
+      READ(LUSTDIN,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') '* Give charge of central atom M:'
-        READ(LUCMD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,AM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -75,10 +75,10 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) AM
+          READ(LUSTDIN,*) AM
         ENDIF
         WRITE(LUPRI,'(A)') '* Give charge of ligand atom X :'
-        READ(LUCMD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,BM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -86,13 +86,13 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) BM
+          READ(LUSTDIN,*) BM
         ENDIF
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') '* Give mass of central atom M in Daltons:'
-        READ(LUCMD,*) AM
+        READ(LUSTDIN,*) AM
         WRITE(LUPRI,'(A)') '* Give mass of ligand atom X in Daltons:'
-        READ(LUCMD,*) BM
+        READ(LUSTDIN,*) BM
       ELSE
         WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
         GOTO 10
@@ -110,7 +110,7 @@
    '2. Asymmetric stretch   <--  <-',                                   &
    '3. Angular deformation         ',                                   &
    '4. Quit....'
-      READ(LUCMD,*) I
+      READ(LUSTDIN,*) I
       IF    (I.EQ.1) THEN
         CALL SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
       ELSEIF(I.EQ.2) THEN
@@ -132,8 +132,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM = 2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -141,6 +140,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -155,7 +159,7 @@
       WRITE(LUPRI,'(A)') 'Symmetry coordinate: [1/SQRT(2)](r12+r32)'
  10   CONTINUE
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A6)'
-      READ(LUCMD,'(A)') POTFIL
+      READ(LUSTDIN,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 'Format: ',                                    &
          'lines of  r12(Angstrom)   energy(Hartree)'
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',             &
@@ -189,7 +193,7 @@
       CALL DSCAL(NP,FAC,X,1)
  60   CONTINUE
       WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
-      READ(LUCMD,*) NORDER
+      READ(LUSTDIN,*) NORDER
       IF(NP.LE.NORDER) THEN
         WRITE(LUPRI,'(A,I3)')                                           &
      'Too few points for a polynomial fit of order',NORDER
@@ -227,7 +231,7 @@
 !     ============
 !
       WRITE(LUPRI,'(A)') '* Do you want to find a minimum ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
 !* Find smallest y-value and take corresponding x-value as start value
 !* for Newton-Raphsons method   
@@ -254,7 +258,7 @@
 !     ==================
 !
       WRITE(LUPRI,'(A)') '* Do you want harmonic constant ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
       V2  = POL2DER(NORDER,C,XOPT)
       FORCE = V2*XTJ/XTM/XTM
@@ -276,10 +280,10 @@
 !
  100  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want derivatives of curve (y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 666
       WRITE(LUPRI,'(A)') 'Derivatives to what order(max.6) ?'
-      READ(LUCMD,*) NDER
+      READ(LUSTDIN,*) NDER
       DO J = 1,NP
         WRITE(ILOGG,'(F6.3,3X,1P,6E14.6)')                              &
     X(J),(POLNDER(NORDER,B,X(J),I),I = 1,NDER)
@@ -287,7 +291,7 @@
       
  666  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want a new polynomial fit ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.EQ.'y') GOTO 60
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -297,8 +301,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI)
@@ -306,6 +309,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP),YB(MP),XB(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -320,7 +328,7 @@
       WRITE(LUPRI,'(A)') 'Symmetry coordinate: [1/SQRT(2)](r12-r32)'
  10   CONTINUE
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A6)'
-      READ(LUCMD,'(A)') POTFIL
+      READ(LUSTDIN,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 'Format: ',                                    &
          'lines of  r12(Angstrom)  r32(Angstrom)  energy(Hartree)'
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',             &
@@ -367,7 +375,7 @@
  60   CONTINUE
       WRITE(LUPRI,'(A,I5)') 'Total number of points :',NP2
       WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
-      READ(LUCMD,*) NORDER
+      READ(LUSTDIN,*) NORDER
       IF(NP2.LE.NORDER) THEN
         WRITE(LUPRI,'(A,I3)')                                           &
      'Too few points for a polynomial fit of order',NORDER
@@ -405,7 +413,7 @@
 !     ==================
 !
       WRITE(LUPRI,'(A)') '* Do you want harmonic constant ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
       XOPT = D0
       V2  = POL2DER(NORDER,C,XOPT)
@@ -427,10 +435,10 @@
 !
  100  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want derivatives of curve (y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 666
       WRITE(LUPRI,'(A)') 'Derivatives to what order(max.6) ?'
-      READ(LUCMD,*) NDER
+      READ(LUSTDIN,*) NDER
       DO J = 1,NP2
         WRITE(ILOGG,'(F6.3,3X,1P,6E14.6)')                              &
     X(J),(POLNDER(NORDER,B,X(J),I),I = 1,NDER)
@@ -438,7 +446,7 @@
       
  666  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want a new polynomial fit ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.EQ.'y') GOTO 60
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -447,8 +455,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D0 = 0.0D0,DMC = 0.01D0)
       PARAMETER(D2PI = D2*PI,CNV = PI/360.0D0)
@@ -456,6 +463,11 @@
       DIMENSION A(*),B(*),C(*),D(*),IBUF(*)
       DIMENSION X(MP),Y(MP)
       CHARACTER POTFIL*6,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
       IUNIT = 1
       ILOGG = 2
@@ -470,7 +482,7 @@
       WRITE(LUPRI,'(A)') '  Symmetry coordinate: SQRT(2)*req*cos[phi/2]'
  10   CONTINUE
       WRITE(LUPRI,'(A)') 'Name input file with potential curve(A6)'
-      READ(LUCMD,'(A)') POTFIL
+      READ(LUSTDIN,'(A)') POTFIL
       WRITE(LUPRI,'(A)') 'Format: ',                                    &
          'one line with r_eq (Angstrom)',                               &
          'lines of  phi(degree)  energy(Hartree)'
@@ -520,7 +532,7 @@
  60   CONTINUE
       WRITE(LUPRI,'(A,I5)') 'Total number of points :',NP2
       WRITE(LUPRI,'(A)') 'Polynomial fit: Give order of polynomial'
-      READ(LUCMD,*) NORDER
+      READ(LUSTDIN,*) NORDER
       IF(NP2.LE.NORDER) THEN
         WRITE(LUPRI,'(A,I3)')                                           &
      'Too few points for a polynomial fit of order',NORDER
@@ -558,7 +570,7 @@
 !     ============
 !
       WRITE(LUPRI,'(A)') '* Do you want to find a minimum ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
       IYOPT = IDMIN(NP,Y,1)
       XOPT = X(IYOPT)
@@ -580,7 +592,7 @@
 !     ==================
 !
       WRITE(LUPRI,'(A)') '* Do you want harmonic constant ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 100
       V2  = POL2DER(NORDER,C,XOPT)
 !TROND
@@ -604,10 +616,10 @@
 !
  100  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want derivatives of curve (y/n) ?'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.NE.'y') GOTO 666
       WRITE(LUPRI,'(A)') 'Derivatives to what order(max.6) ?'
-      READ(LUCMD,*) NDER
+      READ(LUSTDIN,*) NDER
       DO J = 1,NP
         WRITE(ILOGG,'(F6.3,3X,1P,6E14.6)')                              &
     X(J),(POLNDER(NORDER,B,X(J),I),I = 1,NDER)
@@ -615,6 +627,6 @@
       
  666  CONTINUE
       WRITE(LUPRI,'(A)') '* Do you want a new polynomial fit ?(y/n)'
-      READ(LUCMD,'(A1)') REPLY
+      READ(LUSTDIN,'(A1)') REPLY
       IF(REPLY.EQ.'y') GOTO 60
       END

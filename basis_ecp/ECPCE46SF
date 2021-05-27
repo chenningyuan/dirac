@@ -8,7 +8,7 @@ $ In,Sn,Sb,Te,I,Xe,Cs,Ba,La                                          *
 $*********************************************************************
 $ Indium atom
 $ In, 46 el. core, 3 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 49
 ECP 46 4 0
@@ -47,7 +47,7 @@ $      d-f
 $*********************************************************************
 $ Tin atom
 $ Sn, 46 el. core, 4 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 50
 ECP 46 4 0
@@ -86,7 +86,7 @@ $      d-f
 $*********************************************************************
 $ Antimony atom
 $ Sb, 46 el. core, 5 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 51
 ECP 46 4 0
@@ -125,7 +125,7 @@ $      d-f
 $*********************************************************************
 $ Tellurium atom
 $ Te, 46 el. core, 6 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 52
 ECP 46 4 0
@@ -164,7 +164,7 @@ $      d-f
 $*********************************************************************
 $ Iodine atom
 $ I, 46 el. core, 7 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 53
 ECP 46 4 0
@@ -203,7 +203,7 @@ $     d-f
 $*********************************************************************
 $ Xenon atom
 $ Xe, 46 el. core, 8 valence el., spin-free
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 54
 ECP 46 4 0

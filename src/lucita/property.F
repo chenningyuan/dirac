@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -72,10 +72,10 @@
         WRITE(6,*) ' H0 written to disc '
         CALL TODSC(WORK(KFI),NINT1,-1,LU18)
       ELSE IF(IPART.EQ.3) THEN
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
-        WRITE(6,*) ' Zero-order Hamiltonian readin '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
+        WRITE(6,*) ' Zero-order Hamiltonian read in '
         LU18 = 18
         REWIND (LU18)
         CALL FRMDSC(WORK(KFI),NINT1,-1,LU18,IMZERO,IAMPACK)
@@ -159,7 +159,7 @@ C?    write(6,*) ' ENOT IN CIRESP ', ENOT
      &    ' ====================================================='
           WRITE(6,*)
           DO IAVE = 1, N_AVE_OP
-            WRITE(6,'(1H ,5X,A)') AVE_OP(IAVE)
+            WRITE(6,'(5X,A)') AVE_OP(IAVE)
           END DO
           WRITE(6,*)
           WRITE(6,*) ' Perturbations : '
@@ -1820,7 +1820,7 @@ C               END IF
           IORBEF = IORB+IOFF-1
           CONT = OCCNUM(IORBEF)*HDIAG(IORBEF)
           SUM = SUM + CONT
-          WRITE(6,'(1H ,I4, I4,4E13.5)')
+          WRITE(6,'(I5, I4,4E13.5)')
      &    IORB,ISYM,HDIAG(IORBEF),OCCNUM(IORBEF),CONT,SUM
         END DO
       END DO

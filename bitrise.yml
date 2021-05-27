@@ -1,0 +1,53 @@
+##
+## Simple DIRAC buildup configuration file for the bitrise CI service https://www.bitrise.io
+##
+## the free plan is for 10 min/build, therefore do only the compilation...
+##
+##
+
+build:
+  steps:
+    - install-packages:
+        packages: "git gcc g++ gfortran make libblas-dev liblapack-dev libfreetype6-dev zlib1g-dev doxygen python-pip"
+
+    - script:
+        name: install the newest cmake form their webpage
+        code: |
+          wget --no-check-certificate https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz
+          tar xzf cmake-3.5.2-Linux-x86_64.tar.gz
+          export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin:$PATH
+          cmake --version
+
+    - script:
+        name: show system resources
+        code: |
+          lscpu
+          df -h
+          free -m
+
+    - script:
+        name: update submodule, setup configuration scripts
+        code: |
+          git submodule update --init --recursive
+          python ./setup --type=debug --cmake-options="-D BUILDNAME='bitrise-ci.i8.gdb' -D ENABLE_UNIT_TESTS=ON -D ENABLE_BASIS_SETS_CHECK=ON"  build_
+
+    - script:
+        name: run ctest for configuration/buildup/test/submit
+        code: |
+          cd build
+          export CTEST_PROJECT_NAME="DIRACext"
+          ## ctest -D ExperimentalUpdate
+          ctest  -D ExperimentalConfigure
+          ## we have only 30 minutes for the whole buildup !
+          ctest -j 8  -D ExperimentalBuild
+          ## ldd : show dependencies
+          ldd dirac.x
+          ## true : this script continues even if some of tests fail
+          #ctest -j 8  -D ExperimentalTest -L short || true
+          ## deliver buildup status to CDash-web
+          ctest -D ExperimentalSubmit
+
+## turn off email notifications
+notifications:
+        email: false
+

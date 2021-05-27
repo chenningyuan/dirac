@@ -21,5 +21,6 @@ test.run(['acetone.inp'], ['acetone.mol'], f)
 test.run(['HeH+.inp'], ['HeH+.mol'], f)
 test.run(['HCCF.x2c_zdipf.scf_mp2_geopt.inp'], ['HCCF.sto-2g.mol'], f)
 test.run(['1.3.5_trisilacyclohexane.inp'], ['1.3.5_trisilacyclohexane.mol'], f)
+test.run(['HeH+.geomopt.x2c.scf_cc.inp'], ['HeH+.sto-2g.mol'], f)
 
 sys.exit(test.return_code)

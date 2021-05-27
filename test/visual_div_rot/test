@@ -2,35 +2,54 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
-f.add(from_string = 'r_x           r_y           r_z            scalar',
-      num_lines   = 7,
-      rel_tolerance   = 1.0e-5)
+assert version_info.major == 2
 
-test.run(['response_1z_bz.inp'], ['co.mol'], args='--get="DFCOEF PAMXVC"')
+options = cli()
 
-inp_files = []
-inp_files.append('visual_1z_bz.inp')
-inp_files.append('visual_1z_bz_only_para.inp')
-inp_files.append('visual_divj.inp')
-inp_files.append('visual_divs.inp')
-inp_files.append('visual_j.inp')
-inp_files.append('visual_jdia.inp')
-inp_files.append('visual_jpara.inp')
-inp_files.append('visual_rotj.inp')
-inp_files.append('visual_rots.inp')
-inp_files.append('visual_s.inp')
+ierr = 0
+ierr += run(options,
+            configure,
+            input_files=['response_1z_bz.inp', 'co.mol'],
+            extra_args='--get="DFCOEF PAMXVC"')
 
-test.run(inp_files, ['co.mol'], f, args='--copy="DFCOEF PAMXVC"')
+f = [
+    get_filter(from_string='r_x           r_y           r_z            scalar',
+               num_lines=7,
+               rel_tolerance=1.0e-4),
+]
 
-# cleanup
-os.unlink('DFCOEF')
-os.unlink('PAMXVC')
+for inp in ['visual_1z_bz.inp',
+            'visual_1z_bz_only_para.inp',
+            'visual_divj.inp',
+            'visual_divs.inp',
+            'visual_j.inp',
+            'visual_jdia.inp',
+            'visual_rotj.inp']:
+    ierr += run(options,
+                configure,
+                input_files=[inp, 'co.mol'],
+                extra_args='--copy="DFCOEF PAMXVC"',
+                filters={'out': f})
 
-sys.exit(test.return_code)
+f = [
+    get_filter(from_string='r_x           r_y           r_z            scalar',
+               num_lines=7,
+               rel_tolerance=1.0e-4,
+               skip_below=1.0e-8),
+]
+
+for inp in ['visual_jpara.inp',
+            'visual_s.inp',
+            'visual_rots.inp']:
+    ierr += run(options,
+                configure,
+                input_files=[inp, 'co.mol'],
+                extra_args='--copy="DFCOEF PAMXVC"',
+                filters={'out': f})
+
+sys.exit(ierr)

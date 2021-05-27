@@ -103,9 +103,10 @@ result as well as basis set convergence.
 Gauge-origin dependence
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-To investigate gauge-origin dependence we do a CGO and LAo calculation with the gauge origin placed at::
+To investigate gauge-origin dependence we do a CGO and LAO calculation with the gauge origin placed at::
 
-   .GO ANG
+   **INTEGRALS
+   .GO ANG ! gauge origin in Angstrom
    10.00 0.0 0.0
 
 that is, along the :math:`C_3` axis. Please note that when shifting the gauge origin in this manner you should 
@@ -117,7 +118,7 @@ limit the gauge origin to symmetry-independent points, that is, you should stay 
 We see that the parallel component :math:`\zeta_\parallel` is unchanged, whereas the perpendicular component 
 :math:`\zeta_\perp` is dramatically different. With LAOs we get
 
-.. literalinclude:: cgo2_NF3_total
+.. literalinclude:: lao2_NF3_total
 
 where the numerical differences with respect to the original calculation is below
 the convergence threshold of the linear response calculation. We can therefore see that the use of LAOs

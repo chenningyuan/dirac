@@ -23,8 +23,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_AOOSOC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'aoosoc' module without exceptions")
+    set_source_files_properties(${FREE_AOOSOC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_AOOSOC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     aoosoc
+    OBJECT
     ${FIXED_AOOSOC_FORTRAN_SOURCES}
     ${FREE_AOOSOC_FORTRAN_SOURCES}
 )
@@ -32,7 +39,5 @@ add_library(
 #
 # deal with intedependencies
 #
-if (ENABLE_INTEREST)
-    add_dependencies(aoosoc interest)
-endif()
+add_dependencies(aoosoc interest)
 add_dependencies(aoosoc x2c)

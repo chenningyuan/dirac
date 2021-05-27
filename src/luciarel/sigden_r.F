@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -173,7 +173,7 @@ C
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
 #include "mxpdim.inc"
@@ -1071,7 +1071,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *
 * Jeppe Olsen, August 1999    
 * Timo Fleig, June 2001, modified for relativistic case
-*             cont´d, 11th of July, Mallorca, around noon (I´m crazy)
+*             cont'd, 11th of July, Mallorca, around noon (I'm crazy)
 *                     15th of July
 *                     August 2001
 *                     August 2003, ISMDST 
@@ -2768,7 +2768,7 @@ C
 #include "implicit.inc"
 * some stuff relevant for parallel runs
 #if defined (VAR_MPI2)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)     
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)     
       INTEGER RCCTOS(*)
 #endif
 #include "infpar.h"
@@ -2886,7 +2886,7 @@ C***********************************************************************
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       DIMENSION LUCLIST(*), IBLOCKL_C(*), NPARBLOCK_C(*), IGROUPLIST(*)
       DIMENSION IPROCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*)
       INTEGER   RCCTOS(*)
@@ -3440,7 +3440,7 @@ C
 #include "implicit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_C(*)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_C(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), IBLOCKL_C(*)
       DIMENSION LUHCLIST(*), IBLOCKL_S(*), NPARBLOCK_S(*) 
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2 
@@ -3611,7 +3611,7 @@ C     integer array may become very long
 C
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "cintfo.inc"
 #include "parluci.h"
@@ -3932,7 +3932,7 @@ C
 *
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION NPARBLOCK_C(*), IBLOCKL_C(*), IT_TTPL(*)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR_C, IOFF_SCR_C_EXPL
@@ -4751,7 +4751,7 @@ C**********************************************************************
 #include "parluci.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*) 
       DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*), LU1LIST(*), LU2LIST(*)
       DIMENSION LUCLIST(*), LBATX(*), LEBATX(*), I1BATX(*), IBATX(8,*)

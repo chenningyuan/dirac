@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2015 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -40,7 +40,7 @@
 
 /* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()
  * ask pawsa@theochem.kth.se for replacement */
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <ctype.h>
 #include <math.h>

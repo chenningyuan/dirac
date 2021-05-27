@@ -392,7 +392,7 @@ $      f
 $*********************************************************************
 $ Rubidium atom
 $ Rb, 28 el. core,9 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 37
 ECP 28 4 3
@@ -461,7 +461,7 @@ $      f
 $*********************************************************************
 $ Strontium atom
 $ Sr, 28 el. core, 10 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 38
 ECP 28 4 3
@@ -530,7 +530,7 @@ $         d-f
 $*********************************************************************
 $ Yttrium atom
 $ Y, 28 el. core, 11 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 39
 ECP 28 4 3
@@ -599,7 +599,7 @@ $      f
 $*********************************************************************
 $ Zirconium atom
 $ Zr, 28 el. core, 12 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 40
 ECP 28 4 3
@@ -668,7 +668,7 @@ $      f
 $*********************************************************************
 $ Niobium atom
 $ Nb, 28 el. core, 13 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 41
 ECP 28 4 3
@@ -737,7 +737,7 @@ $         d-f
 $*********************************************************************
 $ Molybdenum atom
 $ Mo, 28 el. core, 14 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 42
 ECP 28 4 3
@@ -806,7 +806,7 @@ $      f
 $*********************************************************************
 $ Technetium atom
 $ Tc, 28 el. core, 15 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 43
 ECP 28 4 3
@@ -875,7 +875,7 @@ $      f
 $*********************************************************************
 $ Ruthenium atom
 $ Ru, 28 el. core, 16 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 44
 ECP 28 4 3
@@ -944,7 +944,7 @@ $      f
 $*********************************************************************
 $ Rhodium atom
 $ Rh, 28 el. core, 17 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 45
 ECP 28 4 3
@@ -1013,7 +1013,7 @@ $      f
 $*********************************************************************
 $ Palladium atom
 $ Pd, 28 el. core, 18 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 46
 ECP 28 4 3
@@ -1082,7 +1082,7 @@ $      f
 $*********************************************************************
 $ Silver atom
 $ Ag, 28 el. core, 19 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 47
 ECP 28 4 3
@@ -1151,7 +1151,7 @@ $      f
 $*********************************************************************
 $ Cadmium atom
 $ Cd, 28 el. core, 20 valence el., spin-orbit
-$ Lajohn and Christiansen, JCP 82, 2812 (1987)
+$ Lajohn and Christiansen, JCP 87, 2812 (1987)
 $*********************************************************************
 A 48
 ECP 28 4 3

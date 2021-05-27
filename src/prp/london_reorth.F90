@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,6 +18,9 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 
 module london_reorth_hb
 
@@ -70,6 +73,7 @@ module london_reorth_hb
 
   integer, parameter :: file_unit = 137
   integer, parameter :: tbmo_unit = 71
+  integer, parameter :: tbdmat_file_unit = 81
   logical            :: debug_me
 
 contains
@@ -92,7 +96,6 @@ contains
     real(8), intent(inout) :: work(lwork)
 
     real(8), allocatable   :: fao(:), fmo(:), tb_dmat(:)
-    integer, allocatable   :: npos_array(:)
     integer :: size_tb_dmat, size_fao, size_fmo
 !-----------------------------------------------------------------------
 
@@ -139,6 +142,7 @@ contains
 
   end subroutine
 
+
   subroutine get_ftb(fmat, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(in)    :: fmat(n2orbxq, *)
@@ -158,7 +162,8 @@ contains
     integer :: indxpr
     integer :: icomp, i, j, t, isymh, iz
     logical :: ah, ee, ep
-    real(8) :: a
+    real(8) :: a, dsx
+    real(8), external :: symcheck
 !-----------------------------------------------------------------------
 
     call alloc(fmo, n2bbasxq)
@@ -223,6 +228,8 @@ contains
       call prpmat(indxpr,        &
                   iopsy(icomp),  &
                   tb,            &
+                  .true.,        &
+                  work,           &
                   cmo,           &
                   ibeig,         &
                   icmoq,         &
@@ -233,6 +240,18 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+!CTROND
+            IF(FULMAT) THEN
+              CALL FULMAT2('S',NORBT,NORBT,tb)
+            ENDIF
+!            WRITE(*,*) &
+!            'get_ftb: Get MO matrix of property:', &
+!              icomp,PRPNAM(INDXPR),IREP(icomp)
+!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+!CTROND
+
 
 !!!TEST
 !      call test_new_routines(tb)
@@ -245,10 +264,8 @@ contains
       write(tbmo_unit) icomp
 ! *) irep of T^B_icomp:
       write(tbmo_unit) (isym(icomp) - 1)
-! *) time-reversal symmetry:
-!      write(tbmo_unit) 
-! *) reorthonormalization over both (p+e) shells or only over e shells:
-      write(tbmo_unit) doeprn 
+! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h), we need it for visualization
+      write(tbmo_unit) epreorth 
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb
 
@@ -266,7 +283,7 @@ contains
       if (lao_lr_rearrange) then
         ee = .true.
         ep = .true.
-        if (xlr_skipep .or. .not. doeprn) ep = .false.
+        if (xlr_skipep) ep = .false.
         if (xlr_skipee) ee = .false.
         call get_m_ai(tb, ee, ep)
       end if
@@ -279,17 +296,15 @@ contains
 !     it is = 1, because unperturbed Fock matrix is symmetric (its real part)
 !     it is set in getfck
       isymh = 1
-!     ah = .true. because T is antihermitian
-      ah = .true.
 
 !     do 1-index transformation
-      call ttra(doeprn,          &
-                ah,              &
-                isym(icomp),     &
+      call ttra(isym(icomp),     &
                 isymh,           &
                 tb,              &
                 fmo,             &
                 buf,             &
+                .true.,          &
+                .false.,         &
                 iprprp)
 
       debug_me = .false.
@@ -307,6 +322,10 @@ contains
                  1,              & 
                  fmat(1, icomp), & 
                  1)
+
+!check if it is antisymmetric:
+      DSX=SYMCHECK(fmat(1,icomp),NORBT,NORBT,NORBT,NZ)
+      write(*, *) 'symmetry check in london_reorth', dsx
 
 !     write to FCKLON file:
       call wrtdac(lufckl, norbt*norbt*nz,   &
@@ -340,6 +359,13 @@ contains
 
   subroutine get_gtb(fao, tb_dmat, cmo, ibeig)
     use xcint_main
+    use fde_cfg
+    use fde_mod
+    use fde_mag_cfg
+    use fde_dirac_matrices_integration
+    use fde_evaluators_dirac
+    use fde_data
+
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: fao(*)
     real(8), intent(in)    :: tb_dmat(*)
@@ -358,6 +384,7 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, ioff
+    type(fde_import) :: itmp
 !-----------------------------------------------------------------------
 #include "dcbgen.h"
 
@@ -377,8 +404,10 @@ contains
 !
 ! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
 !
-    call alloc(npos_array, npos)
-    npos_array(1:npos) = 0
+    allocate(npos_array(max(1,npos)))
+    if (npos > 0) then
+      npos_array(1:npos) = 0
+    end if
 
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
@@ -408,15 +437,12 @@ contains
       end do
     end if
 
-    if (allocated(npos_array)) then
-      call dealloc(npos_array)
-    end if
+    deallocate(npos_array)
 
 !       construct kohn-sham contribution
 !       ================================
 !   in dft Bx/By/Bz contributions are added on top of each other!
-    if (dirac_cfg_dft_calculation .and. .not. dft_cfg_no_sdft) then
-    !if (dirac_cfg_dft_calculation) then
+    if (dirac_cfg_dft_calculation) then
 
       debug_me = .false.
       if (debug_me) then
@@ -439,23 +465,40 @@ contains
 
       call generate_num_grid(dmat)
 #ifdef VAR_MPI
-      if (parcal) call dirac_parctl(4)
+      if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
-      call integrate_xc(xc_mat_dim          = ntbas(0), &
-                         xc_nz               = nz,       &
-                         xc_dmat_0           = dmat,        &
-                         xc_nr_dmat          = nr_xyz_comp, &
-                         xc_nr_fmat          = nr_xyz_comp, &
-                         xc_dmat             = tb_dmat,     &
-                         xc_fmat             = fao,         &
-                         xc_fmat_pg_sym      = isymop,      &
-                         xc_dmat_pg_sym      = isymop,      &
-                         xc_dmat_ih_sym      = ihrmop,      &
-                         xc_do_london_rhs_ro = .true.)       
+
+!     tb_dmat has been antisymmetrized in getmdm, ih = -1
+      if (expped) then
+         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+                            xc_nz               = nz,          &
+                            xc_dmat_0           = dmat,        &
+                            xc_nr_dmat          = nr_xyz_comp, &
+                            xc_nr_fmat          = nr_xyz_comp, &
+                            xc_dmat             = tb_dmat,     &
+                            xc_fmat             = fao,         &
+                            xc_fmat_pg_sym      = isymop,      &
+                            xc_dmat_pg_sym      = isymop,      &
+                            xc_dmat_ih_sym      = ihrmop,      &
+                            xc_do_london_rhs_ro = .true.,      &       
+                            xc_london_reorth_export = .true.)       
+      else
+         call integrate_xc(xc_mat_dim          = ntbas(0),     &
+                            xc_nz               = nz,          &
+                            xc_dmat_0           = dmat,        &
+                            xc_nr_dmat          = nr_xyz_comp, &
+                            xc_nr_fmat          = nr_xyz_comp, &
+                            xc_dmat             = tb_dmat,     &
+                            xc_fmat             = fao,         &
+                            xc_fmat_pg_sym      = isymop,      &
+                            xc_dmat_pg_sym      = isymop,      &
+                            xc_dmat_ih_sym      = ihrmop,      &
+                            xc_do_london_rhs_ro = .true.)       
+      end if
 
       call dealloc(dmat)
 
-      if (debug_me) then
+      if (iprprp .ge. 5) then
         do icomp = 1, nr_xyz_comp
           ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
           write(lupri, *) 'london_reorth: fmat after integrate_xc, icomp = ', icomp
@@ -467,9 +510,105 @@ contains
 
     end if
 
+!   fde contributions to property gradient
+!   --------------------------------------
+    if (dirac_cfg_fde_response .and. fde_rsp_propgrad_lao) then
+       call fde_get_import_info(itmp)
+!      no coupling:
+!      ------------
+       if (fde_rsp_propgrad_lao_reorth_embker .and. .not. fde_exclude_rsp_propgrad_lao_reorth_embker) then
+          write(*, *) 'FDE-LAO reorthonormalization contribution to the property gradient '// &
+                      'from the (uncoupled) embedding kernel'
+          call alloc(dmat, n2bbasxq)
+          dmat = 0.0d0
+          call genden(dmat, cmo, 1, iprprp)
+
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(FDE_PAR)
+#endif
+
+          call fde_dirac_emb_matrices_via_integration(          &
+                            fde_mat_dim          = ntbas(0),    &
+                            fde_nz               = nz,          &
+                            fde_dmat_0           = dmat,        &
+                            fde_nr_dmat          = nr_xyz_comp, &
+                            fde_nr_fmat          = nr_xyz_comp, &
+                            fde_dmat             = tb_dmat,     &
+                            fde_fmat             = fao,         &
+                            fde_do_london_rhs_ro = .true.)       
+          
+          call dealloc(dmat)
+
+          if (iprprp .ge. 5) then
+            do icomp = 1, nr_xyz_comp
+              ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
+              write(lupri, *) 'london_reorth: fmat after fde embker, icomp = ', icomp
+              call prqmat(fao(ioff), &
+                          ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                          nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+            end do
+          end if
+
+       end if
+
+!      coupling (non-additive xc and kinetic energy):
+!      ----------------------------------------------
+       if (fde_lao_frozen_embker_nonadd.and.fde_rsp_mag_lao_import) then
+         write(*, *) 'LAO kernel-like contribution to property gradient '// &
+                     'from frozen perturbed density (non-additive xc and kin terms)'
+         call alloc(dmat, n2bbasxq)
+         dmat = 0.0d0
+         call genden(dmat, cmo, 1, iprprp)
+
+#ifdef VAR_MPI
+         if (parcal) call dirac_parctl(FDE_PAR)
+#endif
+
+         call fde_dirac_emb_matrices_via_integration(       &   
+                       fde_mat_dim            = ntbas(0),   &
+                       fde_nz                 = nz,         &
+                       fde_dmat_0             = dmat,       &
+                       fde_nr_dmat            = 0,          &
+                       fde_nr_fmat            = nr_xyz_comp,      &
+                       fde_fmat               = fao,        &
+                       fde_do_london_rhs_reorth_coupling = .true.)
+
+         call dealloc(dmat)
+
+         if (iprprp .ge. 5) then
+           do icomp = 1, nr_xyz_comp
+             ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
+             write(lupri, *) 'london_reorth: fmat after fde embker (coupling nonadd.), icomp = ', icomp
+             call prqmat(fao(ioff), &
+                         ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                         nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+           end do
+         end if
+
+       end if
+!      coupling (Coulomb term):
+!      ------------------------
+       if (fde_lao_frozen_embker_coulomb.and.fde_rsp_mag_lao_import) then
+         write(*, *) 'LAO kernel-like contribution to property gradient ' // &
+                     'from frozen perturbed density (Coulomb term)'
+         call fde_get_elpot_pertden(ntbas(0), nz, nr_xyz_comp, fao)
+
+         if (iprprp .ge. 5) then
+           do icomp = 1, nr_xyz_comp
+             ioff = (icomp - 1)*nz*ntbas(0)**2 + 1
+             write(lupri, *) 'london_reorth: fmat after fde embker (coupling Coulomb), icomp = ', icomp
+             call prqmat(fao(ioff), &
+                         ntbas(0), ntbas(0), ntbas(0), ntbas(0), &
+                         nz, ipqtoq(1, isymax(icomp, 2)), lupri)
+           end do
+         end if
+
+       end if
+    end if   
+             
   end subroutine get_gtb
-
-
+             
+             
       SUBROUTINE my_GET_NPOS(NPOS)
 #include "implicit.h"
 #include "priunit.h"
@@ -484,6 +623,7 @@ contains
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
+
       end subroutine
 
 
@@ -500,6 +640,8 @@ contains
     integer :: isymop(nr_xyz_comp), ihrmop(nr_xyz_comp), ifckop(nr_xyz_comp)
     integer :: indxpr
     integer :: icomp, i, j
+    real(8), pointer       :: work(:)
+    integer                :: lwork
 !-----------------------------------------------------------------------
 
     do icomp = 1, nr_xyz_comp
@@ -508,10 +650,54 @@ contains
       isym(icomp)   = iprpsym(indxpr)
       irep(icomp)   = isym(icomp) - 1
       iopsy(icomp)  = jbtof(irep(icomp), 1)
+      itim(icomp)   = iprptim(indxpr)
 
-      do i = 1, nfsym 
-        j = mod(i + iopsy(icomp), 2) + 1 
-
+      if (spinfr .and.((itim(icomp).eq.1).or.nospin)) then
+        lwork = len_f77_work
+        call di_select_wrk(work, lwork)
+        do i = 1, nfsym 
+          j = mod(i + iopsy(icomp), 2) + 1 
+          if (nfbas(i, 0) > 0 .and. nfbas(j, 0) > 0) then
+            call qbtrans(0, 'AOMO',                  &
+                      'S',                           &
+                      0.0d0,                         &
+                      nfbas(i, 0),                   &
+                      nfbas(j, 0),                   &
+                      norb(i),                       &
+                      norb(j),                       &
+!                     --------------------------------
+                      fao(1 + i2basx(i, j), icomp),  &
+                      ntbas(0),                      &
+                      ntbas(0),                      &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      fmo(1 + i2orbx(i, j),icomp),   &
+                      norbt,                         &
+                      norbt,                         &
+                      nz,                            &
+                      ipqtoq(1, irep(icomp)),        &
+!                     --------------------------------
+                      cmo(1 + icmoq(i)),             &
+                      nfbas(i, 0),                   &
+                      norb(i),                       &
+                      nz,                            &
+                      ipqtoq(1, 0), ibeig(iorb(i)+1),&
+!                     --------------------------------
+                      cmo(1 + icmoq(j)),             &
+                      nfbas(j, 0),                   & 
+                      norb(j),                       &
+                      nz,                            &
+                      ipqtoq(1, 0),ibeig(iorb(j)+1), &
+!                     --------------------------------
+                      work, lwork, iprprp)
+          end if
+        end do
+        call di_deselect_wrk(work, lwork)        
+      else
+        do i = 1, nfsym 
+          j = mod(i + iopsy(icomp), 2) + 1 
+          if (nfbas(i, 0) > 0 .and. nfbas(j, 0) > 0) then
         call qtrans90('AOMO',                        &
                       'S',                           &
                       0.0d0,                         &
@@ -545,6 +731,9 @@ contains
                       ipqtoq(1, 0),                  &
 !                     --------------------------------
                       iprprp)
+          end if
+        end do
+      end if
 
       debug_me = .false.
       if (debug_me) then
@@ -558,13 +747,14 @@ contains
                     nz, ipqtoq(1, irep(icomp)), lupri)
       end if
 
-      end do
     end do
+
 
   end subroutine
 
 
   subroutine get_tb_dmat(tb_dmat, cmo, ibeig)
+  use fde_mod
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: tb_dmat(n2bbasxq, *)
     real(8), intent(in)    :: cmo(*)
@@ -577,7 +767,21 @@ contains
     integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
     integer                :: irep(nr_xyz_comp)
     integer                :: indxpr, icomp
+
 !-----------------------------------------------------------------------
+
+    if (fde_rsp_mag_lao_export) then
+!      write modified density matrix on file
+
+       open(tbdmat_file_unit,        &
+            file = 'TBDMAT',         &
+            form   = 'unformatted',  &
+            access = 'direct',       &
+            recl = 8*n2bbasxq,       &
+            action = 'write',        &
+            status = 'unknown')
+
+    end if
 
     call opnfil(lu1int, 'AOPROPER', 'OLD', 'get_tb_dmat')
 
@@ -602,6 +806,8 @@ contains
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
+                  .true.,           &
+                  work,             &
                   cmo,              &
                   ibeig,            &
                   icmoq,            &
@@ -612,6 +818,18 @@ contains
                   iprprp)
 
       call di_deselect_wrk(work, lwork)
+
+!CTROND
+!            IF(FULMAT) THEN
+!              CALL FULMAT2('S',NORBT,NORBT,tb)
+!            ENDIF
+!            WRITE(*,*) &
+!            'get_tb_dmat: Get MO matrix of property:', &
+!              icomp,PRPNAM(INDXPR),IREP(icomp)
+!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+!CTROND
+
 
 #ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
@@ -633,8 +851,7 @@ contains
       kfree = 1
       call di_select_wrk(work, lwork)
 
-      call getmdm(doeprn,            &
-                  isym(icomp),       &
+      call getmdm(isym(icomp),       &
                   tb_dmat(1, icomp), &
                   cmo,               &
                   ibeig,             &
@@ -646,7 +863,16 @@ contains
 
       call di_deselect_wrk(work, lwork)
 
+      if (fde_rsp_mag_lao_export) then
+         call wrtdac(tbdmat_file_unit, n2bbasxq,   &
+                  tb_dmat(1, icomp), icomp)
+      end if
+
     end do
+
+    if (fde_rsp_mag_lao_export) then
+       close(tbdmat_file_unit, status='keep')
+    end if
 
     close(lu1int)
     call dealloc(tb)

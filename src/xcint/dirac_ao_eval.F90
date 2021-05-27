@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -90,8 +90,10 @@ module dirac_ao_eval
 
    integer, public :: ao_off_g1_m0(1:3, 0:0)
    integer, public :: ao_off_g0_m1(0:0, 1:3)
+   integer, public :: ao_off_g0_m2(0:0, 1:6)
    integer, public :: ao_off_g2_m0(1:6, 0:0)
    integer, public :: ao_off_g1_m1(1:3, 1:3)
+   integer, public :: ao_off_g1_m2(1:3, 1:6)
 
    private
 
@@ -147,6 +149,13 @@ contains
                sy = bitstring_parity(iand(irep_of_axes(2), isym))*center_xyz(shell_center(ishell), 2)
                sz = bitstring_parity(iand(irep_of_axes(3), isym))*center_xyz(shell_center(ishell), 3)
 
+!#define DEBUG_GAUGEO
+#ifdef DEBUG_GAUGEO
+               sx = bitstring_parity(iand(irep_of_axes(1), isym))*(center_xyz(shell_center(ishell), 1) - global_gauge_origin(1))
+               sy = bitstring_parity(iand(irep_of_axes(2), isym))*(center_xyz(shell_center(ishell), 2) - global_gauge_origin(2))
+               sz = bitstring_parity(iand(irep_of_axes(3), isym))*(center_xyz(shell_center(ishell), 3) - global_gauge_origin(3))
+#endif
+
                do k = 1, block_length
                   px(k) = cx(k) - sx
                   py(k) = cy(k) - sy
@@ -199,8 +208,8 @@ contains
                   end if
                end if
 
-               if (need_ao_order(0, 1)) then
-                  call get_cartesian_ao_m1(block_length,                  &
+               if (need_ao_order(0, 2)) then
+                  call get_cartesian_ao_m2(block_length,                  &
                                            ishell,                        &
                                            px,                            &
                                            py,                            &
@@ -208,19 +217,56 @@ contains
                                            ao(1,                      i), &
                                            ao(1, ao_off_g0_m1(0, 1) + i), &
                                            ao(1, ao_off_g0_m1(0, 2) + i), &
-                                           ao(1, ao_off_g0_m1(0, 3) + i))
-                  if (need_ao_order(1, 1)) then
+                                           ao(1, ao_off_g0_m1(0, 3) + i), &
+                                           ao(1, ao_off_g0_m2(0, 1) + i), &
+                                           ao(1, ao_off_g0_m2(0, 2) + i), &
+                                           ao(1, ao_off_g0_m2(0, 3) + i), &
+                                           ao(1, ao_off_g0_m2(0, 4) + i), &
+                                           ao(1, ao_off_g0_m2(0, 5) + i), &
+                                           ao(1, ao_off_g0_m2(0, 6) + i))
+                  if (need_ao_order(1, 2)) then
                      do ixyz = 1, 3
-                        call get_cartesian_ao_m1(block_length,                     &
-                                                 ishell,                           &
-                                                 px,                               &
-                                                 py,                               &
-                                                 pz,                               &
-                                                 ao(1, ao_off_g1_m0(ixyz, 0) + i), &
-                                                 ao(1, ao_off_g1_m1(ixyz, 1) + i), &
-                                                 ao(1, ao_off_g1_m1(ixyz, 2) + i), &
-                                                 ao(1, ao_off_g1_m1(ixyz, 3) + i))
+                           call get_cartesian_ao_m2(block_length,                     &
+                                                    ishell,                           &
+                                                    px,                               &
+                                                    py,                               &
+                                                    pz,                               &
+                                                    ao(1, ao_off_g1_m0(ixyz, 0) + i), &
+                                                    ao(1, ao_off_g1_m1(ixyz, 1) + i), &
+                                                    ao(1, ao_off_g1_m1(ixyz, 2) + i), &
+                                                    ao(1, ao_off_g1_m1(ixyz, 3) + i), &
+                                                    ao(1, ao_off_g1_m2(ixyz, 1) + i), &
+                                                    ao(1, ao_off_g1_m2(ixyz, 2) + i), &
+                                                    ao(1, ao_off_g1_m2(ixyz, 3) + i), &
+                                                    ao(1, ao_off_g1_m2(ixyz, 4) + i), &
+                                                    ao(1, ao_off_g1_m2(ixyz, 5) + i), &
+                                                    ao(1, ao_off_g1_m2(ixyz, 6) + i))
                      end do
+                  end if
+               else
+                  if (need_ao_order(0, 1)) then
+                     call get_cartesian_ao_m1(block_length,                  &
+                                              ishell,                        &
+                                              px,                            &
+                                              py,                            &
+                                              pz,                            &
+                                              ao(1,                      i), &
+                                              ao(1, ao_off_g0_m1(0, 1) + i), &
+                                              ao(1, ao_off_g0_m1(0, 2) + i), &
+                                              ao(1, ao_off_g0_m1(0, 3) + i))
+                     if (need_ao_order(1, 1)) then
+                        do ixyz = 1, 3
+                           call get_cartesian_ao_m1(block_length,                     &
+                                                    ishell,                           &
+                                                    px,                               &
+                                                    py,                               &
+                                                    pz,                               &
+                                                    ao(1, ao_off_g1_m0(ixyz, 0) + i), &
+                                                    ao(1, ao_off_g1_m1(ixyz, 1) + i), &
+                                                    ao(1, ao_off_g1_m1(ixyz, 2) + i), &
+                                                    ao(1, ao_off_g1_m1(ixyz, 3) + i))
+                        end do
+                     end if
                   end if
                end if
 
@@ -276,6 +322,65 @@ contains
       end do
 
    end subroutine
+
+   subroutine get_cartesian_ao_m2(block_length, &
+                                  ishell,       &
+                                  px,           &
+                                  py,           &
+                                  pz,           &
+                                  ao_m000,      &
+                                  ao_m100,      &
+                                  ao_m010,      &
+                                  ao_m001,      &
+                                  ao_m200,      &
+                                  ao_m110,      &
+                                  ao_m101,      &
+                                  ao_m020,      &
+                                  ao_m011,      &
+                                  ao_m002)
+
+!     --------------------------------------------------------------------------
+      integer, intent(in)  :: block_length
+      integer, intent(in)  :: ishell
+      real(8), intent(in)  :: px(*)
+      real(8), intent(in)  :: py(*)
+      real(8), intent(in)  :: pz(*)
+      real(8), intent(in)  :: ao_m000(block_length, *)
+      real(8), intent(out) :: ao_m100(block_length, *)
+      real(8), intent(out) :: ao_m010(block_length, *)
+      real(8), intent(out) :: ao_m001(block_length, *)
+      real(8), intent(out) :: ao_m200(block_length, *)
+      real(8), intent(out) :: ao_m110(block_length, *)
+      real(8), intent(out) :: ao_m101(block_length, *)
+      real(8), intent(out) :: ao_m020(block_length, *)
+      real(8), intent(out) :: ao_m011(block_length, *)
+      real(8), intent(out) :: ao_m002(block_length, *)
+!     --------------------------------------------------------------------------
+      integer              :: k
+      integer              :: ic
+      real(8)              :: f(max_block_length)
+!     --------------------------------------------------------------------------
+
+      do ic = 1, cartesian_deg(ishell)
+         do k = 1, block_length
+            f(k) = 0.5d0*ao_m000(k, ic)
+         end do
+         do k = 1, block_length
+            ao_m100(k, ic) = f(k)*px(k)
+            ao_m010(k, ic) = f(k)*py(k)
+            ao_m001(k, ic) = f(k)*pz(k)
+
+            ao_m200(k, ic) = 0.5d0*f(k)*px(k)*px(k)
+            ao_m110(k, ic) = 0.5d0*f(k)*px(k)*py(k)
+            ao_m101(k, ic) = 0.5d0*f(k)*px(k)*pz(k)
+            ao_m020(k, ic) = 0.5d0*f(k)*py(k)*py(k)
+            ao_m011(k, ic) = 0.5d0*f(k)*py(k)*pz(k)
+            ao_m002(k, ic) = 0.5d0*f(k)*pz(k)*pz(k)
+         end do
+      end do
+
+   end subroutine
+
 
    subroutine ao_to_so(block_length, &
                        ao,           &
@@ -353,6 +458,17 @@ contains
          need_ao_order(2, 0) = .true.
       end if
 
+      if (m_order > 1) then
+         ao_off_g0_m2(0, 1) = (0 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g0_m2(0, 2) = (1 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g0_m2(0, 3) = (2 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g0_m2(0, 4) = (3 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g0_m2(0, 5) = (4 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g0_m2(0, 6) = (5 + nr_ao_slices)*nr_ao_cartesian
+         nr_ao_slices = nr_ao_slices + 6
+         need_ao_order(0, 2) = .true.
+      end if
+
       if (g_order > 0 .and. m_order > 0) then
          ao_off_g1_m1(1, 1) = (0 + nr_ao_slices)*nr_ao_cartesian
          ao_off_g1_m1(1, 2) = (1 + nr_ao_slices)*nr_ao_cartesian
@@ -366,6 +482,30 @@ contains
          nr_ao_slices = nr_ao_slices + 9
          need_ao_order(1, 1) = .true.
       end if
+
+      if (g_order > 0 .and. m_order > 1) then
+         ao_off_g1_m2(1, 1) = (0 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(1, 2) = (1 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(1, 3) = (2 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(1, 4) = (3 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(1, 5) = (4 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(1, 6) = (5 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(2, 1) = (6 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(2, 2) = (7 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(2, 3) = (8 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(2, 4) = (9 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(2, 5) = (10 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(2, 6) = (11 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(3, 1) = (12 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(3, 2) = (13 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(3, 3) = (14 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(3, 4) = (15 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(3, 5) = (16 + nr_ao_slices)*nr_ao_cartesian
+         ao_off_g1_m2(3, 6) = (17 + nr_ao_slices)*nr_ao_cartesian
+         nr_ao_slices = nr_ao_slices + 18
+         need_ao_order(1, 2) = .true.
+      end if
+
 
    end subroutine
 

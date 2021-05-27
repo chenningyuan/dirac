@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@
                              irecl,filecnf,ionizlevel)
 !
 ! purpose: reads in and analyzes long eigenvectors of 
-! single/double ionization and excitations calculations 
+! single/double ionization calculations 
 ! depending on the value of ionizlevel.
 ! Since eigenvectors can be *very* long we restrict the
 ! printout to eigenvector components larger than 0.001.
@@ -86,7 +86,9 @@
         CASE (2)
           write(*,*) 'Analyzing double ionizations.'   
         CASE (3)
-          write(*,*) 'Analyzing excitation calculations.'   
+          write(*,*) '** Attention! Excitations now only accessible'
+          write(*,*) '** in the new POLPRP module (see manual)'
+          call quit('** Use POLPRP module')
         CASE DEFAULT
           call quit('** internal error ** ionizlevel selector')
       END SELECT
@@ -365,24 +367,25 @@
             endif
           ENDDO
 !
-        ELSE   ! generate output for excitation eigenvectors
+        ELSE   ! obsolete....
 !
-          write(io3,'(A8,2X,4A14,A20)') &
-            'Cnf.',ostr,vstr,ostr,vstr,'Coeff(real)'
-          write(io3,'(A)') ' '
-          icount = 1
-          DO ix=1,ladcx
-            read(io2,REC=ix) field
-            if(dabs(evli(ix,K)).gt.coefthr) then
-              IF(ix.gt.nocc) then
-                write(io3,'(I8,2X,A56,F20.12)') ix,field,evli(ix,K)
-              ELSE
-                write(io3,'(I8,2X,A28,2A14,F20.12)') &
-                     ix,field,blankf,blankf,evli(ix,K)
-              ENDIF
-              icount = icount + 1
-            endif
-          ENDDO
+          call quit('** internal error, no excitations available here.')
+!         write(io3,'(A8,2X,4A14,A20)') &
+!           'Cnf.',ostr,vstr,ostr,vstr,'Coeff(real)'
+!         write(io3,'(A)') ' '
+!         icount = 1
+!         DO ix=1,ladcx
+!           read(io2,REC=ix) field
+!           if(dabs(evli(ix,K)).gt.coefthr) then
+!             IF(ix.gt.nocc) then
+!               write(io3,'(I8,2X,A56,F20.12)') ix,field,evli(ix,K)
+!             ELSE
+!               write(io3,'(I8,2X,A28,2A14,F20.12)') &
+!                    ix,field,blankf,blankf,evli(ix,K)
+!             ENDIF
+!             icount = icount + 1
+!           endif
+!         ENDDO
         ENDIF
         write(io3,'(A)') ' '
         write(io3,'(A)') '--------------------------------------------'

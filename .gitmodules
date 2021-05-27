@@ -1,9 +1,15 @@
 [submodule "external/gen1int"]
 	path = external/gen1int
 	url = https://gitlab.com/bingao/gen1int.git
+[submodule "external/pelib"]
+        path = external/pelib
+        url = https://gitlab.com/pe-software/pelib-public.git                
 [submodule "external/unit-tests"]
 	path = external/unit-tests
 	url = https://gitlab.com/dirac/unit-tests.git
 [submodule "external/stieltjes"]
 	path = external/stieltjes
 	url = https://gitlab.com/stieltjes/stieltjes.git
+[submodule "external/laplace-minimax"]
+	path = external/laplace-minimax
+	url = https://github.com/bhelmichparis/laplace-minimax.git

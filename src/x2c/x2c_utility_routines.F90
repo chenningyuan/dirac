@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,9 +33,6 @@ module x2c_utils
   use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
-#ifdef MOD_INTEREST
-  use module_interest_interface
-#endif
 
   implicit none
 
@@ -918,7 +915,6 @@ contains
                                                nr_entries,     &
                                                fh,             &
                                                print_lvl,      &
-                                               loop_read,      &
                                                loop_factor     &
                                               )
 !**********************************************************************
@@ -933,7 +929,6 @@ contains
      integer,           intent(in)    :: nr_entries
      integer,           intent(in)    :: fh
      integer,           intent(in)    :: print_lvl
-     logical, optional                :: loop_read
      real(8), optional                :: loop_factor(0:nr_entries-1)
      real(8),           intent(inout) :: xmat(ndim * nr_entries)
 !----------------------------------------------------------------------
@@ -941,7 +936,12 @@ contains
      integer                          :: nr_entries_check
      character (len=74)               :: info_text
      character (len=72)               :: file_name
+     logical                          :: squash
 !**********************************************************************
+       squash = .false.
+       if(present(loop_factor))then
+        squash = .true.
+       end if
 
 !      step 1: inquire file name
 !      -------------------------
@@ -965,15 +965,11 @@ contains
 
        read(fh) xmat
 
-       if(nr_entries > 1)then
+       !> possibly squash AO matrices into one with scaling factors applied to each matrix, e.g. AOC factors
+       if(nr_entries > 1 .and. squash)then
          offset = 1
          do i = 1, nr_entries
-         print *, 'offset, nr_entries, loop_factor, ndim',offset, nr_entries, loop_factor, ndim
-         print *, 'i, loop_factor(i-1)',i,loop_factor(i-1)
            if(i > 1)then
-!            do j = 1, ndim
-!              xmat(j) = xmat(j) + xmat(offset+j)*loop_factor(i-1)
-!            end do
              call daxpy(ndim,loop_factor(i-1),xmat(offset+(i-1)*(ndim)),1,xmat,1)
            end if
            offset = offset + ndim
@@ -986,6 +982,7 @@ contains
   subroutine write_fock_matrices_saao_basis_x2c(xmat,           &
                                                 ndim,           &
                                                 nr_entries,     &
+                                                name,           &
                                                 fh,             &
                                                 print_lvl)
 !**********************************************************************
@@ -1004,6 +1001,7 @@ contains
 !----------------------------------------------------------------------
      character (len=74)               :: info_text
      character (len=72)               :: file_name
+     character (len=4)                :: name
 !**********************************************************************
 
 !      step 1: inquire file name
@@ -1013,7 +1011,7 @@ contains
 !      step 2: write matrix elements to file
 !      -------------------------------------
        rewind fh
-       write(info_text,'(a74)') 'X2C molecular-mean-field: picture-change transformed effective F[1] matrix.'
+       write(info_text,'(a74)') 'X2C molecular-mean-field: picture-change transformed effective '//name//' matrix.'
        write(fh) info_text
        write(fh) ndim, nr_entries
        if(print_lvl > 2)then
@@ -1058,16 +1056,10 @@ contains
 
        if(task_id >= 0)then
 
-         if(mdirac)then
-#ifdef MOD_INTEREST
-           call process_overlap_integrals_4comp( scr_mat1, ss_scaling=0.0d0 )
-#endif
-         else
 #ifdef PRG_DIRAC
 !        compute Sao_LL overlap matrix where the SS part is set to zero
          call gtovlt(scr_mat1,0.0d0,0)
 #endif
-        end if
 
 !        store matrix on file in "gerade/ungerade" format (if applicable)
          ioff_ovl = 1
@@ -1133,16 +1125,9 @@ contains
        saoao(1:nzt*naosh_ls**2) = 0.0d0
 
 !      compute Saoao overlap matrix
-       if(mdirac)then
-#ifdef MOD_INTEREST
-         call process_overlap_integrals_4comp( saoao , ss_scaling=1.0d0)
-!        call butobs_no_work(saoao,1)
-#endif
-       else
 #ifdef PRG_DIRAC
-         call gtovlx(saoao,1.0d0)
+       call gtovlx(saoao,1.0d0)
 #endif
-       end if
 
        iaomo = 1
 
@@ -1376,7 +1361,7 @@ contains
      lucoef = 99
      call opnfil(lucoef,'DFCOEF','OLD','x2cfck')
      rewind(lucoef)
-     call reacmo_no_work(lucoef,'DFCOEF',cmo,xx,i,j,2)
+     call reacmo(lucoef,'DFCOEF',cmo,xx,i,j,2)
      close(lucoef,status='keep')
 
 !    generate density matri(x/ces) (denmat is a general driver routine from Dirac

@@ -14,5 +14,6 @@ f.add(string = 'Final KR-MCSCF energy',
 
 test.run(['Be.gascip.bss+mfsso.krmc.inp'], ['Be.gascip.mol'], f)
 test.run(['Be.inp'], ['Be.mol'], f)
+test.run(['Be.linear.inp'], ['Be.linear.mol'], f)
 
 sys.exit(test.return_code)

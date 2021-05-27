@@ -8,14 +8,11 @@
       REAL*8  ZCMVAL, TOL_SYMADD
       INTEGER IPREAD, MAXPRI, LUMLCL, LCMMAX, NCMSTR, NCMEND
       LOGICAL BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  PRIBAS, ATOMBA,   &
-     &        UNCONT, ATOMDF, CNTMAT, LCNTNUUM
+     &        UNCONT, CNTMAT, LCNTNUUM
       COMMON /CBIREA/ ZCMVAL, TOL_SYMADD,                               &
      &        IPREAD, MAXPRI, LUMLCL, LCMMAX, NCMSTR, NCMEND,           &
      &        BIGVC,  GENCON, INPTST, DIRAC,  BASIS,  PRIBAS, ATOMBA,   &
-     &        UNCONT, ATOMDF, CNTMAT, LCNTNUUM
-
-      CHARACTER*80 BASNAM
-      COMMON /CBIRET/ BASNAM
+     &        UNCONT, CNTMAT, LCNTNUUM
 
 !     MAXFAMEXP = maximum number of exponents in family basis sets
       INTEGER MXFAMEXP

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -92,7 +92,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Opens a word-addressable file.
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
+      integer itape
 C
 #include "waio.h"
 #if defined (VAR_MPI)
@@ -101,6 +102,7 @@ C
 C
       CHARACTER*6 IDENT
       INTEGER*8 SIZE
+      INTEGER LENREC,NINTE,NLOGI,NREAL,IRECLEN
 C
       IF (ITAPE.GT.MAX_WAIO_FILES-1.OR.ITAPE.LT.1) THEN
          WRITE(6,*) ' INVALID TAPE NUMBER GIVEN: ITAPE=' ,ITAPE
@@ -150,7 +152,8 @@ C
 C     JCODE = 3     CLOSE AND SAVE FILE
 C     JCODE = 4     CLOSE AND DELETE FILE
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
+      integer itape,jcode
 C
 #include "waio.h"
 #if defined (VAR_MPI)
@@ -191,7 +194,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Flush the word-addressable file.
 C
-      IMPLICIT INTEGER (A-Z)
+      IMPLICIT NONE
+      integer itape,jcode
 C
       JCODE = 3
       CALL WAIO_CLOSE (ITAPE,JCODE)
@@ -208,9 +212,11 @@ C     either be zero (start at begin of file) or positive.
 C     This word-addressable I/O is done using either standard c byte 
 C     addressable I/O or using FORTRAN direct access files.
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 #include "waio.h"
+      integer itape,array,nlen,extra,init_waio,irec,irec_first
+      integer irec_last,nwords4,offb
       INTEGER BUFF(NWORDS_ON_RECORD)
       INTEGER*8 OFFSET,OFF,NWORDS
       REAL*8 WALL1,WALL2,CPU1,CPU2,WALL
@@ -276,7 +282,7 @@ cdbg        print*,"first record",irec,offb,extra,'-->',off
 C              This record has been written before, copy the
 C              old information first before partially overwriting
 C              with new information.
-               CALL READDI (ITAPE,IREC,OFFB-1,BUFF)
+               READ (ITAPE,REC=IREC) BUFF
             ELSE
 C              This record has NOT been written before, this is not
 C              allowed in the current version of WAIO (all records
@@ -369,7 +375,7 @@ C     This routine reads or writes NLEN real words into an array.
 C     The file position is specified by the variable OFFSET that should
 C     either be zero (start at begin of file) or positive.
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 #include "waio.h"
 #include "complex.inc"
@@ -377,6 +383,7 @@ C
 C
       REAL*8 ARRAY(NLEN)
       LOGICAL DO_READ
+      integer itape,nlen,nleni
 C
 C     Check for trivial cases
 C
@@ -397,9 +404,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Used for compatibility with the old code.
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 #include "waio.h"
+      integer itape,array,nlen,irec
       DIMENSION ARRAY(NLEN)
       LOGICAL DO_READ
       INTEGER*8 OFFSET,TEMP1,TEMP2

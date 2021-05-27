@@ -1089,11 +1089,11 @@ C     E_CC = CC_VEC(N_CC_AMP+1) IF IDENTITY WAS LAST BUT MINE IS FIRST
 * neighbouring elements in an array.                           *
 *                                                              *
 ****************************************************************
-      SUBROUTINE FIND_LARGEST_DIFF_FOR_NEIGHBOURS(NOUT,NARR,NLENGHT)
+      SUBROUTINE FIND_LARGEST_DIFF_FOR_NEIGHBOURS(NOUT,NARR,NLENGTH)
       IMPLICIT NONE
-      INTEGER NOUT,NLENGHT,NARR(NLENGHT),I,J
+      INTEGER NOUT,NLENGTH,NARR(NLENGTH),I,J
       NOUT = 0
-      DO I=2,NLENGHT
+      DO I=2,NLENGTH
         J = NARR(I)-NARR(I-1)
         IF(J.GT.NOUT) NOUT = J
       END DO

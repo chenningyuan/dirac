@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AINTM(T1,T2,BUF1,BUF2,AZ)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -76,6 +76,8 @@ C------------------------------------------------
       CALL DELINT ('VOOO','DKDD',BUF1,0,0,0)
       CALL SRT9 (NREP,MULTB,LFA,NVO,NV,NO,NOOT,NOOOT,KOOOVT,KKOOOT,
      &           BUF1,BUF2)
+      CALL XSCAL (KOOOVT(NREP+1),-A1,BUF2,1)
+      IF (CARITH) CALL CONJUGA (KOOOVT(NREP+1),BUF2,1)
       CALL CNTRCT ('N','N',NOOOT,NO,NV,A1,BUF2,T1,A0,BUF1,NREP)
       CALL SRT1T3 (NREP,MULTB,LTR,NOOT,NO,NO,NOOOT,KOOOOT,KKOOOT,
      &             BUF1,BUF2)
@@ -93,7 +95,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GOINTM (FVO,T1,BUF1,BUF2,GO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -119,6 +121,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -146,7 +150,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GVINTM(FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -177,6 +181,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL USEDZ,RIGHT
       real*8 ddot
+      integer m,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -219,7 +224,8 @@ C------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
-      IMPLICIT INTEGER (A-Z)
+      use interface_to_mpi
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -251,6 +257,8 @@ C
       DATA T1VAL /2*0.0D0/
       LOGICAL DONE,TEQ
       real*8 ddot,xsum
+      integer akcd,akci,akdi,c,cco,cd,ci,cmin,crep,d,di,drep,i,irep,irp
+      integer istart,jrep,k,kld,m,mint,n,nint,off1,off2,off3,t1ci,t1di
 C
 C---------------Executable code--------------------------------------
 
@@ -306,7 +314,6 @@ C----------------------------------------
         CALL XCOPY(NV4,A0,0,BUF1,1)
 
       ENDIF
-
 
 C ***************************
 C ** END OF TASK SPLITTING **
@@ -405,8 +412,8 @@ C----------------------------------------------------------------------
 C For the H-intermediate in the lambda equations we should not scale t2
 C----------------------------------------------------------------------
       CALL GETTAU (T1,BUF1,BUF2)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF2,BUF1)
+      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,
+     &             JJVO,BUF2,BUF1)
 C---------------------------------------------------------------
 C BUF1 now contains 0.5*T(AD,IL) - T(A,L)*T(D,I) + T(A,I)*T(D,L)
 C Subtract T(A,I)*T(D,L)
@@ -441,12 +448,36 @@ C
  
       CALL XTIME(0,2,'--- HINTM: VVOO contribution      ')
 
+#if defined (VAR_MPI)
+C *******************
+C ** parallel case: the H-intermediate was partially calculated
+C ** on the separate slaves. In order to perform the H*T2
+C ** contraction we need the complete H array ==> we complete it
+C ** here and synchronize all the nodes. They then have the complete
+C ** H-array and this lengthy contraction can also be parallelized.
+C
+      IF (NMPROC .GT. 1) THEN
+
+        IF(NBUF3.LT.IVOVO(NREP+1))
+     &    CALL QUIT('BUF3 can not keep the VOVO integrals !')
+
+C ... we collect the H array
+        CALL XTIME(4,1,'-- combining HINTM via MPI_ALLREDUCE')
+        CALL XCOPY (NBUF3,A0,0,BUF3,1)
+        call interface_mpi_allreduce_r1_work_f77(H,BUF3,
+     &       RCW*IVOVO(NREP+1),
+     &       op_MPI_SUM,global_communicator)
+        CALL XCOPY(IVOVO(NREP+1),BUF3,1,H,1)
+        CALL XTIME(4,2,'-- combining HINTM via MPI_ALLREDUCE')
+      ENDIF
+#endif
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOINTM(FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -475,6 +506,7 @@ C
 C---------------Local variables--------------------------------------
 C
       real*8 ddot
+      integer i,ii,irp,n,nd
 C---------------Executable code--------------------------------------
       interface
          subroutine gettau(t1,t2,tau)
@@ -486,7 +518,6 @@ C
 C---------------------------------------
 C H(K,I) = F(K,I)  - DELTA(K,I) * EPS(I)
 C---------------------------------------
-      call dzero(ho,nfoo)
       CALL XCOPY (NFOO,FOO,1,HO,1)
       II = 1
       I = 1
@@ -516,7 +547,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOVINTM(FVO,T1,BUF1,BUF2,HOV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -542,6 +573,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer k,m
 C
 C---------------Executable code--------------------------------------
 C
@@ -569,7 +602,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HVINTM(FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -596,6 +629,7 @@ C
 C
 C---------------Local variables--------------------------------------
       REAL*8 ddot
+      integer a,aa,irp,n,nd
 C
 C---------------Executable code--------------------------------------
 
@@ -641,9 +675,9 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,NBUF2,BUF3,NBUF3,S2,IW)
+      SUBROUTINE BINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -657,7 +691,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER NBUF2,NBUF3,IW
+      INTEGER NBUF3
       REAL*8 T1(*),T2(*)
       REAL*8 S2(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
@@ -676,6 +710,7 @@ C
       REAL*8 T1MIN(2)
       DATA T1MIN /2*0.0D0/
       REAL*8 ddot
+      integer irp,istart,k,kd,m,mint,n,nint,off1,off2
 C
 C---------------Executable code--------------------------------------
 
@@ -790,7 +825,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU (T1,T2,TAU)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -818,6 +853,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8  T1MIN(2)
       DATA    T1MIN /2*0.0D0/
+      integer ab,abijoff,ai,aj,amin,arp,b,bi,bj,brp,i,ijrp,imin,irp,j
+      integer jrp,na
     
 C
 C---------------Executable code--------------------------------------
@@ -894,7 +931,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -931,6 +968,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 S1MIN(2)
       DATA S1MIN /2*0.0D0/
+      integer na,n,jrp,j,irp,imin,ijrp,i,f,e,brp,bj,bi,b,arp,amin,aj
+      integer ai,abijoff,ab,a,m
 C
 C---------------Executable code--------------------------------------
 C
@@ -1019,7 +1058,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU3 (T1,T2,TAU)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1048,6 +1087,8 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 T1VAL(2)
       DATA T1VAL /2*0.0D0/
+      integer ab,abijoff,ai,aj,amin,arp,b,bi,bj,brp,i,ijrp,imin,irp
+      integer j,jrp,na
 C
 C---------------Executable code--------------------------------------
 C
@@ -1118,530 +1159,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE LAMBD21(T1,L1,S2)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Calculates contribution to L2 equations
-C
-C---------------Routines called----------------------------------------
-C
-C     XCOPY, XAXPY
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 L1(*),T1(*),S2(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "symm.inc"
-#include "complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 T1MIN(2)
-      DATA T1MIN /2*0.0D0/
-C
-C---------------Executable code--------------------------------------
-C
-      ABIJOFF = 0
-      DO IJRP = 1, NREP
-      DO 10 JRP = 1, NREP
-      IRP = MULTB(JRP,IJRP+NREP,2)
-      IF (IRP.LT.JRP) GOTO 10
-      DO J = 1, NO(JRP)
-         IMIN = 1
-         IF (IRP.EQ.JRP) IMIN = J + 1
-         DO I = IMIN, NO(IRP)
-            DO 20 BRP = 1, NREP
-            ARP = MULTB(BRP,IJRP+NREP,2)
-            IF (ARP.LT.BRP) GOTO 20
-C--------------------------------------------------------------
-C L2(AB,IJ) = L2(AB,IJ) + L1(A,I) * T1(B,J) + T1(A,I) * L1(B,J)
-C--------------------------------------------------------------
-            IF (BRP.EQ.JRP) THEN
-               AB = 1
-               BJ = (IVO(JRP) + (J-1) * NV(JRP)) * RCW + 1
-               DO B = 1, NV(BRP)
-                  AMIN = 1
-                  IF (ARP.EQ.BRP) AMIN = B + 1
-                  AI = (IVO(IRP) + (I-1) * NV(IRP) + AMIN - 1) * RCW + 1
-                  NA = NV(ARP) - AMIN + 1
-                  CALL XAXPY (NA,T1(BJ),L1(AI),1,S2(ABIJOFF+AB),1)
-                  CALL XAXPY (NA,L1(BJ),T1(AI),1,S2(ABIJOFF+AB),1)
-                  AB = AB + NA * RCW
-                  BJ = BJ + RCW
-               ENDDO
-            ENDIF
-C--------------------------------------------------------------
-C S2(AB,IJ) = S2(AB,IJ) - L1(A,J) * T1(B,I) - T1(A,J) * L1(B,I)
-C--------------------------------------------------------------
-            IF (ARP.EQ.JRP) THEN
-               AB = 1
-               BI = (IVO(IRP) + (I-1) * NV(IRP)) * RCW + 1
-               DO B = 1, NV(BRP)
-                  AMIN = 1
-                  IF (ARP.EQ.BRP) AMIN = B + 1
-                  AJ = (IVO(JRP) + (J-1) * NV(JRP) + AMIN - 1) * RCW + 1
-                  NA = NV(ARP) - AMIN + 1
-                  T1MIN(1) = -T1(BI)
-                  IF (CARITH) T1MIN(2) = -T1(BI+1)
-                  CALL XAXPY (NA,T1MIN,L1(AJ),1,S2(ABIJOFF+AB),1)
-                  T1MIN(1) = -L1(BI)
-                  IF (CARITH) T1MIN(2) = -L1(BI+1)
-                  CALL XAXPY (NA,T1MIN,T1(AJ),1,S2(ABIJOFF+AB),1)
-                  AB = AB + NA * RCW
-                  BI = BI + RCW
-               ENDDO
-            ENDIF
-C--------------------------------------------------------
-C UPDATE OFFSET AND GO TO NEXT IRREP PAIR
-C--------------------------------------------------------
-            IF (ARP.NE.BRP) THEN
-               ABIJOFF = ABIJOFF + NV(ARP) * NV(BRP) * RCW
-            ELSE
-               ABIJOFF = ABIJOFF + NV(ARP) * (NV(ARP)-1) * RCW / 2
-            ENDIF
- 20         CONTINUE
-         ENDDO
-      ENDDO
- 10   CONTINUE
-      ENDDO
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE CINTM(T1,T2,HOV,AZ,BUF1,BUF2,BUF3,NBUF3,CZ)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C
-C     Make modified VOOO integrals for lambda equations
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER NBUF3
-      REAL*8 T1(*),T2(*),AZ(*),HOV(*),CZ(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "param.inc"
-#include "complex.inc"
-#include "symm.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 T1VAL(2)
-      DATA T1VAL /2*0.0D0/
-      LOGICAL DONE
-      real*8 ddot,xsum
-C
-C---------------Executable code--------------------------------------
-
-      interface
-         subroutine gettau(t1,t2,tau)
-         real*8,intent(in) :: t1(*),t2(*)
-         real*8,intent(out) :: tau(*)
-         end subroutine gettau
-      end interface
-
-C---------------------------------------------------------------------
-C CZ(AL,IJ) = V(AL,IJ)
-C---------------------------------------------------------------------
-      CALL GETVOOO (CZ)
-C--------------------------------------------------
-C CZ(AL,IJ) = CZ(AL,IJ) - T(A,K) * A(KL,IJ)
-C--------------------------------------------------
-      CALL SRT1T2 (NREP,MULTB,LFA,NOOT,NO,NO,NOOT,LOOOOT,LLOOOT,AZ,BUF1)
-      CALL CNTRCT ('N','N',NV,NOOOT,NO,A1,T1,BUF1,A0,BUF2,NREP)
-      CALL SRT1S2 (NREP,MULTB,LTR,NVO,NV,NO,NOOT,LVOOOT,LLOOOT,
-     &             BUF2,BUF1)
-      CALL XAXPY (NV2,-A1,BUF2,1,CZ,1)
-C----------------------------------------------------
-C CZ(AL,IJ) = CZ(AL,IJ) + V(AL,CD) * TAU(CD,IJ)
-C----------------------------------------------------
-      CALL GETTAU (T1,T2,BUF1)
-      OFF1 = 1
-      OFF2 = 1
-      DO 30 IRP = 1, NREP
-         IF (NVO(IRP).EQ.0) GOTO 30
-         DONE = .FALSE.
-         ISTART = 0
-         MINT = NBUF3/NVO(IRP)
-Clv : Check this code : it probably does not work after the
-Clv : parallelization. Does not matter because these lambda routines
-Clv : were not completed or used anyway. Comments holds also for next
-Clv : GETVOVV calls that adddress the distributed integrals
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-         M = NVO (IRP)
-         N = NOOT(IRP)
-         K = NINT
-         CALL XGEMM ('N','N',M,N,K,A1,BUF3,M,BUF1(OFF1+ISTART*RCW),
-     &               NVVT(IRP),A1,CZ(OFF2),M)
-         IF (.NOT.DONE) THEN
-            ISTART = ISTART + NINT
-            GOTO 10
-         ENDIF
-         OFF1 = OFF1 + M * N * RCW
-         OFF2 = OFF2 + M * N * RCW
- 30    CONTINUE
-C-------------------------------------------------------
-C LVOOO1(CI,KL) = VVOOO(CI,KL) + VVVOO (CD,KL) * T1(D,I)
-C-------------------------------------------------------
-      CALL GETVVOO (BUF1)
-      CALL SRT1C1 (NREP,NVVT,NOOT,BUF1,BUF2)
-      CALL SRT1T3 (NREP,MULTB,LFA,NOOT,NV,NV,NOOVT,KOOVVT,KKOOVT,
-     &             BUF2,BUF1)
-      CALL CNTRCT ('N','N',NOOVT,NO,NV,A1,BUF1,T1,A0,BUF2,NREP)
-      CALL SRT1S3 (NREP,MULTB,LTR,NOOT,NV,NO,NOOOT,KOOVOT,KKOOVT,
-     &             BUF2,BUF1)
-      CALL SRT1C1 (NREP,NOOT,NVO,BUF1,BUF2)
-      CALL GETVOOO (BUF1)
-      CALL XAXPY (IVOOOT(NREP+1),A1,BUF2,1,BUF1,1)
-C------------------------------------------------------------------
-C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ T(AC,IK) * LVOOO1(KL,CJ) ]
-C------------------------------------------------------------------
-      IF (CARITH) CALL CONJUGA (NV2,BUF1,1)
-      CALL SRT1ST4 (NREP,MULTB,LFA,LFA,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
-     &              BUF1,BUF2)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              T2,BUF1)
-C     ---------------------------------------------------------
-C     Ordered as T(AI,CK) and V(CK,JL) : do the multiplication.
-C     ---------------------------------------------------------
-      OFF1 = 1
-      OFF3 = 1
-      DO IREP = 1, NREP
-         JREP = MULTB(IREP+NREP,1+NREP,2)
-         M = MVO(IREP)
-         N = MOO(IREP)
-         K = MVO(JREP)
-         OFF2 = J2VOOO(JREP) * RCW + 1
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),K,
-     &               A0,BUF3(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-C     -----------------------------------------------------------------
-C     Sort from order (AI,JL) back to (AL,JI) and add with a minus sign
-C     -----------------------------------------------------------------
-      CALL SRT26 (NREP,MULTB,LFA,LTR,NV,NO,NO,NO,MVO,JVOOO,JJVO,JJOO,
-     &            BUF3,BUF1)
-      CALL XAXPY (NV2,-A1,BUF1,1,CZ,1)
-C------------------------------------------------------------------
-C CZ(AL,IJ) = CZ(AL,IJ) + PIJ.[ V(AL,ID) * T(D,J) ]
-C------------------------------------------------------------------
-      CALL GETVOVO (BUF1)
-      CALL SRT19 (NREP,MULTB,LFA,NVO,NV,NO,NVOO,KVOOV,KKVOO,BUF1,BUF2)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP =1 , NREP
-         M = NVOO(IRP)
-         N = NO(IRP)
-         K = NV(IRP)
-         CALL XGEMM ('N','N',M,N,K,A1,BUF2(OFF1),M,T1(OFF2),K,
-     &               A0,BUF1(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT1T3 (NREP,MULTB,LTR,NVO,NO,NO,NVOO,KVOOO,KKVOO,BUF1,BUF2)
-      CALL XAXPY (NV2,A1,BUF2,1,CZ,1)
-C------------------------------------------------------
-C CZ(AL,IJ) = CZ(AL,IJ) + HOV(L,C) * T(AC,IJ) ]
-C------------------------------------------------------
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF1)
-      OFF1 = 1
-      OFF2 = 1
-      OFF3 = 1
-      DO IRP = 1, NREP
-         M = NO(IRP)
-         N = NVOOT(IRP)
-         K = NV(IRP)
-         CALL XGEMM ('C','N',M,N,K,A1,HOV(OFF1),K,BUF1(OFF2),K,
-     &                A0,BUF2(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF2 = OFF2 + K * N * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-      CALL SRT1S2 (NREP,MULTB,LTR,NOV,NO,NV,NOOT,LOVOOT,LLVOOT,
-     &             BUF2,BUF1)
-      CALL SRT1L1 (NREP,MULTB,LTR,NOV,NO,NV,NOOT,IVOOOT,IIVO,BUF1,BUF2)
-      CALL XAXPY (NV2,A1,BUF2,1,CZ,1)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DINTM(T1,T2,HOV,BUF1,BUF2,NBUF2,BUF3,NBUF3,H)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Calculates LVOVV intermediate for lambda equations and write it to
-C     file. Note that this is the complex conjugate of the intermediate
-C     defined by Gauss & Stanton
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER NBUF2,NBUF3
-      REAL*8 T1(*),T2(*),HOV(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*),H(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "param.inc"
-#include "symm.inc"
-#include "eqns.inc"
-#include "complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 T1CON(2)
-      DATA T1CON /2*0.0D0/
-      LOGICAL DONE
-C
-C---------------Executable code--------------------------------------
-
-      interface
-         subroutine gettau(t1,t2,tau)
-         real*8,intent(in) :: t1(*),t2(*)
-         real*8,intent(out) :: tau(*)
-         end subroutine gettau
-      end interface
-C
-C -------------------------------------------------------------
-C H1(AK,CJ) = V(AK,CJ) + V(AK,CD) * T(D,J) - V(KL,CD) * T(AD,LJ)
-C -------------------------------------------------------------
-      CALL DINTM1(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-      IF (CARITH) CALL CONJUGA (NV4,H,1)
-C
-      CALL GETTAU (T1,T2,BUF1)
-      DO 50 IRP = 1, NREP
-         IF (NOV(IRP).EQ.0.OR.NVVT(IRP).EQ.0) GOTO 50
-         MINT = MIN0(NBUF3/NVVT(IRP),NBUF2/NVO(IRP))
-         ISTART = 0
- 10      CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF2,MINT)
-C----------------------------------------------
-C D(CJ,AB) =  VVOVV(CJ,AB) + T*(J,D) * W(CD,AB)
-C----------------------------------------------
-         MINT = NBUF3/NVVT(IRP)
-         CALL GETVVVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-         IF (CARITH) THEN
-            CALL CONJUGA (NINT*NVVT(IRP),BUF3,1)
-         ENDIF
-C----------------------------------------------
-C W(CD,AB) =  V(CD,AB) + V(CD,KL) * TAU*(KL,AB)
-C----------------------------------------------
-         CALL GETVVOO (T2)
-         M = NVVT(IRP)
-         N = NINT
-         K = NOOT(IRP)
-         ABKL = (IVVOOTT(IRP)+ISTART)*RCW+1
-         CALL XGEMM ('N','C',M,N,K,A1,T2,M,BUF1(ABKL),NVVT(IRP),
-     &               A1,BUF3,M)
-         CALL GETAMPT(T1,T2)
-         CD = 1
-         DO 20 DREP = 1, NREP
-            CREP = MULTB(DREP,IRP+NREP,2)
-            IF (CREP.LT.DREP) GOTO 20
-            DO D = 1, NV(DREP)
-               CMIN = 1
-               IF (CREP.EQ.DREP) CMIN = D + 1
-               DO C = CMIN, NV(CREP)
-                  JREP = DREP
-                  DO J = 1, NO(JREP)
-                     DJ = (IVO(JREP)+(J-1)*NV(DREP)+D-1) * RCW + 1
-                     CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     T1CON(1) =  T1(DJ)
-                     IF (CARITH) T1CON(2) = - T1(DJ+1)
-                     CALL XAXPY(NINT,T1CON,BUF3(CD),1,
-     &                          BUF2(CJ),NVO(IRP))
-                  ENDDO
-                  JREP = CREP
-                  DO J = 1, NO(JREP)
-                     CJ = (IVO(JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     DJ = (IIVO(DREP,JREP)+(J-1)*NV(DREP)+D-1) * RCW + 1
-                     T1CON(1) =  - T1(CJ)
-                     IF (CARITH) T1CON(2) = T1(CJ+1)
-                     CALL XAXPY(NINT,T1CON,BUF3(CD),1,
-     &                          BUF2(DJ),NVO(IRP))
-                  ENDDO
-                  CD = CD + RCW
-               ENDDO
-            ENDDO
- 20      CONTINUE
-C----------------------------------------------
-C D(CJ,AB) =  D(CJ,AB) + V(CJ,KL) * TAU*(KL,AB)
-C----------------------------------------------
-         CALL GETVOOO (BUF3)
-         M = NVO(IRP)
-         N = NINT
-         K = NOOT(IRP)
-         ABKL = (IVVOOTT(IRP)+ISTART)*RCW+1
-         CALL XGEMM ('N','C',M,N,K,A1,BUF3,M,BUF1(ABKL),NVVT(IRP),
-     &               A1,BUF2,M)
-C----------------------------------------------
-C D(CJ,AB) =  D(CJ,AB) - H(C,K) * T2*(KJ,AB)
-C----------------------------------------------
-         ABKJ = (IVVOOTT(IRP)+ISTART)*RCW+1
-         DO 30 JREP = 1, NREP
-            KREP = MULTB(JREP,IRP+NREP,2)
-            IF (KREP.LT.JREP) GOTO 30
-            DO J = 1, NO(JREP)
-               KMIN = 1
-               IF (KREP.EQ.JREP) KMIN = J + 1
-               DO K = KMIN, NO(KREP)
-                  CREP = KREP
-                  DO C = 1, NV(CREP)
-                     CK = (IVO(KREP)+(K-1)*NV(CREP)+C-1) * RCW + 1
-                     CJ = (IIVO(CREP,JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     T1CON(1) =  - HOV(CK)
-                     IF (CARITH) T1CON(2) = HOV(CK+1)
-                     CALL XAXPY(NINT,T1CON,T2(ABKJ),1,
-     &                          BUF2(CJ),NVO(IRP))
-                  ENDDO
-                  CREP = JREP
-                  DO C = 1, NV(CREP)
-                     CJ = (IVO(JREP)+(J-1)*NV(CREP)+C-1) * RCW + 1
-                     CK = (IIVO(CREP,KREP)+(K-1)*NV(CREP)+C-1) * RCW + 1
-                     T1CON(1) =  HOV(CJ)
-                     IF (CARITH) T1CON(2) = - HOV(CJ+1)
-                     CALL XAXPY(NINT,T1CON,T2(ABKJ),1,
-     &                          BUF2(CK),NVO(IRP))
-                  ENDDO
-                  ABKJ = ABKJ + NVVT(IRP) * RCW
-               ENDDO
-            ENDDO
- 30      CONTINUE
-C----------------------------------------------
-C D(CJ,AB) =  D(CJ,AB) - H1(AK,CJ) * T1*(K,B)
-C----------------------------------------------
-         AB = 0
-         DO 40 BREP = 1, NREP
-            AREP = MULTB(BREP,IRP+NREP,2)
-            IF (AREP.LT.BREP) GOTO 40
-            DO B = 1, NV(BREP)
-               AMIN = 1
-               IF (AREP.EQ.BREP) AMIN = B + 1
-               DO A = AMIN, NV(AREP)
-                  IF (AB.LT.ISTART) GOTO 40
-                  IF (AB.GE.ISTART+NINT) GOTO 41
-                  KREP = BREP
-                  AKCJ = (IVOVO(IRP)+IIVO(AREP,KREP)+A-1)
-                  DO K = 1, NO(KREP)
-                     BK = (IVO(KREP)+(K-1)*NV(BREP)+B-1) * RCW + 1
-                     T1CON(1) = - T1(BK)
-                     IF (CARITH) T1CON(2) = T1(BK+1)
-                     CALL XAXPY (NVO(IRP),T1CON,H(AKCJ),NVO(IRP),
-     &                           BUF2(AB*RCW+1),1)
-                     AKCJ = AKCJ + NV(AREP) * RCW
-                  ENDDO
-                  KREP = AREP
-                  BKCJ = (IVOVO(IRP)+IIVO(BREP,KREP)+B-1)
-                  DO K = 1, NO(KREP)
-                     AK = (IVO(KREP)+(K-1)*NV(BREP)+A-1) * RCW + 1
-                     T1CON(1) = T1(AK)
-                     IF (CARITH) T1CON(2) = - T1(AK+1)
-                     CALL XAXPY (NVO(IRP),T1CON,H(BKCJ),NVO(IRP),
-     &                           BUF2(AB*RCW+1),1)
-                     BKCJ = BKCJ + NV(BREP) * RCW
-                  ENDDO
-                  AB = AB + 1
-               ENDDO
-            ENDDO
-   40    CONTINUE
-   41    CONTINUE
-C
-         CALL PUTDZ (IRP,ISTART,NINT,DONE,BUF2)
-C
-         IF (.NOT.DONE) THEN
-            ISTART = ISTART + NINT
-            GOTO 10
-         ENDIF
- 50   CONTINUE
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE MKGPP (T2,S2,BUF1,BUF2,GOO,GVV)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Calculates GOO and GVV intermediates for lambda equations.
-C     Note that the definition differs from Gauss & Stanton
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 GOO(*),GVV(*)
-      REAL*8 T2(*),S2(*)
-      REAL*8 BUF1(*),BUF2(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "param.inc"
-#include "symm.inc"
-#include "eqns.inc"
-#include "complex.inc"
-C
-C---------------Local variables--------------------------------------
-C
-C---------------Executable code--------------------------------------
-C
-C----------------------------------------------------------------------
-C G(I,J) = G(I,J) - L(CD,IL) * T(CD,JL) = - L(CDL,I) * T(CDL,J)
-C----------------------------------------------------------------------
-      CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,S2,BUF1)
-      CALL SRT1T3(NREP,MULTB,LFA,NVVT,NO,NO,NVVOT,KVVOOT,KKVVOT,T2,BUF2)
-      CALL CNTRCT ('C','N',NO,NO,NVVOT,-A1,BUF1,BUF2,A0,GOO,NREP)
-C----------------------------------------------------------------------
-C G(A,B) = L(AD,KL) * T(BD,KL) = L(A,DKL) * T(B,DKL)
-C----------------------------------------------------------------------
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,S2,BUF1)
-      CALL SRT1T2 (NREP,MULTB,LFA,NVVT,NV,NV,NOOT,LVVOOT,LLVOOT,T2,BUF2)
-      CALL CNTRCT ('N','C',NV,NV,NVOOT,A1,BUF1,BUF2,A0,GVV,NREP)
-C
-      IF (CARITH) THEN
-         CALL CONJUGA (NFVV,GVV,1)
-      ENDIF
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CNTRCT (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C,NREP)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1666,6 +1187,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer nrep,irp,k,lda,ldb,ldc,m,n,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C
@@ -1706,7 +1229,7 @@ C
       SUBROUTINE CNTRCT_SP (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1733,6 +1256,7 @@ C
 C
 C---------------Local variables--------------------------------------
       INTEGER :: OFFXX(NREP+1),OFFYY(NREP+1),OFFZZ(NREP+1),IRP,JRP
+      integer k,lda,ldb,ldc,m,n,off1,off2,off3
 C---------------Executable code--------------------------------------
 C
 
@@ -1783,232 +1307,6 @@ C
           OFF1 = OFF1 + M*K
 
       ENDDO
-C
-      RETURN
-      END
-
-!###############################################################################
-
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DINTM1(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Calculates H-like intermediate for D intermediate in Lambda equations
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER NBUF3
-      REAL*8 T1(*),T2(*),H(*)
-      REAL*8 BUF1(*),BUF2(*),BUF3(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "param.inc"
-#include "complex.inc"
-#include "symm.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 T1VAL(2)
-      DATA T1VAL /2*0.0D0/
-      LOGICAL DONE
-      real*8 ddot,xsum
-C
-C---------------Executable code--------------------------------------
-C
-C---------------------------------------------------------------------
-C H(AK,IC) = - W(AK,CI)
-C We store h initially as H(AK,CI), ordening and minus sign after next
-C step !
-C---------------------------------------------------------------------
-      CALL GETVOVO (BUF1)
-C------------------------------------------------------------------
-C H(AK,CI) = H(AK,CI) + W(AK,CD) * T(D,I)
-C H is kept in BUF1, still ordered VOVO
-C------------------------------------------------------------------
-      DO 30 IRP = 1, NREP
-         IF (NVO(IRP).EQ.0) GOTO 30
-         DONE = .FALSE.
-         ISTART = 0
-         MINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-         CD = 0
-         DO 20 DREP = 1, NREP
-           CREP = MULTB(DREP,IRP+NREP,2)
-           IF (CREP.LT.DREP) GOTO 20
-           DO D = 1, NV(DREP)
-              CMIN = 1
-              IF (CREP.EQ.DREP) CMIN = D + 1
-              DO C = CMIN, NV(CREP)
-                 CD = CD + 1
-                 IF (CD.GT.NINT) THEN
-C                   -----------------------
-C                   We need the next buffer
-C                   -----------------------
-                    ISTART = ISTART + NINT
-                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-                    CD = 1
-                 ENDIF
-                 AKCD = (CD-1)*NVO(IRP)*RCW+1
-                 DO I = 1, NO(DREP)
-                    CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
-                    AKCI = (IVOVO(IRP)+(CI-1)*NVO(IRP))*RCW+1
-                    T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
-                    T1VAL(1) = T1(T1DI)
-                    IF (CARITH) T1VAL(2) = T1(T1DI+1)
-                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKCI),1)
-                 ENDDO
-                 DO I = 1, NO(CREP)
-                    DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
-                    AKDI = (IVOVO(IRP)+(DI-1)*NVO(IRP))*RCW+1
-                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = - T1(T1CI)
-                    IF (CARITH) T1VAL(2) = - T1(T1CI+1)
-                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKDI),1)
-                 ENDDO
-              ENDDO
-           ENDDO
- 20      CONTINUE
- 30    CONTINUE
-C------------------------------------------------------------------
-C Now sort H(AK,CI) to H(AI,CK)
-C------------------------------------------------------------------
-      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &            BUF1,H)
-C------------------------------------------------------------------
-C H(AI,CK) = H(AI,CK) + T(AD,IL) * W(KL,CD)
-C------------------------------------------------------------------
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              T2,BUF1)
-      CALL GETVVOO (BUF3)
-      IF (CARITH) CALL CONJUGA (NV3,BUF3,1)
-      CALL SRT1TT4 (NREP,MULTB,LFA,LFA,NV,NV,NO,NO,MVO,J2VOVO,JJVO,JJVO,
-     &              BUF3,BUF2)
-      OFF1 = 1
-      OFF3 = 1
-      DO IREP = 1, NREP
-         JREP = MULTB(IREP+NREP,1+NREP,2)
-         M = MVO(IREP)
-         N = MVO(IREP)
-         K = MVO(JREP)
-         OFF2 = J2VOVO(JREP) * RCW + 1
-         CALL XGEMM ('N','N',M,N,K,A1,BUF1(OFF1),M,BUF2(OFF2),K,
-     &               A1,H(OFF3),M)
-         OFF1 = OFF1 + M * K * RCW
-         OFF3 = OFF3 + M * N * RCW
-      ENDDO
-C------------------------------------------------------------------
-C Sort H(AI,CK) back to H(AK,CI)
-C------------------------------------------------------------------
-      CALL SRT16 (NREP,MULTB,LFA,LTR,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &            BUF1,H)
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE DINTM2(T1,BUF1,BUF3,NBUF3,H)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Calculates H-like intermediate in Lambda2 equations
-C
-C---------------Routines called----------------------------------------
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      INTEGER NBUF3
-      REAL*8 T1(*),H(*)
-      REAL*8 BUF1(*),BUF3(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "param.inc"
-#include "complex.inc"
-#include "symm.inc"
-C
-C---------------Local variables--------------------------------------
-C
-      REAL*8 T1VAL(2)
-      DATA T1VAL /2*0.0D0/
-      LOGICAL DONE
-      real*8 ddot,xsum
-C
-C---------------Executable code--------------------------------------
-C
-C---------------------------------------------------------------------
-C Zero the array H (AK,CI)
-C We store h initially as H(AK,CI), ordening and minus sign after next
-C step !
-C---------------------------------------------------------------------
-      CALL XCOPY (NV4,A0,0,BUF1,1)
-C------------------------------------------------------------------
-C H(AK,CI) = H(AK,CI) + W(AK,CD) * T(D,I)
-C H is kept in BUF1, still ordered VOVO
-C------------------------------------------------------------------
-      DO 30 IRP = 1, NREP
-         IF (NVO(IRP).EQ.0) GOTO 30
-         DONE = .FALSE.
-         ISTART = 0
-         MINT = NBUF3/NVO(IRP)
-  10     CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-         CD = 0
-         DO 20 DREP = 1, NREP
-           CREP = MULTB(DREP,IRP+NREP,2)
-           IF (CREP.LT.DREP) GOTO 20
-           DO D = 1, NV(DREP)
-              CMIN = 1
-              IF (CREP.EQ.DREP) CMIN = D + 1
-              DO C = CMIN, NV(CREP)
-                 CD = CD + 1
-                 IF (CD.GT.NINT) THEN
-C                   -----------------------
-C                   We need the next buffer
-C                   -----------------------
-                    ISTART = ISTART + NINT
-                    CALL GETVOVV (IRP,ISTART,NINT,DONE,BUF3,MINT)
-                    CD = 1
-                 ENDIF
-                 AKCD = (CD-1)*NVO(IRP)*RCW+1
-                 DO I = 1, NO(DREP)
-                    CI = IIVO(CREP,DREP)+(I-1)*NV(CREP)+C
-                    AKCI = (IVOVO(IRP)+(CI-1)*NVO(IRP))*RCW+1
-                    T1DI = (IVO(DREP)+(I-1)*NV(DREP)+D-1) * RCW + 1
-                    T1VAL(1) = T1(T1DI)
-                    IF (CARITH) T1VAL(2) = T1(T1DI+1)
-                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKCI),1)
-                 ENDDO
-                 DO I = 1, NO(CREP)
-                    DI = IIVO(DREP,CREP)+(I-1)*NV(DREP)+D
-                    AKDI = (IVOVO(IRP)+(DI-1)*NVO(IRP))*RCW+1
-                    T1CI = (IVO(CREP)+(I-1)*NV(CREP)+C-1) * RCW + 1
-                    T1VAL(1) = - T1(T1CI)
-                    IF (CARITH) T1VAL(2) = - T1(T1CI+1)
-                    CALL XAXPY(NVO(IRP),T1VAL,BUF3(AKCD),1,BUF1(AKDI),1)
-                 ENDDO
-              ENDDO
-           ENDDO
- 20      CONTINUE
- 30    CONTINUE
-C------------------------------------------------------------------
-C Now sort H(AK,CI) to H(AI,CK)
-C------------------------------------------------------------------
-      CALL SRT16 (NREP,MULTB,LFA,LFA,NV,NO,NV,NO,MVO,JVOVO,JJVO,JJVO,
-     &            BUF1,H)
 C
       RETURN
       END

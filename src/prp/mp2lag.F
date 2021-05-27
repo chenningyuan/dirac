@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -231,7 +231,7 @@ C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
       CALL OPNFIL(LUBUF,'DFCOEF','OLD','LVCDEN1')
-      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2,WORK,KFREE,LFREE)
+      CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2)
       CLOSE(LUBUF,STATUS='KEEP')
 C
 C     b) Generate AO density matrix

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,7 +25,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &  EPS,EFREQ,AVO,AOV,BVO,BOV,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,
      &  CONV,IPRNT,DEBUG,TIMING)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -54,7 +54,7 @@ C
       COMPLEX*16 CERPA,APHASE(*),BPHASE
       CHARACTER*8 NAMEA(*),NAMEB
       LOGICAL BDONE,DEBUG,TIMING
-      INTEGER NAOPER
+      INTEGER NAOPER,MAXIT,IPRNT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -70,6 +70,7 @@ C
       real*8 sdot,ddot
       complex*16 cdotc,zdotc
       CHARACTER*17 TEXT
+      integer aoff,it,itc,nit,aoper
 
       CERPA=DCMPLX(0.0D0,0.0D0)
 C
@@ -249,7 +250,7 @@ C
  6001 FORMAT(2X,I3,5X,2F20.15,13X,E10.5)
  6002 FORMAT(3X,'MP2   =',F20.15/3X,'EMP2  =',F20.15/)
  6003 FORMAT(//3X,'NIT',12X,' << ',A8,' ; ',A8,' >>',20X, 'RMS')
- 6004 FORMAT (//' WARNING: Requested convergence not reached in RPA :'
+ 6004 FORMAT (//' WARNING: Requested convergence not reached in RPA :',
      &        ' RMS = ',F20.15)
  6071 FORMAT(//,'  RPA results',//3X,'Propagator',12X,'Frequency',13X,
      & 'Real part',8X,'Imaginary part')
@@ -267,7 +268,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                FREQR,FREQI,FREQD,NEX,IEXREP,CONV,
      &                IPRNT,DEBUG,TIMING)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -295,6 +296,7 @@ C
 C
       REAL*8 CNV,CONV,EFREQ,RNORM
       LOGICAL DEBUG,TIMING
+      INTEGER MAXDIM,MAXIT,NEX,IEXREP,IPRNT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -307,6 +309,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 CPUDELTA,CPU0,CPUAB,CPUE,CPUVAR,CPUTOT
+      integer indmin,is,it,itc,jcode,nit,nst1,nst2,intowp,idmin
 C
 C---------------Executable code--------------------------------------
 C
@@ -439,7 +442,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOAX(AA,DG,X1,BUF1,X2,LINRES)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -469,6 +472,8 @@ C
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer irep,jrep,k,m,off1,off2,off3,off3d
 C
 C---------------Executable code--------------------------------------
 C
@@ -514,7 +519,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOBY(BB,Y1,BUF1,X2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -540,6 +545,8 @@ C
 #include "symm.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer irep,jrep,k,m,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C
@@ -573,7 +580,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NORMX(NDIMX,FACTOR,X1,Y1,RNORM)        
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -590,6 +597,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 X1(*),Y1(*),FACTOR
+      INTEGER NDIMX
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -633,7 +641,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRECD (EFREQ,DG,X1,Y1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -687,7 +695,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REDEQ(MAXDIM,NDIMX,DG,X1,X2,Y1,Y2,IT,CC,HH,ITC,
      &                 SS,HH1,SS1,FREQR,FREQI,FREQD,EFREQ,CNV,NST1,NST2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -705,6 +713,7 @@ C
       REAL*8 CC(MAXDIM,MAXDIM),HH(MAXDIM,MAXDIM),SS(MAXDIM,MAXDIM)
       REAL*8 HH1(MAXDIM,MAXDIM),SS1(MAXDIM,MAXDIM)
       REAL*8 FREQR(MAXDIM),FREQI(MAXDIM),FREQD(MAXDIM),EFREQ,CNV
+      integer MAXDIM,NDIMX,IT,ITC,NST1,NST2
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -717,6 +726,7 @@ C
       REAL*8 SUM1,SUM2,SSUM,DSUM,SDOT,DDOT,RNORM,ANGLE,C1COS,C1SIN
       COMPLEX*16 CSUM1,ZSUM,CSUM,ZDOTC,CDOTC,CFAC
       LOGICAL COMPRESS
+      integer i,ierr,igs,j,mxdim,n,n1,n1n,n2,sect1,sect2,intowp
 C
 C---------------Executable code--------------------------------------
 C
@@ -1067,7 +1077,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RESID (NDIMX,EFREQ,X1,X2,Y1,Y2,CNV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1083,6 +1093,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 EFREQ,CNV,CEFREQ(2)
       REAL*8 X1(*),Y1(*),X2(*),Y2(*)
+      INTEGER NDIMX
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1115,7 +1126,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RPAVAL (X1,Y1,AVO,AOV,APHASE,BPHASE,CERPA)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1167,7 +1178,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRTEV(NM,N,SS,CC,CCS,ER,ERS,IND)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1202,6 +1213,7 @@ C---------------Local variables--------------------------------------
 C 
       REAL*8 RNORM,SDOT,DDOT
       COMPLEX*16 ZDOTC,CDOTC
+      integer i,j,k,ns,nsp
 C
 C---------------Executable code--------------------------------------
 C
@@ -1265,7 +1277,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDG(EPS,AA,BUF1,DG)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1291,6 +1303,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 FAC,FAC1
+      integer a,ai,aoff,i,ii,irep,irp,jrp,m,off1,off2,off3
 C
 C---------------Executable code--------------------------------------
 C

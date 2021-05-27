@@ -45,7 +45,7 @@
          integer, parameter :: topListSize = 10
 
          type         :: memChunk
-            integer                        :: n_elements        ! size of the memory, in units
+            integer*8                      :: n_elements        ! size of the memory, in units
             integer                        :: type              ! type of variable
             integer(kind=klongint)         :: varID             ! type of variable
             character(len=charArrayLength) :: varLabel          ! type of variable
@@ -85,11 +85,53 @@
          public track_SetCurrentGroup, track_GetCurrentGroup
          public track_getMemoryInuse
 
+         interface track_RegisterAllocation
+            module procedure track_RegisterAllocation
+#if !defined (INT_STAR8)
+            module procedure track_RegisterAllocation_i8_fixed
+#endif
+         end interface track_RegisterAllocation
          contains
 !
 !
             subroutine track_RegisterAllocation(size,type,varID,varLabel,trackCaller,trackLevel)
-               integer                  :: size, type, trackLevel
+#if defined (INT_STAR8)
+               integer(kind=8)          :: size
+#else
+               integer                  :: size
+#endif
+               integer                  :: type, trackLevel
+               real(kind=kreal)         :: bytes
+               integer(kind=klongint)   :: varID
+               character(len=*)         :: varLabel, trackCaller
+               type (memChunk), pointer :: newChunk
+
+               call track_createNewChunk(newChunk)
+
+#if defined (INT_STAR8)
+               newChunk%n_elements  = size
+#else
+               newChunk%n_elements  = int(size,kind(newChunk%n_elements))
+#endif
+               newChunk%type        = type
+               newChunk%varID       = varID
+               newChunk%varLabel    = varLabel
+               bytes = real(size)*real(type)
+               write (newChunk%allocatedAt,'(a42)') trackCaller
+
+               call track_AddToList(memTracking%aL,newChunk)
+
+               memTracking%n_created        = memTracking%n_created + 1
+               memTracking%CurrentMemoryUse = memTracking%CurrentMemoryUse + bytes 
+
+               call track_updateTopLists(memTracking,newChunk)
+
+            end subroutine track_RegisterAllocation
+
+#if !defined (INT_STAR8)
+            subroutine track_RegisterAllocation_i8_fixed(size,type,varID,varLabel,trackCaller,trackLevel)
+               integer(kind=8)          :: size
+               integer                  :: type, trackLevel
                real(kind=kreal)         :: bytes
                integer(kind=klongint)   :: varID
                character(len=*)         :: varLabel, trackCaller
@@ -111,7 +153,9 @@
 
                call track_updateTopLists(memTracking,newChunk)
 
-            end subroutine track_RegisterAllocation
+            end subroutine track_RegisterAllocation_i8_fixed
+#endif
+
 !
 ! registerDeallocation will ad the information gathered within dealloc
 !
@@ -299,12 +343,13 @@
 ! printStats display different statistic related to the use of memory
 !
             subroutine track_PrintStats(mytid, verbose)
+               implicit None
                integer :: mytid, verbose, i, j, actualTopListSize
                real (kind=kreal) :: totalActive
                real (kind=kreal) :: totalFreed 
                real (kind=kreal) :: totalMemory 
                real (kind=kreal) :: meanMemory 
-               real (kind=kreal) :: Peak, small, large
+               real (kind=kreal) :: PeakMB, PeakGB, small, large
 
                totalActive = nint(memTracking%aL%nbytes/(1024*1024))
                totalFreed  = nint(memTracking%dL%nbytes/(1024*1024))
@@ -312,7 +357,8 @@
 
                meanMemory  = totalMemory/(memTracking%n_created) 
 
-               Peak = nint(memTracking%peakMem%bytes/(1024*1024))
+               PeakMB = memTracking%peakMem%bytes/DFLOAT(1024*1024)
+               PeakGB = memTracking%peakMem%bytes/DFLOAT(1024*1024*1024)
 
                if (verbose.gt.0) then
                   call track_ShowMemoryUsage(memTracking%aL,'alloc') 
@@ -321,7 +367,6 @@
 
                actualTopListSize = min(topListsize,memTracking%n_created)
 
-               write (*,*) ' '
 !              if (mytid.eq.1) then
 !               write (*,*) ' Dynamical Memory Usage Summary for Slave(s)'
 !              elseif (mytid.eq.0) then 
@@ -329,7 +374,8 @@
 !              endif
 
                if (mytid.eq.0) then
-                write (*,*) ' Dynamical Memory Usage Summary'
+                write (*,*) ' '
+                write (*,*) ' Dynamical Memory Usage Summary for Master'
                 write (*,*) ' '
                 write (*,'(a,f12.2)') '  Mean allocation size (Mb) : ',meanMemory
                 if (.false.) then
@@ -357,7 +403,8 @@
      &          ' for '//memTracking%largeMem(i)%label(1:42) 
                  enddo
                 write (*,*) ' '
-                write (*,'(a,f12.2)') '  Peak memory usage    (Mb) : ',Peak
+                write (*,'(2x,a,f12.2,a)') 'Peak memory usage: ',PeakMB,' MB'
+                write (*,'(2x,a,f12.3,a)') 'Peak memory usage: ',PeakGB,' GB'
                 write (*,*) '      reached at subroutine : '//memTracking%peakMem%at(1:42)
                 write (*,*) '             for variable   : '//memTracking%peakMem%label(1:42)
                 write (*,*) ' '

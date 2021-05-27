@@ -1,16 +1,22 @@
 name: DIRAC
 
-min_cmake_version: 2.8
+min_cmake_version: 3.0
+
+default_build_type: release
+
+language:
+  - Fortran
+  - C
+  - CXX
 
 url_root: https://github.com/coderefinery/autocmake/raw/master/
 
 modules:
-- fc:
-  - source: '%(url_root)modules/fc.cmake'
-- cc:
-  - source: '%(url_root)modules/cc.cmake'
-- cxx:
-  - source: '%(url_root)modules/cxx.cmake'
+- compilers:
+  - source:
+    - '%(url_root)modules/fc.cmake'
+    - '%(url_root)modules/cc.cmake'
+    - '%(url_root)modules/cxx.cmake'
 - flags:
   - source:
     - 'custom/compiler_flags/Clang.C.cmake'
@@ -27,40 +33,30 @@ modules:
     - 'custom/compiler_flags/XL.C.cmake'
     - 'custom/compiler_flags/XL.CXX.cmake'
     - 'custom/compiler_flags/XL.Fortran.cmake'
-- definitions:
-  - source: '%(url_root)modules/definitions.cmake'
-- builtin_math:
-  - source: 'custom/builtin_math.cmake'
-- python_interpreter:
-  - source: '%(url_root)modules/python_interpreter.cmake'
-- math:
-  - source: '%(url_root)modules/math_libs.cmake'
-- CheckFortranSourceCompiles:  # DIRAC MPI section needs this to run configure-time checks
-  - source: 'custom/CheckFortranSourceCompiles.cmake'
-- CMakeDependentOption:  # in CMake since 3.0
-  - source: 'https://github.com/Kitware/CMake/raw/master/Modules/CMakeDependentOption.cmake'
-- mpi:
-  - source: '%(url_root)modules/mpi.cmake'
-- coverage:
-  - source: '%(url_root)modules/code_coverage.cmake'
+- plugins:
+  - source:
+    - 'custom/ar_ranlib.cmake'
+    - '%(url_root)modules/definitions.cmake'
+    - 'custom/builtin_math.cmake'
+    - '%(url_root)modules/python_interpreter.cmake'
+    - '%(url_root)modules/math_libs.cmake'
+    - 'custom/CheckFortranSourceCompiles1.cmake'  # DIRAC MPI section needs this to run configure-time checks
+    - 'https://github.com/Kitware/CMake/raw/master/Modules/CMakeDependentOption.cmake'  # in CMake since 3.0
+    - '%(url_root)modules/mpi.cmake'
+    - '%(url_root)modules/omp.cmake'
+    - '%(url_root)modules/code_coverage.cmake'
+    - 'custom/static_linking.cmake'
+    - '%(url_root)modules/profile.cmake'
+    - 'custom/runtimecheck.cmake'
+    - '%(url_root)modules/int64.cmake'
+    - 'custom/mathlibs-integer-compatibility.cmake'
+    - '%(url_root)modules/safeguards.cmake'
+    - '%(url_root)modules/git_info/git_info.cmake'
+    - '%(url_root)modules/version.cmake'
 - explicit:
   - docopt: "--explicit-libs=<LIBS> Explicit linker specification for extra libraries passed directly to the linker [default: off]."
   - define: "'-DEXPLICIT_LIBS=\"{0}\"'.format(arguments['--explicit-libs'].strip())"
-- static:
-  - source: 'custom/static_linking.cmake'
-- profiling:
-  - source: 'custom/profiling.cmake'
-- runtime_checks:
-  - source: 'custom/runtimecheck.cmake'
-- int64:
-  - source: '%(url_root)modules/int64.cmake'
-- safeguards:
-  - source: '%(url_root)modules/safeguards.cmake'
-- git_info:
-  - source: '%(url_root)modules/git_info/git_info.cmake'
-- version:
-  - source: '%(url_root)modules/version.cmake'
-- main1:
+- custom:
   - source:
     - 'custom/mpi.cmake'
     - 'custom/test.cmake'
@@ -75,21 +71,26 @@ modules:
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
     - 'custom/pcm.cmake'
-- src:
+    - 'custom/exatensor.cmake'
+    - 'custom/gen1int.cmake'
+    - 'custom/pelib.cmake'
+- subdirectories:
   - source: '%(url_root)modules/src.cmake'
-- main2:
+- custom:
   - source:
     - 'custom/benchmarks.cmake'
     - 'custom/external_libs.cmake'
     - 'custom/tutorials.cmake'
-    - 'custom/basis_set_check.cmake'
     - 'custom/unit/unit_tests.cmake'
     - 'custom/core.cmake'
-    - 'custom/c_fortran_interface.cmake'
+- documentation:
+  - source:
     - 'custom/doxygen.cmake'
     - 'custom/sphinx.cmake'
+- install:
+  - source:
     - 'custom/install.cmake'
-    - 'custom/cpack.cmake'
+    - 'custom/cpack-dirac.cmake'
     - 'custom/pam.cmake'
     - 'custom/test.cmake'
 - save_flags:

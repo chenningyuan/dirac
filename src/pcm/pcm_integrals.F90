@@ -145,7 +145,7 @@ contains
         integer :: iprint
 
         !     Local variables
-        real(8) :: coora(3, nucdep), charges(nucdep), dist, small_chg
+        real(8) :: coora(3, nucdep), charges(nucdep), dist
         integer :: ipoint, i, j, k
         real(8) :: renorm, temp
         real(8), allocatable :: scratch(:)
@@ -153,14 +153,14 @@ contains
         !     Get coordinates and charges of all centers, not only the ones
         !     that are symmetry independent
         call getacord(coora)
-        i = 0
+        i = 1
         do j=1, nucind
-            !     Get small charges
-            call scdens_2(charge(j), small_chg, 1, 0)
-            do k = 1, nucdeg(j)
-                i = i + 1
-                charges(i) = small_chg
+            !     Get small component charges
+            call scdens_2(charges(i), j, j, 0)
+            do k = 1, nucdeg(j)-1
+              charges(i+k) = charges(i)
             enddo
+            i = i + nucdeg(j) 
         enddo
 
         allocate(scratch(nr_points_irr))

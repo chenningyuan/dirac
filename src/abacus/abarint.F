@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -152,8 +152,9 @@ C  /* Deck prnred */
 C
 C     Prints out information about redundant internal coordinates.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
+#include "pi.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
@@ -217,8 +218,8 @@ C  /* Deck redvib */
 C
 C     Converts normal coordinates to redundant internal coordinates.
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C
 #include "mxcent.h"
@@ -2637,7 +2638,6 @@ C
       CALL DZERO(SCLVEC,MXCOOR)
       DO 1 IREP = 0, MAXREP
          DO 2 ICENT = 1, NUCIND
-#include "scalar.h"
             DO 3 ICOOR = 1, 3
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                IF (ISCOOR .GT. 0) THEN
@@ -4268,12 +4268,13 @@ C     nuclei - as Roland also notes in his paper;
 C     with covalent/metallic radii we should get reasonable
 C     r_ref for all bonds)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
       LOGICAL   ORIG_LINDH
+C
       IROWI = 2
       IROWJ = 2
       IF (ATMARR(I,1) .LE. 2) IROWI = 1

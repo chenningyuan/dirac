@@ -6,6 +6,7 @@ Script that updates copyright headers. (c) Radovan Bast
 
 import os
 import re
+import io
 
 
 def convert_to_fortran_comments(s):
@@ -28,7 +29,7 @@ copyright = {}
 
 copyright[('dirac', 'c')] = '''
 /*
- *     Copyright (c) 2015 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -52,12 +53,12 @@ copyright[('dirac', 'fortran')] = convert_to_fortran_comments(copyright[('dirac'
 
 copyright[('dalton', 'c')] = '''
 /*
- *     Copyright (c) 2015 by the authors of Dalton (see below).
+ *     Copyright (c) 2017 by the authors of Dalton (see below).
  *     All Rights Reserved.
  *
  *     The source code in this file is part of
  *     "Dalton, a molecular electronic structure program,
- *      Release DALTON2015 (2015), see http://daltonprogram.org"
+ *      Release DALTON2017 (2017), see http://daltonprogram.org"
  *
  *     This source code is provided under a written licence and may be
  *     used, copied, transmitted, or stored only in accord with that
@@ -95,9 +96,9 @@ for lang in ['fortran', 'c']:
         else:
             p = re.compile('(?<=/\* {}_copyright_start \*/).*(?=/\* {}_copyright_end \*/)'.format(code, code), re.DOTALL)
         for file_name in files[lang]:
-            with open(file_name, 'r', encoding="ascii", errors="surrogateescape") as f:
+            with io.open(file_name, 'r', encoding="ascii", errors="ignore") as f:
                 s = f.read()
             if '_copyright_start' in s:
                 s = re.sub(p, copyright[(code, lang)], s)
-                with open(file_name, 'w', encoding="ascii", errors="surrogateescape") as f:
+                with io.open(file_name, 'w', encoding="ascii", errors="ignore") as f:
                     f.write(s)

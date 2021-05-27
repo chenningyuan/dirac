@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,6 +33,7 @@ module integer_model_in_mpi
 #endif
 
   public determine_integer_model_in_mpi
+  public get_integer_model_in_mpi
   
   private
   save
@@ -48,6 +49,11 @@ contains
 #endif
 
   end subroutine determine_integer_model_in_mpi
+
+  function get_integer_model_in_mpi() result(int_mpi)
+    integer :: int_mpi
+    int_mpi = integer_kind_in_mpi
+  end function get_integer_model_in_mpi
 
 #else
   implicit none

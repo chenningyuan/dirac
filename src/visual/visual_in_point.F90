@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,7 +26,6 @@ module visual_in_point
   use interface_ao
   use visual_cfg
   use visual_london
-  use codata
   use dirac_ao_eval
   use density_eval
   use matrix_defop_old
@@ -63,7 +62,8 @@ contains
                                     pz,      &
                                     ao,      &
                                     buffer,  &
-                                    result)
+                                    result,  &
+                                    jb_input)
 
 !     --------------------------------------------------------------------------
       integer, intent(in)  :: nr_dmat
@@ -75,8 +75,9 @@ contains
       real(8)              :: ao(*)
       real(8)              :: buffer(*)
       real(8), intent(out) :: result(0:3)
+      real(8), intent(in), optional    :: jb_input(3)
 !     --------------------------------------------------------------------------
-      integer              :: imat, i
+      integer              :: imat, i, icomp
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
       real(8)              :: temp_33(3, 3)
@@ -113,6 +114,61 @@ contains
                           D(imat)%elms,  &
                           buffer,        &
                           ao)
+               result(0) = result(0) + density
+            end if
+
+!           components of current density: -ec \psi^\dag \alpha_q \psi 
+            if (visual_cfg_property(imat) == iq_jx) then
+               icomp = 1
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jx not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_jy) then
+               icomp = 2
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jy not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
+               result(0) = result(0) + density
+            end if
+
+            if (visual_cfg_property(imat) == iq_jz) then
+               icomp = 3
+               if (levyle) then
+                  print *, 'error: Levy-Leblond jz not implemented'
+                  stop
+               else
+                  call get_jcomp(density,  &
+                             icomp,        &
+                             cval,         &
+                             D(imat)%irep, &
+                             D(imat)%nrow, &
+                             D(imat)%elms, &
+                             buffer,       &
+                             ao)
+               end if
                result(0) = result(0) + density
             end if
 
@@ -436,13 +492,17 @@ contains
                 (visual_cfg_property(imat) == iq_bdipy) .or. &
                 (visual_cfg_property(imat) == iq_bdipz)) then
 
-               call get_j(v,            &
-                          cval,         &
-                          D(imat)%irep, &
-                          D(imat)%nrow, &
-                          D(imat)%elms, &
-                          buffer,       &
-                          ao)
+               if (present(jb_input)) then
+                 v = jb_input
+               else
+                 call get_j(v,            &
+                            cval,         &
+                            D(imat)%irep, &
+                            D(imat)%nrow, &
+                            D(imat)%elms, &
+                            buffer,       &
+                            ao)
+               end if
 
                rx = px - visual_cfg_gauge_origin(1)
                ry = py - visual_cfg_gauge_origin(2)
@@ -461,6 +521,48 @@ contains
                end if
             end if
 
+!           full light-matter interaction: cosine part
+            if (visual_cfg_property(imat) == iq_tcos) then
+
+               call get_j(v,            &
+                          cval,         &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+
+               f = (visual_cfg_wave_vector(1)*px+   &
+                    visual_cfg_wave_vector(2)*py+   &
+                    visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+               result(0) = result(0) - &
+                    (v(1)*visual_cfg_pol_vector(1)+  &
+                     v(2)*visual_cfg_pol_vector(2)+  &
+                     v(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
+
+            end if
+
+!           full light-matter interaction: sine part
+            if (visual_cfg_property(imat) == iq_tsin) then
+
+               call get_j(v,            &
+                          cval,         &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+
+               f = (visual_cfg_wave_vector(1)*px+   &
+                    visual_cfg_wave_vector(2)*py+   &
+                    visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+               result(0) = result(0) - &
+                    (v(1)*visual_cfg_pol_vector(1)+  &
+                     v(2)*visual_cfg_pol_vector(2)+  &
+                     v(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
+
+            end if
+
 !           responding operator is nuclear magnetic dipole
             if ((visual_cfg_property(imat) == iq_ndipx) .or. &
                 (visual_cfg_property(imat) == iq_ndipy) .or. &
@@ -476,6 +578,9 @@ contains
                               ao)
                   v = -0.5d0*v
                else
+                  if (present(jb_input)) then
+                    v = jb_input
+                  else
                   call get_j(v,            &
                              cval,         &
                              D(imat)%irep, &
@@ -483,6 +588,7 @@ contains
                              D(imat)%elms, &
                              buffer,       &
                              ao)
+               end if
                end if
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
@@ -502,12 +608,21 @@ contains
                   end if
                end if
 
-               rx = px - cord(1, visual_cfg_ref_nucleus(imat))
-               ry = py - cord(2, visual_cfg_ref_nucleus(imat))
-               rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
-
+!              we either calculate the NMR shielding of a given nucleus
+!              or a "NICS" value in a given point
+!              (for a true NICS value multiply by "-1")
+               if (visual_cfg_nics) then
+                  rx = px - visual_cfg_nics_origin(1)
+                  ry = py - visual_cfg_nics_origin(2)
+                  rz = pz - visual_cfg_nics_origin(3)
+               else
+                  rx = px - cord(1, visual_cfg_ref_nucleus(imat))
+                  ry = py - cord(2, visual_cfg_ref_nucleus(imat))
+                  rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
+               end if
+                  
                f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
-
+               
                if (visual_cfg_property(imat) == iq_ndipx) then
                   result(0) = result(0) + f*(ry*v(3) - rz*v(2))
                end if
@@ -541,9 +656,18 @@ contains
                v(2) = matrix_33(2, i)
                v(3) = matrix_33(3, i)
 
-               r(1) = px - cord(1, visual_cfg_ref_nucleus(imat))
-               r(2) = py - cord(2, visual_cfg_ref_nucleus(imat))
-               r(3) = pz - cord(3, visual_cfg_ref_nucleus(imat))
+!              we either calculate the NMR shielding of a given nucleus
+!              or a "NICS" value in a given point
+!              (for a true NICS value multiply by "-1")
+               if (visual_cfg_nics) then
+                  r(1) = px - visual_cfg_nics_origin(1)
+                  r(2) = py - visual_cfg_nics_origin(2)
+                  r(3) = pz - visual_cfg_nics_origin(3)
+               else
+                  r(1) = px - cord(1, visual_cfg_ref_nucleus(imat))
+                  r(2) = py - cord(2, visual_cfg_ref_nucleus(imat))
+                  r(3) = pz - cord(3, visual_cfg_ref_nucleus(imat))
+               end if
 
                v2(1) = r(2)*v(3) - r(3)*v(2)
                v2(2) = r(3)*v(1) - r(1)*v(3)
@@ -557,12 +681,19 @@ contains
          end if
       end do
 
-      f = visual_cfg_scale
-      if (visual_cfg_radial) then
-         distance_to_origin = dsqrt(px*px + py*py + pz*pz)
-         f = f*(distance_to_origin**2.0d0)*4.0d0*3.14159265358979323846d0
-      end if
-      result = f*result
+!     Multiply with Cartesian powers
+      do i = 1,visual_cfg_cartesian_power(1)
+        result = px * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(2)
+        result = py * result    
+      enddo
+      do i = 1,visual_cfg_cartesian_power(3)
+        result = pz * result    
+      enddo
+      
+!     Scale result 
+      result = visual_cfg_scale*result
 
    end subroutine
 

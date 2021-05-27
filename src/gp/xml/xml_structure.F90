@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -80,7 +80,7 @@ contains
     if (associated(node%attr)) then
        new_size=size(node%attr,2)+1
        allocate(new_attr(2,new_size))
-       new_attr(:,:)=node%attr(:,:)
+       new_attr(:,1:new_size-1)=node%attr(:,:)
        deallocate(node%attr)
        node%attr=>new_attr
     else; allocate(node%attr(2,1))
@@ -118,7 +118,7 @@ contains
     if (associated(node%children)) then
        new_size=size(node%children)+1
        allocate(new_children(new_size))
-       new_children(1:new_size)=node%children(:)
+       new_children(1:new_size-1)=node%children(:)
        deallocate(node%children)
        node%children=>new_children
     else;

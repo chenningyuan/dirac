@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -58,16 +58,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DOBSS,V2COUT,FNDLAB,TWOBUF
+      real(8)              :: timstr(2), timend(2)
+
 #include "memint.h"
 
       CALL QENTER('MAKE_H2C')
 C ... generate 2-component Hamiltonian
 C
-C aspg, timing
-      CALL TIMER('START ',TIMSTR,TIMEND)
+      CALL TIMER2('START ',TIMSTR,TIMEND)
       CALL MAKE_BSS(VMAT,WORK(KFREE),LFREE) 
-      CALL TIMER('mk_bss',TIMSTR,TIMEND)
-C aspg, timing
+      CALL TIMER2('make_bss',TIMSTR,TIMEND)
 
 C    ===================================================================================
 C     ... decide whether do the picture change transformation of 4c Fock AO matrixes
@@ -6074,13 +6074,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
 C ----------
-C  Do resort the entering RKB transformation matrix for the one-step (Trond's) BSS
+C  Resort the entering RKB transformation matrix for the one-step (Trond's) BSS
 C  transformation. Called from MODHAM, if needed (SLGROUP).
+C  Routine is called when DC_RKB Hamiltonian is applied, for post-DCSCF transformations.
 C
-C  NOTE: Routine is processed correctly only if TMAT contains
+C  NOTE: Routine does the job only if TMAT contains
 C        the "standard" symmetry (ie no linear symmetry) 
-C        transformation matrix and when NSYM.GT.1
-C        If NSYM=1 (NZ=4) then only copy TMAT into TBUF.
+C        transformation matrix and when NSYM.GT.1.
+C        If NSYM=1 (NZ=4) then only copy TMAT into TBUF, empty run.
 C
 C  Called from:  MODHAM/dirone.F
 C
@@ -6187,6 +6188,9 @@ C         .... accumulate (and skip) L(isym) blocks
 
       ENDIF                                   
       ENDDO  
+
+      WRITE(LUPRI,'(A)')
+     &' * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.'
 
       CALL QEXIT('SLSORT')
       RETURN
@@ -7727,11 +7731,9 @@ C         ... get 4c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
       IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &             WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -7943,11 +7945,9 @@ C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
       IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14,
-     &             WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -8022,11 +8022,9 @@ C ********************************************************
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
        IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15)
        ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,14,
-     &             WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,14)
        ENDIF
        CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -8276,17 +8274,15 @@ C    ... do renew the DFCOEF file !!!
 C     ... do read the DFCOEF file from previous iterations ...
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOINI4C')
       IF(IPRSCF.GE.1) THEN
-         CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,15,
-     &              WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,15)
       ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,14,
-     &              WORK,KFREE,LFREE)
+          CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,14)
       ENDIF
 
 C ===================================================
 C   Write 2c->4c transformed coefficients ()
 C ===================================================
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE (LUPRI,'(/2X,A/)')
      & '>>> The DFCOEF file was renewed for restarting 4c SCF'//
@@ -8810,7 +8806,7 @@ C          write(lupri,*) 'IX set to:',IX
             case(7) ! i
              is_degeneracy = 13
              ilast_IPTYPAO = 35
-            case(8) ! j
+            case(8) ! k
              is_degeneracy = 15
              ilast_IPTYPAO = 47
           end select
@@ -8821,12 +8817,12 @@ C          write(lupri,*) 'IX set to:',IX
             IPNUC  (IX+jjj-1) = INUCPOS
           end do
           IX = IX + is_degeneracy
-          write(lupri,*) 'warning: old amfi routines in use:'//
-     &    ' zero AMFI contributions from h, i, j, ... shells '
+          write(lupri,'(A)') 'warning: old amfi routines in use:'//
+     &    ' zero AMFI contributions from h, i, k, ... shells '
         else
-          write(lupri,*) 'error: old amfi routines in use:'//
-     &    ' no AMFI contributions from k, l, ... shells implemented. '
-          CALL QUIT('AMFI interface ONLY UP TO i FUNCTIONS!')
+          write(lupri,'(A)') 'error: old amfi routines in use:'//
+     &    ' no AMFI contributions from l, m, ... shells implemented. '
+          CALL QUIT('AMFI interface ONLY UP TO k FUNCTIONS!')
         ENDIF
       ENDDO
       ENDDO
@@ -9615,7 +9611,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "cbieri.h"
 #include "ccom.h"
 
       DIMENSION H2CAO(*),WORK(LWORK)
@@ -10170,14 +10165,14 @@ C          ... do some check of entering values of NAMFA,IAMFA
           IF (NAMFA.GT.IX) THEN 
            write(lupri,*) ': NAMFA=',NAMFA,
      &     ' is greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
+           CALL QUIT('AMFI_RELSCF: Wrong value of NAMFA !!!')
           ENDIF
           DO K=1,NAMFA
            IF (IAMFA(K).GT.IX) THEN
              write(lupri,*)
      &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
      &       ' greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
+           CALL QUIT('AMFI_RELSCF: Wrong value of IAMFA(K) !!!')
            ENDIF
           ENDDO
           IF (NAMFA.GE.2) THEN

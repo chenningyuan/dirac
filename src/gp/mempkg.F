@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -281,6 +281,8 @@ C
 !------------------------------------------------------------------------
 #include "implicit.h"
 #include "priunit.h"
+
+      integer*8 mem_need
 
       ! calculate the difference in megawords
       DIFF_MEM=(DFLOAT(MEM_NEED)-DFLOAT(MEM_DISPOSAL))/1000000.0D0

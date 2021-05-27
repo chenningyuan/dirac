@@ -142,6 +142,30 @@ etc). Here is an example::
   FINISH
 
 
+Point charges
+-------------
+
+You can add point charges with the "LARGE NOBASIS" basis set specification (or, equivalently, with "LARGE POINTCHARGE").
+For example adding two point charges, both of -1.6, to the water example above::
+
+  DIRAC
+
+
+  C   3
+          1.    2
+  H1   -1.4523499293         .0000000000         .8996235720
+  H2    1.4523499293         .0000000000         .8996235720
+  LARGE BASIS cc-pVDZ
+          8.    1
+  O      .0000000000        0.0000000000        -.2249058930
+  LARGE BASIS cc-pVDZ
+        -1.6    2
+  XX1    .0000000000        1.0000000000         .0000000000
+  XX2    .0000000000       -1.0000000000         .0000000000
+  LARGE NOBASIS
+  FINISH
+
+
 Multiple basis sets from the basis set library
 ----------------------------------------------
 

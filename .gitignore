@@ -1,5 +1,7 @@
-build*/*
-test/*/*out*
-test/*/compare
+build*/
+test/*/*.out*
+test/*/*.stdout
+test/*/*.stderr
+test/*/*.tgz*
 *.pyc
 venv/

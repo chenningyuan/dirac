@@ -1,5 +1,8 @@
+#ifndef MPIX_DEBUG
+#define MPIX_DEBUG -1
+#endif
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -86,7 +89,7 @@ IF( IPAREX .gt. 0 )THEN
 ! we count the number of slave nodes, subtract the master
   NUMNOD = NUMPROC - 1
 !
-  PARCAL = .TRUE.
+  IF (NUMNOD .GT. 0) PARCAL = .TRUE.
 !
 ! distribute environment variables
 !
@@ -292,11 +295,13 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 !          called from DIRAC main routine - write DIRAC information in ordered
 !          way - smarter solutions are welcome.
 !
-!          written by Stefan Knecht, Duesseldorf 2008
-!
 !          ITASK == 0: print memory allocation; IVARIABLE = memsize (from
 !                      calling routine)
 !          ITASK == 1: call timer and print timing results
+!
+!          Written by Stefan Knecht, Duesseldorf 2008
+!                           H.J.Aa Jensen, SDU Odense, 2016  (polish output)
+!                           M.Ilias, GSI Darmstadt, 2017 (polish output)
 !
 !**********************************************************************************
 !
@@ -315,30 +320,43 @@ use interface_to_mpi
   IF( ITASK .eq. 0 )THEN
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN
-       print '(a,a,a,i20,a,i14,a)', 'DIRAC master    (',HOST(1:LHOST), &
-             ') starts by allocating ',IVARIABLE,' words (',IVARIABLE/2**17,   &
-             ' MB) of memory'
+       print '(a,a,a,i14,a,f8.3,a)', 'DIRAC master    (',HOST(1:LHOST), &
+             ') starts by allocating ',IVARIABLE,' r*8 words (',DFLOAT(IVARIABLE)/DFLOAT(2**27),   &
+             ' GB) of memory'
+       ! 1 MB = 2**20 bytes; 1 r*8 word = 2**3 bytes = 8 bytes
+       flush(lupri)
     ENDIF
     CALL interface_MPI_BARRIER(global_communicator)
-!
-!   DO IJ = 1, (NUMNOD - 1)
-    DO IJ = 1, (NUMNOD    )
+
+#if MPIX_DEBUG > 0
+    DO IJ = 1, NUMNOD
        CALL interface_MPI_BARRIER(global_communicator)
-       IF( MYTID .eq. IJ )  THEN
-          print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
-          '(',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' words (', &
-          IVARIABLE/2**17,' MB) of memory'
+       IF( MYTID .eq. IJ ) THEN
+          print '(a,i0,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
+          ' (',HOST(1:LHOST),') starts by allocating ',IVARIABLE,' r*8 words (', &
+          DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
+          flush(lupri)
        ENDIF
        CALL interface_MPI_BARRIER(global_communicator)
 !
     END DO
+#else
+    IF( MYTID .eq. 1 ) THEN
+       print '(a,i0,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
+       ' starts by allocating      ',IVARIABLE,' r*8 words (', &
+       DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
+       flush(lupri)
+    END IF
+    CALL interface_MPI_BARRIER(global_communicator)
+#endif
 !   ordered last printing
   ELSE IF( ITASK .eq. 1 )THEN
     DO IJ = 1, NUMNOD
       CALL interface_MPI_BARRIER(global_communicator)
       IF( MYTID .eq. IJ ) THEN
+         flush(lupri)
          CALL STOPWATCH(0,MYTID)
-         CALL FLSHFO(LUPRI)
+         flush(lupri)
       END IF
       CALL interface_MPI_BARRIER(global_communicator)
     END DO
@@ -346,34 +364,54 @@ use interface_to_mpi
     CALL interface_MPI_GET_PROCESSOR_NAME(HOST,LHOST)
     IF( MYTID .eq. MPARID ) THEN
        if (ivariable.gt.0) then
-           print '(a,a,a,i20,a,i14,a)', 'DIRAC master    (',HOST(1:LHOST), &
-              ') to allocate at most  ',IVARIABLE,' words (',IVARIABLE/2**17,&
-              ' MB) of memory'
+           print '(a,a,a,i14,a,f8.3,a)', 'DIRAC master    (',HOST(1:LHOST), &
+              ') to allocate at most  ',IVARIABLE,' r*8 words (',DFLOAT(IVARIABLE)/DFLOAT(2**27),&
+              ' GB) of memory'
        else
            print '(a,a,a)', 'DIRAC master    (',HOST(1:LHOST), &
               ') has no limitations in place for the amount of dynamically allocated memory'
        endif
-       print '(a)',' '
-       print '(a)','Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam'
-       print '(a)',' '
+       flush(lupri)
     ENDIF
-!
-!   DO IJ = 1, (NUMNOD - 1)
+
+#if MPIX_DEBUG > 0
     DO IJ = 1, (NUMNOD    )
        CALL interface_MPI_BARRIER(global_communicator)
        IF( MYTID .eq. IJ )  THEN
            if (ivariable.gt.0) then
-              print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') to allocate at most  ',IVARIABLE,' words (', &
-              IVARIABLE/2**17,' MB) of memory'
+              print '(a,i0,a,a,a,i14,a,f8.3,a)', 'DIRAC node ',mytid, &
+              ' (',HOST(1:LHOST),') to allocate at most ',IVARIABLE,' r*8 words (', &
+              DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
            else
-              print '(a,i4,1x,a,a,a,i20,a,i14,a)', 'DIRAC node ',mytid, &
-              '(',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
+              print '(a,i0,a,a)', 'DIRAC node ',mytid, &
+              ' (',HOST(1:LHOST),') has no limitations in place for the amount of dynamically allocated memory'
            endif
+           flush(lupri)
        ENDIF
        CALL interface_MPI_BARRIER(global_communicator)
 !
     END DO
+#else
+    CALL interface_MPI_BARRIER(global_communicator)
+    IF( MYTID .eq. 1 ) THEN
+       if (ivariable.gt.0) then
+          print '(a,i0,a,i14,a,f8.3,a)', 'DIRAC nodes 1 to ',numnod, &
+          ' to allocate at most       ',IVARIABLE,' r*8 words (', &
+          DFLOAT(IVARIABLE)/DFLOAT(2**27),' GB) of memory'
+       else
+          print '(a,i0,a,i14,a,i14,a)', 'DIRAC nodes 1 to ',numnod, &
+          ' has no limitations in place for the amount of dynamically allocated memory'
+       endif
+       flush(lupri)
+    END IF
+    CALL interface_MPI_BARRIER(global_communicator)
+#endif
+    IF( MYTID .eq. MPARID ) THEN
+       print '(a)',' '
+       print '(a)','Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam'
+       print '(a)',' '
+       flush(lupri)
+    ENDIF
 !
   END IF
 !

@@ -1,199 +1,208 @@
-DIRAC pam run in /home/ilias/Documents/Work/qch_softvare/dirac/trunk/test/response_lao_magnetiz
-DIRAC serial starts by allocating 64000000 words (488 MB) of memory
-DIRAC serial has no limitations in place for the amount of dynamically allocated memory
+DIRAC pam run in /home/gosia/programs/dirac/build-gosia-magnetic-all/test/response_lao_magnetiz
+  ** interface to 32-bit integer MPI enabled **
 
-Note: maximum allocatable memory for serial run can be set by pam --aw
+DIRAC master    (phlam-s-sakura.univ-lille1.fr) starts by allocating             64000000 r*8 words (           488 MB) of memory
+DIRAC nodes 1 to 7 starts by allocating             64000000 r*8 words (           488 MB) of memory
+DIRAC master    (phlam-s-sakura.univ-lille1.fr) to allocate at most            2147483648 r*8 words (         16384 MB) of memory
+ 
+Note: maximum allocatable memory for master+nodes can be set by -aw flag (MW) in pam
+ 
+DIRAC nodes 1 to 7 to allocate at most            2147483648 r*8 words (         16384 MB) of memory
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           VU University Amsterdam           Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           UiT The Arctic University of      Norway        *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            ETH Zuerich                       Switzerland   *
+ *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Linkoeping University             Sweden        *
+ *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *                                                                             *
+ *    For the complete list of contributors to the DIRAC code see our          *
+ *    website http://www.diracprogram.org                                      *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    The code (in whole or part) is not to be reproduced for further          *
+ *    distribution without the written permission of the authors or            *
+ *    their representatives.                                                   *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC15 (2015),                                                  *
+ *    written by R. Bast, T. Saue, L. Visscher, and H. J. Aa. Jensen,          *
+ *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
+ *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
+ *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
+ *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
+ *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
+ *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
+ *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
+ *                                                                             *
+ *******************************************************************************
 
- ******************************************************************************
- *                                                                            *
- *                                O U T P U T                                 *
- *                                   from                                     *
- *                                                                            *
- *                   @@@@@    @@   @@@@@     @@@@     @@@@@                   *
- *                   @@  @@        @@  @@   @@  @@   @@                       *
- *                   @@  @@   @@   @@@@@    @@@@@@   @@                       *
- *                   @@  @@   @@   @@ @@    @@  @@   @@                       *
- *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                   *
- *                                                                            *
- *                                                                            *
- %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:
- $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::
- (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::
- $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:
- SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.
- SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::
- ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::
- S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.
- (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.
- $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/
- S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:i
- c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::
- S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::
- $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::
- $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::
- ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::
- Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:
- (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|
- SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||
- $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:
- %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::
- $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:
- $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::
- )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/
- $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii|
- $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////|
- Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/
- $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::
- &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::
- =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/
- $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|
- MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>
- MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:
- MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%
- MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;
- MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<S
- MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$S
- MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<
- MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></
- MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&
- MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SF
- MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]Zk
- MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&
- MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&
- MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&F
- MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&
- MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6
- MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969k
- MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&
- MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1
- MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&
- MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9Z
- MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6
- MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][F
- MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&
- ******************************************************************************
- *                                                                            *
- *         =========================================================          *
- *                     Program for Atomic and Molecular                       *
- *          Direct Iterative Relativistic All-electron Calculations           *
- *         =========================================================          *
- *                                                                            *
- *                                                                            *
- *    Written by:                                                             *
- *                                                                            *
- *    Radovan Bast             Universite P. Sabatier, Toulouse  France       *
- *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark      *
- *    Trond Saue               Universite P. Sabatier, Toulouse  France       *
- *    Lucas Visscher           VU University Amsterdam           Netherlands  *
- *                                                                            *
- *    with contributions from:                                                *
- *                                                                            *
- *    Vebjoern Bakken          University of Oslo                Norway       *
- *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA          *
- *    Sebastien Dubillard      University of Strasbourg          France       *
- *    Ulf Ekstroem             University of Oslo                Norway       *
- *    Ephraim Eliav            University of Tel Aviv            Israel       *
- *    Thomas Enevoldsen        University of Southern Denmark    Denmark      *
- *    Timo Fleig               Universite P. Sabatier, Toulouse  France       *
- *    Olav Fossgaard           University of Tromsoe             Norway       *
- *    Andre S. P. Gomes        CNRS/Universite Lille 1           France       *
- *    Trygve Helgaker          University of Oslo                Norway       *
- *    Jon K. Laerdahl          University of Oslo                Norway       *
- *    Johan Henriksson         Linkoeping University             Sweden       *
- *    Miroslav Ilias           Matej Bel University              Slovakia     *
- *    Christoph R. Jacob       Karlsruhe Institute of Technology Germany      *
- *    Stefan Knecht            University of Southern Denmark    Denmark      *
- *    Christoffer V. Larsen    University of Southern Denmark    Denmark      *
- *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary      *
- *    Patrick Norman           Linkoeping University             Sweden       *
- *    Gosia Olejniczak         University of Warsaw              Poland       *
- *    Jeppe Olsen              Aarhus University                 Denmark      *
- *    Jesper K. Pedersen       University of Southern Denmark    Denmark      *
- *    Markus Pernpointner      University of Heidelberg          Germany      *
- *    Kenneth Ruud             University of Tromsoe             Norway       *
- *    Pawel Salek              Stockholm Inst. of Technology     Sweden       *
- *    Bernd Schimmelpfennig    Forschungszentrum Karlsruhe       Germany      *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands  *
- *    Andreas J. Thorvaldsen   University of Tromsoe             Norway       *
- *    Joern Thyssen            University of Southern Denmark    Denmark      *
- *    Joost van Stralen        VU University Amsterdam           Netherlands  *
- *    Sebastien Villaume       Linkoeping University             Sweden       *
- *    Olivier Visser           University of Groningen           Netherlands  *
- *    Toke Winther             University of Southern Denmark    Denmark      *
- *    Shigeyoshi Yamamoto      Chukyo University                 Japan        *
- *                                                                            *
- *    For the complete list of contributors to the DIRAC code see our         *
- *    website http://dirac.chem.vu.nl                                         *
- *                                                                            *
- *    This is an experimental code. The authors accept no responsibility      *
- *    for the performance of the code or for the correctness of the results.  *
- *                                                                            *
- *    The code (in whole or part) is not to be reproduced for further         *
- *    distribution without the written permission of the authors or           *
- *    their representatives.                                                  *
- *                                                                            *
- *    If results obtained with this code are published, an                    *
- *    appropriate citation would be:                                          *
- *                                                                            *
- *    DIRAC, a relativistic ab initio electronic structure program,           *
- *    Release DIRAC11 (2011),                                                 *
- *    written by R. Bast, H. J. Aa. Jensen, T. Saue, and L. Visscher,         *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,           *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, T. Fleig, O. Fossgaard,           *
- *    A. S. P. Gomes, T. Helgaker, J. K. Laerdahl, J. Henriksson,             *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, C. V. Larsen, H. S. Nataraj,         *
- *    P. Norman, G. Olejniczak, J. Olsen, J. K. Pedersen, M. Pernpointner,    *
- *    K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema, A. J. Thorvaldsen,   *
- *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser, T. Winther,         *
- *    and S. Yamamoto (see http://dirac.chem.vu.nl).                          *
- *                                                                            *
- ******************************************************************************
+ ---  Git version information  ---
+                Git branch : gosia-magnetic-all
+      Last git commit hash : a2bc8cf
+    Last git commit author : gosia olejniczak
+      Last git commit date : Fri Oct 21 20:25:45 2016 +0200
 
-
-Binary information
-------------------
-
- Who compiled             | ilias@lpqlx131
- System                   | Linux-2.6.32-5-amd64
- CMake generator          | Unix Makefiles
- Processor                | x86_64
- 64-bit integers          | ON
- MPI                      | OFF
- Fortran compiler         | /opt/intel/composer_xe_2011_sp1.6.233/bin/intel64/
-                          | ifort
- Fortran compiler version | ifort (IFORT) 12.1.0 20110811
- Fortran flags            | -w -assume byterecl -DVAR_IFORT -g -traceback -i8 
-                          | -O0
- C compiler               | /opt/intel/composer_xe_2011_sp1.6.233/bin/intel64/
-                          | icc
- C compiler version       | icc (ICC) 12.1.0 20110811
- C flags                  | -g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd17
-                          | 7 -O0
- C++ compiler             | /opt/intel/composer_xe_2011_sp1.6.233/bin/intel64/
-                          | icpc
- C++ compiler version     | icpc (ICC) 12.1.0 20110811
- C++ flags                | -Wno-unknown-pragmas -O0 -debug -DDEBUG
- BLAS                     | -Wl,--start-group;-limf;/opt/intel/composer_xe_201
-                          | 1_sp1.6.233/mkl/lib/intel64/libmkl_core.so;/opt/in
-                          | tel/composer_xe_2011_sp1.6.233/mkl/lib/intel64/lib
-                          | mkl_intel_thread.so;/usr/lib/libpthread.so;/usr/li
-                          | b/libm.so;/opt/intel/composer_xe_2011_sp1.6.233/mk
-                          | l/lib/intel64/libmkl_intel_ilp64.so;-openmp;-Wl,--
-                          | end-group
- LAPACK                   | -Wl,--start-group;/opt/intel/composer_xe_2011_sp1.
-                          | 6.233/mkl/lib/intel64/libmkl_lapack95_ilp64.a;-Wl,
-                          | --end-group
- Static linking           | OFF
- Last Git revision        | fb9548253570572f77cd1ece945bd25984c98f8b
- Configuration time       | 2012-10-24 12:37:02.421028
-
+---  Configuration and build info  ---
+              Who compiled : gosia
+        Compiled on server : phlam-s-sakura.univ-lille1.fr
+          Operating system : Linux-2.6.32-504.16.2.el6.x86_64
+            Python version : 2.6.6
+             CMake version : 3.5.1
+           CMake generator : Unix Makefiles
+          CMake build type : debug
+       MPI parallelization : True
+              MPI launcher : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiexec -np <np>
+           64-bit integers : False
+          Fortran compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiifort
+  Fortran compiler version : 13.0
+    Fortran compiler flags :   -w -assume byterecl -g -traceback -DVAR_IFORT   -w -assume byterecl -g -traceback -DVAR_IFORT 
+                C compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiicc
+        C compiler version : 13.0
+          C compiler flags :   -g -wd981 -wd279 -wd383 -wd1572 -wd177   -g -wd981 -wd279 -wd383 -wd1572 -wd177 
+              C++ compiler : /share/apps/intel/impi/4.1.0.024/intel64/bin/mpiicpc
+      C++ compiler version : 13.0.1
+        C++ compiler flags :   -Wno-unknown-pragmas   -Wno-unknown-pragmas 
+            Static linking : False
+      Builtin BLAS library : OFF
+    Builtin LAPACK library : OFF
+    Mathematical libraries : unknown
+        Explicit libraries : unknown
+       Modules definitions : HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+       Configuration time :  2016-10-21 20:24:11.094557
+-----------------------------------------------------------------
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Oct 25 22:00:00 2012
-     Host name              : not found                               
+     Date and time (Linux)  : Fri Oct 21 23:03:48 2016
+     Host name              : phlam-s-sakura.univ-lille1.fr           
 
 
 Contents of the input file
@@ -213,6 +222,11 @@ Contents of the input file
 1                                                                                                   
 .NUCMOD ! 1-Point nucleus, 2-gaussian                                                               
 1                                                                                                   
+*READIN                                                                                             
+.UNCONT                                                                                             
+*TWOINT                                                                                             
+.SCREEN                                                                                             
+1.0D-16                                                                                             
 **HAMILTONIAN                                                                                       
 .URKBAL                                                                                             
 .PRINT                                                                                              
@@ -223,7 +237,7 @@ Contents of the input file
 .SCF                                                                                                
 *SCF                                                                                                
 .CLOSED SHELL                                                                                       
-4 0                                                                                                 
+4                                                                                                   
 .EVCCNV ! Energy convergence...                                                                     
 1.0E-10  1.0D-7                                                                                     
 **PROPERTIES ! Calculating of properties...                                                         
@@ -233,7 +247,6 @@ Contents of the input file
 *NMR                                                                                                
 .LONDON                                                                                             
 .USECM                                                                                              
-.DOEPRN                                                                                             
 *LINEAR RESPONSE                                                                                    
 .MAXITR                                                                                             
 100                                                                                                 
@@ -292,6 +305,7 @@ FINISH
    Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
  * The speed of light :        137.0359998
  * Running in four-component mode
+ * Parallel run with 7 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -321,9 +335,27 @@ FINISH
 
 
 
-    *************************************************************************
-    ****************** Output from READIN input processing ******************
-    *************************************************************************
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+  Set-up from HR2INP:
+  -------------------
+
+ Print level in TWOINT:    1
+ * Direct calculation of Fock matrices in SO-basis.
+ * User specified screening threshold in direct Fock matrix construction: 1.00E-16
+ * Separate density screening of Coulomb integral batches
+ * Separate density screening of exchange integral batches
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
 
 
 
@@ -337,34 +369,22 @@ FINISH
           - Conversion factor : 1 bohr = 0.52917721 A
 
 
-                      SYMADD: Requested addition of symmetry
-                      --------------------------------------
 
- Symmetry threshold:  0.50E-05
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
 
- Original Coordinates                    
- --------------------                    
-    3         0.00000000     0.00000000     3.01808161       1
-    1         0.00000000     0.00000000     0.00000000       1
+ Symmetry test threshold:  5.00E-06
 
- Symmetry class found: C(oo,v)
+    The molecule has been centered at center of mass
 
- Centered and Rotated                    
- --------------------                    
-    3         0.00000000     0.00000000     0.37908307       1
+ Symmetry point group found: C(oo,v)        
+
+ Centered and Rotated in original atom order
+ -------------------------------------------
     1         0.00000000     0.00000000    -2.63899854       1
- 
- Centered and rotated coordinates
- in xyz format (angstrom)
- --------------------------------
- 
-2
- 
-Li      0.00000000    0.00000000    0.20060212
-H       0.00000000    0.00000000   -1.39649788
- 
+    3         0.00000000     0.00000000     0.37908307       1
 
- The following elements were found:   X  Y     
+ The following elements were found: X  Y     
 
 
   Symmetry Operations
@@ -448,10 +468,22 @@ Represented as: C2v
 
 
 
+                                 Isotopic Masses
+                                 ---------------
+
+                           Li          7.016005
+                           H           1.007825
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
+
+
   Atoms and basis sets
   --------------------
 
-  Number of atom types:     2
+  Number of atom types :    2
   Total number of atoms:    2
 
   label    atoms   charge   prim    cont     basis   
@@ -477,8 +509,8 @@ Represented as: C2v
   Basis set typed explicitly in input file                                        
 
 
-  Cartesian Coordinates
-  ---------------------
+  Cartesian Coordinates (bohr)
+  ----------------------------
 
   Total number of coordinates:  6
 
@@ -493,8 +525,8 @@ Represented as: C2v
 
 
 
-  Cartesian coordinates xyz format (angstrom)
-  -------------------------------------------
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
 
     2
  
@@ -505,25 +537,25 @@ H      0.0000000000   0.0000000000  -1.3964978801
   Symmetry Coordinates
   --------------------
 
-  Number of coordinates in each symmetry:   2  2  2  0
+  Number of coordinates in each symmetry:     2    2    2    0
 
 
   Symmetry 1
 
-   1   Li    z    3
-   2   H     z    6
+    1   Li    z    3
+    2   H     z    6
 
 
   Symmetry 2
 
-   3   Li    x    1
-   4   H     x    4
+    3   Li    x    1
+    4   H     x    4
 
 
   Symmetry 3
 
-   5   Li    y    2
-   6   H     y    5
+    5   Li    y    2
+    6   H     y    5
 
 
    Interatomic separations (in Angstroms):
@@ -545,7 +577,8 @@ H      0.0000000000   0.0000000000  -1.3964978801
   bond distance:    H          Li                             1.597100
 
 
-  Nuclear repulsion energy :    0.994008906706
+
+   Nuclear repulsion energy :    0.994008906706 Hartree
 
 
                                 GETLAB: AO-labels
@@ -651,17 +684,26 @@ H      0.0000000000   0.0000000000  -1.3964978801
     ************************** Wave function module **************************
     **************************************************************************
 
- Jobs in this run (in execution order):
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
  * Hartree-Fock calculation
 ===========================================================================
- SCFINP: Set-up for Hartree-Fock calculation:
+ *SCF: Set-up for Hartree-Fock calculation:
 ===========================================================================
  * Number of fermion irreps: 1
  * Closed shell SCF calculation with     4 electrons in    2 orbitals.
- * Bare nucleus screening correction used for start guess
+ * Sum of atomic potentials used for start guess
  * General print level   :   0
+
  ***** INITIAL TRIAL SCF FUNCTION *****
  * Trial vectors read from file DFCOEF
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
+
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
    Desired convergence:1.000D-10
@@ -689,15 +731,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
    ***************************** Property module *****************************
    ***************************************************************************
 
- * Print level:  1
- * Input label:**PROPE
- * Properties calculated for the following wave functions: 
+ * Print level:   1
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
      1: DHF 
  These initial settings of center and origins might be changed later:
  * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
  * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
- * do NOT perform the picture change transformation of the four-component property operators
 ===========================================================================
    Magnetic properties:
 ===========================================================================
@@ -712,15 +753,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
                        Total mass:     8.023830 amu
                        Natural abundance:  92.486 %
 
+ Center-of-mass coordinates (a.u.):    0.000000    0.000000    0.000000
  * Center of mass used for the gauge & dipole origin (a.u.) :    0.000000    0.000000    0.000000
-
- : Reorthonormalization terms over both positronic and electronic shells. 
  : Natural (gauge dependent) connection used for LAO-PDBS.
  : Include London magnet.prop.grad.contributions from the following two-electron integrals:
       - LL-integrals
       - SL-integrals
   --> These are default values from the Hamiltonian input.
- ...Full relativistic form of the RDSUSLL operator used!
+ INFO: Used  full relativistic form of the RDSUSLL operator.
 ===========================================================================
  XLRINP: Electronic linear reponse properties
 ===========================================================================
@@ -736,7 +776,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
     ---> these are default values from Hamiltonian input
  * Initial trial vectors will be preconditioned.
  * Linear response functions evaluated at the following REAL frequencies:
-       0.00000D+00 a.u.
+       0.00000E+00 a.u.
 ===========================================================================
  EXPINP: Expectation values
 ===========================================================================
@@ -759,14 +799,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
       Operator type DIAGONAL : scalar operator
       Labels and factors     : XRM1H2   +00+     1.0000000000000 (imaginary)
 ...........................................................................
-      LAO-XRM1H3           B2      T0
+      LAO-XRM1H3           B2      T-
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : XRM1H3X  0++0     137.03599980944 (complex)  
                                XRM1H3Y  0++0     137.03599980944 (complex)  
                                XRM1H3Z  0++0     137.03599980944 (complex)  
 ...........................................................................
-      LAO-XRM1RN           B2      T0
+      LAO-XRM1RN           B2      T-
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
       Labels and factors     : ZRM1RN   0++0     68.517999904721 (complex)  
@@ -783,14 +823,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
       Operator type DIAGONAL : scalar operator
       Labels and factors     : YRM1H2   +00+     1.0000000000000 (imaginary)
 ...........................................................................
-      LAO-YRM1H3           B1      T0
+      LAO-YRM1H3           B1      T-
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : YRM1H3X  0++0     137.03599980944 (complex)  
                                YRM1H3Y  0++0     137.03599980944 (complex)  
                                YRM1H3Z  0++0     137.03599980944 (complex)  
 ...........................................................................
-      LAO-YRM1RN           B1      T0
+      LAO-YRM1RN           B1      T-
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
       Labels and factors     : XRM1RN   0++0     68.517999904721 (complex)  
@@ -807,14 +847,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
       Operator type DIAGONAL : scalar operator
       Labels and factors     : ZRM1H2   +00+     1.0000000000000 (imaginary)
 ...........................................................................
-      LAO-ZRM1H3           A2      T0
+      LAO-ZRM1H3           A2      T-
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
                                ZRM1H3Y  0++0     137.03599980944 (complex)  
                                ZRM1H3Z  0++0     137.03599980944 (complex)  
 ...........................................................................
-      LAO-ZRM1RN           A2      T0
+      LAO-ZRM1RN           A2      T-
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
       Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
@@ -834,14 +874,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
       Operator type DIAGONAL : scalar operator
       Labels and factors     : XRM1H2   +00+     1.0000000000000 (imaginary)
 ...........................................................................
-      LAO-XRM1H3           B2      T0
+      LAO-XRM1H3           B2      T-
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : XRM1H3X  0++0     137.03599980944 (complex)  
                                XRM1H3Y  0++0     137.03599980944 (complex)  
                                XRM1H3Z  0++0     137.03599980944 (complex)  
 ...........................................................................
-      LAO-XRM1RN           B2      T0
+      LAO-XRM1RN           B2      T-
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
       Labels and factors     : ZRM1RN   0++0     68.517999904721 (complex)  
@@ -858,14 +898,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
       Operator type DIAGONAL : scalar operator
       Labels and factors     : YRM1H2   +00+     1.0000000000000 (imaginary)
 ...........................................................................
-      LAO-YRM1H3           B1      T0
+      LAO-YRM1H3           B1      T-
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : YRM1H3X  0++0     137.03599980944 (complex)  
                                YRM1H3Y  0++0     137.03599980944 (complex)  
                                YRM1H3Z  0++0     137.03599980944 (complex)  
 ...........................................................................
-      LAO-YRM1RN           B1      T0
+      LAO-YRM1RN           B1      T-
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
       Labels and factors     : XRM1RN   0++0     68.517999904721 (complex)  
@@ -882,14 +922,14 @@ H      0.0000000000   0.0000000000  -1.3964978801
       Operator type DIAGONAL : scalar operator
       Labels and factors     : ZRM1H2   +00+     1.0000000000000 (imaginary)
 ...........................................................................
-      LAO-ZRM1H3           A2      T0
+      LAO-ZRM1H3           A2      T-
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : ZRM1H3X  0++0     137.03599980944 (complex)  
                                ZRM1H3Y  0++0     137.03599980944 (complex)  
                                ZRM1H3Z  0++0     137.03599980944 (complex)  
 ...........................................................................
-      LAO-ZRM1RN           A2      T0
+      LAO-ZRM1RN           A2      T-
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
       Labels and factors     : YRM1RN   0++0     68.517999904721 (complex)  
@@ -996,7 +1036,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 13:   LAO-XXRM2H3     
 ...........................................................................
-   13  LAO-XXRM2H3          A1      T0
+   13  LAO-XXRM2H3          A1      T+
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : XXRM2H3X 0++0     137.03599980944 (complex)  
@@ -1006,7 +1046,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 14:   LAO-XYRM2H3     
 ...........................................................................
-   14  LAO-XYRM2H3          A2      T0
+   14  LAO-XYRM2H3          A2      T+
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : XYRM2H3X 0++0     137.03599980944 (complex)  
@@ -1016,7 +1056,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 15:   LAO-XZRM2H3     
 ...........................................................................
-   15  LAO-XZRM2H3          B1      T0
+   15  LAO-XZRM2H3          B1      T+
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : XZRM2H3X 0++0     137.03599980944 (complex)  
@@ -1026,7 +1066,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 16:   LAO-YYRM2H3     
 ...........................................................................
-   16  LAO-YYRM2H3          A1      T0
+   16  LAO-YYRM2H3          A1      T+
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : YYRM2H3X 0++0     137.03599980944 (complex)  
@@ -1036,7 +1076,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 17:   LAO-YZRM2H3     
 ...........................................................................
-   17  LAO-YZRM2H3          B2      T0
+   17  LAO-YZRM2H3          B2      T+
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : YZRM2H3X 0++0     137.03599980944 (complex)  
@@ -1046,7 +1086,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 18:   LAO-ZZRM2H3     
 ...........................................................................
-   18  LAO-ZZRM2H3          A1      T0
+   18  LAO-ZZRM2H3          A1      T+
 ...........................................................................
       Operator type ALPHADOT : [alpha.P]
       Labels and factors     : ZZRM2H3X 0++0     137.03599980944 (complex)  
@@ -1056,7 +1096,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 19:   LAO-XXRDSUSLL   
 ...........................................................................
-   19  LAO-XXRDSUSLL        A1      T0
+   19  LAO-XXRDSUSLL        A1      T+
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
       Labels and factors     : XXRDSULZ 0++0    -137.03599980944 (complex)  
@@ -1065,7 +1105,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 20:   LAO-XYRDSUSLL   
 ...........................................................................
-   20  LAO-XYRDSUSLL        A2      T0
+   20  LAO-XYRDSUSLL        A2      T+
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
       Labels and factors     : XYRDSULX 0++0    -137.03599980944 (complex)  
@@ -1074,7 +1114,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 21:   LAO-XZRDSUSLL   
 ...........................................................................
-   21  LAO-XZRDSUSLL        B1      T0
+   21  LAO-XZRDSUSLL        B1      T+
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
       Labels and factors     : XZRDSULY 0++0    -137.03599980944 (complex)  
@@ -1083,7 +1123,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 22:   LAO-YXRDSUSLL   
 ...........................................................................
-   22  LAO-YXRDSUSLL        A2      T0
+   22  LAO-YXRDSUSLL        A2      T+
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
       Labels and factors     : YXRDSULZ 0++0    -137.03599980944 (complex)  
@@ -1092,7 +1132,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 23:   LAO-YYRDSUSLL   
 ...........................................................................
-   23  LAO-YYRDSUSLL        A1      T0
+   23  LAO-YYRDSUSLL        A1      T+
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
       Labels and factors     : YYRDSULX 0++0    -137.03599980944 (complex)  
@@ -1101,7 +1141,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 24:   LAO-YZRDSUSLL   
 ...........................................................................
-   24  LAO-YZRDSUSLL        B2      T0
+   24  LAO-YZRDSUSLL        B2      T+
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
       Labels and factors     : YZRDSULY 0++0    -137.03599980944 (complex)  
@@ -1110,7 +1150,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 25:   LAO-ZXRDSUSLL   
 ...........................................................................
-   25  LAO-ZXRDSUSLL        B1      T0
+   25  LAO-ZXRDSUSLL        B1      T+
 ...........................................................................
       Operator type XAVECTOR : [alpha x P]_x
       Labels and factors     : ZXRDSULZ 0++0    -137.03599980944 (complex)  
@@ -1119,7 +1159,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 26:   LAO-ZYRDSUSLL   
 ...........................................................................
-   26  LAO-ZYRDSUSLL        B2      T0
+   26  LAO-ZYRDSUSLL        B2      T+
 ...........................................................................
       Operator type YAVECTOR : [alpha x P]_y
       Labels and factors     : ZYRDSULX 0++0    -137.03599980944 (complex)  
@@ -1128,7 +1168,7 @@ H      0.0000000000   0.0000000000  -1.3964978801
 ...........................................................................
     Component no. 27:   LAO-ZZRDSUSLL   
 ...........................................................................
-   27  LAO-ZZRDSUSLL        A1      T0
+   27  LAO-ZZRDSUSLL        A1      T+
 ...........................................................................
       Operator type ZAVECTOR : [alpha x P]_z
       Labels and factors     : ZZRDSULY 0++0    -137.03599980944 (complex)  
@@ -1162,13 +1202,13 @@ H      0.0000000000   0.0000000000  -1.3964978801
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
-   L   A1    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   B1    * Deleted:          0(Proj:          0, Lindep:          0)
-   L   B2    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A1    * Deleted:          2(Proj:          2, Lindep:          0)
-   S   B1    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   B2    * Deleted:          0(Proj:          0, Lindep:          0)
-   S   A2    * Deleted:          0(Proj:          0, Lindep:          0)
+   L   A1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.12E+00
+   L   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.42E+00
+   L   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.42E+00
+   S   A1    * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.16E+00
+   S   B1    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.25E+00
+   S   B2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.25E+00
+   S   A2    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.54E+00
 
 
  WARNING : linear symmetry is not implemented for unrestricted kinetic balance yet
@@ -1189,172 +1229,225 @@ Total no. of orbitals           (NORB):    42
    ****************************************************************************
 
 
-*** INFO *** No trial vectors found. Using bare nucleus approximation for initial trial vectors.
-             Improved by an estimate of the electronic screening (Slater's rules).
+*** INFO *** No trial vectors found.
+ Using bare nucleus approximation for initial trial vectors.
+             Improved by a sum of atomic screening potentials.
 
 
-########## START ITERATION NO.   1 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   1 ##########   Fri Oct 21 23:03:49 2016
 
+E_HOMO...E_LUMO, symmetry 1:    32  -0.41726   33  -0.10612
 
 => Calculating sum of orbital energies
-It.    1    -2.489676367141      0.00D+00  0.00D+00  0.00D+00               0.01600100s   Scr. nuclei    Thu Oct 25
+It.    1    -3.480511974170      0.00D+00  0.00D+00  0.00D+00               0.08798700s   Scr. nuclei    Fri Oct 21
 
-########## START ITERATION NO.   2 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   2 ##########   Fri Oct 21 23:03:49 2016
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.10%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12    0.00%    0.03%    0.00%    0.00%   0.02400199s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.08000501s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.00%    0.00%    0.00%   1.50900000s
+SOfock:SL  1.00D-16    0.00%    0.00%    0.00%    0.00%   0.00300000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.22436   33   0.03436
+>>> Total wall time: 1.52480000s, and total CPU time : 1.51876800s
 
-########## END ITERATION NO.   2 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   2 ##########   Fri Oct 21 23:03:50 2016
 
-It.    2    -7.640613607921      5.15D+00  6.10D-01  1.31D-01               0.08000501s   LL SL          Thu Oct 25
+It.    2    -7.588045992275      4.11D+00  8.71D-01  3.72D-01               1.51876800s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   3 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   3 ##########   Fri Oct 21 23:03:50 2016
 
-    3 *** Differential density matrix. DCOVLP     = 0.9707
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.10%    0.00%    0.00%   0.00400001s
-SOfock:SL  1.00D-12    0.00%    0.06%    0.00%    0.00%   0.02000099s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.05600400s
+    3 *** Differential density matrix. DCOVLP     = 0.9987
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.00%    0.00%    0.00%   0.00140000s
+SOfock:SL  1.00D-16    0.00%    0.00%    0.00%    0.00%   0.00260000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29053   33   0.03775
+>>> Total wall time: 0.00980000s, and total CPU time : 0.00599900s
 
-########## END ITERATION NO.   3 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   3 ##########   Fri Oct 21 23:03:50 2016
 
-It.    3    -7.645985438583      5.37D-03  4.00D-02  1.73D-02   DIIS   2    0.05600400s   LL SL          Thu Oct 25
+It.    3    -7.645026397029      5.70D-02 -1.37D-01  3.53D-02   DIIS   2    0.00599900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   4 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   4 ##########   Fri Oct 21 23:03:50 2016
 
-    4 *** Differential density matrix. DCOVLP     = 0.9958
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.21%    0.00%    0.00%   0.00399999s
-SOfock:SL  1.00D-12    0.00%    0.50%    0.00%    0.00%   0.02000201s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.04800299s
+    4 *** Differential density matrix. DCOVLP     = 1.0197
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.00%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    0.02%    0.00%    0.00%   0.00260000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29409   33   0.03691
+>>> Total wall time: 0.00960000s, and total CPU time : 0.00699900s
 
-########## END ITERATION NO.   4 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   4 ##########   Fri Oct 21 23:03:50 2016
 
-It.    4    -7.646131062327      1.46D-04  4.51D-03  3.02D-03   DIIS   3    0.04800299s   LL SL          Thu Oct 25
+It.    4    -7.646032254358      1.01D-03 -1.60D-02  8.31D-03   DIIS   3    0.00699900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   5 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   5 ##########   Fri Oct 21 23:03:50 2016
 
-    5 *** Differential density matrix. DCOVLP     = 0.9983
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.21%    0.00%    0.00%   0.00800100s
-SOfock:SL  1.00D-12    0.00%    0.52%    0.00%    0.00%   0.02000099s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.06000400s
+    5 *** Differential density matrix. DCOVLP     = 1.0063
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.00%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    0.02%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29465   33   0.03689
+>>> Total wall time: 0.00960000s, and total CPU time : 0.00699900s
 
-########## END ITERATION NO.   5 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   5 ##########   Fri Oct 21 23:03:50 2016
 
-It.    5    -7.646148275459      1.72D-05  5.63D-04  1.13D-03   DIIS   4    0.06000400s   LL SL          Thu Oct 25
+It.    5    -7.646135252383      1.03D-04 -2.12D-03  2.49D-03   DIIS   4    0.00699900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   6 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   6 ##########   Fri Oct 21 23:03:50 2016
 
-    6 *** Differential density matrix. DCOVLP     = 0.9988
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.31%    0.00%    0.00%   0.01200101s
-SOfock:SL  1.00D-12    0.00%    0.60%    0.00%    0.00%   0.02000099s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.05600300s
+    6 *** Differential density matrix. DCOVLP     = 1.0023
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.00%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    0.02%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29468   33   0.03695
+>>> Total wall time: 0.00940000s, and total CPU time : 0.00599900s
 
-########## END ITERATION NO.   6 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   6 ##########   Fri Oct 21 23:03:50 2016
 
-It.    6    -7.646151791770      3.52D-06  3.94D-04  7.05D-05   DIIS   5    0.05600300s   LL SL          Thu Oct 25
+It.    6    -7.646151223233      1.60D-05 -7.02D-04  4.60D-04   DIIS   5    0.00599900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   7 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   7 ##########   Fri Oct 21 23:03:50 2016
 
-    7 *** Differential density matrix. DCOVLP     = 0.9999
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.34%    0.00%    0.00%   0.00800100s
-SOfock:SL  1.00D-12    0.00%    2.34%    0.00%    0.00%   0.01600099s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.05600402s
+    7 *** Differential density matrix. DCOVLP     = 1.0004
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.10%    0.00%    0.00%   0.00140000s
+SOfock:SL  1.00D-16    0.00%    0.03%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29470   33   0.03696
+>>> Total wall time: 0.00940000s, and total CPU time : 0.00699900s
 
-########## END ITERATION NO.   7 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   7 ##########   Fri Oct 21 23:03:50 2016
 
-It.    7    -7.646151803139      1.14D-08  2.42D-05  4.13D-06   DIIS   6    0.05600402s   LL SL          Thu Oct 25
+It.    7    -7.646151800825      5.78D-07 -1.72D-04  3.48D-05   DIIS   6    0.00699900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   8 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   8 ##########   Fri Oct 21 23:03:50 2016
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.33%    0.00%    0.00%   0.00799999s
-SOfock:SL  1.00D-12    0.00%    4.17%    0.00%    0.00%   0.02400202s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.05600297s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.10%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    0.04%    0.00%    0.00%   0.00260000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00940000s, and total CPU time : 0.00599900s
 
-########## END ITERATION NO.   8 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   8 ##########   Fri Oct 21 23:03:50 2016
 
-It.    8    -7.646151803155      1.59D-11 -1.62D-06  4.75D-07   DIIS   7    0.05600297s   LL SL          Thu Oct 25
+It.    8    -7.646151803152      2.33D-09 -1.11D-05  1.70D-06   DIIS   7    0.00599900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.   9 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.   9 ##########   Fri Oct 21 23:03:50 2016
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.95%    0.00%    0.00%   0.00400001s
-SOfock:SL  1.00D-12    0.00%    5.33%    0.00%    0.00%   0.02800199s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.05200300s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.10%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    0.16%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00950000s, and total CPU time : 0.00699900s
 
-########## END ITERATION NO.   9 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.   9 ##########   Fri Oct 21 23:03:50 2016
 
-It.    9    -7.646151803155      1.83D-13 -8.87D-08  2.68D-08   DIIS   8    0.05200300s   LL SL          Thu Oct 25
+It.    9    -7.646151803155      3.08D-12  1.90D-07  1.33D-07   DIIS   8    0.00699900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.  10 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.  10 ##########   Fri Oct 21 23:03:50 2016
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    6.81%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   13.65%    0.00%   26.44%   0.02800202s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.04000300s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.31%    0.00%    0.00%   0.00120000s
+SOfock:SL  1.00D-16    0.00%    0.58%    0.00%    0.00%   0.00260000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00940000s, and total CPU time : 0.00599900s
 
-########## END ITERATION NO.  10 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.  10 ##########   Fri Oct 21 23:03:50 2016
 
-It.   10    -7.646151803155     -2.43D-13  6.00D-09  1.47D-09   DIIS   2    0.04000300s   LL SL          Thu Oct 25
+It.   10    -7.646151803155      1.95D-14 -2.49D-08  4.96D-09   DIIS   6    0.00599900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.  11 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.  11 ##########   Fri Oct 21 23:03:50 2016
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   29.41%    0.00%    0.00%   0.00800103s
-SOfock:SL  1.00D-12    0.00%   46.36%    0.00%   50.47%   0.02000099s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.06400400s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    3.82%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    3.42%    0.00%    0.00%   0.00260000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00950000s, and total CPU time : 0.00699900s
 
-########## END ITERATION NO.  11 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.  11 ##########   Fri Oct 21 23:03:50 2016
 
-It.   11    -7.646151803155      6.59D-13 -2.04D-10  3.90D-10   DAMP0.25    0.06400400s   LL SL          Thu Oct 25
+It.   11    -7.646151803155      1.60D-14 -6.18D-10  8.05D-10   DAMP 25%    0.00699900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.  12 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.  12 ##########   Fri Oct 21 23:03:50 2016
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   33.85%    0.00%    0.00%   0.00800002s
-SOfock:SL  1.00D-12    0.00%   55.13%    0.00%   41.73%   0.02000201s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.05600303s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    4.44%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    4.35%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00600000s, and total CPU time : 0.00599900s
 
-########## END ITERATION NO.  12 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.  12 ##########   Fri Oct 21 23:03:50 2016
 
-It.   12    -7.646151803157      1.29D-12 -5.09D-11  1.72D-10   DAMP0.25    0.05600303s   LL SL          Thu Oct 25
+It.   12    -7.646151803155     -1.78D-15  1.91D-10  4.23D-10   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
 
-########## START ITERATION NO.  13 ##########   Thu Oct 25 22:00:00 2012
+########## START ITERATION NO.  13 ##########   Fri Oct 21 23:03:50 2016
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   39.22%    0.00%    0.00%   0.00000000s
-SOfock:SL  1.00D-12    0.00%   60.43%    0.00%   39.57%   0.02400196s
->>> Total wall time: 0.00000000s
->>> Total CPU time : 0.04400295s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    4.44%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    4.51%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00610000s, and total CPU time : 0.00599900s
 
-########## END ITERATION NO.  13 ##########   Thu Oct 25 22:00:00 2012
+########## END ITERATION NO.  13 ##########   Fri Oct 21 23:03:50 2016
 
-It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04400295s   LL SL          Thu Oct 25
+It.   13    -7.646151803155     -1.42D-14  8.06D-11  2.31D-10   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
+
+########## START ITERATION NO.  14 ##########   Fri Oct 21 23:03:50 2016
+
+   14 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    4.75%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    4.71%    0.00%    0.00%   0.00250000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00930000s, and total CPU time : 0.00599900s
+
+########## END ITERATION NO.  14 ##########   Fri Oct 21 23:03:50 2016
+
+It.   14    -7.646151803155      1.78D-14 -5.82D-11  1.51D-10   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
+
+########## START ITERATION NO.  15 ##########   Fri Oct 21 23:03:50 2016
+
+   15 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    4.95%    0.00%    0.00%   0.00120000s
+SOfock:SL  1.00D-16    0.00%    5.06%    0.00%    0.00%   0.00240000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00930000s, and total CPU time : 0.00600000s
+
+########## END ITERATION NO.  15 ##########   Fri Oct 21 23:03:50 2016
+
+It.   15    -7.646151803155      1.78D-15  2.91D-11  1.24D-10   DAMP 25%    0.00600000s   LL SL          Fri Oct 21
+
+########## START ITERATION NO.  16 ##########   Fri Oct 21 23:03:50 2016
+
+   16 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    4.95%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    5.31%    0.00%    0.00%   0.00260000s
+E_HOMO...E_LUMO, symmetry 1:    32  -0.29469   33   0.03696
+>>> Total wall time: 0.00940000s, and total CPU time : 0.00699900s
+
+########## END ITERATION NO.  16 ##########   Fri Oct 21 23:03:50 2016
+
+It.   16    -7.646151803155      8.88D-15 -3.30D-11  1.06D-10   DAMP 25%    0.00699900s   LL SL          Fri Oct 21
+
+########## START ITERATION NO.  17 ##########   Fri Oct 21 23:03:50 2016
+
+   17 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    5.06%    0.00%    0.00%   0.00130000s
+SOfock:SL  1.00D-16    0.00%    5.47%    0.00%    0.00%   0.00250000s
+>>> Total wall time: 0.00930000s, and total CPU time : 0.00599900s
+
+########## END ITERATION NO.  17 ##########   Fri Oct 21 23:03:50 2016
+
+It.   17    -7.646151803155      5.33D-15 -3.64D-11  5.67D-11   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
 
 
                                    SCF - CYCLE
@@ -1370,37 +1463,41 @@ It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -2.489676367141      0.00D+00  0.00D+00  0.00D+00               0.01600100s   Scr. nuclei    Thu Oct 25
-It.    2    -7.640613607921      5.15D+00  6.10D-01  1.31D-01               0.08000501s   LL SL          Thu Oct 25
-It.    3    -7.645985438583      5.37D-03  4.00D-02  1.73D-02   DIIS   2    0.05600400s   LL SL          Thu Oct 25
-It.    4    -7.646131062327      1.46D-04  4.51D-03  3.02D-03   DIIS   3    0.04800299s   LL SL          Thu Oct 25
-It.    5    -7.646148275459      1.72D-05  5.63D-04  1.13D-03   DIIS   4    0.06000400s   LL SL          Thu Oct 25
-It.    6    -7.646151791770      3.52D-06  3.94D-04  7.05D-05   DIIS   5    0.05600300s   LL SL          Thu Oct 25
-It.    7    -7.646151803139      1.14D-08  2.42D-05  4.13D-06   DIIS   6    0.05600402s   LL SL          Thu Oct 25
-It.    8    -7.646151803155      1.59D-11 -1.62D-06  4.75D-07   DIIS   7    0.05600297s   LL SL          Thu Oct 25
-It.    9    -7.646151803155      1.83D-13 -8.87D-08  2.68D-08   DIIS   8    0.05200300s   LL SL          Thu Oct 25
-It.   10    -7.646151803155     -2.43D-13  6.00D-09  1.47D-09   DIIS   2    0.04000300s   LL SL          Thu Oct 25
-It.   11    -7.646151803155      6.59D-13 -2.04D-10  3.90D-10   DAMP0.25    0.06400400s   LL SL          Thu Oct 25
-It.   12    -7.646151803157      1.29D-12 -5.09D-11  1.72D-10   DAMP0.25    0.05600303s   LL SL          Thu Oct 25
-It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04400295s   LL SL          Thu Oct 25
+It.    1    -3.480511974170      0.00D+00  0.00D+00  0.00D+00               0.08798700s   Scr. nuclei    Fri Oct 21
+It.    2    -7.588045992275      4.11D+00  8.71D-01  3.72D-01               1.51876800s   LL SL          Fri Oct 21
+It.    3    -7.645026397029      5.70D-02 -1.37D-01  3.53D-02   DIIS   2    0.00599900s   LL SL          Fri Oct 21
+It.    4    -7.646032254358      1.01D-03 -1.60D-02  8.31D-03   DIIS   3    0.00699900s   LL SL          Fri Oct 21
+It.    5    -7.646135252383      1.03D-04 -2.12D-03  2.49D-03   DIIS   4    0.00699900s   LL SL          Fri Oct 21
+It.    6    -7.646151223233      1.60D-05 -7.02D-04  4.60D-04   DIIS   5    0.00599900s   LL SL          Fri Oct 21
+It.    7    -7.646151800825      5.78D-07 -1.72D-04  3.48D-05   DIIS   6    0.00699900s   LL SL          Fri Oct 21
+It.    8    -7.646151803152      2.33D-09 -1.11D-05  1.70D-06   DIIS   7    0.00599900s   LL SL          Fri Oct 21
+It.    9    -7.646151803155      3.08D-12  1.90D-07  1.33D-07   DIIS   8    0.00699900s   LL SL          Fri Oct 21
+It.   10    -7.646151803155      1.95D-14 -2.49D-08  4.96D-09   DIIS   6    0.00599900s   LL SL          Fri Oct 21
+It.   11    -7.646151803155      1.60D-14 -6.18D-10  8.05D-10   DAMP 25%    0.00699900s   LL SL          Fri Oct 21
+It.   12    -7.646151803155     -1.78D-15  1.91D-10  4.23D-10   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
+It.   13    -7.646151803155     -1.42D-14  8.06D-11  2.31D-10   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
+It.   14    -7.646151803155      1.78D-14 -5.82D-11  1.51D-10   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
+It.   15    -7.646151803155      1.78D-15  2.91D-11  1.24D-10   DAMP 25%    0.00600000s   LL SL          Fri Oct 21
+It.   16    -7.646151803155      8.88D-15 -3.30D-11  1.06D-10   DAMP 25%    0.00699900s   LL SL          Fri Oct 21
+It.   17    -7.646151803155      5.33D-15 -3.64D-11  5.67D-11   DAMP 25%    0.00599900s   LL SL          Fri Oct 21
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after   13 iterations.
+* Convergence after   17 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00000000s
-      LL SL        :    0.00000000s
+      No 2-ints    :    0.08790000s
+      LL SL        :    0.10373750s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -8.6401607107254890
+   Electronic energy                        :    -8.6401607107225722
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     0.9940089067059045
    SS Coulombic correction                  :     0.0000000008614744
 
    Sum of all contributions to the energy
-   Total energy                             :    -7.6461518031581104
+   Total energy                             :    -7.6461518031551936
 
 
                                WARNING from EIGCHK
@@ -1418,10 +1515,10 @@ It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--2.327598430157078  ( 2)   -0.294694891557108  ( 2)
+-2.327598430200814  ( 2)   -0.294694891582349  ( 2)
   * Virtual eigenvalues, f = 0.0000
- 0.036959241010509  ( 2)    0.095201915793442  ( 4)    0.352199781032860  ( 2)    0.493866512862702  ( 2)    0.493873256599510  ( 2)
- 0.540560112981405  ( 2)    0.705126474209753  ( 2)    3.657506792570877  ( 2)    6.310211032057278  ( 2)
+ 0.036959240975541  ( 2)    0.095201915778863  ( 4)    0.352199781017852  ( 2)    0.493866512854782  ( 2)    0.493873256561788  ( 2)
+ 0.540560113024285  ( 2)    0.705126474237912  ( 2)    3.657506792562911  ( 2)    6.310211032001879  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.03695924 au (symmetry E1 )
@@ -1440,25 +1537,25 @@ It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04
    This is output from the Dirac property module:
 
    HF & DFT first order properties
-   Trond Saue
+      Trond Saue
 
    First-order ESR properties
-   Hans Joergen Aa. Jensen and Anette Noerager
+      Hans Joergen Aa. Jensen et al.
 
    MP2 first order properties:
-   J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
 
    KR-RPA second-order properties
-   Hans Joergen Aa. Jensen and Trond Saue
+      Hans Joergen Aa. Jensen and Trond Saue
 
    KR-QR third order properties
-   Patrick Norman and Hans Joergen Aa. Jensen
+      Patrick Norman and Hans Joergen Aa. Jensen
 
    Molecular gradient
-   Joern Thyssen
+      Joern Thyssen
 
    Additional contributions from:
-   Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
 
 
 
@@ -1475,33 +1572,33 @@ It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04
 
                                                    s0 t0
 ----------------------------------------------------------------------------
-    LAO-XXRM2H1      :     0.439144955111 a.u.      F   F
-    LAO-XYRM2H1      :     0.00000000D+00 a.u.      T   F
-    LAO-XZRM2H1      :     0.00000000D+00 a.u.      T   F
-    LAO-YYRM2H1      :     0.439144955111 a.u.      F   F
-    LAO-YZRM2H1      :     0.00000000D+00 a.u.      T   F
-    LAO-ZZRM2H1      :     0.00000000D+00 a.u.      F   F
-    LAO-XXRM2H2      :     2.098083825652 a.u.      F   F
-    LAO-XYRM2H2      :     0.00000000D+00 a.u.      T   F
-    LAO-XZRM2H2      :     0.00000000D+00 a.u.      T   F
-    LAO-YYRM2H2      :     2.098083825652 a.u.      F   F
-    LAO-YZRM2H2      :     0.00000000D+00 a.u.      T   F
-    LAO-ZZRM2H2      :     0.00000000D+00 a.u.      F   F
-    LAO-XXRM2H3      :    -0.123896719421 a.u.      F   F
-    LAO-XYRM2H3      :     0.00000000D+00 a.u.      T   F
-    LAO-XZRM2H3      :     0.00000000D+00 a.u.      T   F
-    LAO-YYRM2H3      :    -0.123896719421 a.u.      F   F
-    LAO-YZRM2H3      :     0.00000000D+00 a.u.      T   F
-    LAO-ZZRM2H3      :     0.00000000D+00 a.u.      F   F
-    LAO-XXRDSUSLL    :     0.656353230765 a.u.      F   F
-    LAO-XYRDSUSLL    :     0.00000000D+00 a.u.      T   F
-    LAO-XZRDSUSLL    :     0.00000000D+00 a.u.      T   F
-    LAO-YXRDSUSLL    :     0.00000000D+00 a.u.      T   F
-    LAO-YYRDSUSLL    :     0.656353230765 a.u.      F   F
-    LAO-YZRDSUSLL    :     0.00000000D+00 a.u.      T   F
-    LAO-ZXRDSUSLL    :     0.00000000D+00 a.u.      T   F
-    LAO-ZYRDSUSLL    :     0.00000000D+00 a.u.      T   F
-    LAO-ZZRDSUSLL    :     0.00000000D+00 a.u.      F   F
+    LAO-XXRM2H1      :     0.439144955037 a.u.      F   F
+    LAO-XYRM2H1      :     0.00000000E+00 a.u.      T   F
+    LAO-XZRM2H1      :     0.00000000E+00 a.u.      T   F
+    LAO-YYRM2H1      :     0.439144955037 a.u.      F   F
+    LAO-YZRM2H1      :     0.00000000E+00 a.u.      T   F
+    LAO-ZZRM2H1      :     0.00000000E+00 a.u.      F   F
+    LAO-XXRM2H2      :     2.098083825537 a.u.      F   F
+    LAO-XYRM2H2      :     0.00000000E+00 a.u.      T   F
+    LAO-XZRM2H2      :     0.00000000E+00 a.u.      T   F
+    LAO-YYRM2H2      :     2.098083825537 a.u.      F   F
+    LAO-YZRM2H2      :     0.00000000E+00 a.u.      T   F
+    LAO-ZZRM2H2      :     0.00000000E+00 a.u.      F   F
+    LAO-XXRM2H3      :    -0.123896719351 a.u.      F   F
+    LAO-XYRM2H3      :     0.00000000E+00 a.u.      T   F
+    LAO-XZRM2H3      :     0.00000000E+00 a.u.      T   F
+    LAO-YYRM2H3      :    -0.123896719351 a.u.      F   F
+    LAO-YZRM2H3      :     0.00000000E+00 a.u.      T   F
+    LAO-ZZRM2H3      :     0.00000000E+00 a.u.      F   F
+    LAO-XXRDSUSLL    :     0.656353230809 a.u.      F   F
+    LAO-XYRDSUSLL    :     0.00000000E+00 a.u.      T   F
+    LAO-XZRDSUSLL    :     0.00000000E+00 a.u.      T   F
+    LAO-YXRDSUSLL    :     0.00000000E+00 a.u.      T   F
+    LAO-YYRDSUSLL    :     0.656353230809 a.u.      F   F
+    LAO-YZRDSUSLL    :     0.00000000E+00 a.u.      T   F
+    LAO-ZXRDSUSLL    :     0.00000000E+00 a.u.      T   F
+    LAO-ZYRDSUSLL    :     0.00000000E+00 a.u.      T   F
+    LAO-ZZRDSUSLL    :     0.00000000E+00 a.u.      F   F
 ----------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1512,41 +1609,51 @@ It.   13    -7.646151803158      1.34D-12 -4.37D-11  9.65D-11   DAMP0.25    0.04
     - Active orbitals    : No electrons
     - Secondary orbitals :    -30..-1,     3..    12                               
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -7.64615180315677101
-* Heading :  LiH                                             Thu Oct 25 22:00:00 2012
+* REACMO: Coefficients read from file DFCOEF - Total energy: -7.64615180315518828
+* Heading :  LiH                                             Fri Oct 21 23:03:50 2016
 
-cpu time:       0.1200 wall time:       0.0000 used in call to twoint(in get_ao_fock_2el_lao).
+cpu time:       0.0220 wall time:       0.0214 used in call to twoint(in get_ao_fock_2el_lao).
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.17%    0.00%   32.61%   0.00800103s
-SOfock:SL  1.00D-12    0.00%    0.55%    0.00%   33.15%   0.02400100s
+ symmetry check in london_direct  6.261762159563278E-019
+ symmetry check in london_direct  9.683221684081017E-019
+ symmetry check in london_direct  0.000000000000000E+000
+ epreorth in getmdm = T
+ epreorth in getmdm = T
+ epreorth in getmdm = T
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  1.00D-16    0.00%    0.21%    0.00%   33.26%   0.00150000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57100000s
+SOfock:SL  1.00D-16    0.00%    0.04%    0.00%   33.32%   0.00280000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57380000s
 
 * GETFCK: reading old two-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /tmp/ilias/DIRAC_LiH.dc_ukb.linresp_ep_magnetiz_lao-go_cm_Li
-* Heading :  LiH                                             Thu Oct 25 22:00:00 2012
+* REAFCK: Fock matrix read from file /state/partition1/gosia/gosia/DIRAC_LiH.dc_ukb.linresp_ep_ma
+* Heading :  LiH                                             Fri Oct 21 23:03:50 2016
 
 * GETFCK: reading old one-electron Fock matrix
 
-* REAFCK: Fock matrix read from file /tmp/ilias/DIRAC_LiH.dc_ukb.linresp_ep_magnetiz_lao-go_cm_Li
-* Heading :  LiH                                             Thu Oct 25 22:00:00 2012
+* REAFCK: Fock matrix read from file /state/partition1/gosia/gosia/DIRAC_LiH.dc_ukb.linresp_ep_ma
+* Heading :  LiH                                             Fri Oct 21 23:03:49 2016
+ symmetry check in london_reorth -1.338285153569925E-014
+ symmetry check in london_reorth -2.641925898685990E-014
+ symmetry check in london_reorth  0.000000000000000E+000
 
 
 
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
 LAO-YRM1H1       - Symmetry: B1   T-
 
-
-* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.81D-12
-         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.62D+02
 * Screening threshold in LR solver scaled with norm of property vector:  3.6532D+02
-  and changed to:  1.3928D-09
+  and changed to:  3.6532D-14
 
-########## START MICROITERATION NO.   1 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   1 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    0.72%    0.00%    0.00%   0.00400007s
-SOfock:SL  1.39D-09    0.00%    0.03%    0.00%    0.00%   0.02400196s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.10%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57500000s
+SOfock:SL  3.65D-14    0.00%    0.01%    0.00%    0.00%   0.00240000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57740000s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 <<B;B>> at iteration:    1
@@ -1561,13 +1668,15 @@ SOfock:SL  1.39D-09    0.00%    0.03%    0.00%    0.00%   0.02400196s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  6.37E-01  6.37E-01  2.07E-03
 
-* End of microiteration no.    1 after  0.03200197s
+* End of microiteration no.    1 after  0.00699902s
 
-########## START MICROITERATION NO.   2 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   2 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    2.99%    0.00%    0.00%   0.00800097s
-SOfock:SL  1.39D-09    0.00%    4.07%    0.00%    0.00%   0.02000105s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.31%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.57870000s
+SOfock:SL  3.65D-14    0.00%    0.38%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.58120000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    2
@@ -1582,13 +1691,15 @@ SOfock:SL  1.39D-09    0.00%    4.07%    0.00%    0.00%   0.02000105s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.55E-01  1.55E-01  1.99E-03
 
-* End of microiteration no.    2 after  0.03600204s
+* End of microiteration no.    2 after  0.00599897s
 
-########## START MICROITERATION NO.   3 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   3 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    3.30%    0.00%    0.00%   0.00400007s
-SOfock:SL  1.39D-09    0.00%    3.74%    0.00%    0.00%   0.02800202s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.21%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.58250000s
+SOfock:SL  3.65D-14    0.00%    0.13%    0.00%    0.00%   0.00270000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.58520000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    3
@@ -1603,13 +1714,15 @@ SOfock:SL  1.39D-09    0.00%    3.74%    0.00%    0.00%   0.02800202s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.11E-03  5.10E-03  9.11E-05
 
-* End of microiteration no.    3 after  0.04400301s
+* End of microiteration no.    3 after  0.00799906s
 
-########## START MICROITERATION NO.   4 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   4 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    4.85%    0.00%    5.99%   0.00400007s
-SOfock:SL  1.39D-09    0.00%    6.62%    0.00%    1.84%   0.02400100s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.31%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.58650000s
+SOfock:SL  3.65D-14    0.00%    0.57%    0.00%    0.00%   0.00280000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.58930000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    4
@@ -1624,18 +1737,20 @@ SOfock:SL  1.39D-09    0.00%    6.62%    0.00%    1.84%   0.02400100s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  4.42E-05  4.42E-05  7.35E-07
 
-* End of microiteration no.    4 after  0.04400301s
+* End of microiteration no.    4 after  0.00799894s
 
-########## START MICROITERATION NO.   5 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   5 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    7.95%    0.00%   43.19%   0.00800109s
-SOfock:SL  1.39D-09    0.00%   16.90%    0.00%   26.40%   0.02400100s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.72%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59060000s
+SOfock:SL  3.65D-14    0.00%    2.25%    0.00%    0.00%   0.00280000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59340000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    5
 --------------------------------------------
-   Freq.:     0.00000000         -1.69755719
+   Freq.:     0.00000000         -1.69755720
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part   P- part 
@@ -1643,20 +1758,22 @@ SOfock:SL  1.39D-09    0.00%   16.90%    0.00%   26.40%   0.02400100s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.54E-06  2.54E-06  3.38E-08
+     0.00000000  1.00E-09  2.54E-06  2.54E-06  2.59E-08
 
-* End of microiteration no.    5 after  0.04000199s
+* End of microiteration no.    5 after  0.00899899s
 
-########## START MICROITERATION NO.   6 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   6 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%   21.78%    0.00%    0.00%   0.00399995s
-SOfock:SL  1.39D-09   88.11%    0.96%    0.00%    7.54%   0.01200104s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    2.27%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59470000s
+SOfock:SL  3.65D-14    0.00%    3.26%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59720000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    6
 --------------------------------------------
-   Freq.:     0.00000000         -1.69755719
+   Freq.:     0.00000000         -1.69755720
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part   P- part 
@@ -1664,20 +1781,22 @@ SOfock:SL  1.39D-09   88.11%    0.96%    0.00%    7.54%   0.01200104s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  7.46E-07  7.43E-07  6.70E-08
+     0.00000000  1.00E-09  7.42E-07  7.41E-07  4.17E-08
 
-* End of microiteration no.    6 after  0.02400196s
+* End of microiteration no.    6 after  0.00599909s
 
-########## START MICROITERATION NO.   7 ##########   Thu Oct 25 22:00:00 2012
+########## START MICROITERATION NO.   7 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%   34.57%    0.00%    0.00%   0.00800002s
-SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00800097s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    4.23%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.59840000s
+SOfock:SL  3.65D-14    0.00%    3.74%    0.00%    0.00%   0.00260000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.60100000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    7
 --------------------------------------------
-   Freq.:     0.00000000         -1.69755719
+   Freq.:     0.00000000         -1.69755720
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part   P- part 
@@ -1685,9 +1804,9 @@ SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00800097s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.98E-07  2.89E-07  7.45E-08
+     0.00000000  1.00E-09  3.04E-07  3.01E-07  4.43E-08
 
-* End of microiteration no.    7 after  0.01600099s
+* End of microiteration no.    7 after  0.00699902s
 
 
                              Final output from XRSCTL
@@ -1698,33 +1817,33 @@ SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00800097s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.03200197s  (LL SL    )     [  0]     [  1]
+* It.  1   0.00699902s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   6.37D-01 |   6.37D-01  2.07D-03
 ========================================================
-* It.  2   0.03600204s  (LL SL    )     [  1]     [  0]
+* It.  2   0.00599897s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.55D-01 |   1.55D-01  1.99D-03
 ========================================================
-* It.  3   0.04400301s  (LL SL    )     [  1]     [  1]
+* It.  3   0.00799906s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   5.10D-03 |   5.10D-03  9.11D-05
 ========================================================
-* It.  4   0.04400301s  (LL SL    )     [  1]     [  1]
+* It.  4   0.00799894s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   4.42D-05 |   4.42D-05  7.35D-07
 ========================================================
-* It.  5   0.04000199s  (LL SL    )     [  1]     [  1]
+* It.  5   0.00899899s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
-            0.000000 :   2.54D-06 |   2.54D-06  3.38D-08
+            0.000000 :   2.54D-06 |   2.54D-06  2.59D-08
 ========================================================
-* It.  6   0.02400196s  (LL SL    )     [  1]     [  0]
+* It.  6   0.00599909s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   7.46D-07 |   7.43D-07  6.70D-08
+            0.000000 :   7.42D-07 |   7.41D-07  4.17D-08
 ========================================================
-* It.  7   0.01600099s  (LL SL    )     [  1]     [  0]
+* It.  7   0.00699902s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   2.98D-07 |   2.89D-07  7.45D-08
+            0.000000 :   3.04D-07 |   3.01D-07  4.43D-08
 ========================================================
 
 
@@ -1732,17 +1851,16 @@ SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00800097s
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
 LAO-XRM1H1       - Symmetry: B2   T-
 
-
-* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.81D-12
-         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.62D+02
 * Screening threshold in LR solver scaled with norm of property vector:  3.6532D+02
-  and changed to:  1.3928D-09
+  and changed to:  3.6532D-14
 
-########## START MICROITERATION NO.   1 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   1 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    0.72%    0.00%    0.00%   0.00399995s
-SOfock:SL  1.39D-09    0.00%    0.03%    0.00%    0.00%   0.00000000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.10%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.60220000s
+SOfock:SL  3.65D-14    0.00%    0.01%    0.00%    0.00%   0.00240000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.60460000s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 <<B;B>> at iteration:    1
@@ -1757,13 +1875,15 @@ SOfock:SL  1.39D-09    0.00%    0.03%    0.00%    0.00%   0.00000000s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  6.37E-01  6.37E-01  2.07E-03
 
-* End of microiteration no.    1 after  0.01600099s
+* End of microiteration no.    1 after  0.00699902s
 
-########## START MICROITERATION NO.   2 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   2 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    2.99%    0.00%    0.00%   0.00399995s
-SOfock:SL  1.39D-09    0.00%    4.07%    0.00%    0.00%   0.02000201s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.31%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.60580000s
+SOfock:SL  3.65D-14    0.00%    0.38%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.60830000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    2
@@ -1778,13 +1898,15 @@ SOfock:SL  1.39D-09    0.00%    4.07%    0.00%    0.00%   0.02000201s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.55E-01  1.55E-01  1.99E-03
 
-* End of microiteration no.    2 after  0.02800202s
+* End of microiteration no.    2 after  0.00599897s
 
-########## START MICROITERATION NO.   3 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   3 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    3.30%    0.00%    0.00%   0.00400102s
-SOfock:SL  1.39D-09    0.00%    3.74%    0.00%    0.00%   0.02400100s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.21%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.60960000s
+SOfock:SL  3.65D-14    0.00%    0.13%    0.00%    0.00%   0.00260000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.61220000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    3
@@ -1799,13 +1921,15 @@ SOfock:SL  1.39D-09    0.00%    3.74%    0.00%    0.00%   0.02400100s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  5.11E-03  5.10E-03  9.11E-05
 
-* End of microiteration no.    3 after  0.04000199s
+* End of microiteration no.    3 after  0.00899899s
 
-########## START MICROITERATION NO.   4 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   4 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    4.85%    0.00%    5.99%   0.00399995s
-SOfock:SL  1.39D-09    0.00%    6.62%    0.00%    1.84%   0.02400208s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.31%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.61350000s
+SOfock:SL  3.65D-14    0.00%    0.57%    0.00%    0.00%   0.00270000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.61620000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    4
@@ -1820,18 +1944,20 @@ SOfock:SL  1.39D-09    0.00%    6.62%    0.00%    1.84%   0.02400208s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  4.42E-05  4.42E-05  7.35E-07
 
-* End of microiteration no.    4 after  0.03600311s
+* End of microiteration no.    4 after  0.00799894s
 
-########## START MICROITERATION NO.   5 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   5 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%    7.95%    0.00%   43.19%   0.00399995s
-SOfock:SL  1.39D-09    0.00%   16.90%    0.00%   26.40%   0.02400208s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    0.72%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.61750000s
+SOfock:SL  3.65D-14    0.00%    2.25%    0.00%    0.00%   0.00280000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.62030000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    5
 --------------------------------------------
-   Freq.:     0.00000000         -1.69755719
+   Freq.:     0.00000000         -1.69755720
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part   P- part 
@@ -1839,20 +1965,22 @@ SOfock:SL  1.39D-09    0.00%   16.90%    0.00%   26.40%   0.02400208s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.54E-06  2.54E-06  3.38E-08
+     0.00000000  1.00E-09  2.54E-06  2.54E-06  2.59E-08
 
-* End of microiteration no.    5 after  0.03200197s
+* End of microiteration no.    5 after  0.00999808s
 
-########## START MICROITERATION NO.   6 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   6 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%   21.78%    0.00%    0.00%   0.00400007s
-SOfock:SL  1.39D-09   88.11%    0.96%    0.00%    7.54%   0.01200092s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    2.27%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.62150000s
+SOfock:SL  3.65D-14    0.00%    3.26%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.62400000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    6
 --------------------------------------------
-   Freq.:     0.00000000         -1.69755719
+   Freq.:     0.00000000         -1.69755720
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part   P- part 
@@ -1860,20 +1988,22 @@ SOfock:SL  1.39D-09   88.11%    0.96%    0.00%    7.54%   0.01200092s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  7.46E-07  7.43E-07  6.70E-08
+     0.00000000  1.00E-09  7.42E-07  7.41E-07  4.17E-08
 
-* End of microiteration no.    6 after  0.02000093s
+* End of microiteration no.    6 after  0.00499892s
 
-########## START MICROITERATION NO.   7 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   7 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.39D-09    0.00%   34.57%    0.00%    0.00%   0.00400102s
-SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00399995s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  3.65D-14    0.00%    4.23%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.62520000s
+SOfock:SL  3.65D-14    0.00%    3.74%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.62770000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    7
 --------------------------------------------
-   Freq.:     0.00000000         -1.69755719
+   Freq.:     0.00000000         -1.69755720
 
 * XRSNEX: Norm of resultant vectors:
 * Frequency      Total     E- part   P- part 
@@ -1881,9 +2011,9 @@ SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00399995s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  2.98E-07  2.89E-07  7.45E-08
+     0.00000000  1.00E-09  3.04E-07  3.01E-07  4.43E-08
 
-* End of microiteration no.    7 after  0.01600099s
+* End of microiteration no.    7 after  0.00699902s
 
 
                              Final output from XRSCTL
@@ -1894,33 +2024,33 @@ SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00399995s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.01600099s  (LL SL    )     [  0]     [  1]
+* It.  1   0.00699902s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   6.37D-01 |   6.37D-01  2.07D-03
 ========================================================
-* It.  2   0.02800202s  (LL SL    )     [  1]     [  0]
+* It.  2   0.00599897s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   1.55D-01 |   1.55D-01  1.99D-03
 ========================================================
-* It.  3   0.04000199s  (LL SL    )     [  1]     [  1]
+* It.  3   0.00899899s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   5.10D-03 |   5.10D-03  9.11D-05
 ========================================================
-* It.  4   0.03600311s  (LL SL    )     [  1]     [  1]
+* It.  4   0.00799894s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   4.42D-05 |   4.42D-05  7.35D-07
 ========================================================
-* It.  5   0.03200197s  (LL SL    )     [  1]     [  1]
+* It.  5   0.00999808s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
-            0.000000 :   2.54D-06 |   2.54D-06  3.38D-08
+            0.000000 :   2.54D-06 |   2.54D-06  2.59D-08
 ========================================================
-* It.  6   0.02000093s  (LL SL    )     [  1]     [  0]
+* It.  6   0.00499892s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   7.46D-07 |   7.43D-07  6.70D-08
+            0.000000 :   7.42D-07 |   7.41D-07  4.17D-08
 ========================================================
-* It.  7   0.01600099s  (LL SL    )     [  1]     [  0]
+* It.  7   0.00699902s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   2.98D-07 |   2.89D-07  7.45D-08
+            0.000000 :   3.04D-07 |   3.01D-07  4.43D-08
 ========================================================
 
 
@@ -1928,17 +2058,16 @@ SOfock:SL  1.39D-09  100.00%    0.00%    0.00%    0.00%   0.00399995s
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTY >>>
 LAO-ZRM1H1       - Symmetry: A2   T-
 
-
-* XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  3.81D-12
-         which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.62D+02
 * Screening threshold in LR solver scaled with norm of property vector:  2.9312D+02
-  and changed to:  1.1175D-09
+  and changed to:  2.9312D-14
 
-########## START MICROITERATION NO.   1 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   1 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%    0.52%    0.00%    0.00%   0.00399995s
-SOfock:SL  1.12D-09    0.00%    0.03%    0.00%    0.00%   0.01200104s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    0.10%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.62900000s
+SOfock:SL  2.93D-14    0.00%    0.01%    0.00%    0.00%   0.00240000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.63140000s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 <<B;B>> at iteration:    1
@@ -1953,13 +2082,15 @@ SOfock:SL  1.12D-09    0.00%    0.03%    0.00%    0.00%   0.01200104s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.98E-03  1.93E-04  1.97E-03
 
-* End of microiteration no.    1 after  0.03200209s
+* End of microiteration no.    1 after  0.00599909s
 
-########## START MICROITERATION NO.   2 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   2 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%    5.57%    0.00%    0.00%   0.00399995s
-SOfock:SL  1.12D-09    0.00%    5.13%    0.00%    7.46%   0.02400208s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    0.21%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.63270000s
+SOfock:SL  2.93D-14    0.00%    0.12%    0.00%    0.00%   0.00270000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.63540000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    2
@@ -1974,13 +2105,15 @@ SOfock:SL  1.12D-09    0.00%    5.13%    0.00%    7.46%   0.02400208s
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-09  1.80E-05  1.80E-05  2.69E-07
 
-* End of microiteration no.    2 after  0.03600299s
+* End of microiteration no.    2 after  0.00899899s
 
-########## START MICROITERATION NO.   3 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   3 ##########   Fri Oct 21 23:03:50 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%    8.05%    0.00%   43.14%   0.00399995s
-SOfock:SL  1.12D-09    0.00%   18.80%    0.00%   22.00%   0.00800002s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    0.41%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.63670000s
+SOfock:SL  2.93D-14    0.00%    1.29%    0.00%    0.00%   0.00260000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.63930000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    3
@@ -1993,15 +2126,17 @@ SOfock:SL  1.12D-09    0.00%   18.80%    0.00%   22.00%   0.00800002s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  1.52E-05  1.52E-05  4.06E-08
+     0.00000000  1.00E-09  1.52E-05  1.52E-05  3.95E-08
 
-* End of microiteration no.    3 after  0.03200197s
+* End of microiteration no.    3 after  0.00999796s
 
-########## START MICROITERATION NO.   4 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   4 ##########   Fri Oct 21 23:03:51 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%   10.73%    0.00%    0.00%   0.00400007s
-SOfock:SL  1.12D-09    0.69%   21.62%    0.00%   24.18%   0.02400196s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    0.41%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.64060000s
+SOfock:SL  2.93D-14    0.00%    1.39%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.64310000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    4
@@ -2014,15 +2149,17 @@ SOfock:SL  1.12D-09    0.69%   21.62%    0.00%   24.18%   0.02400196s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  4.59E-06  4.59E-06  7.93E-08
+     0.00000000  1.00E-09  4.59E-06  4.59E-06  7.81E-08
 
-* End of microiteration no.    4 after  0.03200197s
+* End of microiteration no.    4 after  0.00499904s
 
-########## START MICROITERATION NO.   5 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   5 ##########   Fri Oct 21 23:03:51 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%   17.96%    0.00%   41.02%   0.00800097s
-SOfock:SL  1.12D-09   15.67%   23.66%    0.00%   40.53%   0.02000105s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    0.93%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.64440000s
+SOfock:SL  2.93D-14    0.00%    2.27%    0.00%    0.00%   0.00260000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.64700000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 <<B;B>> at iteration:    5
@@ -2035,15 +2172,17 @@ SOfock:SL  1.12D-09   15.67%   23.66%    0.00%   40.53%   0.02000105s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  1.36E-06  1.36E-06  2.69E-08
+     0.00000000  1.00E-09  1.35E-06  1.35E-06  3.71E-09
 
-* End of microiteration no.    5 after  0.03600204s
+* End of microiteration no.    5 after  0.00899899s
 
-########## START MICROITERATION NO.   6 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   6 ##########   Fri Oct 21 23:03:51 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%   28.07%    0.00%    0.00%   0.00399995s
-SOfock:SL  1.12D-09   77.83%    4.90%    0.00%   15.89%   0.01200104s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    3.61%    0.00%    0.00%   0.00120000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.64820000s
+SOfock:SL  2.93D-14    0.00%    3.35%    0.00%    0.00%   0.00260000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.65080000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    6
@@ -2056,15 +2195,17 @@ SOfock:SL  1.12D-09   77.83%    4.90%    0.00%   15.89%   0.01200104s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  3.58E-07  3.56E-07  2.88E-08
+     0.00000000  1.00E-09  3.59E-07  3.59E-07  3.90E-09
 
-* End of microiteration no.    6 after  0.02800202s
+* End of microiteration no.    6 after  0.00599897s
 
-########## START MICROITERATION NO.   7 ##########   Thu Oct 25 22:00:01 2012
+########## START MICROITERATION NO.   7 ##########   Fri Oct 21 23:03:51 2016
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.12D-09    0.00%   38.80%    0.00%    0.00%   0.00400007s
-SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.01200092s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
+SOfock:LL  2.93D-14    0.00%    4.33%    0.00%    0.00%   0.00130000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.65210000s
+SOfock:SL  2.93D-14    0.00%    3.85%    0.00%    0.00%   0.00250000s
+>>>> Total wall time used in HER_PARDRV so far   : 1.65460000s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 <<B;B>> at iteration:    7
@@ -2077,9 +2218,9 @@ SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.01200092s
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
-     0.00000000  1.00E-09  1.37E-07  1.34E-07  2.81E-08
+     0.00000000  1.00E-09  1.37E-07  1.37E-07  3.91E-09
 
-* End of microiteration no.    7 after  0.02000093s
+* End of microiteration no.    7 after  0.00699902s
 
 
                              Final output from XRSCTL
@@ -2090,33 +2231,33 @@ SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.01200092s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.03200209s  (LL SL    )     [  0]     [  1]
+* It.  1   0.00599909s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   1.98D-03 |   1.93D-04  1.97D-03
 ========================================================
-* It.  2   0.03600299s  (LL SL    )     [  1]     [  1]
+* It.  2   0.00899899s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   1.80D-05 |   1.80D-05  2.69D-07
 ========================================================
-* It.  3   0.03200197s  (LL SL    )     [  1]     [  1]
+* It.  3   0.00999796s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
-            0.000000 :   1.52D-05 |   1.52D-05  4.06D-08
+            0.000000 :   1.52D-05 |   1.52D-05  3.95D-08
 ========================================================
-* It.  4   0.03200197s  (LL SL    )     [  1]     [  0]
+* It.  4   0.00499904s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   4.59D-06 |   4.59D-06  7.93D-08
+            0.000000 :   4.59D-06 |   4.59D-06  7.81D-08
 ========================================================
-* It.  5   0.03600204s  (LL SL    )     [  1]     [  1]
+* It.  5   0.00899899s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
-            0.000000 :   1.36D-06 |   1.36D-06  2.69D-08
+            0.000000 :   1.35D-06 |   1.35D-06  3.71D-09
 ========================================================
-* It.  6   0.02800202s  (LL SL    )     [  1]     [  0]
+* It.  6   0.00599897s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   3.57D-07 |   3.56D-07  2.88D-08
+            0.000000 :   3.59D-07 |   3.59D-07  3.90D-09
 ========================================================
-* It.  7   0.02000093s  (LL SL    )     [  1]     [  0]
+* It.  7   0.00699902s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
-            0.000000 :   1.37D-07 |   1.34D-07  2.81D-08
+            0.000000 :   1.37D-07 |   1.37D-07  3.91D-09
 ========================================================
 
 
@@ -2131,7 +2272,7 @@ SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.01200092s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    1.697557194227 a.u.                       8.16E-10   (converged)
+  0.00000000 a.u.    1.697557195074 a.u.                       8.31E-10   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 1),B( 1)>> - linear response function (real):
@@ -2141,7 +2282,7 @@ SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.01200092s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    1.697557194227 a.u.                       8.16E-10   (converged)
+  0.00000000 a.u.    1.697557195074 a.u.                       8.31E-10   (converged)
 -----------------------------------------------------------------------------------------------
 
 <<A( 3),B( 3)>> - linear response function (real):
@@ -2151,11 +2292,41 @@ SOfock:SL  1.12D-09   94.66%    0.64%    0.00%    0.00%   0.01200092s
 -----------------------------------------------------------------------------------------------
  Frequency (real)     Real part                                     Convergence
 -----------------------------------------------------------------------------------------------
-  0.00000000 a.u.    2.287650643739 a.u.                       4.68E-10   (converged)
+  0.00000000 a.u.    2.287650643904 a.u.                       4.66E-10   (converged)
 -----------------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------
 
-Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
+
+             Two-electron expectation values, before adding XC terms
+             -------------------------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -1.498612651297      0.000000000000      0.000000000000
+            By         0.000000000000     -1.498612651297      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:   -0.999075
+
+
+                     Two-electron expectation values (total)
+                     ---------------------------------------
+
+                                 Bx                  By                  Bz
+
+
+            Bx        -1.498612651297      0.000000000000      0.000000000000
+            By         0.000000000000     -1.498612651297      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000000000
+
+
+
+       Average value:   -0.999075
+
+Cpu time       0.0420Wall time       0.0410in call to TWOINT(SUSC2EL).
 
 
 
@@ -2171,13 +2342,13 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx         3.069685292107      0.000000000000      0.000000000000
-            By         0.000000000000      3.069685292107      0.000000000000
+            Bx         3.069685292032      0.000000000000      0.000000000000
+            By         0.000000000000      3.069685292032      0.000000000000
             Bz         0.000000000000      0.000000000000      0.000000000000
 
 
 
-       Average value:    2.046457
+       Average value:            2.046457
 
 
                          Two-electron expectation values
@@ -2186,13 +2357,13 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -1.498612651390      0.000000000000      0.000000000000
-            By         0.000000000000     -1.498612651390      0.000000000000
+            Bx        -1.498612651297      0.000000000000      0.000000000000
+            By         0.000000000000     -1.498612651297      0.000000000000
             Bz         0.000000000000      0.000000000000      0.000000000000
 
 
 
-       Average value:   -0.999075
+       Average value:           -0.999075
 
 
                         Highest-order reorthonormalization
@@ -2201,13 +2372,13 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -0.418972534870      0.000000000000      0.000000000000
-            By         0.000000000000     -0.418972534870      0.000000000000
+            Bx        -0.418972534866     -0.000000000000      0.000000000000
+            By        -0.000000000000     -0.418972534866      0.000000000000
             Bz         0.000000000000      0.000000000000      0.000000000000
 
 
 
-       Average value:   -0.279315
+       Average value:           -0.279315
 
 
                         Lowest-order reorthonormalization
@@ -2216,39 +2387,39 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -1.375802203217      0.000000000000      0.000000000000
-            By         0.000000000000     -1.375802203217      0.000000000000
-            Bz         0.000000000000      0.000000000000      0.000000000000
+            Bx        -1.375802203242     -0.000000000000     -0.000000000000
+            By        -0.000000000000     -1.375802203242     -0.000000000000
+            Bz        -0.000000000000     -0.000000000000      0.000000000000
 
 
 
-       Average value:   -0.917201
+       Average value:           -0.917201
   ------------------------------------------------------------------------
 
 
-                                    Relaxation
-                                    ----------
+                       Relaxation part of susceptibilities
+                       -----------------------------------
 
                                  Bx                  By                  Bz
 
 
-            Bx         1.697557194227      0.000000000000      0.000000000000
-            By         0.000000000000      1.697557194227      0.000000000000
-            Bz         0.000000000000      0.000000000000      2.287650643739
+            Bx         1.697557195074      0.000000000000      0.000000000000
+            By         0.000000000000      1.697557195074      0.000000000000
+            Bz         0.000000000000      0.000000000000      2.287650643904
 
 
 
-       Average value:    1.894255
+       Average value:            1.894255
 
 
   e-p "diamagnetic" and e-e "paramagnetic" contributions (au):
   ------------------------------------------------------------
 
-  1   3.55347448  0.00000000  0.00000000    -1.85591728  0.00000000  0.00000000
-  2   0.00000000  3.55347448  0.00000000     0.00000000 -1.85591728  0.00000000
-  3   0.00000000  0.00000000  2.28765065     0.00000000  0.00000000 -0.00000001
+  1       3.553474476249      0.000000000000      0.000000000000        -1.855917281175      0.000000000000      0.000000000000
+  2       0.000000000000      3.553474476249      0.000000000000         0.000000000000     -1.855917281175      0.000000000000
+  3       0.000000000000      0.000000000000      2.287650653924         0.000000000000      0.000000000000     -0.000000010019
 
- e-p "diamagnetic" contribution:    3.131533    e-e "paramagnetic":   -1.237278
+ e-p "diamagnetic" contribution:            3.131533    e-e "paramagnetic":           -1.237278
 
   Units:  JT**(-2)/(10**(-30))   (SI) 
           ppm cm**(3) mol**(-1)  (cgs)
@@ -2259,15 +2430,15 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
   London atomic orbitals used in calculations.
 
 
-  Magnetizabilities                    au          SI         cgs
-  ---------------------------------------------------------------
+  Magnetizabilities                     au                       SI                      cgs
+  ------------------------------------------------------------------------------------------
 
-  Isotropic magnetizability:      -1.7451   -137.7081     -8.2930
-  Diamagnetic contribution:        0.0000      0.0000      0.0000
-  Paramagnetic contribution:      -1.7451   -137.7081     -8.2930
-  Parallel component:             -2.2877   -180.5193    -10.8711
-  Perpendicular component:        -1.4739   -116.3024     -7.0039
-  Anisotropy:                     -0.8138    -64.2169     -3.8672
+  Isotropic magnetizability:              -1.7451           -137.7081             -8.2930
+  Diamagnetic contribution:               -3.1315           -247.1104            -14.8813
+  Paramagnetic contribution:               1.3864            109.4023              6.5884
+  Parallel component:                     -2.2877           -180.5193            -10.8711
+  Perpendicular component:                -1.4739           -116.3024             -7.0039
+  Anisotropy:                             -0.8138            -64.2169             -3.8672
 
   Magnetizability is cylindrical.
 
@@ -2286,9 +2457,9 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -1.473855096857      0.000000000000      0.000000000000
-            By         0.000000000000     -1.473855096857      0.000000000000
-            Bz         0.000000000000      0.000000000000     -2.287650643739
+            Bx        -1.473855097700      0.000000000000      0.000000000000
+            By         0.000000000000     -1.473855097700      0.000000000000
+            Bz         0.000000000000      0.000000000000     -2.287650643904
 
 
 
@@ -2299,9 +2470,9 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx         0.000000000000      0.000000000000      0.000000000000
-            By         0.000000000000      0.000000000000      0.000000000000
-            Bz         0.000000000000      0.000000000000      0.000000000000
+            Bx        -3.553474476249      0.000000000000      0.000000000000
+            By         0.000000000000     -3.553474476249      0.000000000000
+            Bz         0.000000000000      0.000000000000     -2.287650653924
 
 
 
@@ -2312,9 +2483,9 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
                                  Bx                  By                  Bz
 
 
-            Bx        -1.473855096857      0.000000000000      0.000000000000
-            By         0.000000000000     -1.473855096857      0.000000000000
-            Bz         0.000000000000      0.000000000000     -2.287650643739
+            Bx         2.079619378548      0.000000000000      0.000000000000
+            By         0.000000000000      2.079619378549      0.000000000000
+            Bz         0.000000000000      0.000000000000      0.000000010019
 
 
 
@@ -2324,33 +2495,33 @@ Cpu time       0.3480Wall time       0.0000in call to TWOINT(SUSC2EL).
 
 
  
-     Date and time (Linux)  : Thu Oct 25 22:00:01 2012
-     Host name              : not found                               
+     Date and time (Linux)  : Fri Oct 21 23:03:51 2016
+     Host name              : phlam-s-sakura.univ-lille1.fr           
 
+>>>> Node 0, utime: 2, stime: 0, minflt: 10125, majflt: 0, nvcsw: 165, nivcsw: 28, maxrss: 78080
+>>>> Total WALL time used in DIRAC: 3s
   
-  Dynamical Memory Usage Summary
+  Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        23.64
+  Mean allocation size (Mb) :        25.05
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      488.28 Mb at subroutine pamprp_1_+0xc5                             for WORK in PAMPRP_1                          
-      488.28 Mb at subroutine psidhf_+0xbe                               for WORK in PSIDHF                            
-      488.28 Mb at subroutine pamset_+0x90                               for WORK in PAMSET                            
-      488.28 Mb at subroutine MAIN__+0x9bb                               for test allocation of work array in DIRAC mai
-        7.63 Mb at subroutine readin_+0x91                               for WORK in READIN                            
-        0.76 Mb at subroutine paminp_+0x7a                               for PAMINP WORK array                         
-        0.04 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x323 for unnamed variable                          
-        0.04 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x23f for unnamed variable                          
-        0.04 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x432 for unnamed variable                          
-        0.01 Mb at subroutine london_reorth_hb_mp_get_ftb_+0x3e2         for unnamed variable                          
+      488.28 Mb at subroutine pamprp_1_+0xb7                             for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine psiscf_+0xb0                               for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_+0x385                              for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x233                              for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x87                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0xa01                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0x76                               for PAMINP WORK array                         
+        0.04 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x305 for unnamed variable                          
+        0.04 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x22b for unnamed variable                          
+        0.04 Mb at subroutine london_reorth_hb_mp_london_reort_hb_+0x408 for unnamed variable                          
   
   Peak memory usage    (Mb) :       488.00
-       reached at subroutine : qtrans90_+0x300                           
+       reached at subroutine : qtrans90_+0x71b                           
               for variable   : QTRANS90-buffer-space                     
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 2, stime: 0, minflt: 7359, majflt: 0, nvcsw: 43, nivcsw: 3011, maxrss: 18288
->>>> Total WALL time used in DIRAC: 1s

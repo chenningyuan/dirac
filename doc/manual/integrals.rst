@@ -44,37 +44,6 @@ Example: Restrict range to four nuclei (first number), the nuclei 1, 3, 7, and 8
    8
 
 
-keyword(PHASEORIGIN)
-
-Origin appearing in the London atomic orbital phase-factors. Default::
-
-  .PHASEORIGIN
-   0.0 0.0 0.0
-
-.. warning::
-
-  This is the text from the DALTON manual. We wonder if it is used for
-  other integrals, in the code in her1int.F it is the final "else" option.
-
-
-keyword(GAUGEORIGIN)
-
-Set the gauge origin. By default it is set to the coordinate origin::
-
-  .GAUGEORIGIN
-   0.0 0.0 0.0
-
-
-keyword(DIPORG)
-
-Origin for all moment integrals, including the dipole (dipole is independent of
-origin only for neutral systems). By default it is set to the coordinate
-origin::
-
-  .DIPORG
-   0.0 0.0 0.0
-
-
 keyword(MAGCOR)
 
 Print the symmetrized nuclear magnetic moments. This corresponds to taking
@@ -182,13 +151,24 @@ the factors given here. Default::
    1.0 1.0
 
 
+keyword(AOFOCK)
+
+Do direct Fock matrix construction in non-symmetry-adapted basis (AO basis).
+
+The direct Fock matrix construction is performed in AO basis using the
+skeleton matrix approach. This may give better screening, and does give more tasks
+for better parallelization, but AOFOCK is more memory intensive than SOFOCK.
+Default is AOFOCK if 25 or more MPI nodes.
+
+
 keyword(SOFOCK)
 
 Do direct Fock matrix construction in symmetry-adapted basis (SO basis).
+This is the default setting.
 
-By default the direct Fock matrix construction in performed AO basis using the
-skeleton matrix approach. This may give better screening, but is more memory
-intensive.
+AOFOCK may give better screening, and does give more tasks
+for better parallelization, but AOFOCK is more memory intensive than SOFOCK.
+Default is SOFOCK if at most 24 MPI nodes.
 
 
 keyword(PRINT)

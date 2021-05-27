@@ -37,7 +37,6 @@ C***********************************************************************
       integer, allocatable :: ibuf(:)
 C
       CALL QENTER('RSDIAG')
-#include "memint.h"
 C
       allocate (buf(ndim))
       allocate (ibuf(ndim))

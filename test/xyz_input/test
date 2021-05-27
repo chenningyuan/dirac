@@ -14,5 +14,6 @@ f.add(string = 'Total energy',
 
 test.run(['hf.inp'], ['ethanol.xyz'], f)
 test.run(['emb.inp'], ['methanol.xyz'], f)
+test.run(['heh+.inp'], ['heh.xyz'], f)
 
 sys.exit(test.return_code)

@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2015 by the authors of DIRAC.
+ *     Copyright (c) 2019 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -28,7 +28,7 @@
 
  */
 
-#define _BSD_SOURCE 1
+#define _DEFAULT_SOURCE 1
 
 #include <stdarg.h>
 #include <stddef.h>

@@ -1,13 +1,16 @@
   module lambda_equation
 
-!this module consists of subroutines of lambda-equations at different level of theory.
+!this module consists of subroutines for lambda-equations at different level of theory.
 
+  use interface_to_mpi
   use contraction
   use intermediates_1b_2b
+  use wrapper_sorting
 
     public lambda_equation_mp2
     public lambda_equation_L2
     public lambda_equation_L1
+    public lambda2_disconnected
 
 
      private
@@ -25,7 +28,7 @@
 
       subroutine lambda_equation_mp2 (eps,fvo,t1,s1,t2,s2)
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 
 !---------------Description--------------------------------------------
 !
@@ -85,7 +88,7 @@
 
 
       subroutine lambda_equation_L2 (t1,t2,l1,l2,ho,hv,hov, &
-     &             w_voov,w_oooo,int_wooop,G_oo,G_vv,buf1,buf2, &
+     &             w_voov,w_oooo,int_wooop,w_v_temp,G_oo,G_vv,buf1,buf2, &
      &             buf3,nbuf3,resL2,iprnt,niter)
 
       use contraction
@@ -111,10 +114,10 @@
 !       -----------------
 
       integer,intent(in) :: nbuf3,iprnt,niter
-      real(8),intent(in) :: ho(rcw*nfoo),hv(rcw*nfvv),hov(nfvo*rcw)     ! one body intermediates
-      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw),w_oooo(nv1*rcw),int_wooop(:)! two body intermediates
-      real(8),intent(in) :: G_vv(nfvv*rcw), &
-     &                         G_oo(nfoo*rcw)            ! G-intermediates
+      real(8),intent(in) :: ho(rcw*nfoo),hv(rcw*nfvv),hov(nfvo*rcw)  ! one body intermediates
+      real(8),intent(in) :: w_voov(ivoov(nrep+1)*rcw),w_oooo(nv1*rcw)! two body intermediates
+      real(8),intent(in) :: w_v_temp(:),int_wooop(:)                 ! two body intermediates
+      real(8),intent(in) :: G_vv(nfvv*rcw),G_oo(nfoo*rcw)            ! G-intermediates
       real(8),intent(in) :: t1(ndimt1*rcw),t2(ndimt2*rcw)! converged T1 amplitude
       real(8),intent(in) :: L1(ndimt1*rcw),L2(ndimt2*rcw)! L1 and L2 amplitudes from last iteration.
       real(8),intent(in) :: buf1(*),buf2(*),buf3(*)      ! buffer arrays
@@ -129,10 +132,14 @@
       real*8,allocatable :: int_vv(:)
       real*8,allocatable :: int_oo(:),w_vvvv(:),w_intm(:)
       real*8,allocatable :: L2_temp(:),ResL2_temp(:),tau(:)
+      integer, allocatable :: counter(:), displ(:)
       integer     :: jklrep,m2,irep,jrep,abrep,jkloff,ij,ijkl,ijkl1,mint
       integer     :: off2,i,j,istart,m,k,n,irp,ntot,nint,kstart,off1
       integer     :: jabrep,x(nrep,nrep),y(nrep)
-      integer     :: off3,nd
+      integer     :: off3,nd,l, totsize
+      
+
+      type(indices) ::e,f,g 
 
       interface
          subroutine gettau(t1,t2,tau)
@@ -181,68 +188,23 @@
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term3', dot_product(ResL2,ResL2)
+
 !--------------------------------------------------------
 !   term4 : ResL2 = ResL2 + P(ij)P(ab) L2(im,ae) * W_bmej(je,bm)
+!--------------------------------------------------------
 
-!   The following calls should be able to replace the hand coding below, but
-!   did not give the correct result. To be debugged before activating
+      call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
+     &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
 
-!     call contraction_444((/"o1","o3","p1","p3"/),(/"o2","p3","p2","o3"/), (/"o1","o2","p1","p2"/),ResL2, &
-!    &    1.0d0,0.0d0,nrep,righttensor=w_voov,LeftTensor=L2)
-
-      CALL SRT1TT5 (NREP,MULTB,.FALSE.,.FALSE.,NO,NO,NV,NV,MOV,J2OVVO,JJOV,JJVO, &
-     &              L2,buf2)
-
-      CALL SRT1SS4 (NREP,MULTB,.FALSE.,.FALSE.,NO,NV,NV,NO,MOV,J2OVVO,JJOV,JJVO, &
-     &              w_voov,buf3)
-
-
-      allocate (ResL2_temp(j2ovov(nrep+1)*rcw))
-
-      ResL2_temp = 0.0d0
-
-
-      do i = 1, nrep
-         J = MULTB(i+NREP,1+NREP,2)
-
-          M = mov(i)
-!          N = mov(j)
-          N = mov(i)
-          K = mvo(j)
-
-          ND = mov(i)
-          off1 = 1 + j2ovvo(i)*rcw
-          off2 = 1 + j2ovvo(i)*rcw
-          off3 = 1 + j2ovov(i)*rcw
-
-
-            CALL XGEMM ('N','T',M,N,K,A1,buf2(OFF1),M, &
-      &                  buf3(OFF2),ND,A0,ResL2_temp(OFF3),M)
-
-      enddo
-
-      CALL SRT1TT4 (NREP,MULTB,.FALSE.,.TRUE.,NO,NO,NV,NV,MOV,J2OVOV,JJOV,JJOV, &
-     &              ResL2_temp,buf2)
-
-      deallocate(ResL2_temp)
-
-      CALL XAXPY (ndimt2,A1,buf2,1,resl2,1)
-
-       if (iprnt.ge.1) &
-   &  write(iw,*)'RESL2 after term4',dot_product(ResL2,ResL2)
-!      if (iprnt.ge.1) &
-!    & write(*,*)'RESL2 after term4',(ResL2(i),i=1,5)
 !-----------------------------------------------------------
-!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(b,e)
+!   term5 : ResL2 = ResL2 + P(ab) V(ij,ae)*G_vv(e,b)
 !-----------------------------------------------------------
 
       call contraction_424 ((/"o1","o2","p1","p3"/),(/"p3","p2"/), &
      &        (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,RightTensor=G_vv)
 
-
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term5',dot_product(ResL2,ResL2)
-
 
 !---------------------------------------------------------------------------
 !     term6: L2(ij,ab) = L2(ij,ab) + L1(m,a) * w_mnie(ij,mb)
@@ -252,40 +214,26 @@
      &   (/"o1","o2","p2","p1"/),ResL2,-1.0d0,-1.0d0,nrep,RightTensor=L1, &
      &   LeftTensor=int_wooop)
 
-
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term6',dot_product(ResL2,ResL2)
 !--------------------------------------------------------------------
-!    term7 : ResL2 = ResL2 - P(ij) V(im,ab)*(G_oo(j,m)+L1(j,e)*t(e,m))
+!    term7 : ResL2 = ResL2 - P(ij) V(im,ab)*G_oo(j,m)
 !--------------------------------------------------------------------
 
       call contraction_424 ((/"o1","o3","p1","p2"/),(/"o2","o3"/), &
      &        (/"o1","o2","p1","p2"/),ResL2,-1.0d0, &
      &        1.0d0,nrep,RightTensor=G_oo)
 
-      allocate(int_oo(IOO(NREP+1)*rcw))
-
-      int_oo = 0.0d0
-
-      call contraction_222((/"o1","p3"/),(/"p3","o3"/),(/"o1","o3"/),L1, &
-     &        t1,int_oo,1.0d0,1.0d0,nrep)
-
-      call contraction_424 ((/"o3","o2","p1","p2"/),(/"o1","o3"/), &
-     &        (/"o1","o2","p1","p2"/),ResL2,-1.0d0, &
-     &        1.0d0,nrep,RightTensor=int_oo)
-
-      deallocate(int_oo)
-
-      if (iprnt.ge.1) &
-
+       if (iprnt.ge.1) &
       & write(iw,*)'RESL2 after term7',dot_product(ResL2,ResL2)
 
 !-------------------------------------------------------------------------
-!   term 8 : ResL2 = ResL2 + expression to be typed
+!   term 8 : ResL2 = ResL2 + P(ij)L1(i,e)*W(ej,ab)
 !-------------------------------------------------------------------------
 
      call contraction_244 ((/"o1","p3"/),(/"p3","o2","p1","p2"/), &
-    &  (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1)
+    &  (/"o1","o2","p1","p2"/),ResL2,1.0d0,1.0d0,nrep,LeftTensor=L1, &
+    &   RightTensor=w_v_temp)
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term8',dot_product(ResL2,ResL2)
@@ -302,14 +250,21 @@
 !    term 10 : ResL2 = ResL2 + L2(ij,ef) * W_vvvv(ef,ab)
 !--------------------------------------------------------
 
+       allocate(counter(0:nmproc-1))
+       allocate(displ(0:nmproc-1))
 
+       counter = 0
+       displ = 0 
+
+      done = .false.
       allocate(tau(ndimt2*rcw))
       call gettau(t1,t2,tau)
       off2 = 1
       off1 = 1
       do irp = 1, nrep
          istart = 0
-         if (nvvt(irp).eq.0) cycle
+         totsize = 0
+         if ((nvvt(irp).eq.0).or.(noot(irp).eq.0)) cycle
          mint = nbuf3/nvvt(irp)
  10      kstart = istart
          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
@@ -323,10 +278,39 @@
          n = nvvt(irp)
          m = noot(irp)
          k = nint
-         call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
-     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
 
-         deallocate(w_vvvv)
+#if defined (VAR_MPI)
+       call interface_mpi_allgather(NINT,1, &
+     &   counter,1,global_communicator)
+
+      do i = 0, nmproc-1
+
+       counter(i) = counter(i)*noot(irp)*rcw            
+
+      enddo
+
+         displ(0) = 0
+         do i = 1, nmproc-1 
+             displ(i) = displ(i-1) + counter(i-1)
+         enddo
+
+       allocate(ResL2_temp(counter(myproc)*rcw))
+
+       ResL2_temp = 0.0d0    
+
+      call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
+     &           w_vvvv,n,a1,ResL2_temp,m)
+
+      call interface_mpi_allgatherv(ResL2_temp,counter(myproc), &
+     &    buf2(off2+totsize),counter,displ,global_communicator)
+
+       deallocate(ResL2_temp)
+#else
+      call xgemm ('n','n',m,k,n,A1,l2(off1),m, &
+     &           w_vvvv,n,a1,ResL2(off2+istart*m*rcw),m)
+#endif
+         totsize = totsize + sum(counter)
+         deallocate(w_vvvv) 
          if (.not.done) then
             istart = istart + nint
             goto 10
@@ -336,6 +320,10 @@
        enddo
 
        deallocate(tau)
+
+#if defined (VAR_MPI)
+          call xaxpy (ndimt2,A1,buf2,1,ResL2,1)
+#endif
 
        if (iprnt.ge.1) &
      & write(iw,*)'RESL2 after term10',dot_product(ResL2,ResL2)
@@ -390,8 +378,10 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IA = (IVO(AREP) + (A-1) * NO(AREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
-                  CALL XAXPY (NI,f_bar(jb),L1(ia),1,RESL2(IJABOFF+IJ),1)
-                  CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  if (NI > 0) then
+                    CALL XAXPY (NI,f_bar(jb),L1(IA),1,RESL2(IJABOFF+IJ),1)
+                    CALL XAXPY (NI,L1(JB),f_bar(IA),1,RESL2(IJABOFF+IJ),1)
+                  endif
                   IJ = IJ + NI * RCW
                   JB = JB + RCW
                ENDDO
@@ -407,12 +397,14 @@
                   IF (IREP.EQ.JREP) IMIN = J + 1
                   IB = (IVO(BREP) + (B-1) * NO(BREP) + IMIN - 1)*RCW + 1
                   NI = NO(IREP) - IMIN + 1
-                   T1MIN(1) = -f_bar(JA)
-                   IF (CARITH) T1MIN(2) = -f_bar(JA+1)
+                  T1MIN(1) = -f_bar(JA)
+                  IF (CARITH) T1MIN(2) = -f_bar(JA+1)
+                  if (NI > 0) then
                   CALL XAXPY (NI,T1MIN,L1(IB),1,ResL2(IJABOFF+IJ),1)
                    T1MIN(1) = -L1(JA)
                    IF (CARITH) T1MIN(2) = -L1(JA+1)
                   CALL XAXPY (NI,T1MIN,f_bar(IB),1,ResL2(IJABOFF+IJ),1)
+                  endif
                   IJ = IJ + NI * RCW
                   JA = JA + RCW
                ENDDO
@@ -432,7 +424,6 @@
       ENDDO
 
       END SUBROUTINE
-
 
       subroutine symm_index_outofcore_sorter(istart,x)
 

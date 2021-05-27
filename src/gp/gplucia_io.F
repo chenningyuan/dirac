@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -493,7 +493,7 @@ C    &     I_BLK_TO_CLS(IBLK)
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
@@ -1166,7 +1166,7 @@ C
 *
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION VEC1(1),VEC2(1)
-      DIMENSION FAC(1)
+      DIMENSION FAC(*) ! Miro: instead of FAC(1)
 *
       IF(IREW .NE. 0 ) REWIND LUIN
 *

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -46,7 +46,11 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
       use pcm_write
-#endif      
+#endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+      use read_xyzfile, only: pelib_sym_xyz
+#endif
       use x2cmod_cfg
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
@@ -57,6 +61,8 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
+#include "dcbimp.h"
+#include "dcborb.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -158,7 +164,7 @@ C     Start the xml output and echo the input to the xml output
          write(luxml,'(A)') 'dirac'
          call xml_end('name')
          call xml_begin('version')
-         write(luxml,'(A)') '2013'
+         write(luxml,'(A)') '2019'
          call xml_end('version')
          call xml_end('program')
          call xml_begin('input')
@@ -171,40 +177,48 @@ C     Start the xml output and echo the input to the xml output
          call xml_end('input')
       endif
 
-C
 C     General input
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       REWIND LUCMD
       CALL GENINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
+
 C     Integral and basis input
-C
+
       OPEN(LUCMD,FILE = 'DIRAC.INP')
       CALL HERINP(WORK,LWORK)
       CLOSE(LUCMD)
-C
+
       DOJACO = DOJACO.AND.(NZ.EQ.1)
-C
+
 C     Set DCB common blocks - first time
 C     ========================================
 C     (will be done the second time in PAMSET)
-C
+
       CALL SETDC1(IPREAD)
-C
+
 C     Make primitive labels and use label
 C     information to list SO-basis
 C     ===================================
-C
+
       CALL GETLAB(IPREAD)
-C
+
 C     Define Hamiltonian
-C
+
       OPEN(LUCMD,FILE='DIRAC.INP')
       CALL HAMINP(WORK,LWORK)
       CLOSE(LUCMD)
 
-
+#ifdef HAS_PELIB
+C     Initialize PE library
+       IF (PEQM) THEN
+         ! first check if symmetry is disabled (for xyz input)
+         IF (PELIB_SYM_XYZ) CALL QUIT(".PElib/xyz input:" //
+     &                                  " Activate .NOSYM!")
+         CALL PELIB_IFC_INIT()
+       END IF
+#endif
 !     this is the new input reader
 !     contains:
 !     *DFT
@@ -309,6 +323,18 @@ C
 C     Consistency checks
 C
       CALL CONINP
+
+C
+C     set number of blocks in case of import
+C     complex spinors from ReSpect (TODO) or Turbomole
+C
+      NKRBLK = 1
+      IF (DOIMPMOS) THEN
+       IF ((FAKE2C .OR. NZC1.EQ.4) .AND.
+     &     INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
+        NKRBLK = 2
+       END IF
+      END IF
 C
       CALL TITLER('End of input processing','*',124)
 C
@@ -335,14 +361,14 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+#include "consts.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
-      LOGICAL LBIT, FIND_KEYWORD
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
-     &          WORD1*7,MXFORM*6, FMT*6
+     &          WORD1*7, MXFORM*6, FMT*6
       DIMENSION WORK(LWORK)
-      LOGICAL   NOGENINP, USER_STOL
+      LOGICAL   LBIT, FIND_KEYWORD, NOGENINP, USER_STOL, SET_CVALUE
+      REAL*8    CSCALE
 C
 #include "dcbgen.h"
 
@@ -352,16 +378,18 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcb_rkbimp.h"
+#include "dcbimp.h"
+#include "dcborb.h"
 #include "logging.h"
 #include "infpar.h"
 C
       DATA TABDIR /'*END OF','*PARALL','*XXXXXX','*XXXXXX',
      &             '*XXXXXX','*XXXXXX','*XXXXXX','*XXXXXX'/
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
-     &             '.PRINT ','.XXXXXX','.PCMOUT','.LINDEP',
+     &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.XXXXXX','.FAMILY',
-     &             '.SKIP2E','.LOWJAC','.RKBIMP','.PRJTHR',
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
 C     Initialise NOGENINP and USER_STOL
@@ -375,9 +403,16 @@ C
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
       DOQJACO    = .FALSE.
+      DOIMPMOS   = .FALSE.
+C
+      SET_CVALUE = .FALSE.
+C
+      CODSET     = 'NOCODATA'
+      CALL SET_CODATA_VALUES(CODSET)
+C
       RKBIMP_PRJTHR = 2.0D-5
 C
-C     Look for 2c. Hamiltonians, MDIRAC and more
+C     Look for 2c Hamiltonians, ECPCALC, MDIRAC and more
 C
       CALL HAMSCAN
 C
@@ -441,8 +476,10 @@ C
                  ENDIF
             GO TO 100
   102    CONTINUE
-C&&&& CVALUE: Set a different value of light
+C&&&& CVALUE: Set a different value of speed of light (in a.u.)
             READ(LUCMD,*) CVAL
+            SET_CVALUE = .TRUE.
+            CSCALE = CVAL
             GO TO 100
   103    CONTINUE
 C&&&& NOSET: Skip the PAMSET module
@@ -462,6 +499,8 @@ C           and used in some abacus routines. /hjaaj aug 2005
             USRIPR = .TRUE.
             GO TO 100
   106    CONTINUE
+C&&&& PRJTHR
+            READ(LUCMD,*) RKBIMP_PRJTHR
             GO TO 100
   107    CONTINUE
 C&&&& PCMOUT: Write coefficients to formatted DFPCMO
@@ -496,20 +535,29 @@ C
 C&&&& ACMOUT: Print coefficients without symmetry (the C1 group).
             DOACUT = .TRUE.
             GO TO 100
-C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
   114    CONTINUE
+C&&&& ACMOIN: Import coefficients in C1 to actual symmetry
             DOACIN = .TRUE.
             GO TO 100
   115    CONTINUE
+C&&&& IMPMOS
+            DOIMPMOS = .TRUE.
+            READ(LUCMD,*) NFILES
+            IF (NFILES.GT.2 .OR. NFILES.LT.1)  THEN
+             CALL QUIT('1 or 2 MO files to import!')
+            END IF
+            READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   116    CONTINUE
 C&&&& FAMILY: Family basis (Not yet implemented)
             FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
+C&&&& SKIP2E
             SKIP2E = .TRUE.
             GO TO 100
   118    CONTINUE
+C&&&& LOWJAC
             LOWJACO = .TRUE.
             GO TO 100
   119    CONTINUE
@@ -517,16 +565,26 @@ C&&&& RKBIMP: import RKB coefficients
             DORKBIMP=.TRUE.
             GO TO 100
   120    CONTINUE
-C&&&& PRJTHR
-            READ(5,*) RKBIMP_PRJTHR
+C&&&& CODATA: Choose between CODATA sets
+            READ(LUCMD,*) CODSET
+            CALL UPCASE(CODSET)
+            CALL SET_CODATA_VALUES(CODSET)
+            IF(SET_CVALUE) THEN
+             CVAL = CSCALE
+            ELSE
+             CVAL = CVEL
+            END IF
             GO TO 100
   121    CONTINUE
             GO TO 100
   122    CONTINUE
+C&&&& XXXXXX
             GO TO 100
   123    CONTINUE
+C&&&& XXXXXX
             GO TO 100
   124    CONTINUE
+C&&&& XXXXXX
             GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -555,13 +613,57 @@ ctec we require that it is a direct calculation
 !       STOL(2) = STOL(1) / (2.0D0 * CVAL ** 2 )
         STOL(2) = 1.0d-04 / (2.0D0 * CVAL ** 2 )
       end if
+
+C
+C     process IMPMOS input
+C
+
+      IF (DOIMPMOS) THEN
+
+       QCPACK = ADJUSTL(QCPACK)
+       FILIMP(1) = ADJUSTL(FILIMP(1))
+
+       if (nfiles.eq.2) then
+        FILIMP(2) = ADJUSTL(FILIMP(2))
+       else
+        FILIMP(2) = ' -- unknown file name -- '
+       end if
+
+       CALL UPCASE(QCPACK)
+
+       SELECT CASE (QCPACK(1:10))
+        CASE ('MOLCAS    ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  MOLCAS file "//TRIM(FILIMP(1))
+        CASE ('RESPECT   ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  ReSpect file "//TRIM(FILIMP(1))
+        CASE ('TURBOMOLE ')
+         WRITE (LUPRI,'(/,A)') 
+     &    "import MO coefficients from"
+         WRITE (LUPRI,'(/,A,/)') 
+     &    "  Turbomole file "// TRIM(FILIMP(1))
+        CASE DEFAULT
+         CALL QUIT("unknown QCPACK type! Available options: "// 
+     &             "MOLCAS, ReSpect")
+       END SELECT
+
+      ELSE
+       QCPACK    = 'DIRAC '
+       FILIMP(:) = ' -- unknown file name -- '
+      END IF
+
 C
 C     Print section
 C     =============
 C
       CALL TITLER('General DIRAC set-up','*',126)
 C
-      call print_codata_reference
+      call print_codata_reference(CODSET)
 
       WRITE(LUPRI,'(1X,A,F18.7)')
      +   '* The speed of light : ',CVEL
@@ -594,9 +696,6 @@ C
         IF(ISSDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- SS-integrals'
         IF(IGTDIR.EQ.1) WRITE(LUPRI,'(3X,A)') '- GT-integrals'
       ENDIF
-C
-      IF(DENSFIT)
-     &  WRITE(LUPRI,'(1X,A)') '* Employ density fitting techniques'
 C
       IF(LBIT(ISPHTR,1)) THEN
         WRITE(LUPRI,'(1X,A)')
@@ -674,6 +773,8 @@ C
     2 CONTINUE
 #if defined (VAR_MPI)
       CALL PRLINP(WORD)
+#else
+      CALL QUIT('*PARALLEL in input, but this is a non_MPI version')
 #endif
         GO TO 200
     3 CONTINUE
@@ -934,6 +1035,8 @@ C
       CHARACTER LINE*80, TEXT*20, CTEMP*72, temp_line*80
       DIMENSION WORK(LWORK)
       integer, external :: word_count
+      INTEGER   KPMAX(2)
+      INTEGER, allocatable :: SEL_NORB(:,:), KP_NORB(:)
 C
 #include "nuclei.h"
 #include "dcbgen.h"
@@ -946,6 +1049,8 @@ C
 #include "dgroup.h"
 #include "dcbatom.h"
 #include "dcbhoc.h"
+#include "maxaqn.h"
+#include "ccom.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -953,13 +1058,13 @@ C
      &            '.NODIIS','.MXDIIS','.CNVINT','.ITRINT','.INTFLG',
      &            '.MOSTAR','.XXXXXX','.CLOSED','.EIGPRI','.OPEN S',      ! 20
      &            '.AUTOCC','.OWNBAS','.NOBNCR','.DIISTH','.DAMPFC',
-     &            '.OVLSEL','.NODYNS','.XXXXXX','.DIISMO','.DIISAO',      ! 30
+     &            '.OVLSEL','.NODYNS','.BNCORR','.DIISMO','.DIISAO',      ! 30
      &            '.XXXXXX','.MAX MA','.MAX MI','.2NDOPT','.SKIPEE',
      &            '.SKIPEP','.MAX BA','.PRJTHR','.FROZEN','.BOSONS',      ! 40
      &            '.MJSELE','.AOC   ','.FOCC  ','.LSHIFT','.MAXIT2',
      &            '.ERGCN2','.EVCCN2','.FCKCN2','.MOFREE','.OLEVEL',      ! 50
      &            '.ATOMST','.SCFPOP','.OPENFA','.BNC_FO','.FOMOUT',
-     &            '.AD HOC','.HUCPAR','.XXXXXX','.XXXXXX','.XXXXXX',      ! 60
+     &            '.AD HOC','.HUCPAR','.KPSELE','.SELECT','.XXXXXX',      ! 60
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'
      &                                                               /
       DATA SET/.FALSE./
@@ -1002,8 +1107,9 @@ C     initial molecular orbitals:
       TRIVEC    = .TRUE. ! default!
       TRIFCK    = .FALSE.
       BARNUC    = .TRUE.
-      BNCRON    = .TRUE.
-      force_bnc = .false.
+      BNCRON    = .FALSE.
+      FORCE_BNC = .false.
+      BNSPON    = .TRUE.  ! use either this or BNCRON
       SIRIFC    = .FALSE.
       DOHUCKEL  = .false.  
       EWMO      = .FALSE. ! in huckel.h
@@ -1106,7 +1212,8 @@ CMI   ... criteria of convergence for prelim.BSS-SCF
       PRJTHR    = 1.0D-10
       DOLEVEL   = .FALSE.
       DLSHIF    = D0
-      OPEN_FAC  = 0.5D0 ! this value seems to a good compromise value for good convergence
+      OPEN_FAC  = -0.5D0 ! abs(OPEN_FAC) seems to a good compromise value for good convergence
+      ! the negative sign signifies that this is the default value, i.e. not user input
       CALL DZERO(OLEV,MXOPEN)
       CALL DZERO(SCFTID,8)
       CALL IZERO(ITRSCF,8)
@@ -1153,7 +1260,7 @@ C     ========================
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
      &                     41,42,43,44,45,46,47,48,49,50,
-     &                     51,52,53,54,55,56,57), I
+     &                     51,52,53,54,55,56,57,58,59), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1327,9 +1434,15 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
      &                  INDEX(LINE,'BARE NUC').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                ELSE IF (INDEX(LINE,'BNCORR').ne.0) THEN
                   BARNUC = .TRUE.
                   BNCRON = .TRUE.
+                  BNSPON = .FALSE.
+               ELSE IF (INDEX(LINE,'SCRPOT').ne.0) THEN
+                  BARNUC = .TRUE.
+                  BNCRON = .FALSE.
+                  BNSPON = .TRUE.
                ELSE IF (INDEX(LINE,'TRIFCK').ne.0) THEN
 C              TRIFCK: Start on two-electron Fock matrix read from file
                   TRIFCK = .TRUE.
@@ -1477,7 +1590,7 @@ C
                      NERR = NERR + 1
                      WRITE(LUPRI,'(A,2I3)') '.OPEN SHELL error: '//
      &                  'Number of spinors must be even'//
-     &                  'numbers and at least 2 in total:',IAC1,IAC2
+     &                  ' numbers and at least 2 in total:',IAC1,IAC2
                   END IF
                   IF (NERR .GT. 0) THEN
                      CALL QUIT('Error in .OPEN SHELL specifications')
@@ -1499,6 +1612,7 @@ C&&&& OWNBASis: Use local basis for projection
    23          CONTINUE
 C&&&& NOBNCR : Deactivate screening for use with bare nucleus start guess
                   BNCRON = .FALSE.
+                  BNSPON = .FALSE.
                GO TO 100
    24          CONTINUE
 C&&& DIISTH: Change default threshold for DIIS
@@ -1520,6 +1634,9 @@ C            (new overlap selection matrix formed in each iteration)
                   DYNSEL = .FALSE.
                GO TO 100
    28          CONTINUE
+C&&& BNCORR: Bare nucleus screening (based on Slaters rules)
+                  BNCRON = .TRUE.
+                  BNSPON = .FALSE.
                GO TO 100
    29          CONTINUE
 C&&& DIISMO: Do DIIS in MO-basis
@@ -1574,10 +1691,31 @@ C&&& FROZEN: Frozen orbitals
 C&&& BOSONS: Selection based on (approx.) boson symmetry
                DOBOSSEL = .TRUE.
                IBOSSEL  = 1
-               READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL)
+!     READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL) !old version
+               allocate(SEL_NORB(NSUBBL,0:NOPEN))
+               READ(LUCMD,*,IOSTAT=IOS) NSUBBL                
+               READ(LUCMD,*) (SEL_NORB(I,0),I=1,NSUBBL)
+               DO I =1,NSUBBL
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .BOSONS !'
+                   CALL QUIT('Number of electrons must be even!')                    
+                 ELSE   
+                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                 ENDIF
+               ENDDO                 
                DO IOPEN = 1,NOPEN
-                  READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+!                 READ(LUCMD,*) (NACSH_BOS(I,IOPEN),I=1,NSUBBL) !old version
+                 READ(LUCMD,*)(SEL_NORB(I,IOPEN),I=1,NSUBBL)
+                 DO I =1,NSUBBL
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .BOSONS !'
+                     CALL QUIT('Number of electrons must be even!')   
+                   ELSE   
+                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
+                   ENDIF
+                 ENDDO                    
                END DO
+               deallocate(SEL_NORB)
                GOTO 100
  41            CONTINUE
 C&&& MJSELE: Selection based on Mj symmetry,
@@ -1589,15 +1727,35 @@ C            NSUBBL = # of subblocks for MJ sym.
                  WRITE(LUPRI,*) 'Error in reading NSUBBL for .MJSELE !'
                  CALL QUIT('Error in reading NSUBBL for .MJSELE !')
                ENDIF
-               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
+               allocate(SEL_NORB(NSUBBL,0:NOPEN))                             
+!               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
+               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NSUBBL)
+               DO I =1,NSUBBL
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .MJSELE !'
+                   CALL QUIT('Number of electrons must be even!')                    
+                 ELSE   
+                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                 ENDIF
+               ENDDO
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .MJSELE !'
                  CALL QUIT('Error in reading NISH_BOS(I) for .MJSELE !')
                ENDIF
                DO IOPEN = 1,NOPEN
+!                 READ(LUCMD,*,IOSTAT=IOS)
+!     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
                  READ(LUCMD,*,IOSTAT=IOS)
-     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+     &                (SEL_NORB(I,IOPEN),I=1,NSUBBL)                  
+                 DO I =1,NSUBBL
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .MJSELE !'
+                     CALL QUIT('Number of electrons must be even!')   
+                   ELSE   
+                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
+                   ENDIF
+                 ENDDO                  
                  IF (IOS.NE.0) THEN
                    WRITE(LUPRI,*)
      &             'Error in reading NACSH_BOS(I) for .MJSELE !'
@@ -1605,6 +1763,7 @@ C            NSUBBL = # of subblocks for MJ sym.
      &             'Error in reading NACSH_BOS(I) for .MJSELE !')
                  ENDIF
                END DO
+               deallocate(SEL_NORB)
                GO TO 100
  42            CONTINUE
 C&&& AOC: Average-of-Configuration
@@ -1618,6 +1777,7 @@ C&&& FOCC: Fractional Occupation
 C&&& LSHIFT: Level shift
                   READ(LUCMD,*) DLSHIF
                   DOLEVEL = .TRUE.
+                  IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                GOTO 100
  45            CONTINUE
 C&&& Specify the maximum number of preliminary BSS-SCF iterations
@@ -1691,6 +1851,7 @@ C&&& OLEVEL: Open-shell level shifts
                   ELSE
                     READ(LUCMD,*) (OLEV(IOPEN),IOPEN=1,NOPEN)
                     DOLEVEL = .TRUE.
+                    IF (OPEN_FAC .LT. 0) OPEN_FAC = -1.0D0
                   ENDIF
                GOTO 100
  51            CONTINUE
@@ -1718,7 +1879,7 @@ C&&& OPENFA: extra factor on active-active correction block to open shell Fock m
  54            CONTINUE
 C&&& BNC_FO: force bare nucleus correction (usefull for charged systems)
 C    PBS+MI/Aug2014
-               force_bnc = .true.
+               FORCE_BNC = .true.
                GOTO 100
  55            CONTINUE
 !&&& FOMOUT: print out the Fock MO matrices for diagonalization for each
@@ -1752,6 +1913,159 @@ C&&& AD HOC: extended Huckel based on atomic fragments
 C&&& HUCPAR: modify Huckel parameter
                READ(LUCMD,*) HUCPAR
                GOTO 100
+ 58            CONTINUE
+C&&& KPSELE: Selection based on Kappa symmetry
+C    NSUBBL = # of subblocks for KP sym.
+C    copied from MJSELE
+               DOBOSSEL = .TRUE.
+               IBOSSEL  = -1
+C initla setup               
+               IF(DOLVC.EQV..TRUE. .OR. IBTAND(INTGEN/4,1).EQ.1)THEN !4c
+                 NSUBBL = (NHTYP-2)*2+1
+               ELSE !2c
+                 NSUBBL = (NHTYP-1)*2+1 
+               ENDIF   
+               KPBUF = NSUBBL/2+1
+               IF(mod(KPBUF, 2).eq.0)THEN ! Max angular momentum (l) is s,d,g.. 
+                 KPMAX(1) = KPBUF-1
+                 KPMAX(2) = KPBUF
+               ELSE ! Max l is p,f,h..
+                 KPMAX(1) = KPBUF
+                 KPMAX(2) = KPBUF-1      
+               ENDIF
+               IF(NFSYM.EQ.1)KPMAX(1) = MAX(KPMAX(1),KPMAX(2))
+C readling input             
+               READ(LUCMD,*,IOSTAT=IOS) NKP
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Error in reading NKP for .KPSELE !'
+                 CALL QUIT('Error in reading NKP for .KPSELE !')
+               ENDIF
+               allocate(KP_NORB(NKP))
+               allocate(SEL_NORB(NKP,0:NOPEN))
+               READ(LUCMD,*,IOSTAT=IOS) (KP_NORB(I),   I=1,NKP)
+               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NKP)
+               DO I =1,NKP
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .KPSELE !'
+                   CALL QUIT
+     &             ('Number of electrons (closed shell) must be even!')                    
+                 ELSE
+                   KP = KP_NORB(I)
+                   IF(NFSYM.EQ.1)THEN
+                     J = ABS(KP)*2 + (KP/ABS(KP)-1)/2 !(KP,J)=(1,2)(-2,3)(2,4)etc
+                     NISH_BOS(J) = SEL_NORB(I,0)/2
+                   ELSE
+                     IF(KP.LT.0)THEN
+                       IF(mod(-KP,2).EQ.1)THEN
+                         NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)/2
+                       ELSE
+                         NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0)/2        
+                       ENDIF   
+                     ELSE
+                       IF(mod(KP,2).EQ.1)THEN
+                         NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0)/2        
+                       ELSE
+                         NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)/2
+                       ENDIF   
+                     ENDIF 
+                   ENDIF   
+                 ENDIF
+               ENDDO  
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*)
+     &           'Error in reading NISH_BOS(I) for .KPSELE !'
+                 CALL QUIT('Error in reading NISH_BOS(I) for .KPSELE !')
+               ENDIF
+               DO IOPEN = 1,NOPEN
+                 READ(LUCMD,*,IOSTAT=IOS)
+     &                (SEL_NORB(I,IOPEN),I=1,NKP)
+                 DO I =1,NKP
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .KPSELE !'
+                   CALL QUIT
+     &             ('Number of orbitals (open shell) must be even!')                    
+                   ELSE
+                     KP = KP_NORB(I)  
+                     IF(NFSYM.EQ.1)THEN
+                       J = ABS(KP)*2 + (KP/ABS(KP)-1)/2 
+                       NACSH_BOS(J,IOPEN) = SEL_NORB(I,IOPEN)/2
+                     ELSE
+                       IF(KP.LT.0)THEN
+                         IF(mod(-KP,2).EQ.1)THEN
+                           NACSH_BOS(ABS(KP)         ,IOPEN)
+     &                     = SEL_NORB(I,IOPEN)/2
+                         ELSE
+                           NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)
+     &                     = SEL_NORB(I,IOPEN)/2        
+                         ENDIF   
+                       ELSE
+                         IF(mod(KP,2).EQ.1)THEN
+                           NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)
+     &                     = SEL_NORB(I,IOPEN)/2        
+                         ELSE
+                           NACSH_BOS(ABS(KP)         ,IOPEN)
+     &                     = SEL_NORB(I,IOPEN)/2
+                         ENDIF   
+                       ENDIF 
+                     ENDIF
+                   ENDIF
+                 ENDDO  
+                 IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*)
+     &             'Error in reading NACSH_BOS(I) for .KPSELE !'
+                   CALL QUIT(
+     &             'Error in reading NACSH_BOS(I) for .KPSELE !')
+                 ENDIF
+               END DO
+               deallocate(KP_NORB)               
+               deallocate(SEL_NORB)               
+               GO TO 100
+ 59            CONTINUE
+C&&& SELECT: Generalized Selection based on Kappa symmetry
+C    NSUBBL = # of subblocks.
+C    copied from MJSELE
+               DOBOSSEL = .TRUE.
+               IBOSSEL  = -1
+               READ(LUCMD,*,IOSTAT=IOS) NSUBBL
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*) 'Write # of subblocks in first line!'
+                 CALL QUIT('Error in reading NSUBBL for .SELECT !')
+               ENDIF
+               allocate(SEL_NORB(NSUBBL,0:NOPEN))
+               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NSUBBL)
+               DO I =1,NSUBBL
+                 IF(mod(SEL_NORB(I,0),2).eq.1)THEN
+                   WRITE(LUPRI,*) 'Error in reading .SELECT !'
+                   CALL QUIT('Number of electrons must be even!')                    
+                 ELSE   
+                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                 ENDIF
+               ENDDO  
+               IF (IOS.NE.0) THEN
+                 WRITE(LUPRI,*)
+     &           'Error in reading NISH_BOS(I) for .SELECT !'
+                 CALL QUIT('Error in reading NISH_BOS(I) for .SELECT !')
+               ENDIF
+               DO IOPEN = 1,NOPEN
+                 READ(LUCMD,*,IOSTAT=IOS)
+     &                (SEL_NORB(I,IOPEN),I=1,NSUBBL)
+                 DO I =1,NSUBBL
+                   IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
+                     WRITE(LUPRI,*) 'Error in reading .SELECT !'
+                     CALL QUIT('Number of electrons must be even!')   
+                   ELSE   
+                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
+                   ENDIF
+                 ENDDO  
+                 IF (IOS.NE.0) THEN
+                   WRITE(LUPRI,*)
+     &             'Error in reading NACSH_BOS(I) for .SELECT !'
+                   CALL QUIT(
+     &             'Error in reading NACSH_BOS(I) for .SELECT !')
+                 ENDIF
+               END DO
+               deallocate(SEL_NORB)               
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1761,7 +2075,6 @@ C&&& HUCPAR: modify Huckel parameter
                CALL QUIT('Illegal prompt under *SCF.')
             END IF
       END IF
-
   300 CONTINUE
 
 C
@@ -1845,12 +2158,20 @@ C
                DTEMP          = DTEMP +
      &                          real(NACSH(IFRP,IOPEN),8)*D2*DF(IOPEN)
             END DO
-            IF (NELEC_DHF(IFRP).LT.0)
-     &         CALL QUIT('*SCF error: negative number of '//
-     &                   'closed shell electrons!')
-            IF (MOD(NELEC_DHF(IFRP),2).NE.0)
-     &         CALL QUIT('*SCF erro: odd even number of '//
-     &                   'closed shell electrons!')
+            IF (NELEC_DHF(IFRP).LT.0) THEN
+               write(lupri,*) '*SCF error sym',ifrp,
+     &             ' : negative number of '//
+     &             'closed shell electrons :',nelec_dhf(ifrp)
+               CALL QUIT('*SCF error: negative number of '//
+     &             'closed shell electrons!')
+            END IF
+            IF (MOD(NELEC_DHF(IFRP),2).NE.0) THEN
+               write(lupri,*) '*SCF error sym',ifrp,
+     &             ' : odd even number of '//
+     &             'closed shell electrons :',nelec_dhf(ifrp)
+               CALL QUIT('*SCF error: odd even number of '//
+     &             'closed shell electrons!')
+            END IF
             NISH_DHF(IFRP)  = NELEC_DHF(IFRP)/2
          END DO
          NAELEC_DHF = NINT(DTEMP)
@@ -2018,33 +2339,41 @@ C
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
 C
-      IF (BNCRON) THEN
-         WRITE (LUPRI,'(A)')
-     &      ' * Bare nucleus screening correction used for start guess'
-!     psb 1/13/10 (psb+mi Aug2014) New parameter force_bnc (.BNC_FORCE) force input for
-!        bncron variable w/o checking value of molecular charge
-         if (force_bnc) write (lupri,'(5x,a)')
-     1   'the bare nuclear correction used independently of '//
-     2   'the system charge'
+      IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
 C     designed for approx. neutral molecules,
 C     and it will give very poor start guess for e.g.
 C     a U(+90) calculation.
-         CALL RMOLCHR(ICHRG)
-         KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
-         IF (ABS(KCHARG) .GT. 10 .and. .not.force_bnc) THEN
+        IF (FORCE_BNC) THEN
+           WRITE (LUPRI,'(A)')
+     &     ' - INFO: bare nucleus correction used independently of '//
+     &  'the system charge'
+        ELSE
+          CALL RMOLCHR(ICHRG)
+          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+          IF (ABS(KCHARG) .GT. 10) THEN
+            BNCRON = .FALSE.
             BNCRON = .FALSE.
             WRITE (LUPRI,'(A)')
      &      ' - INFO: bare nucleus correction disabled because'//
      &      ' abs(molecular charge) .gt. 10'
-         END IF
-      END IF
-      IF(BNCRON) THEN
-        DHF_INTTYP= 'Scr. nuclei '
+          END IF
+        END IF
+        IF (BNCRON) THEN
+          DHF_INTTYP='Scr. nuclei'
+         WRITE (LUPRI,'(A)')
+     &     ' * Bare nucleus screening correction used for start guess'
+        END IF
+        IF (BNSPON) THEN
+          DHF_INTTYP='Atom. scrpot'
+          WRITE (LUPRI,'(A)')
+     &      ' * Sum of atomic potentials used for start guess'
+        END IF
       ENDIF
 C
       IF (DOBOSSEL) THEN
 C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
+C     .KPSELE was added by ayaki Oct 2018.         
          NERR = 0
          IF (MAX_BOS_BL .NE. MAX_SUB_BL) THEN
             NERR = NERR + 1
@@ -2054,16 +2383,18 @@ C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
          IF (AUTOCC) THEN
             NERR = NERR + 1
             WRITE(LUPRI,*) 'INPUT ERROR! .AUTOCC combined with '//
-     &           '.BOSONS/.MJSELE does not work'
+     &           '.BOSONS/.MJSELE/.KPSELE does not work'
          END IF
          IF (INIOCC) THEN
             NERR = NERR + 1
-            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS/.MJSELE requires'//
+            WRITE(LUPRI,*)
+     &           'INPUT ERROR! .BOSONS/.MJSELE/.KPSELE requires'//
      &           'specification of .CLOSED/.OPEN SH'
          END IF
          IF (OVLSEL) THEN
             NERR = NERR + 1
-            WRITE(LUPRI,*) 'INPUT ERROR! .BOSONS/.MJSELE combined with'
+            WRITE(LUPRI,*)
+     &           'INPUT ERROR! .BOSONS/.MJSELE/.KPSELE combined with'
      &           //' .OVLSEL does not work'
          END IF
          IF (IBOSSEL .GT. 0) THEN
@@ -2075,8 +2406,13 @@ C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
      *      ' * Vector selection based on approximate boson symmetry'
             END IF
          ELSE IF (IBOSSEL .LT. 0) THEN
-            WRITE(LUPRI,'(A)')
-     *      ' * Vector selection based on m_j symmetry'
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(A)')
+     *        ' * Vector selection based on Kappa symmetry'
+            ELSE  
+              WRITE(LUPRI,'(A)')
+     *        ' * Vector selection based on m_j symmetry'
+            ENDIF  
             IF (.NOT. LINEAR) THEN
                NERR = NERR + 1
                WRITE(LUPRI,'(/A/)')
@@ -2084,7 +2420,7 @@ C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
             END IF
          END IF
          WRITE(LUPRI,'(A/4X,16I4)')
-     &      '   - inactive shell:',(NISH_BOS(J),J=1,NSUBBL)
+     &      '   - inactive shell:',(NISH_BOS(J)*2,J=1,NSUBBL)
          I1 = NISH_DHF(1) + NISH_DHF(2)
          I2 = ISUM(NSUBBL,NISH_BOS,1)
          IF (I1 .NE. I2) THEN
@@ -2096,7 +2432,7 @@ C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
          IF (NOPEN.GT.0) THEN
             WRITE(LUPRI,'(A)') '   - active shell(s):'
             DO IOPEN = 1,NOPEN
-               WRITE(LUPRI,'(4X,16I4)') (NACSH_BOS(J,IOPEN),J=1,NSUBBL)
+               WRITE(LUPRI,'(4X,16I4)')(NACSH_BOS(J,IOPEN)*2,J=1,NSUBBL)
                I1 = NACSH(1,IOPEN) + NACSH(2,IOPEN)
                I2 = ISUM(NSUBBL,NACSH_BOS(1,IOPEN),1)
                IF (I1 .NE. I2) THEN
@@ -2106,12 +2442,73 @@ C     .BOSONS/.MJSELE were programmed by hjaaj Oct 2004
                END IF
             END DO
          END IF
+C   INPUT      : Only Kappa
+C   Computation: Kappa and MJ
+C   So, we have to devide each array.
+         IF(ATOMIC)THEN
+           IF(NFSYM.EQ.2)THEN
+             INVMAX   = 1
+             IOFM = KPMAX(1)*(KPMAX(1)+1)/2
+             IOFK = KPMAX(1)
+           ELSE              
+             INVMAX   = 2
+             IOFM = 0
+             IOFK = 0
+           ENDIF
+C          
+           DO I =  NFSYM, 1, -1
+             DO IKAP = KPMAX(I), 1, -1
+               IF(NFSYM.EQ.2)THEN                 
+                 KPADD = IKAP*(IKAP-1)/2 + 1
+               ELSE
+                 KPADD = IKAP*(IKAP-1)   + 1 + IKAP
+               ENDIF
+               DO INV=1,INVMAX
+                 IOFKV = -INV+1+IOFK
+                 IF(mod(NISH_BOS(IKAP*INVMAX+IOFKV),IKAP).eq.0)THEN
+                   KCBUF = NISH_BOS(IKAP*INVMAX+IOFKV)/IKAP
+                 ELSE
+                   WRITE(LUPRI,'(2A,I2,A,3I3,A)')
+     &              'Number of electrons in the closed shell',
+     &              ' ABS(Kappa) =',IKAP,
+     &              " should be",IKAP*2,IKAP*4,IKAP*6,
+     &              " etc."
+                   CALL QUIT('Number of elec. of closed shell is wrong') 
+                 ENDIF
+                 DO IK = IKAP, 1, -1  
+                   NISH_BOS(KPADD+IK-1+IOFM) = KCBUF
+                 ENDDO
+C
+                 DO IOPEN = 1, NOPEN
+                   IF(mod(NACSH_BOS(IKAP*INVMAX+IOFKV,IOPEN),IKAP)
+     &              .eq.0)THEN
+                     KOBUF = NACSH_BOS(IKAP*INVMAX+IOFKV,IOPEN)/IKAP
+                   ELSE
+                     WRITE(LUPRI,'(A,I2,A,I1,A,3I3,A)')
+     &              'Number of orbitals in ABS(Kappa) =',IKAP,
+     &               " of open-shell No. ",IOPEN,
+     &               " should be",IKAP*2,IKAP*4,IKAP*6,
+     &               " etc."
+                     CALL QUIT
+     &                ('Number of orbitals of open-shell is wrong')   
+                   ENDIF                  
+                   DO IK = IKAP, 1, -1  
+                     NACSH_BOS(KPADD+IK-1+IOFM,IOPEN) = KOBUF
+                   ENDDO  
+                 ENDDO
+                 KPADD = KPADD-IKAP
+               ENDDO  !INV            
+             ENDDO    !IKAP
+             IOFK = 0
+             IOFM = 0
+           ENDDO      !NFSYM
+         ENDIF        ! IF(ATOMIC)
 C  TODO HJAAJ: for NFSYM.eq.2
 C  TODO HJAAJ: check NISH_DHF(1/2) against gerade/ungerade NISH_BOS etc.
          IF (NERR .GT. 0) THEN
             CALL QUIT('Input error for .BOSONSelection or .MJSELEction')
          END IF
-      END IF
+      END IF  !(DOBOSSEL)
 C
       WRITE(LUPRI,'(A,I3)') ' * General print level   : ',IPRSCF
       WRITE(LUPRI,'(/A)') ' ***** INITIAL TRIAL SCF FUNCTION *****'
@@ -2160,9 +2557,15 @@ C
       ELSE
         CALL QUIT('ERROR, initial trial SCF function not defined!')
       ENDIF
-      IF (OPEN_FAC .NE. D1) WRITE (LUPRI,'(A,F12.6)')
+      IF (abs(OPEN_FAC) .NE. D1) THEN
+         WRITE (LUPRI,'(A,F12.6)')
      &   ' * Scaling of active-active block correction to '//
-     &   'open shell Fock operator', OPEN_FAC
+     &   'open shell Fock operator', abs(OPEN_FAC)
+         IF (OPEN_FAC .LT. 0.0D0) THEN
+            WRITE (LUPRI,'(A)')
+     &   '   to improve convergence (default value).'
+         END IF
+      END IF
 
       WRITE(LUPRI,'(/A)') ' ***** SCF CONVERGENCE CRITERIA *****'
       IF(ERGCNV) THEN
@@ -2535,7 +2938,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 19, NTABLE = 23)
+      PARAMETER (NDIR = 21, NTABLE = 26)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -2552,13 +2955,16 @@ C
      &             '*MVOCAL','*RESOLV','*KRMCSC','*STEP C',
      &             '*OPTIMI','*MP2 NO','*KRCICA','*COSCI ',
      &             '*GASCIP','*HSFS  ','*KRCCCA','*ARDUCC',
-     &             '*SCF   ','*KRCI  ','*QCORR '/
+     &             '*SCF   ','*KRCI  ','*QCORR ','*LAPLCE',
+     &             '*EXACC '/ 
+
       DATA TABLE  /'xxxxxxx','.MP2   ','.LUCITA','.REORDE',
      &             '.POST S','.RELCCS','.DIRRCI','.MVO   ',
      &             '.RESOLV','.ORBROT','.LUCIAR','.KRMCSC',
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
-     &             '.ARDUCC','.SCF   ','.KRCI  '/
+     &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
+     &             '.EXACC ','.LAPLCE'/
 C
       N_WF = 0
 C
@@ -2567,6 +2973,7 @@ C     ===================
 C
       DOMP2   = .FALSE.
       DORES   = .FALSE.
+      DOEXACC = .FALSE.
       DOCCM   = .FALSE.
       DOCIM   = .FALSE.
       DOLUCT  = .FALSE.
@@ -2582,6 +2989,8 @@ C
       DOCOSCI = .FALSE.
       DOGASCIP= .FALSE.
       DOHSFS  = .FALSE.
+      DOPOLPRP= .FALSE.
+      DOLAPLCE= .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -2626,7 +3035,8 @@ C
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
-     &                117,118,119,120,121,122,123),I
+     &                117,118,119,120,121,122,123,124,
+     &                125,126),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -2805,6 +3215,28 @@ C&&&& SCF
 C&&&& KRCI :  alternative spelling of KR CI
   123    CONTINUE
             GO TO 116
+C&&&& POLPRP: Calculate polarization propagator for excitations
+  124    CONTINUE
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
+            DOPOLPRP   = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'POLPRP'
+            GO TO 100
+
+C&&&& EXACC: Perfrom coupled cluster calculations with exacc
+  125    CONTINUE
+            DOEXACC = .TRUE.
+            dirac_cfg_exacc = .true.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'EXA_CC'
+            GO TO 100
+
+C&&&& LAPLCE: Laplace transformation test program
+  126    CONTINUE
+            DOLAPLCE = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'LAPLCE'
+            GO TO 100
 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
@@ -2861,10 +3293,12 @@ C hj aug03: TODO: idea was/is to maybe follow MCSCF by big CI
       IF(DOLUCT)   WRITE(LUPRI,'(A)') ' * Run LUCITA CI code'
       IF(DOARDUC)  WRITE(LUPRI,'(A)') ' * Run ARDUCCA CC code'
       IF(DOADC)    WRITE(LUPRI,'(A)') ' * Run RELADC code'
+      IF(DOPOLPRP) WRITE(LUPRI,'(A)') ' * Run POLPRP code'
       IF(DOKRCI)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CI calculation'
       IF(DOKRCC)   WRITE(LUPRI,'(A)')
      &   ' * Kramers restricted CC calculation'
+      IF(DOLAPLCE) WRITE(LUPRI,'(A)') ' * Run Laplace test'
 C
 C     Orbital manipulations
 C
@@ -2911,8 +3345,8 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), 
-     &                I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
+     &                20), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -3018,6 +3452,10 @@ C
       ! by new input reader
       call move_to_next_star(word, lucmd)
       go to 200
+!*LAPLCE
+   20 CONTINUE
+      CALL LAPINP(WORD,.FALSE.)
+      GO TO 200
 
     1 CONTINUE
 C
@@ -3094,7 +3532,7 @@ C
             write (*,*) ' Warning! Warning! Warning! Warning! Warning!'
             write (*,*) ' '
             write (*,*) '  RELADC does not run in parallel. To avoid'
-            write (*,*) '  inconsitencies, it is suggested that jobs'
+            write (*,*) '  inconsistencies, it is suggested that jobs'
             write (*,*) '  such as this are rerun setting the number'
             write (*,*) '  of MPI processes to one (e.g. in calling'
             write (*,*) '  pam with the argument -mpi 1)'
@@ -4212,9 +4650,21 @@ C&&&& VECREF: Fragment vectors
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
                   DO J = 1,NREFS
-                    READ(LUCMD,'(A6)') REFFIL(J)
-                    READ(LUCMD, '(I8)') NPROJNUC(J)
-                    READ(LUCMD,'(A72)') (VECREF(I,J),I=1,NFSYM)
+                    READ(LUCMD,'(A6)', IOSTAT=IOS1) REFFIL(J)
+                    IF (IOS1.NE.0) THEN ! miro: specific error message
+                      call quit('error in REFFIL(J) reading!')
+                    ENDIF
+                    READ(LUCMD, '(I8)', IOSTAT=IOS2) NPROJNUC(J)
+                    IF (IOS2.NE.0) THEN ! miro: specific error message
+                      write(LUPRI,*) 'J,NREFS:',J,NREFS
+                      call quit('error in NPROJNUC(J) reading!')
+                    ENDIF
+                    READ(LUCMD,'(A72)', IOSTAT=IOS3) 
+     &              (VECREF(I,J),I=1,NFSYM)
+                    IF (IOS3.NE.0) THEN ! miro: specific error message
+                      call quit('error in VECREF(I,J) reading!')
+                    ENDIF
+
                  ENDDO
                   REFFIL(NREFS+1) = 'Polari'
                GO TO 100
@@ -4247,26 +4697,28 @@ C&&& POLNRM: Normalize polarization contribution
  11            CONTINUE
 C&&& ATOMS : Do projection analysis using atomic fragments
                   PATOMS = .TRUE.
-                  NREFS=NUCDEP
-                  IF((NREFS+1).GT.MAXREF) THEN
+                  IREFS=1
+                  ININD=1
+                  DO ITYP = 1,NONTYP
+                    IF(.NOT.NOORBT(ININD)) THEN
+                      READ(LUCMD,'(A6)') REFFIL(IREFS)
+                      READ(LUCMD,'(A72)') VECREF(1,IREFS)
+                      NPROJNUC(IREFS)=1
+                      DO J = 0,NONT(ITYP)-1
+                        IREFS = IREFS + NUCDEG(ININD+J)
+                      ENDDO
+                    ENDIF
+                    ININD = ININD + NONT(ITYP)
+                  ENDDO
+                  IF(IREFS.GT.MAXREF) THEN
                     WRITE(LUPRI,'(A,I5)')
-     &         '* Number of atomic types specified  :',NREFS,
+     &         '* Number of atomic types specified  :',IREFS,
      &         '* Current maximum no. of fragments  :',MAXREF
                     CALL QUIT('*PROJECT input: Too many fragments !')
                   ENDIF
-                  INDEP=1
-                  ININD=1
-                  DO ITYP = 1,NONTYP
-                    READ(LUCMD,'(A6)') REFFIL(INDEP)
-                    NPROJNUC(INDEP)=1
-                    READ(LUCMD,'(A72)') VECREF(1,INDEP)
-                    DO J = 0,NONT(ITYP)-1
-                      INDEP = INDEP + NUCDEG(ININD+J)
-                    ENDDO
-                    ININD = ININD + NONT(ITYP)
-                  ENDDO
-                  REFFIL(INDEP) = 'Polari'
-               GO TO 100
+                  REFFIL(IREFS) = 'Polari'
+                  NREFS=IREFS-1
+                  GO TO 100
  12            CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
@@ -4356,13 +4808,15 @@ C
         WRITE(LUPRI,'(1X,A)')
      &   '* Projection analysis based on atomic fragments, ',
      &   '  calculated in their individual bases'
-        INDEP=1
+        IREFS=1
         ININD=1
         DO ITYP = 1,NONTYP
-          WRITE(LUPRI,'(A6,3X,A72)') REFFIL(INDEP),VECREF(1,INDEP)
-          DO J = 0,NONT(ITYP)-1
-            INDEP = INDEP + NUCDEG(ININD+J)
-          ENDDO
+          IF(.NOT.NOORBT(ININD)) THEN
+            WRITE(LUPRI,'(6X,A6,3X,A72)') REFFIL(IREFS),VECREF(1,IREFS)
+            DO J = 0,NONT(ITYP)-1
+              IREFS = IREFS + NUCDEG(ININD+J)
+            ENDDO
+          ENDIF 
           ININD = ININD + NONT(ITYP)
         ENDDO
       ELSE
@@ -4572,8 +5026,7 @@ C***********************************************************************
       use codata
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
-C
+#include "consts.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 C
@@ -4585,6 +5038,8 @@ C
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
+C
+      call set_codata_values(CODSET)
 C
 C     Initialize temporary variables
 C     ==============================
@@ -4620,7 +5075,6 @@ C
       DOTRA    = .FALSE.
       NOTRA    = .FALSE.
       OPTIMI   = .FALSE.
-      DENSFIT  = .FALSE.
       NOSET    = .FALSE.
       OPTWLK   = .FALSE.
       OPTNEW   = .FALSE.
@@ -4688,9 +5142,6 @@ C     ======================================
       NPRPS        = 0
 C
       CALL OPTINI()
-#ifdef MOD_ERI
-      CALL FCK3INI
-#endif
 C
       RETURN
       END
@@ -4714,6 +5165,9 @@ C***********************************************************************
 #ifdef HAS_PCMSOLVER      
       use pcmmod_cfg
 #endif
+#ifdef HAS_PELIB
+      use pe_variables, only: peqm
+#endif
 #ifdef MOD_AOOSOC
       use atomic_oo_order_so_correction_cfg
 #endif
@@ -4721,7 +5175,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (NTABLE = 68,NDIR = 11)
+      PARAMETER (NTABLE = 76,NDIR = 12)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
 #include "maxaqn.h"
@@ -4739,9 +5193,7 @@ C
 #include "dcbprl.h"
 #include "gencon.h"
 #include "nuclei.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
+#include "orgcom.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
      &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
@@ -4753,7 +5205,7 @@ C
       SAVE SETFUN
       DATA TABDIR /'*END OF','*SOLVEN','*DFT   ','*CAP   ',
      &             '*FDE   ','*AMFI  ','*X2C   ','*ECP   ',
-     &             '*PCM   ','*aooSOC','*PCMSOL'/
+     &             '*PCM   ','*aooSOC','*PEQM  ','*PCMSOL'/
 
 !                    1         2         3         4
       DATA TABLE /'.PRINT ','.ONESYS','.OPERAT','.GAUNT ',
@@ -4788,7 +5240,11 @@ C
 !                   61        62        63        64
      &            '.ECP   ','.X2CMMF','.DOSSSS','.MDIRAC',
 !                   65        66        67        68
-     &            '.TRSMIX','.JZOUT ','xxxxxxx','xxxxxxx'/
+     &            '.TRSMIX','.PEQM  ','.JZOUT ', '.FAKE2C',
+!                   69        70        71        72
+     &            '.GAUGEO','.GO ANG','.DIPORG', '.PHASEO',
+!                   73        74        75        76
+     &            '.KOUT  ','.XXXXXX','.XXXXXX', '.XXXXXX'/
       DATA SETFUN/.FALSE./
 C
 #include "ibtfun.h"
@@ -4822,6 +5278,7 @@ C
       MDIRAC  = .FALSE.
       LEVYLE  = .FALSE.
       NONREL  = .FALSE.
+      FAKE2C  = .FALSE.
       SPINFR  = .FALSE.
       NOSPIN  = .FALSE.
       SPINFR2 = .FALSE.
@@ -4838,7 +5295,11 @@ C
       POSVAC  = .FALSE.
       VACREF  = .TRUE.
       CAP     = .FALSE.
-      ECPCALC = .FALSE.
+!     ECPCALC = .FALSE. - already set in HAMSCAN
+      ORIGIN(1:3) = 0.0d0
+      GAGORG(1:3) = 0.0d0
+      GAGORG_SET = .FALSE.
+      DIPORG(1:3) = 0.0d0
       INTV1C  = 0
       ONECNV  = D0
       N1OPER  = 0
@@ -4848,6 +5309,7 @@ C
       IPKINERG = -1
       IPANGMOM = -1
       IPSPNMOM = -1
+      IPSPNORB = -1
       IPVEMB0  = -1
       SSMTRC  = D1
       BSS     = .FALSE.
@@ -4902,9 +5364,13 @@ C ... get integral flags in advance
       IGTINT    = IBTAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
+!jmho: deafult - no polarizable embedding
+#ifdef HAS_PELIB
+      PEQM = .FALSE.
+#endif
 !mi:  by default, do not save Jz_MO matrices
       WRITE_Jz_MATRIX = .FALSE.
-
+      WRITE_K_MATRIX = .FALSE. 
       NOINPUT   = .FALSE.
 C
 C     Read menu file
@@ -4950,7 +5416,8 @@ C     Keep track of number of changes and added finite field operators
      &                131,132,133,134,135,136,137,138,139,140,
      &                141,142,143,144,145,146,147,148,149,150,
      &                151,152,153,154,155,156,157,158,159,160,
-     &                161,162,163,164,165,166,167,168),I
+     &                161,162,163,164,165,166,167,168,169,170,
+     &                171,172,173,174,175,176),I
             END IF
   99    CONTINUE
         IF (WORD .EQ. '.OPTION') THEN
@@ -4959,9 +5426,9 @@ C     Keep track of number of changes and added finite field operators
            GO TO 100
          END IF
          WRITE (LUPRI,'(/,3A,/)')
-     *       ' Keyword ',WORD,' not recognized in HAMINP.'
+     *       ' Keyword ',WORD,' not recognized under **HAMILTONIAN.'
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal keyword in HAMINP.')
+         CALL QUIT('Illegal keyword under **HAMILTONIAN.')
   101    CONTINUE
 C&&&& PRINT: Print level for Hamiltonian
            READ(LUCMD,*) IPRHAM
@@ -4978,9 +5445,9 @@ C&&&& OPERATOR: Read in additional  operator, the print level is IPRGEN from the
            N1OPER = N1OPER + 1
            IF(N1OPER.GT.MAX1OPER) THEN
              WRITE(LUPRI,'(A)')
-     &       '***** HAMINP ERROR *****',
+     &       '***** **HAMILTONIAN ERROR *****',
      &       'Redimension MAX1OPER of /CBIHAM/ !'
-             CALL QUIT('HAMINP: beyond MAX1OPER !')
+             CALL QUIT('**HAMILTONIAN: beyond MAX1OPER !')
            ENDIF
            IPR1OP(N1OPER) = INDXPR
            ICHANG = ICHANG + 1
@@ -5085,20 +5552,6 @@ C                  we get n*functional for n'th call !!!! /3-Jun-2003 hjaaj
                      call quit('failure in DFTINPUT after .DFT')
                   end if
                   call set_hf_exchange_factor(hfxfac)
-
-#ifdef MOD_ERI
-C aspg, 20070909
-c if the calculation is performed with non-hybrid functionals,
-C and j-engine is set, we force dolink to true even if it was
-C not specified in the input, so that no extra work in the
-c integral evaluation is done. for hfxfac set to zero, the
-C link driver just acts to scale the fock matrix according to
-c DIRAOF->SKLFC1
-                  IF (DOFCK3.AND.(HFXFAC.EQ.D0)) THEN
-                     DOLINK = .TRUE.
-                  ENDIF
-#endif /* MOD_ERI */
-
                END IF
                dirac_cfg_dft_calculation = .true.
                SETFUN = .TRUE.
@@ -5170,13 +5623,13 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
                READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT,IGTINT
                IF (IOS.NE.0) THEN
                 CALL QUIT(
-     &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT,IGTINT')
+     &   '**HAMILTONIAN: Error in reading .INTFLG with Gaunt')
                ENDIF
             ELSE
                READ(LUCMD,*,IOSTAT=IOS) ILLINT,ISLINT,ISSINT
                IF (IOS.NE.0) THEN
                 CALL QUIT(
-     &'HAMINP: Error in reading INTFLG: ILLINT,ISLINT,ISSINT')
+     &   '**HAMILTONIAN: Error in reading INTFLG without Gaunt')
                ENDIF
                INTFLG_CHANGE = .TRUE.
             END IF
@@ -5192,17 +5645,17 @@ C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
              IF (IOS.NE.0) THEN
                WRITE(LUPRI,'(2X,A)')
-     &         'HAMINP: Error in reading .BSS/IBSS'
+     &         '**HAMILTONIAN: Error in reading .BSS/IBSS'
                WRITE(LUPRI,*) 'IBSS=',IBSS
                CALL QUIT(
-     &         'HAMINP: Error in reading of .BSS/IBSS')
+     &         '**HAMILTONIAN: Error in reading of .BSS/IBSS')
              ENDIF
 C
 C            Check that we have not defined operators yet,
 C            as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
-     &        'HAMINP:give .BSS option before .OPERAT !')
+     &        '**HAMILTONIAN:give .BSS option before .OPERAT !')
              ENDIF
             GO TO 100
 
@@ -5227,7 +5680,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#if defined MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
 #else
              call quit('block diagonalizing feature not in release!')
@@ -5285,8 +5738,8 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
 C           Check that we have not defined operators yet,
 C           as they need to be modified within BSS transformations
             IF (I_FINFIELD.GT.0) THEN
-              CALL QUIT(
-     &       'HAMINP: specify the .X2COLD option before .OPERAT !')
+              CALL QUIT('**HAMILTONIAN:'//
+     &         ' specify the .X2COLD option before .OPERATOR !')
             ENDIF
             GO TO 100
   137     CONTINUE
@@ -5300,7 +5753,7 @@ C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
-     &        'HAMINP: specify the .X2C option before .OPERAT !')
+     &        '**HAMILTONIAN: specify the .X2C option before .OPERAT !')
              ENDIF
              GO TO 100
   138     CONTINUE
@@ -5362,7 +5815,7 @@ C    Check that we have not defined operators yet,
 C      as they need to be modified within BSS transformations
              IF (I_FINFIELD.GT.0) THEN
                CALL QUIT(
-     &        'HAMINP:give .BSS option before .OPERAT !')
+     &        '**HAMILTONIAN:give .BSS option before .OPERAT !')
              ENDIF
 C&&& BSS4: do BSS in 4c-mode
              GO TO 100
@@ -5452,7 +5905,8 @@ CMI&& Activate 4c-2c MO transformation
 #ifdef HAS_PCMSOLVER
           dirac_cfg_pcm = .true.
 #else
-          call quit('HAMINP: PCMSolver not compiled, no PCM available!')
+          call quit(
+     &     '**HAMILTONIAN: PCMSolver not compiled, no PCM available!')
 #endif
           GOTO 100
 ! .HFXATT
@@ -5461,16 +5915,18 @@ CMI&& Activate 4c-2c MO transformation
           GOTO 100
 ! .xB
   159     CONTINUE
+          call quit('.xB not implemented in this version')
           GOTO 100
 ! .xC
   160     CONTINUE
+          call quit('.xC not implemented in this version')
           GOTO 100
 
-
-!         ECP
+! .ECP
   161     CONTINUE
           ECPCALC = .TRUE.
           TWOCOMP = .TRUE.
+          DOLVC   = .FALSE.
           GO TO 100
 
   162     CONTINUE
@@ -5487,7 +5943,7 @@ C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
             CALL QUIT(
-     &     'HAMINP: specify the .X2Cmmf option before .OPERAT !')
+     &     '**HAMILTONIAN: specify the .X2Cmmf option before .OPERAT !')
           ENDIF
           GO TO 100
   163     CONTINUE
@@ -5496,31 +5952,100 @@ C&&&& DOSSSS: Including SS-integral contribution explicitly
             GO TO 100
   164     CONTINUE
 C&&& MDIRAC: use modified Dirac Hamiltonian as implemented in INTEREST integral package
-            MDIRAC=.TRUE.
+            CALL QUIT('.MDIRAC option not implemented => STOP!')
             GO TO 100
 C..TODO: check for inconsistencies and add stops
   165     CONTINUE
-!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operaror
+!&&&& .TRSMIX : allow mixing T+ Hamiltonian with added T- perturbation operator
             TRS_MIX = .TRUE.
-            GO TO 100
+          GO TO 100
+!&&&& .PEQM: polarizable embedding
   166     CONTINUE
-!!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
-            WRITE_Jz_MATRIX = .TRUE.
+#ifdef HAS_PELIB
+           IF(NBSYM.GT.1) THEN
+             CALL QUIT('Polarized embedding '//
+     &       'does not work with symmetry yet.')
+            ENDIF
+            WRITE(LUPRI,*) 'PE library will be used.'
+            PEQM = .TRUE.
+#else
+            WRITE(LUPRI,*) 'ERROR for .PEQM: PE library not enabled.'
+            CALL QUIT('ERROR for .PEQM: PE library not enabled.')
+#endif
             GO TO 100
   167     CONTINUE
+!&&&& .JZOUT : save Jz_MO matrices into formatted files for analysis
+            WRITE_Jz_MATRIX = .TRUE.
           GO TO 100
   168     CONTINUE
+!&&&& .FAKE2C : do a 2C calculation without generating a 2C
+!               1-electron Hamilonian (can be used for correlated
+!                energy calculations)
+            FAKE2C  = .TRUE.
+            TWOCOMP = .TRUE.
+            NONREL  = .TRUE.
+            SPINFR  = .TRUE.
+            DOLVC   = .FALSE.
+          GO TO 100
+  169     CONTINUE
+!&&&& GAUGEO
+          READ (LUCMD, *,IOSTAT=IOS) (GAGORG(I),I=1,3)
+          GAGORG_SET = .TRUE.
+          IF (IOS.NE.0) THEN
+            CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+          ENDIF
+          GO TO 100
+  170     CONTINUE
+!&&&& GO ANG
+          GO TO 100
+!         read user specified gauge origin in angstrom
+          read(lucmd, *, iostat=ios) gagorg
+          GAGORG_SET = .TRUE.
+          if (ios /= 0) then
+            call quit('error in reading .GO ANG')
+          end if
+!         convert from angstrom to bohr
+          gagorg = gagorg/xtang
+  171     CONTINUE
+!&&&& DIPORG
+          READ (LUCMD, *,IOSTAT=IOS) DIPORG(1:3)
+          IF (IOS.NE.0) THEN
+            CALL QUIT('Error in reading DIPORG(1:3)')
+          ENDIF
+          GO TO 100
+  172     CONTINUE
+!&&&& PHASEO
+          READ (LUCMD, *,IOSTAT=IOS) (ORIGIN(I),I=1,3)
+          IF (IOS.NE.0) THEN
+            WRITE(LUPRI,*) 'Error in reading ORIGIN(1:3) !'
+            WRITE(LUPRI,*) 'ORIGIN(1:3) :', (ORIGIN(I),I=1,3)
+            CALL QUIT('Error in reading ORIGIN(1:3) !')
+          ENDIF
+  173     CONTINUE
+!&&&& .KOUT : save Kappa_MO matrices into formatted files for analysis
+            WRITE_K_MATRIX = .TRUE.
+          GO TO 100
+  174     CONTINUE
+          GO TO 100
+  175     CONTINUE
+          GO TO 100
+  176     CONTINUE
           GO TO 100
       ELSE IF (PROMPT .EQ. '*') THEN
         GO TO 300
       ELSE
         WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     *         '" not recognized in HAMINP.'
+     *         '" not recognized for **HAMILTONIAN.'
         CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-        CALL QUIT('Illegal prompt in HAMINP.')
+        CALL QUIT('Illegal prompt for **HAMILTONIAN.')
       END IF
   300 CONTINUE
 
+      WRITE (LUPRI,'(/A/,(A,3F20.15))')
+     &    ' One-electron operator origins:',
+     &    ' - General operator origin (a.u.)       :', ORIGIN(1:3),
+     &    ' - Magnetic gauge origin (a.u.)         :', GAGORG(1:3),
+     &    ' - Dipole (and multipole) origin (a.u.) :', DIPORG(1:3)
 
       if (dirac_cfg_fde) then
          call fde_input_init(lupri,'DIRAC.OUT')
@@ -5570,7 +6095,7 @@ C
      $   CALL QUIT('FREEPJ, VEXTPJ, or LEVYLE require URKBAL = .FALSE.')
 C
       IF(FREEPJ.AND.VEXTPJ) THEN
-        WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
+        WRITE(LUPRI,'(A)') '***** **HAMILTONIAN ERROR *****'
         WRITE(LUPRI,'(A)') 'You cannot specify both VEXTPJ and FREEPJ !'
         CALL QUIT('Conflicting options : VEXTPJ and FREEPJ !')
       ENDIF
@@ -5602,7 +6127,7 @@ CMI   ... take care of 2c-4c/4c-2c transitions !
 CMI     Remove inconsistencies for the TWOCOMP option
       IF (TWOCOMP.AND.(LEVYLE.OR.
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
-        WRITE(LUPRI,'(A)') '***** HAMINP ERROR *****'
+        WRITE(LUPRI,'(A)') '***** **HAMILTONIAN ERROR *****'
         WRITE(LUPRI,'(A)')
      &  'You cannot specify both TWOCOMP and other otions '//
      &  ' (LEVYLE.OR.URKBAL.OR.FREEPJ.OR.VEXTPJ)!'
@@ -5614,38 +6139,38 @@ C
 C     Remove inconsistencies for the BSS/X2C option
 C     =====================================================
       IF ((DO2C4C.OR.DO4C2C.OR.USEDF).AND..NOT.(BSS.or.x2c)) THEN
-          CALL QUIT(
-     &'HAMINP: DO2C4C/DO4C2C/USEDF options require BSS keyword !')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'DO2C4C/DO4C2C/USEDF options require BSS keyword !')
       ENDIF
 
       IF (BSS .or. x2c) THEN
         IF (LEVYLE.OR.FREEPJ.OR.VEXTPJ) THEN
-          CALL QUIT(
-     &   'HAMINP: Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'Conflicting options LEVYL/FREEPJ/VEXTPJ & BSS/X2C !')
         ENDIF
         IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
      &      .not.x2cmod_mmf)THEN
-          CALL QUIT(
-     &    'HAMINP: Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
+          CALL QUIT('**HAMILTONIAN: '//
+     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
      &    & BSS/X2C !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
-         CALL QUIT(
-     &   'HAMINP: Conflicting options URKBAL/SPINFR2 & BSS/X2C!')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'Conflicting options URKBAL/SPINFR2 & BSS/X2C!')
         ENDIF
 C ...   DIRCON(1) means contracted L component basis set !
         IF (ZORA) THEN
-          CALL QUIT(
-     &    'HAMINP: Conflicting options ZORA & BSS/X2C !')
+          CALL QUIT('**HAMILTONIAN: '//
+     &     'Conflicting options ZORA & BSS/X2C !')
         ENDIF
 
 CMI  ... check not combining .IOTC, .DKH1, .DKH2
         IF ((IOTC.AND.DKH1).OR.(IOTC.AND.DKH2).OR.(DKH2.AND.DKH1)) THEN
-          WRITE(LUPRI,'(/,2x,3(A,L6))')
-     &    'HAMINP: conflicting options; IOTC=',IOTC,' DKH1=',DKH1,
-     &    ' DKH2=',DKH2
-          CALL QUIT('HAMINP: Conflicting options IOTC & DKH1 or '//
-     &    'DKH2 & DKH2 or IOTC & DKH1 !')
+          WRITE(LUPRI,'(/3(A,L6))')
+     &    '**HAMILTONIAN: conflicting options; IOTC=',IOTC,
+     &    ' DKH1=',DKH1,' DKH2=',DKH2
+          CALL QUIT('**HAMILTONIAN: Conflicting options IOTC & DKH1 '//
+     &    'or DKH2 & DKH2 or IOTC & DKH1 !')
         ENDIF
 
 CMI  ... todo: more precise specification needed
@@ -5665,8 +6190,8 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
         IF (CONT2C.and.BSS) THEN
          IF (I2CHAM.NE.3.AND.I2CHAM.NE.4.AND.
      &       I2CHAM.NE.5.AND.I2CHAM.NE.6) THEN
-           write(lupri,*) 'HAMINP: wrong value of I2CHAM=',I2CHAM
-          CALL QUIT('HAMINP: wrong value of I2CHAM !')
+           write(lupri,*) '**HAMILTONIAN: wrong value of I2CHAM=',I2CHAM
+          CALL QUIT('**HAMILTONIAN: wrong value of I2CHAM !')
          ENDIF
         ENDIF
 
@@ -5746,7 +6271,12 @@ C
 C
 C     NZC1 is the NZ value in C1 symmetry
 C
-      NZC1 = 4
+      IF (NONREL .AND. .NOT. FAKE2C) THEN
+       NZC1 = 1
+      ELSE
+       NZC1 = 4
+      END IF
+C
 C.....Check RKBIMP
       IF (DORKBIMP) THEN
         IF (.NOT.URKBAL) THEN
@@ -5877,20 +6407,27 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
 
         ENDIF
 
-      ELSE IF (GAUNT) THEN
-        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE IF (ECPCALC) THEN
-        WRITE(LUPRI,'(1X,A)')
-     &   '  employing effective-core-potentials (ECP)'
+        WRITE(LUPRI,'(A)')
+     &   ' * Employing effective-core-potentials (ECP)'
       ELSE IF (NONREL) THEN
         WRITE(LUPRI,'(A)') ' * Non-relativistic Hamiltonian'
       ELSE IF(MDIRAC) THEN
         WRITE(LUPRI,'(A)') ' * Modified Dirac-Coulomb Hamiltonian'
         WRITE(LUPRI,'(A)') 
      &    '   Switching to the INTEREST integral package (M. Repisky)'
+      ELSE IF (GAUNT) THEN
+        WRITE(LUPRI,'(A)') ' * Dirac-Coulomb-Gaunt Hamiltonian'
       ELSE
         WRITE(LUPRI,'(A)') ' * Dirac-Coulomb Hamiltonian'
       ENDIF
+
+      if (x2c.and.ecpcalc) then
+         call quit('Incompatible options: .X2C* and .ECP')
+      end if
+      if (GAUNT.and.ecpcalc) then
+         call quit('Incompatible options: .GAUNT and .ECP')
+      end if
 
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
@@ -5951,18 +6488,6 @@ CMI    ... quantum dots
 !         so let's not call it in this case
           call dftreport()
         end if
-
-#ifdef MOD_ERI
-C aspg, 20070909
-         IF (DOLINK.AND.(HFXFAC.EQ.D0)) then
-            WRITE (LUPRI,*) ' '
-            WRITE (LUPRI,*) '     Note: as J-Engine was selected '//
-     &                      'together with non-hybrid functionals,'
-            WRITE (LUPRI,*) '           only pure Coulomb integrals'//
-     &                      ' will be calculated.'
-            WRITE (LUPRI,*) ' '
-         ENDIF
-#endif /* MOD_ERI */
 
          IF (IGTINT.EQ.1) THEN
             IF (LSCALE_DFT_GAUNT) THEN
@@ -6046,6 +6571,10 @@ C
      & ' one-electron Hamiltonians.'
       ENDIF
 
+#ifdef NOT_USED
+
+! hjaaj 11-Jun-2020: DIRCON(:) is not used in this version of Dirac
+
 C ============ Output for the basis set ===============
       WRITE(LUPRI,'(A)') ' * Basis set:'
 C     ... first large component
@@ -6068,18 +6597,23 @@ CMI   ... treat the small component basis set only if not beeing
 CMI   in the pure two-component mode
       IF (.NOT.TWOCOMP) THEN
 
-C     ... then small component only if not beeing in the two-component mode
+C     ... then small component only if not being in the two-component mode
       IF ( DIRCON(2) ) THEN
          WRITE(LUPRI,'(A)')'   - contracted small component basis set'
       ELSE
          WRITE(LUPRI,'(A)')'   - uncontracted small component basis set'
       END IF
       IF ( DIRCON(2) .AND. .NOT. URKBAL ) THEN
-         WRITE(LUPRI,'(A)') '**** ERROR in HAMINP ****'
+         WRITE(LUPRI,'(A)') '**** ERROR in **HAMILTONIAN ****'
          WRITE(LUPRI,'(A)') 'Contracted small component basis set '//
      &      'and restricted kinetic balance is not implemented.'
-         CALL QUIT('*** ERROR in HAMINP ****')
+         CALL QUIT('*** ERROR in **HAMILTONIAN ****')
       END IF
+
+      END IF
+#endif
+
+      IF (.NOT.TWOCOMP) THEN
 
       IF(URKBAL) THEN
         WRITE(LUPRI,1000) 'unrestricted'
@@ -6133,10 +6667,10 @@ C
       ELSE
          WRITE(LUPRI,'(/A,I5)')
      &        ' ERROR: ISPHTR not legal:',ISPHTR
-         CALL QUIT('HAMINP: Invalid ISPHTR!')
+         CALL QUIT('**HAMILTONIAN: Invalid ISPHTR!')
       ENDIF
 
-      ENDIF
+      END IF ! .not.TWOCOMP
 
 C ==================================================================
 C   ... Check that the selected One-center model is reasonable,
@@ -6259,7 +6793,7 @@ C
           ISYXPR = IPRPSYM(INDXPR)-1
           IF(ISYXPR.NE.0) THEN
              SYMSTP = .TRUE.
-             WRITE(LUPRI,'(4X,A)') '***** HAMINP ERROR *****'
+             WRITE(LUPRI,'(4X,A)') '***** **HAMILTONIAN ERROR *****'
              WRITE(LUPRI,'(4X,A,A)')
      &         'The operator is not totally symmetric under ',
      &         'the molecular point group'
@@ -6277,7 +6811,7 @@ C
 !  wave-functions !
           ITRXPR = IPRPTIM(INDXPR)
           IF(ITRXPR.NE.1) THEN
-            WRITE(LUPRI,'(4X,A)') '***** HAMINP WARNING *****'
+            WRITE(LUPRI,'(4X,A)') '***** **HAMILTONIAN WARNING *****'
             WRITE(LUPRI,'(4X,A,A8,A)') 'The operator ',PRPNAM(INDXPR),
      &      ' is not totally symmetric under time reversal !'
 
@@ -6310,7 +6844,7 @@ C
 CMI  ... treat the INPERR as in paminp.F - proper input is required
         IF (INPERR.GT.0) THEN
           WRITE(LUPRI,'(/,2x,a,i4)') 'INPERR=',INPERR
-          CALL QUIT('Operator input error in *HAMINP')
+          CALL QUIT('Operator input error in ***HAMILTONIAN')
         ENDIF
       ENDIF
       IF(ONESYS) THEN
@@ -6428,6 +6962,13 @@ C
           ENDDO
         ENDIF
       ENDIF
+#ifdef HAS_PELIB
+      IF (PEQM) THEN
+        WRITE(LUPRI,'(1X,A,A)')
+     &  '* Environment is modeled using polarizable embedding scheme'//
+     &  ' (PE library)'
+      END IF
+#endif
       IF (NOINPUT) GOTO 500
 C
 C     Process input for various program sections
@@ -6439,18 +6980,18 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
          WRITE (LUPRI,'(/,3A,/)') ' Directory ',WORD,' nonexistent.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Illegal directory in HAMINP.')
+         CALL QUIT('Illegal directory in **HAMILTONIAN.')
       ELSE
          WRITE (LUPRI,'(/,4A,/)') ' Prompter "',PROMPT,'" illegal or',
      *                        ' out of order.'
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
-         CALL QUIT('Program stopped in HAMINP, error in prompt.')
+         CALL QUIT('Program stopped in **HAMILTONIAN, error in prompt.')
       END IF
     2 CONTINUE
 !       work can be easily removed by changing internal memget to alloc
@@ -6483,7 +7024,7 @@ C       if *CAP in input but MOD_CAP is not defined !!!
       GO TO 200
     6 CONTINUE
 CMI  ... reading input routine for AMFI+RELSCF
-        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI) THEN
+        IF((IBSS.GT.999.or.x2c).AND..NOT.NOAMFI.AND..NOT.SPINFR) THEN
           CALL AMFI_RELSCF_INP(WORD,.FALSE.)
         ELSE
           GO TO 1
@@ -6512,8 +7053,16 @@ CMI  ... reading input routine for AMFI+RELSCF
       ! by new input reader
         call move_to_next_star(word, lucmd)
         go to 200
+!       *PEQM
+   11 CONTINUE
+#ifdef HAS_PELIB
+        CALL PELIB_IFC_INPUT_READER(WORD)
+#else
+        CALL QUIT('ERROR for *PEQM: PE library not enabled.')
+#endif
+        GO TO 200
 !       *PCMSOL
-   11 continue
+   12 continue
       ! this is a cheat so that *PCMSOL section is parsed
       ! by new input reader
         call move_to_next_star(word, lucmd)
@@ -6534,10 +7083,10 @@ C
 C
  500  CONTINUE
 C
-      IF (SYMSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
-     &                     ' molecular point group symmetry!')
-      IF (TRSSTP) CALL QUIT('HAMINP: Non-symmetric operator under'//
-     &          ' time-reversal symmetry (T+ and T- mixing) !')
+      IF (SYMSTP) CALL QUIT('**HAMILTONIAN: Non-symmetric operator '//
+     &                     'under  molecular point group symmetry!')
+      IF (TRSSTP) CALL QUIT('**HAMILTONIAN: Non-symmetric operator '//
+     &          'under  time-reversal symmetry (T+ and T- mixing) !')
 
 C
       CALL QEXIT('HAMINP')
@@ -6646,7 +7195,7 @@ c     Spin-orbit integrals for ECP centres ...
 c     ========================================
 c
         PNAME            = 'Spin-orbit Pseudopotentials'
-        IPTYP            = 22 ! for the new definition
+        IPTYP            = 20 ! for the new definition
         NPCOMP           = 3
         PFAC(1)          = +1.0
         PFAC(2)          = +1.0
@@ -6691,7 +7240,6 @@ C
       IPKINERG         = INDXPR
 
       ENDIF
-
 CMI   ... this is common
       IF (LINEAR) THEN
 C
@@ -6718,7 +7266,27 @@ C
          IPSPNMOM         = INDXPR
       ENDIF
 C
+      IF (ATOMIC) THEN
+C
+C        Spin-orbit integrals (used in case of atomic symmetry !)
+C        ============================================================
+C
+         PNAME            = 'Spin-orbit matrix'
+         IPTYP            = 20
+         NPCOMP           = 3
+         PFAC(1)          = -D1
+         PFAC(2)          = -D1
+         PFAC(3)          = -D1
+         PLABEL(1)        = 'XANGMOM '
+         PLABEL(2)        = 'YANGMOM '
+         PLABEL(3)        = 'ZANGMOM '
+         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &                  INDXPR,ISYXPR,ITRXPR,IPRHAM)
+         IPSPNORB         = INDXPR
+      ENDIF
+C
       CALL QEXIT('OP1INI')
+C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -6896,6 +7464,7 @@ C.....Individual atoms
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -6930,6 +7499,7 @@ C     First make pointer to orbital angular momentum
         ILABDF = 1
         NLAB   = 0
 C.......consider only large component labels
+        ICLS=1 ! Miro: runtimecheck fix
         DO ILAB1 = 1,NPLAB(1)
           IC     = IGET(IATTR(ILAB1,ILABDF))          
           ICENT  = JGET(IATTR(ILAB1,ILABDF))          
@@ -7225,8 +7795,12 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
+#ifndef MOD_UNRELEASED
       IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT')
+     &   CALL QUIT ('.RESOLVE does not work with DFT !')
+#endif
+
+
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
 C     the input routines use different common blocks,
 C     so I think running both should be OK. I have modified the test:
@@ -8172,6 +8746,8 @@ C
       LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword
 
+      ECPCALC = .FALSE.
+
       ISDO2C4C=.FALSE.
       ISDO4C2C=.FALSE.
 
@@ -8216,11 +8792,14 @@ C............variable telling that this is a 2-component relativistic calculatio
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
-         IF (WORD.EQ.'.NONREL') THEN
+         IF (WORD.EQ.'.NONREL' .OR. WORD.EQ.'.FAKE2C') THEN
             TWOCOMP=.TRUE.
             NONREL =.TRUE.
          ENDIF
-         IF (WORD.EQ.'.ECP   ') TWOCOMP=.TRUE.
+         IF (WORD.EQ.'.ECP   ') THEN
+            ECPCALC=.TRUE.
+            TWOCOMP=.TRUE.
+         END IF
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
          IF (WORD.EQ.'.DO2C4C') THEN
@@ -8329,7 +8908,7 @@ C
 C     Position menu file at the specified keyword
 C
 C     Written by L. Visscher, october 2006
-C     Revsision Jan. 2016 hjaaj: Comparison is now case insensitive.
+C     Revision Jan. 2016 hjaaj: Comparison is now case insensitive.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -8731,4 +9310,215 @@ C
         end do
 
       end function
+C======================================================================C
+      SUBROUTINE LAPINP(WORD,RESET)
+C***********************************************************************
+C
+C     Input section for Laplace module (read in old-fashioned Dirac way)
+C
+C     Written by B. Helmich-Paris (Sep 2015)
+C
+C***********************************************************************
+
+      IMPLICIT NONE
+
+C parameters
+#include "priunit.h"
+#include "lapdim.h"
+
+C common blocks
+#include "dcblap.h"
+
+C constants:
+      INTEGER NTABLE
+      CHARACTER*7, CHRERR
+      PARAMETER (NTABLE = 9)
+      PARAMETER (CHRERR = 'LAPINP>')
+
+C input: 
+      CHARACTER*7 WORD
+      LOGICAL   RESET
+      INTENT(IN) RESET
+      INTENT(INOUT) WORD
+
+C local:
+      INTEGER ILAP, MAXCOL, MINCOL, IOS, ITAB, ICHANG
+      LOGICAL SET, NEWDEF, LWGHTS, LXPNTS
+      CHARACTER PROMPT*1, TABLE(NTABLE)*7, WORD1*7
+C
+      SAVE SET
+      DATA TABLE /'.PRINT ','.MXITER','.NUMPTS','.TOLRNG','.TOLPAR',
+     &            '.TOLLAP','.STEPMX','.XPNTS ','.WGHTS '/
+      DATA SET /.FALSE./
+
+C
+      IF (SET) THEN
+         IF (RESET) SET = .FALSE.
+         RETURN
+      END IF
+      IF (RESET) THEN
+         SET = .FALSE.
+      ELSE
+         SET = .TRUE.
+      END IF
+C
+C
+C     Initialize /DCBLAP/
+C     ===================
+C
+      IPRLAP = 1
+      NLAP   = 0
+      MXITER = 100
+      STEPMX = 0.3D0
+      TOLRNG = 1.D-10
+      TOLPAR = 1.D-15
+
+      ! rather conservative accuracy threshold
+      TOLLAP = 1.D-8
+
+      LWGHTS = .FALSE.
+      LXPNTS = .FALSE.
+
+C
+C     Process input for LAPLCE
+C     ========================
+C
+      NEWDEF = (WORD .EQ. '*LAPLCE')
+      ICHANG = 0
+      IF (NEWDEF) THEN
+         WORD1 = WORD
+  100    CONTINUE
+            READ (LUCMD, '(A7)') WORD
+            CALL UPCASE(WORD)
+            PROMPT = WORD(1:1)
+            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') THEN
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '.') THEN
+               ICHANG = ICHANG + 1
+               DO 200 ITAB = 1, NTABLE
+                  IF (TABLE(ITAB) .EQ. WORD) THEN
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9), ITAB
+                  END IF
+  200          CONTINUE
+               IF (WORD .EQ. '.OPTION') THEN
+                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+                 GO TO 100
+               END IF
+               WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
+     *            '" not recognized in LAPINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal keyword in LAPINP.')
+    1          CONTINUE
+C&&&& PRINT  - print level in Laplace module
+                  READ(LUCMD,*) IPRLAP
+               GO TO 100
+    2          CONTINUE
+C&&&& MXITER - maximum number of iterations for Newton type algorithms
+                  READ(LUCMD,*) MXITER
+               GO TO 100
+    3          CONTINUE
+C&&&& NLAP   - number of quadrature points
+                  READ(LUCMD,*) NLAP
+               GO TO 100
+    4          CONTINUE
+C&&&& TOLRNG - threshold for converging Newton type algorithms
+                  READ(LUCMD,*) TOLRNG
+               GO TO 100
+    5          CONTINUE
+C&&&& TOLPAR - threshold for converging Newton type algorithms
+                  READ(LUCMD,*) TOLPAR
+               GO TO 100
+    6          CONTINUE
+C&&&& TOLLAP - threshold for converging Newton type algorithms
+                  READ(LUCMD,*) TOLLAP
+               GO TO 100
+    7          CONTINUE
+C&&&& STEPMX - step length in line search algorithm
+                  READ(LUCMD,*) STEPMX
+               GO TO 100
+    8          CONTINUE
+C&&&& XPNTS  - Laplace exponents
+               LXPNTS = (NLAP.GT.0)
+               MAXCOL = 0
+               DO WHILE (MAXCOL.LT.NLAP)
+                MINCOL = MAXCOL+1
+                MAXCOL = MIN(MAXCOL+5,NLAP)
+                READ(LUCMD,*,IOSTAT=IOS) 
+     &            (XPNTS(ILAP),ILAP=MINCOL,MAXCOL)
+                IF (IOS.NE.0) THEN
+                 CALL QUIT(CHRERR//'Error in reading Laplace exponents')
+                ENDIF
+               END DO 
+               GO TO 100
+    9          CONTINUE
+C&&&& WGHTS  - Laplace weights
+               LWGHTS = (NLAP.GT.0)
+               MAXCOL = 0
+               DO WHILE (MAXCOL.LT.NLAP)
+                MINCOL = MAXCOL+1
+                MAXCOL = MIN(MAXCOL+5,NLAP)
+                READ(LUCMD,*,IOSTAT=IOS) 
+     &            (WGHTS(ILAP),ILAP=MINCOL,MAXCOL)
+                IF (IOS.NE.0) THEN
+                 CALL QUIT(CHRERR//'Error in reading Laplace exponents')
+                ENDIF
+               END DO 
+               GO TO 100
+            ELSE IF (PROMPT .EQ. '*') THEN
+               GO TO 300
+            ELSE
+               WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
+     &            '" not recognized in LAPINP.'
+               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
+               CALL QUIT('Illegal prompt in LAPINP.')
+            END IF
+      END IF
+  300 CONTINUE
+
+C
+C     Post-processing section
+C     =======================
+C
+      ! check if weights and exponents were provided in input file
+      IF (LWGHTS.NEQV.LXPNTS) THEN
+       CALL QUIT(CHRERR//'You need to specify both Laplace '//
+     &                   'exponents and weights!')
+      END IF
+
+      ! if quadrature points not available in input read 
+      ! pre-tabulated start values
+      INILAP = (.NOT.(LWGHTS.AND.LXPNTS))
+
+      ! if number of quadrature points not given or silly
+      ! determine according to accuracy threshold
+      FNDLAP = (NLAP.LT.1)
+
+      IF (IPRLAP.GT.1) THEN
+       WRITE(LUPRI,*) CHRERR,"print level:",IPRLAP
+       WRITE(LUPRI,*) CHRERR,"maximum iteratations:",MXITER
+       WRITE(LUPRI,*) CHRERR,"number of quadrature points:",NLAP
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Maehly algorithms:",TOLRNG 
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Raphson algorithms:",TOLPAR
+       WRITE(LUPRI,*) CHRERR,"accuracy threshold:",TOLLAP 
+       WRITE(LUPRI,*) CHRERR,
+     &  "step length in line search algorithm:",STEPMX 
+       IF (LWGHTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start weights were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,WGHTS(ILAP)
+        END DO
+       END IF
+       IF (LXPNTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start exponents were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,XPNTS(ILAP)
+        END DO
+       END IF
+      END IF
+
+      RETURN
+      END
+C======================================================================C
 !  -- end of dirac/dirrdn.F --

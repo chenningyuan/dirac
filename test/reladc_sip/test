@@ -9,15 +9,15 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'no.    eigenvalue (eV)   mean-res.',
+f.add(from_string = 'No.         (a.u.)      (eV)',
       num_lines    = 4,
       rel_tolerance   = 1.0e-4,
-      ignore_below = 1.0e-6,
-      mask        = [1, 2 , 3])
+      mask        = [2, 3])
 
-test.run(['adclevel1_real.inp', 'adclevel2_real.inp', 'adclevel3_real.inp'], ['ne_d2h.mol'],
-                 f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized'])
-test.run(['hcn_complex_1.inp', 'hcn_complex_2.inp', 'hcn_complex_3.inp'], ['hcn_cs.mol'],
-                 f, args='--mw=64 --aw=130', accepted_errors=['RELADC not parallelized'])
+#test.run(['adclevel1_real.inp', 'adclevel2_real.inp', 'adclevel3_real.inp'], ['ne_d2h.mol'],
+#                 f, accepted_errors=['RELADC not parallelized'])
+#test.run(['hcn_complex_1.inp', 'hcn_complex_2.inp', 'hcn_complex_3.inp'], ['hcn_cs.mol'],
+#                 f, accepted_errors=['RELADC not parallelized'])
+test.run(['hcn_complex_1.inp'], ['hcn_cs.mol'], f, accepted_errors=['RELADC not parallelized'])
 
 sys.exit(test.return_code)

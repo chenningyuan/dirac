@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,9 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NMRINP */
       SUBROUTINE NMRINP(WORD,RESET,WORK,LWORK)
@@ -34,7 +37,6 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use dirac_cfg
-      use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -51,20 +53,22 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "symmet.h"
 #include "dcbxlr.h"
+#include "dgroup.h"
 C
 
-      PARAMETER (NTABLE = 15)
-      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
-      LOGICAL :: DOEPRN_SET, INTNMR_SET
+      PARAMETER (NTABLE = 16)
+      LOGICAL :: SET, NEWDEF, RESET, LBIT, USECM
+      LOGICAL :: INTNMR_SET
+      LOGICAL :: oneexi, twoexi, fckexi
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
      &          PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
-     &            '.INTFLG','.NOTWO ','.NOONEI','.DOEPRN',
-     &            '.NOEPRN','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO ANG','.SEPTEP','.XXXXXX'   /
+      DATA TABLE /'xXXXXXX','.NOLOND','.SYMCON','.NOORTH',
+     &            '.INTFLG','.NOTWO ','.NOONEI','.FULMAT',
+     &            '.REGRAD','.LONDON','.USECM ','.MLLSUS',
+     &            'xXXXXXX','.SEPTEP','.EXPPED','xXXXXXX'  /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -96,20 +100,12 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOORTH = .FALSE.
       NOTWOL = .FALSE.
       NOONEI = .FALSE.
-      GORG   = .FALSE.
       USECM  = .FALSE.
       RDSUSLLMOD = .FALSE.
       SEPTEP = .FALSE.
-
-! gosia: DOEPRN=true unless skipep is on
-!     if (XLR_SKIPEP) then
-!       DOEPRN = .FALSE.
-!     else
-!        DOEPRN = .TRUE.
-!     end if
-cmi: restore to fix tests, later to be refined throughout the code
-       DOEPRN=.FALSE.
-       DOEPRN_SET=.FALSE.
+      FULMAT = .FALSE.
+      EXPPED = .FALSE.
+      REGRAD = .FALSE.
 
 ! The INTNMR parameter here is read before INTXLR (in XLRINP) 
 ! assign top level default value from dcbgen.h instead of previous INTNMR = 7
@@ -133,7 +129,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -141,21 +137,12 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in NMRINP.'
+     &            '" not recognized in NMRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in NMRINP.')
 
-!              .GAUGEO
+!
     1          CONTINUE
-C ... read user specified gauge origin
-                  READ(LUCMD,*,IOSTAT=IOS) (GAGORG(ICOOR),ICOOR=1,3)
-                  IF (IOS.NE.0) THEN
-                   WRITE(LUPRI,*) '(GAGORG(ICOOR),ICOOR=1,3:',
-     &             (GAGORG(ICOOR),ICOOR=1,3)
-                   CALL QUIT(
-     & 'NMRINP: error in reading (GAGORG(ICOOR),ICOOR=1,3) !')
-                  ENDIF
-                  GORG = .TRUE.
                GO TO 100
 
     2          CONTINUE
@@ -195,15 +182,13 @@ C      for the property gradient H(B)
                NOONEI = .TRUE.
                GO TO 100
     8          CONTINUE
-C  ...  do summations in reorthonormalization terms
-C  over both electronic and positronic states
-               DOEPRN = .TRUE.
-               DOEPRN_SET = .TRUE.
+!              .FULMAT
+               FULMAT = .true.
                GO TO 100
     9          CONTINUE
-C ... NOEPRN: deactivate the DOEPRN keyword which is by default set to true
-C     in the URKBAL scheme; in RKBAL the default is .FALSE.
-               DOEPRN = .FALSE.
+C ...REGRAD - restart London contributions to property gradient from file
+               REGRAD = .TRUE.
+!               READ(LUCMD,'(A6)') REGFIL
                GO TO 100
    10          CONTINUE
 C&&&& .LONDON: use London atomic orbitals rather than conventional atomic orbitals
@@ -219,25 +204,21 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
 ! Hamiltonian and with the (RKB,c->infinite) Hamiltonian with the Sternheim's diamagnetic term
                RDSUSLLMOD = .TRUE.
                GO TO 100
-
-!              .GO_ANG
    13          continue
-!              read user specified gauge origin in angstrom
-               read(lucmd, *, iostat=ios) gagorg
-               if (ios /= 0) then
-                 call quit('error in reading .GO_ANG')
-               end if
-!              convert from angstrom to bohr
-               gagorg = gagorg/xtang
-               gorg = .true.
                go to 100
-   14          CONTINUE
-!              .SEPTEP
+   14          CONTINUE ! .SEPTEP
 !              gosia: SEParate T matrix to electronic and positronic blocks
 !              it does not affect shieldings, it is only for analysis.
                SEPTEP = .true.
                GO TO 100
-   15          CONTINUE
+   15          CONTINUE ! .EXPPED
+!              gosia: export contributions to perturbed density to files
+!              direct-LAO phase factor part write to pertden_direct_lao.FINAL
+!              reorthonormalization part write to pertden_reorth_lao.FINAL
+!              it is used further in embedding
+               EXPPED = .true.
+               GO TO 100
+   16          CONTINUE
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -253,56 +234,51 @@ C
 C     Print section
 C     =============
 C
-C ... header:
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
-      CALL PRSYMB(LUPRI,'=',75,0)
-
-      if (dirac_cfg_dft_calculation .and. msuscp .and. london) then
-        call quit('DFT+LAO magnetizabilities not in this release')
-      end if 
-
-      IF (USECM.AND.GORG) THEN
-       WRITE(LUPRI,'(A)')
-     & 'You have asked for center of mass to be the gauge origin!'
-       WRITE(LUPRI,'(A)')
-     & '...your defined gauge origin is then ignored.'
-       GORG = .FALSE.
+C ... header: print out only if relevant (controlled by RESET)
+      IF (.NOT.RESET) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
+        CALL PRSYMB(LUPRI,'=',75,0)
       ENDIF
 
-      IF (GORG) THEN
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
-     &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
+      IF (USECM.AND.GAGORG_SET) THEN
+       WRITE(LUPRI,'(/A/A)') 'WARNING:'//
+     &    ' You have asked for center of mass to be the gauge origin!',
+     &    'WARNING: ...your defined gauge origin is therefore ignored.'
+       GAGORG_SET = .FALSE.
+      ENDIF
 
+      IF (GAGORG_SET .AND. .NOT.USECM) THEN
          if (maxrep > 0) then
-            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(3X,A,/)')
-     &     'WARNING: User defined gauge '//
+            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(/A/)')
+     &     '   WARNING: User defined gauge '//
      &     'may give wrong results when using symmetry !'   
          end if
 CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
+         DIPORG(:) = GAGORG(:)
       ELSE
        IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)
          CALL MEMGET('REAL',KGEOM  ,3*NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('REAL',KMASS  ,  NATOMS ,WORK,KFREE,LFREE)
          CALL MEMGET('INTE',KNAT   ,  NATOMS ,WORK,KFREE,LFREE)
+         CALL MEMGET('INTE',KNUMIS ,  NATOMS ,WORK,KFREE,LFREE)
 C ... call the routine in abacus/hergp.F
-         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),ISOTOP,IPRDEF)
+         CALL CMMASS(WORK(KGEOM),WORK(KMASS),WORK(KNAT),
+     &               WORK(KNUMIS),IPRDEF)
          CALL MEMREL('NMRINP.CMMASS',WORK,KWORK,KGEOM,KFREE,LFREE)
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
-         WRITE(LUPRI,'(1X,A,3F12.6)')
-     &  '* Center of mass used for the gauge & dipole '//
-     &  'origin (a.u.) :',(GAGORG(I), I = 1, 3)
+         WRITE(LUPRI,'(A,3F12.6)')
+     &  ' * Center of mass used for the gauge & dipole '//
+     &  'origins (a.u.) :',GAGORG(1:3)
        END IF
       END IF
 
       IF (LONDON) THEN
        IF (NOONEI) THEN
-         WRITE(LUPRI,'(/,1X,A)')
-     &': No calculation of {T(1),H(0)} reorthonormalization'//
+         WRITE(LUPRI,'(/A)')
+     &' : No calculation of {T(1),H(0)} reorthonormalization'//
      &' terms for the H(B) property gradient !'
        ENDIF
 
@@ -317,29 +293,13 @@ C ... call the routine in abacus/hergp.F
      &' terms for the H(B m_K) expectation value terms !'
        ENDIF
 
-       IF ((LEVYLE.OR.BSS.or.x2c).AND.DOEPRN) THEN
-        WRITE(LUPRI,'(2X,A)') ': For the LevyLe/BSS '//
-     &'Hamiltonian the only choice for DOEPRN is .FALSE.!  '
-         DOEPRN = .FALSE.
-       ENDIF
-
        IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
          IF (INTNMR_SET) THEN
-           WRITE(LUPRI,'(2X,A)') 'WARNING: For the LevyLe/BSS/x2c '//
-     &     'Hamiltonian only LL integrals '//
-     &     ' for the dg(1,2)/dB terms are needed !'
+           WRITE(LUPRI,'(2X,A)') 'WARNING: For a '//
+     &     'LevyLeblond/BSS/x2c Hamiltonian only LL integrals '//
+     &     'for the dg(1,2)/dB terms are needed !'
          ENDIF
-       ENDIF
-
-       IF (.NOT.DOEPRN) THEN
-         WRITE(LUPRI,'(/,1X,A)')
-     & ': Reorthonormalization terms over '//
-     & 'electronic shells.'
-       ELSE
-         WRITE(LUPRI,'(/,1X,A)')
-     & ': Reorthonormalization terms over both '//
-     & 'positronic and electronic shells. '
        ENDIF
 
        IF (SYMCON) THEN
@@ -376,7 +336,7 @@ C   .... defined conventional atomic orbitals (AO), not London AO
      &'  Using conventional atomic orbitals, not London orbitals !',
      &'  WARNING: Calculated magnetic properties are dependent'//
      &  ' on the choice of the gauge origin!',
-     &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
+     &'  NMRINP: The gauge & dipole origin :', GAGORG(1:3)
        END IF
       END IF  !  (LONDON)
 
@@ -395,7 +355,59 @@ C =========================================================================
           ENDIF
       END IF
 
+! easy
+!       if (.not. symcon) then
+!         fulmat = .true.
+!       end if 
+
+       IF (FULMAT) THEN
+          WRITE(LUPRI,'(A/A/A)')
+     &'  FULMAT: when using the natural connection construct'//
+     &' the full symmetric connection matrix'
+       END IF
+!     export perturbed density
+      IF (EXPPED) THEN
+         IF (.NOT.LONDON) THEN
+            CALL QUIT( 
+     &    'export of perturbed density only for runs with .LONDON')
+         END IF
+         WRITE(LUPRI,'(1X,A)')
+     & 'perturbed LAO-density exported on file pertden_lao'
+      END IF
+      if (expped .and. parcal) then
+        call quit('expped is tested in serial mode only; quitting...')
+      end if
+!     if fde and london, then always export perturbed density
+! gosia: activate it if freeze&thaw with response...
+!      if (dirac_cfg_fde_response .and. london) then
+!         EXPPED = .true.
+!      end if
+      if (REGRAD) then
+        IF (.NOT.LONDON) THEN
+            CALL QUIT(
+     &    'read london property gradient only for runs with .LONDON')
+        END IF
+         WRITE(LUPRI,'(1X,A,A6)')
+     & 'London contribs to property gradient read from files'
+        INQUIRE(FILE='ONELON',EXIST=oneexi)
+        INQUIRE(FILE='TWOLON',EXIST=twoexi)
+        INQUIRE(FILE='FCKLON',EXIST=fckexi)
+        if (.not. oneexi) call quit(
+     & 'no ONELON file found, remember to copy it by pam')
+        if (.not. twoexi) call quit(
+     & 'no TWOLON file found, remember to copy it by pam')
+        if (.not. fckexi) call quit(
+     & 'no FCKLON file found, remember to copy it by pam')
+      end if
+
   999 CONTINUE
+!gosia: here we are after reading xlr input, so epreorth has to be assigned here
+!otherwise xlr_skipep is not known yet
+      EPREORTH = .true.
+      if (xlr_skipep) then
+        EPREORTH = .false.
+      end if
+
       CALL QEXIT('NMRINP')
       RETURN
       END
@@ -429,7 +441,7 @@ C
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
       DIMENSION ORTO(3,*),WORK(*), iqsym(4)
-      LOGICAL AH,EPMIX,DOPCTRA_SAVE, ee, ep, occ
+      LOGICAL AH,DOPCTRA_SAVE, ee, ep, occ
       real(8), allocatable:: conmat(:)
 C
 #include "ibtfun.h"
@@ -445,11 +457,11 @@ C boson irreps identification (read with MO coeff.)
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
 
 C Open property file
@@ -476,8 +488,8 @@ C --------------------------------------------
            IREP = ISYM - 1
            IOPSY = JBTOF(ISYM-1,1)
            CALL DZERO(CONMAT,N2ORBXQ)
-           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,.TRUE.,WORK,WORK(KCMO),
+     &                 WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 C --------------------------------------------------------------------
 C ...  calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
 C    as expectation value
@@ -498,14 +510,16 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 #ifdef MOD_LAO_REARRANGED
 !            gosia:
              if (lao_lr_rearrange) then
-               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
 #endif
-             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
@@ -529,29 +543,26 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              if (ee) then
                 call get_m_ee(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
-                EPMIX = DOEPRN
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
-                CALL TTRA3E(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                    CONMAT,WORK(KTHMAT),IPRINT)
+                CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &             CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
              else if (ep) then
                 call get_m_ep(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
-                EPMIX = DOEPRN
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
-                CALL TTRA3P(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                     CONMAT,WORK(KTHMAT),IPRINT)
+                CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &            CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
              else if (occ) then
                 call get_m_ij(work(ktmat))
                 CALL DZERO(WORK(KTHMAT),N2ORBXQ)
-                EPMIX = DOEPRN
                 AH  = .TRUE. ! T_icomp is antihermitian ! 
                 if (lao_lr_rearrange .or.shielding_rearrange) then
 !                 then all contribution to {T,h} comes from occ-occ blocks
-                  CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                       CONMAT,WORK(KTHMAT),IPRINT)
+                  CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &                CONMAT,WORK(KTHMAT),.true.,.true.,IPRINT)
                 else 
-                  CALL TTRA3E(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                       CONMAT,WORK(KTHMAT),IPRINT)
+                  CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &                CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
                 end if
              end if
 #endif
@@ -640,7 +651,7 @@ C
 !              Density matrix
      &         DMAT(NORBT,NORBT,NZ),
      &         ORTO(3,*),WORK(*), iqsym(4)
-      LOGICAL AH,EPMIX,DOPCTRA_SAVE
+      LOGICAL AH,DOPCTRA_SAVE
 C
 #include "ibtfun.h"
       CALL QENTER('GETCON')
@@ -655,11 +666,11 @@ C boson irreps identification (read with MO coeff.)
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
 
 C Open property file
@@ -685,8 +696,8 @@ C --------------------------------------------
            IREP = ISYM - 1
            IOPSY = JBTOF(ISYM-1,1)
            CALL DZERO(CONMAT,N2ORBXQ)
-           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,.TRUE.,WORK,WORK(KCMO),
+     &                 WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
            IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(2A)')
      &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
@@ -713,14 +724,19 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !            gosia:
 #ifdef MOD_LAO_REARRANGED
              if (lao_lr_rearrange) then
-               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
 #endif
-             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
+                IF(FULMAT) THEN
+                  CALL FULMAT2('S',NORBT,NORBT,WORK(KTMAT))
+                ENDIF
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
 #endif
@@ -745,18 +761,17 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 #endif
              IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
              CALL DZERO(WORK(KTHMAT),N2ORBXQ)
-             EPMIX = DOEPRN
              AH  = .TRUE. ! T_icomp is antihermitian ! 
              !if (shielding_rearrange .or. lao_lr_rearrange) then
 #ifdef MOD_LAO_REARRANGED
              if (shielding_rearrange.or.lao_lr_rearrange) then
-             CALL TTRA2(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),IPRINT)
+             CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &              CONMAT,WORK(KTHMAT),.true.,.true.,IPRINT)
              else
 #endif
 C ... do the reorthonormalization ...
-             CALL TTRA(EPMIX,AH,ISYM2,ISYM,WORK(KTMAT),
-     &                   CONMAT,WORK(KTHMAT),IPRINT)
+             CALL TTRA(ISYM2,ISYM,WORK(KTMAT),
+     &          CONMAT,WORK(KTHMAT),.true.,.false.,IPRINT)
 #ifdef MOD_LAO_REARRANGED
              end if !if (shielding_rearrange .or. lao_lr_rearrange) then
 #endif
@@ -809,7 +824,8 @@ C ... release the memmory...
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck TTRA */
-      SUBROUTINE TTRA(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
+      SUBROUTINE TTRA(ISYMT,ISYMH,TMAT,HMAT,THMAT,
+     &                AH,half,IPRINT)
 C*****************************************************************************
 C
 C   PURPOSE:
@@ -836,6 +852,7 @@ C On input:
 C-----------
 C  EPMIX = .true - run o-summation over both positronic and electronic shells,
 C   else (EPMIX=.false.) run only over electronic shells.
+C gosia: now epmix is replaced by epreorth (which is false only when xlr_skipep)
 C
 C  AH = .true. - take -1 for Hermitian conjugate, otherwise take +1
 C
@@ -856,11 +873,12 @@ C*****************************************************************************
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbnmr.h"
 C
-      LOGICAL EPMIX, AH
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
      &          THMAT(NORBT,NORBT,NZ)
+      logical :: AH, half
 C
 #include "ibtfun.h"
       CALL QENTER('TTRA')
@@ -874,12 +892,11 @@ C
       IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
       IOPSYTH = JBTOF(IREPTH,1)
 
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
+      if (AH) then
+        PM = DM1
+      else
+        PM = D1
+      end if
 
       IF(IPRINT.GE.5) THEN
        WRITE(LUPRI,'(/2X,A,I1,A,I1)')
@@ -898,7 +915,7 @@ C ... do matrix multiplications - run over fermion irreps
 C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
 
       DO I1 = 1, NFSYM
-        IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
+        IF (epreorth) THEN ! Matrix multiplication in full e+p MO space
 #ifdef MOD_LAO_REARRANGED
           if (lao_lr_rearrange) then
 !         called only from get_ftb
@@ -945,10 +962,11 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+          if (.not.half) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
+          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), PM,  
 !                    -----------------------------------
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
@@ -961,6 +979,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
      &               NORBT,NORBT,NZ)
+       end if !if (.not.half) then
 #ifdef MOD_LAO_REARRANGED
          end if !if (lao_lr_rearrange) then
 #endif
@@ -1011,10 +1030,11 @@ C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
             CALL PRQMAT(THMAT,NORBT,NORBT,NORBT,
      &              NORBT,NZ,IPQTOQ(1,IREPTH),LUPRI)
           ENDIF
+          if (.not.half) then
 C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
           I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
           I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
+          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), PM, 
 !                    ---------------------------------------------- --
      &               'H', 'N', IPQTOQ(1,IREPT),
      &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
@@ -1027,6 +1047,7 @@ C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
      &               D1, IPQTOQ(1,IREPTH),
      &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
      &               NORBT,NORBT,NZ)
+          end if ! if (.not.half) then
 #ifdef MOD_LAO_REARRANGED
           end if !if (lao_lr_rearrange) then
 #endif
@@ -1089,11 +1110,11 @@ C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident. 
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
 
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
@@ -1117,8 +1138,8 @@ C Allocate memory for storing components of dh(B)/dB_c
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
          IREP   = IPRPSYM(INDXPR) - 1
-         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),CMO,
-     &      IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),.TRUE.,WORK,
+     &               CMO,IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
          IF (IPRPRP.GE.5) THEN
            WRITE(LUPRI,'(/A,A16)') 
      &     'ONELON: *MO-matrix of property ',
@@ -1154,7 +1175,7 @@ C     .... release the whole block used in this subroutine
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck getmdm */
-      SUBROUTINE GETMDM(EPMIX,ISYMT,DMAT,CMO,IBEIG,TMAT,
+      SUBROUTINE GETMDM(ISYMT,DMAT,CMO,IBEIG,TMAT,
      &                   WORK,KFREE,LFREE,IPRINT)
 C*****************************************************************************
 C
@@ -1195,9 +1216,10 @@ C*****************************************************************************
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbnmr.h"
+#include "dcbham.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
-      LOGICAL EPMIX
 
       CALL QENTER('GETMDM')
       KFRSAV = KFREE
@@ -1223,6 +1245,7 @@ C
         CALL PRQMAT(CMO,NTBAS(0),NORBT,NTBAS(0),NORBT,NZ,
      &               IPQTOQ(1,0),LUPRI)
       ENDIF
+      write(*, *) 'epreorth in getmdm =', epreorth
 C
 C     Generate MDM = modified density matrix of f.symm I1,I2
 C   ===========================================================
@@ -1251,7 +1274,7 @@ C
 !g
 !g        else  ! if not lao_lr_rearrange
 
-        IF (EPMIX) THEN ! Run 'o' over both (p+e) shell
+        IF (EPREORTH) THEN ! Run 'o' over both (p+e) shell
           IF (NOCC(I2).GT.0.AND.NORB(I1).GT.0) THEN
             CALL QTRANS('MOAO','S',D0,NFBAS(I1,0),NFBAS(I2,0),
      &                  NORB(I1),NOCC(I2),
@@ -1290,7 +1313,7 @@ C
       IF (IPRINT.GE.6) THEN
         CALL HEADER(
      &'GETMDM: NON-HERMITIAN modified density matrix',-1)
-        IF (EPMIX) THEN
+        IF (EPREORTH) THEN
          WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
         ELSE
          WRITE(LUPRI,'(2X,A)') "summation over e shells..."
@@ -1321,7 +1344,7 @@ C  ... in gp/gpsaue.F
       IF(IPRINT.GE.5) THEN
         CALL HEADER(
      &'GETMDM: Total SYMMETRIZED modified density matrix',-1)
-        IF (EPMIX) THEN
+        IF (EPREORTH) THEN
          WRITE(LUPRI,'(2X,A)') "summation over both e+p shells..."
         ELSE
          WRITE(LUPRI,'(2X,A)') "summation over e shells..."
@@ -1804,12 +1827,12 @@ C
       IF (IPRINT .GE. 4) THEN
        CALL HEADER('GTCNVD: Final quaternion density matrices.',-1)
        DO IMAT = 1,NFMAT
-         WRITE(LUPRI,'(2X,A,I1,A,I1,A)')
-     &    '**** >>>>> Matrix number(1-cs,2-os1,3-os2...): ',
-     &    IMAT,'/',NFMAT,' <<<<<< ****'
+         WRITE(LUPRI,'(A,I1,A,I1,A)')
+     &    '  **** ----- Matrix number(1-cs,2-os1,3-os2...): ',
+     &    IMAT,'/',NFMAT,' ----- ****'
          DO IZ = 1, 4
-          WRITE(LUPRI,'(/2X,A,I1)')
-     &    '=====  quaternion number (1-4): ',IZ
+          WRITE(LUPRI,'(/A,I1)')
+     &    '  =====  quaternion number (1-4): ',IZ
           CALL OUTPUT(DMAT(1,IZ,IMAT),1,NTBAS(0),1,NTBAS(0),
      &                  NTBAS(0),NTBAS(0),1,LUPRI) 
          END DO
@@ -1857,11 +1880,11 @@ C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ELSE
        IOPT = 2 ! read only MO coefficients
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
-     &            TOTERG,IOPT,WORK,KFREE,LFREE)
+     &            TOTERG,IOPT)
       ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C  1. Get tensor of two-electron expectation value terms 
@@ -1886,11 +1909,24 @@ C
 C     This is the pure London-contribution to the second B-derivative.
 C
 C     Resulting tensor is stored in SUS2EL of dcbsusc.h
+!     (gosia: SUS2EL is evaluated in LNDOUT subroutine in abacus/her2ave.F)
 C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
       use quaternion_algebra
+      use dirac_cfg
+      use dft_cfg
+      use xcint_main
+      use memory_allocator
+      use num_grid_gen
+      use fde_input
+      use fde_mag_cfg
+!
+      use fde_mod
+      use fde_data
+      use fde_dirac_matrices_integration
+      use fde_evaluators_dirac
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
@@ -1912,10 +1948,20 @@ C
 #include "dcbprp.h"
 #include "dcbfir.h"
 C
+#include "dcbsusc.h"
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       DIMENSION ISYMOP(6),IHRMOP(6),IFCKOP(6),MTOTTK(3)
       LOGICAL   LBIT,NODV,NOPV,NOCONT,RETUR,
      &          FCKDDR,DDFOCK,FIRST,SUSCEP
+      real(8), allocatable :: dmat_0(:)
+      real(8) :: sus2el_xc(3, 3)
+      real(8) :: sus2el_fde(3, 3)
+      real(8) :: sus2el_fde_1(3, 3), sus2el_fde_2(3,3)
+      real(8) :: sus2el_fde_3(3, 3)
+!
+      real(8), allocatable   :: dmat(:, :), buffer(:)
+      type(fde_import) :: itmp
 
       CALL QENTER('SUSC2EL')
       KFRSAV=KFREE
@@ -1952,8 +1998,8 @@ C ...Integral type - London orbitals and without EXPECT in her2ave !!!
 C
 C     Check what type of two-electron integrals to include
 C
-#if defined (VAR_MPI) || defined (VAR_PVM)
-      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some lenght...
+#if defined (VAR_MPI)
+      MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some length...
       MTOTTK(2) = NLRGBL*(NLRGBL+1)/2
       MTOTTK(3) = NSMLBL*(NSMLBL+1)/2
       FIRST1 = .TRUE.
@@ -1961,12 +2007,16 @@ C
       FIRST3 = .TRUE.
 #endif
       CALL GETTIM(CPU1,WALL1)
+!gosia:
+! i2typ = 1 (LL|LL)
+!         2 (SS|LL)
+!         3 (SS|SS) integrals
       DO I2TYP = 1,3
          IF (LBIT(INTNMR,I2TYP)) THEN
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          IF (PARCAL) THEN
            CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
-           CALL DIRAC_PARCTL( 1 )
+           CALL DIRAC_PARCTL( HERFCK_PAR )
            CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDMAT),
      &          NDMAT,WORK(KIREP),WORK(KIFCT),
      &          ITYPE,MAXDIF,IATOM,.TRUE.,.TRUE.,.FALSE.,
@@ -1984,11 +2034,259 @@ C
      &          I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY,RELCAL,
      &          .FALSE.,IDUMMY,DUMMY)
            CALL MEMREL('SUSC2EL.seq',WORK,1,KFMAT,KFREE,LFREE)
-#if defined (VAR_MPI) || defined (VAR_PVM)
+#if defined (VAR_MPI)
          ENDIF
 #endif
          ENDIF
       END DO
+
+      if (iprprp .ge. 1) then
+!       sus2el before adding dft contributions:
+        CALL HEADER('Two-electron expectation values, ' //
+     &              'before adding XC terms',-1)
+        CALL POLPRI(SUS2EL,'   ',-2)
+        AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
+        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+      end if
+
+!     gosia: add xc contributions:
+!     ============================
+!     here inside integrate_xc we calculate each component of sus2el_xc(i, j)
+!     and add it to sus2el(i, j) from dcbsusc.h
+!
+      if (dirac_cfg_dft_calculation) then
+        call alloc(dmat_0, n2bbasx*nz)
+        call dzero(dmat_0, n2bbasx*nz)
+        call genden(dmat_0, cmo, 1, iprprp)
+
+        call generate_num_grid(dmat_0)
+#ifdef VAR_MPI
+        if (parcal) call dirac_parctl(XCINT_PAR)
+#endif
+
+!       charge density contribution dependent on XC potential
+        sus2el_xc = 0.0d0
+        call integrate_xc(xc_mat_dim   = ntbas(0),
+     &                    xc_nz        = nz,
+     &                    xc_dmat_0    = dmat_0,
+     &                    xc_nr_dmat   = 0,
+     &                    xc_nr_fmat   = 0,
+     &                    xc_do_london_susc2el_der1 = .true.)
+        sus2el_xc = get_susc2el_integrated()
+
+        if (iprprp .ge. 1) then
+          CALL HEADER('XC potential contribs to two-electron '//
+     &               ' expectation values (charge density)',-1)
+          CALL POLPRI(sus2el_xc,'   ',-2)
+          AVERAG = (sus2el_xc(1,1) + sus2el_xc(2,2)
+     &            + sus2el_xc(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+        end if
+        do i = 1, 3
+           do j = 1, 3
+              sus2el(j, i) = sus2el(j, i) + sus2el_xc(j, i)
+           end do
+        end do
+
+        if (.not. dft_cfg_no_sdft) then
+!         spin density contribution dependent on XC kernel
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl(XCINT_PAR)
+#endif
+          sus2el_xc = 0.0d0
+          call integrate_xc(xc_mat_dim   = ntbas(0),
+     &                      xc_nz        = nz,
+     &                      xc_dmat_0    = dmat_0,
+     &                      xc_nr_dmat   = 0,
+     &                      xc_nr_fmat   = 0,
+     &                      xc_do_london_susc2el_der2 = .true.)
+          sus2el_xc = get_susc2el_integrated()
+
+          if (iprprp .ge. 1) then
+            CALL HEADER('XC kernel contribs to two-electron '//
+     &                  ' expectation values (spin density)',-1)
+            CALL POLPRI(sus2el_xc,'   ',-2)
+            AVERAG = (sus2el_xc(1,1) + sus2el_xc(2,2)
+     &              + sus2el_xc(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
+          do i = 1, 3
+             do j = 1, 3
+                sus2el(j, i) = sus2el(j, i) + sus2el_xc(j, i)
+             end do
+          end do
+        end if
+
+        call dealloc(dmat_0)
+
+      end if
+
+
+!     gosia: add fde contributions:
+!     =============================
+!
+      if (fde_magn_expval_lao) then
+        call fde_get_import_info(itmp)
+
+        call alloc(dmat_0, n2bbasx*nz)
+        call dzero(dmat_0, n2bbasx*nz)
+        call genden(dmat_0, cmo, 1, iprprp)
+
+        sus2el_fde   = 0.0d0
+        sus2el_fde_1 = 0.0d0
+        sus2el_fde_2 = 0.0d0
+        sus2el_fde_3 = 0.0d0
+
+!       embedding potential contribution
+!       --------------------------------
+        if (.not. fde_lao_magn_expval_no_embpot) then
+          write(*, *) 'FDE 2-el contribution to expectation value ' //
+     &                'dependent on embedding potential included'
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( FDE_PAR )
+#endif
+          if (itmp%im_vemb) then
+            call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_nr_dmat            = 0,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_use_potential      = .true.,
+     &                    fde_do_london_susc2el_der1 = .true.)
+          else
+            call fde_dirac_emb_matrices_via_integration(
+     &                      fde_mat_dim            = ntbas(0),
+     &                      fde_nz                 = nz,
+     &                      fde_dmat_0             = dmat_0,
+     &                      fde_nr_dmat            = 0,
+     &                      fde_nr_fmat            = 0,
+     &                      fde_do_london_susc2el_der1  = .true.)
+          end if
+          sus2el_fde_1 = fde_susc2el_integrated()
+
+          if (iprprp .ge. 1) then
+            CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                  'embedding potential', -1)
+            CALL POLPRI(sus2el_fde_1,'   ',-2)
+            AVERAG = (sus2el_fde_1(1,1) + sus2el_fde_1(2,2)
+     &              + sus2el_fde_1(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
+
+        end if
+
+!       embedding kernel contribution (no coupling)
+!       -------------------------------------------
+        if (.not.fde_lao_magn_expval_no_uncoup_embker
+     &    .and..not. fde_cfg_no_sdft) then
+          write(*, *) 'FDE 2-el contribution to expectation value ' //
+     &       'dependent on embedding kernel included (uncoupled)'
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( FDE_PAR )
+#endif     
+          call fde_dirac_emb_matrices_via_integration(
+     &                    fde_mat_dim            = ntbas(0),
+     &                    fde_nz                 = nz,
+     &                    fde_dmat_0             = dmat_0,
+     &                    fde_nr_dmat            = 0,
+     &                    fde_nr_fmat            = 0,
+     &                    fde_do_london_susc2el_der2  = .true.)
+          sus2el_fde_2 = fde_susc2el_integrated()
+
+          if (iprprp .ge. 1) then
+            CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                'embedding kernel (uncoupled)', -1)
+            CALL POLPRI(sus2el_fde_2,'   ',-2)
+            AVERAG = (sus2el_fde_2(1,1) + sus2el_fde_2(2,2)
+     &              + sus2el_fde_2(3,3))/3.0d0
+            WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+          end if
+
+        end if
+
+!       embedding coupling-kernel contribution
+!       --------------------------------------
+!       this is the coupling-kernel contribution
+!       which involves the nonadditive xc and kinetic energy functionals
+!       There is no contribution from the Coulomb term from LAO phase factor
+!       in closed-shell systems (only the reorthonormalization term,
+!       but this is taken care of in LORDRNT subroutine which uses
+!       Coulomb term calculated for property gradient and stored on FCKLON file)
+        if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker
+     &        .and. .not. fde_cfg_no_sdft) then
+          if (fde_rsp_mag_lao_import) then
+            write(*, *) 'FDE 2-el contribution to expectation value ' //
+     &       'dependent on embedding kernel and coupling '          //
+     &       'two subsystems included'
+#ifdef VAR_MPI
+            if (parcal) call dirac_parctl( FDE_PAR )
+#endif    
+            call fde_dirac_emb_matrices_via_integration(
+     &                      fde_mat_dim            = ntbas(0),
+     &                      fde_nz                 = nz,
+     &                      fde_dmat_0             = dmat_0,
+     &                      fde_nr_dmat            = 0,
+     &                      fde_nr_fmat            = 0,
+     &                      fde_do_london_susc2el_coupling  = .true.)
+            sus2el_fde_3 = fde_susc2el_integrated()
+
+            if (iprprp .ge. 1) then
+              CALL HEADER('FDE 2-el contribution dependent on ' //
+     &                'coupling embedding kernel (no Coulomb)', -1)
+              CALL POLPRI(sus2el_fde_3,'   ',-2)
+              AVERAG = (sus2el_fde_3(1,1) + sus2el_fde_3(2,2)
+     &                + sus2el_fde_3(3,3))/3.0d0
+              WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+            end if
+
+          else ! not fde_rsp_mag_lao_import
+!gosia todo:  put this quit before, now it is already after costly response equations
+            call quit('You asked for coupling kernel term without '//
+     &                'importing perturbed density') 
+          end if
+        end if
+
+        call dealloc(dmat_0)
+
+!       Calculate total value of sus2el_fde:
+        do i = 1, 3
+           do j = 1, 3
+              sus2el_fde(j, i) = sus2el_fde(j, i) 
+     &                         + sus2el_fde_1(j, i)
+     &                         + sus2el_fde_2(j, i)
+     &                         + sus2el_fde_3(j, i)
+           end do
+        end do
+
+        if (iprprp .ge. 1) then
+!         sus2el - fde contributions:
+          CALL HEADER('Sum of FDE contribs to two-electron '//
+     &                ' expectation value',-1)
+          CALL POLPRI(sus2el_fde,'   ',-2)
+          AVERAG = (sus2el_fde(1,1) + sus2el_fde(2,2)
+     &            + sus2el_fde(3,3))/3.0d0
+          WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+
+        end if
+
+!       Calculate total value of sus2el:
+        do i = 1, 3
+           do j = 1, 3
+              sus2el(j, i) = sus2el(j, i) + sus2el_fde(j, i)
+           end do
+        end do
+
+      end if !if(fde_magn_expval_lao)
+
+!     print total sus2el:
+      if (iprprp .ge. 1) then
+        CALL HEADER('Two-electron expectation values (total)',-1)
+        CALL POLPRI(SUS2EL,'   ',-2)
+        AVERAG = (SUS2EL(1,1) + SUS2EL(2,2) + SUS2EL(3,3))/3.0d0
+        WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+      end if
+
       CALL GETTIM(CPU2,WALL2)
 C
       CALL MEMREL('SUSC2EL',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2048,13 +2346,14 @@ C*****************************************************************************
 #include "dcbsusc.h"
 
       DIMENSION CMO(*),IBEIG(*),WORK(*)
-      LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
+      LOGICAL HERM,AH,DOPCTRA_SAVE
 
       CALL QENTER('HORDRNT')
 
       KFRSAV = KFREE
 
 C   Get the Fock matrix in MO basis
+!   gosia: XC contributions are added in GETFCK subroutine, so no additional programming for DFT-LAO here...
 
       CALL MEMGET('REAL',KFMAT,N2ORBXQ,WORK,KFREE,LFREE)
       IPRINT = IPRPRP
@@ -2076,11 +2375,6 @@ C  ... array for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KT2MAT,N2ORBXQ,WORK,KFREE,LFREE)
 
       IPRINT = IPRPRP
-      EPMIX = DOEPRN 
-      IF (IPRINT.GE.5)  THEN
-        WRITE(LUPRI,'(/,3X,A,L2 )')
-     & "HORDRNT: The EPMIX variable is set to:", EPMIX
-      ENDIF
 
 C ....  DO NOT PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
       DOPCTRA_SAVE=DOPCT
@@ -2094,15 +2388,15 @@ C ....  DO NOT PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
        IREP   = ISYM - 1
        CALL DZERO(WORK(KT2MAT),N2ORBXQ)
 C    --- Get the T(2) symm.connection matrix in MO basis ---
-       CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),CMO,IBEIG,
-     &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+       CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),.TRUE.,WORK,
+     &             CMO,IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
 C ... Call TTRA 
         AH = .FALSE. ! S(2) is hermitian ...
         ISYMT = ISYM
         ISYMH = 1 ! It's the H(0) term
-        CALL TTRA(EPMIX,AH,ISYMT,ISYMH,WORK(KT2MAT),
-     &    WORK(KFMAT),WORK(KTFMAT),IPRINT)
+        CALL TTRA(ISYMT,ISYMH,WORK(KT2MAT),
+     &    WORK(KFMAT),WORK(KTFMAT),.false.,.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          CALL HEADER(
@@ -2198,7 +2492,18 @@ C   Written by Miro Ilias,  august 2003,  Odense.
 C
 C   Last revisions:
 C
+!gosia: both GETFCK and GETDHB contain XC contributions, so no additional
+! programming for DFT-LAO needed here...
 C*****************************************************************************
+      use dirac_cfg
+      use memory_allocator
+      use num_grid_gen
+      use fde_input
+      use fde_mag_cfg
+      use fde_mod
+      use fde_data
+      use fde_dirac_matrices_integration
+      use fde_evaluators_dirac
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2216,7 +2521,10 @@ C*****************************************************************************
 #include "dcbsusc.h"
 
       DIMENSION CMO(*),IBEIG(*),WORK(*)
-      LOGICAL EPMIX,HERM,AH,DOPCTRA_SAVE
+      LOGICAL HERM,AH,DOPCTRA_SAVE
+      real(8), allocatable :: tb_dmat(:,:), tb(:), dmat_0(:)
+      real(8) :: susfsy_xc(3,3), susfsy_fde_1(3,3)
+      type(fde_import) :: itmp
 #include "ibtfun.h"
 
       CALL QENTER('LORDRNT')
@@ -2248,10 +2556,6 @@ C or 1/2{S(1)S(1),H(0)} = 1/2{S(1)S(1),F(0)} for symm.connection
 C****************************************************************
       IPRINT = IPRPRP
 C ... define e-p/e-shells for reorthonormalization
-      EPMIX = DOEPRN
-      IF (IPRINT.GE.5)  WRITE(LUPRI,'(3X,A,L2 )')
-     & "LORDRNT: The EPMIX is set to:", EPMIX
-
 C DO NOT PERFORM THE PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
       DOPCTRA_SAVE=DOPCT
       DOPCT=.FALSE.
@@ -2265,7 +2569,7 @@ C DO NOT PERFORM THE PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
 C    --- Get the S(1) connection matrix in MO basis ---
        IF (ITIM1.NE.-1)
      &  CALL QUIT('LORDRNT:Wrong TRsymm. of S(1)!')
-       CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+       CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
        DO IW1 = 1, 3
@@ -2279,7 +2583,7 @@ C ... it's the natural connection
          IREP2   = ISYM2 - 1 ! 0-7
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis ---
-         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ... it's the symmetric connection
@@ -2291,7 +2595,7 @@ C ... it's the symmetric connection
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the S(1) connection matrix in MO basis ---
          IF (ITIM2.NE.-1) CALL QUIT('LORDRNT: Wrong TR symm. of S(1)!')
-         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 C  ... make a product of operators S(1)_ir1 W(1)/S(1)_ir2 - 
@@ -2327,8 +2631,8 @@ C ... call TTRA for {S(1)S(1), H(0)} = {S(1)S(1), F(0)}
         AH  = .FALSE. ! product of S(1)W(1) is hermitian 
         ISYM12 = IREP12 + 1 ! Total symmetry of S(1)*W(1)/S(1) operators
         ISYMF=1 ! F(0) is fully symmetric
-        CALL TTRA(EPMIX,AH,ISYM12,ISYMF,WORK(KSWMAT),
-     &             WORK(KFMAT),WORK(KXMAT),IPRINT)
+        CALL TTRA(ISYM12,ISYMF,WORK(KSWMAT),
+     &        WORK(KFMAT),WORK(KXMAT),.false.,.false.,IPRINT)
 
         IF (IPRINT.GE.5) THEN
          IF (.NOT.SYMCON) THEN 
@@ -2399,7 +2703,7 @@ C     ====   Get F(1)=h(1)+u(1) MO terms ====
         IREP2   = ISYM2 - 1
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
-        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ELSE
         INDXPR2 = IPCON21(IW1) ! Get index of +S(1)
@@ -2410,10 +2714,13 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         IF (ITIM2.NE.-1) CALL QUIT('LORDRNT:Wron TR of s(1)!')
-        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
+!gosia: if we do fde, then fde terms included here are determined by flags 
+!made for property gradient (and stored on TWOLON and FCKLON files)
+!all the coupling terms are on FCKLON file (next GETDHB call)
         DO IH1 = 1, 3 ! Components of H(1)
           IB = 3 ! 0011 ... get ONELON + TWOLON
           INDXPR1 = IPLONDON(1,IH1) ! RM1H1_comp
@@ -2426,8 +2733,8 @@ C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
 
 C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
           AH  = .TRUE. ! T=W =>evidently antisymm...
-          CALL TTRA(EPMIX,AH,ISYM2,ISYM1,WORK(KWMAT),
-     &            WORK(KSMAT),WORK(KSWMAT),IPRINT)
+          CALL TTRA(ISYM2,ISYM1,WORK(KWMAT),
+     &      WORK(KSMAT),WORK(KSWMAT),.true.,.false.,IPRINT)
 
           IF (IPRINT.GE.5) THEN
            IF (.NOT.SYMCON) THEN
@@ -2443,6 +2750,7 @@ C ... call TTRA for {W(1)/S(1),F(1)} .. get all into KSWMAT
      &                 NORBT,NZ,IPQTOQ(1,IREP12),LUPRI )
           ENDIF
 
+!
 C  ... save the expectation values for the lower order rn term
 C      into SUSFSY(3,3)
 
@@ -2503,7 +2811,7 @@ C ...  get W(1)_icomp(I1) into WORK(KSMAT)
         IREP1   = ISYM1 - 1 ! 0-7
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KSMAT) ---
-        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ...  get S(1)_icomp(I1) into WORK(KSMAT)
@@ -2515,7 +2823,7 @@ C ...  get S(1)_icomp(I1) into WORK(KSMAT)
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
         IF (ITIM1.NE.-1) CALL QUIT('LORDRNT: Wrong TR symm. of S(1)!')
-        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 
@@ -2533,8 +2841,8 @@ C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
 C ...  Do transform  F''={W(1)/S(1)_ic1,F'_ic2} into WORK(KSWMAT)
          AH  = .TRUE. ! T=W=>evidently antiherm...
          CALL DZERO(WORK(KSWMAT),N2ORBXQ)
-         CALL TTRA(EPMIX,AH,ISYM1,ISYM2,WORK(KSMAT),
-     &          WORK(KWMAT),WORK(KSWMAT),IPRINT)
+         CALL TTRA(ISYM1,ISYM2,WORK(KSMAT),
+     &    WORK(KWMAT),WORK(KSWMAT),.true.,.false.,IPRINT)
 
          IF (IPRINT.GE.5) THEN
           IF (.NOT.SYMCON) THEN
@@ -2584,6 +2892,137 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 
       ENDDO
       ENDDO
+
+! !gosia: uncoupled FDE contributions are already present (either through GETFCK or GETDHB subroutines)
+! !but we need additional code for fde coupling-kernel contributions
+!       if (fde_magn_expval_lao) then
+!         if (.not.fde_lao_magn_expval_no_coupl_nonadd_embker .and. 
+!      &           fde_rsp_mag_lao_import) then
+! 
+!           write(*, *) 'FDE reorthonormalization contribution '      //
+!      &       'to expectation value ' //
+!      &       'dependent on embedding kernel and coupling '          //
+!      &       'two subsystems included'
+! 
+!           call fde_get_import_info(itmp)
+!         
+!           call alloc(dmat_0, n2bbasx*nz)
+!           call dzero(dmat_0, n2bbasx*nz)
+!           call genden(dmat_0, cmo, 1, iprprp)
+!           call generate_num_grid(dmat_0)
+! 
+! !         get T(1) matrices from AOPROPER
+!           call alloc(tb_dmat, n2bbasxq, 3)
+!           tb_dmat = 0.0d0
+!           call alloc(tb, n2orbxq)
+!           tb = 0.0d0
+!           
+!           do icomp = 1, 3
+!             tb = 0.0d0
+!             indxpr1 = ipcon(icomp)
+!             isym1   = iprpsym(indxpr1)
+!             irep1   = isym1 - 1
+!             iopsy1  = jbtof(irep1, 1)
+!           
+!             call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
+!      &                  work,kfree,lfree, iprint)
+!           
+!             call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
+!      &                  work,kfree,lfree,iprint)
+!           
+!           end do
+! 
+! #ifdef VAR_MPI
+!           if (parcal) call dirac_parctl( FDE_PAR )
+! #endif     
+! !         inside fde_dirac_emb_matrices_via_integration subroutine
+! !         we will calculate two coupling contributions
+! !         - one is Omega^T(I)*Omega^T(II)
+! !         - second is (R \times r)Omega(I)*Omega^T(II) + (R \times r)Omega(II)*Omega^T(I)
+! !         with:
+! !         Omega^T = MO(a)*MO(b)*(cTc + c.c.) with first-order connection matrix T
+! !         (R \times r)Omega - LAO phase factor
+!           susfsy_fde_1 = 0.0d0
+!           call fde_dirac_emb_matrices_via_integration(
+!      &                    fde_mat_dim            = ntbas(0),
+!      &                    fde_nz                 = nz,
+!      &                    fde_dmat_0             = dmat_0,
+!      &                    fde_dmat               = tb_dmat,
+!      &                    fde_nr_dmat            = 3,
+!      &                    fde_nr_fmat            = 0,
+!      &                    fde_do_london_suscreo_coupling  = .true.)
+! 
+!           susfsy_fde_1 = fde_susc2el_integrated()
+! 
+!           call dealloc(dmat_0)
+!           call dealloc(tb_dmat)
+!           call dealloc(tb)
+! 
+!           if (iprprp .ge. 1) then
+!               CALL HEADER('FDE reorthonormalization contribution ' //
+!      &                'dependent on ' //
+!      &                'embedding kernel, coupling two subsystems', -1)
+!             CALL POLPRI(susfsy_fde_1,'   ',-2)
+!             AVERAG = (susfsy_fde_1(1,1) + susfsy_fde_1(2,2)
+!      &              + susfsy_fde_1(3,3))/3.0d0
+!             WRITE (LUPRI,'(/,6X,A,F12.6)') ' Average value:',AVERAG
+! 
+!           end if
+!         end if
+! 
+! 
+! !n        if (.not.fde_lao_magn_expval_no_coupl_coulomb_embker .and. 
+! !n     &           fde_rsp_mag_lao_import) then
+! !n
+! !n          write(*, *) 'FDE contribution '      //
+! !n     &       'to expectation value ' //
+! !n     &       'dependent on Coulomb term in kernel and coupling '    //
+! !n     &       'two subsystems included'
+! !n
+! !n          call fde_get_import_info(itmp)
+! !n        
+! !n          call alloc(dmat_0, n2bbasx*nz)
+! !n          call dzero(dmat_0, n2bbasx*nz)
+! !n          call genden(dmat_0, cmo, 1, iprprp)
+! !n          call generate_num_grid(dmat_0)
+! !n
+! !n!         get T(1) matrices from AOPROPER
+! !n          call alloc(tb_dmat, n2bbasxq, 3)
+! !n          tb_dmat = 0.0d0
+! !n          call alloc(tb, n2orbxq)
+! !n          tb = 0.0d0
+! !n          
+! !n          do icomp = 1, 3
+! !n            tb = 0.0d0
+! !n            indxpr1 = ipcon(icomp)
+! !n            isym1   = iprpsym(indxpr1)
+! !n            irep1   = isym1 - 1
+! !n            iopsy1  = jbtof(irep1, 1)
+! !n          
+! !n            call prpmat(indxpr1,iopsy1,tb,cmo,ibeig,icmoq,norb,
+! !n     &                  work,kfree,lfree, iprint)
+! !n          
+! !n            call getmdm(isym1,tb_dmat(1, icomp),cmo,ibeig,tb,
+! !n     &                  work,kfree,lfree,iprint)
+! !n          
+! !n          end do
+! !n
+! !n          call fde_magn_coulomb(ntbas(0), nz, 3, dmat)
+! !n
+! !n          call dealloc(dmat_0)
+! !n          call dealloc(tb_dmat)
+! !n          call dealloc(tb)
+! !n        end if
+! 
+! !       Calculate total value of susfsy:
+!         do i = 1, 3
+!            do j = 1, 3
+!               susfsy(j, i) = susfsy(j, i) + susfsy_fde_1(j, i)
+!            end do
+!         end do
+! 
+!       end if !if (fde_magn_expval_lao)
+
 
 C Symmetrize the off-diagonal terms of SUSFSY !!
 
@@ -3299,246 +3738,4 @@ C******************************************************
       RETURN
       END
 
-#ifdef MOD_LAO_REARRANGED
-!ttra2: will be removed
-      SUBROUTINE TTRA2(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-      use london_helper
-      use london_reorth_hb
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-C
-      LOGICAL EPMIX, AH
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA2')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
-
-C ... do matrix multiplications - run over fermion irreps
-C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
-
-      DO I1 = 1, NFSYM
-        IF (EPMIX) THEN ! Matrix multiplication in full e+p MO space
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), D1,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+1, IORB(I2)+1, 1),
-     &               NORBT, NORBT, NZ,
-!                    ---------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I3)+1, 1), 
-     &               NORBT, NORBT, NZ, 
-!                    ---------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-        ELSE  ! Transformation in the e-e space only
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-        ENDIF
-      ENDDO
-
-      CALL QEXIT('TTRA2')
-      RETURN
-      END
-
-      SUBROUTINE TTRA3E(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-      use london_helper
-      use london_reorth_hb
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-C
-      LOGICAL EPMIX, AH
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA3E')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
-
-C ... do matrix multiplications - run over fermion irreps
-C ... (I1,I2) - f.irreps of T, (I2,I3) - f.irreps of H
-
-      DO I1 = 1, NFSYM
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NESH(I1),NESH(I3),NESH(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+NPSH(I1)+1,IORB(I2)+NPSH(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NESH(I1), NESH(I3), NESH(I2), DSGN,
-!                    ---------------------------------------------- --
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+NPSH(I2)+1,IORB(I1)+NPSH(I1)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+NPSH(I2)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+NPSH(I1)+1,IORB(I3)+NPSH(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-      ENDDO
-
-      CALL QEXIT('TTRA3E')
-      RETURN
-      END
-
-      SUBROUTINE TTRA3P(EPMIX,AH,ISYMT,ISYMH,TMAT,HMAT,THMAT,IPRINT)
-C*****************************************************************************
-      use london_helper
-      use london_reorth_hb
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-C
-      LOGICAL EPMIX, AH
-      DIMENSION  TMAT(NORBT,NORBT,NZ), 
-     &           HMAT(NORBT,NORBT,NZ),
-     &          THMAT(NORBT,NORBT,NZ)
-C
-#include "ibtfun.h"
-      CALL QENTER('TTRA3P')
-
-      IREPT = ISYMT-1
-      IOPSYT = JBTOF(IREPT,1)
-
-      IREPH = ISYMH-1
-      IOPSYH = JBTOF(IREPH,1)
-
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
-      IOPSYTH = JBTOF(IREPTH,1)
-
-C ... specify sign for herm.conjugate of TMAT 
-      IF (AH) THEN ! anti-hermitian
-        DSGN = DM1
-      ELSE
-        DSGN = D1
-      ENDIF
-
-      DO I1 = 1, NFSYM
-
-C  ...  do TH(I1,I3) := H(I1,I2).T(I2,I3)
-          I2 = MOD(I1+IOPSYH,2) + 1  ! I1,I2 ... H
-          I3 = MOD(I2+IOPSYT,2) + 1  ! I2,I3 ... T
-          CALL QGEMM(NORB(I1),NORB(I3),NORB(I2),D1,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I1)+1,IORB(I2)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1,IORB(I3)+1,1),
-     &               NORBT, NORBT, NZ,
-!                    -------------------------------------------------
-     &               D0, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1,IORB(I3)+1,1),
-     &               NORBT,NORBT,NZ)
-
-C        ... do TH(I1,I3) := TH(I1,I3) + dsgn*T^{H}(I1,I2).H(I2,I3)
-          I2 = MOD(I1+IOPSYT,2) + 1  ! I1,I2 ... T
-          I3 = MOD(I2+IOPSYH,2) + 1  ! I2,I3 ... H
-          CALL QGEMM(NORB(I1), NORB(I3), NORB(I2), DSGN,
-!                    -----------------------------------
-     &               'H', 'N', IPQTOQ(1,IREPT),
-     &               TMAT(IORB(I2)+1, IORB(I1)+1, 1),
-     &               NORBT,NORBT,NZ,
-!                    -----------------------------------
-     &               'N', 'N', IPQTOQ(1,IREPH),
-     &               HMAT(IORB(I2)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ, 
-!                    -----------------------------------
-     &               D1, IPQTOQ(1,IREPTH),
-     &               THMAT(IORB(I1)+1, IORB(I3)+1, 1),
-     &               NORBT,NORBT,NZ)
-
-      ENDDO
-
-      CALL QEXIT('TTRA3P')
-      RETURN
-      END
-
-#endif
 

@@ -29,15 +29,15 @@ C     Calculate natural orbital occupation numbers and,
 C     if NATORB is true, transform orbital to natural orbitals.
 C
 C     Input:
-C        CREF - CI reference vector
-C        CMO  - MO orbitals
-C        NATORB - transform to natural orbitals
+C        CREF   - CI reference vector
+C        CMO    - MO orbitals
+C        NATORB - transform CMO to natural orbitals
 C
 C     Output:
-C        OCCNO - natural orbital occupation numbers
-C        UNO   - transformation matrix
-C        MOISNO - MO orbitals were already NO orbitals.
-C        CMO   - if NATORB, then NO orbitals, else unchanged
+C        OCCNO  - natural orbital occupation numbers
+C        UNO    - transformation matrix
+C        MOISNO - MO orbitals were already NO orbitals at entry.
+C        CMO    - if NATORB, then NO orbitals, else unchanged
 C
 C     Written by J. Thyssen - Dec 21 2000
 C     Last revision :
@@ -73,12 +73,18 @@ C
 C
       CALL QENTER('RGETNO')
       KFRSAV = KFREE
+
+      IF (NATORB) THEN
+         CALL QUIT('FATAL ERROR in RGETNO:'//
+     &      ' Input option NATORB not implemented yet.')
+      END IF
 C
 C     Calculate DV density matrix
 C     ---------------------------
 C
-      CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NASHT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV',KDV,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NASHT,WORK,KFREE,LFREE)
+
 #if defined MCSCF_DEBUG
 
       iread_from_mc_file = 0
@@ -173,8 +179,7 @@ C     --------------------------
 
 !     zero out coupling blocks between non-equivalent GA spaces
       if(.not.save_1pdens)then
-        if(save_reordered_nos)then
-!         to not destroy some U2 MCSCF/GASCI stuff...
+        if(NATORB)then
           if(ngas_dc > 2) call gasno(work(kdv))
         end if
       end if
@@ -187,14 +192,14 @@ C     --------------------------
             CALL RSJACO(NASHT,NASHT,NASHT,WORK(KDV),WORK(KEIG),
      &           IJOB,IORDER,IPACK,UNO)
          ELSE
-            MATZ = 1
-            IF( NATOLCR ) MATZ = 0
+            MATZ = 1 ! eigenvalues and eigenvectors
+            IF ( NATOLCR ) MATZ = 0 ! only eigenvalues
             CALL QDIAG(NZ,NASHT,WORK(KDV),NASHT,NASHT,
      &           WORK(KEIG),MATZ,UNO,NASHT,NASHT,WORK(KFREE),LFREE,IERR)
             IF (IERR .NE. 0) THEN
-               WRITE(LUPRI,'(/,1X,2A,I4)')
-     &              '*** ERROR in RGETNO ***: ',
-     &              'QDIAG failed with error code ',IERR
+               WRITE(LUPRI,'(/A,I5)')
+     &            ' *** ERROR in RGETNO ***: '//
+     &            'QDIAG failed with error code',IERR
                CALL QUIT('*** ERROR in RGETNO ***')
             END IF
          END IF
@@ -303,15 +308,15 @@ C
  9001 FORMAT(/'   Symmetry',I3,'.   No occupied orbitals.')
  9002 FORMAT(/'   Symmetry',I3,'.   Occupation of active orbitals:'
      &      //,(5F14.9))
- 9003 FORMAT(/'   Total',T15,F14.9,' +',F12.9,' =',F12.9)
+ 9003 FORMAT(/'   Total',F16.9,' +',F16.9,' =',F16.9)
  9004 FORMAT(/'   Symmetry',I3,'. ** REORDERED DESCENDING OCCUPATION **'
      &      //,(5F14.9))
 C
       IF ( IPRINT .GE. 100 .AND. .NOT. MOISNO ) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,'(/1X,A,I3)')
-     &           '(RGETNO) Transformation to NO '//
-     &           '(active orb.) for symmetry ',I
+            WRITE(LUPRI,'(/A,I2)')
+     &           ' (RGETNO) Transformation to NO '//
+     &           '(active orb.) for symmetry',I
             CALL PRQMAT(UNO(1+IASH(I),1+IASH(I),1),NASH(I),NASH(I),
      &           NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
          END DO
@@ -323,8 +328,8 @@ C
 C
       IF (.NOT. NATORB) THEN
         IF ( IPRINT .GE. 1 )
-     &    WRITE(LUPRI,'(/1X,A)')
-     &    '(RGETNO) active orbitals are NOT transformed '//
+     &    WRITE(LUPRI,'(/A)')
+     &    ' (RGETNO) active orbitals are NOT transformed '//
      &    'to natural orbitals.'
       ELSE
 
@@ -421,10 +426,9 @@ C
           call alloc(reorder_fermion,2)
           call alloc(reorder_list,nesht,2)
 
-          reorder_fermion = -1
-          reorder_list    =  0
+          reorder_fermion(1:2) = nesh(1:2)
+
 !         restore unsorted NO numbers in occno
-          call dzero(occno,norbt)
           call dcopy(norbt,WORK(KOCCNO2),1,occno,1)
 !         create list for reordering in descending order according to occupation numbers
 !         ------------------------------------------------------------------------------
@@ -435,46 +439,33 @@ C
 !    &                     NISH(I)+1, ' ... to ... ', 
 !    &                     NISH(I)+NASH(I)
 
-!           a. inactive shells
-            icount = 1
-            do jj = 1, nish(i)
-              reorder_list(icount,i) = icount
-              icount                 = icount + 1
-            end do
+!           a. initialize inactive, active and secondary shells to no reordering
 
-!           do jj = 1, nish(i)
-!             write(lupri,*) ' inactive electronic shell # ',jj,
-!    &                         ' goes to ',reorder_list(jj,i)
-!           end do
-
-!           b. active shells
-!           ----------------
-!           b. 1. initialize
-!           ----------------
-            do jj = 1, nash(i)
-              reorder_list(icount,i) = icount
-              icount                 = icount + 1
+            do jj = 1, nesh(i)
+              reorder_list(jj,i) = jj
             end do
 
 !           -------------
-!           b. 2. reorder
+!           b. reorder active shells after no. isvrono(i)
 !           -------------
+
+            iash_ro = nish(i) + isvrono(i)    ! off-set in reorder_list to orbitals to reorder
+            nash_ro = nash(i) - isvrono(i)    ! no. of orbitals to reorder
+            jash_ro = iorb(i)+npsh(i)+iash_ro ! off-set to first to reorder in total orbital list
 
             myturn = 1
             do 
 !             write(lupri,*) 'myturn,nash(i) ', myturn,nash(i)
 !             exit condition
-              if(myturn > nash(i)-isvrono(i)) exit
+              if (myturn > nash_ro) exit
 
-              mymax  = idamax(nash(i)-isvrono(i),
-     &                 occno(iorb(i)+npsh(i)+nish(i)+isvrono(i)+1),1)
+              mymax  = idamax(nash_ro,occno(jash_ro+1),1)
 !             write(lupri,*) '  max index and value',
 !    &        mymax, occno(iorb(i)+npsh(i)+nish(i)+mymax)
 
 !             new max index
-              reorder_list(nish(i)+isvrono(i)+myturn,i) 
-     &        = mymax + nish(i) + isvrono(i)
-              occno(iorb(i)+npsh(i)+nish(i)+isvrono(i)+mymax) = 0.0d0
+              reorder_list(iash_ro+myturn,i) = iash_ro + mymax
+              occno(jash_ro+mymax) = 0.0d0
 
               myturn = myturn + 1
             end do
@@ -486,14 +477,7 @@ C
 !    &                         reorder_list(nish(i)+jj,i)
 !           end do
 
-!           c. secondary shells
-            icount = nish(i) + nash(i) + 1
-            do jj = 1, nesh(i) - nish(i) + nash(i)
-              reorder_list(icount,i) = icount
-              icount                 = icount + 1
-            end do
-            reorder_fermion(i) = nesh(i)
-          end do
+          end do ! i = 1,nfsym
 
 !         write(lupri,*) 'reorder list'
 !         do i = 1, nfsym
@@ -642,6 +626,7 @@ C
 #include "dcbbas.h"
 #include "maxorb.h"
 #include "dcbidx.h"
+#include "dcbkrmc.h"
 C
       DIMENSION CREF(*), CMO(*), EIG(*), WORK(*)
       CHARACTER KEYCNO*6
@@ -714,17 +699,17 @@ C
 C     1. Calculate one-electron density matrix
 C     ----------------------------------------
 C
-C     Needed for natural orbitals or FV.
+C     Needed for natural orbitals and/or FV.
 C
-      CALL MEMGET('REAL',KDV,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DV',KDV,N2ASHXQ,WORK,KFREE,LFREE)
       IF (NASHT .GE. 1) THEN
          CALL RMAKDV(WORK(KDV),CREF,WORK,KFREE,LFREE)
       END IF
 C
       IF ( .NOT. (TRTOFD .OR. TRTOCO) ) GOTO 1000
 C
-      CALL MEMGET('REAL',KEIGVC,N2ORBXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFD,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIGVC',KEIGVC,N2ORBXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FD',KFD,N2ORBXQ,WORK,KFREE,LFREE)
 C     ... initialize
       CALL DZERO(WORK(KEIGVC),N2ORBXQ)
       CALL DZERO(WORK(KFD),   N2ORBXQ)
@@ -734,7 +719,7 @@ C
       ELSE
          LFV = 0
       END IF
-      CALL MEMGET('REAL',KFV,LFV,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FV',KFV,LFV,WORK,KFREE,LFREE)
 C
 C
 C     2. Calculate Fock matrices
@@ -744,11 +729,10 @@ C
       CALL RFCKMAT(WORK(KDV),CMO,EIX,EAX,WORK(KFC),WORK(KFV),
      &     WORK(KFREE),LFREE)
 C
-C     Calculate FD
+C     Calculate FD: FD = FC + FV
 C
-      IF (NASHT .GT. 0) CALL DAXPY(N2ORBXQ,D1,WORK(KFV),1,WORK(KFD),1)
-
-      CALL MEMREL('RKRMCCNO.after full FD',WORK,KFV,KFV,KFREE,LFREE)
+      IF (NASHT .GT. 0)
+     &   CALL DAXPY(N2ORBXQ,1.0D0,WORK(KFV),1,WORK(KFD),1)
 C
       IF (TRTOCO) THEN
 C
@@ -758,7 +742,7 @@ C
 C        CALL RGETAC(FD,FDAC,IPRINT)
 C
          IF (.NOT. TRTOFD) THEN
-            CALL MEMREL('RKRMCCNO.after RGETAC for FCAC',
+            CALL MEMREL('KRMCCNO.after RGETAC for FCAC',
      &                  WORK,1,KEIGVC,KFREE,LFREE)
             GO TO 1000
          END IF
@@ -777,7 +761,7 @@ C
 
       IF (IPROPT .GE. 5) THEN
          DO I = 1, NFSYM
-            WRITE(LUPRI,*) 'RKRMCCNO: FOCK matrix for fsym = ',I
+            WRITE(LUPRI,*) 'KRMCCNO: FOCK matrix for fsym = ',I
             CALL PRQMAT(WORK(KFD+I2ORBX(I,I)),NORB(I),NORB(I),
      &                  NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          ENDDO
@@ -814,76 +798,8 @@ C
       else
         max_loop = 1
       end if
-
 C
-C     3.1 p-p block
-C     -------------
-C
-      IF ( NPSHT .gt. 0 ) THEN
-C
-C        ... allocate for p-p block diagonalization of Fock-matrix
-         CALL MEMGET('REAL',KFDP,   N2PSHX*NZ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KEIGVCP,N2PSHX*NZ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KEIGP,  NPSHT    ,WORK,KFREE,LFREE)
-C        ... initialize
-         CALL DZERO(WORK(KFDP),   N2PSHX*NZ)
-         CALL DZERO(WORK(KEIGVCP),N2PSHX*NZ)
-         CALL DZERO(WORK(KEIGP),  NPSHT)
-!
-!        extract p-p part of WORK(KFD)
-
-         do indx_loop = 1, max_loop
-
-           if(spinfr_krmc)then
-!            get boson irrep
-             is_symm = indx_loop - 1
-           else if(opt_chckjz)then
-!            get mj-value
-             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-           else
-             is_symm = 0
-           end if
-           CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,
-     &                      NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
-         end do
-
-         IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*) 'RKRMCCNO: positronic FOCK matrix (extracted)'
-           CALL PRQMAT(WORK(KFDP),NPSHT,NPSHT,
-     &                 NPSHT,NPSHT,NZ,IPQTOQ(1,0),LUPRI)
-         END IF
-!
-!        diagonalize
-         CALL DIAG_piv2fock('P',WORK(KFDP),WORK(KEIGP),WORK(KEIGVCP),
-     &                      IDXP2G,work(kibeig),WORK(KFREE),LFREE)
-
-!        insert new p-p matrix block into transformation matrix
-         do indx_loop = 1, max_loop
-
-           if(spinfr_krmc)then
-!            get boson irrep
-             is_symm = indx_loop - 1
-           else if(opt_chckjz)then
-!            get mj-value
-             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
-           else
-             is_symm = 0
-           end if
-           CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
-     &                      NPSHT,NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
-         end do
-
-         IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*)
-     &     'RKRMCCNO: transformation matrix (p-p)'
-           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
-     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
-         END IF
-
-         CALL MEMREL('RKRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
-      END IF
-C
-C     3.2 i-i block
+C     3.1 i-i block
 C     -------------
 C
       IF ( NISHT .gt. 0 ) THEN
@@ -915,7 +831,7 @@ C        ... initialize
          end do
 
          IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*) 'RKRMCCNO: inactive FOCK matrix (extracted)'
+           WRITE(LUPRI,*) 'KRMCCNO: inactive FOCK matrix (extracted)'
            CALL PRQMAT(WORK(KFDI),NISHT,NISHT,
      &                 NISHT,NISHT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -942,12 +858,88 @@ C        ... initialize
 
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*)
-     &     'RKRMCCNO: transformation matrix (p-p + i-i)'
+     &     'KRMCCNO: transformation matrix (i-i)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
  
-         CALL MEMREL('RKRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after i-i',WORK,1,KFDI,KFREE,LFREE)
+      END IF
+
+C
+C     For the empty (virtual) orbitals:
+C     calculate modified FD: FD' = FC + DKRMC_MVOFAC*FV = FD + (DKRMC_MVOFAC-1)*FV
+C
+      FAC_FV = DKRMC_MVOFAC - 1.0D0
+      IF (NASHT .GT. 0 .AND. FAC_FV .NE. 0.0D0)
+     &   CALL DAXPY(N2ORBXQ,FAC_FV,WORK(KFV),1,WORK(KFD),1)
+
+C
+C     3.2 p-p block
+C     -------------
+C
+      IF ( NPSHT .gt. 0 ) THEN
+C
+C        ... allocate for p-p block diagonalization of Fock-matrix
+         CALL MEMGET('REAL',KFDP,   N2PSHX*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGVCP,N2PSHX*NZ,WORK,KFREE,LFREE)
+         CALL MEMGET('REAL',KEIGP,  NPSHT    ,WORK,KFREE,LFREE)
+C        ... initialize
+         CALL DZERO(WORK(KFDP),   N2PSHX*NZ)
+         CALL DZERO(WORK(KEIGVCP),N2PSHX*NZ)
+         CALL DZERO(WORK(KEIGP),  NPSHT)
+!
+!        extract p-p part of WORK(KFD)
+
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATGAT_symm(WORK(KFD),NORBT,NORBT,WORK(KFDP),NPSHT,
+     &                      NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*) 'KRMCCNO: positronic FOCK matrix (extracted)'
+           CALL PRQMAT(WORK(KFDP),NPSHT,NPSHT,
+     &                 NPSHT,NPSHT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+!
+!        diagonalize
+         CALL DIAG_piv2fock('P',WORK(KFDP),WORK(KEIGP),WORK(KEIGVCP),
+     &                      IDXP2G,work(kibeig),WORK(KFREE),LFREE)
+
+!        insert new p-p matrix block into transformation matrix
+         do indx_loop = 1, max_loop
+
+           if(spinfr_krmc)then
+!            get boson irrep
+             is_symm = indx_loop - 1
+           else if(opt_chckjz)then
+!            get mj-value
+             is_symm = ((-1)**(indx_loop+1))*(2*(indx_loop-1)+1)
+           else
+             is_symm = 0
+           end if
+           CALL MATSCT_symm(WORK(KEIGVC),NORBT,NORBT,WORK(KEIGVCP),
+     &                      NPSHT,NPSHT,IDXP2G,work(kibeig),is_symm,NZ)
+         end do
+
+         IF (IPROPT .GE. 5) THEN
+           WRITE(LUPRI,*)
+     &     'KRMCCNO: transformation matrix (p-p + i-i)'
+           CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
+     &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
+         END IF
+
+         CALL MEMREL('KRMCCNO.after p-p',WORK,1,KFDP,KFREE,LFREE)
       END IF
 !
 !     3.3 'active' secondary orbitals: v-v block
@@ -982,7 +974,7 @@ C        ... initialize
          end do
 
          IF (IPROPT .GE. 5) THEN
-           WRITE(LUPRI,*) 'RKRMCCNO: virtual FOCK matrix (extracted)'
+           WRITE(LUPRI,*) 'KRMCCNO: virtual FOCK matrix (extracted)'
            CALL PRQMAT(WORK(KFDVI),NVSHT,NVSHT,
      &                 NVSHT,NVSHT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -990,6 +982,15 @@ C        ... initialize
 !        diagonalize
          CALL DIAG_piv2fock('V',WORK(KFDVI),WORK(KEIGVI),WORK(KEIGVCVI),
      &                      IDXV2G,work(kibeig),WORK(KFREE),LFREE)
+
+         IF (FAC_FV .NE. 0.0D0) THEN
+         IF (IPROPT .GE. 1) THEN
+            WRITE (LUPRI,'(/A,1P,D10.2)')
+     &      ' Modified virtual orbitals for MCSCF from FC + a*FV, a =',
+     &      DKRMC_MVOFAC
+            CALL PREIGV(WORK(KEIGVI),NVSHT,0,WORK(KFREE),LFREE)
+         END IF
+         END IF
 !
 !        insert new v-v matrix block into transformation matrix
          do indx_loop = 1, max_loop
@@ -1009,12 +1010,12 @@ C        ... initialize
 
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*) 
-     &     'RKRMCCNO: transformation matrix (p-p + i-i + v-v)'
+     &     'KRMCCNO: transformation matrix (p-p + i-i + v-v)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 !
-         CALL MEMREL('RKRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after v-v',WORK,1,KFDVI,KFREE,LFREE)
       END IF
 C
 C     3.4 deleted secondary orbitals: d-d block 
@@ -1034,12 +1035,12 @@ C
      &               NDSHT,NDSHT,IDXD2G,NZ)
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*) 
-     &     'RKRMCCNO: transformation matrix (p-p + i-i + v-v + d-d)'
+     &     'KRMCCNO: transformation matrix (p-p + i-i + v-v + d-d)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
 C
-         CALL MEMREL('RKRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after d-d',WORK,1,KEIGVCDL,KFREE,LFREE)
       END IF
 C
 C     3.5 unit matrix for a-a block
@@ -1060,14 +1061,14 @@ C
 C
          IF (IPROPT .GE. 5) THEN
            WRITE(LUPRI,*) 
-     &  'RKRMCCNO: transformation matrix (p-p + i-i + v-v + d-d + a-a)'
+     &  'KRMCCNO: transformation matrix (p-p + i-i + v-v + d-d + a-a)'
            CALL PRQMAT(WORK(KEIGVC),NORBT,NORBT,
      &                 NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
-         CALL MEMREL('RKRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
+         CALL MEMREL('KRMCCNO.after a-a',WORK,1,KEIGVCA,KFREE,LFREE)
       END IF
 C
-      CALL MEMREL('RKRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
+      CALL MEMREL('KRMCCNO.after FD diag',WORK,1,KFD,KFREE,LFREE)
 C
 C     4. Transform orbitals
 C     ---------------------
@@ -1083,12 +1084,12 @@ C
          NORBI = NORB(I)
 C
          IF( IPROPT .ge. 2 )THEN
-           WRITE(LUPRI,'(A,I3)') ' RKRMCCNO: '//
+           WRITE(LUPRI,'(A,I3)') ' KRMCCNO: '//
      &     'Coefficients before transformation for symmetry',I
            CALL PRQMAT(CMO(1+ICMOQ(I)),NBASI,NORBI,
      &          NBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
            WRITE(LUPRI,'(A,I3)')
-     &     ' RKRMCCNO: transformation matrix for symmetry',I
+     &     ' KRMCCNO: transformation matrix for symmetry',I
            CALL PRQMAT(WORK(KEIGVC+I2ORBX(I,I)),NORBI,NORBI,
      &          NORBT,NORBT,NZ,IPQTOQ(1,0),LUPRI)
          END IF
@@ -1120,7 +1121,7 @@ C
          END IF
 C
          IF( IPROPT .ge. 2 )THEN
-           WRITE(LUPRI,'(A,I3)') ' RKRMCCNO: '//
+           WRITE(LUPRI,'(A,I3)') ' KRMCCNO: '//
      &     'MO coefficients after FD transformation for symmetry',I
            CALL PRQMAT(CMO(1+ICMOQ(I)),NBASI,NORBI,
      &          NBASI,NORBI,NZ,IPQTOQ(1,0),LUPRI)
@@ -1129,7 +1130,7 @@ C
 C
 C     Deallocate everything but the density matrix.
 C
-      CALL MEMREL('RKRMCCNO.after FD rot',WORK,1,KEIGVC,KFREE,LFREE)
+      CALL MEMREL('KRMCCNO.after FD rot',WORK,1,KEIGVC,KFREE,LFREE)
 C
  1000 CONTINUE
 C
@@ -1140,7 +1141,7 @@ C     *** Transform to natural or canonical active  orbitals ***
 C     **********************************************************
 C
 C
-      CALL Abend2('*** ERROR in KRMCCNO ***' //
+      CALL QUIT('*** ERROR in KRMCCNO ***' //
      &            'TRTOCO/TRTONO not implemeted yet!')
 C
 C
@@ -1271,6 +1272,14 @@ C     introduce property task
 C
       CALL TITLER('KR-CI property calculation ','*',199)
 C
+      IF (OPT_CIPROGRAM .ne. 'LUCIAREL') THEN
+         WRITE(LUPRI,'(/A/A/2A)')
+     &   'WARNING: Requested KR-CI property calculations skipped',
+     &   'WARNING: because they are only implemented for LUCIAREL',
+     &   'WARNING: and you have requested ',OPT_CIPROGRAM
+         RETURN
+      END IF
+
       WRITE(LUPRI,9000)
  9000 FORMAT(
      &     3X,'This is output from the DIRAC KR-CI property module',/,
@@ -1278,17 +1287,24 @@ C
      &     3X,'Written by: ',/,
      &     3X,'  Stefan Knecht and Hans Joergen Aa. Jensen ',//,
      &     3X,'With contributions from: ',/,
-     &     3X,'  Malaya K. Nayak and Timo Fleig ',
-     &     3X,'       (Magnetic hyperfine interaction) ',//,
+     &     3X,'  Malaya K. Nayak and Timo Fleig ')
+      CALL TITLER(
+     &'(P-odd, P,T-odd properties and magnetic hyperfine interaction)',
+     & ' ',199)
+      WRITE(LUPRI,9005)
+ 9005 FORMAT(
      &     1X,79('*'))
 !
-      WRITE(LUPRI,9001)
- 9001 FORMAT(/3X,'Proper citations:',//,
+      WRITE(LUPRI,9006)
+ 9006 FORMAT(/3X,'Proper citations:',//,
      & 4X,'S.R. Knecht, PhD thesis, University of Duesseldorf, 2009.',/,
 C    & 4X,'    Parallel Relativistic Multiconfiguration Methods:',/,
 C    & 8X,'New Powerful Tools for Heavy-Element
 C    & Electronic-Structure Studies,',
-     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc 300 (2014) 16',/,
+     & 4X,'T. Fleig, M.K. Nayak, Phys. Rev. A  88 (2013) 032514',/,
+     & 4X,'T. Fleig, M.K. Nayak, J. Mol. Spectrosc.  300 (2014) 16',/,
+     & 4X,'M. Denis et al., New J. Phys.  7 (2015) 043005',/,
+     & 4X,'T. Fleig et al., Phys. Rev. A  93 (2016) 012505',/,
      &     //,
      & 1X,79('*'),/)
 
@@ -1300,9 +1316,11 @@ C               1              4
       NPROP_ROOTS_KRCI = 0
       DO I = 1, NKRCI_MAX_SYM
          NPROP_ROOTS_KRCI = NPROP_ROOTS_KRCI + NKRCI_CIROOTS(I)
-         WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+         if (NPROP_ROOTS_KRCI.ne.0) then
+           WRITE(LUPRI,'(I7,I15)') I, NKRCI_CIROOTS(I)
+         end if
       END DO
-         WRITE(LUPRI,'(A/A,I15/)')
+      WRITE(LUPRI,'(A/A,I15/)')
      &   '  _________________________________',
      &   '  Total', NPROP_ROOTS_KRCI
 C
@@ -1438,7 +1456,7 @@ C
         iprintjz = 0
       end if
 #endif
-        
+
 C
 C     ***************************************************
 C     *** Get property matrices *************************
@@ -1454,7 +1472,7 @@ C
 C
          CALL MEMGET('REAL',KRPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KRPRPMO),N2ORBXQ)
-         CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),CMO,
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),.TRUE.,WORK,CMO,
      &               DUMMY,ICMOQ,NORB,WORK,KFREE,LFREE,IPROPT)
 
          if(filelab(3:8) == 'dipole')then
@@ -1556,12 +1574,17 @@ C     Input: property matrix XPROPMAT
 C
 C     Written by S. Knecht - Nov 2008
 C
-C     Last revision :
+C         T. Fleig - Mar 2016
+C         Introduced .EEDM, .MHYP, .ENSPS flags programmed by MKN and TF
+C
+C         Malaya K. Nayak - September 2018
+C         Introduced .NMQM flag programmed by MKN
+C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
-      use codata
       use memory_allocator
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
@@ -1574,22 +1597,42 @@ C
 #include "krciprop.h"
 #include "dcbkrci.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "mxcent.h"
 #include "dipole.h"
+C#include "nuclei.h"
+C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
-     &                   NPROP_KRCI,MZ)
+     &                   NPROP_KRCI,2)
+CMKN     &                   NPROP_KRCI,MZ)
+      DIMENSION GTENSOR(NPROP_ROOTS_KRCI),GTENSORNORM(NPROP_ROOTS_KRCI),
+     &          ENSPSMOM(NPROP_ROOTS_KRCI),HYFENFIN(NPROP_ROOTS_KRCI),
+     &          HYFEDMFIN(NPROP_ROOTS_KRCI),EEFFAU(NPROP_ROOTS_KRCI)
       DIMENSION WORK(*), OSCL(3), EVECS(*), EPROP_CORE(*), OSCLABS(3)
       INTEGER IND_DIP(3), IND_PRP(12)
-      CHARACTER XLABEL*16
+      CHARACTER XLABEL*16,OPTYPE*12
       LOGICAL PRINT_EV
 !     dynamic memory allocation
       integer, allocatable :: indx(:)
       integer, intent(in)  :: mz
 C
 #include "memint.h"
+C
       CALL QENTER('XKRCIPRPANA')
+C
+      IZERO = 0
+      ZERO = 0.0d0
+      IONE = 1
+      ONE = 1.0d0
+C
+CTF   Initialize
+      do IL = 1,NPROP_ROOTS_KRCI,1
+        GTENSOR(IL) = ZERO
+        GTENSORNORM(IL) = ZERO
+        EEFFAU(IL) = ZERO
+      end do
 C
 C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
@@ -1651,6 +1694,64 @@ C
 C     *****************************************************************
 C     ************************** PROPERTIES ***************************
 C     *****************************************************************
+C     Thsi is a General Property Module Implemented for an arbitrary
+C     one-electron operator (defined in .OPERATOR list).
+C
+C     Written by Malaya K. Nayak - September 28, 2018
+C     *****************************************************************
+C     ****************** GENERAL PROPERTY MODULE **********************
+C     *****************************************************************
+      if (dogenp_krci) then
+C
+C       print title
+        write(lupri,*)
+        print*,' NPROP_ROOTS_KRCI = ',NPROP_ROOTS_KRCI
+        write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' *********     General Property Module     **************',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+C
+         INDXPR  = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print Property expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '     < state |      ',XLABEL,'      | state >   '//
+     & '    Property Expectation [a.u.]      Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+          EDMNORM = SQRT(EDMMOM**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & '     * state',INIST,'(',XREPEIG(ISYMST_IN),')       * state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EDMMOM,EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+       END DO
+C
+      end if
+C
+C     ******************************************************************
 C
 C     1. (transition dipole moments) and oscillator strengths
 C     =======================================================
@@ -1697,7 +1798,7 @@ C       ---------
         DO 201 IVEC=1,NPROP_ROOTS_KRCI
          DO 101 JVEC= IVEC+1, NPROP_ROOTS_KRCI
             DEIG  = EVECS(IVEC) - EVECS(JVEC)
-            IF( DEIG < 0.0d0 )THEN
+            IF( DEIG < ZERO )THEN
               INIST = IVEC
               JFLST = JVEC
             ELSE
@@ -1944,19 +2045,71 @@ C       release memory
         CALL MEMREL('XKRCIPRPANA',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
 !
-!     4. Magnetic hyperfine interaction constants
-!     ===========================================
-!
-      if (domhyp_krci) then
-C       CALL FLIP_BLOCK(WORK(KRPRPMOACM),FILELAB,IPRINT)
-
+C
+C     =======================================================
+C     4. electron electric dipole moment
+C        (effective electric field)
+C     =======================================================
+      if(doeedm_krci)then
+C
+C       print title
         write(lupri,*)
         write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' ********* electron Electric Dipole Moment **************',
+     & ' ********************************************************'
+C
+         XLABEL = 'P2-EDM'
+         IND_EDM = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print eEDM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '  <state| ',XLABEL,'  2*ic gamma0 gamma5 p^2 | state >  '//
+     & '  E_eff [a.u.]             E_eff [GV/cm]   '
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+        do IVEC = 1,NPROP_ROOTS_KRCI,1
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+          EEFFAU(IVEC) = DCMPLX(XPROPMAT(INIST,JFLST,IND_EDM,1),
+     &                    XPROPMAT(INIST,JFLST,IND_EDM,2))
+CTF          EDMNORM = sqrt(EDMMOM**2)
+          EEFFGVCM = ( EEFFAU(IVEC) * EFAUMKSA )
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & ' EEDM  state',INIST,'(',XREPEIG(ISYMST_IN),')         state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &      EEFFAU(IVEC),EEFFGVCM
+        end do
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+      end if
+C
+C     =======================================================
+C     5. Magnetic Hyperfine Structure Constants
+C     Written by Malaya K. Nayak, Sept 13, 2013
+C            and Timo Fleig, April 7-8, 2016
+C     =======================================================
+      if (domhyp_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
      & ' ********************************************************',
      & ' *********  Hyperfine Structure Constants  **************',
      & ' ********************************************************'
 C
-       DO I = 1, NPROP_KRCI
+      DO I = 1, NPROP_KRCI
          INDXPR  = LPROP_KRCI(I)
          XLABEL = PRPNAM(INDXPR)(1:8)
          IF (XLABEL(4:6).EQ.'HYP') THEN
@@ -1967,7 +2120,7 @@ C       print mHYP expectation value
 C       ----------------------------
         write(lupri,'(/a,A6,a/a)')
      & '    < state | ',XLABEL,' [alpha x E] | state >  '//
-     & '     Hyperfine Constants [a.u.]     Norm [a.u.]'
+     & '     Hyperfine Const. [a.u.]     Delta E_HypFin [a.u.]   '
         write(lupri,'(a)')
      & '  __________________       _________________'//
      & '    ___________________________________________________'//
@@ -1979,12 +2132,127 @@ C
           JFLST = JVEC
           ISYMST_IN = ISYMEIG_KRCI(INIST)
           ISYMST_FL = ISYMEIG_KRCI(JFLST)
+         HFCONST = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+CTF
+C   prefactor = mu / ( 2c I mp )
+         read(XLABEL(2:2),*) INUC
+         PREFACNUC = VKRCI_NUCMAGMOM(INUC) /
+     &               ( 2 * CVAL * VKRCI_NUCSPIN(INUC) * XFMP )
+         if (IVEC.eq.IONE) print*,' PREFACNUC = ',PREFACNUC
+C   The hyperfine energy splitting:
+         HFENERGY = HFCONST * PREFACNUC
+C   For a level energy, multiply by 1/2[F(F+1)-J(J+1)-I(I+1)]
+C   and add to the electronic energy
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & ' MHYP  state',INIST,'(',XREPEIG(ISYMST_IN),')         state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &     HFCONST,HFENERGY
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
+C     6. electron-Nucleus scalar-pseudoscalar interaction
+C     Written by Malaya K. Nayak, Feb 28, 2014
+C     =======================================================
+      if (doensps_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)') 
+     & ' ********************************************************',
+     & ' *********  e-N S-PS interaction Parameter  *************',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'SPS') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print eNSPS expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '  <state| ',XLABEL,' i[gamma0 gamma5]rho_N |state>'//
+     & '    e-N S-PS Parameter [a.u.]        Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
+         ENSPSMOM(IVEC) = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
+     &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
+         EDMNORM = SQRT(ENSPSMOM(IVEC)**2)
+C
+          write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
+     & ' ENSPS state',INIST,'(',XREPEIG(ISYMST_IN),')         state',
+     &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
+     &     ENSPSMOM(IVEC),EDMNORM
+       END DO
+        write(lupri,'(a)')
+     & '  __________________________________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+         END IF
+       END DO
+C
+      end if
+C     =======================================================
+C     7. Nuclear Magnetic Quadrupole Moment Interaction 
+C     Written by Malaya K. Nayak, Mar 23, 2015
+C     =======================================================
+      if (donmqm_krci) then
+C
+C       print title
+        write(lupri,*)
+        write(lupri,'(/28x,a/28x,a/28x,a)')
+     & ' ********************************************************',
+     & ' *********  Nuclear Magnetic Quadrupole Moment  *********',
+     & ' ********************************************************'
+C
+      DO I = 1, NPROP_KRCI
+         INDXPR = LPROP_KRCI(I)
+         XLABEL = PRPNAM(INDXPR)(1:8)
+         IF (XLABEL(4:6).EQ.'MQM') THEN
+         IND_PRP(I) = IXPRPINDEX(PRPNAM,LPROP_KRCI,NPROP_KRCI,XLABEL)
+C
+C       ----------------------------
+C       print nMQM expectation value
+C       ----------------------------
+        write(lupri,'(/a,A6,a/a)')
+     & '    < state | ',XLABEL,' [alpha X EFG] | state >  '//
+     & '    Nuc. MQM Constant [a.u.]       Norm [a.u.]'
+        write(lupri,'(a)')
+     & '  __________________       _________________'//
+     & '    ___________________________________________________'//
+     & '_______'
+C
+       DO IVEC  = 1,NPROP_ROOTS_KRCI
+          JVEC  = IVEC
+          INIST = IVEC
+          JFLST = JVEC
+          ISYMST_IN = ISYMEIG_KRCI(INIST)
+          ISYMST_FL = ISYMEIG_KRCI(JFLST)
           EDMMOM = DCMPLX(XPROPMAT(INIST,JFLST,IND_PRP(I),1),
      &                    XPROPMAT(INIST,JFLST,IND_PRP(I),2))
           EDMNORM = SQRT(EDMMOM**2)
 C
           write(LUPRI,'(A,I3,A,A4,A,I3,A,A4,A,1F20.12,5X,1F20.12)')
-     &    '   * state',INIST,'(',XREPEIG(ISYMST_IN),')         * state',
+     & ' NMQM  state',INIST,'(',XREPEIG(ISYMST_IN),')         state',
      &      JFLST,'(',XREPEIG(ISYMST_FL),')   ',
      &      EDMMOM,EDMNORM
        END DO
@@ -1994,7 +2262,9 @@ C
      & '_______'
          END IF
        END DO
+C
       end if
+C     =======================================================
 C
 C     release dynamically allocated memory
       if(print_ev) call dealloc(INDX)
@@ -2005,6 +2275,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FLIP_BLOCK */
       SUBROUTINE FLIP_BLOCK(PROP,ACHAR,IPRINT)
+C
+C     Flip the Off-diagonal blocks of property matrix to Diagonal blocks
+C     for parallel components of Hyperfine and Anapole moment operators. 
+C
+C     Written by Malaya K. Nayak Sept 04 2013
+C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -2292,7 +2568,7 @@ C       print omega values
 #endif
 C
 C       release memory
-        CALL MEMREL('RKRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)
+        CALL MEMREL('KRMCCNO.after x-x',WORK,1,KOMX,KFREE,LFREE)
 C
 C       keep track of active states
         IX_AC = IX_AC + NXSTATES

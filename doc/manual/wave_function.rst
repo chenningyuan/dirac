@@ -66,6 +66,23 @@ hartree (a.u.) are included, this can be modified in the
 :ref:`**MOLTRA` section.
 
 
+keyword(RELADC)
+
+Activates the :ref:`RELADC` and
+calculates the single and double ionization spectra by the (A)lgebraic (D)iagrammatic
+(C)onstruction ADC. Also activates the :ref:`**MOLTRA`
+module to get 4-index
+transformed integrals.
+
+
+keyword(POLPRP)
+
+Activates the :ref:`**POLPRP` module for
+calculation of the excitation spectrum by the strict or extended second order
+(A)lgebraic (D)iagrammatic (C)onstruction ADC. Also activates the :ref:`**MOLTRA`
+module to get 4-index transformed integrals.
+
+
 keyword(DIRRCI)
 
 Activates the MOLFDIR CI module (and also the
@@ -88,6 +105,12 @@ transformed integrals).
 By default, molecular orbitals with orbital energy between -10 and +20
 hartree (a.u.) are included, this can be modified in the
 :ref:`**MOLTRA` section.
+
+
+keyword(EXACC)
+
+Activates the  :ref:`**EXACC` module, the new coupled cluster implementation
+based on the ExaTensor library.
 
 
 **Pre-SCF orbital manipulations**
@@ -142,15 +165,6 @@ Phase adjustment of coefficients DFCOEF: make the largest element of a
 given orbital real and positive.
 
 
-keyword(RELADC)
-
-Activates the :ref:`RELADC` and
-calculates the ionization spectrum by the (A)lgebraic (D)iagrammatic
-(C)onstruction ADC. Also activates the :ref:`**MOLTRA`
-module to get 4-index
-transformed integrals.
-
-
 keyword(KRCI)
 
 Activates the :ref:`*KRCI` module
@@ -162,3 +176,9 @@ Activates the :ref:`*KRMCSCF`
 module for the optimization of ground and excited states (in other than the ground state symmetry) 
 at the relativistic MCSCF level.
 
+keyword(LAPLCE)
+
+Activates the :ref:`*LAPLCE`
+module to compute weights for Laplace transformation of orbital
+energy denominators with the algorithm of Helmich-Paris.
+No subsequent calculations, only output of the Laplace points and weights.

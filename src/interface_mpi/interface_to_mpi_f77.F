@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -48,10 +48,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
@@ -81,10 +81,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
@@ -120,10 +120,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
@@ -155,10 +155,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_bcast(x, ndim_i4, my_MPI_INTEGER, root_proc_i4, 
      &               communicator_i4, ierr_i4)
 #else
@@ -189,10 +189,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_bcast(x, ndim_i4, MPI_REAL8, root_proc_i4,
      &               communicator_i4, ierr_i4)
 #else
@@ -225,11 +225,11 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       ndim2_i4        = ndim2
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_bcast(x, ndim_i4*ndim2_i4, MPI_REAL8, root_proc_i4,
      &               communicator_i4, ierr_i4)
 #else
@@ -263,11 +263,11 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       operation_i4    = operation
       receiver_i4     = receiver
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_reduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, 
      &                receiver_i4, communicator_i4, ierr_i4)
 #else
@@ -301,11 +301,11 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       operation_i4    = operation
       receiver_i4     = receiver
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_reduce(x, y, ndim_i4, MPI_REAL8, operation_i4, 
      &                receiver_i4, communicator_i4, ierr_i4)
 #else
@@ -337,10 +337,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       operation_i4    = operation
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_allreduce(x, y, ndim_i4, my_MPI_INTEGER, operation_i4, 
      &                communicator_i4, ierr_i4)
 #else
@@ -372,10 +372,10 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       operation_i4    = operation
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_allreduce(x, y, ndim_i4, MPI_REAL8, operation_i4, 
      &                   communicator_i4, ierr_i4)
 #else
@@ -409,11 +409,11 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim1_i4        = ndim1
       ndim2_i4        = ndim2
       root_proc_i4    = root_proc
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_scatter(x, ndim1_i4, MPI_REAL8, y, ndim2_i4, MPI_REAL8,
      &                 root_proc_i4, communicator_i4, ierr_i4)
 #else
@@ -447,11 +447,11 @@
       integer(kind=4)            :: communicator_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       receiver_i4     = receiver 
       message_id_i4   = message_id
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_send(x, ndim_i4, MPI_REAL8, receiver_i4, 
      &              message_id_i4, communicator_i4, ierr_i4)
 #else
@@ -484,11 +484,11 @@
       integer(kind=4)            :: ierr_i4
       integer(kind=4)            :: status_array_i4(MPI_STATUS_SIZE)
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       receiver_i4     = receiver 
       message_id_i4   = message_id
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_recv(x, ndim_i4, MPI_REAL8, receiver_i4, 
      &              message_id_i4, communicator_i4, 
      &              status_array_i4, ierr_i4)
@@ -527,11 +527,11 @@
       integer(kind=4)            :: request_i4
       integer(kind=4)            :: ierr_i4
 !-------------------------------------------------------------------------------
+      if (.not. MPI_INIT_called) return
       ndim_i4         = ndim
       receiver_i4     = receiver 
       message_id_i4   = message_id
       communicator_i4 = communicator
-      if (.not. MPI_INIT_called) return
       call mpi_issend(x, ndim_i4, my_MPI_INTEGER, receiver_i4, 
      &                message_id_i4, communicator_i4, request_i4, 
      &                ierr_i4)

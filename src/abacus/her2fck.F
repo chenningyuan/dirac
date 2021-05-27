@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,7 +33,7 @@ C
 changed ISYMDM, IFCTYP to ISYMDM(NDMAT), IFCTYP(NDMAT)
 implemented all six IFCTYPes (two was already implemented)
 improved efficiency of INTFCK by moving GINT outside and
- moving common factors to SKLFC1
+ moving common factors to SKLFCK_1
 halved no. of  operations for IFCTYP=2 in INTFCK
 #endif
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -50,7 +50,7 @@ C  Major surgery Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
 C
-C  All IFCTYP's added and partly optimized Nov. 1994 by
+C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
@@ -68,36 +68,24 @@ C*****************************************************************************
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(*),WORK(LWORK)
 #include "twocom.h"
-#include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
-#include "ibtfun.h"
 C
       CALL QENTER('INTFCK')
 #include "memint.h"
 C
-C     Scanning for zero integrals; this is done twice, but
-C     saves quite a bit of memory
-C
-      NBUF = 0
       IF(DOSCRN) THEN
         FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
       ELSE
         FCKTOL = 1.00D-15
       ENDIF
-      DO I = 1,NCCINT
-        IF(ABS(AOINT(I,1)).GT.FCKTOL) NBUF = NBUF + 1
-      ENDDO
-      IF(NBUF.EQ.0) GOTO 999
-      CALL MEMGET('INTE',KIND ,4*NBUF  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IND',KIND ,4*NCCINT,WORK,KFREE,LFREE)
 C
       CALL INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
-     &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,WORK(KIND))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
- 999  CONTINUE
       CALL QEXIT('INTFCK')
       RETURN
 C
@@ -106,7 +94,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck intfc1 */
       SUBROUTINE INTFC1(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
-     &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
+     &                  IPRINT,NINDAB,NINDCD,SUSCEP,IFCTYP,
      &                  DNSBUF,DINTSKP,HFXFAC,IND)
 C*****************************************************************************
 C
@@ -116,7 +104,7 @@ C  Revised Aug 26 1996 by T.Saue
 C
 C  Written by Trygve Helgaker and Henrik Koch  93-93 ??
 C
-C  All IFCTYP's added and partly optimized Nov. 1994 by
+C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
@@ -129,22 +117,18 @@ C*****************************************************************************
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
      &          DM1=-1.D0, DM3=-3.D0)
       INTEGER A,B,C,D
-      LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
+      LOGICAL SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), FMAT(NBASIS,NBASIS,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(4,*),DINTSKP(2,4)
 #include "twocom.h"
-#include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
-#include "ibtfun.h"
 C
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTFC1',-1)
-         WRITE (LUPRI, '(A,2L5)') ' NODV, SUSCEP',
-     *                              NODV, SUSCEP
+         WRITE (LUPRI, '(A,2L5)') ' SUSCEP', SUSCEP
          WRITE (LUPRI, '(A,4I5)') ' NORB ', NORBA,NORBB,NORBC,NORBD
          WRITE (LUPRI, '(A,2L5)') ' DIAGAB/CD ', DIAGAB,DIAGCD
          WRITE (LUPRI, '(A,3L5)') ' SHAEQB, SHCEQD, SHABAB ',
@@ -178,25 +162,32 @@ C
       NBUF  = 0
       IOFF  = 0
       AOMAX = D0
-      IF(SUSCEP) THEN
         IF(NOTEST) THEN
           DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            DO ICOMPB = 1,KHKTBB
+            DO ICOMPB = 1,KHKTB
               DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                DO ICOMPD = 1,KHKTDD
+                DO ICOMPD = 1,KHKTD
                   DO IORBAB = 1,NORBAB
-                    IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
-                    IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    IF (SUSCEP) THEN
+                      IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
+                      IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    ELSE
+                      IORBA = NINDAB(IORBAB,1)
+                      IORBB = NINDAB(IORBAB,2)
+                    END IF
                     A = ICORBA(IORBA) + ICOMPA
                     B = ICORBB(IORBB) + ICOMPB
                     DO IORBCD = 1, NORBCD
                       AINT  = AOINT(IOFF+IORBCD)
                       IF(ABS(AINT).GT.FCKTOL) THEN
                         NBUF  = NBUF + 1
-                        IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
-                        IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        IF (SUSCEP) THEN
+                          IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
+                          IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        ELSE
+                          IORBC = NINDCD(IORBCD,1)
+                          IORBD = NINDCD(IORBCD,2)
+                        END IF
                         AOMAX       = MAX(AOMAX,ABS(AINT))
                         AOINT(NBUF) = AINT
                         IND(1,NBUF) = A
@@ -225,12 +216,17 @@ C
                 IF (DIAGCD) KHKTDD = ICOMPC
                 DO ICOMPD = 1,KHKTDD
                   FCABCD = FACAB
-                  IF(DIAGCD.AND.ICOMPC.NE.ICOMPD)
+                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
      &              FCABCD = FCABCD+FCABCD
                   DO IORBAB = 1,NORBAB
+                    IF (SUSCEP) THEN
+                      IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
+                      IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
+                    ELSE
+                      IORBA = NINDAB(IORBAB,1)
+                      IORBB = NINDAB(IORBAB,2)
+                    END IF
                     FAB = FCABCD
-                    IORBA = 1 + NINDAB(IORBAB,1)/KHKTA
-                    IORBB = 1 + NINDAB(IORBAB,2)/KHKTB
                     IF (TCONAB.AND.IORBA.NE.IORBB)
      &                FAB = FAB+FAB
                     A = ICORBA(IORBA) + ICOMPA
@@ -239,8 +235,13 @@ C
                       AINT  = AOINT(IOFF+IORBCD)
                       IF(ABS(AINT).GT.FCKTOL) THEN
                         NBUF  = NBUF + 1
-                        IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
-                        IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        IF (SUSCEP) THEN
+                          IORBC = 1 + NINDCD(IORBCD,1)/KHKTC
+                          IORBD = 1 + NINDCD(IORBCD,2)/KHKTD
+                        ELSE
+                          IORBC = NINDCD(IORBCD,1)
+                          IORBD = NINDCD(IORBCD,2)
+                        END IF
                         FABCD = FAB
                         IF (TCONCD.AND.IORBC.NE.IORBD)
      &                     FABCD = FABCD+FABCD
@@ -259,88 +260,6 @@ C
             ENDDO
           ENDDO
         ENDIF
-      ELSE
-        IF(NOTEST) THEN
-          DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            DO ICOMPB = 1,KHKTBB
-              DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                DO ICOMPD = 1,KHKTDD
-                  DO IORBAB = 1,NORBAB
-                    IORBA = NINDAB(IORBAB,1)
-                    IORBB = NINDAB(IORBAB,2)
-                    A = ICORBA(IORBA) + ICOMPA
-                    B = ICORBB(IORBB) + ICOMPB
-                    DO IORBCD = 1, NORBCD
-                      AINT  = AOINT(IOFF+IORBCD)
-                      IF(ABS(AINT).GT.FCKTOL) THEN
-                        NBUF  = NBUF + 1
-                        IORBC = NINDCD(IORBCD,1)
-                        IORBD = NINDCD(IORBCD,2)
-                        AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = AINT
-                        IND(1,NBUF) = A
-                        IND(2,NBUF) = B
-                        IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
-                        IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-                      ENDIF
-                    ENDDO
-                    IOFF = IOFF + NORBCD
-                  ENDDO
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-          IF(SFAC.NE.D1) CALL DSCAL(NBUF,SFAC,AOINT,1)
-        ELSE
-          DO ICOMPA = 1,KHKTA
-                        KHKTBB = KHKTB
-            IF (DIAGAB) KHKTBB = ICOMPA
-            DO ICOMPB = 1,KHKTBB
-              FACAB = SFAC
-              IF(DIAGAB.AND.ICOMPA.NE.ICOMPB)
-     &          FACAB = FACAB+FACAB
-              DO ICOMPC = 1,KHKTC
-                            KHKTDD = KHKTD
-                IF (DIAGCD) KHKTDD = ICOMPC
-                DO ICOMPD = 1,KHKTDD
-                  FCABCD = FACAB
-                  IF (DIAGCD.AND.ICOMPC.NE.ICOMPD)
-     &              FCABCD = FCABCD+FCABCD
-                  DO IORBAB = 1,NORBAB
-                    IORBA = NINDAB(IORBAB,1)
-                    IORBB = NINDAB(IORBAB,2)
-                    FAB   = FCABCD
-                    IF(TCONAB.AND.IORBA.NE.IORBB)
-     &                FAB = FAB+FAB
-                    A = ICORBA(IORBA) + ICOMPA
-                    B = ICORBB(IORBB) + ICOMPB
-                    DO IORBCD = 1, NORBCD
-                      AINT  = AOINT(IOFF+IORBCD)
-                      IF(ABS(AINT).GT.FCKTOL) THEN
-                        NBUF  = NBUF + 1
-                        IORBC = NINDCD(IORBCD,1)
-                        IORBD = NINDCD(IORBCD,2)
-                        FABCD = FAB
-                        IF (TCONCD.AND.IORBC.NE.IORBD)
-     &                    FABCD = FABCD+FABCD
-                        AOMAX       = MAX(AOMAX,ABS(AINT))
-                        AOINT(NBUF) = FABCD*AINT
-                        IND(1,NBUF) = A
-                        IND(2,NBUF) = B
-                        IND(3,NBUF) = ICORBC(IORBC) + ICOMPC
-                        IND(4,NBUF) = ICORBD(IORBD) + ICOMPD
-                      ENDIF
-                    ENDDO
-                    IOFF = IOFF + NORBCD
-                  ENDDO
-                ENDDO
-              ENDDO
-            ENDDO
-          ENDDO
-        ENDIF
-      ENDIF
 C
 C     Statistics
 C
@@ -349,7 +268,7 @@ C
       DINTSKP(2,2) = DINTSKP(2,2) + NDEL
       DINTSKP(1,3) = DINTSKP(1,3) + NCM*NBUF
       DINTSKP(1,4) = DINTSKP(1,4) + NEM*NBUF
-      TIND = TIND + SECOND()
+      TIND = SECOND() - TIND
 C
 C     **********************************
 C     ***** Print section  *************
@@ -412,6 +331,10 @@ C..........Coulomb interaction
            IE = IY - IC
 C          ... no direct term for antisymmetric density matrix
            IF (IX.EQ.2) IC = 0
+C
+C          Exchange may be switched off in DFT calculations
+C
+           IF (HFXFAC.EQ.D0) IE = 0
         ELSE
 C..........Gaunt interaction
            IF (IY.LE.5) THEN
@@ -426,11 +349,11 @@ C..........Gaunt interaction
            ENDIF
 C          ... no direct term for symmetric density matrix
            IF (IX.EQ.1) IC = 0
+C
+C          Exchange may be switched off in DFT calculations
+C
+           IF (LSCALE_GAUNT .AND. HFXFAC.EQ.D0) IE = 0
         ENDIF
-C
-C       Exchange may be switched off in DFT calculations
-C
-        IF (HFXFAC.EQ.D0) IE = 0
 C       Screening on direct contributions
         IF(DOC.AND.IC.EQ.1.AND.FCM.LT.SCRTHR) THEN
           IC = 0
@@ -472,7 +395,6 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -498,7 +420,6 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -517,7 +438,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -545,7 +465,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -577,7 +496,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -601,7 +519,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INT = 1,NBUF
               A = IND(1,INT)
               B = IND(2,INT)
@@ -635,12 +552,12 @@ C...............Direct contributions
  400  CONTINUE
       TFCK = SECOND() - TFCK
 C
-      IF(IPRINT.GE.3) THEN
+      IF(IPRINT.GE.4) THEN
         WRITE(LUPRI,'(A)')       '* INTFC1 - statistics:'
         WRITE(LUPRI,'(A,I10)')   '*   Integrals in     :',NCCINT
         WRITE(LUPRI,'(A,I10)')   '*   Integrals out    :',NBUF
-        WRITE(LUPRI,'(A,F15.6)') '*   Indices          :',TIND
-        WRITE(LUPRI,'(A,F15.6)') '*   Fock matrix      :',TFCK
+        WRITE(LUPRI,'(A,F15.6)') '*   Time indices     :',TIND
+        WRITE(LUPRI,'(A,F15.6)') '*   Time Fock matrix :',TFCK
         CALL FLSHFO(LUPRI)
       ENDIF
       RETURN
@@ -663,7 +580,6 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -673,36 +589,32 @@ C
       DO 100 IREPA = 0, MAXREP
          NORBA = NAOS(IREPA+1)
          DO 200 I = ISTRA,ISTRA + NORBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-CTROND            IA     = IBTSHR(IPIND(I),8)
-CTROND            NA     = IBTSHR(IPIND(I),4) - IA*16
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I), -8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
-               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               FACA = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                   NORBB = NAOS(IREPB+1)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IREPDM) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IREPDM) THEN
                   DO 500 J = ISTRB,ISTRB + NORBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
-CTROND                     IB     = IBTSHR(IPIND(J),8)
-CTROND                     NB     = IBTSHR(IPIND(J),4) - IB*16
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J), -8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         DAO(INDA,INDB) = DAO(INDA,INDB)
      &                                 + FACA*FACB*DSO(I,J)
                      END IF
@@ -718,9 +630,9 @@ CTROND                     NB     = IBTSHR(IPIND(J),4) - IB*16
   100 CONTINUE
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Total density matrix in SO basis',-1)
-         CALL OUTPUT(DSO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DSO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
          CALL HEADER('Total density matrix in AO basis',-1)
-         CALL OUTPUT(DAO,1,NBAST,1,NBAST,NBAST,NBAST,1,LUPRI)
+         CALL OUTPUT(DAO,1,NBAST,1,NBAST,NBAST,NBAST,-1,LUPRI)
       END IF
       RETURN
       END
@@ -740,13 +652,12 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
-      LOGICAL DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
-      DIMENSION FMAT(NBASIS*NBASIS,*), WORK(LWORK), ISYMDM(NDMAT),
-     &          IFCTYP(NDMAT)
+      LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
+      REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
+      INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-CTROND#include "inforb.h"
 #include "shells.h"
 #include "symmet.h"
 #include "nuctap.h"
@@ -761,15 +672,19 @@ C     ============================
 C
       IF (DIRFCK) THEN
          NMAT = NDMAT
-         CALL MEMGET('REAL',KSKLTN,NMAT*N2BASX      ,WORK,KFREE,LFREE)
-         CALL MEMGET('REAL',KFAC  ,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','SKLTON',KSKLTN,NMAT*N2BASX,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('REAL','FAC',   KFAC  ,NBASIS*(MAXREP+1),
+     &      WORK,KFREE,LFREE)
          NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
-         CALL MEMGET('REAL',KINDEX,NINDEX           ,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KPOINT,NBASIS*(MAXREP+1),WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IINDEX',KINDEX,NINDEX,
+     &      WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IPOINT',KPOINT,NBASIS*(MAXREP+1),
+     &      WORK,KFREE,LFREE)
          IXYZ = 0
-         CALL SKLFC1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
-     &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
-     &               NMAT,ISYMDM,IFCTYP,IPRINT)
+         CALL SKLFCK_1(FMAT,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
+     &                 WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
+     &                 NMAT,ISYMDM,IFCTYP,IPRINT)
       END IF
 C
 C     Derivative Fock matrices
@@ -817,7 +732,7 @@ C     We ought also to reorder IFCTYP and ISYMDM, but as
 C     all values are 1 and 0, resp., never mind. /941221-hjaaj
                DO 400 IXYZ = 1, 3
                   IADR = IOFF + NMAT*(IXYZ - 1) + 1
-                  CALL SKLFC1(FMAT(1,IADR),WORK(KSKLTN),WORK(KFAC),
+                  CALL SKLFCK_1(FMAT(1,IADR),WORK(KSKLTN),WORK(KFAC),
      &                        WORK(KINDEX),WORK(KPOINT),WORK(KNFAC),
      &                        WORK(KNINDX),WORK(KNPINT),IATOM,IXYZ,NMAT,
      &                        ISYMDM(IADR),IFCTYP(IADR),IPRINT)
@@ -882,14 +797,14 @@ C
       CALL QEXIT('SKLFCK')
       RETURN
       END
-C  /* Deck sklfc1 */
-      SUBROUTINE SKLFC1(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NFACTR,NINDEX,
-     &                  NPOINT,IATOM,IXYZ,NMAT,ISYMDM,IFCTYP,IPRINT)
+C  /* Deck SKLFCK_1 */
+      SUBROUTINE SKLFCK_1(FMAT,SKLTON,FACTOR,INDEX,IPOINT,NFACTR,NINDEX,
+     &                    NPOINT,IATOM,IXYZ,NMAT,ISYMDM,IFCTYP,IPRINT)
 C*****************************************************************************
 C
 C Trygve Helgaker and Henrik Koch 93-94 ??
 C
-C Implemented all IFCTYP's Oct-Nov 94 Hans Joergen Aa. Jensen
+C Implemented all IFCTYPs Oct-Nov 94 Hans Joergen Aa. Jensen
 C Revised Oct 11 1996 by T.Saue:
 C   a) changed definition of IFCTYP
 C   b) symmetrization/anti-symmetrization is taken out
@@ -914,17 +829,16 @@ C*****************************************************************************
 #include "pincom.h"
 #include "shells.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER('Subroutine SKLFC1',-1)
-         CALL HEADER("Input skeleton Fock matrices in SKLFC1",1)
+         CALL HEADER('Subroutine SKLFCK_1',-1)
+         CALL HEADER("Input skeleton Fock matrices in SKLFCK_1",1)
          DO 10 IMAT = 1, NMAT
             WRITE (LUPRI,*) 'Input skeleton Fock matrix no.',IMAT,
      &         ' out of',NMAT
             CALL OUTPUT(FMAT(1,1,IMAT),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+     &                  NBASIS,NBASIS,-1,LUPRI)
    10    CONTINUE
       END IF
 C
@@ -936,7 +850,7 @@ C         (see comments in INTFCK)
 C     /941019-hjaaj
 C
       IF (IPRINT .GT. 5) THEN
-         CALL HEADER("Final scaled skeleton Fock matrices in SKLFC1",1)
+        CALL HEADER("Final scaled skeleton Fock matrices in SKLFCK_1",1)
       END IF
       DO 100 IMAT = 1, NMAT
          IY = MOD(IFCTYP(IMAT),10)
@@ -948,7 +862,7 @@ C
             WRITE (LUPRI,*) 'Skeleton Fock matrix no.',IMAT,
      &         ' out of',NMAT
             CALL OUTPUT(FMAT(1,1,IMAT),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+     &                  NBASIS,NBASIS,-1,LUPRI)
          END IF
   100 CONTINUE
 C
@@ -962,13 +876,13 @@ C
          IORB = 0
          DO 200 ISHELL = 1, KMAX
             DO 210 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                DO 220 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   INDEX(ISHELL,ISYMOP,ICOMP) = IORB
   220          CONTINUE
             ELSE
-               ISYMF = IBTXOR(ISYMOP,IBTAND(ISYMOP,ISTBAO(ISHELL)))
+               ISYMF = IEOR(ISYMOP,IAND(ISYMOP,ISTBAO(ISHELL)))
                DO 230 ICOMP  = 1, KHKT(ISHELL)
                   INDEX(ISHELL,ISYMOP,ICOMP) = INDEX(ISHELL,ISYMF,ICOMP)
   230          CONTINUE
@@ -980,14 +894,14 @@ C
          DO 300 ISHELL = 1, NLRGSH
             NHKTA = NHKT(ISHELL)
             DO 310 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                DO 320 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   DO 330 ISYM = 0, MAXREP
-                     ISYMPR = IBTXOR(ISYMOP,ISYM)
+                     ISYMPR = IEOR(ISYMOP,ISYM)
                      IPOINT(IORB,ISYM) = INDEX(ISHELL,ISYMPR,ICOMP)
                      FACTOR(IORB,ISYM) =
-     &                        PT(IBTAND(ISYM,ISYMAO(NHKTA,ICOMP)))
+     &                        PT(IAND(ISYM,ISYMAO(NHKTA,ICOMP)))
   330             CONTINUE
   320          CONTINUE
             END IF
@@ -1002,14 +916,14 @@ C
          DO 340 ISHELL = NLRGSH+1,KMAX
             NHKTA = NHKT(ISHELL)
             DO 350 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                DO 360 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   DO 370 ISYM = 0, MAXREP
-                     ISYMPR = IBTXOR(ISYMOP,ISYM)
+                     ISYMPR = IEOR(ISYMOP,ISYM)
                      IPOINT(IORB,ISYM) = INDEX(ISHELL,ISYMPR,ICOMP)
                      FACTOR(IORB,ISYM) = IPAR(ISYM)*
-     &                        PT(IBTAND(ISYM,ISYMAO(NHKTA,ICOMP)))
+     &                        PT(IAND(ISYM,ISYMAO(NHKTA,ICOMP)))
   370             CONTINUE
   360          CONTINUE
             END IF
@@ -1022,23 +936,23 @@ C
          IF (IXYZ .GT. 0) THEN
             IMAT = 0
             DO 215 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                IMAT = IMAT + 1
                NINDEX(ISYMOP) = IMAT
             ELSE
-               ISYMF = IBTXOR(ISYMOP,IBTAND(ISYMOP,ISTBNU(IATOM)))
+               ISYMF = IEOR(ISYMOP,IAND(ISYMOP,ISTBNU(IATOM)))
                NINDEX(ISYMOP) = NINDEX(ISYMF)
             END IF
   215       CONTINUE
 C
             IMAT = 0
             DO 315 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                IMAT = IMAT + 1
                DO 335 ISYM = 0, MAXREP
-                  ISYMPR = IBTXOR(ISYMOP,ISYM)
+                  ISYMPR = IEOR(ISYMOP,ISYM)
                   NPOINT(IMAT,ISYM) = NINDEX(ISYMPR)
-                  NFACTR(IMAT,ISYM) = PT(IBTAND(ISYM,ISYMAX(IXYZ,1)))
+                  NFACTR(IMAT,ISYM) = PT(IAND(ISYM,ISYMAX(IXYZ,1)))
   335          CONTINUE
             END IF
   315       CONTINUE
@@ -1047,10 +961,10 @@ C
 C        Construct full matrix from skeleton
 C
          CALL DCOPY(NMAT*(NBASIS**2),FMAT,1,SKLTON,1)
-         IF (IXYZ. EQ. 0) THEN
+         IF (IXYZ .EQ. 0) THEN
             DO 400 ISYMOP = 1, MAXREP
                DO 435 N = 1, NMAT
-                  FP = PT(IBTAND(ISYMOP,ISYMDM(N)))
+                  FP = PT(IAND(ISYMOP,ISYMDM(N)))
                   DO 420 B = 1, NBASIS
                      BP = IPOINT(B,ISYMOP)
                      FBFP = FACTOR(B,ISYMOP)*FP
@@ -1085,12 +999,12 @@ C
          FAC = D1/dble(MAXREP + 1)
          CALL DSCAL(NMAT*(NBASIS**2),FAC,FMAT,1)
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("AO Fock matrices in SKLFC1",1)
+            CALL HEADER("AO Fock matrices in SKLFCK_1",1)
             DO 40 N = 1, NMAT
-               WRITE (LUPRI,*) 'AO Fock matrix no.',IMAT,
+               WRITE (LUPRI,*) 'AO Fock matrix no.',N,
      &         ' out of',NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,-1,LUPRI)
    40       CONTINUE
          END IF
 C
@@ -1110,38 +1024,34 @@ C
             DO 500 IREPA = 0, MAXREP
                NORBA = NAOS(IREPA+1)
                DO 510 I = ISTRA,ISTRA + NORBA - 1
-                  IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-                  NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-CTROND                  IA     = IBTSHR(IPIND(I),8)
-CTROND                  NA     = IBTSHR(IPIND(I),4) - IA*16
+                  IA   = IAND(ISHFT(IPIND(I),-16),65535)
+                  NA   = IAND(ISHFT(IPIND(I), -8),  255)
                   NHKTA  = NHKT(IA)
                   KHKTA  = KHKT(IA)
                   MULA   = ISTBAO(IA)
                   INDA   = KSTRT(IA) + NA - KHKTA
                   DO 520 ISYMA = 0, MAXOPR
-                  IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+                  IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                      INDA = INDA + KHKTA
-                     FACA = PT(IBTAND(ISYMA,
-     &                                IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+                     FACA = PT(IAND(ISYMA,
+     &                                IEOR(IREPA,ISYMAO(NHKTA,NA))))
                      DO 550 N = 1, NMAT
                         ISTRB = 1
                         DO 525 IREPB = 0, MAXREP
                            NORBB = NAOS(IREPB+1)
-                           IF (IBTXOR(IREPA,IREPB) .EQ. ISYMDM(N)) THEN
+                           IF (IEOR(IREPA,IREPB) .EQ. ISYMDM(N)) THEN
                            DO 530 J = ISTRB,ISTRB + NORBB - 1
-                              IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                              NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
-CTROND                              IB     = IBTSHR(IPIND(J),8)
-CTROND                              NB     = IBTSHR(IPIND(J),4) - IB*16
+                              IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                              NB   = IAND(ISHFT(IPIND(J), -8),  255)
                               NHKTB  = NHKT(IB)
                               KHKTB  = KHKT(IB)
                               MULB   = ISTBAO(IB)
                               INDB   = KSTRT(IB) + NB - KHKTB
                               DO 540 ISYMB = 0, MAXOPR
-                              IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                              IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                                  INDB = INDB + KHKTB
-                                 FACB = PT(IBTAND(ISYMB,
-     &                                  IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                                 FACB = PT(IAND(ISYMB,
+     &                                  IEOR(IREPB,ISYMAO(NHKTB,NB))))
                                  FMAT(I,J,N) = FMAT(I,J,N)
      &                                 + FACA*FACB*SKLTON(INDA,INDB,N)
                               END IF
@@ -1162,42 +1072,38 @@ CTROND                              NB     = IBTSHR(IPIND(J),4) - IB*16
             DO 600 IREPA = 0, MAXREP
                NORBA = NAOS(IREPA+1)
                DO 610 I = ISTRA,ISTRA + NORBA - 1
-                  IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-                  NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-CTROND                  IA    = IBTSHR(IPIND(I),8)
-CTROND                  NA    = IBTSHR(IPIND(I),4) - IA*16
+                  IA   = IAND(ISHFT(IPIND(I),-16),65535)
+                  NA   = IAND(ISHFT(IPIND(I), -8),  255)
                   NHKTA = NHKT(IA)
                   KHKTA = KHKT(IA)
                   MULA  = ISTBAO(IA)
                   INDA  = KSTRT(IA) + NA - KHKTA
-                  IVARA = IBTXOR(IREPA,ISYMAO(NHKTA,NA))
+                  IVARA = IEOR(IREPA,ISYMAO(NHKTA,NA))
                   DO 620 ISYMA = 0, MAXOPR
-                  IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
-                     FA    = PT(IBTAND(ISYMA,IVARA))
+                  IF (IAND(ISYMA,MULA) .EQ. 0) THEN
+                     FA    = PT(IAND(ISYMA,IVARA))
                      INDA  = INDA + KHKTA
                      ISTRB = 1
                      DO 630 IREPB = 0, MAXREP
-                        IVARN=IBTXOR(IBTXOR(IREPA,IREPB),ISYMAX(IXYZ,1))
+                        IVARN=IEOR(IEOR(IREPA,IREPB),ISYMAX(IXYZ,1))
                         NORBB = NAOS(IREPB+1)
-                        IF (IBTAND(MULN,IVARN).EQ.0) THEN
+                        IF (IAND(MULN,IVARN).EQ.0) THEN
                            DO 640 J = ISTRB,ISTRB + NORBB - 1
-                              IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                              NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
-CTROND                              IB    = IBTSHR(IPIND(J),8)
-CTROND                              NB    = IBTSHR(IPIND(J),4) - IB*16
+                              IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                              NB   = IAND(ISHFT(IPIND(J), -8),  255)
                               NHKTB = NHKT(IB)
                               KHKTB = KHKT(IB)
                               MULB  = ISTBAO(IB)
                               INDB  = KSTRT(IB) + NB - KHKTB
-                              IVARB = IBTXOR(IREPB,ISYMAO(NHKTB,NB))
+                              IVARB = IEOR(IREPB,ISYMAO(NHKTB,NB))
                               DO 650 ISYMB = 0, MAXOPR
-                              IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                              IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                                  INDB = INDB + KHKTB
-                                 FAB = FA*PT(IBTAND(ISYMB,IVARB))
+                                 FAB = FA*PT(IAND(ISYMB,IVARB))
                                  DO 660 ISYMN = 0, MAXOPR
-                                 IF (IBTAND(ISYMN,MULN) .EQ. 0) THEN
+                                 IF (IAND(ISYMN,MULN) .EQ. 0) THEN
                                     INDN = NINDEX(ISYMN)
-                                    FAC  = FAB*PT(IBTAND(ISYMN,IVARN))
+                                    FAC  = FAB*PT(IAND(ISYMN,IVARN))
                                     FMAT(I,J,1) = FMAT(I,J,1)
      &                                      + FAC*SKLTON(INDA,INDB,INDN)
                                  END IF
@@ -1216,12 +1122,12 @@ CTROND                              NB    = IBTSHR(IPIND(J),4) - IB*16
          END IF
 #endif
          IF (IPRINT .GT. 5) THEN
-            CALL HEADER("SO Fock matrix in SKLFC1",1)
+            CALL HEADER("SO Fock matrices in SKLFCK_1",1)
             DO 700 N = 1, NMAT
-               WRITE (LUPRI,*) 'SO Fock matrix no.',IMAT,
+               WRITE (LUPRI,*) 'SO Fock matrix no.',N,
      &         ' out of',NMAT
                CALL OUTPUT(FMAT(1,1,N),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &                     1,LUPRI)
+     &                     -1,LUPRI)
   700       CONTINUE
          END IF
       END IF
@@ -1247,17 +1153,17 @@ C
 #endif
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton molecular gradient",1)
-         CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,1,LUPRI)
+         CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,-1,LUPRI)
       END IF
       IF (MAXDER .EQ. 2 .AND. IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton molecular Hessian",1)
-         CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,1,LUPRI)
+         CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,
+     &               -1,LUPRI)
       END IF
 C
 #ifndef PRG_DIRAC
@@ -1270,7 +1176,7 @@ C
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("Skeleton molecular Hessian symmetrized",1)
             CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,
-     &                  1,LUPRI)
+     &                  -1,LUPRI)
          END IF
       END IF
 #endif
@@ -1279,13 +1185,13 @@ C
          ICOOR = 0
          DO 100 IATOM = 1, NUCIND
             DO 110 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                DO 120 ICART = 1, 3
                   ICOOR = ICOOR + 1
                   INDEX(IATOM,ICART,ISYMOP) = ICOOR
   120          CONTINUE
             ELSE
-               ISYMF = IBTXOR(ISYMOP,IBTAND(ISYMOP,ISTBNU(IATOM)))
+               ISYMF = IEOR(ISYMOP,IAND(ISYMOP,ISTBNU(IATOM)))
                DO 130 ICART = 1, 3
                   INDEX(IATOM,ICART,ISYMOP) = INDEX(IATOM,ICART,ISYMF)
   130          CONTINUE
@@ -1296,13 +1202,13 @@ C
          ICOOR = 0
          DO 200 IATOM = 1, NUCIND
             DO 210 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                DO 220 ICART = 1, 3
                   ICOOR = ICOOR + 1
                   DO 230 ISYM = 0, MAXREP
-                     ISYMPR = IBTXOR(ISYMOP,ISYM)
+                     ISYMPR = IEOR(ISYMOP,ISYM)
                      IPOINT(ICOOR,ISYM)=INDEX(IATOM,ICART,ISYMPR)
-                     FACTOR(ICOOR,ISYM)=PT(IBTAND(ISYM,ISYMAX(ICART,1)))
+                     FACTOR(ICOOR,ISYM)=PT(IAND(ISYM,ISYMAX(ICART,1)))
   230             CONTINUE
   220          CONTINUE
             END IF
@@ -1324,7 +1230,7 @@ C
 C
 C        Construct full Hessian from skeleton
 C
-         IF (MAXDER. EQ. 2) THEN
+         IF (MAXDER .EQ. 2) THEN
             CALL DCOPY(MXCOOR**2,HESSEE,1,SKLTON,1)
             DO 400 ISYMOP = 1, MAXREP
                DO 410 A = 1, 3*NUCDEP
@@ -1342,13 +1248,13 @@ C
 C
          IF (IPRINT .GT. 5) THEN
            CALL HEADER("Full molecular gradient (non-symmetry basis)",1)
-           CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,1,LUPRI)
+           CALL OUTPUT(GRADEE,1,1,1,3*NUCDEP,1,MXCOOR,-1,LUPRI)
          END IF
 #ifndef PRG_DIRAC
          IF (MAXDER .EQ. 2 .AND. IPRINT .GT. 5) THEN
            CALL HEADER("Full molecular Hessian (non-symmetry basis)",1)
            CALL OUTPUT(HESSEE,1,3*NUCDEP,1,3*NUCDEP,MXCOOR,MXCOOR,
-     &                 1,LUPRI)
+     &                 -1,LUPRI)
          END IF
 #endif
 C
@@ -1360,12 +1266,12 @@ C
          ICOOR = 0
          DO 500 IATOM = 1, NUCIND
          DO 500 ICART = 1, 3
-            IF (IBTAND(ISTBNU(IATOM),ISYMAX(ICART,1)).EQ.0) THEN
+            IF (IAND(ISTBNU(IATOM),ISYMAX(ICART,1)).EQ.0) THEN
                ICOOR = ICOOR + 1
                GRD = D0
                DO 510 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISTBNU(IATOM),ISYMOP).EQ.0) THEN
-                  FAC = PT(IBTAND(ISYMOP,ISYMAX(ICART,1)))
+               IF (IAND(ISTBNU(IATOM),ISYMOP).EQ.0) THEN
+                  FAC = PT(IAND(ISYMOP,ISYMAX(ICART,1)))
                   GRD = GRD + FAC*SKLTON(INDEX(IATOM,ICART,ISYMOP),1)
                END IF
   510          CONTINUE
@@ -1381,24 +1287,24 @@ C
             DO 600 IREPA  = 0, MAXREP
             DO 600 IATOMA = 1, NUCIND
             DO 600 ICARTA = 1, 3
-               IVARA = IBTXOR(IREPA,ISYMAX(ICARTA,1))
-               IF (IBTAND(ISTBNU(IATOMA),IVARA).EQ.0) THEN
+               IVARA = IEOR(IREPA,ISYMAX(ICARTA,1))
+               IF (IAND(ISTBNU(IATOMA),IVARA).EQ.0) THEN
                   A = A + 1
                   B = 0
                   DO 700 IREPB  = 0, MAXREP
                   DO 700 IATOMB = 1, NUCIND
                   DO 700 ICARTB = 1, 3
-                     IVARB = IBTXOR(IREPB,ISYMAX(ICARTB,1))
-                     IF (IBTAND(ISTBNU(IATOMB),IVARB).EQ.0) THEN
+                     IVARB = IEOR(IREPB,ISYMAX(ICARTB,1))
+                     IF (IAND(ISTBNU(IATOMB),IVARB).EQ.0) THEN
                         B = B + 1
                         HES = D0
                         DO 800 ISYMA = 0, MAXOPR
-                        IF (IBTAND(ISTBNU(IATOMA),ISYMA).EQ.0) THEN
-                           FA = PT(IBTAND(IVARA,ISYMA))
+                        IF (IAND(ISTBNU(IATOMA),ISYMA).EQ.0) THEN
+                           FA = PT(IAND(IVARA,ISYMA))
                            AP = INDEX(IATOMA,ICARTA,ISYMA)
                            DO 810 ISYMB = 0, MAXOPR
-                           IF (IBTAND(ISTBNU(IATOMB),ISYMB).EQ.0) THEN
-                              FB = PT(IBTAND(IVARB,ISYMB))
+                           IF (IAND(ISTBNU(IATOMB),ISYMB).EQ.0) THEN
+                              FB = PT(IAND(IVARB,ISYMB))
                               BP = INDEX(IATOMB,ICARTB,ISYMB)
                               HES = HES + FA*FB*SKLTON(AP,BP)
                            END IF
@@ -1442,15 +1348,15 @@ C
 #include "pincom.h"
 #include "shells.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Input skeleton Fock matrices in SKLOND",1)
          DO 100 X = 1, 3
+            WRITE(LUPRI,*) 'Input skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                NBASIS,NBASIS,1,LUPRI)
+     &                  NBASIS,NBASIS,-1,LUPRI)
   100    CONTINUE
       END IF
 C
@@ -1468,8 +1374,9 @@ C
       IF (IPRINT .GT. 5) THEN
          CALL HEADER("Symmetric skeleton Fock matrix in SKLOND",1)
          DO 300 X = 1, 3
+            WRITE(LUPRI,*) 'Symmetric skeleton Fock matrix no.',X,NFMAT
             CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,NBASIS,NBASIS,
-     &                              1,LUPRI)
+     &                  -1,LUPRI)
   300    CONTINUE
       END IF
 C
@@ -1483,13 +1390,13 @@ C
          IORB = 0
          DO 400 ISHELL = 1, KMAX
             DO 410 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                DO 420 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   INDEX(ISHELL,ISYMOP,ICOMP) = IORB
   420          CONTINUE
             ELSE
-               ISYMF = IBTXOR(ISYMOP,IBTAND(ISYMOP,ISTBAO(ISHELL)))
+               ISYMF = IEOR(ISYMOP,IAND(ISYMOP,ISTBAO(ISHELL)))
                DO 430 ICOMP  = 1, KHKT(ISHELL)
                   INDEX(ISHELL,ISYMOP,ICOMP) = INDEX(ISHELL,ISYMF,ICOMP)
   430          CONTINUE
@@ -1501,14 +1408,14 @@ C
          DO 500 ISHELL = 1, KMAX
             NHKTA = NHKT(ISHELL)
             DO 510 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                DO 520 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   DO 530 ISYM = 0, MAXREP
-                     ISYMPR = IBTXOR(ISYMOP,ISYM)
+                     ISYMPR = IEOR(ISYMOP,ISYM)
                      IPOINT(IORB,ISYM) = INDEX(ISHELL,ISYMPR,ICOMP)
                      FACTOR(IORB,ISYM) =
-     &                        PT(IBTAND(ISYM,ISYMAO(NHKTA,ICOMP)))
+     &                        PT(IAND(ISYM,ISYMAO(NHKTA,ICOMP)))
   530             CONTINUE
   520          CONTINUE
             END IF
@@ -1520,7 +1427,7 @@ C
          CALL DCOPY(3*(NBASIS**2),FMAT,1,SKLTON,1)
          DO 600 ISYMOP = 1, MAXREP
             DO 610 X = 1, 3
-               FP = PT(IBTAND(ISYMOP,ISYMAX(X,2)))
+               FP = PT(IAND(ISYMOP,ISYMAX(X,2)))
                DO 620 A = 1, NBASIS
                   AP = IPOINT(A,ISYMOP)
                   FA = FACTOR(A,ISYMOP)
@@ -1538,8 +1445,9 @@ C
          IF (IPRINT .GT. 5) THEN
             CALL HEADER("AO Fock matrices in SKLOND",1)
             DO 700 X = 1, 3
+               WRITE(LUPRI,*) 'AO skeleton Fock matrix no.',X,NFMAT
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,-1,LUPRI)
   700       CONTINUE
          END IF
 C
@@ -1552,38 +1460,34 @@ C
          DO 800 IREPA = 0, MAXREP
             NORBA = NAOS(IREPA+1)
             DO 810 I = ISTRA,ISTRA + NORBA - 1
-               IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-               NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
-CTROND               IA    = IBTSHR(IPIND(I),8)
-CTROND               NA    = IBTSHR(IPIND(I),4) - IA*16
+               IA    = IAND(ISHFT(IPIND(I),-16),65535)
+               NA    = IAND(ISHFT(IPIND(I), -8),  255)
                NHKTA = NHKT(IA)
                KHKTA = KHKT(IA)
                MULA  = ISTBAO(IA)
                INDA  = KSTRT(IA) + NA - KHKTA
-               IVARA = IBTXOR(IREPA,ISYMAO(NHKTA,NA))
+               IVARA = IEOR(IREPA,ISYMAO(NHKTA,NA))
                DO 820 ISYMA = 0, MAXOPR
-               IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
-                  FA    = PT(IBTAND(ISYMA,IVARA))
+               IF (IAND(ISYMA,MULA) .EQ. 0) THEN
+                  FA    = PT(IAND(ISYMA,IVARA))
                   INDA  = INDA + KHKTA
                   ISTRB = 1
                   DO 830 IREPB = 0, MAXREP
                      NORBB = NAOS(IREPB+1)
                      DO 840 J = ISTRB,ISTRB + NORBB - 1
-                        IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                        NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
-CTROND                        IB    = IBTSHR(IPIND(J),8)
-CTROND                        NB    = IBTSHR(IPIND(J),4) - IB*16
+                        IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                        NB   = IAND(ISHFT(IPIND(J), -8),  255)
                         NHKTB = NHKT(IB)
                         KHKTB = KHKT(IB)
                         MULB  = ISTBAO(IB)
                         INDB  = KSTRT(IB) + NB - KHKTB
-                        IVARB = IBTXOR(IREPB,ISYMAO(NHKTB,NB))
+                        IVARB = IEOR(IREPB,ISYMAO(NHKTB,NB))
                         DO 850 ISYMB = 0, MAXOPR
-                        IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                        IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                            INDB = INDB + KHKTB
-                           FAB  = FA*PT(IBTAND(ISYMB,IVARB))
+                           FAB  = FA*PT(IAND(ISYMB,IVARB))
                            DO 860 X = 1, 3
-                           IF (IBTXOR(IREPA,IREPB).EQ.ISYMAX(X,2)) THEN
+                           IF (IEOR(IREPA,IREPB).EQ.ISYMAX(X,2)) THEN
                               FMAT(I,J,X) = FMAT(I,J,X)
      &                                    + FAB*SKLTON(INDA,INDB,X)
                            END IF
@@ -1602,7 +1506,7 @@ CTROND                        NB    = IBTSHR(IPIND(J),4) - IB*16
             CALL HEADER("SO Fock matrix in SKLOND",1)
             DO 900 X = 1, 3
                CALL OUTPUT(FMAT(1,1,X),1,NBASIS,1,NBASIS,
-     &                                   NBASIS,NBASIS,1,LUPRI)
+     &                     NBASIS,NBASIS,-1,LUPRI)
   900       CONTINUE
          END IF
       END IF

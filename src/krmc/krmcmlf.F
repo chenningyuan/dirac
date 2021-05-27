@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -69,8 +69,7 @@ C
       IOPSY = JBTOF(IREP,1)
 CSK   IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output from QFC2MFC',-1)
-         CALL HEADER('Input matrix:',-1)
+         CALL HEADER('QFC2MFC: Input matrix:',-1)
          WRITE(LUPRI,'(A,3I5)')
      &   ' - Boson, Fermion, and Time reversal symmetry :',
      &   ISYM,IOPSY,ITIM
@@ -221,7 +220,7 @@ C
 #undef DMRG_DEBUG
 #endif
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output matrix:',-1)
+         CALL HEADER('QFC2MFC: Output matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      $        IPQTOQ(1,0),LUPRI)
       END IF
@@ -264,8 +263,7 @@ C
 C
 csk   IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output from MFC2QFC',-1)
-         CALL HEADER('Input matrix:',-1)
+         CALL HEADER('MFC2QFC: Input matrix:',-1)
          CALL PRQMAT(DMFC,2*NASHT,2*NASHT,2*NASHT,2*NASHT,MIN(NZ,2),
      &        IPQTOQ(1,0),LUPRI)
       END IF
@@ -355,7 +353,7 @@ C
 !     print section
 !     IPRINT = 30
       IF ( IPRINT .GE. 30 ) THEN
-         CALL HEADER('Output matrix:',-1)
+         CALL HEADER('MFC2QFC: Output matrix:',-1)
          CALL PRQMAT(DQFC,NASHT,NASHT,NASHT,NASHT,NZ,IPQTOQ(1,0),LUPRI)
       END IF
 !     IPRINT = 00
@@ -398,8 +396,6 @@ C
 C
       LOGICAL PSYMM, KSYMM, TSYMM
 C
-#include "ibtfun.h"
-C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VDUUUU,NASHT * NASHT * NNASHX * NZ * 3)
 C
@@ -415,7 +411,7 @@ C
          JJ = JJ + NASH(IFSYM)
       ENDDO
 C
- 9001 FORMAT(4I5,5X,2F20.10)
+ 9001 FORMAT(4I5,5X,4F20.10)
 C
       IF (IPRINT .GE. 30) THEN
          THR_PRINT = 1.0D-12
@@ -511,7 +507,7 @@ C
      $                          + VMUUUU(J,ITR,LTR,K,1)
      $                          + VMUUUU(K,LTR,ITR,J,1)
      $                          + VMUUUU(ITR,J,K,LTR,1)
-                        ELSE
+                        ELSE ! not KSYMM
 C
 C                          (1) Symm. transition density matrix
 C                          (2) Do particle symmetrization
@@ -530,11 +526,11 @@ C
      &                          + VMUUUU(I,JTR,KTR,L,1)
      &                          + VMUUUU(JTR,I,L,KTR,1)
                         END IF
-                     ELSE
+                     ELSE ! not PSYMM
                         IF (KSYMM) THEN
 C
 C                          (1) Symm. transition density matrix
-C                          (2) Kramers symmetrization
+C                          (3) Kramers symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      &                          VMUUUU(K,L,I,J,1)
@@ -563,7 +559,7 @@ C
      $                          - VMUUUU(L,KTR,ITR,J,1)
      $                          + VMUUUU(LTR,K,J,ITR,1)
      $                          + VMUUUU(K,LTR,ITR,J,1)
-                        ELSE
+                        ELSE ! not KSYMM
 C
 C                          (1) Symm. transition density matrix
 C
@@ -577,12 +573,12 @@ C
      &                          + VMUUUU(L,KTR,JTR,I,1)
                         END IF
                      END IF
-                  ELSE
+                  ELSE ! not TSYMM
                      IF (PSYMM) THEN
                         IF (KSYMM) THEN
 C
-C                          (1) Particle symmetrization
-C                          (2) Kramers symmetrization
+C                          (2) Particle symmetrization
+C                          (3) Kramers symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      $                          VMUUUU(K,L,I,J,1)
@@ -611,9 +607,9 @@ C
      $                          - VMUUUU(J,ITR,KTR,L,1)
      $                          + VMUUUU(LTR,K,J,ITR,1)
      $                          + VMUUUU(J,ITR,LTR,K,1)
-                        ELSE
+                        ELSE ! not KSYMM
 C
-C                          (1) Particle symmetrization
+C                          (2) Particle symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      $                          VMUUUU(K,L,I,J,1)
@@ -625,27 +621,27 @@ C
      $                          VMUUUU(KTR,L,I,JTR,1)
      $                          + VMUUUU(I,JTR,KTR,L,1)
                         END IF
-                     ELSE
+                     ELSE ! not PSYMM
                         IF (KSYMM) THEN
 C
-C                          (1) Kramers symmetrization
+C                          (3) Kramers symmetrization
 C
                            VDUUUU(KK,LL,IJ,1,1) =
      $                          VMUUUU(K,L,I,J,1)
-     $                          + VMUUUU(LTR,KTR,I,J,1)
-     $                          + VMUUUU(K,L,JTR,ITR,1)
-     $                          + VMUUUU(LTR,KTR,JTR,ITR,1)
+     $                        + VMUUUU(LTR,KTR,I,J,1)
+     $                        + VMUUUU(K,L,JTR,ITR,1)
+     $                        + VMUUUU(LTR,KTR,JTR,ITR,1)
                            VDUUUU(KK,LL,IJ,1,2) =
      $                          VMUUUU(K,LTR,I,JTR,1)
-     $                          - VMUUUU(L,KTR,I,JTR,1)
-     $                          - VMUUUU(K,LTR,J,ITR,1)
-     $                          + VMUUUU(L,KTR,J,ITR,1)
+     $                        - VMUUUU(L,KTR,I,JTR,1)
+     $                        - VMUUUU(K,LTR,J,ITR,1)
+     $                        + VMUUUU(L,KTR,J,ITR,1)
                            VDUUUU(KK,LL,IJ,1,3) =
      $                          VMUUUU(KTR,L,I,JTR,1)
-     $                          - VMUUUU(LTR,K,I,JTR,1)
-     $                          - VMUUUU(KTR,L,J,ITR,1)
-     $                          + VMUUUU(LTR,K,J,ITR,1)
-                        ELSE
+     $                        - VMUUUU(LTR,K,I,JTR,1)
+     $                        - VMUUUU(KTR,L,J,ITR,1)
+     $                        + VMUUUU(LTR,K,J,ITR,1)
+                        ELSE ! not KSYMM
 C
 C                          No symmetrization
 C
@@ -659,6 +655,8 @@ C
 C                 Complex point groups
 C                 --------------------
 C
+                  IF (.NOT.spinfr .AND. .NOT.levyle) THEN
+                  ! all IZ =2,3,4 terms are zero
                   IF (NZ .GE. 2) THEN
                      IF (TSYMM) THEN
                         IF (PSYMM) THEN
@@ -828,13 +826,13 @@ C                            (1) Particle symmetrization
 C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
-     $                             + VMUUUU(I,J,K,L,2)
+     $                           + VMUUUU(I,J,K,L,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      $                             VMUUUU(K,LTR,I,JTR,2)
-     $                             + VMUUUU(I,JTR,K,LTR,2)
+     $                           + VMUUUU(I,JTR,K,LTR,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      $                             VMUUUU(KTR,L,I,JTR,2)
-     $                             + VMUUUU(I,JTR,KTR,L,2)
+     $                           + VMUUUU(I,JTR,KTR,L,2)
                            END IF
                         ELSE
                            IF (KSYMM) THEN
@@ -843,19 +841,19 @@ C                            (1) Kramers symmetrization
 C
                               VDUUUU(KK,LL,IJ,2,1) =
      $                             VMUUUU(K,L,I,J,2)
-     $                             + VMUUUU(LTR,KTR,I,J,2)
-     $                             + VMUUUU(K,L,JTR,ITR,2)
-     $                             + VMUUUU(LTR,KTR,JTR,ITR,2)
+     $                           + VMUUUU(LTR,KTR,I,J,2)
+     $                           + VMUUUU(K,L,JTR,ITR,2)
+     $                           + VMUUUU(LTR,KTR,JTR,ITR,2)
                               VDUUUU(KK,LL,IJ,2,2) =
      $                             VMUUUU(K,LTR,I,JTR,2)
-     $                             - VMUUUU(L,KTR,I,JTR,2)
-     $                             - VMUUUU(K,LTR,J,ITR,2)
-     $                             + VMUUUU(L,KTR,J,ITR,2)
+     $                           - VMUUUU(L,KTR,I,JTR,2)
+     $                           - VMUUUU(K,LTR,J,ITR,2)
+     $                           + VMUUUU(L,KTR,J,ITR,2)
                               VDUUUU(KK,LL,IJ,2,3) =
      $                             VMUUUU(KTR,L,I,JTR,2)
-     $                             - VMUUUU(LTR,K,I,JTR,2)
-     $                             - VMUUUU(KTR,L,J,ITR,2)
-     $                             + VMUUUU(LTR,K,J,ITR,2)
+     $                           - VMUUUU(LTR,K,I,JTR,2)
+     $                           - VMUUUU(KTR,L,J,ITR,2)
+     $                           + VMUUUU(LTR,K,J,ITR,2)
                            ELSE
 C
 C                             No symmetrization
@@ -869,7 +867,7 @@ C
                            END IF
                         END IF
                      END IF
-                  END IF
+                  END IF ! NZ .GE. 2
 C
                   IF (NZ .EQ. 4) THEN
                      CALL QUIT('*** ERROR in M2DNZ3 ***'
@@ -896,7 +894,9 @@ C
                         VDUUUU(KK,LL,IJ,3,3) = VMUUUU(KTR,L,I,J,1)
                         VDUUUU(KK,LL,IJ,4,3) = VMUUUU(KTR,L,I,J,2)
                      ENDIF
-                  END IF
+                  END IF ! NZ .eq. 4
+                  END IF ! (.NOT.spinfr .AND. .NOT.levyle)
+                         ! for which all IZ = 2,3,4 terms are zero
                END DO
             END DO
          END DO
@@ -911,7 +911,7 @@ C
       end if
 C
       IF (IPRINT .GE. 30) THEN
-         CALL HEADER('VUUUU matrix in Dirac (NZ,3) format',-1)
+         CALL HEADER('M2DNZ3: VUUUU matrix in Dirac (NZ,3) format',-1)
          CALL PRDNZ3(VDUUUU,NASHT,NNASHX,NZ,IPQTOQ(1,0),LUPRI)
       END IF
 C
@@ -946,8 +946,6 @@ C
       DIMENSION DINT(8,2)
       real*8, allocatable :: vmuuuu_tmp(:,:,:,:,:)
 C
-#include "ibtfun.h"
-C
       NCLASS = NZ * NZ * NBSYM / NFSYM
       CALL DZERO(VMUUUU, (2*NASHT)**4 * MIN(NZ,2))
 C
@@ -976,7 +974,7 @@ C
 C
       DO II = 1, NASHT
          DO JJ = 1, II
-            IJ = MAX(II,JJ) * ( MAX(II,JJ) - 1 ) / 2 + MIN(II,JJ)
+            IJ = (II * (II - 1))/2 + JJ
             DO LL = 1, NASHT
                DO KK = 1, NASHT
                   I = KR(II)
@@ -991,7 +989,7 @@ C
 C                 Canonical integrals (I>=J)
 C                 (kl|ij), (kL|iJ), (Kl|iJ)
 C
-                  VMUUUU(K,L,I,J,1) = VDUUUU(KK,LL,IJ,1,1)
+                  VMUUUU(K,L,I,J,1)     = VDUUUU(KK,LL,IJ,1,1)
                   VMUUUU(K,LTR,I,JTR,1) = VDUUUU(KK,LL,IJ,1,2)
                   VMUUUU(KTR,L,I,JTR,1) = VDUUUU(KK,LL,IJ,1,3)
 C
@@ -1085,18 +1083,18 @@ C
                      VMUUUU(K,LTR,I,J,2) = VDUUUU(KK,LL,IJ,4,2)
                      IF (II .NE. JJ) THEN
 C                       (Lk|ji) = (kL|ij)^*
-                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(KK,LL,IJ,3,2)
-                        VMUUUU(L,KTR,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
+                        VMUUUU(LTR,K,J,I,1) =   VDUUUU(KK,LL,IJ,3,2)
+                        VMUUUU(LTR,K,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
 C                    (kl|Ij) = - (kl|Ji) = - (lk|iJ)^*
 C
-                     VMUUUU(K,L,ITR,J,1) = - VDUUUU(LL,KK,IJ,3,2)
-                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(LL,KK,IJ,4,2)
+                     VMUUUU(K,L,ITR,J,1) = - VDUUUU(LL,KK,IJ,3,1)
+                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(LL,KK,IJ,4,1)
                      IF (II .NE. JJ) THEN
 C                       (lk|jI) = - (lk|iJ)
-                        VMUUUU(L,KTR,J,I,1) = - VDUUUU(KK,LL,IJ,3,2)
-                        VMUUUU(L,KTR,J,I,2) = - VDUUUU(KK,LL,IJ,4,2)
+                        VMUUUU(L,K,J,ITR,1) = - VDUUUU(LL,KK,IJ,3,1)
+                        VMUUUU(L,K,J,ITR,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
 C
 C                    (kl|iJ) (canonical)
@@ -1112,44 +1110,60 @@ C
 C
 C                    (3 bars)
 C
-C                    (kL|IJ) = (kL|ji) = (Lk|ij)^*
+C                    (kL|IJ) = -(Kl|ij)^*
 C
-                     VMUUUU(K,LTR,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,3,3)
-                     VMUUUU(K,LTR,ITR,JTR,2) = - VDUUUU(LL,KK,IJ,4,3)
+                     VMUUUU(K,LTR,ITR,JTR,1) = - VDUUUU(KK,LL,IJ,3,3)
+                     VMUUUU(K,LTR,ITR,JTR,2) =   VDUUUU(KK,LL,IJ,4,3)
                      IF (II .NE. JJ) THEN
-C                       (Lk|JI) = (Lk|ij)
-                        VMUUUU(LTR,K,JTR,ITR,1) = VDUUUU(KK,LL,IJ,3,3)
-                        VMUUUU(LTR,K,JTR,ITR,2) = VDUUUU(KK,LL,IJ,4,3)
+C                       (Lk|JI) = (kL|IJ)^* = -(Kl|ij)
+                        VMUUUU(LTR,K,JTR,ITR,1) = - VDUUUU(KK,LL,IJ,3,3)
+                        VMUUUU(LTR,K,JTR,ITR,2) = - VDUUUU(KK,LL,IJ,4,3)
                      END IF
 C
-C                    (Kl|IJ) = (Kl|ji) = (lK|ij)^*
+C                    (Kl|IJ) = -(kL|ij)^*
 C
-                     VMUUUU(KTR,L,ITR,JTR,1) =   VDUUUU(LL,KK,IJ,3,2)
-                     VMUUUU(KTR,L,ITR,JTR,2) = - VDUUUU(LL,KK,IJ,4,2)
+                     VMUUUU(KTR,L,ITR,JTR,1) = - VDUUUU(KK,LL,IJ,3,2)
+                     VMUUUU(KTR,L,ITR,JTR,2) =   VDUUUU(KK,LL,IJ,4,2)
                      IF (II .NE. JJ) THEN
-C                       (lK|JI) = (lK|ij)
-                        VMUUUU(L,KTR,J,I,1) = VDUUUU(KK,LL,IJ,3,2)
-                        VMUUUU(L,KTR,J,I,2) = VDUUUU(KK,LL,IJ,4,2)
+C                       (lK|JI) = (Kl|IJ)^* = -(kL|ij)
+                        VMUUUU(L,KTR,JTR,ITR,1) = - VDUUUU(KK,LL,IJ,3,2)
+                        VMUUUU(L,KTR,JTR,ITR,2) = - VDUUUU(KK,LL,IJ,4,2)
                      END IF
 C
-C                    (KL|iJ) = (lk|iJ)
+C                    (KL|Ij) = -(kl|iJ)^*
 C
-                     VMUUUU(K,L,ITR,J,1) = VDUUUU(KK,LL,IJ,3,1)
-                     VMUUUU(K,L,ITR,J,2) = VDUUUU(KK,LL,IJ,4,1)
+                        VMUUUU(KTR,LTR,ITR,J,1) = - VDUUUU(KK,LL,IJ,3,1)
+                        VMUUUU(KTR,LTR,ITR,J,2) =   VDUUUU(KK,LL,IJ,4,1)
                      IF (II .NE. JJ) THEN
-C                       (LK|Ji) = (kl|Ji) = (lk|iJ)^*
-                        VMUUUU(L,KTR,J,I,1) =   VDUUUU(LL,KK,IJ,3,1)
-                        VMUUUU(L,KTR,J,I,2) = - VDUUUU(LL,KK,IJ,4,1)
+C                       (KL|jI) = -(kl|Ji)^* = -(lk|iJ)
+                        VMUUUU(KTR,LTR,J,ITR,1) = - VDUUUU(LL,KK,IJ,3,1)
+                        VMUUUU(KTR,LTR,J,ITR,2) = - VDUUUU(LL,KK,IJ,4,1)
                      END IF
+
+                     IF (KK .GE. LL) THEN
+                        KL = (KK*(KK-1))/2 + LL
 C
-C                    (KL|Ij) = - (lk|Ji) = - (kl|iJ)^*
+C                    (KL|iJ) = -(kl|Ij)^* = -(Ij|kl)^*
 C
-                     VMUUUU(K,L,ITR,J,1) = - VDUUUU(KK,LL,IJ,3,1)
-                     VMUUUU(K,L,ITR,J,2) =   VDUUUU(KK,LL,IJ,4,1)
-                     IF (II .NE. JJ) THEN
-C                       (LK|jI) = - (kl|iJ)
-                        VMUUUU(L,K,JTR,I,1) = - VDUUUU(KK,LL,IJ,3,1)
-                        VMUUUU(L,K,JTR,I,2) = - VDUUUU(KK,LL,IJ,4,1)
+                        VMUUUU(KTR,LTR,I,JTR,1) = - VDUUUU(II,JJ,KL,3,3)
+                        VMUUUU(KTR,LTR,I,JTR,2) =   VDUUUU(II,JJ,KL,4,3)
+                       IF (II .NE. JJ) THEN
+C                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^*
+                        VMUUUU(KTR,LTR,JTR,I,1) = - VDUUUU(JJ,II,KL,3,2)
+                        VMUUUU(KTR,LTR,JTR,I,2) =   VDUUUU(JJ,II,KL,4,2)
+                       END IF
+                     ELSE ! KK .lt. LL
+                        LK = (LL*(LL-1))/2 + KK
+C
+C                    (KL|iJ) = -(kl|Ij)^* = -(Ij|kl)^* = -(jI|lk)
+C
+                        VMUUUU(KTR,LTR,I,JTR,1) = - VDUUUU(JJ,II,LK,3,2)
+                        VMUUUU(KTR,LTR,I,JTR,2) = - VDUUUU(JJ,II,LK,4,2)
+                       IF (II .NE. JJ) THEN
+C                       (KL|Ji) = -(kl|jI)^* = -(jI|kl)^* = -(Ij|lk)
+                        VMUUUU(KTR,LTR,JTR,I,1) = - VDUUUU(II,JJ,LK,3,3)
+                        VMUUUU(KTR,LTR,JTR,I,2) = - VDUUUU(II,JJ,LK,4,3)
+                       END IF
                      END IF
 C
                   END IF
@@ -1157,11 +1171,6 @@ C
             END DO
          END DO
       END DO
-C
-C
-C
-!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
- 9001 FORMAT(4I5,5X,2F20.10)
 C
 
 !#define DMRG_DEBUG
@@ -1189,10 +1198,18 @@ C
 #undef DMRG_DEBUG
 #endif
 
+C
+!9001 FORMAT(1P,1X,4I3,4X,2(D14.7,1X))
+ 9001 FORMAT(4I5,5X,4F20.10)
       IF (iprint_local .GE. 30) THEN
          WRITE(LUPRI,'(A,1P,D10.2)')
      &   ' (DNZ32M) Output VUUUU matrix in Molfdir format,'//
      &   ' print threshold =',THROUT
+#ifdef old_code
+! hjaaj mar 2018: new code below groups the 2-electron integrals,
+! making it easier to spot some problems (particle symmetry, hermiticity)
+! but not Kramers conjugation problems - that requires 2**4=16 times lot more
+! lines for each quadruplet, but with "DO I = 1,NASHT" instead.
          DO L = 1,2*NASHT
             DO K = 1,2*NASHT
                DO J = 1,2*NASHT
@@ -1201,6 +1218,26 @@ C
      &                    ABS(VMUUUU(I,J,K,L,NZ_in_CI)) .GT. THROUT)
      &                    WRITE(LUPRI,9001)
      &                    I,J,K,L,(VMUUUU(I,J,K,L,IZ),IZ=1,NZ_in_CI)
+                  END DO
+               END DO
+            END DO
+         END DO
+      ELSE IF (iprint_local .GE. 10) THEN
+#endif
+         DO I = 1, 2*NASHT
+            DO J = 1, I
+               DO L = 1, I
+                  DO K = 1, L
+                  WRITE(LUPRI,'(A)')
+     & 'New quadruplet re(ij|kl), re(kl|ij), im(ij|kl), im(kl|ij)'
+                  WRITE(LUPRI,9001)
+     & I,J,K,L,(VMUUUU(I,J,K,L,IZ),VMUUUU(K,L,I,J,IZ),IZ=1,NZ_in_CI)
+                  WRITE(LUPRI,9001)
+     & J,I,L,K,(VMUUUU(J,I,L,K,IZ),VMUUUU(L,K,J,I,IZ),IZ=1,NZ_in_CI)
+                  WRITE(LUPRI,9001)
+     & I,J,L,K,(VMUUUU(I,J,L,K,IZ),VMUUUU(L,K,I,J,IZ),IZ=1,NZ_in_CI)
+                  WRITE(LUPRI,9001)
+     & J,I,K,L,(VMUUUU(J,I,K,L,IZ),VMUUUU(K,L,J,I,IZ),IZ=1,NZ_in_CI)
                   END DO
                END DO
             END DO
@@ -1378,8 +1415,8 @@ C        INDL, INDK: (KL) indeces
 C        IOFF12: offset for (IJ) into INDL and INDK
 C        NUMINT: number of integrals for (IJ)
 C        NUMINTT: total number of integrals
-C        KR: KR(I)  gives unparred orbital number
-C            KR(-I) gives parrred orbital number
+C        KR: KR(I)  gives unbarred orbital number
+C            KR(-I) gives barrred orbital number
 C
 C     Written by J. Thyssen - Jan 18 2001
 C     Last revision :
@@ -1399,8 +1436,6 @@ C
       DIMENSION KR(-2 * NASHT: 2 * NASHT)
       DIMENSION NUMINT(2*NASHT,2*NASHT), IOFF12(2*NASHT,2*NASHT)
       DIMENSION INDL(*), INDK(*)
-C
-#include "ibtfun.h"
 C
       NCLASS = NZ * NZ * NBSYM / NFSYM
 C
@@ -1716,7 +1751,6 @@ C
       integer, allocatable  :: orb_sym_vec(:)
       integer, allocatable  :: ibosym(:)
       logical :: ex_mcdf, ex_mcol, isopen
-#include "ibtfun.h"
 
 !     set up symmetry information
       IF (GROUP.eq.'C1 ') THEN
@@ -1812,7 +1846,7 @@ C
             if(.not.isopen) close(luxxxx,status="keep")
           else
             call opnfil(lucoef,'DFCOEF','OLD','mjlist ')
-            call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,
+            call reacmo(lucoef,'DFCOEF',dummy,dummy,
      &                          orb_sym_vec,dummy,8)
             close(lucoef,status='KEEP')
           end if

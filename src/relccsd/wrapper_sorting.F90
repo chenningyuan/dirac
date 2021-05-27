@@ -1,5 +1,18 @@
   module wrapper_sorting
 
+! This module function as a wrapper around the original RELCCSD sorts that have been generalized to 
+! handle also non-symmetric operators (i.e. cases in which the irrep product of the orbital indices
+! need not be totally symmetric). 
+! Purpose of these sorts is to change the order in which tensor elements are stored such that 
+! contractions can be carried out by calls to a BLAS DGEMM or ZGEMM (for complex groups). After a
+! contraction, tensors need typically be sorted back to the standard "Dirac" order, which is why
+! most of them come with an inverse.
+
+! Module was written by Avijit Shee.
+
+  use modified_sorting
+  use symmetry_offset
+
     implicit none
 
     public shuffle_indices
@@ -10,10 +23,9 @@
     public sorted_dimension 
 
     private
-
+    public indices 
     integer      :: sortType
     logical      :: do_direct, do_exchange
-    logical      :: t_direct, t_exchange
     character(20):: arraytype
     character(2),pointer :: array_original(:)
     character(2)         :: exchange(4)
@@ -21,8 +33,7 @@
     type sorting_list
       integer :: num 
       integer :: trans
-!     contains
-      procedure(),pointer, nopass :: unrestricted !, restricted 
+      procedure(),pointer, nopass :: unrestricted  
       procedure(),pointer, nopass :: restricted_braket, restricted_bra, restricted_ket 
     endtype sorting_list 
 
@@ -32,7 +43,7 @@
     endtype indices
 
     type, extends(indices) :: middle_indices
-       type(indices) :: triangular
+       type(indices) :: triangular 
     endtype
 
    type, extends(middle_indices) :: more_indices
@@ -46,9 +57,12 @@
     endtype bit_processing 
 
     type presorting
-       real*8, allocatable :: presorted(:) 
+       real*8,allocatable :: presorted(:) 
        real*8, pointer :: integral(:)
     endtype
+
+!  The list with the original sorters, which will be assigned on basis of the input arrays 
+!  and desired resorted order.
    external SRT1SS4
    external SRT1L1
    external SRT1C1
@@ -71,14 +85,14 @@
    external SRT6
    external SRT9
    external SRT1TS4
-
+!  subroutines to retrieve anti-symmetrized integrals from disk storage, used when sorting
+!  integrals that do not reside in memory
    external getvoov
    external getoovv
    external getooov
    external getovoo
    external getoovo
    external getvvvo_incore
-
 
     contains
     
@@ -95,78 +109,68 @@
     type(sorting_list)           :: a
 ! --------------------------
 
-  save_index = 0
+    save_index = 0
 
-  select case(sortType)
+    select case(sortType)
     
-    case(13)
+     case(13)
 
-     shifted_array(1:3) =  reorder_array(2:4)
+        shifted_array(1:3) =  reorder_array(2:4)
+        temp = reorder_array(1)
+        allocate (P(6,3))
+        call permutate(shifted_array(1:3),P)
 
-     temp = reorder_array(1)
+        do i = 1, size(P,1)
+          a%num = toDecimal((/temp,P(i,:)/))
+          a%trans = toDecimal((/temp,P(i,:)/),.true.)    
+          call match_array (a%num, no_match, save_index, trans)  
+          if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
+          if (.not.no_match) then
+             reorder_array(2:4)=P(i,:)
+             exit
+          endif
+        enddo
 
-    allocate (P(6,3))
-
-    call permutate(shifted_array(1:3),P)
-
-    do i = 1, size(P,1)
-      a%num = toDecimal((/temp,P(i,:)/))
-      a%trans = toDecimal((/temp,P(i,:)/),.true.)    
-
-      call match_array (a%num, no_match, save_index, trans)  
-      if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
-
-      if (.not.no_match) then
-        reorder_array(2:4)=P(i,:)
-        exit
-      endif
-
-    enddo
-    deallocate(P)
+        deallocate(P)
 
      case(31) 
 
-     shifted_array(1:3) = reorder_array(1:3)
+        shifted_array(1:3) = reorder_array(1:3)
+        temp = reorder_array(4)
+        allocate (P(6,3))
+        call permutate(shifted_array(1:3),P)
 
-     temp = reorder_array(4)
+        do i = 1, size(P,1)
+          a%num = toDecimal((/P(i,:),temp/))
+          a%trans = toDecimal((/P(i,:),temp/),.true.)    
+          call match_array (a%num, no_match, save_index, trans)  
+          if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
+          if (.not.no_match) then
+             reorder_array(1:3)=P(i,:)
+             exit
+           endif
+        enddo
 
-    allocate (P(6,3))
+        deallocate(P)
 
-    call permutate(shifted_array(1:3),P)
+     case (22) 
 
-    do i = 1, size(P,1)
-!    write(*,*)P(i,:)
-    a%num = toDecimal((/P(i,:),temp/))
-    a%trans = toDecimal((/P(i,:),temp/),.true.)    
+        shifted_array(1:4) = reorder_array(1:4) 
+        i = 1
+        do
+          temp = reorder_array(i)
+          reorder_array(i) = reorder_array(i+1)
+          reorder_array(i+1) = temp
+          a%num = toDecimal(reorder_array)
+          a%trans = toDecimal(reorder_array,.true.)    
+          call match_array (a%num,no_match,save_index,trans)  
+          if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
+          if ((.not.no_match).or.(i>3)) exit
+          i = i+2
+          reorder_array(1:4) = shifted_array(1:4)
+        enddo
 
-    call match_array (a%num, no_match, save_index, trans)  
-    if (no_match) call match_array_transpose (a%trans, no_match, save_index, trans)  
-    if (.not.no_match) then
-    reorder_array(1:3)=P(i,:)
-    exit
-    endif
-    enddo
-    deallocate(P)
-
-   case (22) 
-
-     shifted_array(1:4) = reorder_array(1:4) 
-     i = 1
-   do
-     temp = reorder_array(i)
-     reorder_array(i) = reorder_array(i+1)
-     reorder_array(i+1) = temp
-
-    a%num = toDecimal(reorder_array)
-    a%trans = toDecimal(reorder_array,.true.)    
-
-    call match_array (a%num,no_match,save_index,trans)  
-    if (no_match) call match_array_transpose (a%trans,no_match,save_index,trans) 
-    if ((.not.no_match).or.(i>3)) exit
-    i = i+2
-    reorder_array(1:4) = shifted_array(1:4)
-   enddo
-  end select
+    end select
 
    end subroutine
 
@@ -197,15 +201,15 @@
 
   case(22) 
 
-  allocate(A(5))
+  allocate(A(6))
   
-  A = (/1234,1324,1432,2134,1243/)
+  A = (/1234,1324,1432,1342,2134,1243/)
 
   case(31)
 
-  allocate(A(5))
+  allocate(A(6))
 
-  A = (/1234,1243,1342,3421,4123/)
+  A = (/1234,1243,1342,3421,4123,3412/)
 
   case(13)
 
@@ -241,8 +245,8 @@
   select case(sortType) 
 
   case(22)
-  allocate(A(3))
-  A = (/1234,1432,1324/)
+  allocate(A(4))
+  A = (/1234,1324,1432,1342/)
 
   case(31)
   allocate(A(4))
@@ -265,8 +269,8 @@
 
   case(31)
 
-  allocate(A(4))
-  A = (/1234,4123,1342,3421/)
+  allocate(A(5))
+  A = (/1234,4123,1342,3421,3412/)
 
 
   case(13)
@@ -324,15 +328,15 @@
 
   case(22) 
 
-  allocate(A(5))
+  allocate(A(6))
 
-  A = (/1234,1324,1432,2134,1243/)
+  A = (/1234,1324,1432,1342,2134,1243/)
 
   case(31)
 
-  allocate(A(5))
+  allocate(A(6))
 
-  A = (/1234,1243,1342,3421,4123/)
+  A = (/1234,1243,1342,3421,4123,3412/)
 
   case(13)
 
@@ -368,8 +372,8 @@
   select case(sort_type) 
 
   case(22)
-  allocate(A(3))
-  A = (/1234,1432,1324/)
+  allocate(A(4))
+  A = (/1234,1324,1432,1342/)
 
   case(31)
   allocate(A(4))
@@ -392,8 +396,8 @@
 
   case(31)
 
-  allocate(A(4))
-  A = (/1234,4123,1342,3421/)
+  allocate(A(5))
+  A = (/1234,4123,1342,3421,3412/)
 
   case(13)
   allocate(A(1))
@@ -507,7 +511,6 @@
 
     if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
-
 !   if (arraytype=='unrestricted') then 
 
     if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
@@ -515,7 +518,7 @@
 !   endif
 
      if (no_match) then
-      write (*,*) "====no matching sorting subroutine available for direct mode of contraction.====="
+!ashee      write (*,*) "====no matching sorting subroutine available for direct mode of contraction.====="
       do_exchange = .true.
      endif
 
@@ -523,11 +526,10 @@
 
    if (do_exchange) then
 
-   !! In this mode I generate all the antisymmetrized components of an array on the fly where the interchange is possible between the same orbital-type (i.e, h or p).
+! In this mode I generate all the antisymmetrized components of an array on-the-fly, wherever the interchange is possible between the same orbital-type (i.e, h or p).
+! I have included the change in sign due to anti-symmetrization.
 
-   !! i have included the change in sign due to anti-symmetrization.
-
-       write(*,*)'=====contraction will be done in exchange mode====='
+! ashee       write(*,*)'=====contraction will be done in exchange mode====='
 
        array_exchange = opArray_left
 
@@ -549,16 +551,16 @@
        if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
        if (.not.no_match) exit
-       if (k>3)           exit
+       if (k>=3)           exit
        i = i + size(opArray_left)/2 
-       if (k>2) then
+       if (k==2) then
         array_exchange = opArray_left
         i = 3
        endif
        k = k+1
      enddo
 
-     if(.not.no_match) asym_factor = asym_factor*(-1)**k
+     if(.not.no_match) asym_factor = asym_factor*(-1)**(k)
 
 !      if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
 
@@ -574,7 +576,7 @@
 
        call match_array (a%num,no_match,save_index,if_trans)
       
-       call match_array_transpose (a%trans,no_match,save_index,if_trans)  
+       if (no_match) call match_array_transpose (a%trans,no_match,save_index,if_trans)  
 
        if ((no_match).and.(do_shuffle)) call shuffle_indices (reorder_v,no_match,save_index,if_trans)
 
@@ -594,7 +596,6 @@
 !  call shuffle_indices (reorder_v,no_match,save_index,if_trans)
 
 !  endif 
-
 
     if (no_match) then
       call quit('No Sorting subroutine available. code stops here.')
@@ -633,35 +634,39 @@
 
   end subroutine
 
-  subroutine sorting_for_blas(save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym) 
+  subroutine sorting_for_blas(Sort_Type,orb_array,save_index,do_inverse,if_trans,sorted,row,column,presorted,if_TotSym,irrep_input) 
 
 !---------------description-------
 !        carry-out the sorting.
 !---------------------------------
 
 !--------------calling variables---------------
-    real(8),intent(in),target,optional           :: presorted(:)
+    integer,intent(in)                    :: Sort_Type 
+    character(2),intent(in)               :: orb_array(:)
+    real(8),intent(in),target,optional    :: presorted(:)
     logical,intent(in),optional           :: if_TotSym
     integer,intent(inout)                 :: save_index
     logical,intent(in)                    :: do_inverse  
     character(1),intent(inout)            :: if_trans
-    integer,intent(out)                   :: row(:), column(:)
+    integer,intent(out)                   :: row(:),column(:)
     real(8),intent(inout)                 :: sorted(:) !think a bit more carefully to replace it by dynamic allocation. not easy.
+    integer,intent(in)           :: irrep_input 
 !----------------------------------------------
 
 !-------local variables------------------------
-!   character(2) :: array_exchange(4)
-    integer      :: reorder_v(4)
-    logical      :: do_TotSym
+
+    character(20) :: Array_Type
+    logical      :: do_TotSym,if_bra,if_ket
     integer      :: i,j,k,l 
-    character(2) :: p,q,r,s
-    integer      :: sort_type_dummy,shift,shift1,AllocateStatus
+    integer      :: sort_type_dummy,AllocateStatus,total_dim
+
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
 
     type(sorting_list)     :: a
-    type(middle_indices)   :: c(0:30)  
+    type(middle_indices)   :: c(-14:5)!,e  
+    type(Offset)           :: e,f      
     type(more_indices)     :: m(0:15)  
     type(bit_processing)   :: d 
     type(presorting),target  :: V 
@@ -671,239 +676,182 @@
     type(sorting_list) :: srt_31(0:5)
     type(sorting_list) :: srt_13(0:5)
 ! (2,2)->(2,2) type of sorting routines         
-       srt_22(1)%unrestricted => SRT1SS4   
-       srt_22(2)%unrestricted => SRT16     
-       srt_22(3)%unrestricted => SRT1L1    
-       srt_22(4)%unrestricted => SRT1R1 
-       srt_22(1)%restricted_braket =>  SRT1TT4
-       srt_22(2)%restricted_braket =>  SRT1TT5
+       srt_22(1)%unrestricted => SRT1SS4_exp   
+       srt_22(2)%unrestricted => SRT16_exp     
+       srt_22(3)%unrestricted => SRT46_exp 
+       srt_22(4)%unrestricted => SRT1L1    
+       srt_22(5)%unrestricted => SRT1R1 
+       srt_22(1)%restricted_braket => SRT1TT4_exp
+       srt_22(2)%restricted_braket => SRT1TT5_exp
 !      srt_22(1)%restricted_bra =  SRT1LS1
-       srt_22(1)%restricted_bra => SRT36
-       srt_22(2)%restricted_bra => SRT1TS4
-       srt_22(1)%restricted_ket => SRT1ST4
-       srt_22(2)%restricted_ket => SRT26
-!       srt_22(3)%restricted_ket => SRT20D
+       srt_22(1)%restricted_bra => SRT1TS4_exp
+       srt_22(2)%restricted_bra => SRT36_exp
+       srt_22(3)%restricted_bra => SRT56_exp
+       srt_22(1)%restricted_ket => SRT1ST4_exp
+       srt_22(2)%restricted_ket => SRT26_exp
+!      srt_22(3)%restricted_ket => SRT20D
 
 ! (2,2)->(3,1) type of sorting routines.
-       srt_31(0)%unrestricted => SRT1S3
-       srt_31(1)%unrestricted => SRT19
-       srt_31(2)%unrestricted => SRT6
-       srt_31(3)%unrestricted => SRT9
-       srt_31(4)%unrestricted => SRT32
-       srt_31(0)%restricted_ket => SRT1T3
-       srt_31(1)%restricted_ket => SRT22
-       srt_31(2)%restricted_ket => SRT6
-       srt_31(3)%restricted_ket => SRT9
-       srt_31(0)%restricted_braket => SRT1T3
-       srt_31(1)%restricted_braket => SRT22
-       srt_31(2)%restricted_braket => SRT7
-       srt_31(0)%restricted_bra => SRT1S3
-       srt_31(1)%restricted_bra => SRT7
-       srt_31(2)%restricted_bra => SRT19
-       srt_31(3)%restricted_bra => SRT32
+       srt_31(0)%unrestricted => SRT1S3_exp
+       srt_31(1)%unrestricted => SRT19_exp
+       srt_31(2)%unrestricted => SRT6_exp
+       srt_31(3)%unrestricted => SRT9_exp
+       srt_31(4)%unrestricted => SRT32_exp
+       srt_31(5)%unrestricted => SRT10_exp
+
+
+       srt_31(0)%restricted_ket => SRT1T3_exp
+       srt_31(1)%restricted_ket => SRT22_exp
+       srt_31(2)%restricted_ket => SRT6_exp
+       srt_31(3)%restricted_ket => SRT9_exp
+       srt_31(4)%restricted_ket => SRT10_exp
+       srt_31(0)%restricted_braket => SRT1T3_exp
+       srt_31(1)%restricted_braket => SRT22_exp
+       srt_31(2)%restricted_braket => SRT7_exp
+
+
+       srt_31(0)%restricted_bra => SRT1S3_exp
+       srt_31(1)%restricted_bra => SRT7_exp
+       srt_31(2)%restricted_bra => SRT19_exp
+       srt_31(3)%restricted_bra => SRT32_exp
     
 !(2,2)->(1,3) type of sorting routines.
-       srt_13(0)%unrestricted => SRT1S2
-       srt_13(0)%restricted_bra => SRT1T2
-       srt_13(0)%restricted_ket => SRT1S2
-       srt_13(0)%restricted_braket => SRT1T2
+       srt_13(0)%unrestricted => SRT1S2_exp
+       srt_13(0)%restricted_bra => SRT1T2_exp
+       srt_13(0)%restricted_ket => SRT1S2_exp
+       srt_13(0)%restricted_braket => SRT1T2_exp
 
 !----------------------------------------------
 
+    Array_Type = 'unrestricted'
+
+    if_bra = all(orb_array(1:size(orb_array)/2)(1:1) == orb_array(1)(1:1)) 
+    if_ket = all(orb_array((size(orb_array)/2)+1:size(orb_array))(1:1) == orb_array((size(orb_array)/2)+1)(1:1)) 
+
+    if (if_ket) Array_Type = 'restricted_ket' 
+
+    if (if_bra) then
+     Array_Type = 'restricted_bra'  
+     if (if_ket) Array_Type = 'restricted_braket' 
+    endif 
+
      save_index = save_index - 1
 
-      do_TotSym =.false.
+     do_TotSym =.false.
 
      if (present(if_TotSym)) do_TotSym = if_TotSym
 
-     shift     = 0
-     shift1    = 0
-
      if (.not.present(presorted)) then
-     call integral_fetching_incore(V) 
+
+     call input_index(orb_array,c,d)
+
+
+     call alloc_array(e,nrep,f)
+      select case(Array_Type)
+ 
+      case('restricted_braket')
+
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
+
+       case('restricted_bra')
+
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
+
+       case('restricted_ket')
+
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
+
+       case('unrestricted')
+
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
+
+       end select
+
+       total_dim = dot_product(e%oneNonDirac(1:nrep),f%oneNonDirac(1:nrep)) 
+
+      call dealloc_array(e,f)
+
+      allocate(V%presorted(total_dim*rcw))
+
+     call integral_fetching_incore(orb_array,V%presorted) 
 
      B%integral => v%presorted(1:size(v%presorted)) 
 
-     endif
-
-
-     if (present(presorted)) then
+     elseif (present(presorted)) then
 
       B%integral => presorted(1:size(presorted)) 
 
      endif
 
-     sort_type_dummy = sortType
+     sort_type_dummy = Sort_Type
 
      if (if_trans == 'T') then
-       if (sortType == 31) sort_type_dummy = 13
-       if (sortType == 13) sort_type_dummy = 31
+       if (Sort_Type == 31) sort_type_dummy = 13
+       if (Sort_Type == 13) sort_type_dummy = 31
      endif
 
-    if (sortType == 22) then
-
-     if ((.not.do_TotSym).and.(.not.do_inverse)) shift=15  
+    if (Sort_Type == 22) then
 
      if (save_index > 0) then
-      select case(arraytype)
+      select case(Array_Type)
         
          case('unrestricted')
 
-       call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
-       if (do_inverse) then
-
-       shift1 = 4
-
-       if (if_trans=='N') then
-        column =  c(d%ket+shift1)%tuple_combInd
-        row    =  c(d%bra+shift1)%tuple_combInd
-       else
-        row    = c(d%ket+shift1)%tuple_combInd
-        column = c(d%bra+shift1)%tuple_combInd
-       endif
-       else
-       if (if_trans=='N') then
-        row     = c(d%bra_reorder)%tuple_combInd
-        column  = c(d%ket_reorder)%tuple_combInd     
-       else 
-        column  = c(d%bra_reorder)%tuple_combInd
-        row     = c(d%ket_reorder)%tuple_combInd     
-       endif
-       endif
-
-      if (save_index==3) then
-
-       shift1 = 4
-       call srt_22(save_index)%unrestricted (nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
-     &         c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%bra_reorder+shift1)%tuple, &
-     &         B%integral,sorted) 
-
-      elseif (save_index==4) then
-
-       call srt_22(save_index)%unrestricted (nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%K)%orbital_type, &
-     &         c(d%L)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%braket)%totsym%full_array,c(d%ket_reorder+shift1)%tuple, &
-     &         B%integral,sorted) 
-
-      elseif (save_index==2) then
-
-      call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
-     &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-     &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-    
-      else
-
-      call srt_22(save_index)%unrestricted (nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
-     &     c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-     &     c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-
-
-       endif
+    if (if_trans=='N') then
+      call srt_22(save_index)%unrestricted (irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &     c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
+    else
+      call srt_22(save_index)%unrestricted (irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &     c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+    endif
 
          case('restricted_braket') 
 
-      call input_index(c,d)
+      call input_index(orb_array,c,d)
 
-       if (do_inverse) then
-       if (if_trans=='N') then
-        row     = c(d%bra)%triangular%tuple_combInd
-        column  = c(d%ket)%triangular%tuple_combInd     
-       else 
-        column  = c(d%bra)%triangular%tuple_combInd
-        row     = c(d%ket)%triangular%tuple_combInd     
-       endif
-       else
-       if (if_trans=='N') then
-        row     = c(d%bra_reorder)%tuple_combInd
-        column  = c(d%ket_reorder)%tuple_combInd     
-       else 
-        column  = c(d%bra_reorder)%tuple_combInd
-        row     = c(d%ket_reorder)%tuple_combInd     
-       endif
-       endif
 
-      
-      if (save_index==2) then
-
-      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array, &
-      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-
-      else
-
-      call srt_22(save_index)%restricted_braket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
-      &    c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array, &
-      &    c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-
-      endif
+    if (if_trans=='N') then
+     call srt_22(save_index)%restricted_braket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+    &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
+    else
+     call srt_22(save_index)%restricted_braket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,&
+    &    c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+    endif
 
          case('restricted_bra')
 
-       call input_index(c,d)
+      call input_index(orb_array,c,d)
 
-       if (do_inverse) then
-        shift1 = 4
-       if (if_trans=='N') then
-        row     = c(d%bra)%triangular%tuple_combInd
-        column  = c(d%ket+shift1)%tuple_combInd     
-       else 
-        column  = c(d%bra)%triangular%tuple_combInd
-        row     = c(d%ket+shift1)%tuple_combInd     
-       endif
-       else
-       if (if_trans=='N') then
-        row     = c(d%bra_reorder)%tuple_combInd
-        column  = c(d%ket_reorder)%tuple_combInd     
-       else 
-        column  = c(d%bra_reorder)%tuple_combInd
-        row     = c(d%ket_reorder)%tuple_combInd     
-       endif
-       endif
 
-       call srt_22(save_index)%restricted_bra(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
-                  & c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array,  &
-                  & c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)  
+    if (if_trans=='N') then
+      call srt_22(save_index)%restricted_bra(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)  
+    else
+      call srt_22(save_index)%restricted_bra(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)  
+    endif
 
       case('restricted_ket')
 
-      call input_index(c,d)
-
-       if (do_inverse) then
-        shift1 = 4
-       if (if_trans=='N') then
-        row     = c(d%bra+shift1)%tuple_combInd
-        column  = c(d%ket)%triangular%tuple_combInd     
-       else 
-        column  = c(d%bra+shift1)%tuple_combInd
-        row     = c(d%ket)%triangular%tuple_combInd     
-       endif
-       else
-       if (if_trans=='N') then
-        row     = c(d%bra_reorder)%tuple_combInd
-        column  = c(d%ket_reorder)%tuple_combInd     
-       else 
-        column  = c(d%bra_reorder)%tuple_combInd
-        row     = c(d%ket_reorder)%tuple_combInd     
-       endif
-       endif
-
-      if (save_index==2) then
-
-      call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,  &
-     &             c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket)%full_array,&
-     &             c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
+      call input_index(orb_array,c,d)
 
 
-      else
+    if (if_trans=='N') then
+      call srt_22(save_index)%restricted_ket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)  
+    else
+      call srt_22(save_index)%restricted_ket(irrep_input,nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     & c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)  
+    endif
 
-      call srt_22(save_index)%restricted_ket(nrep,multb,do_totsym,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type,  &
-     &             c(d%K)%orbital_type,c(d%L)%orbital_type,c(d%bra_reorder)%tuple_combInd,c(d%braket+shift)%full_array,&
-     &             c(d%bra_reorder)%tuple,c(d%ket_reorder)%tuple,B%integral,sorted)
-
-      endif
        end select
      else
-!!      write(*,*)'====sorting is not needed===='
 
      if (present(presorted)) then
 
@@ -915,467 +863,191 @@
 
      endif
 
-     call input_index(c,d)
-       shift1 = 4
-      select case(arraytype)
+     call input_index(orb_array,c,d)
+
+
+     call alloc_array(e,nrep,f)
+      select case(Array_Type)
  
       case('restricted_braket')
 
-       if (if_trans=='N') then
-       row = c(d%bra)%triangular%tuple_combInd
-       column = c(d%ket)%triangular%tuple_combInd     
-       else 
-       column = c(d%bra)%triangular%tuple_combInd
-       row = c(d%ket)%triangular%tuple_combInd     
-       endif
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
 
        case('restricted_bra')
 
-       if (if_trans=='N') then
-       row = c(d%bra)%triangular%tuple_combInd
-       column = c(d%ket+shift1)%tuple_combInd     
-       else 
-       column = c(d%bra)%triangular%tuple_combInd
-       row = c(d%ket+shift1)%tuple_combInd     
-       endif
+      call auto_symmetry_offset_triangular(e,c(d%I)%orbital_type,c(d%J)%orbital_type)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
 
        case('restricted_ket')
 
-       if (if_trans=='N') then
-       row = c(d%bra+shift1)%tuple_combInd
-       column = c(d%ket)%triangular%tuple_combInd     
-       else 
-       column = c(d%bra+shift1)%tuple_combInd
-       row = c(d%ket)%triangular%tuple_combInd     
-       endif
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset_triangular(f,c(d%K)%orbital_type,c(d%L)%orbital_type)
 
        case('unrestricted')
 
-       if (if_trans=='N') then
-       row    = c(d%bra+shift1)%tuple_combInd
-       column = c(d%ket+shift1)%tuple_combInd     
-       else 
-       column = c(d%bra+shift1)%tuple_combInd
-       row    = c(d%ket+shift1)%tuple_combInd     
-       endif
+      call auto_symmetry_offset(e,c(d%I)%orbital_type,c(d%J)%orbital_type,.false.,.false.)
+      call auto_symmetry_offset(f,c(d%K)%orbital_type,c(d%L)%orbital_type,.false.,.false.)
 
        end select
 
+       if (if_trans=='N') then
+       row = e%oneNonDirac 
+       column = f%oneNonDirac   
+       else 
+       column = e%oneNonDirac 
+       row = f%oneNonDirac   
+       endif
+
+     call dealloc_array(e,f)
      endif
 
      elseif (sort_type_dummy == 31) then
-       select case(arraytype)
+       select case(Array_Type)
       
        case('unrestricted')
 
-        call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
-       shift1 = 4
 
-       if (save_index == 2) then
+      if (if_trans=='N') then
 
-       if (if_trans=='N') then
-        column = c(d%l_reorder)%orbital_type
-        row = m(d%ijk_reorder)%qrs%tuple_combInd  
-       else
-        row = c(d%l_reorder)%orbital_type
-        column = m(d%ijk_reorder)%qrs%tuple_combInd  
-       endif
-       
-        call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
-           & c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%ijk_reorder)%qrs%tuple_combInd,&
-           & array_tot(m(d%ijk_reorder)%qrs%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%qrs%tuple,B%integral,sorted) 
+      call srt_31(save_index)%unrestricted(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-        elseif (save_index == 3) then 
+      else
 
-       if (if_trans=='N') then
-        column = c(d%l_reorder)%orbital_type
-        row = m(d%ijk_reorder)%pqr%tuple_combInd  
-       else
-        row = c(d%l_reorder)%orbital_type
-        column = m(d%ijk_reorder)%pqr%tuple_combInd  
-       endif
-       
-        call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
-           & c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%ijk_reorder)%pqr%tuple_combInd,&
-           & array_tot(m(d%ijk_reorder)%pqr%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%pqr%tuple,B%integral,sorted) 
+      call srt_31(save_index)%unrestricted(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
-        elseif (save_index == 4) then
+      endif
 
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%tuple_combInd
-       endif
+       case('restricted_braket')
 
-     call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%triangular%tuple_combInd,c(d%K)%orbital_type,&
-           & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%tuple_combInd, &
-           & array_tot(m(d%ijk_reorder)%qrs%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%qrs%tuple,B%integral,sorted)
+       call input_index(orb_array,c,d)
 
-       else
 
-       if (if_trans=='N') then
-        column = c(d%l_reorder)%orbital_type
-        row = m(d%ijk_reorder)%pqr%tuple_combInd  
-       else
-        row = c(d%l_reorder)%orbital_type
-        column = m(d%ijk_reorder)%pqr%tuple_combInd  
-       endif
-       
-        call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%K)%orbital_type, &
-           & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%tuple_combInd,&
-           & array_tot(m(d%ijk_reorder)%pqr%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%pqr%tuple,B%integral,sorted) 
+      if (if_trans=='N') then
 
-       endif
+      call srt_31(save_index)%restricted_braket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-       if (do_inverse) then
-       if (if_trans=='N') then
-        column =  c(d%ket+shift1)%tuple_combInd
-        row    = c(d%bra+shift1)%tuple_combInd
-       else
-        row = c(d%ket+shift1)%tuple_combInd
-        column = c(d%bra+shift1)%tuple_combInd
-       endif
-       endif
+      else
 
-         case('restricted_braket')
+      call srt_31(save_index)%restricted_braket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
-        call input_index(c,d,m)
-
-       if (save_index == 2) then
-
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-       endif
-
-      call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%I)%orbital_type, &
-        &  c(d%J)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd, &
-        &  array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-        &  m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted,c(d%ket)%triangular%tuple_combInd)
-
-       elseif (save_index == 1) then
-
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-       endif
-
-     call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
-           & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd, &
-           & array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted)
-
-       else
-
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
-       endif
-
-     call srt_31(save_index)%restricted_braket(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
-              & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd, &
-              & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep),        &
-              & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted)
-
-       endif
-
-       if (do_inverse) then
-       if (if_trans=='N') then
-       row = c(d%bra)%triangular%tuple_combInd
-       column = c(d%ket)%triangular%tuple_combInd     
-       else 
-       column = c(d%bra)%triangular%tuple_combInd
-       row = c(d%ket)%triangular%tuple_combInd     
-       endif
-       endif
+      endif
 
         case('restricted_bra')
 
-        call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
-        shift1 = 4 
-       
-    if (save_index == 1) then
 
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%tuple_combInd
-       endif
+      if (if_trans=='N') then
 
-      call srt_31(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%I)%orbital_type, &
-        &  c(d%J)%orbital_type,m(d%ijk_reorder)%qrs%tuple_combInd, &
-        &  array_tot(m(d%ijk_reorder)%qrs%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-        &  m(d%ijk_reorder)%qrs%tuple,B%integral,sorted,c(d%ket+shift1)%tuple_combInd)
+      call srt_31(save_index)%restricted_bra(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-    elseif (save_index==3) then
+      else
 
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-       endif
+      call srt_31(save_index)%restricted_bra(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
-     call srt_31(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type,&
-           & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%triangular%tuple_combInd, &
-           & array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted)
-
-    else
-
-        if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd
-       endif
-
-        call srt_31(save_index)%restricted_bra (nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,c(d%K)%orbital_type, &
-        & c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%triangular%tuple_combInd, &
-        & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-        & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted) 
-
-     endif
-
-      if (do_inverse) then
-
-       if (if_trans=='N') then
-          row    = c(d%bra)%triangular%tuple_combInd 
-          column = c(d%ket+shift1)%tuple_combInd
-       else  
-          column = c(d%bra)%triangular%tuple_combInd 
-          row    = c(d%ket+shift1)%tuple_combInd
-       endif
-       endif
+      endif
 
          case('restricted_ket')
 
-        call input_index(c,d,m)
+       call input_index(orb_array,c,d)
 
-        shift1 = 4
+      if (if_trans=='N') then
 
-     if (save_index==0) then
+      call srt_31(save_index)%restricted_ket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%pqr%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%pqr%tuple_combInd
-       endif
+      else
 
-     call srt_31(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,&
-          & c(d%K)%orbital_type,c(d%L)%orbital_type,m(d%ijk_reorder)%pqr%tuple_combInd, &
-          & array_tot(m(d%ijk_reorder)%pqr%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-          & m(d%ijk_reorder)%pqr%tuple,B%integral,sorted)
+      call srt_31(save_index)%restricted_ket(irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+     &               c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
-      elseif (save_index==1) then
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%tuple_combInd
-       endif
-
-     call srt_31(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%K)%orbital_type,&
-          & c(d%L)%orbital_type,m(d%ijk_reorder)%qrs%tuple_combInd, &
-          & array_tot(m(d%ijk_reorder)%qrs%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-          & m(d%ijk_reorder)%qrs%tuple,B%integral,sorted)
-
-
-        elseif (save_index == 3) then 
-
-
-       if (if_trans=='N') then
-        column = c(d%l_reorder)%orbital_type
-        row = m(d%ijk_reorder)%pqr%triangular%tuple_combInd  
-       else
-        row = c(d%l_reorder)%orbital_type
-        column = m(d%ijk_reorder)%pqr%triangular%tuple_combInd  
-       endif
-       
-        call srt_31(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type, &
-           & c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd,m(d%ijk_reorder)%pqr%tuple_combInd,&
-           & array_tot(m(d%ijk_reorder)%pqr%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-           & m(d%ijk_reorder)%pqr%triangular%tuple,B%integral,sorted) 
-
-     else
-
-       if (if_trans=='N') then
-          row    = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-          column = c(d%l_reorder)%orbital_type  
-       else
-          row    = c(d%l_reorder)%orbital_type  
-          column = m(d%ijk_reorder)%qrs%triangular%tuple_combInd
-       endif
-
-     call srt_31(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,c(d%I)%orbital_type,&
-     & c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd,m(d%ijk_reorder)%qrs%triangular%tuple_combInd,&
-     & array_tot(m(d%ijk_reorder)%qrs%triangular%tuple_combInd,c(d%l_reorder)%orbital_type,nrep), &
-     & m(d%ijk_reorder)%qrs%triangular%tuple,B%integral,sorted)
-
-     endif
-
-       if (do_inverse) then
-       if (if_trans=='N') then
-       row = c(d%bra+shift1)%tuple_combInd
-       column = c(d%ket)%triangular%tuple_combInd     
-       else 
-       column = c(d%bra+shift1)%tuple_combInd
-       row = c(d%ket)%triangular%tuple_combInd     
-       endif
-       endif
+      endif
 
       end select
 
      elseif (sort_type_dummy == 13) then
-      select case(arraytype)
+      select case(Array_type)
         
          case('unrestricted')
 
-      call input_index(c,d,m)
+     call input_index(orb_array,c,d)
 
-       shift1 = 4
-       if (do_inverse) then
-       if (if_trans=='N') then
-        column =  c(d%ket+shift1)%tuple_combInd
-        row    = c(d%bra+shift1)%tuple_combInd
-       else
-        row = c(d%ket+shift1)%tuple_combInd
-        column = c(d%bra+shift1)%tuple_combInd
-       endif
-       else
-       if (if_trans=='N') then
-          row    = c(d%i_reorder)%orbital_type  
-          column = m(d%jkl_reorder)%qrs%tuple_combInd
-       else
-          row    = m(d%jkl_reorder)%qrs%tuple_combInd
-          column = c(d%i_reorder)%orbital_type  
-       endif
-       endif
 
-      call srt_13(save_index)%unrestricted(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,&
-     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd, &
-     &  array_tot(c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%tuple_combInd,nrep), &
-     &  m(d%jkl_reorder)%qrs%tuple,B%integral,sorted)
-         
-         case('restricted_braket')
+      if (if_trans=='N') then
 
-       call input_index(c,d,m)
+        call srt_13(save_index)%unrestricted (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-       if (do_inverse) then
-       if (if_trans=='N') then
-        column = c(d%ket)%triangular%tuple_combInd
-        row    = c(d%bra)%triangular%tuple_combInd
-       else
-        row = c(d%ket)%triangular%tuple_combInd
-        column = c(d%bra)%triangular%tuple_combInd
-       endif
- 
-       else
+     else
 
-       if (if_trans=='N') then
-          row    = c(d%i_reorder)%orbital_type  
-          column = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
-       else
-          row    = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
-          column = c(d%i_reorder)%orbital_type  
-       endif
+        call srt_13(save_index)%unrestricted (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
 
-       endif 
+     endif 
 
-      call srt_13(save_index)%restricted_braket (nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,&
-     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd, &
-     & array_tot(c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%triangular%tuple_combInd,nrep), &
-     &  m(d%jkl_reorder)%qrs%triangular%tuple,B%integral,sorted)
+       case('restricted_braket')
+
+      call input_index(orb_array,c,d)
+
+
+      if (if_trans=='N') then
+
+        call srt_13(save_index)%restricted_braket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
+
+     else
+
+        call srt_13(save_index)%restricted_braket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+
+     endif 
 
          case('restricted_bra')
 
-          call input_index(c,d,m)
+         call input_index(orb_array,c,d)
 
-          shift1 = 4 
-      if (do_inverse) then
-       if (if_trans=='N') then
-          row    = c(d%bra)%triangular%tuple_combInd 
-          column = c(d%ket+shift1)%tuple_combInd
-       else  
-          column = c(d%bra)%triangular%tuple_combInd 
-          row    = c(d%ket+shift1)%tuple_combInd
-       endif
 
-       else
+      if (if_trans=='N') then
 
-       if (if_trans=='N') then
-          row    = c(d%i_reorder)%orbital_type  
-          column = m(d%jkl_reorder)%qrs%tuple_combInd
-       else
-          row    = m(d%jkl_reorder)%qrs%tuple_combInd
-          column = c(d%i_reorder)%orbital_type  
-       endif
-      endif
+        call srt_13(save_index)%restricted_bra (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-      call srt_13(save_index)%restricted_bra(nrep,multb,do_inverse,c(d%bra)%triangular%tuple_combInd,&
-     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket+shift1)%tuple_combInd, &
-     &  array_tot(c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%tuple_combInd,nrep), &
-     &  m(d%jkl_reorder)%qrs%tuple,B%integral,sorted)
+     else
+
+        call srt_13(save_index)%restricted_bra (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+
+     endif 
 
       case('restricted_ket')
 
-      call input_index(c,d,m)
-      shift1 = 4
-      if (do_inverse) then
+     call input_index(orb_array,c,d)
 
-       if (if_trans=='N') then
-          row    = c(d%bra+shift1)%tuple_combInd 
-          column = c(d%ket)%triangular%tuple_combInd
-       else  
-          column = c(d%bra+shift1)%tuple_combInd 
-          row    = c(d%ket)%triangular%tuple_combInd
-       endif
+      if (if_trans=='N') then
 
-       else
+        call srt_13(save_index)%restricted_ket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,row,column)
 
-       if (if_trans=='N') then
-          row    = c(d%i_reorder)%orbital_type  
-          column = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
-       else
-          row    = m(d%jkl_reorder)%qrs%triangular%tuple_combInd
-          column = c(d%i_reorder)%orbital_type  
-       endif
-       
-      endif
+     else
 
-      call srt_13(save_index)%restricted_ket(nrep,multb,do_inverse,c(d%bra+shift1)%tuple_combInd,&
-     &  c(d%I)%orbital_type,c(d%J)%orbital_type,c(d%ket)%triangular%tuple_combInd, &
-     &  array_tot(c(d%i_reorder)%orbital_type,m(d%jkl_reorder)%qrs%triangular%tuple_combInd,nrep), &
-     &  m(d%jkl_reorder)%qrs%triangular%tuple,B%integral,sorted)
+        call srt_13(save_index)%restricted_ket (irrep_input,nrep,multb,do_inverse,c(d%I)%orbital_type,c(d%J)%orbital_type, &
+       &                          c(d%K)%orbital_type,c(d%L)%orbital_type,B%integral,sorted,column,row)
+
+     endif 
 
       end select
    endif
-     if (allocated(V%presorted)) deallocate(V%presorted)
      
+     if (allocated(V%presorted)) deallocate(V%presorted)
      if (associated(B%integral)) nullify(B%integral)
  
   end subroutine
@@ -1383,9 +1055,7 @@
   subroutine onebody_for_blas (array1,array2,array3,trans_1b,row,column,FreeIndx) 
 
 !--------purpose-------------
-
 !    arrange onebody routine for blas. get the indices for matrix multiplication as well as the end tensor.
-
 !----------------------------
 
 
@@ -1395,7 +1065,7 @@
    character(2),optional,intent(out)     :: FreeIndx(size(array1))
    integer                               :: reorder_array(size(array1))      
    integer,intent(out)                   :: row(:), column(:) 
-   type(middle_indices)                  :: a(0:2)  
+   type(middle_indices)                  :: a(-14:2)  
    integer,dimension(2)                  :: bit_reordered
    integer                               :: i
 !------------------------------
@@ -1409,8 +1079,9 @@
   trans_1b = 'N'
   endif
   
-   a(0)%orbital_type => NO
-   a(1)%orbital_type => NV
+   a(0)%orbital_type(1:nrep) => NO(1:nrep)
+   a(1)%orbital_type(1:nrep) => NV(1:nrep)
+   a(-12)%orbital_type(1:nrep) => NCONT(1:nrep)
 
    bit_reordered = bitString(array1,reorder_array) 
 
@@ -1440,9 +1111,9 @@
   subroutine align_array(array1,array2,array3,reorder_array)
 
 !-------------------------------------------------------------
-    character(*),intent(in) :: array1(:), array2(:) ! array1 is the array to be reordered
+    character(*),intent(in) :: array1(:), array2(:)                    ! array1 is the array to be reordered
     character(*),intent(in),optional :: array3(:) 
-    integer, dimension(size(array1)),intent(out) :: reorder_array      ! array2 is the array from where we will extract the first indices in the reordered 
+    integer, dimension(size(array1)),intent(out) :: reorder_array      ! array2 is the array from where we will extract the first index of the reordered 
                                                                        ! array i.e, for left array it is always intermediate and for right always    
     integer                                  :: k,i                    ! left array. array3 is the array to extract rest of the indices e.g, for left array
                                                                        ! always right and for right array always intermediate.
@@ -1458,58 +1129,23 @@
     if (present(array3)) then 
      do i = 1, size(array3)       ! loop over vorder 
         if (findloc(array1,array3(i)) > 0) then 
-          reorder_array(k) = findloc(array1,array3(i))
-          k=k+1
+          if (k<=4) reorder_array(k) = findloc(array1,array3(i))
+          if (k<4) k=k+1
         endif
      enddo
     endif
     
   end subroutine
 
-
-! subroutine integral_fetching_out_of_core()
-
-! bit_original = bitString (array_original, (/1,2,3,4/)) 
-
-!  value = 10
-!  if (popcnt(bit_original)==2) then
-!   value = ior(iand(bit_original(1),bit_original(2)),iand(bit_original(3),bit_original(4))) 
-!  endif
-
-
-
-!  select case(integrals) 
-
-!   case (popcnt(bit_original)==0)
-!     allocate(Voooo(NV1))
-!     call getOOOO(Voooo)
-!   case (popcnt(bit_original)==1)
-!     allocate(Vvooo(NV2))
-!     call getVOOO(Vvooo)
-!   case (value==1)
-!     allocate(VVVOO(NV3))
-!     call getVVOO(VVVOO) 
-!   case (value==0)
-!     allocate(VVOVO(NV4))
-!     call getVOVO(VVOVO)
-
-!  end select
-
-! end subroutine
-
-
-  subroutine integral_fetching_incore(G)
-  implicit none
+  subroutine integral_fetching_incore(orb_array,array)
 !-------------------------------------------------------------
   integer :: value
-  integer,dimension(4):: bit_original, bit_available
-  integer :: AllocateStatus 
-  type(presorting),intent(out) :: G
+  character(2),intent(in) :: orb_array(:)
+  integer:: bit_original(size(orb_array))
+  real*8,intent(out) :: array(:)
 !-------------------------------------------------------------
-#include "symm.inc"
-#include "complex.inc"
 
-    bit_original = bitString (array_original,(/1,2,3,4/)) 
+    bit_original = bitString (orb_array,(/1,2,3,4/)) 
 
     value = bin2dec(bit_original)
 
@@ -1519,31 +1155,23 @@
 
     case (0)
 
-      allocate(G%presorted(nv1*rcw))
-      call getoooo(G%presorted)
+      call getoooo(array)
 
     case (1)
 
-      allocate(G%presorted(iovoot(nrep+1)*rcw))
-      call getooov(G%presorted)
+      call getooov(array)
 
     case (2)
 
-      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getoovo(G%presorted) 
+      call getoovo(array) 
 
     case (3)
 
-      allocate(G%presorted(nv3*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getoovv(G%presorted)
+      call getoovv(array)
 
    case (4)
 
-      allocate(G%presorted(iovoot(nrep+1)*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getovoo(G%presorted)
+      call getovoo(array)
 
     case (5)
 
@@ -1564,47 +1192,37 @@
 
     case (7)
 
-      allocate(G%presorted(iovvvt(nrep+1)*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getovvv_incore(G%presorted)
+      call getovvv_incore(array)
 
 !      write(*,*)'ovvv type array has to be fetched in out-of-core way.'
 
     case (8)
 
-      allocate(G%presorted(nv2*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvooo(G%presorted)
+      call getvooo(array)
 
     case (9)
 
-      allocate(G%presorted(ivoov(nrep+1)*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvoov(G%presorted)
+      call getvoov(array)
 
     case (10)
 
-      allocate(G%presorted(nv4*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvovo(G%presorted)
+      call getvovo(array)
 
     case (11)
 
-      allocate(G%presorted(nv5*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvovv_incore(G%presorted)
+      call getvovv_incore(array)
 
     case (12)
 
-      allocate(G%presorted(nv3*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvvoo(G%presorted)
+      call getvvoo(array)
+
+    case (13)
+
+      call getvvov_incore(array)
 
     case (14)
 
-      allocate(G%presorted(nv5*rcw),stat = AllocateStatus)
-      IF (AllocateStatus /= 0) STOP "*** Not enough memory ***"
-      call getvvvo_incore(G%presorted)
+      call getvvvo_incore(array)
 
     case default
       write(*,*)'no suitable array to fetch'
@@ -1612,233 +1230,33 @@
 
   end subroutine
 
-  subroutine input_index(a,b,k,reorder_v)
-
-!pointer to most of the indices available in RELCCSD module. purpose is to access them in a generalized fashion. 
-
-!-------------------------------
- integer,dimension(:),allocatable,target :: bit_reordered, bit_original
- integer,dimension(4),intent(in),optional:: reorder_v 
-! logical, intent(in)                :: do_exchange
-! character(2), intent(in)           :: array_exchange(4)
- type(middle_indices),intent(out)     :: a(0:30)  
- type(bit_processing),intent(out)   :: b 
- type(more_indices),intent(out),optional :: k(0:15)
- integer :: i
- integer, pointer :: bitpqr(:),bitqrs(:),bitpqr_reorder(:),bitqrs_reorder(:)
-!-------------------------------
+  subroutine input_index(orb_array,a,b)
 #include "symm.inc"
-     a(0)%tuple => JJOO         
-     a(1)%tuple => JJOV
-     a(2)%tuple => JJVO
-     a(3)%tuple => JJVV
+! This subroutine identifies the dimension of each individual
+! orbital-type (i.e, hole, particle, continuous, active etc.) 
 
-     a(4)%tuple => IIOOT         
-     a(5)%tuple => IIOV
-     a(6)%tuple => IIVO
-     a(7)%tuple => IIVV
+!-------------------------------
+ character(2),intent(in)                   :: orb_array(:)
+ type(middle_indices),intent(out)     :: a(-14:5)  
+ type(bit_processing),intent(out)     :: b 
+ integer,allocatable :: bit_original(:)
+!-------------------------------
 
-     a(0)%tuple_combInd => MOO
-     a(1)%tuple_combInd => MOV
-     a(2)%tuple_combInd => MVO
-     a(3)%tuple_combInd => MVV
+   allocate(bit_original(size(orb_array)))
 
-     a(4)%tuple_combInd => NOO
-     a(5)%tuple_combInd => NOV
-     a(6)%tuple_combInd => NVO
-     a(7)%tuple_combInd => NVV
-
-     a(0)%triangular%tuple_combInd => NOOT
-     a(3)%triangular%tuple_combInd => NVVT
-
-!dimensions for the arrays where both bra and ket are totally symmetric.
-
-
-      a(0)%full_array => JOOOO
-      a(1)%full_array => JOOOV
-      a(2)%full_array => JOOVO
-      a(3)%full_array => JOOVV
-      a(4)%full_array => JOVOO
-      a(5)%full_array => JOVOV
-      a(6)%full_array => JOVVO
-      a(7)%full_array => JOVVV
-      a(8)%full_array => JVOOO
-      a(12)%full_array => JVVOO
-      a(13)%full_array => JVVOV
-      a(10)%full_array => JVOVO
-      a(11)%full_array => JVOVV
-      a(9)%full_array => JVOOV
-      a(14)%full_array => JVVVOI4
-
-      a(15)%full_array => J2OOOO     
-      a(16)%full_array => J2OOOV
-      a(17)%full_array => J2OOVO
-      a(18)%full_array => J2OOVV
-      a(19)%full_array => J2OVOO
-      a(20)%full_array => J2OVOV
-      a(21)%full_array => J2OVVO
-      a(22)%full_array => J2OVVV
-      a(23)%full_array => J2VOOO
-      a(27)%full_array => J2VVOO
-      a(28)%full_array => J2VVOV
-      a(25)%full_array => J2VOVO
-      a(26)%full_array => J2VOVV
-      a(24)%full_array => J2VOOV
-      a(29)%full_array => J2VVVO
-
-
-!    a(4)%full_array = INT(JVVVO,4) !WARNING!!! JVVVOT is int*8 type. I cast it as int*4 from int*8
-
-!dimensions for the arrays where both bra and ket are not necessarily totally symmetric.
-
-!dimension for the single orbital index
-     a(0)%orbital_type => NO
-     a(1)%orbital_type => NV
-
-  if (present(k)) then
-
-     k(4)%pqr%tuple => KKVOO
-     k(5)%pqr%tuple => KKVOV
-     k(2)%pqr%tuple => KKOVO
-     k(3)%pqr%tuple => KKOVV
-
-     k(0)%pqr%triangular%tuple => KKOOOT
-     k(1)%pqr%triangular%tuple => KKOOVT
-     k(6)%pqr%triangular%tuple => KKVVOT
-     k(7)%pqr%triangular%tuple => KKVVVT
-
-     k(2)%pqr%tuple_combInd => NOVO2
-     k(3)%pqr%tuple_combInd => NOVV
-     k(4)%pqr%tuple_combInd => NVOO
-     k(5)%pqr%tuple_combInd => NVOV
-
-     k(0)%pqr%triangular%tuple_combInd => NOOOT
-     k(1)%pqr%triangular%tuple_combInd => NOOVT
-     k(6)%pqr%triangular%tuple_combInd => NVVOT
-     k(7)%pqr%triangular%tuple_combInd => NVVVT
-
-     k(1)%qrs%tuple => LLOOV
-     k(2)%qrs%tuple => LLOVO
-     k(6)%qrs%tuple => LLVVO
-     k(5)%qrs%tuple => LLVOV
-     k(0)%qrs%triangular%tuple => LLOOOT
-     k(4)%qrs%triangular%tuple => LLVOOT
-     k(3)%qrs%triangular%tuple => LLOVVT
-     k(7)%qrs%triangular%tuple => LLVVVT
-
-     k(2)%qrs%tuple_combInd => NOVO
-     k(1)%qrs%tuple_combInd => NOOV
-     k(6)%qrs%tuple_combInd => NVVO
-     k(5)%qrs%tuple_combInd => NVOV2
-     k(0)%qrs%triangular%tuple_combInd => NOOOT2
-     k(4)%qrs%triangular%tuple_combInd => NVOOT
-     k(3)%qrs%triangular%tuple_combInd => NOVVT
-     k(7)%qrs%triangular%tuple_combInd => NVVVT2
-
-     k(0)%pqr%full_array => KOOOOT
-     k(1)%pqr%full_array => KOOOVT
-     k(2)%pqr%full_array => KOOVOT
-     k(3)%pqr%full_array => KOOVVT
-     k(4)%pqr%full_array => KOVOO
-     k(8)%pqr%full_array => KVOOO
-     k(9)%pqr%full_array => KOVOV
-     k(5)%pqr%full_array => KVOOV
-     k(6)%pqr%full_array => KOVVOT
-     k(11)%pqr%full_array=> KVOVV
-     k(10)%pqr%full_array=> KVOVO
-     k(12)%pqr%full_array=> KVVOOT
-     k(13)%pqr%full_array=> KVVOVT
-!    k(14)%pqr%full_array=  INT(KVVVOT,4)  !WARNING!!! KVVVOT is int*8 type. I cast it as int*4 from int*8
-      
-     k(0)%qrs%full_array => LOOOOT
-     k(1)%qrs%full_array => LVOOOT
-     k(2)%qrs%full_array => LOOVO
-     k(3)%qrs%full_array => LOOVVT
-     k(4)%qrs%full_array => LOVOOT
-     k(5)%qrs%full_array => LOVOV
-     k(6)%qrs%full_array => LOVVO 
-     k(8)%qrs%full_array => LVOOOT 
-     k(9)%qrs%full_array => LVOOVT 
-     k(10)%qrs%full_array=> LVOVO 
-     k(11)%qrs%full_array=> LVOVVT 
-     k(12)%qrs%full_array=> LVVOOT
-     k(14)%qrs%full_array=> LVVVO
-
-
-     k(0)%totsym%full_array => IOOOOTT
-!    k(2)%totsym%full_array => IOOVO
-!    k(3)%totsym%full_array => IOOVVT
-     k(4)%totsym%full_array => IOVOOT
-     k(6)%totsym%full_array => IOVVO 
-     k(7)%totsym%full_array => IOVVVT
-     k(8)%totsym%full_array => IVOOOT 
-     k(9)%totsym%full_array => IVOOV  
-     k(10)%totsym%full_array=> IVOVO 
-!    k(11)%totsym%full_array=> IVOVVT 
-     k(12)%totsym%full_array=> IVVOOT
-!    k(14)%totsym%full_array=> IVVVO
-
-  endif
-
-  if (present(reorder_v)) reorder_left = reorder_v  
-
-  allocate (bit_reordered(size(array_original)))
-  allocate (bit_original(size(array_original)))
-
-  if (do_exchange) then
-  bit_reordered = bitString (exchange,reorder_left)
-  bit_original  = bitString (exchange, (/1,2,3,4/)) 
-  else
-  bit_reordered  = bitString (array_original,reorder_left)
-  bit_original  = bitString (array_original, (/1,2,3,4/)) 
-  endif
-
-! unique indexing for pair indices.  
-
-    b%bra_reorder = ior(bit_reordered(1),bit_reordered(2)) + iand(bit_reordered(1),bit_reordered(2)) &
-    &                + ior(bit_reordered(1),iand(bit_reordered(1),bit_reordered(2))) 
-    b%ket_reorder = ior(bit_reordered(3),bit_reordered(4)) + iand(bit_reordered(3),bit_reordered(4)) &
-    &                + ior(bit_reordered(3),iand(bit_reordered(3),bit_reordered(4)))  
-
-    b%braket = bin2dec(bit_reordered)
-
-
-    b%bra = ior(bit_original(1),bit_original(2)) + iand(bit_original(1),bit_original(2)) &
-    &        + ior(bit_original(1),iand(bit_original(1),bit_original(2)))
-    b%ket = ior(bit_original(3),bit_original(4)) + iand(bit_original(3),bit_original(4)) &
-    &        + ior(bit_original(3),iand(bit_original(3),bit_original(4)))
-
-! unique indexing for combined triple indices.
-
-    bitpqr=>bit_original(1:3)
-    bitqrs=>bit_original(2:4)
-
-    b%ijk = bin2dec(bitpqr) 
-    b%jkl = bin2dec(bitqrs)
-
-    bitpqr_reorder=>bit_reordered(1:3)  
-    bitqrs_reorder=>bit_reordered(2:4)  
-
-    b%ijk_reorder = bin2dec(bitpqr_reorder) 
-    b%jkl_reorder = bin2dec(bitqrs_reorder)
-
-! unique indexing for individual label of an array.
+    bit_original  = bitString (orb_array,(/1,2,3,4/)) 
 
     b%I = bit_original(1) 
     b%J = bit_original(2)
     b%K = bit_original(3)
     b%L = bit_original(4)
 
-    b%I_reorder = bit_reordered(1) 
-    b%J_reorder = bit_reordered(2)
-    b%K_reorder = bit_reordered(3)
-    b%L_reorder = bit_reordered(4)
-! unique indexing for full array when triangular index tuple are being used.
-    b%ijkl_reorder = bin2dec(bit_reordered)  
-    b%ijkl = bin2dec(bit_original)  
+    a(0)%orbital_type(1:nrep) => NO(1:nrep)
+    a(1)%orbital_type(1:nrep) => NV(1:nrep)
+    a(-12)%orbital_type(1:nrep) => NCONT(1:nrep)
 
-  deallocate (bit_reordered)
-  deallocate (bit_original)
+   deallocate(bit_original)
+
   end subroutine
 
   integer function findloc(array,value)
@@ -1847,7 +1265,7 @@
   character(2),intent(in) :: value
   integer      :: i  
 
-     do i = 1, size(array)       ! loop over vorder 
+     do i = 1, size(array)        
         if (array(i)==value) then
           findloc = i
           exit
@@ -1859,7 +1277,7 @@
 
   function bitString (generic_array,reorder_index_array)
 
-  character(*), dimension(:),intent(in) :: generic_array
+  character(2), dimension(:),intent(in) :: generic_array
   integer,      dimension(:),intent(in) :: reorder_index_array
   integer      :: i,k
   integer, dimension(size(generic_array)) ::bitString 
@@ -1875,8 +1293,8 @@
 
   integer function toDecimal(index_array,trans)
    
-  integer, dimension(:),intent(in),target :: index_array
-  logical, optional, intent(in) :: trans
+  integer,dimension(:),intent(in),target :: index_array
+  logical,optional, intent(in) :: trans
   integer :: scratch(size(index_array))
   integer,pointer :: scratch_bra(:)
   integer,pointer :: scratch_ket(:)
@@ -1889,7 +1307,7 @@
   else
    do_trans = .false.
   endif
- 
+
   if (do_trans) then
 
 ! it should not be case dependent. if possible try to modify it.
@@ -1938,7 +1356,18 @@
        N = size(E); Nfac = size(P,1); 
      do i=1,N                           ! cases with E(i) in front 
           if( N>1 ) call permutate((/E(:i-1), E(i+1:)/), S) 
-         forall(k=1:Nfac/N) P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/) 
+!
+!    Fix introduced by Tjerk Straatsma:
+!
+!    The following is a work around for the PGI compiler error generated
+!    by the original forall loop
+!
+      do k=1,Nfac/N
+           P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/)
+      enddo
+!
+!         forall(k=1:Nfac/N) P((i-1)*Nfac/N+k,:) = (/E(i), S(k,:)/) 
+!
      end do 
   end subroutine permutate 
 
@@ -1967,25 +1396,6 @@
     character(10)       :: temp
     write (temp,'(I0)') seqnum
     seqstring = trim(temp)
-  end function
-
-  function array_tot(row,column,nrep)
-
-!-----------description-------------------------------------------------------
-! construct the symmetry offset between an index triple bra/ket and and a single index bra/ket. 
-!-----------------------------------------------------------------------------
-
-  integer,intent(in):: nrep
-  integer,intent(in):: row(nrep),column(nrep)
-  integer           :: array_tot(nrep+1) 
-  integer           :: irep
-
-  array_tot(1) = 0
-
-  do irep = 1, nrep
-   array_tot(irep+1) = array_tot(irep) + row(irep)*column(irep)
-  enddo
-
   end function
 
   function sorted_dimension(generic_array)
@@ -2032,5 +1442,6 @@
      end select  
 
   end function
+
 
   end module   

@@ -9,14 +9,14 @@ One-electron operators
 Syntax for the specification of one-electron operators
 ------------------------------------------------------
 
-A general property operator in 4-component calculations is generated from
+A general one-electron property operator in 4-component calculations is generated from
 linear combinations of the basic form:
 
 .. math::
 
-  \hat{P} = f M_{4 \times 4} \Omega
+  \hat{P} = f M_{4 \times 4} \hat{\Omega}
 
-with the scalar factor :math:`f` and the scalar operator :math:`\Omega`, and where
+with the scalar factor :math:`f` and the scalar operator :math:`\hat{\Omega}`, and where
 
 .. math::
 
@@ -26,9 +26,9 @@ is one of the following :math:`4 \times 4` matrices:
 
 .. math::
 
-  I_{4 \times 4}, \gamma_5,
+  I_{4 \times 4}, \gamma_5, \beta \gamma_5,
 
-  \alpha_x, \alpha_y, \alpha_z
+  i\alpha_x, i\alpha_y, i\alpha_z
 
   \Sigma_x, \Sigma_y,  \Sigma_z
 
@@ -36,34 +36,38 @@ is one of the following :math:`4 \times 4` matrices:
 
   i \beta \alpha_x, i \beta \alpha_y, i \beta \alpha_z
 
+One thing to notice is that an imaginary :math:`i` is added to the time-antisymmetric Dirac :math:`\boldsymbol{\alpha}` - matrices and their derivatives to make them time symmetric and hence fit into the
+quaternion symmetry scheme of DIRAC (see :cite:`Saue1999` and :cite:`Salek2005` for more information).
 
 Operator types
 --------------
 
-There are 19 basic operator types used in DIRAC, liste in this Table:
+There are 21 basic operator types used in DIRAC, listed in this Table:
 
 ===========  ============================================================================= ===============
 **Keyword**  **Operator form**                                                             **Nr. factors**
 ===========  ============================================================================= ===============
 DIAGONAL     :math:`f I_{4 \times 4} \Omega`                                               1
-GAMMA5       :math:`f \gamma_5 \Omega`                                                     1
 XALPHA       :math:`f \alpha_x \Omega`                                                     1
 YALPHA       :math:`f \alpha_y \Omega`                                                     1
 ZALPHA       :math:`f \alpha_z \Omega`                                                     1
-XSIGMA       :math:`f \Sigma_x \Omega`                                                     1
-YSIGMA       :math:`f \Sigma_y \Omega`                                                     1
-ZSIGMA       :math:`f \Sigma_z \Omega`                                                     1
 XAVECTOR     :math:`f_1 \alpha_y \Omega_z - f_2 \alpha_z \Omega_y`                         2
 YAVECTOR     :math:`f_1 \alpha_z \Omega_x - f_2 \alpha_x \Omega_z`                         2
 ZAVECTOR     :math:`f_1 \alpha_x \Omega_y - f_2 \alpha_y \Omega_x`                         2
 ALPHADOT     :math:`f_1 \alpha_x \Omega_x + f_2 \alpha_y \Omega_y + f_3 \alpha_z \Omega_z` 3
+GAMMA5       :math:`f \gamma_5 \Omega`                                                     1
+XSIGMA       :math:`f \Sigma_x \Omega`                                                     1
+YSIGMA       :math:`f \Sigma_y \Omega`                                                     1
+ZSIGMA       :math:`f \Sigma_z \Omega`                                                     1
 XBETASIG     :math:`f \beta \Sigma_x \Omega`                                               1
 YBETASIG     :math:`f \beta \Sigma_y \Omega`                                               1
 ZBETASIG     :math:`f \beta \Sigma_z \Omega`                                               1
 XiBETAAL     :math:`f i \beta \alpha_x \Omega`                                             1
 YiBETAAL     :math:`f i \beta \alpha_y \Omega`                                             1
 ZiBETAAL     :math:`f i \beta \alpha_z \Omega`                                             1
-BETAGAMMA5   :math:`f i \beta \gamma_5 \Omega`                                             1
+BETA         :math:`f \beta \Omega`                                                        1
+SIGMADOT     :math:`f_1 \Sigma_x \Omega_x + f_2 \Sigma_y \Omega_y + f_3 \Sigma_z \Omega_z` 1
+iBETAGAMMA5  :math:`f i \beta \gamma_5 \Omega`                                             1
 ===========  ============================================================================= ===============
 
 
@@ -75,22 +79,25 @@ arguments::
 
   .OPERATOR
    'operator name'
-   operator type
-   labels for each component
+   operator type keyword
+   operator labels for each component
    FACTORS
    factors for each component
+   CMULT
    COMFACTOR
    common factor for all components
 
 Note that the arguments following the keyword :ref:`HAMILTONIAN_.OPERATOR` must start with
 a blank. The arguments are optional, except for the operator label.
+Component factors as well as the common factor are all one if not specified.
 
 
 List of one-electron operators
 ------------------------------
 
 +-------------+----------------------------------+----------------+----------------+----------------------------------+
-| **Keyword** | **Description**                  | **Symmetry**   | **Components** | **Operators**                    |
+| **Operator**| **Description**                  | **Symmetry**   | **Components** | **Operators**                    |
+| **label**   |                                  |                |                |                                  |
 +=============+==================================+================+================+==================================+
 | MOLFIELD    | Nuclear attraction integrals     | Symmetric      | MOLFIELD       | :math:`\Omega_1 = \sum_K V_{iK}` |
 +-------------+----------------------------------+----------------+----------------+----------------------------------+
@@ -157,7 +164,7 @@ SDFC        Spin-dipole + Fermi contact integrals
 HDO         Half-derivative overlap integrals
 S1MAG       Second order contribution from overlap matrix to magnetic properties
 ANGLON      Angular momentum around the nuclei
-ANGMOM      Electronic angular momentum around the origin
+ANGMOM      Electronic angular momentum around the molecular center of mass
 LONMOM      London orbital contribution to angular momentum
 MAGMOM      One-electron contributions to magnetic moment
 KINENER     Electronic kinetic energy
@@ -173,7 +180,7 @@ ELFGRDS     Electric field gradient at the individual nuclei, spherical
 S1MAGL      Bra-differentiation of overlap matrix with respect to magnetic field
 S1MAGR      Ket-differentiation of overlap matrix with respect to magnetic field
 HDOBR       Ket-differentiation of HDO-integrals with respect to magnetic field
-NUCPOT      Potential energy at the nuclei
+NUCPOT      Potential energy of the interaction of electrons with individual nuclei, divided by the nuclear charge
 HBDO        Half B-differentiated overlap matrix
 SQHDO       Half-derivative overlap integrals not to be antisymmetrized
 DSUSCGO     Diamagnetic susceptibility with common gauge origin

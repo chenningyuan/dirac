@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2416,7 +2416,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -2636,7 +2636,7 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
           WRITE(LUWRT,*) ' *********************** '
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '  Number of blocks included ', LBATCH(JBATCH)
-          WRITE(LUWRT,*) '  TTSS and offsets and lenghts of each block '
+          WRITE(LUWRT,*) '  TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -2821,7 +2821,7 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '      Number of blocks included ', 
      &                          LBATCH(JBATCH)
-          WRITE(LUWRT,*) '      TTSS and offsets and lenghts of 
+          WRITE(LUWRT,*) '      TTSS and offsets and lengths of 
      &                          each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
@@ -3040,7 +3040,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
           WRITE(LUWRT,*)
           WRITE(LUWRT,*) '      Number of blocks included ', 
      &                          LBATCH(JBATCH)
-          WRITE(LUWRT,*) '      TTSS and offsets and lenghts of 
+          WRITE(LUWRT,*) '      TTSS and offsets and lengths of 
      &                          each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(LUWRT,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
@@ -3647,7 +3647,7 @@ C
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 *
 *.output
@@ -3916,7 +3916,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
 *
       INTEGER NBLK_MS2(*), IBLK_MS2(*)
@@ -4169,7 +4169,7 @@ C
 #include "krciprop.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
       DIMENSION IXSYMBLK(*)
 C
@@ -4427,9 +4427,9 @@ C
 #include "infpar.h"
 #include "cands.inc"
 #include "mxpdim.inc"
-      DIMENSION ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
-      DIMENSION NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
-      DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*)
+      INTEGER   ISTAT(MPI_STATUS_SIZE), ISYM_DISTR(IXSYMACT)
+      INTEGER   NPARBLOCK_X(NUM_BLOCKS,*),IBLOCKL_X(NUM_BLOCKS,*)
+      INTEGER   IXSYMPAIRS(MXPROPKRCI_SYM,*)
       INTEGER   RCCTOS_X(NUM_BLOCKS2,*)
 C
       IXPAIR = 0

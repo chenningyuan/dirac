@@ -1,10 +1,10 @@
 !dalton_copyright_start
-!      Copyright (c) 2015 by the authors of Dalton (see below).
+!      Copyright (c) 2017 by the authors of Dalton (see below).
 !      All Rights Reserved.
 !
 !      The source code in this file is part of
 !      "Dalton, a molecular electronic structure program,
-!       Release DALTON2015 (2015), see http://daltonprogram.org"
+!       Release DALTON2017 (2017), see http://daltonprogram.org"
 !
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
@@ -460,7 +460,6 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -484,8 +483,10 @@ C
 #include "trkoor.h"
 #include "cbilnr.h"
 #include "cbisol.h"
+#include "codata.h"
 C
       DIMENSION NMASS(36)
+C
       DATA NMASS /3,2,2,1,2,  2,2,3,1,3,
      &            1,3,1,3,1,  4,2,3,3,5,
      &            1,5,2,4,1,  4,1,5,2,5,
@@ -704,24 +705,27 @@ C  /* Deck rotana */
       SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
-      PARAMETER (ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU), 
-     &           CINVRS = 1.0D4/CCM)
 C
       DIMENSION GEOM(NCORD), AMASS(NATOMS), 
      &          AINRTI(3,3), AINRTP(6), VINRTI(3,3), VCMNUC(3),
      &          AWRKJC(3), IWRKJC(3)
 C
+      DOUBLE PRECISION ROTMHZ,CINVRS
+C
       LOGICAL  LINEAR, PLANAR
 #include "cbisol.h"
 #include "symmet.h"
 #include "inirep.h"
+C
+      ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU)
+      CINVRS = 1.0D4/CCM
 C
 C     ***** Moments of inertia *****
 C
@@ -837,7 +841,6 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -848,10 +851,10 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
-      PARAMETER (ESUDIP = 1D4*DEBYE**2,
-     &           ESUROT =  ECHARGE*XTANG*CCM*1D40*ECHARGE*HBAR/EMASS)
 C
+      DOUBLE PRECISION ESUDIP,ESUROT
       LOGICAL DONE, SAME, NOTALL, DOVCD
       DIMENSION HESS(NCORD,NCORD), GRAD(NCORD), GRDN(NCORD),
      &          AMASS(*), EVAL(NCORD), EVEC(NCORD,NCORD),
@@ -879,6 +882,9 @@ C
       CHARACTER*1 CHRIMG(0:1)
       CHARACTER*5 IRPTXT
       DATA CHRIMG /' ','i'/
+C
+      ESUDIP = 1.0D4*DEBYE**2
+      ESUROT = ECHARGE*XTANG*CCM*1.0D40*ECHARGE*HBAR/EMASS
 C
 C     *********************************************
 C     ***** Diagonalize mass weighted Hessian *****
@@ -1272,8 +1278,9 @@ C
 C  /* Deck prtfun */
       SUBROUTINE PRTFUN(TOTMAS,AIMOM,BIMOM,CIMOM,EVAL,
      &                  LINEAR,NCORD,NUMMOD)
-      use codata
 #include "implicit.h"
+#include "codata.h"
+#include "pi.h"
 C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
@@ -1289,6 +1296,7 @@ C
       DIMENSION EVAL(NCORD)
 C
       DIMENSION TEMP(MAXTMP)
+C
       DATA TEMP/ 50.0 D0, 100.0D0, 200.0D0, 273.15D0, 298.15D0,
      &          300.0 D0, 400.0D0, 500.0D0, 600.0 D0, 700.0 D0,
      &          800.0 D0, 900.0D0,1000.0D0,1500.0 D0,2000.0 D0/
@@ -1647,7 +1655,6 @@ C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1656,6 +1663,7 @@ C  /* Deck intern */
 C
 #include "cbivib.h"
 #include "nuclei.h"
+#include "codata.h"
 C
       CHARACTER UNITC*3, UNITF*9, UNITD*5
       DIMENSION HESS(NCORD,NCORD), DGRAD(3,NCORD), CAAT(3,NCORD),
@@ -1665,7 +1673,6 @@ C
      &          FINT(NINTER), DINT(NINTER,3), HINT(NINTER,NINTER),
      &          CMAT(NINTER,NCORD,NCORD), QQ(NINTER), AATINT(NINTER,3),
      &          CTYPE(NINTER), W2(NINTER), IWORK(NINTER), WRK(*)
-C
 C
       CALL AROUND('Analysis using curvilinear internal coordinates')
       WRITE (LUPRI,'(2(A/),//)')
@@ -2152,7 +2159,7 @@ C
       DO 100 I = 1, NUCIND
          DO 200 J = 0, MAXOPR
             IF (IBTAND(J,ISTBNU(I)) .EQ. 0) THEN
-               ICHRG(IATOM + 1) = NINT(CHARGE(i))
+               ICHRG(IATOM + 1) = IZATOM(i)
                DO 300 K = 1, 3
                   GEOM(3*IATOM+K) = PT(IBTAND(ISYMAX(K,1),J))*CORD(K,I)
   300          CONTINUE
@@ -2251,7 +2258,6 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
@@ -2271,11 +2277,11 @@ C
 #include "abainf.h"
 #include "nuctap.h"
 #include "cbivib.h"
-#include "cbinum.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
 #include "ibtfun.h"
-C      
+#include "codata.h"
+C
       luwlk = 0
       CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',
      &            'SEQUENTIAL','UNFORMATTED',IDUMMY,
@@ -2326,10 +2332,16 @@ C
       END DO
       ELSE
          CALL DCOPY(NCORD*NCORD*NCORD,FMATF,1,FMATT,1)
-         IF (.NOT.NUMVIB) THEN
-            FAC = D1/XFAMU
-            CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
-         END IF
+Cbhp>
+Cbhp> NUMVIB is never set to any value ???
+Cbhp>
+C        IF (.NOT.NUMVIB) THEN
+C           FAC = D1/XFAMU
+C           CALL DSCAL(NCORD*NCORD*NCORD,FAC,FMATT,1)
+C        END IF
+Cbhp>
+Cbhp> NUMVIB is never set to any value ???
+Cbhp>
       END IF
       
 C
@@ -2656,7 +2668,6 @@ C  /* Deck vibro1 */
      &                  ALMN,GMMNL,GMMNNL,RMINN,DPOLN,CZL,CZNL,CXL,CXNL,
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -2669,13 +2680,11 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "cbilnr.h"
+#include "codata.h"
 C
       INTEGER F
       PARAMETER (DE3=1.0D3,DE13 = 1.0D13, D2=2.0D0, DE6=1.0D6 ) 
-C Conversion factors from au to derivated cgs
-      PARAMETER (XFOAIN = ALPHAC*XTANG**4*XFAMU*DE6,
-     &           XFRAIN = XTANG**4*XFAMU,
-     &           XFCONV = 1/(XTANG**2*XFAMU)*DE13)
+      DOUBLE PRECISION XFOAIN,XFRAIN,XFCONV
       DIMENSION EVEC(NCORD,NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD),
@@ -2695,6 +2704,11 @@ C
 #include "abainf.h"
 #include "nuctap.h"
 #include "cbivib.h"
+C
+C Conversion factors from au to derivated cgs
+      XFOAIN = ALPHAC*XTANG**4*XFAMU*DE6
+      XFRAIN = XTANG**4*XFAMU
+      XFCONV = 1.D0/(XTANG**2*XFAMU)*DE13
 C
 C     Read in Cartesian gradients
 C
@@ -2964,7 +2978,6 @@ C
 C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2974,6 +2987,7 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "optinf.h"
+#include "codata.h"
 C
       DIMENSION EVEC(NCORD,NCORD), EVC1(NCORD), EVC2(NCORD)
       DIMENSION GVC1(NCORD), GVC2(NCORD), ATCHRG(NCORD), WORK(LWORK)
@@ -2981,6 +2995,7 @@ C
       DIMENSION ICHRVC(0:7), ITMP(0:7), ITRANS(NCORD/3)
       LOGICAL FOUND, CHANGE
 #include "ibtfun.h"
+C
       SXFAMU = SQRT(XFAMU)
 C
 C     First we have to expand the atomic coordinates. The geometry
@@ -3156,20 +3171,18 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
-      use codata
 #include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-      PARAMETER (D1 = 1.0D0, D4 = 4.0D0,
-     &           THRESH = 1.0D-5, D0 = 0.0D0, D2 = 2.0D0)
-      PARAMETER (FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
-      PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
-     &           D3 = 3.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
+     &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"
 #include "nuclei.h"
+#include "codata.h"
+#include "pi.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),
@@ -3186,6 +3199,7 @@ C
      &          ROANLA(3,3,MXFR), ROALO0(3,3,MXFR),
      &          ROALOF(3,3,MXFR,MXCOOR), ROALOA(3,3,MXFR),
      &          CSTRA(*), SCTRA(*)
+      DOUBLE PRECISION FAC, FACTOR, PREFAC
 C
 #include "symmet.h"
 #include "cbiwlk.h"
@@ -3193,6 +3207,8 @@ C
 #include "orgcom.h"
 #include "ibtfun.h"
 C
+      FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
+      FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
       PREFAC = D1/(D4*XFAMU)
 C
 C     We have to check if we accidentaly get some negative frequencies at
@@ -3277,7 +3293,7 @@ C
 C
 C     Rotational g tensor
 C
-      IF (MOLGFA) THEN
+      IF (ROTG) THEN
          CALL DZERO(GFACAV,9)
          DO IMOD = 1, NUMMOD
             IF (TEMP(ITMP) .LT. THRZER) THEN
@@ -3506,7 +3522,7 @@ C
 C
 C     Rotational g tensor
 C
-      IF (MOLGFA) THEN
+      IF (ROTG) THEN
          CALL HEADER ('Rotational g tensor',-1)
          WRITE (LUPRI,'(4X,A,7X,A,6X,A)') 'Effective geometry',
      &        '<P^(0)_2>_eff','Vibrationally corrected'
@@ -3715,14 +3731,12 @@ C
      &     'ZZ',ROANL0(3,3,I),ROANLA(3,3,I),ROANL0(3,3,I)+ROANLA(3,3,I)
          END DO
          TMASS = 0.0D0
-         JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-                  JATOM = JATOM + 1
-                  NATTYP = NINT(CHARGE(iatom))
+                  NATTYP = IZATOM(iatom)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
-                     AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
+                     AMASS = DISOTP(NATTYP,ISOTOP(IATOM),'MASS')
                      TMASS = TMASS + AMASS
                   END IF
                END IF
@@ -3774,9 +3788,9 @@ C THIS SUBROUTINE COMPUTES THE CENTRIFUGAL DISTORTION OF THE MOLECULE
 C Juhani Lounila 21.1.1998 
 C
 C ***************************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
       LOGICAL LINEAR
       DIMENSION COOR(3,NATM), AMASS(NATM), CC(3), AINERT(6), U(3,3)
@@ -4004,7 +4018,6 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4015,6 +4028,8 @@ C
       CHARACTER*6 NAME1, NAME2, NAME3, NAME4
 #include "cbivib.h"
 #include "nuclei.h"
+#include "codata.h"
+#include "pi.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
      &          WW(3), ZZ(3), UV(12),
@@ -4155,9 +4170,9 @@ C
          END IF
       END IF
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (3X,I3,1H.,4X,A4,5X,4(A6,2X),F10.5,F12.6)
+  180 FORMAT (I6,'.',4X,A4,5X,4(A6,2X),F10.5,F12.6)
 #else
-  180 FORMAT (3X,I3,1H.,A8,5X,4(A6,2X),F10.5,F12.6)
+  180 FORMAT (I6,'.',A8,5X,4(A6,2X),F10.5,F12.6)
 #endif
   181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
 C

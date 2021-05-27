@@ -1,11 +1,12 @@
 !-----------------------------------------------------------------------------------------
 !
 ! Collection of Fortran90 modules encapsulating the "old" Fortran77 include files
-! (like dcbham.h,dcbgen.h,...) among Dirac source codes.
+! (dcbham.h,dcbgen.h,...) in the Dirac source codes.
 !
-!   All variables inside the h-include files become PRIVATE within own module and are
-! accessible out of module scope only via dedicated subroutines (methods).
-!   Programmers can still use include h-files in the old way.
+!  All variables inside the h-include files become PRIVATE within the dedicated Fotran90 module and are
+! accessible out of module scope ONLY via dedicated subroutines/functions (methods).
+!
+! Programmers can still use the h-include files in the old way (#include "dcbgham.h")
 !
 !
 ! Notation examples:  
@@ -17,14 +18,17 @@
 !             use include_dcbdhf_h
 !
 ! Examples of usage:
+! ------------------
 !
 !    Function get_<variable>(parameter1,parameter2,...) - function returns include file (module) variable
 !
 !    Subroutine set_<variable>(parameter1,parameter2,...) - method changes include file (module) variable
 !
 !
+! TODO: extend encapsulating modules for other inlcude files and other variables
 !
-! Written by Miro Ilias, August 2014, Banska Bystrica
+!
+! Written by Miro Ilias, August 2014, Banska Bystrica; July 2016, GSI.de, Darmstadt
 !
 !-----------------------------------------------------------------------------------------
 
@@ -46,11 +50,13 @@ module include_dgroup_h
 !> module for picking up/setting certain variables from dgroup.h
 implicit none
 private
-#include"dgroup.h"
-!> specify public variables and public methods
-public :: get_IPQTOQ  
+#include "dgroup.h"
+!> specify public variables and public methods to operate upon internal (protected) data module
+public :: get_IPQTOQ
+public :: get_NZ  
 contains
 function get_IPQTOQ(i,j) result (IPQTOQ_out)
+!> get protected (internal) indexed variable IPQTOQ(i,j) from the include file "dgroup.h"
  implicit none
  integer, intent(in) :: i,j
  integer :: IPQTOQ_out
@@ -59,6 +65,14 @@ function get_IPQTOQ(i,j) result (IPQTOQ_out)
  endif
  IPQTOQ_out=IPQTOQ(i,j)
 end function get_IPQTOQ
+
+function get_NZ() result (NZ_out)
+!> retrieves the important NZ value from "dgroup.h"
+ implicit none
+ integer :: NZ_out
+ NZ_out=NZ
+end function get_NZ
+
 end module include_dgroup_h
 
 module include_dcbham_h
@@ -96,10 +110,9 @@ module include_dcbprp_h
 !> module encapsulating the "dcbprp.h" include file
 implicit none
 private
-
 !> needed for parameters used in dcbprp.h
 #include "mxcent.h"
-
+!> own private include file
 #include "dcbprp.h"
 !> specify public variables and public methods
 public :: get_IPRPRP

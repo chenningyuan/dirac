@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,9 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMCCM ()
 C
@@ -146,9 +148,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbgen.h"
 C
-C     ITASK = 3 for parallel RELCCSD
+C     Send task code for parallel RELCCSD
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 3 ) 
+      IF (PARCAL) CALL DIRAC_PARCTL( RELCC_PAR ) 
 C
       RETURN
       END
@@ -164,7 +166,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "infpar.h"
 #ifdef VAR_MPI
-      dimension istat(df_mpi_status_size)
+      integer   istat(df_mpi_status_size)
 #endif
 C
       if(numnod.eq.0) return
@@ -184,7 +186,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
       RETURN
       END
 #if defined (VAR_MPI)
@@ -204,7 +206,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
-      dimension istat(df_mpi_status_size)
+      integer   istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
 #include "dgroup.h"

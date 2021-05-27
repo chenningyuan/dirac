@@ -55,6 +55,6 @@ subroutine read_input_file
       write(LUPRI,"(2x,a,a)") "read_input_file: the input file not found ! input_file=",inpfile
       call quit("read_input_file: the input file not found !")
     endif
-    call read_menu_input(inpfile, lucmd, 'ALL', input_found)
+    call read_menu_input(inpfile, LUSTDIN, 'ALL', input_found)
 end subroutine read_input_file
 

@@ -76,7 +76,8 @@ keyword(ATOMS)
 Analyze molecular orbitals in terms of atomic fragments.
 For each atomic type give filename of AO coefficients
 and an orbital string (see :ref:`orbital_strings`) of atomic orbitals to include.
-DIRAC assumes that the atomic orbitals are calculated in their proper atomic basis.
+DIRAC assumes that the atomic orbitals are calculated in their proper atomic basis *without* symmetry, that is, using the :ref:`GENERAL_.ACMOUT` keyword and the
+resulting DFACMO file.
 
 *Example:*
 

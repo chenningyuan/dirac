@@ -13,6 +13,7 @@
 !     IPSOPP     - Pointer to the ECP spin-orbit matrix, SOPP DCBXPR
 !     IPANGMOM   - Pointer to the z-component of angular momentum in DCBXPR
 !     IPSPNMOM   - Pointer to the z-component of spin in DCBXPR
+!     IPSPNORB   - Pointer to the dot between spin and angular moment in DCBXPR
 !
 !     MC         - number of components (1=only large, 2=large+small)
 !     N1OPER     - Number of additional operators (finite field calculations)
@@ -24,7 +25,9 @@
 !     NOSMLV     - No small nuclear attraction integrals
 !     URKBAL     - Unrestricted kinetic balance
 !     MDIRAC     - modified Dirac Hamiltonian
-!     LEVYLE     - Levy-Leblond Hamiltonian
+!     LEVYLE     - 4-component non-relativistic Levy-Leblond Hamiltonian
+!     NONRAL     - 2-component non-relativistic Pauli Hamiltonian
+!     ECPCALC    - RECP calculation
 !     SUB_BL     - Diagonalize Hamiltonian blockwise (neglect couplings)
 !     SSMTRC     - Scaling factor for SS overlap matrix
 !     SSMTRC_SAVE- Scaling factor for SS overlap matrix, temporary variable
@@ -93,6 +96,9 @@
 !
 !     QDOTS      - use quantum dots harmonic potential instead of the electron-nuclei attraction potential
 !
+!     FAKE2C     - do not compute the 2C 1e-Hamiltonian and take the 2C spinors
+!                  from previous run or import from different QC package
+!
 !     LSCALE_DFT_GAUNT - If true the Gaunt contribution will be scaled together with exchange in DFT
 !                  calculations. If false 100% of the Gaunt contribution (if turned on) will be 
 !                  included in DFT calculations.
@@ -102,6 +108,7 @@
 !     TRS_MIX - if .true.,allow mixing T+ Hamiltonian with chosen T- perturbative operator 
 !
 !     WRITE_Jz_MATRIX - flag for writing out the Jz matrices from the LINSYM routine into text files
+!     WRITE_K_MATRIX - flag for writing out the K matrices from the ATMSYM routine into text files 
 !
 !
 
@@ -109,9 +116,9 @@
       PARAMETER (MAX1OPER = 10)
 
       INTEGER IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD, IPKINERG, IPANGMOM, &
-     &        IPSPNMOM, N1OPER, IPR1OP(MAX1OPER), LSOLMX, IPRSOL,       &
-     &        ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH, I2CHAM,      &
-     &        INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c,         &
+     &        IPSPNMOM, IPSPNORB, N1OPER, IPR1OP(MAX1OPER), LSOLMX,     &
+     &        IPRSOL, ICTLV1C(2), IBSS, MC, I1_HAM, I2_HAM, IMFCH,      &
+     &        I2CHAM, INI2C, I2COFK, IPSOPP, IPVEMB0, ISORDER_AMFI_x2c, &
      &        I1_DCLHAM,I2_DCLHAM                                     
 !
 !     IMPORTANT !!!
@@ -121,8 +128,8 @@
 !     start and the end !!!
 !
       COMMON /DCIHAM/ I1_HAM, IPRHAM, IPOVRLAP, IPBETAMT, IPMOLFLD,     &
-     &                IPKINERG, IPANGMOM, IPSPNMOM, N1OPER, IPR1OP,     &
-     &                LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,                &
+     &                IPKINERG, IPANGMOM, IPSPNMOM, IPSPNORB, N1OPER,   &
+     &                IPR1OP, LSOLMX, IPRSOL, ICTLV1C, IBSS, MC,        &
      &                IMFCH, I2CHAM, INI2C, I2COFK, IPVEMB0, IPSOPP,    &
      &                ISORDER_AMFI_x2c, I2_HAM
 
@@ -136,9 +143,8 @@
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
      &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
-     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ecpcalc,MDIRAC, TRS_MIX,  &
-     &        WRITE_Jz_MATRIX, NONREL
-
+     &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
+     &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C
       COMMON /DCLHAM/ I1_DCLHAM,                                        &
      &                QED, ONESYS, FREEPJ, VEXTPJ, NOSMLV, URKBAL,      &
      &                LEVYLE, SUB_BL, SOLVEN, INERSI, INERSF, SPINFR,   &
@@ -149,8 +155,8 @@
      &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
-     &                ecpcalc,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
-     &                I2_DCLHAM
+     &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &
+     &                WRITE_K_MATRIX,FAKE2C, I2_DCLHAM
 
 !    Do NOT add any variables after the end tag !!!
 !
@@ -158,9 +164,9 @@
 ! checking should be done as to whether or not HFXFAC can leave 
 ! DCRHAM and go to DFTCOM in dftcom.h, for now it stays here
 !
-      REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, HFXFAC,        &
+      REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, HFXFAC,  &
      &       HFXATT, HFXMU, ONECNV
-      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV,       & 
+      COMMON /DCRHAM/ SSMTRC, SSMTRC_SAVE, EPSOL, E_PE, EPSTAT, RSOLAV, & 
      &                HFXFAC, HFXMU, HFXATT, ONECNV
 
 !     REAL*8 SSMTRC, SSMTRC_SAVE, EPSOL, EPSTAT, RSOLAV, ONECNV
@@ -170,7 +176,7 @@
 #else  /* __CVERSION__ */
 #define MAX1OPER 10
   extern struct common_dcrham {
-    real ssmtrc,ssmtrc_save,epsol,epstat,rsolav,hfxfac,hfxmu,hxatt,onecnv;
+    real ssmtrc,ssmtrc_save,epsol,e_pe,epstat,rsolav,hfxfac,hfxmu,hxatt,onecnv;
   } dcrham_;
 
 #endif /* __CVERSION__ */

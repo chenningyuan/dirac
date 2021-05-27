@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -59,6 +59,7 @@ C
       dimension pfac(3)
       character plabel(3)*8
       character tmp(4)*4
+      CHARACTER PNAME*16
 
       call qenter('PRPXLR_MPG')
 CMI   .. add this
@@ -151,7 +152,7 @@ C
       pfac(1)=-1.d0
       plabel(1)='OVERLAP'
       call xprind('Lagrangian rhs. ',iptyp,npcomp,pfac,plabel,
-     &     indxpr,isyxpr,itrxpr,work(kfree),lfree,iprxlr)
+     &     indxpr,isyxpr,itrxpr,iprxlr)
       call op1ind('NLRBPT',ind1op,llrbpu,nlrbpt,indxpr,maxllr)
 C
 C     Allocate memory
@@ -698,11 +699,10 @@ C
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,11,WORK,KFREE,LFREE)
+     &              TOTERG,11)
       ELSE
         KIBRP = KFREE
-        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
       close(lubuf,status='KEEP')
 C
@@ -881,8 +881,7 @@ C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDAX')
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6)
       CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMCHK('na reacmo',WORK,1)
 C
@@ -1054,8 +1053,7 @@ C
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CALCDJI')
         CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
         CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),IDUM,TOTERG,6)
         CLOSE(LUCOEF,STATUS='KEEP')
 C
 C       Calculate D_ji' and D_b'a

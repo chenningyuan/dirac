@@ -391,6 +391,58 @@ with 4 numbers each: the first 2 are the position coordinates, the other
 2 are projections of the vector components along these coordinates.
 
 
+Current density with London atomic orbitals
+'''''''''''''''''''''''''''''''''''''''''''
+
+In order to use London atomic orbitals in the calculation and visualization of magnetically induced current density,
+there are only few modifications needed to be made to the protocol described above.
+
+First, we need to save TBMO file from the preceding response calculation, in addition to DFCOEF and PAMXVC.
+We should use the rspread.x utility in order to check which record of PAMXVC corresponds contains
+response to each of components of magnetic field. 
+An exemplary output may be analogous to::
+
+   Solution vectors found on file : PAMXVC
+   
+   ** Solution vector : LAO-XRM1H1       Irrep:   1 Trev:  -1
+     1 Type : E- Freq.:     0.000000 Rnorm:   0.90E-08 Length:     11448
+     2 Type : P- Freq.:     0.000000 Rnorm:   0.90E-08 Length:     12744
+   ** Solution vector : LAO-YRM1H1       Irrep:   1 Trev:  -1
+     3 Type : E- Freq.:     0.000000 Rnorm:   0.83E-07 Length:     11448
+     4 Type : P- Freq.:     0.000000 Rnorm:   0.83E-07 Length:     12744
+   ** Solution vector : LAO-ZRM1H1       Irrep:   1 Trev:  -1
+     5 Type : E- Freq.:     0.000000 Rnorm:   0.48E-07 Length:     11448
+     6 Type : P- Freq.:     0.000000 Rnorm:   0.48E-07 Length:     12744
+
+What identifies records 1 and 2 as containing the response to the "X"-component of an external magnetic field,
+records 3 and 4 - to the "Y"-component and records 5 and 6 - to the "Z"-component.
+
+Then, we need to change the visualization input slightly::
+
+  ...
+  **VISUAL
+  .J
+   PAMXVC 1
+  .J
+   PAMXVC 2
+  .LONDON
+   X
+
+The argument "X" denotes which component of an external magnetic field is considered here as a perturbation and it has
+to correspond to the relevant record on PAMXVC file, in this case - 1 and 2.
+Thus, for instance to visualize the current density induced by the "Z"-component of an external magnetic field, the correct 
+input is::
+
+  ...
+  **VISUAL
+  .J
+   PAMXVC 5
+  .J
+   PAMXVC 6
+  .LONDON
+   Z
+
+
 Integrating the current density passing through a plane
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 

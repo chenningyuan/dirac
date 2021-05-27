@@ -8,27 +8,34 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_INPUT_FORTRAN_SOURCES
-# subroutine set_lscale_dft_gaunt()
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirrdn.F
 )
 
 set(FREE_INPUT_FORTRAN_SOURCES
    input_reader.F90
    input_reader_sections.F90
    parse_input.F90
-##    input_reader_sections.F90 depends on "module num_grid_cfg" ...
-   ${PROJECT_SOURCE_DIR}/src/grid/num_grid_cfg.F90
-   ${PROJECT_SOURCE_DIR}/src/visual/visual_cfg.F90
-   ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
 )
+if(ENABLE_EXATENSOR)
+set(FREE_INPUT_FORTRAN_SOURCES
+   ${FREE_INPUT_FORTRAN_SOURCES}
+   ${PROJECT_SOURCE_DIR}/src/exacorr/exacorr_cfg.F90
+)
+endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_INPUT_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_INPUT_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'input' module without exceptions")
+    set_source_files_properties(${FREE_INPUT_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_INPUT_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     input
+    OBJECT
     ${FIXED_INPUT_FORTRAN_SOURCES}
     ${FREE_INPUT_FORTRAN_SOURCES}
 )
@@ -44,4 +51,7 @@ add_dependencies(input dirac)
 add_dependencies(input main)
 add_dependencies(input visual)
 add_dependencies(input relccsd)
+if(ENABLE_EXATENSOR)
+add_dependencies(input exacorr)
+endif()
 add_dependencies(input grid)

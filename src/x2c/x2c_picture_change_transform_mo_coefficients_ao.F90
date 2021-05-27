@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -342,8 +342,8 @@ contains
        end do
        allocate(original_eigen_values(l))
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-!      call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
-       call reacmo_no_work(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
+!      call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
+       call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
        close(fh,status='keep')
        offset_1 = 1
        offset_2 = 1
@@ -541,7 +541,7 @@ contains
 
 !      read the title line and total energy (read code -1) from the old DFCOEF
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo_no_work(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
+       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
        close(fh,status='keep')
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
@@ -580,10 +580,15 @@ contains
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
        info_text(51:74) = fdate()
-       write(fh) info_text,nfsym,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
-       write(fh) (mo_coeff_2c_ao(i),i=1,ndim_2c_mo_ao)
-       write(fh) (eigen_values(i),i=1,ndim_2c_ev)
-       write(fh) (boson_irreps_jz_eigenvalues(i),i=1,ndim_2c_bj)
+       CALL NEWLAB('INFO    ',fh,6)
+       write(fh) info_text,nfsym,nz,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
+       CALL WRICMO_coefficients(fh,mo_coeff_2c_ao,ndim_2c_mo_ao)
+       CALL WRICMO_eigenvalues(fh,eigen_values,ndim_2c_ev)
+       CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)
+!      Add additional information about basis set to create a simple interface file
+       !      for correlated calculations (like exacorr)
+       CALL WRICMO_basisinfo(fh)
+       CALL NEWLAB('EOFLABEL',fh,6)                                     
        close(fh,status='keep')
 
        deallocate(boson_irreps_jz_eigenvalues)

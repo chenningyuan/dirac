@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -160,6 +160,39 @@ C   ON OUTPUT:A - full matrix
         WRITE(LUPRI,'(A,A6,A)') '** ERROR in FULMAT **  : Keyword ',
      +    MATTYP,' not recognized!'
       ENDIF
+      END
+C  /* Deck fulmat */
+      SUBROUTINE FULMAT2(MATTYP,LDA,NDIM,A)
+#include "implicit.h"
+#include "priunit.h"
+      PARAMETER(DFAC=0.5D0)
+      CHARACTER MATTYP*1
+      DIMENSION A(LDA,NDIM)
+C*SYMM  : Real symmetric matrix
+C*ASYM  : Real antisymmetric matrix
+C
+C   ON INPUT: A - lower triangular matrix
+C   ON OUTPUT:A - full matrix
+      IF(MATTYP.EQ.'S') THEN
+      DO 10 J = 1,NDIM
+        DO 20 I = J,NDIM
+          A(I,J) = A(I,J) + A(J,I)
+          A(J,I) = A(I,J)
+   20     CONTINUE
+   10   CONTINUE
+      ELSEIF(MATTYP.EQ.'A') THEN
+      DO 30 J = 1,NDIM
+        DO 40 I = J,NDIM
+          A(I,J) = A(I,J) - A(J,I)
+          A(J,I) = -A(I,J)
+   40     CONTINUE
+   30   CONTINUE
+      ELSE
+        WRITE(LUPRI,'(A,A6,A)') '** ERROR in FULMAT **  : Keyword ',
+     +    MATTYP,' not recognized!'
+      ENDIF
+      NN=LDA*NDIM
+      CALL DSCAL(NN,DFAC,A,1)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck offtst */
@@ -428,15 +461,17 @@ C   ON OUTPUT:A - full matrix
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sectid */
-      FUNCTION SECTID(TID)
+      CHARACTER*12 FUNCTION SECTID(TID)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Given time in seconds this function return a character string
 C     with time in suitable units
+C     Revised 4-aug-2017 hjaaj: input TID is not modified any more.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
-      CHARACTER*12 SECTID
+      IMPLICIT NONE
+      REAL*8   TID, TID_rest
+      INTEGER  ITID, IMIN, IHOUR, IDAY
 C
       ITID = TID
       IF(ITID.GE.86400) GOTO 3
@@ -445,15 +480,19 @@ C
 C
 C     Format : Seconds
 C
-      WRITE(SECTID,'(F11.8,A1)') TID,'s'
+      IF (TID .LT. 0.0D0) THEN
+         WRITE(SECTID,'(F11.3,A1)') TID,'s'
+      ELSE
+         WRITE(SECTID,'(F11.8,A1)') TID,'s'
+      END IF
       RETURN
 C
 C     Format: Minutes and seconds
 C
     1 CONTINUE
       IMIN = ITID/60
-      TID  = TID - IMIN*60
-      WRITE(SECTID,'(I2,A3,F6.3,A1)') IMIN,'min',TID,'s'
+      TID_rest  = TID - IMIN*60
+      WRITE(SECTID,'(I2,A3,F6.3,A1)') IMIN,'min',TID_rest,'s'
       RETURN
 C
 C     Format: Hours, minutes and seconds
@@ -476,8 +515,13 @@ C
       IHOUR = ITID/3600
       ITID  = MOD(ITID,3600)
       IMIN  = ITID/60
-      WRITE(SECTID,'(I3,A1,I2,A1,I2,A3)')
+      IF (IDAY .LE. 999) THEN
+         WRITE(SECTID,'(I3,A1,I2,A1,I2,A3)')
      &      IDAY,'d',IHOUR,'h',IMIN,'min'
+      ELSE
+         WRITE(SECTID,'(I5,A1,I2,A1,I2,A1)')
+     &      IDAY,'d',IHOUR,'h',IMIN,'m'
+      END IF
       RETURN
 C
       END
@@ -1390,7 +1434,7 @@ C     generate the Hermitian conjugate matrix
 C     of the general matrix AMAT;
 C
 C     return the new general matrix in AMAT 
-C       (so AMAT is owerwritten !)
+C       (so AMAT is overwritten !)
 C
 C     Written by Miro Ilias, July 2003
 C     (based on QGETHE)
@@ -3819,7 +3863,7 @@ C
 #include "nuclei.h"
       TOTMASS = D0
       DO IATOM = 1, NUCIND
-        NCHARG = NINT(CHARGE(IATOM))
+        NCHARG = IZATOM(IATOM)
         IF (NCHARG .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
           TOTMASS = TOTMASS
      &            + NUCDEG(IATOM)*DISOTP(NCHARG,ISOTOP(IATOM),'MASS')
@@ -3837,18 +3881,16 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       DIMENSION C(NP)
 C
       V2 = POL2DER(NORDER,C,XOPT)
       OMEGA = SQRT(V2/UM)
-      TEMP  = V2*XTJ/XTM/XTM
+      TEMP  = V2*XTJ/XTANGM10/XTANGM10
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(ILOGG,'(A,1P,E18.4,A)') 
@@ -3871,12 +3913,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
       DIMENSION C(NP)
@@ -3913,12 +3953,13 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
+C
       XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
@@ -3958,11 +3999,12 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(D2=2.0D0,D4=4.0D0)
+C
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
       WRITE(LUPRI,'(A,2X,E10.4,A)')
@@ -3990,14 +4032,15 @@ C
 C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
+C
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
-      READ(LUCMD,*) NORDER
+      READ(LUSTDIN,*) NORDER
       IF(NORDER.LT.2) THEN
         WRITE(LUPRI,'(A)') 
      &    '* This program requires at least a quadratic fit.'
@@ -4054,13 +4097,14 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(DTOL = 1.0D-4)
 C
       DIMENSION X(NP),Y(NP),C(NP)
+C
 C* Find smallest y-value and take corresponding x-value as start value
 C* for Newton-Raphsons method      
       IYOPT = IDMIN(NP,Y,1)
@@ -4129,7 +4173,7 @@ C
 C     This subroutine goes through an integer array IARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
 C
-C     The array ARR is not touched.
+C     The array IARR is not touched.
 C
 C***********************************************************************
       INTEGER N,INDX(N),M,NSTACK,IARR(N)
@@ -4270,6 +4314,90 @@ C
       RETURN
       END
 
+      SUBROUTINE NZ_MTX_AMPLITUDES(AMAT,AMAT1,NTOT,NZ)
+!------------------------------------------------------------------------
+! Get amplitudes of the full quaternion matrix AMAT into AMAT1
+!
+! AMAT1(i,j,1)=sqrt(AMAT(i,j,1)+...+AMAT(i,j,NZ))
+!
+! Written by Miro Ilias, GSI, 2016
+!------------------------------------------------------------------------
+      integer, intent(in)  :: NTOT,NZ
+      real*8,  intent(in)  :: AMAT(NTOT,NTOT,NZ)
+      real*8,  intent(out) :: AMAT1(NTOT,NTOT,1)
+      integer              :: I,J,IZ
+
+      DO J = 1, NTOT
+        DO I = 1,NTOT
+!         ...accumulate the real part
+           AMAT1(I,J,1) = (AMAT(I,J,1)*AMAT(I,J,1))
+        ENDDO
+      ENDDO
+
+      DO IZ = 2,NZ
+        DO J = 1, NTOT
+          DO I = 1,NTOT
+!           ... accumulate quaternion-imaginary parts
+             AMAT1(I,J,1) = AMAT1(I,J,1)+(AMAT(I,J,IZ)*AMAT(I,J,IZ))
+          ENDDO
+        ENDDO
+      ENDDO
+!    finally, get the amplitude
+      DO J = 1, NTOT
+        DO I = 1,NTOT
+           AMAT1(I,J,1) = DSQRT(AMAT1(I,J,1))
+        ENDDO
+      ENDDO
+      END
+
+      SUBROUTINE SUM_NZ_MATRIX(AMAT,NROW,NCOL,LRQ,LCQ,NZ,
+     &                         AMAT_SUM_NZ,AMAT_SUM)
+!----------------------------------------------------------------------------
+! Sum all elements in the entering quaternion matrix AMAT into
+! quaternion AMAT_SUM_NZ and real amplitude AMAT_SUM.
+!
+! Written by Miro Ilias, GSI, 2016
+!----------------------------------------------------------------------------
+      integer, intent(in)    :: NROW,NCOL,LRQ,LCQ,NZ
+      real*8,  intent(in)    :: AMAT(LRQ,LCQ,NZ)
+      real*8,  intent(out)   :: AMAT_SUM_NZ(1:4),AMAT_SUM
+      integer                :: I,J,IZ
+      AMAT_SUM_NZ(1)=0.0D0; AMAT_SUM_NZ(2)=0.0D0
+      AMAT_SUM_NZ(3)=0.0D0; AMAT_SUM_NZ(4)=0.0D0 
+      DO IZ=1, NZ
+        DO I=1, NROW
+          DO J=1, NCOL
+            AMAT_SUM_NZ(IZ)=AMAT_SUM_NZ(IZ)+AMAT(I,J,IZ)
+          ENDDO
+        ENDDO
+      ENDDO
+! get the amplitude ...
+      AMAT_SUM =
+     &      DSQRT((AMAT_SUM_NZ(1)*AMAT_SUM_NZ(1)) + 
+     &            (AMAT_SUM_NZ(2)*AMAT_SUM_NZ(2)) +
+     &            (AMAT_SUM_NZ(3)*AMAT_SUM_NZ(3)) +
+     &            (AMAT_SUM_NZ(4)*AMAT_SUM_NZ(4)))
+      END
+
+      SUBROUTINE SUM_RE_MATRIX(AMAT,NROW,NCOL,LRQ,LCQ,AMAT_SUM)
+!----------------------------------------------------------------------------
+! Sum all elements in the entering real matrix AMAT, containing real 
+! amplitutes, into AMAT_SUM.
+!
+! Written by Miro Ilias, GSI, 2016
+!----------------------------------------------------------------------------
+      integer, intent(in)  :: NROW,NCOL,LRQ,LCQ
+      real*8,  intent(in)  :: AMAT(LRQ,LCQ,1)
+      real*8,  intent(out) :: AMAT_SUM
+      integer              :: I,J
+      AMAT_SUM=0.0D0
+      DO I=1, NROW
+      DO J=1, NCOL
+         AMAT_SUM=AMAT_SUM+AMAT(I,J,1)
+      ENDDO
+      ENDDO
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck iicopy */
       SUBROUTINE IICOPY(NDIM,IA,IA1,IASTEP,IB,IBSTEP,IB1)
@@ -4284,3 +4412,97 @@ C***********************************************************************
       CALL ICOPY(NDIM,IA(IA1),IASTEP,IB(IB1),IBSTEP)
       RETURN
       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CHECK_FOR_OPEN_FILES
+C***********************************************************************
+C
+C     Check for open files within some range of unit numbers
+C
+C***********************************************************************
+      INTEGER I
+      LOGICAL ITSOPEN
+      DO I = 1,300
+         INQUIRE(UNIT=I,OPENED=ITSOPEN)
+         IF(ITSOPEN) THEN
+           WRITE(6,*) 'Open file. Unit = ',I
+         ENDIF
+      ENDDO
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LEVI_CEVITA(I,J,K,IJK)
+C***********************************************************************
+C
+C     Given indices i and j, give k and e_ijk
+C
+C     Written by Trond Saue Oct 25 2018      
+C***********************************************************************
+      implicit none
+      integer, intent(in)  :: I,J
+      integer, intent(out) :: K,IJK
+      INTEGER :: IJKTAB(3,3),KTAB(3,3)
+      SAVE IJKTAB,KTAB
+      DATA IJKTAB/ 0,-1, 1, 1, 0,-1,-1, 1, 0/
+      DATA   KTAB/ 0, 3, 2, 3, 0, 1, 2, 1, 0/
+      IF(I.LT.1.OR.I.GT.3) CALL QUIT('LEVI-CEVITA: Not valid I!')
+      IF(J.LT.1.OR.J.GT.3) CALL QUIT('LEVI-CEVITA: Not valid J!')
+      K   = KTAB(I,J)
+      IJK = IJKTAB(I,J)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NOISE(A,N,FACTOR)
+C***********************************************************************
+C
+C     Input is an array A of length N. On output noise has been added.
+C     FACTOR controls the magnitude of the noise ("noise level")
+C     Since RANDOM_NUMBER returns numbers in the interval (0,1],
+C     we extend to (-1,1].      
+C
+C     Written by Trond Saue Nov 7 2019
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: N
+      real*8, intent(in)    :: factor
+      real*8, intent(inout) :: A(N)
+      integer               :: I
+      real*8                :: R
+
+      DO I = 1,N
+        CALL RANDOM_NUMBER(r)
+        A(I) = A(I) + FACTOR*(2.0D00*R-1.0D00)
+      ENDDO
+      RETURN
+      END
+C/* Deck Usym */
+      SUBROUTINE USYM(A,LDA,N)
+C***********************************************************************
+C
+C     Symmetrize an upper triangular matrix
+C
+C***********************************************************************
+       INTEGER LDA,N,I,J
+       REAL*8 A(LDA,N)
+       DO I=2,N
+          DO J=1,I
+            A(I,J) = A(J,I)
+          ENDDO
+       ENDDO
+       END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck Fdiag */
+      SUBROUTINE FDIAG(A,LDA,N)
+C***********************************************************************
+C
+C     Force diagonal form by zeroing out all non-diagonal elements
+C
+C***********************************************************************
+       INTEGER LDA,N,I,J
+       REAL*8 A(LDA,N)
+       DO I=1,N
+          DO J=1,N
+            IF(I.NE.J) A(I,J) = 0.0D0
+          ENDDO
+       ENDDO
+       END
+

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -36,7 +36,8 @@
      &           IBLOCK,INIDEG,E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,
      &           NCLS,
      &           IRC,IDCOMH,IHAM12,
-     &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST,eci_start
+     &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST,eci_start,
+     &           ITERSEOUT
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
      &           RCCTOS,IT_TTPL,IT_TTOL
@@ -61,7 +62,7 @@
 #include "infpar.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
       DIMENSION IT_TTPL(*)
@@ -300,7 +301,7 @@ C       REAL DAVIDSON solver
      &                  WORK(KSCRRED),IGROUPLIST,IPROCLIST,
      &                  IT_TTPL,IT_TTOL,
      &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL),
-     &                  eci_start)
+     &                  eci_start,ITERSEOUT)
 *
 #else
 *
@@ -312,7 +313,7 @@ C       REAL DAVIDSON solver
      &                  H0DUM,IPNTR,NP1,NP2,NQ,H0SCRDUM,
      &                  LBLK,EIGSHF,THRES_E,
      &                  WORK(KAMATC),WORK(KRWORK),WORK(KEIGVL),
-     &                  eci_start)
+     &                  eci_start,ITERSEOUT)
 *
 #endif
         IROOTHOMING = 0
@@ -1680,7 +1681,7 @@ CTF     end do
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
       REAL * 8   INPROD,INPRDD
@@ -1722,7 +1723,7 @@ C
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place "
       write(LUWRT,*) ' Where we shall find our'
       write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
       write(LUWRT,*)
@@ -3263,8 +3264,8 @@ C      END IF
       Call Add_Info('E_CI',FINEIG,NROOT)
 *
       RETURN
- 1030 FORMAT(/,3X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(/,3X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/,3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/,3X,I3,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
  9400 FORMAT(' >>>  CPU (WALL) TIME IN SIGMA VECTOR CALL: ',A,'(',A,')')
       END
@@ -3280,7 +3281,7 @@ C      END IF
      &                  LU3,LU4,LU5,LUDIA,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,WORK,IPRT,
      &                  NPRDIM,H0,IPNTR,NP1,NP2,NQ,H0SCR,LBLK,EIGSHF,
-     &                  E_CONV,AMATC,RWORK,EVL,eciold)
+     &                  E_CONV,AMATC,RWORK,EVL,eciold,ITERSEOUT)
 *
 * Davidson algorithm , requires two blocks in core
 * Multi root version
@@ -3320,7 +3321,7 @@ C      END IF
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
-      DIMENSION ISTAT(MPI_STATUS_SIZE)
+      INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
@@ -3346,7 +3347,7 @@ C      END IF
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
-      write(LUWRT,*) ' I´ll take you to a place '
+      write(LUWRT,*) " I'll take you to a place "
       write(LUWRT,*) ' Where we shall find our'
       write(LUWRT,*) '  ROOTS, BLOODY ROOTS '
       write(LUWRT,*)
@@ -3437,8 +3438,13 @@ C      END IF
 *
  1000 CONTINUE
         CALL GETTIM(CPUITR1,WALLITR1)
+        if (ITERSEOUT.eq.1) then
+          write(LUWRT,'(/A,I6/A)') ' Iteration',ITER,
+     &                             '_________________'
+        else
         WRITE(LUWRT,'(//A,I4)')
      &        ' (MICDV4_ENLMD_REL) CI microiteration no.',ITER
+        end if
         ITER = ITER + 1
 *
 * ===============================
@@ -3480,6 +3486,11 @@ C
 C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
          RNORM = SQRT( INPRDD(VEC1,VEC1,LU4,LU4,1,LBLK) )
          RNRM(ITER-1,IROOT) = RNORM
+*
+         if (ITERSEOUT.eq.1) then
+           WRITE(LUWRT,'(A19,7X,I3,3X,1E18.13,3X,1F19.10)')
+     &     ' Iter RNORM EIGAPR ',ITER-1,RNORM,EIGAPR+EIGSHF
+         end if
 *
          IF(RNORM.LT. TEST .OR. 
      &      (ITER.GT.2.AND.
@@ -3617,21 +3628,25 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
      &      '                    Active energy      =',
      &                        EIG(1:NROOT,ITER-1)
        END IF
+       if (ITERSEOUT.ne.1) then
        WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
      &      '                    Total energy       =',
      &                        (EIG(I,ITER-1)+EIGSHF,i=1,NROOT)
        WRITE(LUWRT,'(A,4F20.8/,(37X,4F20.8))')
      &      '                    Lowering of energy =',
      &      (eciold(i)-EIG(I,ITER-1)-EIGSHF,I=1,nroot)
+       end if
 
        do i = 1, nroot
          eciold(i) = EIG(i,ITER-1) + EIGSHF
        end do
 
+       if (ITERSEOUT.ne.1) then
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I11,D20.5))')
      &   '                    Norm of CI residuals'//
      &   ' (thr = ',test,')',
      &   (i,RNRM(ITER-1,i),i=1,NROOT)
+       end if
 
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
@@ -3661,7 +3676,9 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
   150 CONTINUE
 *. Diagonalize projected matrix
       NVEC = NVEC + IADD
-!     write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+      if (ITERSEOUT.eq.1) then
+        write(LUWRT,*) 'Dimension of projected matrix:',NVEC
+      end if
       CALL DCOPY(NVEC*(NVEC+1)/2,APROJ,1,WORK(KAPROJ),1)
 !     CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
       CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
@@ -3745,15 +3762,96 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       CALL GETTIM(CPUITR2,WALLITR2)
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
+      if (ITERSEOUT.eq.1) then
+        WRITE(LUWRT,9300) CPUTID,WALLTID
+      else
       WRITE(LUWRT,'(/A,5A)')
      &        '                    CPU (Wall) time for microiteration',
      &       '  ',CPUTID,'(',WALLTID,')'
-
+      end if
+*
       IF( ITER .LE. MAXIT .AND. .NOT. CONVER) GOTO 1000
  1001 CONTINUE
  
 * ( End of loop over iterations )
 *
+      if (ITERSEOUT.eq.1) then
+*
+      IF( .NOT. CONVER ) THEN
+*        CONVERGENCE WAS NOT OBTAINED
+         IF(IPRT .GE. 2 )
+     &   WRITE(LUWRT,1170) MAXIT
+ 1170    FORMAT(/'  Convergence was not obtained in ',I3,' iterations')
+      ELSE
+*        CONVERGENCE WAS OBTAINED
+         ITER = ITER - 1
+         IF (IPRT .GE. 2 )
+     &   WRITE(LUWRT,1180) ITER
+ 1180    FORMAT(/,'  Convergence was obtained in ',I3,' iterations')
+        END IF
+*
+      IF ( IPRT .GT. 0 ) THEN
+        CALL REWINE(LU1,LBLK)
+        DO IROOT = 1, NROOT
+          WRITE(LUWRT,*)
+          WRITE(LUWRT,'(A,I3)')
+     &  ' Information about convergence for root... ' ,IROOT
+          WRITE(LUWRT,*)
+     &    '============================================'
+          WRITE(LUWRT,*)
+          FINEIG(IROOT) = EIG(ITER,IROOT)
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,2190) IROOT,FINEIG(IROOT)+EIGSHF
+          ELSE
+             WRITE(6,2191) IROOT,FINEIG(IROOT)+EIGSHF
+          END IF
+ 2190 FORMAT(' The final eigenvalue',I5,F22.10,' (converged)')
+ 2191 FORMAT(' The final eigenvalue',I5,F22.10,' (NOT converged)')
+          IF(IPRT.GE.400) THEN
+            WRITE(LUWRT,2200)
+ 2200       FORMAT(' The final approximation to eigenvector ')
+            CALL WRTVCD(VEC1,LU1,0,LBLK)
+          END IF
+          WRITE(LUWRT,2300)
+ 2300     FORMAT(/,'  Summary of iterations ',/,1H
+     +          ,' ----------------------')
+          WRITE(LUWRT,2310)
+ 2310     FORMAT
+     &    (/,'  Iteration point        Eigenvalue         Residual ')
+          DO I=1,ITER
+ 2330     WRITE(LUWRT,2340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
+ 2340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+        END DO
+        END DO
+      ELSE
+        CALL REWINE(LU1,LBLK)
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
+        DO IROOT = 1, NROOT
+          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
+          IF (RTCNV(IROOT)) THEN
+             WRITE(6,2190) IROOT,FINEIG(IROOT)
+          ELSE
+             WRITE(6,2191) IROOT,FINEIG(IROOT)
+          END IF
+        END DO
+        write(LUWRT,*)
+        write(LUWRT,*) '*++++++++++++++++++++++++++++++++++++++++++++*'
+        write(LUWRT,*)
+      END IF
+*
+*
+      IF(IPRT .EQ. 1 ) THEN
+        DO IROOT = 1, NROOT
+          WRITE(LUWRT,'(A,2I3,E13.6,2E10.3)')
+     &    ' >>> CI-OPT Iter Root E g-norm g-red',
+     &                 ITER,IROOT,FINEIG(IROOT),RNRM(ITER,IROOT),
+     &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
+        END DO
+      END IF
+        
+      else   ! new output
       IF( .NOT. CONVER ) THEN
 *        CONVERGENCE WAS NOT OBTAINED
          WRITE(LUWRT,'(//A,I4,A)') ' (MICDV4_ENLMD_REL) '//
@@ -3804,14 +3902,14 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
           END IF
 
           WRITE(LUWRT,1300)
- 1300     FORMAT(/,'  Summary of iterations ',/,1H
-     +          ,' ----------------------')
+ 1300     FORMAT(/,'  Summary of iterations',
+     +           /,' -----------------------')
           WRITE(LUWRT,1310)
  1310     FORMAT
      &    (/,'  Iteration point        Eigenvalue         Residual ')
           DO 1330 I=1,ITER
  1330     WRITE(LUWRT,1340) I,EIG(IROOT,I)+EIGSHF,RNRM(I,IROOT)
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(7X,I4,8X,F20.13,2X,E12.5)
  1600   CONTINUE
 
         CALL REWINE(LU1,LBLK)
@@ -3826,6 +3924,7 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
      &                 RNRM(1,IROOT)/RNRM(ITER,IROOT)
  1607   CONTINUE
       END IF
+      end if
 C
 C     store information about energies for each root on file
 C     KRCI_CVECS.INFO (fh LU_INFO) - used in property calculations
@@ -3853,7 +3952,7 @@ C     Delete scratch units
 C
       call qexit('MICDV4')
 C
- 1030 FORMAT(/,3X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(/,I6,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/,3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/,I6,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  CPU (WALL) TIME IN ITERATION: ',A,'(',A,')')
       END

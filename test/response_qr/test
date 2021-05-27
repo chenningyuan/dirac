@@ -16,7 +16,7 @@ f.add(from_string = 'Electronic energy',
 f.add(from_string = 'Value of electronic part',
       num_lines   = 3,
       ignore_sign = True,
-      rel_tolerance   = 1.0e-6)
+      rel_tolerance   = 5.0e-5)
 
 test.run(['qrpa1.inp', 'excprp1.inp'], ['LiH.mol'], f)
 test.run(['tpa1.inp'], ['He.mol'], f)

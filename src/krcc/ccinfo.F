@@ -8,10 +8,8 @@
 *
       IRAT = 1
 *
-      WRITE(6,*)
-      WRITE(6,'(1H ,6X,A,I2)')
+      WRITE(6,'(/7X,A,I2/)')
      &'Ratio between Integer and Real word length ', IRAT
-      WRITE(6,*)
 *
       RETURN
       END
@@ -176,12 +174,12 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
           WRITE(LUOUT,*) ' =================================='
         END IF
         WRITE(LUOUT,*)
-        WRITE(LUOUT,'(1H ,A,10I4,A)')
+        WRITE(LUOUT,'(1X,A,10I4,A)')
      &  '            Symmetry  ',(I,I = 1,NSMOB)
-        WRITE(LUOUT,'(1H ,A,2X,10A)')
+        WRITE(LUOUT,'(1X,A,2X,10A)')
      &  '           ========== ',('====',I = 1,NSMOB)
         DO IGAS = 1, NGAS
-          WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
+          WRITE(LUOUT,'(1X,A,I3,7X,A,10I4,8X,I3)')
      &    '   GAS',IGAS,'      ',(NGSOB(I,IGAS),I=1,NSMOB)
         END DO
 *
@@ -245,12 +243,12 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
          WRITE(LUOUT,*) ' Number of down spinors per symmetry :'
          WRITE(LUOUT,*) ' ===================================='
          WRITE(LUOUT,*)
-         WRITE(LUOUT,'(1H ,A,10I4,A)')
+         WRITE(LUOUT,'(1X,A,10I4,A)')
      &   '            Symmetry  ',(I,I = 1,NSMOB)
-         WRITE(LUOUT,'(1H ,A,2X,10A)')
+         WRITE(LUOUT,'(1X,A,2X,10A)')
      &   '           ========== ',('====',I = 1,NSMOB)
          DO IGAS = 1, NGAS
-           WRITE(LUOUT,'(1H      ,A,I3,7X,A,10I4,8X,I3)')
+           WRITE(LUOUT,'(1X,A,I3,7X,A,10I4,8X,I3)')
      &     '   GAS',IGAS,'      ',(NGSOB2(I,IGAS),I=1,NSMOB)
          END DO
          WRITE(LUOUT,*) ' Total number of orbitals ', NTOOB2
@@ -275,9 +273,9 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
         WRITE(LUOUT,'(A)')
      &  ' =========================================== '
         WRITE(LUOUT,*)
-        WRITE(LUOUT,'(1H ,A,10I4,A)')
+        WRITE(LUOUT,'(1X,A,10I4,A)')
      &    '                Irrep ',(I,I = 1,NSMOB)
-        WRITE(LUOUT,'(1H ,A,2X,10A,A)')
+        WRITE(LUOUT,'(1X,A,2X,10A,A)')
      &    '                ===== ',('====',I = 1,NSMOB )
         DO IGAS = 1, NGAS
           WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
@@ -290,9 +288,9 @@ C    &                IOSPIR,NGSOB2(1,IGAS),NGSOBT2(IGAS))
         WRITE(LUOUT,'(A)')
      &  ' =========================================== '
         WRITE(LUOUT,*)
-        WRITE(LUOUT,'(1H ,A,10I4,A)')
+        WRITE(LUOUT,'(1X,A,10I4,A)')
      &    '                Irrep ',(I,I = 1,NSMOB)
-        WRITE(LUOUT,'(1H ,A,2X,10A,A)')
+        WRITE(LUOUT,'(1X,A,2X,10A,A)')
      &    '                ===== ',('====',I = 1,NSMOB )
         DO IGAS = 1, NGAS
           WRITE(LUOUT,'(A,I2,A,10I4,6X,2I6)')
@@ -1186,7 +1184,7 @@ C         IISM = IOSPIR(ISM,IRREP)
         WRITE(6,'(A)') ' Included MS2/MK2 values '
         WRITE(6,'(A)') ' ======================= '
         DO IMS2 = 1, NMS2VAL
-          WRITE(6,'(1H ,I3)') MS2VAL(IMS2)
+          WRITE(6,'(I4)') MS2VAL(IMS2)
         END DO
       END IF
 *
@@ -2845,7 +2843,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
       IF(IOCOC(IA,IB).EQ.0) GOTO 1000
 *. Size of TT block ( all symmetries)
       LBLOCK_AS = 0
-      IF(ISIMSYM.EQ.1 .AND. ISM. EQ. 1 ) THEN
+      IF(ISIMSYM.EQ.1 .AND. ISM.EQ.1 ) THEN
         DO IASM = 1, NSMST
           IBSM = ISMOST(IASM)
           NSTA = NSSOA(IASM,IA)
@@ -2921,7 +2919,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -3442,7 +3440,7 @@ C
            WRITE(6,*) ' Class    Occupation in GASpaces '
            WRITE(6,*) ' ================================'
            DO I = 1, NOCCLS
-             WRITE(6,'(1H ,I5,3X,16I3)')
+             WRITE(6,'(I6,3X,16I3)')
      &       I, (IOCCLS(IGAS,I),IGAS=1, NGAS)
            END DO
 C          CALL IWRTMA(IOCCLS,NGAS,NOCCLS,NGAS,NOCCLS)
@@ -7119,7 +7117,7 @@ C
              WRITE(6,1020) J,(IABCOMP(K,J),K=1,NOPEN)
   20       CONTINUE
          END IF
- 1020    FORMAT(1H0,I5,2X,30I2,/,(1H ,7X,30I2))
+ 1020    FORMAT(/I6,2X,30I2,/,(8X,30I2))
       END IF
 *
       RETURN

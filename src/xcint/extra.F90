@@ -7,7 +7,7 @@ module extra
 
    public gtdoav
    public timtxt
-   public reacmo_no_work
+   public reacmo
    public qtrans90
 
    private
@@ -75,7 +75,7 @@ contains
 !
       end subroutine
 
-      SUBROUTINE REACMO_no_work(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
+      SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
 !***********************************************************************
 !
 !     Read DHF-coefficients and eigenvalues from unformatted file
@@ -257,9 +257,19 @@ contains
 !     Error messages
 !
  10   CONTINUE
-      call my_quit('REACMO: END OF FILE reading TEXT')
+      write(*,'(//A/A/A)') &
+     &   'REACMO: END OF FILE reading first record on DFCOEF.', &
+     &   '        Possible reason: DFCOEF was generated with'// &
+     &      ' 32-bit integer Dirac version.', &
+     &   '        This Dirac is compiled with 64 bit integers.'
+      call my_quit('REACMO: END OF FILE reading first record of DFCOEF')
  20   CONTINUE
-      call my_quit('REACMO: ERROR reading TEXT')
+      write(*,'(//A/A/A)') &
+     &   'REACMO: ERROR reading first record on DFCOEF.', &
+     &   '        Possible reason: DFCOEF was generated with'// &
+     &      ' 32-bit integer Dirac version.', &
+     &   '        This Dirac is compiled with 64 bit integers.'
+      call my_quit('REACMO: ERROR reading first record of DFCOEF')
  30   CONTINUE
       call my_quit('REACMO: END OF FILE reading coefficients')
  40   CONTINUE

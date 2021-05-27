@@ -1,15 +1,14 @@
 !
 ! FILE    : dcbkrmc.h
 !
-!*** KR-MCSCF calculations ***
+!*** Information for KR-MCSCF calculations ***
+
       INTEGER NMCFLAG
       PARAMETER (NMCFLAG = 20)
 
       LOGICAL MCFLAG(NMCFLAG), KRMC_SKIPEE, KRMC_SKIPEP
       LOGICAL KRMC_NOCI, KRMC_UCIBOS, KRMC_CHCKJZ
       LOGICAL KRMC_NO1pdens, krmc_save_reordered_nos, KRMC_full_ci
-      CHARACTER*8 KRMC_CIPROGRAM
-      CHARACTER*72 KRMC_FRZSTR(2), KRMC_DELSTR(2)
       COMMON /DCLKRMC/ MCFLAG, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_NOCI,     &
      &                 KRMC_UCIBOS, KRMC_CHCKJZ,                        &
      &                 KRMC_NO1pdens, krmc_save_reordered_nos,          &
@@ -32,7 +31,11 @@
      &                 MKRMC_MAXBCK, IKRMC_STATE, IKRMC_SYMMETRY,       &
      &                 IPRKRMC, IKRMC_MEMFAC, IKRMC_SVRONO
 
-      REAL*8 DKRMC_CNVINT(2), DKRMC_THRGRD, DKRMC_THRPCI
-      COMMON /DCRKRMC/ DKRMC_CNVINT, DKRMC_THRGRD, DKRMC_THRPCI
+      REAL*8 DKRMC_CNVINT(2), DKRMC_THRGRD, DKRMC_THRPCI, DKRMC_MVOFAC
+      COMMON /DCRKRMC/ DKRMC_CNVINT, DKRMC_THRGRD, DKRMC_THRPCI,        &
+     &                 DKRMC_MVOFAC
 
+      CHARACTER*8 KRMC_CIPROGRAM
+      CHARACTER*72 KRMC_FRZSTR(2), KRMC_DELSTR(2)
       COMMON /DCCKRMC/ KRMC_CIPROGRAM, KRMC_FRZSTR, KRMC_DELSTR
+! -- end of dcbkrmc.h --

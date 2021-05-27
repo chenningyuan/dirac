@@ -1,4 +1,3 @@
-#include <linesep.h>
 !     IRAT  = (real word length) / (integer word length)
 !     IRAT2 = (real word length) / (half-integer word length)
 !             if available and used, otherwise IRAT2 = IRAT

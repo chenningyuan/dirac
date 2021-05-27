@@ -7,9 +7,10 @@
 !  (e.g. a p shell contains 3 components)
 ! MXCORB = max total number of contracted functions = max NBASIS
 !
-!     IF you change any of these parameters you should do a "make depend"
-!     and then rebuild the program using the command "make".
-!
-      INTEGER MXSHEL, MXPRIM, MXCORB, MXORBT
-      PARAMETER (MXSHEL = 3000,MXPRIM = 12000, MXCORB = 10000,          &
-     &           MXORBT = MXCORB*(MXCORB+1)/2)
+      INTEGER MXSHEL, MXPRIM, MXCORB
+      PARAMETER (MXSHEL = 15000, MXPRIM = 15000, MXCORB = 40000)
+! hjaaj Jan 2019: fitting is not implemented in Dirac, so
+!  to save static memory I introduced the following three
+!  variables for the fitting common blocks
+      INTEGER MXSHEL_FIT, MXPRIM_FIT, MXCORB_FIT
+      PARAMETER (MXSHEL_FIT = 1, MXPRIM_FIT = 1, MXCORB_FIT = 1)

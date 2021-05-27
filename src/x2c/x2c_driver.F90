@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -185,8 +185,6 @@ contains
        case(.false.)
                           path = 'molecular X2C (with spin-orbit contributions)      '
          if(x2c_spinfree) path = 'molecular X2C (spinfree)                           '
-       case default
-         call quit('default path for logical not possible in x2c_main')
      end select
 
      print '(/18x,a,a)', ' *** chosen path in X2C module: ',path
@@ -418,7 +416,7 @@ contains
 !      step 3: picture-change transform the 4c-MO coefficients (defining
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
-       if(x2c_is_defining_h1mat == 2)then
+       if(x2c_is_defining_h1mat == 2)then ! X2Cmmf
          call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
                                                  2,                         &
                                                  nr_cmo_q,                  &

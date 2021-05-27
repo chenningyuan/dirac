@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,30 +19,56 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C FILE    : dirac.F
-C
+! FILE    : main/dirac.F
+
+! if openMP, then let MPI slave nodes sleep 10 ms before probing for a new task
+! then the same cores can be used more efficiently for both openMP and MPI.
+#ifdef HAVE_OPENMP
+#define VAR_SLEEPING_SLAVES
+#endif
+
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C***********************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD)
-#include "implicit.h"
+!
+!     main driver for Dirac master node
+!
+      implicit none
+
+      integer IPARCAL, IMYTID, IMPARID, INUMNOD
+
 #include "priunit.h"
-C
+
 #include "dcbgen.h"
-C
+
 #include "infpar.h"
 #include "dgroup.h"
-#ifdef VAR_OMP
-      INTEGER omp_get_num_procs
+
+#ifdef HAVE_OPENMP
+      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_max_threads, omp_get_num_threads
+      INTEGER omp_get_thread_num
 #endif
-C
-C
+
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
-C
-#ifdef VAR_OMP
-         write(lupri,'(//A,I5)')
-     &   ' * openMP activated, number of threads:',
-     &   omp_get_num_procs()
+
+#ifdef HAVE_OPENMP
+      MAX_OMP_THREADS = omp_get_max_threads()
+      write(lupri,'(//A,3I5)')
+     &' * openMP activated, '//
+     &' thread limit - # processes - # threads: ',
+     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+!$OMP PARALLEL
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
+!$OMP END PARALLEL
+#else
+      MAX_OMP_THREADS = 0
 #endif
+
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
@@ -50,12 +76,12 @@ C     NUMNOD = INUMNOD - 1
 C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
-      MYNUM  = MYTID
 C Additional check for parallelism, parallel with only a master is the same as serial
       PARCAL = PARCAL.AND.NUMNOD.ne.0
 C Test the communication by sending an empty task
-      ITASK = 0
-      IF (PARCAL) CALL DIRAC_PARCTL( ITASK )
+      IF (PARCAL) CALL DIRAC_PARCTL( RELEASE_NODES )
+      SLAVE = .FALSE. ! this is the master node (or the only node if not PARCAL)
+      PARHER = .FALSE.
 C
 C     Set basis set directory
 C
@@ -74,7 +100,7 @@ C
 C
 C     Send finish signal to slaves
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( -2 )
+      IF (PARCAL) CALL DIRAC_PARCTL( FINISH_PAR_SIGNAL )
 C
       RETURN
       END
@@ -98,6 +124,7 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 
+      logical run_pamset
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
@@ -113,11 +140,13 @@ C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
 C***********************************************************************
-      CALL PAMSET()
-!     write info to files
-!     this is used in dft and visualization
-      call interface_ao_write()
-      call interface_mo_write()
+      IF (RUN_PAMSET()) THEN
+         CALL PAMSET()
+!        write info to files
+!        this is used in dft and visualization
+         call interface_ao_write()
+         call interface_mo_write()
+      END IF
 
 #ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
@@ -217,14 +246,6 @@ C***********************************************************************
 C
       if (dirac_cfg_visual) call run_visual()
 
-C
-C***********************************************************************
-C ***** cleaning up data stored in fde calculations ********************
-C***********************************************************************
-C
-      if (dirac_cfg_fde)
-     &   call fde_cleanup_data()
-
 
  666  CONTINUE
       CALL QEXIT('PAMDRV')
@@ -253,10 +274,19 @@ C
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbdhf.h"
+#include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
+
+C***********************************************************************
+C**** import MO coeff from different QC package ************************
+C****         and dump it on DFPCMO             ************************
+C***********************************************************************
+      IF (DOIMPMOS) CALL IMPMOS()
+
 C     Attempt read of formatted MO coefficients
       CALL PCMOIN()
+
 C     Read C1 MO coefficients
       IF(DOACIN) CALL ACMOIN()
 C     Extend RKB coeffcients with complementary UKB space
@@ -349,6 +379,14 @@ C
         IF(DOMP2NO) CALL MP2NOGEN()
 C
 C***********************************************************************
+C***** L A P L A C E  ---  T E S T             *************************
+C***********************************************************************
+C
+#ifdef HAS_LAPLACE
+        IF(DOLAPLCE) CALL PAMLAPLCE()
+#endif
+C
+C***********************************************************************
 C***** K R - M C S C F *************************************************
 C***********************************************************************
 C       Do MCSCF before CC and CI because user may want
@@ -390,6 +428,14 @@ C***********************************************************************
       IF(DOPSI) THEN
 C
 C***********************************************************************
+C******* E X A _ C C  M O D U L E **************************************
+C***********************************************************************
+C
+#ifdef MOD_EXACORR
+        IF(DOEXACC) CALL EXA_CC()
+#endif
+C
+C***********************************************************************
 C******* R E L C C S D  M O D U L E ************************************
 C***********************************************************************
 C
@@ -420,6 +466,12 @@ C******* R E L A D C  M O D U L E **************************************
 C***********************************************************************
 C
         IF(DOADC) CALL PAMADC()
+C
+C***********************************************************************
+C******* P O L R I Z A T I O N   P R O P A G A T O R   M O D U L E *****
+C***********************************************************************
+C
+        IF(DOPOLPRP) CALL PAMPOLPRP()
 C
 C***********************************************************************
 C******* C O S C I        stand-alone version of RESOLVE   *************
@@ -560,8 +612,9 @@ C
             NGASSP(1,J) = NINT(XELEC)
             NGASSP(2,J) = NINT(XELEC)
          END DO
-      ELSE IF (CISELECT .EQ. 'FULLCI') THEN
-C        ... do a full CI in the active space
+      ELSE IF (CISELECT .EQ. 'CASCI') THEN
+C        ... do a full CI in the active space (open shell orbitals);
+C            equivalent to RESOLVE but setting information for GASCIP program
          NGAS_DC  = 1
          OPT_THR_CVEC = 1.0D-4
 
@@ -581,102 +634,81 @@ C
          NGASSP(1,1) = NAELEC
          NGASSP(2,1) = NAELEC
       ELSE IF (CISELECT .EQ. 'ESRCI') THEN
-C        ... do CI for ESR spin-polarization /hjaaj nov 2002
+C        ... do CI for ESR spin-polarization and correlation /hjaaj
 
-C        ... set CI program in charge
+C        ... set which CI program in charge
          OPT_CIPROGRAM = 'GASCIP'
 C
          OPT_THR_CVEC = THR_CVEC_ESR
          THRPCI   = THRPCI_ESR
 C
-C        Set up core (NCSH_ESR), valence (NVSH_ESR) and virtual (secondary, NSSH_ESR) orbital shells.
+C        Set up orbital shells for GASCIP
 C
-         NCSH_ESRT = 0
-         NVSH_ESRT = 0
-         NSSH_ESRT = 0
-         NELECT    = 0
-         DO I = 1,NFSYM
+         NRAS1_ELEC = 0
+         DO J = 1,NFSYM
 
-           IF (NCSH_ESR(I) < 0) THEN
-              CALL QUIT('ERROR: NCSH_ESR(I) < 0')
-           END IF
-           IF (NVSH_ESR(I) < 0) THEN
-              CALL QUIT('ERROR: NVSH_ESR(I) < 0')
-           END IF
-           IF (NSSH_ESR(I) < 0) THEN
-              CALL QUIT('ERROR: NSSH_ESR(I) < 0')
-           END IF
+            DO I = NGAS_CIESR(1),1,-1
+               NISH(J) = NISH(J) - NGSH_CIESR(J,I,1)
+               NRAS1_ELEC = NRAS1_ELEC + 2*NGSH_CIESR(J,I,1)
+            END DO
 
-           NISH(I)   = NISH(I)   - NCSH_ESR(I) - NVSH_ESR(I)
-           NSSH(I)   = NSSH(I)   - NSSH_ESR(I)
+            DO I = 1,NGAS_CIESR(3)
+               NSSH(J) = NSSH(J) - NGSH_CIESR(J,I,3)
+            END DO
 
-           NCSH_ESRT = NCSH_ESRT + NCSH_ESR(I)
-           NVSH_ESRT = NVSH_ESRT + NVSH_ESR(I)
-           NSSH_ESRT = NSSH_ESRT + NSSH_ESR(I)
+         END DO ! J = 1, NFSYM
 
-           NELEC(I)  = NELEC(I) - 2*NCSH_ESR(I) - 2*NVSH_ESR(I)
-           NELECT    = NELECT   + NELEC(I)
+         NAELEC = NAELEC + NRAS1_ELEC
 
-         END DO
-         NGAS12_ELEC = 2*NCSH_ESRT + 2*NVSH_ESRT
-         NAELEC      = NAELEC + NGAS12_ELEC
-C
-C        initialize min and max accumulated no. of electrons in each gas space
-C
+C        Set min and max accumulated no. of electrons in each gas space
+
          CALL IZERO(NGSHT,MXGAS)
-         NGAS_DC = 0
-         IF (NCSH_ESRT > 0) THEN
-            NGAS_DC = NGAS_DC + 1
-            NGASSP(1,NGAS_DC) = MAX(0,2*NCSH_ESRT-LVL_CIESR(0))
-            NGASSP(2,NGAS_DC) = 2*NCSH_ESRT
-            DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NCSH_ESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NCSH_ESR(I)
-            END DO
-         END IF
-         IF (NVSH_ESRT > 0) THEN
-            NGAS_DC = NGAS_DC + 1
-            NGASSP(1,NGAS_DC) = MAX(0,NGAS12_ELEC-LVL_CIESR(1))
-            NGASSP(2,NGAS_DC) = NGAS12_ELEC
-            DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NVSH_ESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NVSH_ESR(I)
-            END DO
-         END IF
 
-C            (Cxx are preparation for RESOLVE instead of FULLCI
-C             in the DHF open shells)
-Cxx      XELEC = D2*NCSH_ESRT
-         IF (NOPEN .NE. 1) THEN
-            write (lupri,*) 'ERROR ESRCI: NOPEN is not 1, it is: ',NOPEN
-            call quit ('ESRCI: sorry, NOPEN is not 1')
-         END IF
-         DO J = 1, NOPEN
+         NGAS_DC = 0
+         NAELEC_ACCUM = 0
+
+         DO I = NGAS_CIESR(1),1,-1 ! RAS1-GAS subspaces
             NGAS_DC = NGAS_DC + 1
-Cxx         XELEC = XELEC + D2*DF(J)*NGSHT(J)
-Cxx         NGASSP(1,NGAS_DC) = NINT(XELEC)
-Cxx         NGASSP(2,NGAS_DC) = NINT(XELEC)
-            NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(2))
-            NGASSP(2,NGAS_DC) = NAELEC
-            DO I = 1,NFSYM
-Cxx            NGSH(I,NGAS_DC) = NACSH(I,J)
-               NGSH(I,NGAS_DC) = NASH(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(I)
+            DO J = 1,NFSYM
+               NAELEC_ACCUM    = NAELEC_ACCUM + 2*NGSH_CIESR(J,I,1)
+               NGSH(J,NGAS_DC) = NGSH_CIESR(J,I,1)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH_CIESR(J,I,1)
             END DO
+
+            NGASSP(1,NGAS_DC) = MAX(0, NAELEC_ACCUM-LVL_CIESR(I,1)) ! subtract max number of holes in this RAS1-GAS space
+            NGASSP(2,NGAS_DC) = NAELEC_ACCUM
          END DO
-         IF (NSSH_ESRT .GT. 0) THEN
-            NGAS_DC = NGAS_DC + 1
+
+         NGAS_DC = NGAS_DC + 1 ! RAS2-GAS space
+         DO J = 1,NFSYM
+            NGSH(J,NGAS_DC) = NASH(J)
+            NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NASH(J)
+         END DO
+
+         IF (NGAS_CIESR(3) > 0) THEN
+            NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(1,3))
+         ELSE ! no RAS3-GAS orbitals, i.e. last GAS space
             NGASSP(1,NGAS_DC) = NAELEC
-            NGASSP(2,NGAS_DC) = NAELEC
-            DO I = 1,NFSYM
-               NGSH(I,NGAS_DC) = NSSH_ESR(I)
-               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NSSH_ESR(I)
-            END DO
-         ELSE
-            NGASSP(1,NGAS_DC) = NAELEC ! reset open shell minimum, not possible with NAELEC-LVL_CIESR(2) if not virt gas space
          END IF
-C
-C        reset number of active orbitals
+         NGASSP(2,NGAS_DC) = NAELEC
+
+         DO I = 1,NGAS_CIESR(3) ! RAS3-GAS subspaces
+            NGAS_DC = NGAS_DC + 1
+            DO J = 1,NFSYM
+               NGSH(J,NGAS_DC) = NGSH_CIESR(J,I,3)
+               NGSHT(NGAS_DC)  = NGSHT(NGAS_DC) + NGSH_CIESR(J,I,3)
+            END DO
+
+            IF (I < NGAS_CIESR(3)) THEN
+               NGASSP(1,NGAS_DC) = MAX(0, NAELEC-LVL_CIESR(I+1,3)) ! subtract max number of electrons in next RAS3-GAS space
+            ELSE ! last RAS1-GAS space
+               NGASSP(1,NGAS_DC) = NAELEC
+            END IF
+            NGASSP(2,NGAS_DC) = NAELEC
+         END DO
+
+C        Reset number of active orbitals
+
          DO I = 1,NFSYM
             NASH(I) = 0
             DO J = 1,NGAS_DC
@@ -776,6 +808,7 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
+#include "dcbkrci.h"
 #include "dcbopt.h"
 #include "dcbgascip.h"
 #include "dcbdhf.h"
@@ -1100,26 +1133,71 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
       use interface_to_mpi
+      use iso_c_binding
+
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
-     &    only: initialize_interest_herd,                               &
-     &          process_two_electron_integrals_4comp_slaves,            &
-     &          process_two_electron_integrals_2comp_slaves 
+     &    only: initialize_interest_herd
 #endif
+!     use fde_evaluators_dirac, only : fde_launch_slave_process
+      use fde_mod, only : fde_launch_slave_process
+
       implicit none
+
+#if defined (VAR_SLEEPING_SLAVES)
+      interface
+         ! fortran sleep() is only in seconds,
+         ! so we use the usleep() from C to sleep in microseconds
+         subroutine usleep_ftn(useconds) bind(C,name="usleep")
+      !  integer(c_int) function usleep(useconds) bind(C)
+          use iso_c_binding
+          implicit none
+          integer(c_int32_t), value :: useconds
+      !  end function
+         end subroutine
+      end interface
+#endif
+
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_mpi_status_size)
-      LOGICAL NEWTASK
-      integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL
-      real*8 :: CPU1, WALL1
-C
-C
+      INTEGER :: ISTAT(df_mpi_status_size)
+      LOGICAL :: NEWTASK
+      integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL, mytid_print
+      real*8  :: CPU1, WALL1, TIMSTR, TIMEND
+#ifdef HAVE_OPENMP
+      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_max_threads, omp_get_num_threads
+      INTEGER omp_get_thread_num
+#endif
+
       integer :: sleep_time=15
 
       CALL QENTER('DIRNOD')
+
+      mytid_print = -1
+! activate next line for debug print from one of the nodes
+!     mytid_print = min(10,INUMNOD)
+      
+      if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
+
+! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
+#ifdef HAVE_OPENMP
+!     MAX_OMP_THREADS = omp_get_max_threads()
+!     write(lupri,'(//A,3I5)')
+!    &' * openMP activated, '//
+!    &' thread limit - # processes - # threads: ',
+!    & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
+!$OMP PARALLEL
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
+!$OMP END PARALLEL
+#else
+      MAX_OMP_THREADS = 0
+#endif
+
 C
 C     Transfer variables to common blocks
 C
@@ -1130,16 +1208,32 @@ C     SK - Sep 08: subtraction has already been done in mpixinit.
       NUMNOD = INUMNOD
       MYTID  = IMYTID
       PARCAL = (IPARCAL .NE. 0)
+      IF (.NOT. PARCAL) THEN
+         CALL QUIT('ERROR: PARCAL false, but DIRNOD called')
+      END IF
+C
+C     This is a slave in a parallel run
+C
+      SLAVE = .TRUE.
 
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
 ! node 'sleeps' short time and in between the user can attach debugger to the process
       if(mytid > 0)then
-         write(lupri,'(2x,a,i2,a)')
+         if (mytid .eq. mytid_print) write(lupri,'(2x,a,i2,a)')
      &   'slaves first sleep for ',sleep_time,' seconds. '
          call sleep(sleep_time)
       endif
 #endif
+
+C     Initialize infpar.h control variables
+      PARHER = .FALSE.
+      ! Hermit can be called two ways with mpi:
+      !   PARHER true for MPI parallelization in HERMIT
+      !      (Feb.2019: set true in HERNOD and in TRANOD)
+      !   PARHER false elsewhere,
+      !      in particular for FCK2TRA integral transformation
+      !      calls of Hermit (Feb.2018/hjaaj)
 
 C
 C     Set basis set directory for this slave
@@ -1150,46 +1244,42 @@ C
  100  CONTINUE
 #if defined (VAR_SLEEPING_SLAVES)
 ! If it is important that the slaves are not idling
-! then one can define VAR_SLEEPING SLAVES.
-! If set, then the slaves test once per second if there
-! is a new task (because of the CALL SLEEP(1))
+! then one can define VAR_SLEEPING_SLAVES.
+! If set, then the slaves test once per 10 ms if there
+! is a new task.
       call interface_mpi_iprobe(MPARID,27,NEWTASK,global_communicator,
      &                          ISTAT)
       IF (NEWTASK) THEN
-chj      write (0,*) 'mpi_iprobe true for node',mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-chj      write (0,*) ' itask, node',itask,mytid
-chj      write (0,*) 'istatus(source,tag,error):',
-chj  &     ( istatus(i),i=1,3)
       ELSE
-         CALL SLEEP(1)
+!        CALL SLEEP(1) ! 1 second is too long, costs a lot of waste when 100, 1000 slaves or more
+         call usleep_ftn(10000_c_int32_t) ! sleep for 10 ms = 10000 microseconds
          GO TO 100
       END IF
 #else
 C
-Csk      write(6,*) 'node will recieve itask',MYTID
          CALL interface_MPI_RECV(ITASK,1,MPARID,27,
      &                           global_communicator)
-Csk      write(6,*) 'node has recieved itask',MYTID,itask
 #endif
+      if (mytid .eq. mytid_print) 
+     &   print*,'info: node',mytid,' has received itask',itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
 #if !defined (VAR_MPI2)
 C
       IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
-        WRITE(6,*) ' fatal error in starting a parallel LUCITA /
-     & LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2(' error in DIRNOD: missing MPI-2 library functions')
+        WRITE(LUPRI,'(//A)') 'Fatal error in starting a parallel LUCITA'
+     & //' / LUCIAREL run; you do not have an MPI-2 library installed'
+       CALL QUIT('Error in DIRNOD: missing MPI-2 library functions')
       END IF
 #endif
 C
 C     Start timing.
 C
-      CALL GETTIM(CPU1,WALL1)
+      ! CALL GETTIM(CPU1,WALL1)
+      call TIMER('START',TIMSTR,TIMEND)
 C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
@@ -1254,8 +1344,6 @@ C
 C        start the InteRest two-electron MPI calculation (4-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_4comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
       ELSE IF (ITASK .EQ. 10) THEN
@@ -1263,8 +1351,6 @@ C
 C        start the InteRest two-electron MPI calculation (2-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_2comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
@@ -1273,18 +1359,110 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+
+      ELSE IF (ITASK .EQ. 12) THEN
+C
+C        start the PELIB slave.
+C
+#ifdef HAS_PELIB
+         CALL PELIB_IFC_SLAVE()
+#else
+         call quit('ERROR: PElib not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 13) THEN
+C
+C        start the Polarization propagator node
+C
+         CALL POLPRP_NODE()
+
+      ELSE IF (ITASK .EQ. 14) THEN
+C
+C        initialize Gen1Int workers
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_init()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 15) THEN
+C
+C        start Gen1Int parallel integral evaluation
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_get_int()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 16) THEN
+C
+C        start Gen1Int parallel expectation value evaluation
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_get_expt()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 17) THEN
+C
+C        start Gen1Int parallel cube generation
+C
+#ifdef BUILD_GEN1INT
+         call gen1int_worker_get_cube()
+#else
+         call quit('ERROR: Gen1Int not available')
+#endif
+
+      ELSE IF (ITASK .EQ. 18) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
+      ELSE IF (ITASK .EQ. 19) THEN
+C
+C        start exacorr moltra with MPI
+C
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_moltra task not included in this version')
+#else
+         call exa_moltra()
+#endif
+
+      ELSE IF (ITASK .EQ. 20) THEN
+C
+C        start exacorr cc with MPI
+C
+#ifndef MOD_EXACORR
+          call quit(
+     &    'worker error: exa_cc task not included in this version')
+#else
+         call exa_cc()
+#endif
+      ELSE IF (ITASK .EQ. 21) THEN
+C
+C        start BEDLEB MPI calculation
+C
+         call bedleb_launch_slave_procs()
+
       ELSE
 C
 C        Unknown task. Abort execution.
 C
-         WRITE(LUPRI,'(A,I5)')
-     &     '*** ERROR *** DIRNOD: Unknown task ITASK = ',ITASK
+         WRITE(LUPRI,'(A,I0,A,I5)')
+     &     '*** ERROR *** DIRNOD node ',mytid,
+     &     ': Unknown task ITASK = ',ITASK
          CALL QUIT(' Unknown task in DIRNOD')
       END IF
 C
 C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
 C
+      if (mytid .eq. mytid_print)
+     &   call TIMER('node 10 task',TIMSTR,TIMEND)
       GOTO 100
 C
  999  CALL QEXIT('DIRNOD')
@@ -1299,6 +1477,7 @@ C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
       use interface_to_mpi
+      use fde_mod, only : fde_launch_slave_process
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1322,7 +1501,7 @@ C
       IF (ITASK .eq. 5 .or. ITASK .eq. 6) THEN
         WRITE(6,*) ' fatal error in starting a parallel LUCITA /
      & LUCIAREL run; you do not have a MPI-2 library installed'
-       CALL Abend2(' error in DIRNOD2: missing MPI-2 library functions')
+       CALL QUIT(' error in DIRNOD2: missing MPI-2 library functions')
       END IF
 #endif
 C
@@ -1382,6 +1561,12 @@ C
 C        start GASCIP MPI calculation
 C
          CALL GASCIP_NODE()
+      ELSE IF (ITASK .EQ. 18) THEN
+C
+C        start FDE MPI calculation
+C
+         call fde_launch_slave_process()
+
       ELSE
 C
 C        Unknown task. Abort execution.
@@ -1466,6 +1651,16 @@ C
 #else
         CALL GETENV ('BASDIR',BASDIR)
 #endif
+        LEN_BASDIR = LEN_TRIM(BASDIR)
+!
+!       If string is empty add current directory
+!
+        IF ( LEN_BASDIR .eq. 0 ) THEN
+           BASDIR(1:1) = '.'
+           LEN_BASDIR   = 1
+        END IF
+!       add a trailing blank to avoid problems
+        BASDIR(LEN_BASDIR+1:LEN_BASDIR+1) = ' '
 #if defined (VAR_MPI)
       ENDIF
 #endif /* VAR_MPI */
@@ -1607,3 +1802,24 @@ C
       CALL QEXIT('TKRCCORB')
       END
 #endif /* MOD_KRCC */
+      LOGICAL FUNCTION RUN_PAMSET()
+!     Checks whether the time-consuming set up is really needed.
+!     Avoids the complicated X2C procedure if we just want to start a CC calculation with EXACC
+!     using already available MO coefficients
+#ifdef MOD_EXACORR
+      use dirac_cfg
+      if (dirac_cfg_exacc) then
+         if (dirac_cfg_scf_calculation.or.
+     &       dirac_cfg_dft_calculation.or.
+     &      dirac_cfg_mcsrdft_calculation) then
+            RUN_PAMSET = .TRUE.
+         else
+            RUN_PAMSET = .FALSE.
+         end if
+      else
+         RUN_PAMSET = .TRUE.
+      end if
+#else
+      RUN_PAMSET = .TRUE.
+#endif
+      END

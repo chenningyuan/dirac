@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
-      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK)
+      SUBROUTINE PRPEXP(WF,EXPVAL,WORK,LWORK,state)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -37,6 +37,8 @@ C***********************************************************************
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
+      INTEGER, OPTIONAL :: state 
+      INTEGER :: state_local 
 C
 #include "dcbexp.h"
 #include "dcbbas.h"
@@ -60,9 +62,14 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
       LUNIT = 14
       CALL OPNFIL(LUNIT,'PMAT','UNKNOWN','PAMEXP')
 #endif
+      if (present(state)) then
+          state_local = state
+      else
+          state_local = 1
+      end if
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
-     &            WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE,state_local)
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif
@@ -77,7 +84,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpex1 */
       SUBROUTINE PRPEX1(WF,EXPVAL,LEXPST,CMO,EIG,DMAT,PRPAO,FIRST,
-     &                  WORK,LWORK)
+     &                  WORK,LWORK,state)
 C***********************************************************************
 C
 C     Calculate expectation values defined in /CBIEXP/
@@ -90,7 +97,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16)
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
       
 C
 #include "cbihr1.h"
@@ -111,6 +118,7 @@ C
       CHARACTER WF*4
       INTEGER   GETIOPEN
       LOGICAL FNDLAB
+      INTEGER :: state 
 C
 C     Initialize
 C
@@ -133,8 +141,7 @@ C
         INQUIRE(FILE='DFCOEF',EXIST=FILEX)
         IF(.NOT.FILEX) GOTO 1000
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
-     &               WORK,KFREE,LFREE)
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
         CLOSE(LUCOEF,STATUS='KEEP')
         IF (.NOT. ORBANA) THEN
 C.........accumulate all density into one matrix
@@ -149,10 +156,23 @@ C.........accumulate all density into one matrix
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MP2')
 C
-C        Get relaxed density matrix computed by RELCCSD.
+C        Get relaxed density matrix computed by RELCCSD or EXACORR.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
-C
+
+
+      ELSE IF (WF .EQ. 'EOM ') THEN
+
+         IF (ORBANA) 
+     &        CALL QUIT('*** ERROR in PRPEX1 *** '
+     &        // 'ORBANA not implemented for EOMCC')
+
+C        Get relaxed density matrix computed for excited states
+
+         write(*,*)' Number of EOM states',state
+
+         CALL GET_EOM_DENSITY ('AO',STATE,DMAT,IERR)
+
       ELSE IF (WF .EQ. 'KRMC') THEN
 C
          IF (ORBANA) 
@@ -259,8 +279,6 @@ C
       IF(.NOT.ORBANA) THEN
 
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
-        CALL PRSYMB(LUPRI,'-',76,0)
 
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
@@ -281,23 +299,23 @@ C.........Transform property matrix to fragment orbital basis
      &                  WORK,KFREE,LFREE)
           ENDIF
           FMT = MXFORM(EXPVAL(I),15)
-          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
+          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4,3X,2(3X,A,L1))')
      &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.',
-     &       LEXPST(1,I),LEXPST(2,I)
+     &     's0 = ',LEXPST(1,I),'t0 = ',LEXPST(2,I)
           CALL FLSHFO(LUPRI)
           IF(PRJANA.AND.ABS(EXPVAL(I)).GT.DTOL) THEN
             CALL PRJEX2(EXPVAL(I),WORK(KPFMT),WORK(KDFMT),WORK(KBVEC),
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
      &                  WORK(KINDX),IPREXP,PRPAO,WORK,KFREE,LFREE)
-            CALL PRSYMB(LUPRI,'-',76,0)
+            CALL PRSYMB(LUPRI,'-',75,4)
           ENDIF
           IF(PRPCAN) THEN
             CALL EXPCAN(INDXPR,PRPAO,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
         ENDDO
 
-        CALL PRSYMB(LUPRI,'-',76,0)
+        CALL PRSYMB(LUPRI,'-',75,4)
         WRITE(LUPRI,'(4X,A)')
      &   's0 = T : Expectation value zero by point group symmetry.'
         WRITE(LUPRI,'(4X,A)')
@@ -308,15 +326,14 @@ C     ====================================================
 C
       ELSE
         CALL TITLER('Expectation values','*',127)
-        WRITE(LUPRI,'(51X,2(A2,1X))') 's0','t0'
-        CALL PRSYMB(LUPRI,'-',76,0)
         DO I = 1,NEXPP
           INDXPR = LEXPP(I)
           IREP = IPRPSYM(INDXPR)-1
           ITIM = IPRPTIM(INDXPR)
-          CALL PRSYMB(LUPRI,'-',60,4)
+C          CALL PRSYMB(LUPRI,'-',85,4)
           CALL HEADER('Operator '//PRPNAM(INDXPR)//':',0)            
           CALL HEADER('Expectation value for individual orbitals',-1)
+          WRITE(LUPRI,'(/16X,A)') 'Matrix element     Occ.  '
           EXPVAL(I) = D0
           DO 10 IFRP = 1,NFSYM
             IF(NORB(IFRP).EQ.0) GOTO 10
@@ -331,11 +348,10 @@ C.............calculate expectation value
               CALL PRPEX3(EXPBUF,INDXPR,DMAT,PRPAO,FIRST,
      &          WORK,KFREE,LFREE,IPREXP)
               IOPEN = GETIOPEN(J,IFRP)
-              EXPBUF = EXPBUF*DF(IOPEN)
-              EXPVAL(I) = EXPVAL(I) + EXPBUF
+              EXPVAL(I) = EXPVAL(I) + EXPBUF*DF(IOPEN)
               FMT = MXFORM(EXPBUF,15)
-              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',1X,A4)')
-     &          FREP(IFRP),J,EXPBUF,'a.u.'
+              WRITE(LUPRI,'(4X,A3,I5,3X,'//FMT//',5X,F6.4,5X'//FMT//')')
+     &          FREP(IFRP),J,EXPBUF/D2,D2*DF(IOPEN),EXPBUF*DF(IOPEN)
               CALL FLSHFO(LUPRI)
             ENDDO
 
@@ -347,12 +363,12 @@ C...........Transform property matrix to fragment orbital basis
             ENDIF
  10       CONTINUE
  20       CONTINUE
-          CALL PRSYMB(LUPRI,'-',60,4)
+          CALL PRSYMB(LUPRI,'-',85,4)
           FMT = MXFORM(EXPVAL(I),15)
-          WRITE(LUPRI,'(4X,A8,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
+          WRITE(LUPRI,'(4X,A8,34X,'//FMT//',1X,A4,3X,2(3X,A,L1))')
      &     'Total : ',EXPVAL(I),'a.u.',
-     &     LEXPST(1,I),LEXPST(2,I)
-          CALL PRSYMB(LUPRI,'-',60,4)
+     &     's0 = ',LEXPST(1,I),'t0 = ',LEXPST(2,I)
+          CALL PRSYMB(LUPRI,'-',85,4)
           IF(PRPCAN) THEN
             CALL EXPCAN(INDXPR,PRPAO,CMO,IPREXP,WORK,KFREE,LFREE)
           ENDIF
@@ -361,7 +377,7 @@ C...........Transform property matrix to fragment orbital basis
      &                  WORK(KIBUF),INDXPR,NP(1,0),NP(1,2),
      &                  WORK(KNR),NTOT,WORK(KFMAT),WORK(KPM),
      &                  WORK(KINDX),IPREXP,PRPAO,WORK,KFREE,LFREE)
-            CALL PRSYMB(LUPRI,'-',76,0)
+            CALL PRSYMB(LUPRI,'-',85,4)
           ENDIF
         ENDDO
         WRITE(LUPRI,'(4X,A)')
@@ -458,7 +474,8 @@ C
 C     Operator to be read from file
 C     =============================
 C
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C     
 C
  90   CONTINUE     
@@ -758,188 +775,6 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck nuc_efg */
-      SUBROUTINE NUC_EFG(IPRINT,DOATOM)
-C***********************************************************************
-C     
-C     Calculates nuclear contribution to electric field gradients
-C
-C     Written by T.Enevoldsen  - Sep 1996
-C     Last revision by W.A. de Jong - April 1999
-C     
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-      PARAMETER (D0=0.0D0,D3 = 3.0D0)
-      DIMENSION  GEOM(3*8*MXCENT)
-      LOGICAL    DOATOM(*)
-#include "nuclei.h"
-#include "symmet.h"
-#include "nqcc.h"
-#include "ibtfun.h"
-C
-C     Initialization of GEOM
-C     (copied from abacus/hergp.F:CMMASS)
-C
-      JATOM = 0
-      DO IATOM = 1, NUCIND
-         DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = NINT(CHARGE(IATOM))
-                  DO KCOOR = 1, 3
-                     GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
-     &                    *CORD(KCOOR,IATOM)
-                  END DO
-                  JATOM = JATOM + 1
-            END IF
-         END DO
-      END DO
-C
-C
-      CALL DZERO(EFGNUC,9*MXCENT)
-      KK = 1
-      NATOM = 0
-      IATOMD = 0
-      DO 10 I1 = 1, NUCIND
-      IF(DOATOM(I1)) THEN
-        DO 20 IDEG1 = 1,NUCDEG(I1)
-          NATOM = NATOM + 1
-          IATOMD = IATOMD + 1
-          LL = 1
-          DO 100 I2 = 1, NUCIND
-          IF (CHARGE(I2).EQ.D0) GOTO 100
-            DO 110 IDEG2=1,NUCDEG(I2)
-              IF (LL .NE. KK) THEN
-                XCOOR = GEOM(LL) - GEOM(KK)
-                YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
-                ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
-                R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                R5 = R2*R2*SQRT(R2)
-                EFGNUC(1,1,NATOM) = EFGNUC(1,1,NATOM)
-     &                            + CHARGE(I2)*(D3*XCOOR*XCOOR - R2)/R5
-                EFGNUC(2,2,NATOM) = EFGNUC(2,2,NATOM)
-     &                            + CHARGE(I2)*(D3*YCOOR*YCOOR - R2)/R5
-                EFGNUC(3,3,NATOM) = EFGNUC(3,3,NATOM)
-     &                            + CHARGE(I2)*(D3*ZCOOR*ZCOOR - R2)/R5
-                EFGNUC(1,2,NATOM) = EFGNUC(1,2,NATOM)
-     &                            + CHARGE(I2)*D3*XCOOR*YCOOR/R5
-                EFGNUC(1,3,NATOM) = EFGNUC(1,3,NATOM)
-     &                            + CHARGE(I2)*D3*XCOOR*ZCOOR/R5
-                EFGNUC(2,3,NATOM) = EFGNUC(2,3,NATOM)
-     &                            + CHARGE(I2)*D3*YCOOR*ZCOOR/R5
-              END IF
-              LL = LL + 3
- 110        CONTINUE
- 100      CONTINUE
-          EFGNUC(2,1,NATOM) = EFGNUC(1,2,NATOM)
-          EFGNUC(3,1,NATOM) = EFGNUC(1,3,NATOM)
-          EFGNUC(3,2,NATOM) = EFGNUC(2,3,NATOM)
-          IF (IPRINT .GE. 2) THEN
-            WRITE (LUPRI ,'(/2X,2A,/)')
-     &             'Nuclear EFG Tensor of nucleus: ',NAMDEP(IATOMD)
-            CALL OUTPUT(EFGNUC(1,1,NATOM),1,3,1,3,3,3,1,LUPRI)
-          END IF
-          KK = KK + 3
- 20     CONTINUE
-      ELSE
-        IATOMD = IATOMD + NUCDEG(I1)
-        KK = KK + 3*NUCDEG(I1)
-      ENDIF
- 10   CONTINUE
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck nuc_nef */
-      SUBROUTINE NUC_EFN(IPRINT,DOATOM,EFNNUC,GEOM)
-C***********************************************************************
-C
-C     Calculates nuclear contribution to the electric field at 
-C     individual nuclei
-C
-C     Based on NUC_EFG
-C     Written by T.Saue  - Feb 2003
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-      PARAMETER (D3 = 3.0D0)
-#include "nuclei.h"
-#include "symmet.h"
-      LOGICAL    DOATOM(*)
-      DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
-#include "ibtfun.h"
-C
-C
-C     Initialization of GEOM
-C     (copied from abacus/hergp.F:CMMASS)
-C
-      JATOM = 0
-      DO IATOM = 1, NUCIND
-         DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               ICHARG = NINT(CHARGE(IATOM))
-                  DO KCOOR = 1, 3
-                     GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
-     &                    *CORD(KCOOR,IATOM)
-                  END DO
-                  JATOM = JATOM + 1
-            END IF
-         END DO
-      END DO
-C
-      CALL DZERO(EFNNUC,3*NUCDEP)
-      KK = 1
-      NATOM  = 0
-      IATOMD = 0
-      DO 10 I1 = 1, NUCIND
-      IF(DOATOM(I1)) THEN
-        DO 20 IDEG1 = 1,NUCDEG(I1)
-          NATOM = NATOM + 1
-          IATOMD = IATOMD + 1
-          LL = 1
-          DO 100 I2 = 1, NUCIND
-            IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
-            DO 110 IDEG2 = 1,NUCDEG(I2)
-              IF (LL .NE. KK) THEN
-                XCOOR = GEOM(LL) - GEOM(KK)
-                YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
-                ZCOOR = GEOM(LL + 2) - GEOM(KK + 2)
-                R2 = XCOOR*XCOOR + YCOOR*YCOOR + ZCOOR*ZCOOR
-                R3 = R2*SQRT(R2)
-                EFNNUC(1,NATOM) = EFNNUC(1,NATOM)- CHARGE(I2)*XCOOR/R3
-                EFNNUC(2,NATOM) = EFNNUC(2,NATOM)- CHARGE(I2)*YCOOR/R3
-                EFNNUC(3,NATOM) = EFNNUC(3,NATOM)- CHARGE(I2)*ZCOOR/R3
-              END IF
-              LL = LL + 3
- 110        CONTINUE
- 100      CONTINUE
-          IF (IPRINT .GE. 2) THEN
-            WRITE (LUPRI ,'(/2X,2A,/)')
-     &        'Nuclear electric field at nucleus: ',NAMDEP(IATOMD)
-            IOFF = ICHAR('w')
-            DO K = 1,3
-               WRITE(LUPRI,'(4X,A1,A,E20.10)') CHAR(IOFF+K),
-     &              '-component: ',EFNNUC(K,NATOM)
-            ENDDO
-          END IF
-          KK = KK + 3
- 20     CONTINUE
-      ELSE
-        IATOMD = IATOMD + NUCDEG(I1)      
-        KK = KK + 3*NUCDEG(I1)
-      ENDIF
- 10   CONTINUE
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck prjex3 */
       SUBROUTINE PRJEX3(EXPVAL,PFO,DFO,PTRI,NCNT,
      &                  NR,NMO,IBUF,PBUF,FMAT,PM,INDX,NTOT,
@@ -1113,8 +948,7 @@ C
       CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBP,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12,
-     &               WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
         CALL MEMGET('REAL',KPMO,NISH(IFRP)*NISH(IFRP)*NZ,
@@ -1141,12 +975,11 @@ C
 C     Write new coefficients
       IUNIT = 2
       CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG)
+      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG,.FALSE.)
       CLOSE(IUNIT,STATUS='KEEP')
 C     Read old coefficients
       REWIND LUCOEF
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2,
-     &               WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2)
       CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMREL('EXPCAN.2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN

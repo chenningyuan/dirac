@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/amfi
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,18 +9,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_AMFI_FORTRAN_SOURCES
-    alphac.h 
-    datapow.h  
-    dofuc.h  
-    ired.h  
-    para.h 
-    param.h 
-    Regge.h 
-    relscf_crelop.h 
-    relscf_dim.h  
-    relscf_ijpair.h  
-    relscf_v10.h  
-    scfarr.h
     amfi.F
     amfi1.F
     amfi2.F
@@ -35,8 +24,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_AMFI_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'amfi' module without exceptions")
+    set_source_files_properties(${FREE_AMFI_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_AMFI_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     amfi
+    OBJECT
     ${FIXED_AMFI_FORTRAN_SOURCES}
     ${FREE_AMFI_FORTRAN_SOURCES}
 )

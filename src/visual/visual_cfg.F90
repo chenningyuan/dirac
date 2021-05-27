@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -73,7 +73,12 @@ module visual_cfg
    integer, public :: iq_kin_tau  = 35
    integer, public :: iq_kin_lap  = 36
    integer, public :: iq_kin_nr   = 37
-
+   integer, public :: iq_jx       = 38
+   integer, public :: iq_jy       = 39
+   integer, public :: iq_jz       = 40
+   integer, public :: iq_tcos     = 41
+   integer, public :: iq_tsin     = 42   
+   
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
    real(8), public :: visual_cfg_2d_p_origin(3) = 0.0d0
@@ -96,6 +101,10 @@ module visual_cfg
    logical, public :: visual_cfg_3d_fast    = .false.
    integer, public :: visual_cfg_ncube(1:3) = 0
    real(8), public :: visual_cfg_add_3d     = 4.0d0
+   logical, public :: visual_cfg_3d_gridimp = .false.
+   logical, public :: visual_cfg_3d_readjb  = .false.
+   character(80), public :: visual_cfg_3d_gridfil
+   character(80), public :: visual_cfg_3d_jbfile
 
 !                     integration in 3d
    logical, public :: visual_cfg_3d_integration = .false.
@@ -111,10 +120,22 @@ module visual_cfg
    integer, public              :: visual_cfg_nr_points_in_list = 0
    real(8), public, allocatable :: visual_cfg_xyz_list(:, :)
 
+!                     radial distributions
+   logical, public :: visual_cfg_radial          = .false.
+   real(8), public :: visual_cfg_radial_from(3)  = 0.0d0
+   integer, public :: visual_cfg_radial_nr_steps = 0
+   real(8), public :: visual_cfg_radial_length   = 0
+   
    real(8),       public :: visual_cfg_scale              = 1.0d0
+   real(8),       public :: visual_cfg_cartesian_power(3) = 0.0   
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
-   logical,       public :: visual_cfg_radial             = .false.
+   real(8),       public :: visual_cfg_wave_vector(3)     = 0.0d0
+   real(8),       public :: visual_cfg_freq               = 0.0d0   
+   real(8),       public :: visual_cfg_pol_vector(3)      = 0.0d0   
    logical,       public :: visual_cfg_force_small_ao     = .false.
+
+   logical,       public :: visual_cfg_nics              = .false.
+   real(8),       public :: visual_cfg_nics_origin(3)    = 0.0d0
 
    logical,      public :: visual_cfg_london               = .false.
    logical,      public :: visual_cfg_london_skip_kappa    = .false.

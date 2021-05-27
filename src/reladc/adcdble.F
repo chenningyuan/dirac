@@ -245,16 +245,6 @@ c*****************************************************************
       ELSE
         CALL PST('Building real 2h/3h1p coupling block+')
       ENDIF
-CTROND: preparing for pointer back to SCF orbital indices
-CTROND      J=0
-CTROND      DO IREP = 1,NREP
-CTROND        DO I = 1,NO(IREP)
-CTROND          J=J+1
-CTROND          II=IREPSPI(I,IREP,1)
-CTROND          WRITE(6,*) "TEST..IREPSPI ",IREP,II,REPNA(IREP),EPS(J)
-CTROND        ENDDO
-CTROND      ENDDO
-
       DO 200 IRPLOOP = 1,NREP
         IF(dipreps(IRPLOOP).EQ.0) GOTO 200
         IF(dipreps(IRPLOOP).GT.NREP) THEN
@@ -2640,24 +2630,8 @@ c  ATT the AIK(*) is declared as REAL! We cannot use an operation
 c  which assumes AIK to be complex! Special operation routine!
 c
       NX = NO(KREP)*NO(KREP)
-      CALL XNEGATE(NX,AIK14,AIK14)
+      CALL XSCAL(NX,-A1,AIK14,1)
 
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE XNEGATE(N,RA,CA)
-      IMPLICIT INTEGER (A-Z)
-      INTEGER N
-      REAL*8 RA(*)
-      COMPLEX*16 CA(*)
-#include  "../relccsd/complex.inc"
-      DO I=1,N
-        IF(CARITH) THEN
-          CA(I) = (-1.0D0,0.0D0)*CA(I)
-        ELSE
-          RA(I) = -1.0D0*RA(I)
-        ENDIF
-      ENDDO
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

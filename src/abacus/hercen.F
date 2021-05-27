@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,6 +20,8 @@
 !dirac_copyright_end
 
 ! FILE    : hercen.F
+!
+! NB!!! Nothing in this file is used in current Dirac /28-apr-2021
 !
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
@@ -66,7 +68,6 @@
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0)
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
@@ -84,7 +85,6 @@
 #include "huckel.h"
 #include "gencon.h"
 #include "dcbgen.h"
-#include "ibtfun.h"
 !
 !     Initialize variables that regard the whole basis set
 !     e.g. whether it is contracted or not.
@@ -116,7 +116,7 @@
 !       Read/process data on centers/blocks
 !       ===================================
 !
-        QEXP = D0
+        QEXP = 0.0D0
         READ (MLINE(NMLINE),'(BN,1X,F9.0,I5,F20.5)')  Q,NONT(I),QEXP
 !
 !       Read/process data on symmetry independent centers
@@ -217,11 +217,8 @@
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0)
-      PARAMETER (DSM = 1.0D-30)
-#include "cbirea.h"
       DIMENSION WORK(LWORK)
-      LOGICAL SEG,NOORBTS
+      LOGICAL   SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
      &          SEG(KAOVEC),                                            &
      &          ALPHA(KPRIM,KAOVEC),                                    &
@@ -231,18 +228,22 @@
       CHARACTER*80 BASREF(10)
       PARAMETER (MAXBSFIL=5)
       CHARACTER*20 BSFIL(MAXBSFIL)
-      LOGICAL GENERATE, CNTBAS
+      LOGICAL   GENERATE, CNTBAS
+      PARAMETER (DSM = 1.0D-30)
+
+! cbirea.h : UNCONT
 #include "molinp.h"
 #include "nuclei.h"
 #include "huckel.h"
 #include "dcbgen.h"
-!
-#include "ibtfun.h"
+#include "cbirea.h"
+
       GENERATE = .FALSE.
       CNTBAS = .FALSE.
       NHTYP  = 0
       IQM = 0
       NBLOCK = 0
+      ISGEN(1:KAOVEC) = 0
 !
 !     Initialize reference strings for this atom type.
 !
@@ -360,8 +361,8 @@
            IBSFLAG = 4
            READ (MLINE(NMLINE)(11:),*,ERR=9000)                         &
      &          (FAMPAR(K),K=1,2),NFAMEXP(1),IQM,(JCO(K),K=1,IQM)
-           FAMPAR(3) = D0
-           FAMPAR(4) = D0
+           FAMPAR(3) = 0.0D0
+           FAMPAR(4) = 0.0D0
            CALL GENFAMEXP(LUINFO,0)
       CASE ("FAMILY")
            IBSFLAG = 4
@@ -371,12 +372,12 @@
       CASE ("DUALFAMILY")
            IBSFLAG = 4
            READ (MLINE(NMLINE),'(16X,12I5)',ERR=9000)                   &
-     &          NFAMEXP(1),NFAMEXP(2),IQM,(JCO(K),K=1,IQM)              
+     &          NFAMEXP(1),NFAMEXP(2),IQM,(JCO(K),K=1,IQM)
            CALL GENFAMEXP(LUINFO,2)
       CASE ("MULTIBASIS")
            IBSFLAG = 5
            READ (MLINE(NMLINE)(18:),*,ERR=9000)                         &
-     &          NFILES,(BSFIL(K),K=1,NFILES)                             
+     &          NFILES,(BSFIL(K),K=1,NFILES)
            IF ( NFILES .EQ. 0 ) THEN
               WRITE (LUPRI,*)'SPECIFY THE NUMBER OF BASIS SET FILES'
               GOTO 9000
@@ -445,18 +446,11 @@
 !
 !         Dalton basis set
 !
-          BASNAM = BASFIL
-#if defined (DIRAC_DENSFIT_DEBUG)
-          write(*,*) 'before call to baslib'
-#endif
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
-     &         NBLOCK,ISGEN,KAOVEC,KPRIM,Q,Q,1,DSM,                      &
-     &         BASREF)
+     &         NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,                              &
+     &         UNCONT,BASFIL,BASREF,IPREAD)
           NBLCK = NBLCK + NBLOCK
-#if defined (DIRAC_DENSFIT_DEBUG)
-          write(*,*) 'after call to baslib'
-#endif
       CASE (4)
 !
 !         Generate well-temperered/family basis set
@@ -475,7 +469,7 @@
           CALL MULTI_BASIS(Q,IQM,JCO,NUC,NRC,SEG,                       &
      &         NFILES,BSFILES,ALPHA,CPRIM,CPRIMU,                       &
      &         NBLOCK,ISGEN,KAOVEC,KANG,KPRIM,BASREF)
-          
+
       CASE (6)
 !
 !        Kinetic balance is special as it requires information
@@ -511,7 +505,7 @@
      &     I,' as "',SPDCAR(NHTYP-1),'".',                              &
      &     ' Highest allowed orbital in this version: ',                &
      &     SPDCAR(MXQN-1),                                              &
-     &     ' Increase MXQN from',MXQN,' to',NHTYP/2,' and recompile.'    
+     &     ' Increase MXQN from',MXQN,' to',NHTYP/2,' and recompile.'
         CALL QUIT('Too high angular specified in input.')
  9000 CONTINUE
       WRITE(LUPRI,'(A,/,A,I3,/,A)')                                     &
@@ -538,7 +532,6 @@
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS
@@ -546,7 +539,7 @@
      &          SEG(KAOVEC),                                            &
      &          ALPHA(KPRIM,KAOVEC),                                    &
      &          CPRIM(KPRIM,KPRIM,KAOVEC),                              &
-     &          CPRIMU(KPRIM,KPRIM,KAOVEC),ISGEN(KAOVEC)                                            
+     &          CPRIMU(KPRIM,KPRIM,KAOVEC),ISGEN(KAOVEC)
       CHARACTER SPDCAR*1,BSET*5,BASFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10)
       CHARACTER*20 BSFIL(NFILES)
@@ -570,7 +563,6 @@
       DIMENSION ALPHAT(KPRM,KBLK)
       DIMENSION CPRIMT(KPRM,KPRM,KBLK)
       DIMENSION CPRIMUT(KPRM,KPRM,KBLK)
-      DIMENSION ISGENT(KBLK)
       CHARACTER*80 BASREFT(10,MAXBSFIL)
       LOGICAL SEGT
 !
@@ -592,7 +584,6 @@
        BASREF(1) = "Basis set read from multiple files"
 !
        DO 463 M=1,NFILES
-          BASNAM = BSFIL(M)
           KAOVEC1 = KAOVEC + 1 - IBLOCK1 
 !
           BASREF(3*(M-1)+2) = " " 
@@ -604,8 +595,8 @@
      &                 ALPHAT(1,IBLOCK1),                               &
      &                 CPRIMT(1,1,IBLOCK1),                             &
      &                 CPRIMUT(1,1,IBLOCK1),                            &
-     &                 NBLOCK,ISGENT(IBLOCK1),KAOVEC1,KPRIM,Q,Q,1,DSM,  &
-     &                 BASREFT(1,M))
+     &                 NBLOCK,KAOVEC1,KPRIM,Q,Q,1,DSM,                  &
+     &                 BSFIL(M),BASREFT(1,M),IPREAD)
           BASREF(3*(M-1)+4) = BASREFT(1,M)
 !
 ! to help in the reordering, we create a table mapping the orbital
@@ -645,17 +636,17 @@
             IF ( IBLKAGNMOM(IR) .EQ. IQ ) THEN
               IF ( NUCT(IR) .GT. 0 ) THEN
 
-                   JCO(IQ)= JCO(IQ)+ 1
-                   NUC(KT)  = NUC(KT) + NUCT(IR)
-                   NRC(KT)  = NRC(KT) + NRCT(IR)
-                   SEG(KT)  = SEGT(IR)
-                   ISGEN(KT)  = ISGENT(IR)
+                   JCO(IQ)   = JCO(IQ)+ 1
+                   NUC(KT)   = NUC(KT) + NUCT(IR)
+                   NRC(KT)   = NRC(KT) + NRCT(IR)
+                   SEG(KT)   = SEGT(IR)
+                   ISGEN(KT) = 0
 
                    DO 468 IX=1, NUCT(IR)
                       ALPHA(IX,KT)      =  ALPHAT(IX,IR)
                       DO 468 JX=1, NRCT(IR) 
-                       CPRIM(IX,JX,KT) =  CPRIMT(IX,JX,IR)
-                       CPRIMU(IX,JX,KT)= CPRIMUT(IX,JX,IR)
+                       CPRIM(IX,JX,KT)  = CPRIMT(IX,JX,IR)
+                       CPRIMU(IX,JX,KT) = CPRIMUT(IX,JX,IR)
   468              CONTINUE
                    KT = KT + 1
                 END IF 

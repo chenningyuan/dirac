@@ -785,7 +785,7 @@ C
 #include "cgas.inc"
 *
       DIMENSION XINT(*),XOUT(ISIDE**2)
-      INTEGER I_INDX_TO_GAS(2),ISUBLENGHT(NGAS+1),IORB(NGAS+1)
+      INTEGER I_INDX_TO_GAS(2),ISUBLENGTH(NGAS+1),IORB(NGAS+1)
 *
       NTEST = 00
       IF(NTEST.EQ.100) THEN
@@ -796,7 +796,7 @@ C
 *
       IPOS = 0
       IORBCOUNT = 0
-      ILENGHT = 0
+      ILENGTH = 0
       IPOS = 0
 *
 C Map first indix to orbital subspace
@@ -806,8 +806,8 @@ C Map first indix to orbital subspace
           I_INDX_TO_GAS(1) = IGAS
           I_INDX_TO_GAS(2) = IGAS
         END IF
-        ILENGHT = ILENGHT + IGAS
-        ISUBLENGHT(IGAS+1) =  ILENGHT
+        ILENGTH = ILENGTH + IGAS
+        ISUBLENGTH(IGAS+1) =  ILENGTH
         IORB(IGAS+1) = IORBCOUNT
       END DO
 *

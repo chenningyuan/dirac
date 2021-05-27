@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -109,9 +109,10 @@ C
 #include "param.inc"
       LOGICAL DONE
       PARAMETER (MCORE = 60 000 000)
-      REAL*8 CI(MCORE)
+      REAL*8, allocatable :: CI(:)
 C
       MAXCORE = MCORE
+      allocate(ci(mcore))
 #if defined (SYS_CRAY) || defined (SYS_T3D)
       IERR = 0
       CALL ASNUNIT(5,'-Yon',IERR)
@@ -129,6 +130,6 @@ C
       CLOSE (MRCVECS,STATUS='DELETE')
       CLOSE (MRCTWOE,STATUS='DELETE')
 C
- 1000 STOP
+ 1000 deallocate(ci)
 C
       END

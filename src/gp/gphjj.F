@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1307,20 +1307,20 @@ C
       INTEGER FILELN
       LOGICAL VALUE
 #include "chrnos.h"
-c maxorb for infpar.h
-#include "maxorb.h"
-#include "infpar.h"
+! maxorb for infpar.h
+!include "maxorb.h"
+!include "infpar.h"
 C
       FILELN = LEN(FILENM)
-      IF (MYNUM .GT. 0) THEN
-         FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
-     &                        '#'//CHRNOS(MYNUM/100)//
-     &                        CHRNOS(MOD(MYNUM,100)/10)//
-     &                        CHRNOS(MOD(MOD(MYNUM,100),10))
-         FILELN = FILELN + 4
-      ELSE
+!     IF (MYTID .GT. 0) THEN
+!        FILTMP(1:FILELN+4) = FILENM(1:FILELN)//
+!    &                        '#'//CHRNOS(MYTID/100)//
+!    &                        CHRNOS(MOD(MYTID,100)/10)//
+!    &                        CHRNOS(MOD(MOD(MYTID,100),10))
+!        FILELN = FILELN + 4
+!     ELSE
          FILTMP(1:FILELN) = FILENM(1:FILELN)
-      END IF
+!     END IF
       IF (TASK(1:5) .EQ. 'EXIST') THEN
          INQUIRE(FILE=FILTMP(1:FILELN),EXIST=VALUE)
       ELSE IF (TASK(1:5) .EQ. 'OPENE') THEN
@@ -1330,3 +1330,22 @@ C
       END IF
       RETURN
       END
+      INTEGER FUNCTION LU_NOT_USED(LU_start)
+      ! find a file logical unit number not in use
+      ! hjaaj Jan 2017
+      implicit none
+      INTEGER  LU_start, LU, ios
+      LOGICAL  is_open
+!
+      do LU = LU_start,99
+         inquire (unit=LU, opened=is_open, iostat=ios)
+         if (ios.ne.0) cycle
+         if (.not.is_open) then
+            LU_NOT_USED = LU
+            RETURN
+         end if
+      end do
+!
+      CALL QUIT('LU_NOT_USED: no free i/o unit numbers')
+      END
+! --- end of gp/gphjj.F ---

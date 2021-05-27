@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -287,7 +287,7 @@ C information for property run
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
       CHARACTER CIRUN*6, FILELAB*8, FILELAB_REOD*8, RODLAB*2
@@ -312,13 +312,23 @@ C
 #endif
 C     output file handle in KR-CI module
       LUWRT = LUPRI
-C
-C     Compute offset from WRK to WORK
+
+C     Compute offset from WRK in parameter list
+C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
+C     This offset is added to all Ksomething addresses in WORK(Ksomething)
+C     so that WRK(1:LWRK) are the memory addresses really used.
+
+C     Note that K_OFFSET is in ipoist8.inc and is always i*8
+C     because the offset can be bigger than what can be stored in i*4.
+C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
+C     See also subroutine MEMMAR.
+
       CALL COMPOFF(WRK,WORK,K_OFFSET)
 C     *k_offset = (long) (wrk-work+1);
+
       MXPWRD = LWRK
       KADD = MXPWRD
-C
+
 C     initialize memory
       call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
 C
@@ -520,7 +530,7 @@ C information for property run
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
 #endif
 #include "parluci.h"

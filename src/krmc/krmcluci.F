@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,8 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_SETUP()
 C***********************************************************************
@@ -326,19 +326,27 @@ C
       MZ_NUM = 0
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
-C
-C     Compute offset from WRK to WORK
-C
+
+C     Compute offset from WRK in parameter list
+C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
+C     This offset is added to all Ksomething addresses in WORK(Ksomething)
+C     so that WRK(1:LWRK) are the memory addresses really used.
+
+C     Note that K_OFFSET is in ipoist8.inc and is always i*8
+C     because the offset can be bigger than what can be stored in i*4.
+C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
+C     See also subroutine MEMMAR.
+
       CALL COMPOFF(WRK,WORK,K_OFFSET)
-C
 C     *k_offset = (long) (wrk-work+1);
-C
+
       MXPWRD = LWRK
       KADD = MXPWRD
+
 C     initialize memory
-      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY ')
+
 !     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
-C
 !     IDUM = 0
 !     CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
 !     call memmar(kbla_blubb,4,'ADDS  ',1,'BLABLU')
@@ -2110,9 +2118,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbgen.h"
 #include "parluci.h"
 C
-C     ITASK = 6 for parallel KRMC-LUCIAREL
+C     Send task code for parallel KRMC-LUCIAREL
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( 6 )
+      IF (PARCAL) CALL DIRAC_PARCTL( LUCIAREL_PAR )
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2135,7 +2143,7 @@ C
 C
 C     Let the slaves sleep (if relevant for this operating system)
 C
-      CALL DIRAC_PARCTL( 0 )
+      CALL DIRAC_PARCTL( RELEASE_NODES )
 C
       END
 #if defined (VAR_MPI2)

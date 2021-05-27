@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -204,20 +204,21 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (MAXANG = 20)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1P5 = 1.5D00)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL SKIP, DIF, PRINT, PUNCH
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
 #include "nuclei.h"
 #include "symmet.h"
+#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),
@@ -247,7 +248,7 @@ C
                CYA = PT(IBTAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
                CZA = PT(IBTAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
 C
-               ICHARG(IATOMA) = NINT(CHARGE(ICENTA))
+               ICHARG(IATOMA) = IZATOM(ICENTA)
 C
                IATOMB = 0
                DO 200 ICENTB = 1, NUCIND
@@ -311,8 +312,7 @@ C
      &              ' ARE UNAVAILABLE '
                BONDED(I,J) = .FALSE.
                BONDED(J,I) = .FALSE.
-C           The rather arbitrary number 1.2 is replaced with 1.5
-            ELSE IF (DIST2(I,J) .LT. (D1P5 * (RADI + RADJ))) THEN
+            ELSE IF (DIST2(I,J) .LT. (1.2D0 * (RADI + RADJ))) THEN
                NBONDS = NBONDS + 1
                IPAIRS(1,NBONDS) = I
                IPAIRS(2,NBONDS) = J

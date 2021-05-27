@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -270,16 +270,16 @@ C
 C     Get coefficients and CI vector
 C     ------------------------------
 C
-      CALL MEMGET('REAL',KUNO,N2ASHXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCCNO,NORBT,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','UNO',KUNO,N2ASHXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','OCCNO',KOCCNO,NORBT,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KOCCNO),NORBT)
-      CALL MEMGET('REAL',KCREF,NZCONFQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-C
+      CALL MEMGET2('REAL','CREF',KCREF,NZCONFQ,WORK,KFREE,LFREE)
+
+      CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
       CALL REAKRMC(LUKRMC,'NEWORB  ',WORK(KCMO),NCMOTQ)
 C
-      IF (NZCONF .GT. 0) THEN
-C     ... CI vector and natural orbitals only if MCSCF
+      IF (NZCONF .GT. 1) THEN
+C     ... CI vector and natural orbitals only if MCSCF and >1 configuration
          CALL REAKRMC(LUKRMC,'CREF    ',WORK(KCREF),NZCONFQ)
 C
 C        Calculate natural orbital occ.
@@ -287,6 +287,8 @@ C        ------------------------------
 C
 C        hjaaj Sep 2005: However, do NOT transform orbitals to NO.
 C        (not yet, because not used now, to do: transform and write to KRMCSCF)
+C        2017: if .SVRONO specified, then the reordered natural orbitals
+C        are saved to KRMCSCF in RGETNO.
 C
          IPRGNO = MAX(IPROPT,2)
          IF ( OPT_CIPROGRAM .NE. 'LUCIAREL' ) THEN
@@ -297,6 +299,9 @@ C
 C        Write natural orbitals back to KRMCSCF
 C
 C        FIXME: -"-
+      ELSE
+         ! NCONF .le. 1
+         MOISNO = .TRUE.
       END IF
 C
       IF ( IPROPT .GE. 2 ) THEN

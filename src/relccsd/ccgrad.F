@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSC(IOPT,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -165,7 +165,14 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------------------------------------------------
        real*8, allocatable :: dvo(:),dov(:)
        real*8, allocatable :: woo_temp(:),wpp_temp(:)
+       integer :: iprnt=2, dm_type
 !-------------------------------------------------------------------
+
+        if (iprnt.ge.2) write(*,*) 'at start of cc_density'
+        if (iprnt.ge.2) write(*,*) 'T1',dot_product(t1,t1)
+        if (iprnt.ge.2) write(*,*) 'T2',dot_product(t2,t2)
+        if (iprnt.ge.2) write(*,*) 'L1',dot_product(l1,l1)
+        if (iprnt.ge.2) write(*,*) 'L2',dot_product(l2,l2)
 
         doo(1:nfoo*rcw) = 0.0d0
         dvv(1:nfvv*rcw) = 0.0d0
@@ -177,6 +184,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
         call contraction_442 ((/"o2","o3","p1","p2"/),
      &    (/"p1","p2","o1","o3"/),(/"o2","o1"/),doo,-1.0d0,1.0d0,nrep,
      &    LeftTensor=l2,RightTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram1a',dot_product(doo,doo)
 
 !---------------------------------------------------------------------
 !    doo(j,i) = doo(j,i) - l1(j,e)*t1(e,i)
@@ -184,6 +192,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        call contraction_222 ((/"o2","p1"/),(/"p1","o1"/),(/"o2","o1"/),
      &                         l1,t1,doo,-1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram1b',dot_product(doo,doo)
 
 !----------------------------------------------------------------------
 !     dvv(b,a) = dvv(b,a) + l2(mn,ae)*t2(be,mn) 
@@ -192,6 +201,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442 ((/"o1","o2","p1","p3"/),
      &    (/"p2","p3","o1","o2"/),(/"p2","p1"/),dvv,1.0d0,1.0d0,nrep,
      &     LeftTensor=l2,RightTensor=t2 )
+        if (iprnt.ge.2) write(*,*)'diagram2a',dot_product(dvv,dvv)
 
 
 !----------------------------------------------------------------------
@@ -200,6 +210,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call contraction_222 ((/"o1","p1"/),(/"p2","o1"/),(/"p2","p1"/),
      &              l1,t1,dvv,1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram2b',dot_product(dvv,dvv)
 
 
        allocate(dvo(nfvo*rcw))
@@ -209,6 +220,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !----------------------------------------------------------------------------
 
       call xcopy (nfvo,t1,1,dvo,1)
+        if (iprnt.ge.2) write(*,*)'diagram3a',dot_product(dvo,dvo)
 
 !--------------------------------------------------------------------------
 !     dvo(a,i) = dvo(a,i) + l1(m,e) * t(ae,im)
@@ -220,6 +232,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call contraction_422 ((/"p1","p2","o1","o2"/),(/"o2","p2"/), 
      & (/"p1","o1"/),l1,dvo,1.0d0,1.0d0,nrep,LeftTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram3b',dot_product(dvo,dvo)
 
 
 !----------------------------------------------------------
@@ -232,10 +245,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       call contraction_222 ((/"o2","p2"/),(/"p2","o1"/),(/"o2","o1"/),
      &              l1,t1,woo_temp,1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3c',dot_product(dvo,dvo)
 
 
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3d',dot_product(dvo,dvo)
 
       deallocate(woo_temp)
 
@@ -250,9 +265,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442((/"o2","o3","p2","p3"/),(/"p2","p3","o1","o3"
      &       /),(/"o2","o1"/),woo_temp,1.0d0,1.0d0,nrep,LeftTensor=L2, 
      &          RightTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram3e',dot_product(dvo,dvo)
 
       call contraction_222 ((/"o2","o1"/),(/"p1","o2"/),(/"p1","o1"/),
      &              woo_temp,t1,dvo,-1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3f',dot_product(dvo,dvo)
 
       deallocate(woo_temp)
 
@@ -267,9 +284,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       call contraction_442((/"o2","o3","p2","p3"/),(/"p1","p3","o2","o3"
      &       /),(/"p1","p2"/),wpp_temp,-1.0d0,1.0d0,nrep,LeftTensor=L2, 
      &          RightTensor=t2)
+        if (iprnt.ge.2) write(*,*)'diagram3g',dot_product(dvo,dvo)
 
       call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),
      &              wpp_temp,t1,dvo,1.0d0,1.0d0,nrep)
+        if (iprnt.ge.2) write(*,*)'diagram3h',dot_product(dvo,dvo)
 
       deallocate(wpp_temp)
 
@@ -280,6 +299,35 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        allocate(dov(nfvo*rcw))
 
       call xcopy (nfvo,l1,1,dov,1)
+        if (iprnt.ge.2) write(*,*)'diagram4a',dot_product(dov,dov)
+
+      if (iprnt.ge.9) then
+
+         print *,'>>>>> elements, DOV not symmetrized'
+         dm_type = 3
+         call print_density_matrix(dov,dm_type)
+         write(*,*)'dov before c.c.',dot_product(dov,dov)
+         print *,'<<<<< elements, DOV not symmetrized'
+
+         print *,'>>>>> elements, DVO not symmetrized'
+         dm_type = 4
+         call print_density_matrix(dvo,dm_type)
+         write(*,*)'dvo before c.c.',dot_product(dvo,dvo)
+         print *,'<<<<< elements, DVO not symmetrized'
+
+         print *,'>>>>> elements, DVV not symmetrized'
+         dm_type = 2
+         call print_density_matrix(dvv,dm_type)
+         write(*,*)'dvv before c.c.',dot_product(dvv,dvv)
+         print *,'<<<<< elements, DVV not symmetrized'
+
+         print *,'>>>>> elements, DOO not symmetrized'
+         dm_type = 1
+         call print_density_matrix(doo,dm_type)
+         write(*,*)'doo before c.c.',dot_product(doo,doo)
+        print *,'<<<<< elements, DOO not symmetrized'
+
+      end if
 
       if (carith) then
          call conjuga (nfoo,doo,1)
@@ -296,9 +344,81 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       end subroutine
 
 
+      subroutine print_density_matrix(dm,block_type)
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "dgroup.h"
+         real(kind=8), intent(in) :: dm(*)
+         integer, intent(in) :: block_type ! 1 : oo, 2: vv, 3: ov, 4: vo
+         integer :: pq, irep, p, q
+
+         pq = 0
+         if (block_type.eq.1) then
+            DO IREP = 1, NREP
+               write (*,*) 'DOO for irrep ',irep
+               DO p = 1, NO(IREP)
+                  DO q = 1, NO(IREP)
+                     pq = pq + 1
+                     IF (CARITH) THEN
+       write (*,'(3X,I4,2x,2F28.10,2I4)') pq,dm(rcw*pq-1),dm(rcw*pq),p,q
+                     ELSE
+                        write (*,'(3X,2I4,2x,F28.10)') pq,dm(pq),p,q
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+         else if (block_type.eq.2) then
+            DO IREP = 1, NREP
+               write (*,*) 'DVV for irrep ',irep
+               DO p = 1, NV(IREP)
+                  DO q = 1, NV(IREP)
+                     pq = pq + 1
+                     IF (CARITH) THEN
+       write (*,'(3X,I4,2x,2F28.10,2I4)') pq,dm(rcw*pq-1),dm(rcw*pq),p,q
+                     ELSE
+                        write (*,'(3X,2I4,2x,F28.10)') pq,dm(pq),p,q
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+         else if (block_type.eq.3) then
+            DO IREP = 1, NREP
+               write (*,*) 'DOV for irrep ',irep
+               DO p = 1, NO(IREP)
+                  DO q = 1, NV(IREP)
+                     pq = pq + 1
+                     IF (CARITH) THEN
+       write (*,'(3X,I4,2x,2F28.10,2I4)') pq,dm(rcw*pq-1),dm(rcw*pq),p,q
+                     ELSE
+                        write (*,'(3X,2I4,2x,F28.10)') pq,dm(pq),p,q
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+         else if (block_type.eq.4) then
+            DO IREP = 1, NREP
+               write (*,*) 'DVO for irrep ',irep
+               DO p = 1, NV(IREP)
+                  DO q = 1, NO(IREP)
+                     pq = pq + 1
+                     IF (CARITH) THEN
+       write (*,'(3X,I4,2x,2F28.10,2I4)') pq,dm(rcw*pq-1),dm(rcw*pq),p,q
+                     ELSE
+                        write (*,'(3X,2I4,2x,F28.10)') pq,dm(pq),p,q
+                     ENDIF
+                  ENDDO
+               ENDDO
+            ENDDO
+         else
+            call quit('unknown density matrix block')
+         end if
+
+      end subroutine
+
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -312,13 +432,17 @@ C     DOOTODIR
 C     DVVTODIR
 C---------------Last modified------------------------------------------
 C
-C     Author : Joost van Stralen - March 2002
+C     Author : Joost van Stralen - March 2002 : Extended by Avijit Shee
+C     for CC
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 DOO(*),DVV(*),DOV(*),DVO(*)
       REAL*8 BUF1(*),BUF2(*)
       REAL*8 DMO(*)
+      REAL*8 sym_factor !we will change this factor depending on the
+                        !fact whether our desired property opeartor is
+                        !hermition or anti-hermition.   
 C
 C
 C---------------Common Blocks--------------------------------------
@@ -326,11 +450,15 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
 C
-       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:) 
-
+       real*8, allocatable :: DOO_TRANS(:),DVV_TRANS(:),D_TRANS(:)
+      integer a, ab, ai,b,i,ia,ij,irep,j 
+! debug
+      logical :: debug=.false.
+      integer :: dm_type
 C---------------Executable code--------------------------------------
 C
 C
@@ -351,17 +479,39 @@ C                                            unbar + bar
 C######################################################################
 C
 
+      sym_factor = 1.0d0 !1.0d0 for the hermition part of density matrix.
+                         !it will be -1.0d0 for the anti-hermition part. 
 
-!!!   ALLOCATE(D_TRANS(NFVO*RCW))
+      ALLOCATE(D_TRANS(NFVO*RCW))
 
-!!!   CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
+      if (debug) then
+         write(*,*)'dov in symmet. before', 
+     &           dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
+      end if 
 
-!!!   CALL XAXPY (NFVO,A1,D_TRANS,1,DOV,1)
+      CALL SRT1C1 (NREP,NO,NV,DVO,D_TRANS)
 
-!!!   CALL XSCAL (NFVO,AP5,DOV,1)
+      CALL XAXPY (NFVO,sym_factor*A1,D_TRANS,1,DOV,1)
 
-!!!   DEALLOCATE(D_TRANS)
+      if (debug) then
+         write(*,*)'dov in symmet. after', 
+     &           dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
+         write(*,*)'dov_trans in symmet.', 
+     &           dot_product(d_trans(1:NFVO*rcw),d_trans(1:NFVO*rcw))
+      end if
 
+      CALL XSCAL (NFVO,AP5,DOV,1)
+
+      if (debug) then
+         print *,'>>>>> elements, DOV symmetrized'
+         dm_type = 3
+         call print_density_matrix(dov,dm_type)
+         write(*,*)'dov in symmet. after, scaled by 0.5', 
+     &              dot_product(dov(1:NFVO*rcw),dov(1:NFVO*rcw))
+         print *,'<<<<< elements, DOV symmetrized'
+      end if
+
+      DEALLOCATE(D_TRANS)
 
       CALL DZERO(DMO,NORBT*NORBT*NZ)
 
@@ -397,16 +547,36 @@ C##############
 
       buf1(1:nfoo*rcw) = 0.0d0
 
-!!!!  ALLOCATE(DOO_TRANS(NFOO*RCW))
+      ALLOCATE(DOO_TRANS(NFOO*RCW))
 
-!!!!  CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
+      if (debug) then
+         write(*,*)'doo in symmet. before', 
+     &           dot_product(doo(1:NFOO*rcw),doo(1:NFOO*rcw))
+      end if
 
-!!!!  CALL XAXPY (NFOO,A1,DOO_TRANS,1,DOO,1)
+      CALL SRT1C1 (NREP,NO,NO,DOO,DOO_TRANS)
 
-!!!!  DEALLOCATE(DOO_TRANS)
+      CALL XAXPY (NFOO,sym_factor*A1,DOO_TRANS,1,DOO,1)
 
-!!!!  CALL XSCAL (NFOO,AP5,DOO,1)
+      if (debug) then
+         write(*,*)'doo in symmet. after', 
+     &           dot_product(doo(1:NFOO*rcw),doo(1:NFOO*rcw))
+         write(*,*)'doo_trans in symmet.', 
+     &          dot_product(doo_trans(1:NFOO*rcw),doo_trans(1:NFOO*rcw))
+      end if
 
+      DEALLOCATE(DOO_TRANS)
+
+      CALL XSCAL (NFOO,AP5,DOO,1)
+
+      if (debug) then
+         print *,'>>>>> elements, DOO symmetrized'
+         dm_type = 1
+         call print_density_matrix(doo,dm_type)
+         write(*,*)'doo in symmet. after, scaled by 0.5', 
+     &           dot_product(doo(1:NFOO*rcw),doo(1:NFOO*rcw))
+         print *,'<<<<< elements, DOO symmetrized'
+      end if
 
       IJ = 0
       DO IREP = 1, NREP
@@ -422,18 +592,14 @@ C##############
             ENDDO
          ENDDO
       ENDDO
+
 C
 C Put imaginary part after real part
 C
       IF (CARITH) THEN
          CALL DCOPY(NFOO,BUF2,1,BUF1(NFOO+1),1)
       ENDIF
-c     do i = 1, nfoo
-c        print*,'real DOO ',i,buf1(i)
-c        print*,'imag DOO ',i,buf1(i+nfoo)
-c     enddo
-C
-c     print*,'laat oo deel dmo op 0'
+
       CALL DOOTODIR(dmo,BUF1,NO,nfoo,NREP,RCW)
 
 C##############
@@ -442,12 +608,29 @@ C##############
 
       buf1(1:nfvv*rcw) = 0.0d0
 
-!!!!  ALLOCATE(DVV_TRANS(NFVV*RCW))
-!!!!  CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
-!!!!  CALL XAXPY (NFVV,A1,DVV_TRANS,1,DVV,1)
-!!!!  DEALLOCATE(DVV_TRANS)
+      ALLOCATE(DVV_TRANS(NFVV*RCW))
+      CALL SRT1C1 (NREP,NV,NV,DVV,DVV_TRANS)
+      CALL XAXPY (NFVV,sym_factor*A1,DVV_TRANS,1,DVV,1)
 
-!!!!  CALL XSCAL (NFVV,AP5,DVV,1)
+      if (debug) then
+         write(*,*)'dvv in symmet. after',
+     &           dot_product(dvv(1:NFVV*rcw),dvv(1:NFVV*rcw))
+         write(*,*)'dvv_trans in symmet.',
+     &          dot_product(dvv_trans(1:NFVV*rcw),dvv_trans(1:NFVV*rcw))
+      end if
+
+      DEALLOCATE(DVV_TRANS)
+
+      CALL XSCAL (NFVV,AP5,DVV,1)
+
+      if (debug) then
+         print *,'>>>>> elements, DVV not symmetrized'
+         dm_type = 2
+         call print_density_matrix(dvv,dm_type)
+         write(*,*)'dvv in symmet. after, scaled by 0.5',
+     &           dot_product(dvv(1:NFVV*rcw),dvv(1:NFVV*rcw))
+         print *,'<<<<< elements, DVV not symmetrized'
+      end if
 
       AB = 0
       DO IREP = 1, NREP
@@ -470,12 +653,7 @@ C
          CALL DCOPY(NFVV,BUF2,1,BUF1(NFVV+1),1)
       ELSE
       ENDIF
-c     do i = 1, nfvv
-c        print*,'real DVV ',i,buf1(i)
-c        print*,'imag DVV ',i,buf1(i+nfvv)
-c     enddo
-C
-c     print*,'laat vv deel dmo op 0'
+
       CALL DVVTODIR(dmo,BUF1,NV,nfvv,NREP,RCW)
 
 C##############
@@ -484,13 +662,18 @@ C##############
 
       buf1(1:nfvo*rcw) = 0.0d0
 
+      CALL SRT1C1 (NREP,NV,NO,DOV,DVO)
 
-!     ALLOCATE(D_TRANS(NFVO*RCW))
-!     CALL SRT1C1 (NREP,NV,NO,DVO,D_TRANS)
+      CALL XSCAL (NFVO,sym_factor*A1,DVO,1)
 
-!     CALL XAXPY (NFVO,A1,DOV,1,DVO,1)
-
-!     CALL XSCAL (NFVO,AP5,DVO,1)
+      if (debug) then
+         print *,'>>>>> elements, DVO symmetrized'
+         dm_type = 4
+         call print_density_matrix(dvo,dm_type)
+         write(*,*)'dvo :',
+     &      dot_product(dvo(1:nfvo*rcw),dvo(1:nfvo*rcw))
+         print *,'<<<<< elements, DVO symmetrized'
+      end if
 
       IA = 0
       DO IREP = 1, NREP
@@ -507,13 +690,11 @@ C##############
          ENDDO
       ENDDO
 
-!      DEALLOCATE(D_TRANS)
-
       IF (CARITH) THEN
          CALL DCOPY(NFVO,BUF2,1,BUF1(NFVO+1),1)
       ENDIF
 
-        CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
+      CALL DOVTODIR(DMO,BUF1,NFVO,RCW,NREP,NO,NV)
 
       RETURN
       END
@@ -526,7 +707,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -546,7 +727,7 @@ C     Author : Luuk Visscher
 C
 C---------------Calling variables--------------------------------------
 C
-      INTEGER IOPT
+      INTEGER IOPT,NSP,IREPSPI,NBUF2,NBUF3,CC1,BB1,BB2,CONV
       REAL*8 T1(*),S1(*),T2(*),S2(*)
       REAL*8 DOO(*),DVO(*),DOV(*),DVV(*)
       REAL*8 D2VO(*),D2OV(*),DG(*)
@@ -569,6 +750,7 @@ C
       CHARACTER*8 NAME
       COMPLEX*16 EPHASE(MAXOP)
       LOGICAL BDONE,USEDZ,RIGHT
+      integer dum,eoff,eoper,jprnt,k,m,maxit,n
 C
 C---------------Executable code--------------------------------------
 C
@@ -614,7 +796,7 @@ C--------------------------------------------
 C X(A,I) = X(A,I) + V(K,L,C,I) * TAU(A,C,K,L)
 C--------------------------------------------
       CALL XCOPY (NDIMT2,S2,1,BUF3,1)
-      CALL T1EQN1 (BUF1,BUF2,BUF3,NBUF3,XVO)
+      CALL T1EQN1 (BUF3,XVO)
 C---------------------------------------------------------------------
 C X(A,I) = X(A,I) + V(IK,AL) * D(K,L)
 C---------------------------------------------------------------------
@@ -657,7 +839,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -678,6 +860,7 @@ C
       REAL*8 DMO(*)
       REAL*8 XMO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      INTEGER NBUF3
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -688,6 +871,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer kfree, lfree
 C
 C---------------Executable code--------------------------------------
 C
@@ -746,7 +931,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -771,8 +956,11 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
+#include "dgroup.h"
 C
 C---------------Local variables--------------------------------------
+C
+       integer a, ai, i, irep
 C
 C---------------Executable code--------------------------------------
 C
@@ -829,7 +1017,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVAL (DOO,DVV,DVO,DOV,EOO,EVV,EVO,EOV,EPHASE,CEXPA)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -859,6 +1047,7 @@ C---------------Local variables--------------------------------------
 C
       COMPLEX*16 EXPA,EXPA_SUM
       REAL*8 DDOT,ZDOT
+      integer ii,irep
 C
 C---------------Executable code--------------------------------------
 C
@@ -946,7 +1135,7 @@ C
 !     !> read ibeig (info array on boson irreps) from DFCOEF
       if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
-        call reacmo_no_work(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
         close(lucoef,STATUS='KEEP')
       end if
 C
@@ -1270,6 +1459,12 @@ C---------------Executable code--------------------------------------
             FILE_NAME    = 'CCDENS'
             ADD_2_FOCK   = .TRUE.
             IERR         = 0
+         CASE ("EOM ")
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+            LABEL        = 'EOM DENS'
+            FILE_NAME    = 'CCDENS'
+            ADD_2_FOCK   = .FALSE.
+            IERR         = 0
          CASE ("MC  ")
             WRITE (LUPRI,*) " Retrieving MCSCF density matrix from file"
             LABEL        = 'MC  DENS'
@@ -1305,6 +1500,7 @@ C     Read the appropriate correlated density from file
       FND =  FNDLAB(LABEL,MCCDENS)
       CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
+!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution
@@ -1326,7 +1522,107 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
             CALL DENSMO_TO_DENSAO (DMO,DMAT)
       END SELECT
 
+      DEALLOCATE(DMO)
       END
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE GET_EOM_DENSITY (BASIS,STATE,DMAT,IERR)
+C
+C---------------Description--------------------------------------------
+C
+C     Retrieve relaxed density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      PARAMETER (HALF=0.5D0)
+      CHARACTER*2 BASIS                  ! Representation
+      REAL*8 DMAT(*)                     ! Density matrix
+      INTEGER IERR                       ! Error code
+      INTEGER STATE                      ! Number of state for which density has been stored  
+C
+C---------------Local variables--------------------------------------
+C
+      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      LOGICAL FND,FNDLAB,ADD_2_FOCK
+      CHARACTER*8 LABEL
+      CHARACTER*6 FILE_NAME
+      INTEGER dlength,dstart  
+      INTEGER, PARAMETER :: EOMDEN=299
+C
+C---------------Executable code--------------------------------------
+
+            ADD_2_FOCK = .FALSE.
+
+            WRITE (LUPRI,*) " Retrieving EOMCC density matrix from file"
+           ADD_2_FOCK   = .TRUE.
+!              ADD_2_FOCK = .FALSE.
+            IERR         = 0
+
+C     Read the appropriate correlated density from file
+
+      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in DMO allocation !')
+      ENDIF
+
+!      call waio_open(itapt+7)
+      
+      inquire(iolength=dlength) DMO
+
+      dstart = (state-1)*norbt*norbt*nz+1    
+!      dlength = norbt*norbt*nz*8
+
+      open (eomden,file='EOM_DENS',access='direct',status='old',
+     &      recl=dlength)
+
+      read (eomden,rec=state) dmo
+
+!      write(*,*)(dmo(i,i,1),i=1,norbt) 
+!      call rread (itapt+7,dmo,dlength,dstart)
+      
+C     Add the closed shell Hartree-Fock contribution
+      IF(ADD_2_FOCK)THEN
+C       The add_two routine scales by 2, scale back to the orginal afterwards
+        CALL ADD_TWO_FOCK(DMO,.TRUE.,0)
+        CALL DSCAL(NZ*NORBT*NORBT,HALF,DMO,1)
+      END IF
+
+
+      SELECT CASE (BASIS)
+         CASE ("MO")
+            CALL DCOPY (N2ORBTQ,DMO,1,DMAT,1)
+         CASE ("AO")
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+         CASE DEFAULT
+            WRITE (LUPRI,*) " Unknown or unimplemented basis: ",BASIS
+            WRITE (LUPRI,*) " Use density matrix in AO basis "
+            IERR = IERR + 2
+            CALL DENSMO_TO_DENSAO (DMO,DMAT)
+      END SELECT
+
+      deallocate(dmo)
+      
+      close (eomden,status='keep')
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO)
 C
@@ -1353,6 +1649,7 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
+#include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1383,8 +1680,101 @@ C     without being able to do a replace or check for old data.
       IF (FNDLAB(EOFLABEL,MCCDENS))
      & BACKSPACE MCCDENS
       CALL NEWLAB(LABEL,MCCDENS,LUPRI)
+! aspg, debug of properties for exacorr
+! keep this code commented out for the moment
+!     write (*,'(3X,A,2I6)') '>>>>> debug : norbt, nz',norbt,nz 
+!     print *,'>>>>> DMO in dirac format'
+!     do i=1, NORBT*NORBT*NZ
+!        write(*,'(3X,I4,2x,F28.10)') i, dmo(i)
+!     end do
+!     print *,'<<<<< DMO in dirac format'
       CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
       CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
+C     Switch on evaluation of property output
+      DOEXP = .TRUE.
+C     Add this density matrix to the list to be evaluated
+      IPRP_WF = 0
+      DO I = 1, NPRP_WF
+         IF (PRP_WF(I).EQ.WF) IPRP_WF = I
+      END DO
+      IF (IPRP_WF.EQ.0) THEN
+         IF (NPRP_WF .GE. MXPRP_WF) THEN
+             IPRP_WF = 1 ! Unlikely that this happens, just skip the HF print out in this case
+         ELSE
+             NPRP_WF = NPRP_WF + 1
+             IPRP_WF = NPRP_WF
+         END IF
+         PRP_WF(IPRP_WF) = WF
+      END IF
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE STORE_EOM_DENSITY (WF,STATE,DMO)
+C
+C---------------Description--------------------------------------------
+C     Storing relaxed EOM density matrix for processing by other modules
+C     of DIRAC (currenty only first-order properties)
+C     This should work with multi-state methods as well...
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "implicit.h"
+#include "files.inc"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+C
+C---------------Calling variables--------------------------------------
+C
+      CHARACTER*4 WF                     ! Wave function type
+      REAL*8, INTENT(IN):: DMO(*)                      ! Density matrix (MO-basis)
+      INTEGER STATE                      ! I designate each state by a Number
+C
+C---------------Local variables--------------------------------------
+C
+      CHARACTER*8 :: LABEL,EOFLABEL
+      LOGICAL, SAVE :: INIT=.FALSE.
+      LOGICAL :: FNDLAB
+      logical            :: exist
+      INTEGER, PARAMETER :: EOMDEN=299
+      integer :: dlength
+C---------------Executable code--------------------------------------
+ 
+      WRITE (LUPRI,*) "Storing ",WF," density matrix for state",STATE,
+     &                " on file"
+
+C     Write the correlated density to file
+C     Code should be replaced by proper storage routine, this just adds to the end of a file 
+C     without being able to do a replace or check for old data.
+
+      inquire(iolength=dlength) DMO(1:norbt*norbt*nz)
+
+      inquire(file='EOM_DENS', exist=exist)
+      if (exist) then
+
+      open (eomden,file='EOM_DENS',access='direct',status='old',
+     &      recl=dlength)
+
+      else
+
+       open (eomden,file='EOM_DENS',access='direct',status='new',
+     &      recl=dlength)
+     
+      endif
+
+      write (eomden,rec=state) dmo(1:norbt*norbt*nz)
+
+      close (eomden,status='keep')
+
+      print *,"done for state ",state
       END

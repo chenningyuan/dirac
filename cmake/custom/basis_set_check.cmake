@@ -1,7 +1,0 @@
-option(ENABLE_BASIS_SETS_CHECK "Enable check reading of almost all basis sets input files" OFF)
-if(ENABLE_BASIS_SETS_CHECK)
-    message(STATUS "Reading of almost all basis sets input files in extra test ENABLED")
-    dirac_test(read_all_basis_sets "read;basis")
-else()
-    message(STATUS "Reading of almost all basis sets input files in extra test DISABLED")
-endif()

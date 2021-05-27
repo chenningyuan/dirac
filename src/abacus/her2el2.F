@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -58,7 +58,7 @@ C
          WRITE (LUPRI, 1006) DC2E
       END IF
 C
-C     Deratives on common nucleus
+C     Derivatives on common nucleus
 C
       IF (DC2H) THEN
          LNHCC =  2*KCKT34
@@ -75,7 +75,7 @@ C
          CALL MEMREL('C2DRIV.C2HINT',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF
 C
-C     Deratives on each separate nucleus
+C     Derivatives on each separate nucleus
 C
       IF (DC2E) THEN
          LNHCC = 18*KCKT34
@@ -113,7 +113,7 @@ C     TUH
 C
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1 = 1.00 D00)
+      PARAMETER (D1 = 1.0D0)
 #include "maxaqn.h"
       LOGICAL DORDER(2), DHOVEC
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
@@ -148,7 +148,7 @@ C     4   XQ00 YQ00 ZQ00
 C     7   XXPP XYPP XZPP YYPP YZPP ZZPP
 C     13  XXQQ XYQQ XZQQ YYQQ YZQQ ZZQQ
 C
-#include "ibtfun.h"
+
 C
       CALL QENTER('C2HINT')
 #include "memint.h"
@@ -186,7 +186,7 @@ C
                   IX = IORDER - IXDER(ICOOR2)
                   IY = IYDER(ICOOR2)
                   IZ = IZDER(ICOOR2)
-                  JODD2=IBTAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
+                  JODD2=IAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
                   IADRHO = JDHO + ICOOR2
 C
 C                 Differentiation on a single electron
@@ -222,7 +222,7 @@ C
                NHCCMP = 0
                JODD34 = IODD34(ICMP34,ITYPE)
                DO 220 ICMP12 = 1, KHKT12
-                  IO1234 = IBTXOR(IODD12(ICMP12,2),JODD34)
+                  IO1234 = IEOR(IODD12(ICMP12,2),JODD34)
                   DO 230 ICOOR = 1, NCOOR
                      IF (IO1234.EQ.JODDIF(ICOOR)) NHCCMP = NHCCMP + 1
   230             CONTINUE
@@ -351,7 +351,6 @@ C  /* Deck c2hin1 */
 C
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0)
 #include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
@@ -370,7 +369,6 @@ C
 #include "twoao.h"
 #include "twocom.h"
 #include "sphtrm.h"
-#include "ibtfun.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
 C
@@ -418,9 +416,9 @@ C
                   MAXT = L3 + L4
                   MAXU = M3 + M4
                   MAXV = N3 + N4
-                  MINT = IBTAND(MAXT,INCRMT - 1)
-                  MINU = IBTAND(MAXU,INCRMU - 1)
-                  MINV = IBTAND(MAXV,INCRMV - 1)
+                  MINT = IAND(MAXT,INCRMT - 1)
+                  MINU = IAND(MAXU,INCRMU - 1)
+                  MINV = IAND(MAXV,INCRMV - 1)
                   IF (IDERIV .EQ. 0) THEN
                      ITYPE  = IOFFHC(1)
                      DO 300 V = MINV, MAXV, INCRMV
@@ -485,7 +483,7 @@ C
                            JV = V + IVADD(ICOOR)
                            INTHC  = INDHER(JT,JU,JV)
                            ITYPE  = IOFFHC(ICOOR)
-                           IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
+                           IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                            DO 440 I = 1, KHKT12
                            IF (IODD12(I,2) .EQ. IODDIF) THEN
                               DO 450 J = 1, NCCPP
@@ -536,7 +534,7 @@ C
             DO 800 ICOOR = 1, NCOOR
                ITYPE  = IOFFCC(ICOOR)
                FAC    = FACTOR(ICOOR)
-               IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
+               IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                ICMP   = ICMP34
                DO 810 ICMP12 = 1, KHKT12
                   IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
@@ -554,7 +552,7 @@ C
             DO 830 ICOOR = 1, NCOOR
                ITYPE  = IOFFCC(ICOOR)
                FAC    = FACTOR(ICOOR)
-               IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
+               IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                DO 840 ICMP12 = 1, KHKT12
                IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
                   ICMP = ICMP0 + ICMP12
@@ -738,7 +736,7 @@ C     HCHX HCEX1 HCEX2
 C     HCHY HCEY1 HCEY2
 C     HCHZ HCEZ1 HCEZ2
 C
-#include "ibtfun.h"
+
 C
       CALL QENTER('C2EINT')
 #include "memint.h"
@@ -747,9 +745,9 @@ C
 C     ***** Initialization *****
 C
       IF (CROSS) THEN
-         JODD1(1) = IBTAND(IHRSYM,1)
-         JODD1(2) = IBTAND(IHRSYM,2)
-         JODD1(3) = IBTAND(IHRSYM,4)
+         JODD1(1) = IAND(IHRSYM,1)
+         JODD1(2) = IAND(IHRSYM,2)
+         JODD1(3) = IAND(IHRSYM,4)
       END IF
 C
 C     MAX(ICOOR) = 3 + 6 = 9
@@ -802,7 +800,7 @@ C
             IEXOFF = IEOFF(IX)
             IEYOFF = IEOFF(IY)
             IEZOFF = IEOFF(IZ)
-            JODD2  = IBTAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
+            JODD2  = IAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
             IATOM2 = 0
             DO 20 IATOMX = 0, IX
             DO 20 IATOMY = 0, IY
@@ -831,7 +829,7 @@ C
                   END IF
                   IF (CROSS) THEN
                      DO 30 ICOOR1 = 1, 3
-                        JODD = IBTXOR(JODD1(ICOOR1),JODD2)
+                        JODD = IEOR(JODD1(ICOOR1),JODD2)
                         IADRHC = 3*ICOOR1 - 1
                         IF (DATOMH) THEN
                            IADRMX = IDMX(ICOOR2,ICOOR1,IATOM2,IPATH)
@@ -887,7 +885,7 @@ C
                IEXOFF = IEOFF(IX)
                IEYOFF = IEOFF(IY)
                IEZOFF = IEOFF(IZ)
-               JODD2  = IBTAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
+               JODD2  = IAND(IHRSYM,MOD(IX,2)+2*MOD(IY,2)+4*MOD(IZ,2))
                IATOM2 = 0
                DO 60 IATOMX = 0, IX
                DO 60 IATOMY = 0, IY
@@ -933,7 +931,7 @@ C
                ILAST  = JENDHC(JENDAT(ICOOR),ICOOR)
                NHCCMP = 0
                DO 130 ICMP12 = 1, KHKT12
-                 IO1234 = IBTXOR(IODD12(ICMP12,2),JODD34)
+                 IO1234 = IEOR(IODD12(ICMP12,2),JODD34)
                  DO 140 I = ISTART, ILAST
                     IF (IO1234 .EQ. JODDIF(I)) NHCCMP = NHCCMP + 1
   140            CONTINUE
@@ -1095,7 +1093,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0)
       INTEGER T, U, V
       COMMON /COMC2E/ JSTRHC(27,9), JENDHC(27,9),
      &                INCMXT(9), INCMXU(9), INCMXV(9),
@@ -1118,7 +1115,7 @@ C
 #include "twocom.h"
 #include "sphtrm.h"
 C
-#include "ibtfun.h"
+
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2EIN1','*',103)
 
@@ -1166,9 +1163,9 @@ C
                   MAXU   = M3 + M4 + INCMXU(ICOOR)
                   MAXV   = N3 + N4 + INCMXV(ICOOR)
                   MAXTUV = MAXT + MAXU + MAXV - 1
-                  MINT   = IBTAND(MAXT,INCRMT - 1)
-                  MINU   = IBTAND(MAXU,INCRMU - 1)
-                  MINV   = IBTAND(MAXV,INCRMV - 1)
+                  MINT   = IAND(MAXT,INCRMT - 1)
+                  MINU   = IAND(MAXU,INCRMU - 1)
+                  MINV   = IAND(MAXV,INCRMV - 1)
                   DO 300 V = MINV, MAXV, INCRMV
                   DO 300 U = MINU, MAXU, INCRMU
                   DO 300 T = MINT, MAXT, INCRMT
@@ -1177,7 +1174,7 @@ C
                      DO 400 IATOM = ISTRAT, IENDAT
                         ISTRHC = JSTRHC(IATOM,ICOOR)
                         IENDHC = JENDHC(IATOM,ICOOR)
-                        IODD   = IBTXOR(JODDIF(ISTRHC),JODD34)
+                        IODD   = IEOR(JODDIF(ISTRHC),JODD34)
 C
 C                       Expansion coefficients
 C                       ======================
@@ -1238,7 +1235,7 @@ C
   540                      CONTINUE
                            DO 550 IHCINT = ISTRHC, IENDHC
                               INTHC  = IOFFHC(IHCINT)
-                              IODDIF = IBTXOR(JODDIF(IHCINT),JODD34)
+                              IODDIF = IEOR(JODDIF(IHCINT),JODD34)
                               DO 560 I = 1,KHKT12
                               IF (IODD12(I,2) .EQ. IODDIF) THEN
                                  DO 570 J = 1, NCCPP
@@ -1296,7 +1293,7 @@ C
                      ITYPE  = IOFFCC(IHCINT)
                      ICMP   = ICMP34
                      FAC    = FACTOR(IHCINT)
-                     IODDIF = IBTXOR(JODDIF(IHCINT),JODD34)
+                     IODDIF = IEOR(JODDIF(IHCINT),JODD34)
                      DO 820 ICMP12 = 1, KHKT12
                         IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
                            DO 830 I = 1, NO1234
@@ -1317,7 +1314,7 @@ C
                   DO 910 IHCINT = ISTRHC, IENDHC
                      ITYPE  = IOFFCC(IHCINT)
                      FAC    = FACTOR(IHCINT)
-                     IODDIF = IBTXOR(JODDIF(IHCINT),JODD34)
+                     IODDIF = IEOR(JODDIF(IHCINT),JODD34)
                      DO 920 ICMP12 = 1, KHKT12
                      IF (IODD12(ICMP12,2) .EQ. IODDIF) THEN
                         ICMP = ICMP0 + ICMP12
@@ -1355,7 +1352,7 @@ C
                            IADR = (ICMP34-1)*KHKT12 + 1
                            IADD = 1
                         END IF
-                        IODDIF = IBTXOR(JODDIF(ICOOR),JODD34)
+                        IODDIF = IEOR(JODDIF(ICOOR),JODD34)
                         DO 1020 ICMP12 = 1, KHKT12
                            WRITE (LUPRI,'(/A,I3)') ' ICMP12 ', ICMP12
                            IF (IODD12(ICMP12,2).EQ. IODDIF) THEN
@@ -1401,7 +1398,7 @@ C
 C     Scratch: SCR1(NUCR3*NUCR4*NINT12)
 C              SCR2(NORR3*NUCR4*NINT12)
 C
-      PARAMETER (D0 = 0.0D0)
+      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 #include "twoao.h"
       DIMENSION CCPRIM(*), CCONT(*), SCR1(*), SCR2(*),
      &          CONT3(*), CONT4(*), NPCO3(NSET3,2), NPCO4(NSET4,2),
@@ -1477,7 +1474,8 @@ C
                   IADR = IADR + 1
   200          CONTINUE
             END IF
-            CALL MXM(CONT3,NORR3,SCR1,NUCR3,SCR2,NUCR4*NINT12)
+            CALL DGEMM('N','N',NORR3,NUCR4*NINT12,NUCR3,D1,CONT3,NORR3,
+     &           SCR1,NUCR3,D0,SCR2,NORR3)
          ELSE
             IF (RPRI34) THEN
                N34Q = NUCR3*NUCR4
@@ -1486,9 +1484,11 @@ C
                   CALL DCOPY(NINT12,CCPRIM(I),NUC34,
      &                              SCR1(NPNT34(I,1)),N34Q)
   300          CONTINUE
-               CALL MXM(CONT3,NORR3,SCR1,NUCR3,SCR2,NUCR4*NINT12)
+               CALL DGEMM('N','N',NORR3,NUCR4*NINT12,NUCR3,D1,CONT3,
+     &              NORR3,SCR1,NUCR3,D0,SCR2,NORR3)
             ELSE
-               CALL MXM(CONT3,NORR3,CCPRIM,NUCR3,SCR2,NUCR4*NINT12)
+               CALL DGEMM('N','N',NORR3,NUCR4*NINT12,NUCR3,D1,CONT3,
+     &              NORR3,CCPRIM,NUCR3,D0,SCR2,NORR3)
             END IF
          END IF
 C
@@ -1513,13 +1513,15 @@ C        Transform third index
 C
          NCT412 = NORR3*NINT12
          IF (TCON34 .OR. RCNT34) THEN
-            CALL MXM(CONT4,NORR4,SCR1,NUCR4,SCR2,NCT412)
+            CALL DGEMM('N','N',NORR4,NCT412,NUCR4,D1,CONT4,NORR4,SCR1,
+     &           NUCR4,D0,SCR2,NORR4)
             NCTSQ = NORR3*NORR4
             DO 800 I = 1, NORB34
                CALL DCOPY(NINT12,SCR2(NRED34(I)),NCTSQ,CCONT(I),NORB34)
   800       CONTINUE
          ELSE
-            CALL MXM(CONT4,NORR4,SCR1,NUCR4,CCONT,NCT412)
+            CALL DGEMM('N','N',NORR4,NCT412,NUCR4,D1,CONT4,NORR4,SCR1,
+     &           NUCR4,D0,CCONT,NORR4)
          END IF
 C
 C     Case (iii): Segmented contraction
@@ -1611,8 +1613,8 @@ C
   300       CONTINUE
   100    CONTINUE
 C
-C     Transformatio of first index only
-C     =================================
+C     Transformation of first index only
+C     ==================================
 C
       ELSE IF (SPHR3) THEN
          DO 400 ICOMP3 = 1, KCKT3
@@ -1631,8 +1633,8 @@ C
             END IF
   400    CONTINUE
 C
-C     Transformatio of second index only
-C     ==================================
+C     Transformation of second index only
+C     ===================================
 C
       ELSE
          DO 500 IKOMP3 = 1, KHKT3

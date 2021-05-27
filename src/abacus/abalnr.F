@@ -1,10 +1,10 @@
 !dalton_copyright_start
-!      Copyright (c) 2015 by the authors of Dalton (see below).
+!      Copyright (c) 2017 by the authors of Dalton (see below).
 !      All Rights Reserved.
 !
 !      The source code in this file is part of
 !      "Dalton, a molecular electronic structure program,
-!       Release DALTON2015 (2015), see http://daltonprogram.org"
+!       Release DALTON2017 (2017), see http://daltonprogram.org"
 !
 !      This source code is provided under a written licence and may be
 !      used, copied, transmitted, or stored only in accord with that
@@ -307,7 +307,7 @@ C
       CALL TIMER('START ',TIMEIN,TIMOUT)
 C
       IF (IPRLNR .GE. 0) 
-     &     CALL TITLER('Solving Linear Response Equations','¤',118)
+     &     CALL TITLER('Solving Linear Response Equations','#',118)
 C
       IPRRSP = IPRLNR
 C
@@ -931,9 +931,10 @@ C Calculate the difference differential scattering cross section
 C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
-      use codata
-#include "implicit.h"
-      PARAMETER ( D2 = 2.0D0, D4 = 4.0D0, D6 = 6.0D0 )
+      implicit none
+#include "consts.h"
+#include "codata.h"
+      REAL*8    DELTAZ,BETAGM,BETAA
 C
       DELTAZ = D4 / CVEL * (D6 * BETAGM - D2 * BETAA)
 C
@@ -946,9 +947,11 @@ C Calculate the difference differential scattering cross section
 C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
 C
-      use codata
-#include "implicit.h"
-      PARAMETER ( D4 = 4.0D0, D7 = 7.0D0, D45 = 45.0D0)
+      implicit none
+#include "consts.h"
+#include "codata.h"
+      REAL*8    D45,DELTAX,ALFAMN,GMMN,BETAGM,BETAA
+      PARAMETER ( D45 = 45.0D0)
 C
       DELTAX = D4 / CVEL * (D45*ALFAMN*GMMN+D7*BETAGM+BETAA)
 C
@@ -960,10 +963,12 @@ C
 C Calculate the difference differential scattering cross section
 C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
-C  
-      use codata
-#include "implicit.h"
-      PARAMETER ( D4 = 4.0D0, D180 = 18.0D1 )
+C
+      implicit none
+#include "consts.h"
+#include "codata.h"
+      REAL*8    D180,DELTA0,ALFAMN,GMMN,BETAGM,BETAA
+      PARAMETER ( D180 = 18.0D1 )
 C
       DELTA0 = D4 / CVEL * (D180*ALFAMN*GMMN+D4*BETAGM-D4*BETAA)
 C
@@ -975,10 +980,12 @@ C
 C Calculate the difference differential scattering cross section
 C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
-C 
-      use codata
-#include "implicit.h"
-      PARAMETER ( D4 = 4.0D0, D8 = 8.0D0, D24 = 24.0D0 )
+C
+      implicit none
+#include "consts.h"
+#include "codata.h"
+      REAL*8    D24,DELTAB,BETAGM,BETAA
+      PARAMETER ( D24 = 24.0D0 )
 C
       DELTAB = D4 / CVEL * (D24*BETAGM + D8*BETAA)
 C
@@ -1006,11 +1013,12 @@ C
 C  /* Deck boltzk */
       FUNCTION BOLTZK(FREQ)
 C
-C Calculate the Boltzmannfactor for Spectra simulation 
+C Calculate the Boltzmann factor for Spectra simulation
 C BOLTZK = 1/(1-EXP(-h*freq/k/T)), FREQ is in Hartree = 2Pi*freq
 C 
-      use codata
-#include "implicit.h"
+      implicit none
+#include "codata.h"
+      REAL*8    TSTAND,BOLTZK,FREQ
       PARAMETER ( TSTAND = 298.15D0 )
 C
       BOLTZK = 1-EXP(-(FREQ*AUTK)/TSTAND)
@@ -1026,8 +1034,9 @@ C B = SQRT(1/(4Pi*freq))
 C CROSSK = K*B**2
 C ****************** FREQ is in Hartree = 2Pi*freq
 C  
-      use codata
-#include "implicit.h"
+      implicit none
+#include "codata.h"
+      REAL*8    D180,CROSSK,FRVAL,FREQ
       PARAMETER ( D180 = 18.0D1)
 C
       CROSSK = (FRVAL-FREQ)**3*FRVAL/FREQ/D180/CVEL**3
@@ -1037,7 +1046,6 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
-      use codata
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
@@ -1045,16 +1053,20 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER (FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4),
-     &           D3 = 3.0D0)
+      PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "nuclei.h"
 #include "symmet.h"
 #include "abainf.h"
 #include "cbilnr.h"
+#include "codata.h"
+#include "pi.h"
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2)
+      DOUBLE PRECISION FACTOR
 #include "ibtfun.h"
+C
+      FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
 C
       IF (ALFA .AND. IPRINT .GE. 0) THEN
          WRITE(LUPRI,9000)
@@ -1123,7 +1135,7 @@ C
             DO ISYMOP = 0, MAXOPR
                IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
-                  NATTYP = NINT(CHARGE(IATOM))
+                  NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
                      AMASS = DISOTP(NATTYP,ISOTOP(JATOM),'MASS')
                      TMASS = TMASS + AMASS

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -36,9 +36,6 @@ C***********************************************************************
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
 #ifdef MOD_CAP
       use memory
 #endif
@@ -62,13 +59,14 @@ C
 #endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
+      real(8) :: TIMSTR(2), TIMEND(2)
       real(8), allocatable :: WORK(:)
 
       CALL QENTER('PAMSET')
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in PAMSET - 1')
 
-      CALL TIMER('START ',TIMSTR,TIMEND)
+      CALL TIMER2('START ',TIMSTR,TIMEND)
 C
 C     Attempt a restart unless geometry optimization
 C     ==============================================
@@ -95,9 +93,6 @@ C     Generate all one-electron integrals
 C     ===================================
 C     exit if DOHRM: .ONLY INTEGRALS -- only calc. 1-el. integrals
 C
-#ifdef MOD_INTEREST
-      IF(MDIRAC) call initialize_interest
-#endif
 C     Start RECP integral     
 C     ===================
       IF (ECPCALC) CALL RECP
@@ -116,8 +111,8 @@ C     ===================
         goto 11
       endif
       IF(TOBE .and. .not. optimi) THEN
-        WRITE(LUPRI,'(2X,A,A)') 
-     &  '* WARNING: DIRAC found the AOPROPER file ',
+        WRITE(LUPRI,'(A)')
+     &  '* WARNING: DIRAC found the AOPROPER file '//
      &  '(one-electron integrals) ...will attempt restart.'
         IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
@@ -129,7 +124,7 @@ C     ===================
 #endif
 
       IF(DOHRM) THEN
-        CALL TIMER('PAMSET',TIMSTR,TIMEND)
+        CALL TIMER2('PAMSET',TIMSTR,TIMEND)
         RETURN
       ENDIF
 C
@@ -168,7 +163,7 @@ C     ==============================================
 C
       CALL RELINF
 C
-      CALL TIMER('PAMSET',TIMSTR,TIMEND)
+      CALL TIMER2('PAMSET',TIMSTR,TIMEND)
       call dealloc(WORK)
       CALL QEXIT('PAMSET')
       RETURN
@@ -371,11 +366,10 @@ C
         WRITE(LUPRI,'(3X,41A1)') ('-',I=1,41)
         WRITE(LUPRI,'(3X,A6,3I7,4X,A3,I7)') 'Total ',(NTBAS(J),J=0,2),
      &        'Max',MXBBAS
-        WRITE(LUPRI,'(/3X,2(A,I6,2X))') 'NNBBAST = ',NNBBAST,
-     &        'NNBBASX ',NNBBASX
-         WRITE(LUPRI,'(/A)') '* Matrix offsets to symmetry',
-     &                       ' blocks (I2BBASX):'
-         WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),2X,I8))')
+        WRITE(LUPRI,'(/3X,A,2I9))') 'NNBBAST, NNBASX:',NNBBAST,NNBBASX
+        WRITE(LUPRI,'(/A)')
+     &      '* Matrix offsets to symmetry blocks (I2BBASX):'
+        WRITE(LUPRI,'(4(3X,2(A3,2X),2(A1,2X),I10))')
      &     ((((REP(I),REP(J),COMP(IC),COMP(JC),
      &        I2BBASX(I,J,IC,JC),IC = 1,2),JC = 1,2)
      &        ,I=0,NBSYM-1),J=0,NBSYM-1)
@@ -679,13 +673,12 @@ C        Hermitian operator
          IHRMOP(I) = 1
       END DO
 C
-C
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck SCDENS_2 */
-      SUBROUTINE SCDENS_2(Q,SCQ,N,IPRINT)
+      SUBROUTINE SCDENS_2(SCQ,ISTART,ISTOP,IPRINT)
 C***********************************************************************
 C
 C     INPUT:  Charge of atom
@@ -726,11 +719,12 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "mxcent.h"
+#include "nuclei.h"
       PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
-      LOGICAL XPOL,IPOL
-      DIMENSION SCCHRG(103),BFIT(6),Q(N),SCQ(N)
+      DIMENSION SCCHRG(103),BFIT(6),SCQ(ISTART:ISTOP)
       SAVE SCCHRG,BFIT
-C
+C     
       DATA (SCCHRG(I),I = 1,103)
      +/ 0.000013D0, 0.0001D0, 0.0002D0, 0.0004D0, 0.0007D0, 
      1  0.0010D0, 0.0014D0, 0.0020D0, 0.0026D0, 0.0034D0, 
@@ -763,19 +757,11 @@ C
 C
 C     Check that charge is on list
 C            
-      DO I = 1,N
-        IQ   = NINT(Q(I))
-        XPOL = IQ.GT.103
-c       IPOL = (ABS(Q(I)-dble(IQ)).GT.DTOL).AND.(.NOT.XPOL)
-        IPOL = ABS(Q(I)-dble(IQ)).GT.DTOL .OR. IQ.GT.150
-c       IF(XPOL.OR.IPOL) THEN
-        IF(IPOL) THEN
-C       ... non-integer nuclear charge, assume this is a point charge
-C           However, integer point charges are corrected erroneously !! /HJAaJ
-C           (but if charge is 1.0 then it will be OK because SCQ(1) = 0 !)
-          SCQ(I) = D0
-        ELSEIF(XPOL) THEN
-          SCQ(I) = - POLVAL(5,BFIT,Q(I))
+      DO 10 I = ISTART,ISTOP
+        IF(NOORBT(I)) GOTO 10
+        IQ   = NINT(CHARGE(I))
+        IF(IQ.GT.103) THEN
+          SCQ(I) = - POLVAL(5,BFIT,CHARGE(I))
         ELSEIF(IQ.GT.0) THEN
           SCQ(I) = - SCCHRG(IQ)
         ELSE
@@ -783,23 +769,18 @@ C       ... this takes care of floating orbitals ! /HJAaJ
           SCQ(I) = D0
         ENDIF
         IF(IPRINT.GE.1) THEN
-          IF    (XPOL) THEN
+          IF    (IQ.GT.103) THEN
             WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
-     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
-     &        '(extrapolation)'
-          ELSEIF(IPOL) THEN
-c           WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
-c    &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
-c    &        '(interpolation)'
-            WRITE(LUPRI,'(A,F9.4,A,F12.8,A)')
-     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I),
-     &        '(INFO: assumes this is a point charge)'
+     &            'Charge : ',CHARGE(I),
+     &            ' --> Small component charge : ',SCQ(I),
+     &            '(extrapolation)'
           ELSE
             WRITE(LUPRI,'(A,F9.4,A,F12.8)')
-     &        'Charge : ',Q(I),' --> Small component charge : ',SCQ(I)
+     &            'Charge : ',CHARGE(I),
+     &            ' --> Small component charge : ',SCQ(I)
           ENDIF
         ENDIF            
-      ENDDO
+ 10   CONTINUE
       RETURN
 C
       ENTRY SCQSET(IZ,SCQVAL)
@@ -878,16 +859,6 @@ C
         CALL LVCORR_1(WORK(KSCQ),IPRINT)
         CALL MEMREL('LVCORR',WORK,KWORK,KWORK,KFREE,LFREE)  
       ENDIF
-C
-C     Print section (this is now printed in LVCORR_1)
-C
-C     IF(IPRINT.GE.1) THEN
-C       CALL HEADER('Output from LVCORR',-1)
-C        WRITE(LUPRI,'(1X,A,F18.12)')
-C     &    '* Classical repulsion of small component atomic charges:',
-C     &    CORRLV
-C     ENDIF
-C
       RETURN
       
       END
@@ -932,7 +903,7 @@ c     ... when to use tabulated charges :
 C       ... use tabulated small component charges
          IF(IPRINT.GE.1) WRITE(LUPRI,'(A/)')
      &      ' * Using tabulated small component atomic charges:'
-         CALL SCDENS_2(CHARGE,SCQ,NUCIND,IPRINT)
+         CALL SCDENS_2(SCQ,1,NUCIND,IPRINT)
        ELSE
 C       ... use Mulliken small component charges
          CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
@@ -1513,7 +1484,7 @@ C
 #include "memint.h"
       INQUIRE(FILE='DFBVAC',EXIST=TOBE)
       IF(TOBE) THEN
-        WRITE(6,'(A)') 
+        WRITE(LUPRI,'(A)')
      &   '* WARNING: BARVAC found file DFBVAC. '//
      &   'No reference vacuum generated.'
       ELSE
@@ -1618,7 +1589,7 @@ C
       GOFAST = .FALSE.
       INQUIRE(FILE='AOMOMAT',EXIST=GOFAST)
       IF(GOFAST) THEN
-        WRITE(LUPRI,'(A,A)') 
+        WRITE(LUPRI,'(2A)')
      &  '* WARNING: DIRAC found file AOMOMAT (transformation matrices)',
      &  '  ...will attempt restart.'
       ENDIF
@@ -1635,11 +1606,11 @@ C.......skip AO2MO transformation matrix
 C.......skip inverse transformation matrix
         READ(LUTMAT)
 C.......read records containing orbital information
-        READ(LUTMAT,END=10) NZT,URKBAL,SUB_BL,I2COFK
+        READ(LUTMAT,END=10,ERR=10) NZT,URKBAL,SUB_BL,I2COFK
         N2TMT   = 0
         N2TMOTQ = 0
         DO IFRP = 1,NFSYM
-          READ(LUTMAT,END=10) 
+          READ(LUTMAT,END=10,ERR=10) 
      &       NORB(IFRP),(NFORB(IFRP,J),J=0,2),
      &       ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
@@ -1655,7 +1626,7 @@ C.......read records containing orbital information
         ENDDO
         IF(SUB_BL) THEN
           DO IFRP = 1,NFSYM
-            READ(LUTMAT,END=10) N_SUB_BL(IFRP),
+            READ(LUTMAT,END=10,ERR=10) N_SUB_BL(IFRP),
      &       ((NORB_SUB(IB,IFRP,IC),IC=0,2),
      &       ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
           ENDDO
@@ -1670,11 +1641,11 @@ C.......Look for a formatted file with same information
         IF(GOFAST) THEN
           OPEN(LUTMAT,FILE ='GOFAST',STATUS='OLD',
      &             ACCESS='SEQUENTIAL',FORM = 'FORMATTED')
-          READ(LUTMAT,*,END=30) NZT,URKBAL,SUB_BL,I2COFK
+          READ(LUTMAT,*,END=30,ERR=30) NZT,URKBAL,SUB_BL,I2COFK
           N2TMT   = 0
           N2TMOTQ = 0
           DO IFRP = 1,NFSYM
-            READ(LUTMAT,*,END=30) 
+            READ(LUTMAT,*,END=30,ERR=30) 
      &      NORB(IFRP),(NFORB(IFRP,J),J=0,2),
      &      ((NBORB(JSYM,IFRP,IC),JSYM=1,NBRP),IC=1,2),
      &        NISH(IFRP),NESH(IFRP),NPSH(IFRP),
@@ -1690,7 +1661,7 @@ C.......Look for a formatted file with same information
           ENDDO
           IF(SUB_BL) THEN
             DO IFRP = 1,NFSYM
-              READ(LUTMAT,*,END=30) N_SUB_BL(IFRP),
+              READ(LUTMAT,*,END=30,ERR=30) N_SUB_BL(IFRP),
      &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
      &        ID_SUB_BL(IB,IFRP),IB=1,N_SUB_BL(IFRP))
             ENDDO
@@ -1704,7 +1675,8 @@ C.......Look for a formatted file with same information
       IF(GOFAST) THEN
         WRITE(LUPRI,'(A)') '*** Restart successful !'
         IF(IPRINT.GE.2) THEN
-          WRITE(LUPRI,*) NZT,URKBAL,SUB_BL,I2COFK
+          WRITE(LUPRI,*) 'NZT,URKBAL,SUB_BL,I2COFK...',
+     &                    NZT,URKBAL,SUB_BL,I2COFK
           WRITE(LUPRI,*) 'NORB...',(NORB(I),I=1,NFSYM)
           WRITE(LUPRI,*) 'NFORB..',
      &       ((NFORB(IFRP,J),J=0,2),IFRP=1,NFSYM)
@@ -1721,6 +1693,7 @@ C.......Look for a formatted file with same information
           WRITE(LUPRI,*) 'NACSHMF',
      &       ((NACSHMF(IOPEN,IFRP),IOPEN=1,NOPEN),IFRP=1,NFSYM)
           IF(SUB_BL) THEN
+            WRITE(LUPRI,*) 'SUB_BL information:'
             DO IFRP = 1,NFSYM
               WRITE(LUPRI,*) N_SUB_BL(IFRP),
      &        ((NORB_SUB(IB,IFRP,IC),IC=0,2),
@@ -1752,10 +1725,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
-C      CALL OPNFIL(LUTMAT,'AOMOMAT','OLD','ORBDAT')
       NBRP = 4/NZ
-C      READ(LUTMAT)
-C      READ(LUTMAT)
       WRITE(LUTMAT) NZT,URKBAL,SUB_BL,I2COFK
       DO IFRP = 1,NFSYM
         WRITE(LUTMAT) NORB(IFRP),(NFORB(IFRP,J),J=0,2),
@@ -1774,8 +1744,7 @@ C      READ(LUTMAT)
      &     ID_SUB_BL(IB,IFRP),IB=1,NN)
         ENDDO
       ENDIF
-C      CLOSE(LUTMAT,STATUS='KEEP')      
 C
       RETURN
       END
-
+! -- end of dirac/dirset.F --

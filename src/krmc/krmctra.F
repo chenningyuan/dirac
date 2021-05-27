@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -459,13 +459,13 @@ C
          IIDX(IFSYM) = IT
          DO I = 1, NORB(IFSYM)
             IA = IA + 1
-            IF (.NOT. USENOROT .OR. NOROT(IA) .EQ. 0) THEN
+            IF (IDXFLG) THEN
+               IG = IDX(IA)
+            ELSE
+               IG = IA
+            END IF
+            IF (.NOT. USENOROT .OR. NOROT(IG) .EQ. 0) THEN
                IT = IT + 1
-               IF (IDXFLG) THEN
-                  IG = IDX(IA)
-               ELSE
-                  IG = IA
-               END IF
                IDXT2G(IT) = IG
             END IF
          END DO
@@ -706,7 +706,6 @@ C
 C     /DCBTRL/
 C
       TRA_ANTIS = .FALSE.
-      TRA_MSOUT = .TRUE.
       NO2IND = .TRUE.
       NO4IND = .FALSE.
       NOPAIR = LNOPAIR
@@ -799,7 +798,7 @@ C         ... -1 tells NUMLST to _not_ reorder orbital list
           NSTR(IFRP,0,I) = NSTR(IFRP,1,I) + NSTR(IFRP,2,I)
           NSTRT(I) = NSTRT(I) +  NSTR(IFRP,0,I)
           CALL MEMREL('PAMTRA',WORK,KFRSAV,KVEC(IFRP,I),KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(IFRP,I),NSTR(IFRP,0,I),
+          CALL MEMGET2('INTE','VEC',KVEC(IFRP,I),NSTR(IFRP,0,I),
      &                WORK,KFREE,LFREE)
         ENDDO
       ENDDO
@@ -936,7 +935,7 @@ C     --------------------------------------
 C
       CALL PAMTR1(WORK,KFREE,LFREE,IPRTRA,KQ,KE,KIBE,
      &            NDMOQR,ICMOQR,NSTR,.FALSE.,DUM,
-     &            TRA_MSOUT,TRA_ANTIS,ITRA_INTFL4)
+     &            TRA_ANTIS,ITRA_INTFL4)
 C
 C     Print timing information
 C
@@ -1182,8 +1181,6 @@ C
       OPEN(LUINT, FILE = '4INDINFO', STATUS = 'OLD',
      &     FORM = 'UNFORMATTED' )
 C
-      write(print_unit,'(/a)') ' Reading from file : 4INDINFO '
-C
 C     Read time & date for creation
 C
       READ (LUINT) DATEX, TIMEX
@@ -1271,7 +1268,8 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
            mytid      = mytid_save
          end if
 
-         WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
+         IF (IPRINT .GE. 5)
+     &   WRITE(print_unit,'(A,A)') ' Reading from file : ',FNODE
          OPEN (LUINT+IREPIJ,FILE=FNODE,STATUS='OLD',
      &        ACCESS='DIRECT',RECL=IRECL)
          IIKLB = IIKLB + NFPCK34(IREPIJ)
@@ -1299,8 +1297,8 @@ C
             CALL GTXY(NXY,IX,IY,IXU,IYU,idxkr12)
             call dzero(h2xy,nclass*n2orbx)
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-            write(6,'(2x,a,2i8)') ' active : ',ixu,iyu
-            write(6,'(2x,a, i8)') ' IXY is     : ',IXY
+      write(print_unit,'(2x,a,2i8)') ' active : ',ixu,iyu
+      write(print_unit,'(2x,a, i8)') ' IXY is     : ',IXY
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(1,ixy)',
      &                              idxkr12(1,ixy)
       write(print_unit,'(2x,a,i4)') ' (RGETH21) idxkr12(2,ixy)',
@@ -1503,15 +1501,22 @@ C***********************************************************************
 C
       PARAMETER ( D1 = 1.0D00 , DM1 = -1.0D00 )
 C
+C dcbham.h : spinfr, levyle
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbham.h"
 C
       DIMENSION H2XY(NORBT,NASHT,NZ,3)
       DIMENSION H2YX(NORBT,NASHT,NZ,3)
       DIMENSION FQ(NORBT,NASHT,NZ)
       DIMENSION PV(NASHT,NASHT,NNASHX,NZ,3)
 C
+      IF (spinfr .OR. levyle) THEN
+         NZ_local = 1
+      ELSE
+         NZ_local = NZ
+      END IF
       IF (IPRINT .GE. 20) THEN
          CALL HEADER('Output from RADDFQ',-1)
          WRITE(LUPRI,'(A,I3)') 'NXY       = ',NXY
@@ -1572,7 +1577,7 @@ C     Term 2 (real part)
 C     ------------------
 C
 C
-      IF (NZ .GE. 2) THEN
+      IF (NZ_local .GE. 2) THEN
 C
 C        - \sum_{x \geq y} \sum_v \Twoint{pv|xy}_{2,1} P_{qv,xy;2,1}
 C
@@ -1599,7 +1604,7 @@ C     Term 3 and 4 (real part)
 C     ------------------------
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;3,1}
 C
@@ -1639,7 +1644,7 @@ C     Term 6 (real part)
 C     ------------------
 C
 C
-      IF (NZ .GE. 2 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 2 .AND. IX .NE. IY) THEN
 C
 C        - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,2} P_{qv,xy;2,2}
 C
@@ -1650,7 +1655,7 @@ C
 C
       END IF
 C
-      IF (NZ .GE. 4) THEN
+      IF (NZ_local .GE. 4) THEN
 C
 C
 C        Term 7 (real part)
@@ -1721,7 +1726,7 @@ C     Term 10 (real part)
 C     ------------------
 C
 C
-      IF (NZ .GE. 2 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 2 .AND. IX .NE. IY) THEN
 C
 C        - \sum_{x>y} \sum_v \Twoint{pv|xy}_{2,3} P_{qv,xy;2,3}
 C
@@ -1733,7 +1738,7 @@ C
       END IF
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C
 C        Term 11 (real part)
@@ -1764,7 +1769,7 @@ C
 C
 C     Skip remaining 36 terms if NZ = 1.
 C
-      IF (NZ .EQ. 1) GOTO 100
+      IF (NZ_local .EQ. 1) GOTO 100
 C
 C
 C     *************************
@@ -1822,7 +1827,7 @@ C     Term 3 and 4 (i-imag part)
 C     --------------------------
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C        \sum_{x > y} \sum_v \Twoint{pv|xy}_{3,1} P_{qv,xy;4,1}
 C
@@ -1870,7 +1875,7 @@ C
 C
       END IF
 C
-      IF (NZ .GE. 4) THEN
+      IF (NZ_local .GE. 4) THEN
 C
 C
 C        Term 7 (i-imag part)
@@ -1950,7 +1955,7 @@ C
       END IF
 C
 C
-      IF (NZ .GE. 4 .AND. IX .NE. IY) THEN
+      IF (NZ_local .GE. 4 .AND. IX .NE. IY) THEN
 C
 C
 C        Term 11 (i-imag part)
@@ -1981,7 +1986,7 @@ C
 C
 C     Skip remaining 24 terms if NZ = 2.
 C
-      IF (NZ .EQ. 2) GOTO 100
+      IF (NZ_local .EQ. 2) GOTO 100
 C
 C
       call quit('*** ERROR in RADDFQ *** NZ = 4 not implemented')
@@ -2997,8 +3002,10 @@ C***********************************************************************
 C
 #include "consts.h"
 C
+C dcbham.h : spinfr, levyle
 #include "dcborb.h"
 #include "dcbopt.h"
+#include "dcbham.h"
 #include "dgroup.h"
 C
       DIMENSION H2AC(NASHT,NASHT,NNASHX,NZ,3,*)
@@ -3006,6 +3013,14 @@ C
 C
       LOGICAL SWAPIJ
 C
+      IF (spinfr .OR. levyle) THEN
+         NZ_local = 1
+      ELSE
+         NZ_local = NZ
+      END IF
+      if (NZ_local .eq. 4) then
+         call quit('SYMMH2AX1: nz=4 not implemented')
+      end if
       DO IN = 1, N
          CALL DCOPY(NASHT*NASHT*NNASHX*3*NZ,H2AC(1,1,1,1,1,IN),1,
      &        H2ACO,1)
@@ -3047,7 +3062,7 @@ C
 C                    NZ = 2:
 C                    -------
 C
-                     IF (NZ .GE. 2) THEN
+                     IF (NZ_local .GE. 2) THEN
 C
 C                       (kl|ij) + (ij|kl) = (kl|ij) + (ji|lk)^*
 C
@@ -3072,7 +3087,7 @@ C
 C                    NZ = 4:
 C                    -------
 C
-                     IF (NZ .GE. 4) THEN
+                     IF (NZ_local .GE. 4) THEN
 C
 C                       (kl|iJ) + (iJ|kl) = (kl|iJ) + (Ji|lk)^*
 C
@@ -3137,7 +3152,7 @@ C
      &                    H2AC(K,L,NIJ,1,3,IN) +
      &                    H2ACO(I,J,NKL,1,3)
 C
-                     IF (NZ .GE. 2) THEN
+                     IF (NZ_local .GE. 2) THEN
 C
 C                       NZ = 2:
 C                       -------
@@ -3162,7 +3177,7 @@ C
 C
                      END IF
 C
-                     IF (NZ .GE. 4) THEN
+                     IF (NZ_local .GE. 4) THEN
 C
 C                       NZ = 4:
 C                       -------

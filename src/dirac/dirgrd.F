@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmolgrd */
@@ -286,8 +288,7 @@ c        ... Calculate and add correction.
          allocate(cmo(n2bbasxq))
          cmo = 0.0d0
          call opnfil(lucoef, 'DFCOEF', 'OLD', 'xc molecular gradient')
-         call reacmo_no_work(lucoef, 'DFCOEF', 
-     &                       cmo, dummy, dummy, dummy, 3)
+         call reacmo(lucoef, 'DFCOEF',cmo, dummy, dummy, dummy, 3)
          close(lucoef, status='keep')
        
          allocate(dmat(n2bbasxq))
@@ -296,7 +297,7 @@ c        ... Calculate and add correction.
          deallocate(cmo)
 
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
 !fixme: there is some issue with one-step - investigate later
 !       not correct for gga
@@ -320,7 +321,7 @@ c        ... Calculate and add correction.
      &                     xc_fmat              = work(kh1ao),
      &                     xc_do_potential      = .true.)
 #ifdef VAR_MPI
-         if (parcal) call dirac_parctl(4)
+         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
          call integrate_xc(xc_mat_dim           = ntbas(0),
      &                     xc_nz                = nz,
@@ -351,8 +352,7 @@ C
       IF (NASHT.GT.0) THEN
 C
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &               WORK,KFREE,LFREE)
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C
@@ -405,8 +405,7 @@ C
 C
             KCMO = KFVAO
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &                  WORK,KFREE,LFREE)
+            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
             CLOSE(LUCOEF,STATUS='KEEP')
 C
             IF (NISH(I).EQ.0) GOTO 20
@@ -445,8 +444,7 @@ C
       CALL DZERO(WORK(KFCAO),N2BBASXQ)
       KCMO = KFVAO
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
       IF ( IPRINT .GE. 10 ) THEN
          DO I=1,NFSYM
@@ -560,8 +558,7 @@ C
       KDVAO = KDAO + N2BBASXQ
       KCMO  = KDVAO + N2BBASXQ
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get density matrix
@@ -688,8 +685,7 @@ C
 C     Contruct density matrix
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
@@ -1379,7 +1375,7 @@ C
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-         CALL DIRAC_PARCTL(1)
+         CALL DIRAC_PARCTL( HERFCK_PAR )
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -1488,7 +1484,7 @@ C
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-         CALL DIRAC_PARCTL(1)
+         CALL DIRAC_PARCTL( HERFCK_PAR )
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -1606,7 +1602,7 @@ C
       CALL FLSHFO(LUPRI)
 #if defined (VAR_MPI)
       IF (PARCAL) THEN
-         CALL DIRAC_PARCTL(1)
+         CALL DIRAC_PARCTL( HERFCK_PAR )
          CALL MEMGET('INTE',KNPOS,MTOTTK,WORK,KFREE,LFREE)
          CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDAO),NDMAT,
      &        IDUMMY,IFCTYP,ITYPE,MAXDIF,JATOM,NODV,NOPV,NOCONT,TKTIME,
@@ -2015,16 +2011,16 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 C
-      PARAMETER( D0 = 0.0 D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
@@ -2094,16 +2090,17 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 C
-      PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
+      PARAMETER(DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
@@ -2610,8 +2607,7 @@ C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3,
-     &            WORK,KFREE,LFREE)
+      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get total density matrix

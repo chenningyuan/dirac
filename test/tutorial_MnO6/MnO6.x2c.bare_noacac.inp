@@ -27,16 +27,16 @@ MnO6 Cluster with old UW PCs Bare Start
 .INTFLG
 1 1 0
 .MAXITR
- 75 
+ 100
 .EVCCNV
 5.0E-8  1.0e-7
 !.ITRINT
 ! 0 0
 .CNVINT
 0.001 0.000001
-! no active-active shells Fock matrix contribution
+! Miro: ensure the SCF convergence ...
 .OPENFAC
-0.0D0
+-0.35
 *RESOLVE
 .SCHEME
  4

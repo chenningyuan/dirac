@@ -1,8 +1,7 @@
-      SUBROUTINE amplitude_equation_T1 (FVO,EPS,T1,T2,
-     &                   HO,HV,HOV,H,CZ,GOO,GVV,
-     &                   BUF1,BUF2,NBUF2,BUF3,NBUF3,S1)
+      SUBROUTINE amplitude_equation_T1 (FVO,T1,T2,
+     &        HO,HV,HOV,BUF1,BUF2,BUF3,NBUF3,S1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -28,12 +27,11 @@ C
       external t1eqn2
      
 
-      INTEGER NBUF2,NBUF3
-      REAL*8 EPS(*),FVO(*)
+      INTEGER NBUF3
+      REAL*8 FVO(*)
       REAL*8 T1(*),T2(*)
       REAL*8 S1(*)
-      REAL*8 HO(*),HV(*),HOV(*),H(*)
-      REAL*8 GOO(*),GVV(*),CZ(*)
+      REAL*8 HO(*),HV(*),HOV(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
 C
 C---------------Common Blocks--------------------------------------
@@ -57,6 +55,7 @@ C---------------Local variables--------------------------------------
 C
       LOGICAL DONE,TEQ,USEDZ,RIGHT
       REAL*8 SDOT,DDOT
+      INTEGER irp,k,k1,k2,m,n,off1,off2
 C
 C---------------Executable code--------------------------------------
 C

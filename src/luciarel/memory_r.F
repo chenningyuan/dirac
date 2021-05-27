@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -84,6 +84,9 @@ C
       DATA PAD2/0.987654321D0/
       INTEGER*8 KBASE_LOCAL
       REAL*8    XBASE_LOCAL
+      logical test1,test2
+      integer*8 ibase1,ibase2
+      REAL*8 work1,work2
 C
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -320,6 +323,7 @@ csk  &                    KBASE_LOCAL, XBASE_LOCAL, LMEMFREE_PTR
 C
 C     Check paddings
 C
+cjp circumvention of gfotran -O bug
       ICHECK = 1
       ITSOK = 1
       IF(TASK(1:5).EQ.'CHECK'.OR.ICHECK.EQ.1) THEN
@@ -330,35 +334,26 @@ C
           ELSE
            JBASEN = KFREEL + 1
           END IF
-!         write(luwrt,*) 'bla bla: JBASE, JBASEN ==> ',JBASE, JBASEN
           L1OK = 1
           L2OK = 1
+          ibase1=JBASE-NPAD-1
+          ibase2=JBASEN-2*NPAD-1
           DO IPAD = 1, NPAD
-            IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1 .OR.
-     &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
+            work1=WORK(ibase1+IPAD)
+            test1=work1.ne.pad1
+            IF(test1) THEN
                ITSOK = 0
-               WRITE(LUWRT,*) ' Memory problem for : '
-               WRITE(LUWRT,*) '   Level (IL) ',IL
-               IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
-               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
-               IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
-               ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       OKAY '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &            IIDENT(IL),IBASE(IL),'     -       OKAY '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       -    '
-               END IF
+               WRITE(LUWRT,*) 'memory problem1: ',IIDENT(IL),IBASE(IL)
             END IF
-          END DO
+           END DO
+           DO IPAD = 1, NPAD
+            work2=WORK(ibase2+IPAD)
+            test2=work2.ne.pad2
+            IF(test2) THEN
+               ITSOK = 0
+               WRITE(LUWRT,*) 'memory problem2: ',IIDENT(IL),IBASE(IL)
+            END IF
+           END DO
   100   CONTINUE
       END IF
  1001 CONTINUE
@@ -486,6 +481,11 @@ C
 #include "wrkspc.inc"
 #include "parluci.h"
 C
+cjp
+      logical test1,test2
+      integer*8 ibase1,ibase2
+      REAL*8 work1,work2
+
       ILPRNT = 0
       IF(ILPRNT .NE. 0 ) THEN
         WRITE(LUWRT,*) ' KBASE KADD, IR ', KBASE,KADD,IR
@@ -611,6 +611,7 @@ C
 C
 C     Check paddings
 C
+cjp circumvention of gfortran -O bug
       ICHECK = 1
       ITSOK = 1
       IF(TASK(1:5).EQ.'CHECK'.OR.ICHECK.EQ.1) THEN
@@ -623,32 +624,24 @@ C
           END IF
           L1OK = 1
           L2OK = 1
+          ibase1=JBASE-NPAD-1
+          ibase2=JBASEN-2*NPAD-1
           DO IPAD = 1, NPAD
-            IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1 .OR.
-     &         WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) THEN
+            work1=WORK(ibase1+IPAD)
+            test1=work1.ne.pad1
+            IF(test1) THEN
                ITSOK = 0
-               WRITE(LUWRT,*) ' Memory problem for : '
-               WRITE(LUWRT,*) '   Level (IL) ',IL
-               IF(WORK(JBASE-NPAD-1+IPAD).NE.PAD1) L1OK = 0
-               IF(WORK(JBASEN-2*NPAD-1+IPAD).NE.PAD2) L2OK = 0
-               IF(L1OK.EQ.1.AND.L2OK.EQ.1) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'    OKAY     OKAY '
-               ELSE IF(L1OK.EQ.1.AND.L2OK.EQ.0) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'    OKAY       -  '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       OKAY '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.1) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &            IIDENT(IL),IBASE(IL),'     -       OKAY '
-               ELSE IF(L1OK.EQ.0.AND.L2OK.EQ.0) THEN
-                WRITE(LUWRT,'(4X,A6,2X,I20,4X,A)')
-     &          IIDENT(IL),IBASE(IL),'     -       -    '
-               END IF
+               WRITE(LUWRT,*) 'memory problem3: ',IIDENT(IL),IBASE(IL)
             END IF
-          END DO
+           END DO
+           DO IPAD = 1, NPAD
+            work2=WORK(ibase2+IPAD)
+            test2=work2.ne.pad2
+            IF(test2) THEN
+               ITSOK = 0
+               WRITE(LUWRT,*) 'memory problem4: ',IIDENT(IL),IBASE(IL)
+            END IF
+           END DO
   100   CONTINUE
       END IF
  1001 CONTINUE

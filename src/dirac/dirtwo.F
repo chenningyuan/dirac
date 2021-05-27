@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck twofck */
@@ -38,9 +40,6 @@ C*****************************************************************************
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
-#endif
-#ifdef MOD_INTEREST
-      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -122,7 +121,7 @@ C        matrix to file as it should be unchanged once we leave the
 C        routine. Use Fock matrix to store projector.
 C        TODO : reduce memory use for DMAT in AO basis
 C
-         CALL MEMGET ('REAL',KBUF1,4*N2BBASX,WORK,KFREE,LFREE)
+         CALL MEMGET2 ('REAL','BUF1',KBUF1,4*N2BBASX,WORK,KFREE,LFREE)
          CALL OPNFIL(LUPMAT,'DFPMAT','OLD','TWOFCK')
          CALL READT (LUPMAT,N2BBASX,FMAT)
          CALL WRITT (LUPMAT,N2BBASXQ*NFMAT,DMAT)
@@ -177,32 +176,8 @@ C
 #endif
          HFXTMP = HFXMU
          HFXMU = D0
-         IF(MDIRAC)THEN
-#ifdef MOD_INTEREST
-
-!          stefan: for the time being we will have an outer loop over fock matrices 
-!                  assuming that MDIRAC will only be active for regular SCF and 
-!                  not, e.g., response. todo: inner loop over fmat and proper flags 
-!                  ISYMOP,IHRMOP, IFCKOP in InteRest.
-
-           do i = 1, nfmat
-             if(x2c)then
-               call process_two_electron_integrals_2comp(fmat(1,1,i),
-     &                                                   dmat(1,1,i),
-     &                                                   intflg,
-     &                                                   hfxfac) 
-             else
-               call process_two_electron_integrals_4comp(fmat(1,1,i),
-     &                                                   dmat(1,1,i),
-     &                                                   intflg,
-     &                                                   hfxfac) 
-             end if
-           end do
-#endif
-         ELSE
-           CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                    IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
-         ENDIF
+         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                  IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
          HFXMU = HFXTMP
 #ifdef MOD_SRDFT
       end if 
@@ -217,7 +192,7 @@ C        expansion that approximates the missing integrals. Restore
 C        density matrix after using it as scratch space.
 C        TODO : Reduce memory usage 
 C
-         CALL MEMGET ('REAL',KBUF1,4*N2BBASX,WORK,KFREE,LFREE)
+         CALL MEMGET2 ('REAL','BUF1',KBUF1,4*N2BBASX,WORK,KFREE,LFREE)
          CALL OPNFIL(LUPMAT,'DFPMAT','OLD','TWOFCK')
 C
 C        CAUTION: Here we read the projector in the scratch array DMAT !
@@ -315,24 +290,15 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif /* MOD_ERI */
 #include "dcbind.h"
 #include "dcbbas.h"
 #include "hrunit.h"
       DIMENSION WORK(LWORK)
       LUINTA = 11
-#ifdef MOD_ERI
-      IF(.NOT.RUNERI) THEN
-#endif /* MOD_ERI */
         LUSUPM = 17
         LUDASP = 24
         LUSOL  = 49
         CALL PAOVEC(WORK,LWORK,0,IPRTWO)
-#ifdef MOD_ERI
-      ENDIF
-#endif /* MOD_ERI */
 C
 C     Define bit packing
 C     ==================
@@ -420,11 +386,16 @@ C
         ENDDO
 C
         MBUF = NBSYM*2
-        CALL MEMGET('REAL',KTWOMT,N2BBASX*MBUF      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KINDMT,N2BBASX*MBUF*NIBUF,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBUF  ,NCHUNK            ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBUF ,NCHUNK*NIBUF      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND  ,NCHUNK*2          ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TWOMT.LLc',KTWOMT,N2BBASX*MBUF      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDMT.LLc',KINDMT,N2BBASX*MBUF*NIBUF,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF.LLc'  ,KBUF  ,NCHUNK            ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBUF.LLc' ,KIBUF ,NCHUNK*NIBUF      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','CHUNK.LLc',KIND  ,NCHUNK*2          ,
+     &       WORK,KFREE,LFREE)
 C
         CALL XX1SRT(LUINT,LU2HER,WORK(KTWOMT),WORK(KINDMT),N2BBASX,
      &              WORK(KBUF),WORK(KIBUF),WORK(KIND),IREPA,
@@ -439,15 +410,24 @@ C       *************************
 C
 C
         NNDIM = NTBAS(1)*(NTBAS(1)-1)/2
-        CALL MEMGET('REAL',KTWOMT,N2BBASX        ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KINDMT,N2BBASX*NIBUF  ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND  ,N2BBASX*4      ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCMAT ,2*N2BBASX      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KICMAT,2*NIBUF*N2BBASX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBMAT ,4*NNDIM        ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBMAT,4*NNDIM        ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KAVEC ,NTBAS(1)       ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIAVEC,NTBAS(1)*NIBUF ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TWOMT.LLf',KTWOMT,N2BBASX        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDMT.LLf',KINDMT,N2BBASX*NIBUF  ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IND.LLf'  ,KIND  ,N2BBASX*4      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CMAT.LLf' ,KCMAT ,2*N2BBASX      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','ICMAT.LLf',KICMAT,2*NIBUF*N2BBASX,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BMAT.LLf' ,KBMAT ,4*NNDIM        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBMAT.LLf',KIBMAT,4*NNDIM        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','AVEC.LLf' ,KAVEC ,NTBAS(1)       ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IAVEC.LLf',KIAVEC,NTBAS(1)*NIBUF ,
+     &       WORK,KFREE,LFREE)
 C
         CALL OPNFIL(LU2HER,'DFLLSB','UNKNOWN','LL2SRT')
         IF(IPRINT.GE.3) THEN
@@ -493,11 +473,16 @@ C
         ENDDO
 C
         MBUF = NBSYM*2
-        CALL MEMGET('REAL',KTWOMT,N2BBASX*MBUF      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KINDMT,N2BBASX*MBUF*NIBUF,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBUF  ,NCHUNK            ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBUF ,NCHUNK*NIBUF      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND  ,NCHUNK*2          ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TWOMT.SLc',KTWOMT,N2BBASX*MBUF      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDMT.SLc',KINDMT,N2BBASX*MBUF*NIBUF,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF.SLc'  ,KBUF  ,NCHUNK            ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBUF.SLc' ,KIBUF ,NCHUNK*NIBUF      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IND.SLc'  ,KIND  ,NCHUNK*2          ,
+     &       WORK,KFREE,LFREE)
 C
         CALL XY1SRT(LUINT,LU2HER,WORK(KTWOMT),WORK(KINDMT),N2BBASX,
      &              WORK(KBUF),WORK(KIBUF),WORK(KIND),IREPA,
@@ -518,13 +503,20 @@ C
 C	Memory assignment
 C
         NSLDIM = NTBAS(1)*NTBAS(2)
-        CALL MEMGET('REAL',KBUF  ,N2BBASX        ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBUF ,N2BBASX*NIBUF  ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND  ,N2BBASX*4      ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KAMAT ,NSLDIM         ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIAMAT,NSLDIM         ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBCMAT,2*N2BBASX      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBCMT,2*N2BBASX*NIBUF,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF.SLf'  ,KBUF  ,N2BBASX        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBUF.SLf' ,KIBUF ,N2BBASX*NIBUF  ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IND.SLf'  ,KIND  ,N2BBASX*4      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','AMAT.SLf' ,KAMAT ,NSLDIM         ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IAMAT.SLf',KIAMAT,NSLDIM         ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BCMAT.SLf',KBCMAT,2*N2BBASX      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBCMT.SLf',KIBCMT,2*N2BBASX*NIBUF,
+     &       WORK,KFREE,LFREE)
 C
         IF(IPRINT.GE.3) THEN
           CALL HEADER('Output from SL2SRT',-1)
@@ -568,11 +560,16 @@ C
         ENDDO
 C
         MBUF = NBSYM*2
-        CALL MEMGET('REAL',KTWOMT,N2BBASX*MBUF      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KINDMT,N2BBASX*MBUF*NIBUF,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBUF  ,NCHUNK            ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBUF ,NCHUNK*NIBUF      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND  ,NCHUNK*2          ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TWOMT.SSc',KTWOMT,N2BBASX*MBUF      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDMT.SSc',KINDMT,N2BBASX*MBUF*NIBUF,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BUF.SSc'  ,KBUF  ,NCHUNK            ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBUF.SSc' ,KIBUF ,NCHUNK*NIBUF      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IND.SSc'  ,KIND  ,NCHUNK*2          ,
+     &       WORK,KFREE,LFREE)
         CALL XX1SRT(LUINT,LU2HER,WORK(KTWOMT),WORK(KINDMT),N2BBASX,
      &              WORK(KBUF),WORK(KIBUF),WORK(KIND),IREPA,
      &              NCHUNK,IPRINT)
@@ -585,15 +582,24 @@ C       *************************
 C
 C
         NNDIM = NTBAS(2)*(NTBAS(2)-1)/2
-        CALL MEMGET('REAL',KTWOMT,N2BBASX        ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KINDMT,N2BBASX*NIBUF  ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIND  ,N2BBASX*4      ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KCMAT ,2*N2BBASX      ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KICMAT,2*NIBUF*N2BBASX,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KBMAT ,4*NNDIM        ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBMAT,4*NNDIM        ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KAVEC ,NTBAS(2)       ,WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIAVEC,NTBAS(2)*NIBUF ,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','TWOMT.SSf',KTWOMT,N2BBASX        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','INDMT.SSf',KINDMT,N2BBASX*NIBUF  ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IND.SSf'  ,KIND  ,N2BBASX*4      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','CMAT.SSf' ,KCMAT ,2*N2BBASX      ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','ICMAT.SSf',KICMAT,2*NIBUF*N2BBASX,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','BMAT.SSf' ,KBMAT ,4*NNDIM        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IBMAT.SSf',KIBMAT,4*NNDIM        ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','AVEC.SSf' ,KAVEC ,NTBAS(2)       ,
+     &       WORK,KFREE,LFREE)
+        CALL MEMGET2('INTE','IAVEC.SSf',KIAVEC,NTBAS(2)*NIBUF ,
+     &       WORK,KFREE,LFREE)
 C
         CALL OPNFIL(LU2HER,'DFSSSB','UNKNOWN','SS2SRT')
         IF(IPRINT.GE.3) THEN
@@ -1516,7 +1522,7 @@ C
 C
 C     Memory allocation
 C
-      CALL MEMGET('INTE',KIREPA,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IREPA',KIREPA,NTBAS(0),WORK,KFREE,LFREE)
 C
       CALL TWOGE1(WORK(KIREPA),WORK(KFREE),LFREE)
 C
@@ -1533,6 +1539,8 @@ C*****************************************************************************
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER IREPA(*), LWORK
+      REAL(8) WORK(LWORK)
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -1543,7 +1551,8 @@ C
 #include "cbihr2.h"
 #include "hrunit.h"
       LOGICAL LBIT,TOBE,REGO
-      DIMENSION IREPA(*),WORK(LWORK)
+      real(8) :: TIMSTR(2), TIMEND(2)
+
 C     Undifferentiated integrals written on file
       INTTYP = 0
       NCHUNK = 600
@@ -1576,9 +1585,9 @@ C
         I2TYP = 1
 CTROND        CALL OPNFIL(LUINTA,'DFTWLL','UNKNOWN','TWOGE1')          
         CALL GPOPEN(LUINTA,'DFTWLL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('LL-int',TIMSTR,TIMEND)
+        CALL TIMER2('LL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1618,9 +1627,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(1P,A,D9.2)') 'SL-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWSL','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('SL-int',TIMSTR,TIMEND)
+        CALL TIMER2('SL-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1664,9 +1673,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'SS-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWSS','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('SS-int',TIMSTR,TIMEND)
+        CALL TIMER2('SS-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1682,9 +1691,9 @@ C
         IF(IPRTWO.GE.2)
      +     WRITE(LUPRI,'(A,E9.2)') 'GT-int - threshhold:',THRS
         CALL GPOPEN(LUINTA,'DFTWGT','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-        CALL TIMER('START ',TIMSTR,TIMEND)
+        CALL TIMER2('START ',TIMSTR,TIMEND)
         CALL TWODRV(INTTYP,I2TYP,WORK,LWORK,IPRTWO)
-        CALL TIMER('GT-int',TIMSTR,TIMEND)
+        CALL TIMER2('GT-int',TIMSTR,TIMEND)
         CALL FLSHFO(LUPRI)
         CALL TWOSRT(I2TYP,NCHUNK,IREPA,WORK,LWORK,IPRTWO)
       ENDIF
@@ -1936,7 +1945,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1958,7 +1966,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -1974,7 +1981,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2000,7 +2006,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2027,7 +2032,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2048,7 +2052,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2174,7 +2177,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2195,7 +2197,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2210,7 +2211,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2235,7 +2235,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2261,7 +2260,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2281,7 +2279,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(3,INTS)
               B = IND(1,INTS)
@@ -2402,7 +2399,6 @@ C         =============================
 C         F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2421,7 +2417,6 @@ C         =========================================
 C         F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2434,7 +2429,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2459,7 +2453,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2480,7 +2473,6 @@ C         ================================================
 C         FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2496,7 +2488,6 @@ C         ================================================
 C         F(i,j) = (1/8) * FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2604,7 +2595,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2618,7 +2608,6 @@ C         antisymmetric triplet Fock matrix
 C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2630,7 +2619,6 @@ C         Coulomb contributions only
 C         ==========================
 C
            ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2654,7 +2642,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2670,7 +2657,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2686,7 +2672,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2792,7 +2777,6 @@ C         =============================
 C         F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2808,7 +2792,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2819,7 +2802,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2842,7 +2824,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2857,7 +2838,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2870,7 +2850,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2974,7 +2953,6 @@ C       =============================
 C       F(i,j) = (FMAT(i,j) + FMAT(j,i))
 C
           IF(IY.EQ.3) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -2991,7 +2969,6 @@ C         =========================================
 C         F(i,j) = (FMAT(i,j) +/- FMAT(j,i))
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3005,7 +2982,6 @@ C         Coulomb contributions only
 C         ==========================
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3027,7 +3003,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           IF(IY.EQ.3) THEN
-#include"scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3044,7 +3019,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.2) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3059,7 +3033,6 @@ C         ================================================
 C         F(i,j) = FMAT(i,j)
 C
           ELSEIF(IY.EQ.1) THEN
-#include "scalar.h"
             DO INTS = 1,NBUF
               A = IND(1,INTS)
               B = IND(2,INTS)
@@ -3237,179 +3210,7 @@ C
  400  CONTINUE
 C
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck jengine */
-      SUBROUTINE JENGINE(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &                   NPOS,INTFLG,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver for direct Coulomb-contrubution using the J-engine
-C     Two possible options; with and without desity-fitting.
-C
-C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-      PARAMETER (DP5 = 0.5D0,D2=2.0D0)
-      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
-     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK)
-      LOGICAL SAVE_DOCART
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "densfit.h"
-#include "dcbgen.h"
-#include "maxaqn.h"
-#include "ccom.h"
-C
-C     (SR,ASPG,TS,LV june 2007) A four-component special :
-C     A not-so-clean hack to use the Hermite scheme ONLY for the Coulomb
-C     2-electron integrals, while keeping the Cartesian intermediates for
-C     all other integrals and transformations. This allows most of the code to
-C     be unmodified while having a faster integral evaluation where it counts
-C     1) Switch off DOCART before diving into FCK3
-C     2) FCK3 uses the Hermite scheme (switch HERECF) and builds a Fock matrix 
-C        directly in the restricted kinetic balance scalar basis that is also
-C        used as an intermediary basis in the Cartesian -> 2c RKB transformation.
-C     3) We switch DOCART back to the orginal value.
-C
-      IF (.NOT.(TWOCOMP)) THEN
-         SAVE_DOCART = DOCART
-         DOCART = .FALSE.
-      ENDIF
-C
-      NDIM = N2BBASX*NZC1*NFMAT
-      CALL DSCAL(NDIM,D2,DSO,1)
-      NDMAT = NZC1*NFMAT
-      KIFCTP = 1
-      KISYMD = KIFCTP + NDMAT
-      KLAST  = KISYMD + NDMAT
-      LWRK   = LWORK - KLAST + 1
-      IF (KLAST.GT.LWRK) CALL STOPIT('JENGINE','Coulomb',KLAST,
-     &                         LWORK)
-      CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
-     &          IFCKOP,IPRINT)
-#ifdef MOD_ERI
-#ifdef MOD_DNF
-      IF (DOFIT) THEN
-        CALL LIN_DF_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
-     &            IPRINT,WORK(KLAST),LWRK)
-      ELSE
-#endif /* MOD_DNF */
-        CALL FCK_Coulomb(FMAT,DSO,NFMAT,WORK(KISYMD),WORK(KIFCTP),
-     &                   IPRINT,WORK(KLAST),LWRK)
-#ifdef MOD_DNF
-      ENDIF
-#endif /* MOD_DNF */
-      CALL DSCAL(NDIM,DP5,DSO,1)
-#else /* MOD_ERI */
-      CALL QUIT('JENGINE only works if ERI is also present.')
-#endif /* MOD_ERI */
-C     Make sure to switch back DOCART....
-      IF (.NOT.(TWOCOMP)) THEN
-         SAVE_DOCART = DOCART
-         DOCART = .FALSE.
-      ENDIF
-C
-      RETURN
-      END
-#ifdef MOD_ERI
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck FCK_Coulomb */
-      SUBROUTINE FCK_Coulomb(FMAT,DMAT,NDMT,ISYMDM,IFCTYP,
-     &                       IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver for direct Coulomb-contrubution using the J-engine
-C     without density-fitting
-C
-C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-      DIMENSION FMAT(N2BBASX,NZC1,NDMT),DMAT(N2BBASX,NZC1,NDMT),
-     &        ISYMDM(NZC1,NDMT),IFCTYP(NZC1,NDMT),WORK(LWORK)
-#include "dcbbas.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-      DO IDMT=1,NDMT
-        IF ( (MOD(IFCTYP(1,IDMT),10).EQ.1) .OR.
-     &       (MOD(IFCTYP(1,IDMT),10).EQ.3) ) THEN
-          CALL ACT_ALL_BATCHES
-          CALL FCK3DRV(FMAT(1,1,IDMT),DMAT(1,1,IDMT),1,DUMMY,DUMMY,
-     &             DUMMY,WORK,LWORK)
-#ifdef MOD_FMM
-          if (dofmm) then
-!radovan:
-             call quit('fix rank mismatch in fmmfck call')
-!            CALL FMMFCK(FMAT(ISTR),DMAT(ISTR),WORK,LWORK)
-          end if
-#endif /* MOD_FMM */  
-        END IF
-      END DO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck linkdr */
-      SUBROUTINE LINKDR(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
-C*****************************************************************************
-C
-C     Driver for direct LinK exchange
-C
-C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "cbieri.h"
-      PARAMETER(D0=0.0D0,DP5 = 0.5D0,D2=2.0D0)
-      DIMENSION FMAT(N2BBASX,NZC1,NFMAT),DSO(N2BBASX,NZC1,NFMAT),
-     &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK)
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "memint.h"
-      I2TYP_TEMP = 1
-      NDIM = N2BBASX*NZC1*NFMAT
-      NDMAT = NFMAT*NZC1
-      IF (HFXFAC.NE.D0) THEN  
-        CALL DSCAL(NDIM,D2,DSO,1)
-        KIFCTP = 1
-        KISYMD = KIFCTP + NDMAT
-        KCCFBT = KISYMD + NDMAT
-        KINDXB = KCCFBT + MXPRIM*MXCONT
-        KFCKTP = KINDXB + 8*MXSHEL*MXCONT
-        KFREE  = KFCKTP
-        LFREE  = LWORK - KFREE + 1
-        IF (KFREE.GT.LWORK) CALL STOPIT('LINKDR','EXC',KFREE,
-     &                           LWORK)
-        CALL SETFCK(WORK(KIFCTP),WORK(KISYMD),NFMAT,NZC1,ISYMOP,IHRMOP,
-     &            IFCKOP,IPRINT)
-C
-        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP_TEMP)
-C
-        CALL ERIEXC(FMAT,DSO,NDMAT,WORK(KISYMD),WORK(KIFCTP),IPRINT,
-     &            WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &            WORK(KFREE),LFREE)
-        CALL DSCAL(NDIM,DP5,DSO,1)
-      END IF
-CCTROND Scale in accordance with DIRAOF->SKLFC1
-      CALL DSCAL(NDIM,DP5,FMAT,1)
-      RETURN
-      END
-C
-#endif /* MOD_ERI */ 
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+CC&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fastjk */
       SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
      &              NPOS,INTFLG,IPRINT,WORK,LWORK)
@@ -3433,103 +3234,11 @@ C
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
      &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
-      DIM = N2BBASX*NZC1*NFMAT
-#ifdef MOD_ERI
-      IF (DOLINK .AND. DOFCK3) THEN
-C
-C       Jengine Coulomb contribution, regular or density-fitted
-        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &             NPOS,INTFLG,IPRINT,WORK,LWORK)
-C       LinK-exchange
-        CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
-C
-      ELSEIF (DOLINK) THEN
-C
-C       LinK-exchange plus conventional Coulomb
-C
-C       Turn off exchange. This will affect how IX and IY will be set 
-C       for instance in FCKCON, but IX and IY will be set in SETFCK,
-C       and care has to be taken to correctly match the ifckop_temp
-C       values and those expected in SETFCK... in other words, 
-C       whenever you change this, check if you're doing the correct
-C       correspondenct to the table IPFCK in SETFCK. /aspg/
-C
-        DO IFMAT=1, NFMAT
-          IF (IFCKOP(IFMAT).EQ.1)  THEN
-            IFCKOP_TEMP(IFMAT) = 2
-          ELSEIF (IFCKOP(IFMAT).EQ.3) THEN
-            IFCKOP_TEMP(IFMAT) = 0
-          ELSE
-            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
-          ENDIF
-        ENDDO
-C     
-C       first add conventional (via 4-center integrals) AO Coulomb
-C
-      CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &            IFCKOP_TEMP,NPOS,INTFLG,
-     &            IPRINT,WORK,LWORK)
-C   
-C       now adding exchange via LinK... 
-C
-C       a "hack"-type solution to combine J from ERI and 
-C       K from linK is to perform a symmetrization of FMAT 
-C       and DMAT inside DIRAO1 before passing them on to LINKDR,
-C       because (a) only the upper triangular elements of the 
-C       fock matrices are placed in FMAT when HRFCK2 is
-C       called, and the full symmetrization of FMAT and
-C       DMAT is done only outside FASTJK; and (b) LINKDR
-C       creates the symmetrical matrices, so the symmetrization
-C       outside FASTJK gets completely wrong after
-C       exchange is added via LINKDR. /aspg/ 
-C       
-      CALL LINKDR(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &            NPOS,INTFLG,IPRINT,WORK,LWORK)
-C
-      ELSEIF (DOFCK3) THEN
-C
-C       Jengine Coulomb contribution, regular or density-fitted
-C       plus exchange via the conventional AO code
-C
-        CALL JENGINE(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &               NPOS,INTFLG,IPRINT,WORK,LWORK)
-C
-C       Turn off Coulomb. same comments as for the LinK/Conventional
-C       combination (see above) apply. 
-C
-C       HEADS UP for possible problems when using jengine and eri
-C       together, since JENGINE also creates full matrices (as link,
-C       see comment above) and ERI the upper triangular, but I haven't
-C       seen wrong resuls for the pure non-relativistic calculations.
-C       So at this point (2006-07-27) there's no dirty tricks is DIRAO1
-C       to symmetrize matrices when DOFCK3 is switched on. /aspg/ 
-C
-        DO IFMAT=1, NFMAT
-          IF (IFCKOP(IFMAT).EQ.1) THEN
-            IFCKOP_TEMP(IFMAT) = 3
-          ELSEIF (IFCKOP(IFMAT).EQ.2) THEN
-            IFCKOP_TEMP(IFMAT) = 0
-          ELSE
-            IFCKOP_TEMP(IFMAT) = IFCKOP(IFMAT)
-          ENDIF
-        ENDDO
-C
-C       Conventional (4-center integrals) AO exchange
-C
-        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &              IFCKOP_TEMP,NPOS,INTFLG,
-     &              IPRINT,WORK,LWORK)
-C
-      ELSE
-#endif /* MOD_ERI */
+!     DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &              IFCKOP,NPOS,INTFLG,
      &              IPRINT,WORK,LWORK)
-#ifdef MOD_ERI
-      ENDIF
-#endif /* MOD_ERI */
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3561,7 +3270,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
-#include "cbieri.h"
 #include "blocks.h"
 #include "cbihr2.h"
 #include "ibtfun.h"
@@ -3573,38 +3281,36 @@ C     Memory allocation
       NDMAT   = NFMAT*NZC1
       N2GAB   = NSYMBL*NSYMBL
       NDMRAO  = N2GAB*NDMAT
-      CALL MEMGET('INTE',KIFC  ,NDMAT  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRD  ,NDMAT  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IFC'  ,KIFC  ,NDMAT  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IRD'  ,KIRD  ,NDMAT  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GAB'  ,KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMRAO',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
 C
-      IF (.NOT.RUNERI) THEN 
 C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
 C
-         IF (SCRFCK .GT. D0) THEN
+      IF (SCRFCK .GT. D0) THEN
 C
-            IJOB   = 0
-            ITYPE  = 0
-            IGTYP  = 0
-C           IGTYP 0 gives just the LL integrals
-C           IGTYP 1 will add the SS type integrals
-            IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
-C           IGTYP 2 will add also the SL (Gaunt) type integrals
-            IF(LBIT(INTFLG,4)) IGTYP = 2
-            MAXDIF = 0
-            CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
-     &           IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
-         ENDIF
+         IJOB   = 0
+         ITYPE  = 0
+         IGTYP  = 0
+C        IGTYP 0 gives just the LL integrals
+C        IGTYP 1 will add the SS type integrals
+         IF(LBIT(INTFLG,2).OR.LBIT(INTFLG,3)) IGTYP = 1
+C        IGTYP 2 will add also the SL (Gaunt) type integrals
+         IF(LBIT(INTFLG,4)) IGTYP = 2
+         MAXDIF = 0
+         CALL GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,
+     &        IPRINT,WORK(KGAB),WORK(KFREE),LFREE)
       ENDIF
 C
       IF(NBSYM.GT.1) THEN
         IF(MDIRAC) THEN
           CALL QUIT('DIRAOF: Dont know how to handle symmetry yet..')
         ENDIF
-        CALL MEMGET('REAL',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FAO',KFAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','DAO',KDAO,N2BBASX*NDMAT,WORK,KFREE,LFREE)
 C
 C       Transform density matrix from QO to AO
 C       ======================================
@@ -3636,12 +3342,12 @@ C       Construct Fock matrix
 C       ======================
 C
         CALL DZERO(WORK(KFAO),N2BBASX*NDMAT)
-        CALL DIRAO1(WORK(KFAO),WORK(KDAO),NFMAT,
+        CALL DIRAOF_1(WORK(KFAO),WORK(KDAO),NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
         IF(IPRINT.GE.5) THEN
-          WRITE(LUPRI,'(A)') 'After DIRAO1'
+          WRITE(LUPRI,'(A)') 'After DIRAOF_1'
           CALL PRQMAT(WORK(KFAO),NTBAS(0),NTBAS(0),NTBAS(0),
      &                NTBAS(0),NZC1,IQMULT,LUPRI)
         ENDIF
@@ -3665,22 +3371,22 @@ C
       ELSE
 C
 C       If there is no symmetry involved the density matrix DMAT
-C       is sent to DIRAO1 module:
+C       is sent to DIRAOF_1 module:
 C
-        CALL DIRAO1(FMAT,DMAT,NFMAT,
+        CALL DIRAOF_1(FMAT,DMAT,NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
       ENDIF
-      CALL MEMREL('DIRAOF.DIRAO1',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL MEMREL('DIRAOF.DIRAOF_1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('DIRAOF')
       RETURN
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck dirao1 */
-      SUBROUTINE DIRAO1(FAO,DAO,NFMAT,
+C  /* Deck DIRAOF_1 */
+      SUBROUTINE DIRAOF_1(FAO,DAO,NFMAT,
      &                  IFCTYP,IREPDM,ISYMOP,IHRMOP,IFCKOP,
      &                  DMRAO,GABRAO,NPOS,INTFLG,
      &                  IPRINT,WORK,LWORK)
@@ -3703,24 +3409,23 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "mxcent.h"
 C
 C Used from COMMON blocks:
-C   CCOM  : THRS,NHTYP,KHK
-C   DHFIOU: LUINTA
-C   SHELLS: KMAX
-C   DCBBAS: NTBAS(0),N2BBASX
 C   DCBGEN: PARCAL
+C   DCBBAS: NTBAS(0),N2BBASX
+C   CCOM  : THRS,NHTYP,KHK
+C   SHELLS: KMAX
+C   symmet.h : MAXREP
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
-#include "cbieri.h"
-#include "cbifck3.h"
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "ccom.h"
 #include "shells.h"
 #include "blocks.h"
-#include "densfit.h"
+#include "symmet.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3733,7 +3438,7 @@ C
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
 C
-      CALL QENTER('DIRAO1')
+      CALL QENTER('DIRAOF_1')
 #include "memint.h"
 C
 Ctec Is FIRST needed???
@@ -3742,15 +3447,13 @@ Ctec Is FIRST needed???
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZC1,ISYMOP,IHRMOP,IFCKOP,IPRINT)
       CALL DZERO(DNTSKP,8)
 
-      IF (.NOT.RUNERI) THEN
-         IF (SCRFCK.GT.D0) THEN
+      IF (SCRFCK.GT.D0) THEN
 C
-C       Make reduced density matrix for screening
-C       ==========================================
-C       (Reduced GAB is already present in GABRAO)
+C     Make reduced density matrix for screening
+C     ==========================================
+C     (Reduced GAB is already present in GABRAO)
 C
-           CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
-         ENDIF
+         CALL MKDRAO(DAO,DMRAO,NDMAT,WORK,LWORK,IPRINT)
       ENDIF
 C
 C     ****************************
@@ -3810,13 +3513,12 @@ C....> Check whether the class is active
 C
       IF(LBIT(INTFLG,I2TYP).AND.LBIT(IDFLAG,I2TYP)) THEN
 C
-         IF (.NOT.RUNERI) THEN  ! hermit-based scf
 #if defined (VAR_MPI)
             IF (PARCAL) THEN
 C
 C             Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
-              CALL DIRAC_PARCTL( 1 )
+              CALL DIRAC_PARCTL( HERFCK_PAR )
 C
               CALL GETTIM(CPU1,WALL1)
               CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
@@ -3855,34 +3557,6 @@ C
 #if defined (VAR_MPI)
            ENDIF
 #endif
-         ELSE
-C
-C we are using the eri/fck3 fock matrix builder, if
-C eri has been enabled
-C
-#ifdef MOD_ERI
-           CALL MEMGET('REAL',KCCFBT,MXPRIM*MXCONT  ,WORK,KFREE,LFREE)
-           CALL MEMGET('INTE',KINDXB,8*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-           KFCKTP = KFREE
-           CPU = SECOND()
-C
-           CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-C
-           IPRFCK=IPRINT
-           CALL DSCAL(N2BBASX*NDMAT,D2,DAO,1)
-           CALL HRFCK2(FAO,DAO,NDMAT,ISYMOP,IFCTYP,IPRFCK,
-C    &                 WORK(KCCFBT),WORK(KINDXB),WORK(KFCKTP),
-     &                 WORK(KCCFBT),WORK(KINDXB),IFCKOP,
-     &                 WORK(KFREE),LFREE)
-           CALL DSCAL(N2BBASX*NDMAT,DP5,DAO,1)
-           CALL MEMREL('dirao1.hrfck23',WORK,KWORK,KWORK,KFREE,LFREE)
-           CPU = SECOND() - CPU
-         ENDIF
-#else /* MOD_ERI */
-            CALL QUIT('*** Direct SCF only possible with HERMIT 
-     &                 in this version. Recompile with ERI ***')
-         ENDIF
-#endif /* MOD_ERI */
       ENDIF
 C
 C     Restore IFCTYP to the old value (even though we'll not need
@@ -3903,14 +3577,27 @@ C
 C.... End of loop over integral classes
 C
          CALL FLSHFO(LUPRI)
-      ENDDO
-C
+      ENDDO ! I2TYP = 1, 4
 C
 C     Symmetrize Fock matrix
 C     ======================
 C
-      CALL SKLFCK(FAO,WORK,LWORK,IPRINT,.TRUE.,.FALSE.,.FALSE.,
-     &            .FALSE.,.TRUE.,0,.FALSE.,NDMAT,IREPDM,IFCTYP,IDUM)
+!     CALL MEMGET2('REAL','SKLTON',KSKLTN,NMAT*N2BASX,
+!    &   WORK,KFREE,LFREE)
+!     save memory by reusing DAO for SKLTON matrix
+      CALL MEMGET2('REAL','FAC',KFAC,NTBAS(0)*(MAXREP+1),
+     &   WORK,KFREE,LFREE)
+      NINDEX = KMAX*(MAXREP + 1)*KHK(NHTYP)
+      CALL MEMGET2('INTE','IINDEX',KINDEX,NINDEX,
+     &   WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IPOINT',KPOINT,NTBAS(0)*(MAXREP+1),
+     &   WORK,KFREE,LFREE)
+      IXYZ = 0
+!     CALL SKLFCK_1(FAO,WORK(KSKLTN),WORK(KFAC),WORK(KINDEX),
+      CALL SKLFCK_1(FAO,DAO         ,WORK(KFAC),WORK(KINDEX),
+     &               WORK(KPOINT),DUM,DUM,DUM,IDUM,IXYZ,
+     &               NDMAT,IREPDM,IFCTYP,IPRINT)
+      CALL MEMREL('SKLFCK_1',WORK,KWORK,KWORK,KFREE,LFREE)
       IF(IPRINT.GE.5) THEN
         DO I = 1,NFMAT
           CALL HEADER('Symmetrized skeleton FOCK',-1)
@@ -3919,28 +3606,7 @@ C
      &                NZC1,IQMULT,LUPRI)
         ENDDO
       ENDIF
-#ifdef MOD_ERI
-Caspg
-C
-C   2006-07-27
-C
-C   temporary solution (or dirty trick, take your pick) to make the 
-C   combination ERI->J / LinK->K work, due to the differences in 
-C   constructing the fock matrices in each case. So below we add
-C   a bare bones version of the code outside FASTJK responsible to
-C   perform the final setup on the matrices (symmetrization etc).
-C  
-C   This assumes that a call to LINKDR comes after the call to DIRAO1,
-C   otherwise the fock matrices will continue to be updated incorrectly.
-C
-      IF (DOLINK) THEN
-        CALL FULMAT('S',NTBAS(0),NTBAS(0),FAO)
-      ENDIF
-C
-Caspg
-#endif /* MOD_ERI */
-C
-      CALL QEXIT('DIRAO1')
+      CALL QEXIT('DIRAOF_1')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3977,11 +3643,11 @@ C
 C     Memory allocation
 C
       NDMAT = NZ*NFMAT
-      CALL MEMGET('INTE',KIFC  ,NDMAT        ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRD  ,NDMAT        ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF  ,N2BBASX      ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF ,N2BBASX*NIBUF,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIND  ,N2BBASX*4    ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IFC' ,KIFC  ,NDMAT        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IRD' ,KIRD  ,NDMAT        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF' ,KBUF  ,N2BBASX      ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBUF',KIBUF ,N2BBASX*NIBUF,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IND' ,KIND  ,N2BBASX*4    ,WORK,KFREE,LFREE)
       CALL CONSC1(FSO,DSO,NFMAT,
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &            INTFLG,WORK(KBUF),WORK(KIBUF),
@@ -4306,11 +3972,11 @@ C
       N2GAB  = NSYMBL*NSYMBL
       NDMRAO = N2GAB*NDMAT
       NDMRSO = MAXSHL*MAXSHL*NDMAT
-      CALL MEMGET('INTE',KIFC  ,NDMAT  ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIRD  ,NDMAT  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KDMRSO,NDMRSO ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IFC'  ,KIFC  ,NDMAT  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IRD'  ,KIRD  ,NDMAT  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','GAB'  ,KGAB  ,N2GAB  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMRAO',KDMRAO,NDMRAO ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','DMRSO',KDMRSO,NDMRSO ,WORK,KFREE,LFREE)
 C
 C     Get G(ab) integrals from AOPROPER
 C     =================================
@@ -4452,7 +4118,7 @@ C
 C
 C          Get hold of the slaves ( ITASK = 1 for Fock matrices )
 C
-           CALL DIRAC_PARCTL( 1 )
+           CALL DIRAC_PARCTL( HERFCK_PAR )
 C
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
@@ -4465,7 +4131,7 @@ C
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
            CALL SCRSTA(SOTEXT,DNTSKP,WALL)
-           IF (IPRINT .GT. 0) THEN
+           IF (IPRINT .GT. 1) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
      &             '>>>> Total wall time used in HER_PARDRV so far   :',
@@ -4563,13 +4229,13 @@ C
 C
 C     Make index array from AOs to blocks
 C
-      CALL MEMGET('INTE',KINRAO,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INRAO',KINRAO,NTBAS(0),WORK,KFREE,LFREE)
       CALL PTRDAO(WORK(KINRAO))
 C
 C     Make reduced AO matrix
 C
       IF(NBSYM.GT.1) THEN
-        CALL MEMGET('REAL',KDBF,N2BBASX,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','DBF',KDBF,N2BBASX,WORK,KFREE,LFREE)
         DO I = 1,NFMAT
           IREP = ISYMOP(I)-1
           IPAR = JBTOF(IREP,1)
@@ -4622,10 +4288,6 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
-C
-#ifdef MOD_ERI
-#include "cbieri.h"
-#endif
 #include "cbihr2.h"
 #include "ccom.h"
 #include "dgroup.h"
@@ -4635,21 +4297,6 @@ C
       CHARACTER CINT(3)*2
       DATA CINT/'LL','SL','SS'/
 #include "memint.h"
-C
-#ifdef MOD_ERI
-      IF(RUNERI) THEN
-C.......Allocate:
-C       CCFBT - normalized contraction coefficients
-        CALL MEMGET('REAL',KCCFBT,MXCONT*MXPRIM,WORK,KFREE,LFREE)
-C       INDXBT - orbital indices for AO batches
-        CALL MEMGET('INTE',KINDXB,NBSYM*MXSHEL*MXCONT,WORK,KFREE,LFREE)
-C
-        CALL SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-C
-        CALL ER2INT(WORK(KCCFBT),WORK(KINDXB),WORK(KFREE),LFREE)
-        CALL MEMREL('TWODRV.ER2INT',WORK,KWORK,KWORK,KFREE,LFREE)
-      ELSE
-#endif /* MOD_ERI */
 C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           NDMAT  = 1
@@ -4678,98 +4325,6 @@ C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           THRS = THRBUF 
         ENDIF
-#ifdef MOD_ERI
-      ENDIF
-#endif
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SET_AOBATCH_STATE(ICENTER,STATUS)
-#include "implicit.h"
-#include "cbieri.h"
-      CHARACTER STATUS
-C
-C     sets and individual center as active when calculating ao batches 
-C     icenter is the center on the two-electron integral to be made active.
-C
-C     arguments:
-C
-C     icenter: the numerical designation for the center, takes 
-C              values 1,2,3 or 4
-C     status : whether to make the center active or inactive, takes 
-C              values 'A' for active and 'I' for inactive
-C
-C     note: the variables are defined in the CBIERI common block 
-C
-      IF (    (ICENTER.LT.1) .OR.(ICENTER.GT.4)
-     &    .OR.((STATUS.NE.'A').AND.(STATUS.NE.'I'))) 
-     &   CALL QUIT('wrong parameter value in set_aobatch_state')
-
-      IF (STATUS.EQ.'A') THEN
-C     center is active
-         NCENTS(ICENTER)   = 0
-         ICENTS(1,ICENTER) = 0
-      ELSE
-         NCENTS(ICENTER)   = 1
-         ICENTS(1,ICENTER) = 1
-      ENDIF
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SET_ALL_AOCENTERS_ACTIVE(I2TYP)
-#include "implicit.h"
-C
-C sets all centers active for the ao-batches of class i2typ
-C
-Caspg     write (6,*) 'debug: setting centers'
-      CALL SET_AOBATCH_STATE(1,'A')
-      CALL SET_AOBATCH_STATE(2,'A')
-      CALL SET_AOBATCH_STATE(3,'A')
-      CALL SET_AOBATCH_STATE(4,'A')
-      CALL SET_AOBATCH_CLASS(I2TYP)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SET_AOBATCH_CLASS(I2TYP)
-#include "implicit.h"
-#include "priunit.h"
-#include "cbieri.h"
-C
-C     note: the variables are in the CBIERI common block 
-C
-C     Index 1
-      IF(I2TYP.EQ.1) THEN
-C       (LL|LL)-integrals
-        ICLASSES(1) = 1
-        ICLASSES(2) = 1
-        ICLASSES(3) = 1
-        ICLASSES(4) = 1
-      ELSEIF(I2TYP.EQ.2) THEN
-C       (SS|LL)-integrals
-        ICLASSES(1) = 2
-        ICLASSES(2) = 2
-        ICLASSES(3) = 1
-        ICLASSES(4) = 1
-      ELSEIF(I2TYP.EQ.3) THEN
-C       (SS|SS)-integrals
-        ICLASSES(1) = 2
-        ICLASSES(2) = 2
-        ICLASSES(3) = 2
-        ICLASSES(4) = 2
-      ELSEIF(I2TYP.EQ.4) THEN
-C       (SL|SL)-integrals (Gaunt integrals)
-        ICLASSES(1) = 2
-        ICLASSES(2) = 1
-        ICLASSES(3) = 2
-        ICLASSES(4) = 1
-! hjaaj May 2012: I have just defined ICLASSES for Gaunt (preceeding four lines)
-!   now quit until someone verifies that Gaunt is OK in ERI
-        call quit('Gaunt integrals not implemented in ERI yet')
-      ELSE
-        write(lupri,*) 'Unknown I2TYP in SET_AOBATCH_CLASS',I2TYP
-        call quit('Unknown I2TYP in SET_AOBATCH_CLASS')
-      ENDIF
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4785,6 +4340,10 @@ C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER   NFMAT, LWORK, INTFLG
+      REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
+      INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),NPOS(*)
+
 #include "priunit.h"
 #include "maxaqn.h"
 #include "dummy.h"
@@ -4794,8 +4353,7 @@ C
 #include "cbihr2.h"
 #include "dcbham.h"
 C
-      DIMENSION FMAT(*),DMAT(*),ISYMOP(NFMAT),IHRMOP(NFMAT),
-     &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
+      real(8) :: TIMSTR(2), TIMEND(2)
 C
 C     *************************************************
 C     *****  D i r e c t  c o n s t r u c t i o n *****
@@ -4815,19 +4373,26 @@ C
       IF(IDFLAG.NE.0.AND.IDFLAG.GT.8) THEN
         IF(SOFOCK) THEN
 C.........construction of Fock matrix using ERIs in SO-basis
+          CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
      &                IFCKOP,NPOS,INTFLG,
      &                IPRINT,WORK,LWORK)
+          CALL TIMER2('SO Fock',TIMSTR,TIMEND)
         ELSE
 C.........construction of Fock matrix using ERIs in AO-basis:
 C.........skeleton Fock approach
-C aspg, timing
-          CALL TIMER('START ',TIMSTR,TIMEND)
-          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
-     &                IPRINT,WORK,LWORK)
-          CALL TIMER('fastjk',TIMSTR,TIMEND)
-C aspg, timing
+          CALL TIMER2('START ',TIMSTR,TIMEND)
+
+        !DIM = N2BBASX*NZC1*NFMAT
+C       Conventional (4-center integrals) AO Coulomb + exchange
+        CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &              IFCKOP,NPOS,INTFLG,
+     &              IPRINT,WORK,LWORK)
+!          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+!     &                IFCKOP,NPOS,INTFLG,
+!     &                IPRINT,WORK,LWORK)
+!         CALL TIMER2('fastjk',TIMSTR,TIMEND)
+          CALL TIMER2('AO Fock',TIMSTR,TIMEND)
         ENDIF
       ELSE
 C

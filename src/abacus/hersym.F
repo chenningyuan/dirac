@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@
 ! ::: HERSYM_DEBUG - Debug print if > 0 + IPRSYM set to HERSYM_DEBUG
 #define HERSYM_DEBUG -1
 ! ::: IPRTHR - Print level threshold for verbose output
-#define IPRTHR 3
+!#define IPRTHR 3 ! Miro: I had to deactivate it due to runtime checks !
 !
 !========================================================================
 !950208-Vebjoern Bakken
@@ -59,6 +59,7 @@ C*****************************************************************************
 
       CALL QENTER('SYMADD')
 
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
       IPRSYM = MAX(HERSYM_DEBUG, IPRSYM_input)
 
 C     Set control variables in "mxsymm.h"
@@ -100,9 +101,7 @@ C  /* Deck FIND_SYMMETRY */
      &            TMPARR,TMP2AR,NSYMOP,
      &            KATOM,KASYM,LENTMP,POINT_GROUP,VRML_SYM,
      &            internal_file,WORK,KFREE,LFREE)
-
-      use codata
-
+C
 #include "implicit.h"
 #include "mxsymm.h"
 #include "mxcent.h"
@@ -111,7 +110,6 @@ C  /* Deck FIND_SYMMETRY */
 #include "cbisol.h"
 #include "cbihr1.h"
 #include "molinp.h"
-#include "r12int.h"
 #include "numder.h"
 ! infpar.h: MPARID, MYTID
 #include "infpar.h"
@@ -134,6 +132,8 @@ C ***********************************************************
       CHARACTER*1 KASYM(3,3)
       CHARACTER SYMM*9, TMPLN*80
       CHARACTER POINT_GROUP*15, TEXT*43
+
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
 C
 C     Just to make sure, we zero all temporary arrays
 C
@@ -240,12 +240,13 @@ C
          IF (NINT(DMRPLN(1,0)) .EQ. 0) THEN
             WRITE(LUPRI,'(/A)') ' No mirror planes were found.'
          ELSE
-            CALL PRNARR('Mirror planes: 2=h, 1=v, 0=other',
-     &         MAXMIR, DMRPLN)
+            CALL PRNMIR(MAXMIR, DMRPLN)
          END IF
       END IF
       END IF
 
+C ::: Find symmetry operations which can be used by Dalton/Dirac
+C ::: and remove symmetry-dependent atoms
       CALL SYM_REDUCE(MXCENT, ATMARR,TMPARR, TMP2AR, SYMM,
      &      internal_file)
       IF (IPRSYM .GE. MIN(3,IPRTHR)) THEN
@@ -268,15 +269,15 @@ C ::: If there is any Aangstroem mark, it is removed. :::
         WRITE(TMPLN(10:10), '(I1)') NSYMOP
         WRITE(TMPLN(11:20), '(A9,A1)') SYMM, ' '
       end if
-      IF( MYTID .eq. MPARID .OR. IPRSYM .GE. 1) THEN
+      IF (MYTID .eq. MPARID .OR. IPRSYM .GE. 1) THEN
          IF (NSYMOP .EQ. 0) THEN
             WRITE(LUPRI, '(/A)') ' No symmetry elements were found.'
          ELSE IF (NSYMOP .EQ. 1) THEN
             WRITE(LUPRI, '(/2A)')
-     &         ' The following element was found:   ',SYMM
+     &         ' The following symmetry element was found:   ',SYMM
          ELSE
             WRITE(LUPRI, '(/2A)')
-     &         ' The following elements were found: ',SYMM
+     &         ' The following symmetry elements were found: ',SYMM
          END IF
       END IF
 
@@ -304,6 +305,7 @@ C        ... IOLD .ge. I after CALL SRTOLD
          IZATOM(I) = IZATOM(IOLD)
          ISOTOP(I) = ISOTOP(IOLD)
          GNUEXP(I) = GNUEXP(IOLD)
+         NOORBT(I) = NOORBT(IOLD)         
 #ifndef PRG_DIRAC
          RSPH(I)   = RSPH(IOLD)
          IDXSPH(I) = IDXSPH(IOLD)
@@ -407,6 +409,34 @@ C ::::::::::::::::::::::::::::::::::::::::::::::
      &                    NINT(ARR(6,I))
       END DO
    11 FORMAT (I8, ' : ', 3F15.8,'  Isotope',I3)
+      RETURN
+      END
+C  /* Deck prnmir */
+      SUBROUTINE PRNMIR(MXM, MIRPLN)
+C ::::::::::::::::::::::::::::::::::::::::::::::
+C ::                                          ::
+C ::       Prints all mirror planes           ::
+C ::       (based on PRNARR)                  ::
+C ::                                          ::
+C ::::::::::::::::::::::::::::::::::::::::::::::
+#include "implicit.h"
+#include "priunit.h"
+      REAL*8    MIRPLN(6,0:MXM)
+
+      WRITE(LUPRI,'(6(/A))')
+     &   ' Mirror planes',
+     &   ' -----------------------------',
+     &   ' #1 = Type: 2=h, 1=v, 0=other',
+     &   ' #2 = Number of atoms in plane',
+     &   ' #3-5 = normal vector of plane',
+     &   ' -----------------------------'
+      DO I=1,NINT(MIRPLN(1,0))
+         IT = NINT(MIRPLN(4,I))
+         N  = MOD(IT,100000) 
+         IT = IT / 100000
+         WRITE (LUPRI,11) IT,N,(MIRPLN(J,I), J=1,3)
+      END DO
+   11 FORMAT (I2,I6, ' : ', 3F15.8)
       RETURN
       END
 C  /* Deck prnarr2 */
@@ -817,6 +847,7 @@ C    - do it twice to minimize round-off errors
 C
 #include "implicit.h"
 #include "priunit.h"
+#include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
@@ -1053,6 +1084,9 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
       DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
+      LOGICAL   LINMOL
+
+      IPRTHR = 3 ! Miro: for runtime check it must be defined as variable
 C
       N_ROTAXS = NINT(DRTAXS(1,0))
       N_MIRROR = NINT(DMRPLN(1,0))
@@ -1063,7 +1097,7 @@ C
      &      N_ROTAXS, N_MIRROR, N_ATOMS
       END IF
 
-      IF (N_ROTAXS .LE. 0) GOTO 9000 ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
+      IF (N_ROTAXS .LE. 0 . AND. .NOT. LINMOL(MXM, ATMARR)) RETURN ! RETURN, no turning if no rotation axes (C1, Cs, or Ci symmetry)
 C
       CALL DZERO(TMPARR,6*(LENTMP+1))
 C ::: First we make a new array of vectors, consisting of mirror :::
@@ -1210,7 +1244,6 @@ C             i.e. do not require true z-coordinate to be zero this time.
             GOTO 200
          END IF
 C
- 9000 RETURN
       END
 C  /* Deck linmol */
       LOGICAL FUNCTION LINMOL(MXM, ATMARR)

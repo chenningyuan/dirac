@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -470,6 +470,90 @@ C            ENDIF
 C
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE SRT20_NTS (NREP,MULTB,IJPAIR,IFIE,JFIE,KFIE,LFIE,
+     &                      NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
+!
+      IMPLICIT INTEGER (A-Z)
+!
+!---------------Description--------------------------------------------
+!
+!     Sort array BUF1(IJ,K>L:KLREP) to array BUF2(IK,LJ:LJREP).
+!     This routine is a modification of the original SRT20/SRT20M
+!     tree where also nontotally symmetric destination ireps LJREP and
+!     KJREP are included. This is necessary due to the occurrence of
+!     nontotally symmetric property integrals. No inverse sort is
+!     provided here since it is not needed.
+!
+!---------------Calling variables--------------------------------------
+!
+      INTEGER NREP,MULTB(64,64,2),IJPAIR(NREP)
+      INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP),NPAIR(NREP)
+      INTEGER OFF(NREP+1),OFF1(32,32),OFF2(32,32)
+      REAL*8 BUF1(*),BUF2(*)
+!
+!---------------Common Blocks--------------------------------------
+!
+#include "../relccsd/complex.inc"
+#include "../relccsd/param.inc"
+#include "../relccsd/files.inc"
+!
+!---------------Local variables--------------------------------------
+!
+      REAL*8 P
+      PARAMETER(P=555.5555554D0)
+!
+!---------------Executable code--------------------------------------
+!
+!
+      CALL XCOPY (OFF(NREP+1),A0,0,BUF2,1)
+
+      IJKL = 1
+      DO 10 KLREP = 1, NREP
+       IF (IJPAIR(KLREP).EQ.0) GOTO 10
+       DO 20 LREP = 1, NREP
+        KREP = MULTB(LREP,KLREP+NREP,2)
+        IF (KREP.LT.LREP) GOTO 20
+        DO 30 L = 1, LFIE(LREP)
+         KMIN = 1
+         IF (KREP.EQ.LREP) KMIN = L + 1
+         DO 40 K = KMIN, KFIE(KREP)
+          DO 50 JREP = 1, NREP
+           IREP = MULTB(JREP,KLREP+NREP,2)
+           LJREP = MULTB(LREP,JREP,2)
+           IKREP = MULTB(IREP,KREP,2)
+           ILREP = MULTB(IREP,LREP,2)
+           KJREP = MULTB(KREP,JREP,2)
+!          IF(OFF2(LREP,JREP).eq.0) 
+!    &        write(iw,*) 'off2 alarm LREP/JREP in SRT20_NTS'
+           IKLJ0 = OFF(LJREP) + (OFF2(LREP,JREP)+L-1) * NPAIR(IKREP)
+           IKLJ0 = IKLJ0 + OFF1(IREP,KREP) + (K-1)*IFIE(IREP)
+!          IF(OFF1(IREP,KREP).eq.0)
+!    &        write(iw,*) 'off1 alarm IREP/KREP in SRT20_NTS'
+           IKLJ0 = IKLJ0 * RCW + 1
+           ILKJ0 = OFF(KJREP) + (OFF2(KREP,JREP)+K-1) * NPAIR(ILREP)
+           ILKJ0 = ILKJ0 + OFF1(IREP,LREP) + (L-1)*IFIE(IREP)
+           ILKJ0 = ILKJ0 * RCW + 1
+           DO 60 J = 1, JFIE(JREP)
+!
+!  copy to destination for all ireps and resolve antisymmetric storage
+!
+             CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(IKLJ0),1)
+             CALL XCOPY (IFIE(IREP),BUF1(IJKL),1,BUF2(ILKJ0),1)
+             CALL XSCAL (IFIE(IREP),-A1,BUF2(ILKJ0),1)
+
+             IJKL = IJKL + IFIE(IREP) * RCW
+             IKLJ0 = IKLJ0 + NPAIR(IKREP) * LFIE(LREP) * RCW
+             ILKJ0 = ILKJ0 + NPAIR(ILREP) * KFIE(KREP) * RCW
+ 60        CONTINUE
+ 50       CONTINUE
+ 40      CONTINUE
+ 30     CONTINUE
+ 20    CONTINUE
+ 10   CONTINUE
+
+      RETURN
+      END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT7 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2,NPAIR2)
@@ -539,6 +623,7 @@ C
  10    CONTINUE
        IJKL = IJKL + M * N * RCW
       ENDDO
-C
+
       RETURN
       END
+!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

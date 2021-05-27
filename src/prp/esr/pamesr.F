@@ -1,6 +1,6 @@
 #define notESR_DEBUG
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -42,18 +42,17 @@ C
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
-#include "orgcom.h"
 #include "dgroup.h"
       PARAMETER (NTABLE = 16)
-      LOGICAL SET, NEWDEF, RESET, GORG_BY_USER
+      LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.PRINT ','.OPERAT','.MULTIP',
+      DATA TABLE /'xXXXXXX','.PRINT ','.OPERAT','.MULTIP',
      &            '.SPINPO','.SDCI  ','.MAX CI','.CI ROO',
      &            '.THRCVE','.THRCI ','.SDTCI ','.SDT*CI',
-     &            '.COREHO','.MY CI ','.THRPCI','.KR-CON'/
+     &            '.ESR CI','.MY CI ','.THRPCI','.KR-CON'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -79,21 +78,21 @@ C
       MULTIPESR = 0
       N_CIESR   = -1
       MAX_CIESR_IT = 0
-      THR_CVEC_ESR = 1.0D-4
-      THRPCI_ESR   = 1.0D-3
+      THR_CVEC_ESR = 1.0D-4 ! trial vector threshold
+      THRPCI_ESR   = 1.0D-3 ! print of CI vector threshold
       THR_CIESR    = 1.0D-6 ! based on 1 ppm = 10**(-6)
-C     variables for spin polarization in CI
-      NCSH_ESR(:)  = -1
-      NVSH_ESR(:)  = -1
-      NSSH_ESR(:)  = -1
-      LVL_CIESR(:) = 0
+
+C     variables for spin polarization and correlation in CI
+      NGAS_CIESR(1)  = 0  ! RAS1_GAS
+      LVL_CIESR(:,1) = 0
+      NGAS_CIESR(2)  = 1  ! one RAS2-GAS subspace in this version (NOPEN = 1)
+      LVL_CIESR(:,2) = -1   ! no occupation restriction in RAS2-GAS
+      NGAS_CIESR(3)  = 0  ! RAS3_GAS
+      LVL_CIESR(:,3) = 0
+
+      NGSH_CIESR(:,:,:) = 0
+
       USE_KRAMERS_CONJ = .FALSE.
-C
-C     Initialize orgcom.h
-C     ===================
-C
-      GORG_BY_USER = .FALSE.
-      CALL DZERO(GAGORG,3)
 C
 C     Process input
 C     =========================
@@ -122,13 +121,10 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in ESRINP.'
+     &            '" not recognized in ESRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in ESRINP.')
-C Read user specified gauge origin
-    1          CONTINUE ! .GAUGEO
-                  READ(LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
-                  GORG_BY_USER = .TRUE.
+    1          CONTINUE !
                GO TO 100
     2          CONTINUE ! .PRINT
 C&&&& PRINT:  Print level in ESR module
@@ -149,15 +145,21 @@ C Read multiplicity
                GO TO 100
 C&&&& SPINPOLARIZATION (= SCI)
     5          CONTINUE ! .SPINPOL
-                  LVL_CIESR(1:2) = 1
-                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+                  NGAS_CIESR(1)  = 1
+                  LVL_CIESR(1,1) = 1
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,1),I=1,NFSYM) ! valence hole orbitals
+                  NGAS_CIESR(3)  = 1
+                  LVL_CIESR(1,3) = 1
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
 C&&&& Singles and doubles CI
     6          CONTINUE ! .SDCI
-                  LVL_CIESR(1:2) = 2
-                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+                  NGAS_CIESR(1)  = 1
+                  LVL_CIESR(1,1) = 2
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,1),I=1,NFSYM) ! valence hole orbitals
+                  NGAS_CIESR(3)  = 1
+                  LVL_CIESR(1,3) = 2
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
 C&&&& MAX CI ITERATIONS
     7          CONTINUE ! .MAX CI ITERATIONS
@@ -177,27 +179,58 @@ C&&&& Convergence threshold for CI
                GO TO 100
 C&&&& Singles doubles triples CI
    11          CONTINUE ! .SDTCI
-                  LVL_CIESR(1:2) = 3
-                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+                  NGAS_CIESR(1)  = 1
+                  LVL_CIESR(1,1) = 3
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,1),I=1,NFSYM) ! valence hole orbitals
+                  NGAS_CIESR(3)  = 1
+                  LVL_CIESR(1,3) = 3
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
 C&&&& MR-CI-SDT/SD
    12          CONTINUE ! .SDT*CI
-                  LVL_CIESR(1) = 3
-                  LVL_CIESR(2) = 2
-                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+                  NGAS_CIESR(1)  = 1
+                  LVL_CIESR(1,1) = 3
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,1),I=1,NFSYM) ! valence hole orbitals
+                  NGAS_CIESR(3)  = 1
+                  LVL_CIESR(1,3) = 2
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
-C&&&& number of holes in non-frozen NISH(1:2) - NVSH_ESR(1:2) orbitals
-   13          CONTINUE ! .COREHOLES
-                  READ(LUCMD,*) LVL_CIESR(0)
+C&&&& general specification of ESR CI space
+   13          CONTINUE ! .ESR CI
+                  READ(LUCMD,*) NGAS_CIESR(1), NGAS_CIESR(3)
+                  NERR = 0
+                  IF (NGAS_CIESR(1) .LT. 0 .OR.
+     &                NGAS_CIESR(1) .GT. maxgas_esr) NERR = NERR + 1
+                  IF (NGAS_CIESR(3) .LT. 0 .OR.
+     &                NGAS_CIESR(3) .GT. maxgas_esr) NERR = NERR + 1
+                  IF (NERR .GT. 0) THEN
+                     WRITE(LUPRI,'(//A,I0//A,I0/A,I0)')
+     &               ' ".ESR CI" input error, number of GAS spaces'//
+     &               ' not in interval 0:',maxgas_esr,
+     &         ' Number of RAS1-GAS spaces from input: ',NGAS_CIESR(1),
+     &         ' Number of RAS3-GAS spaces from input: ',NGAS_CIESR(3)
+                     CALL QUIT('".ESR CI" input error')
+                  END IF
+                  ! RAS1-GAS subspaces:
+                  DO J = NGAS_CIESR(1),1,-1
+                     READ(LUCMD,*) LVL_CIESR(J,1) ! max number of holes in this RAS1-GAS space
+                     READ(LUCMD,*) (NGSH_CIESR(I,J,1),I=1,NFSYM) ! hole orbitals
+                  END DO
+                  ! RAS3-GAS subspaces:
+                  DO J = 1,NGAS_CIESR(3)
+                     READ(LUCMD,*) LVL_CIESR(J,3) ! max number of electrons in this RAS3-GAS space
+                     READ(LUCMD,*) (NGSH_CIESR(I,J,3),I=1,NFSYM) ! electron orbitals
+                  END DO
                GO TO 100
 C&&&& flexible input of the CI you want
    14          CONTINUE ! .MY CI
-                  READ(LUCMD,*) LVL_CIESR(0:2)
-                  READ(LUCMD,*) (NCSH_ESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NVSH_ESR(I),I=1,NFSYM)
-                  READ(LUCMD,*) (NSSH_ESR(I),I=1,NFSYM)
+                  NGAS_CIESR(1) = 2
+                  NGAS_CIESR(3) = 1
+                  READ(LUCMD,*) LVL_CIESR(2,1),LVL_CIESR(1,1),
+     &                          LVL_CIESR(1,3)
+                  READ(LUCMD,*) (NGSH_CIESR(I,2,1),I=1,NFSYM) ! core hole orbitals
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,1),I=1,NFSYM) ! valence hole orbitals
+                  READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
 C&&&& limit for printing CI coefficients in output
    15          CONTINUE ! .THRPCI
@@ -217,28 +250,6 @@ C&&&& use Kramers conjugation on CI vector
             END IF
       END IF
   300 CONTINUE
-      LVL_CIESR_T = LVL_CIESR(0) + LVL_CIESR(1) + LVL_CIESR(2)
-      IF (LVL_CIESR_T == 0) THEN
-         NCSH_ESR(:) = 0
-         NVSH_ESR(:) = 0
-         NSSH_ESR(:) = 0
-      ELSE
-         IF (NSSH_ESR(1) < 0) THEN
-            NSSH_ESR(1:2) = NSSH(1:2)
-         END IF
-         IF (NCSH_ESR(1) < 0) THEN
-            NCSH_ESR(1:2) = 0
-            IF (NVSH_ESR(1) < 0) THEN
-               NVSH_ESR(1:2) = NISH(1:2) - NFRO(1:2)
-            ELSE IF (LVL_CIESR(0) > 0) THEN
-               NCSH_ESR(1:2) = NISH(1:2) - NFRO(1:2) - NVSH_ESR(1:2)
-            END IF
-         ELSE
-            IF (NVSH_ESR(1) < 0) THEN
-               NVSH_ESR(1:2) = NISH(1:2) - NFRO(1:2) - NCSH_ESR(1:2)
-            END IF
-         END IF
-      END IF
 C
 C     Print section
 C     =============
@@ -251,8 +262,9 @@ C
          WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP not (correctly) specified'
          INPERR = INPERR + 1
       END IF
-      IF (LVL_CIESR_T .gt. 0 .OR. MULTIPESR .ne. 2) THEN
-      !  LVL_CIESR_T test because o.k. with no CI if just doublet one open-shell DHF
+      NGAS_CIESR_T = NGAS_CIESR(1) + NGAS_CIESR(3)
+      IF (NGAS_CIESR_T .gt. 0 .OR. MULTIPESR .ne. 2) THEN
+      !  NGAS_CIESR_T test because o.k. with no CI if just doublet one open-shell DHF or DFT
          IF (N_CIESR < 0) N_CIESR = MULTIPESR
          WRITE(LUPRI,'(/A,I5)')
      &   '* Number of roots to converge in CI:', N_CIESR
@@ -261,48 +273,56 @@ C
             INPERR = INPERR + 1
          END IF
       END IF
-      IF (LVL_CIESR_T .GT. 0) THEN
-         WRITE (LUPRI,'(/A)')
-     &      ' * Spin polarization and correlation included with'
+      IF (NGAS_CIESR_T .GT. 0) THEN
+         WRITE (LUPRI,'(/A/)')
+     &      ' * Spin polarization and correlation CI specification:'
 
-         IF (LVL_CIESR(0) .LT. 0) THEN
-            WRITE(LUPRI,*) 'INPUT ERROR: number of core holes < 0'
-            INPERR = INPER + 1
-         ELSE IF (LVL_CIESR(0) .EQ. 0) THEN
-         ELSE
-            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(0),
-     &         ' holes in non-frozen core orbitals:', NCSH_ESR(1:NFSYM)
+         DO J = NGAS_CIESR(1),1,-1
+             WRITE(LUPRI,'(A,I2,A,T50,2I5)')
+     &       ' Max',LVL_CIESR(J,1),' holes in RAS1-GAS orbitals: ',
+     &       NGSH_CIESR(1:NFSYM,J,1)
+         END DO
+
+         WRITE (LUPRI,'(/A,T50,2I5/)')
+     &      '  RAS2-GAS active/open shell orbitals:', NASH(1:NFSYM)
+
+         DO J = 1,NGAS_CIESR(3)
+             WRITE(LUPRI,'(A,I2,A,T50,2I5)')
+     &       ' Max',LVL_CIESR(J,3),' electrons in RAS3-GAS orbitals: ',
+     &       NGSH_CIESR(1:NFSYM,J,3)
+         END DO
+
+         NERR = 0
+         LVL_RAS1 = 10000
+         LVL_RAS3 = 10000
+         DO J = 1, maxgas_esr
+            IF (LVL_CIESR(J,1) > LVL_RAS1) NERR = NERR + 100
+            LVL_RAS1 = LVL_CIESR(J,1)
+            IF (LVL_CIESR(J,3) > LVL_RAS3) NERR = NERR + 1000
+            LVL_RAS3 = LVL_CIESR(J,3)
+
+            DO I = 1,NFSYM
+               IF (NGSH_CIESR(I,J,1) < 0) NERR = NERR + 1
+               IF (NGSH_CIESR(I,J,3) < 0) NERR = NERR + 10
+            END DO
+         END DO
+
+         IF (NERR > 0) THEN
+           WRITE(LUPRI,'(//A,I5/)')
+     &        '*ESR: ERROR in specification of CI. Error code',NERR
+           WRITE(LUPRI,*) 'NGAS_CIESR    :',NGAS_CIESR(1:3)
+           WRITE(LUPRI,*) 'RAS1 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
+           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
+           WRITE(LUPRI,*) 'RAS1 orbitals :',NGSH_CIESR(1,1:maxgas_esr,1)
+           WRITE(LUPRI,*) 'RAS3 orbitals :',NGSH_CIESR(1,1:maxgas_esr,3)
          END IF
-
-         IF (LVL_CIESR(1) .LT. 0) THEN
-            WRITE(LUPRI,*) 'INPUT ERROR: number of valence holes < 0'
-            INPERR = INPER + 1
-         ELSE IF (LVL_CIESR(1) .EQ. 0) THEN
-         ELSE
-            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(1),
-     &         ' holes in valence orbitals:', (NVSH_ESR(I),I=1,NFSYM)
+         IF (NFSYM .GT. 1) THEN
+            CALL QUIT('Sorry, inversion symmetry is not implemented'//
+     &         ' in ESR CI module.')
          END IF
-
-         WRITE (LUPRI,'(A,T50,2I5)') '   - active/open shell orbitals:',
-     &      (NASH(I),I=1,NFSYM)
-
-         IF (LVL_CIESR(2) .LT. 0) THEN
-            WRITE(LUPRI,*)
-     &         'INPUT ERROR: number of virtual space electrons < 0'
-            INPERR = INPER + 1
-         ELSE IF (LVL_CIESR(2) .EQ. 0) THEN
-         ELSE
-            WRITE (LUPRI,'(A,I2,A,T50,2I5)') '   - 0 to',LVL_CIESR(2),
-     &        ' electrons in virtual orbitals:', (NSSH_ESR(I),I=1,NFSYM)
-         END IF
+         IF (NERR > 0) CALL QUIT('*ESR: ERROR in specification of CI')
       END IF
 
-      IF (GORG_BY_USER) THEN
-         CALL PRSYMB(LUPRI,'-',75,0)
-         WRITE(LUPRI,'(/A,3F12.6)') '* User defined magnetic '//
-     &           'gauge origin used:',(GAGORG(I), I = 1, 3)
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
-      END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 
   999 CONTINUE
@@ -320,10 +340,11 @@ C
 C     Written by Anette Noerager - Mar 2000
 C
 C***********************************************************************
-       use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "consts.h"
 C     for PRQMAT print of complex matrices:
       PARAMETER (NZCMPLX = 2)
       DIMENSION IQINDX(NZCMPLX)
@@ -335,8 +356,6 @@ C
       LOGICAL   FILEX
       DIMENSION GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
      &          GEVEC(3,3), GCOR(3),JMS(-5:5)
-C
-      PARAMETER (D2=2.0D0, D3 = 3.0D0, D4 = 4.0D0)
 C
 C Used from common blocks:
 C  dcbgen : LUCOEF
@@ -1090,8 +1109,7 @@ C     Generate density matrix
 C     =======================
 C
 C      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
-C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6,
-C     &            WORK,KFREE,LFREE)
+C      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
 C      CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Expectation values normal procedure
@@ -1149,7 +1167,7 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
 c     call memchk('prpesr1 2',work,1)
-C          CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,IBEIG,IPCMO,NASH,
+C          CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,IBEIG,IPCMO,NASH,
 C     &                WORK,KFREE,LFREE,IPRESR)
 c    &                WORK,KFREE,LFREE,10)
 C      call memchk('prpesr1 3',work,1)
@@ -1369,11 +1387,11 @@ C
 !d    call memchk('esrTRANS 2',work,1)
       CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ESRPRP')
-      CALL REACMO_no_work(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
+      CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
      &                    TOTERG,8)
       CLOSE(LUCOEF,status='KEEP')
-      CALL PRPMAT(INDXPR,IOPSY,PMAT,CMO,WORK(KIBEIG),IPCMO,NASH,
-     &            WORK,KFREE,LFREE,IPRESR)
+      CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,WORK(KIBEIG),
+     &            IPCMO,NASH,WORK,KFREE,LFREE,IPRESR)
       CALL MEMREL('after PRPMAT',WORK,1,KIBEIG,KFREE,LFREE)
 c    &            WORK,KFREE,LFREE,10)
 !d    call memchk('esrTRANS 3',work,1)
@@ -1676,9 +1694,8 @@ C
 C     Totally symmetric operator ==> proceed
 C
       CALL LSET(NZ,.TRUE.,FIRST)
-CMI   CALL PRPMAO(LU1INT,INDXPR,PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
-      CALL PRPMAO(LU1INT,INDXPR,NNBBASX,
-     &             PTRI,OP1INT,FIRST,WORK,LWORK,IPRINT)
+      CALL PRPMAO(LU1INT,INDXPR,.TRUE.,WORK,.TRUE.,NNBBASX,
+     &             PTRI,OP1INT,FIRST,IPRINT)
 C
 C     Get expectation value, using only the matrices containing
 C     integrals
@@ -1804,7 +1821,7 @@ C
       IDEG = NUCDEG(INUC)
       IF(DOATOM(INUC)) THEN
         TEST = .FALSE.
-        IZ   = NINT(CHARGE(INUC))
+        IZ   = IZATOM(INUC)
         NISO = 0
         DO ISO = 1,5
           GVAL = DISOTP(IZ,ISO,'GVAL')
@@ -1971,17 +1988,18 @@ C
 C     April 2000 A. Noerager
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
-      PARAMETER (FACTOR = ALPHAC*ALPHAC/(D2*XFMP))
-C                factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       CHARACTER NAME*6, NAMEX(3)*6
       DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
      &          TMATX(3,3)
 #include "chrxyz.h"
+C
+C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
+      FACTOR = ALPHAC*ALPHAC/(D2*XFMP)
 C
 C     Multiply with FACTOR
 C
@@ -2038,19 +2056,20 @@ C
 C     Hans Joergen Aa. Jensen Feb. 2015
 C
 C     Read MO coefficents for ESR-CI calculation in this priority order:
-C        1. MP2NO on KRMCOLD
-C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals
+C        1. Orbitals on KRMCSCF
+C        2. MP2NO on KRMCOLD
+C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals
 C
 #include "implicit.h"
 #include "priunit.h"
       REAL*8  CMO(*), WORK(*)
-      LOGICAL FILEX
+      LOGICAL FILEX, FNDLAB
 C
 C Used from COMMON blocks:
 C  dcbgen.h : LUCOEF, LUKRMC
 C  dcbham.h : SPINFR; LEVYLE
 C  dcbbas.h : N2BBASXQ, ...
-C  dcborb.h : NORBT, ...
+C  dcborb.h : NORBT, ..., NCMOTQ
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -2060,9 +2079,51 @@ C
       KFREE_start = KFREE
       CALL DZERO(CMO,N2BBASXQ)
 
-C        1. MP2NO on KRMCOLD ?
+C        1. Orbitals on KRMCSCF ?
 
-      INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
+      INQUIRE(FILE='KRMCSCF',EXIST=FILEX)
+      IF (FILEX) THEN
+         CALL OPNFIL(LUKRMC,'KRMCSCF','OLD','PRPESR')
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('NEWNATOB', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "NEWNATOB" orbitals from file KRMCSCF'
+            GO TO 101
+         END IF
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('MCCINATO', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "MCCINATO" orbitals from file KRMCSCF'
+            GO TO 101
+         END IF
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('NEWORB  ', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "NEWORB  " orbitals from file KRMCSCF'
+            GO TO 101
+         END IF
+
+         REWIND (LUKRMC)
+         IF (FNDLAB('OLDORB  ', LUKRMC)) THEN
+            WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  Reading "OLDORB  " orbitals from file KRMCSCF'
+            GO TO 101
+         END IF
+
+         ! no orbitals found on KRMCSCF, try next file
+         GO TO 200
+
+  101    CALL READT(LUKRMC,NCMOTQ,CMO)
+         CLOSE(LUKRMC,STATUS='KEEP')
+         GO TO 9000
+      END IF
+
+C        2. MP2NO on KRMCOLD ?
+
+  200 INQUIRE(FILE='KRMCOLD',EXIST=FILEX)
       IF (FILEX) THEN
          WRITE(LUPRI,'(/A)')
      &      ' (ESR)  Reading MP2 natural orbitals from file KRMCOLD'
@@ -2080,14 +2141,14 @@ C        ... read from file
      &                   WORK(KBEIG))
          CLOSE(LUKRMC,STATUS='KEEP')
 
-         WRITE(LUPRI,'(/A)')
-     &      ' (ESR)  MP2 natural orbitals read from file KRMCOLD'
+!        WRITE(LUPRI,'(/A)')
+!    &      ' (ESR)  MP2 natural orbitals read from file KRMCOLD'
 C
          GO TO 9000
       END IF
 
 C        MP2NO not found. Then:
-C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
+C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
 
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(FILEX) THEN
@@ -2096,11 +2157,11 @@ C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
          IF (SPINFR.OR.LEVYLE) THEN
             CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
             CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
-     &                  TOTERG,10,WORK,KFREE,LFREE)
+     &                  TOTERG,10)
          ELSE
             KIBRP = KFREE
             CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
-     &                  TOTERG,2,WORK,KFREE,LFREE)
+     &                  TOTERG,2)
          END IF
          CLOSE(LUCOEF,STATUS='KEEP')
          WRITE(LUPRI,'(/A)')
@@ -2109,13 +2170,14 @@ C        2. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
       END IF
 
 C        DFCOEF not found. Then:
-C        3. no more options (yet).
+C        4. no more options (yet).
 
       WRITE(LUPRI,'(//A)') 'Fatal error for ESR: MO coefficients not'//
      &   ' found on KRMCOLD or DFCOEF'
       CALL QUIT('ESR fatal error: no MO coefficients found')
 
  9000 CALL MEMREL('ESR_READ_CMO',WORK,1,KFREE_start,KFREE,LFREE)
+      flush(lupri)
       RETURN
       END
 !  -- end of pamesr.F --

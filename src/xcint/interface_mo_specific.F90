@@ -55,7 +55,7 @@ contains
          allocate(mo_coef(n2bbasxq))
          mo_coef = 0.0d0
 
-         call reacmo_no_work(interface_file_unit,      &
+         call reacmo(interface_file_unit,    &
                              'DFCOEF',       &
                              mo_coef,        &
                              mo_eigenvalues, &

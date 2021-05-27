@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
-C
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR4T */
       SUBROUTINE TRDR4T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
@@ -49,7 +50,6 @@ C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
 C       LMP2  = .TRUE. - evaluate MP2 energy
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIGn           - eigenvalues (for  MP2 calculation)
 C       ANTIS = .TRUE. - anti-symmetrize integrals
 C       INTFLG - flag of what integral types to transform
@@ -66,7 +66,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
@@ -104,7 +104,7 @@ C
 C       Get hold of the slaves
 C       ( ITASK = 2 for parallel integral transformation )
 C
-        CALL DIRAC_PARCTL( 2 )
+        CALL DIRAC_PARCTL( MOLTRA_PAR )
 C       
 C       Initialize
 C
@@ -264,7 +264,7 @@ C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
       IF (.NOT. NOMDCINT) THEN
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       ELSE
          CALL INI4INDINFO
       END IF
@@ -274,12 +274,23 @@ C
       CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
       CALL MKINDXKR (NSTR,TRIAN(1),WORK(KDXKR12))
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
+
+!MI: fixes dues to out-of-bound checks
+      IKIBE21=KIBE(2,1)
+      IKIBE22=KIBE(2,2)
+      IKIBE23=KIBE(2,3)
+      IKIBE24=KIBE(2,4)
+      IF (KIBE(2,1).LE.0) IKIBE21=1
+      IF (KIBE(2,2).LE.0) IKIBE22=1
+      IF (KIBE(2,3).LE.0) IKIBE23=1
+      IF (KIBE(2,4).LE.0) IKIBE24=1
+
+      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(IKIBE21),
+     &              WORK(KIBE(1,2)),WORK(IKIBE22),
      &              TRIAN(1),WORK(KDXB12))
       CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
-      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
-     &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
+      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(IKIBE23),
+     &              WORK(KIBE(1,4)),WORK(IKIBE24),
      &              TRIAN(2),WORK(KDXB34))
 C
       CALL GETTIM(CPUST,WALLST)
@@ -355,7 +366,7 @@ C
 C     Release the slaves if we run in parallel.
 C        ( ITASK = -1 )
 C
-      IF (PARCAL) CALL DIRAC_PARCTL( -1 )
+      IF (PARCAL) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
 #if defined (VAR_PFS)
 C
@@ -876,12 +887,23 @@ C
       CALL MEMGET('INTE',KDXKR12,NFPCK12T*2,WORK,KFREE,LFREE)
       CALL MKINDXKR (NSTR,TRIAN(1),WORK(KDXKR12))
       CALL MEMGET('INTE',KDXB12,2*NFPCK12T,WORK,KFREE,LFREE)
-      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(KIBE(2,1)),
-     &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
+
+!MI: fixes dues to out-of-bound checks
+      IKIBE21=KIBE(2,1)
+      IKIBE22=KIBE(2,2)
+      IKIBE23=KIBE(2,3)
+      IKIBE24=KIBE(2,4)
+      IF (KIBE(2,1).LE.0) IKIBE21=1
+      IF (KIBE(2,2).LE.0) IKIBE22=1
+      IF (KIBE(2,3).LE.0) IKIBE23=1
+      IF (KIBE(2,4).LE.0) IKIBE24=1
+
+      CALL MKINDXB (NSTR,WORK(KIBE(1,1)),WORK(IKIBE21),
+     &              WORK(KIBE(1,2)),WORK(IKIBE22),
      &              TRIAN(1),WORK(KDXB12))
       CALL MEMGET('INTE',KDXB34,2*NFPCK34T,WORK,KFREE,LFREE)
-      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(KIBE(2,3)),
-     &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
+      CALL MKINDXB (NSTR,WORK(KIBE(1,3)),WORK(IKIBE23),
+     &              WORK(KIBE(1,4)),WORK(IKIBE24),
      &              TRIAN(2),WORK(KDXB34))
 C
       CALL MS4IN2D(WORK,KFREE,LFREE,IPRINT,ICS34,ICF34,
@@ -1186,7 +1208,7 @@ C
 C
 C        Initialize MOLFDIR integral file on slave
 C
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       END IF
 C
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')

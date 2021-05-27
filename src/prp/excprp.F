@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,7 @@ C***********************************************************************
 C
 C     Driver routine for computing matrix norm.
 C
-C     Written by Ulf Ekström
+C     Written by Ulf Ekstrom
 C***********************************************************************
       SUBROUTINE QMATNORM(NAME,A,ROWS,COLS,NZ)
       IMPLICIT NONE
@@ -123,12 +123,10 @@ C
       CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
-     &              TOTERG,11,WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),TOTERG,11)
       ELSE
         KIBRP = KFREE
-        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3,
-     &              WORK,KFREE,LFREE)
+        CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
       CLOSE(LUCMO,STATUS='KEEP')
 !
@@ -547,9 +545,6 @@ C*****************************************************************************
       CHARACTER OPNAME*16
 !
       CALL QENTER('EXCPRPINP')
-!     Set index limits of free working memory
-      KFREE = 1
-      LFREE = LWRK
 !     Do consistency check if KEYWID == 4
       IF (KEYWID .eq. 4) THEN
          DOFLAG = .false.
@@ -872,8 +867,8 @@ C
 C     Written by Erik Tellgren
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"

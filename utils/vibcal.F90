@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -73,24 +73,24 @@
   write(lupri,'(a)') 'Set print level [default:0]:'
   write(lupri,'(a)') '      0. Basic print level '
   write(lupri,'(a)') '      1. Print additional information'
-  read(lucmd,'(a)',iostat=ier) strkey; read(strkey,*,iostat=ier) nprint
+  read(LUSTDIN,'(a)',iostat=ier) strkey; read(strkey,*,iostat=ier) nprint
   if(nprint /= 1) nprint = 0
 
   ! read reduced mass
   write(lupri,'(a)') 'Reduced mass (in Daltons)'
-  read(lucmd,*) u
+  read(LUSTDIN,*) u
   ! read the name of file with potential/property curve
   write(lupri,'(a)') 'Name of the input file (A30) with potential/property curve'
-  read(lucmd,'(a)') potfil
+  read(LUSTDIN,'(a)') potfil
   write(lupri,'(a)')  'Select one of the following:'
   write(lupri,'(a)')  '  1. Bond lengths in Angstroms.'
   write(lupri,'(a)')  '  2. Bond lengths in atomic units.'
   write(lupri,'(a)')  ' (Note that all other quantities only in atomic units !)'
-  read(lucmd,*) iang
+  read(LUSTDIN,*) iang
   write(lupri,'(a)')  'Select one of the following:'         
   write(lupri,'(a)')  '  1. Numerical derivatives (assumes fixed step length).'
   write(lupri,'(a)')  '  2. Polynomial fits             .'
-  read(lucmd,*) keymeth
+  read(LUSTDIN,*) keymeth
 
   ! open input file
   ipot = 1
@@ -192,9 +192,9 @@
 
   elseif(keymeth==2)then
     write(lupri,*) 'Give order of polynomial:'
-    read(lucmd,*) norder
+    read(LUSTDIN,*) norder
     write(lupri,*) 'Select point for the calculation of derivatives'
-    read(lucmd,*)  xmin
+    read(LUSTDIN,*)  xmin
     if(iang==1)then
       xmin=xmin/xtang
     endif
@@ -202,7 +202,7 @@
       write(lupri,*) 'Too few points for a polynomial fit of order',norder
       write(lupri,*) '  Try again.'
       write(lupri,*) 'Give order of polynomial:'
-      read(lucmd,*) norder
+      read(LUSTDIN,*) norder
     enddo
     ndim = norder + 1
   ! allocate arrays

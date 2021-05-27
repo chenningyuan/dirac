@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -18,12 +18,11 @@
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
-
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,BUF1,BUF2,BUF3,
-     &                   DS1,DS2,S1,S2)
+      SUBROUTINE FOLDED (ICURFSS,T1,T2,EPS,FVO,
+     &                   BUF1,BUF2,BUF3,S1,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -48,20 +47,21 @@ C     Author : Ephraim Eliav
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 T1(*),T2(*),S1(*),S2(*),DS1(*),DS2(*)
+      REAL*8 T1(*),T2(*),S1(*),S2(*),EPS(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
+      INTEGER ICURFSS
 C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "ihm.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
       LOGICAL TEQ
+      real*8, allocatable, target :: ds1 (:), ds2 (:)
 C
 C---------------Executable code--------------------------------------
 C
@@ -72,6 +72,8 @@ C  For each term we also indicate which part of the array needs to be extracted 
 C  second class of virtual indices which are the inactive virtuals).
 C
 C--------------------------------------------------------------------
+      allocate (ds1(RCW*ndimt1))
+      allocate (ds2(RCW*ndimt2))
       CALL XCOPY (NDIMT1,A0,0,DS1,1)
       CALL XCOPY (NDIMT2,A0,0,DS2,1)
 C--------------------------------------------------------------------
@@ -88,6 +90,12 @@ C     H1=S1(E,F) (a=1; i=3)
 C
 C     Extract the Hamiltonian
       CALL EXTRT1 (S1,BUF1,1,1,3,3,LFA)
+C     Extract and add first-order Fock matrix elements
+C     These are non-zero for non-canonical orbitals and when a finite field is added
+      CALL XCOPY (NDIMT1,FVO,1,BUF3,1)
+      CALL REMOVE_F0 (EPS,BUF3)
+      CALL EXTRT1 (BUF3,BUF2,1,1,3,3,LFA)
+      CALL XAXPY (IAVAV(NREP+1),A1,BUF2,1,BUF1,1)
 C     Extract the wave function
       CALL EXTRT1 (T1,BUF2,2,2,3,3,LFA)
 C     Calculate the diagram
@@ -119,6 +127,12 @@ C     H1=S1(M,N) (a=3; i=2)
 C
 C     Extract the Hamiltonian
       CALL EXTRT1 (S1,BUF1,3,3,2,2,LFA)
+C     Extract and add first-order Fock matrix elements
+C     These are non-zero for non-canonical orbitals and when a finite field is added
+      CALL XCOPY (NDIMT1,FVO,1,BUF3,1)
+      CALL REMOVE_F0 (EPS,BUF3)
+      CALL EXTRT1 (BUF3,BUF2,3,3,2,2,LFA)
+      CALL XAXPY (IAOAO(NREP+1),A1,BUF2,1,BUF1,1)
 C     Extract the wave function
       CALL EXTRT1 (T1,BUF2,3,3,1,1,LFA)
       CALL CNTRCT ('N','N',NAO,NIO,NAO,A1,BUF1,BUF2,A0,BUF3,NREP)
@@ -193,8 +207,8 @@ C     Term 3 : S2(MB,IE) <---  H2(MH,OE) * T2TAU(OB,IH)
 C              contributes in sector (1,1)
 C
 C     This term is evaluated after a sort of the second and fourth indices :
-C              S2'(ME,IB) <--- H2'(ME,OH) * T2TAU'(OH,IB)
-C
+C              S2'(ME,IB) <--- H2'(ME,OH) * T2TAU'(OH,IB)    
+C'
 C     S2=S2(MB,IE) (a=3; b=1,2; i=1,2; j=3 {exclude 3123, achieved in denomf})
 C     H2=T2(MH,OE) (a=3; b=1 ; i=2; j=3)
 C
@@ -256,15 +270,18 @@ C
       CALL DENOMF (BUF1,DS1,DS2,DS1,DS2,2)
       CALL XAXPY (NDIMT1,A1,DS1,1,S1,1)
       CALL XAXPY (NDIMT2,A1,DS2,1,S2,1)
+      deallocate (ds1)
+      deallocate (ds2)
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HEFF1(ICURFSS,IPR,S1,S2,FVO,EPS,BUF1,BUF2,BUF3,
-     &                 HEFF,EIGENVALUES,EIGENVECTORS)
+     &                 NSP,IREPSPI)
 
 C
-      implicit real*8 (a-h,o-z)
+      use memory_allocator
+      implicit none
 C---------------Description--------------------------------------------
 C
 C     Extract the Hamiltonian dressing terms from the S1 and S2 arrays
@@ -274,25 +291,38 @@ C     problem. Finish by analyzing the eigenvectors and computing the
 C     transition moments.
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 HEFF(*),EIGENVALUES(0:*),EIGENVECTORS(*)
-      REAL*8 S1(*),FVO(*)
+      REAL*8 S1(*),S2(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
       CHARACTER*40 TIT
-      INTEGER ICURFSS
+      INTEGER ICURFSS,NSP,IREPSPI
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "results.inc"
 #include "ccpar.inc"
 #include "files.inc"
 C
 C---------------Local variables -----------------------------------
+      integer ndimh,ipr,eps,ind,indx_all,irp,irps_all,ndt_all,ndimh2
       PARAMETER (NDIMH=600,NDIMH2=NDIMH*NDIMH)
       DIMENSION INDX_ALL(NDIMH*MXREP),IRPS_ALL(NDIMH*MXREP)
       DIMENSION IND(MXREP),NDT_ALL(MXREP)
       REAL*8 E_OFF
+      real*8, allocatable ::  HEFF(:), EIGENVALUES(:),
+     &                             EIGENVECTORS_LEFT(:),
+     &                             EIGENVECTORS_RIGHT(:)
+
+      IF (ICURFSS.NE.1) THEN
+           call alloc (HEFF, RCW*IFS_HE2(NREP+1,ICURFSS), id="heff")
+           call alloc (EIGENVALUES,  RCW*(IFS_HE(NREP+1,ICURFSS)+1),
+     &                 id="eigenvalues" )
+           call alloc (EIGENVECTORS_LEFT, RCW*IFS_HE2(NREP+1,ICURFSS),
+     &                 id="eigenvectors_left" )
+           call alloc (EIGENVECTORS_RIGHT, RCW*IFS_HE2(NREP+1,ICURFSS),
+     &                 id="eigenvectors_right" )
+      END IF
+
 C---------------Executable code--------------------------------------
       IF (ICURFSS.EQ.1) THEN
 C-------------------------------------------
@@ -407,203 +437,258 @@ C       Make the effective Hamiltonian in the full array.
 C       Extract the Hamiltonian
         CALL EXTRT2T(BUF2,HEFF,3,3,2,2,LFA)
       ENDIF
+
+C     Write effective Hamiltonian to file for post-processing
+      CALL DUMP_HEFF(ICURFSS,HEFF)
+
 C
 C.... Diagonalize the effective Hamiltonian (blocked by symmetry).
 C
-      DO 100 IRP=1,NREP
-         IF (NFS_HE(IRP,ICURFSS).EQ.0) GOTO 100
+      DO IRP = 1, NREP
+         IF (NFS_HE(IRP,ICURFSS).EQ.0) CYCLE
          CALL SOLVE_CG (NFS_HE(IRP,ICURFSS),
      &                  HEFF(IFS_HE2(IRP,ICURFSS)*RCW+1),
-     &                  EIGENVECTORS(IFS_HE2(IRP,ICURFSS)*RCW+1),
-     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW))
-100   CONTINUE
+     &                  EIGENVECTORS_LEFT(IFS_HE2(IRP,ICURFSS)*RCW+1),
+     &                  EIGENVECTORS_RIGHT(IFS_HE2(IRP,ICURFSS)*RCW+1),
+     &                  EIGENVALUES(IFS_HE(IRP,ICURFSS)*RCW+RCW+1))
+       END DO
+
+      if (ICURFSS.GT.1) then
+C        Print the Fock space eigenvalues, compute transition moments
+C        except for the 00 sector, obviously
+         CALL FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,
+     &     EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NSP,IREPSPI)
+      endif
+
+!     Deallocate space for the effective Hamiltonian
+
+      call dealloc (HEFF, id="heff")
+      call dealloc (EIGENVALUES, id="eigenvalues")
+      call dealloc (EIGENVECTORS_LEFT, id="eigenvectors_left")
+      call dealloc (EIGENVECTORS_RIGHT, id="eigenvectors_right")
 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SOLVE_CG (NDT,H,EVEC,EV)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Find eigenvalues and eigenvectors of a complex or real general matrix
-C     NDT : Dimension of the matrix
-C     H   : Matrix (complex or real, square)
-C     EV  : Eigenvalues (real part, if carith=T also imaginary)
-C     EVEC: Eigenvectors (complex)
-C
-C---------------Routines called----------------------------------------
-C
-C      CG or RG (from EISPACK) if complex or real case, respectively
-C
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C            Miro Ilias - complex eingenenergies carried in EV, more output
-C
-C---------------Common Blocks--------------------------------------
-C
+      SUBROUTINE SOLVE_CG (NDT,H,EVEC_LEFT,EVEC_RIGHT,EV)
+!
+      implicit none
+!
+!---------------Description--------------------------------------------
+!
+!     Find eigenvalues and left and right eigenvectors of a complex or real general matrix
+!     NDT : Dimension of the matrix
+!     H   : Matrix (complex or real, square)
+!     EV  : Eigenvalues (real part, if carith=T also imaginary)
+!     EVEC_LEFT: Left eigenvectors (complex)
+!     EVEC_RIGHT: Right eigenvectors (complex)
+!
+!---------------Routines called----------------------------------------
+!
+!      ZGEEV or DGEEV (from LAPACK) if complex or real case, respectively
+!
+!---------------Common Blocks--------------------------------------
+!
 #include "files.inc"
 #include "complex.inc"
 #include "inpt.inc"
-C
-C---------------Calling variables--------------------------------------
+!
+!---------------Calling variables--------------------------------------
 
-      REAL*8 H(RCW,NDT,NDT),EVEC(RCW,NDT,NDT),EV(RCW,NDT)
-C---------------Local variables -----------------------------------
-      REAL*8, ALLOCATABLE :: EVR(:),EVI(:)
-      REAL*8, ALLOCATABLE :: HR(:,:),HI(:,:)
-      REAL*8, ALLOCATABLE :: VECR(:,:),VECI(:,:)
-      REAL*8, ALLOCATABLE :: SCR(:,:)
+      REAL*8 H(RCW,NDT,NDT),EVEC_LEFT(RCW,NDT,NDT),
+     &       EVEC_RIGHT(RCW,NDT,NDT),EV(RCW,NDT)
+      INTEGER NDT
+!---------------Local variables -----------------------------------
+      INTEGER :: IERR,NDT2,I,J
+      real*8, allocatable :: QQWORK(:,:),QQRWORK(:),H_FULL(:,:,:)
+      real*8, allocatable :: EVR(:), EVI(:)
       INTEGER , ALLOCATABLE :: INDX(:)
-      INTEGER :: IERR
-      REAL*8 FNOR(RCW),E_OFF
-C---------------Executable code--------------------------------------
-C
-C....... Allocate memory for the diagonalization routine
-C
-      ALLOCATE (EVR(NDT),STAT=IERR)
+      real*8 :: RVEC(RCW,NDT,NDT),LVEC(RCW,NDT,NDT)
+!---------------Executable code--------------------------------------
+!
+!....... Allocate memory for the diagonalization routine
+!
+      ALLOCATE (QQWORK(RCW,4*NDT),STAT=IERR)
       IF (IERR.NE.0) THEN
-         CALL QUIT('Error in EVR allocation !')
+        CALL QUIT('Error in QQWORK allocation !')
       ENDIF
-      ALLOCATE (EVI(NDT),STAT=IERR)
+      ALLOCATE (QQRWORK(2*NDT),STAT=IERR)
       IF (IERR.NE.0) THEN
-        CALL QUIT('Error in EVI allocation !')
+        CALL QUIT('Error in QQRWORK allocation !')
       ENDIF
-      ALLOCATE (VECR(NDT,NDT),STAT=IERR)
+      allocate (EVR(NDT))
+      allocate (INDX(NDT))
+!
+!....... Diagonalize effective Hamiltonian.
+!
+      NDT2=NDT*NDT
+      allocate (H_FULL(RCW,NDT,NDT),STAT=IERR)
       IF (IERR.NE.0) THEN
-        CALL QUIT('Error in VECR allocation !')
+        CALL QUIT('Error in H_FULL allocation !')
       ENDIF
-      ALLOCATE (SCR(NDT,3),STAT=IERR)
-      IF (IERR.NE.0) THEN
-        CALL QUIT('Error in SCR allocation !')
-      ENDIF
-      ALLOCATE (INDX(NDT),STAT=IERR)
-      IF (IERR.NE.0) THEN
-        CALL QUIT('Error in INDX allocation !')
-      ENDIF
-
-C
-C....... Diagonalize effective Hamiltonian.
-C
+      call xcopy (NDT2,H,1,H_FULL,1)
       IF  (CARITH) THEN
-C        The diagonalization routine expects separate real and imaginary blocks,
-C        make a local copy
-         NDT2=NDT*NDT
-         ALLOCATE (HR(NDT,NDT),STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in HR allocation !')
-         ENDIF
-         ALLOCATE (HI(NDT,NDT),STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in HI allocation !')
-         ENDIF
-         ALLOCATE (VECI(NDT,NDT),STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in VECI allocation !')
-         ENDIF
-         CALL DCOPY (NDT2,H,2,HR,1)
-         CALL DCOPY (NDT2,H(2,1,1),2,HI,1)
-
-         IF (IPRNT.GE.10) THEN
-CMI    ... control print out
-           WRITE(IW,'(2X,A)')
-     &'Output from SOLVE_CG - complex matrix (RCW=2) to be diagonalized'
-           CALL OUTPUT(HR,1,NDT,1,NDT,NDT,NDT,1,IW)
-           WRITE(IW,'(/2X,A)') 'Imaginary part'
-           CALL OUTPUT(HI,1,NDT,1,NDT,NDT,NDT,1,IW)
-         ENDIF
-
-         CALL CG(NDT,NDT,HR,HI,EVR,EVI,1,VECR,VECI,
-     &           SCR,SCR(1,2),SCR(1,3),IERR)
-         DEALLOCATE (HR,STAT=IERR)
-         IF (IERR.NE.0) THEN
-            CALL QUIT('Error in HR deallocation !')
-         ENDIF
-         DEALLOCATE (HI,STAT=IERR)
-         IF (IERR.NE.0) THEN
-           CALL QUIT('Error in HI deallocation !')
-         ENDIF
+        CALL ZGEEV('V','V', NDT, H_FULL, NDT, EV, EVEC_LEFT, NDT,
+     &         EVEC_RIGHT, NDT, QQWORK, 4*NDT, QQRWORK, IERR )
+        DO I = 1, NDT
+           EVR(I) = EV(1,I)
+        ENDDO
       ELSE
-            IF (IPRNT.GE.10) THEN
-CMI    ... control print out
+        IF (IPRNT.GE.10) THEN
+!MI    ... control print out
            WRITE(IW,'(2X,A)')
      &'Output from SOLVE_CG - real matrix to be diagonalized'
-             CALL OUTPUT(H,1,NDT,1,NDT,NDT,NDT,1,IW)
-            ENDIF
-            CALL RG(NDT,NDT,H,EVR,EVI,1,VECR,SCR,SCR(1,2),IERR)
+            CALL OUTPUT(H,1,NDT,1,NDT,NDT,NDT,1,IW)
+        ENDIF
+        allocate (EVI(NDT))
+        CALL DGEEV('V','V', NDT, H_FULL, NDT, EVR,EVI,EVEC_LEFT, NDT,
+     &         EVEC_RIGHT, NDT, QQWORK, 4*NDT, IERR )
+        deallocate (EVI)
       ENDIF
-C
-C.....Check for errors
-C
+      deallocate (H_FULL,STAT=IERR)
+      IF (IERR.NE.0) THEN
+        CALL QUIT('Error in H_FULL deallocation !')
+      ENDIF
+!
+!.....Check for errors
+!
       IF (IERR.NE.0) THEN
          WRITE (IW,'('' CG/RG IERR='',I4)') IERR
          CALL QUIT('Error in diagonalization of matrix')
       ENDIF
-C
-C.....Sort eigenvalues
-C
-      CALL INDEXX (NDT,EVR,INDX)
-C
-C.....Store the eigenvalues 
-      DO I = 1, NDT
-       EV(1,I) = EVR(INDX(I))
-       IF (CARITH) EV(2,I) = EVI(INDX(I))
-      ENDDO
-C
-C.....Store the eigenvectors in EVEC
-C     
-      DO I = 1, NDT
-         DO J = 1, NDT
-            EVEC(1,J,I) = VECR(J,INDX(I))
-            IF (CARITH) EVEC(2,J,I) = VECI(J,INDX(I))
-         ENDDO
-      ENDDO
-C
-C.....Normalize the eigenvectors
-C
-      DO I = 1, NDT
-         CALL XDOTC(FNOR,NDT,EVEC(1,1,I),1,EVEC(1,1,I),1)
-         FNOR(1) = SQRT(1.D0 / FNOR(1))
-         IF (CARITH) FNOR(2) = 0.D0
-         CALL XSCAL(NDT,FNOR,EVEC(1,1,I),1)
-      ENDDO
-C
-C.....Release the memory
-C
-      DEALLOCATE (EVR,STAT=IERR)
+!
+        CALL INDEXX (NDT,EVR,INDX)
+        DO I = 1, NDT
+           EV(1,I) = EVR(INDX(I))
+        ENDDO
+        RVEC(:,:,:) = EVEC_RIGHT(:,:,:)
+        LVEC(:,:,:) = EVEC_LEFT(:,:,:)
+
+        DO I = 1, NDT
+           DO J = 1, NDT
+              EVEC_RIGHT(1,J,I) = RVEC(1,J,INDX(I))
+              IF (CARITH) EVEC_RIGHT(2,J,I) = RVEC(2,J,INDX(I))
+           ENDDO
+        ENDDO
+        DO I = 1, NDT
+           DO J = 1, NDT
+              EVEC_LEFT(1,J,I) = LVEC(1,J,INDX(I))
+              IF (CARITH) EVEC_LEFT(2,J,I) = LVEC(2,J,INDX(I))
+           ENDDO
+        ENDDO
+
+!
+!.....Release the memory
+!
+      deallocate (EVR)
+      deallocate (INDX)
+      DEALLOCATE (QQWORK,STAT=IERR)
       IF (IERR.NE.0) THEN
-       CALL QUIT('Error in EVR deallocation !')
+       CALL QUIT('Error in QQWORK deallocation !')
       ENDIF
-      DEALLOCATE (EVI,STAT=IERR)
+      DEALLOCATE (QQRWORK,STAT=IERR)
       IF (IERR.NE.0) THEN
-       CALL QUIT('Error in EVI deallocation !')
-      ENDIF
-      DEALLOCATE (VECR,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in VECR deallocation !')
-      ENDIF
-      IF (CARITH) THEN
-        DEALLOCATE (VECI,STAT=IERR)
-        IF (IERR.NE.0) THEN
-          CALL QUIT('Error in VECI deallocation !')
-        ENDIF
-      ENDIF
-      DEALLOCATE (SCR,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in SCR deallocation !')
-      ENDIF
-      DEALLOCATE (INDX,STAT=IERR)
-      IF (IERR.NE.0) THEN
-       CALL QUIT('Error in INDX deallocation !')
+       CALL QUIT('Error in QQRWORK deallocation !')
       ENDIF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,EIGENVECTORS,
-     &  NSP,IREPSPI)      
+      SUBROUTINE DUMP_HEFF(ICURFSS,HEFF)
 C
-      implicit real*8 (a-h,o-z)
+      implicit none
+C---------------Description--------------------------------------------
+C
+C     Write the effective Hamiltonian to file for post-processing
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "files.inc"
+#include "ihm.inc"
+
+      integer, intent(in) :: icurfss
+      real(8), intent(in) :: heff(*)
+      integer :: irp, i, istart, nelements
+      logical :: hefffile_open
+      character*4 :: sector
+
+c
+c     open file if this is the first sector
+c
+      inquire(unit=iuheff,opened=hefffile_open)
+      write(IW,'(/1X,A/)')
+     &     'Writing effective Hamiltonian to formatted HEFFF file'
+      if(.NOT.hefffile_open) then
+         open(unit=iuheff, form='FORMATTED',file='HEFFF')
+         if(CARITH)then
+            write(iuheff,'(A)') 'complex      # arithmetic'
+         else
+            write(iuheff,'(A)') 'real         # arithmetic'
+         endif
+      endif
+
+      select case (icurfss)
+      case (1)
+       sector = '0h0p'
+       return
+      case (2)
+       sector = '0h1p'
+      case (3)
+       sector = '1h0p'
+      case (4)
+       sector = '1h1p'
+      case (5)
+       sector = '0h2p'
+      case (6)
+       sector = '2h0p'
+      case default
+       call quit ('Error in call to dump_heff')
+      end select
+
+!
+!      Pade extrapolation method of Zaitsevskii and Eliav for IH-FSCC
+!
+!      activated only if .DOIH & IHSCHEME=1 & AIH .le. 0
+!      AIH=0.0 (-10^{-7} < AIH < 10^{-7}): two-parametric real shift
+!      AIH negative (-10^{-7} > AIH), complex arithmetics:
+!                                    two-parametric imaginary shift
+!
+      if(DOIH .and. IHSCHEME.eq.1) then
+        write(IW,'(1X,A,A/1X,A,2f7.3/1X,A,i4/1X,A,f7.3)')
+     &     'sector                     ',sector,
+     &     'shift parameters ',SHIFT_IH(1,icurfss),SHIFT_IH(2,icurfss),
+     &     'attenuation parameter      ',NIH,
+     &     'alpha                   ',AIH
+     
+      if( AIH .lt. -1.d-7 )write(IW, '(//4x,a,f12.6,/4x,a,/4x,a,/)' )
+     & 'ASSUMING AIH =',AIH,
+     & 'YOU HAD SWITCHED ON A VERY SUSPICIOUS IMAGINARY SHIFT ENGINE',
+     & 'HIGHLY LIKELY THAT THE RESULTS BELOW ARE FULLY SENSELESS' 
+      endif
+  
+      write(iuheff,'(2A)') sector,'         # sector'
+      write(iuheff,'(i4,A)') NREP,'         # number of reps'
+C
+C.... Loop over irreps and write the Hamiltonian.
+C
+      DO IRP=1,NREP
+         IF (NFS_HE(IRP,ICURFSS).EQ.0) CYCLE
+         write(iuheff,'(i4,i6,a)')
+     &         irp,NFS_HE(irp,ICURFSS),'   # rep No & heff size'
+         ISTART = IFS_HE2(IRP,ICURFSS)*RCW
+         NELEMENTS = NFS_HE(IRP,ICURFSS)**2 * RCW
+         write (iuheff,1000) (HEFF(ISTART+I),I=1,NELEMENTS)
+      END DO
+
+ 1000 FORMAT (4e21.12)
+
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE FS_ANALYSIS1(ICURFSS,EPS,EIGENVALUES,
+     &  EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NSP,IREPSPI)
+C
+      implicit none
 C---------------Description--------------------------------------------
 C
 C     Analyse the eigenvectors of the effective Hamiltonian and
@@ -621,12 +706,13 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      REAL*8 EPS(*),EIGENVALUES(RCW,0:*),EIGENVECTORS(*) 
-      INTEGER ICURFSS,NSP
+      REAL*8 EPS(*),EIGENVALUES(RCW,0:*)
+      REAL*8 EIGENVECTORS_RIGHT(*),EIGENVECTORS_LEFT(*)
+      INTEGER ICURFSS,NSP,IREPSPI
 C
 C---------------Local variables -----------------------------------
       INTEGER , ALLOCATABLE :: INDX_ALL(:), IRPS_ALL(:)
-      INTEGER :: IERR, ISIZE
+      INTEGER :: IERR, ISIZE,IND
       DIMENSION IND(MXREP)
       DIMENSION IREPSPI(NSP,MXREP,2)
       REAL*8 E_OFF
@@ -675,7 +761,8 @@ C        Even electron case : boson irreps
       ENDIF
 C     Detailed print-out including oscillator strengths
       CALL FS_ANALYSIS (ICURFSS,EPS,IPRNT,IFS_HE(NREP+1,ICURFSS),
-     &                E_OFF,EIGENVALUES(1,1),EIGENVECTORS,NSP,IREPSPI)
+     &                  E_OFF,EIGENVALUES(1,1),EIGENVECTORS_LEFT,
+     &                  EIGENVECTORS_RIGHT,NSP,IREPSPI)
       DEALLOCATE (INDX_ALL,STAT=IERR)
       IF (IERR.NE.0) THEN
        CALL QUIT('Error in INDX_ALL deallocation !')
@@ -690,7 +777,7 @@ C     Detailed print-out including oscillator strengths
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMF (EPS,T1,T2,CT1,CT2,OPTION)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -714,15 +801,16 @@ C     XCOPY
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher  & Ephraim Eliav
+C     Authors : Lucas Visscher (LV), Ephraim Eliav (EE) & Andre Zaitsevskii (AZ)
 C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 EPS(*)
       REAL*8 T1(*),T2(*)
       COMPLEX*16 CT1(*),CT2(*)
+      INTEGER OPTION
 C
-C---------------Common Blocks--------------------------------------					
+C---------------Common Blocks----------------------------------------
 C
 #include "symm.inc"
 #include "files.inc"
@@ -734,11 +822,17 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 FAC,FAC1,FAC2,FAC3,VALUE,FACIH
+      complex*16 CFACIH
+      REAL*8 AFAC
+      logical yimshift
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(3,2)
       LOGICAL DENO,ZERO,Z1,Z2,Z3,Z4,IHZERO
       LOGICAL DOIHDN
+      INTEGER A,AA,ABIJ,acv,acvMIN,AI,AMIN,AOFF,ARP,B,BB,bcv,BRP,i,ico
+      INTEGER icomin,ijrp,ii,imin,ioff,irp,isecth,isecth1,isecth2
+      INTEGER isectp,isectp1,isectp2,j,jj,jco,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -748,9 +842,12 @@ C
       CLASS(1,2) = 'Va'
       CLASS(2,2) = 'Vi'
       CLASS(3,2) = 'Oa'
+
+      yimshift= CARITH .and. ( AIH .lt. -1.d-7 )
+    
 c
 c
-c The Fock Space blocks constraction:
+c The Fock Space blocks construction:
 c
 c
 c      #       O         V
@@ -822,6 +919,7 @@ C
              AA = AOFF + A
              FAC = FAC1 - EPS(AA)
              FACIH = FAC
+             CFACIH=cmplx(FAC,0.d00)
              ISECTH=0
              IF (DOIH.AND.ACV.EQ.3) THEN
                 ISECTH=1
@@ -833,62 +931,119 @@ C
              DOIHDN = (Z1.OR.Z2).AND.IHSCHEME.EQ.1
              IHZERO = (Z1.OR.Z2).AND.IHSCHEME.EQ.2
              IF (DENO) THEN
-               IF (DOIHDN) THEN
-                IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) FACIH=FAC+SHIFT_IH(1,1)
-                IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) FACIH=FAC+SHIFT_IH(1,2)
-               ENDIF
+                IF (DOIHDN) THEN
+c                  Compute modified denominators for extrapolated intermediate Hamiltonian scheme
+caz                EEs version of intermediate denominators is assumed 
+caz                for positive aih parameter. otherwise, AZs version works 
+                   if ( AIH  .gt. 1.d-7) then
+c                     positive aih
+                      IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) 
+     &                   FACIH=FAC+SHIFT_IH(1,2)
+                      IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) 
+     &                   FACIH=FAC+SHIFT_IH(1,3)
+                   else
+c                     zero or negative aih
+                      if (yimshift) then
+c                        imaginary shift                  
+                         if (ISECTP.EQ.1 .AND. ISECTH.EQ.0) then
+c                           0h1p sector        
+                            AFAC = dabs( SHIFT_IH(1,2) ) / 
+     &                            ( dsqrt( FAC**2+SHIFT_IH(1,2)**2 ) ) 
+                            CFACIH=cmplx(FAC,SHIFT_IH(1,2)*AFAC**NIH)
+                        
+                         endif    
+                         if (ISECTP.EQ.0.AND.ISECTH.EQ.1) then 
+c                           1h0p sector        
+                             AFAC = dabs( SHIFT_IH(1,3) ) / 
+     &                            ( dsqrt( FAC**2+SHIFT_IH(1,3)**2 ) ) 
+                             CFACIH=cmplx(FAC,SHIFT_IH(1,3)*AFAC**NIH)
+                         endif
+                      else
+c                        real shift
+                         if (ISECTP.EQ.1 .AND. ISECTH.EQ.0) then
+c                           0h1p sector        
+                            AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(1,2)) )
+                            FACIH=FAC+SHIFT_IH(1,2)*AFAC**NIH
+                         endif    
+                         if (ISECTP.EQ.0.AND.ISECTH.EQ.1) then 
+c                           1h0p sector        
+                            AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(1,3)) )
+                            FACIH=FAC+SHIFT_IH(1,3)*AFAC**NIH
+                         endif
+                      endif ! end imaginary / real shift branching
+                   endif ! end positve / negative shift branching
+                ENDIF ! end special code for extrapolated IH 
+
+!               Start division of amplitudes by (modified) denominators
                 IF (CARITH) THEN
-                    IF (IHZERO) CT1(AI) = A0
-                    IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
-                CT1(AI)=CT1(AI)/FACIH
-                      IF (DABS(AIH).GT.1.D-9) THEN
-                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
-                CT1(AI)=CT1(AI)*
-     x                  (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
-     x                  (1.d0 - AIH*(FACIH-FAC)/FACIH)
-                       ELSEIF (NIH.GE.100) THEN
-                CT1(AI)=CT1(AI)/
-     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+!                  complex arithmetic variant (CARITH True)
+                   IF (IHZERO) CT1(AI) = A0
+                   if ( yimshift ) then
+!                     imaginary shift is used
+                      IF (DOIHDN.AND.ABS(CFACIH-cmplx(FAC,0.d+0))
+     &                    .GT.1.D-7)  THEN
+                          CT1(AI)=CT1(AI)/CFACIH
+                      ELSE
+                          CT1(AI) = CT1(AI)/FAC
                       ENDIF
+                   else                    
+!                     real shift is used
+                      IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                         CT1(AI)=CT1(AI)/FACIH
+caz                      aih is strictly positive because the ee denoms are not active
+                         IF (AIH.GT.1.D-7) THEN
+                            IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                                CT1(AI)=CT1(AI)*
+     &                          (1.d0-(AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                          (1.d0-AIH*(FACIH-FAC)/FACIH)
+                            ELSE IF (NIH.GE.100) THEN
+                                CT1(AI)=CT1(AI)/
+     &                          (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                            ENDIF
+                         ENDIF
+                      ELSE
+                         CT1(AI) = CT1(AI)/FAC
                       ENDIF
-                    ELSE
-                    CT1(AI) = CT1(AI)/FAC
-                    ENDIF
-                 ELSE
+                   endif ! end of real/imaginary shift branching
+                ELSE
+!                   real arithmetic variant (CARITH False)
                     IF (IHZERO) T1(AI) = A0
                     IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
-                T1(AI)=T1(AI)/FACIH
-                      IF (DABS(AIH).GT.1.D-9) THEN
-                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
-                T1(AI)=T1(AI)*
-     x                  (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
-     x                  (1.d0 - AIH*(FACIH-FAC)/FACIH)
-                       ELSEIF (NIH.GE.100) THEN
-                T1(AI)=T1(AI)/
-     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
-                      ENDIF
-                      ENDIF
-                     ELSE
-                    T1(AI) = T1(AI)/FAC
+                       T1(AI)=T1(AI)/FACIH
+                       IF (AIH.GT.1.D-7) THEN
+                          IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                             T1(AI)=T1(AI)*
+     &                         (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                         (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                           ELSE IF (NIH.GE.100) THEN
+                             T1(AI)=T1(AI)/
+     &                         (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                           ENDIF
+                       ENDIF
+                    ELSE
+                       T1(AI) = T1(AI)/FAC
                     ENDIF
-                ENDIF
-             ENDIF
-C
+                ENDIF ! end of real/complex arithmetic branching
+
+             ENDIF ! end of code for division of T1-amplitudes by denominators
 C
              IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
+!               ampltitudes will be zeroed (sector is not yet active, or
+!               non-dressed, CI-like, IH variant is used)
                 IF (CARITH) THEN
                    CT1(AI) = A0
                 ELSE
                    T1(AI) = A0
                 ENDIF
              ENDIF
-          ISECTP=0
-          ISECTH=0
-         ENDDO
-         enddo
-      ENDDO
-      enddo
-      ENDDO
+
+             ISECTP=0
+             ISECTH=0
+         ENDDO ! A (spinor index within specific ACV)
+         enddo ! ACV (types of virtual spinors)
+      ENDDO ! I (spinor index within specific ICO)
+      enddo ! ICO (types of occupied spinors)
+      ENDDO ! IRP (symmetry irreps)
 C
 
 c T2 part:
@@ -896,78 +1051,78 @@ c T2 part:
 c
       DO IJRP = 1, NREP
       DO 10 JRP = 1, NREP
-      JJ = IO(JRP)
-      IRP = MULTB(JRP,IJRP+NREP,2)
-      IF (IRP.LT.JRP) GOTO 10
+         JJ = IO(JRP)
+         IRP = MULTB(JRP,IJRP+NREP,2)
+         IF (IRP.LT.JRP) GOTO 10
 c
-      IOJ(0)=0
-      IOJ(1)=NIO(JRP)+IOJ(0)
-      IOJ(2)=NAO(JRP)+IOJ(1)
-      IOJ(3)=NAV(JRP)+IOJ(2)
+         IOJ(0)=0
+         IOJ(1)=NIO(JRP)+IOJ(0)
+         IOJ(2)=NAO(JRP)+IOJ(1)
+         IOJ(3)=NAV(JRP)+IOJ(2)
 c
-      IOFF = IO(IRP) 
+         IOFF = IO(IRP) 
 c
-      IOI(0)=0
-      IOI(1)=NIO(IRP)+IOI(0)
-      IOI(2)=NAO(IRP)+IOI(1)
-      IOI(3)=NAV(IRP)+IOI(2)
+         IOI(0)=0
+         IOI(1)=NIO(IRP)+IOI(0)
+         IOI(2)=NAO(IRP)+IOI(1)
+         IOI(3)=NAV(IRP)+IOI(2)
 c
 
-          do jco=1,3
-          DO J = IOJ(jco-1)+1, IOJ(jco)
-            Z1 = .FALSE.
-            JJ = JJ + 1
-            FAC1 = EPS(JJ)
-            ISECTP1=0
-            IF (DOIH.AND.JCO.EQ.3) THEN
-                 ISECTP1=1
-                 IF (IPIORB(JJ).EQ.1) Z1 = .TRUE.
-            ENDIF
-            icomin=1
-            IF (IRP.EQ.JRP) icoMIN = jco
-            do ico=icoMIN,3
-            IMIN = IOI(ico-1)+1
-            IF (IRP.EQ.JRP.and.ico.eq.jco) IMIN = J + 1
-            DO I = IMIN, IOI(ico)
-               Z2 = .FALSE.
-               II = IOFF + I
-               FAC2 = EPS(II) + FAC1
-               ISECTP2=0
-               IF (DOIH.AND.ICO.EQ.3) THEN
-                  ISECTP2=1
-                  IF (IPIORB(II).EQ.1) Z2 = .TRUE.
-               ENDIF
+         do jco=1,3
+         DO J = IOJ(jco-1)+1, IOJ(jco)
+           Z1 = .FALSE.
+           JJ = JJ + 1
+           FAC1 = EPS(JJ)
+           ISECTP1=0
+           IF (DOIH.AND.JCO.EQ.3) THEN
+                ISECTP1=1
+                IF (IPIORB(JJ).EQ.1) Z1 = .TRUE.
+           ENDIF
+           icomin=1
+           IF (IRP.EQ.JRP) icoMIN = jco
+           do ico=icoMIN,3
+           IMIN = IOI(ico-1)+1
+           IF (IRP.EQ.JRP.and.ico.eq.jco) IMIN = J + 1
+           DO I = IMIN, IOI(ico)
+             Z2 = .FALSE.
+             II = IOFF + I
+             FAC2 = EPS(II) + FAC1
+             ISECTP2=0
+             IF (DOIH.AND.ICO.EQ.3) THEN
+                ISECTP2=1
+                IF (IPIORB(II).EQ.1) Z2 = .TRUE.
+             ENDIF
 c
              DO 20 BRP = 1, NREP
-             BB = IV(BRP) + IO(NREP+1)
-             ARP = MULTB(BRP,IJRP+NREP,2)
-             IF (ARP.LT.BRP) GOTO 20
+                BB = IV(BRP) + IO(NREP+1)
+                ARP = MULTB(BRP,IJRP+NREP,2)
+                IF (ARP.LT.BRP) GOTO 20
 c
-             IVB(0)=0
-             IVB(1)=NAV(BRP)+IVB(0)
-             IVB(2)=NIV(BRP)+IVB(1)
-             IVB(3)=NAO(BRP)+IVB(2)
+                IVB(0)=0
+                IVB(1)=NAV(BRP)+IVB(0)
+                IVB(2)=NIV(BRP)+IVB(1)
+                IVB(3)=NAO(BRP)+IVB(2)
 c
-             AOFF = IV(ARP) + IO(NREP+1)
+                AOFF = IV(ARP) + IO(NREP+1)
 c
-             IVA(0)=0
-             IVA(1)=NAV(ARP)+IVA(0)
-             IVA(2)=NIV(ARP)+IVA(1)
-             IVA(3)=NAO(ARP)+IVA(2)
+                IVA(0)=0
+                IVA(1)=NAV(ARP)+IVA(0)
+                IVA(2)=NIV(ARP)+IVA(1)
+                IVA(3)=NAO(ARP)+IVA(2)
 c
-                  do bcv=1,3
-                  DO B = IVB(bcv-1)+1, IVB(bcv)
-                     Z3 = .FALSE.
-                     BB = BB + 1
-                     FAC3 = FAC2 - EPS(BB)
-                     ISECTH1=0
-                     IF (DOIH.AND.BCV.EQ.3) THEN
-                       ISECTH1=1
-                       IF (IPIORB(BB).EQ.1) Z3 = .TRUE.
-                     ENDIF
-                     acvMIN=1
-                     IF (ARP.EQ.BRP) acvMIN = Bcv
-                     do acv=acvMIN,3
+                do bcv=1,3
+                DO B = IVB(bcv-1)+1, IVB(bcv)
+                   Z3 = .FALSE.
+                   BB = BB + 1
+                   FAC3 = FAC2 - EPS(BB)
+                   ISECTH1=0
+                   IF (DOIH.AND.BCV.EQ.3) THEN
+                      ISECTH1=1
+                      IF (IPIORB(BB).EQ.1) Z3 = .TRUE.
+                   ENDIF
+                   acvMIN=1
+                   IF (ARP.EQ.BRP) acvMIN = Bcv
+                   do acv=acvMIN,3
 C                    Find out whether we need to divide by the denoms
 C                    leave Hamiltonian matrix elements untouched.
                      IF (OPTION.EQ.1) THEN
@@ -977,7 +1132,6 @@ C                    leave Hamiltonian matrix elements untouched.
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)
-ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))
      &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
@@ -993,18 +1147,19 @@ ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))
 C                    Find out whether we need to zero non-wf parts
 C                    This will zero out Hamiltonian elements
                      IF (OPTION.EQ.2) THEN
+!lv: Indentation is broken below due to 72 character F77 format limitation
                  IF ( (ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.1)      ! H2 (EF,GH) (0,2) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.3)      ! H2 (MN,OP) (2,0) sector
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.3.AND.BCV.EQ.1)      ! H2 (MF,GP) (1,1) sector
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.2.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,GP) (1,1) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.1)      ! H2 (MF,OH) (1,1) sector
      &            .OR.(ICO.EQ.2.AND.JCO.EQ.3.AND.ACV.EQ.1.AND.BCV.EQ.3)      ! H2 (EN,OH) (1,1) sector
-ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H2 (MN,GH)  ?
      &            .OR.(             JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.             AND.ACV.EQ.3.AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.             AND.BCV.EQ.3)
      &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3             ))
      &                  THEN
+!lv: Resume proper indentation
                             ZERO = .TRUE.
                         ELSE
                             ZERO = .FALSE.
@@ -1019,6 +1174,7 @@ ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H
                            AA = AOFF + A
                            FAC = FAC3 - EPS(AA)
                            FACIH = FAC
+                           CFACIH = cmplx( FAC, 0.d+0)
                            ISECTH2=0
                            IF (DOIH.AND.ACV.EQ.3) THEN
                             ISECTH2=1
@@ -1031,89 +1187,150 @@ ceph &            .OR.(ICO.EQ.3.AND.JCO.EQ.3.AND.ACV.EQ.3.AND.BCV.EQ.3))     ! H
      &                              .AND.IHSCHEME.EQ.1
                            IHZERO = (Z1.OR.Z2.OR.Z3.OR.Z4)
      &                              .AND.IHSCHEME.EQ.2
-              ISECTP=ISECTP1+ISECTP2
-              ISECTH=ISECTH1+ISECTH2
-              IF (DENO) THEN
-               IF (DOIHDN) THEN
-                IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
-                    FACIH=FAC+SHIFT_IH(2,1)
-                ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
-                    FACIH=FAC+SHIFT_IH(2,2)
-                ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
-                   FACIH=FAC+SHIFT_IH(2,5)
-                   IF (Z1.AND.Z2) FACIH=FACIH+SHIFT_IH(2,5)
-                ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
-                   FACIH=FAC+SHIFT_IH(2,6)
-                   IF (Z3.AND.Z4) FACIH=FACIH+SHIFT_IH(2,6)
-                ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
-                   FACIH=FAC+SHIFT_IH(2,4)
-                   IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
-     x                 (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
-     x             FACIH=FACIH+SHIFT_IH(2,4)
-                ENDIF
-               ENDIF
-C                            Check for zero denominators
-                             IF (DABS(FACIH).LT.1.D-9) THEN
-                               WRITE (IW,1000) IRP,JRP,ARP,BRP,
-     &                         I,J,A,B,
-     &                         CLASS(ICO,1),CLASS(JCO,1),
-     &                         CLASS(ACV,2),CLASS(BCV,2),
-     &                         EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC,FACIH
-                               CALL QUIT('Zero denominator in DENOMF')
-                             ENDIF
-               IF (CARITH) THEN
+                           ISECTP=ISECTP1+ISECTP2
+                           ISECTH=ISECTH1+ISECTH2
+                           IF (DENO) THEN
+!lv: Indentation is resetbelow due to 72 character F77 format limitation
+! this whole DOIHDN block has to do with the extrapolated IH scheme of AZ & EE
+             IF (DOIHDN) THEN
+                if (AIH .gt. 1.d-7) then
+czai               EEs version .......
+                   IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                       FACIH=FAC+SHIFT_IH(2,2)
+                   ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                       FACIH=FAC+SHIFT_IH(2,3)
+                   ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                      FACIH=FAC+SHIFT_IH(2,5)
+                      IF (Z1.AND.Z2) FACIH=FACIH+SHIFT_IH(2,5)
+                   ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                      FACIH=FAC+SHIFT_IH(2,6)
+                      IF (Z3.AND.Z4) FACIH=FACIH+SHIFT_IH(2,6)
+                   ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                      FACIH=FAC+SHIFT_IH(2,4)
+                      IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     &                    (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
+     &                FACIH=FACIH+SHIFT_IH(2,4)
+                   ENDIF
+                else
+c                  ...... AZs version 
+                  if ( yimshift ) then
+c                     imaginary shift
+                      IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                         AFAC=dabs(SHIFT_IH(2,2))/
+     &                        dsqrt(FAC**2+SHIFT_IH(2,2)**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,2)*AFAC**NIH)
+                      ELSE IF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                         AFAC=dabs(SHIFT_IH(2,3))/
+     &                        dsqrt(FAC**2+SHIFT_IH(2,3)**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,3)*AFAC**NIH)
+                      ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                         AFAC=SHIFT_IH(2,5)
+                         IF (Z1.AND.Z2) AFAC=AFAC+SHIFT_IH(2,5) 
+                         AFAC=dabs(AFAC)/sqrt(FAC**2+AFAC**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,5)*AFAC**NIH) 
+                      ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                         AFAC=SHIFT_IH(2,6)
+                         IF (Z3.AND.Z4) AFAC=AFAC+SHIFT_IH(2,6)
+                         AFAC=dabs(AFAC)/sqrt(FAC**2+AFAC**2)
+                         CFACIH=cmplx(FAC,SHIFT_IH(2,6)*AFAC**NIH)  
+                      ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                          AFAC=SHIFT_IH(2,4)
+                          IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     &                    (Z2.AND.Z4).OR.(Z2.AND.Z3))
+     &                    AFAC=AFAC+SHIFT_IH(2,4)
+                          AFAC=dabs(AFAC)/sqrt(FAC**2+AFAC**2)
+                          CFACIH=cmplx(FAC,SHIFT_IH(2,4)*AFAC**NIH)
+                       ENDIF
+                  else
+c                   real shift
+                    IF (ISECTP.EQ.1.AND.ISECTH.EQ.0) THEN
+                        AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(2,2)) )
+                        FACIH=FAC+SHIFT_IH(2,2)*AFAC**NIH
+                    ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.1) THEN
+                        AFAC=1.d0 - ( FAC / (FAC+SHIFT_IH(2,3)) )
+                        FACIH=FAC+SHIFT_IH(2,3)*AFAC**NIH
+                    ELSEIF (ISECTP.EQ.2.AND.ISECTH.EQ.0) THEN
+                         AFAC=SHIFT_IH(2,5)
+                         if (Z1.and.Z2) AFAC=AFAC+SHIFT_IH(2,5)
+                         FACIH=FACIH+AFAC*(AFAC/(FAC+AFAC))**NIH
+                    ELSEIF (ISECTP.EQ.0.AND.ISECTH.EQ.2) THEN
+                        AFAC=SHIFT_IH(2,6)
+                        IF (Z3.AND.Z4) AFAC=AFAC+SHIFT_IH(2,6)
+                        FACIH=FACIH+AFAC*(AFAC/(FAC+AFAC))**NIH
+                    ELSEIF (ISECTP.EQ.1.AND.ISECTH.EQ.1) THEN
+                        AFAC=SHIFT_IH(2,4)
+                        IF ((Z1.AND.Z4).OR.(Z1.AND.Z3).OR.
+     &                     (Z2.AND.Z4).OR.(Z2.AND.Z3)) 
+     &                  AFAC=AFAC+SHIFT_IH(2,4)
+                        FACIH=FACIH+AFAC*(AFAC/(FAC+AFAC))**NIH
+                    ENDIF
+                  endif ! end of real/imaginary shift branching
+                endif ! end positive / negative shift branching
+c
+             ENDIF ! end of DOIHDN block but we are still inside the T2 DENOM block
+
+!            Check for zero denominators and abort if necessary
+             IF( ((.not.yimshift).and.DABS(FACIH).LT.1.D-7).or. 
+     &           (DOIHDN.and.yimshift.and.ABS(CFACIH).LT.1.D-7) ) THEN
+                        WRITE (IW,1000) IRP,JRP,ARP,BRP,
+     &                  I,J,A,B,
+     &                  CLASS(ICO,1),CLASS(JCO,1),
+     &                  CLASS(ACV,2),CLASS(BCV,2),
+     &                  EPS(II),EPS(JJ),EPS(AA),EPS(BB),FAC,FACIH
+                        write (IW,*) ' CFACIH' , CFACIH
+                        CALL QUIT('Zero denominator in DENOMF')
+             ENDIF
+
+             IF (CARITH) THEN
+!               complex arithmetics branch
+                if( yimshift ) then
+!                  complex shift
+                   IF (DOIHDN.AND.ABS(CFACIH-FAC).GT.1.D-7) THEN
+                     CT2(ABIJ)=CT2(ABIJ)/CFACIH
+                   ELSE
+                     CT2(ABIJ) = CT2(ABIJ)/FAC
+                   ENDIF
+                else 
+!                  real shift
+                   IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
+                      CT2(ABIJ)=CT2(ABIJ)/FACIH
+                      IF ( AIH .GT. 1.D-7) THEN
+                         IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                              CT2(ABIJ)=CT2(ABIJ)*
+     &                        (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                        (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                         ELSEIF (NIH.GE.100) THEN
+                              CT2(ABIJ)=CT2(ABIJ)/
+     &                        (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                         ENDIF
+                       ENDIF
+                   ELSE
+                     CT2(ABIJ) = CT2(ABIJ)/FAC
+                   ENDIF
+                endif ! end of real/imaginary shift branching
+c
+             ELSE
+!               real arithmetics branch
+                IF (IHZERO) T2(ABIJ) = A0
                 IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
-                CT2(ABIJ)=CT2(ABIJ)/FACIH
-                      IF (DABS(AIH).GT.1.D-9) THEN
-                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
-                CT2(ABIJ)=CT2(ABIJ)*
-     x           (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
-     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                   T2(ABIJ)=T2(ABIJ)/FACIH
+                    IF (AIH .GT. 1.D-7) THEN
+                       IF (NIH.GT.0.AND.NIH.LT.100) THEN
+                          T2(ABIJ)=T2(ABIJ)*
+     &                    (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
+     &                    (1.d0 - AIH*(FACIH-FAC)/FACIH)
                        ELSEIF (NIH.GE.100) THEN
-                CT2(ABIJ)=CT2(ABIJ)/
-     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
-                      ENDIF
-                      ENDIF
-                 ELSE
-                  CT2(ABIJ) = CT2(ABIJ)/FAC
-                 ENDIF
+                          T2(ABIJ)=T2(ABIJ)/
+     &                    (1.d0 - AIH*(FACIH-FAC)/FACIH)
+                       ENDIF
+                    ENDIF
                 ELSE
-                 IF (IHZERO) T2(ABIJ) = A0
-                 IF (DOIHDN.AND.DABS(FACIH-FAC).GT.1.D-7) THEN
-                 T2(ABIJ)=T2(ABIJ)/FACIH
-                      IF (DABS(AIH).GT.1.D-9) THEN
-                      IF (NIH.GT.0.AND.NIH.LT.100) THEN
-                 T2(ABIJ)=T2(ABIJ)*
-     x           (1.d0 - (AIH*(FACIH-FAC)/FACIH)**NIH)/
-     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
-                       ELSEIF (NIH.GE.100) THEN
-                 T2(ABIJ)=T2(ABIJ)/
-     x           (1.d0 - AIH*(FACIH-FAC)/FACIH)
-                      ENDIF
-                      ENDIF
-                  ELSE
                    T2(ABIJ) = T2(ABIJ)/FAC
-                 ENDIF
                 ENDIF
-C-----------------------------------------------------------------------
-CThis may cause large output : activate when debugging..
-C                            Check for large amplitudes
-C                            IF (CARITH) THEN
-C                               VALUE = CDABS(CT2(ABIJ))
-C                            ELSE
-C                               VALUE = ABS(T2(ABIJ))
-C                            ENDIF
-C                            IF (VALUE.GT.0.1D0) THEN
-C                               WRITE (IW,1001) IRP,JRP,ARP,BRP,
-C    &                          I,J,A,B,
-C    &                          CLASS(ICO,1),CLASS(JCO,1),
-C    &                          CLASS(ACV,2),CLASS(BCV,2),
-C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
-C                            ENDIF
-C-----------------------------------------------------------------------
-              ENDIF
-C
-C
+             ENDIF ! end of real/complex arithmetic branching
+    
+                           ENDIF ! End of T2-denominator (DENO True) code block, resume original indentation
+
                            IF (ZERO.OR.(OPTION.EQ.3.AND.IHZERO)) THEN
                              IF (CARITH) THEN
                                 CT2(ABIJ) = A0
@@ -1121,19 +1338,35 @@ C
                                 T2(ABIJ) = A0
                              ENDIF
                            ENDIF
-                        ENDDO
-                        enddo
-                  ENDDO
-                  enddo
- 20          CONTINUE
-               ENDDO
-               enddo
-          ENDDO
-         enddo
- 10   CONTINUE
-      ENDDO
+C-----------------------------------------------------------------------
+CThis may cause large output : activate only when debugging toy systems
+C                            Check for large amplitudes
+C                            IF (CARITH) THEN
+C                               VALUE = CDABS(CT2(ABIJ))
+C                            ELSE
+C                               VALUE = ABS(T2(ABIJ))
+C                            ENDIF
+C                            IF (VALUE.GT.0.1D0.AND..OPTION.EQ.2) THEN
+C                               WRITE (IW,1001) IRP,JRP,ARP,BRP,
+C    &                          I,J,A,B,
+C    &                          CLASS(ICO,1),CLASS(JCO,1),
+C    &                          CLASS(ACV,2),CLASS(BCV,2),
+C    &                          EPS(II),EPS(JJ),EPS(AA),EPS(BB),VALUE
+C                            ENDIF
+C-----------------------------------------------------------------------
+                        ENDDO ! A (spinor index within specific ACV)
+                        enddo ! ACV (types of virtual spinors)
+                  ENDDO ! B (spinor index within specific BCV)
+                  enddo ! BCV (types of virtual spinors)
+ 20          CONTINUE ! BRP (irreps of second virtual spinor)
+             ENDDO ! I (spinor index within specific ICO)
+             enddo ! ICO (types of occupied spinors)
+          ENDDO ! J (spinor index within specific JCO)
+         enddo ! JCO ((types of occupied spinors)
+ 10   CONTINUE ! JRP (irreps of second occupied spinor)
+      ENDDO ! IJRP (compound irreps: Gamma(IRP)*Gamma(JRP) = Gamma (ARP) * Gamma(BRP) = Gamma(IJRP)
 C
-      IF (ABIJ.NE.NDIMT2) CALL QUIT ('ERROR in DENOMF')
+      IF (ABIJ.NE.NDIMT2) CALL QUIT ('ERROR in DENOMF') ! Sanity check: we should have looped over all array elements
 C
       RETURN
  1000 FORMAT (//' Zero denominator found in DENOMF',
@@ -1155,7 +1388,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT1 (T1,FT1,ACVMIN,ACVMAX,ICOMIN,ICOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1174,6 +1407,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),FT1(*)
       LOGICAL DOINV
+      INTEGER ACVMIN,ACVMAX,ICOMIN,ICOMAX
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1183,6 +1417,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ai,i,ico,ioffs1,ioi,irp,iva,lngth
       dimension IOI(0:3), IVA(0:3)
 C
 C---------------Executable code--------------------------------------
@@ -1238,7 +1473,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2R(T2,FT2,ABCVMIN,ABCVMAX,ICOMIN,ICOMAX,JCOMIN,
      &                   JCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1280,6 +1515,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ab,abij,acv,acvstrt,amin,b,arp,bcv,brp,i,ico,ij,ijoff
+      integer ijrp,ijrpoff,ioff2,ioi,ioj,irp,iva,ivb,j,jco,jrp,lngth
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
       COMPLEX*16 FACTOR 
@@ -1401,7 +1638,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2L(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,IJCOMIN,
      &                   IJCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1443,6 +1680,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer a,ab,abij,acv,acvstrt,arp,b,bcv,brp,i,ico,icostrt,ij
+      integer ijoff,ijrp,ijrpoff,imin,ioff,ioff2,ioi,ioj
+      integer irp,iva,ivb,j,jco,jrp
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
       COMPLEX*16 FACTOR
@@ -1567,7 +1807,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRAMPF (T1,T2,CT1,CT2,TRES)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1600,6 +1840,8 @@ C
       INTEGER IOI(0:3), IVA(0:3)
       INTEGER IOJ(0:3), IVB(0:3)
       CHARACTER*2 CLASS(5)
+      integer a,aa,abij,acv,acvmin,ai,amin,aoff,arp,b,bcv,brp,i,ico
+      integer icomin,ii,ijrp,imin,ioff,irp,j,jco,jj,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -1768,7 +2010,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2T(T2,FT2,ABCVMIN,ABCVMAX,IJCOMIN,IJCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1810,6 +2052,9 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ab,abij,acv,acvstrt,amin,arp,b,bcv,brp,i,ico,icostrt,ij
+      integer ijoff,ijrp,ijrpoff,imin,ioff2,ioi,ioj,irp,iva,ivb,j
+      integer jco,jrp,lngth
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
 C
@@ -1913,7 +2158,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXTRT2S(T2,FT2,ACVMIN,ACVMAX,BCVMIN,BCVMAX,
      &                   ICOMIN,ICOMAX,JCOMIN,JCOMAX,DOINV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1955,6 +2200,8 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer a,ab,abij,acv,acvstrt,arp,b,bcv,brp,i,ico,ij,ijoff,ijrp
+      integer ijrpoff,ioff2,ioi,ioj,irp,iva,ivb,j,jco,jrp
       dimension IOI(0:3), IVA(0:3)
       dimension IOJ(0:3), IVB(0:3)
       COMPLEX*16 FACTOR,FACTOR1
@@ -2090,7 +2337,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SCALE_S1 (S1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2117,7 +2364,7 @@ C
 #include "param.inc"
 C
 C---------------Local variables--------------------------------------
-C
+      integer ai,i,iend,irp,istart
 C---------------Executable code--------------------------------------
 c
 c
@@ -2157,7 +2404,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSTAU (T1,T2,BUF1,BUF2,BUF3)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2206,9 +2453,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FS_ANALYSIS (ICURFSS,EPS,IPR,NDT_TOT,E_OFF,
-     &                        EV_ALL,H,NSP,IREPSPI)
+     &                   EV_ALL,H_left,H,NSP,IREPSPI)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2240,6 +2487,7 @@ C
 #include "symm.inc"
       REAL*8 TRES,EPS(*),E_OFF
       REAL*8 EV_ALL(RCW,NDT_TOT),H(RCW,*) 
+      real*8 H_left(RCW,*)
       INTEGER ICURFSS,IPR,NSP
       DIMENSION IREPSPI(NSP,MXREP,2)
 C
@@ -2251,6 +2499,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ndt_tot,irepspi,ij,irp,irpoff,j_coeff,k_coeff,ndimh,ndt
       PARAMETER (NDIMH=5000)
       INTEGER I_EIGENVALUE, J_EIGENVALUE, I_COEFF
       CHARACTER*50 LABEL(NDIMH)
@@ -2260,7 +2509,7 @@ C---------------Executable code--------------------------------------
  
 !     At the moment only sector 4 has intensities
       IF (ICURFSS.EQ.4) THEN
-      CALL FS_COMPUTE_INTENSITY (ICURFSS,H,
+      CALL FS_COMPUTE_INTENSITY (ICURFSS,H_left,H,
      &                           NDT_TOT,IREPSPI,NSP,E_OFF,EV_ALL)
       END IF ! Intensities for excitation energies
 C
@@ -2326,15 +2575,15 @@ C           Loop over the coefficients and print the interesting ones
  1000 FORMAT (//' Analysis of eigenvectors of the effective Hamiltonian'
      &/' First line  :  Energy, Eigenvalue'
      &/' other lines : Coefficients of contributing determinants',
-     & ' (above a treshold of ',E6.1,')')
+     & ' (above a threshold of ',E6.1,')')
  1010 FORMAT (/' Irrep ',A4,' State ',I5,2F16.8)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS,
-     &                                 NDT_TOT,IREPSPI,NSP,
-     &                                 E_OFF,EV_ALL) 
+      SUBROUTINE FS_COMPUTE_INTENSITY (ICURFSS,EIGENVECTORS_LEFT,
+     &                EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP,
+     &                                 E_OFF,EV_ALL)
 c
-      IMPLICIT INTEGER (A-Z)   
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2353,29 +2602,26 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "dcbxpr.h"
-#include "dcbham.h"
-! The dcbham common block is needed temporarily to check for spinfree (transformation of dipole integrals not debugged yet for spinfree)
 c
 c---------------Calling Variables-----------------------------------
 c 
       INTEGER ICURFSS,NSP,NDT_TOT,IREPSPI(NSP,MXREP,2)
-      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_LEFT(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_RIGHT(RCW,IFS_HE2(NREP+1,ICURFSS))
       REAL*8 E_OFF,EV_ALL(RCW,NDT_TOT)
 !output
       REAL*8, ALLOCATABLE ::   INTENSITY(:),TRANS_DIPOLE(:,:,:)
 c
 c---------------Local Variables-----------------------------------------------
 c
-c    NB: note that this scheme is treating a H-eff as were it a Hermitian CI matrix, a probably better approach
-c        is to use the left and righthand side eigenvectors, but this needs to be worked out more carefully.
-c
       REAL*8, ALLOCATABLE:: PROP(:,:,:)
+      integer eoper,i,ierr,irp,ix,iy,j_eigenvalue,i_eigenvalue,ndt
 c
 c---------------Executable code--------------------------------------------------
 c
 
       IF (ICURFSS.EQ.0) RETURN ! No intensities if we only have the ground state
-      IF (SPINFR)       RETURN ! Transformed dipole moment integrals not yet available
+      IF (SPFR)         RETURN ! Transformed dipole moment integrals not yet available
 
       ALLOCATE(PROP(RCW,NSP,NSP),STAT=IERR)
       ALLOCATE(INTENSITY(NDT_TOT),STAT=IERR)
@@ -2398,16 +2644,17 @@ c  Transition dipole moments for (0,1) or (1,0) sector
 c
       IF ((ICURFSS.EQ.2).OR.(ICURFSS.EQ.3)) THEN 
   
-       CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
-     &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+         CALL TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
+     &     EV_ALL,EIGENVECTORS_LEFT,
+     &     EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
        CYCLE  ! Transition dipoles are only written to xml output, as there are too many to print in human-readable form
 c
 c  Transition dipole moments for (1,1) sector
 c 
       ELSEIF (ICURFSS.EQ.4) THEN         
 
-      CALL TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
-     &                        EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
+        CALL TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
+     &            EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
 
       ENDIF
 c
@@ -2493,9 +2740,9 @@ c
       RETURN
       END 
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,
-     &                             EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
-      IMPLICIT INTEGER (A-Z)
+      SUBROUTINE TRANSITION_EA_IP (ICURFSS,EOPER,PROP,EV_ALL,
+     &         EIGENVECTORS_LEFT,EIGENVECTORS_RIGHT,NDT_TOT,IREPSPI,NSP)
+      implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (0,1) or (1,0)
 c     Output is written directly here, as getting a nice human-readable output is
@@ -2511,15 +2758,22 @@ c
 c
 c-------------------Calling Variables-------------------------------------------------
 c
-      INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2)
-      REAL*8 EIGENVECTORS(RCW,IFS_HE2(NREP+1,ICURFSS))
+      INTEGER NSP,NDT_TOT,EOPER,IREPSPI(NSP,MXREP,2),ICURFSS
+      REAL*8 EIGENVECTORS_LEFT(RCW,IFS_HE2(NREP+1,ICURFSS))
+      REAL*8 EIGENVECTORS_RIGHT(RCW,IFS_HE2(NREP+1,ICURFSS))
       REAL*8 PROP(RCW,NSP,NSP)
+      REAL*8 EV_ALL(RCW,NDT_TOT)
 c
 c-------------------Local Variables--------------------------------------------------
 c
       REAL*8, ALLOCATABLE::  DIP_RHS(:,:,:),DIP_SUB(:,:,:),
      &                       TDIP_SUB(:,:,:)
-      REAL*8 DDOT
+      REAL*8 DDOT, TDIPA2, TR_ENERGY
+!     Conversion factor for spontaneous emission in MHz = 10^6 s^(-1) based on values of E and mu in atomic units
+!     See e.g Atkins for equation for A = (4 / 3) * E_fi^3 * mu_fi^2 / (4 pi epsilon_0 hbar^4 c^3)
+!     Constants used (NIST 2017): c = 137.035999139 au = 299792458 m/s; Bohr radius = 1.0 au = 5.2917721067E-11 m
+      REAL*8, PARAMETER :: A_CONVERSION = 21420.007784D0
+      INTEGER i, ircw,irep,j,jrep,ndtl,ndtr,ii,jj
 c
 c------------------------------------------------------------------------------------
 c
@@ -2532,10 +2786,12 @@ c
 c to keep things simple in storage we do not care about symmetry zeroes in the resulting
 c trans_dipole array
 c
+      JJ = 0 ! offset for index state of symmetry JREP in list of all eigenstates
       DO JREP = 1, NREP  ! loop over symmetry of the right-hand vector
          NDTR = NFS_HE(JREP,ICURFSS) 
          IF (NDTR.EQ.0) CYCLE ! no need to process irreps with no states
 
+         II = 0 ! offset for index state of symmetry JREP in list of all eigenstates
          DO IREP = 1, NREP  ! loop over symmetry of the left-hand vector
             NDTL = NFS_HE(IREP,ICURFSS) 
             IF (NDTL.EQ.0) CYCLE
@@ -2552,6 +2808,7 @@ c
                IF (DDOT(RCW*NDTR*NDTL,DIP_SUB,1,DIP_SUB,1)
      &             .LT.1.E-16) THEN
                   DEALLOCATE (DIP_SUB)
+                  II = II + NDTL
                   CYCLE
                END IF
 
@@ -2561,35 +2818,62 @@ c
 
 !              Form | dipole | rhs > for the symmetry pair (irep,jrep)
                CALL XGEMM ('N','N',NDTL,NDTR,NDTR,A1,DIP_SUB,NDTL,
-     &              EIGENVECTORS(1,IFS_HE2(JREP,ICURFSS)+1),NDTR,
+     &         EIGENVECTORS_RIGHT(1,IFS_HE2(JREP,ICURFSS)+1),NDTR,
      &              A0,DIP_RHS,NDTL)
 
 !              Form < lhs | dipole | rhs > for the symmetry pair (irep,jrep)
                CALL XGEMM ('N','N',NDTL,NDTR,NDTL,A1,
-     &              EIGENVECTORS(1,IFS_HE2(IREP,ICURFSS)+1),NDTL,
+     &         EIGENVECTORS_LEFT(1,IFS_HE2(IREP,ICURFSS)+1),NDTL,
      &              DIP_RHS,NDTL,A0,TDIP_SUB,NDTL)
 
 !              Write output (wll be xml after the testing phase is done)
-               Print*, "Transition dipoles for ",eoper,irep,jrep
+               WRITE (IW,1000) NAMEE(EOPER)
                DO J = 1, NDTR
                   DO I = 1, NDTL
-                  WRITE (*,*) I,J,(TDIP_SUB(IRCW,I,J),IRCW=1,RCW)
+                    TR_ENERGY = EV_ALL(1,JJ+J) - EV_ALL(1,II+I)
+                    IF (TR_ENERGY.LE.1.D-6) CYCLE ! print only transitions to higher energies
+                    TDIPA2 = A0
+                    DO IRCW = 1, RCW
+                       TDIPA2 = TDIPA2
+     &                        + TDIP_SUB(IRCW,I,J) * TDIP_SUB(IRCW,I,J)
+                    ENDDO
+                    IF (TDIPA2.LE.1.D-15) CYCLE ! don't print transitions with zero intensity
+                    IF (RCW.EQ.1) THEN
+                       WRITE (IW,1001) irep,I,jrep,J,
+     &                 TDIP_SUB(1,I,J),TR_ENERGY,
+     &                 TDIPA2 * TR_ENERGY * 2.0D0/3.0D0,
+     &                 TDIPA2 * TR_ENERGY**3 * A_CONVERSION
+                     ELSE
+                       WRITE (IW,1002) irep,I,jrep,J,
+     &                 (TDIP_SUB(IRCW,I,J),IRCW=1,RCW),TR_ENERGY,
+     &                 TDIPA2 * TR_ENERGY * 2.0D0/3.0D0,
+     &                 TDIPA2 * TR_ENERGY**3 * A_CONVERSION
+                     ENDIF
                   ENDDO
                ENDDO
                
                DEALLOCATE (DIP_SUB)
                DEALLOCATE (DIP_RHS)
                DEALLOCATE (TDIP_SUB)
-             
+
+         II = II + NDTL
          ENDDO !irreps in lhs
+
+         JJ = JJ + NDTR
        enddo ! irreps on rhs
+
+ 1000 Format (/' Transition dipoles and partial intensities for ',A,/
+     & ' Final state Init. State    Transition moment   ',
+     & 'Trans. Energy  Osc. Strength     A (MHz)')
+ 1001 Format (I3,I5,' <-',I3,I5,3X,F12.6,12X,F14.8,E16.6,2X,F16.6)
+ 1002 Format (I3,I5,' <-',I3,I5,3X,2F12.6,F14.8,E16.6,2x,F12.6)
 
       RETURN
       END
 !C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TRANSITION_ONEONE (EOPER,PROP,TRANS_DIPOLE,
      &                       EIGENVECTORS,NDT_TOT,IREPSPI,NSP)
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c     Contraction of dipole integrals with coefficients for sector (1,1)
 c
@@ -2612,6 +2896,7 @@ c-------------------Local Variables---------------------------------------------
 c
       INTEGER, ALLOCATABLE:: IND(:,:)
       REAL*8 DDOT
+      integer i,ijrep,j,ji,k,ndt
 c
 c------------------------------------------------------------------------------------
 c
@@ -2659,7 +2944,7 @@ c     find  the position of the dipole_{av,ao} elements in the full array
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        SUBROUTINE READ_PROP(DIPLEN,NSP,PROP)
 C
-       IMPLICIT INTEGER (A-Z)
+       implicit none
 C
 C This routine is analogous to RDPROP in relccsd/ccints.F (without the sorting).
 C
@@ -2682,6 +2967,7 @@ C
       CHARACTER*32 ACHAR
       REAL*8 DUMPROP(2,NSP,NSP)
       REAL*8 DUMMY,AMAXR,AMAXI,ANORM,APHASE(2)
+      integer i,ierr,imax,j,jmax
 C
 C---------------Executable code--------------------------------------
 C
@@ -2774,7 +3060,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROP_SUB(ICURFSS,PROP,IREP,JREP,DIP_SUB,NDTL,NDTR,
      &                    IREPSPI,NSP)
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c Takes out symmetry block as needed in subroutine Transition_EA_IP
 c                                                      
@@ -2790,10 +3076,14 @@ c
 c
 c----------------Calling variables---------------------------------------------
 c
-      INTEGER NDTR, NDTL,IJREP,ICURFSS
+      INTEGER NDTR, NDTL,IJREP,ICURFSS,NSP,IREP,JREP,IREPSPI
       DIMENSION IREPSPI(NSP,MXREP,2)
       REAL*8 PROP(RCW,NSP,NSP),DIP_SUB(RCW,NDTL,NDTR)
 
+c
+c---------------Local variables--------------------------------------
+c
+      integer i, ii, j, jj
 c
 c  Distinguish between the two possible cases and get the symmetry block
 c 
@@ -2824,7 +3114,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PROPINDEX(IND,IJREP,NDT,IREPSPI,NSP) 
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 c
 c define offsets of property matrix needed in subroutine Transition_OneOne
 c                                                      
@@ -2840,10 +3130,14 @@ c
 c
 c----------------Calling variables---------------------------------------------
 c
-      INTEGER NDT, IJREP
+      INTEGER NDT, IJREP, IREPSPI, NSP
       INTEGER IND(2,NDT)
       DIMENSION IREPSPI(NSP,MXREP,2)
 
+c
+c---------------Local variables--------------------------------------
+c
+      integer i, irep, ii, j, jrep
 c
 c  Determine indices for property matrix (in MOLFDIR format!)
 c 
@@ -2864,7 +3158,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_FSLABEL (ICURFSS,EPS,LABEL,NDIMH)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -2880,6 +3174,7 @@ C
 C
 C---------------Variables-----------------------------------------------
 C
+      integer ndimh,iao,iav,ii,ijrep,irep,j,jrep
       CHARACTER*50 LABEL(NDIMH),NOT_DEFINED
       INTEGER ICURFSS,I
       REAL*8 EPS(*)

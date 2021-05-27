@@ -4,7 +4,7 @@ $ H  He Li Be Na Mg
 $ K  Ca Rb Sr Cs Ba Fr Ra 
 $ B  C  N  O  F  Ne Al Si P  S  Cl Ar
 $ Ga Ge As Se Br Kr In Sn Sb Te I  Xe Tl Pb Bi Po At Rn 
-$ Uut Fl Uup Lv Uus Uuo
+$ Nh Fl Mc Lv Ts Og
 $ Sc Ti V  Cr Mn Fe Co Ni Cu Zn
 $ Y  Zr Nb Mo Tc Ru Rh Pd Ag Cd Hf Ta W  Re Os Ir Pt Au Hg 
 $ Rf Db Sg Bh Hs Mt Ds Rg Cn
@@ -13,11 +13,11 @@ $ Ac Th Pa U  Np Pu Am Cm Bk Cf Es Fm Md No Lr
 $  
 $  REFERENCE
 $  
-$ 1s-3s: K.G. Dyall, unpublished
+$ 1s-3s: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128
 $ 4s-5s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638 
 $ 6s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638; 
 $        K.G. Dyall, Theor. Chem. Acc. (2012) 131:1217.
-$ 2p-3p: K.G. Dyall, unpublished
+$ 2p-3p: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128
 $    4p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
 $        revision K.G. Dyall, Theor. Chem. Acc. (2006) 115:441
 $ 5p-6p: K.G. Dyall, Theor. Chem. Acc. (1998) 99:366;
@@ -654,7 +654,7 @@ $ d functions
     8.53918207E-02
 $ f functions
     2    0    0
-    7.50848138E-01
+    2.67825538E-01
     1.56595129E-01
 
 $ Ti
@@ -699,7 +699,7 @@ $ d functions
     1.17759016E-01
 $ f functions
     2    0    0
-    9.96984281E-01
+    8.63676263E-01
     1.94276261E-01
 
 $ V 
@@ -744,7 +744,7 @@ $ d functions
     1.46226594E-01
 $ f functions
     2    0    0
-    1.24095497E+00
+    1.12966362E+00
     2.37468827E-01
 
 $ Cr
@@ -789,7 +789,7 @@ $ d functions
     1.73545369E-01
 $ f functions
     2    0    0
-    1.32189994E+00
+    1.38970422E+00
     2.58091600E-01
 
 $ Mn
@@ -834,7 +834,7 @@ $ d functions
     2.00625150E-01
 $ f functions
     2    0    0
-    1.75828937E+00
+    1.65856471E+00
     3.12155006E-01
 
 $ Fe
@@ -879,7 +879,7 @@ $ d functions
     2.27876313E-01
 $ f functions
     2    0    0
-    2.03425623E+00
+    1.93871575E+00
     3.38275692E-01
 
 $ Co
@@ -924,7 +924,7 @@ $ d functions
     2.55517128E-01
 $ f functions
     2    0    0
-    2.33486073E+00
+    2.23165872E+00
     3.69000695E-01
 
 $ Ni
@@ -969,7 +969,7 @@ $ d functions
     2.83677235E-01
 $ f functions
     2    0    0
-    2.63322853E+00
+    2.53914356E+00
     3.98353350E-01
 
 $ Cu
@@ -1014,7 +1014,7 @@ $ d functions
     3.12440496E-01
 $ f functions
     2    0    0
-    2.95657515E+00
+    2.84632713E+00
     3.99320662E-01
 
 $ Zn
@@ -7321,7 +7321,7 @@ $ g functions
     4.07562219E+01
     5.43450830E+00
 
-$ Uut
+$ Nh
 a 113
 $ s functions
    26    0    0
@@ -7505,7 +7505,7 @@ $ g functions
     4.30161720E+01
     5.96240690E+00
 
-$ Uup
+$ Mc
 a 115
 $ s functions
    26    0    0
@@ -7689,7 +7689,7 @@ $ g functions
     4.53346100E+01
     6.50598890E+00
 
-$ Uus
+$ Ts
 a 117
 $ s functions
    26    0    0
@@ -7781,7 +7781,7 @@ $ g functions
     4.65156190E+01
     6.78364000E+00
 
-$ Uuo
+$ Og
 a 118
 $ s functions
    26    0    0

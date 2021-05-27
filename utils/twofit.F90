@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -40,8 +40,7 @@
 #include "implicit.h"
 #include "priunit.h"
 !
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM,XTCM=2.19474625D+05)
+      PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       PARAMETER(D2PI = D2*PI,D4=4.0D0,CENT=1.0D2)
       PARAMETER(NITER=10)
@@ -50,6 +49,11 @@
       DIMENSION A(MP,MDIM),B(MP),C(MDIM),D(MDIM)
       DIMENSION X(MP),Y(MP),P(MP,MXPRP)
       CHARACTER POTFIL*40,REPLY*1
+      DOUBLE PRECISION XTM,AMUKG
+!
+      call set_codata_values(CODSET)
+      XTM   = XTANG*ANGM
+      AMUKG = UMASS
 !
 !     Heading
 !
@@ -64,20 +68,20 @@
 !
       IUNIT = 1
       ILOGG = 2
-      READ(LUCMD,*) I
+      READ(LUSTDIN,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)')                                              &
      'Name of input file with potential curve with '//                  &
      '" R E(R)" values (A40)'
-        READ(LUCMD,'(A)') POTFIL
+        READ(LUSTDIN,'(A)') POTFIL
         NPRP = 0
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)')                                              &
      'Name of input file with potential/property curve (A40)'
-        READ(LUCMD,'(A)') POTFIL
+        READ(LUSTDIN,'(A)') POTFIL
         WRITE(LUPRI,'(A)')                                              &
      'Give number of property curves'
-        READ(LUCMD,*) NPRP
+        READ(LUSTDIN,*) NPRP
         IF(NPRP.GT.MXPRP) THEN
           WRITE(LUPRI,'(A,I5)')                                         &
         '* Maximum number of properties  : ',MXPRP,                     &
@@ -92,7 +96,7 @@
    '  1. Bond lengths in Angstroms.',                                   &
    '  2. Bond lengths in atomic units.',                                &
    ' (Note that all other quantities only in atomic units !)'
-      READ(LUCMD,*) IANG
+      READ(LUSTDIN,*) IANG
       i=LNBLNK(POTFIL)
       OPEN(IUNIT,FILE=POTFIL,STATUS='OLD',FORM='FORMATTED',             &
       ACCESS='SEQUENTIAL',ERR=20)
@@ -149,10 +153,10 @@
    '  1. Select masses of the most abundant isotopes.',                 &
    '  2. Employ user-defined atomic masses.',                           &
    '  3. Normal modes: Give reduced mass.'
-      READ(LUCMD,*) I
+      READ(LUSTDIN,*) I
       IF(I.EQ.1) THEN
         WRITE(LUPRI,'(A)') '* Give charge of atom A:'
-        READ(LUCMD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,AM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -160,10 +164,10 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) AM
+          READ(LUSTDIN,*) AM
         ENDIF
         WRITE(LUPRI,'(A)') '* Give charge of atom B :'
-        READ(LUCMD,*) IZ
+        READ(LUSTDIN,*) IZ
         CALL GETMSS(IZ,BM,ABUND,INFO)
         IF(INFO.EQ.0) THEN
           WRITE(LUPRI,'(A,F12.4)')                                      &
@@ -171,16 +175,16 @@
      '* Abundance:', ABUND
         ELSE
           WRITE(LUPRI,'(A)') 'Routine failed. Give mass in Daltons:'
-          READ(LUCMD,*) BM
+          READ(LUSTDIN,*) BM
         ENDIF
       ELSEIF(I.EQ.2) THEN
         WRITE(LUPRI,'(A)') '* Give mass of atom A in Daltons:'
-        READ(LUCMD,*) AM
+        READ(LUSTDIN,*) AM
         WRITE(LUPRI,'(A)') '* Give mass of atom B in Daltons:'
-        READ(LUCMD,*) BM
+        READ(LUSTDIN,*) BM
       ELSEIF(I.EQ.3) THEN
         WRITE(LUPRI,'(A)') '* Give reduced mass in Daltons:'
-        READ(LUCMD,*) UM
+        READ(LUSTDIN,*) UM
         GOTO 50
       ELSE
         WRITE(LUPRI,'(A)') ' You stupid fart ! Try again !'
@@ -212,12 +216,12 @@
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&
     ' with other isotope(s) (y/n)?'
-      READ(LUCMD,*) REPLY
+      READ(LUSTDIN,*) REPLY
       IF(REPLY.EQ.'y') GO TO 10
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&
     ' with another polynomial order (y/n)?'
-      READ(LUCMD,*) REPLY
+      READ(LUSTDIN,*) REPLY
       IF(REPLY.EQ.'y') GO TO 60
 !
 !     Anharmonic constant at non-stationary geometry
@@ -225,7 +229,7 @@
 !
       WRITE(LUPRI,*) 'Do you want to calculate spectroscopic constants',&
     ' at another geometry (y/n)?'
-      READ(LUCMD,*) REPLY
+      READ(LUSTDIN,*) REPLY
       IF(REPLY.EQ.'y') THEN
         WRITE(LUPRI,*) 'Give geometry in Angstroms '
         READ(5,*) XNEW

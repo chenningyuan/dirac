@@ -1,6 +1,0 @@
-C
-C  FILE: fck3thr.h
-C
-      PARAMETER ( THRFCK3_DEFAULT = 1.0E-15 )
-      COMMON /FKC3THR/ THRNCL, THRPOD, THRCOD, THRSPEXP,
-     &                 FACCLS, THRFCK3

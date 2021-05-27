@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,9 +33,6 @@
 !
 module x2c_def_h1_4c
 
-#ifdef MOD_INTEREST
-      use module_interest_interface
-#endif
   use x2c_import_exportC1
   use x2c_fio
   use x2c_cb_interface, only:         &
@@ -285,21 +282,13 @@ contains
 
        if(defining_h1mat == 0)then
 
-         if(mdirac)then
-#ifdef MOD_INTEREST
-           h1_saao_bas(1:naosh_ls**2*nz) = 0.0d0
-           call process_kinetic_energy_integrals_4comp( h1_saao_bas )
-           call process_nuclear_attraction_integrals_4comp( h1_saao_bas ) 
-#endif
-         else
 #ifdef PRG_DIRAC
-           allocate(wrk(lwrk))
-           call reset_x2c_cb_onefck(.false.)
-           call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
-           call reset_x2c_cb_onefck(.true.)
-           deallocate(wrk)
+         allocate(wrk(lwrk))
+         call reset_x2c_cb_onefck(.false.)
+         call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+         call reset_x2c_cb_onefck(.true.)
+         deallocate(wrk)
 #endif
-         end if
 
        else if(defining_h1mat == 1)then
 !        HUCKEL start guess...

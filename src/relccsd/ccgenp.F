@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -35,7 +35,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FLIN(A,IDIM,IN,IM,DET)
-      IMPLICIT REAL*8 (A-H,O-Z)
+      implicit none
 C
 C     LINEAR SIMULTANEOUS EQUATION
 C
@@ -44,7 +44,10 @@ C
 C     A & B SHOULD BE STORED ON A(IN*(IN+IM))
 C     SOLUTION X WILL BE STORED ON B PART IN DIMENSION A.
 C
+      integer idim, in, im, i, imax, j, k, m, n, npi, nr,jj, jmax
+      real*8 a, aval, d, det, sign, temp, dott, stor
       DIMENSION A(IDIM,*)
+      REAL ZERO, ONE
       PARAMETER (ZERO=0.D0,ONE=1.D0)
 C
       N=IN
@@ -102,9 +105,11 @@ C ON ZERO PIVOT, SET DET=0.AND RETURN TO CALLING PROGRAM NOV 1972
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION DOTT(A,NA,B,NB,N)
-      IMPLICIT REAL*8 (A-H,O-Z)
-
+      implicit none
+      real*8 a, b, dott
+      integer nb,n,na, i, iapt, ibpt
       DIMENSION A(*),B(*)
+      real*8 zero, one, d
       PARAMETER (ZERO=0.D0,ONE=1.D0)
 C
       IAPT=1

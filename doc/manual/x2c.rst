@@ -14,9 +14,14 @@ which are stored in the file X2CMAT. For each atom type (C, H, F, U, ...) the mo
 with the atomic number as appropriate ending, for example: X2CMAT.092 (for U), X2CMAT.006 (C), X2CMAT.001 (H) etc.. 
 See also the tutorial section for a working example.    
 
+keyword(skippc)
+
+Skip the picture change transformation of four-component operators. This is for restarting X2c calculations after SCF, SCF+MOLTRA steps,
+when such operators transformations were already carried out.
+
 keyword(DEBUG)
 
-raises the print level in the X2C module to print intermediate matrices and arrays. use with care as the output might
+raises the print level in the X2C module to print intermediate matrices and arrays. Use with care as the output might
 become filled with lots of numbers.
 
 keyword(freeh1)

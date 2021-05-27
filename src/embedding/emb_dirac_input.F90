@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,6 +24,7 @@ module fde_input_dirac
 
    use fde_types
    use fde_cfg
+   use fde_mag_cfg
    use fde_data
    use fde_nadd_derv
    use fde_input
@@ -96,6 +97,9 @@ module fde_input_dirac
             CASE ('.ENER_B')
                read(lucmd,*) fde_frozen_energy 
 
+            CASE ('.OLDESP')
+               fde_export_old_esp = .true. 
+
             CASE ('.SKIPK')
                call fde_set_skip_nadd_ke(.true.)
             CASE ('.SKIPX')
@@ -121,7 +125,6 @@ module fde_input_dirac
                call fde_set_nadd_all_alda
                dirac_cfg_fde_response = .true.
 
-#ifdef MOD_UNRELEASED
             CASE ('.LEVEL')
                read(lucmd,*) etmp%ex_level 
 
@@ -146,7 +149,113 @@ module fde_input_dirac
                skip_all_imports = .true.
                doprp = .true.
 
-#endif /* MOD_UNRELEASED */ 
+            CASE ('.NOSDFT')
+!              no spin density contributions
+               fde_cfg_no_sdft = .true.
+
+! gosia: keywords for properties in LAO basis sets:
+!           FDE-LAO contributions to property gradient:
+!           -------------------------------------------
+            CASE ('.LDPT')
+!              Direct-LAO contribution to property gradient, involving embedding PoTential
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_direct_embpot = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embpot = .false.
+            CASE ('.NOLDPT')
+!              Exclude Direct-LAO contribution to property gradient, involving embedding PoTential
+               fde_rsp_propgrad_lao_direct_embpot = .false.
+               fde_exclude_rsp_propgrad_lao_direct_embpot = .true.
+            CASE ('.LDKR')
+!              Direct-LAO contribution to property gradient, involving embedding KeRnel (nonzero if SDFT)
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_direct_embker = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .false.
+            CASE ('.NOLDKR')
+!              Exclude Direct-LAO contribution to property gradient, involving embedding KeRnel
+               fde_rsp_propgrad_lao_direct_embker = .false.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .true.
+            CASE ('.LRKR')
+!              Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_reorth_embker = .true.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .false.
+            CASE ('.NOLRKR')
+!              Exclude Reorthonormalization-LAO contribution to property gradient, involving embedding KeRnel
+               fde_rsp_propgrad_lao_reorth_embker = .false.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
+            CASE ('.L11KR')
+!              Group all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_w11 = .true.
+               fde_rsp_propgrad_lao_direct_embker = .true.
+               fde_rsp_propgrad_lao_reorth_embker = .true.
+               fde_exclude_rsp_propgrad_lao_w11 = .false.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .false.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .false.
+            CASE ('.NL11KR')
+!              Exclude all LAO contributions to property gradient involving uncoupled embedding kernel (w11)
+               fde_rsp_propgrad_lao_w11 = .false.
+               fde_rsp_propgrad_lao_direct_embker = .false.
+               fde_rsp_propgrad_lao_reorth_embker = .false.
+               fde_exclude_rsp_propgrad_lao_w11 = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embker = .true.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .true.
+            CASE ('.LAO11')
+!              Group all LAO contributions to property gradient involving embedding PoTential (v) and uncoupled embedding kernel (w11)
+               fde_rsp_propgrad_lao = .true.
+               fde_rsp_propgrad_lao_vw11 = .true.
+               fde_rsp_propgrad_lao_direct_embpot = .true.
+               fde_rsp_propgrad_lao_direct_embker = .true.
+               fde_rsp_propgrad_lao_reorth_embker = .true.
+               fde_exclude_rsp_propgrad_lao_direct_embpot = .false. 
+               fde_exclude_rsp_propgrad_lao_direct_embker = .false.
+               fde_exclude_rsp_propgrad_lao_reorth_embker = .false. 
+!           keywords related to coupled-kernel contributions (to do):
+            CASE ('.LAOFRZ')
+!              LAO contribution to property gradient from the FRoZen density (read from file)
+!              it depends on embedding kernel and does NOT include the Coulomb term...
+               fde_rsp_propgrad_lao = .true.
+               fde_lao_frozen_embker_nonadd = .true.
+            CASE ('.LFCOUL')
+!              ...this is the additional Coulomb term that contributes to the coupling-kernel-like term (.LAOFRZ)
+               fde_rsp_propgrad_lao = .true.
+               fde_lao_frozen_embker_coulomb = .true.
+            CASE ('.LAO12')
+!              Group all LAO contributions to property gradient involving coupling kerned terms (w12)
+               fde_rsp_propgrad_lao = .true.
+               fde_lao_frozen_embker_nonadd = .true.
+               fde_lao_frozen_embker_coulomb = .true.
+!           import/export of perturbed density:
+!           -----------------------------------
+            CASE ('.PERTIM')
+!              import perturbed density (additional columns on 'GRIDOUT' file)
+               read(lucmd,'(A60)') ftmp%frozen_pert_direct%name
+               read(lucmd,'(A60)') ftmp%frozen_pert_reorth%name
+               itmp%im_frozen_pert_direct = .true.
+               itmp%im_frozen_pert_reorth = .true.
+               itmp%im_frozen = .true.
+               fde_rsp_mag_lao_import = .true.
+            CASE ('.PERTEX')
+!              export perturbed density (additional columns on 'GRIDOUT' file)
+               dirac_cfg_fde_export = .true.
+               etmp%do_grid_out = .true.
+               fde_rsp_mag_lao_export = .true.
+!           embedding contributions to expectation value of magnetizability:
+!           ----------------------------------------------------------------
+            CASE ('.EMAFDE')
+!              Expectation value contribution to MAgnetizability - FDE (all terms, excluding terms by keywords below)
+!              it has to be called with PERTIM which imports perturbed density
+               fde_magn_expval_lao = .true.
+            CASE ('.MNOPOT')
+!              Magnetizability NO embedding POTential
+               fde_lao_magn_expval_no_embpot = .true.
+            CASE ('.MNOUKE')
+!              Magnetizability NO Uncoupled KErnel
+               fde_lao_magn_expval_no_uncoup_embker = .true.
+            CASE ('.MNONKE')
+!              Magnetizability NO coupled Nonadditive KErnel
+               fde_lao_magn_expval_no_coupl_nonadd_embker = .true.
+ 
 
             CASE DEFAULT
               WRITE (lunit,'(/,3A,/)') ' Keyword "',WORD, &

@@ -29,6 +29,7 @@ module xcint_main
    public get_xc_energy
    public get_xc_mat_energy
    public get_nr_electrons_integrated
+   public get_susc2el_integrated
 
    private
 
@@ -39,7 +40,6 @@ module xcint_main
       real(8), allocatable :: gs(:, :, :)
       real(8), allocatable :: tn(:)
       real(8), allocatable :: ts(:, :)
-!gosia, temporarily for sdft+lao
       real(8), allocatable :: s_lao(:, :)
       real(8), allocatable :: gs_lao(:, :, :)
    end type
@@ -63,6 +63,9 @@ module xcint_main
    real(8) :: nr_electrons_integrated
    real(8) :: xc_energy
    real(8) :: xc_mat_energy
+
+   real(8) :: susc2el_xc_integrated(3, 3)
+   real(8) :: susc2el_xc_integrated_sdft(3, 3)
 
    logical :: use_gga_qr = .false. !quaternion real
    logical :: use_gga_qi = .false. !quaternion imaginary
@@ -100,8 +103,8 @@ module xcint_main
    integer                      :: mat_dim
    integer                      :: nz
 
-   real(8), pointer             :: dmat_0(:, :)
-   real(8), allocatable, target :: dmat_0_container(:, :)
+   real(8), pointer             :: dmat_0(:, :, :)
+   real(8), allocatable, target :: dmat_0_container(:, :, :)
 
    real(8), allocatable         :: tmat_1(:, :)
    real(8), allocatable         :: tmat_2(:, :)
@@ -128,8 +131,13 @@ module xcint_main
    logical :: do_potential
    integer :: response_order_mo
    integer :: response_order_ao
-   logical :: do_london_rhs_direct
+   logical :: do_london_rhs_direct_der1
+   logical :: do_london_rhs_direct_der2
    logical :: do_london_rhs_ro
+   logical :: do_london_susc2el_der1
+   logical :: do_london_susc2el_der2
+   logical :: london_direct_export
+   logical :: london_reorth_export
    logical :: do_geo
    logical :: do_geo_0
    logical :: do_geo_1
@@ -157,8 +165,13 @@ contains
                             xc_nr_atoms,              &
                             xc_property_gradient,     &
                             xc_do_potential,          &
-                            xc_do_london_rhs_direct,  &
+                            xc_do_london_rhs_direct_der1,  &
+                            xc_do_london_rhs_direct_der2,  &
+                            xc_london_direct_export,       &
+                            xc_london_reorth_export,       &
                             xc_do_london_rhs_ro,      &
+                            xc_do_london_susc2el_der1,&
+                            xc_do_london_susc2el_der2,&
                             xc_do_geo_0,              &
                             xc_do_geo_1,              &
                             xc_do_geo_2,              &
@@ -182,7 +195,7 @@ contains
 !     --------------------------------------------------------------------------
       integer,                   intent(in)    :: xc_mat_dim
       integer,                   intent(in)    :: xc_nz
-      real(8),           target, intent(in)    :: xc_dmat_0(xc_mat_dim, xc_mat_dim)
+      real(8),           target, intent(in)    :: xc_dmat_0(xc_mat_dim, xc_mat_dim, xc_nz)
       integer,                   intent(in)    :: xc_nr_dmat
       integer,                   intent(in)    :: xc_nr_fmat
       real(8), optional, target, intent(in)    :: xc_dmat(xc_mat_dim, xc_mat_dim, xc_nz, xc_nr_dmat)
@@ -196,8 +209,13 @@ contains
       real(8), optional, target, intent(inout) :: xc_property_gradient(*)
 
       logical, optional,         intent(in)    :: xc_do_potential
-      logical, optional,         intent(in)    :: xc_do_london_rhs_direct
+      logical, optional,         intent(in)    :: xc_do_london_rhs_direct_der1
+      logical, optional,         intent(in)    :: xc_do_london_rhs_direct_der2
+      logical, optional,         intent(in)    :: xc_london_direct_export
+      logical, optional,         intent(in)    :: xc_london_reorth_export
       logical, optional,         intent(in)    :: xc_do_london_rhs_ro
+      logical, optional,         intent(in)    :: xc_do_london_susc2el_der1
+      logical, optional,         intent(in)    :: xc_do_london_susc2el_der2
       logical, optional,         intent(in)    :: xc_do_geo_0
       logical, optional,         intent(in)    :: xc_do_geo_1
       logical, optional,         intent(in)    :: xc_do_geo_2
@@ -217,7 +235,7 @@ contains
 
 !#define DEBUG_XC
 #ifdef DEBUG_XC
-      call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0)
+      call matrix_to_file('xc_dmat0', xc_mat_dim*xc_mat_dim, xc_dmat_0(1,1,1))
 #endif
 
 !     start timer
@@ -231,6 +249,9 @@ contains
       nr_electrons_integrated = 0.0d0
       xc_energy    = 0.0d0
       tau_integral = 0.0d0
+
+      susc2el_xc_integrated = 0.0d0
+      susc2el_xc_integrated_sdft = 0.0d0
 
       parallel_xc = (xc_mpi_get_nr_proc() > 1)
 
@@ -256,14 +277,20 @@ contains
          nz      = xc_nz
          nr_dmat = xc_nr_dmat
          nr_fmat = xc_nr_fmat
+!        print *,'debug in xcint: mat_dim,nz,nr_dmat,nr_fmat ',mat_dim,nz,nr_dmat,nr_fmat
       end if
 
 !     set defaults
       do_potential          = .false.
       response_order_mo     = 0
       response_order_ao     = 0
-      do_london_rhs_direct  = .false.
+      do_london_rhs_direct_der1  = .false.
+      do_london_rhs_direct_der2  = .false.
+      london_direct_export  = .false.
+      london_reorth_export  = .false.
       do_london_rhs_ro      = .false.
+      do_london_susc2el_der1= .false.
+      do_london_susc2el_der2= .false.
       do_geo_0              = .false.
       do_geo_1              = .false.
       do_geo_2              = .false.
@@ -277,8 +304,13 @@ contains
          if (present(xc_do_potential))          do_potential          = xc_do_potential
          if (present(xc_response_order_mo))     response_order_mo     = xc_response_order_mo
          if (present(xc_response_order_ao))     response_order_ao     = xc_response_order_ao
-         if (present(xc_do_london_rhs_direct))  do_london_rhs_direct  = xc_do_london_rhs_direct
+         if (present(xc_do_london_rhs_direct_der1))  do_london_rhs_direct_der1  = xc_do_london_rhs_direct_der1
+         if (present(xc_do_london_rhs_direct_der2))  do_london_rhs_direct_der2  = xc_do_london_rhs_direct_der2
+         if (present(xc_london_direct_export))  london_direct_export  = xc_london_direct_export
+         if (present(xc_london_reorth_export))  london_reorth_export  = xc_london_reorth_export
          if (present(xc_do_london_rhs_ro))      do_london_rhs_ro      = xc_do_london_rhs_ro
+         if (present(xc_do_london_susc2el_der1))  do_london_susc2el_der1  = xc_do_london_susc2el_der1
+         if (present(xc_do_london_susc2el_der2))  do_london_susc2el_der2  = xc_do_london_susc2el_der2
          if (present(xc_do_geo_0))              do_geo_0              = xc_do_geo_0
          if (present(xc_do_geo_1))              do_geo_1              = xc_do_geo_1
          if (present(xc_do_geo_2))              do_geo_2              = xc_do_geo_2
@@ -297,8 +329,13 @@ contains
          call xc_mpi_bcast(nr_fmat)
          call xc_mpi_bcast(nr_atoms)
          call xc_mpi_bcast(do_potential)
-         call xc_mpi_bcast(do_london_rhs_direct)
+         call xc_mpi_bcast(do_london_rhs_direct_der1)
+         call xc_mpi_bcast(do_london_rhs_direct_der2)
+         call xc_mpi_bcast(london_direct_export)
+         call xc_mpi_bcast(london_reorth_export)
          call xc_mpi_bcast(do_london_rhs_ro)
+         call xc_mpi_bcast(do_london_susc2el_der1)
+         call xc_mpi_bcast(do_london_susc2el_der2)
          call xc_mpi_bcast(response_order_mo)
          call xc_mpi_bcast(response_order_ao)
          call xc_mpi_bcast(do_geo_0)
@@ -326,7 +363,7 @@ contains
 
       nullify(dmat_0)
       if (.not. xc_mpi_is_master()) then
-         allocate(dmat_0_container(mat_dim, mat_dim))
+         allocate(dmat_0_container(mat_dim, mat_dim, nz))
          dmat_0 => dmat_0_container
       else
          dmat_0 => xc_dmat_0
@@ -476,21 +513,27 @@ contains
       end if
      
       max_ao_m_order = 0
-      if (do_london_rhs_direct) then
+      if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2) then
         max_ao_m_order = 1
       end if
-     
+      if (do_london_susc2el_der1 .or. do_london_susc2el_der2) then
+        max_ao_m_order = 2
+      end if
+
       call dirac_ao_eval_init(max_ao_g_order, &
                         max_ao_m_order, &
                         .true.)
 
       if (xc_mpi_is_master()) then
-!        initial expectation value of the two-electron matrix
+!        initial expectation value of the two-electron matrix (real part)
          if (do_potential) then
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
          end if
 
+!        print *,'nr_mo_gerade_positive_active #1',nr_mo_gerade_positive_active
+!        print *,'nr_mo_ungerade_positive_active #1',nr_mo_ungerade_positive_active
 !        get average density from open shells
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #1'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 #ifdef PRG_DIRAC
@@ -575,7 +618,20 @@ contains
       end if
 #endif
 
+      if (london_direct_export .or. london_reorth_export) then
+         call london_export_open_files(london_direct_export, london_reorth_export)
+      end if
+
       call loop_over_batches()
+
+      if (london_direct_export.or.london_reorth_export) then
+         call london_export_close_files()
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            call london_export_data_collect(london_direct_export, london_reorth_export, xc_mpi_get_nr_proc())
+         end if
+#endif
+      end if
 
 #ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
@@ -604,6 +660,12 @@ contains
          if (do_geo) then
             call xc_mpi_reduce(property_gradient)
          end if
+         if (do_london_susc2el_der1) then
+            call xc_mpi_reduce(susc2el_xc_integrated)
+         end if
+         if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+            call xc_mpi_reduce(susc2el_xc_integrated_sdft)
+         end if
       end if
 #endif
 
@@ -616,22 +678,34 @@ contains
          call scale_density_matrices(0.5d0)
 #endif
 
+!        print *,'nr_mo_gerade_positive_active #2',nr_mo_gerade_positive_active
+!        print *,'nr_mo_ungerade_positive_active #2',nr_mo_ungerade_positive_active
 !        get average density from open shells
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #2'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
-
+ 
 !        symmetrize matrices
          if (use_blas3_scheme .or. (use_gga                         &
-                                   .and. .not. do_london_rhs_direct &
+                                   .and. .not. do_london_rhs_direct_der1 &
+                                   .and. .not. do_london_rhs_direct_der2 &
+                                   .and. .not. do_london_susc2el_der1    &
+                                   .and. .not. do_london_susc2el_der2    &
                                    .and. .not. do_london_ks         &
                                    .and. .not. do_geo)) then
             if (nr_dmat > 0) then
                call gga_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym, dmat_ih_sym)
             else
-               call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
+             call gga_sym(mat_dim, nz, 1, fmat, (/1/), (/1/))
             end if
          end if
 
-         if (do_london_rhs_direct) then
+         if (do_london_rhs_direct_der2 .and. use_gga) then
+            ! symmetrize the imaginary part of fmat
+            call gga_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
+         end if
+
+         if (do_london_rhs_direct_der1) then
+            ! antisymmetrize the real part of fmat
             call mat_lao_sym(mat_dim, nz, nr_fmat, fmat, fmat_pg_sym)
          end if
 
@@ -639,7 +713,7 @@ contains
 
 !        final expectation value of the two-electron matrix
          if (do_potential) then
-            save_ddot2    = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
+            save_ddot2    = ddot(mat_dim*mat_dim, dmat_0(1,1,1), 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
          end if
 
@@ -662,6 +736,7 @@ contains
 #endif
 
 !     check for nan in xc matrix
+      if (xc_nr_fmat > 0) then
       do imat = 1, xc_nr_fmat
          do iz = 1, nz
             do i = 1, mat_dim
@@ -674,6 +749,7 @@ contains
             end do
          end do
       end do
+      end if
 
    end subroutine
 
@@ -756,7 +832,7 @@ contains
       real(8) :: f
 !     --------------------------------------------------------------------------
 
-      call dscal(mat_dim*mat_dim, f, dmat_0, 1)
+      call dscal(mat_dim*mat_dim*nz, f, dmat_0(1,1,1), 1)
       if (nr_dmat > 0) then
         call dscal(mat_dim*mat_dim*nz*nr_dmat, f, dmat, 1)
       end if
@@ -786,10 +862,15 @@ contains
                end do
             end do
          end if
+         if (do_london_rhs_direct_der2) then
+           do iz = 1, nz
+             iq = pq_to_uq(iz, 0)
+             call my_q2bphase('D', iq, 1, dmat_0(1,1,iz))
+           end do
+         end if
       end if
 
    end subroutine
-
 
 
 
@@ -814,7 +895,7 @@ contains
 !     --------------------------------------------------------------------------
       integer :: id, m
       integer :: ii, ji
-      real(8) :: temp
+      real(8) :: temp, temp2(52)
       real(8) :: block_threshold
       real(8) :: rho13, rho_outer, rho_resp, f
     integer :: ipoint
@@ -823,12 +904,11 @@ contains
     integer              :: derv_length, im, i
     real(8), allocatable :: derv(:, :)
     real(8), allocatable :: derv_nadd(:, :)
-
-    logical :: print_data_at_point
-
     real(8) :: n_b(3)
     real(8) :: gnn_b(3)
     real(8) :: gn_b(3, 3)
+    real(8) :: n_bb(3, 3)
+    integer :: ixyz, jxyz
 
       logical :: un_above_threshold
       logical :: us_above_threshold
@@ -844,19 +924,17 @@ contains
 
     type(omega_prefactor) :: u
 
-    allocate(u%n (      nr_fmat))
-    allocate(u%s (   3, nr_fmat))
-    allocate(u%gn(   3, nr_fmat))
-    allocate(u%gs(3, 3, nr_fmat))
-    allocate(u%tn(      nr_fmat))
-    allocate(u%ts(   3, nr_fmat))
-    allocate(u%s_lao(3, nr_fmat))
-    allocate(u%gs_lao(3, 3, nr_fmat))
-
-
-
-
-
+    if (nr_fmat > 0) then
+      allocate(u%n (      nr_fmat))
+      allocate(u%s (   3, nr_fmat))
+      allocate(u%gn(   3, nr_fmat))
+      allocate(u%gs(3, 3, nr_fmat))
+      allocate(u%tn(      nr_fmat))
+      allocate(u%ts(   3, nr_fmat))
+      allocate(u%s_lao(3, nr_fmat))
+      allocate(u%gs_lao(3, 3, nr_fmat))
+    end if
+    tau=0.0d0 ! Miro: satisfy runtime check
 
     if (use_blas3_scheme) then
        block_threshold = get_block_threshold(dft_cfg_tinydens, mat_dim, dmat_0)
@@ -874,12 +952,17 @@ contains
     if (response_order_mo > 0) then
        max_fun_derv = response_order_mo + 1
     end if
-    if (do_london_rhs_direct) then
-       if (dft_cfg_no_sdft) then
-          max_fun_derv = 1
-       else
-          max_fun_derv = 2
-       end if
+    if (do_london_rhs_direct_der1) then
+       max_fun_derv = 1
+    end if
+    if (do_london_rhs_direct_der2 .and. .not. dft_cfg_no_sdft) then
+       max_fun_derv = 2
+    end if
+    if (do_london_susc2el_der1) then
+       max_fun_derv = 1
+    end if
+    if (do_london_susc2el_der2) then
+       max_fun_derv = 2
     end if
     if (do_geo_0) then
        max_fun_derv = 1
@@ -990,13 +1073,21 @@ contains
       allocate(buffer(1, nr_ao_slices*nr_ao_cartesian))
       buffer = 0.0d0
 
-   print_data_at_point = .true.
-
 !  here starts the expensive loop over points
 !  do not evaluate anything inside this loop
 !  that does not change from point to point
+!gosia debug:
+!  if (do_london_rhs_ro) then
+!   do i =1, 3
+!     write(*, *) 'dmat reorth dft read test, i =', i
+!     call prqmat(dmat(1,1,1,i), mat_dim, mat_dim, mat_dim, mat_dim, nz,  &
+!      (/1,2,3,4/), 6)
+!   end do
+!  end if
+
    do ipoint = 1, nr_points_on_this_proc
    
+!     print *, "check points",ipoint,xc_mpi_get_rank(),ipoint,rx(ipoint),ry(ipoint),rz(ipoint)
       time_ao_start = second()
       call get_ao(1,          &
                   rx(ipoint), &
@@ -1004,6 +1095,17 @@ contains
                   rz(ipoint), &
                   ao,         &
                   buffer)
+
+!gosia debug:
+!      if (do_london_rhs_ro) then
+!         write(*, *) 'ao dft nr_ao_slices, nr_ao_cartesian = ', nr_ao_slices, nr_ao_cartesian
+!         do i = 1, nr_ao_slices*nr_ao_cartesian 
+!           write(*, '(A,3E16.8,ES30.20E3)') 'ao in point ', rx(ipoint), ry(ipoint), rz(ipoint), ao(1,i)
+!         end do
+!      end if
+
+!     print *, "dft check ao",ipoint,xc_mpi_get_rank(),ao
+!     print *, "dft check buffer",ipoint,xc_mpi_get_rank(),buffer
       time_ao = time_ao + second() - time_ao_start
 
       time_density_start = second()
@@ -1019,17 +1121,19 @@ contains
       end if
       time_density = time_density + second() - time_density_start
 
+!     print *, "check density ",ipoint,xc_mpi_get_rank(),dft_cfg_tinydens,n_0(1)
+
       if (n_0(1) > dft_cfg_tinydens) then
          nr_points_used = nr_points_used + 1
 
-         u%n  = 0.0d0
-         u%s  = 0.0d0
-         u%gn = 0.0d0
-         u%gs = 0.0d0
-         u%tn = 0.0d0
-         u%ts = 0.0d0
-         u%s_lao  = 0.0d0
-         u%gs_lao  = 0.0d0
+         if (allocated(u%n)) u%n  = 0.0d0
+         if (allocated(u%s)) u%s  = 0.0d0
+         if (allocated(u%gn)) u%gn = 0.0d0
+         if (allocated(u%gs)) u%gs = 0.0d0
+         if (allocated(u%tn)) u%tn = 0.0d0
+         if (allocated(u%ts)) u%ts = 0.0d0
+         if (allocated(u%s_lao)) u%s_lao  = 0.0d0
+         if (allocated(u%gs_lao)) u%gs_lao  = 0.0d0
 
          w(1) = rw(ipoint)
 
@@ -1126,7 +1230,7 @@ contains
         end if !exchange-correlation potential
 
 !fix for lao shieldings with saop:
-        if (do_london_rhs_direct .or. do_london_rhs_ro) then
+        if (do_london_rhs_direct_der1 .or. do_london_rhs_direct_der2 .or. do_london_rhs_ro) then
 !         asymptotic correction
           if (dft_cfg_saop_is_active) then
             call get_n(rho_outer,       &
@@ -1150,14 +1254,13 @@ contains
 
         end if
 
-!       direct-lao contribution to differentiated kohn-sham matrix
-!       ==========================================================
+!       london contributions to differentiated Kohn-Sham matrix, 
+!       added to property gradient, closed-shell only
 
-!       gosia: this part is correct only for closed-shell systems
-!       some xc contributions to differentiated Fock matrix have not been
-!       programmed as for closed-shell systems they are = 0 by definition
+!       (1) direct-lao contributions, 1st functional derivatives
+!       --------------------------------------------------------
+        if (do_london_rhs_direct_der1) then
 
-        if (do_london_rhs_direct) then
             if (use_gga) then
               call gga_london_distribute_r(derv(1, d1000000),                 &
                                            2.0d0*derv(1, d0010000),           &
@@ -1180,48 +1283,46 @@ contains
 
           end if
 
+!       (2) london reorthogonalization contribution, 2nd functional derivatives
+!       -----------------------------------------------------------------------
 
-!       london reorthogonalization spin density contribution
-!       ====================================================
-
-        if (do_london_rhs_ro .and. .not. dft_cfg_no_sdft) then
-           call lr_sdft_lao_reorth(bllen,          &
+        if (do_london_rhs_ro) then
+           call lr_sdft_lao_reorth(ipoint,         &
+                                   bllen,          &
                                    mat_dim,        &
                                    nz,             &
                                    ao,             &
                                    n_0,            &
                                    gn_0_pointwise, &
-                                   gnn_0,          &
-                                   w,              &
-                                   use_gga_qi,     &
+                                   w(1),           &
+                                   use_gga,        &
                                    dmat,           &
                                    dmat_pg_sym,    &
                                    buffer,         &
                                    derv_length,    &
-                                   derv, u)
+                                   derv, u,        &
+                                   rx(ipoint), ry(ipoint), rz(ipoint))
         end if
 
+!       (3) direct-lao spin density contribution, 2nd functional derivatives
+!       --------------------------------------------------------------------
 
-!       london direct spin density contribution
-!       =======================================
-
-        if (do_london_rhs_direct .and. .not. dft_cfg_no_sdft) then
-!radovan: this code is commented and tests pass, strange
-              !call lr_sdft_lao_direct(bllen,          &
-              !                        mat_dim,        &
-              !                        nz,             &
-              !                        ao,             &
-              !                        n_0,            &
-              !                        gn_0_pointwise, &
-              !                        gnn_0,          &
-              !                        w,              &
-              !                        use_gga_qi,     &
-              !                        buffer,         &
-              !                        derv_length,    &
-              !                        derv, u,        &
-              !                        rx(ipoint), ry(ipoint), rz(ipoint))
+        if (do_london_rhs_direct_der2) then
+              call lr_sdft_lao_direct(ipoint,         &
+                                      bllen,          &
+                                      mat_dim,        &
+                                      nz,             &
+                                      ao,             &
+                                      n_0,            &
+                                      gn_0_pointwise, &
+                                      w(1),           &
+                                      use_gga,        &
+                                      dmat_0,         &
+                                      buffer,         &
+                                      derv_length,    &
+                                      derv, u,        &
+                                      rx(ipoint), ry(ipoint), rz(ipoint))
         end if
-
 
 !       linear response
 !       ===============
@@ -1575,11 +1676,8 @@ contains
                                 ao(1, ao_off_g1_m0(3, 0) + 1))
              end if
 
-!gosia:
-!sdft+lao now separately, later will be moved to u%s and u%gs,
-!now i left it separately for debugging
-
 !radovan: this code does not seem to be covered by any test, is this true?
+!gosia: tested in 'london_properties_symmetry'
 
              us_lao_above_threshold = .false.
              if (maxval((/dabs(u%s_lao(1, im)), &
@@ -1602,6 +1700,8 @@ contains
              end if
 
              if (ugs_lao_above_threshold) then
+!               F_pq(im) +=   u%s_lao(j, im)   \chi_p* \Sigma_j \chi_q
+!                        + 2 u%gs_lao(:, j, im) \chi_p* \Sigma_j \nabla_i \chi_q
                 call nabla_omega_imag(fmat,                &
                                       im,                  &
                                       fmat_pg_sym(im) - 1, &
@@ -1612,13 +1712,13 @@ contains
                                       ao)
              else
                 if (us_lao_above_threshold) then
-!                  F_pq += u%s_j \chi_p* \Sigma_j \chi_q
+!                  F_pq(im) += u%s_lao(j, im) \chi_p* \Sigma_j \chi_q
                    call omega_imag(fmat,                &
-                                   im,                  &
-                                   fmat_pg_sym(im) - 1, &
+                                   im,                  &  ! in order: Bx, By, Bz
+                                   fmat_pg_sym(im) - 1, &  ! irep of property gradient
                                    mat_dim,             &
                                    nz,                  &
-                                   u%s_lao(1:3, im),    &
+                                   u%s_lao(1, im),      &
                                    ao)
                 end if
              end if
@@ -1626,6 +1726,114 @@ contains
           end do
 
           time_matrix_dist = time_matrix_dist + second() - time_matrix_dist_start
+
+!         xc contributions to expectation value part of magnetizability
+!         =============================================================
+!         gosia: closed-shell only, called from pammag.F (susc2el subroutine)
+!         these are 'pure-direct' terms
+!         now works only in C1 symmetry, because isymop in pammag is hardcoded to 1
+
+          if (do_london_susc2el_der1) then
+            n_bb = 0.0d0
+!           here no SDFT contributions (first-order functional derivatives)
+            if (use_gga) then
+              call gga_london_sus2el_der1(derv(1, d1000000),        &
+                                          2.0d0*derv(1, d0010000),  &
+                                          gn_0_pointwise,           &
+                                          (/1,1,1/),                &
+                                          mat_dim,                  &
+                                          nz,                       &
+                                          dmat_0,                   &
+                                          ao,                       &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
+                                          n_bb)
+            !   call xc_london_c1_susc_gga_der1(derv(1, d1000000),   &
+            !                               2.0d0*derv(1, d0010000),  &
+            !                               gn_0_pointwise,           &
+            !                               mat_dim,             &
+            !                               nz,                  &
+            !                               dmat_0,                &
+            !                               ao,                  &
+            !                               (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+            !                               n_bb)
+
+            else
+              call lda_london_sus2el_der1(derv(1, d1000000),   &
+                                          (/1,1,1/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
+                                          n_bb)
+             !  call xc_london_c1_susc_der1(derv(1, d1000000),   &
+             !                              mat_dim,             &
+             !                              nz,                  &
+             !                              dmat_0,                &
+             !                              ao,                  &
+             !                              (/rx(ipoint), ry(ipoint), rz(ipoint)/), &
+             !                              n_bb)
+            end if
+!           test c1, use overlap derivatives and not AO derivs (leave it to compare directly with dalton):
+!           sum to susc2el_xc_integrated
+            do ixyz = 1, 3
+              do jxyz = 1, 3
+                susc2el_xc_integrated(jxyz, ixyz) = susc2el_xc_integrated(jxyz, ixyz) &
+                                                  + n_bb(jxyz, ixyz)
+              end do
+            end do
+          end if  ! if (do_london_susc2el_der1) then
+
+          if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+!           here only sdft contributions (second-order functional derivatives)
+            n_bb = 0.0d0
+            if (use_gga) then
+              call gga_london_sus2el_der2(derv(1, d0200000),   &
+                                          derv(1, d0101000),   &
+                                          derv(1, d0002000),   &
+                                          2.0d0*derv(1, d0000100),   &
+                                          gn_0_pointwise,      &
+                                          (/0,0,0/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
+                                          n_bb)
+            else
+              call lda_london_sus2el_der2(derv(1, d0200000),   &
+                                          (/0,0,0/),           &
+                                          mat_dim,             &
+                                          nz,                  &
+                                          dmat_0,              &
+                                          ao,                  &
+                                          rx(ipoint), ry(ipoint), rz(ipoint), &
+                                          buffer, &
+                                          n_bb)
+
+            end if
+
+!           sum to susc2el_xc_integrated_sdft
+            do ixyz = 1, 3
+              do jxyz = 1, 3
+                susc2el_xc_integrated_sdft(jxyz, ixyz) = susc2el_xc_integrated_sdft(jxyz, ixyz) &
+                                                  + n_bb(jxyz, ixyz)
+              end do
+            end do
+
+          end if ! if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+
+!gosia: if perturbed density export, then in points where the density is lower than threshold, put the perturbed density to 0
+      else if (n_0(1) <= dft_cfg_tinydens) then
+         temp2 = 0.0d0
+         if (london_direct_export .or. london_reorth_export) then
+            call london_export_write_data_to_files((/rx(ipoint),ry(ipoint),rz(ipoint), rw(ipoint), &
+                                          temp2(1:48)/),    &
+                                       (/london_direct_export,london_reorth_export/))
+         end if
 
       end if !if (n_0(1) > dft_cfg_tinydens) then
     end do !do ipoint = 1, nr_points_on_this_proc
@@ -1638,14 +1846,14 @@ contains
     deallocate(derv)
     deallocate(derv_nadd)
 
-    deallocate(u%n)
-    deallocate(u%s)
-    deallocate(u%gn)
-    deallocate(u%gs)
-    deallocate(u%tn)
-    deallocate(u%ts)
-    deallocate(u%s_lao)
-    deallocate(u%gs_lao)
+    if (allocated(u%n)) deallocate(u%n)
+    if (allocated(u%s)) deallocate(u%s)
+    if (allocated(u%gn)) deallocate(u%gn)
+    if (allocated(u%gs)) deallocate(u%gs)
+    if (allocated(u%tn)) deallocate(u%tn)
+    if (allocated(u%ts)) deallocate(u%ts)
+    if (allocated(u%s_lao)) deallocate(u%s_lao)
+    if (allocated(u%gs_lao)) deallocate(u%gs_lao)
 
    end subroutine
 
@@ -1728,6 +1936,421 @@ contains
       real(8) :: get_xc_mat_energy
       get_xc_mat_energy = xc_mat_energy
    end function
+
+   function get_susc2el_integrated() result(r)
+      real(8) :: r(3, 3)
+      integer :: i, j
+
+      if (do_london_susc2el_der1) then
+        write(*, *) 'XC contributions to susc2el (charge density; XC potential) - details:'
+        do i = 1, 3
+          write(*, '(3F20.12)') (susc2el_xc_integrated(i,j), j = 1, 3)
+        end do
+      end if
+
+      if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+        write(*, *) 'XC contributions to susc2el (spin density; XC kernel) - details:'
+        do i = 1, 3
+          write(*, '(3F20.12)') (susc2el_xc_integrated_sdft(i,j), j = 1, 3)
+        end do
+      end if
+
+      r = 0.0d0
+      do i = 1,3
+        do j = 1,3
+          if (do_london_susc2el_der1) then
+            r(j, i) = r(j, i) + susc2el_xc_integrated(j, i)
+          end if
+          if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
+            r(j, i) = r(j, i) + susc2el_xc_integrated_sdft(j, i)
+          end if
+        end do
+      end do
+   end function
+
+   subroutine london_export_write_data_to_files(d, f)
+      real(8), intent(in) :: d(*)
+      logical, intent(in) :: f(2)
+      integer :: file_unit
+
+!     where:
+!     f(lao_direct, lao_reorth)
+!     decides where to write to
+#ifdef VAR_MPI
+      if (parallel_xc) then
+         if (f(1)) file_unit = pertden_direct_lao_par_file_unit
+         if (f(2)) file_unit = pertden_reorth_lao_par_file_unit
+      else
+         if (f(1)) file_unit = pertden_direct_lao_file_unit
+         if (f(2)) file_unit = pertden_reorth_lao_file_unit
+      end if
+#else
+      if (f(1)) file_unit = pertden_direct_lao_file_unit
+      if (f(2)) file_unit = pertden_reorth_lao_file_unit
+#endif
+
+!     now we can write...
+      write(file_unit, pertden_file_format) d(1:pertden_nr_columns)
+
+   end subroutine
+
+
+   subroutine london_export_copy_data_from_files(hfile_in, hfile_out)
+      integer, intent(in) :: hfile_in, hfile_out
+      real(8) :: d(pertden_nr_columns)
+      integer :: ierr, i
+
+      i = 0
+      do
+         read(hfile_in, pertden_file_format, iostat=ierr) &
+                        d(1:pertden_nr_columns)
+         i = i+1
+         if (ierr .ne. 0) then
+            exit
+         end if
+         write(hfile_out, pertden_file_format) &
+                        d(1:pertden_nr_columns)
+      end do
+
+   end subroutine
+
+   subroutine compare_files(file_new)
+      integer, intent(in) :: file_new
+      integer :: i, j, k, ierr
+      integer :: iline, iline_grid
+      character*80 :: file_format, line, lines(nr_points_total)
+      character*80 :: lines_grid(nr_points_total)
+      real(8) :: line_new(3)
+
+      write(*, *) 'compare_files, nr_points_total =', nr_points_total
+
+      file_format = "(3d20.12)"
+      rewind(file_new)
+      i = 0
+      do
+         !read(file_new, file_format, iostat=ierr) line_new
+         read(file_new, '(80a)', iostat=ierr) line
+         if (ierr .eq. -1) exit
+         if (ierr .ne. 0) write(*, *) &
+              'error reading file, compare_files (new), ierr = ', ierr
+         i = i + 1
+         lines(i) = line
+      end do
+      iline = i
+
+!     read numerical_grid file
+      open(interface_file_unit,       &
+          file   = 'numerical_grid', &
+           status = 'unknown',        &
+           form   = 'formatted',      &
+           access = 'sequential')
+      rewind(interface_file_unit)
+
+      i = 0
+      do
+ 103     continue
+         read(interface_file_unit, '(80a)', iostat=ierr) line
+         if (ierr .eq. -1) exit
+         if (ierr .ne. 0) write(*, *) &
+              'error reading file, compare_files (grid), ierr = ', ierr
+         if (line(1:7) == '       ') go to 103
+         i = i + 1
+         lines_grid(i) = line
+      end do
+      !close(interface_file_unit, status='keep')
+      iline_grid = i
+      write(*, *) 'compare files iline_grid = ', iline_grid
+      write(*, *) 'compare files lines_grid = ', lines_grid
+
+      k = 0
+      do i = 1, nr_points_total
+         do j = 1, nr_points_total
+            if (lines(i) .eq. lines_grid(j)) k = k+1
+         end do
+      end do
+      write(*, *) 'compare files k =', k
+      if (k == nr_points_total) write(*,*) 'files the same'
+
+   end subroutine
+
+   subroutine london_export_open_files(lao_direct, lao_reorth)
+      logical, intent(in) :: lao_direct, lao_reorth
+      integer :: numproc, myproc
+      integer :: file_name_length, file_unit
+      character :: file_name*18, file_name_full*24
+      logical :: file_exists
+!     pertden files always have the same number of columns (52)
+!     the order of columns is:
+!     1  2  3  4  |     5-7      |         8-16           |       17-25           |       26-52
+!     rx ry rz w  | n_b(B=x,y,z) | gn_b(r=x,y,z; B=x,y,z) | s_b(s=x,y,z; B=x,y,z) | gs_b(r=x,y,z; s=x,y,z; B=x,y,z)
+
+
+#ifdef VAR_MPI
+      if (parallel_xc) then
+
+         if (lao_direct) then
+            file_name = pertden_direct_lao_par_file_name !"pertden_direct_lao"
+            file_unit = pertden_direct_lao_par_file_unit
+         end if
+         if (lao_reorth) then
+            file_name = pertden_reorth_lao_par_file_name !"pertden_reorth_lao"
+            file_unit = pertden_reorth_lao_par_file_unit
+         end if
+
+!        get the number of all proc involved (including master)
+         numproc = xc_mpi_get_nr_proc()
+!        get the task id (0=master)
+         myproc = xc_mpi_get_rank()
+
+!        create a file name on each proc         
+         if (myproc .lt. 10) then    ! mpi id has one digit
+            write (file_name_full,'(a18,a1,i1)') file_name,'.',myproc
+            file_name_length=20
+         else if (myproc .lt. 100) then  ! mpi id has two digits
+            write (file_name_full,'(a18,a1,i2)') file_name,'.',myproc
+            file_name_length=21
+         else if (myproc .lt. 1000) then  ! mpi id has three digits
+            write (file_name_full,'(a18,a1,i3)') file_name,'.',myproc
+            file_name_length=22
+         else
+            call quit("error in london_export_open_files parallel run")
+         endif
+
+!        bcast whatever will be needed:
+         call xc_mpi_bcast(pertden_nr_columns)
+         call xc_mpi_bcast(file_name_length)
+         call xc_mpi_bcast(file_name_full)
+
+      else
+!        if serial run, then write directly to the *FINAL file
+         if (xc_mpi_is_master()) then
+            if (lao_direct) then
+               file_name_full = pertden_direct_lao_file_name !"pertden_direct_lao.FINAL"
+               file_name_length = 24
+               file_unit = pertden_direct_lao_file_unit
+            end if
+            if (lao_reorth) then
+               file_name_full = pertden_reorth_lao_file_name !"pertden_reorth_lao.FINAL"
+               file_name_length = 24
+               file_unit = pertden_reorth_lao_file_unit
+            end if
+         end if
+      end if
+#else
+      if (xc_mpi_is_master()) then
+         if (lao_direct) then
+            file_name_full = pertden_direct_lao_file_name !"pertden_direct_lao.FINAL"
+            file_name_length = 24
+            file_unit = pertden_direct_lao_file_unit
+            pertden_direct_lao_file_open = .false.
+         end if
+         if (lao_reorth) then
+            file_name_full = pertden_reorth_lao_file_name !"pertden_reorth_lao.FINAL"
+            file_name_length = 24
+            file_unit = pertden_reorth_lao_file_unit
+            pertden_reorth_lao_file_open = .false.
+         end if
+      end if
+#endif
+
+      inquire(file=file_name_full(1:file_name_length), exist=file_exists)
+      if (.not.file_exists) then
+         open(file_unit, &
+              file = file_name_full(1:file_name_length), &
+              status = 'new',        &
+              form   = 'formatted',  &
+              access = 'sequential')
+
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            if (lao_direct) pertden_direct_lao_par_file_open = .true.
+            if (lao_reorth) pertden_reorth_lao_par_file_open = .true.
+            call xc_mpi_bcast(pertden_direct_lao_par_file_open)
+            call xc_mpi_bcast(pertden_reorth_lao_par_file_open)
+         else
+            if (lao_direct) pertden_direct_lao_file_open = .true.
+            if (lao_reorth) pertden_reorth_lao_file_open = .true.
+         end if
+#else
+         if (lao_direct) pertden_direct_lao_file_open = .true.
+         if (lao_reorth) pertden_reorth_lao_file_open = .true.
+#endif
+      end if
+
+   end subroutine
+
+
+   subroutine london_export_close_files()
+
+!     close proc-unique files
+#ifdef VAR_MPI
+      if (parallel_xc) then
+         if (pertden_direct_lao_par_file_open) then
+            close(pertden_direct_lao_par_file_unit, status='keep')
+            pertden_direct_lao_par_file_open = .false.
+         end if
+         if (pertden_reorth_lao_par_file_open) then
+            close(pertden_reorth_lao_par_file_unit, status='keep')
+            pertden_reorth_lao_par_file_open = .false.
+         end if
+      end if
+#endif
+
+!     and the final file (was opened if serial run)
+      if (pertden_direct_lao_file_open) then
+         close(pertden_direct_lao_file_unit, status='keep')
+         pertden_direct_lao_file_open = .false.
+      end if
+      if (pertden_reorth_lao_file_open) then
+         close(pertden_reorth_lao_file_unit, status='keep')
+         pertden_reorth_lao_file_open = .false.
+      end if
+
+   end subroutine
+
+#ifdef VAR_MPI
+   subroutine london_export_data_collect(lao_direct, lao_reorth, numproc)
+!     this is called only in parallel run
+!     here: data from all the files created for each process
+!     is copied to one "final" file
+      logical, intent(in) :: lao_direct, lao_reorth
+      integer, intent(in) :: numproc
+      integer :: myproc
+      integer :: ieof
+      integer :: file_unit_par, file_unit_final, file_name_length
+      character :: file_name_final*24, file_name_full*22, file_name_par*18
+      logical :: file_exists, file_is_open
+      integer :: ioff(0:numproc-1), nr_points_proc(0:numproc-1)
+      integer :: i, iline, ierr
+      real(8) :: d(pertden_nr_columns)
+      real(8), allocatable, target :: buffer_container(:, :)
+      real(8), pointer             :: buffer(:, :)
+     
+      !numproc = xc_mpi_get_nr_proc()
+      myproc = xc_mpi_get_rank()
+      file_is_open = .false.
+
+      if (lao_direct) then
+         file_name_par   = pertden_direct_lao_par_file_name  !"pertden_direct_lao"
+         file_unit_par   = pertden_direct_lao_par_file_unit
+         file_name_final = pertden_direct_lao_file_name      !"pertden_direct_lao.FINAL"
+         file_unit_final = pertden_direct_lao_file_unit
+      end if
+      if (lao_reorth) then
+         file_name_par   = pertden_reorth_lao_par_file_name  !"pertden_reorth_lao"
+         file_unit_par   = pertden_reorth_lao_par_file_unit
+         file_name_final = pertden_reorth_lao_file_name      !"pertden_reorth_lao.FINAL"
+         file_unit_final = pertden_reorth_lao_file_unit
+      end if
+
+      if (xc_mpi_is_master()) then
+
+         inquire(file=file_name_final, exist=file_exists)
+         if (.not. file_exists) then
+
+            if (lao_direct) file_is_open = pertden_direct_lao_file_open
+            if (lao_reorth) file_is_open = pertden_reorth_lao_file_open
+
+            if (.not. file_is_open) then
+
+               open(file_unit_final, &
+                    file = file_name_final, &
+                    status = 'new',        &
+                    form   = 'formatted',  &
+                    access = 'sequential', &
+                    position = 'append')
+
+               file_is_open = .true.
+               if (lao_direct) pertden_direct_lao_file_open = file_is_open
+               if (lao_reorth) pertden_reorth_lao_file_open = file_is_open
+
+            end if
+         end if
+      end if
+          
+!     prepare buffer
+      nullify(buffer)
+      allocate(buffer_container(nr_points_total,pertden_nr_columns))
+      buffer_container = 0.0d0
+      buffer => buffer_container
+      call xc_mpi_bcast(buffer)
+
+!     and offsets for buffer:
+      do i = 0, numproc - 1
+        nr_points_proc(i) = nr_points_on_this_proc
+        call xc_interface_mpi_barrier()
+      end do
+      call xc_mpi_bcast(nr_points_proc)
+      ioff(0)  = 1 
+      do i = 1, numproc - 1
+        ioff(i) = ioff(i-1) + nr_points_proc(i-1)
+        call xc_interface_mpi_barrier()
+      end do
+      call xc_mpi_bcast(ioff)
+
+      call xc_interface_mpi_barrier()
+
+      do i = 0, numproc - 1
+         if (i .lt. 10) then
+            write (file_name_full,'(a18,a1,i1)') file_name_par,'.',i
+            file_name_length=20
+         else if (i .lt. 100) then
+            write (file_name_full,'(a18,a1,i2)') file_name_par,'.',i
+            file_name_length=21
+         else if (i .lt. 1000) then
+            write (file_name_full,'(a18,a1,i3)') file_name_par,'.',i
+            file_name_length=22
+         else
+            call quit("error in london.*collect parallel run")
+         endif
+      
+         call xc_interface_mpi_barrier()
+         if (myproc == i) then
+            inquire(file=file_name_full(1:file_name_length), exist=file_exists)
+            open(file_unit_par,  &
+                 file = file_name_full(1:file_name_length), &
+                 status = 'old',        &
+                 form   = 'formatted',  &
+                 access = 'sequential')
+            rewind(file_unit_par)
+         
+            iline = 0
+            do
+               read(file_unit_par, pertden_file_format, iostat=ierr) &
+                              d(1:pertden_nr_columns)
+                              !buffer(ioff(i)+iline, 1:pertden_nr_columns)
+               if (ierr .ne. 0) exit
+               buffer(ioff(i)+iline, 1:pertden_nr_columns) = d(1:pertden_nr_columns)
+               iline = iline+1
+            end do
+            close(file_unit_par, status='delete')
+         end if
+      
+      end do ! do i = 0, numproc - 1
+      call xc_interface_mpi_barrier()
+
+      call xc_mpi_reduce(buffer)
+
+      call xc_interface_mpi_barrier()
+
+      if (xc_mpi_is_master()) then
+        do iline = 1, nr_points_total
+          write(file_unit_final, pertden_file_format) &
+                     buffer(iline, 1:pertden_nr_columns)
+        end do
+      end if
+
+      nullify(buffer)
+      if (allocated(buffer_container)) deallocate(buffer_container)
+
+      close(file_unit_final, status = 'keep')
+
+   end subroutine
+
+#endif
+
+
+
 
    subroutine loop_over_batches()
     real(8) :: dummy
@@ -2046,31 +2669,32 @@ contains
 
   end subroutine
 
-
-  subroutine lr_sdft_lao_direct(block_length,       &
+  subroutine lr_sdft_lao_direct(ipoint,             &
+                                block_length,       &
                                 mat_dim,            &
                                 nz,                 &
-                                ao,               &
+                                ao,                 &
                                 n_0,                &
                                 gn_0_pointwise,     &
-                                gnn_0,              &
                                 w,                  &
-                                is_gga_qi,          &
+                                is_gga,             &
+                                dmat_full,          &
                                 buffer,             &
                                 n,                  &
                                 derv, u,            &
                                 px, py, pz)
 
 !   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
-    real(8), intent(in)    :: gnn_0(*)
-    real(8), intent(in)    :: w(*)
-    logical, intent(in)    :: is_gga_qi
+    real(8), intent(in)    :: w
+    logical, intent(in)    :: is_gga
+    real(8), intent(in)    :: dmat_full(*)
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv(max_block_length, 0:n)
@@ -2079,98 +2703,156 @@ contains
     real(8)                ::  s_b_lao(3, 3), gs_b_lao(3, 3, 3)
 
     real(8)                :: z_b
-    real(8)                :: y_b(3, 3)
+    real(8)                :: y_b(3)
 
-    integer                :: k_start, k, im, im_off, j
+    integer                :: k_start, k, im, im_off, j, ioff, i
+    integer                :: irep(nr_fmat)
     type(omega_prefactor) :: u
-    integer :: i
+
+    real(8) :: temp(pertden_nr_columns)
 !   ----------------------------------------------------------------------------
+
+!   gs_b_lao(R_{x,y,z}, Sigma_{x,y,z}, B_{x,y,z})
+!   s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
+    s_b_lao = 0.0d0
+    gs_b_lao = 0.0d0
+    irep = 0 ! irep of unperturbed dmat_0 (totally symmetric)
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
 
+!   please leave xc_london_* subroutines for testing
+    if (is_gga) then
+      !call xc_london_c1_get_gs_b(gs_b_lao,   &
+      !                           s_b_lao,    &
+      !                           mat_dim,    &
+      !                           nz,         &
+      !                           dmat_full,  &
+      !                           ao,         &
+      !                           (/px, py, pz/))
 
-    if (is_gga_qi) then
-      print *, 'ERROR: get_gs_lao needs to be programmed'
-      stop
+      call get_gs_lao(s_b_lao,    &
+                     gs_b_lao,    &
+                     irep,        &
+                     mat_dim,     &
+                     dmat_full,   & ! this is the unperturbed dmat_0
+                     ao,          &
+                     px, py, pz, buffer)
     else
-      call get_s_lao(s_b_lao,                            &
-                     fmat_pg_sym,                        &
-                     mat_dim,                            &
-                     dmat_0,                             &
-                     ao, &
-                     px, py, pz,                         &
-                     buffer)
 
+      !call xc_london_c1_get_s_b(s_b_lao,    &
+      !                          mat_dim,    &
+      !                          nz,         &
+      !                          dmat_full,  &
+      !                          ao,         &
+      !                          (/px, py, pz/))
+
+      call get_s_lao(s_b_lao,      &
+                     irep,         &
+                     mat_dim,      &
+                     dmat_full,    & ! this is the unperturbed dmat_0
+                     ao,           & 
+                     px, py, pz,   &
+                     buffer)
     end if
 
-    do im = 1, nr_fmat
-        do k = k_start, 3
 
-           u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0200000)*s_b_lao(k, im)
+     do im = 1, nr_fmat         ! B_{x,y,z}
+        do k = k_start, 3       ! Sigma_{x,y,z}
 
-           if (is_gga_qi) then
-              y_b(k, im)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
-                          + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
-                          + gn_0_pointwise(3)*gs_b_lao(3, k, im)
+           u%s_lao(k, im) = derv(1, d0200000)*s_b_lao(k, im)
 
-              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k, im)
+           if (is_gga) then
+              y_b(k)  = gn_0_pointwise(1)*gs_b_lao(1, k, im) &
+                      + gn_0_pointwise(2)*gs_b_lao(2, k, im) &
+                      + gn_0_pointwise(3)*gs_b_lao(3, k, im)
 
-              u%gs_lao(1:3, k, im) = u%gs_lao(1:3, k, im)                               &
-                                   +(gn_0_pointwise(1)*s_b_lao(1, k)                    &
-                                   + gn_0_pointwise(2)*s_b_lao(2, k)                    &
-                                   + gn_0_pointwise(3)*s_b_lao(3, k))*derv(1, d0101000) &
-                                   + gn_0_pointwise(1:3)*y_b(k, im)*derv(1, d0002000)   &
+              u%s_lao(k, im) = u%s_lao(k, im) + derv(1, d0101000)*y_b(k)
+              u%gs_lao(1:3, k, im) = &
+                                   + gn_0_pointwise(1:3)*s_b_lao(k, im)*derv(1, d0101000)    &
+                                   + gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000)  &
                                    + 2.0d0*gs_b_lao(1:3, k, im)*derv(1, d0000100)
            end if
         end do
-
     end do
+
+    if (london_direct_export) then
+       temp = 0.0d0
+       temp(1) = px
+       temp(2) = py
+       temp(3) = pz
+       temp(4) = w
+       do i = 1, 3
+          do j = 1, 3
+             ioff = (i-1)*3+j
+             temp(16+ioff) = s_b_lao(j, i) !17-25
+          end do
+       end do
+       if (is_gga) then
+          do i = 1, 3
+             do j = 1, 3
+                do k = 1, 3
+                   ioff = (i-1)*9+(j-1)*3+k 
+                   temp(25+ioff) = gs_b_lao(k, j, i) !26-52
+                end do
+             end do
+          end do
+       end if
+       call london_export_write_data_to_files( &
+                    (/temp(1:pertden_nr_columns)/), &
+                    (/.true., .false./))
+    end if
 
   end subroutine
 
 
-  subroutine lr_sdft_lao_reorth(block_length,       &
+  subroutine lr_sdft_lao_reorth(ipoint,             &
+                                block_length,       &
                                 mat_dim,            &
                                 nz,                 &
-                                ao,               &
+                                ao,                 &
                                 n_0,                &
                                 gn_0_pointwise,     &
-                                gnn_0,              &
                                 w,                  &
                                 is_gga,             &
                                 tb_dmat,            &
                                 isym,               &
                                 buffer,             &
                                 n,                  &
-                                derv, u)
+                                derv, u,            &
+                                px, py, pz)
 
 !   ----------------------------------------------------------------------------
+    integer, intent(in)    :: ipoint
     integer, intent(in)    :: block_length
     integer, intent(in)    :: mat_dim
     integer, intent(in)    :: nz
     real(8), intent(in)    :: ao(*)
     real(8), intent(in)    :: n_0(*)
     real(8), intent(in)    :: gn_0_pointwise(*)
-    real(8), intent(in)    :: gnn_0(*)
-    real(8), intent(in)    :: w(*)
+    real(8), intent(in)    :: w
     logical, intent(in)    :: is_gga
     real(8), intent(in)    :: tb_dmat(*)
     integer, intent(in)    :: isym(*)
     real(8), intent(in)    :: buffer(*)
     integer, intent(in)    :: n
     real(8), intent(in)    :: derv(max_block_length, 0:n)
+    real(8), intent(in)    :: px, py, pz
 !   ----------------------------------------------------------------------------
-    real(8)                ::  r_b,     s_b(3)
-    real(8)                :: gr_b(3), gs_b(3, 3)
+    real(8)                ::  r_b(3),     s_b(3,3)
+    real(8)                :: gr_b(3,3), gs_b(3, 3,3)
 
     real(8)                :: z_b
     real(8)                :: y_b(3)
 
-    integer                :: k_start, k, im, im_off, j
+    integer                :: k_start, k, im, im_off, ioff, j, i, irep
     type(omega_prefactor) :: u
-    integer :: i
+
+    real(8) :: temp(pertden_nr_columns)
 !   ----------------------------------------------------------------------------
+
+    r_b = 0.0d0
+    gr_b = 0.0d0
 
     k_start = 1
     if (dft_cfg_sdft_collinear) k_start = 3 !collinear approximation
@@ -2178,77 +2860,124 @@ contains
     do im = 1, nr_fmat
 
        im_off = mat_dim*mat_dim*nz*(im - 1)
+       irep   = isym(im) - 1
 
-!      only charge density part
-!       if (is_gga) then
-!          call get_gn(r_b,                      &
-!                      gr_b,                     &
-!                      isym(im) - 1,             &
-!                      mat_dim,                  &
-!                      tb_dmat(1 + im_off),      &
-!                      buffer,                   &
-!                      ao)
-!       else
-!          call get_n(r_b,                       &
-!                     isym(im) - 1,              &
-!                     mat_dim,                   &
-!                     tb_dmat(1 + im_off),       &
-!                     buffer,                    &
-!                     ao)
-!       end if
-!
-!       u%n(im) = u%n(im) + derv(1, d2000000)*r_b
-!
-!       if (is_gga) then
-!          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1) &
-!                     + gn_0_pointwise(2)*gr_b(2) &
-!                     + gn_0_pointwise(3)*gr_b(3))
-!
-!          u%n(im) = u%n(im) + derv(1, d1010000)*z_b
-!
-!          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b*derv(1, d1010000) &
-!                                        + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
-!                                        + 2.0d0*gr_b(1:3)*derv(1, d0010000)
-!       end if
+!      charge density part
+       if (is_gga) then
+          call get_gn_nonhermitian(r_b(im),             &
+                                   gr_b(1,im),          &
+                                   irep,                &
+                                   mat_dim,             &
+                                   tb_dmat(1 + im_off), &
+                                   buffer,              &
+                                   ao)
+       else
+          call get_n(r_b(im),             &
+                     irep,                &
+                     mat_dim,             &
+                     tb_dmat(1 + im_off), &
+                     buffer,              &
+                     ao)
+       end if
 
-!      SDFT
+       u%n(im) = u%n(im) + derv(1, d2000000)*r_b(im)
+
+       if (is_gga) then
+          z_b = 2.0d0*(gn_0_pointwise(1)*gr_b(1, im) &
+                     + gn_0_pointwise(2)*gr_b(2, im) &
+                     + gn_0_pointwise(3)*gr_b(3, im))
+
+          u%n(im) = u%n(im) + derv(1, d1010000)*z_b
+
+          u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*r_b(im)*derv(1, d1010000) &
+                                        + 2.0d0*gn_0_pointwise(1:3)*z_b*derv(1, d0020000) &
+                                        + 2.0d0*gr_b(1:3,im)*derv(1, d0010000)
+       end if
+
+
+!      spin density part
        if (.not. dft_cfg_no_sdft) then
           if (is_gga) then
-             call get_gs(s_b,                       &
-                         gs_b,                      &
-                         isym(im) - 1,              &
-                         mat_dim,                   &
-                         tb_dmat(1 + im_off),       &
-                         buffer,                    &
-                         ao)
+            call get_gs_nonhermitian(s_b(1,im),           &
+                                     gs_b(1,1,im),        &
+                                     irep,                &
+                                     mat_dim,             &
+                                     tb_dmat(1 + im_off), &
+                                     buffer,              &
+                                     ao)
           else
-             call get_s(s_b,                        &
-                        isym(im) - 1,               &
-                        mat_dim,                    &
-                        tb_dmat(1 + im_off),        &
-                        buffer,                     &
+             call get_s(s_b(1,im),            &
+                        irep,                 &
+                        mat_dim,              &
+                        tb_dmat(1 + im_off),  &
+                        buffer,               &
                         ao)
           end if
-
           do k = k_start, 3
 
-             u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k)
+             u%s(k, im) = u%s(k, im) + derv(1, d0200000)*s_b(k, im)
 
              if (is_gga) then
-                y_b(k)  = gn_0_pointwise(1)*gs_b(1, k) &
-                        + gn_0_pointwise(2)*gs_b(2, k) &
-                        + gn_0_pointwise(3)*gs_b(3, k)
+                y_b(k)  = gn_0_pointwise(1)*gs_b(1, k, im) &
+                        + gn_0_pointwise(2)*gs_b(2, k, im) &
+                        + gn_0_pointwise(3)*gs_b(3, k, im)
 
                 u%s(k, im) = u%s(k, im) + derv(1, d0101000)*y_b(k)
 
-                u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k)*derv(1, d0101000) &
+                u%gs(1:3, k, im) = u%gs(1:3, k, im) +       gn_0_pointwise(1:3)*s_b(k,im)*derv(1, d0101000) &
                                                     +       gn_0_pointwise(1:3)*y_b(k)*derv(1, d0002000) &
-                                                    + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
+                                                    + 2.0d0*gs_b(1:3, k, im)*derv(1, d0000100)
              end if
           end do
 
-      end if
+       end if
+
     end do
+
+    ioff = 0
+    if (london_reorth_export) then
+       temp = 0.0d0
+       temp(1) = px
+       temp(2) = py
+       temp(3) = pz
+       temp(4) = w
+!      nosdft
+       do i = 1, 3
+          temp(4+i) = r_b(i) !5:7
+       end do
+       if (is_gga) then
+          do i = 1, 3
+             do j = 1, 3
+                ioff = (i-1)*3+j
+                temp(7+ioff) = gr_b(j, i) !8:16
+             end do
+          end do
+       end if
+!      sdft
+       if (.not. dft_cfg_no_sdft) then
+          do i = 1, 3
+             do j = 1, 3
+                ioff = (i-1)*3+j
+                temp(16+ioff) = s_b(j, i) !17-25
+             end do
+          end do
+          if (is_gga) then
+             do i = 1, 3
+                do j = 1, 3
+                   do k = 1, 3
+                      ioff = (i-1)*9+(j-1)*3+k
+                      temp(25+ioff) = gs_b(k, j, i) !26:52
+                   end do
+                end do
+             end do
+          end if
+       end if
+       call london_export_write_data_to_files( &
+               (/temp(1:pertden_nr_columns)/), &
+               (/.false., .true./))
+
+    end if
+
 
   end subroutine
 

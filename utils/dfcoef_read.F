@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2018 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -101,12 +101,12 @@ c     for now we just skip down to the eigenvalues
       INTEGER   NARG,JARG,LUINP,LUPRI
       CHARACTER*80 ARGC
       PARAMETER (LUINP = 1, LUPRI = 6)
-      NARG = IARGC()
+      NARG = command_argument_count()
       IF (NARG .NE. 1) THEN
          WRITE(6,'(/3A/)') 'Usage: dfcoef_read FILE'
          stop
       END IF
-      CALL GETARG(1,ARGC)
+      CALL get_command_argument(1,ARGC)
       OPEN(LUINP,FILE=ARGC,STATUS='UNKNOWN',FORM='UNFORMATTED')
       call dumpcmo(luinp)
       END

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -149,19 +149,19 @@ C&&&& PRINT - print level in MP2 module
                   READ(LUCMD,*) IPRMP2
                GO TO 100
     2          CONTINUE
-C&&&& String of active occupied pairs in MP2 module
+C&&&& OCCUP - String of active occupied pairs in MP2 module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') MP2_INDSTR(1,I)
                   ENDDO
                GO TO 100
     3          CONTINUE
-C&&&& String of active virtual pairs in MP2 module
+C&&&& VIRTUA -String of active virtual pairs in MP2 module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') MP2_INDSTR(2,I)
                   ENDDO
                GO TO 100
     4          CONTINUE
-C&&&& Integral classes not included in 4-index transformation
+C&&&& INTFLG -Integral classes not included in 4-index transformation
                   IF (IGTINT .EQ. 1) THEN
                      READ(LUCMD,*,IOSTAT=IOS) 
      &                  ILLINT,ILSINT,ISSINT,IGTINT
@@ -179,7 +179,7 @@ C&&&& Integral classes not included in 4-index transformation
                   MP2_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     5          CONTINUE
-C&&&& Write 4-index transformed integrals to file
+C&&&& MSOUT :Write 4-index transformed integrals to file
 C     aug 2001 hjaaj TODO: disabled this option because only false implemented
                   MP2_MSOUT = .TRUE.
                GO TO 100
@@ -240,17 +240,17 @@ C&&&& SCREEN: Screening threshold for 4-index transformation
                READ(LUCMD,*) SCRMP2
                GO TO 100
    14          CONTINUE
-C&&&& MP2ORG: Activate/deactivate original MP2 algorithm
+C&&&& ORGALG: Activate/deactivate original MP2 algorithm
                MP2ORG = .TRUE.
                GO TO 100
    15          CONTINUE
-C&&&& SRTSHL: Controls the sorting of shells in decreasing size
+C&&&& NOSORT: Controls the sorting of shells in decreasing size
                SRTSHL = .FALSE.
                GO TO 100
    16          CONTINUE
                GO TO 100
    17          CONTINUE
-C&&&& CMMNFO: Active printing of communication status (for parallel jobs)
+C&&&& COMMINfo: Active printing of communication status (for parallel jobs)
                CMMNFO = .TRUE.
                GO TO 100
    18          CONTINUE
@@ -419,7 +419,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
-      PARAMETER (NDIR = 3, NTABLE = 26)
+      PARAMETER (NDIR = 3, NTABLE = 29)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -440,17 +440,18 @@ C
       DATA TABDIR /'*END OF','*PRPTRA','*HSCC  '/
 C
       DATA TABLE /'.PRINT ','.ACTIVE','.INTFLG','xANTIS ','.4INDEX',
-     &            'xMSOUT ','.POSITR','.CORE  ','.SCHEME','.THROUT',
+     &            '.EXACOR','.POSITR','.CORE  ','.SCHEME','.THROUT',
      &            '.NO2IND','.NO4IND','.2INDEX','.INTFL2','.INTFL4',
      &            '.PRPTRA','.SCREEN','.RCORBS','.NOMDCI','.NOSCAT',
      &            '.PAR4BS','.SCATTE','.MDCINT','.HSCC  ','.HTSORT',
-     &            '.ASCII '/
+     &            '.ASCII ','.MOFILE','.CORE2 ','.CHOLES'/
       DATA SET/.FALSE./
 C
 #include "ibtfun.h"
 #include "memint.h"
       IF (SET) RETURN
-      SET = .TRUE.
+!Miro: nasty workaround to enable repeated input reading in the RelCC geometry optimization
+      !SET = .TRUE. 
 C
 C     Local variables
 C
@@ -466,9 +467,13 @@ C     Initialize /DCBTRA/
 C     ===================
 C
       IPRTRA  = 0
-Caspg, default in MOLTA is scheme 6 unless it's a LUCITA run... 
+Caspg, default in MOLTRA is scheme 6 unless it's a GOSCIP, DIRRCI or LUCITA run... 
 C      if problems are encountered, should be reverted to scheme 4
-      if (DOLUCT) then
+Clv,   reason is that scheme 6 produces a list of integrals that is distributed over nodes and the
+clv,   authors of the above-mentioned modules nor anyone else have taken the time to adjust the
+clv,   integral processing routines accordingly (if anyone is inclined to do so: this is not rocket
+clv    science, just have a look on how RELCCSD does this in ccints.F).
+      if (DOLUCT.OR.DOCIM) then
          ISTRAT = 4
       else
          ISTRAT = 6
@@ -487,8 +492,10 @@ c
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       IPAR4BS = -1
+      NCORE2 = -1
       DO I = 1,NFSYM
         WRITE(TRA_CORSTR(I),'(A)') 'not specified'
+        WRITE(TRA_CORSTR2(I),'(A)') 'not specified'
         WRITE(TRA_INDSTR(I),'(A)') 'energy -10.0 20.0 1.0'
         DO J = 1,2
           WRITE(TRA2_INDSTR(J,I),'(A)') 'energy -10.0 20.0 1.0'
@@ -498,9 +505,8 @@ c
         ENDDO
       ENDDO
       TRA_ANTIS  = .FALSE.
-C     TRA_MSOUT  = .FALSE.
-      TRA_MSOUT  = .TRUE.
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
+      TRA_EXACORR = .FALSE.
+      TH_CHOLESKY = -1.0D0
       TRA_ASCII = .FALSE.
       NO2IND = .FALSE.
       NO4IND = .FALSE.
@@ -511,13 +517,15 @@ C     aug 2001 hjaaj TODO : disabled this option because only true implemented
          PRPTRA = .TRUE.  ! Always on to allow intensity calculation in RELCCSD
       END IF
       RCORBS = .FALSE.
-      NOMDCINT = .FALSE.
+      NOMDCINT = .FALSE. ! will be reset depending on where PAMTR1 is called
+      NOMDCINT_TRAINP = .FALSE. ! for **MOLTRA input, used to set NOMDCINT for DOTRA call of PAMTRA
       MDCSCAT = .FALSE.
 !.s/sya,2007.0907/ SK - 30-11-2009
       PRPSYA = .FALSE.
 !.q
       THROUT = 1.0D-14
       SCRTRA = 1.0D-14
+      MOFILE_TRAINP = 'UNKNOWN'
 C
 C     Process input for MOLTRA
 C     ========================
@@ -558,8 +566,8 @@ C         if reading input from a terminal
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-     &                      16,17,18,19,20,21,22,23,24,25,26), I
+                     GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
+     &                      17,18,19,20,21,22,23,24,25,26,27,28,29), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -575,7 +583,7 @@ C&&&& PRINT - print level in 4-index transformation module
                   READ(LUCMD,*) IPRTRA
                GO TO 100
     2          CONTINUE
-C&&&& Range of ACTIVE orbitals in 4-index transformation module
+C&&&& ACTIVE - Range of ACTIVE orbitals in 4-index transformation module
                   IF (LSPES) THEN
                      WRITE (LUPRI,*) ' Warning : encountered .ACTIVE '//
      &                               'block twice , using first block'
@@ -626,7 +634,7 @@ C&&&& INTFLG - Integral classes not included in transformation
                   ITRA_INTFLG = ILLINT + 2*ILSINT + 4*ISSINT + 8*IGTINT
                GO TO 100
     4          CONTINUE
-C&&&& Anti-Symmetrize integrals
+C&&&& "ANTIS " - Anti-Symmetrize integrals
 C     aug 2001 hjaaj TODO: disabled this option because not implemented
                   TRA_ANTIS = .TRUE.
                GO TO 100
@@ -660,16 +668,16 @@ C
                   ENDDO
                GO TO 100
     6          CONTINUE
-C&&&& Write 4-index transformed integrals to file
-C     aug 2001 hjaaj TODO : disabled this option because only true implemented
-                  TRA_MSOUT = .TRUE.
+C&&&& Use exacorr transformation routine
+                  TRA_EXACORR = .TRUE.
+                  ISTRAT = 4 ! This corresponds to non-distributed integrals
                GO TO 100
     7          CONTINUE
 C&&&& POSITRONS - allow positronic solutions
                   NOPAIR = .FALSE.
                GO TO 100
     8          CONTINUE
-C&&&& Range of CORE orbitals in 2-index transformation module
+C&&&& "CORE  " - Range of CORE orbitals in 2-index transformation module
                   DO I=1,NFSYM
                      READ(LUCMD,'(A)') TRA_CORSTR(I)
                   ENDDO
@@ -783,10 +791,10 @@ C&&&& RCORBS - Recanonize orbitals before transforming
                GO TO 100
    19          CONTINUE
 C&&&& NOMDCINT - Don't write MDCINT file, instead save scratch files
-C              and write an additional MDINFO file which contains various
+C              and write an additional 4INDINFO file which contains various
 C              pointers'n'stuff. This options is used within the MCSCF
-C              program to avoid the generation of the enourmous MDCINT file.
-                  NOMDCINT = .TRUE.
+C              program to avoid the generation of the enormous MDCINT file.
+                  NOMDCINT_TRAINP = .TRUE.
                GO TO 100
    20          CONTINUE
 C&&&& NOSCATTER - Don't Scatter MDCINT/4IND to all nodes
@@ -802,14 +810,14 @@ C&&&& SCATTER - Do Scatter MDCINT/4IND to all nodes
                GO TO 100
    23          CONTINUE
 C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
-                  NOMDCINT = .FALSE.
+                  NOMDCINT_TRAINP = .FALSE.
                GO TO 100
    24          CONTINUE
-!&&&& HSMRCC - interface
+!&&&& "HSCC  " - HSMRCC interface
                   DOHSCC = .TRUE.
                GO TO 100
    25          CONTINUE
-!&&&& MOLTRA scheme 6 stuff
+!&&&& HTSORT - MOLTRA scheme 6 stuff
                READ(LUCMD,*) IS6SORT
 #ifndef VAR_PFS
                if (is6sort.eq.0) then
@@ -826,8 +834,28 @@ C&&&& MDCINT - Force writing of the MDCINT file in MOLFDIR format
 #endif
                GO TO 100
    26          CONTINUE
-!&&&& Write ASCII file with transformed MO integrals
+!&&&& "ASCII " - Write ASCII file with transformed MO integrals
                   TRA_ASCII = .TRUE.
+               GO TO 100
+   27          CONTINUE
+!&&&& "MOFILE" - which file to read MO coefficients from
+!      note: list directed read will ignore initial blanks, so MOFILE_TRAINP
+!            will always begin with the first non-blank character in input line.
+                  READ(LUCMD,*) MOFILE_TRAINP
+               GO TO 100
+   28          CONTINUE
+C&&&& "CORE2 " - Range of open shell CORE orbitals in 2-index transformation module
+                  WRITE (LUPRI,'(A)') '* use open-shell core:'
+                  READ(LUCMD,*) NCORE2
+                  WRITE (LUPRI,'(I4,A)') NCORE2,' el. in'
+                  DO I=1,NFSYM
+                     READ(LUCMD,'(A)') TRA_CORSTR2(I)
+                     WRITE (LUPRI,'(A)') TRA_CORSTR2(I)
+                  ENDDO
+               GO TO 100
+   29          CONTINUE
+C&&&& ."CHOLES" - CHOLESKY threshold
+                  READ(LUCMD,*) TH_CHOLESKY
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -886,7 +914,8 @@ C       if "*HSCC" is in the input but MOD_HSCC is not defined !!!
 C
   400 CONTINUE
 
-      CALL TRPINP(WORD,.FALSE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+      CALL TRPINP(WORD,.TRUE.,WORK,LWORK)  ! always call this routine, sets transformation for dipole integrals
+!Miro: set RESET to .true. to enable geometry optimization
 
 C
 C     Process defaults for 2- and 4-index transformations
@@ -947,11 +976,15 @@ C
       IF(NOPAIR) WRITE(LUPRI,'(1X,A)') '* Electronic orbitals only.'
       IF(NO2IND) WRITE(LUPRI,'(1X,A)') '* Skip 2-index transformation.'
       IF(NO4IND) WRITE(LUPRI,'(1X,A)') '* Skip 4-index transformation.'
-      IF(NOMDCINT) WRITE(LUPRI,'(1X,A)')
+      IF(NOMDCINT_TRAINP) WRITE(LUPRI,'(1X,A)')
      &     '* MDCINT is not going to be written, 4IND1* is kept.'
       IF(MDCSCAT) WRITE(LUPRI,'(1X,2A)')
      &     '* MDCINT (and in principle the 4IND*-files) ',
      &     '  will be scattered to all nodes.'
+      IF ( MOFILE_TRAINP .NE. 'UNKNOWN' ) THEN
+         WRITE(LUPRI,'(2A)')
+     &   ' * MO coeffients will be read from ',MOFILE_TRAINP
+      END IF
       WRITE(LUPRI,'(1X,A)') '* Total active space.'
       NTVEC(1) = 0
       DO I = 1,NFSYM
@@ -1077,8 +1110,6 @@ C
      +     '* Gaunt Integrals not transformed.'
       IF (TRA_ANTIS) WRITE(LUPRI,'(1X,A)')
      +     '* Calculating Anti-symmetrized integrals.'
-      IF (TRA_MSOUT) WRITE(LUPRI,'(1X,A)')
-     +     '* 4-index transformed integrals written to file.'
       WRITE(LUPRI,'(1X,A)') '* Active spaces:'
       CALL IZERO (NTVEC,4)
       DO I = 1,NFSYM
@@ -1142,7 +1173,8 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbtra.h"
-#include "dcbham.h" ! Added temporarily to test for bss (where transform is not working)
+! Added temporarily to test for bss (where transform is not working)
+#include "dcbham.h"
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1151,7 +1183,7 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.OPERAT','.MORANG','.XXXXXX',
+      DATA TABLE /'.PRINT ','.OPERAT','.MORANG','.NMQM  ', !MKN
      &            '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 C
@@ -1170,17 +1202,20 @@ C
 C     Initialize /CBIEXP/
 C     ===================
 C
+CMKN
+      DONMQM = .FALSE.
+CMKN
       IPRTRP   = IPRTRA
 !     Always transform the dipole length operator
       IF (.NOT. BSS) THEN
-      PNAME(1) = 'XDIPLEN'
-      PNAME(2) = 'YDIPLEN'
-      PNAME(3) = 'ZDIPLEN'
-      DO I=1,3
-         CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
-     &               ITRXPR,WORK,LWORK,IPRXQR)
-         CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
-      END DO
+        PNAME(1) = 'XDIPLEN'
+        PNAME(2) = 'YDIPLEN'
+        PNAME(3) = 'ZDIPLEN'
+        DO I=1,3
+          CALL XPRIND(PNAME(I),1,1,D1,PNAME(I),INDXPR,ISYXPR,
+     &               ITRXPR,IPRTRP)
+          CALL OP1IND('TRPINP',INDTRP,LTRPP,NTRPP,INDXPR,MAXTRP)
+        END DO
       END IF
 
 C
@@ -1236,6 +1271,11 @@ C&&&& OPERATOR: Define operator
 !.q
                GO TO 100
     4          CONTINUE
+CMKN NMQM: Define operator Nuclear Magnetic Quadruple Moment
+                  DONMQM = .TRUE.
+                  PRPTRA = .TRUE.
+                  ICHANG = ICHANG + 1
+CMKN NMQM: Defination added by M. K. Nayak on July 19 2018
                GO TO 100
     5          CONTINUE
                GO TO 100
@@ -1255,6 +1295,11 @@ C&&&& OPERATOR: Define operator
             END IF
       END IF
   300 CONTINUE
+CMKN
+      IF(DONMQM) THEN
+        CALL DEF_PRP_NMQM(LTRPP,NTRPP,MAXTRP,IPRTRP)
+      ENDIF
+CMKN
 C
 C     Print section
 C     =============
@@ -1287,6 +1332,10 @@ C
         CALL PRSYMB(LUPRI,'-',75,0)
         WRITE(LUPRI,'(4X,A)')'- Nuclear Quadrupole Coupling Constant'
       ENDIF
+      IF(DONMQM) THEN
+        CALL PRSYMB(LUPRI,'-',75,0)
+        WRITE(LUPRI,'(4X,A)')'- Nuclear Magnetic Quadruple Moment'
+      ENDIF
 C
       CALL PRSYMB(LUPRI,'-',75,0)
   999 CONTINUE
@@ -1301,14 +1350,17 @@ C
 C     Input section for RESOLVE module (GOSCI)
 C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
+C     Last changes: Miro Ilias, Aug.2016 (for DFT-COSCI)
 C
 C*****************************************************************************
+      use include_dcbtra_h, only : set_tra_ascii
+      use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
-      PARAMETER (NTABLE = 5)
+      PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1324,7 +1376,8 @@ C
       DIMENSION WORK(LWORK),IR(2,2)
 C
       SAVE SET
-      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','xTHROUT'/
+      DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','xTHROUT',
+     &            '.ASCII ','.NOVXC ','.COREDN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
 #include "ibtfun.h"
 #include "memint.h"
@@ -1340,8 +1393,8 @@ C
       END IF
 C
 C
-C     Initialize /DCBRES/
-C     ===================
+C     Initialize /DCLRES, DCBRES, DCIRES/
+C     ===================================
 C
       ISTRES = 4
       IPRRES = 0
@@ -1351,6 +1404,8 @@ C
       IGTINT = IBTAND(INTGEN/8,1)
       SCRRES = 1.D-14
       RESOUT = 1.D-14
+      NOVXC  = .FALSE.
+      COREDENS = .FALSE.
 C
 C     Process input for RESOLV
 C     ========================
@@ -1369,7 +1424,7 @@ C
                ICHANG = ICHANG + 1
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
-                     GO TO (1, 2, 3, 4, 5),I
+                     GO TO (1, 2, 3, 4, 5, 6, 7, 8),I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1405,6 +1460,25 @@ C&&&& THROUT - Treshold for output integrals
 CTROND: disabled, because THROUT is not implemented 
                   READ(LUCMD,*) RESOUT
                GO TO 100
+!Miro: .ASCII keyword for writing the "MO_integrals.txt" file
+    6          CONTINUE
+                  call set_tra_ascii(.true.)
+               GO TO 100
+!Miro: .NOVXC keyword for not adding DFT-Vxc terms into Fij (rough approx)
+    7          CONTINUE
+                  NOVXC = .TRUE.
+               GO TO 100
+!Miro: .COREDN keyword to have only core density for Vxc (approximation)
+    8          CONTINUE
+                  COREDENS= .TRUE.
+               GO TO 100
+! .XXXXX
+    9          CONTINUE
+               GO TO 100
+! .XXXXX
+   10          CONTINUE
+               GO TO 100
+
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -1471,6 +1545,25 @@ C
      +     '* SS integrals not included.'
          IF (IGTINT.NE.1) WRITE(LUPRI,'(1X,A)')
      +     '* Gaunt integrals not included.'
+
+!Miro: printouts concerning DFT-COSCI
+      IF (dirac_cfg_dft_calculation) THEN
+         IF (NOVXC) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &     "No Vxc term in transformed Fij elements for COSCI!"
+            WRITE(LUPRI,"(2X,A)")
+     &     "This is crude approximation for DFT-COSCI ..."
+         ENDIF
+         IF (COREDENS) THEN
+            WRITE(LUPRI,"(2X,A)")
+     &      "Only core-density for Vxc in Fij terms ... approximation "
+         ENDIF
+         IF (PARCAL) CALL QUIT('DFT-COSCI not parallelized')
+      ENDIF
+      IF ((NOVXC.OR.COREDENS).AND..NOT.dirac_cfg_dft_calculation) THEN
+          WRITE(LUPRI,"(2X,A)")
+     &    "COSCI-DFT works only with open-shell DFT !"
+      ENDIF
 
  999  CONTINUE
       RETURN

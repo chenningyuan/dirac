@@ -1,3 +1,6 @@
+# (c) https://github.com/coderefinery/autocmake/blob/master/AUTHORS.md
+# licensed under BSD-3: https://github.com/coderefinery/autocmake/blob/master/LICENSE
+
 #.rst:
 #
 # Detects and links to BLAS and LAPACK libraries.
@@ -366,7 +369,12 @@ macro(config_math_service _SERVICE)
         set(_omp_flag)
         if(HAVE_MKL_BLAS OR HAVE_MKL_LAPACK)
             if(MKL_COMPILER_BINDINGS MATCHES Intel)
-                set(_omp_flag -openmp)
+                if(CMAKE_Fortran_COMPILER_ID STREQUAL "Intel" AND
+                   "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "15.0.0.20140528")
+                    set(_omp_flag -openmp)
+                else()
+                    set(_omp_flag -qopenmp)
+                endif()
             endif()
             if(MKL_COMPILER_BINDINGS MATCHES GNU)
                 set(_omp_flag -fopenmp)
@@ -515,4 +523,10 @@ if (ENABLE_STATIC_LINKING)
         # fix for MKL static linking
         set(MATH_LIBS ${MATH_LIBS} -ldl)
     endif()
+endif()
+
+if(MATH_LIB_SEARCH_ORDER)
+    # this print is here to avoid warning about MATH_LIB_SEARCH_ORDER which
+    # might be set but never used
+    message(STATUS "MATH_LIB_SEARCH_ORDER set to ${MATH_LIB_SEARCH_ORDER}")
 endif()

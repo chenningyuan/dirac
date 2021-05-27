@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -271,15 +271,8 @@ C
             SGN34Z = SIGNT(3)
          END IF
 C
-C	It turns out 64-bits IRIX compiler misinterprets this statement with
-C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
-#if defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_SX)
-         IODS  = 1
-         NODS  = 1
-#else
          IODS  = 0
          NODS  = 0
-#endif
          DO 300 IOD12 = 1, NUC12
             EXPP   = EXP12(IOD12)
             FAC12I = FAC12(IOD12)
@@ -288,18 +281,14 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
             PZ     = SGN12Z*COOR12(IOD12,3)
             IF (HFXMU .NE. D0) THEN
                DO IOD34 = 1, NUC34
-#if !defined (SYS_IRIX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPQI = D1/(EXPP + EXPQ)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   ALPHA = EXPP*EXPQ*EXPPQI
                   BETA = HFXMU**2/(ALPHA + HFXMU**2)
                   SCLFAC(IODS) = SQRT(BETA)*FACTOR
-#if !defined (SYS_IRIX)
                   NODS = NODS + 1
-#endif
                   TALPHA(IODS) = - D2*ALPHA*BETA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
                   PQYI = PY - SGN34Y*COOR34(IOD34,2)
@@ -310,23 +299,15 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   WVALU(NODS)=ALPHA*BETA*
      &               (PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
                END DO
             ELSEIF (PANAS .EQ. D0) THEN
                DO 310 IOD34 = 1, NUC34
-#if !defined (SYS_IRIX) && !defined (SYS_DEC) && !defined (SYS_SX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPQI = D1/(EXPP + EXPQ)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQI)
                   SCLFAC(IODS) = FACTOR
-#if !defined (SYS_IRIX) && !defined (SYS_DEC) && !defined (SYS_SX)
                   NODS = NODS + 1
-#endif
                   ALPHA = EXPP*EXPQ*EXPPQI
                   TALPHA(IODS) = - D2*ALPHA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
@@ -337,25 +318,17 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   PQZ(IODS) = PQZI
                   WVALU(NODS) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_SX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
  310           CONTINUE
             ELSE
                DO 311 IOD34 = 1, NUC34
-#if !defined (SYS_IRIX) && !defined (SYS_DEC) && !defined (SYS_SX)
                   IODS = IODS + 1
-#endif
                   EXPQ   = EXP34(IOD34)
                   EXPPQ  = EXPP + EXPQ
                   EXPMOD = EXPPQ/D2
                   EXPPQP = EXPMOD + SQRT(EXPMOD**2 + EXPP*EXPQ*PANAS)
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(D1/EXPPQP)
                   SCLFAC(IODS) = FACTOR
-#if !defined (SYS_IRIX) && !defined (SYS_DEC) && !defined (SYS_SX)
                   NODS = NODS + 1
-#endif
                   ALPHA = EXPP*EXPQ/EXPPQP
                   TALPHA(IODS) = - D2*ALPHA
                   PQXI = PX - SGN34X*COOR34(IOD34,1)
@@ -366,17 +339,9 @@ C       -O2 optimization. These fixes prevent it. K.Ruud-Jan96
                   PQZ(IODS) = PQZI
                   WVALU(NODS) = ALPHA*(PQXI*PQXI+PQYI*PQYI+PQZI*PQZI)
                   INDADR(NODS) = IODS
-#if defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_SX)
-                  IODS = IODS + 1
-                  NODS = NODS + 1
-#endif
  311           CONTINUE
             END IF
   300    CONTINUE
-#if defined (SYS_IRIX) || defined (SYS_DEC) || defined (SYS_SX)
-	 IODS = IODS - 1
-	 NODS = NODS - 1
-#endif
          IF (.NOT.NOINT) THEN
             IPQ0X = 1
             IPQ0Y = 1
@@ -701,8 +666,6 @@ C
      &          RJ000(NUABCD,0:JMAX)
 #include "doxyz.h"
 #include "hertop.h"
-C
-#include "ibtfun.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1

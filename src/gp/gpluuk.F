@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -185,15 +185,41 @@ C
 C     Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#include "implicit.h"
+      IMPLICIT NONE
 #include "priunit.h"
-      INTEGER NREAL,NINTE,NLOGI,IRECLEN
+      INTEGER    NREAL,NINTE,NLOGI,IRECLEN, IRECL
+      INTEGER*8  IRECL8
 C
 #if  defined (INT_STAR8)
-      IRECL = 8 * NREAL + 8 * NINTE + 8 * NLOGI
+      IRECL8 = 8 * NREAL + 8 * NINTE + 8 * NLOGI
 #else
-      IRECL = 8 * NREAL + 4 * NINTE + 4 * NLOGI
+      IRECL8 = 8 * NREAL + 4 * NINTE + 4 * NLOGI
 #endif
+
+      IRECL  = IRECL8
+      IF (NREAL .LT. 0 .OR. NINTE .LT. 0 .OR. 
+     &    NLOGI .LT. 0 .OR. IRECL .LT. 0) THEN
+         WRITE(LUPRI,'(//A,5(/A,I20))')
+     &   'IRECLEN error: negative record length',
+     &   '   NREAL',NREAL,
+     &   '   NINTE',NINTE,
+     &   '   NLOGI',NLOGI,
+     &   '   record length (64 bit integers)',IRECL8,
+     &   '   record length (32 bit integers)',IRECL
+         CALL QUIT(
+     &   'IRECLEN error: negative record length')
+      END IF
+      IF (IRECL .NE. IRECL8) THEN
+         WRITE(LUPRI,'(//A,5(/A,I20))')
+     &   'IRECLEN error: record length too big for 32 bit integers',
+     &   '   NREAL',NREAL,
+     &   '   NINTE',NINTE,
+     &   '   NLOGI',NLOGI,
+     &   '   record length (64 bit integers)',IRECL8,
+     &   '   record length (32 bit integers)',IRECL
+         CALL QUIT(
+     &   'IRECLEN error: record length too big for 32 bit integers')
+      END IF
 C
       IRECLEN = IRECL
 C
@@ -416,8 +442,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -522,7 +548,7 @@ C
       ELSE IF (IRCW.EQ.1) THEN
         CALL INDEXX(N_TOTAL,EV(1,1),INDX)
       ELSE
-        write(LUPRI,*) 'IRCW=',IRCW
+        write(LUPRI,*) 'PRT_EV: wrong parameter IRCW=',IRCW
         CALL QUIT('PRT_EV...wrong parameter !!! ')
       ENDIF
 
@@ -540,15 +566,15 @@ CMI ... own printout
       ENDIF
       ENDIF
 C
-      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+      WRITE(LUPRI,'(/A,F14.10,A,F17.9,A)')
+     & ' ( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
       IF (IRCW.EQ.1) THEN
         WRITE (LUPRI,1005)
       ELSE IF (IRCW.EQ.2) THEN
         WRITE (LUPRI,1007)
       ELSE
-        WRITE(LUPRI,*) 'PRT_EV: IRCW=',IRCW
+        WRITE(LUPRI,*) 'PRT_EV: wrong IRCW=',IRCW
         CALL QUIT('PRT_EV: wrong IRCW value !')
       ENDIF
 C
@@ -706,8 +732,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -760,7 +786,6 @@ C
       CHARACTER*4 REPNA(*), REPNAO(*)
       INTEGER TSHOLD
       REAL*8 E_OFF
-
 C
 C---------------Local variables--------------------------------------
 C
@@ -791,8 +816,8 @@ C
       CALL INDEXX(N_TOTAL,EV,INDX)
 C
 CMI ... print out conversion factors (from codata)
-      WRITE(LUPRI,'(/,1X,A,F14.10,A,F17.9,A)')
-     & '( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
+      WRITE(LUPRI,'(/A,F14.10,A,F17.9,A)')
+     & ' ( 1 au =',XTEV,' eV  / ',XTKAYS,' cm-1)' 
 
 
       WRITE (LUPRI,1005)
@@ -1485,8 +1510,8 @@ C
         GIGABYTES = GIGABYTES / (1024.0**3)
         WRITE (LUPRI,1000) MYTID,N_WRITTEN,PERC, GIGABYTES
       ENDIF
- 1000 FORMAT (/" Node",I5," finished first half transformation",I16,
-     &         " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
+ 1000 FORMAT (" Node",I5," finished first half transformation",I16,
+     &        " HT integrals written (",F6.2,"%, ",F9.2," GB)") 
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1607,7 +1632,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
 C
@@ -1651,7 +1676,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
       INTEGER ISTATS(df_MPI_STATUS_SIZE,MAX_SEND_BUFFERS)
       LOGICAL NEWMAIL
       INTEGER IEND

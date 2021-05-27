@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -209,7 +209,8 @@ CADDE
       INTEGER*8 KFREES, KFREEL, NWORD, IMARK, IBASE, JBASE,
      &          JBASEN, IBASE_L
 !               for addressing of WORK
-      CHARACTER*6 TASK,IDENT,IIDENT,MARKC
+      CHARACTER*6 TASK,IIDENT,MARKC
+      CHARACTER IDENT*(*)
       integer, parameter :: npad = 1
       PARAMETER(MAXLVL = 1024 )
       PARAMETER(MAXMRK = 1024)
@@ -269,6 +270,7 @@ CADDE
 **. Static memory
 *
       ELSE IF(TASK(1:4).EQ.'ADDS') THEN
+!Miro: KFREEL is too big, causing out-of-bounds !
         KBASE = KFREEL+NPAD
         IF( IR .EQ. 1 ) THEN
           KFREES = KFREEL +(KADD+1)/RtoI + 2*NPAD
@@ -305,6 +307,8 @@ CADDE
         KFREEL         = KFREES
         IBASE(NS)      = KBASE
 
+!     Miro: indexes "KBASE-1","KFREEL-1" are out-of-bounds , see
+!     wrkspc.inc; runtime check flags report problem
         work(KBASE-1)  = PAD1
         work(KFREEL-1) = PAD2
         call setvec(work(KBASE-1), PAD1,1)

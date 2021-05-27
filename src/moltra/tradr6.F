@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,6 +19,8 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 
+! define task symbols for CALL DIRAC_PARCTL( task )
+#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
       SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
@@ -52,7 +54,6 @@ C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
 C       LMP2  = .TRUE. - evaluate MP2 energy
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIG            - eigenvalues (for  MP2 calculation)
 C       ANTIS = .TRUE. - anti-symmetrize integrals
 C       INTFLG - flag of what integral types to transform
@@ -154,7 +155,12 @@ C
 C
 C     Initialize MOLFDIR integral file
 C
+      IF (NOMDCINT) THEN
+         CALL QUIT('ERROR:'//
+     &   ' .NOMDCINT not valid for strategy 6 integral transformation')
+      END IF
       CALL MDINTI(NSTR,IPRINT)
+
 C
 C     Make index arrays to translate pair index to individual indices
 C
@@ -186,13 +192,13 @@ C
 !    &              WORK(KIBE(1,2)),WORK(KIBE(2,2)),
 !    miro: easy fix
       I_KIBE11=KIBE(1,1)
-      IF (KIBE(1,1).EQ.0) I_KIBE11=1
+      IF (KIBE(1,1).LE.0) I_KIBE11=1
       I_KIBE21=KIBE(2,1)
-      IF (KIBE(2,1).EQ.0) I_KIBE21=1
+      IF (KIBE(2,1).LE.0) I_KIBE21=1
       I_KIBE12=KIBE(1,2)
-      IF (KIBE(1,2).EQ.0) I_KIBE12=1
+      IF (KIBE(1,2).LE.0) I_KIBE12=1
       I_KIBE22=KIBE(2,2)
-      IF (KIBE(2,2).EQ.0) I_KIBE22=1
+      IF (KIBE(2,2).LE.0) I_KIBE22=1
       CALL MKINDXB (NSTR,WORK(I_KIBE11),WORK(I_KIBE21),
      &              WORK(I_KIBE12),WORK(I_KIBE22),
      &              .FALSE.,INDXB12)
@@ -200,13 +206,13 @@ C
 !    &              WORK(KIBE(1,4)),WORK(KIBE(2,4)),
 !    miro: easy fix
       I_KIBE13=KIBE(1,3)
-      IF (KIBE(1,3).EQ.0) I_KIBE13=1
+      IF (KIBE(1,3).LE.0) I_KIBE13=1
       I_KIBE23=KIBE(2,3)
-      IF (KIBE(2,3).EQ.0) I_KIBE23=1
+      IF (KIBE(2,3).LE.0) I_KIBE23=1
       I_KIBE14=KIBE(1,4)
-      IF (KIBE(1,4).EQ.0) I_KIBE14=1
+      IF (KIBE(1,4).LE.0) I_KIBE14=1
       I_KIBE24=KIBE(2,4)
-      IF (KIBE(2,4).EQ.0) I_KIBE24=1
+      IF (KIBE(2,4).LE.0) I_KIBE24=1
       CALL MKINDXB (NSTR,WORK(I_KIBE13),WORK(I_KIBE23),
      &              WORK(I_KIBE14),WORK(I_KIBE24),
      &              .FALSE.,INDXB34)
@@ -258,7 +264,7 @@ C
 C
 C     It is the masters duty to release the slaves
 C
-      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( -1 )
+      IF (PARCAL.AND.MYTID.EQ.MPARID) CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
       CALL MEMREL('TRDR6T',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       CALL QEXIT('TRDR6T')
@@ -406,7 +412,7 @@ C***********************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -428,9 +434,9 @@ C
       IF (MYTID.EQ.0) THEN
 C
 C       Get hold of the slaves
-C       ( ITASK = 2 for parallel integral transformation )
+C       ( MOLTRA_PAR from dirac_partask.h is code for parallel integral transformation )
 C
-        CALL DIRAC_PARCTL( 2 )
+        CALL DIRAC_PARCTL( MOLTRA_PAR )
 C       
 C       Initialize (for the slave this is done in TRANOD)
 C
@@ -491,15 +497,15 @@ C
    10         CONTINUE
               CALL interface_MPI_PROBE(df_MPI_ANY_SOURCE,df_MPI_ANY_TAG,
      &                                 global_communicator,ISTAT)
+              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ISTAT(df_MPI_TAG).EQ.20) THEN
-                 CALL interface_MPI_RECV(ITEST,1,df_MPI_ANY_SOURCE,20,
+                 CALL interface_MPI_RECV(ITEST,1,NWHO,20,
      &                                   global_communicator)
               ELSE
                  CALL BUFFER_FILE_RECV ()
                  GOTO 10
               ENDIF
               CALL XTIME(2,2,' Slave requesting task from master')
-              NWHO = ISTAT(df_MPI_SOURCE)
               IF (ITEST .EQ. 0) THEN
 C                ... slave wants new set of A,B shells
                  CALL GETTIM(CPUST,WALLST)
@@ -523,7 +529,7 @@ C                ... slave wants new set of A,B shells
 C
       ELSE
 C
-C     Wait for tasks until we receive the end message
+C     This is a slave process. Wait for tasks until we receive the end message.
 C
          Allocate (RGBUF(MEM))
          Allocate (IGBUF(2,MEM))
@@ -820,14 +826,24 @@ C           calculate memory requirements for this batch.
 C
 C
 C           First a dummy run to calculate the memory requirements
-C           for GMAT. Max size of GMAT is set in MAXSCL from
-C           .SCLMEM in input or chosen based on MWHER.
+C           for GMAT. Max size of GMAT is chosen based on MWHER.
 C
             NSIZG = LFREE - MIN(LFREE/10, 1 000 000) - MWHER
 C           subtract max mem needed in Hermit and 10%/1Mw for anything else
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
      &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
+            IF (NPASS .GT. 1) THEN
+               ! we cannot fit all integrals in memory,
+               ! instead we use memory for buffering of integrals.
+               ! Filled buffers are saved on direct access file SCLIN (LGFIL),
+               ! opened in subroutine INITGBF. We limit NSIZG to 10 mio words,
+               ! in order not to get too long records on SCLIN.
+               ! /hjaaj Aug. 2018
+               NSIZG = MIN(10000000,NSIZG)
+               NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
+     &           .TRUE.,INDX,IDUM,IJP12,IDUM,NSIZG,IDUM)
+            END IF
 C
             LDXAB = 5*NINSHA*NINSHB
             CALL MEMGET2('INTE','DXAB',KDXAB,LDXAB,WORK,KFREE,LFREE)
@@ -843,7 +859,7 @@ C
 C
             IF (IPRINT .GE. 3) THEN
                WRITE (LUPRI,
-     &              '(//,1X,A,2I16/,2(1X,A,I16/),2(1X,A,I16,F10.3/))')
+     &              '(//A,2I16/,2(A,I16/),2(A,I16,F10.3/))')
      &         ' Calculation of integral distribution set:',
      &              ISHLA,ISHLB,
      &         ' Number of distributions in this set:     ',NUMDIS,
@@ -1260,9 +1276,7 @@ C
       if (do_finesort) call sort_buffers(mytid,1)
 #endif        
 
-      write (*,*) ' '
-      write (*,*) '<<< Starting 2HT on node ',mytid
-      write (*,*) ' '
+      if (iprint .gt. 0) write (*,*) '<<< Starting 2HT on node ',mytid
 c
       Allocate (GMAT(maxval(NSPCK(:,0))*NZ))
       NIJOFF = 0
@@ -1373,10 +1387,8 @@ C
 #if defined (VAR_PFS)
       CALL LOCAL_FILE_CLOSE_READ
 #endif
-        write (*,*) ' '
-        write (*,*) '>>> Finished 2HT on node ',mytid
+        if (iprint .gt.0) write (*,*) '>>> Finished 2HT on node ',mytid
         call timer('2HT_all',TIMSTR,TIMEND)
-        write (*,*) ' '
 
       CALL QEXIT('MS6IN2')
 C

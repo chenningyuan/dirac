@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -43,7 +43,6 @@ C
      &          IPNTOP(3,*)
 #include "twocom.h"
 #include "symmet.h"
-#include "ibtfun.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -57,22 +56,22 @@ C
       IF (SOP000) THEN
          DO 100 I = 1, NINTX
             IAO = IPNTAO(I)
-            ITMPR  = IBTAND(ISYMR, IPNTOP(1,I))
-            ITMPT  = IBTAND(ISYMT, IPNTOP(2,I))
-            ITMPTS = IBTAND(ISYMTS,IPNTOP(3,I))
-            ITMP1  = IBTXOR(ITMPT,ITMPTS)
-            FAC    = FACTOR*PT(IBTXOR(ITMPR,ITMP1))
+            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
+            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
+            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
+            ITMP1  = IEOR(ITMPT,ITMPTS)
+            FAC    = FACTOR*PT(IEOR(ITMPR,ITMP1))
             CALL DCOPY(NOABCD,AO(1,IAO),1,SO(1,I),1)
             CALL DSCAL(NOABCD,FAC,SO(1,I),1)
   100    CONTINUE
       ELSE
          DO 200 I = 1, NINTX
             IAO = IPNTAO(I)
-            ITMPR  = IBTAND(ISYMR, IPNTOP(1,I))
-            ITMPT  = IBTAND(ISYMT, IPNTOP(2,I))
-            ITMPTS = IBTAND(ISYMTS,IPNTOP(3,I))
-            ITMP1  = IBTXOR(ITMPT,ITMPTS)
-            FAC    = FACTOR*PT(IBTXOR(ITMPR,ITMP1))
+            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
+            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
+            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
+            ITMP1  = IEOR(ITMPT,ITMPTS)
+            FAC    = FACTOR*PT(IEOR(ITMPR,ITMP1))
             CALL DAXPY(NOABCD,FAC,AO(1,IAO),1,SO(1,I),1) 
   200    CONTINUE
       END IF
@@ -107,7 +106,6 @@ C
 #include "symmet.h"
 #include "dorps.h"
 #include "doxyz.h"
-#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -127,12 +125,12 @@ C
          ISYTYE = ISYMAX(ICOOR,1)
          DO 200 IREPE = 0, MAXREP
             IF (DOREPS(IREPE) .AND.
-     &          (IBTAND(MULE,IBTXOR(IREPE,ISYTYE)) .EQ. 0)) THEN
+     &          (IAND(MULE,IEOR(IREPE,ISYTYE)) .EQ. 0)) THEN
                IREPX = IPTREP(IREPE,2)
                NINTX = NINTSR(IREPX)
                IF (NINTX .GT. 0) THEN
                   IF (NOATMS .EQ. 1) THEN
-                     FACSYM = PT(IBTAND(ISOPDR(1),IREPE))
+                     FACSYM = PT(IAND(ISOPDR(1),IREPE))
      &                        *SIGNDR(1,ICOOR)*HKABCD
                      CALL SYM2(SOINT(1,ISTR),AOINT(1,ICOOR),
      &                         IPNTAO(1,IREPX),IPNTOP(1,1,IREPX),
@@ -141,7 +139,7 @@ C
                   ELSE
                      FACSYM = HKABCD
                      DO 300 ICENT = 1, NOATMS
-                        FACTOR = PT(IBTAND(ISOPDR(ICENT),IREPE))
+                        FACTOR = PT(IAND(ISOPDR(ICENT),IREPE))
      &                           *SIGNDR(ICENT,ICOOR)
                         ITYPE   = 3*(ICENT - 1) + ICOOR
                         IF (ICENT .EQ. 1) THEN
@@ -192,16 +190,15 @@ C
 #include "dirprt.h"
 #include "expcom.h"
 #include "symmet.h"
-#include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
      &                             ISYMR, ISYMT, ISYMTS
       END IF
       ISOSTR = 1
-      IRPXYZ = IBTXOR(ISYMAX(1,1),IBTXOR(ISYMAX(2,1),ISYMAX(3,1)))
+      IRPXYZ = IEOR(ISYMAX(1,1),IEOR(ISYMAX(2,1),ISYMAX(3,1)))
       DO 100 X = 1, 3
-         IREPE = IBTXOR(ISYMAX(X,1),IRPXYZ)
+         IREPE = IEOR(ISYMAX(X,1),IRPXYZ)
          IREPX = IPTREP(IREPE,2)
          NINTX = NINTSR(IREPX)
          IF (IPRINT .GT. 20) THEN
@@ -234,10 +231,9 @@ C
 #include "twocom.h"
 #include "twosta.h"
 #include "symmet.h"
-#include "ibtfun.h"
-      XAND(I) = PT(IBTAND(ISYMAX(1,1),I))
-      YAND(I) = PT(IBTAND(ISYMAX(2,1),I))
-      ZAND(I) = PT(IBTAND(ISYMAX(3,1),I))
+      XAND(I) = PT(IAND(ISYMAX(1,1),I))
+      YAND(I) = PT(IAND(ISYMAX(2,1),I))
+      ZAND(I) = PT(IAND(ISYMAX(3,1),I))
       NEXT(I) = MOD(I,3) + 1
 C
       IF (IPRINT .GT. 10) THEN

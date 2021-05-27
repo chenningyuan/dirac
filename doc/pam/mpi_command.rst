@@ -21,3 +21,16 @@ instead of::
   mpirun -np N dirac.x
 
 Note that ``--mpi`` overrides DIRAC_MPI_COMMAND.
+
+Passing arguments to MPI launcher
+---------------------------------
+
+You can pass arguments to the MPI launcher, for example::
+
+  ./pam --scratchfull="/tmp/milias/TEST" --noarch --mpiarg="-x PATH -x LD_LIBRARY_PATH --wdir '/tmp/milias/TEST'" --mpi=4 --inp=cc.inp  --mol=N2.ccpVDZ.mol
+
+Note that you have provide proper workdir (the ``--wdir`` flag) for your MPI launcher, otherwise it ends with error.
+
+Concerning passing of environmental variables (through the ``-x`` flag), if the variable is not defined, 
+the MPI launcher gives warning (like ``Warning: could not find environment variable "LD_LIBRARY_PATHx"``).
+

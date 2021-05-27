@@ -41,6 +41,13 @@ ExternalProject_Add(pcmsolver
   GIT_TAG v1.1.1
   CMAKE_ARGS "${PCMSolverCMakeArgs}"
   INSTALL_DIR "${CUSTOM_PCMSolver_LOCATION}/install"
+  LOG_INSTALL 1
+  LOG_DOWNLOAD 1
+  LOG_UPDATE 1
+  LOG_CONFIGURE 1
+  LOG_BUILD 1
+  LOG_TEST 1
+  LOG_INSTALL 1
   )
 
 # Set also variables usually set by find_package
@@ -96,8 +103,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_PCM_DIRAC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'pcm_dirac' module without exceptions")
+    set_source_files_properties(${FREE_PCM_DIRAC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_PCM_DIRAC_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     pcm_dirac
+    OBJECT
     ${FIXED_PCM_DIRAC_FORTRAN_SOURCES}
     ${FREE_PCM_DIRAC_FORTRAN_SOURCES}
 )

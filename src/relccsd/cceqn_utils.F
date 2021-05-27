@@ -1,6 +1,6 @@
       SUBROUTINE BFLOPS(CPU4V,CPUH1,CPUH2,NIT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -29,6 +29,7 @@ C
       REAL*8 MFLOPS,DRCW2,DRCW,DNVVT,DNOOT,DNVO,DNVOOT,DNV,DNO
       REAL*8 MFLOPB,MFLOPH,DMVO
       CHARACTER*30 CONTR
+      integer i,irp
 C
 C---------------Executable code--------------------------------------
 C
@@ -108,7 +109,7 @@ C
       END
       SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC,ECCIM)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -183,7 +184,7 @@ C
       END
       SUBROUTINE DELFCK (CLASS,DODEL,FXX)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -228,6 +229,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
+      integer ic,idel,ij,imin,index,irep,j,jc,jrep,lngth,nindx
       DIMENSION NINDX(0:2,MXREP,2)
 C
 C---------------Executable code--------------------------------------
@@ -301,7 +303,7 @@ C
       END
       SUBROUTINE DELINT (CLASS,DODEL,VXXXX,IREPVV,ISTART,NINT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -336,6 +338,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 VXXXX(*)
       CHARACTER*4 CLASS,DODEL
+      INTEGER IREPVV,ISTART,NINT
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -348,6 +351,8 @@ C---------------Local variables--------------------------------------
 C
       DIMENSION NINDX(0:2,MXREP,4)
       LOGICAL TRIANG(2),ALLOWED,ALLOW1,ALLOW2
+      integer ic,ijkl,imin,index,indexe,indexp,indexs,irep,j,jc,jrep,k
+      integer kc,kl,klrep,kmin,krep,l,lc,lngth,lrep,nindx
 C
 C---------------Executable code--------------------------------------
 C
@@ -522,7 +527,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOM (EPS,T1,T2,CT1,CT2)
 C
       use relcc_cfg, only: relcc_ccener_dholu_limit
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -551,6 +556,8 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,ABS,DHOLU
+      integer a,aa,abij,ai,amin,aoff,arp,b,bb,brp,i,ii,ijrp,imin,ioff,j
+      integer irp,jj,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -679,7 +686,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOM_L (EPS,T1,T2,CT1,CT2)
 C
       use relcc_cfg, only: relcc_ccener_dholu_limit
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -708,6 +715,8 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,DHOLU
+      integer a,aa,abij,abrp,amin,aoff,arp,b,bb,brp,i,ia,ii,imin,ioff
+      integer irp,iw,j,jj,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -831,7 +840,7 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 C
       use relcc_cfg, only: relcc_ccener_dholu_limit
 
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -856,6 +865,8 @@ C---------------Common Blocks--------------------------------------
 C---------------Local variables--------------------------------------
 
       REAL*8 FAC,FAC1,FAC2,FAC3,ATVAL,DHOLU,CONST
+      integer a,aa,abij,abrp,amin,aoff,arp,b,bb,brp,i,ia,ii,imin,j,jj
+      integer ioff,irp,jrp
 
 C---------------Executable code--------------------------------------
 
@@ -934,7 +945,7 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -952,6 +963,7 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 BUF1(*),BUF2(*)
       REAL*8 T1(*),T2(*)
+      INTEGER FVO
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -963,6 +975,7 @@ C
 C---------------Local variables--------------------------------------
 C
       REAL*8 EI,EIJ
+      integer a,abij,ai,amin,arp,b,brp,i,ijrp,imin,irp,j,jrp
 C
 C---------------Executable code--------------------------------------
 C
@@ -1046,7 +1059,7 @@ C
       SUBROUTINE PARTS(IMODE,RMS,T1,T2,BUF1,BUF2)
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1067,7 +1080,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),BUF1(*),BUF2(*)
-      INTEGER IMODE
+      INTEGER IMODE,RMS
 C
 C---------------Common Blocks--------------------------------------
 C
@@ -1076,7 +1089,7 @@ C
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      integer ISTAT(df_MPI_STATUS_SIZE)
 #endif
 C
 C---------------Local variables--------------------------------------
@@ -1105,7 +1118,7 @@ C
       END
       SUBROUTINE S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1158,7 +1171,7 @@ C
       END
       SUBROUTINE ZCORE(T1,T2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1182,6 +1195,8 @@ C
 #include "complex.inc"
 C
 C---------------Local variables--------------------------------------
+C
+      integer i,ijrp,imin,irp,j,jrp,n,off
 C
 C---------------Executable code--------------------------------------
 C
@@ -1215,9 +1230,75 @@ C
 C
       RETURN
       END
+
+      SUBROUTINE FCORE(T1,T2,EPS)
+      use relcc_cfg  
+      use projectors 
+C
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     Zeroes out core contributions (frozen core approximation)
+C
+C---------------Routines called----------------------------------------
+C
+C---------------Last modified------------------------------------------
+C
+C     Author : Luuk Visscher
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 T1(*),T2(*),EPS(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "param.inc"
+#include "symm.inc"
+#include "complex.inc"
+C
+C---------------Local variables--------------------------------------
+C
+      integer :: idet, j, k
+      logical, pointer :: projector(:) => NULL()
+C
+C---------------Executable code--------------------------------------
+C
+      if (.not.relcc_projectors_frozen_core) RETURN
+
+      projector => create_t_projector(NDIMT1+NDIMT2,EPS)
+       
+      do idet=1, (NDIMT1+NDIMT2)
+        if (projector(idet)) then
+          if (idet.le.NDIMT1) then
+            if(CARITH) then
+              j = 2*(idet-1) + 1
+              k = j + 1
+              T1(j) = 0d0
+              T1(k) = 0d0
+            else
+              T1(idet) = 0d0
+            endif
+          else 
+            if(CARITH) then
+              j = 2*(idet-1) + 1
+              k = j + 1
+              T2(j-NDIMT1*2) = 0d0
+              T2(k-NDIMT1*2) = 0d0
+            else
+              T2(idet-NDIMT1) = 0d0
+            endif
+          endif
+        endif
+      end do
+C
+      RETURN
+      END
+
+
       SUBROUTINE MP2ENG(T1,T2,FVO,BUF1,EMP2)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1274,7 +1355,7 @@ C
       END
       SUBROUTINE T1DIAG(DIAG,T1,BUF1)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -1298,7 +1379,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      INTEGER SUM
+      INTEGER SUM,I
       REAL*8 RSUM,DDOT,SDOT
 C
 C---------------Executable code--------------------------------------

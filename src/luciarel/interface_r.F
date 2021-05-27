@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -52,6 +52,7 @@
 #include "mxpdim.inc"
 #include "crun.inc"
       logical mcscf, run_wo_t_buff
+      character*6 CIRUN
  
       if(.not.run_wo_t_buff)then
         call integral_distribution_driver(ISPINFREE,NL2D,IUB2D,ISM2D,
@@ -601,7 +602,7 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
@@ -1303,7 +1304,7 @@ C
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
 #include "parluci.h"
@@ -2074,7 +2075,7 @@ C
 #include "dgroup.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
 #endif
 #include "parluci.h"
@@ -2424,7 +2425,7 @@ C     in list LPROP_KRCI in LUCIAREL sub-double group notation.
 C     
 C     symmetry of property operator IVOP according to
 C      _           _              _      
-C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)⁺
+C     | (IVOP) =  | (IBSP_KRCI) x | (IASP_KRCI)*
 C
 C     final symmetry stored in ISYMOPPRP_KRCI (krciprop.h).
 C     
@@ -3121,7 +3122,7 @@ C
           NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3232,7 +3233,7 @@ csk               write(LUWRT,*) ' continuing ...'
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krmc_shmem.h"
 #include "ipoist8.inc"
@@ -3360,7 +3361,7 @@ csk               write(LUWRT,*) ' continuing ...'
           NINT_TP = NINT_TP_X
 csk          write(LUWRT,*) ' NINT_TP is for IRUN and iRI',NINT_TP,IRUN,IRI
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3498,7 +3499,7 @@ csk               write(LUWRT,*) ' continuing ...'
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -3653,7 +3654,7 @@ csk             CALL WRTMATMN(DENS_SCR,1,NINT_TP,1,NINT_TP,LUWRT)
           END IF
 *
 *
-          IF( IRI. eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
+          IF( IRI .eq. 1 .and. IRUN .eq. (N1ELINT + 1) ) THEN
 *
 *           real part finished
 *
@@ -3768,7 +3769,7 @@ csk               write(LUWRT,*) ' continuing ...'
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "wrkspc.inc"

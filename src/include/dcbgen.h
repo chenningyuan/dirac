@@ -12,6 +12,7 @@
 !           has been specified manually (used for SMLV1C)
 !  BNCRON - Improved screening of nucleus for bare nucleus starting guess
 !  force_bnc - use input value of BNCRON w/o checking molecular charge (PSB+MI)
+!  BNCRON - Use sum of atomic potentials for the starting guess
 !
 !  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
 !    TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
@@ -38,29 +39,27 @@
       COMMON /CBCPAM/ TITLE, DIRAC_WF
 
       LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
-     &        DOANA, DOPRP,          DOHRM, DOJACO,                     &
-     &        DOPUT,DORKBIMP,                                           &
+     &        DOANA, DOPRP,DOHRM, DOJACO,DOPUT,DORKBIMP,                &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
-     &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG, DENSFIT,    &
-     &        TWOCOMP, TWOCOMPBSS, DOLINK, DOFMM, NOSET,                &
+     &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
+     &        TWOCOMP, TWOCOMPBSS, NOSET,                               &
      &        DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH, DOQJACO,     &
-     &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc
+     &        QM3, QMMM, BARNUC, DOHUCKEL, force_bnc, BNSPON
       LOGICAL OPTWLK, OPTNEW,  NMWALK
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
 
       COMMON /DCBGEN_L_PAM/                                             &
      &                FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
      &                NOTRA, DOPRP, DOANA,    DOHRM, DOJACO,            &
-     &                DOFCK3,                 DORKBIMP,                 & 
-     &                DOPUT, OPTIMI, HRINPC, RDINPC,                    &
+     &                DOFCK3,DORKBIMP,DOPUT, OPTIMI, HRINPC, RDINPC,    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
-     &                BNCRON, DOACUT, MP2ORG, DENSFIT, TWOCOMP,         &
-     &                TWOCOMPBSS, DOLINK, DOFMM, NOSET,                 &
+     &                BNCRON, DOACUT, MP2ORG, TWOCOMP,                  &
+     &                TWOCOMPBSS, NOSET,                                &
      &                DOACIN, CBKRINI, SKIP2E, LOWJACO, NOSFCRASH,      &
      &                DOQJACO, QM3, QMMM, BARNUC, DOHUCKEL,             &
-     &                OPTWLK, OPTNEW, NMWALK, force_bnc
+     &                OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &
      &        ILLDIR, ISLDIR, ISSDIR, IGTDIR, LENDND, N_WF, INTGEN_SAVE

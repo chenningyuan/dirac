@@ -19,7 +19,7 @@ typedef double real;
 
 /* FirstDrv: matrix of first order derivatives with respect to two
  * parameters: density rho and SQUARE of the gradient of density grho.  
- * zeta_i = |\nabla\rho_i|²
+ * zeta_i = |\nabla\rho_i|2
  * mu     = |\nabla\rho_\alpha||\nabla\rho_\beta|
  */
 typedef struct FunFirstFuncDrv_ {

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1171,9 +1171,6 @@ C
 C        Expectation value of undifferentiated elements
 C
          SAVR0  = D0
-#if defined (SYS_CONVEX)
-#include "scalar.h"
-#endif
          DO 200 ICOMP = 1, KHKTAB
             DENS  = DSHELL(ICOMP)
             SAVR0 = SAVR0 + DENS*SINT0(ICOMP)

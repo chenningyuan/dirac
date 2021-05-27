@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -721,7 +721,8 @@ contains
 !       set offset in boson_symm_array / orb_sym_vec 
         j = orb_off(i) + num_pos_sh(i) + num_inact_sh(i)
 
-        if(double_group /= 9)                                    &
+!      miro: fix Index '0' of dimension 1 of array 'boson_symm_array' below lower bound of 1
+        if(double_group /= 9 .and. j > 0)                      &
           boson_symm_array(j)      = (i-1)*number_of_dbg_irreps/4
 
         offset = 0

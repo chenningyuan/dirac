@@ -3,6 +3,7 @@ subroutine xcint_potential_rks(mat_dim, &
                                fmat)
 
   use xcint_main
+ ! use include_dgroup_h,only : get_IPQTOQ,get_NZ
 
   implicit none
 
@@ -11,6 +12,10 @@ subroutine xcint_potential_rks(mat_dim, &
   real(8), intent(in) :: fmat(*)
 ! fmat should be inout
 
+  !miro: control print out of fmat at the beginnig
+  !print *,'xcint_potential_rks: entering fmat matrix, get_nz()=',get_nz()
+  !call prqmat(fmat,mat_dim,mat_dim,mat_dim,mat_dim, get_nz(), get_ipqtoq(1,0), 6)
+
   call integrate_xc(xc_mat_dim      = mat_dim, &
                     xc_nz           = 1,       &
                     xc_dmat_0       = dmat_0,  &
@@ -18,6 +23,9 @@ subroutine xcint_potential_rks(mat_dim, &
                     xc_nr_fmat      = 1,       &
                     xc_fmat         = fmat,    &
                     xc_do_potential = .true.)
+
+ ! print *,'xcint_potential_rks: exit fmat matrix'
+ ! call prqmat(fmat,mat_dim,mat_dim,mat_dim,mat_dim, get_nz(), get_ipqtoq(1,0), 6)
 
 end subroutine
 

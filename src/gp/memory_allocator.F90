@@ -69,6 +69,12 @@
          use allocator_internal_P_2d_I  
          use allocator_internal_P_3d_I 
          use allocator_internal_P_4d_I 
+
+#if !defined (INT_STAR8)
+         use allocator_internal_A_1d_fixed_i8_indexing_R
+         use allocator_internal_P_1d_fixed_i8_indexing_R
+#endif
+
                   
          use allocator_legacy_dirac
 
@@ -111,6 +117,9 @@
             module procedure alloc_A_normal_2d_R
             module procedure alloc_A_normal_3d_R
             module procedure alloc_A_normal_4d_R
+#if !defined (INT_STAR8)
+            module procedure alloc_A_normal_1d_fixed_i8_indexing_R
+#endif
             module procedure alloc_A_normal_1d_I
             module procedure alloc_A_normal_2d_I
             module procedure alloc_A_normal_3d_I
@@ -123,6 +132,9 @@
             module procedure alloc_A_sliced_2d_R
             module procedure alloc_A_sliced_3d_R
             module procedure alloc_A_sliced_4d_R
+#if !defined (INT_STAR8)
+            module procedure alloc_A_sliced_1d_fixed_i8_indexing_R
+#endif
             module procedure alloc_A_sliced_1d_I
             module procedure alloc_A_sliced_2d_I
             module procedure alloc_A_sliced_3d_I
@@ -138,6 +150,9 @@
             module procedure alloc_P_normal_2d_R
             module procedure alloc_P_normal_3d_R
             module procedure alloc_P_normal_4d_R
+#if !defined (INT_STAR8)
+            module procedure alloc_P_normal_1d_fixed_i8_indexing_R
+#endif
             module procedure alloc_P_normal_1d_I
             module procedure alloc_P_normal_2d_I
             module procedure alloc_P_normal_3d_I
@@ -150,6 +165,9 @@
             module procedure alloc_P_sliced_2d_R
             module procedure alloc_P_sliced_3d_R
             module procedure alloc_P_sliced_4d_R
+#if !defined (INT_STAR8)
+            module procedure alloc_P_sliced_1d_fixed_i8_indexing_R
+#endif
             module procedure alloc_P_sliced_1d_I
             module procedure alloc_P_sliced_2d_I
             module procedure alloc_P_sliced_3d_I

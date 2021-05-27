@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -28,10 +28,12 @@ module density_eval
 
    public mat_lao_sym
    public gga_sym
+   public gga_lao_sym
    public get_n
    public get_gamma5
    public get_s
    public get_j
+   public get_jcomp
    public get_kin
    public get_kin_ls
    public get_kin_sl
@@ -50,9 +52,19 @@ module density_eval
    public lda_london_distribute_r
    public gga_london_distribute_r
    public get_s_lao
+   public get_gs_lao
    public get_jblao
    public get_gjblao
    public get_jblao_ll
+   public lda_london_sus2el_der1
+   public gga_london_sus2el_der1
+   public lda_london_sus2el_der2
+   public gga_london_sus2el_der2
+   public lda_london_susreo_der2_r
+   public lda_london_susreo_der2_i
+   public gga_london_susreo_der2_r
+   public gga_london_susreo_der2_i
+
 
    private
 
@@ -76,9 +88,8 @@ contains
     real(8), intent(inout) :: mat(mat_dim, mat_dim, nz, nr_mat)
     integer, intent(in)    :: isym(nr_mat)
 !   ----------------------------------------------------------------------------
-    integer                :: irep, iblock, imat, iz
+    integer                :: irep, iblock, imat, iz, jxyz
     integer                :: i, j, ii, jj
-    integer, parameter     :: h(4) = (/-1, 1, 1, 1/)
     integer                :: st1, st2, nr1, nr2
     real(8)                :: average
 !   ----------------------------------------------------------------------------
@@ -87,32 +98,87 @@ contains
 
        irep = isym(imat) - 1
 
-       do iz = 1, nz
-          do iblock = 1, nr_ao_blocks
-             nr1 = ao_block_nr(iblock)
-             st1 = ao_block_start(iblock)
-             nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
-             st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
-             if ((nr1 < 1) .or. (nr2 < 1)) cycle
+       do iblock = 1, nr_ao_blocks
+          nr1 = ao_block_nr(iblock)
+          st1 = ao_block_start(iblock)
+          nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+          st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+          if ((nr1 < 1) .or. (nr2 < 1)) cycle
 
+          if (.not. (st2 > st1)) then
              do i = 1, nr1
                 do j = 1, nr2
                    ii = st1 + i - 1
                    jj = st2 + j - 1
-
-                   average = mat(ii, jj, iz, imat) &
-                           + h(iz)*mat(jj, ii, iz, imat)
+             
+                   average = mat(ii, jj, iq(0), imat) &
+                           - mat(jj, ii, iq(0), imat)
                    average = 0.5d0*average
-
-                   mat(ii, jj, iz, imat) = average
-                   mat(jj, ii, iz, imat) = h(iz)*average
+             
+                   mat(ii, jj, iq(0), imat) =  average
+                   mat(jj, ii, iq(0), imat) = -average
                 end do
              end do
+          end if
+       end do
+    end do
+
+  end subroutine
+
+  subroutine gga_lao_sym(mat_dim, &
+                     nz,      &
+                     nr_mat,  &
+                     mat,     &
+                     isym)
+
+!   ----------------------------------------------------------------------------
+    integer, intent(in)    :: mat_dim
+    integer, intent(in)    :: nz
+    integer, intent(in)    :: nr_mat
+    real(8), intent(inout) :: mat(mat_dim, mat_dim, nz, nr_mat)
+    integer, intent(in)    :: isym(nr_mat)
+!   ----------------------------------------------------------------------------
+    integer                :: irep, iblock, imat, jxyz
+    integer                :: i, j, ii, jj
+    integer                :: st1, st2, nr1, nr2
+    real(8)                :: average
+!   ----------------------------------------------------------------------------
+
+    ! symmetrize the imaginary parts
+
+    do imat = 1, nr_mat
+
+       irep = isym(imat) - 1
+
+       do jxyz = jxyz_start, 3
+          do iblock = 1, nr_ao_blocks
+             nr1 = ao_block_nr(iblock)
+             st1 = ao_block_start(iblock)
+             nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep))
+             st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep))
+             if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+             if (.not. (st2 > st1)) then
+                do i = 1, nr1
+                   do j = 1, nr2
+                      ii = st1 + i - 1
+                      jj = st2 + j - 1
+
+                      average = mat(ii, jj, iq(jxyz), imat) &
+                              + mat(jj, ii, iq(jxyz), imat)
+                      average = 0.5d0*average
+
+                      mat(ii, jj, iq(jxyz), imat) = average
+                      mat(jj, ii, iq(jxyz), imat) = average
+                   end do
+                end do
+             end if
           end do
        end do
     end do
 
   end subroutine
+
 
   subroutine gga_sym(mat_dim, &
                      nz,      &
@@ -359,6 +425,53 @@ contains
    
    end subroutine
 
+   subroutine get_jcomp(j,       &
+                        ixyz,    &
+                        cval,    &
+                        irep,    &
+                        mat_dim, &
+                        dmat,    &
+                        buffer,  &
+                        ao)
+   
+!     --------------------------------------------------------------------------
+      real(8), intent(out) :: j
+      real(8), intent(in)  :: cval
+      integer, intent(in)  :: irep,ixyz
+      integer, intent(in)  :: mat_dim
+      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+      real(8), intent(in)  :: buffer(*)
+      real(8), intent(in)  :: ao(*)
+!     --------------------------------------------------------------------------
+      integer              :: nr1, nr2, st1, st2, iblock
+      real(8), external    :: ddot
+!     --------------------------------------------------------------------------
+   
+      j = 0.0d0
+      do iblock = 1, nr_ao_blocks
+         nr1 = ao_block_nr(iblock)
+         st1 = ao_block_start(iblock)
+         nr2 = ao_block_nr(lssl_block_partner(iblock, ixyz, irep))
+         st2 = ao_block_start(lssl_block_partner(iblock, ixyz, irep))
+         if ((nr1 < 1) .or. (nr2 < 1)) cycle
+  
+         call dgemv('N',                      &
+                    nr1,                      &
+                    nr2,                      &
+                    1.0d0,                    &
+                    dmat(st1, st2, iq(ixyz)), &
+                    mat_dim,                  &
+                    ao(st2),                  &
+                    1,                        &
+                    0.0d0,                    &
+                    buffer,                   &
+                    1)
+  
+         j = j + ddot(nr1, ao(st1), 1, buffer, 1)
+      end do
+      j = -cval*j
+   
+   end subroutine
 
   subroutine get_gn(n,       &
                     gn,      &
@@ -1131,7 +1244,6 @@ contains
 
    end subroutine
 
-
    subroutine lda_london_distribute_r(s, isym, mat_dim, nz, fmat, ao, cx, cy, cz)
    
 !    ----------------------------------------------------------------------------
@@ -1143,7 +1255,7 @@ contains
      real(8), intent(in)    :: ao(*)
      real(8), intent(in)    :: cx, cy, cz
 !    ----------------------------------------------------------------------------
-     integer                :: nr1, nr2, st1, st2, iblock, ii, i, a, b, c
+     integer                :: nr1, nr2, st1, st2, iblock, ii, jj, i, a, b, c
      real(8)                :: f
      real(8)                :: r_co(3)
 !    ----------------------------------------------------------------------------
@@ -1183,7 +1295,7 @@ contains
                         1)
      
            end do
-     
+ 
          end do
      end do
 
@@ -1293,12 +1405,11 @@ contains
    
    end subroutine
 
+   subroutine get_s_lao(s, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
 
-   subroutine get_s_lao(s, isym, mat_dim, dmat, ao, cx, cy, cz, buffer)
-   
 !    ----------------------------------------------------------------------------
      real(8), intent(out) :: s(3, 3)
-     integer, intent(in)  :: isym(*)
+     integer, intent(in)  :: irep(*)
      integer, intent(in)  :: mat_dim
      real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
      real(8), intent(in)  :: ao(*)
@@ -1306,21 +1417,20 @@ contains
      real(8), intent(in)  :: buffer(*)
 !    ----------------------------------------------------------------------------
      integer              :: nr1, nr2, st1, st2, iblock, jxyz
-     integer              :: a, b, c, irp1, irp2, ii, jj
-     real(8)              :: r_co(3), f(mat_dim), ff
+     integer              :: a, b, c, ii, i, j
+     real(8)              :: r_co(3), f(mat_dim), s1, s2
      real(8), external    :: ddot
-     integer :: i, j, k
 !    ----------------------------------------------------------------------------
-   
+
      r_co(1) = cx
      r_co(2) = cy
      r_co(3) = cz
-   
+
      s = 0.0d0
      f = 0.0d0
-     ff= 0.0d0
 
      do a = 1, 3   ! Bx, By, Bz
+
        select case (a)
          case (1)
            b = 2; c = 3
@@ -1329,36 +1439,286 @@ contains
          case (3)
            b = 1; c = 2
        end select
-    
+
+       do ii = 1, mat_dim
+         f(ii) = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))
+       end do
+
        do jxyz = jxyz_start, 3
-    
+
          do iblock = 1, nr_ao_blocks
-    
+
            nr1 = ao_block_nr(iblock)
            st1 = ao_block_start(iblock)
-           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, isym(a) - 1))
-           st2 = ao_block_start(llss_block_partner(iblock, jxyz, isym(a) - 1))
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
            if ((nr1 < 1) .or. (nr2 < 1)) cycle
-    
-           do ii = st1, st1 + nr1 - 1
-             do jj = st2, st2 + nr2 - 1
-    
-               ff = (r_co(c)*ao(ao_off_g0_m1(0, b) + jj) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + jj))*ao(ii) &
-                  - (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) &
-                   - r_co(b)*ao(ao_off_g0_m1(0, c) + ii))*ao(jj)
 
-               s(jxyz, a) = s(jxyz, a) - dmat(jj, ii, iq(jxyz))*ff
-    
+!          lao(st1) * dmat(st1, st2) * ao(st2)
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s1 = llss_prefactor(iblock)*ddot(nr1, f(st1), 1, buffer, 1)
+
+!          ao(st1) * dmat(st1, st2) * lao(st2)
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s2 = llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+           s(jxyz, a) = s(jxyz, a) + (s1 - s2)
+
+         end do
+       end do
+     end do
+
+   end subroutine
+
+   subroutine get_gs_lao(s, gs, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(out) :: s(3, 3)
+     real(8), intent(out) :: gs(3, 3, 3)
+     integer, intent(in)  :: irep(*)
+     integer, intent(in)  :: mat_dim
+     real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)  :: ao(*)
+     real(8), intent(in)  :: buffer(*)
+     real(8), intent(in)  :: cx, cy, cz
+!    ----------------------------------------------------------------------------
+     integer              :: nr1, nr2, st1, st2, iblock, jxyz, ixyz
+     integer              :: a, b, c, ii, jj
+     real(8)              :: r_co(3), ff, ff_gn
+     real(8), external    :: ddot
+     real(8) :: f_lda(mat_dim), f1_gga(mat_dim), f2_gga(mat_dim, 3), f3_gga(mat_dim, 3)
+     integer :: i, j, k
+!    ----------------------------------------------------------------------------
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     s = 0.0d0
+     gs = 0.0d0
+     ff= 0.0d0
+
+     do a = 1, 3   ! B_{x,y,z}
+       select case (a)
+         case (1)
+           b = 2; c = 3
+         case (2)
+           b = 3; c = 1
+         case (3)
+           b = 1; c = 2
+       end select
+
+       do jxyz = jxyz_start, 3  ! Sigma_{x,y,z}
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, jxyz, irep(a)))
+           st2 = ao_block_start(llss_block_partner(iblock, jxyz, irep(a)))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = 1, mat_dim
+             f_lda(ii)  = (r_co(c)*ao(ao_off_g0_m1(0, b) + ii) - r_co(b)*ao(ao_off_g0_m1(0, c) + ii)) 
+             do ixyz = 1, 3
+               f2_gga(ii, ixyz) =  &
+                  + (r_co(c)*ao(ao_off_g1_m1(ixyz, b) + ii) - r_co(b)*ao(ao_off_g1_m1(ixyz, c) + ii))
              end do
            end do
 
-         end do  ! do iblock = 1, nr_ao_blocks
+!          lda
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      ao(st2),                  &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
 
-       end do    ! do jxyz = 1, jxyz_start, 3
-     end do      ! do a = 1, 3
+           call dgemv('N',                      &
+                      nr1,                      &
+                      nr2,                      &
+                      1.0d0,                    &
+                      dmat(st1, st2, iq(jxyz)), &
+                      mat_dim,                  &
+                      f_lda(st2),               &
+                      1,                        &
+                      0.0d0,                    &
+                      buffer,                   &
+                      1)
+     
+           s(jxyz, a) = s(jxyz, a) &
+                   - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+
+!          gga
+           do ixyz = 1, 3 !dR
+!            (1) [(R_M \times r)(\partial(ixyz)ao_M) ] * Dmat * ao_N
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        ao(st2),                  &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     + llss_prefactor(iblock)*ddot(nr1, f2_gga(st1, ixyz), 1, buffer, 1)
+
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        f2_gga(st2, ixyz),        &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+             
+!            (2) [(R_M \times r)*ao_M] * Dmat * (\partial(ixyz) ao_N)
+             call dgemv('N',                             &
+                        nr1,                             &
+                        nr2,                             &
+                        1.0d0,                           &
+                        dmat(st1, st2, iq(jxyz)),        &
+                        mat_dim,                         &
+                        ao(ao_off_g1_m0(ixyz, 0) + st2), &
+                        1,                               &
+                        0.0d0,                           &
+                        buffer,                          &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     + llss_prefactor(iblock)*ddot(nr1, f_lda(st1), 1, buffer, 1)
+
+             call dgemv('N',                      &
+                        nr1,                      &
+                        nr2,                      &
+                        1.0d0,                    &
+                        dmat(st1, st2, iq(jxyz)), &
+                        mat_dim,                  &
+                        f_lda(st2),               &
+                        1,                        &
+                        0.0d0,                    &
+                        buffer,                   &
+                        1)
+             
+             gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                     - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g1_m0(ixyz, 0) + st1), 1, buffer, 1)
+
+!            (3) [R_M \times (\partial(ixyz) r)] ao_M * Dmat * ao_N
+             if (ixyz == b) then
+               call dgemv('N',                      &
+                          nr1,                      &
+                          nr2,                      &
+                          1.0d0,                    &
+                          dmat(st1, st2, iq(jxyz)), &
+                          mat_dim,                  &
+                          ao(st2),                  &
+                          1,                        &
+                          0.0d0,                    &
+                          buffer,                   &
+                          1)
+              
+               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                       - llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g0_m1(0, c) + st1), 1, buffer, 1)
+              
+               call dgemv('N',                          &
+                          nr1,                          &
+                          nr2,                          &
+                          1.0d0,                        &
+                          dmat(st1, st2, iq(jxyz)),     &
+                          mat_dim,                      &
+                          ao(ao_off_g0_m1(0, c) + st2), &
+                          1,                            &
+                          0.0d0,                        &
+                          buffer,                       &
+                          1)
+              
+               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                       + llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+             end if
+
+             if (ixyz == c) then
+               call dgemv('N',                      &
+                          nr1,                      &
+                          nr2,                      &
+                          1.0d0,                    &
+                          dmat(st1, st2, iq(jxyz)), &
+                          mat_dim,                  &
+                          ao(st2),                  &
+                          1,                        &
+                          0.0d0,                    &
+                          buffer,                   &
+                          1)
+              
+               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                       + llss_prefactor(iblock)*ddot(nr1, ao(ao_off_g0_m1(0, b) + st1), 1, buffer, 1)
+              
+               call dgemv('N',                          &
+                          nr1,                          &
+                          nr2,                          &
+                          1.0d0,                        &
+                          dmat(st1, st2, iq(jxyz)),     &
+                          mat_dim,                      &
+                          ao(ao_off_g0_m1(0, b) + st2), &
+                          1,                            &
+                          0.0d0,                        &
+                          buffer,                       &
+                          1)
+              
+               gs(ixyz, jxyz, a) = gs(ixyz, jxyz, a) &
+                       - llss_prefactor(iblock)*ddot(nr1, ao(st1), 1, buffer, 1)
+
+             end if
+
+           end do
+
+         end do
+       end do
+     end do
 
    end subroutine
+
 
    subroutine get_jblao(perturbation_component, cval, D_0, mat_dim, ao, r, j)
 
@@ -1543,5 +1903,838 @@ contains
       j = -0.5d0*j
 
    end subroutine
+
+   subroutine lda_london_sus2el_der1(s, isym, mat_dim, nz, dmat, ao, cx, cy, cz, buffer, n_bb)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: s
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock, ii
+     integer                :: a1, a2, b1, b2, c1, c2
+     integer                :: ind(3, 3)
+     real(8)                :: f1i, f2i, f3i, f4i
+     real(8)                :: r_co(3)
+     real(8)                :: f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
+     real(8), external    :: ddot
+!    ----------------------------------------------------------------------------
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     ind(1,1) = 1 ! xx
+     ind(1,2) = 2 ! xy
+     ind(2,1) = 2 ! yx
+     ind(1,3) = 3 ! xz
+     ind(3,1) = 3 ! zx
+     ind(2,2) = 4 ! yy
+     ind(2,3) = 5 ! yz
+     ind(3,2) = 5 ! zy
+     ind(3,3) = 6 ! zz
+
+     do a1 = 1, 3
+!      B_'alpha'
+       select case (a1)
+         case (1)
+           b1 = 2; c1 = 3
+         case (2)
+           b1 = 3; c1 = 1
+         case (3)
+           b1 = 1; c1 = 2
+       end select
+
+       do a2 = 1, 3
+!        B_'beta'
+         select case (a2)
+           case (1)
+             b2 = 2; c2 = 3
+           case (2)
+             b2 = 3; c2 = 1
+           case (3)
+             b2 = 1; c2 = 2
+         end select
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, 0, 0))
+           st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           do ii = 1, mat_dim
+             f1a(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b(ii)  = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+             f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2(ii) = f1i - f2i - f3i + f4i
+           end do
+
+!          first-order magnetic derivatives of lao (contribute with "+")
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a(st2),              &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b(st2),              &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a(st1), 1, buffer, 1)
+
+
+!          second-order magnetic derivatives of lao (contribute with "-")
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      1.0d0,                 &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, f2(st1), 1, buffer, 1)
+
+         end do
+       end do
+     end do
+
+    n_bb = s*n_bb
+
+   end subroutine
+
+
+   subroutine gga_london_sus2el_der1(d_r, d_z, n_g, isym, mat_dim, nz, dmat, ao, cx, cy, cz, buffer, n_bb)
+
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_r
+     real(8), intent(in)    :: d_z
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: nr1, nr2, st1, st2, iblock, ii, jj, ixyz
+     integer                :: a1, a2, b1, b2, c1, c2
+     integer                :: ind(3, 3)
+     real(8)                :: f_1_lda, f_1_gga1, f_1_gga2
+     real(8)                :: f_2_lda, f_2_gga1, f_2_gga2, f_2_gga3a, f_2_gga3b
+     real(8)                :: f1i, f2i, f3i, f4i, f1j, f2j, f3j, f4j
+     real(8)                :: fg1i, fg2i, fg3i, fg4i, fg1j, fg2j, fg3j, fg4j
+     real(8)                :: r_co(3)
+     real(8) :: s
+     real(8) ::  f1a(mat_dim), f1b(mat_dim), f2(mat_dim)
+     real(8) ::  f1a_gga_ng(mat_dim), f1a_gga_r(mat_dim), f1a_gga_rg1m1(mat_dim)
+     real(8) ::  f1b_gga_ng(mat_dim), f1b_gga_r(mat_dim), f1b_gga_rg1m1(mat_dim)
+     real(8) ::  f2_gga_g1m2(mat_dim), f2a_gga_g0m2(mat_dim)
+     real(8) ::  f2_gga_g1m0(mat_dim), f2b_gga_g0m2(mat_dim)
+     real(8), external    :: ddot
+! d_z is already multiplied by 2.0
+!    ----------------------------------------------------------------------------
+
+     n_bb = 0.0d0
+
+     r_co(1) = cx
+     r_co(2) = cy
+     r_co(3) = cz
+
+     ind(1,1) = 1 ! xx
+     ind(1,2) = 2 ! xy
+     ind(2,1) = 2 ! yx
+     ind(1,3) = 3 ! xz
+     ind(3,1) = 3 ! zx
+     ind(2,2) = 4 ! yy
+     ind(2,3) = 5 ! yz
+     ind(3,2) = 5 ! zy
+     ind(3,3) = 6 ! zz
+
+     do a1 = 1, 3
+!      B_'alpha'
+       select case (a1)
+         case (1)
+           b1 = 2; c1 = 3
+         case (2)
+           b1 = 3; c1 = 1
+         case (3)
+           b1 = 1; c1 = 2
+       end select
+
+       do a2 = 1, 3
+!        B_'beta'
+         select case (a2)
+           case (1)
+             b2 = 2; c2 = 3
+           case (2)
+             b2 = 3; c2 = 1
+           case (3)
+             b2 = 1; c2 = 2
+         end select
+
+         do iblock = 1, nr_ao_blocks
+
+           nr1 = ao_block_nr(iblock)
+           st1 = ao_block_start(iblock)
+           nr2 = ao_block_nr(llss_block_partner(iblock, 0, 0))
+           st2 = ao_block_start(llss_block_partner(iblock, 0, 0))
+           if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+           f1a_gga_rg1m1 = 0.0d0
+           f1b_gga_rg1m1 = 0.0d0
+           f2_gga_g1m2   = 0.0d0
+           f2_gga_g1m0   = 0.0d0
+           do ii = 1, mat_dim
+!
+             f1a(ii)  = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)-r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b(ii)  = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)-r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1i = r_co(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             f2i = r_co(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(c1,b2)) + ii)
+             f3i = r_co(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             f4i = r_co(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2(ii) = f1i - f2i - f3i + f4i
+!
+             f1a_gga_ng(ii)  = (n_g(c1)*ao(ao_off_g0_m1(0, b1) + ii) - n_g(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b_gga_ng(ii)  = (n_g(c2)*ao(ao_off_g0_m1(0, b2) + ii) - n_g(b2)*ao(ao_off_g0_m1(0, c2) + ii))
+             f1a_gga_r(ii)   = (r_co(c1)*ao(ao_off_g0_m1(0, b1) + ii)- r_co(b1)*ao(ao_off_g0_m1(0, c1) + ii))
+             f1b_gga_r(ii)   = (r_co(c2)*ao(ao_off_g0_m1(0, b2) + ii)- r_co(b2)*ao(ao_off_g0_m1(0, c2) + ii))
+!
+             do ixyz = 1, 3
+               f1a_gga_rg1m1(ii) = f1a_gga_rg1m1(ii) &
+                       + (r_co(c1)*ao(ao_off_g1_m1(ixyz, b1) + ii) - r_co(b1)*ao(ao_off_g1_m1(ixyz, c1) + ii))*n_g(ixyz)
+               f1b_gga_rg1m1(ii) = f1b_gga_rg1m1(ii) &
+                       + (r_co(c2)*ao(ao_off_g1_m1(ixyz, b2) + ii) - r_co(b2)*ao(ao_off_g1_m1(ixyz, c2) + ii))*n_g(ixyz)
+!
+               fg1i = r_co(c1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(b1,b2)) + ii)
+               fg2i = r_co(b1)*r_co(c2)*ao(ao_off_g1_m2(ixyz, ind(c1,b2)) + ii)
+               fg3i = r_co(b2)*r_co(c1)*ao(ao_off_g1_m2(ixyz, ind(b1,c2)) + ii)
+               fg4i = r_co(b1)*r_co(b2)*ao(ao_off_g1_m2(ixyz, ind(c1,c2)) + ii)
+               f2_gga_g1m2(ii) = f2_gga_g1m2(ii) + (fg1i - fg2i - fg3i + fg4i)*n_g(ixyz)
+
+               f2_gga_g1m0(ii) = f2_gga_g1m0(ii) &
+                       + ao(ao_off_g1_m0(ixyz, 0) + ii)*n_g(ixyz)
+             end do
+!
+             fg1i = n_g(c1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             fg2i = n_g(c1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             fg3i = n_g(b1)*r_co(c2)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+             fg4i = n_g(b1)*r_co(b2)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2a_gga_g0m2(ii) = (fg1i - fg2i - fg3i + fg4i)
+
+             fg1i = n_g(c2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,b2)) + ii)
+             fg2i = n_g(c2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(b2,c1)) + ii)
+             fg3i = n_g(b2)*r_co(c1)*ao(ao_off_g0_m2(0, ind(b1,c2)) + ii)
+             fg4i = n_g(b2)*r_co(b1)*ao(ao_off_g0_m2(0, ind(c1,c2)) + ii)
+             f2b_gga_g0m2(ii) = (fg1i - fg2i - fg3i + fg4i)
+
+           end do
+
+!          lda
+!          first-order magnetic derivatives of lao (contribute with "+")
+           s = d_r 
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a(st2),              &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b(st2),              &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a(st1), 1, buffer, 1)
+
+!          second-order magnetic derivatives of lao (contribute with "-")
+           s = d_r
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) - ddot(nr1, f2(st1), 1, buffer, 1)
+
+!          gga
+!          first-order magnetic derivatives of lao (contribute with "+")
+!          [ R_M \times r] (\partial ao_M)] Dmat_MN [R_N \times r] ao_N
+           s = d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_rg1m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_r(st2),        &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_rg1m1(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_rg1m1(st2),    &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_r(st2),        &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_rg1m1(st1), 1, buffer, 1)
+
+!          [ R_M \times (\partial(i) r)] (ao_M)] * n_g(i)* Dmat_MN [R_N \times r] ao_N
+           s = d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_ng(st2),       &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_ng(st2),       &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_r(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1a_gga_r(st2),        &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1b_gga_ng(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f1b_gga_r(st2),        &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f1a_gga_ng(st1), 1, buffer, 1)
+
+!          second-order magnetic derivatives of lao (contribute with "-")
+!          [ R_M \times r] [R_M \times r] (\partial ao_M)] Dmat_MN ao_N
+           s = - d_z
+           !s =  d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2_gga_g1m2(st2),      &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+ 
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m2(st1), 1, buffer, 1)
+
+!          [ R_M \times (\partial(i) r)] [R_M \times r] ao_M Dmat_MN ao_N
+           s = - d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2a_gga_g0m2(st2),     &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2a_gga_g0m2(st1), 1, buffer, 1)
+  
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2b_gga_g0m2(st2),     &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, ao(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      ao(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2b_gga_g0m2(st1), 1, buffer, 1)
+
+!          [ R_M \times r)] [R_M \times r] ao_M Dmat_MN (\partial(i) ao_N)*n_g(i)
+           s = - d_z
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2_gga_g1m0(st2),      &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2(st1), 1, buffer, 1)
+
+           call dgemv('N',                   &
+                      nr1,                   &
+                      nr2,                   &
+                      s,                     &
+                      dmat(st1, st2, iq(0)), &
+                      mat_dim,               &
+                      f2(st2),               &
+                      1,                     &
+                      0.0d0,                 &
+                      buffer,                &
+                      1)
+           n_bb(a2,a1) = n_bb(a2,a1) + ddot(nr1, f2_gga_g1m0(st1), 1, buffer, 1)
+
+         end do
+       end do
+     end do
+
+   end subroutine
+
+
+   subroutine lda_london_sus2el_der2(s, irep, mat_dim, nz, dmat, ao, cx, cy, cz, buffer,n_bb)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: s
+     integer, intent(in)    :: irep(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, jxyz
+     real(8)                :: r_co(3), s_b_lao(3,3)
+!    ----------------------------------------------------------------------------
+
+     s_b_lao = 0.0d0
+     !call get_s_lao(s_b_lao, (/0/), irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
+     call get_s_lao(s_b_lao, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
+
+!    s_b_lao(Sigma_{x,y,z}, B_{x,y,z})
+     do jxyz = 1, 3
+        do a1 = 1, 3
+          do a2 = 1, 3
+            n_bb(a2, a1) = n_bb(a2, a1) + s*s_b_lao(jxyz,a1)*s_b_lao(jxyz,a2)
+          end do
+        end do
+     end do
+
+   end subroutine
+
+   subroutine lda_london_susreo_der2_r(f, isym, mat_dim, nz, dmat, ao, &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: f
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, irep(3)
+     real(8)                :: n(3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+
+!    real part
+     do a1 = 1, 3
+       call get_n(n(a1), irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1) + f*n(a1)*n(a2)
+       end do
+     end do
+
+   end subroutine
+
+   subroutine lda_london_susreo_der2_i(f, isym, mat_dim, nz, dmat, ao, &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: f
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, jxyz, irep(3)
+     real(8)                :: s(3, 3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+ 
+!    imaginary part
+     do a1 = 1, 3
+       call get_s(s(1:3,a1), irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+     do jxyz = 1, 3
+        do a1 = 1, 3
+          do a2 = 1, 3
+            n_bb(a2, a1) = n_bb(a2, a1) + f*s(jxyz,a1)*s(jxyz,a2)
+          end do
+        end do
+     end do
+
+   end subroutine
+
+   subroutine gga_london_susreo_der2_r(d_n1, d_n2, d_n3, d_n4, n_g,  &
+                                       isym, mat_dim, nz, dmat, ao,  &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_n1, d_n2, d_n3, d_n4
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, a1, a2, irep(3)
+     real(8)                :: n(3), gn(3,3), n_g_gn(3), gn_gn(3,3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+
+!    get density and density gradient; dmat is modified by T_Bx/y/z matrices
+     do a1 = 1, 3 ! B_x/y/z
+       call get_gn(n(a1), gn(1:3,a1),irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+
+     do a1 = 1, 3
+       n_g_gn(a1) = n_g(1)*gn(1,a1) &
+                  + n_g(2)*gn(2,a1) &
+                  + n_g(3)*gn(3,a1)
+       do a2 = 1, 3
+         gn_gn(a2, a1)  = gn(1,a2)*gn(1,a1) &
+                        + gn(2,a2)*gn(2,a1) &
+                        + gn(3,a2)*gn(3,a1)
+       end do
+     end do
+
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1)       &
+!                     lda
+                      +       d_n1*n(a1)*n(a2)              &
+                      + 2.0d0*d_n2*n_g_gn(a1)*n(a2)         &
+!                     gradient terms
+                      + 2.0d0*d_n2*n_g_gn(a2)*n(a1)         &
+                      + 4.0d0*d_n3*n_g_gn(a1)*n_g_gn(a2)    &
+                      + 2.0d0*d_n4*gn_gn(a2, a1)
+       end do
+     end do
+
+
+   end subroutine
+
+   subroutine gga_london_susreo_der2_i(d_s1, d_s2, d_s3, d_s4, n_g,  &
+                                       isym, mat_dim, nz, dmat, ao,  &
+                                       n_bb, buffer)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_s1, d_s2, d_s3, d_s4
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: isym(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim*mat_dim, nz, 3)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: i, k, a1, a2, irep(3)
+     real(8)                :: s(3,3), gs(3,3,3), n_g_gs(3,3), gs_gs(3,3)
+!    ----------------------------------------------------------------------------
+
+     do i = 1, 3
+        irep(i) = isym(i) - 1
+     end do
+
+!    get density and density gradient; dmat is modified by T_Bx/y/z matrices
+     do a1 = 1, 3 ! B_x/y/z
+       call get_gs(s(1:3,a1),       &
+                   gs(1:3,1:3,a1),  &
+                   irep(a1), mat_dim, dmat(1,1,a1), buffer, ao)
+     end do
+
+     do k = 1, 3
+       do a1 = 1, 3
+         n_g_gs(k, a1) = n_g(1)*gs(1,k,a1) &
+                       + n_g(2)*gs(2,k,a1) &
+                       + n_g(3)*gs(3,k,a1)
+         do a2 = 1, 3
+           gs_gs(a2, a1)  = gs(1,k,a2)*gs(1,k,a1) &
+                          + gs(2,k,a2)*gs(2,k,a1) &
+                          + gs(3,k,a2)*gs(3,k,a1)
+         end do
+       end do
+     end do
+
+     do a1 = 1, 3
+       do a2 = 1, 3
+         n_bb(a2, a1) = n_bb(a2, a1)  &
+!                     lda
+                      + d_s1*(s(1,a1)*s(1,a2)       &
+                      +       s(2,a1)*s(2,a2)       &
+                      +       s(3,a1)*s(3,a2))      &
+                      + d_s2*(n_g_gs(1,a1)*s(1,a2)     &
+                      +       n_g_gs(2,a1)*s(2,a2)     &
+                      +       n_g_gs(3,a1)*s(3,a2))    &
+!                     gradient terms
+                      + d_s2*(n_g_gs(1,a2)*s(1,a1)     &
+                      +       n_g_gs(2,a2)*s(2,a1)     &
+                      +       n_g_gs(3,a2)*s(3,a1))    &
+                      + d_s3*(n_g_gs(1,a1)*n_g_gs(1,a2)    &
+                      +       n_g_gs(2,a1)*n_g_gs(2,a2)    &
+                      +       n_g_gs(3,a1)*n_g_gs(3,a2))   &
+                      + 2.0d0*d_s4*gs_gs(a2, a1)
+       end do
+     end do
+
+
+   end subroutine
+
+
+   subroutine gga_london_sus2el_der2(d_s, d_sns, d_nsns, d_ss, n_g, &
+                                     irep, mat_dim, nz, dmat, ao, cx, cy, cz, buffer, n_bb)
+!    ----------------------------------------------------------------------------
+     real(8), intent(in)    :: d_s, d_sns, d_nsns, d_ss
+     real(8), intent(in)    :: n_g(3)
+     integer, intent(in)    :: irep(*)
+     integer, intent(in)    :: mat_dim
+     integer, intent(in)    :: nz
+     real(8), intent(inout) :: dmat(mat_dim, mat_dim, *)
+     real(8), intent(in)    :: ao(*)
+     real(8), intent(in)    :: buffer(*)
+     real(8), intent(in)    :: cx, cy, cz
+     real(8), intent(out)   :: n_bb(3, 3)
+!    ----------------------------------------------------------------------------
+     integer                :: a1, a2, ixyz
+     real(8)                :: s(3, 3), gs(3, 3, 3)
+!    d_ss is already multiplied by 2.0
+!    ----------------------------------------------------------------------------
+
+     s = 0.0d0
+     gs = 0.0d0
+
+!    get s and gs in LAO basis:
+!    --------------------------
+!    s(Sigma_{x,y,z}, B_{x,y,z})
+!    gs(dR_{x,y,z}, Sigma_{x,y,z}, B_{x,y,z})
+     call get_gs_lao(s, gs, irep, mat_dim, dmat, ao, cx, cy, cz, buffer)
+
+     do a1 = 1, 3   ! B_alpha
+       do a2 = 1, 3   ! B_beta
+         n_bb(a2, a1) = n_bb(a2, a1) &
+!
+                      + d_s*( s(1, a1)*s(1, a2)   &
+                      +       s(2, a1)*s(2, a2)   &
+                      +       s(3, a1)*s(3, a2))
+!
+         do ixyz = 1, 3 ! Sigma
+           n_bb(a2, a1) = n_bb(a2, a1) &
+                        + d_sns*(n_g(1)*gs(1, ixyz, a1)*s(ixyz, a2)  & 
+                        +        n_g(2)*gs(2, ixyz, a1)*s(ixyz, a2)  & 
+                        +        n_g(3)*gs(3, ixyz, a1)*s(ixyz, a2)  & 
+                        +        n_g(1)*gs(1, ixyz, a2)*s(ixyz, a1)  & 
+                        +        n_g(2)*gs(2, ixyz, a2)*s(ixyz, a1)  & 
+                        +        n_g(3)*gs(3, ixyz, a2)*s(ixyz, a1)) & 
+                        + d_nsns*(n_g(1)*gs(1, ixyz, a1) + n_g(2)*gs(2, ixyz, a1) + n_g(3)*gs(3, ixyz, a1)) &
+                                *(n_g(1)*gs(1, ixyz, a2) + n_g(2)*gs(2, ixyz, a2) + n_g(3)*gs(3, ixyz, a2)) &
+                        + d_ss*(gs(1, ixyz, a1)*gs(1, ixyz, a2)      &
+                        +       gs(2, ixyz, a1)*gs(2, ixyz, a2)      &
+                        +       gs(3, ixyz, a1)*gs(3, ixyz, a2))
+         end do
+       end do
+     end do
+
+   end subroutine
+
+
 
 end module

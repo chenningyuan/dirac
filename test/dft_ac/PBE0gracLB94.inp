@@ -26,6 +26,8 @@ LB94
 *SCF
 .EVCCNV
  1.0E-5         !we use poor convergence threshold for the test
+.MOSTART        !we use the old start procedure as this was used when generating the test
+BNCORR
 **PROPERTIES
 .POLARIZABILITY
 *EXPECTATION

@@ -9,7 +9,6 @@
      &    ISOTOP(MXCENT), IZATOM(MXCENT),                               &
      &    NAMFA, IAMFA(MXCENT), IATOMTYP(MXCENT),                       &
      &    NONTYP, NONT(MXATOM), NBAS_ATOMTYPE(MXATOM,0:MXBSETS),        & ! <--- atom type info
-     &    NBASISAUX, NPBASAUX, NAUX, NPAUX,                             & ! <--- density fitting basis info
      &    NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT,     &
      &    NPSML_FIT
       LOGICAL NOORBT(MXCENT), GAUNUC
@@ -20,7 +19,6 @@
      &    NPBAS,  NPLRG,  NPSML,  NUCNET, INCENT, INUNIQ,               &
      &    NDEGNM, ISOTOP, IZATOM, NAMFA,  IAMFA,  IATOMTYP,             &
      &    NONTYP, NONT        , NBAS_ATOMTYPE            ,              & ! <--- atom type info
-     &    NBASISAUX, NPBASAUX, NAUX, NPAUX,                             & ! <--- density fitting basis info
      &    NBASIS_FIT, NLARGE_FIT, NSMALL_FIT, NPBAS_FIT, NPLRG_FIT,     &
      &    NPSML_FIT, NOORBT, GAUNUC
 

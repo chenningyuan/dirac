@@ -16,23 +16,46 @@ Primer <http://sphinx.pocoo.org/rest.html>`_ and the `Sphinx Markup Constructs
 auto-colored in the terminal so you can see when the markup is correct or
 wrong.
 
+
 Sphinx installation
 -------------------
 
-The sphinx generator is part of standard packages, and on most systems
-can be installed via their official repositories.
-Common names of packages are "python-sphinx" and "python-matplotlib", but there might be
-additional packages needed depending on the operating system.
+We recommend to install the required packages using
+either `virtualenv <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__
+or `Conda <https://docs.conda.io/>`__
+but not using standard packages.
+Possibly the only packages that you may need to install system-wide are
+python-pip and python-virtualenv).
 
-Linux users, for example on Ubuntu, can get the documentation generator as::
+Now you can set up a virtual environment (the last argument is its name/location
+and you can change it)::
 
-    sudo apt-get install python-sphinx python-matplotlib
+  $ python -m venv venv
 
-For  *Mac* users using the macport::
+On some systems, instead of the above, you need::
 
-    sudo port install python-sphinx
-    sudo port select --set sphinx py27-sphinx
-    sudo port install py27-matplotlib
+  $ python3 -m venv venv
+
+This will create a folder called ``venv`` in your current working directory.
+You can create it in another place and you can give it a different name.
+It is a good practice to have separate environments for separate projects.
+Once you have set it up, you need to activate it::
+
+  $ source venv/bin/activate
+
+Once activated, you can install Python packages into the virtual
+environment::
+
+  $ python -m pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+
+Again, on some systems you need ``python3 -m pip ...`` instead.
+Next time you log on, you do not need to install it again, you just activate (source) it
+like above, you do not need to install the dependencies again.
+
+The advantage of using virtualenv is that it is cross-platform,
+you get the latest packages, you get an isolated and disposable
+environment, and you do not require sudo permissions.
+
 
 Generation of html pages
 ------------------------
@@ -59,7 +82,8 @@ in index.rst.
 New theme
 ---------
 
-The `sphinx_rtd_theme <https://github.com/snide/sphinx_rtd_theme>`_ has been customized and integrated as the new theme for Dirac. Theme extension can be installed using pip:
+The `sphinx_rtd_theme <https://github.com/snide/sphinx_rtd_theme>`_ has been customized and integrated as the new theme for Dirac. 
+Theme extension can be installed using pip:
 
 .. code-block:: bash
 
@@ -117,13 +141,15 @@ Citations can be added using the new :rst:dir:`cite` directive:
     # new format
     :cite:`Dubillard2006`
 
-The new format also enables the option to download the citations in BibTeX. This code will generate a link to static BibTeX file with all citations:
+The new format also enables the option to download the citations in BibTeX.
+This code will generate a link to static BibTeX file with all citations:
 
 .. code-block:: rest
 
     :download:`BibTeX <zreferences.bib>`
 
-The list of references can be added to the document using the :rst:dir:`bibliography` directive:
+The list of references can be added to the document using the
+:rst:dir:`bibliography` directive:
 
 .. code-block:: rest
 
@@ -137,14 +163,17 @@ The list of references can be added to the document using the :rst:dir:`bibliogr
     name the references page so that it starts with the "z" letter in order to be alphabeticaly last.
     The issue is being tracked `here <http://sphinxcontrib-bibtex.readthedocs.org/en/latest/usage.html#unresolved-citations-across-documents>`_.
 
-When definining you own styles, please consider studying these `examples <http://bazaar.launchpad.net/~pybtex-devs/pybtex/trunk/files/head:/pybtex/style/>`_, as the documentation of this project is really poor. In order for citations to be sorted alphabeticaly, the ``plain`` or ``alpha`` formatting must be used.
+When defining you own styles, please consider studying these `examples
+<http://bazaar.launchpad.net/~pybtex-devs/pybtex/trunk/files/head:/pybtex/style/>`_,
+as the documentation of this project is really poor. In order for citations to
+be sorted alphabetically, the ``plain`` or ``alpha`` formatting must be used.
 
 Available labels:
 
 * ``alpha`` - Display data from citation fields.
 * ``numbers`` - Displays numbers.
 
-Available formattings:
+Available formatting:
 
 * ``alpha`` - Uses ``alpha`` label, citations are sorted by ``author_year_title``.
 * ``plain`` -  Uses ``number`` label, citations are sorted by ``author_year_title``.
@@ -220,36 +249,6 @@ This code shows a simple usage in Jinja2 template:
         Commit sha1 hash: {{ git_commit_sha }}
     {%- endif %}
 
-
-Google Analytics
-----------------
-
-Google Analytics support for both slides and main documentation has been added. In order to support this
-feature a new ``_templates/shared/macros.html`` file has been added to enable Jinja 2 macros sharing between
-two documentation systems.
-
-Setting Google Account for main documentation (in file ``conf.py``):
-
-.. code-block:: python
-
-    html_context = {
-        'google_analytics_account': 'UA-XXXXX',
-    }
-
-Setting Google Account for slides (in file ``workshop-slides/conf.py``):
-
-.. code-block:: python
-
-    slide_theme_options = {
-        'google_analytics_account': 'UA-XXXXX',
-    }
-
-Example usage of the ``google_analytics`` macro in Jinja 2 template:
-
-.. code-block:: jinja
-
-    {% import "shared/macros.html" as macros %}
-    {{ macros.google_analytics('UA-XXXXX') }}
 
 Continuous integration and deployments
 --------------------------------------
@@ -361,13 +360,3 @@ After keyword arguments you have to provide two positional arguments.
 
 Every operation on the remote server will be executed under the given user. If the ``post_script`` option is passed it will be executed after the rsync operation finishes. Example
 post deploy script can be found in ``maintenance/post_deploy.py``. It used to generate nice overview of last documentation builds on the `main documentation site <http://dirac.umb.sk/doc/doc-deployments/>`_.
-
-Summary 
--------
-
-We give complete list of packages to be installed for compiling the DIRAC documentation:
-::
-
-    sudo apt-get install python-sphinx python-matplotlib
-    pip install sphinx_rtd_theme hieroglyph sphinxcontrib-bibtex
-

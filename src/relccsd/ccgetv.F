@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FMTOFILE (PUT,FVO,FOO,FVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -50,6 +50,8 @@ C
 #include "waio.h"
 C
 C---------------Local variables--------------------------------------
+C
+      integer nsec, nsec0, nsec1, nsec2
 C
 C---------------Executable code--------------------------------------
 C
@@ -80,7 +82,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETOOOO (VOOOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -114,7 +116,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOOO (VVOOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -151,7 +153,7 @@ C
 
       SUBROUTINE GETOOVO (VOOVO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -195,7 +197,7 @@ C---------------Executable code--------------------------------------
 
       SUBROUTINE GETOVOO (VOVOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -238,7 +240,7 @@ C---------------Executable code--------------------------------------
 !=======================================================================
       SUBROUTINE GETOOOV (VOOOV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -281,7 +283,7 @@ C---------------Executable code--------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVVOO (VVVOO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -317,7 +319,7 @@ C
 
       SUBROUTINE GETOOVV (VOOVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -360,7 +362,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVO (VVOVO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -400,7 +402,7 @@ C
 
       SUBROUTINE GETVOOV (VVOOV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -447,7 +449,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVV (IREP,ISTART,NINT,DONE,VVOVV,MINT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -470,7 +472,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 VVOVV(*)
-      INTEGER IREP,ISTART,NINT
+      INTEGER IREP,ISTART,NINT,MINT
       LOGICAL DONE
 C
 C---------------Common Blocks--------------------------------------
@@ -484,6 +486,7 @@ C
 C---------------Local variables--------------------------------------
 C
        INTEGER*8 JSTART
+       integer jint,mtot,ntot
 C
 C---------------Executable code--------------------------------------
 C
@@ -514,50 +517,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-      SUBROUTINE GETVOVV_incore (VVOVV)
-C
-      IMPLICIT INTEGER (A-Z)
-C
-C---------------Description--------------------------------------------
-C
-C     Get VOVO part of two-electron integrals
-C
-C---------------Routines called----------------------------------------
-C
-
-
-
-C---------------Last modified------------------------------------------
-C
-C     Author : Luuk Visscher
-C
-C---------------Calling variables--------------------------------------
-C
-      REAL*8 VVOVV(*)
-C
-C---------------Common Blocks--------------------------------------
-C
-#include "files.inc"
-#include "complex.inc"
-#include "symm.inc"
-#include "eqns.inc"
-C
-C---------------Local variables--------------------------------------
-C
-C---------------Executable code--------------------------------------
-C
-      CALL RREAD(ITAPT+5,VVOVV,NV5*IRW*RCW,1)
-C
-      RETURN
-      END
-
-
       SUBROUTINE GETVVVO_incore (VVVVO)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
-
 C     Get VOVO part of two-electron integrals
 
 C---------------Calling variables--------------------------------------
@@ -568,19 +532,21 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
+#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "eqns.inc"
-#include "param.inc"
 C
 C---------------Local variables--------------------------------------
-C
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize
 C---------------Executable code--------------------------------------
 C
-
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
-      CALL RREAD(ITAPT+5,VVOVV,NV5*IRW*RCW,1)
+      CALL GETVOVV_incore (VVOVV)
 
       CALL SRT1C1 (NREP,NVO,NVVT,VVOVV,VVVVO) 
 
@@ -588,11 +554,125 @@ C
 
       RETURN
       END
+!=================================================================
 
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+      SUBROUTINE GETVOVV_incore (VVOVV)
+
+      use interface_to_mpi
+      implicit none
+C
+C---------------Description--------------------------------------------
+C
+C     Get VOVV part of two-electron integrals in core.
+C     We first read the VOVV integrals on different nodes.
+C     Then synchronize all of them to the master 
+C
+C---------------Routines called----------------------------------------
+
+
+C---------------Last modified------------------------------------------
+C
+C     Author : Avijit Shee
+C
+C---------------Calling variables--------------------------------------
+C
+      REAL*8 VVOVV(*)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "param.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "ccpar.inc"
+#if defined (VAR_MPI)
+      integer ISTAT(df_MPI_STATUS_SIZE)
+#endif
+C
+C---------------Local variables--------------------------------------
+      REAL*8, ALLOCATABLE :: VOVV_TEMP(:)
+      INTEGER, ALLOCATABLE :: counter(:), displ(:)
+      LOGICAL :: DONE
+      INTEGER :: totsize, check, i, istart, mint, nint, off1, irp
+C---------------Executable code--------------------------------------
+C
+       allocate(counter(0:nmproc-1))
+       allocate(displ(0:nmproc-1))
+
+         counter = 0
+
+       OFF1 = 1
+       DO  30 IRP = 1, NREP
+         check = IRP
+         totsize = 0
+         IF ((NVO(IRP).EQ.0).OR.(NVVT(IRP).EQ.0)) GOTO 30
+         ALLOCATE(VOVV_TEMP(NVO(IRP)*NVVT(IRP)*RCW))
+
+         VOVV_TEMP = 0.0d0
+
+         DONE = .FALSE.
+         ISTART = 0
+         MINT = NVVT(IRP)  ! max. # of NVO batches that fit in mem.
+  10     CONTINUE
+         CALL GETVOVV (IRP,ISTART,NINT,DONE,VOVV_TEMP,MINT)
+
+#if defined (VAR_MPI)
+       call interface_mpi_allgather(NINT,1,
+     &   counter,1,global_communicator)
+#endif
+
+      do i = 0, nmproc-1
+       counter(i) = counter(i)*nvo(irp)*rcw            
+      enddo
+
+         displ(0) = 0
+         do i = 1, nmproc-1 
+             displ(i) = displ(i-1) + counter(i-1)
+         enddo
+
+#if defined (VAR_MPI)
+      IF (nmproc .GT. 1) THEN
+
+        CALL XTIME(4,1,'-- combining VOVV via MPI_GATHER')
+
+        call interface_mpi_allgatherv(vovv_temp(1),counter(myproc),
+     &    VVOVV(totsize+off1),counter,displ,global_communicator)
+
+        CALL XTIME(4,2,'-- combining VOVV via MPI_GATHER')
+
+      ENDIF
+#endif
+
+      if (nmproc .eq. 1) then
+
+       call xcopy(nvo(irp)*nvvt(irp),vovv_temp(1),1,VVOVV(off1),1)
+    
+      endif
+
+         totsize = totsize + sum(counter)
+
+         if (.not.done) then
+            istart = istart + nint
+            goto 10
+         endif
+         off1 = off1+nvo(irp)*nvvt(irp)*rcw
+
+         deallocate(vovv_temp)
+
+ 30    continue
+
+       deallocate(counter)
+       deallocate(displ)
+
+      RETURN
+      END
 
       SUBROUTINE GETOVVV_incore (VOVVV)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 
@@ -618,7 +698,7 @@ C
 
       ALLOCATE(VVOVV(NV5*IRW*RCW))
 
-      CALL RREAD(ITAPT+5,VVOVV,NV5*IRW*RCW,1)
+      CALL GETVOVV_incore (VVOVV)
 
       CALL SRT1L1(NREP,MULTB,.FALSE.,NVO,NV,NO,NVVT,IOVVVT,IIOV,
      &             VVOVV,VOVVV)
@@ -629,9 +709,47 @@ C
       END
 
 
-      SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
+      SUBROUTINE GETVVOV_incore (VVVOV)
 C
       IMPLICIT INTEGER (A-Z)
+C
+C---------------Description--------------------------------------------
+
+C     Get VOVO part of two-electron integrals
+
+C---------------Calling variables--------------------------------------
+C
+      REAL*8             :: VVVOV(*)
+      REAL*8, ALLOCATABLE:: VOVVV(:)
+C
+C---------------Common Blocks--------------------------------------
+C
+#include "files.inc"
+#include "complex.inc"
+#include "symm.inc"
+#include "eqns.inc"
+#include "param.inc"
+C
+C---------------Local variables--------------------------------------
+C
+C---------------Executable code--------------------------------------
+C
+
+      ALLOCATE(VOVVV(NV5*IRW*RCW))
+
+      CALL GETOVVV_incore (VOVVV)
+
+      CALL SRT1C1 (NREP,NOV,NVVT,VOVVV,VVVOV) 
+
+      DEALLOCATE(VOVVV)
+
+      RETURN
+      END
+
+
+      SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
+C
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -652,7 +770,7 @@ C
 C---------------Calling variables--------------------------------------
 C
       REAL*8 VVVVV(*)
-      INTEGER IREP,ISTART,NINT
+      INTEGER IREP,ISTART,NINT,MINT
       LOGICAL DONE
 C
 C---------------Common Blocks--------------------------------------
@@ -666,6 +784,7 @@ C
 C---------------Local variables--------------------------------------
 C
        INTEGER*8 JSTART
+       integer jint,mtot,ntot
 C
 C---------------Executable code--------------------------------------
 C
@@ -700,7 +819,7 @@ C     Are we done with this IRREP ?
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTDZ (IREP,ISTART,NINT,DZ)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -714,7 +833,7 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Avijit Shee
 C
 C---------------Calling variables--------------------------------------
 C
@@ -730,6 +849,7 @@ C
 #include "ccpar.inc"
 C---------------Local variables--------------------------------------
        INTEGER*8 JSTART
+       integer jint,mtot
 C---------------Executable code--------------------------------------
       MTOT = NVVT(IREP)
       JSTART = IDIST(5,1,IREP)
@@ -751,7 +871,7 @@ C     The integrals may be complex, convert offset and length to real before rea
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ,MINT)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -765,7 +885,7 @@ C---------------Routines called----------------------------------------
 C
 C---------------Last modified------------------------------------------
 C
-C     Author : Luuk Visscher
+C     Author : Avijit Shee
 C
 C---------------Calling variables--------------------------------------
 C
@@ -784,6 +904,7 @@ C
 C---------------Local variables--------------------------------------
 C
        INTEGER*8 JSTART
+      integer jint,mtot,ntot
 C
 C---------------Executable code--------------------------------------
 C
@@ -818,7 +939,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTAMPT (T1,T2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -844,6 +965,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 BUFF(RSRCLEN)
       DATA BUFF /RSRCLEN*0.D0/
+      integer ioff,irec,irecl,n,nbuf,ireclen
 C
 C---------------Executable code--------------------------------------
 C
@@ -884,7 +1006,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETAMPT (T1,T2)
 C
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description--------------------------------------------
 C
@@ -910,6 +1032,7 @@ C---------------Local variables--------------------------------------
 C
       REAL*8 BUFF(RSRCLEN)
       DATA BUFF /RSRCLEN*0.D0/
+      integer ioff,irec,irecl,n,nbuf,ireclen
 C
 C---------------Executable code--------------------------------------
 C
@@ -948,4 +1071,3 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-

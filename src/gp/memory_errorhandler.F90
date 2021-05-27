@@ -48,6 +48,14 @@
          public varIsAliveP
          public varIsAliveA
 
+         interface allocator_errorHandler
+            module procedure allocator_errorHandler_i4
+#if !defined (INT_STAR8)
+            module procedure allocator_errorHandler_i8
+#endif
+         end interface allocator_errorHandler
+
+
          interface varIsAliveP
             module procedure cPointerIsAlive_1d
             module procedure rPointerIsAlive_1d
@@ -81,7 +89,7 @@
          contains
 
 
-            subroutine allocator_errorHandler(status,size,data_kind,var_id,ignoreError)
+            subroutine allocator_errorHandler_i4(status,size,data_kind,var_id,ignoreError)
                integer                        :: status
 ! optional arguments
                logical, optional              :: ignoreError
@@ -236,7 +244,163 @@
                   endif
                endif
                
-            end subroutine allocator_errorHandler
+            end subroutine allocator_errorHandler_i4
+
+#if !defined (INT_STAR8)
+            subroutine allocator_errorHandler_i8(status,size,data_kind,var_id,ignoreError)
+               integer                        :: status
+! optional arguments
+               logical, optional              :: ignoreError
+               integer(kind=8)                :: size
+               integer, optional              :: data_kind
+               character(len=*), optional     :: var_id 
+! local variables
+               logical                        :: ignoreErrorLocal, isFatal, isVerbose
+               integer                        :: kbytesRequested, kindLocal
+               integer(kind=8)                :: sizeLocal
+               character(len=charArrayLength) :: ErrorMessage
+               character(len=charArrayLength) :: InfoMessage(10)
+               character(len=charArrayLength) :: trace_result
+               character(len=charArrayLength) :: kbytesAvailable
+               character(len=1)               :: dummy
+               real(kind=kreal)               :: mbytesInUse, mbytesRequested, mbytesMax
+               integer                        :: nlines_info
+
+               isFatal = .True.
+               call allocator_get_verbose(isVerbose)
+
+               if (present(ignoreError)) then 
+                  ignoreErrorLocal = ignoreError
+               else
+                  ignoreErrorLocal = .False.
+               endif
+
+               sizeLocal = size
+
+               if (present(data_kind)) then
+                  kindLocal = data_kind
+               else
+                  kindLocal = 4
+               endif
+
+               if (present(var_id).and.isVerbose) then
+                  if (var_id.ne.'None') then
+                     write (*,*) 'Warning: at allocation for var. id '//var_id(1:42)
+                  endif
+               endif
+ 
+               write (InfoMessage,  '(a)') 'Unknown error!'
+               write (ErrorMessage, '(a)') 'Unknown error!'
+               write (trace_result, '(a)') 'unknown (stack trace info unavailable)'
+
+               call get_traceback_info (printAllocCaller,trace_result,charArrayLength)
+               
+               mbytesRequested = real(sizeLocal)*real(kindLocal)/b2mbfac
+               call allocator_get_meminuse(mbytesInUse)  
+               mbytesInUse = mbytesInUse/b2mbfac
+
+               call allocator_get_max(mbytesMax)
+               mbytesMax   = mbytesMax/b2mbfac
+
+               nlines_info = 1
+
+               select case (status)
+                  case (alreadyAllocated)      
+                     write (InfoMessage, '(a)') 'Trying to allocate variable already allocated.'
+                     write (ErrorMessage,'(a)') 'Fatal error on memory allocation at '//trace_result(1:42)
+                     isFatal = .True.
+
+                  case (alreadyDeallocated)     
+                     write (InfoMessage, '(a)') 'Trying to deallocate variable already deallocated.'
+                     write (ErrorMessage,'(a)') 'Non-fatal error on memory deallocation at '//trace_result(1:42)
+                     isFatal = .False.
+                  
+                  case (allocateFailure)
+                     write (InfoMessage(1),'(a,i15,a)')                                                &
+     &                     'Not enough memory available when attempting to allocate ',                &
+     &                      nint(mbytesRequested),                                                    &
+     &                     ' Mb in subroutine '//trace_result(1:42)
+                     write (InfoMessage(2),'(a)') ' '                                                  
+                     write (InfoMessage(3),'(a)') 'Please verify whether:'                                                  
+                     write (InfoMessage(4),'(a)')                                                     &
+     &                     ' - the amount of memory per cpu you wish to use is compatible with that'//   &
+     &                     ' installed in the system'
+                     write (InfoMessage(5),'(a)')                                                     &
+     &                     ' - the shell/queueing system/OS place any constraints on the memory available.'
+                     nlines_info = 5
+
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
+                     isFatal = .True.
+
+                  case (deallocateFailure)
+                     write (InfoMessage, '(a)') 'Memory deallocation failed at '//trace_result(1:42)
+                     write (ErrorMessage,'(a)') 'Non-fatal memory deallocation error at '//trace_result(1:42)
+                     isFatal = .False.
+
+                  case (malformedAllocCall)
+                     write (InfoMessage, '(a)') 'Malformed call to alloc(). Please submit a bug report.'
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
+                     isFatal = .True.
+
+                  case (reqMemoryOverLimit)
+                     write (InfoMessage(1),'(a)')                                                     &
+     &                  'Error when allocating memory at subroutine:'//trace_result(1:42)
+
+                     write (InfoMessage(2),'(a)') ' '                                                  
+                     write (InfoMessage(3),'(a,i7,a)')                                                &
+     &                  'adding the      Memory requested in current allocation          :',          &
+     &                  nint(mbytesRequested),                                                        &
+     &                  ' Mb'
+
+                     write (InfoMessage(4),'(a,i7,a)')                                                &
+     &                  'to the          Current dynamical memory usage                  :',          &
+     &                  nint(mbytesInUse),                                                            &
+     &                  ' Mb'
+
+                     write (InfoMessage(5),'(a,i7,a)')                                                &
+     &                  'will exceed the User-defined dynamically allocated memory limit :',          &
+     &                  nint(mbytesMax),                                                              &
+     &                  ' Mb' 
+
+                     write (InfoMessage(6),'(a)') ' '                                                  
+                     write (InfoMessage(7),'(a)')                                                     &
+     &                  'Please consult the user manual for information on how to solve this issue.'
+
+                     nlines_info = 7
+
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
+                     isFatal = .True.
+
+                  case (negativeSizeCall)
+                     write (InfoMessage, '(a)')                                    & 
+     &                     'Negative array dimension (e.g. a value larger than '// &
+     &                     'what the variable can hold). Allocation is not possible.'
+                     write (ErrorMessage,'(a)') 'Fatal memory allocation error at '//trace_result(1:42)
+                     isFatal = .True.
+
+               end select
+
+               if (isFatal) then
+                  if (ignoreErrorLocal) then
+                     if (isVerbose) &
+     &               write (*,*) 'Non-fatal error at '//trace_result(1:42)//'. The program will continue.'
+                  else
+                     if (var_id.ne.'None') then
+                        nlines_info = nlines_info + 1
+                        write (InfoMessage(nlines_info),'(a)') 'Fatal error at allocation for var. id '//var_id(1:42)
+                     endif
+                     call quit(InfoMessage,ErrorMessage,nlines_info)
+                  endif
+               else
+                  if (isVerbose) then
+                     write (*,*) 'Non-fatal error at '//trace_result(1:42)
+                     write (*,*) InfoMessage
+                     write (*,*) 'The program will continue.'
+                  endif
+               endif
+               
+            end subroutine allocator_errorHandler_i8
+#endif
 
 
             subroutine quit(info,error,nlines)

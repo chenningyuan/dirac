@@ -1,5 +1,6 @@
+#define DEBUG_IPRPAR -1
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -36,20 +37,8 @@ C
       but that requires a little more coding.
       SORT renamed to PARSRT (it is likely that library routines exist
       called SORT).
-950531-kr: Reorganized the code so that the node programs are
-started only once for a given calculation
 950428-kr+hjaaj;
  Merged with Odense version. Implemented DOINT in PARLOP.
-941219-hjaaj
-(1)  Note: in old HERFCK 'IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD' was
- transferred to TWOINT, do we want to do that in CALINT for ITYPE=3 ???
-(2)  removed JSYMDM,JFCTYP,ITRIPL from /PARINT/ in aba.cdk
-941114-hjaaj
-PARDRV,SDINIT,RVINIT,CALINT:  removed TRIPLE in parameter list
-SDINIT,RVINIT: removed ITRIPL message tag; moved IFCTYP and IREPDM
- message tags after NDMAT message tag
-CALINT: call TWOINT directly instead of CALL HERFCK
-PARDRV,...: s/IFCTYP/IFCTYP(*)/ and s/IREPDM/IREPDM(*)/
 #endif
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
@@ -109,9 +98,10 @@ C
 C
       use interface_to_mpi
 #include "implicit.h"
-C
-C
 #include "priunit.h"
+C
+C dirac_partask.h : symbols for DIRAC_PARCTL codes
+C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -119,6 +109,7 @@ C
 #include "molinp.h"
 #include "twocom.h"
 #if defined (PRG_DIRAC)
+#include "dirac_partask.h"
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
@@ -126,10 +117,12 @@ C
 #include "inforb.h"
 #include "infpar.h"
 C
-      DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+!     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
+      DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
      &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
+      real(8)  :: TIMSTR(2), TIMEND(2)
 C
       CALL QENTER('HER_PARDRV')
 C
@@ -138,25 +131,20 @@ C
      &('program error: parallel code called but MPI not activated')
 #endif
 C
-C     Ensure that NODES .LE. MAXNOD
-C
-      IF (NODES .GT. MAXNOD) THEN
-         WRITE(LUPRI,'(/5X,A,/12X,A,/5X,A16,I8,/5X,A16,I8)')
-     &    'ERROR: Number of nodes allocated has exceeded hardcoded',
-     &    'limit. Reduce number of nodes or recompile program. ',
-     &    'Allocated (NODES) :',NODES,'Limit (MAXNOD) :',MAXNOD
-         CALL QUIT('Number of nodes requested/allocated is too large.')
-      ELSE IF (IPRPAR .GT. 0) THEN
+      IPRPAR = max(DEBUG_IPRPAR,IPRPAR)
+      IF (IPRPAR .GT. 0) THEN
          WRITE(LUPRI,'(/5X,A,I5/)')
-     &    'HER_PARDRV: Number of nodes allocated:', NODES
+     &    'HER_PARDRV: Number of MPI worker nodes:', NODES
       ENDIF
 C
 C     Take calculation time of each IJ pair?
 C
       TIMING = .TRUE.
+! initialization
+      KFREE=1
 C
 C     Determine total number of tasks - MTOTTK.
-      CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -169,9 +157,9 @@ C
       KWORK = 1
       KFREE = KWORK
       LFREE = LWORK
-      CALL MEMGET('INTE',KNSTAT,NODES ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KINDEX,MTOTTK,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','NSTAT',KNSTAT,NODES ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDEX',KINDEX,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TIMES',KTIMES,MTOTTK,WORK,KFREE,LFREE)
 C
 C     Test of work space allocation.
 C
@@ -202,12 +190,23 @@ C
       ELSE IF (ITYPE .EQ. 8) THEN
          NREQUI = 3*NNBASX
       END IF
+
+      LDMAT = NDMAT*N2BASX
+      IF (NREQUI .LE. LDMAT .AND. LFREE .LT. NREQUI) THEN
+         ! use DMAT as scratch space in RVRES
+         LREQUI = -1
+         open(unit=78, file='DMAT_AO_SAVE', form='UNFORMATTED')
+         write(78) DMAT(1:LDMAT)
+         rewind (78)
+      ELSE
+         LREQUI = NREQUI
+      END IF
 C
-      IF (LFREE .LT. NREQUI) THEN
-         WRITE(LUPRI,'(/5X,A,2(/5X,A,I8),/5X,A,2I8)')
+      IF (LFREE .LT. LREQUI) THEN
+         WRITE(LUPRI,'(/5X,A,2(/5X,A,I12),/5X,A,2I8)')
      &    'Insufficient work space for subroutine RVRES',
      &    'Free space     :',LFREE,
-     &    'Required space :',NREQUI,
+     &    'Required space :',LREQUI,
      &    'ITYPE, NDMAT   :',ITYPE,NDMAT
          CALL QUIT('Insufficient work space for RVRES')
       ENDIF
@@ -216,35 +215,57 @@ C--------------------------
 C     Make the index array.
 C--------------------------
 C
-      CALL INDEKS(FIRST,WORK(KINDEX),ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
+      CALL HERPAR_INDEKS(FIRST,WORK(KINDEX),WORK(KTIMES),
+     &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
 C
 C---------------------------------------
 C     Send initialization data to nodes.
 C---------------------------------------
 C
+      CALL TIMER2('START',TIMSTR,TIMEND)
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
 C     and transfer screening information to twocom.h
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
+      IF (IPRPAR.GT.0) CALL TIMER2('SDINIT',TIMSTR,TIMEND)
 C
 C-----------------------
 C     Start calculation.
 C-----------------------
 C
-      CALL DOPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+      CALL DO_HERPAR(WORK(KINDEX),MTOTTK,NBATCH,WORK(KNSTAT))
+      IF (IPRPAR.GT.0) CALL TIMER2('DO_HERPAR',TIMSTR,TIMEND)
 C.....Get results from nodes
-      CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+      IF (LREQUI .EQ. -1) THEN
+         ! use DMAT as scratch space in RVRES
+         CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+         rewind (78)
+         read(78) DMAT(1:LDMAT)
+         CLOSE(78, status='DELETE')
+      ELSE
+         CALL RVRES(WORK(KFREE),FMAT,ITYPE,MTOTTK,NREQUI,
+     &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
+      END IF
+      IF (IPRPAR.GT.0) CALL TIMER2('RVRES',TIMSTR,TIMEND)
+C
+C-------------------------------------
+C     Get timing results if requested.
+C-------------------------------------
+C
+      IF (IPRPAR .GT. 0) THEN
+         CALL TIMRES(WORK(KNSTAT))
+         CALL TIMER2('TIMRES',TIMSTR,TIMEND)
+      END IF
 C
 C--------------------------------------
 C     Release nodes from this task
 C     and let them return to main menu.
 C--------------------------------------
 C
-      ITASK = - 1
-      CALL DIRAC_PARCTL( -1 )
+      CALL DIRAC_PARCTL( EXIT_NODEMENU )
 C
 C-----------------------------------------
 C     Sort the integral-calculation times.
@@ -252,12 +273,6 @@ C-----------------------------------------
 C
       IF(TIMING) CALL PARSR2(MTOTTK,NPOS,WORK(KTIMES),
      &                       WORK(KINDEX),IPRPAR)
-C
-C-------------------------------------
-C     Get timing results if requested.
-C-------------------------------------
-C
-      IF (IPRPAR .GT. 0) CALL TIMRES(WORK(KNSTAT))
 C
       IF (FIRST)  FIRST  = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
@@ -268,9 +283,9 @@ C
       CALL QEXIT('HER_PARDRV')
       RETURN
       END
-C  /* Deck indeks */
-      SUBROUTINE INDEKS(FIRST,INDEX,ITYPE,MTOTTK,NBATCH,
-     &                  NPOS,I2TYP)
+C  /* Deck herpar_indeks */
+      SUBROUTINE HERPAR_INDEKS(FIRST,INDEX_IJ,TIMES,
+     &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
 C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
@@ -288,7 +303,8 @@ C
 #include "blocks.h"
 #include "dcbfir.h"
 C
-      DIMENSION INDEX(MTOTTK), NPOS(MTOTTK)
+      INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
+      REAL*8  TIMES(MTOTTK)
       LOGICAL FIRST,DOFIRST
 C
 C     If new run, make initial guess as to run times
@@ -312,7 +328,10 @@ C
       ENDIF
 C
       IF (NEWBAS .OR. DOFIRST) THEN
-         CALL DET_TASK (I2TYP,2,MTOTTK,NPOS)
+         ! make a list of tasks in INDEX_IJ and a task weight for each in TIMES
+         CALL HERPAR_DET_TASK(I2TYP,2,MTOTTK,INDEX_IJ,TIMES)
+         ! make a sorted list of tasks in NPOS based on the weights in TIMES
+         CALL PARSR2(MTOTTK,NPOS,TIMES,INDEX_IJ,IPRPAR)
       ENDIF
 C
 C     Distribute jobs on nodes
@@ -324,7 +343,7 @@ C
         MORE2  = MOD(ICOUNT,NODES)*NTASK
         MORE3  = ((ICOUNT-MORE1)/NODES) + 1
         IPLACE = MORE1+MORE2+MORE3
-        INDEX(IPLACE) = NPOS(I)
+        INDEX_IJ(IPLACE) = NPOS(I)
         ICOUNT=ICOUNT+1
       ENDDO
 C
@@ -340,8 +359,9 @@ C
       NEACH = NBATCH/NODES
       NREST = NBATCH - NEACH*NODES
 C
-      IF (FIRST .AND. IPRPAR .GT. 4) THEN
-         WRITE(LUPRI,'(5(/5X,A,I5),2X,A7,I3,A1/)')
+      IF (FIRST .AND. IPRPAR .GT. 2) THEN
+         WRITE(LUPRI,'(/A,5(/5X,A,I5),2X,A7,I3,A1/)')
+     &        'Output from HERPAR_INDEKS:',
      &        'Number of nodes   :',NODES,
      &        'Number of tasks   :',MTOTTK,
      &        'Tasks pr. batch   :',NTASK,
@@ -350,13 +370,13 @@ C
      &        '(rest =',NREST,')'
       END IF
 C
-C     Print the index array.
+C     Print the INDEX_IJ array.
 C
       IF (IPRPAR .GE. 10) THEN
          WRITE(LUPRI,'(/5X,A/)') 'The order of task-distribution :'
          DO 400 I=1, NBATCH*NTASK
             WRITE(LUPRI,'(5X,A3,I5,A15,I5)')
-     &           'i =',I,'index(i) =',INDEX(I)
+     &           'i =',I,'index_ij(i) =',INDEX_IJ(I)
  400      CONTINUE
       END IF
 C
@@ -412,7 +432,7 @@ C--------------------------------------
 C
       IF (ITYPE .EQ. 2 .OR. ITYPE .EQ. 4) THEN
          NFMAT  = 0
-      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE. EQ. 9 .OR. ITYPE. EQ. 7) THEN
+      ELSE IF (ITYPE .EQ. 3 .OR. ITYPE .EQ. 9 .OR. ITYPE .EQ. 7) THEN
          NFMAT  = NDMAT
       ELSE IF (ITYPE .EQ. -5) THEN
          IF(MAXDIF.EQ.1) THEN
@@ -475,18 +495,21 @@ C     ... not used any more (was used for PVM)
       JLEVYL = 0
       IF (LEVYLE) JLEVYL = 1
 
+      JNONREL = 0
+      IF (NONREL) JNONREL = 1
+
       JTWOCOMP = 0
       IF (TWOCOMP) JTWOCOMP = 1
+
+      JECPCALC = 0
+      IF (ECPCALC) JECPCALC = 1
 
       J2TYP  = I2TYP
       JCEDIF = ICEDIF
 C
       CALL IZERO(JDOSYM,8)
       CALL IZERO(JDOREP,8)
-      CALL IZERO(JTIDS,MAXNOD)
       CALL IZERO(JDOCOR,MXCOOR)
-C
-      CALL ICOPY(NODES,MTIDS,1,JTIDS,1)
 C
       DO 100 I = 0, MAXREP
          IF (DOREPS(I))  JDOREP(I+1) = 1
@@ -621,21 +644,21 @@ C         ... broadcast screening matrix
 #endif
       RETURN
       END
-C  /* Deck dopar */
-      SUBROUTINE DOPAR(INDEX,MTOTTK,NBATCH,NSTAT)
+C  /* Deck do_herpar */
+      SUBROUTINE DO_HERPAR(INDEX_IJ,MTOTTK,NBATCH,NSTAT)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
       use interface_to_mpi
 #include "implicit.h"
 #ifdef VAR_MPI
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "infpar.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
-      DIMENSION INDEX(MTOTTK), NSTAT(NODES), ISHELL(2)
+      DIMENSION INDEX_IJ(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
 
       CALL IZERO(NSTAT,NODES)
@@ -667,7 +690,7 @@ C
          DO 200 J = 1,NTASK
             IPLACE = IPLACE + 1
             NUMTSK = NUMTSK + 1
-            ISHELL(1) = INDEX(IPLACE)
+            ISHELL(1) = INDEX_IJ(IPLACE)
             ISHELL(2) = IPLACE
 C
 #if defined (VAR_MPI)
@@ -677,7 +700,7 @@ C
 C
 C           Pack only one null-task.
 C
-            IF (INDEX(IPLACE) .EQ. 0) THEN
+            IF (INDEX_IJ(IPLACE) .EQ. 0) THEN
                IPLACE = IPLACE + NTASK - J
                NUMTSK = NUMTSK - 1
                GO TO 300
@@ -685,12 +708,11 @@ C
 C
             IF (IPRPAR .GT. 10) THEN
                WRITE(LUPRI,'(5X,I5,A10,I5,A8,I4)')
-     &              NUMTSK, 'Send task', INDEX(IPLACE), 'to node', NODE
+     &         NUMTSK, 'Send task', INDEX_IJ(IPLACE), 'to node', NODE
             END IF
   200    CONTINUE
 C
   300    CONTINUE
-         NWHO = MTIDS(NODE)
 C
 C
 C        Who-got-the-last-batch statistics
@@ -704,9 +726,9 @@ C     Instruct nodes to return the final results.
 C------------------------------------------------
 C
       NTEST = -1
-      DO 400 I = 1,NODES
+      DO I = 1,NODES
 C
-C           Ready to receive request from any node.
+C        Ready to receive request from any node.
 C
 #if defined (VAR_MPI)
          CAll interface_mpi_RECV(NODE,1,df_MPI_ANY_SOURCE,20,
@@ -716,7 +738,7 @@ C
      &                 global_communicator)
 #endif
 C
-  400 CONTINUE
+      END DO ! I
       RETURN
       END
 C  /* Deck rvres */
@@ -739,7 +761,7 @@ C
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
       PARAMETER (D1 = 1.0D0)
 C
@@ -754,9 +776,11 @@ C
 #include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
+
 C
-      DIMENSION FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
+      REAL*8    FMAT(*),WORK(NREQUI),TIMES(MTOTTK),DINTSKP(LDINTSKP),
      &          DNSKBF(3*3*14),SUS2ELBUF(9)
+
 C
 C     Clean matrices.
 C
@@ -771,16 +795,41 @@ C
       END IF
 C
 C---------------------------
+C    use MPI_REDUCE for type 3 ( direct SCF)
+C---------------------------
+C
+#if defined (VAR_MPI)
+      IF (ITYPE .EQ. 3) THEN
+         ! using _f77 version
+         CALL dcopy(NREQUI,FMAT,1,WORK,1)
+         CALL interface_mpi_reduce_r1_work_f77(
+     &        WORK, FMAT, NREQUI,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         call dcopy(ldintskp,DINTSKP,1,WORK,1)
+         CALL interface_mpi_reduce_r1_work_f77(
+     &        WORK, DINTSKP, LDINTSKP,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         IF (TIMING) THEN
+            call dzero(WORK,MTOTTK)
+            CALL interface_mpi_reduce_r1_work_f77(
+     &        WORK, TIMES, MTOTTK,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         END IF
+         GO TO 9000 ! RETURN
+      END IF
+C
+C---------------------------
 C     Start loop over nodes.
 C---------------------------
 C
       ICOUNT = 0
       DO 100 I = 1,NODES
 C
-#if defined (VAR_MPI)
          CALL interface_mpi_RECV(ITASK,1,df_mpi_any_source,40,
      &                 global_communicator,ISTAT)
 C
+         IF (ITASK .EQ. 0) GOTO 100 ! more nodes than tasks
+
          ICOUNT = ICOUNT + ITASK
 C
          NWHO = ISTAT(df_MPI_SOURCE)
@@ -840,8 +889,8 @@ C
 C
   300       CONTINUE
          END IF
-#endif
   100 CONTINUE
+#endif
 C
       IF (ICOUNT .NE. MTOTTK) THEN
         WRITE(LUPRI,'(/5X,A)') 'Error in parallel calculation!'
@@ -849,10 +898,10 @@ C
      &       MTOTTK
         WRITE(LUPRI,'(5X,A,I5)') 'Number of tasks    calculated : ',
      &       ICOUNT
-        CALL QUIT('Inconsistence in RVRES -> MTOTTK .NE. ICOUNT')
+        CALL QUIT('Inconsistency in RVRES : MTOTTK .NE. ICOUNT')
       ENDIF
 C
-      RETURN
+ 9000 RETURN
       END
 C  /* Deck parsrt */
       SUBROUTINE PARSRT(MTOTTK,NPOS,SORTED,TIMES)
@@ -919,7 +968,7 @@ C
          END IF
  100  CONTINUE
 C
-      IF (IPRPAR .GE. 10) THEN
+      IF (IPRPAR .GE. 9) THEN
          DO 400 I = 1, ITEMS
             WRITE(LUPRI,'(15X,A10,I5,A9,F8.3)')
      &           'IJ-shell =', NPOS(I), '   time =', SORTED(I)
@@ -936,7 +985,7 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
 #include "maxorb.h"
@@ -947,61 +996,92 @@ C
 #include "dcbgrd.h"
 #endif
 C
-      DIMENSION NSTAT(NODES),CPUS(MAXNOD),WALLS(MAXNOD),RBUF(2)
+      INTEGER   NSTAT(NODES)
+
+      REAL*8    RBUF(4), TTOT, WTOT
       CHARACTER SECTID*12, INTTID*12
+
+      REAL*8, SAVE        :: TSOFAR=0.0D0, WSOFAR=0.0D0
+      REAL*8, ALLOCATABLE :: CPUS(:,:),WALLS(:,:)
 C
-      SAVE TSOFAR
-      DATA TSOFAR/0.0D0/
-C
+      IF (NODES .LE. 0) RETURN
+
+#if defined (VAR_MPI)
+
+      allocate( CPUS(2,NODES), WALLS(2,NODES) )
 #ifdef PRG_DIRAC
       IF (RELGRD) DMXCPU = D0
       IF (RELGRD) DMXWLL = D0
 #endif
-      DO 100 I = 1,NODES
-#if defined (VAR_MPI)
-         CAll interface_mpi_RECV(RBUF,2,df_mpi_any_source,
+      TTOT = 0.0D0
+      WTOT = 0.0D0
+      DO I = 1,NODES
+         CAll interface_mpi_RECV(RBUF,4,df_mpi_any_source,
      &                 50,global_communicator,istat)
          NODE = ISTAT(df_MPI_SOURCE)
-         CPUS(NODE)  = RBUF(1)
-         WALLS(NODE) = RBUF(2)
+         CPUS(1,NODE)  = RBUF(1)
+         CPUS(2,NODE)  = RBUF(2)
+         WALLS(1,NODE) = RBUF(3)
+         WALLS(2,NODE) = RBUF(4)
 C
-         TSOFAR = TSOFAR + CPUS(NODE)
+         TTOT = TTOT + CPUS(1,NODE)
+         WTOT = WTOT + WALLS(1,NODE) + WALLS(2,NODE)
 #ifdef PRG_DIRAC
          IF ( RELGRD ) THEN
-            DMXCPU = MAX(DMXCPU,CPUS(NODE))
-            DMXWLL = MAX(DMXWLL,WALLS(NODE))
+            DMXCPU = MAX(DMXCPU,CPUS(1,NODE))
+            DMXWLL = MAX(DMXWLL,WALLS(2,NODE))
          END IF
 #endif
 C
-#endif
-  100 CONTINUE
+      END DO ! I
+      TSOFAR = TSOFAR + TTOT
+      WSOFAR = WSOFAR + WTOT
 C
       IF (IPRPAR .GT. 2) THEN
          CALL AROUND('Overall statistics for distribution of batches')
 C
-         WRITE(LUPRI,'(11X,5(A,4X))')   'Node',
+         IF (IPRPAR .GT. 4 .OR. NODES .le. 10) THEN
+            NODES_print = NODES
+         ELSE
+            NODES_print = 10
+            WRITE(LUPRI,'(11X,A/)') '(Only first 10 nodes printed).'
+         END IF
+
+         WRITE(LUPRI,'(11X,7(A,4X))')   'Node',
      &                                  'Batches',
      &                                  'CPU time',
      &                                  'Wall time',
-     &                                  'Efficiency'
-         WRITE(LUPRI,'(11X,5(A,4X)/)')  '----',
+     &                                  'Efficiency',
+     &                                  'Wall time w/o MPI',
+     &                                  'Efficiency w/o MPI'
+         WRITE(LUPRI,'(11X,7(A,4X)/)')  '----',
      &                                  '-------',
      &                                  '--------',
      &                                  '---------',
-     &                                  '----------'
+     &                                  '----------',
+     &                                  '-----------------',
+     &                                  '------------------'
 C
-         DO 200 NODE = 1, NODES
-            IF (WALLS(NODE) .NE. 0.0D0) THEN
-               EFFI = (CPUS(NODE)/WALLS(NODE))*100
+         DO NODE = 1, NODES_print
+            WALLS_TOT = WALLS(1,NODE)+WALLS(2,NODE)
+            IF (WALLS_TOT .NE. 0.0D0) THEN
+               EFFI_T = (CPUS(1,NODE)/WALLS_TOT)*100.D0
             ELSE
-               EFFI = 0.0D0
+               EFFI_T = 0.0D0
             END IF
-            WRITE(LUPRI,'(11X,I3,4X,I6,6X,F8.2,5X,F8.2,6X,F6.2)')
-     &                  NODE,NSTAT(NODE),CPUS(NODE),WALLS(NODE),EFFI
- 200     CONTINUE
+            IF (WALLS(1,NODE) .NE. 0.0D0) THEN
+               EFFI_1 = (CPUS(1,NODE)/WALLS(1,NODE))*100.D0
+            ELSE
+               EFFI_1 = 0.0D0
+            END IF
+            WRITE(LUPRI,'(I14,I10,F12.2,F13.2,F12.2,2F20.2)')
+     &         NODE,NSTAT(NODE),CPUS(1,NODE),WALLS_TOT,EFFI_T,
+     &         WALLS(1,NODE),EFFI_1
+         END DO ! NODE
+         WRITE(LUPRI,'(/11X,A)')
+     &   'Note: CPU times are without CPU time used in MPI.'
       END IF
 C
-      INTTID = SECTID(TSOFAR)
 #ifdef PRG_DIRAC
       IF ( RELGRD ) THEN
          DMXWLT = DMXWLL
@@ -1009,10 +1089,29 @@ C
       END IF
 #endif
 C
-      WRITE(LUPRI,'(/A,A12)')
-     &     '>>>> Total CPU  time used in Hermit nodes so far :',
-     &     INTTID
+      INTTID = SECTID(TTOT)
+      WRITE(LUPRI,'(/A,A12,A)')
+     &     '>>>> Total CPU  time used in all Hermit nodes this call :',
+     &     INTTID, ' (MPI wait excluded)'
+      INTTID = SECTID(WTOT)
+      WRITE(LUPRI,'(A,A12/A,F12.2)')
+     &     '>>>> Total WALL time used in all Hermit nodes this call :',
+     &     INTTID,
+     &     '>>>> Efficiency this call :', (TTOT/WTOT) * 100.0D0
+
+      INTTID = SECTID(TSOFAR)
+      WRITE(LUPRI,'(/A,A12,A)')
+     &     '>>>> Total CPU  time used in all Hermit nodes so far    :',
+     &     INTTID, ' (MPI wait excluded)'
+      INTTID = SECTID(WSOFAR)
+      WRITE(LUPRI,'(A,A12/A,F12.2)')
+     &     '>>>> Total WALL time used in all Hermit nodes so far    :',
+     &     INTTID,
+     &     '>>>> Efficiency so far    :', (TSOFAR/WSOFAR) * 100.0D0
+
 C
+      deallocate( CPUS, WALLS )
+#endif    /* VAR_MPI */
       RETURN
       END
 C  /* Deck hernod */
@@ -1072,11 +1171,6 @@ C     Start timing.
 C
       CALL GETTIM(CPU1,WALL1)
 C
-C     This is a slave in a parallel run
-C
-      SLAVE = .TRUE.
-      DEBUG  = .FALSE.
-C
 C
 C     ***************************************************
 C     ***** Receive initialization data from master *****
@@ -1120,10 +1214,10 @@ C
       END IF
 C
 C     Determine total number of tasks - MTOTTK.
-      CALL DET_TASK (I2TYP,1,MTOTTK,NPOS)
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
 C
-      CALL MEMGET('INTE',KINDEX,MTOTTK,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KTIMES,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDEX',KINDEX,MTOTTK,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','TIMES',KTIMES,MTOTTK,WORK,KFREE,LFREE)
 C
 C     ********************************
 C     ***** Initialize workspace *****
@@ -1159,10 +1253,10 @@ C     ****************************************
 C     ***** Send final results to master *****
 C     ****************************************
 C
-      
+
       CALL SDRES(WORK(KFMAT),LFMAT,NUMGRA,MAXDIF,
      &     NUMHES,NUMSUS,CPU1,WALL1,ITYPE,DINTSKP,
-     &     WORK(KINDEX),WORK(KTIMES))
+     &     MTOTTK,WORK(KINDEX),WORK(KTIMES))
 
 C
 C     We want the slave program to go until there is nothing
@@ -1175,6 +1269,7 @@ C
  999  CONTINUE
 C
       call dealloc(WORK)
+      PARHER = .FALSE.
       CALL QEXIT('HERNOD')
       END
 C  /* Deck rvinit */
@@ -1295,15 +1390,11 @@ C
       SOLVNT = JSOLVN .EQ. 1
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
-      LEVYLE = JLEVYL .EQ. 1
       TWOCOMP = JTWOCOMP .EQ. 1
-      ICEDIF = JCEDIF
-C
-      CALL IZERO(MTIDS,MAXNOD)
-      CALL ICOPY(NODES,JTIDS,1,MTIDS,1)
-      DO 100 I = 1, NODES
-         IF (MTIDS(I) .EQ. MYTI) NODE = I
- 100  CONTINUE
+      LEVYLE  = JLEVYL .EQ. 1
+      NONREL  = JNONREL .EQ. 1
+      ECPCALC = JECPCALC .EQ. 1
+      ICEDIF  = JCEDIF
 C
       DO 200 I = 0, MAXREP
          DOREPS(I)  = JDOREP(I+1) .EQ. 1
@@ -1316,6 +1407,12 @@ C
  210  CONTINUE
 C
 C     Set hermit.
+C
+      IF (NEWGEO) RDINPC = .FALSE.
+C
+C     call SETHER to read basis set input and set hermit variables in common blocks for this slave
+C
+      CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
 C
       IF (NEWGEO .AND. SOLVNT) THEN
          NEWGEO = .TRUE.
@@ -1348,14 +1445,10 @@ C
          NEWGEO = .FALSE.
       END IF
 C
-      IF (NEWGEO) RDINPC = .FALSE.
-C     
-      CALL SETHER(0,NEWGEO,RELCAL,WORK(KFREE),LFREE)
-C
-C     ... xyz input reader fails/gives wrong results from now on 
-C         in parallel if there is no update 
+C     ... xyz input reader fails/gives wrong results from now on
+C         in parallel if there is no update
 C         for primitives. Does it change because of reordered geoemtry?
-C         FIXME: check enabling reordered geoemtry instead of broadcast of 
+C         FIXME: check enabling reordered geoemtry instead of broadcast of
 C         primit.h. - SK 14 Sep 08
       IF( NEWGEO )THEN
 #if defined (VAR_MPI)
@@ -1384,7 +1477,7 @@ C
 
       LFMAT = NFMAT*N2BASX
 
-      IF(NFMAT.GT.0) THEN       
+      IF(NFMAT.GT.0) THEN
         CALL MEMGET('REAL',KFMAT,LFMAT,WORK,KFREE,LFREE)
         CALL MEMGET('INTE',KIRD,NDMAT,WORK,KFREE,LFREE)
         call interface_mpi_bcast_i1_work_f77(WORK(KIRD),NDMAT,MPARID,
@@ -1478,7 +1571,7 @@ C  /* Deck parlop */
      &     SQ12EL,INDHER,INDHSQ,IODDHR,
      &     IREPDM,IFCTYP,ADISTR,I2TYP,ICEDIF,SCREEN,
      &     GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT,
-     &     INDEX,TIMES)
+     &     INDEX_IJ,TIMES)
 C
 C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
@@ -1487,7 +1580,7 @@ CMI changes from TEC for LAO
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI)
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1504,7 +1597,7 @@ CMI changes from TEC for LAO
       DIMENSION DMAT(*), FMAT(*), GMAT(*), INDHSQ(*), IODDHR(*),
      &          INDHER(*), WORK(LWORK), IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),
-     &          IJSHEL(2),INDEX(*),TIMES(*)
+     &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
 #include "cbisol.h"
 #include "twocom.h"
@@ -1625,6 +1718,7 @@ C
 C        The compressed index IJSHEL is split to indices ISHELA and ISHELB.
 C
          CALL UNPKIJ(IJSHEL(1),ISHELA,ISHELB)
+!Miro: runtimecheck problem - ISHELA gets wrong value, see below !
 C
          IF (TIMING) CPUTK1 = SECOND()
 C
@@ -1632,6 +1726,8 @@ C        *****************************
 C        ***** First Shell Index *****
 C        *****************************
 C
+! Fortran runtime error: Index '-2147483648' of dimension 1 of array 'lclash' below lower bound of 1
+! Miro: this means ISHELA get wrong value, needs fix !!!
          ICA    = LCLASH(ISHELA)
          NHKTA  = NHKTSH(ISHELA)
          KHKTA  = KHKTSH(ISHELA)
@@ -1774,9 +1870,9 @@ C
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
-     &                 ISHELB .EQ. IPRNTB .AND.
-     &                 ISHELC .EQ. IPRNTC .AND.
-     &                 ISHELD .EQ. IPRNTD) RETURN
+     &                ISHELB .EQ. IPRNTB .AND.
+     &                ISHELC .EQ. IPRNTC .AND.
+     &                ISHELD .EQ. IPRNTD) RETURN
                END IF
  500        CONTINUE
  400     CONTINUE
@@ -1786,7 +1882,7 @@ C
             CPUTSK = CPUTK2 - CPUTK1
             IPLACE = ICOUNT + I
 C
-            INDEX(IPLACE) = IJSHEL(2)
+            INDEX_IJ(IPLACE) = IJSHEL(2)
             TIMES(IPLACE) = CPUTSK
          END IF
  200  CONTINUE
@@ -1884,7 +1980,7 @@ C
 C  /* Deck sdres */
       SUBROUTINE SDRES(FMAT,LFMAT,NUMGRA,MAXDIF,
      &                 NUMHES,NUMSUS,CPU1,WALL1,ITYPE,
-     &                 DINTSKP,INDEX,TIMES)
+     &                 DINTSKP,MTOTTK,INDEX_IJ,TIMES)
 C
 C           ITYPE  - Calc. type: 2 = expectation values.
 C                                3 = direct SCF (AO-basis)
@@ -1913,13 +2009,49 @@ C
 #include "infpar.h"
 #include "inforb.h"
 C
-      DIMENSION FMAT(LFMAT), DINTSKP(*),INDEX(*),TIMES(*),SUS2ELBUF(9)
+      INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
+      REAL*8    CPU1, WALL1
+      REAL*8    FMAT(LFMAT), DINTSKP(*), TIMES(*)
+      INTEGER   INDEX_IJ(*)
+
 #if defined (VAR_MPI)
-      DIMENSION RBUF(2)
-#endif
-#if defined (VAR_MPI)
+      REAL*8    RBUF(4)
+      REAL*8, allocatable :: my_TIMES(:)
+
+      CALL GETTIM(CPU2,WALL2)
+C
+C---------------------------
+C    use MPI_REDUCE for type 3 ( direct SCF)
+C---------------------------
+C
+      IF (ITYPE .EQ. 3) THEN
+         ! using _f77 version
+         CALL interface_mpi_reduce_r1_work_f77(
+     &        FMAT, DUMMY, LFMAT,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         CALL interface_mpi_reduce_r1_work_f77(
+     &        DINTSKP, DUMMY, 8,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         IF (TIMING) THEN ! used for better load balancing in next iteration
+            allocate (my_TIMES(ICOUNT))
+            my_TIMES(1:ICOUNT) = TIMES(1:ICOUNT)
+            TIMES(1:MTOTTK) = 0.0D0
+            DO I = 1, ICOUNT
+               TIMES( INDEX_IJ(I) ) = my_TIMES(I)
+            END DO 
+            deallocate (my_TIMES)
+            CALL interface_mpi_reduce_r1_work_f77(
+     &        TIMES, DUMMY, MTOTTK,
+     &        op_MPI_SUM, MPARID, global_communicator)
+         END IF
+         GO TO 6000 ! to send general timing info
+      END IF
+
       CAll interface_mpi_SEND(ICOUNT,1,MPARID,40,
      &                 global_communicator)
+
+      IF (ICOUNT .EQ. 0) RETURN ! this node has done nothing
+
       IF(ITYPE.EQ.3.OR.ITYPE.EQ.9) THEN
          CAll interface_mpi_send_r1_work_f77(DINTSKP,8,MPARID,40,
      &                 global_communicator)
@@ -1932,46 +2064,42 @@ C
      &                 global_communicator)
       ELSE IF(ITYPE.EQ.-5) THEN
          IF(MAXDIF.EQ.1) THEN
-           CALL interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
+           Call interface_mpi_SEND(FMAT,LFMAT,MPARID,40,
      &          global_communicator)
          ELSEIF(MAXDIF.EQ.2) THEN
-          CALL DCOPY(9,SUS2EL,1,SUS2ELBUF,1)
-          CAll interface_mpi_SEND(SUS2ELBUF,9,MPARID,40,
-     &                 global_communicator)
+           Call interface_mpi_SEND(SUS2EL,9,MPARID,40,
+     &          global_communicator)
         ENDIF
       ENDIF
 C
 C
       IF (TIMING) THEN
-         DO 200, I = 1, ICOUNT
-C
-            CAll interface_mpi_SEND(INDEX(I),1,MPARID,40,
+
+         DO I = 1, ICOUNT
+            Call interface_mpi_SEND(INDEX_IJ(I),1,MPARID,40,
      &                    global_communicator)
-            CAll interface_mpi_SEND(TIMES(I),1,MPARID,40,
+            Call interface_mpi_SEND(TIMES(I),1,MPARID,40,
      &                    global_communicator)
-C
-  200    CONTINUE
+         END DO
+
       END IF
-#endif
 C
 C----------------------------------------------
 C     Send general timing results if requested.
 C----------------------------------------------
 C
+ 6000 CONTINUE
       IF (IPRPAR .GT. 0) THEN
-         CALL GETTIM(CPU2,WALL2)
-C
-         CPU  = CPU2 - CPU1
-         WALL = WALL2 - WALL1
-C
-#if defined (VAR_MPI)
-         RBUF(1) = CPU
-         RBUF(2) = WALL
-         CAll interface_mpi_SEND(RBUF,2,MPARID,50,
+         CALL GETTIM(CPU3,WALL3)
+         RBUF(1) = CPU2 - CPU1
+         RBUF(2) = CPU3 - CPU2
+         RBUF(3) = WALL2 - WALL1
+         RBUF(4) = WALL3 - WALL2
+         CAll interface_mpi_SEND(RBUF,4,MPARID,50,
      &                 global_communicator)
-#endif
 C
       END IF
+#endif
 C
       RETURN
       END
@@ -2008,9 +2136,9 @@ C
 C
 C     For infpar.h
 C
-      SLAVE  = .FALSE.
-C
-      PARHER = .FALSE.
+! SLAVE is set and PARHER is initialized to .false. in dirac.F at beginning of execution
+!     SLAVE  = .FALSE.
+!     PARHER = .FALSE.
 #if defined (VAR_MPI)
       NODES = NUMNOD
 #else
@@ -2078,39 +2206,60 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Parsr2 */
-      SUBROUTINE PARSR2(NDIM,NPOS,TIMES,INDEX,IPRINT)
+      SUBROUTINE PARSR2(NDIM,NPOS,TIMES,INDEX_IJ,IPRINT)
 C*****************************************************************************
 C
 C     Sort IJ-indices according to increasing run time...
 C     Written by T.Saue Oct 3 1996
+C     Rewritten 3-Aug-2017 by hjaaj because old code sorted after decreasing run time
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRES = 1.0D-2)
-      DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX(NDIM)
-      CALL FNDAMX(TIMES,NDIM,NDIM,NPOS,NDIM,0,THRES)
-CTROND FNDAMX sorts by absolute values, but unless we hope
-C      for negative run times, this will be no problem...
-      IF (IPRINT .GE. 10) THEN
-        DO I = 1, NDIM
-          WRITE(LUPRI,'(15X,A10,I5,A9,F8.3)')
-     &           'IJ-shell =', INDEX(NPOS(I)),
-     &           '   time =', TIMES(NPOS(I))
+      DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX_IJ(NDIM)
+      INTEGER, ALLOCATABLE :: IPLACE(:)
+
+
+!     Sort IPLACE pointer array
+!     such that TIMES( IPLACE(I) ) .le. TIMES( IPLACE(I+1) )
+      allocate(IPLACE(NDIM))
+      DO I = 1, NDIM
+         IPLACE(I) = I
+         TI = TIMES( I )
+         DO J = 1,(I-1)
+            TJ = TIMES( IPLACE(J) )
+            IF (TJ .GT. TI) THEN
+               DO K = I, (J+1), -1
+                  IPLACE(K) = IPLACE(K-1)
+               END DO ! K
+               IPLACE(J) = I
+               EXIT ! exit loop, found the right place to put it in
+            END IF
+         END DO ! J
+      END DO ! I
+
+      IF (IPRINT .GE. 6) THEN
+         DO I = 1, NDIM
+           WRITE(LUPRI,'(15X,A,I8,A,F8.3)')
+     &           'IJ-shell =', INDEX_IJ(IPLACE(I)),
+     &           '    time =', TIMES(IPLACE(I))
         ENDDO
       ENDIF
+
 C
-C     Transfer INDEX to NPOS
+C     Transfer sorted order of INDEX_IJ to NPOS
 C
       DO I = 1,NDIM
-        NPOS(I) = INDEX(NPOS(I))
+         NPOS(I) = INDEX_IJ(IPLACE(I))
       ENDDO
 C
+      deallocate(IPLACE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck det_task */
-      SUBROUTINE DET_TASK (I2TYP,IMODE,MTOTTK,NPOS)
+C  /* Deck HERPAR_det_task */
+      SUBROUTINE HERPAR_DET_TASK (I2TYP,IMODE,MTOTTK,NPOS,TIMES)
 C*****************************************************************************
 C
 C     Determine tasks that are to be distributed.
@@ -2130,7 +2279,8 @@ C*****************************************************************************
 #endif
 #include "blocks.h"
 C
-      DIMENSION NPOS(*)
+      INTEGER  NPOS(*)
+      REAL*8   TIMES(*)
 C
       IF(I2TYP.EQ.0) THEN
         IASTRT = 1
@@ -2171,6 +2321,7 @@ C
 C
          ICA    = LCLASH(ISHELA)
          NCENTA = NCNTSH(ISHELA)
+         NORBA  = NORBSH(ISHELA) * KHKTSH(ISHELA)
 C
 C        ******************************
 C        ***** Second Shell Index *****
@@ -2182,6 +2333,7 @@ C
 C
             ICB    = LCLASH(ISHELB)
             NCENTB = NCNTSH(ISHELB)
+            NORBB  = NORBSH(ISHELB) * KHKTSH(ISHELB)
 C
 C           Skip two-center SS contributions if requested
 C           This test is provisory, in SYMLOP we take out more integrals
@@ -2194,7 +2346,15 @@ C
             ENDIF
 C
             IJ  = (ISHELA*(ISHELA-1))/2 + ISHELB
-            IF (IMODE.EQ.2) NPOS(MTOTTK-IND) = IJ
+            IF (IMODE.EQ.2) THEN
+               NPOS(MTOTTK-IND) = IJ
+               ! hjaaj Aug 2017: assume time proportional to number of (ij/ functions for this (IJ/ shell combination
+               IF (ISHELB .EQ. ISHELA) THEN
+                  TIMES(MTOTTK-IND) = (NORBA*(NORBA+1))/2
+               ELSE
+                  TIMES(MTOTTK-IND) = NORBA*NORBB
+               END IF
+            END IF
             IND = IND + 1
 C
   200    CONTINUE

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,11 +23,17 @@ module fde_cfg
 ! this module holds all options for the embedding code, and routines to set/access
 ! this information
 
+implicit none
+
    type fde_export
       character(len=4) :: ex_level
       character(len=3) :: ex_format
       logical          :: ex_n
+      !logical          :: ex_n_b
+      !logical          :: ex_s_b
       logical          :: ex_gn
+      !logical          :: ex_gn_b
+      !logical          :: ex_gs_b
       logical          :: ex_coulomb
       logical          :: do_grid_out
    end type
@@ -36,10 +42,20 @@ module fde_cfg
       character(len=4) :: im_level
       character(len=3) :: im_format
       logical          :: im_n
+      logical          :: im_n_b_direct
+      logical          :: im_n_b_reorth
+      logical          :: im_s_b_direct
+      logical          :: im_s_b_reorth
       logical          :: im_gn
+      logical          :: im_gn_b_direct
+      logical          :: im_gn_b_reorth
+      logical          :: im_gs_b_direct
+      logical          :: im_gs_b_reorth
       logical          :: im_coulomb
       logical          :: im_vemb
       logical          :: im_frozen
+      logical          :: im_frozen_pert_direct
+      logical          :: im_frozen_pert_reorth
       logical          :: im_update_vemb
    end type
 
@@ -51,6 +67,8 @@ module fde_cfg
    type fde_files
       type(fde_file) :: embpot
       type(fde_file) :: frozen
+      type(fde_file) :: frozen_pert_direct
+      type(fde_file) :: frozen_pert_reorth
       type(fde_file) :: export
       type(fde_file) :: test
       type(fde_file) :: logfile
@@ -62,7 +80,8 @@ module fde_cfg
    public fde_files
 
    public fde_initialize_cfg
-   
+   public sync_fde_cfg   
+
    public fde_set_print_level
    public fde_set_import_info
    public fde_set_export_info
@@ -74,15 +93,30 @@ module fde_cfg
    public fde_get_files_info
    
    public parallel_fde
+   public fde_export_old_esp 
    public fde_cfg_screening
+   public fde_cfg_tinydens
+   public fde_cfg_alda_hs
+   public fde_cfg_alda_ha
+   public fde_cfg_no_sdft
+
+   public fde_use_blas3_scheme
    public fde_intersub_nucrep
    public fde_frozen_energy 
 
    private
 
    integer, save      :: fde_print_level   = 0
-   real(kind=8), save :: fde_cfg_screening = 1.0d-9
-   logical, save      :: fde_is_parallel   = .false.
+   real(kind=8), save :: fde_cfg_screening = 1.0d-10
+   real(kind=8), save :: fde_cfg_tinydens  = 1.0d-22
+   logical, save      :: parallel_fde   = .false.
+   logical, save      :: fde_export_old_esp = .false.
+
+   logical, save      :: fde_cfg_alda_hs = .false.
+   logical, save      :: fde_cfg_alda_ha = .false.
+
+   logical, save      :: fde_use_blas3_scheme = .false.
+   logical, save      :: fde_cfg_no_sdft = .false.
 
    type(fde_export), save :: fde_ex_control
    type(fde_import), save :: fde_im_control
@@ -128,6 +162,12 @@ module fde_cfg
          f%frozen%name = 'FRZDNS'
          f%frozen%unit = 48
 
+         f%frozen_pert_direct%name = 'pertden_direct_lao.FINAL'
+         f%frozen_pert_direct%unit = 51
+
+         f%frozen_pert_reorth%name = 'pertden_reorth_lao.FINAL'
+         f%frozen_pert_reorth%unit = 52
+
          f%export%name = 'GRIDOUT'
          f%export%unit = 47
 
@@ -147,7 +187,11 @@ module fde_cfg
          ec%ex_level     = 'DHF'
          ec%ex_format    = 'XML'
          ec%ex_n         = .false.
+         !ec%ex_n_b       = .false.
+         !ec%ex_s_b       = .false.
          ec%ex_gn        = .false.
+         !ec%ex_gn_b      = .false.
+         !ec%ex_gs_b      = .false.
          ec%ex_coulomb   = .false.
          ec%do_grid_out  = .false.
       end subroutine fde_initialize_export
@@ -161,10 +205,20 @@ module fde_cfg
          ic%im_level     = 'DHF'
          ic%im_format    = 'TXT'
          ic%im_n         = .false.
+         ic%im_n_b_direct       = .false.
+         ic%im_n_b_reorth       = .false.
+         ic%im_s_b_direct       = .false.
+         ic%im_s_b_reorth       = .false.
          ic%im_gn        = .false.
+         ic%im_gn_b_direct      = .false.
+         ic%im_gn_b_reorth      = .false.
+         ic%im_gs_b_direct      = .false.
+         ic%im_gs_b_reorth      = .false.
          ic%im_coulomb   = .false.
          ic%im_vemb      = .false.
          ic%im_frozen    = .false.
+         ic%im_frozen_pert_direct    = .false.
+         ic%im_frozen_pert_reorth    = .false.
          ic%im_update_vemb=.false.
       end subroutine fde_initialize_import
 
@@ -177,7 +231,15 @@ module fde_cfg
          fde_ex_control%ex_level     = tmp%ex_level
          fde_ex_control%ex_format    = tmp%ex_format
          fde_ex_control%ex_n         = tmp%ex_n
+         !fde_ex_control%ex_n_b_direct       = tmp%ex_n_b_direct
+         !fde_ex_control%ex_n_b_reorth       = tmp%ex_n_b_reorth
+         !fde_ex_control%ex_s_b_direct       = tmp%ex_s_b_direct
+         !fde_ex_control%ex_s_b_reorth       = tmp%ex_s_b_reorth
          fde_ex_control%ex_gn        = tmp%ex_gn 
+         !fde_ex_control%ex_gn_b_direct      = tmp%ex_gn_b_direct
+         !fde_ex_control%ex_gn_b_reorth      = tmp%ex_gn_b_reorth
+         !fde_ex_control%ex_gs_b_direct      = tmp%ex_gs_b_direct
+         !fde_ex_control%ex_gs_b_reorth      = tmp%ex_gs_b_reorth
          fde_ex_control%ex_coulomb   = tmp%ex_coulomb
          fde_ex_control%do_grid_out  = tmp%do_grid_out
       end subroutine fde_set_export_info
@@ -191,10 +253,20 @@ module fde_cfg
          fde_im_control%im_level     = tmp%im_level
          fde_im_control%im_format    = tmp%im_format
          fde_im_control%im_n         = tmp%im_n
+         fde_im_control%im_n_b_direct       = tmp%im_n_b_direct
+         fde_im_control%im_n_b_reorth       = tmp%im_n_b_reorth
+         fde_im_control%im_s_b_direct       = tmp%im_s_b_direct
+         fde_im_control%im_s_b_reorth       = tmp%im_s_b_reorth
          fde_im_control%im_gn        = tmp%im_gn 
+         fde_im_control%im_gn_b_direct      = tmp%im_gn_b_direct
+         fde_im_control%im_gn_b_reorth      = tmp%im_gn_b_reorth
+         fde_im_control%im_gs_b_direct      = tmp%im_gs_b_direct
+         fde_im_control%im_gs_b_reorth      = tmp%im_gs_b_reorth
          fde_im_control%im_coulomb   = tmp%im_coulomb
          fde_im_control%im_vemb      = tmp%im_vemb
          fde_im_control%im_frozen    = tmp%im_frozen
+         fde_im_control%im_frozen_pert_direct    = tmp%im_frozen_pert_direct
+         fde_im_control%im_frozen_pert_reorth    = tmp%im_frozen_pert_reorth
          fde_im_control%im_update_vemb=tmp%im_update_vemb
       end subroutine fde_set_import_info
 
@@ -209,6 +281,12 @@ module fde_cfg
 
          fde_f%frozen%name = tmp%frozen%name
          fde_f%frozen%unit = tmp%frozen%unit
+
+         fde_f%frozen_pert_direct%name = tmp%frozen_pert_direct%name
+         fde_f%frozen_pert_direct%unit = tmp%frozen_pert_direct%unit
+
+         fde_f%frozen_pert_reorth%name = tmp%frozen_pert_reorth%name
+         fde_f%frozen_pert_reorth%unit = tmp%frozen_pert_reorth%unit
 
          fde_f%export%name = tmp%export%name
          fde_f%export%unit = tmp%export%unit
@@ -229,7 +307,15 @@ module fde_cfg
          tmp%ex_level   = fde_ex_control%ex_level
          tmp%ex_format  = fde_ex_control%ex_format
          tmp%ex_n       = fde_ex_control%ex_n         
+         !tmp%ex_n_b_direct     = fde_ex_control%ex_n_b_direct       
+         !tmp%ex_n_b_reorth     = fde_ex_control%ex_n_b_reorth       
+         !tmp%ex_s_b_direct     = fde_ex_control%ex_s_b_direct       
+         !tmp%ex_s_b_reorth     = fde_ex_control%ex_s_b_reorth       
          tmp%ex_gn      = fde_ex_control%ex_gn           
+         !tmp%ex_gn_b_direct    = fde_ex_control%ex_gn_b_direct         
+         !tmp%ex_gn_b_reorth    = fde_ex_control%ex_gn_b_reorth         
+         !tmp%ex_gs_b_direct    = fde_ex_control%ex_gs_b_direct         
+         !tmp%ex_gs_b_reorth    = fde_ex_control%ex_gs_b_reorth         
          tmp%ex_coulomb = fde_ex_control%ex_coulomb
          tmp%do_grid_out= fde_ex_control%do_grid_out    
       end subroutine fde_get_export_info
@@ -243,11 +329,22 @@ module fde_cfg
          tmp%im_level       = fde_im_control%im_level       
          tmp%im_format      = fde_im_control%im_format      
          tmp%im_n           = fde_im_control%im_n           
+         tmp%im_n_b_direct         = fde_im_control%im_n_b_direct         
+         tmp%im_n_b_reorth         = fde_im_control%im_n_b_reorth         
+         tmp%im_s_b_direct         = fde_im_control%im_s_b_direct         
+         tmp%im_s_b_reorth         = fde_im_control%im_s_b_reorth         
          tmp%im_gn          = fde_im_control%im_gn           
+         tmp%im_gn_b_direct        = fde_im_control%im_gn_b_direct         
+         tmp%im_gn_b_reorth        = fde_im_control%im_gn_b_reorth         
+         tmp%im_gs_b_direct        = fde_im_control%im_gs_b_direct         
+         tmp%im_gs_b_reorth        = fde_im_control%im_gs_b_reorth         
          tmp%im_coulomb     = fde_im_control%im_coulomb     
          tmp%im_vemb        = fde_im_control%im_vemb        
          tmp%im_frozen      = fde_im_control%im_frozen      
+         tmp%im_frozen_pert_direct      = fde_im_control%im_frozen_pert_direct      
+         tmp%im_frozen_pert_reorth      = fde_im_control%im_frozen_pert_reorth      
          tmp%im_update_vemb = fde_im_control%im_update_vemb 
+!g         write(*, *) 'test4 inside fde_get_import_info', tmp%im_n, tmp%im_n_b
       end subroutine fde_get_import_info
 
       
@@ -262,6 +359,12 @@ module fde_cfg
          tmp%frozen%name = fde_f%frozen%name
          tmp%frozen%unit = fde_f%frozen%unit
 
+         tmp%frozen_pert_direct%name = fde_f%frozen_pert_direct%name
+         tmp%frozen_pert_direct%unit = fde_f%frozen_pert_direct%unit
+
+         tmp%frozen_pert_reorth%name = fde_f%frozen_pert_reorth%name
+         tmp%frozen_pert_reorth%unit = fde_f%frozen_pert_reorth%unit
+
          tmp%export%name = fde_f%export%name
          tmp%export%unit = fde_f%export%unit
 
@@ -272,5 +375,31 @@ module fde_cfg
          tmp%logfile%unit = fde_f%logfile%unit         
       end subroutine fde_get_files_info
       
+
+   subroutine sync_fde_cfg()
+
+#ifdef VAR_MPI
+      use fde_mpi
+
+      call fde_mpi_bcast(fde_print_level)
+
+      call fde_mpi_bcast(fde_cfg_screening)
+      call fde_mpi_bcast(fde_cfg_tinydens)
+      call fde_mpi_bcast(fde_cfg_alda_ha)
+      call fde_mpi_bcast(fde_cfg_alda_hs)
+      call fde_mpi_bcast(fde_use_blas3_scheme)
+      call fde_mpi_bcast(fde_cfg_no_sdft)
+      
+      call fde_mpi_bcast(parallel_fde)
+
+!     call fde_mpi_bcast(fde_ex_control)
+!     call fde_mpi_bcast(fde_im_control)
+!     call fde_mpi_bcast(fde_f)
+      call fde_mpi_bcast(fde_intersub_nucrep)
+      call fde_mpi_bcast(fde_frozen_energy)
+#endif /* ifdef VAR_MPI */
+
+   end subroutine
+
 
 end module fde_cfg

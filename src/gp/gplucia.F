@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1372,7 +1372,7 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
           WRITE(6,*) '  ITYP KTYP LTYP JTYP '
           WRITE(6,*) '  ===================='
           DO  IDX = 1,NDXTP
-            WRITE(6,'(1H ,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
+            WRITE(6,'(1X,4I5)')ITP(IDX),KTP(IDX),LTP(IDX),JTP(IDX)
           END DO
         END IF
       END IF
@@ -1501,7 +1501,7 @@ C
       AJUK=(A(LM)*A(LM)+X*X)
       AJUK=DSQRT(AJUK)
       IF(DABS(AJUK).LT.TESTIT)WRITE(6,3000)TESTIT,AJUK,A(LM)
- 3000 FORMAT(1H0,'***DENOMINATOR LT ',D12.6,'. VALUE=',D14.8,
+ 3000 FORMAT(/1P,' ***DENOMINATOR LT',D13.6,'. VALUE=',D14.8,
      ['. NUMERATOR=',D14.8)
       Y=0.D0
       IF(DABS(AJUK).LT.TESTIT)GO TO 67
@@ -1513,7 +1513,7 @@ C  68 Y=-A(LM)/ DSQRT(A(LM)*A(LM)+X*X)
    70 Y=-Y
    75 AJUK=(1.D0-Y*Y)
       IF(AJUK.LT.0.D0)WRITE(6,3001) AJUK
- 3001 FORMAT(1H0,'***DSQRT OF ',D14.8)
+ 3001 FORMAT(/1P,' ***DSQRT OF ',D14.8)
       IF(AJUK.LT.0.D0)AJUK=0.D0
       AJUK=DSQRT(AJUK)
       AJUK=2.D0*(1.D0+AJUK)
@@ -2663,7 +2663,7 @@ C
 *
       IEFF = 0
 C     WRITE(6,*) ' INPUT string to LFTPOS ' 
-C     WRITE(6,'(1H ,A)') CARD
+C     WRITE(6,'(1X,A)') CARD
 
       DO 100 IPOS = 1, LENGTH
        IF(CARD(IPOS:IPOS).NE.' ') THEN
@@ -2679,7 +2679,7 @@ C     WRITE(6,'(1H ,A)') CARD
       NTEST = 0
       IF(NTEST.NE.0) THEN
         WRITE(6,*) ' Left adjusted character string '
-        WRITE(6,'(1H ,A)') CARD
+        WRITE(6,'(1X,A)') CARD
       END IF
 *
       RETURN
@@ -3106,7 +3106,8 @@ C     call iwrtma(minval,1,ngasl,1,ngasl)
         IMULT = IMULT*(MAXVAL(IGAS)-MINVAL(IGAS)+1)
 C       write(6,*) ' igas i imult ',igas,i,imult
       END DO
-      IOFF_SYM_DIST=IOFF(I)
+      ! Miro: fix due to runtimecheck, I should be nonzero
+      IF (I.GT.0) IOFF_SYM_DIST=IOFF(I) 
 *
       NTEST = 000
       IF(NTEST.GE.100) THEN
@@ -3438,7 +3439,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
           DO JPLACE = 1, IPLACE
             INUM(JPLACE) = 1
           END DO
-        ELSE IF ( IPLACE. EQ. NELMNT ) THEN
+        ELSE IF ( IPLACE .EQ. NELMNT ) THEN
           NONEW = 1
           GOTO 1001
         END IF
@@ -3497,7 +3498,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
           DO JPLACE = 1, IPLACE
             INUM(JPLACE) = MINVAL(JPLACE)
           END DO
-        ELSE IF ( IPLACE. EQ. NELMNT ) THEN
+        ELSE IF ( IPLACE .EQ. NELMNT ) THEN
           NONEW = 1
           GOTO 1001
         END IF
@@ -3686,7 +3687,7 @@ CSK        WRITE(LUWRT,*) ' IBLOCK, NBLOCK are now',IBLOCK,NBLOCK
               ELSE
                 INUM(IPLACE) = INUM(IPLACE-1) + 1
               END IF
-        ELSE IF ( IPLACE. EQ. NELMNT ) THEN
+        ELSE IF ( IPLACE .EQ. NELMNT ) THEN
               NONEW = 1
               GOTO 1001
         END IF
@@ -3969,7 +3970,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
       DIMENSION ISTR(NEL,NSTR)
 *
       DO JSTR = 1, NSTR
-        WRITE(6,'(1H0,A,I6,A,4X,10(2X,I4),/,(1H ,19X,10(2X,I4)))' )
+        WRITE(6,'(/A,I6,A,4X,10I6,/,(20X,10I6)))' )
      &   ' String ',JSTR,' : ',(ISTR(IEL,JSTR),IEL=1,NEL)
       END DO
 *
@@ -5220,7 +5221,7 @@ C
 C
       DO 100 I=1,NROW
       WRITE(6,1010) I,(A(I,J),J=1,NCOL)
- 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+ 1010 FORMAT(/I4,2X,4E15.8,/,(6X,4E15.8))
   100 CONTINUE
       RETURN
       END
@@ -5241,7 +5242,7 @@ C
 C
       DO 100 I=1,NROW
       WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL)
- 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+ 1010 FORMAT(/I4,2X,4E15.8,/,(6X,4E15.8))
   100 CONTINUE
   200 CONTINUE
       END
@@ -5259,7 +5260,7 @@ C
 C
       DO 100 I=1,NROW8
       WRITE(LUWRT,1010) I,(A(I,J),J=1,NCOL8)
- 1010 FORMAT(1H0,I3,2X,4(1X,E14.8),/,(1H ,5X,4(1X,E14.8)))
+ 1010 FORMAT(/I4,2X,4E15.8,/,(6X,4E15.8))
   100 CONTINUE
       END
 ***********************************************************************
@@ -5275,7 +5276,7 @@ C
 C
       DO 100 I=1,NROW
       WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
- 1010 FORMAT(1H0,I3,2X,4(1X,I18),/,(1H ,5X,4(1X,I18)))
+ 1010 FORMAT(/I4,2X,4I19,/,(6X,4I19))
   100 CONTINUE
       END
 ***********************************************************************
@@ -5291,7 +5292,7 @@ C
 C
       DO 100 I=1,NROW
       WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL)
- 1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
+ 1010 FORMAT(/I4,2X,4I11,/,(6X,4I11))
   100 CONTINUE
       END
 ***********************************************************************
@@ -5308,7 +5309,7 @@ C
 C
       DO 100 I=1,NROW8
       WRITE(LUWRT,1010) I,(MAT(I,J),J=1,NCOL8)
- 1010 FORMAT(1H0,I3,2X,4(1X,I10),/,(1H ,5X,4(1X,I10)))
+ 1010 FORMAT(/I4,2X,4I11,/,(6X,4I11))
   100 CONTINUE
       END
 ***********************************************************************
@@ -5332,7 +5333,7 @@ C
       IF(ITEST.EQ.0) INACTIVE = INACTIVE + 1
       IF(ITEST.EQ.0) GOTO 100
       WRITE(6,1010) I,(MAT(I,J),J=1,NCOL)
- 1010 FORMAT(1X,I4,2X,60(1X,I1),/,(1H ,6X,60(1X,I1)))
+ 1010 FORMAT(I5,2X,60I2,/,(7X,60I2))
   100 CONTINUE
       WRITE(6,*)'  ' 
       WRITE(6,'(1X,A,1X,I3)')'TOTAL    NUMBER:',NCOL
@@ -5616,7 +5617,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 * Partition a CI vector into batches of blocks.
 * The length of a batch must be atmost MXLNG
 *
-* IF ICOMP. eq. 1 the complete CI vector is constructed
+* IF ICOMP .eq. 1 the complete CI vector is constructed
 *
 *
 * Compared to PART_CIV, the NOOS arrays have been eliminated.
@@ -5759,7 +5760,7 @@ C?      WRITE(6,*) '====================='
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO
@@ -5781,7 +5782,7 @@ C?      WRITE(6,*) '====================='
 * Partition a CI vector into batches of blocks.
 * The length of a batch must be atmost MXLNG
 *
-* IF ICOMP. eq. 1 the complete CI vector is constructed
+* IF ICOMP .eq. 1 the complete CI vector is constructed
 *
 *
 * Compared to PART_CIV, the NOOS arrays have been eliminated.
@@ -5973,7 +5974,7 @@ C?      WRITE(6,*) '====================='
           WRITE(6,*) ' *********************** '
           WRITE(6,*)
           WRITE(6,*) '      Number of blocks included ', LBATCH(JBATCH)
-          WRITE(6,*) '      TTSS and offsets and lenghts of each block '
+          WRITE(6,*) '      TTSS and offsets and lengths of each block '
           DO IBLOCK = I1BATCH(JBATCH),I1BATCH(JBATCH)+ LBATCH(JBATCH)-1
             WRITE(6,'(10X,4I3,4I8)') (IBATCH(II,IBLOCK),II=1,8)
           END DO

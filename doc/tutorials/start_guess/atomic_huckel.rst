@@ -47,6 +47,9 @@ and the menu file `PBE.inp`
 
 .. literalinclude:: PBE.inp
 
+This menu file includes specifications to use uncontracted integrals and  specifies a screening threshhold for 2-electron integrals. The the method is specified; Here the Kohn-Sham DFT will be used with the PBE functional. The molecule is defined as having 98 closed shell electrons (for the fermion irrep without inversion symmetry). Further more, the Mulliken population analysis is specified to provide labels for individual orbitals and lastly the basis sets used are defined. Note that a special basis set is used for the Lu atom. The basis set must be specified in the menu file when using an xyz file rather than a mol file.
+Note that the keyword ``INPTES`` for testing the inputfile before the run is commented out.
+Observe that the caclulation will take more than an hour.
 Unfortunately, and curiously, this calculation does not converge
 
 .. literalinclude:: PBE_LuF3.out
@@ -56,9 +59,9 @@ reads
 
 .. literalinclude:: PBEhuc.inp
 
-In addition to the keyword :ref:`SCF_.AD HOC` file names for the Lu and F atomic types are given, followed 
+Using the keyword :ref:`SCF_.AD HOC` file names for the Lu and F atomic types are given, followed 
 by orbital strings specifying what atomic orbitals to select (see
-:ref:`orbital_strings` for the syntax).
+:ref:`orbital_strings` for the syntax). These files can be generated following the procedure outlined in the tutorial Atomic start for "Preparing the atomic start". Note, that the calculation is specified to be performed without the use of symmetry.
 The calculation now converges in 20 iterations
 
 .. literalinclude:: PBEhuc_LuF3.out

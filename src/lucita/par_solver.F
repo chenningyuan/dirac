@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2021,13 +2021,13 @@ C
 C        CONVERGENCE WAS NOT OBTAINED
          IF(IPRT .GE. 2 )
      &   WRITE(LUWRTOUT,1170) MAXIT
- 1170    FORMAT('0  Convergence was not obtained in ',I3,' iterations')
+ 1170    FORMAT(/' Convergence was not obtained in ',I3,' iterations')
       ELSE
 C        CONVERGENCE WAS OBTAINED
          ITER = ITER - 1
          IF (IPRT .GE. 2 )
      &   WRITE(LUWRTOUT,1180) ITER
- 1180    FORMAT(1H0,' Convergence was obtained in ',I3,' iterations')
+ 1180    FORMAT(/' Convergence was obtained in ',I3,' iterations')
         END IF
 C
       IF ( IPRT .GT. 0 ) THEN
@@ -2040,26 +2040,23 @@ C
           DO I=1,ITER
             WRITE(LUWRTOUT,1340) I,EIG(I,IROOT)+EIGSHF,RNRM(I,IROOT)
           end do
-          WRITE(LUWRTOUT,*)
-          WRITE(LUWRTOUT,'(A,I3)')
-     &  ' Information about convergence for root... ' ,IROOT
-          WRITE(LUWRTOUT,*)
-     &    '============================================'
-          WRITE(LUWRTOUT,*)
+          WRITE(LUWRTOUT,'(/A,I3/A)')
+     &  ' Information about convergence for root... ' ,IROOT,
+     &  ' ============================================'
           FINEIG(IROOT) = EIG(ITER,IROOT)
           WRITE(LUWRTOUT,1190) FINEIG(IROOT)+EIGSHF
- 1190     FORMAT(' The final approximation to eigenvalue ',F18.10)
+ 1190     FORMAT(/' The final approximation to eigenvalue ',F18.10)
           IF(IPRT.GE.400) THEN
             WRITE(LUWRTOUT,1200)
- 1200       FORMAT(1H0,'The final approximation to eigenvector')
+ 1200       FORMAT(/' The final approximation to eigenvector')
             CALL WRTVCD(VEC1,LU1,0,LBLK)
           END IF
- 1340     FORMAT(1H ,6X,I4,8X,F20.13,2X,E12.5)
+ 1340     FORMAT(I10,F28.13,1P,E14.5)
  1600   CONTINUE
       ELSE
         write(LUWRTOUT,*)
  1310   FORMAT
-     &  (1H0,' Iteration point        Eigenvalue         Residual ')
+     &  (/' Iteration point        Eigenvalue         Residual ')
         DO IROOT = 1, NROOT
           write(LUWRT,*) '------------------------'
           write(LUWRT,*) 'Root number  ',IROOT
@@ -2102,8 +2099,8 @@ C
  
       RETURN
 
- 1030 FORMAT(1H0,2X,7F15.8,/,(1H ,2X,7F15.8))
- 1120 FORMAT(1H0,2X,I3,7F15.8,/,(1H ,5X,7F15.8))
+ 1030 FORMAT(/3X,7F15.8,/,(3X,7F15.8))
+ 1120 FORMAT(/3X,I3,7F15.8,/,(6X,7F15.8))
  9300 FORMAT(' >>>  WALL TIME FOR CURRENT ITERATION            : ',A)
  9410 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH NROOT: ',A)
  9420 FORMAT(' >>>  WALL TIME FOR REDUCING WORK OF LENGTH      :

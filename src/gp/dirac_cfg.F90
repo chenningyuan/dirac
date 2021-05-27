@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -44,6 +44,8 @@ module dirac_cfg
   logical, public :: dirac_cfg_openrsp            = .false.
 !                    visualization module
   logical, public :: dirac_cfg_visual             = .false.
+!                    exacc module
+  logical, public :: dirac_cfg_exacc              = .false.
 !                    relcc module
   logical, public :: dirac_cfg_relcc              = .false.
 !                    embedding module

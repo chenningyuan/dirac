@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/main
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,10 +9,7 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_MAIN_FORTRAN_SOURCES
-   dirac.h
    dirac.F
-# needs missing object pamgeo
-   ${PROJECT_SOURCE_DIR}/src/dirac/dirgeo.F
 )
 
 set(FREE_MAIN_FORTRAN_SOURCES
@@ -24,8 +22,15 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FIXED_MAIN_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
 endif()
 
+if(ENABLE_RUNTIMECHECK)
+    message(STATUS "runtime-check flags activated for the 'main' module without exceptions")
+    set_source_files_properties(${FREE_MAIN_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+    set_source_files_properties(${FIXED_MAIN_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_Fortran_FLAGS_runtimecheck})
+endif()
+
 add_library(
     main
+    OBJECT
     ${FIXED_MAIN_FORTRAN_SOURCES}
     ${FREE_MAIN_FORTRAN_SOURCES}
 )
@@ -34,11 +39,12 @@ add_library(
 add_dependencies(main gp)
 add_dependencies(main visual)
 add_dependencies(main embedding)
+add_dependencies(main interest)
 if (ENABLE_STIELTJES)
     add_dependencies(main stieltjes)
 endif()
-if (ENABLE_INTEREST)
-    add_dependencies(main interest)
+if (ENABLE_LAPLACE)
+    add_dependencies(main laplace-minimax)
 endif()
 if(ENABLE_PCMSOLVER)
     add_dependencies(main pcm_dirac)

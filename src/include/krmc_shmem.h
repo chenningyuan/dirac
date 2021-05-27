@@ -7,7 +7,7 @@
       integer, parameter :: my_MPI_ADDRESS_KIND = 8
       integer, parameter :: my_MPI_OFFSET_KIND  = 8
 #if defined (VAR_MPI2) 
-#if ! defined (SYS_AIX)
+#if ! defined (SYS_AIX) && ! defined (VAR_XLF)
       INTEGER(KIND=my_MPI_ADDRESS_KIND) MY_T_PTR,MY_T_D_PTR,
      &                               MY_T_SCR_PTR,
      &                               MY_TTPL_PTR, MY_TCTR_PTR,

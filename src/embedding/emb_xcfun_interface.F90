@@ -1,6 +1,6 @@
 
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -23,6 +23,7 @@
 module fde_xcfun_interface
 
    use xcfun_1_0
+   use fde_mpi
    use fde_max_block_length
 
    implicit none
@@ -45,6 +46,8 @@ module fde_xcfun_interface
       real(8), allocatable :: input(:, :)
       real(8), allocatable :: output(:, :)
    end type
+
+   logical, public :: fde_fun_is_automatic
 
    integer, parameter, public :: d0000000 =  0
    integer, parameter, public :: d1000000 =  1
@@ -596,6 +599,13 @@ contains
 !     --------------------------------------------------------------------------
 
       if (.not. f%xcfun_id_is_set) then
+#ifdef VAR_MPI
+         if (parallel_xc) then
+            call fde_mpi_bcast(f%w)
+            call fde_mpi_bcast(f%id)
+            call fde_mpi_bcast(f%xcfun_id_is_set)
+         end if
+#endif
          f%id = xc_new_functional()
          call xc_set_mode(f%id, XC_VARS_NS)
 

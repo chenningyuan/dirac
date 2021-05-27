@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1190,7 +1190,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
         WRITE(6,*) ' ============================='
         WRITE(6,*)
         WRITE(6,*) ' Type and symmetry of the 4 orbitals (i j k l )'
-        WRITE(6,'(1H ,8(1X,I4) )')
+        WRITE(6,'(1X,8I5)')
      &  IGAS,ISM,JGAS,JSM,KGAS,KSM,LGAS,LSM
 *
         NIJ = NI*NJ
@@ -1237,7 +1237,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       IF(NTEST.GE.100) THEN
         WRITE(6,*) ' Element of two electron density matrix'
         WRITE(6,*) 'I,IGAS,ISM,J,JGAS,JSM,K,KGAS,KSM,L,LGAS,LSM'
-        WRITE(6,'( 1H ,(12I4) )')
+        WRITE(6,'( 1X,(12I4) )')
      &  I,IGAS,ISM,J,JGAS,JSM,K,KGAS,KSM,L,LGAS,LSM
         WRITE(6,*) ' IJ, KL ', IJ,KL
         WRITE(6,*) ' IABS JABS KABS LABS',IABS,JABS,KABS,LABS

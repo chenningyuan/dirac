@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,7 +24,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       PROGRAM RELCCSD
 C
       use interface_to_mpi
-      IMPLICIT INTEGER (A-Z)
+      implicit none
 C
 C---------------Description-----------------------------------------------
 C
@@ -50,6 +50,7 @@ C
       REAL*8 SEC,SEC0
       LOGICAL CA
       CHARACTER*10 INTFCE
+      integer i
 C
 C---------------Executable code--------------------------------------
 C

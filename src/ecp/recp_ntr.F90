@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -145,7 +145,7 @@ SUBROUTINE RECP_NTRA_BASIS(KATOM,KANG,KBLOCK,NONTYP,IQM,JCO,NUC,NRC)
   
   ALLOCATE ( RECPIN_NONTYP(1),STAT=IERR )
   IF (IERR.NE.0) CALL RECP_NTR_EXIT(1000,'RECPIN_NONTYP') 
-  ALLOCATE ( RECPIN_IQM(MXIQM),STAT=IERR )
+  ALLOCATE ( RECPIN_IQM(NONTYP),STAT=IERR )
   IF (IERR.NE.0) CALL RECP_NTR_EXIT(1000,'RECPIN_IQM') 
 ! ALLOCATE ( RECPIN_JCO(MXJCO,MXIQM),STAT=IERR )
   ALLOCATE ( RECPIN_JCO(MXIQM,NONTYP),STAT=IERR )

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2015 by the authors of DIRAC.
+!      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -194,7 +194,7 @@ C            ... First case : Estimate (LL|SS) contributions
 C                Last case  : Simulate one-center SS integrals since explicit
 C                             evaluation has been omitted in this iteration.
          IF (ICTLV1C(2) .EQ. 1) THEN 
-            CALL SCDENS_2(CHARGE,WORK(KCHRG),NUCIND,0)
+            CALL SCDENS_2(WORK(KCHRG),1,NUCIND,0)
          ELSE
             IOFF = 1
             DO I = 1,NUCIND
@@ -697,7 +697,7 @@ c         (We use the nuclear exponents)
 c
       CALL DZERO(WORK(KCHRG),NUCIND)
       IF (ICTLV1C(2) .EQ. 1) THEN 
-         CALL SCDENS_2(CHARGE,WORK(KCHRG),NUCIND,0)
+         CALL SCDENS_2(WORK(KCHRG),1,NUCIND,0)
       ELSE
          IOFF = 1
          DO I = 1,NUCIND
