@@ -277,7 +277,7 @@ contains
          nz      = xc_nz
          nr_dmat = xc_nr_dmat
          nr_fmat = xc_nr_fmat
-         !print *,'debug in xcint: mat_dim,nz,nr_dmat,nr_fmat ',mat_dim,nz,nr_dmat,nr_fmat
+!        print *,'debug in xcint: mat_dim,nz,nr_dmat,nr_fmat ',mat_dim,nz,nr_dmat,nr_fmat
       end if
 
 !     set defaults
@@ -530,10 +530,10 @@ contains
             save_ddot1 = ddot(mat_dim*mat_dim, dmat_0, 1, fmat, 1)
          end if
 
-         !print *,'nr_mo_gerade_positive_active #1',nr_mo_gerade_positive_active
-         !print *,'nr_mo_ungerade_positive_active #1',nr_mo_ungerade_positive_active
+!        print *,'nr_mo_gerade_positive_active #1',nr_mo_gerade_positive_active
+!        print *,'nr_mo_ungerade_positive_active #1',nr_mo_ungerade_positive_active
 !        get average density from open shells
-         !if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #1'
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #1'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
 
 #ifdef PRG_DIRAC
@@ -678,10 +678,10 @@ contains
          call scale_density_matrices(0.5d0)
 #endif
 
-         !print *,'nr_mo_gerade_positive_active #2',nr_mo_gerade_positive_active
-         !print *,'nr_mo_ungerade_positive_active #2',nr_mo_ungerade_positive_active
+!        print *,'nr_mo_gerade_positive_active #2',nr_mo_gerade_positive_active
+!        print *,'nr_mo_ungerade_positive_active #2',nr_mo_ungerade_positive_active
 !        get average density from open shells
-         !if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #2'
+!        if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) print *,'call gtdoav #2'
          if ((nr_mo_gerade_positive_active + nr_mo_ungerade_positive_active) > 0) call gtdoav(mat_dim, nz, 1, dmat_0, 1)
  
 !        symmetrize matrices

@@ -12,147 +12,147 @@ module intermediates
     real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_tau
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_tau_exatns
 #endif
         module procedure get_tau_talsh
      end interface get_tau
 
      interface get_hoo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_hoo_exatns
 #endif
         module procedure get_hoo_talsh
      end interface get_hoo
 
      interface get_hov
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_hov_exatns
 #endif
         module procedure get_hov_talsh
      end interface get_hov
 
      interface get_hvv
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_hvv_exatns
 #endif
         module procedure get_hvv_talsh
      end interface get_hvv
 
      interface get_goo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_goo_exatns
 #endif
         module procedure get_goo_talsh
      end interface get_goo
 
      interface get_gvv
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_gvv_exatns
 #endif
         module procedure get_gvv_talsh
      end interface get_gvv
 
      interface get_a
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_a_exatns
 #endif
         module procedure get_a_talsh
      end interface get_a
 
      interface get_h
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_h_exatns
 #endif
         module procedure get_h_talsh
      end interface get_h
 
      interface get_fbar_oo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_fbar_oo_exatns
 #endif
         module procedure get_fbar_oo_talsh
      end interface get_fbar_oo
 
      interface get_fbar_ov
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_fbar_ov_exatns
 #endif
         module procedure get_fbar_ov_talsh
      end interface get_fbar_ov
 
      interface get_fbar_vv
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_fbar_vv_exatns
 #endif
         module procedure get_fbar_vv_talsh
      end interface get_fbar_vv
 
      interface get_w_oooo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_oooo_exatns
 #endif
         module procedure get_w_oooo_talsh
      end interface get_w_oooo
 
      interface get_w_ooov
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_ooov_exatns
 #endif
         module procedure get_w_ooov_talsh
      end interface get_w_ooov
 
      interface get_w_ovoo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_ovoo_exatns
 #endif
         module procedure get_w_ovoo_talsh
      end interface get_w_ovoo
 
      interface get_w_vovo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_vovo_exatns
 #endif
         module procedure get_w_vovo_talsh
      end interface get_w_vovo
 
      interface get_wbar_vovo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_wbar_vovo_exatns
 #endif
         module procedure get_wbar_vovo_talsh
      end interface get_wbar_vovo
 
      interface get_w_vvvo
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_vvvo_exatns
 #endif
         module procedure get_w_vvvo_talsh
      end interface get_w_vvvo
 
      interface get_w_vovv
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_vovv_exatns
 #endif
         module procedure get_w_vovv_talsh
      end interface get_w_vovv
 
      interface get_w_vvvv
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_vvvv_exatns
 #endif
         module procedure get_w_vvvv_talsh
      end interface get_w_vvvv
 
      interface get_goo_lambda
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_goo_lambda_exatns
 #endif
         module procedure get_goo_lambda_talsh
      end interface get_goo_lambda
 
      interface get_gvv_lambda
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_gvv_lambda_exatns
 #endif
         module procedure get_gvv_lambda_talsh
@@ -160,21 +160,21 @@ module intermediates
 
 !! Start CC2
      interface get_tauCC2 !L
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_tauCC2_exatns
 #endif
         module procedure get_tauCC2_talsh
      end interface get_tauCC2
 
      interface get_fbar_oo_CC2
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_fbar_oo_CC2_exatns
 #endif
         module procedure get_fbar_oo_CC2_talsh
      end interface get_fbar_oo_CC2
 
      interface get_fbar_vv_CC2
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_fbar_vv_CC2_exatns
 #endif
         module procedure get_fbar_vv_CC2_talsh
@@ -182,7 +182,7 @@ module intermediates
 
 !fbar_ov_CC2 Not usefulll same as CCSD but here to check equations
      interface get_fbar_ov_CC2
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_fbar_ov_CC2_exatns
 #endif
         module procedure get_fbar_ov_CC2_talsh
@@ -190,21 +190,21 @@ module intermediates
 
 
      interface get_w_vvvv_CC2
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_vvvv_CC2_exatns
 #endif
         module procedure get_w_vvvv_CC2_talsh
      end interface get_w_vvvv_CC2
 
      interface get_w_oooo_CC2
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_oooo_CC2_exatns
 #endif
         module procedure get_w_oooo_CC2_talsh
      end interface get_w_oooo_CC2
 
      interface get_w_vovo_CC2
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         module procedure get_w_vovo_CC2_exatns
 #endif
         module procedure get_w_vovo_CC2_talsh
@@ -248,7 +248,7 @@ module intermediates
 
      contains
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
        subroutine get_tau_exatns(comm_t,CCD,one_tensor)
 
         use exatensor
