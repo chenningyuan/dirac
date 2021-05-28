@@ -64,8 +64,8 @@ Example for calculating *Y* = 5 roots in irrep *X* = 1:
     .CIROOTS
     1 5
 
-The KRCI module exploits the character tables for the Abelian double groups handled by DIRAC as detailed here
-:ref:`Symmetry-handling at the correlated level`. In contrast to other correlation
+The KRCI module exploits the character tables for the Abelian double groups handled by DIRAC as detailed here,
+:ref:`Symm_handling_corr_level`. In contrast to other correlation
 modules,  in KRCI the order is reversed that is boson irreps come **before** fermion irreps.
 
 If you run the calculation in **linear symmetry** you have to specify the **2 x OMEGA** value
