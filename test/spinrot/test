@@ -13,6 +13,6 @@ f.add(from_string = 'Spin-rotation constants (kHz) for',
       to_string   = 'E N D   of   D I R A C  output',
       rel_tolerance   = 1.0e-4)
 
-test.run(['spinrot.inp'], ['H2_cc-pVDZ-sym.mol', 'HF_cc-pVDZ-sym.mol', 'SF6_3-21G-sym.mol'], f, args='--mw=100 --aw=128')
+test.run(['spinrot.inp', 'spinrot-LL.inp'], ['H2_cc-pVDZ-sym.mol', 'HF_cc-pVDZ-sym.mol', 'SF6_3-21G-sym.mol'], f, args='--mw=100 --aw=128')
 
 sys.exit(test.return_code)

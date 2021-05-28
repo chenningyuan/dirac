@@ -3,7 +3,7 @@
 
    program exacorr_main
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
@@ -37,7 +37,7 @@
       mytid   = 0
       numproc = 0
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       call interface_mpi_init()
       call interface_mpi_comm_rank(global_communicator,mytid)
       call interface_mpi_comm_size(global_communicator,numproc)
@@ -59,7 +59,7 @@
         if (.not.input_found) call quit('Input was not found!')
       end if
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,global_communicator)
 #else
 !     serial version of DIRAC
@@ -103,7 +103,7 @@
          if (exa_input%talsh) then
             if (mytid == 0) call talsh_cc_driver (exa_input)
          else
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 !           slaves need the same info to get started
             call exacc_sync_cw(0,mytid)
 #endif
@@ -113,7 +113,7 @@
 
       call exacc_deallocate_cw()
 
-#if defined (VAR_MPI) 
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       call interface_mpi_finalize()
 #endif
 

@@ -10,7 +10,7 @@ module exacorr_utils
   public get_free_fileunit
   public print_exacorr_logo
   public print_iteration
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
   public write_tensor
 #endif
   public quicksort
@@ -248,7 +248,7 @@ module exacorr_utils
 
     end subroutine print_iteration
 
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
     subroutine write_tensor(exa_tensor, i_dims)
 
       use exatensor
