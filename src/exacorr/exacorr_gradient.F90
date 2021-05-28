@@ -2,7 +2,7 @@ module exacorr_gradient
 
 ! This module contains routines for solving the Lambda equations
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
@@ -271,7 +271,7 @@ module exacorr_gradient
       use talsh
       use tensor_algebra
       use talsh_common_routines,  only : print_tensor
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 
 !     variables for mpi
