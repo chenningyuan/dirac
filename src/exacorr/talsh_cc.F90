@@ -170,6 +170,7 @@ module talsh_cc
 
          ! begin finite field loop
          do iff=1,exa_input%nff(2)
+         if (exa_input%nff(1)>0) call quit ('finite field not implemented yet') 
 !        Get fixed one-body tensors, needs to follow the two body tensors
          call init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
                     comm_t%foo,comm_t%fov,comm_t%fvv, int_t, scf_energy,iff)

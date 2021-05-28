@@ -32,6 +32,8 @@ X2C Hamiltonian, CC2 energies and expectation values.
 .LAMBDA
 .PRINT
 2
+.TALSH_BUFF
+50
 **MOLECULE
 *COORDINATES
 .UNITS

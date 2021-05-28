@@ -30,4 +30,6 @@ energy  0.0  10.0  0.01
 42
 .CHOLESKY
 1.0D-6
+.TALSH_BUFF
+16
 *END OF
