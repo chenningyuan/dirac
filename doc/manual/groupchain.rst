@@ -1,5 +1,7 @@
 :orphan:
 
+.. _Symm_handling_corr_level:
+
 Symmetry-handling at the correlated level
 =========================================
 
