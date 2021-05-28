@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -201,6 +201,7 @@ C
 #include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+#include "dgroup.h"  ! ATOMIC
       DO 5 I = 0,7
         LSYMOP(I) = .FALSE.
     5 CONTINUE
@@ -248,7 +249,7 @@ C
         JSOP(IND) = 7
         NINVC       = 1
       ENDIF
-C
+C     
 C     Reflections
 C
       NREFL = 0
@@ -474,7 +475,7 @@ C
         FREP(1) = 'E1g'
         FREP(2) = 'E1u'
       ENDIF
-C
+C     
 C     Determine NZ - parameter
 C     ========================
 C       NZ = 4  quaternionic group        no    totally symmetric rotations
@@ -662,10 +663,13 @@ C
 C     Determine boson symmetries connected by a given
 C     fermion irrep
 C
+      CALL ICOPY(16,-1,0,IBTOSF(0,1),1)
       IF(NFSYM.EQ.1) THEN
         DO ISYM = 1,NBSYM
           JFSYM(ISYM,1) = ISYM
           JFSYM(ISYM,2) = ISYM
+          IBTOSF(ISYM-1,1) = ISYM
+          IBTOSF(ISYM-1,2) = ISYM          
         ENDDO
       ELSEIF(NFSYM.EQ.2) THEN
         ISYMA = 0
@@ -674,9 +678,11 @@ C
           IF(JBTOF(ISYM-1,1).EQ.1) THEN
             ISYMA = ISYMA + 1
             JFSYM(ISYMA,1) = ISYM
+            IBTOSF(ISYM-1,1) = ISYMA
           ELSE
             ISYMB = ISYMB + 1
             JFSYM(ISYMB,2) = ISYM
+            IBTOSF(ISYM-1,2) = ISYMB
           ENDIF
         ENDDO
       ENDIF
@@ -758,7 +764,7 @@ C
           IQTOPQ(IQ,IREP) = IPQ
         ENDDO
       ENDDO
-C
+C     
 C     Assign JQBAS - gives quaternion vector for given
 C     component and bosonirrep
 C     ================================================
@@ -1128,6 +1134,9 @@ C
 C     ***************************************
 C     ***** Definition of full operator *****
 C     ***************************************
+C     MCMP : number of components
+C     JM4  : pointer to matrix operator for a given component
+C     JCOM : coefficient of component
 C
 C     1. P             * scalar operator
 C     ==================================

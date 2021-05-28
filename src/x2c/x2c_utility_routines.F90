@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,9 +33,6 @@ module x2c_utils
   use x2c_fio
   use x2c_cb_interface, only:  &
       set_x2c_subblock_data
-#ifdef MOD_INTEREST
-  use module_interest_interface
-#endif
 
   implicit none
 
@@ -1059,16 +1056,10 @@ contains
 
        if(task_id >= 0)then
 
-         if(mdirac)then
-#ifdef MOD_INTEREST
-           call process_overlap_integrals_4comp( scr_mat1, ss_scaling=0.0d0 )
-#endif
-         else
 #ifdef PRG_DIRAC
 !        compute Sao_LL overlap matrix where the SS part is set to zero
          call gtovlt(scr_mat1,0.0d0,0)
 #endif
-        end if
 
 !        store matrix on file in "gerade/ungerade" format (if applicable)
          ioff_ovl = 1
@@ -1134,16 +1125,9 @@ contains
        saoao(1:nzt*naosh_ls**2) = 0.0d0
 
 !      compute Saoao overlap matrix
-       if(mdirac)then
-#ifdef MOD_INTEREST
-         call process_overlap_integrals_4comp( saoao , ss_scaling=1.0d0)
-!        call butobs_no_work(saoao,1)
-#endif
-       else
 #ifdef PRG_DIRAC
-         call gtovlx(saoao,1.0d0)
+       call gtovlx(saoao,1.0d0)
 #endif
-       end if
 
        iaomo = 1
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -2083,6 +2083,7 @@ C     -------------------------------------------------------------
 	    If (i.NE.0.AND.j.NE.0) Then
 	       ji = norb*(i-1)+j
 	       gmatr(ji) = tintr(jid)
+!LV 28-9-2020: did not modify next line after MRCONEE change, code appeared to have already used Fortran ordering
 	       IF (.NOT.REALAR) gmati(ji) = tinti(jid)
             EndIf
          enddo

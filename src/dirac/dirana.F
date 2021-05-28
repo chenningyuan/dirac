@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -398,8 +398,14 @@ C            occupancies
       ELSE
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &               TOTERG,14)
+         IOPT=14
+         IF(ATOMIC) THEN
+           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &          WORK(KBEIG),TOTERG,IOPT)           
+         ELSE
+           CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                 WORK(KBEIG),TOTERG,IOPT)
+         ENDIF
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        check for energy 137.0D0 - if found we are doing a Mulliken
@@ -489,7 +495,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 C
-      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),EIG(*),IBEIG(*),
+      DIMENSION PMAT(NPOPLAB,NPOPLAB,2),SMAT(*),CMO(*),
+     &          EIG(NORBT),IBEIG(NORBT),
      &          IPGRS(*),POPG(NPOPLAB,2),IEFF(NPOPLAB),OCC(*),
      &          PNTOT(NPOPLAB,NPOPLAB,NFSYM),
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
@@ -652,7 +659,8 @@ C
 #else
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
 #endif
-      CHARACTER FMT*6,MXFORM*6,SYMLAB*9
+      CHARACTER FMT*6,MXFORM*6,SYMLAB*9,SYMLAB2*11
+      CHARACTER SPDCAR*1 ! type declaration for external function      
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
      &          CMO(NCBAS,NPVECS+NEVECS,NZ),EIG(*),IBEIG(*),IPGRS(*),
      &          POPG(NPOPLAB,2),IEFF(NPOPLAB),
@@ -724,18 +732,30 @@ C             ... CI-NOs, MP2-NOs,...
               END IF
             END IF
           ELSE
-             IF(SPINFR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
-             ELSEIF(LINEAR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
-             ENDIF
-             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
-     &          '* Electronic eigenvalue no.',JVEC(I),': ',
-     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
-     &          SYMLAB
-          END IF
+            IF(SPINFR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+            ELSEIF(ATOMIC) THEN
+              ID = IBEIG(II)
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
+              WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
+            ELSEIF(LINEAR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            ENDIF
+C           
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A11)')
+     &           '* Electronic eigenvalue no.',JVEC(I),': ',
+     &           EIG(II),'   (Occupation : f = ',OCC2(I),')',
+     &           SYMLAB2
+            ELSE
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
+     &           '* Electronic eigenvalue no.',JVEC(I),': ',
+     &           EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &           SYMLAB
+            ENDIF   
+          END IF   !  IF (KRMC_FLG.gt.0 )
         ELSE ! Positronic eigenvalues
           II  = NPSH(IFRP)+1+JVEC(I)
           FMT = MXFORM(EIG(II),16)
@@ -743,17 +763,28 @@ C             ... CI-NOs, MP2-NOs,...
              WRITE(LUPRI,'(/A,I3)')
      &       '* Positronic eigenvalue no.',II
           ELSE
-             IF(SPINFR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
-             ELSEIF(LINEAR) THEN
-               ID = IBEIG(II)
-               WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
-             ENDIF
-             WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
+            IF(SPINFR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("sym= ",A3,1X)') REP(ID)
+            ELSEIF(ATOMIC) THEN
+              ID = IBEIG(II)
+              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
+              WRITE(SYMLAB2,'(A,I2,"/2",";",I3,"/2")') SPDCAR(LL),J,MJ
+            ELSEIF(LINEAR) THEN
+              ID = IBEIG(II)
+              WRITE(SYMLAB,'("m_j=",I3,"/2")') ID
+            ENDIF
+            IF(ATOMIC)THEN
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A11)')
+     &          '* Positronic eigenvalue no.',II,': ',
+     &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
+     &          SYMLAB2
+            ELSE
+              WRITE(LUPRI,'(/A,I4,A,'//FMT//',A,F6.4,A,2X,A9)')
      &          '* Positronic eigenvalue no.',II,': ',
      &          EIG(II),'       (Occupation : f = ',OCC2(I),')',
      &          SYMLAB
+            ENDIF   
           END IF
         END IF
         CALL PRSYMB(LUPRI,'=',92,0)
@@ -1254,7 +1285,7 @@ C     &                WORK(KBV(IFRP)),NVECS(IFRP,0),NVECS(IFRP,2),
 C     &                WORK(KVEC(IFRP,0)),NSTR(IFRP,2,0),NSTR(IFRP,1,0))
 C        ENDDO
 C        REWIND LUCOEF
-C        CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBE),TOTERG)
+C        CALL WRICMO(LUCOEF,WORK(KCMO),WORK(KEIG),WORK(KIBE),TOTERG,.FALSE.)
 C        CLOSE(LUCOEF,STATUS='KEEP')
 C      ENDIF
 C
@@ -1282,7 +1313,7 @@ C
 #include "dcbham.h"
 #include "dummy.h"
 C
-      LOGICAL TOBE
+      LOGICAL TOBE,FNDLAB
       DIMENSION WORK(*)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          NVECS(2,0:2),IOFF(2),IDIM(3,2)
@@ -1304,8 +1335,14 @@ C     is used in the orbital strings
 C
       DO I = 1,NREFS
         CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','ANAPRJ')
-        READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+        IF(FNDLAB('INFO    ',LUCOEF)) THEN         
+          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &       (NSTR(J,2,I),NSTR(J,1,I),IDUM,J=1,NSYM),DUM
+C.............NPSH........NESH........NBAS...........TOTERG
+       ELSE
+          WRITE(6,*) 'PRJSOB: Error reading first record on ',REFFIL(I)     
+          CALL QUIT('PRJSOB: Error reading info')
+        ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
       ENDDO
       DO IFRP = 1,NFSYM
@@ -2070,8 +2107,14 @@ C
 C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
-     &            TOTERG,14)
+      IOPT=14
+      IF(ATOMIC) THEN
+        CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &                     WORK(KBEIG),TOTERG,IOPT)           
+      ELSE
+        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KBEIG),
+     &              TOTERG,IOPT)
+      ENDIF
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       IF (NTESTL.GE.10) THEN
@@ -4296,9 +4339,10 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF),
-     &          NAO(MAXREF),WORK(*)
+     &          NAO(MAXREF),WORK(*),IDIM(3)
       DIMENSION IOFF(2)
       CHARACTER TEXT*74
+      LOGICAL FNDLAB
 C
       KFRSAV = KFREE
       IF(IPRPRJ.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
@@ -4317,9 +4361,15 @@ C.........Find the total number of basis functions for this atom type
           CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.........Read information from coefficient file
           CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+          IF(FNDLAB('INFO    ',LUCOEF)) THEN         
+            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &          NSTR(1,2,IREFS),NSTR(1,1,IREFS),NAO(IREFS),DUM
-C...............NPSH............NESH............NBAS...........TOTERG
+C...............NPSH............NESH............NBAS.......TOTERG
+          ELSE
+            WRITE(6,*) 'PRJAOB: Error reading first record on ',
+     &        REFFIL(IREFS)     
+            CALL QUIT('PRJAOB: Error reading info')
+          ENDIF
           CLOSE(LUCOEF,STATUS='KEEP')
           IF(NAO(IREFS).NE.MBAS) THEN
              WRITE(LUPRI,'(A,A,I3,/,A,A6,A,I6)') 
@@ -4388,14 +4438,25 @@ C     ==========================
           IREFS = IREFS + 1
 C.........Read C1 coefficients and orbitalenergies
           CALL OPNFIL(LUCOEF,REFFIL(IREFS),'OLD','PRJAOB')        
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,
+          IF(FNDLAB('INFO    ',LUCOEF)) THEN
+            READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
      &        NNEG,NPOS,NAO(IREFS),DUM
+          ELSE
+            WRITE(LUPRI,*) 'PRJAOB: error reading coefficients ',
+     &                    REFFIL(IREFS) 
+            CALL QUIT('PRJAOB: Error reading coefficients')
+          ENDIF
           NTOT = NNEG+NPOS
           NQA  = NAO(IREFS)*NTOT*NZC1
+          IDIM(1) = NNEG
+          IDIM(2) = NPOS
+          IDIM(3) = NAO(IREFS)
           CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-          CALL READT(LUCOEF,NQA,WORK(KQA))
+          CALL REACMO_coefficients(LUCOEF,WORK(KQA),NQA,1,NZC1,
+     &           NTOT,NAO(IREFS),NNEG,NPOS,IDIM)         
           CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
-          CALL READT(LUCOEF,NTOT,WORK(KEA))
+          CALL REACMO_eigenvalues(LUCOEF,WORK(KEA),NTOT,1,NZC1,
+     &           NTOT,NNEG,NPOS,IDIM)         
           CLOSE(LUCOEF,STATUS='KEEP')
 C.........Make pointer array to selected reference orbitals
           NDIM = NTOT+1

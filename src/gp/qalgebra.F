@@ -1511,12 +1511,11 @@ C
   220    D(L) = D(L) + F
   240 CONTINUE
 C     .......... ORDER EIGENVALUES AND EIGENVECTORS ..........
-      DO 300 II = 2, N
-         I = II - 1
+      DO 300 I = 1, N-1
          K = I
          P = D(I)
 C
-         DO 260 J = II, N
+         DO 260 J = I+1, N
             IF (D(J) .GE. P) GO TO 260
             K = J
             P = D(J)

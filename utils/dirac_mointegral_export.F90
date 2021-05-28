@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -120,7 +120,7 @@ contains
         call make_index
      endif
 
-     write (*,*) " Initialized reading from MRCONEE"
+     write (*,*) " Initialized reading from MRCONEE (version DIRAC20 and later)"
      write (*,*) " Core energy: ", core_energy
      write (*,*) " Breit interaction: ", breit_included
      write (*,*) " Group type (1:real, 2:complex, 4:quaternion) :",group_type
@@ -149,8 +149,11 @@ contains
      real(8), allocatable   :: integral(:,:,:)
 
      allocate (integral(number_of_spinors,number_of_spinors,2))
-     ! for historical reasons integrals on MRCONEE were written in c rather than fortran order
-     read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),j=1,number_of_spinors),i=1,number_of_spinors)
+     ! NB: changed September 28, 2020. Integrals on MRCONEE were written in c rather than fortran order,
+     ! now they are in Fortran order.
+     read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),i=1,number_of_spinors),j=1,number_of_spinors)
+     ! for MRCONEE produced with older DIRAC versions (prior to release 2020) use this:
+     ! read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),j=1,number_of_spinors),i=1,number_of_spinors)
 
      select case (target)
 

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -32,7 +32,6 @@ C
 C
       IF (IPRINT .GT. 5) WRITE (LUPRI,'(A,/)')
      &     ' <<<<<<<<<< OUTPUT FROM PR1DRV >>>>>>>>>> '
-
       npoint = 1
 
       if      (inttyp == 12) then ! DSO
@@ -443,6 +442,12 @@ C     type 58 already defined (NUCFIEL)
       else if (inttyp == 105) then
 !        g1kz
          jmaxd  = 2
+         jmaxm  = 0
+         donuc1 = .true.
+         domom1 = .true.
+      else if (inttyp == 106) then
+!        cxikr
+         jmaxd  = 0
          jmaxm  = 0
          donuc1 = .true.
          domom1 = .true.
@@ -1003,7 +1008,6 @@ C
          ELSE IF (INTTYP .EQ. 57) THEN
             CALL EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-
          else if (inttyp == 100) then
 !          g1o
            call s1htra(shlint, soint, isymop, 
@@ -1175,7 +1179,7 @@ C
          JPRIMA = JSTA + IPRIMA
          CONTA = PRICCF(JPRIMA,NUMCFA)
          EXPA = PRIEXP(JPRIMA)
-      DO 100 IPRIMB = 1,NUCB
+      DO 200 IPRIMB = 1,NUCB
          JPRIMB = JSTB + IPRIMB
          CONTB = PRICCF(JPRIMB,NUMCFB)
          EXPB = PRIEXP(JPRIMB)
@@ -1605,8 +1609,8 @@ C
             CALL HDBINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  DIFOBX,DIFOBY,DIFOBZ)
 C
-C        Potential energy at the individual nuclei
-C        -----------------------------------------
+C        Potential energy of interaction of electrons with individual nuclei
+C        -------------------------------------------------------------------
 C
          ELSE IF (INTTYP .EQ. 35) THEN
             CALL NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
@@ -1889,7 +1893,13 @@ C
      &                          shlint)
            end if
 
+!     CEXPIKR: expikr integrals for interaction with electromagnetic field
+!     radiation
+!     ===========================================================
 
+         ELSE IF (INTTYP == 106) THEN
+           CALL CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &          CORPX,CORPY,CORPZ,EXPPI,NOPTYP,WORK,LWORK)
 C
 C        rp integrals, RM1H3  i c Q_MN < r (alpha.p) >
 C        --------------------------------------------------
@@ -3796,7 +3806,7 @@ C  /* Deck npeint */
       SUBROUTINE NPEINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,SHLINT,
      &                  NOPTYP,NATOMC)
 C
-C     Potential energy at the nuclei
+C     Potential energy of interaction of electrons with individual nuclei
 C
 C     K.Ruud, July 1992
 C
@@ -4736,6 +4746,7 @@ C
 #include "nuclei.h"
 C
 #include "ibtfun.h"
+#include "pi.h"
 C
       DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC
@@ -5853,6 +5864,180 @@ C
   100 CONTINUE
       RETURN
       END
+C/* Deck cexpint */
+C***********************************************************************      
+      SUBROUTINE CEXPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK,LWORK)
+C***********************************************************************      
+C
+C     nhl 2016 -- calculates integrals over exp(ikr)
+C                 based on GOSINT routine.
+C     References are:
+C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C     Hans Jrgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "onecom.h"             !contains KCKTAB
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
+#include "memint.h"
+      CALL MEMGET2('REAL','TMPARR',KTMP,8*KCKTAB,WORK,KFREE,LFREE)
+      CALL CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK(KTMP))
+      CALL MEMREL('CEXPINT',WORK,KWORK,KTMP,KFREE,LFREE)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
+      SUBROUTINE CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &     CORPX,CORPY,CORPZ,EXPPI,NINTS,TMPARR)
+C***********************************************************************      
+C
+C     nhl 2016 -- calculates integrals over exp(ikr)
+C                 based on GOSINT routine.
+C     References are:
+C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
+C     Hans Jrgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+      PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
+     &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
+      INTEGER T, U, V, NINTS
+#include "onecom.h" !contains KCKTAB
+#include "lmns.h"
+#include "symmet.h"
+#include "inforb.h"
+#include "pgroup.h"
+#include "dgroup.h"
+#include "dcbwav.h"      
+C
+#include "ibtfun.h"
+C
+      CALL DZERO(TMPARR,KCKTAB*8)
+C     
+      DKX  = WAVEVEC(1)
+      DKY  = WAVEVEC(2)
+      DKZ  = WAVEVEC(3)
+      FACX = SHGTF/EXP(DP25*EXPPI*DKX**2)
+      FACY = SHGTF/EXP(DP25*EXPPI*DKY**2)
+      FACZ = SHGTF/EXP(DP25*EXPPI*DKZ**2)
+      COSX = COS(CORPX*DKX)*FACX
+      COSY = COS(CORPY*DKY)*FACY
+      COSZ = COS(CORPZ*DKZ)*FACZ
+      SINX = SIN(CORPX*DKX)*FACX
+      SINY = SIN(CORPY*DKY)*FACY
+      SINZ = SIN(CORPZ*DKZ)*FACZ
+C
+      INT = 0
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA) !power of x factor in basis a
+         MVALA = MVALUA(ICOMPA) !power of y factor in basis a
+         NVALA = NVALUA(ICOMPA) !power of z factor in basis a
+      DO 100 ICOMPB = 1, KCKTB
+         LVALB = LVALUB(ICOMPB) !power of x factor in basis b
+         MVALB = MVALUB(ICOMPB) !power of y factor in basis b
+         NVALB = NVALUB(ICOMPB) !power of z factor in basis b
+C
+         CX    = D0
+         CXDX  = D0
+         SX    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKX = D1
+         DO 200 T = 0, LVALA + LVALB
+            IF (MOD(T,2) .EQ. 0) THEN
+               CX = CX + SGNC*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SX = SX + SGNS*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SGNC = - SGNC
+            ELSE
+               CX = CX + SGNC*FACKX*SINX*ODC(LVALA,LVALB,T,0,0,1)
+               SX = SX + SGNS*FACKX*COSX*ODC(LVALA,LVALB,T,0,0,1)
+               SGNS = - SGNS
+            END IF
+            FACKX = FACKX*DKX
+  200    CONTINUE
+         CY    = D0
+         CYDY  = D0
+         SY    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKY = D1
+         DO 300 U = 0, MVALA + MVALB
+            IF (MOD(U,2) .EQ. 0) THEN
+               CY = CY + SGNC*FACKY*COSY*ODC(MVALA,MVALB,U,0,0,2)
+               SY = SY + SGNS*FACKY*SINY*ODC(MVALA,MVALB,U,0,0,2)
+               SGNC = - SGNC
+            ELSE
+               CY = CY + SGNC*FACKY*SINY*ODC(MVALA,MVALB,U,0,0,2)
+               SY = SY + SGNS*FACKY*COSY*ODC(MVALA,MVALB,U,0,0,2)
+               SGNS = - SGNS
+            END IF
+            FACKY = FACKY*DKY
+  300    CONTINUE
+C
+         CZ    = D0
+         CZDZ  = D0
+         SZ    = D0
+         SGNC  = D1
+         SGNS  = D1
+         FACKZ = D1
+         DO 400 V = 0, NVALA + NVALB
+            IF (MOD(V,2) .EQ. 0) THEN
+               CZ = CZ + SGNC*FACKZ*COSZ*ODC(NVALA,NVALB,V,0,0,3)
+               SZ = SZ + SGNS*FACKZ*SINZ*ODC(NVALA,NVALB,V,0,0,3)
+               SGNC = - SGNC
+            ELSE
+               CZ = CZ + SGNC*FACKZ*SINZ*ODC(NVALA,NVALB,V,0,0,3)
+               SZ = SZ + SGNS*FACKZ*COSZ*ODC(NVALA,NVALB,V,0,0,3)
+               SGNS = - SGNS
+            END IF
+            FACKZ = FACKZ*DKZ
+  400    CONTINUE
+C
+        INT = INT + 1
+CC     Real part: eq. 44
+        TMPARR(INT,1) = TMPARR(INT,1) + CX*CY*CZ ! Sym 0
+        TMPARR(INT,2) = TMPARR(INT,2) - CX*SY*SZ ! Sym yz
+        TMPARR(INT,3) = TMPARR(INT,3) - SX*CY*SZ ! Sym xz
+        TMPARR(INT,4) = TMPARR(INT,4) - SX*SY*CZ ! Sym xy
+CC     Imaginary part: eq. 45
+        TMPARR(INT,5) = TMPARR(INT,5) + CX*CY*SZ ! Sym z
+        TMPARR(INT,6) = TMPARR(INT,6) + CX*SY*CZ ! Sym y
+        TMPARR(INT,7) = TMPARR(INT,7) + SX*CY*CZ ! Sym x
+        TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ ! Sym xyz
+ 100  CONTINUE
+      IOFF = NINTS/2
+      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+C     accumulating real part on symmetries
+      II = IBTOSF(0,1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,1) ! Sym 0
+      II = IBTOSF(ISYMAX(1,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,2)  ! Sym yz
+      II = IBTOSF(ISYMAX(2,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,3)  ! Sym xz
+      II = IBTOSF(ISYMAX(3,2),1)
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,4)  ! Sym xy
+C     accumulating imaginary part on symmetries
+      II = IBTOSF(ISYMAX(3,1),2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,5)  ! Sym z
+      II = IBTOSF(ISYMAX(2,1),2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,6)  ! Sym y
+      II = IBTOSF(ISYMAX(1,1),2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,7)  ! Sym x
+      II = IBTOSF(IXYZ,2) + IOFF
+      SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,8)  ! Sym xyz
+      RETURN
+      END
+
 C  /* Deck sl1int */
       SUBROUTINE SL1INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &                  CORPX,CORPY,CORPZ,DIFABX,DIFABY,DIFABZ,EXPPI,

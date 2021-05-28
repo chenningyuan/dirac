@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -76,6 +76,8 @@ module visual_cfg
    integer, public :: iq_jx       = 38
    integer, public :: iq_jy       = 39
    integer, public :: iq_jz       = 40
+   integer, public :: iq_tcos     = 41
+   integer, public :: iq_tsin     = 42   
    
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
@@ -127,6 +129,9 @@ module visual_cfg
    real(8),       public :: visual_cfg_scale              = 1.0d0
    real(8),       public :: visual_cfg_cartesian_power(3) = 0.0   
    real(8),       public :: visual_cfg_gauge_origin(3)    = 0.0d0
+   real(8),       public :: visual_cfg_wave_vector(3)     = 0.0d0
+   real(8),       public :: visual_cfg_freq               = 0.0d0   
+   real(8),       public :: visual_cfg_pol_vector(3)      = 0.0d0   
    logical,       public :: visual_cfg_force_small_ao     = .false.
 
    logical,       public :: visual_cfg_nics              = .false.

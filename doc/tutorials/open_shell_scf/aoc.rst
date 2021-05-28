@@ -1,5 +1,7 @@
 :orphan:
 
+.. _aoc:   
+
 Average-of-configuration open-shell Hartree-Fock
 ================================================
 
@@ -30,7 +32,7 @@ We will now find the set of orbitals which minimizes the average energy
 
 .. math::
 
-   E_{av}=\frac{1}{N_{det}}\sum_{I=1}^{N_{det}}\left<\Psi_P\left|H\right|\Psi_P\right>
+   E_{av}=\frac{1}{N_{det}}\sum_{I=1}^{N_{det}}\left<\Psi_I\left|H\right|\Psi_I\right>
 
 Inserting the expansion of the solutions in terms of Slater determinants and using the fact that the expansion
 coefficients :math:`C_{PI}` are  elements of a unitary matrix we obtain
@@ -60,17 +62,17 @@ respective shells. The total energy can then be written in terms of orbitals rat
 
 .. math::
 
-   E_{av}=\sum_S f_s \left[\sum_{p\in S}h_{pp}+\frac{1}{2}\sum_{T}Q^{T}_{pp}+\frac{1}{2}(a_S-1)Q^S_{pp}\right]
+   E_{av}=\sum_S f_s \left\{\sum_{p\in S}\left(h_{pp}+\frac{1}{2}\sum_{S^{\prime}}Q^{S^{\prime}}_{pp}+\frac{1}{2}(a_S-1)Q^S_{pp}\right)\right\}
 
 where we have introduced
 
 - the fractional occupation :math:`f_S=\frac{N_S}{M_S}` of shell :math:`S`
 - the coupling coefficient :math:`a_S`
 
-  - :math:`a_S=\frac{M_S\left(N_2-1\right)}{N_S\left(M_2-1\right)}` for :math:`f_s\ne 0` 
-  - :math:`a_S=1` for :math:`f_s = 0`
+  - :math:`a_S=\frac{M_S\left(N_S-1\right)}{N_S\left(M_S-1\right)}` for :math:`f_S\ne 0` 
+  - :math:`a_S=1` for :math:`f_S = 0`
 
-- two-electron contributions :math:`Q^S_{pq}=f_s\sum_{r\in S}<pr||qr>`
+- two-electron contributions :math:`Q^S_{pq}=f_S\displaystyle{\sum_{r\in S}\langle pr||qr\rangle}`
 
 Orbital rotations
 -----------------
@@ -96,7 +98,7 @@ The generally non-zero elements of the gradient vector are:
 - inactive-secondary rotations:
 
 .. math::
-  \quad g_{ia}=h_{ai}+\sum_T Q_{ai}^T=F^I_{ai}a
+  \quad g_{ia}=h_{ai}+\sum_{S^{\prime}} Q_{ai}^{S^{\prime}}=F^I_{ai}
 
 - active-secondary rotations:
 
@@ -122,20 +124,30 @@ These gradient elements allow the definition of the off-diagonal elements of the
 
 - inactive-secondary block:
 
-.. math:`\quad {\cal F}_{ia}=F^I_{ia}`
+.. math::
+
+   \mathbb{F}_{ia}=F^I_{ia}
 
 - active-secondary block:
 
-.. math:`\quad {\cal F}_{ua}=F^I_{ua}+(a_U-1)Q^U_{ua};\quad u\in U`
+.. math::
+
+   \mathbb{F}_{ua}=F^I_{ua}+(a_U-1)Q^U_{ua};\quad u\in U
 
 - inactive-active block:
 
-.. math:`\quad {\cal F}_{iu}=F^I_{iu}+f_U\alpha_UQ^U_{iu};\quad u\in U`
+.. math::
 
-- inter-shell active-active rotations :math:`U\ne V`:
+   \mathbb{F}_{iu}=F^I_{iu}+f_U\alpha_UQ^U_{iu};\quad u\in U
 
-.. math:`\quad {\cal F}_{uv}=F^I_{uv}-\frac{(a_U-1)}{(f_U-f_V)}Q^U_{uv}-\frac{(a_V-1)}{(f_V-f_U)}Q^V_{uv};\quad f_U\ne f_V`
-.. math:`\quad {\cal F}_{uv}=(a_U-1)Q^U_{uv}-(a_V-1)Q^V_{vu};\quad f_U = f_V`
+- inter-shell active-active rotations :math:`(U\ne V)`:
+
+.. math::
+
+   \mathbb{F}_{uv}=\left\{\begin{array}{ll}
+   F^I_{uv}+\frac{(a_U-1)}{(f_U-f_V)}Q^U_{uv}+\frac{(a_V-1)}{(f_V-f_U)}Q^V_{uv}&\mbox{for }f_U\ne f_V\\
+   (a_U-1)Q^U_{uv}+(a_V-1)Q^V_{uv}&\mbox{for }f_U = f_V\\\end{array}\right.
+
 
 Diagonal blocks of the Fock matrix
 ----------------------------------
@@ -158,7 +170,7 @@ If we now define the diagonal block of the Fock matrix corresponding to shell :m
 
 .. math::
 
-   {\cal F}_{pq} = h_{pq}+\sum_S Q^S_{pq}+(a_{T}-1)Q_{pq}^T
+   \mathbb{F}_{pq} = h_{pq}+\sum_S Q^S_{pq}+(a_{T}-1)Q_{pq}^T
 
 the ionization potential associated with the electron removal becomes
 
@@ -179,17 +191,17 @@ Based on these observations we define the diagonal blocks of the AOC Fock matrix
 - inactive-inactive block:
 
 .. math:: 
-  \quad {\cal F}_{ij}=F^I_{ij}
+  \quad \mathbb{F}_{ij}=F^I_{ij}
 
 - secondary-secondary block:
 
 .. math:: 
-  \quad {\cal F}_{ab}=F^I_{ab}
+  \quad \mathbb{F}_{ab}=F^I_{ab}
 
 - active-active block:
 
 .. math:: 
-  \quad {\cal F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
+  \quad \mathbb{F}_{uv}=F^I_{uv}+(a_{U}-1)Q_{uv}^U;\quad u,v \in U
 
 *These are the definitions employed in DIRAC12 and onwards* (and also the definition found in the thesis of Jørn Thyssen :cite:`Thyssen2004`). 
 In previous versions the term :math:`(a_{U}-1)Q_{uv}^U` was
@@ -203,6 +215,7 @@ convergence. More specifically, this happens when the orbitals of an open shell 
 However, such situations are often symptomatic for a wrong choice of partitioning of orbitals into closed and open shells. Furthermore, 
 the definition of the active-active block in pre-DIRAC12 versions tend to close the HOMO-LUMO gap which may hamper convergence.
 
+
 Level shift
 -----------
 
@@ -214,3 +227,12 @@ definition of diagonal blocks of the Fock matrix and introduce a *level shift* :
 
 The level shift of secondary (virtual) orbitals is controlled by the keyword :ref:`SCF_.LSHIFT`, whereas open shells can be shifted
 using the keyword :ref:`SCF_.OLEVEL`.
+
+Convergence issues
+==================
+
+Open-shell systems tend to be more difficult to converge than closed-shell ones, because of additional orbital classes and more possibilities of near-degeneracies between orbital classes. It is important to understand that DIRAC will generally order orbitals
+according to energy. Furthermore, DIRAC starts by filling closed-shell orbitals, then open-shell ones.
+In the case of Uranium (:math:`[Rn]5f^36d^17s^2`) the closed-shell :math:`7s` orbitals will have higher orbital energies than the
+:math:`6d` open-shell ones, and this may lead to convergence problems. Fortunately, since DIRAC21 convergence of open-shell atoms
+is unproblematic thanks to atomic supersymmetry, see keyword :ref:`SCF_.KPSELE`.      

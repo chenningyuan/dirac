@@ -2,7 +2,7 @@
 # Copyright (c) 2015-2018 by Radovan Bast, Roberto Di Remigio, Jonas Juselius, and contributors.
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
 
 # project name
 project(DIRAC Fortran C CXX)
@@ -70,6 +70,7 @@ include(work_array)
 include(workarounds)
 include(external)
 include(pcm)
+include(exatensor)
 include(gen1int)
 include(pelib)
 include(autocmake_src)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -22,7 +22,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MDINTI */
-      SUBROUTINE MDINTI(NSTR,IPRINT)
+      SUBROUTINE MDINTI(IPRINT)
 C
 C     Initialize MDINT file
 C     Written by Luuk Visscher, March 1997
@@ -38,7 +38,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "infpar.h"
-      DIMENSION NSTR(2)
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
 C
@@ -172,16 +171,20 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       CALL QENTER('MDINTB')
 
-      IF (IPRTRA.GE.5) THEN
-        CALL HEADER('Output from MDINTB routine',-1)
-        SELECT CASE (ICLASS)
-         CASE(1); write(LUPRI,'(A)') 'Class 1 : (i    j    | k    l   )'
-         CASE(2); write(LUPRI,'(A)') 'Class 2 : (i    j    | kbar lbar)'
-         CASE(3); write(LUPRI,'(A)') 'Class 3 : (i    jbar | k    lbar)'
-         CASE(4); write(LUPRI,'(A)') 'Class 4 : (ibar j    | k    lbar)'
-         CASE DEFAULT
-            write(LUPRI,'(A,I5)')'WARNING Unknown integral class',ICLASS
-        END SELECT
+      IF (IPRINT.GE.5) THEN
+      CALL HEADER('Output from MDINTB routine',-1)
+      SELECT CASE (ICLASS)
+       CASE(1); write(LUPRI,'(A)') 'Class 1 : (i    j    | k    l   )'
+       CASE(2); write(LUPRI,'(A)') 'Class 2 : (i    j    | kbar lbar)'
+       CASE(3); write(LUPRI,'(A)') 'Class 3 : (i    jbar | k    lbar)'
+       CASE(4); write(LUPRI,'(A)') 'Class 4 : (i    jbar | kbar l   )'
+       CASE(9); write(LUPRI,'(A)') 'Class 9 : (i    j    | kbar l   )'
+       CASE(10); write(LUPRI,'(A)') 'Class 10 : (i    j    | k    lbar)'
+       CASE(11); write(LUPRI,'(A)') 'Class 11 : (ibar j    | k    l   )'
+       CASE(12); write(LUPRI,'(A)') 'Class 12 : (i    jbar | k    l   )'
+       CASE DEFAULT
+         write(LUPRI,'(A,I5)')'WARNING Unknown integral class',ICLASS
+      END SELECT
 C     ...      
       ENDIF
 C
@@ -193,7 +196,7 @@ C
       DO IREPL = 1, NFSYM
          IREPK = MOD(IREPL+IREPIJ,2) + 1
 
-         IF (IPRTRA.GE.5) THEN
+         IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A,I3,A,I3)') 'IREPK=',IREPK,' IREPL=',IREPL
           WRITE(LUPRI,'(2X,A,I3,A,I3)') ' NSTR3(IREPK)=',NSTR3(IREPK), 
      &                                  ' NSTR4(IREPL)=',NSTR4(IREPL)
@@ -289,7 +292,7 @@ C     Write out integrals in ASCII format
 C
 C     Write out integrals to output if desired. 
 C   ------------------------------------------------------------------
-      IF (IPRTRA.GE.25) THEN
+      IF (IPRINT.GE.25) THEN
          WRITE(LUPRI,'(2x,a,3i4)')
      &  'MOLTRA: integrals batch saved;  IKR1,JKR1,NZKL:',
      &   IKR1,JKR1,NZKL

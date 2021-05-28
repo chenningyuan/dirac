@@ -10,13 +10,13 @@ Introduction
 In this tutorial we introduce the calculation of molecular rotational g-tensors as given in the DIRAC code, based on the theoretical
 developments by I. Agustín Aucar *et al.* For details, you are welcome to consult :cite:`Aucar_JCP2014`.
 
-The Molecular rotational g-tensor elements are given by
+The molecular rotational g-tensor elements are given by
 
 .. math::
 
-   g_{\alpha\beta} = g_{\alpha\beta}^{nuc} + g_{\alpha\beta}^{LR}
+   g_{\alpha\beta} = g_{\alpha\beta}^{nuc} + g_{\alpha\beta}^{elec}
 
-They have two terms: the first of them is independent of the electronic variables, whereas the second one is given by a linear response (LR) function.
+They have two terms: the first of them is independent of the electronic variables, whereas the second one is given by a linear response function.
 
 In tensorial notation, the rotational g-tensor contributions of a molecule are given by:
 
@@ -26,7 +26,7 @@ In tensorial notation, the rotational g-tensor contributions of a molecule are g
 
 .. math::
 
-   {\bf g}^{LR} = m_p \;  \langle \langle  \left ({\bf r}-{\bf R}_{GO} \times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e\rangle\rangle \; \otimes  \; {\bf I}^{-1}
+   {\bf g}^{elec} = {\bf g}^{LR} = m_p \;  \langle \langle  \left ({\bf r}-{\bf R}_{GO} \times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e\rangle\rangle \; \otimes  \; {\bf I}^{-1}
 
 where :math:`{\bf R}_{M,GO}` is the position of nucleus :math:`M` with respect to the gauge origin; :math:`{\bf R}_{M,CM}` is the position of nucleus :math:`M` with respect to the molecular center of mass; :math:`{\bf R}_{GO}` is the position of the gauge origin; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
 
@@ -49,7 +49,7 @@ The calculation is run using::
 
 As a result, g-factors are obtained at the coupled Hartree-Fock level. The code also works at the DFT level.
 
-It is also interesting to note that as :ref:`HAMILTONIAN_.URKBAL` is requested in the present calculation, the results will be very close to those obtained using the RKB prescription, because the diamagnetic (e-p) contributions to :math:`g_{\alpha\beta}^{LR}` are almost zero (see Eq. 41 of :cite:`Aucar_JCP2014`).
+It is also interesting to note that as :ref:`HAMILTONIAN_.URKBAL` is requested in the present calculation, the results will be very close to those obtained using the RKB prescription, because the diamagnetic-like (e-p) contributions to :math:`g_{\alpha\beta}^{LR}` are almost zero (see Eq. 41 of :cite:`Aucar_JCP2014`).
 
 
 Reading the output file
