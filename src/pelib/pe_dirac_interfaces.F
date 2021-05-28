@@ -670,7 +670,7 @@
 !     &                  scvecs, wrk, nwrk)
 !!
 !!  Written by Erik Donovan Hedegaard and Jgvan Magnus H. Olsen
-!!             after original routine by Hans Jrgen Aa. Jensen
+!!             after original routine by Hans Joergen Aa. Jensen
 !!
 !!  Purpose:  Calculate Hessian contribution from a polarizable
 !!            embedding potantial to a csf trial vector.
