@@ -1,5 +1,5 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -  0.477 GB) of memory
-    out of the allowed maximum of 2147483648 words (  16384.00 MB - 16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
+    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -80,13 +80,15 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Radovan Bast             UiT The Arctic University of      Norway        *
- *    Trond Saue               Universite Toulouse III           France        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
@@ -96,37 +98,44 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Elke Fasshauer           University of Aarhus              Denmark       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
- *    Benjamin Helmich-Paris   Vrije Universiteit Amsterdam      Netherlands   *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stanford University               USA           *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
- *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
  *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            University of Leiden              Netherlands   *
  *    Avijit Shee              University of Michigan            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Technical University of Denmark   Denmark       *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
@@ -145,18 +154,22 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC17 (2017),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, E. D. Hedegrd, T. Helgaker,               *
+ *    Release DIRAC21 (2021), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast, and A. S. P. Gomes      *
+ *    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *
+ *    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *
+ *    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *
  *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
- *    M. K. Nayak, P. Norman, G. Olejniczak, J. Olsen, J. M. H. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, A. Shee, J. Sikkema, A. J. Thorvaldsen,    *
- *    J. Thyssen, J. van Stralen, S. Villaume, O. Visser,T. Winther,           *
- *    and S. Yamamoto (see http://diracprogram.org).                           *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List,          *
+ *    H. S. Nataraj, M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen,          *
+ *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
+ *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *
+ *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+ *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
  *                                                                             *
  *******************************************************************************
 
@@ -164,51 +177,61 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | master-format-change
-Commit hash   | eaf8256
-Commit author | Hans Jørgen Aagaard Jensen
-Commit date   | Fri Mar 9 17:50:53 2018 +0000
+Branch        | miro/fix_oper_mo_mxt_elements_issue475
+Commit hash   | a0c5b06
+Commit author | Johann Pototschnig
+Commit date   | Thu May 27 10:27:56 2021 +0000
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | milias
-Compiled on server       | lxi082
-Operating system         | Linux-3.16.0-5-amd64
-CMake version            | 3.0.2
+Compiled on server       | lxir127
+Operating system         | Linux-3.16.0-11-amd64
+CMake version            | 3.15.3
 CMake generator          | Unix Makefiles
-CMake build type         | debug
-Configuration time       | 2018-03-09 19:07:51.805506
+CMake build type         | release
+Configuration time       | 2021-05-27 11:56:22.005782
 Python version           | 2.7.9
-Fortran compiler         | /cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/bin/intel64/ifort
+Fortran compiler         | /cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.4.196/linux/bin/intel64/ifort
 Fortran compiler version | 17.0
-Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT -w -assume byterecl -g -traceback -DVAR_IFORT
-C compiler               | /usr/bin/gcc
-C compiler version       | 4.9.2
-C compiler flags         |  -g -g
-C++ compiler             | /usr/bin/g++
-C++ compiler version     | 4.9.2
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT -qopenmp -i8 -w -assume byterecl -g -traceback -DVAR_IFORT -qopenmp -i8
+C compiler               | /cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.4.196/linux/bin/intel64/icc
+C compiler version       | 17.0
+C compiler flags         |  -g -wd981 -wd279 -wd383 -wd1572 -wd177 -qopenmp -g -wd981 -wd279 -wd383 -wd1572 -wd177 -qopenmp
+C++ compiler             | /cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.4.196/linux/bin/intel64/icpc
+C++ compiler version     | 17.0.4
+C++ compiler flags       |  -Wno-unknown-pragmas -qopenmp -Wno-unknown-pragmas -qopenmp
 Static linking           | False
-64-bit integers          | False
+64-bit integers          | True
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | -Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_lapack95_lp64.a;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_intel_lp64.so;-openmp;-Wl,--end-group;-Wl,--start-group;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_intel_lp64.so;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_intel_thread.so;/cvmfs/it.gsi.de/compiler/intel/17.0/compilers_and_libraries_2017.0.098/linux/mkl/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.so;/usr/lib/x86_64-linux-gnu/libm.so;-openmp;-Wl,--end-group
+Math libraries           | unknown
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_OPENMP;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
+ LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+
+ * openMP activated,  thread limit - # processes - # threads: *****   20    1
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Mar  9 20:13:18 2018
-     Host name              : lxi082                                  
+     Date and time (Linux)  : Thu May 27 15:30:43 2021
+     Host name              : lxir127                                 
 
 
 Contents of the input file
@@ -268,7 +291,7 @@ all
 *PRPTRA                                                                                             
 # we need this print level to get all MO mtx elements printed                                       
 .PRINT                                                                                              
-3                                                                                                   
+2                                                                                                   
 # operator x^1 y^2 z^3                                                                              
 .OPERATOR                                                                                           
  CM010203                                                                                           
@@ -318,10 +341,17 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+ The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web V
+ ersion 8.1)
+        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor      
+            
+        Database developed by J. Baker, M. Douma, and S. Kotochigova            
+            
+  Available at http://physics.nist.gov/constants                                
+            
+  National Institute of Standards and Technology, Gaithersburg, MD 20899        
+            
+ * The speed of light :        137.0359992
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -345,7 +375,7 @@ FINISH
     *************************************************************************
 
  Default print level:        0
- Nuclear model: Gaussian charge distribution.
+ Nuclear model requested in input: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -360,7 +390,7 @@ FINISH
 
  Uncontracted basis forced, irrespective of basis input file.
 
-  Nuclear Gaussian exponent for atom of charge  86.000 :    1.3242350205D+08
+  Nuclear Gaussian exponent for atom of charge  86.000 :    1.3242348299D+08
  INFO: GENSML deleted  2 small functions in a block out of  2
 
 
@@ -381,6 +411,11 @@ FINISH
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Levy-Leblond Hamiltonian
    - Spin-orbit interactions neglected
@@ -389,9 +424,6 @@ FINISH
    - LS-integrals:     0
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
-   - uncontracted small component basis set
 
 
  Information about the restricted kinetic balance scheme:
@@ -415,6 +447,7 @@ FINISH
  * Number of fermion irreps: 2
  * Closed shell SCF calculation with    10 electrons in
        2 orbitals in Fermion irrep 1 and    3 orbitals in Fermion irrep 2
+ - INFO: bare nucleus correction disabled because abs(molecular charge) .gt. 10
  * Sum of atomic potentials used for start guess
  * General print level   :   0
 
@@ -422,8 +455,6 @@ FINISH
  * Trial vectors read from file DFCOEF
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -449,7 +480,7 @@ FINISH
 ===========================================================================
  TRPINP: Property integral transformation
 ===========================================================================
- * Print level:    3
+ * Print level:    2
  *The following operators will be transformed:
     1  XDIPLEN              B3u     T+
 ...........................................................................
@@ -510,7 +541,6 @@ FINISH
  * LS Integrals not transformed.
  * SS Integrals not transformed.
  * Gaunt Integrals not transformed.
- * 4-index transformed integrals written to file.
  * Active spaces:
     Fermion ircop:E1g
     - Index  1:  1..2                                                                    
@@ -583,7 +613,7 @@ FINISH
  * All positronic solutions deleted !
 
 
- WARNING : linear symmetry is not implemented for spinfree yet
+ WARNING : atomic symmetry is not implemented for spinfree yet
            continue calculation in lower symmetry
 
 
@@ -603,11 +633,12 @@ Total no. of orbitals      (NORB):    16      15      31
 
 
 *** INFO *** No trial vectors found.
- Using bare nucleus approximation for initial trial vectors.
-             Improved by a sum of atomic screening potentials.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Fri Mar  9 20:13:19 2018
+########## START ITERATION NO.   1 ##########   Thu May 27 15:30:44 2021
 
  
  
@@ -616,18 +647,18 @@ Total no. of orbitals      (NORB):    16      15      31
  
  
  
-E_HOMO...E_LUMO, symmetry 1:     2 951.40666    31344.62011
-E_HOMO...E_LUMO, symmetry 2:    19-357.51357   203445.58847
+E_HOMO...E_LUMO, symmetry 1:                                  2 946.94445    31345.94037
+E_HOMO...E_LUMO, symmetry 2:                                 19-356.60953   203443.08047
 
 => Calculating sum of orbital energies
-It.    1    -6564.596078656      0.00D+00  0.00D+00  0.00D+00               0.08800000s   Scr. nuclei    Fri Mar  9
+It.    1    -6590.315699387      0.00D+00  0.00D+00  0.00D+00               0.01200000s   Atom. scrpot   Thu May 27
 
-########## START ITERATION NO.   2 ##########   Fri Mar  9 20:13:19 2018
+########## START ITERATION NO.   2 ##########   Thu May 27 15:30:44 2021
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
+SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00000000s
  
  
  
@@ -635,19 +666,19 @@ SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
  
  
  
-E_HOMO...E_LUMO, symmetry 1:     2 692.93539    31108.86453
-E_HOMO...E_LUMO, symmetry 2:    19-611.92928   203223.42937
->>> Total wall time: 0.14090000s, and total CPU time : 0.09200000s
+E_HOMO...E_LUMO, symmetry 1:                                  2 692.95414    31108.86909
+E_HOMO...E_LUMO, symmetry 2:                                 19-611.92204   203223.46128
+>>> Total wall time:  0.05118418s, and total CPU time :  0.04000000s
 
-########## END ITERATION NO.   2 ##########   Fri Mar  9 20:13:19 2018
+########## END ITERATION NO.   2 ##########   Thu May 27 15:30:44 2021
 
-It.    2    -10199.26814281      3.63D+03 -2.30D+02  2.10D+01               0.09200000s   LL             Fri Mar  9
+It.    2    -10199.24595419      3.61D+03 -2.28D+02  3.04D+01               0.05118418s   LL             Thu May 27
 
-########## START ITERATION NO.   3 ##########   Fri Mar  9 20:13:19 2018
+########## START ITERATION NO.   3 ##########   Thu May 27 15:30:44 2021
 
-    3 *** Differential density matrix. DCOVLP     = 1.0003
+    3 *** Differential density matrix. DCOVLP     = 1.0016
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
+SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00400001s
  
  
  
@@ -655,19 +686,19 @@ SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
  
  
  
-E_HOMO...E_LUMO, symmetry 1:     2 692.85543    31108.82725
-E_HOMO...E_LUMO, symmetry 2:    19-611.96556   203223.34771
->>> Total wall time: 0.07010000s, and total CPU time : 0.02400000s
+E_HOMO...E_LUMO, symmetry 1:                                  2 692.85554    31108.82729
+E_HOMO...E_LUMO, symmetry 2:                                 19-611.96551   203223.34786
+>>> Total wall time:  0.01773500s, and total CPU time :  0.00800000s
 
-########## END ITERATION NO.   3 ##########   Fri Mar  9 20:13:19 2018
+########## END ITERATION NO.   3 ##########   Thu May 27 15:30:44 2021
 
-It.    3    -10199.30839980      4.03D-02 -1.55D-01  7.90D-02   DIIS   2    0.02400000s   LL             Fri Mar  9
+It.    3    -10199.30839954      6.24D-02 -3.21D-01  6.65D-02   DIIS   2    0.01773500s   LL             Thu May 27
 
-########## START ITERATION NO.   4 ##########   Fri Mar  9 20:13:19 2018
+########## START ITERATION NO.   4 ##########   Thu May 27 15:30:44 2021
 
     4 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
+SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.00399999s
  
  
  
@@ -675,19 +706,19 @@ SOfock:LL  1.00D-12   10.26%    3.63%    2.78%   27.73%   0.01199999s
  
  
  
-E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
-E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
->>> Total wall time: 0.07140000s, and total CPU time : 0.01600000s
+E_HOMO...E_LUMO, symmetry 1:                                  2 692.85559    31108.82731
+E_HOMO...E_LUMO, symmetry 2:                                 19-611.96549   203223.34792
+>>> Total wall time:  0.01709294s, and total CPU time :  0.00800000s
 
-########## END ITERATION NO.   4 ##########   Fri Mar  9 20:13:19 2018
+########## END ITERATION NO.   4 ##########   Thu May 27 15:30:44 2021
 
-It.    4    -10199.30840002      2.25D-07  5.40D-04  1.24D-04   DIIS   3    0.01600000s   LL             Fri Mar  9
+It.    4    -10199.30839984      3.06D-07  7.05D-04  4.11D-05   DIIS   3    0.01709294s   LL             Thu May 27
 
-########## START ITERATION NO.   5 ##########   Fri Mar  9 20:13:19 2018
+########## START ITERATION NO.   5 ##########   Thu May 27 15:30:44 2021
 
     5 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%    4.45%    2.69%   27.63%   0.01199999s
+SOfock:LL  1.00D-12   10.26%    6.26%    2.65%   27.32%   0.00399999s
  
  
  
@@ -695,64 +726,24 @@ SOfock:LL  1.00D-12   10.26%    4.45%    2.69%   27.63%   0.01199999s
  
  
  
-E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
-E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
->>> Total wall time: 0.02970000s, and total CPU time : 0.02000000s
+E_HOMO...E_LUMO, symmetry 1:                                  2 692.85559    31108.82731
+E_HOMO...E_LUMO, symmetry 2:                                 19-611.96549   203223.34792
+>>> Total wall time:  0.01656389s, and total CPU time :  0.00800000s
 
-########## END ITERATION NO.   5 ##########   Fri Mar  9 20:13:19 2018
+########## END ITERATION NO.   5 ##########   Thu May 27 15:30:44 2021
 
-It.    5    -10199.30840002     -5.64D-11 -1.13D-06  1.31D-07   DIIS   4    0.02000000s   LL             Fri Mar  9
+It.    5    -10199.30839984      3.64D-12 -2.81D-07  5.31D-08   DIIS   4    0.01656389s   LL             Thu May 27
 
-########## START ITERATION NO.   6 ##########   Fri Mar  9 20:13:19 2018
+########## START ITERATION NO.   6 ##########   Thu May 27 15:30:44 2021
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   10.26%   37.11%    1.63%   21.10%   0.01199999s
- 
- 
- 
- 
- 
- 
- 
-E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
-E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
->>> Total wall time: 0.03170000s, and total CPU time : 0.02000000s
+SOfock:LL  1.00D-12   10.26%   47.91%    1.25%   18.76%   0.00399999s
+>>> Total wall time:  0.01544404s, and total CPU time :  0.00400000s
 
-########## END ITERATION NO.   6 ##########   Fri Mar  9 20:13:19 2018
+########## END ITERATION NO.   6 ##########   Thu May 27 15:30:44 2021
 
-It.    6    -10199.30840002     -1.64D-11  7.57D-10  1.06D-09   DIIS   4    0.02000000s   LL             Fri Mar  9
-
-########## START ITERATION NO.   7 ##########   Fri Mar  9 20:13:19 2018
-
-    7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   48.30%   48.28%    0.57%   17.62%   0.00799999s
- 
- 
- 
- 
- 
- 
- 
-E_HOMO...E_LUMO, symmetry 1:     2 692.85559    31108.82731
-E_HOMO...E_LUMO, symmetry 2:    19-611.96549   203223.34792
->>> Total wall time: 0.02750000s, and total CPU time : 0.01600000s
-
-########## END ITERATION NO.   7 ##########   Fri Mar  9 20:13:19 2018
-
-It.    7    -10199.30840002     -1.64D-11 -1.75D-10  1.08D-09   DAMP 25%    0.01600000s   LL             Fri Mar  9
-
-########## START ITERATION NO.   8 ##########   Fri Mar  9 20:13:19 2018
-
-    8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12   85.95%   14.03%    0.00%    3.62%   0.00400001s
->>> Total wall time: 0.01980000s, and total CPU time : 0.00800000s
-
-########## END ITERATION NO.   8 ##########   Fri Mar  9 20:13:19 2018
-
-It.    8    -10199.30840002     -2.91D-11  1.16D-10  8.74D-10   DAMP 25%    0.00800000s   LL             Fri Mar  9
+It.    6    -10199.30839984      1.27D-11  5.82D-10  4.66D-10   DIIS   4    0.01544404s   LL             Thu May 27
 
 
                                    SCF - CYCLE
@@ -768,31 +759,29 @@ It.    8    -10199.30840002     -2.91D-11  1.16D-10  8.74D-10   DAMP 25%    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -6564.596078656      0.00D+00  0.00D+00  0.00D+00               0.08800000s   Scr. nuclei    Fri Mar  9
-It.    2    -10199.26814281      3.63D+03 -2.30D+02  2.10D+01               0.09200000s   LL             Fri Mar  9
-It.    3    -10199.30839980      4.03D-02 -1.55D-01  7.90D-02   DIIS   2    0.02400000s   LL             Fri Mar  9
-It.    4    -10199.30840002      2.25D-07  5.40D-04  1.24D-04   DIIS   3    0.01600000s   LL             Fri Mar  9
-It.    5    -10199.30840002     -5.64D-11 -1.13D-06  1.31D-07   DIIS   4    0.02000000s   LL             Fri Mar  9
-It.    6    -10199.30840002     -1.64D-11  7.57D-10  1.06D-09   DIIS   4    0.02000000s   LL             Fri Mar  9
-It.    7    -10199.30840002     -1.64D-11 -1.75D-10  1.08D-09   DAMP 25%    0.01600000s   LL             Fri Mar  9
-It.    8    -10199.30840002     -2.91D-11  1.16D-10  8.74D-10   DAMP 25%    0.00800000s   LL             Fri Mar  9
+It.    1    -6590.315699387      0.00D+00  0.00D+00  0.00D+00               0.01200000s   Atom. scrpot   Thu May 27
+It.    2    -10199.24595419      3.61D+03 -2.28D+02  3.04D+01               0.05118418s   LL             Thu May 27
+It.    3    -10199.30839954      6.24D-02 -3.21D-01  6.65D-02   DIIS   2    0.01773500s   LL             Thu May 27
+It.    4    -10199.30839984      3.06D-07  7.05D-04  4.11D-05   DIIS   3    0.01709294s   LL             Thu May 27
+It.    5    -10199.30839984      3.64D-12 -2.81D-07  5.31D-08   DIIS   4    0.01656389s   LL             Thu May 27
+It.    6    -10199.30839984      1.27D-11  5.82D-10  4.66D-10   DIIS   4    0.01544404s   LL             Thu May 27
 --------------------------------------------------------------------------------------------------------------------------------
-* Convergence after    8 iterations.
+* Convergence after    6 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.09360000s
-      LL           :    0.05587143s
+      No 2-ints    :    0.01044512s
+      LL           :    0.02360401s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -10199.308400022772
+   Electronic energy                        :    -10199.308399843800
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :         0.000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -10199.308400022772
+   Total energy                             :    -10199.308399843800
 
 
                                    Eigenvalues
@@ -801,55 +790,55 @@ It.    8    -10199.30840002     -2.91D-11  1.16D-10  8.74D-10   DAMP 25%    0.00
 
 * Boson symmetry Ag 
   * Closed shell, f = 1.0000
-  -3426.6789883278  ( 2)       692.8555868126  ( 2)
+  -3426.6789882759  ( 2)       692.8555868497  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 4)      7422.9014103940  ( 4)     12679.6236295467  ( 2)     67911.3486224417  ( 2)    242594.6812283297  ( 2)
- 690715.0881129777  ( 2)
+   1108.8273124029  ( 4)      7422.9014103939  ( 4)     12679.6236297086  ( 2)     67911.3486235748  ( 2)    242594.6812307817  ( 2)
+ 690715.0881347437  ( 2)
 
 * Boson symmetry B1g
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 2)      7422.9014103940  ( 2)
+   1108.8273124029  ( 2)      7422.9014103939  ( 2)
 
 * Boson symmetry B2g
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 2)      7422.9014103940  ( 2)
+   1108.8273124029  ( 2)      7422.9014103939  ( 2)
 
 * Boson symmetry B3g
   * Virtual eigenvalues, f = 0.0000
-   1108.8273124029  ( 2)      7422.9014103940  ( 2)
+   1108.8273124029  ( 2)      7422.9014103939  ( 2)
 
 * Boson symmetry B3u
   * Closed shell, f = 1.0000
-   -611.9654850373  ( 2)
+   -611.9654850374  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   3223.3479157441  ( 2)     20271.1359016479  ( 2)    124109.5512017154  ( 2)    405328.2179296894  ( 2)
+   3223.3479157439  ( 2)     20271.1359016474  ( 2)    124109.5512017143  ( 2)    405328.2179297020  ( 2)
 
 * Boson symmetry B2u
   * Closed shell, f = 1.0000
-   -611.9654850373  ( 2)
+   -611.9654850374  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   3223.3479157441  ( 2)     20271.1359016479  ( 2)    124109.5512017154  ( 2)    405328.2179296893  ( 2)
+   3223.3479157439  ( 2)     20271.1359016474  ( 2)    124109.5512017142  ( 2)    405328.2179297039  ( 2)
 
 * Boson symmetry B1u
   * Closed shell, f = 1.0000
-   -611.9654850373  ( 2)
+   -611.9654850374  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   3223.3479157441  ( 2)     20271.1359016479  ( 2)    124109.5512017149  ( 2)    405328.2179296882  ( 2)
+   3223.3479157439  ( 2)     20271.1359016474  ( 2)    124109.5512017143  ( 2)    405328.2179297027  ( 2)
 
 * Boson symmetry Au 
   * No eigenvalues.
 
 * Occupation in fermion symmetry E1g
   * Inactive orbitals
-    Ag  Ag  
+      Ag   Ag 
   * Virtual orbitals
-    B3g B2g B1g Ag  Ag  B1g B3g B2g Ag  Ag  Ag  Ag  Ag  Ag  
+      B3g  B2g  B1g  Ag   Ag   B2g  B3g  B1g  Ag   Ag   Ag   Ag   Ag   Ag 
 
 * Occupation in fermion symmetry E1u
   * Inactive orbitals
-    B3u B1u B2u 
+      B2u  B1u  B3u
   * Virtual orbitals
-    B2u B1u B3u B1u B2u B3u B1u B3u B2u B1u B2u B3u 
+      B2u  B3u  B1u  B1u  B2u  B3u  B2u  B3u  B1u  B3u  B1u  B2u
 
 * Occupation of subblocks
                        E1g:  Ag   B1g  B2g  B3g                                                             
@@ -865,9 +854,9 @@ tot.num. of pos.erg shells:    5    5    5    0
 * HOMO - LUMO gap:
 
     E(LUMO) :  1108.82731240 au (symmetry B3g)
-  - E(HOMO) :   692.85558681 au (symmetry Ag )
+  - E(HOMO) :   692.85558685 au (symmetry Ag )
   ------------------------------------------
-    gap     :   415.97172559 au
+    gap     :   415.97172555 au
 
 ===========================================================================
 * PCMOUT: Coefficients read from unformatted DFCOEF 
@@ -891,10 +880,13 @@ tot.num. of pos.erg shells:    5    5    5    0
      ************************************************************************
 
 
- Transformation started at : Fri Mar  9 20:13:19 2018
+ Transformation started at : Thu May 27 15:30:44 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3084000228009
-* Heading :  Ne atom                                         Fri Mar  9 20:13:19 2018
+* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3083998437869
+* Heading :  Ne atom                                         Thu May 27 15:30:44 2021
+
+INFO, .NOMDCINT is only implemented for strategy 4; therefore use stategy 4 instead of 6
+
 
 * Orbital ranges for 4-index transformation:
 
@@ -928,6 +920,8 @@ tot.num. of pos.erg shells:    5    5    5    0
       Index 4    3 orbitals
           1    2    3
 
+ (PAMTRA)  Orbitals read from DFCOEF
+
 * Core orbital ranges for 2-index transformation:
 
 
@@ -957,18 +951,10 @@ tot.num. of pos.erg shells:    5    5    5    0
       **********************************************************************
 
 
- Transformation started at : Fri Mar  9 20:13:19 2018
+ Transformation started at : Thu May 27 15:30:44 2021
 
-
-          SETDC2: Distribution of symmetry orbitals among fermion ircops
-          --------------------------------------------------------------
-
-       Total Lbas Sbas
-E1g       56   18   38
-E1u       50   15   35
-
-* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3084000228009
-* Heading :  Ne atom                                         Fri Mar  9 20:13:19 2018
+* REACMO: Coefficients read from file DFCOEF - Total energy: -10199.3083998437869
+* Heading :  Ne atom                                         Thu May 27 15:30:44 2021
 
 
  * Fermion ircop E1g
@@ -990,433 +976,73 @@ E1u       50   15   35
 
 Property elements of the "XDIPLEN " operator in Kramers paired molecular spinor basis:
 
-Printout of all property elements
-    1    1   0.000000E+00   0.000000E+00
-    1    2   0.000000E+00   0.000000E+00
-    1    3   0.000000E+00   0.000000E+00
-    1    4   0.000000E+00   0.000000E+00
-    1    5  -9.763904E-03   0.000000E+00
-    1    6   0.000000E+00   0.000000E+00
-    1    7   0.000000E+00   0.000000E+00
-    1    8   0.000000E+00   0.000000E+00
-    1    9   0.000000E+00   0.000000E+00
-    1   10   0.000000E+00   0.000000E+00
-    2    1   0.000000E+00   0.000000E+00
-    2    2   0.000000E+00   0.000000E+00
-    2    3   0.000000E+00   0.000000E+00
-    2    4   0.000000E+00   0.000000E+00
-    2    5   1.804073E-02   0.000000E+00
-    2    6   0.000000E+00   0.000000E+00
-    2    7   0.000000E+00   0.000000E+00
-    2    8   0.000000E+00   0.000000E+00
-    2    9   0.000000E+00   0.000000E+00
-    2   10   0.000000E+00   0.000000E+00
-    3    1   0.000000E+00   0.000000E+00
-    3    2   0.000000E+00   0.000000E+00
-    3    3   0.000000E+00   0.000000E+00
-    3    4   0.000000E+00   0.000000E+00
-    3    5   0.000000E+00   0.000000E+00
-    3    6   0.000000E+00   0.000000E+00
-    3    7   0.000000E+00   0.000000E+00
-    3    8  -9.763904E-03   0.000000E+00
-    3    9   0.000000E+00   0.000000E+00
-    3   10   0.000000E+00   0.000000E+00
-    4    1   0.000000E+00   0.000000E+00
-    4    2   0.000000E+00   0.000000E+00
-    4    3   0.000000E+00   0.000000E+00
-    4    4   0.000000E+00   0.000000E+00
-    4    5   0.000000E+00   0.000000E+00
-    4    6   0.000000E+00   0.000000E+00
-    4    7   0.000000E+00   0.000000E+00
-    4    8   1.804073E-02   0.000000E+00
-    4    9   0.000000E+00   0.000000E+00
-    4   10   0.000000E+00   0.000000E+00
-    5    1  -9.763904E-03   0.000000E+00
-    5    2   1.804073E-02   0.000000E+00
-    5    3   0.000000E+00   0.000000E+00
-    5    4   0.000000E+00   0.000000E+00
-    5    5   0.000000E+00   0.000000E+00
-    5    6   0.000000E+00   0.000000E+00
-    5    7   0.000000E+00   0.000000E+00
-    5    8   0.000000E+00   0.000000E+00
-    5    9   0.000000E+00   0.000000E+00
-    5   10   0.000000E+00   0.000000E+00
-    6    1   0.000000E+00   0.000000E+00
-    6    2   0.000000E+00   0.000000E+00
-    6    3   0.000000E+00   0.000000E+00
-    6    4   0.000000E+00   0.000000E+00
-    6    5   0.000000E+00   0.000000E+00
-    6    6   0.000000E+00   0.000000E+00
-    6    7   0.000000E+00   0.000000E+00
-    6    8   0.000000E+00   0.000000E+00
-    6    9   0.000000E+00   0.000000E+00
-    6   10   0.000000E+00   0.000000E+00
-    7    1   0.000000E+00   0.000000E+00
-    7    2   0.000000E+00   0.000000E+00
-    7    3   0.000000E+00   0.000000E+00
-    7    4   0.000000E+00   0.000000E+00
-    7    5   0.000000E+00   0.000000E+00
-    7    6   0.000000E+00   0.000000E+00
-    7    7   0.000000E+00   0.000000E+00
-    7    8   0.000000E+00   0.000000E+00
-    7    9   0.000000E+00   0.000000E+00
-    7   10   0.000000E+00   0.000000E+00
-    8    1   0.000000E+00   0.000000E+00
-    8    2   0.000000E+00   0.000000E+00
-    8    3  -9.763904E-03   0.000000E+00
-    8    4   1.804073E-02   0.000000E+00
-    8    5   0.000000E+00   0.000000E+00
-    8    6   0.000000E+00   0.000000E+00
-    8    7   0.000000E+00   0.000000E+00
-    8    8   0.000000E+00   0.000000E+00
-    8    9   0.000000E+00   0.000000E+00
-    8   10   0.000000E+00   0.000000E+00
-    9    1   0.000000E+00   0.000000E+00
-    9    2   0.000000E+00   0.000000E+00
-    9    3   0.000000E+00   0.000000E+00
-    9    4   0.000000E+00   0.000000E+00
-    9    5   0.000000E+00   0.000000E+00
-    9    6   0.000000E+00   0.000000E+00
-    9    7   0.000000E+00   0.000000E+00
-    9    8   0.000000E+00   0.000000E+00
-    9    9   0.000000E+00   0.000000E+00
-    9   10   0.000000E+00   0.000000E+00
-   10    1   0.000000E+00   0.000000E+00
-   10    2   0.000000E+00   0.000000E+00
-   10    3   0.000000E+00   0.000000E+00
-   10    4   0.000000E+00   0.000000E+00
-   10    5   0.000000E+00   0.000000E+00
-   10    6   0.000000E+00   0.000000E+00
-   10    7   0.000000E+00   0.000000E+00
-   10    8   0.000000E+00   0.000000E+00
-   10    9   0.000000E+00   0.000000E+00
-   10   10   0.000000E+00   0.000000E+00
+Printout of nonzero elements...zero threshold=0.100D-10
+    1    7  -9.763904E-03   0.000000E+00
+    2    7   1.804073E-02   0.000000E+00
+    3   10  -9.763904E-03   0.000000E+00
+    4   10   1.804073E-02   0.000000E+00
+    7    1  -9.763904E-03   0.000000E+00
+    7    2   1.804073E-02   0.000000E+00
+   10    3  -9.763904E-03   0.000000E+00
+   10    4   1.804073E-02   0.000000E+00
 End of property elements printout.
  
+Printout of nonzero MO matrix elements into one line:XDIPLEN 
+  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00
+End of nonzero matrix elements printout into one line.
 
 Property elements of the "YDIPLEN " operator in Kramers paired molecular spinor basis:
 
-Printout of all property elements
-    1    1   0.000000E+00   0.000000E+00
-    1    2   0.000000E+00   0.000000E+00
-    1    3   0.000000E+00   0.000000E+00
-    1    4   0.000000E+00   0.000000E+00
-    1    5   0.000000E+00   0.000000E+00
-    1    6   0.000000E+00   0.000000E+00
-    1    7  -9.763904E-03   0.000000E+00
-    1    8   0.000000E+00   0.000000E+00
-    1    9   0.000000E+00   0.000000E+00
-    1   10   0.000000E+00   0.000000E+00
-    2    1   0.000000E+00   0.000000E+00
-    2    2   0.000000E+00   0.000000E+00
-    2    3   0.000000E+00   0.000000E+00
-    2    4   0.000000E+00   0.000000E+00
-    2    5   0.000000E+00   0.000000E+00
-    2    6   0.000000E+00   0.000000E+00
-    2    7   1.804073E-02   0.000000E+00
-    2    8   0.000000E+00   0.000000E+00
-    2    9   0.000000E+00   0.000000E+00
-    2   10   0.000000E+00   0.000000E+00
-    3    1   0.000000E+00   0.000000E+00
-    3    2   0.000000E+00   0.000000E+00
-    3    3   0.000000E+00   0.000000E+00
-    3    4   0.000000E+00   0.000000E+00
-    3    5   0.000000E+00   0.000000E+00
-    3    6   0.000000E+00   0.000000E+00
-    3    7   0.000000E+00   0.000000E+00
-    3    8   0.000000E+00   0.000000E+00
-    3    9   0.000000E+00   0.000000E+00
-    3   10  -9.763904E-03   0.000000E+00
-    4    1   0.000000E+00   0.000000E+00
-    4    2   0.000000E+00   0.000000E+00
-    4    3   0.000000E+00   0.000000E+00
-    4    4   0.000000E+00   0.000000E+00
-    4    5   0.000000E+00   0.000000E+00
-    4    6   0.000000E+00   0.000000E+00
-    4    7   0.000000E+00   0.000000E+00
-    4    8   0.000000E+00   0.000000E+00
-    4    9   0.000000E+00   0.000000E+00
-    4   10   1.804073E-02   0.000000E+00
-    5    1   0.000000E+00   0.000000E+00
-    5    2   0.000000E+00   0.000000E+00
-    5    3   0.000000E+00   0.000000E+00
-    5    4   0.000000E+00   0.000000E+00
-    5    5   0.000000E+00   0.000000E+00
-    5    6   0.000000E+00   0.000000E+00
-    5    7   0.000000E+00   0.000000E+00
-    5    8   0.000000E+00   0.000000E+00
-    5    9   0.000000E+00   0.000000E+00
-    5   10   0.000000E+00   0.000000E+00
-    6    1   0.000000E+00   0.000000E+00
-    6    2   0.000000E+00   0.000000E+00
-    6    3   0.000000E+00   0.000000E+00
-    6    4   0.000000E+00   0.000000E+00
-    6    5   0.000000E+00   0.000000E+00
-    6    6   0.000000E+00   0.000000E+00
-    6    7   0.000000E+00   0.000000E+00
-    6    8   0.000000E+00   0.000000E+00
-    6    9   0.000000E+00   0.000000E+00
-    6   10   0.000000E+00   0.000000E+00
-    7    1  -9.763904E-03   0.000000E+00
-    7    2   1.804073E-02   0.000000E+00
-    7    3   0.000000E+00   0.000000E+00
-    7    4   0.000000E+00   0.000000E+00
-    7    5   0.000000E+00   0.000000E+00
-    7    6   0.000000E+00   0.000000E+00
-    7    7   0.000000E+00   0.000000E+00
-    7    8   0.000000E+00   0.000000E+00
-    7    9   0.000000E+00   0.000000E+00
-    7   10   0.000000E+00   0.000000E+00
-    8    1   0.000000E+00   0.000000E+00
-    8    2   0.000000E+00   0.000000E+00
-    8    3   0.000000E+00   0.000000E+00
-    8    4   0.000000E+00   0.000000E+00
-    8    5   0.000000E+00   0.000000E+00
-    8    6   0.000000E+00   0.000000E+00
-    8    7   0.000000E+00   0.000000E+00
-    8    8   0.000000E+00   0.000000E+00
-    8    9   0.000000E+00   0.000000E+00
-    8   10   0.000000E+00   0.000000E+00
-    9    1   0.000000E+00   0.000000E+00
-    9    2   0.000000E+00   0.000000E+00
-    9    3   0.000000E+00   0.000000E+00
-    9    4   0.000000E+00   0.000000E+00
-    9    5   0.000000E+00   0.000000E+00
-    9    6   0.000000E+00   0.000000E+00
-    9    7   0.000000E+00   0.000000E+00
-    9    8   0.000000E+00   0.000000E+00
-    9    9   0.000000E+00   0.000000E+00
-    9   10   0.000000E+00   0.000000E+00
-   10    1   0.000000E+00   0.000000E+00
-   10    2   0.000000E+00   0.000000E+00
-   10    3  -9.763904E-03   0.000000E+00
-   10    4   1.804073E-02   0.000000E+00
-   10    5   0.000000E+00   0.000000E+00
-   10    6   0.000000E+00   0.000000E+00
-   10    7   0.000000E+00   0.000000E+00
-   10    8   0.000000E+00   0.000000E+00
-   10    9   0.000000E+00   0.000000E+00
-   10   10   0.000000E+00   0.000000E+00
+Printout of nonzero elements...zero threshold=0.100D-10
+    1    5  -9.763904E-03   0.000000E+00
+    2    5   1.804073E-02   0.000000E+00
+    3    8  -9.763904E-03   0.000000E+00
+    4    8   1.804073E-02   0.000000E+00
+    5    1  -9.763904E-03   0.000000E+00
+    5    2   1.804073E-02   0.000000E+00
+    8    3  -9.763904E-03   0.000000E+00
+    8    4   1.804073E-02   0.000000E+00
 End of property elements printout.
  
+Printout of nonzero MO matrix elements into one line:YDIPLEN 
+  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00
+End of nonzero matrix elements printout into one line.
 
 Property elements of the "ZDIPLEN " operator in Kramers paired molecular spinor basis:
 
-Printout of all property elements
-    1    1   0.000000E+00   0.000000E+00
-    1    2   0.000000E+00   0.000000E+00
-    1    3   0.000000E+00   0.000000E+00
-    1    4   0.000000E+00   0.000000E+00
-    1    5   0.000000E+00   0.000000E+00
+Printout of nonzero elements...zero threshold=0.100D-10
     1    6  -9.763904E-03   0.000000E+00
-    1    7   0.000000E+00   0.000000E+00
-    1    8   0.000000E+00   0.000000E+00
-    1    9   0.000000E+00   0.000000E+00
-    1   10   0.000000E+00   0.000000E+00
-    2    1   0.000000E+00   0.000000E+00
-    2    2   0.000000E+00   0.000000E+00
-    2    3   0.000000E+00   0.000000E+00
-    2    4   0.000000E+00   0.000000E+00
-    2    5   0.000000E+00   0.000000E+00
     2    6   1.804073E-02   0.000000E+00
-    2    7   0.000000E+00   0.000000E+00
-    2    8   0.000000E+00   0.000000E+00
-    2    9   0.000000E+00   0.000000E+00
-    2   10   0.000000E+00   0.000000E+00
-    3    1   0.000000E+00   0.000000E+00
-    3    2   0.000000E+00   0.000000E+00
-    3    3   0.000000E+00   0.000000E+00
-    3    4   0.000000E+00   0.000000E+00
-    3    5   0.000000E+00   0.000000E+00
-    3    6   0.000000E+00   0.000000E+00
-    3    7   0.000000E+00   0.000000E+00
-    3    8   0.000000E+00   0.000000E+00
     3    9  -9.763904E-03   0.000000E+00
-    3   10   0.000000E+00   0.000000E+00
-    4    1   0.000000E+00   0.000000E+00
-    4    2   0.000000E+00   0.000000E+00
-    4    3   0.000000E+00   0.000000E+00
-    4    4   0.000000E+00   0.000000E+00
-    4    5   0.000000E+00   0.000000E+00
-    4    6   0.000000E+00   0.000000E+00
-    4    7   0.000000E+00   0.000000E+00
-    4    8   0.000000E+00   0.000000E+00
     4    9   1.804073E-02   0.000000E+00
-    4   10   0.000000E+00   0.000000E+00
-    5    1   0.000000E+00   0.000000E+00
-    5    2   0.000000E+00   0.000000E+00
-    5    3   0.000000E+00   0.000000E+00
-    5    4   0.000000E+00   0.000000E+00
-    5    5   0.000000E+00   0.000000E+00
-    5    6   0.000000E+00   0.000000E+00
-    5    7   0.000000E+00   0.000000E+00
-    5    8   0.000000E+00   0.000000E+00
-    5    9   0.000000E+00   0.000000E+00
-    5   10   0.000000E+00   0.000000E+00
     6    1  -9.763904E-03   0.000000E+00
     6    2   1.804073E-02   0.000000E+00
-    6    3   0.000000E+00   0.000000E+00
-    6    4   0.000000E+00   0.000000E+00
-    6    5   0.000000E+00   0.000000E+00
-    6    6   0.000000E+00   0.000000E+00
-    6    7   0.000000E+00   0.000000E+00
-    6    8   0.000000E+00   0.000000E+00
-    6    9   0.000000E+00   0.000000E+00
-    6   10   0.000000E+00   0.000000E+00
-    7    1   0.000000E+00   0.000000E+00
-    7    2   0.000000E+00   0.000000E+00
-    7    3   0.000000E+00   0.000000E+00
-    7    4   0.000000E+00   0.000000E+00
-    7    5   0.000000E+00   0.000000E+00
-    7    6   0.000000E+00   0.000000E+00
-    7    7   0.000000E+00   0.000000E+00
-    7    8   0.000000E+00   0.000000E+00
-    7    9   0.000000E+00   0.000000E+00
-    7   10   0.000000E+00   0.000000E+00
-    8    1   0.000000E+00   0.000000E+00
-    8    2   0.000000E+00   0.000000E+00
-    8    3   0.000000E+00   0.000000E+00
-    8    4   0.000000E+00   0.000000E+00
-    8    5   0.000000E+00   0.000000E+00
-    8    6   0.000000E+00   0.000000E+00
-    8    7   0.000000E+00   0.000000E+00
-    8    8   0.000000E+00   0.000000E+00
-    8    9   0.000000E+00   0.000000E+00
-    8   10   0.000000E+00   0.000000E+00
-    9    1   0.000000E+00   0.000000E+00
-    9    2   0.000000E+00   0.000000E+00
     9    3  -9.763904E-03   0.000000E+00
     9    4   1.804073E-02   0.000000E+00
-    9    5   0.000000E+00   0.000000E+00
-    9    6   0.000000E+00   0.000000E+00
-    9    7   0.000000E+00   0.000000E+00
-    9    8   0.000000E+00   0.000000E+00
-    9    9   0.000000E+00   0.000000E+00
-    9   10   0.000000E+00   0.000000E+00
-   10    1   0.000000E+00   0.000000E+00
-   10    2   0.000000E+00   0.000000E+00
-   10    3   0.000000E+00   0.000000E+00
-   10    4   0.000000E+00   0.000000E+00
-   10    5   0.000000E+00   0.000000E+00
-   10    6   0.000000E+00   0.000000E+00
-   10    7   0.000000E+00   0.000000E+00
-   10    8   0.000000E+00   0.000000E+00
-   10    9   0.000000E+00   0.000000E+00
-   10   10   0.000000E+00   0.000000E+00
 End of property elements printout.
  
+Printout of nonzero MO matrix elements into one line:ZDIPLEN 
+  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00  -0.976390E-02   0.000000E+00   0.180407E-01   0.000000E+00
+End of nonzero matrix elements printout into one line.
 
 Property elements of the "CM010203" operator in Kramers paired molecular spinor basis:
 
-Printout of all property elements
-    1    1   0.000000E+00   0.000000E+00
-    1    2   0.000000E+00   0.000000E+00
-    1    3   0.000000E+00   0.000000E+00
-    1    4   0.000000E+00   0.000000E+00
-    1    5   0.000000E+00   0.000000E+00
-    1    6   0.000000E+00   0.000000E+00
-    1    7   0.000000E+00   0.000000E+00
-    1    8   0.000000E+00   0.000000E+00
-    1    9   0.000000E+00   0.000000E+00
-    1   10   0.000000E+00   0.000000E+00
-    2    1   0.000000E+00   0.000000E+00
-    2    2   0.000000E+00   0.000000E+00
-    2    3   0.000000E+00   0.000000E+00
-    2    4   0.000000E+00   0.000000E+00
-    2    5   0.000000E+00   0.000000E+00
-    2    6   0.000000E+00   0.000000E+00
-    2    7   0.000000E+00   0.000000E+00
-    2    8   0.000000E+00   0.000000E+00
-    2    9   0.000000E+00   0.000000E+00
-    2   10   0.000000E+00   0.000000E+00
-    3    1   0.000000E+00   0.000000E+00
-    3    2   0.000000E+00   0.000000E+00
-    3    3   0.000000E+00   0.000000E+00
-    3    4   0.000000E+00   0.000000E+00
-    3    5   0.000000E+00   0.000000E+00
-    3    6   0.000000E+00   0.000000E+00
-    3    7   0.000000E+00   0.000000E+00
-    3    8   0.000000E+00   0.000000E+00
-    3    9   0.000000E+00   0.000000E+00
-    3   10   0.000000E+00   0.000000E+00
-    4    1   0.000000E+00   0.000000E+00
-    4    2   0.000000E+00   0.000000E+00
-    4    3   0.000000E+00   0.000000E+00
-    4    4   0.000000E+00   0.000000E+00
-    4    5   0.000000E+00   0.000000E+00
-    4    6   0.000000E+00   0.000000E+00
-    4    7   0.000000E+00   0.000000E+00
-    4    8   0.000000E+00   0.000000E+00
-    4    9   0.000000E+00   0.000000E+00
-    4   10   0.000000E+00   0.000000E+00
-    5    1   0.000000E+00   0.000000E+00
-    5    2   0.000000E+00   0.000000E+00
-    5    3   0.000000E+00   0.000000E+00
-    5    4   0.000000E+00   0.000000E+00
-    5    5   0.000000E+00   0.000000E+00
-    5    6   2.583371E-10   0.000000E+00
-    5    7   0.000000E+00   0.000000E+00
-    5    8   0.000000E+00   0.000000E+00
-    5    9   0.000000E+00   0.000000E+00
-    5   10   0.000000E+00   0.000000E+00
-    6    1   0.000000E+00   0.000000E+00
-    6    2   0.000000E+00   0.000000E+00
-    6    3   0.000000E+00   0.000000E+00
-    6    4   0.000000E+00   0.000000E+00
-    6    5   2.583371E-10   0.000000E+00
-    6    6   0.000000E+00   0.000000E+00
-    6    7   0.000000E+00   0.000000E+00
-    6    8   0.000000E+00   0.000000E+00
-    6    9   0.000000E+00   0.000000E+00
-    6   10   0.000000E+00   0.000000E+00
-    7    1   0.000000E+00   0.000000E+00
-    7    2   0.000000E+00   0.000000E+00
-    7    3   0.000000E+00   0.000000E+00
-    7    4   0.000000E+00   0.000000E+00
-    7    5   0.000000E+00   0.000000E+00
-    7    6   0.000000E+00   0.000000E+00
-    7    7   0.000000E+00   0.000000E+00
-    7    8   0.000000E+00   0.000000E+00
-    7    9   0.000000E+00   0.000000E+00
-    7   10   0.000000E+00   0.000000E+00
-    8    1   0.000000E+00   0.000000E+00
-    8    2   0.000000E+00   0.000000E+00
-    8    3   0.000000E+00   0.000000E+00
-    8    4   0.000000E+00   0.000000E+00
-    8    5   0.000000E+00   0.000000E+00
-    8    6   0.000000E+00   0.000000E+00
-    8    7   0.000000E+00   0.000000E+00
-    8    8   0.000000E+00   0.000000E+00
-    8    9   2.583371E-10   0.000000E+00
-    8   10   0.000000E+00   0.000000E+00
-    9    1   0.000000E+00   0.000000E+00
-    9    2   0.000000E+00   0.000000E+00
-    9    3   0.000000E+00   0.000000E+00
-    9    4   0.000000E+00   0.000000E+00
-    9    5   0.000000E+00   0.000000E+00
-    9    6   0.000000E+00   0.000000E+00
-    9    7   0.000000E+00   0.000000E+00
-    9    8   2.583371E-10   0.000000E+00
-    9    9   0.000000E+00   0.000000E+00
-    9   10   0.000000E+00   0.000000E+00
-   10    1   0.000000E+00   0.000000E+00
-   10    2   0.000000E+00   0.000000E+00
-   10    3   0.000000E+00   0.000000E+00
-   10    4   0.000000E+00   0.000000E+00
-   10    5   0.000000E+00   0.000000E+00
-   10    6   0.000000E+00   0.000000E+00
-   10    7   0.000000E+00   0.000000E+00
-   10    8   0.000000E+00   0.000000E+00
-   10    9   0.000000E+00   0.000000E+00
-   10   10   0.000000E+00   0.000000E+00
+Printout of nonzero elements...zero threshold=0.100D-10
+    6    7   2.583371E-10   0.000000E+00
+    7    6   2.583371E-10   0.000000E+00
+    9   10   2.583371E-10   0.000000E+00
+   10    9   2.583371E-10   0.000000E+00
 End of property elements printout.
  
+Printout of nonzero MO matrix elements into one line:CM010203
+   0.258337E-09   0.000000E+00   0.258337E-09   0.000000E+00   0.258337E-09   0.000000E+00   0.258337E-09   0.000000E+00
+End of nonzero matrix elements printout into one line.
 
 
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Fri Mar  9 20:13:19 2018
+ Transformation ended at : Thu May 27 15:30:44 2021
 
 
 *****************************************************
@@ -1425,35 +1051,35 @@ End of property elements printout.
 
 
  
-     Date and time (Linux)  : Fri Mar  9 20:13:19 2018
-     Host name              : lxi082                                  
+     Date and time (Linux)  : Thu May 27 15:30:44 2021
+     Host name              : lxir127                                 
 
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        56.37
+  Mean allocation size (Mb) :       117.24
   
-  Largest          10  allocations
+  Largest                    10  allocations
   
-      488.28 Mb at subroutine pamtra_+0x121                              for WORK in PAMTRA                            
-      488.28 Mb at subroutine psiscf_+0xb0                               for WORK in PSISCF                            
-      488.28 Mb at subroutine pamset_+0x3e0                              for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_+0x233                              for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_+0x87                               for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0xa55                               for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_+0x76                               for PAMINP WORK array                         
-        0.09 Mb at subroutine pcmout_+0xc3                               for CMO in PCMOUT                             
-        0.09 Mb at subroutine butobs_no_work_+0x90                       for buf in butobs                             
-        0.04 Mb at subroutine gtovlx_+0x158                              for unnamed variable                          
+      488.28 Mb at subroutine pamtra_+0x1c5                              for WORK in PAMTRA                            
+      488.28 Mb at subroutine psiscf_+0xaf                               for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_+0x32a                              for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x5a9c                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x8e                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0x2bf                               for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_+0x82                               for PAMINP WORK array                         
+        0.09 Mb at subroutine butobs_no_work_+0x86                       for buf in butobs                             
+        0.04 Mb at subroutine gtovlx_+0x86                               for unnamed variable                          
+        0.03 Mb at subroutine xpldef_+0x20f                              for INTADR in XPLDEF                          
   
   Peak memory usage:       488.37 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_+0x90                      
+       reached at subroutine : butobs_no_work_+0x86                      
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 0, stime: 0, minflt: 4233, majflt: 80, nvcsw: 535, nivcsw: 90, maxrss: 34948
+>>>> Node 0, utime: 0, stime: 0, minflt: 5122, majflt: 77, nvcsw: 276, nivcsw: 50, maxrss: 35028
 >>>> Total WALL time used in DIRAC: 1s
-DIRAC pam run in /u/milias/Work/qch/software/dirac/devel_trunk/test/operators_mo_mtx_elements
+DIRAC pam run in /data.local1/milias/software/dirac/trunk_release21/test/operators_mo_mtx_elements

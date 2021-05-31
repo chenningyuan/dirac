@@ -69,14 +69,14 @@ module exacorr_global
              use exacc_cfg
              use exacorr_utils, only : print_date
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
              integer :: ierr, scf_file
              logical :: tobe
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
              if (my_MPI_rank /= my_MPI_master) then
 !               Slaves go to the sync immediately and get all that is necessary from master
@@ -147,7 +147,7 @@ module exacorr_global
 
          subroutine synchronize_global_data
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
              integer :: nao, nshells, n_primitives, nsp
              integer :: ish
