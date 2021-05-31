@@ -5,6 +5,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -21,9 +24,6 @@ f.add(from_string = 'Eigenvalues',
 f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
       rel_tolerance   = 1.0e-6)
-
-os.environ["OMP_STACKSIZE"] = "200M"
-os.system('ulimit -s unlimited')
 
 test.run(['cc.inp'], ['h2.xyz'], f)
 test.run(['be_cc.inp'], ['Be.xyz'], f)
