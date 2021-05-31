@@ -60,7 +60,9 @@ if(ENABLE_EXATENSOR)
     endif()
     
     # Find out which compiler family we are using (this can be tricky, tweak after the configure step if necessary)
-    if (CMAKE_Fortran_COMPILER_ID MATCHES GNU) 
+    if (DEFINED ENV{TOOLKIT})
+       set(EXATENSOR_TOOLKIT TOOLKIT=$ENV{TOOLKIT})
+    elseif (CMAKE_Fortran_COMPILER_ID MATCHES GNU) 
        set (EXATENSOR_TOOLKIT TOOLKIT=GNU)
        if (   "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "8"
            OR "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_EQUAL "9"
@@ -78,7 +80,8 @@ if(ENABLE_EXATENSOR)
        set (EXATENSOR_TOOLKIT TOOLKIT=IBM)
     elseif(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
        set (EXATENSOR_TOOLKIT TOOLKIT=PGI)
-     else()
+    else()
+       message(STATUS "ExaTensor TOOLKIT not found, setting to GNU")
        set (EXATENSOR_TOOLKIT TOOLKIT=GNU)
        if (   "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "8"
            OR "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_EQUAL "9"
