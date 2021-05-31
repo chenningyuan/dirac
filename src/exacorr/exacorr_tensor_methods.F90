@@ -1,7 +1,7 @@
 module exacorr_tensor_methods
 
 !This module contains routines to modify (initialize, scale with denominators, etc.) that can be registered with exatensor
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
         use exatensor
         use, intrinsic:: ISO_C_BINDING

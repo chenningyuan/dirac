@@ -42,7 +42,7 @@ module talsh_ao_to_mo
          use exacorr_global
          use module_interest_interface
          use module_interest_eri
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif
 
@@ -79,7 +79,7 @@ module talsh_ao_to_mo
 
 !        Initialize global data
          call initialize_global_data
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 #else
          my_MPI_rank = 0

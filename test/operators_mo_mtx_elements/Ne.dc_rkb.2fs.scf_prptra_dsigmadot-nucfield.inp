@@ -56,7 +56,7 @@ all
 *PRPTRA
 # we need this print level to get all MO mtx elements
 .PRINT
-3
+2
 # eEDM operators
 .OPERATOR
  'e_EDM' 

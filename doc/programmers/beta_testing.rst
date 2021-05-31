@@ -46,7 +46,7 @@ You may also run a subset by specifying regular expressions: e.g. ::
 
 where the "-R" means regular expression, so this will run all tests that contain the substring "dft".
 
-Since tests are provided with descriptive tags (labales), you can run group of tests based on label. 
+Since tests are provided with descriptive tags (labels), you can run group of tests based on label. 
 For example, this command selects only short tests from the whole suite: ::
 
   $ ctest -L short 
