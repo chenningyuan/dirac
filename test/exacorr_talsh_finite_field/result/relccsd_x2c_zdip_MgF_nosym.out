@@ -1,7 +1,7 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC serial starts by allocating 1936000000 words (  14770.51 MB -     14.424 GB)
- of memory    out of the allowed maximum of 2048000000 words (  15625.00 MB -     15.259 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 256000000 words (   1953.12 MB -      1.907 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -180,9 +180,9 @@ Version information
 -------------------
 
 Branch        | exacorr-finite-field
-Commit hash   | c7ead1bf4
-Commit author | Trond Saue
-Commit date   | Mon May 3 06:46:49 2021 +0000
+Commit hash   | 75d5bd6cb
+Commit author | Johann Pototschnig
+Commit date   | Wed May 19 11:38:07 2021 +0200
 
 
 Configuration and build information
@@ -190,11 +190,11 @@ Configuration and build information
 
 Who compiled             | pototschnig
 Compiled on server       | poto-W65-W67RB
-Operating system         | Linux-5.4.0-72-generic
+Operating system         | Linux-5.4.0-73-generic
 CMake version            | 3.10.2
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2021-05-11 22:52:36.678984
+Configuration time       | 2021-05-28 09:43:33.201055
 Python version           | 2.7.1
 Fortran compiler         | /home/pototschnig/mpich/bin/mpif90
 Fortran compiler version | 8.2.0
@@ -219,20 +219,20 @@ EXACORR dependencies
 --------------------
 Exatensor source repo    | https://gitlab.com/DmitryLyakh/ExaTensor.git
 Exatensor git hash       | d304c03b7289525f250245ece1b4a13a5973fef4
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT   TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=MPICH PATH_MPICH=/home/pototschnig/mpich
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT   TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=MPICH PATH_MPICH=/home/pototschnig/mpich BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
 
- * openMP activated,  thread limit - # processes - # threads:   256    8    4
+ * openMP activated,  thread limit - # processes - # threads:   256    8    1
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri May 14 02:52:57 2021
+     Date and time (Linux)  : Mon May 31 10:16:20 2021
      Host name              : poto-W65-W67RB                          
 
 
@@ -286,7 +286,7 @@ energy -1000.00   2000.0 0.01
 .NFFOPER                                                                                            
 1                                                                                                   
 ZDIPLEN                                                                                             
-0.00100,0.000                                                                                       
+0.0001,0.000                                                                                        
 *END OF                                                                                             
 
 
@@ -883,7 +883,7 @@ Mg     0.0000000000   0.0000000000   0.0000000000
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00392200s and (WALL)  0.00400000s
+Total time used in ONEGEN (CPU)  0.00289900s and (WALL)  0.00300000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1052,8 +1052,6 @@ Total time used in ONEGEN (CPU)  0.00392200s and (WALL)  0.00400000s
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> CPU  time used in mk_h2c is   0.22 seconds
- >>> WALL time used in mk_h2c is   0.21 seconds
 
   Coordinates are entered in Angstroms and converted to atomic units.
           - Conversion factor : 1 bohr = 0.52917721 A
@@ -1073,7 +1071,7 @@ Total time used in ONEGEN (CPU)  0.00392200s and (WALL)  0.00400000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00142100s and (WALL)  0.00200000s
+Total time used in ONEGEN (CPU)  0.00113200s and (WALL)  0.00100000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1089,8 +1087,8 @@ Total time used in ONEGEN (CPU)  0.00142100s and (WALL)  0.00200000s
 No. of positive energy orbitals (NESH):    28
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    28
- >>> CPU  time used in PAMSET is   0.24 seconds
- >>> WALL time used in PAMSET is   0.23 seconds
+ >>> CPU  time used in PAMSET is   0.12 seconds
+ >>> WALL time used in PAMSET is   0.12 seconds
 
 
  *******************************************************************************
@@ -1104,245 +1102,245 @@ Total no. of orbitals           (NORB):    28
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   1 ##########   Mon May 31 10:16:20 2021
 
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.32309   11  -0.11488   12   0.01342
 
 => Calculating sum of orbital energies
-It.    1    -120.4445718571      0.00D+00  0.00D+00  0.00D+00               0.00445900s   Atom. scrpot   Fri May 14
+It.    1    -120.4445718571      0.00D+00  0.00D+00  0.00D+00               0.00361500s   Atom. scrpot   Mon May 31
 
-########## START ITERATION NO.   2 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   2 ##########   Mon May 31 10:16:20 2021
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   70.46%    0.00%    3.05%   0.00423297s
+SOfock:LL  1.00D-12    0.00%   70.46%    0.00%    3.05%   0.00411102s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.29642   11  -0.16447   12   0.17281
->>> Total wall time:  0.02100000s, and total CPU time :  0.01547900s
+>>> Total wall time:  0.01300000s, and total CPU time :  0.01142100s
 
-########## END ITERATION NO.   2 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   2 ##########   Mon May 31 10:16:20 2021
 
-It.    2    -287.5579779275      1.67D+02 -2.07D+00  1.71D+00               0.02100000s   LL             Fri May 14
+It.    2    -287.5579779275      1.67D+02 -2.07D+00  1.71D+00               0.01300000s   LL             Mon May 31
 
-########## START ITERATION NO.   3 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   3 ##########   Mon May 31 10:16:20 2021
 
     3 *** Differential density matrix. DCOVLP     = 1.0174
     3 *** Differential density matrix. DVOVLP( 1) = 0.7648
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   70.84%    0.00%    3.00%   0.00408700s
+SOfock:LL  1.00D-12    0.00%   70.84%    0.00%    3.00%   0.00582501s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.43362   11  -0.15100   12   0.17406
->>> Total wall time:  0.01400000s, and total CPU time :  0.00919200s
+>>> Total wall time:  0.01100000s, and total CPU time :  0.00851300s
 
-########## END ITERATION NO.   3 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   3 ##########   Mon May 31 10:16:20 2021
 
-It.    3    -287.7175781857      1.60D-01  3.82D-01  5.09D-01   DIIS   2    0.01400000s   LL             Fri May 14
+It.    3    -287.7175781857      1.60D-01  3.82D-01  5.09D-01   DIIS   2    0.01100000s   LL             Mon May 31
 
-########## START ITERATION NO.   4 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   4 ##########   Mon May 31 10:16:20 2021
 
     4 *** Differential density matrix. DCOVLP     = 0.9743
     4 *** Differential density matrix. DVOVLP( 1) = 1.0778
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.09%    0.00%    2.98%   0.00417700s
+SOfock:LL  1.00D-12    0.00%   71.09%    0.00%    2.98%   0.00394300s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.36393   11  -0.15681   12   0.17587
->>> Total wall time:  0.01600000s, and total CPU time :  0.01107800s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00599500s
 
-########## END ITERATION NO.   4 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   4 ##########   Mon May 31 10:16:20 2021
 
-It.    4    -287.7443374525      2.68D-02  1.39D-01  1.60D-01   DIIS   3    0.01600000s   LL             Fri May 14
+It.    4    -287.7443374525      2.68D-02  1.39D-01  1.60D-01   DIIS   3    0.00900000s   LL             Mon May 31
 
-########## START ITERATION NO.   5 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   5 ##########   Mon May 31 10:16:20 2021
 
     5 *** Differential density matrix. DCOVLP     = 1.0046
     5 *** Differential density matrix. DVOVLP( 1) = 0.9691
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.30%    0.00%    2.96%   0.00464898s
+SOfock:LL  1.00D-12    0.00%   71.30%    0.00%    2.96%   0.00467399s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37954   11  -0.15719   12   0.17446
->>> Total wall time:  0.01500000s, and total CPU time :  0.00987000s
+>>> Total wall time:  0.01000000s, and total CPU time :  0.00687800s
 
-########## END ITERATION NO.   5 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   5 ##########   Mon May 31 10:16:20 2021
 
-It.    5    -287.7496042719      5.27D-03 -6.30D-02  3.46D-02   DIIS   4    0.01500000s   LL             Fri May 14
+It.    5    -287.7496042719      5.27D-03 -6.30D-02  3.46D-02   DIIS   4    0.01000000s   LL             Mon May 31
 
-########## START ITERATION NO.   6 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   6 ##########   Mon May 31 10:16:20 2021
 
     6 *** Differential density matrix. DCOVLP     = 0.9975
     6 *** Differential density matrix. DVOVLP( 1) = 0.9994
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.59%    0.00%    2.94%   0.00412399s
+SOfock:LL  1.00D-12    0.00%   71.59%    0.00%    2.94%   0.00391299s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37846   11  -0.15787   12   0.17431
->>> Total wall time:  0.01400000s, and total CPU time :  0.00998600s
+>>> Total wall time:  0.01100000s, and total CPU time :  0.00662400s
 
-########## END ITERATION NO.   6 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   6 ##########   Mon May 31 10:16:20 2021
 
-It.    6    -287.7502624866      6.58D-04  1.28D-02  7.99D-03   DIIS   5    0.01400000s   LL             Fri May 14
+It.    6    -287.7502624866      6.58D-04  1.28D-02  7.99D-03   DIIS   5    0.01100000s   LL             Mon May 31
 
-########## START ITERATION NO.   7 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   7 ##########   Mon May 31 10:16:20 2021
 
     7 *** Differential density matrix. DCOVLP     = 0.9998
     7 *** Differential density matrix. DVOVLP( 1) = 0.9943
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.73%    0.00%    2.93%   0.00432998s
+SOfock:LL  1.00D-12    0.00%   71.73%    0.00%    2.93%   0.00379500s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37930   11  -0.15753   12   0.17428
->>> Total wall time:  0.01300000s, and total CPU time :  0.00957900s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00616900s
 
-########## END ITERATION NO.   7 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   7 ##########   Mon May 31 10:16:20 2021
 
-It.    7    -287.7503482070      8.57D-05 -3.13D-03  1.77D-03   DIIS   6    0.01300000s   LL             Fri May 14
+It.    7    -287.7503482070      8.57D-05 -3.13D-03  1.77D-03   DIIS   6    0.00800000s   LL             Mon May 31
 
-########## START ITERATION NO.   8 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   8 ##########   Mon May 31 10:16:20 2021
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 0.9996
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   72.87%    0.00%    2.84%   0.00483805s
+SOfock:LL  1.00D-12    0.00%   72.87%    0.00%    2.84%   0.00428200s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37929   11  -0.15750   12   0.17429
->>> Total wall time:  0.01500000s, and total CPU time :  0.01021000s
+>>> Total wall time:  0.01000000s, and total CPU time :  0.00658000s
 
-########## END ITERATION NO.   8 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   8 ##########   Mon May 31 10:16:20 2021
 
-It.    8    -287.7503496315      1.42D-06  5.71D-04  3.79D-04   DIIS   7    0.01500000s   LL             Fri May 14
+It.    8    -287.7503496315      1.42D-06  5.71D-04  3.79D-04   DIIS   7    0.01000000s   LL             Mon May 31
 
-########## START ITERATION NO.   9 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.   9 ##########   Mon May 31 10:16:20 2021
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   73.66%    0.00%    2.77%   0.00461698s
+SOfock:LL  1.00D-12    0.00%   73.66%    0.00%    2.77%   0.00383201s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37933   11  -0.15747   12   0.17429
->>> Total wall time:  0.01400000s, and total CPU time :  0.01001200s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00610400s
 
-########## END ITERATION NO.   9 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.   9 ##########   Mon May 31 10:16:20 2021
 
-It.    9    -287.7503498111      1.80D-07  9.30D-05  1.45D-04   DIIS   8    0.01400000s   LL             Fri May 14
+It.    9    -287.7503498111      1.80D-07  9.30D-05  1.45D-04   DIIS   8    0.00900000s   LL             Mon May 31
 
-########## START ITERATION NO.  10 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  10 ##########   Mon May 31 10:16:20 2021
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   74.13%    0.00%    2.77%   0.00409395s
+SOfock:LL  1.00D-12    0.00%   74.13%    0.00%    2.77%   0.00588000s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.01500000s, and total CPU time :  0.00990600s
+>>> Total wall time:  0.01100000s, and total CPU time :  0.00822100s
 
-########## END ITERATION NO.  10 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  10 ##########   Mon May 31 10:16:20 2021
 
-It.   10    -287.7503498341      2.30D-08  5.35D-05  1.69D-05   DIIS   9    0.01500000s   LL             Fri May 14
+It.   10    -287.7503498341      2.30D-08  5.35D-05  1.69D-05   DIIS   9    0.01100000s   LL             Mon May 31
 
-########## START ITERATION NO.  11 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  11 ##########   Mon May 31 10:16:20 2021
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   75.77%    0.00%    2.74%   0.00412303s
+SOfock:LL  1.00D-12    0.00%   75.77%    0.00%    2.74%   0.00387600s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.01400000s, and total CPU time :  0.00986200s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00597400s
 
-########## END ITERATION NO.  11 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  11 ##########   Mon May 31 10:16:20 2021
 
-It.   11    -287.7503498342      8.98D-11  2.88D-06  2.30D-06   DIIS   9    0.01400000s   LL             Fri May 14
+It.   11    -287.7503498342      8.95D-11  2.88D-06  2.30D-06   DIIS   9    0.00900000s   LL             Mon May 31
 
-########## START ITERATION NO.  12 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  12 ##########   Mon May 31 10:16:20 2021
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   77.04%    0.00%    3.47%   0.00425500s
+SOfock:LL  1.00D-12    0.00%   77.04%    0.00%    3.47%   0.00423199s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.01400000s, and total CPU time :  0.00959900s
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00653800s
 
-########## END ITERATION NO.  12 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  12 ##########   Mon May 31 10:16:20 2021
 
-It.   12    -287.7503498342      3.30D-12  6.97D-07  3.18D-07   DIIS   9    0.01400000s   LL             Fri May 14
+It.   12    -287.7503498342      3.41D-12  6.97D-07  3.18D-07   DIIS   9    0.00900000s   LL             Mon May 31
 
-########## START ITERATION NO.  13 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  13 ##########   Mon May 31 10:16:20 2021
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   79.16%    0.00%    3.03%   0.00412500s
+SOfock:LL  1.00D-12    0.00%   79.16%    0.00%    3.03%   0.00556701s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.00600000s, and total CPU time :  0.00679600s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00750300s
 
-########## END ITERATION NO.  13 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  13 ##########   Mon May 31 10:16:20 2021
 
-It.   13    -287.7503498342     -6.82D-13 -1.57D-07  1.10D-07   DIIS   9    0.00600000s   LL             Fri May 14
+It.   13    -287.7503498342     -6.82D-13 -1.57D-07  1.10D-07   DIIS   9    0.00800000s   LL             Mon May 31
 
-########## START ITERATION NO.  14 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  14 ##########   Mon May 31 10:16:20 2021
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
    14 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   81.08%    0.00%    3.02%   0.00378996s
+SOfock:LL  1.00D-12    0.00%   81.08%    0.00%    3.02%   0.00418100s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.00500000s, and total CPU time :  0.00629700s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00539300s
 
-########## END ITERATION NO.  14 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  14 ##########   Mon May 31 10:16:20 2021
 
-It.   14    -287.7503498342     -5.68D-14  3.02D-08  3.54D-08   DIIS   7    0.00500000s   LL             Fri May 14
+It.   14    -287.7503498342     -3.41D-13  3.02D-08  3.54D-08   DIIS   7    0.00500000s   LL             Mon May 31
 
-########## START ITERATION NO.  15 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  15 ##########   Mon May 31 10:16:20 2021
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
    15 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   81.81%    0.01%    2.93%   0.00442302s
+SOfock:LL  1.00D-12    0.00%   81.81%    0.01%    2.93%   0.00364900s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.00600000s, and total CPU time :  0.00717800s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00472500s
 
-########## END ITERATION NO.  15 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  15 ##########   Mon May 31 10:16:20 2021
 
-It.   15    -287.7503498342      1.71D-13  6.37D-09  1.14D-08   DIIS   2    0.00600000s   LL             Fri May 14
+It.   15    -287.7503498342      5.68D-13  6.37D-09  1.14D-08   DIIS   2    0.00500000s   LL             Mon May 31
 
-########## START ITERATION NO.  16 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  16 ##########   Mon May 31 10:16:20 2021
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
    16 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   83.30%    0.07%    2.94%   0.00427902s
+SOfock:LL  1.00D-12    0.00%   83.30%    0.07%    2.94%   0.00399101s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.00600000s, and total CPU time :  0.00698800s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00518400s
 
-########## END ITERATION NO.  16 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  16 ##########   Mon May 31 10:16:20 2021
 
-It.   16    -287.7503498342     -1.08D-12  2.69D-09  1.55D-09   DAMP 25%    0.00600000s   LL             Fri May 14
+It.   16    -287.7503498342     -1.36D-12  2.69D-09  1.55D-09   DAMP 25%    0.00500000s   LL             Mon May 31
 
-########## START ITERATION NO.  17 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  17 ##########   Mon May 31 10:16:20 2021
 
    17 *** Differential density matrix. DCOVLP     = 1.0000
    17 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   86.92%    0.31%    2.89%   0.00378597s
+SOfock:LL  1.00D-12    0.00%   86.92%    0.31%    2.89%   0.00396800s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.00600000s, and total CPU time :  0.00612100s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00515600s
 
-########## END ITERATION NO.  17 ##########   Fri May 14 02:52:57 2021
+########## END ITERATION NO.  17 ##########   Mon May 31 10:16:20 2021
 
-It.   17    -287.7503498342     -4.83D-12 -4.93D-10  1.91D-09   DAMP 25%    0.00600000s   LL             Fri May 14
+It.   17    -287.7503498342     -4.66D-12 -4.93D-10  1.91D-09   DAMP 25%    0.00500000s   LL             Mon May 31
 
-########## START ITERATION NO.  18 ##########   Fri May 14 02:52:57 2021
+########## START ITERATION NO.  18 ##########   Mon May 31 10:16:20 2021
 
    18 *** Differential density matrix. DCOVLP     = 1.0000
    18 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   88.59%    0.19%    2.93%   0.00428200s
+SOfock:LL  1.00D-12    0.00%   88.59%    0.19%    2.93%   0.00332099s
 E_HOMO...E_LUMO, symmetry 1:                                 10  -0.37934   11  -0.15747   12   0.17429
->>> Total wall time:  0.00600000s, and total CPU time :  0.00689600s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00441700s
 
-########## END ITERATION NO.  18 ##########   Fri May 14 02:52:58 2021
+########## END ITERATION NO.  18 ##########   Mon May 31 10:16:20 2021
 
-It.   18    -287.7503498342      2.27D-12  2.57D-10  1.26D-09   DAMP 25%    0.00600000s   LL             Fri May 14
+It.   18    -287.7503498342      2.16D-12  2.57D-10  1.26D-09   DAMP 25%    0.00500000s   LL             Mon May 31
 
-########## START ITERATION NO.  19 ##########   Fri May 14 02:52:58 2021
+########## START ITERATION NO.  19 ##########   Mon May 31 10:16:20 2021
 
    19 *** Differential density matrix. DCOVLP     = 1.0000
    19 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   89.80%    0.23%    2.65%   0.00374401s
->>> Total wall time:  0.00400000s, and total CPU time :  0.00436500s
+SOfock:LL  1.00D-12    0.00%   89.80%    0.23%    2.65%   0.00576499s
+>>> Total wall time:  0.00600000s, and total CPU time :  0.00667900s
 
-########## END ITERATION NO.  19 ##########   Fri May 14 02:52:58 2021
+########## END ITERATION NO.  19 ##########   Mon May 31 10:16:20 2021
 
-It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00400000s   LL             Fri May 14
+It.   19    -287.7503498342     -1.93D-12  1.34D-10  8.65D-10   DAMP 25%    0.00600000s   LL             Mon May 31
 
 
                                    SCF - CYCLE
@@ -1358,42 +1356,42 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -120.4445718571      0.00D+00  0.00D+00  0.00D+00               0.00445900s   Atom. scrpot   Fri May 14
-It.    2    -287.5579779275      1.67D+02 -2.07D+00  1.71D+00               0.02100000s   LL             Fri May 14
-It.    3    -287.7175781857      1.60D-01  3.82D-01  5.09D-01   DIIS   2    0.01400000s   LL             Fri May 14
-It.    4    -287.7443374525      2.68D-02  1.39D-01  1.60D-01   DIIS   3    0.01600000s   LL             Fri May 14
-It.    5    -287.7496042719      5.27D-03 -6.30D-02  3.46D-02   DIIS   4    0.01500000s   LL             Fri May 14
-It.    6    -287.7502624866      6.58D-04  1.28D-02  7.99D-03   DIIS   5    0.01400000s   LL             Fri May 14
-It.    7    -287.7503482070      8.57D-05 -3.13D-03  1.77D-03   DIIS   6    0.01300000s   LL             Fri May 14
-It.    8    -287.7503496315      1.42D-06  5.71D-04  3.79D-04   DIIS   7    0.01500000s   LL             Fri May 14
-It.    9    -287.7503498111      1.80D-07  9.30D-05  1.45D-04   DIIS   8    0.01400000s   LL             Fri May 14
-It.   10    -287.7503498341      2.30D-08  5.35D-05  1.69D-05   DIIS   9    0.01500000s   LL             Fri May 14
-It.   11    -287.7503498342      8.98D-11  2.88D-06  2.30D-06   DIIS   9    0.01400000s   LL             Fri May 14
-It.   12    -287.7503498342      3.30D-12  6.97D-07  3.18D-07   DIIS   9    0.01400000s   LL             Fri May 14
-It.   13    -287.7503498342     -6.82D-13 -1.57D-07  1.10D-07   DIIS   9    0.00600000s   LL             Fri May 14
-It.   14    -287.7503498342     -5.68D-14  3.02D-08  3.54D-08   DIIS   7    0.00500000s   LL             Fri May 14
-It.   15    -287.7503498342      1.71D-13  6.37D-09  1.14D-08   DIIS   2    0.00600000s   LL             Fri May 14
-It.   16    -287.7503498342     -1.08D-12  2.69D-09  1.55D-09   DAMP 25%    0.00600000s   LL             Fri May 14
-It.   17    -287.7503498342     -4.83D-12 -4.93D-10  1.91D-09   DAMP 25%    0.00600000s   LL             Fri May 14
-It.   18    -287.7503498342      2.27D-12  2.57D-10  1.26D-09   DAMP 25%    0.00600000s   LL             Fri May 14
-It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00400000s   LL             Fri May 14
+It.    1    -120.4445718571      0.00D+00  0.00D+00  0.00D+00               0.00361500s   Atom. scrpot   Mon May 31
+It.    2    -287.5579779275      1.67D+02 -2.07D+00  1.71D+00               0.01300000s   LL             Mon May 31
+It.    3    -287.7175781857      1.60D-01  3.82D-01  5.09D-01   DIIS   2    0.01100000s   LL             Mon May 31
+It.    4    -287.7443374525      2.68D-02  1.39D-01  1.60D-01   DIIS   3    0.00900000s   LL             Mon May 31
+It.    5    -287.7496042719      5.27D-03 -6.30D-02  3.46D-02   DIIS   4    0.01000000s   LL             Mon May 31
+It.    6    -287.7502624866      6.58D-04  1.28D-02  7.99D-03   DIIS   5    0.01100000s   LL             Mon May 31
+It.    7    -287.7503482070      8.57D-05 -3.13D-03  1.77D-03   DIIS   6    0.00800000s   LL             Mon May 31
+It.    8    -287.7503496315      1.42D-06  5.71D-04  3.79D-04   DIIS   7    0.01000000s   LL             Mon May 31
+It.    9    -287.7503498111      1.80D-07  9.30D-05  1.45D-04   DIIS   8    0.00900000s   LL             Mon May 31
+It.   10    -287.7503498341      2.30D-08  5.35D-05  1.69D-05   DIIS   9    0.01100000s   LL             Mon May 31
+It.   11    -287.7503498342      8.95D-11  2.88D-06  2.30D-06   DIIS   9    0.00900000s   LL             Mon May 31
+It.   12    -287.7503498342      3.41D-12  6.97D-07  3.18D-07   DIIS   9    0.00900000s   LL             Mon May 31
+It.   13    -287.7503498342     -6.82D-13 -1.57D-07  1.10D-07   DIIS   9    0.00800000s   LL             Mon May 31
+It.   14    -287.7503498342     -3.41D-13  3.02D-08  3.54D-08   DIIS   7    0.00500000s   LL             Mon May 31
+It.   15    -287.7503498342      5.68D-13  6.37D-09  1.14D-08   DIIS   2    0.00500000s   LL             Mon May 31
+It.   16    -287.7503498342     -1.36D-12  2.69D-09  1.55D-09   DAMP 25%    0.00500000s   LL             Mon May 31
+It.   17    -287.7503498342     -4.66D-12 -4.93D-10  1.91D-09   DAMP 25%    0.00500000s   LL             Mon May 31
+It.   18    -287.7503498342      2.16D-12  2.57D-10  1.26D-09   DAMP 25%    0.00500000s   LL             Mon May 31
+It.   19    -287.7503498342     -1.93D-12  1.34D-10  8.65D-10   DAMP 25%    0.00600000s   LL             Mon May 31
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   19 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00300000s
-      LL           :    0.01133333s
+      No 2-ints    :    0.00400000s
+      LL           :    0.00827778s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -320.40814342135184
+   Electronic energy                        :    -320.40814342135195
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      32.65779358715657
 
    Sum of all contributions to the energy
-   Total energy                             :    -287.75034983419528
+   Total energy                             :    -287.75034983419539
 
 
                                    Eigenvalues
@@ -1402,15 +1400,15 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
- -47.5834495435387  ( 2)    -25.3378954876848  ( 2)     -3.7995259990297  ( 2)     -2.1267683163554  ( 2)     -2.1207621637037  ( 2)
-  -2.1194944776302  ( 2)     -1.4293361327466  ( 2)     -0.4213322051793  ( 2)     -0.3802852667098  ( 2)     -0.3793370303501  ( 2)
+ -47.5834495435385  ( 2)    -25.3378954876849  ( 2)     -3.7995259990297  ( 2)     -2.1267683163554  ( 2)     -2.1207621637037  ( 2)
+  -2.1194944776303  ( 2)     -1.4293361327467  ( 2)     -0.4213322051793  ( 2)     -0.3802852667097  ( 2)     -0.3793370303501  ( 2)
   * Open shell #1, f = 0.5000
   -0.1574705941478  ( 2)
   * Virtual eigenvalues, f = 0.0000
-   0.1742871549908  ( 2)      0.1744925767016  ( 2)      0.3069668618816  ( 2)      0.9522877633493  ( 2)      0.9531566526912  ( 2)
-   0.9754398206854  ( 2)      1.0826214798452  ( 2)      3.1465725636175  ( 2)      3.1481804617252  ( 2)      3.3074916844606  ( 2)
-   4.6767632834982  ( 2)      6.6473779822662  ( 2)      6.6546723218960  ( 2)      6.7361016182173  ( 2)     11.1652086474036  ( 2)
-  56.5358837553032  ( 2)    105.3320916581614  ( 2)
+   0.1742871549908  ( 2)      0.1744925767016  ( 2)      0.3069668618816  ( 2)      0.9522877633493  ( 2)      0.9531566526911  ( 2)
+   0.9754398206853  ( 2)      1.0826214798452  ( 2)      3.1465725636176  ( 2)      3.1481804617251  ( 2)      3.3074916844606  ( 2)
+   4.6767632834983  ( 2)      6.6473779822661  ( 2)      6.6546723218960  ( 2)      6.7361016182173  ( 2)     11.1652086474038  ( 2)
+  56.5358837553034  ( 2)    105.3320916581616  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.17428715 au (symmetry E1 )
@@ -1436,10 +1434,10 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
      ************************************************************************
 
 
- Transformation started at : Fri May 14 02:52:58 2021
+ Transformation started at : Mon May 31 10:16:20 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -287.750349834197209
-* Heading :  MgF electric field -> dipole                    Fri May 14 02:52:58 2021
+* REACMO: Coefficients read from file DFCOEF - Total energy: -287.750349834197323
+* Heading :  MgF electric field -> dipole                    Mon May 31 10:16:20 2021
      Energy selection of active orbitals :    -1000.00 < Eps. <      2000.00 with a mininum gap of     0.0100 au.
      Energy selection of active orbitals :    -1000.00 < Eps. <      2000.00 with a mininum gap of     0.0100 au.
      Energy selection of active orbitals :    -1000.00 < Eps. <      2000.00 with a mininum gap of     0.0100 au.
@@ -1496,10 +1494,10 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
       **********************************************************************
 
 
- Transformation started at : Fri May 14 02:52:58 2021
+ Transformation started at : Mon May 31 10:16:20 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -287.750349834197209
-* Heading :  MgF electric field -> dipole                    Fri May 14 02:52:58 2021
+* REACMO: Coefficients read from file DFCOEF - Total energy: -287.750349834197323
+* Heading :  MgF electric field -> dipole                    Mon May 31 10:16:20 2021
      Energy selection of active orbitals :    -1000.00 < Eps. <      2000.00 with a mininum gap of     0.0100 au.
      Energy selection of active orbitals :    -1000.00 < Eps. <      2000.00 with a mininum gap of     0.0100 au.
 
@@ -1533,13 +1531,13 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
        ********************************************************************
 
 
- Transformation started at : Fri May 14 02:52:58 2021
+ Transformation started at : Mon May 31 10:16:20 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -287.750349834197209
-* Heading :  MgF electric field -> dipole                    Fri May 14 02:52:58 2021
+* REACMO: Coefficients read from file DFCOEF - Total energy: -287.750349834197323
+* Heading :  MgF electric field -> dipole                    Mon May 31 10:16:20 2021
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :  MgF electric field -> dipole                    Fri May 14 02:52:57 2021
+* Heading :  MgF electric field -> dipole                    Mon May 31 10:16:20 2021
 
 
  Core energy (includes nuclear repulsion) :             32.6577935872
@@ -1555,11 +1553,11 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
    - Beginning task   3 of   4 after      0. seconds and      0. CPU-seconds
    - Beginning task   4 of   4 after      0. seconds and      0. CPU-seconds
  - Integral class 2 : (SS|??)
- Node    0 finished first half transformation          505643 HT integrals written ( 39.71%,      0.01 GB)
+ Node    0 finished first half transformation          507407 HT integrals written ( 39.85%,      0.01 GB)
 
 
    Integrals written :
- >>> CPU time used in 2HT_all is   0.73 seconds
+ >>> CPU time used in 2HT_all is   0.74 seconds
  - Binary  file MDCINT was written.
 * Screening statistics:
    (LL|LL)ints :   0.00%
@@ -1567,8 +1565,8 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
- Time in  First halftransformation            0.748 seconds
- Time in  Second halftransformation           0.730 seconds
+ Time in  First halftransformation            0.751 seconds
+ Time in  Second halftransformation           0.744 seconds
 
 ------ End of timing report ------
 
@@ -1577,7 +1575,7 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  Total wall time used in PAMTRA :   00:00:02
  Total CPU  time used in PAMTRA (master only) :   00:00:02
 
- Transformation ended at : Fri May 14 02:52:59 2021
+ Transformation ended at : Mon May 31 10:16:22 2021
 
 
 ---< Process     1 of     1----<
@@ -1606,8 +1604,8 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
   - Core spectra (CVS-EOM) : L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes, arXiv:2011.08549
 
 
- Today is :    14 May 21
- The time is :  02:52:59
+ Today is :    31 May 21
+ The time is :  10:16:22
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 ===========================================================================
@@ -1616,7 +1614,7 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  * General print level   :   1
  NEL_F1:  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 
- Total memory available :       15625.00 MB   15.259 GB
+ Total memory available :        1953.12 MB    1.907 GB
 
  INFO: No old restart file(s) found!
 
@@ -1645,7 +1643,7 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  Debug information       :                 F
  Timing information      :                 T
  Print level          :                    1
- Memory limit (MWord) :                      1953
+ Memory limit (MWord) :                       244
  Interface used       :                DIRAC6    
 
 
@@ -1666,32 +1664,32 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  Type VOVV :          437325 integrals
  Type VVVV :          354025 integrals
 
- Start sorting of integral classes at  14 May 21 02:52:59
+ Start sorting of integral classes at  31 May 21 10:16:22
 
 
- Sorting of first 4 classes done at  14 May 21 02:52:59
+ Sorting of first 4 classes done at  31 May 21 10:16:22
 
  Need      1 passes to sort VOVV integrals
 
- Pass     1 ended at  14 May 21 02:53:00
+ Pass     1 ended at  31 May 21 10:16:23
 
- VOVV sorting done at  14 May 21 02:53:00
+ VOVV sorting done at  31 May 21 10:16:23
 
  Need      1 passes to sort VVVV integrals
 
- Pass     1 ended at  14 May 21 02:53:00
+ Pass     1 ended at  31 May 21 10:16:23
 
- VVVV sorting done at  14 May 21 02:53:00
+ VVVV sorting done at  31 May 21 10:16:23
 
  Reading Coulomb integrals :
- File date :      14 May 21
- File time :       02:53:00
- # of integrals             1934084
+ File date :      31 May 21
+ File time :       10:16:23
+ # of integrals             1952434
 
  Finished sorting of integrals
 
 
- Single determinant electronic energy :     -320.408143421357408
+ Single determinant electronic energy :     -320.408143421357579
 
 
  Checking the orbital energies, the program computes the diagonal elements of the
@@ -1704,53 +1702,53 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
   O    3    3     A       -3.7995259990   -3.7938610011
   O    4    4     A       -2.1267683164   -2.1251206858
   O    5    5     A       -2.1207621637   -2.1191709703
-  O    6    6     A       -2.1194944776   -2.1216515727
+  O    6    6     A       -2.1194944776   -2.1216843209
   O    7    7     A       -1.4293361327   -1.4241252789
   O    8    8     A       -0.4213322052   -0.4051108341
   O    9    9     A       -0.3802852667   -0.3830073460
-  O   10   10     A       -0.3793370304   -0.3817195885
+  O   10   10     A       -0.3793370304   -0.3813397897
   O   11   11     A      -47.5834495435  -47.5856569926
   O   12   12     A      -25.3378954877  -25.3385107850
   O   13   13     A       -3.7995259990   -3.8051909970
   O   14   14     A       -2.1267683164   -2.1284159469
   O   15   15     A       -2.1207621637   -2.1223533571
-  O   16   16     A       -2.1194944776   -2.1173373825
+  O   16   16     A       -2.1194944776   -2.1173046344
   O   17   17     A       -1.4293361327   -1.4345469867
   O   18   18     A       -0.4213322052   -0.4375535765
   O   19   19     A       -0.3802852667   -0.3775631874
-  O   20   20     A       -0.3793370304   -0.3769544722
+  O   20   20     A       -0.3793370304   -0.3773342710
   O   21   21     A       -0.1574705941   -0.2439934800
   V    1   22     A       -0.1574705941    0.1020980632
   V    2   23     A        0.1742871550    0.1501223665
-  V    3   24     A        0.1744925767    0.1589019127
+  V    3   24     A        0.1744925767    0.1544687373
   V    4   25     A        0.3069668619    0.3229752609
   V    5   26     A        0.9522877633    0.9416825858
-  V    6   27     A        0.9531566527    0.9429444635
+  V    6   27     A        0.9531566527    0.9431942654
   V    7   28     A        0.9754398207    1.0010174562
   V    8   29     A        1.0826214798    1.0907379644
   V    9   30     A        3.1465725636    3.1456812459
-  V   10   31     A        3.1481804617    3.1472916200
+  V   10   31     A        3.1481804617    3.1472904606
   V   11   32     A        3.3074916845    3.3125654497
   V   12   33     A        4.6767632835    4.6792709144
   V   13   34     A        6.6473779823    6.6453427756
-  V   14   35     A        6.6546723219    6.6526165999
+  V   14   35     A        6.6546723219    6.6526165948
   V   15   36     A        6.7361016182    6.7405622641
   V   16   37     A       11.1652086474   11.1696378683
   V   17   38     A       56.5358837553   56.5363331923
   V   18   39     A      105.3320916582  105.3339519754
   V   19   40     A        0.1742871550    0.1984519434
-  V   20   41     A        0.1744925767    0.1900832407
+  V   20   41     A        0.1744925767    0.1945164161
   V   21   42     A        0.3069668619    0.2909584629
   V   22   43     A        0.9522877633    0.9628929409
-  V   23   44     A        0.9531566527    0.9633688419
+  V   23   44     A        0.9531566527    0.9631190400
   V   24   45     A        0.9754398207    0.9498621851
   V   25   46     A        1.0826214798    1.0745049953
   V   26   47     A        3.1465725636    3.1474638813
-  V   27   48     A        3.1481804617    3.1490693034
+  V   27   48     A        3.1481804617    3.1490704627
   V   28   49     A        3.3074916845    3.3024179191
   V   29   50     A        4.6767632835    4.6742556525
   V   30   51     A        6.6473779823    6.6494131890
-  V   31   52     A        6.6546723219    6.6567280439
+  V   31   52     A        6.6546723219    6.6567280490
   V   32   53     A        6.7361016182    6.7316409723
   V   33   54     A       11.1652086474   11.1607794264
   V   34   55     A       56.5358837553   56.5354343181
@@ -1766,14 +1764,14 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  Going to add  1 finite field operator(s) to the unrestricted Fock matrix.
 
  Read integral type ZDIPLEN  created ******** storage info : ********
- Added this to the Fock matrix with field strength   0.10000000E-02   0.0000000    
+ Added this to the Fock matrix with field strength   0.10000000E-03   0.0000000    
 
 
  Nuclear repulsion + core energy :            32.657793587156569
- Zero order electronic energy :             -171.610140534883186
- First order electronic energy :            -148.767776694932252
- Electronic energy :                        -320.377917229815466
- SCF energy :                               -287.720123642658905
+ Zero order electronic energy :             -171.637344107270621
+ First order electronic energy :            -148.767776694932678
+ Electronic energy :                        -320.405120802203328
+ SCF energy :                               -287.747327215046766
 
 
  Energy calculations
@@ -1784,10 +1782,10 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
 
   MP2 results
 
- SCF energy :                               -287.720123642658905
- MP2 correlation energy :                     -0.226484494000390
- Total MP2 energy :                         -287.946608136659279
- T1 diagnostic :                               0.005835222388386
+ SCF energy :                               -287.747327215046766
+ MP2 correlation energy :                     -0.226339709072366
+ Total MP2 energy :                         -287.973666924119129
+ T1 diagnostic :                               0.005723104917909
 
 
  CCSD options :
@@ -1795,153 +1793,153 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  Maximum size of DIIS space :              8
  Convergence criterium :             0.1E-09
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000000692242
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000000139953
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.226501064393751   1.000000000000000   0.00584
+    0       -0.226358001365384   1.000000000000000   0.00572
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000093814343
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000101227062
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000071582039
-    1       -0.220500308163482   0.000433385003567   0.03300
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000076379192
+    1       -0.220159510051549   0.000431614974043   0.03224
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000007281071
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000007736476
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000009723539
-    2       -0.231734195089319   0.000220406385102   0.02854
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000010788412
+    2       -0.231338005736010   0.000218478320257   0.02779
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000011758237
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000012351907
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000019357973
-    3       -0.235044204726916   0.000109022925440   0.03944
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000021344853
+    3       -0.234595387624062   0.000107399383924   0.03856
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000019871561
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000021747747
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000039604474
-    4       -0.234901127821687   0.000020471011303   0.04081
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000041570699
+    4       -0.234455058008770   0.000020114732502   0.03994
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000017594280
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000018512022
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000040331571
-    5       -0.234825055356864   0.000013130750253   0.04110
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000042420252
+    5       -0.234374891844307   0.000012856442325   0.04023
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000009955891
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000011023204
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000037037252
-    6       -0.234960038674336   0.000005095440465   0.04137
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000038738382
+    6       -0.234504270852885   0.000005037769161   0.04049
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000008543348
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000008730513
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000038775923
-    7       -0.235030176663022   0.000002727943294   0.04149
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000040410340
+    7       -0.234573680226303   0.000002694689555   0.04060
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000170803
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000712220
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000066924965
-    8       -0.235017326068202   0.000001369232425   0.04145
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000069595861
+    8       -0.234561609547110   0.000001343684050   0.04057
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000001790788
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000001165082
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000076775311
-    9       -0.235015022238862   0.000000580462994   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000079803062
+    9       -0.234558900418220   0.000000563990758   0.04058
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000854604
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000334929
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000067155014
-   10       -0.235011068169870   0.000000154771648   0.04148
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000070178025
+   10       -0.234555168999639   0.000000145711743   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000243817
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000139603
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000041647669
-   11       -0.235011217872899   0.000000060934609   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000042867493
+   11       -0.234555349395231   0.000000056640477   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000483034
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000035647
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000052968876
-   12       -0.235011753604180   0.000000027522069   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000053214555
+   12       -0.234555860799330   0.000000025424769   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000201750
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000164056
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000040871202
-   13       -0.235011604098555   0.000000011408751   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000039851280
+   13       -0.234555722271943   0.000000010738312   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000143015
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000058245
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000010187574
-   14       -0.235011614963169   0.000000007614819   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000010135314
+   14       -0.234555730943649   0.000000007144839   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000087862
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000072726
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000018189290
-   15       -0.235011604280076   0.000000003848201   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000018000235
+   15       -0.234555721191045   0.000000003662051   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000105915
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000012164
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000010853489
-   16       -0.235011585356979   0.000000002498021   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000010500890
+   16       -0.234555703151962   0.000000002382318   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000040702
+ WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000015147
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000006615074
-   17       -0.235011595501531   0.000000001572711   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000005824018
+   17       -0.234555713839471   0.000000001491836   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :  -0.000000000011692
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000005710
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000001979832
-   18       -0.235011598786594   0.000000000768102   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000001514449
+   18       -0.234555716682972   0.000000000711684   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000009920
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000003450
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000000798323
-   19       -0.235011600590634   0.000000000371625   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000000644985
+   19       -0.234555718277908   0.000000000336887   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000000860
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000004979
 
- WARNING : Imaginary contribution to T2 part of CC energy :   0.000000000450930
-   20       -0.235011602452232   0.000000000153547   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :   0.000000000367975
+   20       -0.234555719689103   0.000000000134362   0.04059
 
- WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000003500
+ WARNING : Imaginary contribution to T1 part of CC energy :   0.000000000003499
 
- WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000000013919
-   21       -0.235011601585132   0.000000000081102   0.04147
+ WARNING : Imaginary contribution to T2 part of CC energy :  -0.000000000024631
+   21       -0.234555718940570   0.000000000073846   0.04059
 
 
   CCSD results
 
- SCF energy :                               -287.720123642658905
- CCSD correlation energy :                    -0.235011601585132
- Total CCSD energy :                        -287.955135244244047
- T1 diagnostic :                               0.041472181651812
- Convergence :                                 0.000000000081102
+ SCF energy :                               -287.747327215046766
+ CCSD correlation energy :                    -0.234555718940570
+ Total CCSD energy :                        -287.981882933987322
+ T1 diagnostic :                               0.040588158962082
+ Convergence :                                 0.000000000073846
  Number or iterations used :                                  21
 
 
  Performance of BLAS GEMM in the largest contractions
 
  Contraction type                           Performance
- VVVV+VOVV (in B: includes I/O)             28.91   Gflop/s
- VOVO (in H: only XGEMM)                    36.48   Gflop/s
- VOVO (in T2EQN: includes sort)             33.76   Gflop/s
+ VVVV+VOVV (in B: includes I/O)             30.44   Gflop/s
+ VOVO (in H: only XGEMM)                    37.82   Gflop/s
+ VOVO (in T2EQN: includes sort)             35.65   Gflop/s
 
 
   Perturbative treatment of triple excitations
 
- SCF energy :                               -287.720123642658905
- CCSD correlation energy :                    -0.235011601585132
- 4th order triples correction :               -0.014772185573726
- 5th order triples (T) correction :            0.004410262500646
- 5th order triples -T  correction :            0.006109695370788
- Total CCSD+T  energy :                     -287.969907429817795
- Total CCSD(T) energy :                     -287.965497167317153
- Total CCSD-T  energy :                     -287.963797734446985
+ SCF energy :                               -287.747327215046766
+ CCSD correlation energy :                    -0.234555718940570
+ 4th order triples correction :               -0.014456137127370
+ 5th order triples (T) correction :            0.004191473662349
+ 5th order triples -T  correction :            0.005833179075685
+ Total CCSD+T  energy :                     -287.996339071114676
+ Total CCSD(T) energy :                     -287.992147597452345
+ Total CCSD-T  energy :                     -287.990505892038982
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :    14 May 21
- The time is :  02:53:12
+ Today is :    31 May 21
+ The time is :  10:16:34
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -1953,81 +1951,81 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
  CCSD(T) energy calculation :          Completed, restartable        
 
  Overview of calculated energies
-@ SCF energy :                              -287.720123642658905
-@ MP2 correlation energy :                    -0.226484494000390
-@ CCSD correlation energy :                   -0.235011601585132
-@ 4th order triples correction :              -0.014772185573726
-@ 5th order triples (T) correction :           0.004410262500646
-@ 5th order triples -T  correction :           0.006109695370788
-@ Total MP2 energy :                        -287.946608136659279
-@ Total CCSD energy :                       -287.955135244244047
-@ Total CCSD+T  energy :                    -287.969907429817795
-@ Total CCSD(T) energy :                    -287.965497167317153
-@ Total CCSD-T  energy :                    -287.963797734446985
+@ SCF energy :                              -287.747327215046766
+@ MP2 correlation energy :                    -0.226339709072366
+@ CCSD correlation energy :                   -0.234555718940570
+@ 4th order triples correction :              -0.014456137127370
+@ 5th order triples (T) correction :           0.004191473662349
+@ 5th order triples -T  correction :           0.005833179075685
+@ Total MP2 energy :                        -287.973666924119129
+@ Total CCSD energy :                       -287.981882933987322
+@ Total CCSD+T  energy :                    -287.996339071114676
+@ Total CCSD(T) energy :                    -287.992147597452345
+@ Total CCSD-T  energy :                    -287.990505892038982
 
 
 --------------------------------------------------------------------------------
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
- Time in Sorting of integrals                 0.594 seconds
- Time in CCSD equations                       9.424 seconds
- Time in - T1 equations                       1.678 seconds
+ Time in Sorting of integrals                 0.609 seconds
+ Time in CCSD equations                       8.950 seconds
+ Time in - T1 equations                       1.591 seconds
  Time in --- T1EQNS T*[HOV - F]*T             0.001 seconds
- Time in --- T1EQNS HOV*T2(A,C,I,K            0.068 seconds
+ Time in --- T1EQNS HOV*T2(A,C,I,K            0.064 seconds
  Time in --- T1EQNS   HV*T / T*HO             0.001 seconds
- Time in --- T1EQNS VOOO*TAU                  0.139 seconds
- Time in --- T1EQNS VOVV contribution         0.972 seconds
- Time in --- T1EQNS VOVO * T(C,K)             0.082 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.131 seconds
+ Time in --- T1EQNS VOVV contribution         0.936 seconds
+ Time in --- T1EQNS VOVO * T(C,K)             0.076 seconds
  Time in -- GOINTM                            0.042 seconds
- Time in -- GVINTM                            0.058 seconds
- Time in -- AINTM                             0.224 seconds
- Time in -- HINTM                             2.787 seconds
- Time in --- HINTM: VOVV*T                    0.452 seconds
- Time in --- HINTM: VVOO contribution         1.829 seconds
- Time in -- T2 EQNS                           4.329 seconds
- Time in --- T2EQNS: TAU*AINTM contract       0.150 seconds
- Time in --- T2EQNS: VOVV*T1                  0.668 seconds
- Time in --- T2EQNS: HINTM*T2                 1.976 seconds
- Time in -- BINTM                             0.997 seconds
+ Time in -- GVINTM                            0.055 seconds
+ Time in -- AINTM                             0.217 seconds
+ Time in -- HINTM                             2.696 seconds
+ Time in --- HINTM: VOVV*T                    0.436 seconds
+ Time in --- HINTM: VVOO contribution         1.764 seconds
+ Time in -- T2 EQNS                           4.081 seconds
+ Time in --- T2EQNS: TAU*AINTM contract       0.140 seconds
+ Time in --- T2EQNS: VOVV*T1                  0.619 seconds
+ Time in --- T2EQNS: HINTM*T2                 1.871 seconds
+ Time in -- BINTM                             0.947 seconds
  Time in - adding partial T1/T2 amplitu       0.000 seconds
- Time in - DIIS extrapolation                 0.222 seconds
+ Time in - DIIS extrapolation                 0.190 seconds
  Time in - synchronizing T1 & T2 amplit       0.000 seconds
- Time in CCSD(T) evaluation                   2.204 seconds
- Time in -- T3CORR: Integral resorting        0.010 seconds
- Time in -- T3CORR: VOVV contraction          1.793 seconds
- Time in -- T3CORR: energy calculation        0.392 seconds
+ Time in CCSD(T) evaluation                   1.808 seconds
+ Time in -- T3CORR: Integral resorting        0.008 seconds
+ Time in -- T3CORR: VOVV contraction          1.477 seconds
+ Time in -- T3CORR: energy calculation        0.319 seconds
 
 ------ End of timing report ------
 
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :               1759.53                     2.16
- Initialization :                    0.14                     0.14
- Integral sorting :                  0.59                     0.59
- Energy calculation :               12.14                    11.72
+ Before CC driver :               2381.04                     2.01
+ Initialization :                    0.15                     0.15
+ Integral sorting :                  0.61                     0.61
+ Energy calculation :               11.27                    10.85
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
  EOMCC energies :                    0.00                     0.00
  Untimed parts :                     0.00                     0.00
- Total time in CC driver :            13.                    12.46
+ Total time in CC driver :            12.                    11.61
 
  Statistics for the word-addressable I/O
  Number of write calls                                1075.
  Number of read calls                                 1081.
  Megabytes written                                  148.029
  Megabytes read                                    2481.693
- Seconds spent in reads                               0.557
- Seconds spent in writes                              0.561
- average I/O speed for write (Mb/s)                 265.761
- average I/O speed for read  (Mb/s)                4423.696
+ Seconds spent in reads                               0.531
+ Seconds spent in writes                              0.532
+ average I/O speed for write (Mb/s)                 278.774
+ average I/O speed for read  (Mb/s)                4664.837
 
 
- CPU time (seconds) used in RELCCSD:                    12.4627
- CPU time (seconds) used before RELCCSD:                 2.1560
- CPU time (seconds) used in total sofar:                14.6187
+ CPU time (seconds) used in RELCCSD:                    11.6119
+ CPU time (seconds) used before RELCCSD:                 2.0098
+ CPU time (seconds) used in total sofar:                13.6217
 
   --- Normal end of RELCCSD Run ---
 
@@ -2040,31 +2038,31 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
 
 
  
-     Date and time (Linux)  : Fri May 14 02:53:12 2021
+     Date and time (Linux)  : Mon May 31 10:16:34 2021
      Host name              : poto-W65-W67RB                          
 
->>>> Node 0, utime: 13, stime: 1, minflt: 221799, majflt: 0, nvcsw: 4336, nivcsw: 104, maxrss: 488712
->>>> Total WALL time used in DIRAC: 15s
+>>>> Node 0, utime: 12, stime: 1, minflt: 146778, majflt: 0, nvcsw: 19, nivcsw: 111, maxrss: 188696
+>>>> Total WALL time used in DIRAC: 14s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       809.14
+  Mean allocation size (Mb) :        28.09
   
   Largest          10  allocations
   
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA - part 2                   
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-    14770.51 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA - part 2                   
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
         8.25 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
         8.25 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
         8.25 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
   
-  Peak memory usage:     14770.51 MB
-  Peak memory usage:       14.424 GB
+  Peak memory usage:       488.29 MB
+  Peak memory usage:        0.477 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
@@ -2072,7 +2070,3 @@ It.   19    -287.7503498342     -1.93D-12 -1.34D-10  8.65D-10   DAMP 25%    0.00
 
 *****************************************************
 DIRAC pam run in /home/pototschnig/DIRAC/exacorr-finite-field/build/test/exacorr_talsh_finite_field
-
- ====  below this line is the stderr stream  ====
-
-libgomp: Invalid value for environment variable OMP_PROC_BIND
