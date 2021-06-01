@@ -509,7 +509,8 @@ contains
                         ipq_off_in,          &
                         x2c_file_glb,        &
                         print_lvl,           &
-                        linear_sym)
+                        linear_sym,          &
+                        atomic_sym)
 !**********************************************************************
 !
 !    purpose:
@@ -539,6 +540,7 @@ contains
      integer, intent(in)    :: x2c_file_glb
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: atomic_sym
 !----------------------------------------------------------------------
      integer                :: i
      integer                :: j
@@ -606,8 +608,13 @@ contains
 
 !        a. read the linear-symmetry adapted MO2MO transformation matrix
 !        -----------------------------------------------------------------
-         open(8,file='JzMOLLb',status='old',form='unformatted', &
-              access='sequential',action="readwrite",position='rewind')
+         if(atomic_sym)then
+           open(8,file='KMJMOLLb',status='old',form='unformatted', &
+                access='sequential',action="readwrite",position='rewind')
+         else
+           open(8,file='JzMOLLb',status='old',form='unformatted', &
+                access='sequential',action="readwrite",position='rewind')
+         end if
 
 !        MO2MO linear symmetry <--> nonlinear symmetry transformation matrix
          ilowdmat = 1

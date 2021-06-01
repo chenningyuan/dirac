@@ -6297,11 +6297,8 @@ C
 !     stefan - june 2011: save LL block of <j_z>-eigenvectors (temporary) on file
 !                         this block is needed to transform the 2c-LOWDIN matrix
 !                         in the x2c-mmf approach (thus ensuring numerical stability by not re-doing this step).
-!     ayaki.15.11.2019
-!     I have not tested do4c2c (X2Cmmf) yet,
-!     because the correlation part has not been finished yet.
       if(do4c2c)then
-        open(13,file='KMOLLb',status='replace',form='unformatted',
+        open(13,file='KMJMOLLb',status='replace',form='unformatted',
      &       access='sequential',action='readwrite',
      &       position='rewind')
       end if
@@ -6670,9 +6667,6 @@ C
  20   CONTINUE ! DO 20 IFRP = 1,NFSYM
 C         
 
-      if(do4c2c)then ! x2c-mmf approach
-        close(13,status='keep')
-      end if
 C
 C     Generate transformation matrix in non-orthogonal basis
 C     ======================================================
