@@ -7043,12 +7043,13 @@ C
          IOFL = 0
          IOFVL = IOFVL + NFBAS(IFRP,0)*NS
          DO IK = 1,IKAP
+           IOFK = KPADD+IK-1
            IF(NS.GT.0)THEN  
              CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
-     &                   NORB_SUB(KPADD+IK-1,IFRP,2),
-     &                   WORK(KVSS+IOFS),NS,NORB_SUB(KPADD+IK-1,IFRP,2),
+     &                   NORB_SUB(IOFK,IFRP,2),
+     &                   WORK(KVSS+IOFS),NS,NORB_SUB(IOFK,IFRP,2),
      &                   NS,1,
-     &                   NORB_SUB(KPADD+IK-1,IFRP,2),1,NFBAS(IFRP,0),
+     &                   NORB_SUB(IOFK,IFRP,2),1,NFBAS(IFRP,0),
      &                   VMAT(IOFVS),NFBAS(IFRP,0),NS,1,
      &                   IPRHAM)
              IF(do4c2c)THEN
@@ -7065,10 +7066,10 @@ C
            IOFS = IOFS + NS*NORB_SUB(IOFK,IFRP,2)
            IOFT = IOFT + NFBAS(IFRP,0)*NORB_SUB(IOFK,IFRP,2)
            CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
-     &                 NORB_SUB(KPADD+IK-1,IFRP,1),
-     &                 WORK(KVLL+IOFL),NL,NORB_SUB(KPADD+IK-1,IFRP,1),
+     &                 NORB_SUB(IOFK,IFRP,1),
+     &                 WORK(KVLL+IOFL),NL,NORB_SUB(IOFK,IFRP,1),
      &                 NL,1,
-     &                 NORB_SUB(KPADD+IK-1,IFRP,1),1,NFBAS(IFRP,0),
+     &                 NORB_SUB(IOFK,IFRP,1),1,NFBAS(IFRP,0),
      &                 VMAT(IOFVL),NFBAS(IFRP,0),NL,1,
      &                 IPRHAM)
            IF(do4c2c)THEN
@@ -7079,8 +7080,8 @@ C... Insert WORK(KFLL) to TMPB (U_Mj) for each Mj
      &                 WORK(KFLL+IOFL),TMPB(1),IPRHAM)
            ENDIF
 C...  Update large here: : WORK(KVLL+IOFL),VMAT(IOFV),TMAT(IOFV)
-           IOFL = IOFL + NL*NORB_SUB(KPADD+IK-1,IFRP,1)
-           IOFT = IOFT + NFBAS(IFRP,0)*NORB_SUB(KPADD+IK-1,IFRP,1)
+           IOFL = IOFL + NL*NORB_SUB(IOFK,IFRP,1)
+           IOFT = IOFT + NFBAS(IFRP,0)*NORB_SUB(IOFK,IFRP,1)
          ENDDO  ! IK = 1,IKAP
 C     
          IOFVS = IOFVS + NFBAS(IFRP,0)*(NL+NS)
