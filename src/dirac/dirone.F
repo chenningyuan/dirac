@@ -7116,8 +7116,8 @@ C
      &        NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
 C
          CALL HEADER(
-     &    'ATMSYM: Unitary transformation'//
-     &    ' matrix Kappa->Mj MO (only LL), TMPA',-1)         
+     &    'ATMSYM: Final Unitary transformation'//
+     &    ' matrix MO->MO (only LL), TMPA',-1)         
          WRITE(LUPRI,'(A,I1,A,I1)')
      &   '* Fermion ircop no.',IFRP,'/',NFSYM
          CALL PRQMAT(TMPA(1),NESH(IFRP),NESH(IFRP),
