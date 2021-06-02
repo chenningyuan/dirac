@@ -601,6 +601,14 @@ contains
 
        call x2c_write(flabel,lowd_mat,nlowdmat,x2c_file_glb)
 
+! debug print
+       if(print_lvl > 2)then
+         ilowdmat = 1
+         do i = 1, nfsym
+           call print_x2cmat(lowd_mat(ilowdmat),naosh_all(i),nesh_dim(i),nz,ipq_off_in(1,0),'lowd-2cG',6)
+           ilowdmat     = ilowdmat     + naosh_all(i)*nesh_dim(i)
+         end do
+       end if
 
 !      step 4: transform 2c-adapted Lowdin matrix in AO2MO basis to account for linear symmetry
 !      ----------------------------------------------------------------------------------------
@@ -684,7 +692,7 @@ contains
      integer, intent(in)           :: ndim_x
      integer, intent(in)           :: ndim_y
      integer, intent(in)           :: nz
-     integer, intent(in)           :: ipq_off(4,*)
+     integer, intent(in)           :: ipq_off(1:4, 0:7)
      integer, intent(in)           :: prntunit
      logical, optional, intent(in) :: lrlc_equal
      character(*), intent(in)      :: title
@@ -693,10 +701,10 @@ contains
          call header2(title,-1,prntunit)
          if(.not.present(lrlc_equal))then
            call prqmat(xmat,ndim_x,ndim_y,ndim_x,ndim_y,nz,  &
-                       ipq_off,prntunit)
+                       ipq_off(1,0),prntunit)
          else
            call prqmat(xmat,ndim_x,ndim_x,ndim_y,ndim_y,nz,  &
-                       ipq_off,prntunit)
+                       ipq_off(1,0),prntunit)
          end if
 
   end subroutine print_x2cmat
