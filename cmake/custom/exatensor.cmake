@@ -6,7 +6,9 @@ if(ENABLE_EXATENSOR)
        # The following weird construction is needed because these cmake variables are otherwise not active inside the environment and make that is called below
        set(TALSH_COMPILERS "CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER} CMAKE_C_COMPILER=${CMAKE_C_COMPILER} CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
    else()
-       if (NOT (${MPI_Fortran_COMPILER} MATCHES "mpif90" OR ${MPI_Fortran_COMPILER} MATCHES "mpifort"))
+       if (DEFINED ENV{MPILIB})
+         set(EXATENSOR_MPIENV MPILIB=$ENV{MPILIB})
+       elseif (NOT (${MPI_Fortran_COMPILER} MATCHES "mpif90" OR ${MPI_Fortran_COMPILER} MATCHES "mpifort"))
           message(STATUS "This MPI compiler is not supported by ExaTENSOR, using only the TALSH (serial) component of the ExaTensor library")
           message(STATUS "Only MPICH (3.2.1+) and OpenMPI (4.1.1+) are currently supported by ExaTENSOR")
           set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
@@ -161,7 +163,7 @@ if(ENABLE_EXATENSOR)
        set(EXTERNAL_LIBS ${EXTERNAL_LIBS} ${EXATENSOR_INSTALL_DIR}/libexatensor.a)
     endif()
     #In case of problems with the build, one may manually add ExaTENSOR dependencies here (BLAS, OpenMP, CUDA, C++):
-    #set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
+    set(EXTERNAL_LIBS ${EXTERNAL_LIBS} -L/sw/summit/essl/6.1.0-2/essl/6.1/lib64 -L/sw/summit/xl/16.1.1-5/xlC/16.1.1/lib -L/sw/summit/xl/16.1.1-5/xlf/16.1.1/lib -lessl -lxlf90_r -lxlfmath -L/sw/summit/cuda/10.1.243/lib64 -lcublas -lcudart -lnvToolsExt -lstdc++ -lgomp)
 
     include_directories(${PROJECT_BINARY_DIR}/exatensor/src/exatensor/include)
 
