@@ -6973,7 +6973,7 @@ C
        CALL MEMGET('REAL',KVSS,NSS,WORK,KFREE,LFREE)
 C
        IF(do4c2c)THEN 
-C       make U_Mj only for kappa = 1,-1, beucase U_Mj is diagonal at Kappa = -1,1 
+C       make U_Mj only for kappa = 1,-1, because U_Mj is diagonal at Kappa = -1,1 
 C       kappa = not 1,-1 will be made later       
          allocate(TMPB(NORB(IFRP)*NORB(IFRP)))       
          CALL DZERO(TMPB,NORB(IFRP)*NORB(IFRP))
@@ -7272,7 +7272,7 @@ C... Extract only LL block (TMPA) from total U (TBUF)
      &               TBUF(IOFU),NORB(IFRP),NORB(IFRP),1)
         call writt(13,NESH(IFRP)*NESH(IFRP),TMPA(1))
 C
-        IF(IPRHAM.GE.6)THEN        
+        IF(IPRHAM.GE.5)THEN        
          CALL HEADER(
      &    'ATMSYM: Unitary transformation'//
      &    ' matrix Kappa->Mj MO, TMPB',-1)         
@@ -7306,16 +7306,17 @@ C
 C
 C... Debug sentences
 C      
-      DO 50 IFRP = 1,NFSYM
-      IF(NORB(IFRP).EQ.0) GOTO 50      
+      IOFT = 1
+      IOFU = 1
+      IOFV = 1
+      IMAT = 1
+      IBUF = 1 
       IF (IPRHAM.GE.5) THEN
-         IOFT = 1
-         IOFU = 1
-         IOFV = 1
-         IMAT = 1
-         IBUF = 1 
+            DO 50 IFRP = 1,NFSYM
+            IF(NORB(IFRP).EQ.0) GOTO 50      
+      
 C
-         CALL HEADER(
+            CALL HEADER(
      &'ATMSYM: Final unitary transformation matrix'// 
      &' in orthon. basis U (MO->MO),TBUF',-1)
          WRITE(LUPRI,'(3X,A,I1,A,I1)')
@@ -7342,14 +7343,14 @@ C
      &               NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
          WRITE(LUPRI,'(/5X,A/)')         
 C
-         IOFT = IOFT + NFBAS(IFRP,0)*NORB(IFRP)
-         IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
-         IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
-         IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
-         IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
-      ENDIF
+            IOFT = IOFT + NFBAS(IFRP,0)*NORB(IFRP)
+            IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
+            IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
+            IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
+            IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
 C
- 50   CONTINUE
+ 50         CONTINUE
+      ENDIF            
 C
       CALL FLSHFO(LUPRI)
       CALL QEXIT('ATMSYM')
