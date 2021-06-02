@@ -44,7 +44,7 @@ if(ENABLE_EXATENSOR)
     # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
     # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
     set (EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-    set (EXATENSOR_GIT_HASH f95a6fe8fc5fb4e673fa103b6c5745c61ce4151a CACHE STRING "ExaTENSOR Git repository hash in use")
+    set (EXATENSOR_GIT_HASH e8e6f6351fabad514be9dd07d3c0a3a9e81c3f52 CACHE STRING "ExaTENSOR Git repository hash in use")
     set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
     # The build of ExaTensor is controlled by environment variables, set these using information provided by cmake.
