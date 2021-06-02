@@ -17,19 +17,20 @@ Li2 molecule. X2C Hamiltonian. CC energies.
 1.0E-9 1.0E-7
 **MOLTRA
 .ACTIVE
-energy -5.0 10.0 0.01
+energy -5.0 1.0 0.01
 .NO4IND
 **EXACC
 .OCCUPIED
 energy -5.0  0.0  0.01
 .VIRTUAL
-energy  0.0  10.0  0.01
+energy  0.0  1.0  0.01
 .PRINT
 4
 .MOINT_SCHEME
 42
 .CHOLESKY
 1.0D-6
+.NOTRIPLES
 .TALSH_BUFF
-16
+50
 *END OF

@@ -104,18 +104,19 @@
         end type space_dims
 #endif
 
-!       All two electron integral tensors
+!       All fixed one and two electron integral tensors (defines 2nd quantized Hamiltonian)
         type, public :: talsh_intg_tens
          type(talsh_tens_t) :: oooo
          type(talsh_tens_t) :: ooov
          type(talsh_tens_t) :: oovv, vovo
          type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
+         type(talsh_tens_t) :: foo, fov, fvv
         end type talsh_intg_tens
 
 !       Common blocks between t and lambda
         type, public :: talsh_comm_tens
-         type(talsh_tens_t) :: foo, fov, fvv
+         type(talsh_tens_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in talsh_intg_tens
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int
