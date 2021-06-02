@@ -6909,9 +6909,33 @@ C
         IOFV = IOFV + NORB(IFRP)*NFBAS(IFRP,0)
  30   CONTINUE !  DO 30 IFRP = 1,NFSYM
 
+      CALL ICOPY(MAX_SUB_BL*3*2,NORB_SUB,1,NTMO_SUB,1)  
       !> copy kappa-adapted 4c AO->atomic MO transformation matrix from TMAT to VMAT
       !> so that VMAT becomes VU, i.e. V => VU
       CALL DCOPY(N2TMT,TMAT,1,VMAT,1)
+      IF(IPRHAM.GE.5) THEN
+            CALL HEADER(
+     &    'dcopy: AFTER LINSYM final transformation'//
+     &    ' matrix 4c AO->LINSYM MO, TMAT(output)',-1)
+        IMAT = 1
+        IBUF = 1
+        DO IFRP = 1,NFSYM
+            IF(NORB(IFRP).GT.0) THEN
+                WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',IFRP,'/',NFSYM
+                CALL PRQMAT(TMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
+     &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
+                WRITE(LUPRI,'(A,I1,A,I1)')
+     &      '* Fermion ircop no.',IFRP,'/',NFSYM
+                CALL PRQMAT(VMAT(IMAT),NFBAS(IFRP,0),NORB(IFRP),
+     &                  NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
+                WRITE(LUPRI,'(/5X,A/)')
+                IMAT = IMAT + NFBAS(IFRP,0)*NORB(IFRP)*1
+                IBUF = IBUF + NORB(IFRP)*NORB(IFRP)*1
+            ENDIF
+         ENDDO
+      ENDIF
+    
 C       
 CCCCCCCCCCCCCCCCCCCCCCCCCCC
 C.....Here we start MJ-part
