@@ -6762,6 +6762,7 @@ C
      &' Parity  Kappa  MJ  Functions(total) Functions(LC) Functions(SC)'
 C      
       IOFT    = 1
+      IOFU    = 1
       IOFVS   = 1
       IOFVL   = 1
       INVMAX  = 3-NFSYM  ! INV=2 for NFSYM=1 and INV=1 for NFSYM=2
@@ -6774,14 +6775,15 @@ C
          WRITE (LUPRI,1020) 3-2*IFRP,(-1)**IFRP,1,
      &          (NORB_SUB(1,IFRP,IC),IC=0,2)
          KPADD = 2
-         NORB1 = NFBAS(IFRP,0)*NORB_SUB(1,IFRP,0)
+         NSKIP = NORB_SUB(1,IFRP,0)
        ELSE
          WRITE (LUPRI,1020) 3-2*IFRP,-1,1,(NORB_SUB(1,IFRP,IC),IC=0,2)
          WRITE (LUPRI,1020) 3-2*IFRP, 1,1,(NORB_SUB(2,IFRP,IC),IC=0,2)
          KPADD = 3
-         NORB1 = NFBAS(IFRP,0)*(NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0))
+         NSKIP = NORB_SUB(1,IFRP,0)+NORB_SUB(2,IFRP,0)
        ENDIF
-C       
+       NORB1 = NFBAS(IFRP,0)*NSKIP
+C     
        IOFVS = IOFVS + NORB1
        IOFVL = IOFVL + NORB1
        IOFT  = IOFT  + NORB1
@@ -7112,7 +7114,15 @@ C
      &   '* Fermion ircop no.',IFRP,'/',NFSYM
          CALL PRQMAT(TMPB(1),NORB(IFRP),NORB(IFRP),
      &        NORB(IFRP),NORB(IFRP),1,IPQTOQ(1,0),LUPRI)
-        ENDIF 
+C
+         CALL HEADER(
+     &    'ATMSYM: Unitary transformation'//
+     &    ' matrix Kappa->Mj MO (only LL), TMPA',-1)         
+         WRITE(LUPRI,'(A,I1,A,I1)')
+     &   '* Fermion ircop no.',IFRP,'/',NFSYM
+         CALL PRQMAT(TMPA(1),NESH(IFRP),NESH(IFRP),
+     &        NESH(IFRP),NESH(IFRP),1,IPQTOQ(1,0),LUPRI)
+       ENDIF 
         deallocate(TMPB)
        end if !do4c2c
        IOFU = IOFU + NORB(IFRP)*NORB(IFRP)
