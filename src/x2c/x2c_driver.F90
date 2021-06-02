@@ -482,7 +482,7 @@ contains
                                lwrk,                 &
                                print_lvl,            &
                                linear_sym,           &
-                               atomic_sym,           &
+                               atomic_sym,           &                
                                mdirac                &
                               )              
 !**********************************************************************
@@ -525,7 +525,7 @@ contains
      integer, intent(inout) :: lwrk
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
-     logical, intent(in)    :: atomic_sym
+     logical, intent(in)    :: atomic_sym     
      logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)

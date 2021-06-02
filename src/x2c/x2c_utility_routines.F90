@@ -615,7 +615,7 @@ contains
 !        a. read the linear-symmetry adapted MO2MO transformation matrix
 !        -----------------------------------------------------------------
          if(atomic_sym)then
-           open(8,file='KMOLLb',status='old',form='unformatted', &
+           open(8,file='KMJMOLLb',status='old',form='unformatted', &
                 access='sequential',action="readwrite",position='rewind')
          else
            open(8,file='JzMOLLb',status='old',form='unformatted', &
