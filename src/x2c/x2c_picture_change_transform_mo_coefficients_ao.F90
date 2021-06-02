@@ -414,7 +414,7 @@ contains
 !        debug print
          if(print_lvl > 2)then
            write(info_text,'(a27,i1)') 'x2c - 2c-cmo-onMO  - fsym =',i
-           call print_x2cmat(xmat(offset_2),n1esh_f,n1esh_f,nz,ipq_off_in,info_text,6)
+           call print_x2cmat(xmat(offset_2),nesh_dim(i),nesh_dim(i),nz,ipq_off_in,info_text,6)
          end if
 
 !        keep track of proper offsets
