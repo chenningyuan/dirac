@@ -306,6 +306,8 @@ C
      &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
          END IF
          WRITE(LUPRI,'(10X,A,I10)')
+     &        'Max no. of strings     ',MAXSTR
+         WRITE(LUPRI,'(10X,A,I10)')
      &        'Max no. of determinants',MAXDET
       END IF
 C
