@@ -84,12 +84,8 @@ K(rhoa,grada,rhob,gradb,gradab):=(rhoa+rhob)*(eps(rhoa,rhob)+H(d(rhoa,rhob,grada
 
  
 /* strictly conform to XOPEN ANSI C standard */
-#if !defined(SYS_DEC)
-/* XOPEN compliance is missing on old Tru64 4.0E Alphas and pow() prototype
- * is not specified. */
 #define _XOPEN_SOURCE          500
 #define _XOPEN_SOURCE_EXTENDED 1
-#endif
 #include <math.h>
 #include <stddef.h>
  

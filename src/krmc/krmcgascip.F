@@ -734,15 +734,9 @@ C
 C
 C     17-11-2007-SK: INTEGER*1 is an illegal value on 64-Bit SX machines
 C     Is this solution still working?
-#if defined (SYS_SX64)
-!     INTEGER*4 ID1(4)
-      call qenter('NGASCIP_NBITS')
-      call quit('ERROR: INTEGER*1 not defined on 64-bit SX machines')
-#else
       INTEGER*8 JDET, ID8
       INTEGER*1 ID1(8)
       EQUIVALENCE (ID1(1),ID8)
-#endif /* SYS_SX64 */
 C
 C     Anyone who can find with a faster routine?
 C

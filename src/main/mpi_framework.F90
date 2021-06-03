@@ -178,13 +178,7 @@ IERR      = 0
 !
 IF( ITASK .eq. 0 )THEN
    IF( MYTID .eq. MPARID )THEN
-!tsaue: Adding initialization until I have checked what happend for SYS_T3D and SYS_T90....
-      LEN_LOCAL = LBASDIR
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDIR,IERR)
-#else
       CALL GETENV('BASDIR',BASDIR_SCR)
-#endif
       LEN_LOCAL = LEN_TRIM(BASDIR_SCR)
 !
 !     If string is empty add current directory
@@ -210,11 +204,7 @@ IF( ITASK .eq. 0 )THEN
 ELSE IF ( ITASK .eq. 1 ) THEN ! ITASK == 1: DIRWRK
 !
    IF( MYTID .eq. MPARID )THEN
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('DIRWRK',6,CDIRWRK_SCR,LDIRWRK,IERR)
-#else
       CALL GETENV("DIRWRK",CDIRWRK_SCR)
-#endif
       LEN_LOCAL = LDIRWRK
 20    CONTINUE
       IF ( LEN_LOCAL .gt. 0 ) THEN
@@ -247,11 +237,7 @@ ELSE IF ( ITASK .eq. 1 ) THEN ! ITASK == 1: DIRWRK
 ELSE IF ( ITASK .eq. 2 ) THEN ! ITASK == 2: DIRNOD
 !
    IF( MYTID .eq. MPARID )THEN
-#if defined (SYS_T3D) || defined (SYS_T90)
-      CALL PXFGETENV ('DIRNOD',6,CDIRNOD_SCR,LDIRNOD,IERR)
-#else
       CALL GETENV("DIRNOD",CDIRNOD_SCR)
-#endif
       LEN_LOCAL = LDIRNOD
 30    CONTINUE
       IF ( LEN_LOCAL .gt. 0 ) THEN

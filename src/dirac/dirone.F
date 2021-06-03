@@ -1864,12 +1864,7 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBUF(NBAST,*)
-#else
       DIMENSION VBUF(NTBAS(0),*)
-#endif
       DIMENSION VMAT(*),ISORT(*),NVEC(2)
 C
 C

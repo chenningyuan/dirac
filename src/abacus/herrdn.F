@@ -1940,12 +1940,8 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "consts.h"
-      PARAMETER(CORMAX = 1.D5)
-#if defined (SYS_HPUX)
-      PARAMETER (LUERR = 7)
-#else
+      PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
-#endif
 #include "cbirea.h"
 C
 #include "molinp.h"
@@ -1997,7 +1993,7 @@ C        951115-hjaaj: NAMN() must never be read with free format
 C          (otherwise it will on e.g. AIX be filled with nulls:
 C           e.g. ' C  ' would become 'C\NULL\NULL\NULL'; and on
 C           e.g. IRIX free format read of char. var. is not defined).
-#if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D)
+#if !defined (VAR_NOFREE)
         READ (MLINE(NMLINE)(5:80),*,ERR=101) (CORD(J,NUCIND),J = 1, 3)
         GO TO 104
 #endif
@@ -3323,7 +3319,7 @@ C
         DO 100 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
               DO M = 1, NRCIJ
@@ -3371,7 +3367,7 @@ C
         DO 300 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
 #else
@@ -5777,7 +5773,7 @@ C
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_NOFREE)
+#if defined (VAR_NOFREE)
       DUMMY = 1.0D20
       IDUMMY = - 9 999 999
 #endif
@@ -5792,7 +5788,7 @@ C
       BET(NUCIND)=D0
       READ (MLINE(NMLINE),'(A4)',IOSTAT=IOS) NAMN(NUCIND)
       IF (FIRST) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
          ISTART = 5
          CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
          CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
@@ -5811,7 +5807,7 @@ C
          IF(NUCIND .EQ. 3) GO TO 202
          GO TO 203
       END IF
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
  201  ISTART = 5
       CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
       CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
