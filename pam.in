@@ -975,12 +975,13 @@ Options are also read from ~/.diracrc"""
             if self.dirac_mpi_command is None:
                if self.own_mpirun:
                   self.dirac_mpi_command = str(self.own_mpirun) + ' '
-            elif "@MPI_TYPE@" == "OPENMPI":
-               # For openMPI: if --bind-to none is not added, then e.g. "ctest -j 10" for "-np 1" will run all 10 jobs on CPU core 0
-               # and the remaining CPU cores will idle ... observed 03-May-2021)
-               self.dirac_mpi_command = self.mpirun + ' --bind-to none -np ' + str(self.nr_proc) + ' '
-            else:
-               self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+               else:
+                  self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+            
+         # For openMPI: if --bind-to none is not added, then e.g. "ctest -j 10" for "-np 1" will run all 10 jobs on CPU core 0
+         # and the remaining CPU cores will idle ... observed 03-May-2021)
+            if "@MPI_TYPE@" == "OPENMPI":
+                self.dirac_mpi_command = self.dirac_mpi_command + ' --bind-to none '
 
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
