@@ -6,9 +6,17 @@
 #
 #
 if(MPI_FOUND)
-    if (${MPI_Fortran_VERSION_MAJOR})
-        message(STATUS "MPI version:  ${MPI_Fortran_VERSION_MAJOR}.${MPI_Fortran_VERSION_MINOR}")
-    endif()
+
+    # which MPI package ?  Get MPI TYPE from Python script
+    execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/custom/IdentifyMPI.py
+                    ${MPIEXEC} OUTPUT_VARIABLE PYTHON_OUTPUT)
+    string(STRIP "${PYTHON_OUTPUT}" MPI_TYPE)
+    message(STATUS "MPI package type: ${MPI_TYPE}")
+
+# commented 3-jun-2021, hjaaj. I do not understand the relation between MPI version and MPI_fortran_VERSION_MAJOR ???
+#   if (${MPI_Fortran_VERSION_MAJOR})
+#       message(STATUS "MPI version:  ${MPI_Fortran_VERSION_MAJOR}.${MPI_Fortran_VERSION_MINOR}")
+#   endif()
 
     include(CheckFortranSourceCompiles1)
 
