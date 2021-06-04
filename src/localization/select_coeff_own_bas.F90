@@ -474,7 +474,7 @@ contains
   FUNCTION JGET(I)
   INTEGER I, JGET
 !
-#if defined (SYS_CRAY) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       JGET = IAND(ISHFT(I,-32),65535)
 #else
       JGET = IAND(ISHFT(I,-16),255)

@@ -694,13 +694,6 @@ C           --------------------------
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
      &              .FALSE.,INDX,WORK(KFREE),IJP12,IDUM,NSIZG,IDUM)
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C           CRAYfix:
-C           Opening a direct access file with too long records 
-C           generates a crash because the machine tries to keep some
-C           records in memory
-            IF (NPASS.GT.1) NSIZG = MIN0(NSIZG,1000000)
-#endif
 C
 C           Setup INDXAB & IJPASS
 C           ---------------------

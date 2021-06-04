@@ -518,12 +518,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -566,12 +561,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -614,12 +604,7 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
@@ -662,12 +647,7 @@ C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AQO(NBAST,NBAST,NZ),ASO(NBAST,NBAST,4)
-#else
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#endif
 #include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
@@ -1936,12 +1916,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBU(NBAST,NVEC),VBS(NBAST,NVEC)
-#else
       DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
-#endif
       CALL QENTER('VTBUBS')
 C
       DO J = 1,NVEC
@@ -1981,12 +1956,7 @@ C
 #include "dgroup.h"
 #include "symmet.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION VBS(NBAST,NVEC),VBU(NBAST,NVEC)
-#else
       DIMENSION VBS(NTBAS(0),NVEC),VBU(NTBAS(0),NVEC)
-#endif
       CALL QENTER('VTBSBU')
       DO J = 1,NVEC
         DO IC = 1,2
@@ -2768,12 +2738,7 @@ C  /* Deck sphts1 */
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION AMAT(NBAST,NBAST),BMAT(NSPH,NBAST),WORK(LWORK)
-#else
       DIMENSION AMAT(NTBAS(0),NTBAS(0)),BMAT(NSPH,NTBAS(0)),WORK(LWORK)
-#endif
 C
 C     GENERATE MATRIX
 C

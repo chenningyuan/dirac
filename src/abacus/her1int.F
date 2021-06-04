@@ -5874,7 +5874,7 @@ C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
 C     References are:
 C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
-C     Hans Jrgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -5900,7 +5900,7 @@ C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
 C     References are:
 C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
-C     Hans Jrgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 C***********************************************************************
 #include "implicit.h"

@@ -147,45 +147,6 @@ C  /* Deck timdat */
       SUBROUTINE TIMDAT
 #include "implicit.h"
 #include "priunit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-      INTEGER CDATE, CTIME
-      CDATE = DATE()
-      CTIME = CLOCK()
-      WRITE(LUPRI,100) CDATE, CTIME
-  100 FORMAT(/,'  Date and time (CRAY) : ',A8,2X,A8)
-#endif
-#if defined (SYS_CONVEX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (Convex) : ',A)
-#endif
-#if defined (SYS_HAL)
-      CHARACTER*(24) CFDATE
-      CALL FDATE(CFDATE)
-      WRITE (LUPRI,100) CFDATE
-  100 FORMAT(/,' Date and time (HAL)    : ',A)
-#endif
-#if defined (SYS_AIX)
-C     AIX XL FORTRAN version 2.3+
-      CHARACTER*(24) fdate
-      WRITE (LUPRI,100) fdate()
-  100 FORMAT(/,' Date and time (IBM-AIX): ',A)
-#endif
-#if defined (SYS_HPUX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (HP-UX)  : ',A)
-#endif
-#if defined (SYS_DEC)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (DEC)  : ',A)
-#endif
-#if defined (SYS_IRIX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (IRIX)   : ',A)
-#endif
 #if defined (SYS_LINUX)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
@@ -200,16 +161,6 @@ C     AIX XL FORTRAN version 2.3+
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
   100 FORMAT(/,' Date and time (Darwin) : ',A)
-#endif
-#if defined (SYS_SX)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (Nec-SX) : ',A)
-#endif
-#if defined (SYS_SUN)
-      CHARACTER*(24) FDATE
-      WRITE (LUPRI,100) FDATE()
-  100 FORMAT(/,' Date and time (SUN)   : ',A)
 #endif
       RETURN
       END
@@ -348,19 +299,11 @@ C
       WRITE (LUPRI,'(/A)') STRING
       CALL TIMDAT
       WRITE (LUPRI,'(1X,A)') TEXT
-#if defined (SYS_CRAY) || defined (SYS_CONVEX)\
-|| defined (SYS_UNIX) || defined (SYS_AIX)\
-|| defined (SYS_HPUX) || defined (SYS_IRIX)\
-|| defined (SYS_NEC) || defined (SYS_DEC)\
-|| defined (SYS_T3D) || defined (SYS_LINUX)\
-|| defined (SYS_SUN) || defined (SYS_HPUX)\
-|| defined (SYS_HAL) || defined (SYS_T90)\
-|| defined (SYS_SX) || defined (SYS_DARWIN)
+      CALL FLSHFO(LUPRI)
+
 C     Write to stderr
       WRITE (0,'(/A/1X,A)') STRING, TEXT
       CALL FLSHFO(0)
-#endif
-      CALL FLSHFO(LUPRI)
 
 #if defined (SYS_LINUX)
 C aspg, replacing trace with os-provided traceback facilities. linux support for now
@@ -511,70 +454,8 @@ C
 #include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
-#if defined (VAR_SPLITFILES)
-      INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
-      LRECL = LRECL/8
-#else
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
-      LRECL = LRECL/4
-#endif
-#endif
-      IRECPF = I2GB/LRECL
-C
-C     Error branch for very large record lengths
-C
-      IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)')
-     &        ' ERROR: The requested record length of ', LRECL,
-     &        ' is larger than 2Gb'
-         WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
-     &        'single record to file!'
-         CALL QUIT('Record length of file too long for this computer')
-      END IF
-C
-      IF (I .GT. IRECPF) THEN
-C
-C     Ooops, this record is not in this file
-C
-         LFILNM = I/IRECPF - 1
-         IF (LFILNM .GT. 9) THEN
-            WRITE (LUPRI,'(/A)') ' DALTON needs to read from a file '//
-     &           ' split more than 11 times.',
-     &           ' This is currently not supported'
-            CALL QUIT('Too many splittings of a file')
-         END IF
-         IRECT = MOD(I,IRECPF)
-         IF (IRECT .EQ. 0) IRECT = IRECPF
-         INQUIRE(UNIT=LU,NAME=FNNAME)
-         LN = 1
- 10      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 10
-         END IF
-         LN = LN - 1
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         FNNM2 = FNNAME(1:LN)//'-'//CHRNOS(LFILNM)
-         CALL GPOPEN(LU,FNNM2(1:(LN+2)),'UNKNOWN','DIRECT',' ',LRECL,
-     &               OLDDX)
-      ELSE
-         IRECT = I
-      END IF
-#else
       IRECT = I
-#endif
       READ (LU, REC = IRECT) IVEC
-#if defined (VAR_SPLITFILES)
-      IF (I .GT. IRECPF) THEN
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         CALL GPOPEN(LU,FNNAME(1:LN),'UNKNOWN','DIRECT',' ',LRECL,OLDDX)
-      END IF
-#endif
       RETURN
       END
 C  /* Deck writdx */
@@ -592,70 +473,8 @@ C
 #include "inftap.h"
 #include "chrnos.h"
 C
-#if defined (VAR_SPLITFILES)
-      INQUIRE(UNIT=LU,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
-      LRECL = LRECL/8
-#else
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
-      LRECL = LRECL/4
-#endif
-#endif
-      IRECPF = I2GB/LRECL
-C
-C     Error branch for very large record lengths
-C
-      IF (IRECPF .EQ. 0) THEN
-         WRITE (LUPRI,'(/A,I14,A)')
-     &        ' ERROR: The requested record length of ', LRECL,
-     &        ' is larger than 2Gb'
-         WRITE (LUPRI,'(/A)') ' The program cannot write even a '//
-     &        'single record to file!'
-         CALL QUIT('Record length of file too long for this computer')
-      END IF
-C
-      IF (I .GT. IRECPF) THEN
-C
-C     Ooops, this record will not fit in this file
-C
-         LFILNM = I/IRECPF - 1
-         IF (LFILNM .GT. 9) THEN
-            WRITE (LUPRI,'(/A)') ' DALTON need to split a file more '//
-     &           ' than 11 times.', ' This is currently not supported'
-            CALL QUIT('Too many splittings of a file')
-         END IF
-         IRECT = MOD(I,IRECPF)
-         IF (IRECT .EQ. 0) IRECT = IRECPF
-         INQUIRE(UNIT=LU,NAME=FNNAME)
-         LN = 1
- 10      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 10
-         END IF
-         LN = LN - 1
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         FNNM2 = FNNAME(1:LN)//'-'//CHRNOS(LFILNM)
-         LN2 = LN + 2
-         CALL GPOPEN(LU,FNNM2(1:LN2),'UNKNOWN','DIRECT',' ',LRECL,
-     &               OLDDX)
-      ELSE
-         IRECT = I
-      END IF
-#else
       IRECT = I
-#endif
       WRITE (LU, REC = IRECT) IVEC
-#if defined (VAR_SPLITFILES)
-      IF (I .GT. IRECPF) THEN
-         LUBKP = LU
-         CALL GPCLOSE(LU,'KEEP')
-         LU = LUBKP
-         CALL GPOPEN(LU,FNNAME(1:LN),'UNKNOWN','DIRECT',' ',LRECL,OLDDX)
-      END IF
-#endif
       RETURN
       END
 C  /* Deck aolab4 */
@@ -1016,51 +835,7 @@ C
          CLOSE (LUNIT,STATUS='KEEP',ERR=9003)
          GOTO 30
       ELSE
-#if defined (VAR_SPLITFILES)
-         INQUIRE(UNIT=LUNIT,DIRECT=IODIR)
-         INQUIRE(UNIT=LUNIT,NAME=FNNAME)
-         IF (IODIR .EQ. 'YES') THEN
-            INQUIRE(UNIT=LUNIT,RECL=LRECL)
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90) || defined (SYS_LINUX)
-            LRECL = LRECL/8
-#endif
-#if !defined (SYS_NEC) && !defined (SYS_IRIX)
-            LRECL = LRECL/4
-#endif
-         END IF
-         LN = 1
- 15      CONTINUE
-         IF (FNNAME(LN:LN) .NE. ' ') THEN
-            LN = LN + 1
-            GOTO 15
-         END IF
-         LN = LN - 1
-         IF (IODIR .NE. 'YES') THEN
-            IF (FNNAME((LN-1):(LN-1)) .EQ. '-') THEN
-               CLOSE(LUNIT,STATUS='KEEP')
-               LN = LN - 2
-               OPEN (UNIT=LUNIT,FILE=FNNAME(1:LN),STATUS='OLD')
-            END IF
-         END IF
          CLOSE (LUNIT,STATUS='DELETE',ERR=20)
-         IUNIT = 0
- 16      CONTINUE
-         FNNM2 = FNNAME(1:LN)//'-'//CHRNOS(IUNIT)
-         LN2 = LN + 2
-         INQUIRE(FILE=FNNM2(1:LN2),EXIST=FEXIST)
-         IF (FEXIST) THEN
-            IF (IODIR .EQ. 'YES') THEN
-               CALL OPENDX(LUNIT,FNNM2(1:LN2),LRECL,'OLD',OLDDX)
-            ELSE
-               OPEN(UNIT=LUNIT,FILE=FNNM2(1:LN2),STATUS='OLD')
-            END IF
-            CLOSE(LUNIT,STATUS='DELETE')
-            IUNIT = IUNIT + 1
-            GOTO 16
-         END IF
-#else
-         CLOSE (LUNIT,STATUS='DELETE',ERR=20)
-#endif
          GOTO 30
       END IF
 C
