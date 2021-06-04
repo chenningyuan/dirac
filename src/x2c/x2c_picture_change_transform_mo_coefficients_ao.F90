@@ -31,7 +31,9 @@ module x2c_pct_mo_coefficients
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &
-      renew_x2c_cb_orb_shell_dim
+       renew_x2c_cb_orb_shell_dim
+  use x2cmod_cfg, only:                &
+       x2c_linsym, x2c_atomic
 
   implicit none
 
@@ -487,6 +489,7 @@ contains
      logical                     :: fndlab12
      integer, allocatable        :: dimension_info(:,:)
      integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
+     integer, allocatable        :: ibeig(:,:)
 !----------------------------------------------------------------------
 
        allocate(dimension_info(3,nfsym))
@@ -584,7 +587,17 @@ contains
        write(fh) info_text,nfsym,nz,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
        CALL WRICMO_coefficients(fh,mo_coeff_2c_ao,ndim_2c_mo_ao)
        CALL WRICMO_eigenvalues(fh,eigen_values,ndim_2c_ev)
-       CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)
+       if(x2c_atomic) then
+          allocate(ibeig(ndim_2c_bj,2))
+          do i = 1,ndim_2c_bj
+            CALL ATOMIC_ID(boson_irreps_jz_eigenvalues(i),ibeig(i,2),j,ibeig(i,1),k) 
+          enddo
+          CALL WRICMO_supersymmetry(fh,'SUPERSYM',ibeig(1,1),ndim_2c_bj)
+          CALL WRICMO_supersymmetry(fh,'KAPPA   ',ibeig(1,2),ndim_2c_bj)
+          deallocate(ibeig)
+       else
+         CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)
+       endif  
 !      Add additional information about basis set to create a simple interface file
        !      for correlated calculations (like exacorr)
        CALL WRICMO_basisinfo(fh)
