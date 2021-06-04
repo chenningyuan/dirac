@@ -15,9 +15,9 @@
 1.0E-9 1.0E-8  
 **EXACC
 .OCCUPIED                                                                                           
-2..5 
+energy -5.00 -0.30 0.001  
 .VIRTUAL                                                                                            
-6..20   
+energy -0.30  6.00 0.001 
 .MP2NO
 0.0d-4
 **MOLECULE

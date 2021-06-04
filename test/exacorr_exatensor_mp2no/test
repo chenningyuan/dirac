@@ -26,8 +26,8 @@ f.add(from_string = '    -     Final results from EXACORR     -    ',
 f.add(from_string = '* Dipole moment:',
       num_lines   = 9,
       rel_tolerance   = 1.0e-6)
-f.add(from_string = '* Electric field gradients :',
-      num_lines   = 20,
+f.add(from_string = '           Total contribution to principal components',
+      num_lines   = 15,
       rel_tolerance   = 1.0e-6)
 
 test.run(['hf_canonical_ccpvdz_0.0_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_exatensor=\
