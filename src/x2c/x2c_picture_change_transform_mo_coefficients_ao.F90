@@ -455,6 +455,7 @@ contains
 !             common blocks. 
 !
 !----------------------------------------------------------------------
+     use dircmo
      real(8), intent(inout)      :: transformation_matrix_mo2ao(*)
      real(8), intent(inout)      :: mo_coeff_2c_ao(*)
      real(8), intent(inout)      :: xmat(*)
@@ -482,14 +483,12 @@ contains
      integer                     :: offset_2
      integer                     :: fh = 99
      character (len=12)          :: flabel
-     character (len=24)          :: fdate
-     character (len=74)          :: info_text
+     character (len=50)          :: info_text
      logical                     :: fndlab12
-     integer, allocatable        :: dimension_info(:,:)
+     integer                     :: dimension_info(12)
      integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
 !----------------------------------------------------------------------
 
-       allocate(dimension_info(3,nfsym))
        allocate(boson_irreps_jz_eigenvalues(nesh_dim_total))
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
@@ -497,6 +496,7 @@ contains
 
        offset_1 = 1
        offset_2 = 1
+       dimension_info = 0 ! initialization
        do i = 1, nfsym
 
          if(nesh_dim(i) > 0)then
@@ -528,16 +528,15 @@ contains
          offset_1            = offset_1 + nesh_dim(i)
          offset_2            = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
 
-!        write dimension info for the new DFCOEF
-         dimension_info(1,i) = 0
-         dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = naosh_L(i)
+!        write dimension info for the new DFCOEF (7:9=gerade,10:12=ungerade)
+         dimension_info(4+3*i) = 0
+         dimension_info(5+3*i) = nesh_dim(i)
+         dimension_info(6+3*i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
        ndim_2c_bj = offset_1 - 1
        ndim_2c_ev = offset_1 - 1
-
 
 !      read the title line and total energy (read code -1) from the old DFCOEF
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
@@ -548,7 +547,6 @@ contains
        ndim_2c_mo_ao = 0
        offset_2      = 1
        do i = 1, nfsym
-!        print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
          call bcktr1(mo_coeff_2c_ao(offset_2),               &
                      naosh_L(i),                             &
                      nesh_dim(i),                            &
@@ -574,25 +572,20 @@ contains
          offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
          ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
        end do
-!      print *, 'dimension...',dimension_info
 
+       dimension_info(1) = nz
+       dimension_info(2) = nfsym
+       dimension_info(3) = ndim_2c_mo_ao
+       dimension_info(4) = 1 ! Hardwired, to be changed once I know what nkrblk does
+       dimension_info(5) = ndim_2c_ev
+       dimension_info(6) = 1 ! Hardwired, needs to be changed for atomic calculations
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       info_text(51:74) = fdate()
-       CALL NEWLAB('INFO    ',fh,6)
-       write(fh) info_text,nfsym,nz,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
-       CALL WRICMO_coefficients(fh,mo_coeff_2c_ao,ndim_2c_mo_ao)
-       CALL WRICMO_eigenvalues(fh,eigen_values,ndim_2c_ev)
-       CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)
-!      Add additional information about basis set to create a simple interface file
-       !      for correlated calculations (like exacorr)
-       CALL WRICMO_basisinfo(fh)
-       CALL NEWLAB('EOFLABEL',fh,6)                                     
+       call wricmo (fh,mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,info_text,dimension_info)
        close(fh,status='keep')
 
        deallocate(boson_irreps_jz_eigenvalues)
-       deallocate(dimension_info)
 
   end subroutine x2c_molecular_mean_field_mos
 

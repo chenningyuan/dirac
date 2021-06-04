@@ -2103,6 +2103,7 @@ C                    2006 - M.Ilias
 C
 C*****************************************************************************
       use memory_allocator
+      use dircmo
       use x2cmod_cfg
       use dirx2c
       use x2c_pct_ao, only:
@@ -2754,7 +2755,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo(lucoef,'DFCOEF',cmo_aoosoc,dum,idum,dum,2)
+            call reacmo_new(lucoef,cmo=cmo_aoosoc)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2915,7 +2916,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo(lucoef,'DFCOEF',cmo_mmf,dum,idum,dum,2)
+          call reacmo_new(lucoef,cmo=cmo_mmf)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
