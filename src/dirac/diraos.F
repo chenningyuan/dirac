@@ -37,12 +37,7 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
-#endif
       RHO = D0
       DO IC = 1,MC
          CALL GETRH1(RHO,IC,IREPOP,GAO,DMAT,BUF)      
@@ -67,12 +62,7 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),BUF(*)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
-#endif
 C
 #include "ibtfun.h"
 C      
@@ -110,14 +100,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
-     &          BUF(NBAST),GAO1(NBAST,3)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0)),GAO1(NTBAS(0),3)
-#endif
       DIMENSION RHG(3)
 C      
 #include "ibtfun.h"
@@ -166,14 +150,8 @@ C
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION RHO(0:2),GAO(NBAST),DMAT(NBAST,NBAST),
-     &          BUF(NBAST,4),GAO1(NBAST,3),GAO2(NBAST,6)
-#else
       DIMENSION RHO(0:2),GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &          BUF(NTBAS(0),4),GAO1(NTBAS(0),3),GAO2(NTBAS(0),6)
-#endif
 C      
       RXX = D0
       RXY = D0

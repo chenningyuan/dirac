@@ -1634,11 +1634,7 @@ C
       END
 #ifndef PRG_DIRAC
 C  /* Deck hdot */
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#else
-      DOUBLE PRECISION FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#endif
+      REAL*8 FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION VEC1(NDIM), VEC2(NDIM), HMAT(NDIM,NDIM)
@@ -1955,11 +1951,7 @@ C  /* Deck prhint */
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL MATRIX(NINTER,NINTER)
-#else
-      DOUBLE PRECISION MATRIX(NINTER,NINTER)
-#endif
+      REAL*8 MATRIX(NINTER,NINTER)
 #include "cbivib.h"
 #include "nuclei.h"
 C
@@ -4169,11 +4161,7 @@ C
             WRITE (LUPRI,181)       NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
          END IF
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (I6,'.',4X,A4,5X,4(A6,2X),F10.5,F12.6)
-#else
   180 FORMAT (I6,'.',A8,5X,4(A6,2X),F10.5,F12.6)
-#endif
   181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
 C
 C     Test that all specified atoms are well defined

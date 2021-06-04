@@ -1240,19 +1240,9 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equivalence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
 #include "ibtfun.h"
 C
       WRITE(LUPRI,*)
@@ -1292,19 +1282,9 @@ C***********************************************************************
 #include "consts.h"
 #include "dcbbas.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
 C
 C     Arrays for 2nd order polynomial fit:
 C
@@ -1466,19 +1446,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
-     &     SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
       GAO   = 0.0d0
       SMAT  = 0.0d0
       ASMAT = 0.0d0

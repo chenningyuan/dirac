@@ -42,17 +42,6 @@ C
 C Revised 2-Jun-1989 Hans Joergen Aa. Jensen to use
 C    floating point arithmetic, for larger range
 C
-#if defined (VAR_SECSEC) || defined (SYS_ALLIANT)
-C Alliant: experiments showed problems with -DAS (890502/hjaaj).
-C The reason was found to be that integer arithmetic then was used
-C in the following way:
-C FNFAC = PRODUCT(<1:N1>); FBION = PRODUCT(<M-N1+1:M>) / FNFAC
-C To get double precision accuracy one may either use the nonstandard
-C DFLOAT(K) or FK (see below) to use default type conversion.
-C (Note that nonstandard FLOAT is non-generic, so FLOAT(K)
-C gives only single precision accuracy!).
-C
-#endif
 #include "implicit.h"
       N1 = MIN(N,M-N)
       FNFAC = 1.0D0
@@ -290,11 +279,7 @@ C
 C  /* Deck matvcd */
       SUBROUTINE MATVCD(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
-#else
-      DOUBLE PRECISION MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
-#endif
+      REAL*8 MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
 C
 C     VECOUT=MATRIX*VECIN FOR ITRNSP=0
 C     VECOUT=MATRIX(TRANSPOSED)*VECIN FOR ITRNSP .NE. 0
@@ -355,36 +340,6 @@ C
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
-#if defined (SYS_ALLIANT)
-      IF (NVCEFF .LE. 0) THEN
-         DO 10 I = 1,NDIM
-            AX(I) = 0.0D0
-   10    CONTINUE
-         RETURN
-      END IF
-C
-      IF (NDIM .LE. 32) THEN
-CVD$  SHORTLOOP
-         DO 100 I = 1,NDIM
-            AX(I) = A(1)*X(I,INDEX(1))
-  100    CONTINUE
-         DO 300 L = 2,NVCEFF
-CVD$  SHORTLOOP
-            DO 200 I = 1,NDIM
-               AX(I) = AX(I) + A(L)*X(I,INDEX(L))
-  200       CONTINUE
-  300    CONTINUE
-      ELSE
-         DO 500 I = 1,NDIM
-            AX(I) = A(1)*X(I,INDEX(1))
-  500    CONTINUE
-         DO 700 L = 2,NVCEFF
-            DO 600 I = 1,NDIM
-               AX(I) = AX(I) + A(L)*X(I,INDEX(L))
-  600       CONTINUE
-  700    CONTINUE
-      END IF
-#else
       IF (NVCEFF .LE. 0) THEN
          DO 10 I = 1,NDIM
             AX(I) = 0.0D0
@@ -400,7 +355,6 @@ C
             AX(I) = AX(I) + A(L)*X(I,INDEX(L))
   200    CONTINUE
   300 CONTINUE
-#endif
       RETURN
       END
 C  /* Deck msaxpy */
@@ -412,30 +366,12 @@ C
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
-#if defined (SYS_ALLIANT)
-C
-      IF (NDIM .LE. 32) THEN
-         DO 300 L = 1,NVCEFF
-CVD$  SHORTLOOP
-            DO 200 I = 1,NDIM
-               AX(I) = AX(I) + A(L)*X(I,INDEX(L))
-  200       CONTINUE
-  300    CONTINUE
-      ELSE
-         DO 700 L = 1,NVCEFF
-            DO 600 I = 1,NDIM
-               AX(I) = AX(I) + A(L)*X(I,INDEX(L))
-  600       CONTINUE
-  700    CONTINUE
-      END IF
-#else
 C
       DO 300 L = 1,NVCEFF
          DO 200 I = 1,NDIM
             AX(I) = AX(I) + A(L)*X(I,INDEX(L))
   200    CONTINUE
   300 CONTINUE
-#endif
       RETURN
       END
 C  /* Deck reormt */
@@ -694,7 +630,6 @@ C
 #include "implicit.h"
       DIMENSION VECI(*),VECO(*),INDEX(*)
 C
-#include "nosync.h"
       DO 100 I = 1, NDIM
   100 VECO(INDEX(I)) = VECI(I)
 C
@@ -792,7 +727,6 @@ C
       DO 100 I = 1,NDET
          IF (IORD(I) .LT. 0) BCSF(I) = -BCSF(I)
   100 CONTINUE
-#include "nosync.h"
       DO 200 I = 1,NDET
          ADET( ABS(IORD(I)) ) = BCSF(I)
   200 CONTINUE
@@ -955,16 +889,11 @@ c
       RETURN
       END
 C  /* Deck inprod */
-      FUNCTION INPROD(A,B,NDIM)
+      REAL*8 FUNCTION INPROD(A,B,NDIM)
 C
 C     PURPOSE: CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
 C
 #include "implicit.h"
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL INPROD
-#else
-      DOUBLE PRECISION INPROD
-#endif
 C
       DIMENSION A(*),B(*)
 C
@@ -986,7 +915,6 @@ C
 C
       DO 100 I = 1, NPROD
          VU(I) = D0
-#include "prefer_vector.h"
          DO 50 J = 1,NROW
             VU(I) = VU(I) + A(J,IP(I))*VI(J)
    50    CONTINUE
