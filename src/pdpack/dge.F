@@ -9,22 +9,12 @@ C Call Linpack routines to calculate the inverse of a
 C general matrix A.
 C
       INTEGER N, IPVT(*), N2
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL A(*), AINV(*), WRK(*), DET(2)
-#else
-      DOUBLE PRECISION A(*), AINV(*), WRK(*), DET(2)
-#endif
+      REAL*8  A(*), AINV(*), WRK(*), DET(2)
 C
       N2 = N*N
-#if !defined (VAR_SBLAS)
       CALL DCOPY(N2,A,1,AINV,1)
       CALL DGEFA(AINV,N,N,IPVT,INFO)
       IF (INFO .EQ. 0) CALL DGEDI(AINV,N,N,IPVT,DET,WRK,01)
-#else
-      CALL SCOPY(N2,A,1,AINV,1)
-      CALL SGEFA(AINV,N,N,IPVT,INFO)
-      IF (INFO .EQ. 0) CALL SGEDI(AINV,N,N,IPVT,DET,WRK,01)
-#endif
       RETURN
       END
 C  /* Deck dgesol */

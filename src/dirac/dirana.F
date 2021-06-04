@@ -653,12 +653,7 @@ C
 #include "pgroup.h"
 #include "dcbdhf.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION SMAT(NBAST,NBAST)
-#else
       DIMENSION SMAT(NTBAS(0),NTBAS(0))
-#endif
       CHARACTER FMT*6,MXFORM*6,SYMLAB*9,SYMLAB2*11
       CHARACTER SPDCAR*1 ! type declaration for external function      
       DIMENSION PMAT(NPOPLAB,NPOPLAB,2),JVEC(*),OCC(*),OCC2(*),
@@ -924,12 +919,7 @@ C  DGROUP: NZ
 #include "dgroup.h"
 #include "dcbpop.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION SMAT(NBAST,NBAST),PBUF(NBAST,NBAST,*)
-#else
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),PBUF(NTBAS(0),NTBAS(0),*)
-#endif
       DIMENSION PMAT(NGLAB,NGLAB,2),CMO(NCBAS,NVECS,4),IGLAB(*)
 C
 C     Generate population matrix for basis

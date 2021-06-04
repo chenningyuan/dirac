@@ -1375,7 +1375,7 @@ contains
               eV(1,i),eV(2,i),"), (",eV(1,j),eV(2,j),")"
               write (davidson_output_file_unit,'(a)') &
               'Rerun the same calculation with a larger number of ', &
-              'root to verify whether lowest roots were found'
+              'roots to verify whether lowest roots were found'
            end if
         end do
 
