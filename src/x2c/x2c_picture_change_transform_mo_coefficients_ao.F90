@@ -31,7 +31,9 @@ module x2c_pct_mo_coefficients
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &
-      renew_x2c_cb_orb_shell_dim
+       renew_x2c_cb_orb_shell_dim
+  use x2cmod_cfg, only:                &
+       x2c_linsym, x2c_atomic
 
   implicit none
 
@@ -486,10 +488,11 @@ contains
      character (len=50)          :: info_text
      logical                     :: fndlab12
      integer                     :: dimension_info(12)
-     integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
+     integer, allocatable        :: supersymmetry(:)
+     integer, allocatable        :: ibeig(:,:)
 !----------------------------------------------------------------------
 
-       allocate(boson_irreps_jz_eigenvalues(nesh_dim_total))
+       allocate(supersymmetry(nesh_dim_total))
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
        open(fh,file='X2CMAT',status='old',form='unformatted',access='sequential',action='read',position='rewind')
@@ -509,7 +512,7 @@ contains
            rewind fh
            write(flabel,'(a7,i4,i1)') 'bos-irr',1,i
            if(fndlab12(flabel,fh))then
-             call readi(fh,nesh_dim(i),boson_irreps_jz_eigenvalues(offset_1))
+             call readi(fh,nesh_dim(i),supersymmetry(offset_1))
            end if
 
 !          c. 2c-MO coefficients in MO reference basis
@@ -540,7 +543,7 @@ contains
 
 !      read the title line and total energy (read code -1) from the old DFCOEF
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
+       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,-1)
        close(fh,status='keep')
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
@@ -582,10 +585,15 @@ contains
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       call wricmo (fh,mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,info_text,dimension_info)
+       if(x2c_atomic) then
+         dimension_info(6) = 2
+         call ATOMIC_WRICMO(fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
+       else
+          call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
+       endif
        close(fh,status='keep')
 
-       deallocate(boson_irreps_jz_eigenvalues)
+       deallocate(supersymmetry)
 
   end subroutine x2c_molecular_mean_field_mos
 

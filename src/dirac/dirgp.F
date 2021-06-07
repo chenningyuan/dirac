@@ -343,29 +343,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        end subroutine append_basisinfo_to_dfcoef
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-       SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
-       use dircmo
-!***********************************************************************
-!
-!     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
-!
-!     Written by Trond Saue March 3 2021
-!***********************************************************************
-      real(8)              :: CMO(*),EIG(*),toterg
-      integer              :: IUNIT,IBEIG(*)
-      integer, allocatable :: IBEIG2(:,:)
-      integer              :: i,j,norbt,ll,idims(12)
-
-      call get_dimension_info(idims)
-      norbt = idims(5)
-      allocate(IBEIG2(NORBT,2))
-      DO I = 1,NORBT
-         CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
-      ENDDO
-      CALL WRICMO(IUNIT,CMO,EIG,reshape(IBEIG2,(/2*NORBT/)),TOTERG)
-      deallocate(IBEIG2)
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck wripcmo */
       SUBROUTINE WRIPCMO(IUNIT,CMO,EIG,IBEIG,TOTERG,SSYM)
 C*****************************************************************************
@@ -474,15 +451,33 @@ C
 
       ! perform check on consistency of the data on this file with the current calculation
       call reacmo_new (iunit,idims=idims_dfcoef)
-      if (idims_dfcoef(1) .ne. nz )
-     &   call quit ('DFCOEF has incompatible symmetry (NZ)')
-      if (idims_dfcoef(2) .ne. nfsym )
-     &   call quit ('DFCOEF has incompatible symmetry (NFSYM)')
-      if (idims_dfcoef(9) .ne. NFBAS(1,0))
-     &   call quit ('DFCOEF has incompatible # of basis functions')
+      if (idims_dfcoef(1) .ne. nz ) then
+         WRITE(LUPRI,*) '* REACMO: Incompatible algebra: '
+         WRITE(LUPRI,*) ' Expected: ',NZ
+         WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(1)
+         call quit ('DFCOEF has incompatible algebra (NZ)')
+      endif
+      if (idims_dfcoef(2) .ne. nfsym ) then
+         WRITE(LUPRI,*) '* REACMO: Incompatible fermion symmetry: '
+         WRITE(LUPRI,*) ' Expected: ',NFSYM
+         WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(2)
+         call quit ('DFCOEF has incompatible symmetry (NFSYM)')
+      endif
+      if (idims_dfcoef(9) .ne. NFBAS(1,0)) then
+         WRITE(LUPRI,*)
+     &     '* REACMO: Incompatible # of basis functions (1): '
+         WRITE(LUPRI,*) ' Expected: ',NFBAS(1,0)
+         WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(9)
+         call quit ('DFCOEF has incompatible # of basis functions(1)')
+      endif
       if (nfsym == 2) then
-         if (idims_dfcoef(12) .ne. NFBAS(2,0))
-     &   call quit ('DFCOEF has incompatible # of basis functions')
+         if (idims_dfcoef(12) .ne. NFBAS(2,0)) then
+           WRITE(LUPRI,*)
+     &     '* REACMO: Incompatible # of basis functions (2): '
+           WRITE(LUPRI,*) ' Expected: ',NFBAS(2,0)
+           WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(12)
+           call quit ('DFCOEF has incompatible # of basis functions(2)')
+         endif
       end if
 
       ! The file may contain a different number of orbitals, requiring special treatments
