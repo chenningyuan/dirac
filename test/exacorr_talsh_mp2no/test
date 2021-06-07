@@ -26,14 +26,15 @@ f.add(from_string = 'Orbital           1',
 
 test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
 test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
+test.run(['hf_get_no_ccpvdz_0.0d_subv.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv"')
 
 f = Filter()
 
 f.add(from_string = '* Dipole moment:',
       num_lines   = 9,
       rel_tolerance   = 1.0e-6)
-f.add(from_string = '* Electric field gradients :',
-      num_lines   = 20,
+f.add(from_string = '           Total contribution to principal components',
+      num_lines   = 15,
       rel_tolerance   = 1.0e-6)
 
 #test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="CCDENS_all-active_hf-ccpvdz_0.0d=CCDENS \
@@ -43,5 +44,5 @@ f.add(from_string = '* Electric field gradients :',
 
 test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
 test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
-
+test.run(['hf_fno_ccpvdz_0.0_subv.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv=DFCOEF"')
 sys.exit(test.return_code)

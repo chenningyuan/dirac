@@ -249,26 +249,26 @@ module exacorr_mp2no
             call print_date('initialized Fock matrix')
 
 
-!           Initialize t2 amplitudes with the MP2 values
-      !      ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-      !      if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-      !      ierr=exatns_tensor_init(comm_t%t2,ZERO)
-      !      ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
-      !      ierr=exatns_tensor_transform(comm_t%t2,denom)
+      !     Initialize t2 amplitudes with the MP2 values
+            ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+            ierr=exatns_tensor_init(comm_t%t2,ZERO)
+            ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
+            ierr=exatns_tensor_transform(comm_t%t2,denom)
 
-!           Calculate and print the MP2 energy
-      !      ierr=exatns_tensor_init(result_tensor,ZERO)
-      !      ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
-      !      ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-      !      mp2_energy=real(result_val,8)
-      !      ierr=exatns_tensor_init(result_tensor,ZERO)
-      !      ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
-      !      ierr=exatns_tensor_get_scalar(result_tensor,result_val)
-      !      mp2_energy=mp2_energy+real(result_val,8)
+      !     Calculate and print the MP2 energy
+            ierr=exatns_tensor_init(result_tensor,ZERO)
+            ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv,ONE_QUARTER)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            mp2_energy=real(result_val,8)
+            ierr=exatns_tensor_init(result_tensor,ZERO)
+            ierr=exatns_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+            ierr=exatns_tensor_get_scalar(result_tensor,result_val)
+            mp2_energy=mp2_energy+real(result_val,8)
          
-      !      write(*,*) ""
-      !      write(*,*) "    MP2 energy = ", mp2_energy
-      !      write(*,*) ""
+            write(*,*) ""
+            write(*,*) "    MP2 energy = ", mp2_energy
+            write(*,*) ""
 
 
             ierr=exatns_tensor_transform(int_t%oovv,denom)
@@ -1233,7 +1233,7 @@ module exacorr_mp2no
                      real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
                      real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
                      real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-                     integer                            :: sz,flb                  ! size of matrix and flag for block
+                     integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
                      character                          :: mat                     ! flag used for matrix basis transform
                      integer                            :: i
                      integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
@@ -1259,7 +1259,8 @@ module exacorr_mp2no
                        
                      flb = 0                     ! we read vv block of Fock matrix
                      sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
-                     call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+                     sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
+                     call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
                      call print_date('Read Fock matrix from DFCOEF')
    
                      mat = 'Matrix'
@@ -1292,12 +1293,15 @@ module exacorr_mp2no
                integer,intent(inout)              :: N_reduced               ! number of reduced natural orbital 
    
    
+               real(kind=8)                       :: Sum_N_OCCUPATION_total
+               real(kind=8)                       :: Sum_N_OCCUPATION_reduced 
+               real(kind=8)                       :: Ratio_OCCUPATION_reduced
                real(kind=8), pointer              :: NOs_MO_reduced(:,:,:)   ! natural orbitals which have occupation number larger than threshold
                real(kind=8), pointer              :: New_cano_MO(:,:,:)      ! new canonical orbital in AO basis
                real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
                real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-               integer                            :: sz,flb, fl              ! size of matrix and flag for block
+               integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
                character                          :: mat                     ! flag used for matrix basis transform
                integer                            :: i,j,k
                integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
@@ -1305,21 +1309,32 @@ module exacorr_mp2no
             
             call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
             if (my_MPI_rank == 0) then   
-               call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,threshold,N_reduced,file_orb)
+               call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
+                        threshold,N_reduced,file_orb)
                call print_date('Get the truncated the natural orbital and occupation number from NOs_MO')
+               Sum_N_OCCUPATION_reduced = 0.0 
+               do i=1, size(N_OCCUPATION_reduced)
+                  Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
+               end do
+               Ratio_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
+
                write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
+               write(*,"(A39,2X,D8.3)") 'Current MP2 occupation number Sum: ', Sum_N_OCCUPATION_reduced
+               write(*,"(A41,2X,D8.3)") 'Current MP2 occupation number Ratio: ', Ratio_OCCUPATION_reduced
                write(*,"(A15,2X,I4,2X,A15)") 'Now we have', N_reduced, 'New Orbitals'
    
    
                flb = 0                       ! we only read virtual orbital 
                sz = exa_input%nkr_vir        ! the number of virtual orbital 
-               call quater_read_from_dirac_orbital(HF_AO,sz,flb)
+               sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
+               call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
                call print_date('Read HF orbital coefficient from DFCOEF')
    
                
                flb = 0                         ! we read vv block of Fock matrix
                sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
-               call quater_read_from_dirac_fock(Fock_HF,sz,flb)
+               sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
+               call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
                call print_date('Read Fock matrix from DFCOEF')
    
    
@@ -1402,7 +1417,7 @@ module exacorr_mp2no
    !        read information of from DFCOEF
             call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
    
-            nocc = exa_input%nkr_occ
+            nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
             nao = qorbital_hf%nao
             nno = size(NOs_AO,2)
             nmo = nocc+nno
@@ -1431,6 +1446,13 @@ module exacorr_mp2no
    !            qorbital%energy(i)=qorbital_hf%energy(i)
             end do
    
+            if (nmo < nmo_hf) then
+                  do i=nmo+1, nmo_hf
+                     qorbital%energy(i)=qorbital_hf%energy(nmo_hf)*100
+      !               print *, "removed orbital energy", qorbital%energy(i)
+                  end do
+            end if 
+
             do j = 1, nocc
                do  i = 1, qorbital%nao
                      qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)

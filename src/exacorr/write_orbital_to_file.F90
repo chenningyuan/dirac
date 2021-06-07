@@ -386,7 +386,7 @@ module write_orbital_to_file
    
 
 !----------------------------------------------------------------------------------------------------------------------
-      subroutine quater_read_from_dirac_fock(Fock_HF,sz,flb)
+      subroutine quater_read_from_dirac_fock(Fock_HF,sz,k,flb)
 !     routine for only reading orbital energy from DFCOEF and construting the diagonal Fock matrix 
 !     flb =1 we construt the oo block otherwise we build vv block. 
          use exacorr_mo
@@ -394,11 +394,11 @@ module write_orbital_to_file
          use exacorr_global,only: nfunctions
 
             real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)          ! Fock matrix 
-            integer, intent(inout)                  :: sz,flb                  ! size of matrix and flag for block
+            integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
             type(qumo)                              :: qorbital
             type(basis_set_info_t)                  :: ao_basis
             integer                                 :: ierr
-            integer                                 :: i, k, sz_total_energy
+            integer                                 :: i,sz_total_energy
 
 
 !     read information from DFCOEF
@@ -414,7 +414,7 @@ module write_orbital_to_file
                   Fock_HF(i,i,1) = qorbital%energy(i)
                end do
             else
-               k = sz_total_energy - sz
+   !            k = sz_total_energy - sz
                do i = 1, sz
                   Fock_HF(i,i,1) = qorbital%energy(k+i)
                end do
@@ -424,7 +424,7 @@ module write_orbital_to_file
 
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine quater_read_from_dirac_orbital(HF_AO,sz,flb)
+      subroutine quater_read_from_dirac_orbital(HF_AO,sz,k,flb)
 !     routine for only reading HF orbital coefficient from DFCOEF.
 
  
@@ -434,11 +434,11 @@ module write_orbital_to_file
          use exacorr_utils
 
          real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)            ! new canonical orbital 
-         integer, intent(inout)                  :: sz,flb                  ! size of matrix and flag for block
+         integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
          type(qumo)                              :: qorbital
          type(basis_set_info_t)                  :: ao_basis
          integer                                 :: ierr
-         integer                                 :: i, j, sz_occ, sz_total_mo, sz_total_ao
+         integer                                 :: i, j, sz_total_mo, sz_total_ao
 
 
 !     read information of from DFCOEF
@@ -459,17 +459,9 @@ module write_orbital_to_file
                   HF_AO(i,j,4) = qorbital%coeff(i,j,4)
                end do
             end do
-         else if (flb == 2) then !read all orbital
-            do j = 1, sz_total_mo
-               do  i = 1, sz_total_ao
-                  HF_AO(i,j,1) = qorbital%coeff(i,j,1)
-                  HF_AO(i,j,2) = qorbital%coeff(i,j,2)
-                  HF_AO(i,j,3) = qorbital%coeff(i,j,3)
-                  HF_AO(i,j,4) = qorbital%coeff(i,j,4)
-               end do
-            end do   
-         else                  ! only read virtual orbital
-            do j = 1, sz  
+         else
+!            k = sz_total_mo - sz
+            do j = 1, sz
                do i = 1, sz_total_ao
                   HF_AO(i,j,1) = qorbital%coeff(i,sz_occ+j,1)
                   HF_AO(i,j,2) = qorbital%coeff(i,sz_occ+j,2)
@@ -544,13 +536,14 @@ module write_orbital_to_file
       end subroutine quater_write_fock
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine  quater_read_orbital(orbital_coeff,orbital_eigenval,threshold,n_orb_trunca,file_name)
+      subroutine  quater_read_orbital(orbital_coeff,orbital_eigenval,Sum_orbital_eigenval_total,threshold,n_orb_trunca,file_name)
 !     routine for reading the orbital coefficient and eigenvalue from the file according to the threshold.
       use exacorr_utils
 
 !     input variables
          real(kind=8), pointer              :: orbital_coeff(:,:,:)      
-         real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)        
+         real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)   
+         real(kind=8),intent(inout)         :: Sum_orbital_eigenval_total   
          integer,intent(inout)              :: n_orb_trunca  ! number of truncated orbital 
          real(kind=8),intent(in)            :: threshold 
          character(len=*),intent(in)        :: file_name
@@ -610,6 +603,10 @@ module write_orbital_to_file
             end do
         end do
 
+        Sum_orbital_eigenval_total = 0.0
+        do i=1, sz_all
+           Sum_orbital_eigenval_total = Sum_orbital_eigenval_total + orbital_eigenval_all(i)
+        end do
 
         deallocate(orbital_coeff_all)
         deallocate(orbital_eigenval_all)
