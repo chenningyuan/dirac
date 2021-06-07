@@ -50,7 +50,7 @@ module dircmo
       character*(*),intent(in), optional :: title
       integer,intent(in), optional :: idims(:)
 
-      INTEGER   CMO_DIMS(12),IDIM(3,2),NCMOTQ,NKRBLK,NORBT,NZ,NFSYM,NSSYM
+      INTEGER   CMO_DIMS(12),IDIM(3,2),NCMOTQ,NORBT,NZ,NFSYM,NSSYM
       LOGICAL   SSYM
       character(len=74) text
 
@@ -72,7 +72,6 @@ module dircmo
       NZ     = cmo_dims(1) ! Number of active quaternion units (1, 2 or 4)
       NFSYM  = cmo_dims(2) ! Number of fermion symmetries (no inversion 1, inversion 2)
       NCMOTQ = cmo_dims(3) ! Size of MO coefficient array
-      NKRBLK = cmo_dims(4) ! FIXME: explain what this is
       NORBT  = cmo_dims(5) ! Total number of orbitals
       NSSYM  = cmo_dims(6) ! Number of blocks with supersymmetry information
       ! unpack NPSH, NESH and NFBAS(:,0) for each fermion irrep
@@ -83,11 +82,11 @@ module dircmo
 
       REWIND IUNIT
       CALL LAB_WRITE(IUNIT,'INFO    ')
-      WRITE(IUNIT) TEXT,NFSYM,NZ*NKRBLK,IDIM(:,1:NFSYM),TOTERG
-      CALL LAB_WRITE(IUNIT,'COEFS   ',CMO(1:NCMOTQ*NKRBLK))
-      CALL LAB_WRITE(IUNIT,'EVALS   ',EIG(1:NORBT*NKRBLK))
-      CALL LAB_WRITE(IUNIT,'SUPERSYM',idata=IBEIG(1:NORBT*NKRBLK))
-      IF (SSYM) CALL LAB_WRITE(IUNIT,'KAPPA   ',idata=IBEIG(NORBT*NKRBLK+1:2*NORBT*NKRBLK))
+      WRITE(IUNIT) TEXT,NFSYM,NZ,IDIM(:,1:NFSYM),TOTERG
+      CALL LAB_WRITE(IUNIT,'COEFS   ',CMO(1:NCMOTQ))
+      CALL LAB_WRITE(IUNIT,'EVALS   ',EIG(1:NORBT))
+      CALL LAB_WRITE(IUNIT,'SUPERSYM',idata=IBEIG(1:NORBT))
+      IF (SSYM) CALL LAB_WRITE(IUNIT,'KAPPA   ',idata=IBEIG(NORBT+1:2*NORBT))
 !     Add additional information about the basis set
       CALL LAB_WRITE(IUNIT,'BASINFO ')
       call append_basisinfo_to_dfcoef (IUNIT)
@@ -112,7 +111,7 @@ module dircmo
       integer, intent(out), optional :: ibeig(*),kappa(*),idims(*)
       real(8), intent(out), optional :: toterg,cmo(*),eig(*)
 
-      integer              :: nfsym, NZxNKRBLK, i, ifsym, idim(3,2), norb2(2), ncoef, neig
+      integer              :: nfsym, nz, i, ifsym, idim(3,2), norb2(2), ncoef, neig
       real(8)              :: energy
       real(8), allocatable :: coefficients(:), eigenvalues(:)
       integer, allocatable :: boson_irreps(:), atom_irreps(:)
@@ -121,7 +120,7 @@ module dircmo
 !     Always read the info text and dimensions (NB: actual size (written part) of idim depends on nfsym)
       rewind iunit
       call lab_read(iunit,'INFO    ')
-      read(iunit) infotext,nfsym,NZxNKRBLK,((idim(i,ifsym),i=1,3),ifsym=1,nfsym),energy
+      read(iunit) infotext,nfsym,nz,((idim(i,ifsym),i=1,3),ifsym=1,nfsym),energy
 
       if (present(toterg)) toterg = energy
       if (present(text))   text   = infotext
@@ -133,16 +132,16 @@ module dircmo
          neig  = neig  +  idim(1,ifsym) + idim(2,ifsym)
          ncoef = ncoef + (idim(1,ifsym) + idim(2,ifsym)) * idim(3,ifsym)
       end do
-      ncoef = ncoef * NZxNKRBLK
+      ncoef = ncoef * nz
 
       if (present(idims))  then
        ! Pack dimension information (can be used to allocate and/or check consistency before reading)
-       ! NB: in the old format no information on nkrblk and ssym was stored on dfcoef, these are necessarily
+       ! NB: in the old format no information on sym was stored on dfcoef, this is necessarily
        ! constrained to be 1 to keep backwards compatibility.
-         idims(1) = NZxNKRBLK ! Number of active quaternion units (1, 2 or 4)
+         idims(1) = nz        ! Number of active quaternion units (1, 2 or 4)
          idims(2) = nfsym     ! Number of fermion symmetries (no inversion 1, inversion 2)
          idims(3) = ncoef     ! Size of MO coefficient array
-         idims(4) = 1         ! NKRBLK (see above, this variable is likely to be removed)
+         idims(4) = 1         ! Used to be NKRBLK, now obsolete.
          idims(5) = neig      ! Total number of orbitals
          idims(6) = 1         ! Number of blocks with supersymmetry information (atomic symmetry unsupported, see above)
          idims(7:9) = idim(:,1) ! npsh, nesh, nfbas for fermion irrep 1

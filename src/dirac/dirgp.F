@@ -66,8 +66,8 @@ C
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
 C
-      allocate(CMO(NCMOTQ*NKRBLK))
-      NEIG=NORBT*NKRBLK
+      allocate(CMO(NCMOTQ))
+      NEIG=NORBT
       allocate(EIG(NEIG))
       allocate(IBEIG(NEIG,2))
       SSYM=.FALSE.
@@ -94,7 +94,7 @@ C         Check dimensions
             NCMOTQ2 = NCMOTQ2 + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
           ENDDO
           NCMOTQ2 = NCMOTQ2*NDIM
-          IF(NCMOTQ2.NE.NCMOTQ*NKRBLK) THEN
+          IF(NCMOTQ2.NE.NCMOTQ) THEN
              WRITE(LUPRI,'(25X,A20)')       ' Expected /From file'       
              DO IFRP = 1,NFSYM
                 WRITE(6,'(3X,A22,2I10)') 'Positronic solutions: ',
@@ -134,7 +134,7 @@ C     Write coefficients to either KRMCOLD or DFCOEF
 C
       IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
-        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ*NKRBLK)
+        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         CLOSE (LUKRMC,STATUS='KEEP')
         IWRTMO = 1
       ELSE
@@ -190,9 +190,9 @@ C
 
       CALL QENTER('PCMOUT')
 
-      NEIGB=NORBT*NKRBLK
-      NCMOB=NCMOTQ*NKRBLK
-      NDIMB=NZ*NKRBLK
+      NEIGB=NORBT
+      NCMOB=NCMOTQ
+      NDIMB=NZ
       allocate(CMO(NCMOB))
       allocate(EIG(NEIGB))
       allocate(IBEIG(NEIGB,2))
@@ -290,7 +290,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       IDIMS(1) = NZ
       IDIMS(2) = NFSYM
       IDIMS(3) = NCMOTQ
-      IDIMS(4) = NKRBLK
+      IDIMS(4) = 1
       IDIMS(5) = NORBT
       IDIMS(6) = 1
       IF (ATOMIC) IDIMS(6) = 2
@@ -386,8 +386,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbgen.h"
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
-     &          IBEIG(NORBT*NKRBLK,2)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),
+     &          IBEIG(NORBT,2)
       DIMENSION IDIM(3,2)
       LOGICAL   SSYM
 C
@@ -403,17 +403,17 @@ C
       WRITE(IUNIT,'(A8)') 'INFO    '
       WRITE(IUNIT,'(A74)') TEXT
       WRITE(IUNIT,'(8(X,I0))')
-     &      NFSYM,NZ*NKRBLK,((IDIM(I,J),I = 1,3),J=1,NFSYM)
+     &      NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM)
       WRITE(IUNIT,'(E24.16)') TOTERG
       WRITE(IUNIT,'(A8)') 'COEFS   '      
       WRITE(IUNIT,'(6F22.16)') CMO
       WRITE(IUNIT,'(A8)') 'EVALS   '            
       WRITE(IUNIT,'(6E22.12)') EIG
       WRITE(IUNIT,'(A8)') 'SUPERSYM'
-      WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT*NKRBLK)
+      WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT)
       IF(SSYM) THEN
         WRITE(IUNIT,'(A8)') 'KAPPA   '
-        WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,2),I=1,NORBT*NKRBLK)
+        WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,2),I=1,NORBT)
       ENDIF
 C
       RETURN
@@ -448,8 +448,8 @@ C
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
-     &          IBEIG(NORBT*NKRBLK,2)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),
+     &          IBEIG(NORBT,2)
       DIMENSION IDIM(3,2),IDIMS_DFCOEF(12)
 
       logical special_psh, special_esh

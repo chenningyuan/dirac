@@ -576,7 +576,7 @@ contains
        dimension_info(1) = nz
        dimension_info(2) = nfsym
        dimension_info(3) = ndim_2c_mo_ao
-       dimension_info(4) = 1 ! Hardwired, to be changed once I know what nkrblk does
+       dimension_info(4) = 1
        dimension_info(5) = ndim_2c_ev
        dimension_info(6) = 1 ! Hardwired, needs to be changed for atomic calculations
 !      write the new DFCOEF file
