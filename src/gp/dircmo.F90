@@ -10,10 +10,15 @@ module dircmo
   private
 
   public wricmo
+  public atomic_wricmo
   public reacmo_new
 
   interface wricmo
       module procedure wricmo
+  end interface
+
+  interface atomic_wricmo
+      module procedure atomic_wricmo
   end interface
 
   interface reacmo_new
@@ -93,6 +98,46 @@ module dircmo
       CALL LAB_WRITE(IUNIT,'EOFLABEL')
 
       RETURN
+      END
+
+      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG,TITLE,IDIMS)
+!***********************************************************************
+!
+!     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
+!
+!     Written by Trond Saue March 3 2021
+!***********************************************************************
+      implicit none
+      integer                            :: IUNIT,IBEIG(*)
+      real(8)                            :: CMO(*),EIG(*),toterg
+      integer, allocatable               :: IBEIG2(:,:)
+      integer                            :: i,j,norbt,ll
+      integer,intent(in), optional       :: idims(:)
+      character*(*),intent(in), optional :: title
+      character(len=74) text
+      INTEGER   cmo_dims(12)
+      
+!     Check whether we should get some information from the common blocks
+      if (present(title)) then
+         text(1:50) = title
+      else
+         call get_title (text)
+      end if
+      CALL GTINFO(TEXT(51:74)) ! Add date & time info to title
+
+      if (present(idims)) then
+         cmo_dims = idims
+      else
+         call get_dimension_info(cmo_dims)
+      end if
+      
+      norbt = cmo_dims(5)
+      allocate(IBEIG2(NORBT,2))
+      DO I = 1,NORBT
+        CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
+      ENDDO
+      CALL WRICMO(IUNIT,CMO,EIG,reshape(IBEIG2,(/2*NORBT/)),TOTERG,text,cmo_dims)
+      deallocate(IBEIG2)
       END
 
       SUBROUTINE REACMO(IUNIT,TEXT,CMO,EIG,IBEIG,KAPPA,TOTERG,IDIMS)
