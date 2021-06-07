@@ -31,7 +31,9 @@ module x2c_pct_mo_coefficients
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &
-      renew_x2c_cb_orb_shell_dim
+       renew_x2c_cb_orb_shell_dim
+  use x2cmod_cfg, only:                &
+       x2c_linsym, x2c_atomic
 
   implicit none
 
@@ -487,6 +489,7 @@ contains
      logical                     :: fndlab12
      integer                     :: dimension_info(12)
      integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
+     integer, allocatable        :: ibeig(:,:)
 !----------------------------------------------------------------------
 
        allocate(boson_irreps_jz_eigenvalues(nesh_dim_total))
