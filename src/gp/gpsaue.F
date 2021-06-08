@@ -559,12 +559,7 @@ C  /* Deck lset */
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_CRAY) || defined (SYS_T3D) 
-CSK|| defined (INT_STAR8)
-      REAL FUNCTION GAMMP(A,X)
-#else
-      DOUBLE PRECISION FUNCTION GAMMP(A,X)
-#endif
+      REAL*8 FUNCTION GAMMP(A,X)
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C****************************************************************C
@@ -707,7 +702,6 @@ C***********************************************************************
 #include "implicit.h"
       DIMENSION AMAT(LDM,N), ATRI(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -876,7 +870,6 @@ C
             CX= SQRT(DP5   + T)
             SSX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SSX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SSX
@@ -956,7 +949,6 @@ Cwas         JAA=(IA-1)*NROWV
 Cwas         JBB=(IB-1)*NROWV
          JAA=(IA-1)*LDM
          JBB=(IB-1)*LDM
-#include "ivdep.h"
 CMI ... ensure that no mem-error happens when we do not want 
 CMI     to calculate eigenvectors!!
        IF (NEVEC.GT.0) THEN
@@ -1695,14 +1687,8 @@ C
 #include "implicit.h"
       CHARACTER TEXT*(*)
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      TEXT = ' '
-      WRITE(TEXT(1:8),'(A8)') DATE()
-      WRITE(TEXT(12:19),'(A8)') CLOCK()
-#else
       CHARACTER*(24) FDATE
       TEXT = FDATE()
-#endif
 C
       RETURN
       END

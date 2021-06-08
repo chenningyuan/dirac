@@ -17,4 +17,10 @@ f.add(from_string  = '   Electronic energy',
 test.run(['Nb.inp'], ['Nb.xyz'], f)
 test.run(['Nblin.inp'], ['Nblin.xyz'], f)
 
+f = Filter()
+f.add(from_string = ' Overview of calculated energies',
+      num_lines   = 12,
+      rel_tolerance   = 1.0e-6)
+test.run(['cc_x2cmmf'], ['Ne.xyz'], f)
+
 sys.exit(test.return_code)

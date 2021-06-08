@@ -22,7 +22,7 @@
 #include "functionals.h"
 
 /* Match Fortran name mangling. If the Fortran compiler does not
- * mangle names, define NO_UNDERSCORE in CFLAGS.  g77 and compaq fort
+ * mangle names, define NO_UNDERSCORE in CFLAGS.
  * (cryptically referred to with HAVE_GCPP below) for linux-alpha both
  * insert a second underscore if routine name contains at least one
  * underscore /hjaaj Oct04 */
@@ -31,7 +31,7 @@
 #define FSYM2(a) a
 #else
 #define FSYM(a) a ## _
-#if defined(VAR_G77) || defined(HAVE_GCPP)
+#if defined(HAVE_GCPP)
 #define FSYM2(a) a ## __
 #else
 #define FSYM2(a) a ## _
@@ -40,15 +40,6 @@
 
 #if defined(VAR_PGF77)
 #define __FUNCTION__ "PGI_does_not_define__FUNCTION__"
-#endif
-#if defined(SYS_SUN)
-#define __FUNCTION__ "SUNs CC compiler_does_not_define__FUNCTION__"
-#endif
-#if defined(SYS_IRIX)
-#define __FUNCTION__ "SGIs CC compiler_does_not_define__FUNCTION__"
-#endif
-#if defined(SYS_DEC)
-#define __FUNCTION__ "DEC CC compiler does not define __FUNCTION__"
 #endif
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
