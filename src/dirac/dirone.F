@@ -326,7 +326,6 @@ C
          MXNP = 4000            !same to GRASP
          NUCTYP = 0
          IF(GAUNUC) NUCTYP = 3
-         write(*,*)"NUCTYP,IATOM",NUCTYP,IATOM
          CALL MEMSET_NUM(CHARGE(IATOM),IATOM,MXNP,RNT,H,EPH,GRDC,
      &                    num_grid_cfg_grasp,IPRINT)
 C         
@@ -1497,20 +1496,13 @@ C
               exit
            ENDIF   
            RTEMP = RTEMP*EPH
-C           X = WD*RTEMP
-c$$$           IF(X.GT.1.0D+02)THEN !same to FUNK
-c$$$              TEMP = FACTOR*FUNK (X,1)
-c$$$              MXNP = I
-c$$$              IF(MOD(MXNP,2).eq.0)THEN
-c$$$                 MXNP = MXNP + 1
-c$$$!     sunaga
+C
+c$$$  !     sunaga
 c$$$!     As far as I check GRASP, the number of grid (MXNP) must be odd number,
 c$$$!     for the integral of Vacuum polarization using Ne and Hg atoms.         
 c$$$!     If it is even number, the value of QUAD
-c$$$!     does not agree with the one of GRASP (Maximu error in each grid is 10e-5). 
-c$$$              ENDIF   
-c$$$              exit
-C           ENDIF   
+c$$$  !     does not agree with the one of GRASP (Maximu error in each grid is 10e-5).
+C           
  1      CONTINUE
       ELSE !num_grid_cfg_grasp
 C
@@ -1520,27 +1512,19 @@ C
         ADDSML = num_grid_cfg_force_4c_grid.OR.
      &              (MC.GT.1.AND.(.NOT.LEVYLE))
         RADDER = num_grid_cfg_RADINT
-        write(*,*)'Z,IATOM=',Z,IATOM
-        write(*,*)'AA(1,2),IATOM',AA(1,1,1,IATOM),AA(1,1,2,IATOM),IATOM
         CALL LMGGRID(H,RNT,RH,RADDER,IATOM,ADDSML,NUCORB,AA,IPRINT)
 C
-        write(*,*)
-        write(*,*)'GRDC1,RADERR',GRDC,RADDER
         EPH   = EXP(H)
         GRDC  = RNT/(EPH-ONE)
         RTEMP = RNT
-        write(*,*)'GRDC2,RNT,EPH',GRDC,RNT,EPH
 C     
 C     SET UP POTENTIAL FOR POINT NUCLEUS
 C
         DO 2 I = 1,N
            X = PREFAC*EXP(-Z*RTEMP)
-C           write(*,*)'X,Z,I',X,Z,I
            IF(X.LT.1.0D-50)THEN
               TEMP = X
               MXNP = I 
-              write(*,*)'MEMSET_NUM'
-              write(*,*)'TEMP,RTEMP,MXNP',TEMP,RTEMP,MXNP                         
              exit
            ENDIF 
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
@@ -1561,14 +1545,6 @@ C
            ENDIF   
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
         ENDDO
-        write(*,*)'MUEHLING,RTEMP',MUEHLING,RTEMP
-c$$$           X = WD*RTEMP
-c$$$           IF(X.GT.1.0D+02)THEN !same to FUNK
-c$$$!     IF(VPTST2-VPTST1.GT.THSHD)THEN
-c$$$              TEMP = FACTOR*FUNK (X,1)              
-c$$$              MXNP = I
-c$$$              exit
-c$$$           ENDIF
       ENDIF    !num_grid_cfg_grasp
 C      
       IF (IPRINT.GE.6) THEN
