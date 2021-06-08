@@ -313,7 +313,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-11)
+      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-7)
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)

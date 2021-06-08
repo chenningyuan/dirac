@@ -31,7 +31,9 @@ module x2c_pct_mo_coefficients
   use x2c_utils, only:                 &
       print_x2cmat
   use x2c_cb_interface, only:          &
-      renew_x2c_cb_orb_shell_dim
+       renew_x2c_cb_orb_shell_dim
+  use x2cmod_cfg, only:                &
+       x2c_linsym, x2c_atomic
 
   implicit none
 
@@ -455,6 +457,7 @@ contains
 !             common blocks. 
 !
 !----------------------------------------------------------------------
+     use dircmo
      real(8), intent(inout)      :: transformation_matrix_mo2ao(*)
      real(8), intent(inout)      :: mo_coeff_2c_ao(*)
      real(8), intent(inout)      :: xmat(*)
@@ -482,21 +485,21 @@ contains
      integer                     :: offset_2
      integer                     :: fh = 99
      character (len=12)          :: flabel
-     character (len=24)          :: fdate
-     character (len=74)          :: info_text
+     character (len=50)          :: info_text
      logical                     :: fndlab12
-     integer, allocatable        :: dimension_info(:,:)
-     integer, allocatable        :: boson_irreps_jz_eigenvalues(:)
+     integer                     :: dimension_info(12)
+     integer, allocatable        :: supersymmetry(:)
+     integer, allocatable        :: ibeig(:,:)
 !----------------------------------------------------------------------
 
-       allocate(dimension_info(3,nfsym))
-       allocate(boson_irreps_jz_eigenvalues(nesh_dim_total))
+       allocate(supersymmetry(nesh_dim_total))
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
        open(fh,file='X2CMAT',status='old',form='unformatted',access='sequential',action='read',position='rewind')
 
        offset_1 = 1
        offset_2 = 1
+       dimension_info = 0 ! initialization
        do i = 1, nfsym
 
          if(nesh_dim(i) > 0)then
@@ -509,7 +512,7 @@ contains
            rewind fh
            write(flabel,'(a7,i4,i1)') 'bos-irr',1,i
            if(fndlab12(flabel,fh))then
-             call readi(fh,nesh_dim(i),boson_irreps_jz_eigenvalues(offset_1))
+             call readi(fh,nesh_dim(i),supersymmetry(offset_1))
            end if
 
 !          c. 2c-MO coefficients in MO reference basis
@@ -528,27 +531,25 @@ contains
          offset_1            = offset_1 + nesh_dim(i)
          offset_2            = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
 
-!        write dimension info for the new DFCOEF
-         dimension_info(1,i) = 0
-         dimension_info(2,i) = nesh_dim(i)
-         dimension_info(3,i) = naosh_L(i)
+!        write dimension info for the new DFCOEF (7:9=gerade,10:12=ungerade)
+         dimension_info(4+3*i) = 0
+         dimension_info(5+3*i) = nesh_dim(i)
+         dimension_info(6+3*i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
        ndim_2c_bj = offset_1 - 1
        ndim_2c_ev = offset_1 - 1
 
-
 !      read the title line and total energy (read code -1) from the old DFCOEF
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,boson_irreps_jz_eigenvalues,total_energy,-1)
+       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,-1)
        close(fh,status='keep')
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
        offset_2      = 1
        do i = 1, nfsym
-         !print *, 'blubb ...',nfbas(i,1),naosh_L(i),nfbas(i,0),i2tmt(i),i2tmot(i),offset_2
          call bcktr1(mo_coeff_2c_ao(offset_2),               &
                      naosh_L(i),                             &
                      nesh_dim(i),                            &
@@ -574,25 +575,25 @@ contains
          offset_2      = offset_2 + naosh_L(i)*nesh_dim(i)*nz
          ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
        end do
-!      print *, 'dimension...',dimension_info
 
+       dimension_info(1) = nz
+       dimension_info(2) = nfsym
+       dimension_info(3) = ndim_2c_mo_ao
+       dimension_info(4) = 1
+       dimension_info(5) = ndim_2c_ev
+       dimension_info(6) = 1 ! Hardwired, needs to be changed for atomic calculations
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       info_text(51:74) = fdate()
-       CALL NEWLAB('INFO    ',fh,6)
-       write(fh) info_text,nfsym,nz,((dimension_info(i,j),i = 1,3),j=1,nfsym),total_energy
-       CALL WRICMO_coefficients(fh,mo_coeff_2c_ao,ndim_2c_mo_ao)
-       CALL WRICMO_eigenvalues(fh,eigen_values,ndim_2c_ev)
-       CALL WRICMO_supersymmetry(fh,'SUPERSYM',boson_irreps_jz_eigenvalues,ndim_2c_bj)
-!      Add additional information about basis set to create a simple interface file
-       !      for correlated calculations (like exacorr)
-       CALL WRICMO_basisinfo(fh)
-       CALL NEWLAB('EOFLABEL',fh,6)                                     
+       if(x2c_atomic) then
+         dimension_info(6) = 2
+         call ATOMIC_WRICMO(fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
+       else
+          call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
+       endif
        close(fh,status='keep')
 
-       deallocate(boson_irreps_jz_eigenvalues)
-       deallocate(dimension_info)
+       deallocate(supersymmetry)
 
   end subroutine x2c_molecular_mean_field_mos
 

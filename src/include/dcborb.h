@@ -3,9 +3,6 @@
 !
 ! DCBORB  : Dirac Common Block - ORBital informaiton
 !
-!  NKRBLK : 1 for codes that store MOs as quaternions or
-!           2                             complex spinors
-!
 
 #include "mxgas.h"
 
@@ -27,7 +24,7 @@
      &        NCMO(2), NCMOQ(2), NCMOT, NCMOTQ, ICMO(2), ICMOQ(2),      &
      &        NAOCC(2), NAOCCT, NIOCC(2), NIOCCT,                       &
      &        NAVIR(2), NAVIRT, NIVIR(2), NIVIRT,                       &
-     &        NELEC(2), NAELEC, NELECT, NKRBLK,                         &
+     &        NELEC(2), NAELEC, NELECT,                                 &
      &        NGAS_DC, NGSH(2, MXGAS),NGSHT(MXGAS), NGASSP(2, MXGAS),   &  ! NGAS_DC to avoid conflict with NGAS in LUCI* modules  /SK-Aug 2008
      &        NPAS_DC, NPASSP(MXGAS, MXPAS),                            &
      &        I_DCBORB_SET, I2_DCBORB
@@ -54,7 +51,7 @@
      &        NCMO   , NCMOQ   , NCMOT, NCMOTQ, ICMO   , ICMOQ   ,      &
      &        NAOCC   , NAOCCT, NIOCC   , NIOCCT,                       &
      &        NAVIR   , NAVIRT, NIVIR   , NIVIRT,                       &
-     &        NELEC   , NAELEC, NELECT, NKRBLK,                         &
+     &        NELEC   , NAELEC, NELECT,                                 &
      &        NGAS_DC, NGSH          ,NGSHT       , NGASSP          ,   &
      &        NPAS_DC, NPASSP              ,                            &
      &        I_DCBORB_SET, I2_DCBORB         ! Do NOT place any variables after the end tag "I2_DCBORB" !!!

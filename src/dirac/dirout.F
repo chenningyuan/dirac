@@ -1602,6 +1602,7 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
+       use dircmo
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1677,26 +1678,17 @@ C
 C     Read coefficients
 C     =================
 C    
-      IF(LBIT(IOPT_TMP,2)) THEN
-        CALL REACMO_coefficients(IUNIT,CMO,NCDIM,NFSYM,NZ,
-     &           JDIM(1,0),JDIM(1,3),JDIM(1,1),JDIM(1,2),IDIM)         
-      ENDIF
+      IF(LBIT(IOPT_TMP,2)) CALL REACMO_new(IUNIT,cmo=CMO)
 C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT_TMP,3)) THEN
-        CALL REACMO_eigenvalues(IUNIT,EIG,NEDIM,NFSYM,NZ,
-     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
-      ENDIF
+      IF(LBIT(IOPT_TMP,3)) CALL REACMO_new(IUNIT,eig=EIG)
 C
 C     Read boson irrep info
 C     =====================
 C
-      IF(LBIT(IOPT_TMP,4)) THEN
-        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEDIM,NFSYM,NZ,
-     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
-      ENDIF
+      IF(LBIT(IOPT_TMP,4)) CALL REACMO_new(IUNIT,ibeig=IBEIG)
 C
 C     Select and adjust format to molecular basis
 C     ===========================================

@@ -37,6 +37,9 @@ def identify_mpi_type(compiler,version_flag):
         mpitype='OPENMPI'
     elif re.search('open-mpi', output_compiler.decode('utf-8'),re.IGNORECASE):
         mpitype='OPENMPI'
+    elif re.search('Spectrum', output_compiler.decode('utf-8'),re.IGNORECASE):
+        #IBM Spectrum MPI
+        mpitype='OPENMPI' 
     else:
         mpitype='None'
 

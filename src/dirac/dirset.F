@@ -1003,12 +1003,7 @@ C
 #include "shells.h"
 #include "dcbbas.h"
 #include "ccom.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
-#else
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
-#endif
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 #include "dcbibt.h"
 C
@@ -1132,12 +1127,7 @@ C
 #include "shells.h"
 #include "dcbbas.h"
 #include "ccom.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION SMAT(NBAST,*),DMAT(NBAST,*)
-#else
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
-#endif
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
 #include "dcbibt.h"
 
@@ -1434,12 +1424,7 @@ C***********************************************************************
 #include "dcbbas.h"
       PARAMETER(D2=2.0D0)
 #include "nuclei.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION RLMMAT(NBAST,*),DMAT(NBAST,*)
-#else
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
-#endif
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
 #include "dcbibt.h"
 C

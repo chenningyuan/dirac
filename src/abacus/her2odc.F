@@ -601,10 +601,6 @@ C
   510             CONTINUE
 C
                   NSYMOP = 0
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C                 Cray fails in some cases without this directive
-CDIR$ NOVECTOR
-#endif
                   DO 500 ISYMOP = 0,MAXOPR
                   IF (IAND(ISYMOP,IOR(MUL1,MUL2)) .EQ. 0) THEN
                      NSYMOP = NSYMOP + 1
