@@ -1,6 +1,6 @@
 module exacorr_eom
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
         use exatensor
         use exacorr_datatypes

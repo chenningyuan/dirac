@@ -18,6 +18,7 @@ C
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+#include "codata.h"      
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "pgroup.h"
@@ -188,7 +189,7 @@ C
            GOTO 10
         ENDIF
 C
-C       Length of wave vector
+C       Prefactor alpha matrix
 C 
         FAC=OMEGA(IEXC)/CVAL
         DO IOP = 1,NOP
@@ -216,11 +217,16 @@ C
 C     
 C         Generate integrals
 C
-        IF(BEDCHK) THEN
+
+C
+C         Length wave vector
+C
+		    FACW = OMEGA(IEXC)/CVEL	      !This factor is defnined with CVEL to 
+        IF(BEDCHK) then 		          !correctly describe the non-rel limit
            CALL DCOPY(3,D0,0,WAVEVEC,1)
         ELSE
           DO I = 1,3
-            WAVEVEC(I) = FAC*UWAVE(I)
+            WAVEVEC(I) = FACW*UWAVE(I)
           ENDDO
         ENDIF
 C       
@@ -892,6 +898,7 @@ C
 #include "maxash.h"
 #include "dcborb.h"
 C
+#include "codata.h" 
 #include "dcbgen.h"
 #include "chrxyz.h"
 #include "dcbbas.h"
@@ -1147,6 +1154,7 @@ C.......Set up chi-average over polarization directions
 C
 C         Length of wave vector
 C
+          FACW=OMEGA(IEXC)/CVEL			!There are two different FAC's to properly describe the non-rel limit
           FAC=OMEGA(IEXC)/CVAL
           II = 0
           DO IC = 1,NC
@@ -1162,9 +1170,9 @@ C
           IF(BEDCHK) THEN
             CALL DCOPY(3,D0,0,WAVEVEC,1)
           ELSE
-            WAVEVEC(1) = FAC*X(IP)
-            WAVEVEC(2) = FAC*Y(IP)
-            WAVEVEC(3) = FAC*Z(IP)
+            WAVEVEC(1) = FACW*X(IP)
+            WAVEVEC(2) = FACW*Y(IP)
+            WAVEVEC(3) = FACW*Z(IP)
           ENDIF
           CALL PR1IN2(WORK(KFREE),LFREE,PRPINT,INTTYP,
      &       NPRPINT,INTREP,ANTI,SQUARE,DUMMY,LABINT,TRIANG,
@@ -1572,6 +1580,7 @@ C
 #include "maxash.h"
 #include "dcborb.h"
 C
+#include "codata.h" 
 #include "dcbgen.h"
 #include "chrxyz.h"
 #include "dcbbas.h"
@@ -1839,6 +1848,8 @@ CCCC     ****************************************************
       call interface_mpi_bcast(MXFBAS, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(CVAL, 1, MASTER,
+     &              global_communicator)
+      call interface_mpi_bcast(CVEL, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast(NPRPS, 1, MASTER,
      &              global_communicator)
