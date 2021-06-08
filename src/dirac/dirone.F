@@ -1466,10 +1466,12 @@ C
 #include "maxaqn.h"
 #include "ccom.h"
 C     
-      LOGICAL ADDSML,GRASP
+      LOGICAL ADDSML,GRASP,UEHCUT
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
-C     
+C
+      UEHCUT = num_grid_cfg_uehcut
+C      
       N = MXNP
       BZ = 0.074D0 + 0.35D0*Z/CVAL
       CVAL3 = CVAL*CVAL*CVAL
@@ -1497,13 +1499,26 @@ C
            ENDIF   
            RTEMP = RTEMP*EPH
 C
-c$$$  !     sunaga
-c$$$!     As far as I check GRASP, the number of grid (MXNP) must be odd number,
-c$$$!     for the integral of Vacuum polarization using Ne and Hg atoms.         
-c$$$!     If it is even number, the value of QUAD
-c$$$  !     does not agree with the one of GRASP (Maximu error in each grid is 10e-5).
+c     sunaga
+c     As far as I check GRASP, the number of grid (MXNP) must be odd number,
+c     for the integral of Vacuum polarization using Ne and Hg atoms.         
+c     If it is even number, the value of QUAD
+c     does not agree with the one of GRASP (Maximu error in each grid is 10e-5).
 C           
  1      CONTINUE
+C
+        IF(UEHCUT)THEN
+          RTEMP = RNT
+          DO J = 1,N
+             X = WD*RTEMP
+             IF(X.GT.1.0D+02)THEN !same to FUNK
+                TEMP = FACTOR*FUNK (X,1)              
+                MXNP = J
+                exit
+             ENDIF   
+             RTEMP = RTEMP*EPH
+          ENDDO
+        ENDIF        
       ELSE !num_grid_cfg_grasp
 C
 C     Get information about basis sets
@@ -1529,22 +1544,19 @@ C
            ENDIF 
            RTEMP = (RTEMP+GRDC)*EPH-GRDC
  2      CONTINUE
-        RTEMP = RNT
-        DO J = 1,N
-           X = WD*RTEMP
-           IF(X.GT.1.0D+02)THEN !same to FUNK
-!     IF(VPTST2-VPTST1.GT.THSHD)THEN
-              TEMP = FACTOR*FUNK (X,1)              
-              MUEHLING = J
-C              
-              CALL HEADER('It is r_max in LF!',-1) !delete
-C              MXNP = J  !delete   
-C              CALL HEADER('It is r_max in UEHLING!',-1) !delete
-C              
-              exit
-           ENDIF   
-           RTEMP = (RTEMP+GRDC)*EPH-GRDC
-        ENDDO
+C
+        IF(UEHCUT)THEN
+          RTEMP = RNT
+          DO J = 1,N
+             X = WD*RTEMP
+             IF(X.GT.1.0D+02)THEN !same to FUNK
+                TEMP = FACTOR*FUNK (X,1)              
+                MXNP = J
+                exit
+             ENDIF   
+             RTEMP = (RTEMP+GRDC)*EPH-GRDC
+          ENDDO
+        ENDIF
       ENDIF    !num_grid_cfg_grasp
 C      
       IF (IPRINT.GE.6) THEN
