@@ -1266,21 +1266,6 @@ C            ENDDO
             IOF_block = IOF_block + nblock_length
             deallocate(GAO2)
           ENDDO                  ! m_NUM
-C          write(*,*)'IR',IR
-C          write(*,*)
-C          DO JJ = 1,NTBAS(0)
-C             write(*,*)'GAO,JJ',GAO(1,JJ),JJ
-C          ENDDO
-C          write(*,*)
-C          write(*,*)'2' 
-C          DO JJ = 1,NTBAS(0)
-C             write(*,*)'GAO2,JJ',GAO(2,JJ),JJ
-C          ENDDO   
-C          write(*,*)
-C          write(*,*)'3'
-C          DO JJ = 1,NTBAS(0)
-C             write(*,*)'GAO2,JJ',GAO(3,JJ),JJ
-C          ENDDO   
 C     Multiplying the factor for angular part ANGXYZ. BUFGAO = ANGXYZ*GAO
           DO  iy = 1, m
             CALL DAXPY(NTBAS(0),ANGXYZ(iy),GAO(iy,1),m,BUFGAO(iy,1),m)
@@ -1296,13 +1281,13 @@ C sum  weight*r^2*V(r)*Basis^2
           deallocate(BUFGAO)
         end do                ! IR
       ENDIF                     ! GRASP or DIRAC
-      IF(IPRINT.GE.1)THEN
+      IF(IPRINT.GE.6)THEN
         WRITE(TITLE_PRINT,'(5A)')
      &     'INTSUM: ',LABEL,'Before-symmetrized AO-matrix of ',
      &     NAMN(IATOM),"atom"
            CALL HEADER(TITLE_PRINT,-1)
-        CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
-     &               NTBAS(0),NTBAS(0),-1,LUPRI) ! debug, title
+           CALL OUTPUT(INTAOBUF,1,NTBAS(0),1,NTBAS(0),
+     &                 NTBAS(0),NTBAS(0),-1,LUPRI) 
       ENDIF   
 C
       CALL MTAOSO(INTAOBUF,INTSO,NTBAS(0),MTXYZ,IPRINT)
@@ -1560,15 +1545,8 @@ C
       ENDIF    !num_grid_cfg_grasp
 C      
       IF (IPRINT.GE.6) THEN
-         WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid'
-         WRITE(LUPRI,'(2X,A,E11.5e2,A,E11.4e2)')
-     &    'The value of inner grid point is ',RNT,'
-     &    ; Step size is ',H
-         WRITE(LUPRI,'(2X,A,I4)')
-     &    'The number of grid points is ',MXNP
-         WRITE(LUPRI,'(2X,A,E11.4e2,A)')
+         WRITE(LUPRI,'(2X,/A)')'**Truncation of radial grid',
      &    'The value of outer grid ',TEMP,' is less than 1.0D-50'
-         WRITE(LUPRI,'(2X,A)')'Note that GRASP part is truncated'
       ENDIF   
 C      
       RETURN
