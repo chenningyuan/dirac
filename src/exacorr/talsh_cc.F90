@@ -184,7 +184,8 @@ module talsh_cc
          ! copy Fock matrix to comm, add finite field to the Fock matrix
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
-         call define_H0(fock_mode,scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo,exa_input%level_shift,-1)
+         call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1))
 
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
@@ -223,10 +224,9 @@ module talsh_cc
          ! copy Fock matrix to comm, add finite field to the Fock matrix
          call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,iff)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
-         call define_H0 (fock_mode,scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo,exa_input%level_shift,exa_input%print_level)
+         call define_H0 (scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+                         exa_input%level_shift,exa_input%print_level,fock_mode,exa_input%nff(1))
 
-
-         
 !        Start CCSD iterations
          call print_date('-Start- CC Iterations')
 
@@ -1838,7 +1838,7 @@ module talsh_cc
 
         end subroutine init_fock_talsh
 
-        subroutine define_H0 (mode,scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level)
+        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff)
 
 !        Written by Lucas Visscher, spring 2021
 !        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
@@ -1853,6 +1853,7 @@ module talsh_cc
          real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! (level-shifted) orbital energies, aka H0
          real(8), intent(in)                  :: level_shift
          integer, intent(in)                  :: print_level
+         integer, intent(in)                  :: nff
          real(8), intent(inout)               :: scf_energy            ! recomputed single determinant UHF energy
 
 
@@ -1890,6 +1891,8 @@ module talsh_cc
          !recompute SCF energy
          if (mode>1) then
             call compute_scf_energy(scf_energy,comm_t%foo,oooo,fo_dims,print_level)
+         else
+            if (nff.gt.0) stop "finite field requires core energy (MRCONEE)"
          end if
 
          !apply level shift
@@ -2003,7 +2006,7 @@ module talsh_cc
 
          type(exacc_input), intent(in)        :: exa_input
          integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital indices
-         integer, intent(in)                  :: iff !integer to loop over field strengths, for now hardwired
+         integer, intent(in)                  :: iff !integer to loop over field strengths
 
 !        integral tensors (for technical reasons defined as inout, but not to be changed here).
          type(talsh_intg_tens), intent(inout) :: int_t
