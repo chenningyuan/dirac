@@ -15,14 +15,14 @@
 *SCF
 **MOLTRA
 .ACTIVE
-energy -1000.00   2000.0 0.01
+energy -1.0  2.0 0.001
 **RELCC
 .ENERGY
 .TIMING
 .PRINT
 1
 .NELEC
-10 11
+4 3
 *CCENER
 .MAXIT
 45        
