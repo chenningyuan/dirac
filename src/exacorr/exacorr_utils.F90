@@ -329,7 +329,15 @@ module exacorr_utils
     end subroutine quicksort
 
     subroutine shift_orbital_energy(eps_vir,eps_occ,level_shift)
-          implicit none
+
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+          use interface_to_mpi
+
+          implicit none 
+
+          integer :: my_MPI_rank
+          integer :: my_MPI_master=0
+#endif
 
           real(8), intent(inout)   :: eps_vir(:),eps_occ(:)
           real(8), intent(in)      :: level_shift
@@ -342,22 +350,33 @@ module exacorr_utils
           e_homo = maxval(eps_occ)
           lumo   = minloc(eps_vir,1)
 
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+          call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
+#endif
 
           if (level_shift.gt.1.0D-14) then
             e_lumo = minval(eps_vir)
 
             do i=1,size(eps_vir)
               eps_vir(i)=eps_vir(i)+level_shift
-              
+
               if (print_level.gt.-1) then
-                  write(*,*) "LUMO shifted from  ", e_lumo," to ",eps_vir(lumo)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+                if (my_MPI_rank == my_MPI_master) write(*,*) "LUMO shifted from  ", e_lumo," to ",eps_vir(lumo)
+#else           
+                write(*,*) "LUMO shifted from  ", e_lumo," to ",eps_vir(lumo)
+#endif
               end if
 
             end do
           end if
           
           if (eps_vir(lumo)-e_homo<THRESHOLD) then
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+            if (my_MPI_rank == my_MPI_master) write(*,*) 'WARNING: Negative HOMO-LUMO gap (.LSHIFT possible)'
+#else           
             write(*,*) 'WARNING: Negative HOMO-LUMO gap (.LSHIFT possible)'
+#endif
           end if
 
     end subroutine shift_orbital_energy

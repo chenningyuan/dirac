@@ -464,10 +464,14 @@ module exacorr_global
         if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
         if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
 
+        if (i_prop<0 .or. i_prop>10000) then
+          print*, " ERROR: property number ",i_prop," not available"
+          stop "        property to be added not found"
+        end if
+
         do qmo = 1, nmo2
           do pmo = 1, nmo1
-            h(pmo, qmo) = h(pmo, qmo) + &
-            int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
+            h(pmo, qmo) = int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
           end do
         end do
 

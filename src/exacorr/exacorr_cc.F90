@@ -223,7 +223,8 @@ module exacorr_cc
             call set_fock_exat(comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
                                   ff_set,exa_input,-1)
             call define_H0_exat(comm_t, int_t%oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                            f_delta,denom,orb_set,exa_input,scf_energy,fock_mode,exa_input%nff(1))
+                            f_delta,denom,orb_set,scf_energy,fock_mode,exa_input%nff(1),exa_input%print_level)
+
             call print_date('initialized Fock matrix')
 
 !           Initialize t1 amplitudes
@@ -263,7 +264,7 @@ module exacorr_cc
                                   ff_set,exa_input,iff)
             ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
             call define_H0_exat(comm_t, int_t%oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                            f_delta,denom,orb_set,exa_input,scf_energy,fock_mode,exa_input%nff(1))
+                            f_delta,denom,orb_set,scf_energy,fock_mode,exa_input%nff(1),-1)
 
 !           Start CC(S)D iterations
             call print_date('-Start- CC Iterations')
@@ -320,9 +321,6 @@ module exacorr_cc
             else
                 call diis(comm_t%t2,mode=2)
             end if
-
-            ! end finite field loop
-            end do
             
             if (lambda.and..not.CC2) then
              call print_date('-Start- Lambda Equations')
@@ -361,26 +359,32 @@ module exacorr_cc
                write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release'
             end if
 
+            ierr=exatns_tensor_destroy(comm_t%goo)
+            ierr=exatns_tensor_destroy(comm_t%gvv)
+            ierr=exatns_tensor_destroy(comm_t%hoo)
+            ierr=exatns_tensor_destroy(comm_t%hvv)
+            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%hov)
+            ierr=exatns_tensor_destroy(comm_t%a_int)
+            ierr=exatns_tensor_destroy(comm_t%h_int)
+            ierr=exatns_tensor_destroy(comm_t%tau)
+
+            ! end finite field loop
+            end do
+
             ierr=exatns_tensor_destroy(int_t%oooo)
             ierr=exatns_tensor_destroy(int_t%ooov)
             ierr=exatns_tensor_destroy(int_t%oovv)
             ierr=exatns_tensor_destroy(int_t%vovo)
             ierr=exatns_tensor_destroy(int_t%vovv)
             ierr=exatns_tensor_destroy(int_t%vvvv)
+
             ierr=exatns_tensor_destroy(int_t%foo)
             ierr=exatns_tensor_destroy(int_t%fov)
             ierr=exatns_tensor_destroy(int_t%fvv)
             ierr=exatns_tensor_destroy(comm_t%foo)
             ierr=exatns_tensor_destroy(comm_t%fov)
             ierr=exatns_tensor_destroy(comm_t%fvv)
-            ierr=exatns_tensor_destroy(comm_t%tau)
-            ierr=exatns_tensor_destroy(comm_t%hoo)
-            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%hov)
-            ierr=exatns_tensor_destroy(comm_t%hvv)
-            ierr=exatns_tensor_destroy(comm_t%goo)
-            ierr=exatns_tensor_destroy(comm_t%gvv)
-            ierr=exatns_tensor_destroy(comm_t%a_int)
-            ierr=exatns_tensor_destroy(comm_t%h_int)
+
             ierr=exatns_tensor_destroy(result_tensor)
             ierr=exatns_tensor_destroy(one_tensor)
             if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%t1)
@@ -2813,14 +2817,14 @@ module exacorr_cc
           type(exacc_input), intent(in)          :: exa_input
           integer                                :: iff
 
-          type(tens_rcrsv_t)         :: tensor_one, tensor_h
+          type(tens_rcrsv_t)         :: FS_one, ff_temp
           integer(INTD)              :: ierr
           complex(8)                 :: result_val
           integer                    :: i,i_prop
 
-          ! Allocate two auxilliary tensors needed to extract results or multiply by one
-          ierr=exatns_tensor_create(tensor_one,"tensor_one",EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(tensor_one, ONE)
+          ! Allocate two auxilliary tensor
+          ierr=exatns_tensor_create(FS_one,"FS_one",EXA_DATA_KIND_C8)
+          ierr=exatns_tensor_init(FS_one, ONE)
 
           !Intialize Fock matrix
           ierr=exatns_tensor_init(comm_t%foo,'ZERO')
@@ -2828,38 +2832,48 @@ module exacorr_cc
           ierr=exatns_tensor_init(comm_t%fvv,'ZERO')
 
           !Set Fock matrix
-          ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,int_t%foo,tensor_one,ONE)
-          ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%fov,int_t%fov,tensor_one,ONE)
-          ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%fvv,int_t%fvv,tensor_one,ONE)
+          ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,int_t%foo,FS_one,ONE)
+          ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%fov,int_t%fov,FS_one,ONE)
+          ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%fvv,int_t%fvv,FS_one,ONE)
 
           !adding property integrals
-          do i=1,exa_input%nff(1)
-            call get_ff_ind (i_prop,exa_input%ff_names(i))
-            call ff_set%reset(i_prop)
+          if (iff>0 .and. exa_input%nff(1)>0) then 
+            do i=1,exa_input%nff(1)
+                call get_ff_ind (i_prop,exa_input%ff_names(i))
+                call ff_set%reset(i_prop)
 
-            ierr=exatns_tensor_create(tensor_h,"tensor_h",oo_id,oo_root,EXA_DATA_KIND_C8)
-            write(*,*) 'ff_set create error', ierr
-            ierr=exatns_tensor_init(tensor_h, ff_set)
-            write(*,*) 'ff_set init error', ierr
-            ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%foo,tensor_h,tensor_one,exa_input%ff(i,iff))
-            write(*,*) 'ff_set contract error', ierr
-            write(*,*) " prop =",print_tensornorm2(tensor_h)
-            write(*,*) " field =",exa_input%ff(i,iff)
-            ierr=exatns_tensor_traverse(tensor_h,'PrintTensor')
-            ierr=exatns_tensor_destroy(tensor_h)
-            write(*,*) " F_oo+prop =",print_tensornorm2(comm_t%foo)
-            write(*,*) 'ff_set destroy error', ierr
-            ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor')
+
+                write(*,*) "exa_input%ff:",exa_input%ff, "; exa_input%nff:",exa_input%nff
+                if (exa_input%print_level > -1) write(*,*) " Adding field ",exa_input%ff_names(i), " (",i_prop,")"
+                if (exa_input%print_level > -1) write(*,*) " with field strength =",exa_input%ff(i,iff)
+
+                ierr=exatns_tensor_create(ff_temp,"ff_temp",oo_id,oo_root,EXA_DATA_KIND_C8)
+                ierr=exatns_tensor_init(ff_temp, ff_set)
+                ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%foo,ff_temp,FS_one,exa_input%ff(i,iff))
+                ierr=exatns_tensor_destroy(ff_temp)
+                if (exa_input%print_level > -1) write(*,*) " F_oo+prop =",print_tensornorm2(comm_t%foo)
+
+                ierr=exatns_tensor_create(ff_temp,"ff_temp",vv_id,vv_root,EXA_DATA_KIND_C8)
+                ierr=exatns_tensor_init(ff_temp, ff_set)
+                ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%fvv,ff_temp,FS_one,exa_input%ff(i,iff))
+                ierr=exatns_tensor_destroy(ff_temp)
+                if (exa_input%print_level > -1)  write(*,*) " F_vv+prop =",print_tensornorm2(comm_t%fvv)
+
+                ierr=exatns_tensor_create(ff_temp,"ff_temp",ov_id,ov_root,EXA_DATA_KIND_C8)
+                ierr=exatns_tensor_init(ff_temp, ff_set)
+                ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%fov,ff_temp,FS_one,exa_input%ff(i,iff))
+                ierr=exatns_tensor_destroy(ff_temp)
+                if (exa_input%print_level > -1) write(*,*) " F_ov+prop =",print_tensornorm2(comm_t%fov)
             
-          end do
-
-          ierr=exatns_tensor_destroy(tensor_h)
-          ierr=exatns_tensor_destroy(tensor_one)
+            end do
+          end if
+              
+          ierr=exatns_tensor_destroy(FS_one)
 
         end subroutine set_fock_exat
 
         subroutine define_H0_exat(comm_t, oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                              f_delta,denom,orb_set,exa_input,scf_energy,mode,nff)
+                              f_delta,denom,orb_set,scf_energy,mode,nff,print_level)
 
             use exacorr_tensor_methods
 
@@ -2872,9 +2886,8 @@ module exacorr_cc
             type(delta_t)                          :: f_delta
             type(denom_t)                          :: denom
             type(set_energy_t)                     :: orb_set
-            type(exacc_input), intent(in)          :: exa_input
             real(8), intent(out)                   :: scf_energy
-            integer                                :: mode, nff
+            integer                                :: mode, nff, print_level
      
             real(8)                    :: off_diag
             type(tens_rcrsv_t)         :: H0_val, H0_one, orb_tensor
@@ -2886,11 +2899,11 @@ module exacorr_cc
             ierr=exatns_tensor_create(H0_one,"H0_one",EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(H0_one, ONE)
 
-            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, exa_input%print_level)
+            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id,print_level)
 
             !recompute SCF energy
             if (mode>1) then
-                call compute_scf_energy_exat(scf_energy,comm_t%foo,oooo,oo_id,oo_root,exa_input%print_level)
+                call compute_scf_energy_exat(scf_energy,comm_t%foo,oooo,oo_id,oo_root,print_level)
             else
                 if (nff.gt.0) stop "finite field requires core energy (MRCONEE)"
             end if
@@ -2908,9 +2921,9 @@ module exacorr_cc
             if(ierr.ne.EXA_SUCCESS) call quit('init_fock4: set orbitals failed!')
             ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,H0_one, MINUS_ONE)
             ierr=exatns_tensor_destroy(orb_tensor)
-            if (exa_input%print_level >0) call print_date('orbital energies subtracted from the diagonal')
+            if (print_level >0) call print_date('orbital energies subtracted from the diagonal')
             
-            if (exa_input%print_level >0) then
+            if (print_level >0) then
               ! Compute norms (check whether this single determinant is contructed from optimized orbitals)
               write(*,*) ""
               ierr=exatns_tensor_init(H0_val, ZERO)
