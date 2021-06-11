@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final results from EXACORR',
+      num_lines   = 6,
+      abs_tolerance   = 1.0e-6)
+f.add(from_string = 'Final CCSD energy',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-8)
+f.add(from_string = 'Norm of Fock matrix (OO',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-4)
+f.add(from_string = 'Norm of Fock matrix (OV',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-3)
+f.add(from_string = 'Norm of Fock matrix (VV',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-2)
+
+test.run(['exat_ccsd_x2c_zdip.inp'], ['MgF_nosym.mol'], f)
+test.run(['exat_ccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f)
+
+sys.exit(test.return_code)

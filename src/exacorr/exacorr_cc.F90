@@ -222,8 +222,8 @@ module exacorr_cc
                             orb_set,exa_input,scf_energy)
             call set_fock_exat(comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
                                   ff_set,exa_input,-1)
-            call define_H0_exat(comm_t, int_t%oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                            f_delta,denom,orb_set,scf_energy,fock_mode,exa_input%nff(1),exa_input%print_level)
+            call define_H0_exat(comm_t, int_t%oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,f_delta,denom,orb_set,&
+                                scf_energy,fock_mode,exa_input%nff(1),exa_input%level_shift,exa_input%print_level)
 
             call print_date('initialized Fock matrix')
 
@@ -263,8 +263,8 @@ module exacorr_cc
             call set_fock_exat(comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
                                   ff_set,exa_input,iff)
             ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
-            call define_H0_exat(comm_t, int_t%oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                            f_delta,denom,orb_set,scf_energy,fock_mode,exa_input%nff(1),-1)
+            call define_H0_exat(comm_t, int_t%oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,f_delta,denom,orb_set,&
+                                scf_energy,fock_mode,exa_input%nff(1),exa_input%level_shift,-1)
 
 !           Start CC(S)D iterations
             call print_date('-Start- CC Iterations')
@@ -664,7 +664,7 @@ module exacorr_cc
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(AointSegment) failed!')
 
          !Register the denominator initializer as a method
-         call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift,occ_space_id)
+         call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,occ_space_id)
          ierr=exatns_method_register('Denominate',denom)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
 
@@ -703,7 +703,7 @@ module exacorr_cc
          end if
 
          !Register methods to make matrix with orbital energies on the diagonal
-         call orb_set%set_energy_init(mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,exa_input%level_shift)
+         call orb_set%set_energy_init(mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id)
          ierr=exatns_method_register('OrbSet',orb_set)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet) failed!')
 
@@ -2842,8 +2842,6 @@ module exacorr_cc
                 call get_ff_ind (i_prop,exa_input%ff_names(i))
                 call ff_set%reset(i_prop)
 
-
-                write(*,*) "exa_input%ff:",exa_input%ff, "; exa_input%nff:",exa_input%nff
                 if (exa_input%print_level > -1) write(*,*) " Adding field ",exa_input%ff_names(i), " (",i_prop,")"
                 if (exa_input%print_level > -1) write(*,*) " with field strength =",exa_input%ff(i,iff)
 
@@ -2873,7 +2871,7 @@ module exacorr_cc
         end subroutine set_fock_exat
 
         subroutine define_H0_exat(comm_t, oooo, oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                              f_delta,denom,orb_set,scf_energy,mode,nff,print_level)
+                              f_delta,denom,orb_set,scf_energy,mode,nff,level_shift,print_level)
 
             use exacorr_tensor_methods
 
@@ -2887,6 +2885,7 @@ module exacorr_cc
             type(denom_t)                          :: denom
             type(set_energy_t)                     :: orb_set
             real(8), intent(out)                   :: scf_energy
+            real(8), intent(in)                    :: level_shift
             integer                                :: mode, nff, print_level
      
             real(8)                    :: off_diag
@@ -2899,7 +2898,7 @@ module exacorr_cc
             ierr=exatns_tensor_create(H0_one,"H0_one",EXA_DATA_KIND_C8)
             ierr=exatns_tensor_init(H0_one, ONE)
 
-            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id,print_level)
+            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, level_shift, print_level)
 
             !recompute SCF energy
             if (mode>1) then
@@ -3007,10 +3006,10 @@ module exacorr_cc
 
         end subroutine compute_scf_energy_exat
 
-        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
+        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, level_shift, print_level)
           
           use exacorr_tensor_methods
-          use exacorr_utils, only : print_orbital_energy
+          use exacorr_utils, only : print_orbital_energy, shift_orbital_energy
 
           implicit none
 
@@ -3020,6 +3019,7 @@ module exacorr_cc
           type(set_energy_t)                     :: orb_set 
           integer(INTL),dimension(2), intent(in) :: oo_root, vv_root
           integer(INTD),dimension(2), intent(in) :: oo_id, vv_id 
+          real(8), intent(in)                    :: level_shift
           integer, intent(in)                    :: print_level
 
           real(8),allocatable        :: eps_occ(:),eps_vir(:)
@@ -3066,6 +3066,8 @@ module exacorr_cc
 
           end do
           ierr=exatns_tensor_destroy(d_mat)
+
+          call shift_orbital_energy(eps_vir,eps_occ,level_shift)
           
           if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,2)
 
