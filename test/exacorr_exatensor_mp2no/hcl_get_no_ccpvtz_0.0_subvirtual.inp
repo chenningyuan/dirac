@@ -15,9 +15,9 @@
 1.0E-9 1.0E-8  
 **EXACC
 .OCCUPIED                                                                                           
-5..9 
+energy -2.00 -0.30 0.001 
 .VIRTUAL                                                                                            
-6..29   
+energy -0.30 2.00 0.001   
 .MP2NO
 0.0d-3
 .EXATENSOR

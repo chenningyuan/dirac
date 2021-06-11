@@ -1300,6 +1300,9 @@ module exacorr_mp2no
                integer,intent(inout)              :: N_reduced               ! number of reduced natural orbital 
    
    
+               real(kind=8)                       :: Sum_N_OCCUPATION_total
+               real(kind=8)                       :: Sum_N_OCCUPATION_reduced 
+               real(kind=8)                       :: Ratio_OCCUPATION_reduced
                real(kind=8), pointer              :: NOs_MO_reduced(:,:,:)   ! natural orbitals which have occupation number larger than threshold
                real(kind=8), pointer              :: New_cano_MO(:,:,:)      ! new canonical orbital in AO basis
                real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
@@ -1313,9 +1316,18 @@ module exacorr_mp2no
             
             call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
             if (my_MPI_rank == 0) then   
-               call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,threshold,N_reduced,file_orb)
+               call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
+                        threshold,N_reduced,file_orb)
                call print_date('Get the truncated the natural orbital and occupation number from NOs_MO')
+               Sum_N_OCCUPATION_reduced = 0.0 
+               do i=1, size(N_OCCUPATION_reduced)
+                  Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
+               end do
+               Ratio_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
+
                write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
+               write(*,"(A39,2X,D8.3)") 'Current MP2 occupation number Sum: ', Sum_N_OCCUPATION_reduced
+               write(*,"(A41,2X,D8.3)") 'Current MP2 occupation number Ratio: ', Ratio_OCCUPATION_reduced
                write(*,"(A15,2X,I4,2X,A15)") 'Now we have', N_reduced, 'New Orbitals'
    
    
@@ -1441,6 +1453,13 @@ module exacorr_mp2no
    !            qorbital%energy(i)=qorbital_hf%energy(i)
             end do
    
+            if (nmo < nmo_hf) then
+                  do i=nmo+1, nmo_hf
+                     qorbital%energy(i)=qorbital_hf%energy(nmo_hf)*100
+      !               print *, "removed orbital energy", qorbital%energy(i)
+                  end do
+            end if 
+
             do j = 1, nocc
                do  i = 1, qorbital%nao
                      qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)

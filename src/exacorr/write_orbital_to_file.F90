@@ -535,13 +535,14 @@ module write_orbital_to_file
       end subroutine quater_write_fock
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine  quater_read_orbital(orbital_coeff,orbital_eigenval,threshold,n_orb_trunca,file_name)
+      subroutine  quater_read_orbital(orbital_coeff,orbital_eigenval,Sum_orbital_eigenval_total,threshold,n_orb_trunca,file_name)
 !     routine for reading the orbital coefficient and eigenvalue from the file according to the threshold.
       use exacorr_utils
 
 !     input variables
          real(kind=8), pointer              :: orbital_coeff(:,:,:)      
-         real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)        
+         real(kind=8), pointer,intent(out)  :: orbital_eigenval(:)   
+         real(kind=8),intent(inout)         :: Sum_orbital_eigenval_total   
          integer,intent(inout)              :: n_orb_trunca  ! number of truncated orbital 
          real(kind=8),intent(in)            :: threshold 
          character(len=*),intent(in)        :: file_name
@@ -601,6 +602,10 @@ module write_orbital_to_file
             end do
         end do
 
+        Sum_orbital_eigenval_total = 0.0
+        do i=1, sz_all
+           Sum_orbital_eigenval_total = Sum_orbital_eigenval_total + orbital_eigenval_all(i)
+        end do
 
         deallocate(orbital_coeff_all)
         deallocate(orbital_eigenval_all)
