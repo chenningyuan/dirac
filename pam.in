@@ -283,6 +283,9 @@ class pam_enviroment:
         self.inkrmc = False
         self.outkrmc = False
 
+    # ... qforce files form exatensor
+        self.outqforce = False
+
     # execution time-limit in seconds (TODO: implement general time format)
         self.timeout = None
 
@@ -780,6 +783,11 @@ Options are also read from ~/.diracrc"""
                          dest='dest_outkrmc', default=False,
                          help='get KRMCSCF and KRMCOLD from scratch directory [default: %default]'
                          )
+        group.add_option('--outqforce', action='store_true',
+                         dest='dest_outqforce', default=False,
+                         help='get qforce.*.log from scratch directory [default: %default]'
+                         )
+
         group.add_option('--keep_scratch', action='store_true',
                          dest='dest_keep_scratch', default=False,
                          help='keep the scratch directory after calculation [default: delete it]'
@@ -962,13 +970,19 @@ Options are also read from ~/.diracrc"""
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
-            # always is parallel run if ENABLE_MPI=ON
+            # always a parallel run if ENABLE_MPI=ON
             self.parallel_run = True
             if self.dirac_mpi_command is None:
                if self.own_mpirun:
                   self.dirac_mpi_command = str(self.own_mpirun) + ' '
                else:
                   self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+            
+         # For openMPI: if --bind-to none is not added, then e.g. "ctest -j 10" for "-np 1" will run all 10 jobs on CPU core 0
+         # and the remaining CPU cores will idle ... observed 03-May-2021)
+            if "@MPI_TYPE@" == "OPENMPI":
+                self.dirac_mpi_command = self.dirac_mpi_command + ' --bind-to none '
+
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
                 self.global_scratch_disk = False
@@ -1010,6 +1024,7 @@ Options are also read from ~/.diracrc"""
         self.outcmo = options.dest_outcmo
         self.outkrmc = options.dest_outkrmc
         self.inkrmc = options.dest_inkrmc
+        self.outqforce = options.dest_outqforce
 
         self.rcp = options.rcp
         self.rsh = options.rsh
@@ -1444,14 +1459,11 @@ Options are also read from ~/.diracrc"""
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
         dirac_executable = os.path.join(self.scratch_dir,self.dirac_exe_file)
-        if not os.path.isfile(dirac_executable):
-            print_error_message(dirac_executable+' not found!')
-            sys.exit(13)
 
         # On summit we execute a script that executes dirac.x (to keep things simple...)
         if self.summit:
            # assemble the jsrun command that we need and put this at the place of mpirun command
-           mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone"
+           mpi_command = "jsrun --smpiargs='-async' --smpiargs='-mca common_pami_use_odp 1' -bnone"
            mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
            mpi_command =  mpi_command + ' -a 1'
            mpi_command =  mpi_command + ' -r ' + os.environ.get('QF_PROCS_PER_NODE')
@@ -1461,17 +1473,28 @@ Options are also read from ~/.diracrc"""
            # create an executable script to set the correct OMP_PLACES before starting dirac.x
            path_to_script = os.path.join(self.scratch_dir,'exec_script.sh')
            with open(path_to_script, 'w') as script:
-               script.write("#!/bin/bash\n")
+               script.write("#!/bin/bash \n")
+               script.write(" \n")
+               script.write("# OpenMP environment \n")
+               script.write("export OMP_PROC_BIND=\""+ os.environ.get('OMP_PROC_BIND') +"\" \n")
                script.write("remainder=$(( $PMIX_RANK % 2 ))\n")
                script.write("if [ $remainder -eq 0 ]; then\n")
                script.write("export OMP_PLACES='{0},{4},{8},{12},{28:56},{16},{20},{24}' \n")
                script.write("else\n")
                script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
                script.write("fi\n")
+               script.write(" \n")
+               script.write("# echo \" OMP_NUM_THREADS = $OMP_NUM_THREADS \" \n")
+               script.write("# echo \" OMP_DYNAMIC = $OMP_DYNAMIC \" \n")
+               script.write(" \n")
                script.write("./dirac.x\n")
                script.close()
            os.chmod(path_to_script, 509)
            dirac_executable = path_to_script
+
+        if not os.path.isfile(dirac_executable):
+            print_error_message(dirac_executable+' not found!')
+            sys.exit(13)
 
         if self.parallel_run:
             if self.mpirun is None:
@@ -1840,6 +1863,18 @@ Options are also read from ~/.diracrc"""
             save_single_file('KRMCSCF')
             save_single_file('KRMCOLD')
 
+        if self.outqforce:
+            qfpath = os.path.join(self.input_directory, 'qfdir')
+            try:
+                os.mkdir(qfpath)
+            except OSError:
+                print ("Creation of the directory %s failed" % qfpath)
+            for p in os.listdir(self.scratch_dir):
+                if 'qforce' in p:
+                    full_file_name_scratch = os.path.join(self.scratch_dir, p)
+                    full_file_name_local = os.path.join(qfpath,p)
+                    self.copy_file(full_file_name_scratch, full_file_name_local)
+
     # take care of individual nodes if parallel run
 
         if self.nodes:
@@ -1983,9 +2018,6 @@ class pam_run(pam_enviroment):
     def perform(self):
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            sys.exit()
 
         self.pam_variables.set_dirac_environment()
         self.pam_variables.print_header()
@@ -1996,6 +2028,10 @@ class pam_run(pam_enviroment):
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            self.pam_variables.remove_scratch_dir()
+            sys.exit()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()

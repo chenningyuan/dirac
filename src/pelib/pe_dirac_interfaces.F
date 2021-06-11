@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -670,7 +670,7 @@
 !     &                  scvecs, wrk, nwrk)
 !!
 !!  Written by Erik Donovan Hedegaard and Jgvan Magnus H. Olsen
-!!             after original routine by Hans Jrgen Aa. Jensen
+!!             after original routine by Hans Joergen Aa. Jensen
 !!
 !!  Purpose:  Calculate Hessian contribution from a polarizable
 !!            embedding potantial to a csf trial vector.

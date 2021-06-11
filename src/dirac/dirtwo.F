@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -40,9 +40,6 @@ C*****************************************************************************
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
-#endif
-#ifdef MOD_INTEREST
-      use module_interest_interface
 #endif
 #include "implicit.h"
 #include "priunit.h"
@@ -179,32 +176,8 @@ C
 #endif
          HFXTMP = HFXMU
          HFXMU = D0
-         IF(MDIRAC)THEN
-#ifdef MOD_INTEREST
-
-!          stefan: for the time being we will have an outer loop over fock matrices 
-!                  assuming that MDIRAC will only be active for regular SCF and 
-!                  not, e.g., response. todo: inner loop over fmat and proper flags 
-!                  ISYMOP,IHRMOP, IFCKOP in InteRest.
-
-           do i = 1, nfmat
-             if(x2c)then
-               call process_two_electron_integrals_2comp(fmat(1,1,i),
-     &                                                   dmat(1,1,i),
-     &                                                   intflg,
-     &                                                   hfxfac) 
-             else
-               call process_two_electron_integrals_4comp(fmat(1,1,i),
-     &                                                   dmat(1,1,i),
-     &                                                   intflg,
-     &                                                   hfxfac) 
-             end if
-           end do
-#endif
-         ELSE
-           CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                    IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
-         ENDIF
+         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
+     &                  IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
          HFXMU = HFXTMP
 #ifdef MOD_SRDFT
       end if 
@@ -330,7 +303,7 @@ C
 C     Define bit packing
 C     ==================
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       NIBUF = 1
       IF (NTBAS(0) .LE. 255) THEN
          NBITS = 8
@@ -1901,12 +1874,7 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbind.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,*),DMAT(NBAST,NBAST,*) 
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),*),DMAT(NTBAS(0),NTBAS(0),*) 
-#endif
       DIMENSION BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(4,N2BBASX),
      &          IFCTYP(NDMAT),IREPDM(NDMAT)
       INTEGER A,B,C,D
@@ -2129,14 +2097,8 @@ C*****************************************************************************
       PARAMETER (D2 = 2.0D0,D4 = 4.0D0)
 #include "dcbbas.h"
 #include "dcbind.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,NDMAT),
-     &          DMAT(NBAST,NBAST,NDMAT) 
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT) 
-#endif
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
       INTEGER A,B,D
@@ -2355,14 +2317,8 @@ C*****************************************************************************
       PARAMETER (D2 = 2.0D0)
 #include "dcbbas.h"
 #include "dcbind.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,NDMAT),
-     &          DMAT(NBAST,NBAST,NDMAT)
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
-#endif
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
       INTEGER A,B,C
@@ -2563,14 +2519,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbind.h"
 #include "dgroup.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,NDMAT),
-     &          DMAT(NBAST,NBAST,NDMAT)
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
-#endif
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
@@ -2744,14 +2694,8 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0)
 #include "dcbbas.h"
 #include "dcbind.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,NDMAT),
-     &          DMAT(NBAST,NBAST,NDMAT)
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
-#endif
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
@@ -2920,14 +2864,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbind.h"
 #include "dgroup.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,NDMAT),
-     &          DMAT(NBAST,NBAST,NDMAT)
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
-#endif
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
@@ -3104,14 +3042,8 @@ C*****************************************************************************
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0,DP5=0.5D0)
 #include "dcbbas.h"
 #include "dcbind.h"
-#if defined (VAR_G77) || defined (SYS_SX)
-      EQUIVALENCE (NBAST,NTBAS(0))
-      DIMENSION FMAT(NBAST,NBAST,NDMAT),
-     &          DMAT(NBAST,NBAST,NDMAT)
-#else
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
-#endif
       DIMENSION BUF(NDIM),IND(NDIM),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
       INTEGER A

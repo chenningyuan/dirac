@@ -8,7 +8,9 @@ Kramers unrestricted Coupled-Cluster methods
 ============================================
 
 See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space CC 
-implementation is described in :cite:`Visscher2001`.
+implementation is described in :cite:`Visscher2001`. The ground-state expectation 
+value implementations are described in :cite:`vanStralen2005` for MP2 and :cite:`Shee2016` for CCSD.
+The base EOM CC implementation is described in :cite:`Shee2018`.
 
 starstar(RELCC)
 
@@ -43,6 +45,14 @@ keyword(GRADIENT)
 Calculate the effective 1-particle density matrix. This option can be used to calculate
 molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
 see :cite:`Shee2016`.
+
+This calculation generates the file CCDENS, which contains the MP2 or CC ground-state density 
+matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
+ground-state expectation values. 
+
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+without the need to invoke this module.
+
 
 *Default:*
 
@@ -272,9 +282,12 @@ keyword(EE)
 
 Selects excitation energy calculations. 
 
-Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
 The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
 the different EOM models in the same run.
+
+NB: finding the state symmetry number for EE may require some experimentation, the totally symmetry irrep is always number 1,
+but the order of the other boson irreps depends on the double group that is used and how the molecule is oriented.
 
 *Example:* requesting two excitation energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
 
@@ -296,9 +309,12 @@ keyword(EA)
 
 Selects single electron attachment calculations. 
 
-Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
 The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
 the different EOM models in the same run.
+
+NB: the state symmetry number for EA depends on the ordering of irreps for the spinors, this information is printed at
+the beginning of the RELCCSD output.
 
 
 *Example:* requesting two electron attachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
@@ -320,10 +336,12 @@ keyword(IP)
 
 Selects electron detachment calculations. 
 
-Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
 The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
 the different EOM models in the same run.
 
+NB: the state symmetry number for IP depends on the ordering of irreps for the spinors, this information is printed at
+the beginning of the RELCCSD output.
 
 
 *Example:* requesting two single electron detachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
@@ -457,7 +475,7 @@ star(CCPROJ)
 
 This menu controls the use of projection operators in the CC calculations.
 
-These projectors are used to remove terms from the ground state CC equations (frozen core), the EOM-CC similarity transformed Hamiltonian (CVS and restricted excitation window), or a combination of both.
+These projectors are used to remove terms from the ground state CC equations (frozen core), the EOM-CC similarity transformed Hamiltonian (CVS and restricted excitation window), or a combination of both. The implementation for projection operations is detailed in :cite:`Halbert2020` and follows the scheme introduced by Coriani and Koch :cite:`Coriani2015`.
 
 keyword(FCORE)
 

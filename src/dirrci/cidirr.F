@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -122,11 +122,6 @@ CMKN
       call alloc(CI,MCORE,id='CI work space in CIDIRR')
 C
       MAXCORE = MCORE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
 CMKN
 C Modified by Malaya .K. Nayak on 4th Feb. 2011
 C This part will calculate normal RASCI energy
@@ -1180,13 +1175,6 @@ C
       DIMENSION IVWU(2*MXREP,0:NORB,0:NELEC)
 C
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IAND (I, J) = AND (I, J)
-      IOR (I, J) = OR (I, J)
-      NOT(I) = COMPL (I)
-      ISHFT (I, J) = SHIFT (I, J)
-#endif
-C
       DO 10 ID = 1, ND
       JELEC(ID) = NORBR(1)
       IDIND(ID) = 1
@@ -2083,6 +2071,7 @@ C     -------------------------------------------------------------
 	    If (i.NE.0.AND.j.NE.0) Then
 	       ji = norb*(i-1)+j
 	       gmatr(ji) = tintr(jid)
+!LV 28-9-2020: did not modify next line after MRCONEE change, code appeared to have already used Fortran ordering
 	       IF (.NOT.REALAR) gmati(ji) = tinti(jid)
             EndIf
          enddo

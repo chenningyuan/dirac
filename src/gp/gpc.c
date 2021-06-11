@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2019 by the authors of DIRAC.
+ *     Copyright (c) 2021 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -38,6 +38,10 @@ typedef int32_t fortran_int4_t;
   typedef fortran_int8_t fortran_int_t;
 #else
   typedef fortran_int4_t fortran_int_t;
+#endif
+
+#if defined (VAR_MPI)
+#include <mpi.h>
 #endif
 
 void printaddr_(void *p)
@@ -176,7 +180,6 @@ void distribute_env(const char* name, int mytid)
 #if !defined (VAR_MPI)
   return;
 #else
-#include <mpi.h>
   char *env_local, *env_master, *newname;
   int len_local, len_master, len_name;
 
@@ -206,7 +209,6 @@ void distribute_env(const char* name, int mytid)
     putenv(newname);
     free(env_master);
   }
-
 #endif
 }
 
@@ -221,7 +223,7 @@ int icommsize_(const fortran_int_t *istart, const fortran_int_t *iend)
 */
 void crash_(void)
 {
-  __builtin_trap();
+  *(int *)0 = 0;
 }
 
 /*
