@@ -2727,8 +2727,6 @@ module exacorr_cc
           type(tens_rcrsv_t)         :: tensor_one, id_mat_occ, orb_tensor
           integer(INTD)              :: ierr
           complex(8)                 :: result_val
-          !        finite field stuff
-          integer                    :: i,i_prop
 
           ierr=exatns_tensor_create(tensor_one,"tensor_one",EXA_DATA_KIND_C8)
           ierr=exatns_tensor_init(tensor_one, ONE)
@@ -2842,6 +2840,8 @@ module exacorr_cc
                 call get_ff_ind (i_prop,exa_input%ff_names(i))
                 call ff_set%reset(i_prop)
 
+                if (exa_input%print_level > -1) write(*,*) ""
+                if (exa_input%print_level > -1) write(*,*) "------------------------------------------"
                 if (exa_input%print_level > -1) write(*,*) " Adding field ",exa_input%ff_names(i), " (",i_prop,")"
                 if (exa_input%print_level > -1) write(*,*) " with field strength =",exa_input%ff(i,iff)
 
@@ -2849,20 +2849,23 @@ module exacorr_cc
                 ierr=exatns_tensor_init(ff_temp, ff_set)
                 ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%foo,ff_temp,FS_one,exa_input%ff(i,iff))
                 ierr=exatns_tensor_destroy(ff_temp)
-                if (exa_input%print_level > -1) write(*,*) " F_oo+prop =",print_tensornorm2(comm_t%foo)
+                if (exa_input%print_level > 1) write(*,*) " F_oo+prop =",print_tensornorm2(comm_t%foo)
 
                 ierr=exatns_tensor_create(ff_temp,"ff_temp",vv_id,vv_root,EXA_DATA_KIND_C8)
                 ierr=exatns_tensor_init(ff_temp, ff_set)
                 ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%fvv,ff_temp,FS_one,exa_input%ff(i,iff))
                 ierr=exatns_tensor_destroy(ff_temp)
-                if (exa_input%print_level > -1)  write(*,*) " F_vv+prop =",print_tensornorm2(comm_t%fvv)
+                if (exa_input%print_level > 1)  write(*,*) " F_vv+prop =",print_tensornorm2(comm_t%fvv)
 
                 ierr=exatns_tensor_create(ff_temp,"ff_temp",ov_id,ov_root,EXA_DATA_KIND_C8)
                 ierr=exatns_tensor_init(ff_temp, ff_set)
                 ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%fov,ff_temp,FS_one,exa_input%ff(i,iff))
                 ierr=exatns_tensor_destroy(ff_temp)
-                if (exa_input%print_level > -1) write(*,*) " F_ov+prop =",print_tensornorm2(comm_t%fov)
+                if (exa_input%print_level > 1) write(*,*) " F_ov+prop =",print_tensornorm2(comm_t%fov)
             
+                if (exa_input%print_level > -1) write(*,*) "------------------------------------------"
+                if (exa_input%print_level > -1) write(*,*) ""
+
             end do
           end if
               
