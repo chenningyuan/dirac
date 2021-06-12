@@ -45,7 +45,7 @@ f1.add(from_string = ' Overview of calculated energies',
       abs_tolerance   = 2.0e-5)
 f1.add(from_string = 'Total CCSD energy',
       num_lines   = 1,
-      abs_tolerance   = 1.0e-7)
+      abs_tolerance   = 5.0e-8)
 
 #test.run(['relccsd_x2c.inp'], ['MgF_nosym.mol'], f1 )
 #test.run(['relccsd_x2c_eedm.inp'], ['MgF_nosym.mol'], f1 )
