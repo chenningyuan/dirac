@@ -1280,6 +1280,7 @@ C  /* Deck prtfun */
      &                  LINEAR,NCORD,NUMMOD)
 #include "implicit.h"
 #include "codata.h"
+#include "pi.h"
 C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
@@ -1633,11 +1634,7 @@ C
       END
 #ifndef PRG_DIRAC
 C  /* Deck hdot */
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#else
-      DOUBLE PRECISION FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
-#endif
+      REAL*8 FUNCTION HDOT(NDIM,VEC1,VEC2,HMAT)
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION VEC1(NDIM), VEC2(NDIM), HMAT(NDIM,NDIM)
@@ -1954,11 +1951,7 @@ C  /* Deck prhint */
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL)
-      REAL MATRIX(NINTER,NINTER)
-#else
-      DOUBLE PRECISION MATRIX(NINTER,NINTER)
-#endif
+      REAL*8 MATRIX(NINTER,NINTER)
 #include "cbivib.h"
 #include "nuclei.h"
 C
@@ -3181,6 +3174,7 @@ C
 #include "cbilnr.h"
 #include "nuclei.h"
 #include "codata.h"
+#include "pi.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),
@@ -4027,6 +4021,7 @@ C
 #include "cbivib.h"
 #include "nuclei.h"
 #include "codata.h"
+#include "pi.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
      &          WW(3), ZZ(3), UV(12),
@@ -4166,11 +4161,7 @@ C
             WRITE (LUPRI,181)       NAME1,NAME2,NAME3,NAME4,CCOEF,CSCAL
          END IF
       END IF
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-  180 FORMAT (I6,'.',4X,A4,5X,4(A6,2X),F10.5,F12.6)
-#else
   180 FORMAT (I6,'.',A8,5X,4(A6,2X),F10.5,F12.6)
-#endif
   181 FORMAT (20X,            4(A6,2X),F10.5,F12.6)
 C
 C     Test that all specified atoms are well defined

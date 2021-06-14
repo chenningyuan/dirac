@@ -1,12 +1,8 @@
-  ** interface to 64-bit integer MPI enabled **
+DIRAC serial starts by allocating 110000000 words (    839.23 MB -      0.820 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
-DIRAC master    (phlam-s-sakura.univ-lille1.fr) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
-DIRAC nodes 1 to 3 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC master    (phlam-s-sakura.univ-lille1.fr) to allocate at most       256000000 r*8 words (   1.907 GB) of memory
-DIRAC nodes 1 to 3 to allocate at most            256000000 r*8 words (   1.907 GB) of memory
- 
-Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
- 
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -164,8 +160,7 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
  *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,           *
  *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
-  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     
- *
+  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *******************************************************************************
@@ -174,71 +169,58 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
 Version information
 -------------------
 
-Branch        | andre-verify-eomea-to-master
-Commit hash   | 32884ee
-Commit author | Lucas
-Commit date   | Wed Jul 22 17:38:45 2020 +0000
+Branch        | master
+Commit hash   | 464faf5bc
+Commit author | Miroslav Iliaš
+Commit date   | Wed Jan 20 13:43:15 2021 +0000
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | gomes
-Compiled on server       | phlam-s-sakura.univ-lille1.fr
-Operating system         | Linux-2.6.32-504.16.2.el6.x86_64
-CMake version            | 3.13.3
+Who compiled             | saue
+Compiled on server       | dirac
+Operating system         | Linux-5.4.0-59-generic
+CMake version            | 3.10.2
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-07-22 20:36:36.264925
-Python version           | 3.6.8
-Fortran compiler         | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiifort
-Fortran compiler version | 19.0
-Fortran compiler flags   |  -ilp64 -w -assume byterecl -g -traceback -DVAR_IFORT  -qopenmp -i8 -ilp64 -w -assume byterecl -g -traceback -DVAR_IFORT  -qopenmp -i8
-C compiler               | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiicc
-C compiler version       | 19.0
-C compiler flags         |  -g -wd981 -wd279 -wd383 -wd1572 -wd177  -qopenmp -g -wd981 -wd279 -wd383 -wd1572 -wd177  -qopenmp
-C++ compiler             | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiicpc
-C++ compiler version     | 19.0.5
-C++ compiler flags       |  -Wno-unknown-pragmas  -qopenmp -Wno-unknown-pragmas  -qopenmp
+Configuration time       | 2021-01-28 10:16:39.060434
+Python version           | 3.6.9
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 7.5.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+C compiler               | /usr/bin/gcc
+C compiler version       | 7.5.0
+C compiler flags         |  -g -g
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 7.5.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
 Static linking           | False
-64-bit integers          | True
-MPI parallelization      | True
-MPI launcher             | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiexec
-Math libraries           | unknown
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/libatlas.so;/usr/lib/x86_64-linux-gnu/atlas/liblapack.so;/usr/lib/x86_64-linux-gnu/libf77blas.so;/usr/lib/x86_64-linux-gnu/libcblas.so;/usr/lib/x86_64-linux-gnu/libatlas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
-
-
- * openMP activated,  thread limit - # processes - # threads: *****    6    1
-
-
- * openMP parallel region,  max # threads - current # threads - current thread:                    1    1    0
-
-
- * openMP activated,  thread limit - # processes - # threads: *****    6    1
-
-
- * openMP parallel region,  max # threads - current # threads - current thread:                    1    1    0
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
- MPI selftest passed with MPI_INTEGER of the size 8 bytes
-
-
- * openMP activated,  thread limit - # processes - # threads: *****    6    1
-
-
- * openMP parallel region,  max # threads - current # threads - current thread:                    1    1    0
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jul 22 23:40:15 2020
-     Host name              : phlam-s-sakura.univ-lille1.fr           
+     Date and time (Linux)  : Mon Feb  1 13:30:07 2021
+     Host name              : dirac                                   
 
 
 Contents of the input file
@@ -322,19 +304,13 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
- The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web V
- ersion 8.1)
-        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor      
-            
-        Database developed by J. Baker, M. Douma, and S. Kotochigova            
-            
-  Available at http://physics.nist.gov/constants                                
-            
-  National Institute of Standards and Technology, Gaithersburg, MD 20899        
-            
+ The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)
+        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 
+        Database developed by J. Baker, M. Douma, and S. Kotochigova                       
+  Available at http://physics.nist.gov/constants                                           
+  National Institute of Standards and Technology, Gaithersburg, MD 20899                   
  * The speed of light :        137.0359992
  * Running in four-component mode
- * Parallel run with 3 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -389,12 +365,6 @@ FINISH
 
   F2 molecule                                                             
   explicitly using Ci symmetry                                            
-
-
- * openMP activated,  thread limit - # processes - # threads: *****    6    1
-
-
- * openMP parallel region,  max # threads - current # threads - current thread:                    1    1    0
 
 
   Symmetry Operations
@@ -511,8 +481,8 @@ Point group: Ci
    2            y      0.0000000000
    3            z      0.7085000000
 
-   4   F    2   x      0.0000000000
-   5            y      0.0000000000
+   4   F    2   x     -0.0000000000
+   5            y     -0.0000000000
    6            z     -0.7085000000
 
 
@@ -521,9 +491,9 @@ Point group: Ci
   ----------------------------------------------
 
     2
- 
+
 F      0.0000000000   0.0000000000   0.3749220539
-F      0.0000000000   0.0000000000  -0.3749220539
+F     -0.0000000000  -0.0000000000  -0.3749220539
 
 
   Symmetry Coordinates
@@ -572,11 +542,7 @@ F      0.0000000000   0.0000000000  -0.3749220539
                        * Natural abundance: 100.000 %
 
 
-
 * Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
-
-
-
 * Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
 
 
@@ -793,7 +759,6 @@ F      0.0000000000   0.0000000000  -0.3749220539
  * MO integral threshold :1.00E-14
  * SS Integrals not transformed.
  * Gaunt Integrals not transformed.
- * 4-index transformed integrals written to file.
  * Active spaces:
     Fermion ircop:E1g
     - Index  1:  all                                                                     
@@ -824,7 +789,7 @@ F      0.0000000000   0.0000000000  -0.3749220539
 
                     All dipole components are zero by symmetry
 
-Total time used in ONEGEN (CPU)  0.00400000s and (WALL)  0.00376296s
+Total time used in ONEGEN (CPU)  0.00219800s and (WALL)  0.00200000s
 
 
                        Generating Lowdin canonical matrix:
@@ -864,7 +829,7 @@ Total no. of orbitals      (NORB):    20      20      40
  Reference: arXiv:2002.02587 (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Wed Jul 22 23:40:16 2020
+########## START ITERATION NO.   1 ##########   Mon Feb  1 13:30:07 2021
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -875,148 +840,144 @@ E_HOMO...E_LUMO, symmetry 1:    15  -0.34500   16   0.71310
 E_HOMO...E_LUMO, symmetry 2:    34  -1.06852   35   0.51064
 
 => Calculating sum of orbital energies
-It.    1    -60.44619894996      0.00D+00  0.00D+00  0.00D+00               0.00799900s   Atom. scrpot   Wed Jul 22
+It.    1    -60.44619894996      0.00D+00  0.00D+00  0.00D+00               0.00775900s   Atom. scrpot   Mon Feb  1
 
-########## START ITERATION NO.   2 ##########   Wed Jul 22 23:40:16 2020
+########## START ITERATION NO.   2 ##########   Mon Feb  1 13:30:07 2021
 
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.56659698s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01127815s
- >>> CPU  time used in SO Fock is   0.58 seconds
- >>> WALL time used in SO Fock is   0.58 seconds
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00213300s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01603100s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.13096   16   1.25098
 E_HOMO...E_LUMO, symmetry 2:    34  -1.01174   35   0.93143
->>> Total wall time:  0.58732104s, and total CPU time :  0.58391100s
+>>> Total wall time:  0.02500000s, and total CPU time :  0.02460500s
 
-########## END ITERATION NO.   2 ##########   Wed Jul 22 23:40:17 2020
+########## END ITERATION NO.   2 ##########   Mon Feb  1 13:30:07 2021
 
-It.    2    -196.8598659652      1.36D+02  6.51D+00  2.01D+00               0.58732104s   LL SL          Wed Jul 22
+It.    2    -196.8598659652      1.36D+02  6.51D+00  2.01D+00               0.02500000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   3 ##########   Wed Jul 22 23:40:17 2020
+########## START ITERATION NO.   3 ##########   Mon Feb  1 13:30:07 2021
 
     3 *** Differential density matrix. DCOVLP     = 1.0270
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00387287s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01010489s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00206500s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01790100s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.37400   16   1.14235
 E_HOMO...E_LUMO, symmetry 2:    34  -1.24582   35   0.87227
->>> Total wall time:  0.02324700s, and total CPU time :  0.01899700s
+>>> Total wall time:  0.02800000s, and total CPU time :  0.02693200s
 
-########## END ITERATION NO.   3 ##########   Wed Jul 22 23:40:17 2020
+########## END ITERATION NO.   3 ##########   Mon Feb  1 13:30:07 2021
 
-It.    3    -197.0501349195      1.90D-01 -9.55D-01  5.54D-01   DIIS   2    0.02324700s   LL SL          Wed Jul 22
+It.    3    -197.0501349195      1.90D-01 -9.55D-01  5.54D-01   DIIS   2    0.02800000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   4 ##########   Wed Jul 22 23:40:17 2020
+########## START ITERATION NO.   4 ##########   Mon Feb  1 13:30:07 2021
 
     4 *** Differential density matrix. DCOVLP     = 0.9736
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00436306s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.90739989s
- >>> CPU  time used in SO Fock is   0.91 seconds
- >>> WALL time used in SO Fock is   0.91 seconds
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00197200s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01615900s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33758   16   1.15991
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20963   35   0.88234
->>> Total wall time:  0.92187810s, and total CPU time :  0.91786100s
+>>> Total wall time:  0.02600000s, and total CPU time :  0.02495700s
 
-########## END ITERATION NO.   4 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.   4 ##########   Mon Feb  1 13:30:07 2021
 
-It.    4    -197.0896398769      3.95D-02  3.21D-01  9.89D-02   DIIS   3    0.92187810s   LL SL          Wed Jul 22
+It.    4    -197.0896398770      3.95D-02  3.21D-01  9.89D-02   DIIS   3    0.02600000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   5 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.   5 ##########   Mon Feb  1 13:30:07 2021
 
     5 *** Differential density matrix. DCOVLP     = 1.0041
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00360799s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01043200s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00208400s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01648200s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33785   16   1.15990
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20972   35   0.88234
->>> Total wall time:  0.02278399s, and total CPU time :  0.01999600s
+>>> Total wall time:  0.02700000s, and total CPU time :  0.02556800s
 
-########## END ITERATION NO.   5 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.   5 ##########   Mon Feb  1 13:30:07 2021
 
-It.    5    -197.0909139549      1.27D-03 -4.84D-02  1.58D-03   DIIS   4    0.02278399s   LL SL          Wed Jul 22
+It.    5    -197.0909139549      1.27D-03 -4.84D-02  1.58D-03   DIIS   4    0.02700000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   6 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.   6 ##########   Mon Feb  1 13:30:07 2021
 
     6 *** Differential density matrix. DCOVLP     = 1.0002
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00499606s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01022911s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00205000s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01624000s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33783   16   1.15989
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20971   35   0.88233
->>> Total wall time:  0.02388906s, and total CPU time :  0.02099700s
+>>> Total wall time:  0.02600000s, and total CPU time :  0.02526600s
 
-########## END ITERATION NO.   6 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.   6 ##########   Mon Feb  1 13:30:07 2021
 
-It.    6    -197.0909143720      4.17D-07 -6.35D-05  7.17D-05   DIIS   5    0.02388906s   LL SL          Wed Jul 22
+It.    6    -197.0909143720      4.17D-07 -6.35D-05  7.17D-05   DIIS   5    0.02600000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   7 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.   7 ##########   Mon Feb  1 13:30:07 2021
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00472593s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01033306s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00227500s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01689801s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33783   16   1.15989
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20971   35   0.88233
->>> Total wall time:  0.02370000s, and total CPU time :  0.02099700s
+>>> Total wall time:  0.02700000s, and total CPU time :  0.02608500s
 
-########## END ITERATION NO.   7 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.   7 ##########   Mon Feb  1 13:30:07 2021
 
-It.    7    -197.0909143729      9.41D-10  8.30D-06  7.19D-06   DIIS   6    0.02370000s   LL SL          Wed Jul 22
+It.    7    -197.0909143729      9.42D-10  8.30D-06  7.19D-06   DIIS   6    0.02700000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   8 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.   8 ##########   Mon Feb  1 13:30:07 2021
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00489283s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01051688s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00203900s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01635800s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33783   16   1.15989
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20971   35   0.88233
->>> Total wall time:  0.02406502s, and total CPU time :  0.02099700s
+>>> Total wall time:  0.02700000s, and total CPU time :  0.02544200s
 
-########## END ITERATION NO.   8 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.   8 ##########   Mon Feb  1 13:30:07 2021
 
-It.    8    -197.0909143729      1.21D-11 -1.67D-06  9.36D-07   DIIS   7    0.02406502s   LL SL          Wed Jul 22
+It.    8    -197.0909143729      1.33D-11 -1.67D-06  9.36D-07   DIIS   7    0.02700000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.   9 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.   9 ##########   Mon Feb  1 13:30:07 2021
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00465107s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01053715s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00197399s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01620699s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33783   16   1.15989
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20971   35   0.88233
->>> Total wall time:  0.02383614s, and total CPU time :  0.02099600s
+>>> Total wall time:  0.02600000s, and total CPU time :  0.02500400s
 
-########## END ITERATION NO.   9 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.   9 ##########   Mon Feb  1 13:30:07 2021
 
-It.    9    -197.0909143729      1.71D-13  1.26D-07  1.23D-07   DIIS   8    0.02383614s   LL SL          Wed Jul 22
+It.    9    -197.0909143729      5.68D-14  1.26D-07  1.23D-07   DIIS   8    0.02600000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.  10 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.  10 ##########   Mon Feb  1 13:30:07 2021
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00488591s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01055312s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00201599s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01657899s
 E_HOMO...E_LUMO, symmetry 1:    15  -0.33783   16   1.15989
 E_HOMO...E_LUMO, symmetry 2:    34  -1.20971   35   0.88233
->>> Total wall time:  0.02413392s, and total CPU time :  0.02099800s
+>>> Total wall time:  0.02700000s, and total CPU time :  0.02616600s
 
-########## END ITERATION NO.  10 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.  10 ##########   Mon Feb  1 13:30:07 2021
 
-It.   10    -197.0909143729      8.53D-14 -2.06D-08  9.31D-09   DIIS   7    0.02413392s   LL SL          Wed Jul 22
+It.   10    -197.0909143729      2.59D-12 -2.06D-08  9.31D-09   DIIS   7    0.02700000s   LL SL          Mon Feb  1
 
-########## START ITERATION NO.  11 ##########   Wed Jul 22 23:40:18 2020
+########## START ITERATION NO.  11 ##########   Mon Feb  1 13:30:07 2021
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL -1.00D+00    0.00%   66.41%    0.00%    0.00%   0.00465202s
-SOfock:SL -1.00D+00    0.00%   71.78%    0.00%    0.00%   0.01028681s
->>> Total wall time:  0.02135015s, and total CPU time :  0.01799600s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  0.00D+00    0.00%   66.41%    0.00%    0.00%   0.00235099s
+SOfock:SL  0.00D+00    0.00%   71.89%    0.00%    0.00%   0.01647100s
+>>> Total wall time:  0.02200000s, and total CPU time :  0.02180400s
 
-########## END ITERATION NO.  11 ##########   Wed Jul 22 23:40:18 2020
+########## END ITERATION NO.  11 ##########   Mon Feb  1 13:30:07 2021
 
-It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02135015s   LL SL          Wed Jul 22
+It.   11    -197.0909143729     -3.87D-12 -8.26D-10  2.05D-09   DIIS   7    0.02200000s   LL SL          Mon Feb  1
 
 
                                    SCF - CYCLE
@@ -1032,35 +993,35 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -60.44619894996      0.00D+00  0.00D+00  0.00D+00               0.00799900s   Atom. scrpot   Wed Jul 22
-It.    2    -196.8598659652      1.36D+02  6.51D+00  2.01D+00               0.58732104s   LL SL          Wed Jul 22
-It.    3    -197.0501349195      1.90D-01 -9.55D-01  5.54D-01   DIIS   2    0.02324700s   LL SL          Wed Jul 22
-It.    4    -197.0896398769      3.95D-02  3.21D-01  9.89D-02   DIIS   3    0.92187810s   LL SL          Wed Jul 22
-It.    5    -197.0909139549      1.27D-03 -4.84D-02  1.58D-03   DIIS   4    0.02278399s   LL SL          Wed Jul 22
-It.    6    -197.0909143720      4.17D-07 -6.35D-05  7.17D-05   DIIS   5    0.02388906s   LL SL          Wed Jul 22
-It.    7    -197.0909143729      9.41D-10  8.30D-06  7.19D-06   DIIS   6    0.02370000s   LL SL          Wed Jul 22
-It.    8    -197.0909143729      1.21D-11 -1.67D-06  9.36D-07   DIIS   7    0.02406502s   LL SL          Wed Jul 22
-It.    9    -197.0909143729      1.71D-13  1.26D-07  1.23D-07   DIIS   8    0.02383614s   LL SL          Wed Jul 22
-It.   10    -197.0909143729      8.53D-14 -2.06D-08  9.31D-09   DIIS   7    0.02413392s   LL SL          Wed Jul 22
-It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02135015s   LL SL          Wed Jul 22
+It.    1    -60.44619894996      0.00D+00  0.00D+00  0.00D+00               0.00775900s   Atom. scrpot   Mon Feb  1
+It.    2    -196.8598659652      1.36D+02  6.51D+00  2.01D+00               0.02500000s   LL SL          Mon Feb  1
+It.    3    -197.0501349195      1.90D-01 -9.55D-01  5.54D-01   DIIS   2    0.02800000s   LL SL          Mon Feb  1
+It.    4    -197.0896398770      3.95D-02  3.21D-01  9.89D-02   DIIS   3    0.02600000s   LL SL          Mon Feb  1
+It.    5    -197.0909139549      1.27D-03 -4.84D-02  1.58D-03   DIIS   4    0.02700000s   LL SL          Mon Feb  1
+It.    6    -197.0909143720      4.17D-07 -6.35D-05  7.17D-05   DIIS   5    0.02600000s   LL SL          Mon Feb  1
+It.    7    -197.0909143729      9.42D-10  8.30D-06  7.19D-06   DIIS   6    0.02700000s   LL SL          Mon Feb  1
+It.    8    -197.0909143729      1.33D-11 -1.67D-06  9.36D-07   DIIS   7    0.02700000s   LL SL          Mon Feb  1
+It.    9    -197.0909143729      5.68D-14  1.26D-07  1.23D-07   DIIS   8    0.02600000s   LL SL          Mon Feb  1
+It.   10    -197.0909143729      2.59D-12 -2.06D-08  9.31D-09   DIIS   7    0.02700000s   LL SL          Mon Feb  1
+It.   11    -197.0909143729     -3.87D-12 -8.26D-10  2.05D-09   DIIS   7    0.02200000s   LL SL          Mon Feb  1
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00740886s
-      LL SL        :    0.16962044s
+      No 2-ints    :    0.00800000s
+      LL SL        :    0.02610000s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -254.25393960932792
+   Electronic energy                        :    -254.25393960932496
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      57.16302046577276
    SS Coulombic correction                  :       0.00000477064220
 
    Sum of all contributions to the energy
-   Total energy                             :    -197.09091437291295
+   Total energy                             :    -197.09091437290999
 
 
                                    Eigenvalues
@@ -1069,16 +1030,16 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
 * Fermion symmetry E1g
   * Closed shell, f = 1.0000
--26.44702004452547  ( 2)    -2.77993448223050  ( 2)    -1.02934431744515  ( 2)    -0.33987392856367  ( 2)    -0.33782801280084  ( 2)
+-26.44702004452632  ( 2)    -2.77993448223053  ( 2)    -1.02934431743440  ( 2)    -0.33987392856082  ( 2)    -0.33782801278762  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  1.15989286086544  ( 2)     1.52663895430958  ( 2)     1.52859510157257  ( 2)     1.90420592713969  ( 2)    32.44417717828439  ( 2)
+  1.15989286085919  ( 2)     1.52663895431876  ( 2)     1.52859510157060  ( 2)     1.90420592714175  ( 2)    32.44417717828691  ( 2)
 
 * Fermion symmetry E1u
   * Closed shell, f = 1.0000
--26.43703550725460  ( 2)    -1.27290136836949  ( 2)    -1.27107396301194  ( 2)    -1.20970822355767  ( 2)
+-26.43703550725202  ( 2)    -1.27290136839142  ( 2)    -1.27107396305032  ( 2)    -1.20970822354172  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.88233488108099  ( 2)     1.21138535678443  ( 2)     1.21290516549022  ( 2)     2.35130099544600  ( 2)     3.28606546486301  ( 2)
- 34.28269245551358  ( 2)
+  0.88233488107292  ( 2)     1.21138535677798  ( 2)     1.21290516548205  ( 2)     2.35130099549128  ( 2)     3.28606546486063  ( 2)
+ 34.28269245551974  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.88233488 au (symmetry E1u)
@@ -1104,10 +1065,10 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
      ************************************************************************
 
 
- Transformation started at : Wed Jul 22 23:40:18 2020
+ Transformation started at : Mon Feb  1 13:30:07 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -197.090914372912778
-* Heading :DIRAC: No title specified !!!                     Wed Jul 22 23:40:18 2020
+* REACMO: Coefficients read from file DFCOEF - Total energy: -197.090914372913858
+* Heading :DIRAC: No title specified !!!                     Mon Feb  1 13:30:07 2021
 
 * Orbital ranges for 4-index transformation:
 
@@ -1172,10 +1133,10 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
       **********************************************************************
 
 
- Transformation started at : Wed Jul 22 23:40:18 2020
+ Transformation started at : Mon Feb  1 13:30:07 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -197.090914372912778
-* Heading :DIRAC: No title specified !!!                     Wed Jul 22 23:40:18 2020
+* REACMO: Coefficients read from file DFCOEF - Total energy: -197.090914372913858
+* Heading :DIRAC: No title specified !!!                     Mon Feb  1 13:30:07 2021
 
 
  * Fermion ircop E1g
@@ -1212,13 +1173,13 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
        ********************************************************************
 
 
- Transformation started at : Wed Jul 22 23:40:18 2020
+ Transformation started at : Mon Feb  1 13:30:07 2021
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -197.090914372912778
-* Heading :DIRAC: No title specified !!!                     Wed Jul 22 23:40:18 2020
+* REACMO: Coefficients read from file DFCOEF - Total energy: -197.090914372913858
+* Heading :DIRAC: No title specified !!!                     Mon Feb  1 13:30:07 2021
 
-* REAFCK: Fock matrix read from file /state/partition1/gomes/dirac_runspace/gomes/DIRAC_eom_ea_dc
-* Heading :DIRAC: No title specified !!!                     Wed Jul 22 23:40:16 2020
+* REAFCK: Fock matrix read from file DFFCK1                                                      
+* Heading :DIRAC: No title specified !!!                     Mon Feb  1 13:30:07 2021
 
 
  Core energy (includes nuclear repulsion) :             57.1630252364
@@ -1230,23 +1191,19 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
  MOLFDIR file MRCONEE is written
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
-
- * Max no. of B shells in a task determined to be   2
- - Integral class 2 : (SS|??)
-   - Starting shell A no.    5 after           0.00 seconds.
-   - Starting shell A no.    4 after           0.00 seconds.
-   - Starting shell A no.    3 after           0.00 seconds.
  - Integral class 1 : (LL|??)
-   - Starting shell A no.    2 after           1.93 seconds.
-   - Starting shell A no.    1 after           1.93 seconds.
- Node    3 finished first half transformation          636164 HT integrals written ( 50.97%,      0.01 GB)
- Node    1 finished first half transformation         1562574 HT integrals written ( 52.42%,      0.03 GB)
- Node    2 finished first half transformation          174945 HT integrals written ( 56.95%,      0.00 GB)
- >>> CPU time used in 2HT_all is   0.12 seconds
+   - Beginning task   1 of   2 after      0. seconds and      0. CPU-seconds
+   - Beginning task   2 of   2 after      0. seconds and      0. CPU-seconds
+ - Integral class 2 : (SS|??)
+   - Beginning task   3 of   5 after      0. seconds and      0. CPU-seconds
+   - Beginning task   4 of   5 after      0. seconds and      0. CPU-seconds
+   - Beginning task   5 of   5 after      0. seconds and      0. CPU-seconds
+ Node    0 finished first half transformation         2395308 HT integrals written ( 52.81%,      0.04 GB)
+
+
+   Integrals written :
+ >>> CPU time used in 2HT_all is   0.36 seconds
  - Binary  file MDCINT was written.
- >>> CPU time used in 2HT_all is   0.12 seconds
- >>> CPU time used in 2HT_all is   0.12 seconds
- >>> CPU time used in 2HT_all is   0.12 seconds
 * Screening statistics:
    (LL|LL)ints :   0.00%
    (SS|LL)ints :   0.00%
@@ -1254,27 +1211,17 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
 ------ Timing report (in CPU seconds) of module  integral transformation      
 
+ Time in  First halftransformation            0.351 seconds
+ Time in  Second halftransformation           0.362 seconds
 
 
-                                    Master   --------- Slaves ------------
+ Total wall time used in PAMTRA :   00:00:01
+ Total CPU  time used in PAMTRA (master only) :   00:00:01
 
- Timer                              Master   Minimum   Maximum     Average
-
-  First halftransformation             3.0       2.7       2.9       2.8
-  Slave requesting task from ma        2.0       0.0       0.0       0.0
-  Second halftransformation            0.1       0.1       0.1       0.1
-
------- End of timing report ------
+ Transformation ended at : Mon Feb  1 13:30:08 2021
 
 
-
- Total wall time used in PAMTRA :   00:00:03
- Total CPU  time used in PAMTRA (master only) :   00:00:03
-
- Transformation ended at : Wed Jul 22 23:40:21 2020
-
-
----< Process     1 of     4----<
+---< Process     1 of     1----<
 
 
 
@@ -1299,8 +1246,8 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
   - EOM-IP/EA/EE energies  : A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, J. Chem. Phys. 149 (2018) 174113.
 
 
- Today is :    22 Jul 20
- The time is :  23:40:21
+ Today is :     1 Feb 21
+ The time is :  13:30:08
 
  Initializing word-addressable I/O : the FORTRAN-interface is used with    16 KB records
 ===========================================================================
@@ -1309,10 +1256,10 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
  * General print level   :   1
  NEL_F1:  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 
- Total memory available :        1953.12 MB    1.907 GB
- 
+ Total memory available :       16384.00 MB   16.000 GB
+
  INFO: No old restart file(s) found!
- 
+
 
  Configuration in highest pointgroup
 
@@ -1338,14 +1285,14 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
  Debug information       :                 F
  Timing information      :                 F
  Print level          :                    1
- Memory limit (MWord) :                       244
+ Memory limit (MWord) :                      2048
  Interface used       :                DIRAC6    
 
 
  Leave after calculating the total memory demand :          F
- Memory for reading and sorting integrals :               748538 8-byte words
+ Memory for reading and sorting integrals :               653201 8-byte words
  Core used for calculating amplitudes :                   725614 8-byte words
- Core used for in core evaluation of triples :            390948 8-byte words
+ Core used for in core evaluation of triples :            459876 8-byte words
  Core used for EOMCC calculation :                       1340528 8-byte words
  Memory used for active modules :                        1340528 8-byte words
 
@@ -1359,30 +1306,33 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
  Type VOVO :           78416 integrals
  Type VOVV :           45756 integrals
  Type VVVV :           26721 integrals
- 
- Start sorting of integral classes at  22 Jul 20 23:40:21
- 
- 
- Sorting of first 4 classes done at  22 Jul 20 23:40:22
+
+ Start sorting of integral classes at   1 Feb 21 13:30:08
+
+
+ Sorting of first 4 classes done at   1 Feb 21 13:30:08
 
  Need      1 passes to sort VOVV integrals
- 
- Pass     1 ended at  22 Jul 20 23:40:22
- 
- VOVV sorting done at  22 Jul 20 23:40:22
+
+ Pass     1 ended at   1 Feb 21 13:30:08
+
+ VOVV sorting done at   1 Feb 21 13:30:08
 
  Need      1 passes to sort VVVV integrals
- 
- Pass     1 ended at  22 Jul 20 23:40:22
- 
- VVVV sorting done at  22 Jul 20 23:40:22
+
+ Pass     1 ended at   1 Feb 21 13:30:08
+
+ VVVV sorting done at   1 Feb 21 13:30:08
 
  Reading Coulomb integrals :
- File date :      22 Jul 20
- File time :       23:40:22
- # of integrals              333232
+ File date :       1 Feb 21
+ File time :       13:30:08
+ # of integrals              335744
 
  Finished sorting of integrals
+
+
+ Single determinant electronic energy :     -254.253939609327858
 
 
  Checking the orbital energies, the program computes the diagonal elements of the
@@ -1390,24 +1340,24 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
  are given if above a treshold or if iprnt > 1
 
  Spinor   Abelian Rep.         Energy   Recalc. Energy
-  O    1    1    AG      -26.4470200447  -26.4470200447
-  O    2    2    AG       -2.7799344823   -2.7799344823
-  O    3    3    AG       -1.0293443175   -1.0293443175
-  O    4    4    AG       -0.3398739289   -0.3398739289
-  O    5    5    AG       -0.3378280126   -0.3378280126
-  O    6    6    AG      -26.4470200447  -26.4470200447
-  O    7    7    AG       -2.7799344823   -2.7799344823
-  O    8    8    AG       -1.0293443175   -1.0293443175
-  O    9    9    AG       -0.3398739289   -0.3398739289
-  O   10   10    AG       -0.3378280126   -0.3378280126
-  O    1   11    AU      -26.4370355075  -26.4370355075
-  O    2   12    AU       -1.2729013686   -1.2729013686
-  O    3   13    AU       -1.2710739629   -1.2710739629
-  O    4   14    AU       -1.2097082237   -1.2097082237
-  O    5   15    AU      -26.4370355075  -26.4370355075
-  O    6   16    AU       -1.2729013686   -1.2729013686
-  O    7   17    AU       -1.2710739629   -1.2710739629
-  O    8   18    AU       -1.2097082237   -1.2097082237
+  O    1    1    AG      -26.4470200445  -26.4470200447
+  O    2    2    AG       -2.7799344822   -2.7799344823
+  O    3    3    AG       -1.0293443174   -1.0293443175
+  O    4    4    AG       -0.3398739286   -0.3398739289
+  O    5    5    AG       -0.3378280128   -0.3378280126
+  O    6    6    AG      -26.4470200445  -26.4470200447
+  O    7    7    AG       -2.7799344822   -2.7799344823
+  O    8    8    AG       -1.0293443174   -1.0293443175
+  O    9    9    AG       -0.3398739286   -0.3398739289
+  O   10   10    AG       -0.3378280128   -0.3378280126
+  O    1   11    AU      -26.4370355073  -26.4370355075
+  O    2   12    AU       -1.2729013684   -1.2729013686
+  O    3   13    AU       -1.2710739631   -1.2710739629
+  O    4   14    AU       -1.2097082235   -1.2097082237
+  O    5   15    AU      -26.4370355073  -26.4370355075
+  O    6   16    AU       -1.2729013684   -1.2729013686
+  O    7   17    AU       -1.2710739631   -1.2710739629
+  O    8   18    AU       -1.2097082235   -1.2097082237
 
  The diagonal elements of the recomputed Fock matrix (right column) are used in perturbation expressions.
 
@@ -1418,10 +1368,10 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
 
  Nuclear repulsion + core energy :            57.163025236414960
- Zero order electronic energy :             -122.249439697613724
- First order electronic energy :            -132.004499911713935
- Electronic energy :                        -254.253939609327659
- SCF energy :                               -197.090914372912692
+ Zero order electronic energy :             -122.249439697604686
+ First order electronic energy :            -132.004499911723173
+ Electronic energy :                        -254.253939609327858
+ SCF energy :                               -197.090914372912891
 
 
  Energy calculations
@@ -1432,10 +1382,10 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
   MP2 results
 
- SCF energy :                               -197.090914372912692
- MP2 correlation energy :                     -0.196492123286744
- Total MP2 energy :                         -197.287406496199424
- T1 diagnostic :                               0.000000000174844
+ SCF energy :                               -197.090914372912891
+ MP2 correlation energy :                     -0.196492123286945
+ Total MP2 energy :                         -197.287406496199850
+ T1 diagnostic :                               0.000000000173644
 
 
  CCSD options :
@@ -1445,41 +1395,41 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
 
    NIT          ENERGY                    RMS       T1-DIAGN
-    0       -0.196492123286744   1.000000000000000   0.00000
-    1       -0.201715917650193   0.000229201031863   0.00592
-    2       -0.204594684770830   0.000047033846532   0.00590
-    3       -0.205109797364265   0.000014071890467   0.00609
-    4       -0.205113627420457   0.000001623445234   0.00607
-    5       -0.205112603010016   0.000000212522492   0.00608
-    6       -0.205112652340526   0.000000031683318   0.00608
-    7       -0.205112636379021   0.000000005626538   0.00608
-    8       -0.205112637519046   0.000000000908276   0.00608
-    9       -0.205112638215454   0.000000000125621   0.00608
-   10       -0.205112638242357   0.000000000017892   0.00608
-   11       -0.205112638243329   0.000000000002633   0.00608
-   12       -0.205112638246464   0.000000000000381   0.00608
+    0       -0.196492123286945   1.000000000000000   0.00000
+    1       -0.201715917650300   0.000229201031860   0.00592
+    2       -0.204594684770854   0.000047033846531   0.00590
+    3       -0.205109797364271   0.000014071890467   0.00609
+    4       -0.205113627420463   0.000001623445234   0.00607
+    5       -0.205112603010021   0.000000212522492   0.00608
+    6       -0.205112652340532   0.000000031683318   0.00608
+    7       -0.205112636379027   0.000000005626538   0.00608
+    8       -0.205112637519052   0.000000000908276   0.00608
+    9       -0.205112638215459   0.000000000125621   0.00608
+   10       -0.205112638242362   0.000000000017892   0.00608
+   11       -0.205112638243335   0.000000000002633   0.00608
+   12       -0.205112638246469   0.000000000000381   0.00608
 
 
   CCSD results
 
- SCF energy :                               -197.090914372912692
- CCSD correlation energy :                    -0.205112638246464
- Total CCSD energy :                        -197.296027011159168
- T1 diagnostic :                               0.006075110171567
+ SCF energy :                               -197.090914372912891
+ CCSD correlation energy :                    -0.205112638246469
+ Total CCSD energy :                        -197.296027011159367
+ T1 diagnostic :                               0.006075110171269
  Convergence :                                 0.000000000000381
  Number or iterations used :                                  12
 
 
   Perturbative treatment of triple excitations
 
- SCF energy :                               -197.090914372912692
- CCSD correlation energy :                    -0.205112638246464
- 4th order triples correction :               -0.002039809017755
- 5th order triples (T) correction :            0.000366706387516
- 5th order triples -T  correction :            0.000545988381075
- Total CCSD+T  energy :                     -197.298066820176928
- Total CCSD(T) energy :                     -197.297700113789404
- Total CCSD-T  energy :                     -197.297520831795850
+ SCF energy :                               -197.090914372912891
+ CCSD correlation energy :                    -0.205112638246469
+ 4th order triples correction :               -0.002039809017753
+ 5th order triples (T) correction :            0.000366706387525
+ 5th order triples -T  correction :            0.000545988381086
+ Total CCSD+T  energy :                     -197.298066820177127
+ Total CCSD(T) energy :                     -197.297700113789602
+ Total CCSD-T  energy :                     -197.297520831796049
   
  Equation of Motion CC module setup
   
@@ -1497,20 +1447,19 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
      done with W_iemn
      done with W_efam
      done with W_efam diagram #2
-   Sync done   W_efam diagram #2
      done with W_mnie
      done with W_amef
  
  Configuration variables for matrix-free diagonalizer
  
-   output written to unit        :                      6
+   output written to unit        :            6
    verbose output                :  F
  
   convergence control
  
-   convergence threshold         :   1.000000000000000E-007
-   maximum subspace size         :                   1024
-   maximum number of iterations  :                     50
+   convergence threshold         :    9.9999999999999995E-008
+   maximum subspace size         :         1024
+   maximum number of iterations  :           50
    refresh trial vectors         :  F
  
   restart/data storage
@@ -1527,17 +1476,17 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
    complex mode (real variables) :  T
    root following via overlap    :  F
    energy shift in eigval sorting:  F
-      shift value, real  part    :   0.000000000000000E+000
-      shift value, imag. part    :   0.000000000000000E+000
+      shift value, real  part    :    0.0000000000000000     
+      shift value, imag. part    :    0.0000000000000000     
  
  
   <<< SOLVING RHS EOM-EA EQUATIONS FOR SYMMETRY    AG( 1) >>>
  
     Requested      6 eigenvales
  
- Iteration                      1
+ Iteration            1
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.116218E+01
     Eigenvalue      2 :   0.116221E+01
     Eigenvalue      3 :   0.154938E+01
@@ -1551,25 +1500,25 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
     Root      5  ||q_k,M||   0.540501E+00
     Root      6  ||q_k,M||   0.167707E+01
   
- Iteration                      2
+ Iteration            2
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113936E+01
     Eigenvalue      2 :   0.113937E+01
     Eigenvalue      3 :   0.150229E+01
-    Eigenvalue      4 :   0.155041E+01
-    Eigenvalue      5 :   0.155234E+01
+    Eigenvalue      4 :   0.154997E+01
+    Eigenvalue      5 :   0.155281E+01
     Eigenvalue      6 :   0.183144E+01
     Root      1  ||q_k,M||   0.366956E-01
     Root      2  ||q_k,M||   0.373202E-01
     Root      3  ||q_k,M||   0.386629E-01
-    Root      4  ||q_k,M||   0.336446E+00
-    Root      5  ||q_k,M||   0.343856E+00
+    Root      4  ||q_k,M||   0.334738E+00
+    Root      5  ||q_k,M||   0.345609E+00
     Root      6  ||q_k,M||   0.685823E-01
   
- Iteration                      3
+ Iteration            3
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113893E+01
     Eigenvalue      2 :   0.113894E+01
     Eigenvalue      3 :   0.150188E+01
@@ -1579,13 +1528,13 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
     Root      1  ||q_k,M||   0.853763E-02
     Root      2  ||q_k,M||   0.925123E-02
     Root      3  ||q_k,M||   0.102570E-01
-    Root      4  ||q_k,M||   0.384121E-01
-    Root      5  ||q_k,M||   0.391323E-01
+    Root      4  ||q_k,M||   0.382454E-01
+    Root      5  ||q_k,M||   0.393020E-01
     Root      6  ||q_k,M||   0.121032E+00
   
- Iteration                      4
+ Iteration            4
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150186E+01
@@ -1594,292 +1543,253 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
     Eigenvalue      6 :   0.180571E+01
     Root      1  ||q_k,M||   0.161685E-02
     Root      2  ||q_k,M||   0.287542E-02
-    Root      3  ||q_k,M||   0.521191E-02
-    Root      4  ||q_k,M||   0.102350E-01
-    Root      5  ||q_k,M||   0.103891E-01
+    Root      3  ||q_k,M||   0.521468E-02
+    Root      4  ||q_k,M||   0.101993E-01
+    Root      5  ||q_k,M||   0.104253E-01
     Root      6  ||q_k,M||   0.154862E+00
   
- Iteration                      5
+ Iteration            5
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150364E+01
     Eigenvalue      5 :   0.150364E+01
-    Eigenvalue      6 :   0.175299E+01
-    Root      1  ||q_k,M||   0.183285E-03
+    Eigenvalue      6 :   0.175374E+01
+    Root      1  ||q_k,M||   0.183292E-03
     Root      2  ||q_k,M||   0.576320E-03
-    Root      3  ||q_k,M||   0.227317E-02
-    Root      4  ||q_k,M||   0.526929E-02
-    Root      5  ||q_k,M||   0.530567E-02
-    Root      6  ||q_k,M||   0.627283E+00
+    Root      3  ||q_k,M||   0.231435E-02
+    Root      4  ||q_k,M||   0.526081E-02
+    Root      5  ||q_k,M||   0.531417E-02
+    Root      6  ||q_k,M||   0.621419E+00
   
- Iteration                      6
+ Iteration            6
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150363E+01 +  0.136292E-07 i
-    Eigenvalue      5 :   0.150363E+01 -  0.136292E-07 i
-    Eigenvalue      6 :   0.168294E+01
+    Eigenvalue      4 :   0.150363E+01 +  0.199942E-07 i
+    Eigenvalue      5 :   0.150363E+01 -  0.199942E-07 i
+    Eigenvalue      6 :   0.168170E+01
     Root      1  ||q_k,M||   0.121841E-03
-    Root      2  ||q_k,M||   0.213775E-04
-    Root      3  ||q_k,M||   0.551833E-03
-    Root      4  ||q_k,M||   0.239218E-02
-    Root      5  ||q_k,M||   0.239218E-02
-    Root      6  ||q_k,M||   0.133190E+00
+    Root      2  ||q_k,M||   0.213808E-04
+    Root      3  ||q_k,M||   0.562661E-03
+    Root      4  ||q_k,M||   0.239213E-02
+    Root      5  ||q_k,M||   0.239213E-02
+    Root      6  ||q_k,M||   0.171528E+00
   
- Iteration                      7
+ Iteration            7
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150363E+01 +  0.142108E-08 i
-    Eigenvalue      5 :   0.150363E+01 -  0.142108E-08 i
-    Eigenvalue      6 :   0.157924E+01
-    Root      1  ||q_k,M||   0.428833E-05
-    Root      2  ||q_k,M||   0.283886E-04
-    Root      3  ||q_k,M||   0.128250E-03
-    Root      4  ||q_k,M||   0.705059E-03
-    Root      5  ||q_k,M||   0.705059E-03
-    Root      6  ||q_k,M||   0.514939E+00
+    Eigenvalue      4 :   0.150363E+01 +  0.208487E-08 i
+    Eigenvalue      5 :   0.150363E+01 -  0.208487E-08 i
+    Eigenvalue      6 :   0.159422E+01
+    Root      1  ||q_k,M||   0.428761E-05
+    Root      2  ||q_k,M||   0.283888E-04
+    Root      3  ||q_k,M||   0.116559E-03
+    Root      4  ||q_k,M||   0.705054E-03
+    Root      5  ||q_k,M||   0.705054E-03
+    Root      6  ||q_k,M||   0.488040E+00
   
- Iteration                      8
+ Iteration            8
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150363E+01
     Eigenvalue      5 :   0.150363E+01
-    Eigenvalue      6 :   0.150416E+01
-    Root      1  ||q_k,M||   0.423495E-05
-    Root      2  ||q_k,M||   0.613343E-06
-    Root      3  ||q_k,M||   0.283246E-04
-    Root      4  ||q_k,M||   0.198854E-03
-    Root      5  ||q_k,M||   0.200362E-03
-    Root      6  ||q_k,M||   0.141693E+00
+    Eigenvalue      6 :   0.150525E+01
+    Root      1  ||q_k,M||   0.423494E-05
+    Root      2  ||q_k,M||   0.613421E-06
+    Root      3  ||q_k,M||   0.258652E-04
+    Root      4  ||q_k,M||   0.198498E-03
+    Root      5  ||q_k,M||   0.200711E-03
+    Root      6  ||q_k,M||   0.171294E+00
   
- Iteration                      9
+ Iteration            9
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150195E+01
+    Eigenvalue      4 :   0.150199E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.861597E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.861622E-07     <<< converged ! 
     Root      2  ||q_k,M||   0.784550E-06
-    Root      3  ||q_k,M||   0.683851E-05
-    Root      4  ||q_k,M||   0.340701E-01
-    Root      5  ||q_k,M||   0.545338E-04
-    Root      6  ||q_k,M||   0.550767E-04
+    Root      3  ||q_k,M||   0.600313E-05
+    Root      4  ||q_k,M||   0.411391E-01
+    Root      5  ||q_k,M||   0.544070E-04
+    Root      6  ||q_k,M||   0.552036E-04
   
- Iteration                     10
+ Iteration           10
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150186E+01
+    Eigenvalue      4 :   0.150187E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.860344E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955209E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.142941E-05
-    Root      4  ||q_k,M||   0.702666E-02
-    Root      5  ||q_k,M||   0.748013E-05
-    Root      6  ||q_k,M||   0.752637E-05
+    Root      1  ||q_k,M||   0.860608E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955214E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.134871E-05
+    Root      4  ||q_k,M||   0.768177E-02
+    Root      5  ||q_k,M||   0.746928E-05
+    Root      6  ||q_k,M||   0.753729E-05
   
- Iteration                     11
+ Iteration           11
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150185E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.860354E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955207E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.331946E-06
-    Root      4  ||q_k,M||   0.402976E-02
-    Root      5  ||q_k,M||   0.161493E-05
-    Root      6  ||q_k,M||   0.162019E-05
+    Root      1  ||q_k,M||   0.860541E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955210E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.312334E-06
+    Root      4  ||q_k,M||   0.437740E-02
+    Root      5  ||q_k,M||   0.161336E-05
+    Root      6  ||q_k,M||   0.162162E-05
   
- Iteration                     12
+ Iteration           12
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150184E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.860183E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955211E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.155836E-06
-    Root      4  ||q_k,M||   0.872095E-04
-    Root      5  ||q_k,M||   0.323454E-06
-    Root      6  ||q_k,M||   0.328632E-06
+    Root      1  ||q_k,M||   0.860353E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955213E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.169088E-06
+    Root      4  ||q_k,M||   0.936464E-04
+    Root      5  ||q_k,M||   0.322271E-06
+    Root      6  ||q_k,M||   0.329829E-06
   
- Iteration                     13
+ Iteration           13
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150184E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.860302E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955203E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.157179E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.325435E-03
-    Root      5  ||q_k,M||   0.101853E-06
-    Root      6  ||q_k,M||   0.101761E-06
+    Root      1  ||q_k,M||   0.860524E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955206E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.252311E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.973672E-04
+    Root      5  ||q_k,M||   0.101829E-06
+    Root      6  ||q_k,M||   0.101778E-06
   
- Iteration                     14
+ Iteration           14
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150184E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.860308E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955200E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.160467E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.749240E-05
-    Root      5  ||q_k,M||   0.352162E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.350949E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.860476E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955202E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.151393E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.714650E-05
+    Root      5  ||q_k,M||   0.352107E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.350927E-07     <<< converged ! 
   
- Iteration                     15
+ Iteration           15
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150184E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.859801E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955194E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.152487E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.560453E-05
-    Root      5  ||q_k,M||   0.352104E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.350903E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.859786E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955196E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.148714E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.624856E-05
+    Root      5  ||q_k,M||   0.352006E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.350789E-07     <<< converged ! 
   
- Iteration                     16
+ Iteration           16
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150184E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.859120E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.858802E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955196E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.158914E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.132909E-05
+    Root      5  ||q_k,M||   0.352147E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.350905E-07     <<< converged ! 
+  
+ Iteration           17
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.113892E+01
+    Eigenvalue      2 :   0.113892E+01
+    Eigenvalue      3 :   0.150184E+01
+    Eigenvalue      4 :   0.150184E+01
+    Eigenvalue      5 :   0.150363E+01
+    Eigenvalue      6 :   0.150363E+01
+    Root      1  ||q_k,M||   0.858193E-07     <<< converged ! 
     Root      2  ||q_k,M||   0.955195E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.148487E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.122151E-05
-    Root      5  ||q_k,M||   0.352079E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.350879E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.212917E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.118529E-06
+    Root      5  ||q_k,M||   0.352061E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.350853E-07     <<< converged ! 
   
- Iteration                     17
+ Iteration           18
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.113892E+01
     Eigenvalue      2 :   0.113892E+01
     Eigenvalue      3 :   0.150184E+01
     Eigenvalue      4 :   0.150184E+01
     Eigenvalue      5 :   0.150363E+01
     Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.858502E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955194E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.148561E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.177852E-06
-    Root      5  ||q_k,M||   0.352169E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.350979E-07     <<< converged ! 
-  
- Iteration                     18
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.113892E+01
-    Eigenvalue      2 :   0.113892E+01
-    Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150184E+01
-    Eigenvalue      5 :   0.150363E+01
-    Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.858422E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955192E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.137875E-06
-    Root      4  ||q_k,M||   0.148561E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.352016E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.350805E-07     <<< converged ! 
-  
- Iteration                     19
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.113892E+01
-    Eigenvalue      2 :   0.113892E+01
-    Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150184E+01
-    Eigenvalue      5 :   0.150363E+01
-    Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.858416E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955192E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.138227E-06
-    Root      4  ||q_k,M||   0.121300E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.352295E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.351079E-07     <<< converged ! 
-  
- Iteration                     20
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.113892E+01
-    Eigenvalue      2 :   0.113892E+01
-    Eigenvalue      3 :   0.150184E+01
-    Eigenvalue      4 :   0.150184E+01
-    Eigenvalue      5 :   0.150363E+01
-    Eigenvalue      6 :   0.150363E+01
-    Root      1  ||q_k,M||   0.858398E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.955192E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.197306E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.197273E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.352167E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.350972E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.857562E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.955193E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.955855E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.975227E-08     <<< converged ! 
+    Root      5  ||q_k,M||   0.352154E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.350917E-07     <<< converged ! 
   
  All roots converged.
- Final size of reduced subspace :                     80
+ Final size of reduced subspace :           78
+================================================================================
 
- ( 1 au = 27.2113862127 eV  /  219474.631229534 cm-1)
+ *** EXCITATIONS OF FERMION IRREP   AG( 1) ***
 
-
- Energy eigenvalues in atomic units
-
- Level   Rel eigenvalue     Abs eigenvalue      Total Energy       Total imag.ener.  Degeneracy
-
-    1     0.0000000000      1.138921408008     -196.157105603151    0.000000000000000 (   2 * )
-    2     0.3629226663      1.501844074279     -195.794182936880   -0.000000000000000 (   2 * )
-    3     0.3647043101      1.503625718099     -195.792401293060    0.000000000000000 (   2 * )
+--------------------------------------------------------------------------------
 
 
- Total average:      -195.9145632777
+ Level   Abs eigenvalue      Total Energy       Total imag.ener.   (atomic units)
 
-
- Relative real eigenvalues in other units;
- Symmetry Classification in the Abelian subgroup
-
- Level  eigenvalue (eV)  Eigenvalue (cm-1)    AG|  AU|
-    1        0.000000000          0.000000     2|   0|
-    2        9.875628837      79652.318345     2|   0|
-    3        9.924109835      80043.343965     2|   0|
+    1     1.1389214080   -196.157105603153       -0.000000000000 
+    2     1.1389214080   -196.157105603150        0.000000000000 
+    3     1.5018440742   -195.794182936920       -0.000000000000 
+    4     1.5018440743   -195.794182936876        0.000000000000 
+    5     1.5036257181   -195.792401293060       -0.000000000000 
+    6     1.5036257181   -195.792401293060        0.000000000000 
+--------------------------------------------------------------------------------
 
 
  Analysis of EOM eigenvectors
@@ -1893,28 +1803,28 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
         0.99453        0.00000   |   AG #  16 (   1.160) |                         
 
  Irrep   AG State     3   -195.79418294      1.50184407
-        0.86902        0.00000   |   AG #  12 (   1.527) |                         
-       -0.46677        0.08292   |   AG #  17 (   1.527) |                         
+        0.95902        0.00000   |   AG #  12 (   1.527) |                         
+       -0.22633        0.09483   |   AG #  17 (   1.527) |                         
 
  Irrep   AG State     4   -195.79418294      1.50184407
-        0.86902        0.00000   |   AG #  12 (   1.527) |                         
-       -0.05273       -0.47114   |   AG #  17 (   1.527) |                         
+        0.98909        0.00000   |   AG #  12 (   1.527) |                         
 
  Irrep   AG State     5   -195.79240129      1.50362572
-       -0.17552       -0.55327   |   AG #  13 (   1.529) |                         
-        0.60631       -0.52471   |   AG #  18 (   1.529) |                         
+       -0.10061       -0.42402   |   AG #  13 (   1.529) |                         
+       -0.42387       -0.78119   |   AG #  18 (   1.529) |                         
 
  Irrep   AG State     6   -195.79240129      1.50362572
-        0.15815        0.58506   |   AG #  13 (   1.529) |                         
-        0.59149       -0.51252   |   AG #  18 (   1.529) |                         
+        0.11974        0.56930   |   AG #  13 (   1.529) |                         
+       -0.38247       -0.70365   |   AG #  18 (   1.529) |                         
+================================================================================
  
   <<< SOLVING RHS EOM-EA EQUATIONS FOR SYMMETRY    AU( 2) >>>
  
     Requested      6 eigenvales
  
- Iteration                      1
+ Iteration            1
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.889324E+00
     Eigenvalue      2 :   0.122776E+01
     Eigenvalue      3 :   0.122928E+01
@@ -1928,25 +1838,25 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
     Root      5  ||q_k,M||   0.601686E+00
     Root      6  ||q_k,M||   0.166174E+01
   
- Iteration                      2
+ Iteration            2
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871681E+00
     Eigenvalue      2 :   0.118539E+01
-    Eigenvalue      3 :   0.122865E+01
-    Eigenvalue      4 :   0.122993E+01
+    Eigenvalue      3 :   0.122890E+01
+    Eigenvalue      4 :   0.122967E+01
     Eigenvalue      5 :   0.214789E+01
     Eigenvalue      6 :   0.270599E+01
     Root      1  ||q_k,M||   0.257018E-01
     Root      2  ||q_k,M||   0.360583E-01
-    Root      3  ||q_k,M||   0.326372E+00
-    Root      4  ||q_k,M||   0.331654E+00
+    Root      3  ||q_k,M||   0.327429E+00
+    Root      4  ||q_k,M||   0.330583E+00
     Root      5  ||q_k,M||   0.891175E-01
     Root      6  ||q_k,M||   0.661081E+00
   
- Iteration                      3
+ Iteration            3
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871564E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118681E+01
@@ -1955,14 +1865,14 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
     Eigenvalue      6 :   0.229497E+01
     Root      1  ||q_k,M||   0.402456E-02
     Root      2  ||q_k,M||   0.712605E-02
-    Root      3  ||q_k,M||   0.358556E-01
-    Root      4  ||q_k,M||   0.363656E-01
+    Root      3  ||q_k,M||   0.359578E-01
+    Root      4  ||q_k,M||   0.362624E-01
     Root      5  ||q_k,M||   0.100901E+00
     Root      6  ||q_k,M||   0.344288E+00
   
- Iteration                      4
+ Iteration            4
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118652E+01
@@ -1970,478 +1880,494 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
     Eigenvalue      5 :   0.212468E+01
     Eigenvalue      6 :   0.220545E+01
     Root      1  ||q_k,M||   0.563898E-03
-    Root      2  ||q_k,M||   0.150332E-02
-    Root      3  ||q_k,M||   0.710397E-02
-    Root      4  ||q_k,M||   0.718509E-02
+    Root      2  ||q_k,M||   0.150330E-02
+    Root      3  ||q_k,M||   0.712025E-02
+    Root      4  ||q_k,M||   0.716869E-02
     Root      5  ||q_k,M||   0.191238E+00
     Root      6  ||q_k,M||   0.387787E+00
   
- Iteration                      5
+ Iteration            5
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118652E+01
     Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.195526E+01
-    Eigenvalue      6 :   0.208822E+01
+    Eigenvalue      5 :   0.195399E+01
+    Eigenvalue      6 :   0.208820E+01
     Root      1  ||q_k,M||   0.707266E-04
-    Root      2  ||q_k,M||   0.187203E-03
-    Root      3  ||q_k,M||   0.150767E-02
-    Root      4  ||q_k,M||   0.151995E-02
-    Root      5  ||q_k,M||   0.167454E+01
-    Root      6  ||q_k,M||   0.245543E+00
+    Root      2  ||q_k,M||   0.187399E-03
+    Root      3  ||q_k,M||   0.151013E-02
+    Root      4  ||q_k,M||   0.151746E-02
+    Root      5  ||q_k,M||   0.168046E+01
+    Root      6  ||q_k,M||   0.245070E+00
   
- Iteration                      6
+ Iteration            6
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118652E+01 +  0.627305E-09 i
-    Eigenvalue      4 :   0.118652E+01 -  0.627305E-09 i
-    Eigenvalue      5 :   0.127256E+01
-    Eigenvalue      6 :   0.191890E+01
-    Root      1  ||q_k,M||   0.929573E-05
-    Root      2  ||q_k,M||   0.589400E-04
+    Eigenvalue      3 :   0.118652E+01 -  0.374633E-09 i
+    Eigenvalue      4 :   0.118652E+01 +  0.374633E-09 i
+    Eigenvalue      5 :   0.127191E+01
+    Eigenvalue      6 :   0.191951E+01
+    Root      1  ||q_k,M||   0.929750E-05
+    Root      2  ||q_k,M||   0.588070E-04
     Root      3  ||q_k,M||   0.179352E-03
     Root      4  ||q_k,M||   0.179352E-03
-    Root      5  ||q_k,M||   0.479703E+00
-    Root      6  ||q_k,M||   0.457483E+00
+    Root      5  ||q_k,M||   0.478008E+00
+    Root      6  ||q_k,M||   0.459797E+00
   
- Iteration                      7
+ Iteration            7
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118652E+01
     Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.118727E+01
-    Eigenvalue      6 :   0.183815E+01
-    Root      1  ||q_k,M||   0.888256E-06
-    Root      2  ||q_k,M||   0.928070E-05
-    Root      3  ||q_k,M||   0.429281E-04
-    Root      4  ||q_k,M||   0.429282E-04
-    Root      5  ||q_k,M||   0.975270E-01
-    Root      6  ||q_k,M||   0.144113E+00
+    Eigenvalue      5 :   0.118731E+01
+    Eigenvalue      6 :   0.183813E+01
+    Root      1  ||q_k,M||   0.888241E-06
+    Root      2  ||q_k,M||   0.924866E-05
+    Root      3  ||q_k,M||   0.429287E-04
+    Root      4  ||q_k,M||   0.429288E-04
+    Root      5  ||q_k,M||   0.984107E-01
+    Root      6  ||q_k,M||   0.144737E+00
   
- Iteration                      8
+ Iteration            8
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118516E+01
+    Eigenvalue      3 :   0.118517E+01
     Eigenvalue      4 :   0.118652E+01
     Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.182627E+01
-    Root      1  ||q_k,M||   0.113674E-06
-    Root      2  ||q_k,M||   0.147482E-05
-    Root      3  ||q_k,M||   0.208989E-01
-    Root      4  ||q_k,M||   0.993666E-05
-    Root      5  ||q_k,M||   0.993685E-05
-    Root      6  ||q_k,M||   0.155934E+00
+    Eigenvalue      6 :   0.182615E+01 +  0.591470E-09 i
+    Root      1  ||q_k,M||   0.113547E-06
+    Root      2  ||q_k,M||   0.146884E-05
+    Root      3  ||q_k,M||   0.211324E-01
+    Root      4  ||q_k,M||   0.993677E-05
+    Root      5  ||q_k,M||   0.993686E-05
+    Root      6  ||q_k,M||   0.158041E+00
   
- Iteration                      9
+ Iteration            9
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00
+    Eigenvalue      2 :   0.118510E+01
+    Eigenvalue      3 :   0.118510E+01 -  0.694016E-09 i
+    Eigenvalue      4 :   0.118652E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.180581E+01 -  0.594086E-08 i
+    Root      1  ||q_k,M||   0.141998E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.273679E-06
+    Root      3  ||q_k,M||   0.354920E-02
+    Root      4  ||q_k,M||   0.169862E-05
+    Root      5  ||q_k,M||   0.169874E-05
+    Root      6  ||q_k,M||   0.321574E+00
+  
+ Iteration           10
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00
+    Eigenvalue      2 :   0.118510E+01 +  0.706959E-09 i
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118652E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.178973E+01 -  0.283358E-07 i
+    Root      1  ||q_k,M||   0.120973E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.184635E-03
+    Root      3  ||q_k,M||   0.618363E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.227063E-06
+    Root      5  ||q_k,M||   0.227028E-06
+    Root      6  ||q_k,M||   0.825767E-01
+  
+ Iteration           11
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00
+    Eigenvalue      2 :   0.118510E+01 -  0.435765E-09 i
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118652E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.178888E+01 -  0.420887E-08 i
+    Root      1  ||q_k,M||   0.118446E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.825177E-04
+    Root      3  ||q_k,M||   0.365353E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.328297E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.327704E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.187342E-01
+  
+ Iteration           12
+ 
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118652E+01
     Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.180619E+01
-    Root      1  ||q_k,M||   0.142307E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.274527E-06
-    Root      3  ||q_k,M||   0.351359E-02
-    Root      4  ||q_k,M||   0.169854E-05
-    Root      5  ||q_k,M||   0.169873E-05
-    Root      6  ||q_k,M||   0.323992E+00
+    Eigenvalue      6 :   0.178878E+01 -  0.147201E-08 i
+    Root      1  ||q_k,M||   0.114873E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.358418E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.866448E-05
+    Root      4  ||q_k,M||   0.328287E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.327676E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.849489E-02
   
- Iteration                     10
+ Iteration           13
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118652E+01
     Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.178975E+01
-    Root      1  ||q_k,M||   0.121166E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.186772E-03
-    Root      3  ||q_k,M||   0.610578E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.227074E-06
-    Root      5  ||q_k,M||   0.227003E-06
-    Root      6  ||q_k,M||   0.834258E-01
+    Eigenvalue      6 :   0.178875E+01 -  0.533797E-09 i
+    Root      1  ||q_k,M||   0.115359E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.351580E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.232748E-05
+    Root      4  ||q_k,M||   0.328145E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.327566E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.676818E-02
   
- Iteration                     11
+ Iteration           14
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118652E+01
     Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.178888E+01
-    Root      1  ||q_k,M||   0.118681E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.823519E-04
-    Root      3  ||q_k,M||   0.363760E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.328604E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327916E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.189125E-01
+    Eigenvalue      6 :   0.178874E+01 +  0.254939E-09 i
+    Root      1  ||q_k,M||   0.114819E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.379971E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.344907E-06
+    Root      4  ||q_k,M||   0.328127E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.327528E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.425745E-02
   
- Iteration                     12
+ Iteration           15
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.118510E+01
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118652E+01
     Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.178878E+01
-    Root      1  ||q_k,M||   0.114952E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.361373E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.924142E-05
-    Root      4  ||q_k,M||   0.327556E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328272E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.862316E-02
+    Eigenvalue      6 :   0.137329E+01 +  0.615345E-04 i
+    Root      1  ||q_k,M||   0.112066E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.522154E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.507770E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.328168E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.327616E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.174706E+01
   
- Iteration                     13
+ Iteration           16
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.178875E+01
-    Root      1  ||q_k,M||   0.115352E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.352288E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.234741E-05
-    Root      4  ||q_k,M||   0.327623E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328321E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.677412E-02
-  
- Iteration                     14
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.178874E+01
-    Root      1  ||q_k,M||   0.114811E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.392004E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.350633E-06
-    Root      4  ||q_k,M||   0.327670E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328367E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.434292E-02
-  
- Iteration                     15
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.151540E+01 -  0.141016E-06 i
-    Root      1  ||q_k,M||   0.112461E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.553594E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.551250E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.328687E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327971E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.192554E+01
-  
- Iteration                     16
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.123280E+01 -  0.101059E-06 i
-    Root      1  ||q_k,M||   0.112023E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.750580E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.469524E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.328500E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327800E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.165995E+01
-  
- Iteration                     17
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.118510E+01
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118652E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.122937E+01 -  0.102387E-06 i
-    Root      1  ||q_k,M||   0.111889E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.931070E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.462830E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.328453E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327766E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.168903E+01
-  
- Iteration                     18
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.107970E+01 +  0.379208E-08 i
+    Eigenvalue      2 :   0.114367E+01 +  0.375533E-04 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111944E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.949132E+00
-    Root      3  ||q_k,M||   0.362047E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.484861E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328550E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.327792E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.111343E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.142113E+01
+    Root      3  ||q_k,M||   0.349918E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.804861E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.327782E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.328377E-07     <<< converged ! 
   
- Iteration                     19
+ Iteration           17
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.105508E+01 +  0.101841E-06 i
+    Eigenvalue      2 :   0.114161E+01 +  0.376682E-04 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111564E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.831372E+00
-    Root      3  ||q_k,M||   0.403419E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.415602E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327653E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328367E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.111272E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.138789E+01
+    Root      3  ||q_k,M||   0.351589E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.732926E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328317E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327747E-07     <<< converged ! 
   
- Iteration                     20
+ Iteration           18
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.104409E+01 +  0.832143E-07 i
+    Eigenvalue      2 :   0.100969E+01 +  0.489723E-05 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111327E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.793795E+00
-    Root      3  ||q_k,M||   0.382130E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.417146E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327600E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328263E-07     <<< converged ! 
-  
- Iteration                     21
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.984494E+00 -  0.939874E-07 i
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118510E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111457E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.746695E+00
-    Root      3  ||q_k,M||   0.394781E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.397117E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327690E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328387E-07     <<< converged ! 
-  
- Iteration                     22
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.964945E+00 -  0.942325E-07 i
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118510E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.112207E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.761098E+00
-    Root      3  ||q_k,M||   0.392377E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.394562E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.111293E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.719781E+00
+    Root      3  ||q_k,M||   0.374306E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.417707E-07     <<< converged ! 
     Root      5  ||q_k,M||   0.328419E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.327730E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327772E-07     <<< converged ! 
   
- Iteration                     23
+ Iteration           19
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.960257E+00 -  0.622187E-07 i
+    Eigenvalue      2 :   0.979802E+00 -  0.342914E-04 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.112241E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.735529E+00
-    Root      3  ||q_k,M||   0.392001E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.395283E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327614E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328334E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.110957E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.663631E+00
+    Root      3  ||q_k,M||   0.403067E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.390957E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328168E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327604E-07     <<< converged ! 
   
- Iteration                     24
+ Iteration           20
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.917741E+00 -  0.142396E-06 i
+    Eigenvalue      2 :   0.978709E+00 -  0.349987E-04 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111936E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.602224E+00
-    Root      3  ||q_k,M||   0.396571E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.394902E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327675E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328354E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.111110E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.697985E+00
+    Root      3  ||q_k,M||   0.382945E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.386545E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328307E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327667E-07     <<< converged ! 
   
- Iteration                     25
+ Iteration           21
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.879316E+00 +  0.281140E-07 i
+    Eigenvalue      2 :   0.967755E+00 -  0.918361E-05 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111830E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.281605E+00
-    Root      3  ||q_k,M||   0.405064E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.390932E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328376E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.327692E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.111155E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.573320E+00
+    Root      3  ||q_k,M||   0.384022E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.383810E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328245E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327574E-07     <<< converged ! 
   
- Iteration                     26
+ Iteration           22
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.871741E+00 +  0.433375E-08 i
+    Eigenvalue      2 :   0.922789E+00 +  0.218526E-04 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.111172E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.457935E-01
-    Root      3  ||q_k,M||   0.404847E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.396700E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327661E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328349E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.110957E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.545678E+00
+    Root      3  ||q_k,M||   0.394012E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.386349E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328282E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327638E-07     <<< converged ! 
   
- Iteration                     27
+ Iteration           23
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.871572E+00 -  0.560492E-09 i
+    Eigenvalue      2 :   0.883742E+00 +  0.368324E-04 i
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.110277E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.556999E-02
-    Root      3  ||q_k,M||   0.404726E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.390950E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327724E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328416E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.110234E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.365726E+00
+    Root      3  ||q_k,M||   0.392948E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.386186E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328311E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327705E-07     <<< converged ! 
   
- Iteration                     28
+ Iteration           24
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00
+    Eigenvalue      2 :   0.871936E+00 -  0.489379E-05 i
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118510E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.118652E+01
+    Root      1  ||q_k,M||   0.108800E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.577843E-01
+    Root      3  ||q_k,M||   0.393018E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.390928E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328403E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327736E-07     <<< converged ! 
+  
+ Iteration           25
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00
+    Eigenvalue      2 :   0.871570E+00 +  0.311031E-07 i
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118510E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.118652E+01
+    Root      1  ||q_k,M||   0.109139E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.762276E-02
+    Root      3  ||q_k,M||   0.395966E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.385283E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328366E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327742E-07     <<< converged ! 
+  
+ Iteration           26
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00
+    Eigenvalue      2 :   0.871567E+00 +  0.606896E-08 i
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118510E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.118652E+01
+    Root      1  ||q_k,M||   0.107750E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.990232E-03
+    Root      3  ||q_k,M||   0.398568E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.380691E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328252E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327705E-07     <<< converged ! 
+  
+ Iteration           27
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00 -  0.879884E-08 i
+    Eigenvalue      2 :   0.871566E+00
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118510E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.118652E+01
+    Root      1  ||q_k,M||   0.158617E-03
+    Root      2  ||q_k,M||   0.107909E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.395969E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.384358E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328384E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327715E-07     <<< converged ! 
+  
+ Iteration           28
+ 
+  Number of OMP threads, procs in use:     1     1
+    Eigenvalue      1 :   0.871566E+00 +  0.280193E-09 i
+    Eigenvalue      2 :   0.871566E+00
+    Eigenvalue      3 :   0.118510E+01
+    Eigenvalue      4 :   0.118510E+01
+    Eigenvalue      5 :   0.118652E+01
+    Eigenvalue      6 :   0.118652E+01
+    Root      1  ||q_k,M||   0.283070E-04
+    Root      2  ||q_k,M||   0.107740E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.396426E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.374730E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328112E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327531E-07     <<< converged ! 
+  
+ Iteration           29
+ 
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.871566E+00
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.327122E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.443222E-03
-    Root      3  ||q_k,M||   0.404077E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.385047E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327595E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328261E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.111182E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.422410E-05
+    Root      3  ||q_k,M||   0.397198E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.367907E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328028E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327552E-07     <<< converged ! 
   
- Iteration                     29
+ Iteration           30
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.871566E+00
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.123975E-03
-    Root      2  ||q_k,M||   0.111270E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.403493E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.385085E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327639E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328336E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.107211E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.526334E-06
+    Root      3  ||q_k,M||   0.397696E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.367751E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328275E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327683E-07     <<< converged ! 
   
- Iteration                     30
+ Iteration           31
  
-  Number of OMP threads, procs in use:     1     6
+  Number of OMP threads, procs in use:     1     1
     Eigenvalue      1 :   0.871566E+00
     Eigenvalue      2 :   0.871566E+00
     Eigenvalue      3 :   0.118510E+01
     Eigenvalue      4 :   0.118510E+01
     Eigenvalue      5 :   0.118652E+01
     Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.185840E-04
-    Root      2  ||q_k,M||   0.110154E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.403671E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.382918E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327721E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328379E-07     <<< converged ! 
-  
- Iteration                     31
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.871566E+00
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118510E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.117187E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.313762E-05
-    Root      3  ||q_k,M||   0.404822E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.381501E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.327618E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.328321E-07     <<< converged ! 
-  
- Iteration                     32
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.871566E+00
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118510E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.385605E-06
-    Root      2  ||q_k,M||   0.112814E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.404248E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.380012E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328496E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.327810E-07     <<< converged ! 
-  
- Iteration                     33
- 
-  Number of OMP threads, procs in use:     1     6
-    Eigenvalue      1 :   0.871566E+00
-    Eigenvalue      2 :   0.871566E+00
-    Eigenvalue      3 :   0.118510E+01
-    Eigenvalue      4 :   0.118510E+01
-    Eigenvalue      5 :   0.118652E+01
-    Eigenvalue      6 :   0.118652E+01
-    Root      1  ||q_k,M||   0.717923E-07     <<< converged ! 
-    Root      2  ||q_k,M||   0.109699E-07     <<< converged ! 
-    Root      3  ||q_k,M||   0.404766E-07     <<< converged ! 
-    Root      4  ||q_k,M||   0.381167E-07     <<< converged ! 
-    Root      5  ||q_k,M||   0.328333E-07     <<< converged ! 
-    Root      6  ||q_k,M||   0.327658E-07     <<< converged ! 
+    Root      1  ||q_k,M||   0.107927E-07     <<< converged ! 
+    Root      2  ||q_k,M||   0.905385E-07     <<< converged ! 
+    Root      3  ||q_k,M||   0.400588E-07     <<< converged ! 
+    Root      4  ||q_k,M||   0.366965E-07     <<< converged ! 
+    Root      5  ||q_k,M||   0.328328E-07     <<< converged ! 
+    Root      6  ||q_k,M||   0.327611E-07     <<< converged ! 
   
  All roots converged.
- Final size of reduced subspace :                     89
+ Final size of reduced subspace :           87
+================================================================================
+
+ *** EXCITATIONS OF FERMION IRREP   AU( 2) ***
+
+--------------------------------------------------------------------------------
+
+
+ Level   Abs eigenvalue      Total Energy       Total imag.ener.   (atomic units)
+
+    1     0.8715658942   -196.424461116959       -0.000000000000 
+    2     0.8715658942   -196.424461116918        0.000000000002 
+    3     1.1850964462   -196.110930564923       -0.000000000000 
+    4     1.1850964463   -196.110930564907        0.000000000000 
+    5     1.1865168514   -196.109510159733       -0.000000000000 
+    6     1.1865168514   -196.109510159733        0.000000000000 
+--------------------------------------------------------------------------------
+
+
+ Analysis of EOM eigenvectors
+ First line  :  State Energy, Eigenvalue
+ other lines : Largest R1 and R2 Vectors (above a threshold of .1E+00)
+
+ Irrep   AU State     1   -196.42446112      0.87156589
+        0.99697        0.00000   |   AU #   9 (   0.882) |                         
+
+ Irrep   AU State     2   -196.42446112      0.87156589
+        0.22360       -0.02742   |   AU #   9 (   0.882) |                         
+       -0.84053        0.48659   |   AU #  15 (   0.882) |                         
+
+ Irrep   AU State     3   -196.11093056      1.18509645
+        0.86210        0.00000   |   AU #  10 (   1.211) |                         
+        0.47718        0.10995   |   AU #  16 (   1.211) |                         
+
+ Irrep   AU State     4   -196.11093056      1.18509645
+        0.84924        0.00000   |   AU #  10 (   1.211) |                         
+       -0.49766       -0.11892   |   AU #  16 (   1.211) |                         
+
+ Irrep   AU State     5   -196.10951016      1.18651685
+       -0.14390       -0.55002   |   AU #  11 (   1.213) |                         
+        0.11702       -0.80377   |   AU #  17 (   1.213) |                         
+
+ Irrep   AU State     6   -196.10951016      1.18651685
+        0.79073        0.00000   |   AU #  11 (   1.213) |                         
+       -0.54354       -0.24953   |   AU #  17 (   1.213) |                         
+================================================================================
+ 
+  Final results for RHS EOM-EA
+ 
 
  ( 1 au = 27.2113862127 eV  /  219474.631229534 cm-1)
 
@@ -2450,59 +2376,34 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
  Level   Rel eigenvalue     Abs eigenvalue      Total Energy       Total imag.ener.  Degeneracy
 
-    1     0.0000000002      0.871565894027     -196.424461117132    0.000000000000129 (   2 * )
-    2     0.3135305524      1.185096446244     -196.110930564915   -0.000000000000221 (   2 * )
-    3     0.3149509576      1.186516851426     -196.109510159733   -0.000000000000001 (   2 * )
+    1     0.0000000000      0.871565894221     -196.424461116938    0.000000000000999 (   2 * )
+    2     0.2673555138      1.138921408008     -196.157105603152    0.000000000000000 (   2 * )
+    3     0.3135305520      1.185096446244     -196.110930564915    0.000000000000060 (   2 * )
+    4     0.3149509572      1.186516851426     -196.109510159733    0.000000000000000 (   2 * )
+    5     0.6302781801      1.501844074262     -195.794182936898    0.000000000000000 (   2 * )
+    6     0.6320598239      1.503625718099     -195.792401293060    0.000000000000000 (   2 * )
 
 
- Total average:      -196.2149672806
+ Total average:      -196.0647652791
 
 
  Relative real eigenvalues in other units;
  Symmetry Classification in the Abelian subgroup
 
  Level  eigenvalue (eV)  Eigenvalue (cm-1)    AG|  AU|
-    1        0.000000005          0.000038     0|   2|
-    2        8.531600951      68812.002365     0|   2|
-    3        8.570252145      69123.745268     0|   2|
-
-
- Analysis of EOM eigenvectors
- First line  :  State Energy, Eigenvalue
- other lines : Largest R1 and R2 Vectors (above a threshold of .1E+00)
-
- Irrep   AU State     1   -196.42446112      0.87156589
-       -0.83832        0.53964   |   AU #  15 (   0.882) |                         
-
- Irrep   AU State     2   -196.42446112      0.87156589
-        0.99700        0.00000   |   AU #   9 (   0.882) |                         
-
- Irrep   AU State     3   -196.11093056      1.18509645
-        0.85114        0.00000   |   AU #  10 (   1.211) |                         
-        0.43695       -0.26010   |   AU #  16 (   1.211) |                         
-
- Irrep   AU State     4   -196.11093056      1.18509645
-        0.84077        0.00000   |   AU #  10 (   1.211) |                         
-       -0.43692        0.29191   |   AU #  16 (   1.211) |                         
-
- Irrep   AU State     5   -196.10951016      1.18651685
-        0.78713        0.00000   |   AU #  11 (   1.213) |                         
-        0.12555       -0.58960   |   AU #  17 (   1.213) |                         
-
- Irrep   AU State     6   -196.10951016      1.18651685
-        0.09546       -0.61307   |   AU #  11 (   1.213) |                         
-        0.72425        0.27104   |   AU #  17 (   1.213) |                         
- 
-  Final results for RHS EOM-EA
- 
- Analysis of all EOM roots not implemented yet !
+    1        0.000000001          0.000004     0|   2|
+    2        7.275114142      58677.752800     2|   0|
+    3        8.531600941      68812.002289     0|   2|
+    4        8.570252135      69123.745192     0|   2|
+    5       17.150742979     138330.071141     2|   0|
+    6       17.199223978     138721.096765     2|   0|
 
 
 --------------------------------------------------------------------------------
 
 
- Today is :    22 Jul 20
- The time is :  23:40:25
+ Today is :     1 Feb 21
+ The time is :  13:30:10
 
  Status of the calculations
  Integral sort # 1 :                   Completed, restartable        
@@ -2514,89 +2415,78 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
  CCSD(T) energy calculation :          Completed, restartable        
 
  Overview of calculated energies
-@ SCF energy :                              -197.090914372912692
-@ MP2 correlation energy :                    -0.196492123286744
-@ CCSD correlation energy :                   -0.205112638246464
-@ 4th order triples correction :              -0.002039809017755
-@ 5th order triples (T) correction :           0.000366706387516
-@ 5th order triples -T  correction :           0.000545988381075
-@ Total MP2 energy :                        -197.287406496199424
-@ Total CCSD energy :                       -197.296027011159168
-@ Total CCSD+T  energy :                    -197.298066820176928
-@ Total CCSD(T) energy :                    -197.297700113789404
-@ Total CCSD-T  energy :                    -197.297520831795850
+@ SCF energy :                              -197.090914372912891
+@ MP2 correlation energy :                    -0.196492123286945
+@ CCSD correlation energy :                   -0.205112638246469
+@ 4th order triples correction :              -0.002039809017753
+@ 5th order triples (T) correction :           0.000366706387525
+@ 5th order triples -T  correction :           0.000545988381086
+@ Total MP2 energy :                        -197.287406496199850
+@ Total CCSD energy :                       -197.296027011159367
+@ Total CCSD+T  energy :                    -197.298066820177127
+@ Total CCSD(T) energy :                    -197.297700113789602
+@ Total CCSD-T  energy :                    -197.297520831796049
 
 
 --------------------------------------------------------------------------------
 
 ------ Timing report (in CPU seconds) of module  RELCCSD                      
 
-
-
-                                    Master   --------- Slaves ------------
-
- Timer                              Master   Minimum   Maximum     Average
-
- Sorting of integrals                  0.2       0.2       0.2       0.2
- CCSD equations                        1.0       1.0       1.0       1.0
- - T1 equations                        0.0       0.0       0.0       0.0
- --- T1EQNS T*[HOV - F]*T              0.0       0.0       0.0       0.0
- --- T1EQNS HOV*T2(A,C,I,K             0.0       0.0       0.0       0.0
- --- T1EQNS VOOO*TAU                   0.0       0.0       0.0       0.0
- --- T1EQNS VOVV contribution          0.0       0.0       0.0       0.0
- --- T1EQNS VOVO * T(C,K)              0.0       0.0       0.0       0.0
- -- GOINTM                             0.0       0.0       0.0       0.0
- -- GVINTM                             0.0       0.0       0.0       0.0
- -- AINTM                              0.8       0.0       0.5       0.3
- -- HINTM                              0.0       0.4       0.8       0.5
- --- HINTM: VOVV*T                     0.0       0.0       0.0       0.0
- --- HINTM: VVOO contribution          0.0       0.0       0.0       0.0
- -- combining HINTM via MPI_ALL        0.0       0.4       0.8       0.5
- -- T2 EQNS                            0.1       0.0       0.0       0.0
- --- T2EQNS: TAU*AINTM contract        0.0       0.0       0.0       0.0
- --- T2EQNS: VOVV*T1                   0.0       0.0       0.0       0.0
- --- T2EQNS: HINTM*T2                  0.0       0.0       0.0       0.0
- -- BINTM                              0.0       0.0       0.0       0.0
- - adding partial T1/T2 amplitu        0.0       0.0       0.0       0.0
- - DIIS extrapolation                  0.0       0.0       0.0       0.0
- - synchronizing T1 & T2 amplit        0.0       0.0       0.0       0.0
- CCSD(T) evaluation                    0.1       0.1       0.1       0.1
- -- T3CORR: Integral resorting         0.0       0.0       0.0       0.0
- -- T3CORR: VOVV contraction           0.0       0.0       0.0       0.0
- -- T3CORR: addition of partial        0.0       0.1       0.1       0.1
- -- T3CORR: energy calculation         0.0       0.0       0.0       0.0
- -- combining VOVV via MPI_GATH        0.0       0.0       0.0       0.0
-
------- End of timing report ------
-
+ Time in Sorting of integrals                 0.079 seconds
+ Time in CCSD equations                       0.442 seconds
+ Time in - T1 equations                       0.053 seconds
+ Time in --- T1EQNS T*[HOV - F]*T             0.000 seconds
+ Time in --- T1EQNS HOV*T2(A,C,I,K            0.003 seconds
+ Time in --- T1EQNS   HV*T / T*HO             0.000 seconds
+ Time in --- T1EQNS VOOO*TAU                  0.008 seconds
+ Time in --- T1EQNS VOVV contribution         0.016 seconds
+ Time in --- T1EQNS VOVO * T(C,K)             0.005 seconds
+ Time in -- GOINTM                            0.005 seconds
+ Time in -- GVINTM                            0.004 seconds
+ Time in -- AINTM                             0.017 seconds
+ Time in -- HINTM                             0.143 seconds
+ Time in --- HINTM: VOVV*T                    0.019 seconds
+ Time in --- HINTM: VVOO contribution         0.092 seconds
+ Time in -- T2 EQNS                           0.203 seconds
+ Time in --- T2EQNS: TAU*AINTM contract       0.011 seconds
+ Time in --- T2EQNS: VOVV*T1                  0.007 seconds
+ Time in --- T2EQNS: HINTM*T2                 0.103 seconds
+ Time in -- BINTM                             0.047 seconds
+ Time in - adding partial T1/T2 amplitu       0.000 seconds
+ Time in - DIIS extrapolation                 0.013 seconds
+ Time in - synchronizing T1 & T2 amplit       0.000 seconds
+ Time in CCSD(T) evaluation                   0.157 seconds
+ Time in -- T3CORR: Integral resorting        0.001 seconds
+ Time in -- T3CORR: VOVV contraction          0.134 seconds
+ Time in -- T3CORR: energy calculation        0.022 seconds
 
 
  Timing of main modules :         Wallclock (s)       CPU on master (s)
- Before CC driver :          ************                     6.00
- Initialization :                    0.06                     0.06
- Integral sorting :                  0.22                     0.22
- Energy calculation :                1.10                     1.08
+ Before CC driver :             966386.85                     1.05
+ Initialization :                    0.08                     0.08
+ Integral sorting :                  0.08                     0.08
+ Energy calculation :                0.64                     0.64
  First order properties :            0.00                     0.00
  Second order properties :           0.00                     0.00
  Fock space energies :               0.00                     0.00
- EOMCC energies :                    0.00                     2.52
- Untimed parts :                     2.61                     0.00
- Total time in CC driver :             4.                     3.88
+ EOMCC energies :                    0.00                     1.67
+ Untimed parts :                     1.67                     0.00
+ Total time in CC driver :             2.                     2.47
 
  Statistics for the word-addressable I/O
- Number of write calls                                 688.
- Number of read calls                                 1199.
- Megabytes written                                    6.298
- Megabytes read                                     113.251
- Seconds spent in reads                               0.027
- Seconds spent in writes                              0.041
- average I/O speed for write (Mb/s)                 236.474
- average I/O speed for read  (Mb/s)                2796.255
+ Number of write calls                                 690.
+ Number of read calls                                 1189.
+ Megabytes written                                   13.736
+ Megabytes read                                     315.962
+ Seconds spent in reads                               0.024
+ Seconds spent in writes                              0.032
+ average I/O speed for write (Mb/s)                 572.345
+ average I/O speed for read  (Mb/s)                9873.817
 
 
- CPU time (seconds) used in RELCCSD:                     3.8784
- CPU time (seconds) used before RELCCSD:                 6.0011
- CPU time (seconds) used in total sofar:                 9.8795
+ CPU time (seconds) used in RELCCSD:                     2.4674
+ CPU time (seconds) used before RELCCSD:                 1.0459
+ CPU time (seconds) used in total sofar:                 3.5133
 
   --- Normal end of RELCCSD Run ---
 
@@ -2609,35 +2499,35 @@ It.   11    -197.0909143729      1.71D-13  8.25D-10  2.06D-09   DIIS   7    0.02
 
 
  
-     Date and time (Linux)  : Wed Jul 22 23:40:26 2020
-     Host name              : phlam-s-sakura.univ-lille1.fr           
+     Date and time (Linux)  : Mon Feb  1 13:30:10 2021
+     Host name              : dirac                                   
 
->>>> Node 0, utime: 7, stime: 2, minflt: 140710, majflt: 0, nvcsw: 107, nivcsw: 57, maxrss: 78596
->>>> Total WALL time used in DIRAC: 11s
+>>>> Node 0, utime: 3, stime: 0, minflt: 71605, majflt: 0, nvcsw: 10, nivcsw: 25, maxrss: 63268
+>>>> Total WALL time used in DIRAC: 3s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        16.02
+  Mean allocation size (Mb) :        31.77
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      488.28 Mb at subroutine pamtra_+0x15c                              for WORK in PAMTRA                            
-      488.28 Mb at subroutine psiscf_+0xaf                               for WORK in PSISCF                            
-      488.28 Mb at subroutine pamset_+0x354                              for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_+0x5c50                             for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_+0x8e                               for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0x9bf                               for test allocation of work array in DIRAC mai
-        1.46 Mb at subroutine eom_driver_mp_eom_ee_+0xb38                for buf3                                      
-        1.46 Mb at subroutine eom_driver_mp_eom_ee_+0xb38                for buf3                                      
-        1.37 Mb at subroutine ccseti_+0x438                              for ibuf                                      
-        1.37 Mb at subroutine ccseti_+0x438                              for ibuf                                      
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      839.23 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        1.46 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf3                                      
+        1.46 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf3                                      
+        1.20 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vta                                       
+        1.20 Mb at subroutine __allocator_track_if_MOD_allocator_registe for vt                                        
   
-  Peak memory usage:       488.40 MB
-  Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_+0x86                      
+  Peak memory usage:       839.35 MB
+  Peak memory usage:        0.820 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/gomes/devel/gitlab/gitlab.org/production/dirac_trunk/impi5_intel19_ilp64_mkl-parallel_omp_master-check-ilp64-compilation/test/eomea_energy_symmetry
+DIRAC pam run in /home/saue/Dirac/build/test/eomea_energy_symmetry

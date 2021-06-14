@@ -81,6 +81,19 @@ good, since we want to keep the release branches forever (these branches are pro
 Finally green button: "Submit merge request".
 
 
+How to create a new release branch?
+-----------------------------------
+
+If you create a new release branch (e.g. "release-25" in the year 2025) locally
+using the terminal, you will experience that the repository will refuse to
+accept your ``git push origin -u release-25``. This is because we protect
+``master`` and ``release-*`` against (accidental) direct pushes.
+
+But in this case it will be in your way. You (repository/group admins) can
+temporarily unprotect the matching wild-card pattern at GitLab (Settings ->
+Repository -> Protected branches).
+
+
 Further reading
 ---------------
 

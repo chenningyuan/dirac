@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -156,7 +156,7 @@ C.........accumulate all density into one matrix
      &        CALL QUIT('*** ERROR in PRPEX1 *** '
      &        // 'ORBANA not implemented for MP2')
 C
-C        Get relaxed density matrix computed by RELCCSD.
+C        Get relaxed density matrix computed by RELCCSD or EXACORR.
 C
          CALL GET_CC_DENSITY (WF,'AO',DMAT,IERR)
 
@@ -169,7 +169,7 @@ C
 
 C        Get relaxed density matrix computed for excited states
 
-         write(*,*)'# of statets',state
+         write(*,*)' Number of EOM states',state
 
          CALL GET_EOM_DENSITY ('AO',STATE,DMAT,IERR)
 
@@ -474,7 +474,8 @@ C
 C     Operator to be read from file
 C     =============================
 C
-      CALL PRPMSAO(INDXPR,PRPAO,FIRST,WORK(KFREE),LFREE,IPRINT)
+      CALL PRPMSAO(INDXPR,PRPAO,.TRUE.,WORK,FIRST,
+     &             WORK(KFREE),LFREE,IPRINT)
 C     
 C
  90   CONTINUE     
@@ -929,6 +930,7 @@ C
 C     Written by T. Saue Jan 20 2005 
 C
 C***********************************************************************
+       use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -939,15 +941,17 @@ C
 #include "dcbxpr.h"
 #include "dgroup.h"
       DIMENSION PAO(*),CMO(*),WORK(*)
+      integer, allocatable :: IBP(:)
+      real(8), allocatable :: EIG(:)
 C
       KFRSAV = KFREE
 C
 C     Read eigenvalues and boson irrep information
 C
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBP,NORBT,WORK,KFREE,LFREE)
+      allocate (eig(norbt))
+      allocate (ibp(norbt))
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBP,TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
         CALL MEMGET('REAL',KPMO,NISH(IFRP)*NISH(IFRP)*NZ,
@@ -965,7 +969,7 @@ C       Select occupied molecular orbitals
         CALL MEMREL('EXPCAN.sel',WORK,KSEL,KSEL,KFREE,LFREE)
 C       Generate canonical property orbitals
         CALL EXPCA1(INDXPR,IFRP,PAO(I2BASX(IFRP,IFRP)+1),
-     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),WORK(KEIG+IORB(IFRP)),
+     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),EIG(1+IORB(IFRP)),
      &              WORK(KSCO),WORK(KUCO),WORK(KPEI),
      &              IPRINT,WORK,KFREE,LFREE)
 C      
@@ -974,7 +978,7 @@ C
 C     Write new coefficients
       IUNIT = 2
       CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG)
+      CALL WRICMO(IUNIT,CMO,EIG,IBP,TOTERG)
       CLOSE(IUNIT,STATUS='KEEP')
 C     Read old coefficients
       REWIND LUCOEF

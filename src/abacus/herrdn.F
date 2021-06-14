@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -538,7 +538,7 @@ C     JHS The following variables come from a common block and are thus kept in 
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
 #include "dgroup.h"
 #include "memint.h"
@@ -720,6 +720,7 @@ C     *************************************************
 C
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          IF (IPREAD .GE. 3) THEN
@@ -747,8 +748,7 @@ C     ****************************************************
 C
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM,
-     &            DOOWN,blk)
-
+     &     DOOWN,blk)
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
       call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,
@@ -905,7 +905,6 @@ C***********************************************************************
       CHARACTER SPDCAR*1,BSET*5,ZMATL*1,BASFIL*20,AUXFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
-! dcbham.h : MDIRAC
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
@@ -1570,18 +1569,11 @@ C                 Make uncontracted small component basis
 C                 set from kinetic balance.
 C                 =======================================================
 C
-                  IF(MDIRAC) THEN
-                    CALL RKBBAS(I,IBLOCK(1),IBLOCK(2),
-     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                   NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                   CNTBAS)
-                  ELSE
-                    CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
-     &                   IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
-     &                   NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
-     &                   CNTBAS)
-                    BASREF(1,I,2) = ' Derived from large component'
-                  ENDIF
+                  CALL KINBAL(I,IBLOCK(1),IBLOCK(2),
+     &                 IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,
+     &                 NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,INPTST,
+     &                 CNTBAS)
+                  BASREF(1,I,2) = ' Derived from large component'
 C
                ENDIF
                NOORBTS    = NOORBTS.AND.IQM(I,2).EQ.0
@@ -1948,12 +1940,8 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "consts.h"
-      PARAMETER(CORMAX = 1.D5)
-#if defined (SYS_HPUX)
-      PARAMETER (LUERR = 7)
-#else
+      PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
-#endif
 #include "cbirea.h"
 C
 #include "molinp.h"
@@ -2005,7 +1993,7 @@ C        951115-hjaaj: NAMN() must never be read with free format
 C          (otherwise it will on e.g. AIX be filled with nulls:
 C           e.g. ' C  ' would become 'C\NULL\NULL\NULL'; and on
 C           e.g. IRIX free format read of char. var. is not defined).
-#if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D)
+#if !defined (VAR_NOFREE)
         READ (MLINE(NMLINE)(5:80),*,ERR=101) (CORD(J,NUCIND),J = 1, 3)
         GO TO 104
 #endif
@@ -3331,7 +3319,7 @@ C
         DO 100 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
               DO M = 1, NRCIJ
@@ -3379,7 +3367,7 @@ C
         DO 300 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
 #else
@@ -4048,7 +4036,8 @@ C
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
-C
+#include "dgroup.h"
+C     
 C
 C
 C     Statement function to "convert" 0 - 7 to a printable
@@ -4122,8 +4111,12 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
+      IF (LINEAR .EQV. .TRUE.) THEN
+        IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
+     &    ATOMIC = .TRUE.
+      ENDIF
       IF (NUCDEP .GT. MXCENT) GOTO 5010
-C
+C     
 C     Nuclear repulsion energy
 C     ========================
 C
@@ -5780,7 +5773,7 @@ C
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_NOFREE)
+#if defined (VAR_NOFREE)
       DUMMY = 1.0D20
       IDUMMY = - 9 999 999
 #endif
@@ -5795,7 +5788,7 @@ C
       BET(NUCIND)=D0
       READ (MLINE(NMLINE),'(A4)',IOSTAT=IOS) NAMN(NUCIND)
       IF (FIRST) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
          ISTART = 5
          CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
          CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
@@ -5814,7 +5807,7 @@ C
          IF(NUCIND .EQ. 3) GO TO 202
          GO TO 203
       END IF
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
  201  ISTART = 5
       CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
       CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')
@@ -5899,6 +5892,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "consts.h"
+#include "pi.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
@@ -6696,7 +6690,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
-#include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"

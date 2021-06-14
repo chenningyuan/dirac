@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -994,23 +994,26 @@ contains
                v(1:3)  = q(1:3, 1)
 !              gosia TODO add tensors
                !t(4:12) = q(4:12, 1)
-!              gosia TODO write to custom files
 
-               write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
-                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,   &
-                  s
-
-               write(lunit_2d_vector, '(2e18.10,2ES26.16E3)')     &
-                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
-                  (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
-                  (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
-
-               write(lunit_2d_flow, '(2e18.10,ES26.16E3)')        &
-                  ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
-                  iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
-                  (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+               if (.not.visual_cfg_out_file_custom) then
+                  write(lunit_2d_scalar, '(2e18.10,ES26.16E3)')     &
+                     ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2, &
+                     iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,   &
+                     s
+                  
+                  write(lunit_2d_vector, '(2e18.10,2ES26.16E3)')     &
+                     ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                     iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
+                     (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
+                     (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
+                  
+                  write(lunit_2d_flow, '(2e18.10,ES26.16E3)')        &
+                     ix*vx_norm - vx_norm*visual_cfg_2d_nr_right/2,  &
+                     iy*vy_norm - vy_norm*visual_cfg_2d_nr_top/2,    &
+                     (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+               else
+!              gosia: todo
+               end if !if (.not.visual_cfg_out_file_custom) then
 
             end do
          end do
@@ -1435,18 +1438,45 @@ contains
          deallocate(temp2)
       end if
 
-      if (visual_cfg_line) close(lunit_line_scalar, status = 'keep')
-      if (visual_cfg_line) close(lunit_line_vector, status = 'keep')
-      if (visual_cfg_line) close(lunit_line_tensor, status = 'keep')
+      is_open=.false.
+      inquire(lunit_line_scalar, opened=is_open)
+      if (is_open) close(lunit_line_scalar, status = 'keep')
 
-      if (visual_cfg_radial) close(lunit_radial_scalar, status = 'keep')
-      if (visual_cfg_radial) close(lunit_radial_vector, status = 'keep')
-      if (visual_cfg_radial) close(lunit_radial_tensor, status = 'keep')
+      is_open=.false.
+      inquire(lunit_line_vector, opened=is_open)
+      if (is_open) close(lunit_line_vector, status = 'keep')
 
-      if (visual_cfg_2d) close(lunit_2d_scalar, status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d_vector, status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d_flow,   status = 'keep')
-      if (visual_cfg_2d) close(lunit_2d_tensor, status = 'keep')
+      is_open=.false.
+      inquire(lunit_line_tensor, opened=is_open)
+      if (is_open) close(lunit_line_tensor, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_radial_scalar, opened=is_open)
+      if (is_open) close(lunit_radial_scalar, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_radial_vector, opened=is_open)
+      if (is_open) close(lunit_radial_vector, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_radial_tensor, opened=is_open)
+      if (is_open) close(lunit_radial_tensor, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_scalar, opened=is_open)
+      if (is_open) close(lunit_2d_scalar, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_vector, opened=is_open)
+      if (is_open) close(lunit_2d_vector, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_flow, opened=is_open)
+      if (is_open) close(lunit_2d_flow, status = 'keep')
+
+      is_open=.false.
+      inquire(lunit_2d_tensor, opened=is_open)
+      if (is_open) close(lunit_2d_tensor, status = 'keep')
 
       is_open=.false.
       inquire(lunit_3d_cube, opened=is_open)

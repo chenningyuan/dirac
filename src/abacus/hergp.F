@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -514,6 +514,7 @@ C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
 #include "implicit.h"
 #include "codata.h"
+#include "pi.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
       PARAMETER (THRESH = 1.0D-10)

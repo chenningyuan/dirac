@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -50,7 +50,6 @@ C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
 C       LMP2  = .TRUE. - evaluate MP2 energy
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIGn           - eigenvalues (for  MP2 calculation)
 C       ANTIS = .TRUE. - anti-symmetrize integrals
 C       INTFLG - flag of what integral types to transform
@@ -265,7 +264,7 @@ C     Initialize MOLFDIR integral file
 C
       CALL FLSHFO(LUPRI)
       IF (.NOT. NOMDCINT) THEN
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       ELSE
          CALL INI4INDINFO
       END IF
@@ -695,13 +694,6 @@ C           --------------------------
 C
             NUMDIS = NDISTRN(I2TYP,IPRINT,.FALSE.,.FALSE.,.FALSE.,
      &              .FALSE.,INDX,WORK(KFREE),IJP12,IDUM,NSIZG,IDUM)
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-C           CRAYfix:
-C           Opening a direct access file with too long records 
-C           generates a crash because the machine tries to keep some
-C           records in memory
-            IF (NPASS.GT.1) NSIZG = MIN0(NSIZG,1000000)
-#endif
 C
 C           Setup INDXAB & IJPASS
 C           ---------------------
@@ -1209,7 +1201,7 @@ C
 C
 C        Initialize MOLFDIR integral file on slave
 C
-         CALL MDINTI(NSTR,IPRINT)
+         CALL MDINTI(IPRINT)
       END IF
 C
       CALL XTIME(4,1,' Symmetrizing MO integrals    ')

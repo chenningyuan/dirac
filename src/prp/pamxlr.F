@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1774,8 +1774,8 @@ C         Get gradient
 C         ------------
 C
           IF (KTIMOP .EQ. ITIM) THEN
-             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,
-     &                  CMO,IBEIG,NBTYP,WORK,KFREE,LFREE,IPRXLR)
+             CALL GPGET(INDPRA,GPO,JXOP,NXPAR,CMO,IBEIG,
+     &                  NBTYP,.TRUE.,WORK,WORK,KFREE,LFREE,IPRXLR)
           END IF
 C
 C         Form linear reponse function
@@ -2363,7 +2363,7 @@ C     Read vectors
         ENDIF
         CALL READT(LUINP,LEN,BVEC(1,1,I))
         IF(IPRINT.GE.4) THEN
-          WRITE(LUPRI,'(3X,A2,A,F10.6)')
+          WRITE(LUPRI,'(3X,A2,A,F15.8)')
      &      TYP1,' vector at frequency: ', FREQ(I)
           CALL PRQMAT(BVEC(1,1,I),NBDIM,1,NBDIM,1,
      &                NZ,IPQTOQ(1,IREP),LUPRI)
@@ -2412,7 +2412,7 @@ C       Calculate norm
           D2TOT = D2TOT + BUF2(J)
         ENDDO
         DNTOT = SQRT(D2TOT)
-        WRITE(LUPRI,'(A8,F10.6,A,E16.8,A,E10.2)')
+        WRITE(LUPRI,'(A8,F15.8,A,E16.8,A,E10.2)')
      &        ' Freq.: ',FREQ(I),' Norm: ',DNTOT,
      &        ' Residual norm: ',RNORM(I)
         IF(DNTOT.LT.DTOL2) THEN
@@ -2459,22 +2459,21 @@ C       Give major virtual orbitals
         ENDDO
  4      CONTINUE
 C       Give major orbital rotations in excitations
-        THR   = SQRT(D2TOT/NBDIM)
         CALL INDEXX (NBDIM,BUF2,INDX)
-        WRITE(LUPRI,'(3X,A,E10.2/)')
-     &   'Excitation amplitudes larger than threshold ',THR
-        THR = THR*THR
+        WRITE(LUPRI,'(3X,A,F6.2,A1/)')
+     &   'Excitation amplitudes larger than weight ',THR,'%'
         DO J = NBDIM,1,-1
           JJ = INDX(J)
-          IF(ABS(BUF2(JJ)).LT.THR) GOTO 5
+          WT = FAC*BUF2(JJ)
+          IF(WT.LT.THR) GOTO 5
           I1 = JXOP(1,JJ)
           I2 = JXOP(2,JJ)
-          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,E16.8)')
+          WRITE(LUPRI,'(3X,I6,3A1,A3,A1,A,I6,3A1,A3,A1,F6.2,A1)')
      &      IORBCL(2,I1),'(',TYP(IORBCL(1,I1)),':',
      &      FREP(IORBCL(3,I1)),')',
      &      ' ---> ',
      &      IORBCL(2,I2),'(',TYP(IORBCL(1,I2)),':',
-     &      FREP(IORBCL(3,I2)),')',SQRT(BUF2(JJ))
+     &      FREP(IORBCL(3,I2)),')',WT,'%'
         ENDDO
  5      CONTINUE
         IF(IPRINT.GE.4) THEN
@@ -2509,6 +2508,33 @@ C       Give major orbital rotations in excitations
 #endif /* MOD_UNRELEASED */
       ENDIF
  20   CONTINUE
+      ENDDO
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE PRINT_GP_XP(GP,XP,JXOP,NXOP,NZ)
+C***********************************************************************
+C
+C     Printout of proprty gradient and solution vector
+C     Written by Trond Saue Nov 26 2019
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION GP(NXOP,NZ),XP(NXOP,NZ),JXOP(2,NXOP)
+      CHARACTER M(4)*6
+      M(1) = 'A real'
+      M(2) = 'A imag'
+      M(3) = 'B real'
+      M(4) = 'B imag'
+      DO IZ = 1,NZ
+        WRITE(LUPRI,'(/A,A6,A/)') '*** ',M(IZ),' part ***';
+        WRITE(LUPRI,'(A)')
+     & '    A    I   Property gradient     Solution vector'
+        DO IXOP = 1,NXOP
+          WRITE(LUPRI,'(2I5,2ES20.8)')
+     &         JXOP(1,IXOP),JXOP(2,IXOP),GP(IXOP,IZ),XP(IXOP,IZ)
+        ENDDO
       ENDDO
       RETURN
       END

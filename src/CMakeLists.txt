@@ -29,11 +29,6 @@ endif()
 if(ENABLE_STIELTJES)
     add_definitions(-DHAS_STIELTJES)
 endif()
-# interest as separate library
-cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
-if(ENABLE_INTEREST)
-    add_definitions(-DMOD_INTEREST)
-endif()
 option(ENABLE_OPENRSP "Enable OpenRSP" OFF)
 if(ENABLE_OPENRSP)
     add_definitions(-DMOD_OPENRSP)
@@ -105,6 +100,13 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:abacus> ${EXTERNAL_OBJECTS})
 # Making matrix_operations  as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/matrix_operations)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:matrix_operations> ${EXTERNAL_OBJECTS})
+
+# exacorr as separate library
+if(ENABLE_EXATENSOR)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
+add_definitions(-DMOD_EXACORR)
+endif()
 
 #    Moltra as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/moltra)
@@ -270,14 +272,8 @@ else()
 endif()
 
 # interest as separate library
-if(ENABLE_INTEREST)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
-    set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-    dirac_test(mdirac_closed-shell_dft "interest" "")
-else()
-    set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
-endif()
-message(STATUS "Interest library: ${ENABLE_INTEREST}")
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
 
 #   krcc as separate library
 if(ENABLE_KRCC)

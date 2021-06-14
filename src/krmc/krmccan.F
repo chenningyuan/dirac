@@ -1,4 +1,4 @@
-!      Copyright (c) 2014 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1472,7 +1472,7 @@ C
 C
          CALL MEMGET('REAL',KRPRPMO,N2ORBXQ,WORK,KFREE,LFREE)
          CALL DZERO(WORK(KRPRPMO),N2ORBXQ)
-         CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),CMO,
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KRPRPMO),.TRUE.,WORK,CMO,
      &               DUMMY,ICMOQ,NORB,WORK,KFREE,LFREE,IPROPT)
 
          if(filelab(3:8) == 'dipole')then

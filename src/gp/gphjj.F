@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -160,10 +160,6 @@ C Written 4-Dec-1983 hjaaj
 C
 C Major clean-up LV (feb. 2007)
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      CALL QTRACE(6)
-      CALL TRBK()
-#endif
       CALL QTRACE(6)
       WRITE(*,*) 'This OS has no obvious system traceback facility.'
       RETURN
@@ -475,7 +471,6 @@ C
             CX= SQRT(DP5   + T)
             SSX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SSX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SSX
@@ -553,7 +548,6 @@ C              F(IEAB)=     TT*CX+F(IEBR)*SSX
   390       CONTINUE
          JAA=(IA-1)*NROWV
          JBB=(IB-1)*NROWV
-#include "ivdep.h"
          DO 400 I=1,NROWV
             T=V(JBB+I)*SSX
             V(JBB+I)=-V(JAA+I)*SSX + V(JBB+I)*CX
@@ -1051,19 +1045,11 @@ C
       END IF
       END
 C  /* Deck second */
-#if !defined (SYS_CRAY) && !defined (VAR_SECSEC)
-      FUNCTION SECOND ()
-#if defined (SYS_AIX) || defined (SYS_ALLIANT) || defined (SYS_CONVEX) \
-      || defined (SYS_HPUX) || defined (SYS_IRIX) || defined (SYS_DEC) \
-      || defined (SYS_T3D) || defined (SYS_SUN) || defined (SYS_LINUX) \
-      || defined (SYS_DEC) || defined (SYS_SX) || defined (SYS_DARWIN)
-#include "implicit.h"
+      REAL*8 FUNCTION SECOND ()
       real*4 etime,tarray(2)
       SECOND = etime(tarray)
-#endif
       RETURN
       END
-#endif
 C  /* Deck sotmat */
       SUBROUTINE SOTMAT(NMO,UMO,IFAIL)
 C

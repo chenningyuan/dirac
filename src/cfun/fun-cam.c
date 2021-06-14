@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2019 by the authors of DIRAC.
+ *     Copyright (c) 2021 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -31,12 +31,8 @@
 
  
 /* strictly conform to XOPEN ANSI C standard */
-#if !defined(SYS_DEC)
-/* XOPEN compliance is missing on old Tru64 4.0E Alphas and pow() prototype
- * is not specified. */
 #define _XOPEN_SOURCE          500
 #define _XOPEN_SOURCE_EXTENDED 1
-#endif
 /* Use BSD's strncasecmp() */
 #define _DEFAULT_SOURCE 1
 

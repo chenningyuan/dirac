@@ -26,7 +26,8 @@ sys.path.append(os.path.abspath('sphinxext'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax',
               'sphinx.ext.doctest',]
-
+extensions = ['sphinxcontrib.bibtex']
+bibtex_bibfiles = ['references.bib']
 # be safe about adding new extensions
 try:
     import sphinxcontrib.bibtex
