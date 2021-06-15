@@ -55,6 +55,7 @@ module visual
 #include "symmet.h"
 #include "dcbxlr.h"
 #include "codata.h"
+#include "orgcom.h"
 
     integer, parameter :: file_unit = 137
 
@@ -1191,7 +1192,7 @@ contains
 !        add some space, calculate step sizes and convert step vectors to angstrom
 
          do i = 1, 3
-            step_3d(i, 0) =  step_3d(i, 0) -  visual_cfg_add_3d
+            step_3d(i, 0) = (step_3d(i, 0) - (visual_cfg_add_3d*2.0d0))*xtang
             step_3d(i, i) = (step_3d(i, i) + (visual_cfg_add_3d*2.0d0))*xtang
             step_3d(i, i) = (step_3d(i, i) -  step_3d(i, 0))/(visual_cfg_ncube(i) - 1)
          end do
