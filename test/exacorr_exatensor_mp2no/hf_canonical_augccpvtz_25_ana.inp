@@ -1,0 +1,36 @@
+**DIRAC
+.WAVE FUNCTION
+.PROPERTIES
+**INTEGRALS
+.NUCMOD
+ 1
+*READIN                                                                                             
+.UNCONTRACT  
+**HAMILTONIAN
+.X2C
+**WAVE FUNCTION
+.SCF
+.EXACC
+*SCF
+.EVCCNV
+1.0E-9 1.0E-8  
+**EXACC
+.OCCUPIED                                                                                           
+1..5 
+.VIRTUAL                                                                                            
+6..30   
+.LAMBDA
+.TALSH_BUFF                                                                                         
+1000
+.DONATORB
+**PROPERTIES                                                                                        
+.DIPOLE                                                                                             
+.EFG 
+.QUADRUPOLE                                                                                               
+**MOLECULE
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT 
+aug-cc-pVTZ
+*END OF 

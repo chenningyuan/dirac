@@ -27,7 +27,7 @@ module get_natural_orbital
         use exacorr_global, only : get_nsolutions
         type(exacc_input), intent(in) :: exa_input
 
-        integer                :: NORBT, NROOT
+        integer                :: NORBT, NROOT, N_CORR_OCC
         real(8),pointer        :: NOs_AO(:,:,:)           ! new quaternion orbital in AO basis
         real(kind=8), pointer  :: N_OCCUPATION(:)         ! occupation number from qdia of DM
         logical                :: alive
@@ -38,9 +38,10 @@ module get_natural_orbital
             call print_date('File CCDENS existed')
             NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
             NROOT = get_nsolutions() / 2
-            call get_transform_NO(NROOT,NORBT,NOs_AO,N_OCCUPATION)
-            call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','DFNOSAO')
+            N_CORR_OCC = exa_input%mokr_occ(1)
+            call get_transform_NO(NROOT,NORBT,N_CORR_OCC,NOs_AO,N_OCCUPATION)
             call print_date('Generated Natural orbital')
+            call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','DFNOSAO')
         else
             stop "Error: density matrix File CCDENS not found" 
         end if 
@@ -49,7 +50,7 @@ module get_natural_orbital
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine get_transform_NO (NROOT,NORBT,NOs_AO,N_OCCUPATION)
+      subroutine get_transform_NO (NROOT,NORBT,N_CORR_OCC,NOs_AO,N_OCCUPATION)
          ! This routine read the quternion density matrix and do diagonalization.
          ! Then do basis transform to go to atomic basis set.  
          ! NROOT used in dimension of ccden file and norbt is the total correlated orbital number. 
@@ -59,7 +60,7 @@ module get_natural_orbital
             use matrix_complex_to_quaternion 
             use write_orbital_to_file
 
-                  integer, intent(in)                :: NROOT,NORBT
+                  integer, intent(in)                :: NROOT,NORBT,N_CORR_OCC
 
                   real(kind=8), pointer              :: N_OCCUPATION(:)         ! occupation number from qdia of DM
                   real(8), pointer                   :: density_quat_read(:,:,:)! quaternion MP2 density matrix read from CCDENS 
@@ -67,14 +68,15 @@ module get_natural_orbital
                   real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
                   real(kind=8), pointer              :: NOs_AO(:,:,:)           ! new canonical orbital in AO basis
                   real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-                  integer                            :: sz,flb, fl              ! size of matrix and flag for block
+                  integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
 
 !                  real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
 !                  real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
 !                  integer                            :: sz,flb                  ! size of matrix and flag for block
 !                  character                          :: mat                     ! flag used for matrix basis transform
-                  integer                            :: i,j,k
+                  integer                            :: i,j,k,q,sz_print
                   real                               :: trace,compact
+                  real(kind=8)                       :: temp
 
                                                 
                   allocate(density_quat(NORBT,NORBT,4))
@@ -97,10 +99,11 @@ module get_natural_orbital
                      end do
                   end do
 
-                  flb = 2                                      ! we read all orbital 
+                  flb = 0                                    
 !                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
                   sz = NORBT
-                  call quater_read_from_dirac_orbital(HF_AO,sz,flb)
+                  sz_occ = N_CORR_OCC
+                  call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
                   call diagoanl_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
@@ -113,7 +116,6 @@ module get_natural_orbital
                   call basis_transform(NOs_MO,HF_AO,NOs_AO,fl)
                   call print_date('Get new orbital in AO basis')
 
-                  print *, " Print several orbitals' occupation number"
                   trace = 0.0
                   compact = 0.0 
                   do i=1, size(N_OCCUPATION)
@@ -122,11 +124,52 @@ module get_natural_orbital
                               compact = compact + N_OCCUPATION(i)
                         end if 
                         trace = trace + N_OCCUPATION(i)
-                        print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
                   end do
 
-                  print *, "Sum of occupation number which should be the same as total electron number", trace
-                  print *, "Sum of large component of occupation number", compact
+
+                  sz_print = size(N_OCCUPATION)
+                  do i = 1, sz_print
+                     do j =1, sz_print-i
+                        if (N_OCCUPATION(j) < N_OCCUPATION(j+1)) then
+                              temp = N_OCCUPATION(j)
+                              N_OCCUPATION(j) = N_OCCUPATION(j+1)
+                              N_OCCUPATION(j+1) = temp
+                        end if
+                     end do 
+                  end do
+
+
+                  print *, " The Occupation Number of Natural Orbital"
+
+                  k = size(N_OCCUPATION)/5
+                  q = mod(size(N_OCCUPATION),5)
+                  do i=1, k, 1
+                        j= (i-1)*5+1
+                        write(*,"(F10.7,3X,F10.7,3X,F10.7,3X,F10.7,3X,F10.7)") N_OCCUPATION(j), N_OCCUPATION(j+1), &
+                        N_OCCUPATION(j+2),N_OCCUPATION(j+3), N_OCCUPATION(j+4)
+      !                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+                  end do
+
+                  j = k*5+1
+                  select case (q)
+                     case (1)
+                        write(*,"(F10.7)") N_OCCUPATION(j)
+
+                     case (2)
+                        write(*,"(F10.7,3X,F10.7)") N_OCCUPATION(j), N_OCCUPATION(j+1)
+
+                     case (3)
+                        write(*,"(F10.7,3X,F10.7,3X,F10.7)") N_OCCUPATION(j), N_OCCUPATION(j+1), N_OCCUPATION(j+2)
+                                                                                       
+                     case (4)
+                        write(*,"(F10.7,3X,F10.7,3X,F10.7,3X,F10.7)") N_OCCUPATION(j), N_OCCUPATION(j+1), N_OCCUPATION(j+2), &
+                                                                               N_OCCUPATION(j+3)                                                                                          
+                  end select                                                                                                                                                
+
+
+
+                  print *, "Sum of occupation number which should be the same as total correlated electron number", trace
+                  print *, "Sum of occupation number of occupied orbital", compact
 
                     
 !                  flb = 0                     ! we read vv block of Fock matrix
@@ -149,6 +192,7 @@ module get_natural_orbital
             !      write new orbital information into new file 'DFNOSAO', which is similar to DFCOEF 
             !      copy the basis information from DFCOEF and use new occupation number and orbital coefficient 
             !      to replace the old orbital. 
+            !      This file only includes the orbital which is correlated in CC. 
             !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
           
                    use exacorr_mo
@@ -200,7 +244,7 @@ module get_natural_orbital
                    qorbital%index = index
                    
                    
-                   do i = 1, nocc
+                   do i = 1, nmo
                       qorbital%energy(i)=N_OCCUPATION(i) !we use occupation number to replace the orbital energy
                    end do
  

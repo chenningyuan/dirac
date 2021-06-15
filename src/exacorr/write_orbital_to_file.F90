@@ -426,7 +426,7 @@ module write_orbital_to_file
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine quater_read_from_dirac_orbital(HF_AO,sz,k,flb)
 !     routine for only reading HF orbital coefficient from DFCOEF.
-
+!     flb =1 we read occupied orbital otherwise we read virtual orbital 
  
          use exacorr_mo
          use exacorr_datatypes
@@ -447,11 +447,10 @@ module write_orbital_to_file
          sz_total_mo = size(qorbital%coeff,2)
 
          allocate(HF_AO(sz_total_ao,sz,4))
-         sz_occ = sz_total_mo - sz
       
 !     constrcut HF orbital matrix
-         if (flb == 1) then  !only read occupied orbital
-            do j = 1, sz_occ
+         if (flb == 1) then
+            do j = 1, sz
                do  i = 1, sz_total_ao
                   HF_AO(i,j,1) = qorbital%coeff(i,j,1)
                   HF_AO(i,j,2) = qorbital%coeff(i,j,2)
@@ -463,10 +462,10 @@ module write_orbital_to_file
 !            k = sz_total_mo - sz
             do j = 1, sz
                do i = 1, sz_total_ao
-                  HF_AO(i,j,1) = qorbital%coeff(i,sz_occ+j,1)
-                  HF_AO(i,j,2) = qorbital%coeff(i,sz_occ+j,2)
-                  HF_AO(i,j,3) = qorbital%coeff(i,sz_occ+j,3)
-                  HF_AO(i,j,4) = qorbital%coeff(i,sz_occ+j,4)
+                  HF_AO(i,j,1) = qorbital%coeff(i,k+j,1)
+                  HF_AO(i,j,2) = qorbital%coeff(i,k+j,2)
+                  HF_AO(i,j,3) = qorbital%coeff(i,k+j,3)
+                  HF_AO(i,j,4) = qorbital%coeff(i,k+j,4)
                end do
             end do
          end if 
@@ -614,28 +613,29 @@ module write_orbital_to_file
 
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine  quater_read_matrix(NORBT,matrix)
-   !     routine for reading the fock matrix from the file.
-         use exacorr_utils
-
-   !     input variables
-         real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
-         integer,intent(in)                 :: NORBT
-         character(8)           :: label(4)
-
-         
-   !     loop variables
-         integer :: sz
-
-         integer :: read_mat 
-         logical :: debug=.true.
-
-         call get_free_fileunit(read_mat)
-         open (read_mat,file='CCDENS',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-         read (read_mat) label
-         read (read_mat) matrix
-         close(read_mat,status='KEEP')      
-
-      end subroutine quater_read_matrix
+         !     routine for reading the fock matrix from the file.
+               use exacorr_utils
+      
+         !     input variables
+               real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
+               integer,intent(in)                 :: NORBT
+               character(8)           :: label(4)
+      
+               
+         !     loop variables
+               integer :: sz
+      
+               integer :: read_mat 
+               logical :: debug=.true.
+      
+               call get_free_fileunit(read_mat)
+               open (read_mat,file='CCDENS',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+               read (read_mat) label
+               read (read_mat) matrix
+               close(read_mat,status='KEEP')      
+      
+            end subroutine quater_read_matrix
+      
 
 end module write_orbital_to_file
 
