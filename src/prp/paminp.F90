@@ -551,11 +551,7 @@
          GO TO 200
 
     7 CONTINUE
-#ifdef MOD_ESR
          CALL ESRINP(WORD,.FALSE.,WORK,LWORK)
-#else
-         CALL QUIT('*ESR    not included in this version')
-#endif
          GO TO 200
     8 CONTINUE
          CALL XQRINP(WORD,.FALSE.)
@@ -596,9 +592,7 @@
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
-#ifdef MOD_ESR
       IF(DOESR) CALL ESRINP(WORD,.TRUE.,WORK,LWORK)
-#endif
 
 !===========================================================================
 ! Define special operators for the list of properties programmed in DIRAC
