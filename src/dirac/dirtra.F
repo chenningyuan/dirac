@@ -4256,6 +4256,7 @@ C     taken from DFCOEF
 C     Written by L. Visscher, March 2008
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -4283,7 +4284,7 @@ C     Read the MO coefficients
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(.NOT.FILEX) CALL QUIT ('DFCOEF missing')
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
-      CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,DUM,2)
+      CALL REACMO_new(LUCOEF,cmo=CMO)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Perform the transformation

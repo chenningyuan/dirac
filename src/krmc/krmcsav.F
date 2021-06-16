@@ -36,6 +36,7 @@ C                S. Knecht - Feb 2010: print of mj-vector to file
 C                                      KRMCSCF added.
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -51,6 +52,8 @@ C
       LOGICAL   FNDLAB, FND, RTRACI
 C
       CHARACTER CNOLBL*6
+      real(8), allocatable :: eig(:)
+      integer, allocatable :: ibeig(:)
 C
       CALL QENTER('KRMCSAV')
       KFRSAV = KFREE
@@ -71,9 +74,9 @@ C
           CALL IREAKRMC(LUKRMC,'MJVEC   ',WORK(KMJVEC),NORBT)
         END IF
       else
-        CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-        CALL IZERO(WORK(KIBEIG),NORBT)
-        CALL IREAKRMC(LUKRMC,'IBEIG   ',WORK(KIBEIG),NORBT)
+        allocate (ibeig(norbt))
+        CALL IZERO(IBEIG,NORBT)
+        CALL IREAKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
       end if
 C
 C     Clean LUKRMC
@@ -100,8 +103,8 @@ C
 C       (1).2 IBEIG: write boson irreps orbital-vector
 C       -------------------------------------------
 C
-        CALL IWRTKRMC(LUKRMC,'IBEIG   ',WORK(KIBEIG),NORBT)
-        CALL MEMREL('KRMCSAV.1',WORK,1,KFRSAV,KFREE,LFREE)
+        CALL IWRTKRMC(LUKRMC,'IBEIG   ',IBEIG,NORBT)
+        deallocate (ibeig)
       end if
 C
 C     (2) OLDORB & OLDCREF: write old MO orbitals
@@ -158,8 +161,8 @@ C
 C
 C     Rotate to Fock type and/or natural orbitals.
 C
-      CALL MEMGET('REAL',KEIG  ,NORBT,WORK,KFREE,LFREE)
-      CALL DZERO(WORK(KEIG),NORBT)
+      allocate (eig(norbt))
+      CALL DZERO(EIG,NORBT)
       IF (IKRMCCNO .GE. -1) THEN
 CSK   IF (.FALSE.) THEN
 C     TODO Feb 2004 hjaaj: KRMCCNO not working correctly yet ...
@@ -183,7 +186,7 @@ C
          END IF
 C
          WRITE (LUPRI,'(/2A)') ' - calling KRMCCNO with keyword ',CNOLBL
-         CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,WORK(KEIG),
+         CALL KRMCCNO(CNOLBL,RTRACI,CREF,CMO,IPROPT,EIG,
      &                WORK,KFREE,LFREE)
 C
       END IF
@@ -196,9 +199,9 @@ C     ... also save on DFCOEF when SCF
 C         (needed for e.g. RPA or restarts without changing
 C          input from .HF to .MCSCF /hjaaj Feb 2004)
          CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','KRMCSAV')
-         CALL MEMGET('INTE',KIBEIG,NORBT,WORK,KFREE,LFREE)
-         CALL IZERO(WORK(KIBEIG),NORBT)
-         CALL WRICMO(LUCOEF,CMO,WORK(KEIG),WORK(KIBEIG),EMCSCF)
+         allocate (ibeig(norbt))
+         CALL IZERO(IBEIG,NORBT)
+         CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,EMCSCF)
          CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
