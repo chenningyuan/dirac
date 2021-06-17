@@ -1,6 +1,5 @@
 **DIRAC
 .WAVE FUNCTION
-.PROPERTIES
 **INTEGRALS
 .NUCMOD
  1
@@ -16,21 +15,15 @@
 1.0E-9 1.0E-8  
 **EXACC
 .OCCUPIED                                                                                           
-1..5 
+energy -2.00 -0.30 0.001
 .VIRTUAL                                                                                            
-6..30   
-.LAMBDA
-.TALSH_BUFF                                                                                         
-1000
+energy -0.30 2.00 0.001
+.NOTRIPLE
 .DONATORB
-**PROPERTIES                                                                                        
-.DIPOLE                                                                                             
-.EFG 
-.QUADRUPOLE                                                                                               
 **MOLECULE
 *SYMMETRY
 .NOSYM
 *BASIS
 .DEFAULT 
-aug-cc-pVTZ
+cc-pVTZ
 *END OF 

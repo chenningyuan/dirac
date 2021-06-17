@@ -205,7 +205,10 @@ C
 #endif
 
       if (exa_input%talsh) then
-         if (exa_input%mp2no) then
+       if (exa_input%do_no) then
+         call get_no_driver (exa_input)
+
+       else if (exa_input%mp2no) then
               call talsh_mp2no_driver (exa_input,n_mp2no)
 ! if we do MP2NOs we reinitialize global data, which in essence means to replace DFCOEF by the MP2NO file
 !              call initialize_global_data
@@ -216,13 +219,9 @@ C
 !              do i = 1, size(exa_input%mokr_vir)
 !                     exa_input%mokr_vir(i) = exa_input%nkr_occ +i
 !              end do
-         else
+       else
              call talsh_cc_driver (exa_input)
-         end if
-         if (exa_input%do_no) then
-           call initialize_global_data   
-           call get_no_driver (exa_input)
-         end if
+       end if
       else
 #if defined (VAR_MPI)
        call exacc_sync_cw(0,mytid)
@@ -254,9 +253,10 @@ C
        else
               call exacorr_cc_driver (exa_input) 
        end if 
-       if (exa_input%do_no) then 
-              if (mytid == 0) call get_no_driver (exa_input)
-       end if
+!       if (exa_input%do_no) then 
+!              call initialize_global_data   
+!              if (mytid == 0) call get_no_driver (exa_input)
+!       end if
       end if
 
       call exacc_deallocate_cw()
