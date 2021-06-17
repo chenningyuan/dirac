@@ -12,8 +12,8 @@ f = Filter()
 #f.add(from_string = '    -     Final results from EXACORR     -    ',
 #      num_lines   = 8,
 #      rel_tolerance   = 5.0e-9)
-f.add(from_string = 'Orbital           1',
-      num_lines   = 10,
+f.add(from_string = '******************Recanonical MP2FNO******************',
+      num_lines   = 21,
       rel_tolerance   = 5.0e-8)
 
 # Right now, we separate the mp2no and cc modules. The test have two parts, first round only generates truncatd MP2FNO 

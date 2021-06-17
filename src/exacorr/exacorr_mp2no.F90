@@ -1250,32 +1250,32 @@ module exacorr_mp2no
                   if (my_MPI_rank == 0) then
 
                      call read_matrix_comp(MP2_density_comp,Matrix_file)
-                     call print_date('Read Density Matrix from DM_complex')
+                     call print_date('read Density Matrix from DM_complex')
    
                      call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
-                     call print_date('Transform DM from complex into quaternion')
+                     call print_date('transformed DM from complex into quaternion')
    
                      call diagoanl_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
-                     call print_date('Qdiag Density matrix')   
+                     call print_date('qdiag Density matrix')   
    
                      call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                     call print_date('Sort quaterbion natural orbital')
+                     call print_date('Sorted quaterbion natural orbital')
    
                      call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
-                     call print_date('Write the all natural orbital and occupation number in file NOs_MO')
+                     call print_date('Wrote all natural orbital and occupation number in file NOs_MO')
                        
                      flb = 0                     ! we read vv block of Fock matrix
                      sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
                      sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
                      call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
-                     call print_date('Read Fock matrix from DFCOEF')
+                     call print_date('read Fock matrix from DFCOEF')
    
                      mat = 'Matrix'
                      call basis_transform(Fock_HF,NOs_MO,Fock_NO,mat)
-                     call print_date('Get full vv Fock matrix in natural orbital basis')
+                     call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
    
                      call quater_write(Fock_NO,"FM_in_NatOrb")
-                     call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
+                     call print_date('wrote F_VV_NO in file FM_in_NatOrb')
                   end if 
                            
          end subroutine get_transform_Fock
@@ -1318,7 +1318,7 @@ module exacorr_mp2no
             if (my_MPI_rank == 0) then   
                call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
                         threshold,N_reduced,file_orb)
-               call print_date('Get the truncated the natural orbital and occupation number from NOs_MO')
+               call print_date('got the truncated NO and occupation number from NOs_MO')
                Sum_N_OCCUPATION_reduced = 0.0 
                do i=1, size(N_OCCUPATION_reduced)
                   Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
@@ -1328,30 +1328,30 @@ module exacorr_mp2no
                write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
                write(*,"(A39,2X,D8.3)") 'Current MP2 occupation number Sum: ', Sum_N_OCCUPATION_reduced
                write(*,"(A41,2X,D8.3)") 'Current MP2 occupation number Ratio: ', Ratio_OCCUPATION_reduced
-               write(*,"(A15,2X,I4,2X,A15)") 'Now we have', N_reduced, 'New Orbitals'
+               write(*,"(A15,2X,I4,2X,A7)") 'Now we have', N_reduced, 'MP2FNO'
    
    
                flb = 0                       ! we only read virtual orbital 
                sz = exa_input%nkr_vir        ! the number of virtual orbital 
                sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
                call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
-               call print_date('Read HF orbital coefficient from DFCOEF')
+               call print_date('read HF orbital coefficient from DFCOEF')
    
                
                flb = 0                         ! we read vv block of Fock matrix
                sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
                sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
                call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
-               call print_date('Read Fock matrix from DFCOEF')
+               call print_date('read Fock matrix from DFCOEF')
    
    
                mat = 'Matrix'
                call basis_transform(Fock_HF,NOs_MO_reduced,Fock_NO,mat)
-               call print_date('Get reduced vv Fock Matrix in Natural Orbital Basis')
+               call print_date('transformed Fock matrix into reduced NO basis')
    
                
                call get_Cano_Orbital(NOs_MO_reduced,New_cano_MO,Fock_NO,New_orbital_energy)
-               call print_date('Get new Canonical orbital in MO basis')
+               call print_date('Got new Canonical orbital in MO basis')
    
    
    !      Debug part, write HF orbital into the new file to test the code.
@@ -1364,21 +1364,9 @@ module exacorr_mp2no
                
                fl = 0 
                call basis_transform(New_cano_MO,HF_AO,NOs_AO,fl)
-               call print_date('Get new orbital in AO basis')
+               call print_date('Got new orbital in AO basis')
                
-   
-               print *, " Print several lowest New orbital Energy"
-               if (N_reduced < 10) then
-                     do i=1, N_reduced
-                           !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
-                           print *, ' Orbital',i,'  :Energy: ', New_orbital_energy(i)
-                     end do
-               else
-                     do i=1, 10
-                           !write(*,"(A8,2X,I2,2X,A8,2X,F20.11)") ' Orbital',i,':Energy:', New_orbital_energy(i)
-                           print *, ' Orbital',i,'  :Energy: ', New_orbital_energy(i)
-                     end do
-               end if
+               call print_NO(New_orbital_energy,N_OCCUPATION_reduced)
 
             end if
          end subroutine
@@ -1485,6 +1473,86 @@ module exacorr_mp2no
    
       end if 
       end subroutine write_to_newfile
+
+!--------------------------------------------------------------------------------------------------------------      
+      subroutine print_NO(number_energy,number_occupation)
+            real(kind=8), pointer,intent(inout)  :: number_occupation(:) ! occupation number from qdia of DM
+            real(kind=8), pointer,intent(inout)  :: number_energy(:) 
+            integer                            :: i, j, k, q
+
+
+            print *, "  "
+            print *,"******************Recanonical MP2FNO******************"
+            print *, "  "
+            print *, "                  Occupation number       "
+            print *, "                  -----------------"
+            print *, "  "
+            k = size(number_occupation)/5
+            q = mod(size(number_occupation),5)
+            do i=1, k, 1
+                  j= (i-1)*5+1
+                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1), &
+                  number_occupation(j+2),number_occupation(j+3), number_occupation(j+4)
+!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+            end do
+
+            j = k*5+1
+            select case (q)
+               case (1)
+                  write(*,"(F18.8)") number_occupation(j)
+
+               case (2)
+                  write(*,"(F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1)
+
+               case (3)
+                  write(*,"(F18.8,3X,F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1), number_occupation(j+2)
+                                                                                 
+               case (4)
+                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1), & 
+                  number_occupation(j+2), number_occupation(j+3)                                                                                          
+            end select              
+
+
+
+            print *, "  "
+            print *, "                  Orbital energy          "
+            print *, "                  -----------------"
+            print *, "  "
+            k = size(number_energy)/5
+            q = mod(size(number_energy),5)
+            do i=1, k, 1
+                  j= (i-1)*5+1
+                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_energy(j), number_energy(j+1), &
+                  number_energy(j+2),number_energy(j+3), number_energy(j+4)
+!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+            end do
+
+            j = k*5+1
+            select case (q)
+               case (1)
+                  write(*,"(F18.8)") number_energy(j)
+
+               case (2)
+                  write(*,"(F18.8,3X,F18.8)") number_energy(j), number_energy(j+1)
+
+               case (3)
+                  write(*,"(F18.8,3X,F18.8,3X,F18.8)") number_energy(j), number_energy(j+1), number_energy(j+2)
+                                                                                 
+               case (4)
+                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_energy(j), number_energy(j+1), number_energy(j+2), &
+                                                            number_energy(j+3)                                                                                          
+            end select 
+
+            print *,"*****************************************************"
+            print *, " "
+            print *, " "
+            print *, " "
+            print *, " "
+            print *, " "
+            print *, " "
+
+
+      end subroutine print_NO
 
 !-----------------------------------------------------------------------------------------------------
 #else
