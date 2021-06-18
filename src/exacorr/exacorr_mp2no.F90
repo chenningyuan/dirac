@@ -1491,7 +1491,7 @@ module exacorr_mp2no
             q = mod(size(number_occupation),5)
             do i=1, k, 1
                   j= (i-1)*5+1
-                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1), &
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), &
                   number_occupation(j+2),number_occupation(j+3), number_occupation(j+4)
 !                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
             end do
@@ -1499,16 +1499,16 @@ module exacorr_mp2no
             j = k*5+1
             select case (q)
                case (1)
-                  write(*,"(F18.8)") number_occupation(j)
+                  write(*,"(F20.10)") number_occupation(j)
 
                case (2)
-                  write(*,"(F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1)
+                  write(*,"(F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1)
 
                case (3)
-                  write(*,"(F18.8,3X,F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1), number_occupation(j+2)
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), number_occupation(j+2)
                                                                                  
                case (4)
-                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_occupation(j), number_occupation(j+1), & 
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), & 
                   number_occupation(j+2), number_occupation(j+3)                                                                                          
             end select              
 
@@ -1522,7 +1522,7 @@ module exacorr_mp2no
             q = mod(size(number_energy),5)
             do i=1, k, 1
                   j= (i-1)*5+1
-                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_energy(j), number_energy(j+1), &
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), &
                   number_energy(j+2),number_energy(j+3), number_energy(j+4)
 !                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
             end do
@@ -1530,16 +1530,16 @@ module exacorr_mp2no
             j = k*5+1
             select case (q)
                case (1)
-                  write(*,"(F18.8)") number_energy(j)
+                  write(*,"(F20.10)") number_energy(j)
 
                case (2)
-                  write(*,"(F18.8,3X,F18.8)") number_energy(j), number_energy(j+1)
+                  write(*,"(F20.10,3X,F20.10)") number_energy(j), number_energy(j+1)
 
                case (3)
-                  write(*,"(F18.8,3X,F18.8,3X,F18.8)") number_energy(j), number_energy(j+1), number_energy(j+2)
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2)
                                                                                  
                case (4)
-                  write(*,"(F18.8,3X,F18.8,3X,F18.8,3X,F18.8)") number_energy(j), number_energy(j+1), number_energy(j+2), &
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2), &
                                                             number_energy(j+3)                                                                                          
             end select 
 

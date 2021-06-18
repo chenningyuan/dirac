@@ -14,7 +14,7 @@ f = Filter()
 #      rel_tolerance   = 5.0e-9)
 f.add(from_string = '******************Recanonical MP2FNO******************',
       num_lines   = 21,
-      rel_tolerance   = 5.0e-8)
+      rel_tolerance   = 1.0e-7)
 
 # Right now, we separate the mp2no and cc modules. The test have two parts, first round only generates truncatd MP2FNO 
 # and second round cc would use these orbital to compute energy and property. 
