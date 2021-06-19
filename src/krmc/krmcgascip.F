@@ -1,4 +1,5 @@
 #define GASCIP_DEBUG -1
+! note: a lot of bit string info lines if GASCIP_DEBUG > 10
 !dirac_copyright_start
 !      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -310,11 +311,11 @@ C
          IF (IRRP .LE. 0) THEN
             IF (UCIBOS) THEN
                WRITE(LUPRI,'(10X,A,I4,A,I3)')
-     &        'Generating determinants of all spatial symmetries',
+     &        'Generating determinants of all spatial symmetries'//
      &        ' and 2*MS interval:',MINMK2,' to',MAXMK2
             ELSE
                WRITE(LUPRI,'(10X,A,I4,A,I3)')
-     &        'Generating determinants of all symmetries',
+     &        'Generating determinants of all symmetries'//
      &        ' and 2*MK interval:',MINMK2,' to',MAXMK2
             END IF
          ELSE IF (UCIBOS) THEN
@@ -919,7 +920,7 @@ C       MSKGAS  : mask for counting occupation in each GAS space
 C       IBTAB   : table of # of 1-bits for table lookup in FNBITS
 C
 C     Output:
-C       NG_STR  : number of occupied orbigtals in each GAS space for each string
+C       NG_STR  : number of occupied spinors in each GAS space for each string
 C
 C     Written by hjaaj May 2017 (based on code by J. Thyssen - Feb 11 2001)
 C
@@ -2202,13 +2203,18 @@ C
        END IF
 #endif
 
-      PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
+      PAR_GASCIP = PARCAL .AND. NDET .GE. 10000
       IF (PAR_GASCIP) THEN
+         WRITE(LUPRI,'(/A)') 'GASCIP run in MPI parallel  mode.'
          CALL GASCIP_WAKE_NODES()
          IPRINT_slaves = IPRINT - 1
          CALL GASCIP_PAR_CISIG_SETUP(
      &            P1MAT_MO,WORK(KPMUUUU),
      &            .FALSE.,NDET,IDET,ACCURACY,IPRINT_slaves)
+      ELSE IF (PARCAL) THEN
+         WRITE(LUPRI,'(/A,I0,A)')
+     &      'GASCIP in sequential mode because only',
+     &      NDET,' determinants (< 10,000)'
       END IF
 
 C      Make sigma vectors from property matrix and CI vectors
@@ -2733,10 +2739,10 @@ C
       CALL MEMGET2('REAL','HEIGVL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','HEIGVC',KEIGVC,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHRED),LHRED)
-      KHREDI  = KHRED + MAX_HRED*MAX_HRED   ! off-set to imaginary part (if NZ_in_CI .eq. 2)
-      KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED  ! off-set to imaginary part (if NZ_in_CI .eq. 2)
+      KHREDI  = KHRED  + MAX_HRED*MAX_HRED   ! off-set to imaginary part (if NZ_in_CI .eq. 2)
+      KEIGVCI = KEIGVC + MAX_HRED*MAX_HRED   ! off-set to imaginary part (if NZ_in_CI .eq. 2)
 
-      CALL MEMGET2('REAL','SRED' ,KSRED,LHRED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','SRED'  ,KSRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','SEIGVL',KSEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','S_MHLF',KS_MHLF,LHRED,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KSRED),LHRED)
@@ -3512,7 +3518,8 @@ C        Construct N_ROOTS new trial vectors
 C        -----------------------------------
 C
          IF (IPRINT .GE. 3) write(lupri,'(/A,1P,D10.2)')
-     &      'Threshold for removing element in trial vectors', THR_CVEC
+     &      'Relative threshold for removing elements in trial vectors',
+     &      THR_CVEC
          N_ROOTS_NOT_CONVERGED = 0   !! counter for new trial vectors (only add non-converged roots!)
          JBCVEC = KBCVEC + N_CRED*NDETQ - 1
          DO I_ROOT = 1,N_ROOTS
@@ -3523,7 +3530,7 @@ C
             THR_CVEC_I = DNRES(I_ROOT) * THR_CVEC
 
             IF (IPRINT .GE. 5) write(lupri,'(/A,I0,1P,D10.2)')
-     &      'Threshold for removing elements in trial vector',
+     &      'Absolute threshold for removing elements in trial vector ',
      &      I_ROOT, THR_CVEC_I
 
             I_ZERO = 0
@@ -3881,7 +3888,7 @@ C     Written by J. Thyssen - Jan 5 2001
 C     Last revision :
 C
 C***********************************************************************
-#include "implicit.h"
+      implicit none
 #include "priunit.h"
 C
 #include "dcbgascip.h"
@@ -3889,25 +3896,24 @@ C
 #include "dgroup.h"
 C
       INTEGER*8 IA, IB
-      INTEGER   JASTR(*), JBSTR(*)
-C
-      LOGICAL LBIT
-C
-C
+      INTEGER   JASTR(*), JBSTR(*), IAELEC, IBELEC
+
+      INTEGER   J
+
       IAELEC = 0
       IBELEC = 0
-C
+
       DO J = 1, NASHT
-         IF (LBIT(IA,J)) THEN
+         IF (BTEST(IA,J-1)) THEN
             IAELEC = IAELEC + 1
             JASTR(IAELEC) = IPTA2O(J)
          END IF
-         IF (LBIT(IB,J)) THEN
+         IF (BTEST(IB,J-1)) THEN
             IBELEC = IBELEC + 1
             JBSTR(IBELEC) = IPTB2O(J)
          END IF
       END DO
-C
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3979,10 +3985,13 @@ C
      &            '  P-string     : ',(JASTR(J),J=1,IA)
                WRITE(LUPRI,'(3X,A,(T21,40I4))')
      &            '  P(bar)-string: ',(JBSTR(J)-NASHT,J=1,IB)
-!              WRITE(LUPRI,'(3X,A,B64.64)')
-!    &            '  P-string     : ',IDET(1,I)
-!              WRITE(LUPRI,'(3X,A,B64.64)')
-!    &            '  P(bar)-string: ',IDET(2,I)
+#if GASCIP_DEBUG > 8
+               WRITE(LUPRI,'(3X,A,B64.64)')
+     &            '  P-string     : ',IDET(1,I)
+               WRITE(LUPRI,'(3X,A,B64.64)')
+     &            '  P(bar)-string: ',IDET(2,I)
+#endif
+
             END IF
          END DO
          IF (K .EQ. 0) WRITE(LUPRI,'(3X,A)')
