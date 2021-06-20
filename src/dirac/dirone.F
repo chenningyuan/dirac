@@ -438,23 +438,6 @@ C
 C     debug print
 C      
       NRAD = int(-log10(num_grid_cfg_RADINT))
-      write(*,*)"NRAD",NRAD
-      write(RADC,'(I2)')NRAD
-      write(ANGC,'(I2)')INTANG
-      write(*,*)"RADC,ANGC",RADC,ANGC
-      RADANGC(1:2) = RADC
-      RADANGC(3:3) = '.'
-      RADANGC(4:5) = ANGC  !debug, numerical integration
-      RADANGC(6:6) = LABEL(1:1)
-      write(*,*)RADANGC
-      IF(IPRINT.GE.2)THEN      
-        OPEN(30,FILE=RADANGC,STATUS='REPLACE')
-        DO I = 1,NDIM2
-           write(30,*)INTAOTRI(I)
-        ENDDO   
-        write(30,*)'INTAO,RADC,ANGC',RADC,ANGC,LABEL
-      CLOSE(30,STATUS='KEEP')
-      ENDIF
  5    CONTINUE !IXYZ
       deallocate(ANG)
       deallocate(INTAO)
