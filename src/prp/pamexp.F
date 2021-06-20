@@ -930,6 +930,7 @@ C
 C     Written by T. Saue Jan 20 2005 
 C
 C***********************************************************************
+       use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -940,15 +941,17 @@ C
 #include "dcbxpr.h"
 #include "dgroup.h"
       DIMENSION PAO(*),CMO(*),WORK(*)
+      integer, allocatable :: IBP(:)
+      real(8), allocatable :: EIG(:)
 C
       KFRSAV = KFREE
 C
 C     Read eigenvalues and boson irrep information
 C
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBP,NORBT,WORK,KFREE,LFREE)
+      allocate (eig(norbt))
+      allocate (ibp(norbt))
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBP,TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
         CALL MEMGET('REAL',KPMO,NISH(IFRP)*NISH(IFRP)*NZ,
@@ -966,7 +969,7 @@ C       Select occupied molecular orbitals
         CALL MEMREL('EXPCAN.sel',WORK,KSEL,KSEL,KFREE,LFREE)
 C       Generate canonical property orbitals
         CALL EXPCA1(INDXPR,IFRP,PAO(I2BASX(IFRP,IFRP)+1),
-     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),WORK(KEIG+IORB(IFRP)),
+     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),EIG(1+IORB(IFRP)),
      &              WORK(KSCO),WORK(KUCO),WORK(KPEI),
      &              IPRINT,WORK,KFREE,LFREE)
 C      
@@ -975,7 +978,7 @@ C
 C     Write new coefficients
       IUNIT = 2
       CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG,.FALSE.)
+      CALL WRICMO(IUNIT,CMO,EIG,IBP,TOTERG)
       CLOSE(IUNIT,STATUS='KEEP')
 C     Read old coefficients
       REWIND LUCOEF

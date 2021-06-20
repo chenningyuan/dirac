@@ -328,11 +328,10 @@ C
 C     set number of blocks in case of import
 C     complex spinors from ReSpect (TODO) or Turbomole
 C
-      NKRBLK = 1
       IF (DOIMPMOS) THEN
        IF ((FAKE2C .OR. NZC1.EQ.4) .AND.
      &     INDEX(QCPACK,"TURBOMOLE").GT.0) THEN
-        NKRBLK = 2
+       call quit ('Import of complex 2-spinors no longer supported')
        END IF
       END IF
 C

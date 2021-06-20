@@ -119,28 +119,4 @@ test.run(['scf-nr-turbomole.inp'], ['h2o-cc-pV5Z-nosym-tm.mol'], f, args='--put=
 # remove copy
 os.unlink('mos')
 
-#---------------------------------------#
-#
-# Test 6:  Turbomole  X2C
-#
-#---------------------------------------#
-
-f = Filter()
-
-# check energy
-f.add(from_string = 'checksum of imported and converted MOs:',
-      num_lines   = 1,
-      rel_tolerance = 1.0e-11)
- 
-# copy MOs
-shutil.copy('scf-x2c-h2po-nosym.spinor.r', 'spinor.r')
-shutil.copy('scf-x2c-h2po-nosym.spinor.i', 'spinor.i')
-
-# run test
-test.run(['scf-x2c-turbomole.inp'], ['h2po-nosym-tm.mol'], f, args='--put="spinor.r spinor.i"')
-
-# remove copy
-os.unlink('spinor.r')
-os.unlink('spinor.i')
-
 sys.exit(test.return_code)
