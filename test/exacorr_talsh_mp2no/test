@@ -50,7 +50,7 @@ CCDENS_hf_ccpvdz_0.0_subv"')
 f = Filter()
 
 f.add(from_string = '  The Occupation Number of Natural Orbital',
-      num_lines   = 6,
+      num_lines   = 5,
       rel_tolerance   = 1.0e-6)
 
 test.run(['hf_fno_ccpvdz_0.0_subv_ana.inp'], ['hf.xyz'], f, args='--put="CCDENS_hf_ccpvdz_0.0_subv=CCDENS"')
