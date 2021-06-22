@@ -56,4 +56,5 @@ if(ENABLE_EXATENSOR)
 # deal with dependencies
   add_dependencies(exacorr  main)
   add_dependencies(exacorr  exatensor)
+  add_dependencies(exacorr interest)
 endif()

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,6 +20,8 @@
 !dirac_copyright_end
 
 ! FILE    : hercen.F
+!
+! NB!!! Nothing in this file is used in current Dirac /28-apr-2021
 !
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */

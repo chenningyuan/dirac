@@ -6,7 +6,7 @@ Commit policy after the release is out
 
 Since DIRAC12 we have two novelties:
  - We have put a patching/updating mechanism in place for patches and bugfixes.
- - We have a versionned documentation.
+ - We have a versioned documentation.
 
 Both the patching and the documentation **will** break down if we do not follow
 the guidelines outlined here.

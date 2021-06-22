@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -104,11 +104,11 @@ print *, '*                                                                     
 print *, '*                                                                             *'
 print *, '*    Written by:                                                              *'
 print *, '*                                                                             *'
-print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
-print *, '*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *'
-print *, '*    Trond Saue               Universite Toulouse III           France        *'
-print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
 print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
+print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
+print *, '*    Trond Saue               Universite Toulouse III           France        *'
+print *, '*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *'
+print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
@@ -129,7 +129,7 @@ print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. German
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
-print *, '*    Stefan Knecht            ETH Zuerich                       Switzerland   *'
+print *, '*    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *'
 print *, '*    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *'
 print *, '*    Ossama Kullie            University of Kassel              Germany       *'
 print *, '*    Jon K. Laerdahl          University of Oslo                Norway        *'
@@ -190,8 +190,10 @@ print *, '*    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,     
 print *, '*    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *'
 print *, '*    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*'
 print *, '*    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *'
-print *,' *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *'
+print *, '*    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *'
 print *, '*    (see http://diracprogram.org).                                           *'
+print *, '*                                                                             *'
+print *, '*    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *'
 print *, '*                                                                             *'
 print *, '*******************************************************************************'
 end

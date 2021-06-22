@@ -6,7 +6,7 @@ module talsh_gradient
 
   use talsh
   use tensor_algebra
-  use talsh_ao_to_mo, only    : tensor_norm2
+  use talsh_common_routines, only : tensor_norm2
   use exacorr_datatypes, only : talsh_dm_tens, exacc_input
   use exacorr_utils, only     : print_date
   use, intrinsic:: ISO_C_BINDING
@@ -141,7 +141,6 @@ module talsh_gradient
 
     subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
-      use talsh_ao_to_mo, only       : tensor_norm2
 !     input variables
       type(talsh_dm_tens), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor

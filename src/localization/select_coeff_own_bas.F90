@@ -47,6 +47,7 @@ contains
 
   SUBROUTINE SELOWN_mod(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL, &
                     CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR)
+  use dircmo
 !***********************************************************************
 !
 !     Select coeffiecients for symmetry independent nucleus INUC
@@ -86,6 +87,7 @@ contains
       REAL*8 CMCSCF_MAGIC
 !
       INTEGER, ALLOCATABLE :: KBAS(:)
+      integer idims(12)
 !
 !     flag for MCSCF coefficients on file CMOFIL
       CMCSCF_MAGIC = 137.0D0
@@ -111,12 +113,10 @@ contains
 !     ===============
 !
       IF(KEYFORM == 1)THEN
-        IF(FNDLAB('INFO    ',IUNIT)) THEN      
-          READ (IUNIT,END=10,ERR=20) TEXT,NSYM,NZBUF,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-        ELSE
-           CALL QUIT('SELOWN: Error reading info')
-        ENDIF
-!        READ(IUNIT,END=10,ERR=20) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+        call reacmo_new(iunit,text=text,idims=idims,toterg=toterg)
+        nzbuf = idims(1)
+        nsym  = idims(2)
+        idim  = reshape(idims(7:12),(/3,2/))
       ELSEIF(KEYFORM == 2)THEN
         READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
         IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while reading TEXT')
@@ -169,44 +169,17 @@ contains
 !     Read coefficients
 !     =================
 !    
-      IF(LBIT(IOPT_TMP,2)) THEN
-        CALL REACMO_coefficients(IUNIT,CMO,NCDIM,NFSYM,NZ,    &
-     &           JDIM(1,0),JDIM(1,3),JDIM(1,1),JDIM(1,2),IDIM)         
-      ENDIF
-!      IF(LBIT(IOPT_TMP,2)) THEN
-!        CALL READT_MOD(IUNIT,NCDIM,CMO,KEYFORM)
-!      ELSE
-!        IF(KEYFORM == 1) READ(IUNIT)
-!        IF(KEYFORM == 2) READ(IUNIT,*)
-!      ENDIF
+      IF(LBIT(IOPT_TMP,2)) call reacmo_new(iunit,cmo=cmo)
 !
 !     Read eigenvalues
 !     ================
 !
-      IF(LBIT(IOPT_TMP,3)) THEN
-        CALL REACMO_eigenvalues(IUNIT,EIG,NEDIM,NFSYM,NZ, &
-     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
-      ENDIF
-!      IF(LBIT(IOPT_TMP,3)) THEN
-!        CALL READT_MOD(IUNIT,NEDIM,EIG,KEYFORM)
-!      ELSE
-!        IF(KEYFORM == 1) READ(IUNIT)
-!        IF(KEYFORM == 2) READ(IUNIT,*)
-!      ENDIF
+      IF(LBIT(IOPT_TMP,3)) call reacmo_new(iunit,eig=eig)
 !
 !     Read boson irrep info
 !     =====================
 !
-      IF(LBIT(IOPT_TMP,4)) THEN
-        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEDIM,NFSYM,NZ, &
-     &           JDIM(1,0),JDIM(1,1),JDIM(1,2),IDIM)         
-      ENDIF
-!      IF(LBIT(IOPT_TMP,4)) THEN
-!        CALL READI_MOD(IUNIT,NEDIM,IBEIG,KEYFORM)
-!      ELSE
-!        IF(KEYFORM == 1) READ(IUNIT)
-!        IF(KEYFORM == 2) READ(IUNIT,*)
-!      ENDIF
+      IF(LBIT(IOPT_TMP,4)) call reacmo_new(iunit,ibeig=ibeig)
 !
 !     Select and adjust format to molecular basis
 !     ===========================================
@@ -474,7 +447,7 @@ contains
   FUNCTION JGET(I)
   INTEGER I, JGET
 !
-#if defined (SYS_CRAY) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       JGET = IAND(ISHFT(I,-32),65535)
 #else
       JGET = IAND(ISHFT(I,-16),255)

@@ -1,7 +1,7 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
 #endif
         use talsh
@@ -66,7 +66,7 @@
             character(8), allocatable :: ff_names(:)            ! property labels
         end type exacc_input
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 !       All two electron integral tensors
         type, public :: exatns_intg_tens
          type(tens_rcrsv_t) :: oooo
@@ -74,6 +74,7 @@
          type(tens_rcrsv_t) :: oovv, vovo
          type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
+         type(tens_rcrsv_t) :: foo, fov, fvv
         end type exatns_intg_tens
 
 !       Common blocks between t and lambda
@@ -107,18 +108,19 @@
         end type space_dims
 #endif
 
-!       All two electron integral tensors
+!       All fixed one and two electron integral tensors (defines 2nd quantized Hamiltonian)
         type, public :: talsh_intg_tens
          type(talsh_tens_t) :: oooo
          type(talsh_tens_t) :: ooov
          type(talsh_tens_t) :: oovv, vovo
          type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
+         type(talsh_tens_t) :: foo, fov, fvv
         end type talsh_intg_tens
 
 !       Common blocks between t and lambda
         type, public :: talsh_comm_tens
-         type(talsh_tens_t) :: foo, fov, fvv
+         type(talsh_tens_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in talsh_intg_tens
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int

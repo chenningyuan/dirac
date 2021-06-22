@@ -3,8 +3,6 @@
 !
 
 
-#ifdef MOD_UNRELEASED
-
 !> Program for testing (and improving) the quaternion matrix Jacobi (block) diagonalization procedure
 !> written by Miro ILIAS, Strasbourg,2005, improved in Tel Aviv, 2012, 
 !> Banska Bystrica, August 2014
@@ -214,6 +212,8 @@ end module qjacobi_mod
 !
 !  Written: M Ilias, Strasbourg, May 2005;
 !  MI, August 2014 - rearragned for F90 
+!
+!  TODO: routine needs perfomance optimization 
 !      
 !**************************************************************************
 use include_dgroup_h, only: get_IPQTOQ
@@ -2519,7 +2519,6 @@ implicit none
 
       RETURN
       END
-!#endif /* MOD_UNRELEASED */
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& 
 module diagmod
@@ -2981,18 +2980,12 @@ integer :: istat,i,j
   !CALL PREPMATRIX
   ! ... call of the external diagonalization routine ...
   IPRINT = print_level+1; NBL = 0 ; DOEVE = .true.
-#ifdef MOD_UNRELEASED
-  CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
-#else
-  CALL QUIT('QJACOI is not in this DIRAC release !')
-#endif
 
+  CALL QJACOBI(A,EV,N,NZ,NBL,IBL,DOEVE,IPRINT)
 
 END subroutine
 
 end module diagmod
-
-#endif /* MOD_UNRELEASED */
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 Subroutine alloc_stat_check(alloc_label,istat)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -49,6 +49,7 @@ module x2cmod_cfg
   logical, public :: x2cmod_skip_op_pct               =  .false.
   logical, public :: x2cmod_mmf_restart               =  .false.
   logical, public :: x2c_linsym                       =  .false.
+  logical, public :: x2c_atomic                       =  .false.  
   logical, public :: x2c_prep_bnccorr                 =  .false.
   logical, public :: x2c_do_spherical                 =  .false.
   logical, public :: x2c_free_part_mtx_defh1          =  .false.

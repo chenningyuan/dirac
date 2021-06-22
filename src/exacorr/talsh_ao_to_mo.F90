@@ -6,6 +6,7 @@ module talsh_ao_to_mo
 
         use tensor_algebra
         use talsh
+        use talsh_common_routines, only : tensor_norm2
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
 
@@ -15,7 +16,6 @@ module talsh_ao_to_mo
         public talsh_compute_mo_integrals
         public compute_ao_integrals
         public get_integral_tensor
-        public tensor_norm2
         public ao2mo_ind
         public ao2mo_vec
         public mulliken_to_dirac_sort
@@ -42,7 +42,7 @@ module talsh_ao_to_mo
          use exacorr_global
          use module_interest_interface
          use module_interest_eri
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif
 
@@ -79,7 +79,7 @@ module talsh_ao_to_mo
 
 !        Initialize global data
          call initialize_global_data
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 #else
          my_MPI_rank = 0
@@ -122,6 +122,9 @@ module talsh_ao_to_mo
 
          else if (.FALSE.) then
             call print_date(' Cholesky method 41')
+            write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+            write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+            write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
             !determine cholesky vectors for ao integrals
             call decompose_cholesky_talsh_vec (chol_tensor, m, th_cholesky, nao, print_level)
             
@@ -192,6 +195,9 @@ module talsh_ao_to_mo
 
          else
             call print_date('Cholesky method 42')
+            write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+            write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+            write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
             !determine cholesky vectors for ao integrals
             call decompose_cholesky_talsh_all (chol_tens, th_cholesky, nao, print_level)
             ierr = talsh_tensor_dimensions(chol_tens,i,dim_chol)
@@ -590,49 +596,6 @@ module talsh_ao_to_mo
 !        end work-round
 
         end subroutine mulliken_to_dirac_sort
-
-        function tensor_norm2(a_tensor) result(a_norm2)
-
-         !compute norm2(complete contraction of a tensor with itself) for debugging purposed
-
-         type(talsh_tens_t), intent(inout):: a_tensor
-
-         integer(INTD) :: a_dims(1:4)
-         integer(INTD) :: ierr, a_rank
-
-!        scalars (need to be defined as tensor types)
-         type(talsh_tens_t)  :: result_tensor
-         integer(C_INT)      :: result_dims(1)
-         complex(8), pointer :: result_tens(:)
-         type(C_PTR):: body_p
-         real(8) :: a_norm2
-
-!        Initialize scalars that are to be used as tensors in contractions
-         result_dims(1) = 1
-         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,result_tens,result_dims)
-
-         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
-         select case (a_rank)
-         case (0)
-            ierr=talsh_tensor_contract("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
-         case (1)
-            ierr=talsh_tensor_contract("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
-         case (2)
-            ierr=talsh_tensor_contract("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
-         case (3)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
-         case (4)
-            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
-         case default
-            call quit ('wrong dimension in tensor_norm2')
-         end select
-
-         a_norm2 = real(result_tens(1),8)
-         ierr=talsh_tensor_destruct(result_tensor)
-
-        end function tensor_norm2
 
         subroutine ao2mo_ind(ao_tensor,mo_tensor,nmo,mo_list,ind)
 !         Transform integral tensor from ao-basis to mo-basis

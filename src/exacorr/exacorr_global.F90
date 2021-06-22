@@ -69,14 +69,14 @@ module exacorr_global
              use exacc_cfg
              use exacorr_utils, only : print_date
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
              integer :: my_MPI_rank
 #endif
              integer :: ierr, scf_file, nmo_original
              logical :: tobe, tobe_mp2no, tobe_dfcoef, tobe_respect
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
              if (my_MPI_rank /= my_MPI_master) then
 !               Slaves go to the sync immediately and get all that is necessary from master
@@ -162,7 +162,7 @@ module exacorr_global
 
          subroutine synchronize_global_data
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              use interface_to_mpi
              integer :: nao, nshells, n_primitives, nsp
              integer :: ish
@@ -479,10 +479,14 @@ module exacorr_global
         if((mo1_list(nmo1)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
         if((mo2_list(nmo2)-min_occ+1).gt.int_1el%n_spinor) call quit ('Not enough orbitals in MDPROP (MOLTRA)')
 
+        if (i_prop<0 .or. i_prop>10000) then
+          print*, " ERROR: property number ",i_prop," not available"
+          stop "        property to be added not found"
+        end if
+
         do qmo = 1, nmo2
           do pmo = 1, nmo1
-            h(pmo, qmo) = h(pmo, qmo) + &
-            int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
+            h(pmo, qmo) = int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
           end do
         end do
 

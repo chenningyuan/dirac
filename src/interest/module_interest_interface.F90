@@ -9,7 +9,7 @@
 ! Contains:     
 !
 ! Licensing:    dirac_copyright_start
-!                     Copyright (c) 2016 by the authors of DIRAC.
+!                     Copyright (c) 2021 by the authors of DIRAC.
 !                     All Rights Reserved.
 !                     
 !                     This source code is part of the DIRAC program package.
@@ -36,8 +36,6 @@
 ! Comments:     
 !                            
 ! ------------------------------------------------------------------------------------
-
-#ifdef MOD_INTEREST
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
 #include "dirac_partask.h"
@@ -311,5 +309,3 @@ CONTAINS
   END SUBROUTINE
 ! ------------------------------------------------------------------------------------
 END MODULE
-
-#endif

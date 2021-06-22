@@ -8,7 +8,9 @@ Kramers unrestricted Coupled-Cluster methods
 ============================================
 
 See :cite:`Visscher1996` for the initial CCSD(T) implementation. The Fock-space CC 
-implementation is described in :cite:`Visscher2001`.
+implementation is described in :cite:`Visscher2001`. The ground-state expectation 
+value implementations are described in :cite:`vanStralen2005` for MP2 and :cite:`Shee2016` for CCSD.
+The base EOM CC implementation is described in :cite:`Shee2018`.
 
 starstar(RELCC)
 
@@ -473,7 +475,7 @@ star(CCPROJ)
 
 This menu controls the use of projection operators in the CC calculations.
 
-These projectors are used to remove terms from the ground state CC equations (frozen core), the EOM-CC similarity transformed Hamiltonian (CVS and restricted excitation window), or a combination of both.
+These projectors are used to remove terms from the ground state CC equations (frozen core), the EOM-CC similarity transformed Hamiltonian (CVS and restricted excitation window), or a combination of both. The implementation for projection operations is detailed in :cite:`Halbert2020` and follows the scheme introduced by Coriani and Koch :cite:`Coriani2015`.
 
 keyword(FCORE)
 
