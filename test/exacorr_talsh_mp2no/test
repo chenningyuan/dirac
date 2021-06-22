@@ -9,10 +9,7 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-#f.add(from_string = '    -     Final results from EXACORR     -    ',
-#      num_lines   = 8,
-#      rel_tolerance   = 5.0e-9)
-f.add(from_string = '******************Recanonical MP2FNO******************',
+f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
       num_lines   = 21,
       rel_tolerance   = 1.0e-7)
 
@@ -25,8 +22,8 @@ f.add(from_string = '******************Recanonical MP2FNO******************',
 #         MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
 
 test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
-test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
-test.run(['hf_get_no_ccpvdz_0.0d_subv.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv"')
+#test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
+#test.run(['hf_get_no_ccpvdz_0.0d_subv.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv"')
 
 f = Filter()
 
@@ -42,16 +39,16 @@ f.add(from_string = '           Total contribution to principal components',
 #test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="CCDENS_all-active_hf-ccpvdz_1.0d-4=CCDENS \
 #         MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
 
-test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
+#test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
 test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
-test.run(['hf_fno_ccpvdz_0.0_subv.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv=DFCOEF" --get="CCDENS=\
-CCDENS_hf_ccpvdz_0.0_subv"')
+#test.run(['hf_fno_ccpvdz_0.0_subv.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv=DFCOEF" --get="CCDENS=\
+#CCDENS_hf_ccpvdz_0.0_subv"')
 
-f = Filter()
-
-f.add(from_string = '  The Occupation Number of Natural Orbital',
-      num_lines   = 5,
-      rel_tolerance   = 1.0e-6)
-
-test.run(['hf_fno_ccpvdz_0.0_subv_ana.inp'], ['hf.xyz'], f, args='--put="CCDENS_hf_ccpvdz_0.0_subv=CCDENS"')
+#f = Filter()
+#
+#f.add(from_string = 'Sum of occupation numbers (1)',
+#      num_lines   = 5,
+#      rel_tolerance   = 1.0e-6)
+#
+#test.run(['hf_fno_ccpvdz_0.0_subv_ana.inp'], ['hf.xyz'], f, args='--put="CCDENS_hf_ccpvdz_0.0_subv=CCDENS"')
 sys.exit(test.return_code)
