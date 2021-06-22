@@ -48,14 +48,15 @@ module talsh_mp2no
         real(kind=8)           :: threshold
         integer                :: i
 
-        
+        call print_date("Entering MP2_NO Module")
+ 
         threshold = exa_input%t_mp2no
 
         inquire(file="NOs_MO", exist=alive)
         if (alive) then
-            call print_date('File NOs_MO existed')
+            call print_date('File NOs_MO exists')
         else
-            call print_date('File NOs_MO is not existed. Start constructing MP2 density matrix')
+            call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
             call talsh_generate_MP2_VNO_MObasis(exa_input)   
             call get_transform_Fock(exa_input,'DM_complex')
         end if
@@ -63,7 +64,7 @@ module talsh_mp2no
                               New_orbital_energy,'NOs_MO',N_cano)
         call write_to_newfile(exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
 
-        call print_date('Leave MP2_NO Module')
+        call print_date('Leaving MP2_NO Module')
       end subroutine talsh_mp2no_driver
 
 
@@ -366,16 +367,16 @@ module talsh_mp2no
 
                                                         
                   call read_matrix_comp(MP2_density_comp,Matrix_file)
-                  call print_date('read Density Matrix from DM_complex')
+                  call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
 
                   call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
-                  call print_date('transformed DM from complex into quaternion')
+                  call print_date('changed MO DM representation (spinor->quaternion)')
 
                   call diagoanl_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
-                  call print_date('qdiag Density matrix')       
+                  call print_date('diagonalized MO DM (quaternion)')
 
                   call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                  call print_date('sorted quaterbion natural orbital')
+                  call print_date('Sorted natural orbitals by occupation number')
 
                   call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
@@ -440,15 +441,13 @@ module talsh_mp2no
             write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
             write(*,"(A39,2X,D8.3)") 'Current MP2 occupation number Sum: ', Sum_N_OCCUPATION_reduced
             write(*,"(A41,2X,D8.3)") 'Current MP2 occupation number Ratio: ', Ratio_OCCUPATION_reduced
-            write(*,"(A15,2X,I4,2X,A7)") 'Now we have', N_reduced, 'MP2FNO'
-
+            write(*,"(A15,2X,I4,2X,A7)") 'The (truncated) space contains ', N_reduced, 'MP2 FVNOs'
 
             flb = 0                       ! we only read virtual orbital 
             sz = exa_input%nkr_vir        ! the number of virtual orbital 
             sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
             call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
             call print_date('read HF orbital coefficient from DFCOEF')
-
             
             flb = 0                         ! we read vv block of Fock matrix
             sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
@@ -456,29 +455,18 @@ module talsh_mp2no
             call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
             call print_date('read Fock matrix from DFCOEF')
 
-
             mat = 'Matrix'
             call basis_transform(Fock_HF,NOs_MO_reduced,Fock_NO,mat)
             call print_date('transformed Fock matrix into reduced NO basis')
-
             
             call get_Cano_Orbital(NOs_MO_reduced,New_cano_MO,Fock_NO,New_orbital_energy)
             call print_date('got new Canonical orbital in MO basis')
 
-
-!      Debug part, write HF orbital into the new file to test the code.
-!*********************************************** 
-!            New_cano_MO = 0.0                
-!            do i=1, size(New_cano_MO,2)      
-!                  New_cano_MO(i,i,1) = 1.0   
-!            end do                            
-!***********************************************
-            
             fl = 0 
             call basis_transform(New_cano_MO,HF_AO,NOs_AO,fl)
             call print_date('got new orbitals in AO basis')
 
-            call print_NO(New_orbital_energy,N_OCCUPATION_reduced)
+            call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
       end subroutine
 
 
@@ -535,8 +523,6 @@ module talsh_mp2no
          qorbital%fermion_irrep = qorbital_hf%fermion_irrep
          qorbital%boson_irrep = 0
          qorbital%index = index
-         
-
 
          do i = 1, nocc
             qorbital%energy(i)=qorbital_hf%energy(i)
@@ -553,7 +539,6 @@ module talsh_mp2no
 !               print *, "removed orbital energy", qorbital%energy(i)
             end do
          end if 
-        
 
          do j = 1, nocc
             do  i = 1, qorbital%nao
@@ -564,7 +549,6 @@ module talsh_mp2no
             enddo
          enddo
 
-
          do  j = nocc+1, nmo
             do  i = 1, qorbital%nao
                   qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
@@ -574,93 +558,10 @@ module talsh_mp2no
             enddo
          enddo
 
-
          call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
          call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
 
         end subroutine write_to_newfile
-
-!----------------------------------------------------------------------------------------------------------------------
-      subroutine print_NO(number_energy,number_occupation)
-            real(kind=8), pointer,intent(inout)  :: number_occupation(:) ! occupation number from qdia of DM
-            real(kind=8), pointer,intent(inout)  :: number_energy(:) 
-            integer                            :: i, j, k, q
-
-
-            print *, "  "
-            print *,"******************Recanonical MP2FNO******************"
-            print *, "  "
-            print *, "                  Occupation number       "
-            print *, "                  -----------------"
-            print *, "  "
-            k = size(number_occupation)/5
-            q = mod(size(number_occupation),5)
-            do i=1, k, 1
-                  j= (i-1)*5+1
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), &
-                  number_occupation(j+2),number_occupation(j+3), number_occupation(j+4)
-!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
-            end do
-
-            j = k*5+1
-            select case (q)
-               case (1)
-                  write(*,"(F20.10)") number_occupation(j)
-
-               case (2)
-                  write(*,"(F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1)
-
-               case (3)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), number_occupation(j+2)
-                                                                                 
-               case (4)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), & 
-                  number_occupation(j+2), number_occupation(j+3)                                                                                          
-            end select              
-
-
-
-            print *, "  "
-            print *, "                  Orbital energy          "
-            print *, "                  -----------------"
-            print *, "  "
-            k = size(number_energy)/5
-            q = mod(size(number_energy),5)
-            do i=1, k, 1
-                  j= (i-1)*5+1
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), &
-                  number_energy(j+2),number_energy(j+3), number_energy(j+4)
-!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
-            end do
-
-            j = k*5+1
-            select case (q)
-               case (1)
-                  write(*,"(F20.10)") number_energy(j)
-
-               case (2)
-                  write(*,"(F20.10,3X,F20.10)") number_energy(j), number_energy(j+1)
-
-               case (3)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2)
-                                                                                 
-               case (4)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2), &
-                                                            number_energy(j+3)                                                                                          
-            end select 
-
-            print *,"*****************************************************"
-            print *, " "
-            print *, " "
-            print *, " "
-            print *, " "
-            print *, " "
-            print *, " "
-
-
-      end subroutine print_NO
-
-
 
 end module talsh_mp2no
 

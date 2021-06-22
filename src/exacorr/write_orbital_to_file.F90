@@ -24,6 +24,8 @@ module write_orbital_to_file
         public quater_read_from_dirac_all,quater_write_mos_to_dirac,quater_read_from_dirac_fock, &
                quater_read_from_dirac_orbital, quater_write, quater_read
 
+        public print_rMP2FVNO
+
        contains
 
 !-------------------------------------------------------------------------------------------------------------------------------------------
@@ -635,6 +637,85 @@ module write_orbital_to_file
                close(read_mat,status='KEEP')      
       
             end subroutine quater_read_matrix
+
+!--------------------------------------------------------------------------------------------------------------      
+      subroutine print_rMP2FVNO(number_energy,number_occupation)
+            real(kind=8), pointer,intent(inout)  :: number_occupation(:) ! occupation number from qdia of DM
+            real(kind=8), pointer,intent(inout)  :: number_energy(:)
+            integer                            :: i, j, k, q
+
+            print *, "  "
+            print *,"**********************************************************"
+            print *,"***** Recanonized MP2 frozen virtual natural spinors *****"
+            print *,"**********************************************************"
+            print *, "  "
+            print *, "                  ------------------"
+            print *, "                  Occupation numbers"
+            print *, "                  ------------------"
+            print *, "  "
+            k = size(number_occupation)/5
+            q = mod(size(number_occupation),5)
+            do i=1, k, 1
+                  j= (i-1)*5+1
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), &
+                  number_occupation(j+2),number_occupation(j+3), number_occupation(j+4)
+!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+            end do
+
+            j = k*5+1
+            select case (q)
+               case (1)
+                  write(*,"(F20.10)") number_occupation(j)
+
+               case (2)
+                  write(*,"(F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1)
+
+               case (3)
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), number_occupation(j+2)
+
+               case (4)
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), &
+                  number_occupation(j+2), number_occupation(j+3)
+            end select
+
+
+
+            print *, "  "
+            print *, "                  ----------------"
+            print *, "                  Orbital energies"
+            print *, "                  ----------------"
+            print *, "  "
+            k = size(number_energy)/5
+            q = mod(size(number_energy),5)
+            do i=1, k, 1
+                  j= (i-1)*5+1
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), &
+                  number_energy(j+2),number_energy(j+3), number_energy(j+4)
+!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
+            end do
+
+            j = k*5+1
+            select case (q)
+               case (1)
+                  write(*,"(F20.10)") number_energy(j)
+
+               case (2)
+                  write(*,"(F20.10,3X,F20.10)") number_energy(j), number_energy(j+1)
+
+               case (3)
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2)
+
+               case (4)
+                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2), &
+                                                            number_energy(j+3)
+            end select
+
+            print *,"**********************************************************"
+            print *, " "
+
+
+      end subroutine 
+
       
 
 end module write_orbital_to_file

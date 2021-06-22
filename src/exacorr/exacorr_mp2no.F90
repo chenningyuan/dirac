@@ -57,6 +57,8 @@ module exacorr_mp2no
             real(kind=8)           :: threshold
             integer                :: i
     
+            call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
+            if (my_MPI_rank == 0) call print_date("Entering MP2_NO Module")
             
             threshold = exa_input%t_mp2no
     
@@ -64,14 +66,9 @@ module exacorr_mp2no
             if (alive) then
                 call interface_mpi_comm_rank(global_communicator,my_MPI_rank)  
                 if (my_MPI_rank == 0) then 
-                    call print_date(" File NOs_MO existed") 
+                    call print_date("File NOs_MO exists") 
                 end if 
             else
-!                call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-!                if (my_MPI_rank == 0) then
-!                    call print_date ('File NOs_MO is not existed. Start constructing & 
-!                                    MP2 density matrix')
-!                end if 
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
                 call get_transform_Fock(exa_input,'DM_complex')
             end if
@@ -80,23 +77,12 @@ module exacorr_mp2no
             call write_to_newfile(exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
     
             call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-            if (my_MPI_rank == 0) call print_date(" Leave MP2_NO Module")
+            if (my_MPI_rank == 0) call print_date("Leave MP2_NO Module")
 
             ierr=exatns_method_unregister('ZERO')
-      !      print *, "unregister method ierr", ierr
             ierr=exatns_method_unregister('Aoint_calculator_mp2')
-      !      print *, "unregister method ierr Aoint_calculator", ierr
-      !      ierr=exatns_method_unregister('AointSegment_mp2')
-      !      print *, "unregister method ierr AointSegment", ierr
             ierr=exatns_method_unregister('Denominate_mp2')
-      !      print *, "unregister method ierr Denominate", ierr
-      !      ierr=exatns_method_unregister('PrintTensor_mp2')
-      !      print *, "unregister method ierr PrintTensor", ierr
             ierr=exatns_method_unregister('Unity_mp2')
-      !      print *, "unregister method ierr Unity", ierr
-
-            
-
 
       end subroutine exacorr_mp2no_driver
 
@@ -121,34 +107,31 @@ module exacorr_mp2no
 
          type(exacc_input), intent(in) :: exa_input
 
-         integer                :: nocc,nvir             ! the size of the mo basis for occupied and virtual spinors
-!         integer, intent(inout)        :: N_cano        ! number of new canonical orbital
-
+         integer       :: nocc,nvir             ! the size of the mo basis for occupied and virtual spinors
          integer(INTD) :: my_role
-         integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
+         integer       :: my_MPI_rank           ! needed to start exatensor, MPI should already be started in threaded mode
 
-         integer(INTD)                  :: ierr
-         complex(8)                     :: result_val
-
+         integer(INTD)         :: ierr
+         complex(8)            :: result_val
 !        Common tensors
-         type(exatns_comm_tens) :: comm_t
+         type(exatns_comm_tens):: comm_t
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(exatns_intg_tens) :: int_t
+         type(exatns_intg_tens):: int_t
 !        Lambda tensors
-         type(tens_rcrsv_t) :: l1_tensor, l2_tensor
+         type(tens_rcrsv_t)    :: l1_tensor, l2_tensor
 !        scalars (need to be defined as tensor types)
-         type(tens_rcrsv_t)         :: result_tensor
-         type(exatns_dm_tens)       :: MP2_density_tensor
+         type(tens_rcrsv_t)    :: result_tensor
+         type(exatns_dm_tens)  :: MP2_density_tensor
 !        space ids and roots
-         type(space_dims) :: dims
+         type(space_dims)      :: dims
 !        CCSD control and result variables
-         real(8)            :: scf_energy, mp2_energy, cc_energy, t_energy(3) ! triples not implemented
-         real(8)            :: t1diag
-         real(8)            :: t_target_precision
+         real(8)               :: scf_energy, mp2_energy, cc_energy, t_energy(3) ! triples not implemented
+         real(8)               :: t1diag
+         real(8)               :: t_target_precision
 
          ! classes for the definition of spaces (AO and 2 different MO spaces)
-         class(h_space_t), pointer                :: ao_space
-         class(h_space_t), pointer                :: occ_space, vir_space
+         class(h_space_t), pointer  :: ao_space
+         class(h_space_t), pointer  :: occ_space, vir_space
 
          ! variables for the definition of spaces (AO and 2 different MO spaces)
          integer(INTL)              :: ao_space_root, occ_space_root, vir_space_root
@@ -160,7 +143,6 @@ module exacorr_mp2no
                                        vvoo_id, vovv_id, vvvv_id
          integer(INTD)              :: ao_space_id, occ_space_id, vir_space_id
 
-
          !methods
          type(delta_t)      :: f_delta
          type(denom_t)      :: denom
@@ -171,7 +153,7 @@ module exacorr_mp2no
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-         if (my_MPI_rank == 0) call print_date(" NOs_MO is not existed. Starting MP2NO calculation with exatensor")
+         if (my_MPI_rank == 0) call print_date(" NOs_MO does not exist. Starting MP2NO calculation with exatensor")
 
 !        Initialize and register AO and MO spaces and get their IDs for further reference
          call exacorr_mp2no_spaces (exa_input,ao_space,occ_space,vir_space,ao_space_id,occ_space_id,vir_space_id)
@@ -187,8 +169,6 @@ module exacorr_mp2no
          nocc = exa_input%nocc
          nvir = exa_input%nvir
          t_target_precision = exa_input%t_econv
-
-
 
          !Create all id and root arrays, neccessary for exatns_tensor_create
          ao_space_root=ao_space%get_root_id(ierr)
@@ -223,7 +203,6 @@ module exacorr_mp2no
 !        These other nodes return only after exatns_stop() is called by the driver.
 
 !        Start ExaTENSOR within MPI_COMM_WORLD (called global_communicator in the MPI interface that DIRAC uses):
-         !call exatns_ctrl_reset_logging(1,2) !logging for debugging purposes
          ierr=exatns_start(int(global_communicator,INT_MPI))
 
          if(ierr.eq.EXA_SUCCESS) then
@@ -285,7 +264,7 @@ module exacorr_mp2no
 !        Make some noise so that we know we are proceeding 
             
             call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
-            call print_date('Save complex non-digonal DM to file DM_complex')
+            call print_date('Save DM in MO (spinor) basis to file : DM_complex')
 
             ierr=exatns_tensor_destroy(int_t%oooo)
             ierr=exatns_tensor_destroy(int_t%ooov)
@@ -309,10 +288,6 @@ module exacorr_mp2no
             ierr=exatns_tensor_destroy(comm_t%t2)
 
             !Stop ExaTENSOR runtime
-            
-
-            !ierr=exatns_space_unregister('Virtual')
-            !print *, "unregister space ierr Virtual", ierr
             ierr=exatns_stop()
 
             end if
@@ -420,18 +395,17 @@ module exacorr_mp2no
                   write(mp2dm) dm_mo_fort
 
                   ierr=talsh_tensor_destruct(tensor_slice)
-      
-                  ierr = talsh_shutdown()
+                  ierr=talsh_shutdown()
             
-!                  if (debug) then
-!                  print *,'<<<<< DM, complete, before formatting to DM_complex'
-!                        do j=1,(nocc+nvir)
-!                           do i=1,(nocc+nvir)
-!                              write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
-!                           end do
-!                        end do
-!                        print *,'>>>>> DM, complete, after formatting to DM_complex'
-!                  end if
+                  if (debug) then
+                     print *,'<<<<< DM, complete, before formatting to DM_complex'
+                     do j=1,(nocc+nvir)
+                        do i=1,(nocc+nvir)
+                           write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
+                        end do
+                     end do
+                     print *,'>>>>> DM, complete, after formatting to DM_complex'
+                  end if
             
                   close(mp2dm,status='KEEP')
             
@@ -1250,16 +1224,16 @@ module exacorr_mp2no
                   if (my_MPI_rank == 0) then
 
                      call read_matrix_comp(MP2_density_comp,Matrix_file)
-                     call print_date('read Density Matrix from DM_complex')
+                     call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
    
                      call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
-                     call print_date('transformed DM from complex into quaternion')
+                     call print_date('changed MO DM representation (spinor->quaternion)')
    
                      call diagoanl_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
-                     call print_date('qdiag Density matrix')   
+                     call print_date('diagonalized MO DM (quaternion)')
    
                      call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                     call print_date('Sorted quaterbion natural orbital')
+                     call print_date('Sorted natural orbitals by occupation number')
    
                      call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                      call print_date('Wrote all natural orbital and occupation number in file NOs_MO')
@@ -1313,7 +1287,6 @@ module exacorr_mp2no
                integer                            :: i,j,k
                integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
                
-            
             call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
             if (my_MPI_rank == 0) then   
                call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
@@ -1328,15 +1301,13 @@ module exacorr_mp2no
                write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
                write(*,"(A39,2X,D8.3)") 'Current MP2 occupation number Sum: ', Sum_N_OCCUPATION_reduced
                write(*,"(A41,2X,D8.3)") 'Current MP2 occupation number Ratio: ', Ratio_OCCUPATION_reduced
-               write(*,"(A15,2X,I4,2X,A7)") 'Now we have', N_reduced, 'MP2FNO'
-   
+               write(*,"(A15,2X,I4,2X,A7)") 'The (truncated) space contains ', N_reduced, 'MP2 FVNOs'
    
                flb = 0                       ! we only read virtual orbital 
                sz = exa_input%nkr_vir        ! the number of virtual orbital 
                sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
                call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
                call print_date('read HF orbital coefficient from DFCOEF')
-   
                
                flb = 0                         ! we read vv block of Fock matrix
                sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
@@ -1344,29 +1315,18 @@ module exacorr_mp2no
                call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
                call print_date('read Fock matrix from DFCOEF')
    
-   
                mat = 'Matrix'
                call basis_transform(Fock_HF,NOs_MO_reduced,Fock_NO,mat)
                call print_date('transformed Fock matrix into reduced NO basis')
-   
                
                call get_Cano_Orbital(NOs_MO_reduced,New_cano_MO,Fock_NO,New_orbital_energy)
                call print_date('Got new Canonical orbital in MO basis')
    
-   
-   !      Debug part, write HF orbital into the new file to test the code.
-   !*********************************************** 
-   !            New_cano_MO = 0.0                
-   !            do i=1, size(New_cano_MO,2)      
-   !                  New_cano_MO(i,i,1) = 1.0   
-   !            end do                            
-   !***********************************************
-               
                fl = 0 
                call basis_transform(New_cano_MO,HF_AO,NOs_AO,fl)
                call print_date('Got new orbital in AO basis')
                
-               call print_NO(New_orbital_energy,N_OCCUPATION_reduced)
+               call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
 
             end if
          end subroutine
@@ -1473,86 +1433,6 @@ module exacorr_mp2no
    
       end if 
       end subroutine write_to_newfile
-
-!--------------------------------------------------------------------------------------------------------------      
-      subroutine print_NO(number_energy,number_occupation)
-            real(kind=8), pointer,intent(inout)  :: number_occupation(:) ! occupation number from qdia of DM
-            real(kind=8), pointer,intent(inout)  :: number_energy(:) 
-            integer                            :: i, j, k, q
-
-
-            print *, "  "
-            print *,"******************Recanonical MP2FNO******************"
-            print *, "  "
-            print *, "                  Occupation number       "
-            print *, "                  -----------------"
-            print *, "  "
-            k = size(number_occupation)/5
-            q = mod(size(number_occupation),5)
-            do i=1, k, 1
-                  j= (i-1)*5+1
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), &
-                  number_occupation(j+2),number_occupation(j+3), number_occupation(j+4)
-!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
-            end do
-
-            j = k*5+1
-            select case (q)
-               case (1)
-                  write(*,"(F20.10)") number_occupation(j)
-
-               case (2)
-                  write(*,"(F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1)
-
-               case (3)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), number_occupation(j+2)
-                                                                                 
-               case (4)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_occupation(j), number_occupation(j+1), & 
-                  number_occupation(j+2), number_occupation(j+3)                                                                                          
-            end select              
-
-
-
-            print *, "  "
-            print *, "                  Orbital energy          "
-            print *, "                  -----------------"
-            print *, "  "
-            k = size(number_energy)/5
-            q = mod(size(number_energy),5)
-            do i=1, k, 1
-                  j= (i-1)*5+1
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), &
-                  number_energy(j+2),number_energy(j+3), number_energy(j+4)
-!                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
-            end do
-
-            j = k*5+1
-            select case (q)
-               case (1)
-                  write(*,"(F20.10)") number_energy(j)
-
-               case (2)
-                  write(*,"(F20.10,3X,F20.10)") number_energy(j), number_energy(j+1)
-
-               case (3)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2)
-                                                                                 
-               case (4)
-                  write(*,"(F20.10,3X,F20.10,3X,F20.10,3X,F20.10)") number_energy(j), number_energy(j+1), number_energy(j+2), &
-                                                            number_energy(j+3)                                                                                          
-            end select 
-
-            print *,"*****************************************************"
-            print *, " "
-            print *, " "
-            print *, " "
-            print *, " "
-            print *, " "
-            print *, " "
-
-
-      end subroutine print_NO
 
 !-----------------------------------------------------------------------------------------------------
 #else

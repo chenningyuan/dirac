@@ -33,19 +33,20 @@ module get_natural_orbital
         logical                :: alive
       
 
+        call print_date('Entering get_no_driver')
         inquire(file="CCDENS", exist=alive)
         if (alive) then
-            call print_date('File CCDENS existed')
+            call print_date('File CCDENS exists')
             NORBT = exa_input%nkr_occ + exa_input%nkr_vir 
             NROOT = get_nsolutions() / 2
             N_CORR_OCC = exa_input%mokr_occ(1)
             call get_transform_NO(NROOT,NORBT,N_CORR_OCC,NOs_AO,N_OCCUPATION)
-            call print_date('Generated Natural orbital')
+            call print_date('Generated natural orbitals in AO basis')
             call write_no_to_newfile (exa_input,NOs_AO,N_OCCUPATION,'DFCOEF','DFNOSAO')
         else
             stop "Error: density matrix File CCDENS not found" 
         end if 
-        call print_date('Leave get natural orbital driver')
+        call print_date('Leaving get_no_driver')
       end subroutine get_no_driver
 
 
@@ -82,7 +83,7 @@ module get_natural_orbital
                   allocate(density_quat(NORBT,NORBT,4))
                   allocate(density_quat_read(NROOT,NROOT,4))
                   call quater_read(NROOT,density_quat_read)
-                  call print_date('Read Quaternion Density matrix')
+                  call print_date('Read density matrix (quaternion basis)')
                   trace = 0
       !            do i=1, size(density_quat,1)
       !                  trace = trace+density_quat(i,i,1)
@@ -107,7 +108,7 @@ module get_natural_orbital
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
                   call diagoanl_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
-                  call print_date('Qdiag Density matrix')       
+                  call print_date('Diagonalized density matrix (quaternion basis)')       
 
 !                  call sort_values_vectors (N_OCCUPATION,NOs_MO)
 !                  call print_date('Sort quaterbion natural orbital')
@@ -139,7 +140,7 @@ module get_natural_orbital
                   end do
 
 
-                  print *, " The Occupation Number of Natural Orbital"
+                  print *, " Natural orbital occupation numbers"
 
                   k = size(N_OCCUPATION)/5
                   q = mod(size(N_OCCUPATION),5)
@@ -168,8 +169,9 @@ module get_natural_orbital
 
 
 
-                  print *, "Sum of occupation number which should be the same as total correlated electron number", trace
-                  print *, "Sum of occupation number of occupied orbital", compact
+                  print *, "Sum of occupation numbers (1) :",trace
+                  print *, "Sum of occupation numbers of occupied orbitals (2)", compact
+                  print *, "Note : (1) should equal the total number or correlated electrons"
 
                     
 !                  flb = 0                     ! we read vv block of Fock matrix
