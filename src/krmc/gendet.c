@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2019 by the authors of DIRAC.
+ *     Copyright (c) 2021 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -25,7 +25,7 @@
 #include <stdio.h>      // printf, ?
 #include <string.h>     // strcat
 
-#if defined (SYS_IRIX) || defined (SYS_LINUX) || defined (SYS_DEC) || defined (SYS_AIX) || defined (SYS_HPUX) || defined (SYS_DARWIN) || defined (SYS_WINDOWS)
+#if defined (SYS_LINUX) || defined (SYS_AIX) || defined (SYS_DARWIN) || defined (SYS_WINDOWS)
 
 #define cgendet     cgendet_
 

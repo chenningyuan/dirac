@@ -78,6 +78,8 @@ def run_cmake(command, build_path, default_build_path):
     with open(os.path.join(build_path, 'cmake_output'), 'w') as f:
         f.write(stdout)
 
+    print('-- INFO: you can review the output above from cmake in ' + build_path + '/cmake_output\n')
+
     # change directory and return
     os.chdir(topdir)
 
@@ -102,8 +104,7 @@ def print_build_help(build_path, default_build_path):
     """
     Print help text after configuration step is done.
     """
-    print('   configure step is done')
-    print('   now you need to compile the sources:')
+    print('   configure step is done, now you need to compile the sources:')
     if (build_path == default_build_path):
         print('   $ cd build')
     else:

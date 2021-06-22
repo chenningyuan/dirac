@@ -45,7 +45,6 @@ module talsh_cc
 !        Written by Lucas Visscher, winter 2016/2017
 
          use exacorr_global
-         use talsh_ao_to_mo, only       : tensor_norm2
          use talsh_gradient
 
          type(exacc_input), intent(in) :: exa_input
@@ -77,7 +76,7 @@ module talsh_cc
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD,CC2,... control and result variables
-         real(8) :: scf_energy, mp2_energy, cc_energy, t_energy(3)
+         real(8) :: e_core, scf_energy, mp2_energy, cc_energy, t_energy(3)
          real(8) :: t_target_precision
          real(8) :: t1diag
          integer :: ncycles
@@ -88,7 +87,8 @@ module talsh_cc
          integer :: iterative_level, iterative_scheme
          integer :: perturbative_level, perturbative_scheme
 
-         integer :: iff  !integer to loop over field strengths, for now hardwired
+         integer :: iff        ! loop variable to loop over field strengths
+         integer :: fock_mode  ! choice of Fock build options
          
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
@@ -153,9 +153,21 @@ module talsh_cc
          end if
          call print_date('-End- Integral Transformation')
 
+!        Get fixed one-body tensors (Fock matrices)
+         ! build using orbital energies supplied by SCF program unless MRCONEE is present
+         ! third option (for open shells) still to be implemented
+         if ( exist_one_el(e_core) ) then
+            fock_mode = 2
+         else
+            fock_mode = 1
+         end if
+         call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+
 !        create tensors needed in CC
          oo_dims = nocc
          vv_dims = nvir
+         ierr=talsh_tensor_construct(comm_t%foo,C8,oo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%fvv,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%goo,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(comm_t%gvv,C8,vv_dims,init_val=ZERO)
@@ -165,6 +177,7 @@ module talsh_cc
             ov_dims(2) = nvir
             vo_dims(1) = nvir
             vo_dims(2) = nocc
+            ierr=talsh_tensor_construct(comm_t%fov,C8,ov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(comm_t%hov,C8,ov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
 !           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
@@ -196,13 +209,11 @@ module talsh_cc
             return
          end if
 
-         ! begin finite field loop
-         do iff=1,exa_input%nff(2)
-!        Get fixed one-body tensors, needs to follow the two body tensors
-         call init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
-                    comm_t%foo,comm_t%fov,comm_t%fvv, int_t, scf_energy,iff)
-
-         if (iff==1) then
+         ! copy Fock matrix to comm, add finite field to the Fock matrix
+         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+         ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
+         call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+                        exa_input%level_shift,-1,fock_mode,exa_input%nff(1))
 
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
@@ -245,7 +256,14 @@ module talsh_cc
          call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
 !=====================
 
-         end if
+         ! begin finite field loop (nff(2) gives number of field strengths, nff(1) gives number of fields)
+         ! in case no finite field is specified nff(2)=1 and nff(1)=0
+         do iff=1,exa_input%nff(2)
+         ! copy Fock matrix to comm, add finite field to the Fock matrix
+         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,iff)
+         ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
+         call define_H0 (scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+                         exa_input%level_shift,exa_input%print_level,fock_mode,exa_input%nff(1))
 
 !        Start CCSD iterations
          call print_date('-Start- CC Iterations')
@@ -258,10 +276,6 @@ module talsh_cc
             end if
          else
             call diis (t2_tensor=comm_t%t2,mode=1)
-         end if
-
-         if (exa_input%print_level.gt.8) then
-            write(*,*) "Voovv = ",tensor_norm2(int_t%oovv)
          end if
 
          if (.not.CC2) then
@@ -388,8 +402,6 @@ module talsh_cc
                                 ccsd_energy,CCD,iterative_level,iterative_scheme,ncycles,print_level)
 
 !        Routine for solving the t amplitude equations
-
-         use talsh_ao_to_mo, only : tensor_norm2
 
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
@@ -1215,7 +1227,6 @@ module talsh_cc
 
 !        Routine for solving the t amplitude equations
 
-         use talsh_ao_to_mo, only : tensor_norm2
 
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
@@ -1554,8 +1565,6 @@ module talsh_cc
         subroutine solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                           t_target_precision,ncycles,print_level,l1_tensor)
 !        Routine for solving the lambda equations
-
-         use talsh_ao_to_mo, only : tensor_norm2
 
          integer, intent(in) :: nocc, nvir, print_level
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
@@ -1934,8 +1943,6 @@ module talsh_cc
                                      eps_occ,eps_vir,t_target_precision,ncycles,print_level,l1_tensor)
 
 !        Routine for solving the lambda equations
-
-         use talsh_ao_to_mo, only : tensor_norm2
 
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
@@ -2320,75 +2327,89 @@ module talsh_cc
         end subroutine solve_CC2_lambda_equations 
 
 
-        subroutine init_fock_talsh (exa_input,mo_occ,mo_vir,eps_occ,eps_vir, &
-                                       fo_tensor,fov_tensor,fv_tensor,int_t,scf_energy,iff)
+        subroutine init_fock_talsh (mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,print_level)
 
 !        Written by Lucas Visscher, summer 2017
+!        Constructs unrestricted Hartree-Fock matrix and computes corresponding UHF energy.
 
          use exacorr_global
-         use exacorr_utils, only : shift_orbital_energy,print_orbital_energy
 
          implicit none
 
-         type(exacc_input), intent(in)        :: exa_input
-         integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
-         real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! orbital energies
-         real(8), intent(out)                 :: scf_energy
-         integer, intent(in)                  :: iff !integer to loop over field strengths, for now hardwired
+         integer, intent(in)                  :: mode ! 1: Use precomputed orbital energies and HF energy from start file
+                                                      ! 2: Build from scratch using one- and two-electron integrals
+                                                      ! 3: Construct as F^{UHF} = F^{AvHF} + (F^{UHF} - F^{AvHF})
+                                                      !    where F^{AvHF} is the average HF expression used in DIRAC
+         integer, intent(in)                  :: mo_occ(:),mo_vir(:)   ! orbital indices
+         real(8), intent(in)                  :: eps_occ(:),eps_vir(:) ! orbital energies (as read from start file)
+         real(8), intent(out)                 :: scf_energy            ! computed (or read) single determinant UHF energy
+         integer, intent(in)                  :: print_level
          
-!        target tensors to be filled and given back to the caller
-         type(talsh_tens_t), intent(inout)    :: fo_tensor, fv_tensor, fov_tensor
+!        target tensors (2e integrals are input, UHF matrix sections to be filled here).
          type(talsh_intg_tens), intent(inout) :: int_t
 
          integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
-         type(talsh_tens_t)              :: id_mat_occ, diag_mat_occ, diag_mat_vir
+         type(talsh_tens_t)              :: id_mat_occ
          type(talsh_tens_t)              :: h_tensor
          integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
          integer(INTD)                   :: ierr
          logical                         :: one_el_exist
-         type(one_el_t)                  :: one_int
-         real(8)                         :: e_core, ev_energy, off_diag
-         integer                         :: nkp, min_occ
+         real(8)                         :: e_core
+         integer                         :: min_occ
          type(C_PTR)                     :: body_p
          complex(8), pointer, contiguous :: h_tens(:,:)
-         integer                         :: i, j, iv, jv, imo, jmo
-         type(talsh_tens_t)              :: result_tensor
-         integer(INTD)                   :: result_dims(1)
-         complex(8), pointer             :: result_tens(:)
+         integer                         :: i
 
-         real(8)            :: e_lumo, e_homo
-         integer            :: lumo
-         real(8), parameter :: THRESHOLD=1.0D-8
-         character*8        :: property
-         complex(8)         :: field_strength
 
-         
-         nocc = exa_input%nocc
-         nvir = exa_input%nvir
+         nocc = size(eps_occ)
+         nvir = size(eps_vir)
 
          min_occ=minval(mo_occ)
-         result_dims(1)=1
 
 !        Get foo tensor
          fo_dims(1:2) = nocc
-         ierr=talsh_tensor_construct(fo_tensor,C8,fo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(int_t%foo,C8,fo_dims,init_val=ZERO)
 
 !        Get fvv tensor
          fv_dims(1:2) = nvir
-         ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(int_t%fvv,C8,fv_dims,init_val=ZERO)
 
 !        Get fov tensor
          fov_dims(1) = nocc
          fov_dims(2) = nvir
-         ierr=talsh_tensor_construct(fov_tensor,C8,fov_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(int_t%fov,C8,fov_dims,init_val=ZERO)
 
-!        get one electron integrals
-         one_el_exist = exist_one_el(e_core)
+         select case (mode)
 
-!        copy one electron integrals to the OO, VV and OV Fock matrix tensors
-         if (one_el_exist) then
+         case (3)
 
-!           create density (identity) matrix for the occupied space
+!            construct Fock matrix from orbital energies and valence 2e integrals
+!            to be written by Chima Chibueze
+
+         case (2)
+
+!           get one electron integrals
+            one_el_exist = exist_one_el(e_core)
+
+            if (.not. one_el_exist) stop "Requested Fock matrix construction, but MRCONEE is missing"
+
+!           read the one electron integrals and copy them into the tensors
+
+            ierr=talsh_tensor_get_body_access(int_t%foo,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
+
+            ierr=talsh_tensor_get_body_access(int_t%fvv,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
+
+            ierr=talsh_tensor_get_body_access(int_t%fov,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
+            call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
+
+            call print_date('one electron integrals added to Fock Matrix')
+
+            !create density (identity) matrix for the occupied space
             ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
             ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
@@ -2397,138 +2418,279 @@ module talsh_cc
               h_tens(i,i) = ONE
             enddo
 
-!           now select the one electron integrals and copy them into the tensors
+            ierr=talsh_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",int_t%foo,int_t%oooo,id_mat_occ, ONE)
+            ierr=talsh_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",int_t%fov,int_t%ooov,id_mat_occ, ONE)
+            ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",int_t%fvv,int_t%vovo,id_mat_occ, ONE)
 
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
-            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_occ,nocc,min_occ)
-
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
-            call add_finitefield(h_tens,exa_input,iff,mo_vir,nvir,mo_vir,nvir,min_occ)
-
-            ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
-            call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
-            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_vir,nvir,min_occ)
-
-            do i=1,exa_input%nff(1)
-              write(*,*) ""
-              write (*,'(3A,2E12.3)') "    Added finite field ",exa_input%ff_names(i), &
-                                       " with strength ",exa_input%ff(i,iff)
-              write(*,*) ""
-            end do
-
-!           Get access to result
-            result_dims(1) = 1
-            ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,result_tens,result_dims)
-
-!           compute HF energy
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("R()=F(i,j)*I(i,j)",result_tensor,fo_tensor,id_mat_occ)
-            ierr=talsh_tensor_construct(h_tensor,C8,fo_dims,init_val=ZERO)
-            ierr=talsh_tensor_contract("H(i,j)+=G(i,k,j,l)*I(k,l)",h_tensor,int_t%oooo,id_mat_occ, ONE_HALF)
-            ierr=talsh_tensor_contract("R()+=H(i,j)*I(i,j)",result_tensor,h_tensor,id_mat_occ)
-            ierr=talsh_tensor_destruct(h_tensor)
-
-            scf_energy=real(result_tens(1),8) ! Casting into real(8)
-            scf_energy=scf_energy+e_core
-            write(*,*) ""
-            write (*,'(A,F23.15)') "    Reference energy (single determinant, calculated) = ", scf_energy
-            write(*,*) ""
-            call print_date('one electron integrals added to Fock Matrix')
-
-            ierr=talsh_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",fo_tensor,int_t%oooo,id_mat_occ, ONE)
-
-            ierr=talsh_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",fov_tensor,int_t%ooov,id_mat_occ, ONE)
-
-            ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
             call print_date('two electron integrals added to Fock Matrix')
-            
-            if (exa_input%print_level >10) then
-              call print_tensor(fo_tensor, 1.0D-6, 'fo_tensor')
-              call print_tensor(fov_tensor, 1.0D-6, 'fov_tensor')
-              call print_tensor(fv_tensor, 1.0D-6, 'fv_tensor')
-            end if
 
-            !now we can get the correct epsilon values
-            ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            do i=1,fo_dims(1)
-              eps_occ(i)=h_tens(i,i)
-            end do
-
-            ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            do i=1,fv_dims(1)
-              eps_vir(i)=h_tens(i,i)
-            end do
-
-            !apply level shift
-            call shift_orbital_energy(eps_vir,eps_occ,exa_input%level_shift)
-            if (exa_input%print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
-
-            !set diag_mat
-            ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-            h_tens = ZERO
-            do i = 1, nocc
-               h_tens(i,i) = eps_occ(i)
-            end do
-
-            ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-            h_tens = ZERO
-            do i = 1, nvir
-              h_tens(i,i) = eps_vir(i)
-            end do
-
-            ierr=talsh_tensor_add("F(i,j)+=D(i,j)",fo_tensor,diag_mat_occ,scale=MINUS_ONE)
-            ierr=talsh_tensor_add("F(a,b)+=D(a,b)",fv_tensor,diag_mat_vir,scale=MINUS_ONE)
-            if (exa_input%print_level >1) call print_date('diagonal substracted from Fock Matrix')
-            
-            if (exa_input%print_level >0) then 
-              write(*,*) ""
-              ierr=talsh_tensor_init(result_tensor)
-              ierr=talsh_tensor_contract("R()+=F(i,j)*F(i,j)",result_tensor,fo_tensor,fo_tensor)
-              off_diag=real(result_tens(1),8)
-              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
-
-              ierr=talsh_tensor_init(result_tensor)
-              ierr=talsh_tensor_contract("R()+=F(i,a)*F(i,a)",result_tensor,fov_tensor,fov_tensor)
-              off_diag=real(result_tens(1),8)
-              write(*,*) "    Norm of Fock matrix (OV, all        ) = ", off_diag
-
-              ierr=talsh_tensor_init(result_tensor)
-              ierr=talsh_tensor_contract("R()+=F(a,b)*F(a,b)",result_tensor,fv_tensor,fv_tensor)
-              off_diag=real(result_tens(1),8)
-              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
-              write(*,*) 
+            if (print_level >10) then
+              call print_tensor(int_t%foo, 1.0D-6, 'fo_tensor')
+              call print_tensor(int_t%fov, 1.0D-6, 'fov_tensor')
+              call print_tensor(int_t%fvv, 1.0D-6, 'fv_tensor')
             end if
 
             ierr=talsh_tensor_destruct(id_mat_occ)
-            ierr=talsh_tensor_destruct(diag_mat_occ)
-            ierr=talsh_tensor_destruct(diag_mat_vir)
-            ierr=talsh_tensor_destruct(result_tensor)
-         else
+
+         case (1)
+
+            ! Fock matrix is defined as diagonal matrix with orbital energies on the diagonal
+            ierr=talsh_tensor_get_body_access(int_t%foo,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            do i=1,fo_dims(1)
+               h_tens(i,i)=eps_occ(i)
+            end do
+
+            ierr=talsh_tensor_get_body_access(int_t%fvv,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            do i=1,fv_dims(1)
+               h_tens(i,i)=eps_vir(i)
+            end do
+
             call get_scf ( scf_energy )
             write(*,*) ""
             write (*,'(A,F23.15)') "    SCF energy ( read ) = ", scf_energy
             write(*,*) ""
 
-            !apply level shift
-            call shift_orbital_energy(eps_vir,eps_occ,exa_input%level_shift)
-            if (exa_input%print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
+            if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
 
-         end if
-         if (exa_input%print_level >0) call print_date('Fock matrix initialized')
+         end select
+
+         if (print_level >0) call print_date('Fock matrix initialized')
+
         end subroutine init_fock_talsh
+
+        subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff)
+
+!        Written by Lucas Visscher, spring 2021
+!        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
+!        and make foo and fvv consistent with this choice
+!        recomputes scf_energy if mode > 1
+
+         use exacorr_global
+
+         implicit none
+
+         integer, intent(in)                  :: mode ! for 1 the scf energy is not recomputed
+         real(8), intent(inout)               :: eps_occ(:),eps_vir(:) ! (level-shifted) orbital energies, aka H0
+         real(8), intent(in)                  :: level_shift
+         integer, intent(in)                  :: print_level
+         integer, intent(in)                  :: nff
+         real(8), intent(inout)               :: scf_energy            ! recomputed single determinant UHF energy
+
+
+!        common tensors: the foo and fvv parts get modfied here (diagonal is shifted to the left)
+         type(talsh_comm_tens), intent(inout) :: comm_t
+         type(talsh_tens_t)                   :: oooo
+
+         integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
+         type(talsh_tens_t)              :: diag_mat_occ, diag_mat_vir
+         type(talsh_tens_t)              :: h_tensor
+         integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
+         integer(INTD)                   :: ierr
+         type(C_PTR)                     :: body_p
+         complex(8), pointer, contiguous :: h_tens(:,:)
+         integer                         :: i
+
+         nocc = size(eps_occ)
+         nvir = size(eps_vir)
+         fo_dims(1:2) = nocc
+         fv_dims(1:2) = nvir
+
+         ! The epsilons are initialized from the diagonal of the UHF Fock matrix
+         ierr=talsh_tensor_get_body_access(comm_t%foo,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+         do i=1,fo_dims(1)
+            eps_occ(i)=h_tens(i,i)
+         end do
+
+         ierr=talsh_tensor_get_body_access(comm_t%fvv,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+         do i=1,fv_dims(1)
+            eps_vir(i)=h_tens(i,i)
+         end do
+
+         !recompute SCF energy
+         if (mode>1) then
+            call compute_scf_energy(scf_energy,comm_t%foo,oooo,fo_dims,print_level)
+         else
+            if (nff.gt.0) stop "finite field requires core energy (MRCONEE)"
+         end if
+
+         !apply level shift
+         call shift_orbital_energy(eps_vir,eps_occ,level_shift)
+         if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
+
+         !put these orbital energies back at the diagonal to form H0
+         ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+         h_tens = ZERO
+         do i = 1, nocc
+            h_tens(i,i) = eps_occ(i)
+         end do
+
+         ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+         h_tens = ZERO
+         do i = 1, nvir
+           h_tens(i,i) = eps_vir(i)
+         end do
+
+         ! create foo and fvv with H0 subtracted
+         ierr=talsh_tensor_add("F(i,j)+=D(i,j)",comm_t%foo,diag_mat_occ,scale=MINUS_ONE)
+         ierr=talsh_tensor_add("F(a,b)+=D(a,b)",comm_t%fvv,diag_mat_vir,scale=MINUS_ONE)
+         if (print_level >0) then 
+           write(*,*)
+           write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", tensor_norm2(comm_t%foo)
+           write(*,*) "    Norm of Fock matrix (OV, all        ) = ", tensor_norm2(comm_t%fov)
+           write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", tensor_norm2(comm_t%fvv)
+           write(*,*) 
+         end if
+
+         ierr=talsh_tensor_destruct(diag_mat_occ)
+         ierr=talsh_tensor_destruct(diag_mat_vir)
+
+        end subroutine define_H0
+
+        subroutine compute_scf_energy(scf_energy,foo,oooo,foo_dims,print_level)
+
+            use exacorr_global
+
+!           Refactored by by Johann Pototschnig, spring 2021
+
+            type(talsh_tens_t)                 :: foo
+            type(talsh_tens_t)                 :: oooo
+            real(8), intent(inout)             :: scf_energy
+            integer(INTD)                      :: foo_dims(1:2)
+            integer                            :: print_level
+
+            type(talsh_tens_t)              :: id_mat_occ, h_tensor
+            logical                         :: one_el_exist
+            real(8)                         :: e_core
+            integer(INTD)                   :: ierr
+            type(C_PTR)                     :: body_p
+            complex(8), pointer, contiguous :: h_tens(:,:)
+            type(talsh_tens_t)              :: result_tensor
+            integer(INTD)                   :: result_dims(1)
+            complex(8), pointer             :: result_tens(:)
+            integer                         :: i
+
+!           get one electron integrals
+            one_el_exist = exist_one_el(e_core)
+
+            if (.not. one_el_exist) stop "Requested Fock matrix computation, but MRCONEE is missing"
+
+            !Make a result tensor and arrange access to it via a Fortran pointer
+            result_dims(1) = 1
+            ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,result_tens,result_dims)
+
+            !create density (identity) matrix for the occupied space
+            ierr=talsh_tensor_construct(id_mat_occ,C8,foo_dims,init_val=ZERO)
+            ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,foo_dims) ! to use as a regular Fortran array
+            h_tens = ZERO
+            do i = 1, foo_dims(1)
+              h_tens(i,i) = ONE
+            enddo
+            ! recompute HF energy
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("R()=F(i,j)*I(i,j)",result_tensor,foo,id_mat_occ)
+            ierr=talsh_tensor_construct(h_tensor,C8,foo_dims,init_val=ZERO)
+            ierr=talsh_tensor_contract("H(i,j)+=G(i,k,j,l)*I(k,l)",h_tensor,oooo,id_mat_occ, MINUS_ONE_HALF)
+            ierr=talsh_tensor_contract("R()+=H(i,j)*I(i,j)",result_tensor,h_tensor,id_mat_occ)
+            ierr=talsh_tensor_destruct(h_tensor)
+
+            scf_energy=real(result_tens(1),8) ! Casting into real(8)
+            scf_energy=scf_energy+e_core
+            if (print_level>-1) then
+               write(*,*) "" 
+               write (*,'(A,F23.15)') "   Recomputed energy (single determinant, calculated) = ", scf_energy
+               write(*,*) ""
+            end if
+
+            ierr=talsh_tensor_destruct(result_tensor)
+            ierr=talsh_tensor_destruct(id_mat_occ)
+
+        end subroutine compute_scf_energy
+
+        subroutine set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,iff)
+
+!        Refactored by Lucas Visscher from routine by Johann Pototschnig, spring 2021
+!        Fock matrix is copied from int_t to comm_t and finite field is added if available
+
+         use exacorr_global
+
+         implicit none
+
+         type(exacc_input), intent(in)        :: exa_input
+         integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital indices
+         integer, intent(in)                  :: iff !integer to loop over field strengths
+
+!        integral tensors (for technical reasons defined as inout, but not to be changed here).
+         type(talsh_intg_tens), intent(inout) :: int_t
+!        target tensors to be augmented with the finite field
+         type(talsh_comm_tens), intent(inout) :: comm_t
+
+         integer                         :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
+         type(talsh_tens_t)              :: h_tensor
+         integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2),fov_dims(1:2)
+         integer(INTD)                   :: ierr
+         integer                         :: i,min_occ
+         type(C_PTR)                     :: body_p
+         complex(8), pointer, contiguous :: h_tens(:,:)
+
+!        copy the matrices
+         ierr=talsh_tensor_init(comm_t%foo)
+         ierr=talsh_tensor_init(comm_t%fvv)
+         ierr=talsh_tensor_init(comm_t%fov)
+         ierr=talsh_tensor_add("F(i,j)+=D(i,j)",comm_t%foo,int_t%foo)
+         ierr=talsh_tensor_add("F(a,b)+=D(a,b)",comm_t%fvv,int_t%fvv)
+         ierr=talsh_tensor_add("F(i,a)+=D(i,a)",comm_t%fov,int_t%fov)
+
+!        if there is a finte field add it 
+         if (exa_input%nff(1)>0 .and. iff>-1) then
+            nocc = exa_input%nocc
+            nvir = exa_input%nvir
+
+            min_occ=minval(mo_occ)
+
+!           Get foo tensor
+            fo_dims(1:2) = nocc
+
+!           Get fvv tensor
+            fv_dims(1:2) = nvir
+
+!           Get fov tensor
+            fov_dims(1) = nocc
+            fov_dims(2) = nvir
+
+            ierr=talsh_tensor_get_body_access(comm_t%foo,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_occ,nocc,min_occ)
+
+            ierr=talsh_tensor_get_body_access(comm_t%fvv,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+            call add_finitefield(h_tens,exa_input,iff,mo_vir,nvir,mo_vir,nvir,min_occ)
+
+            ierr=talsh_tensor_get_body_access(comm_t%fov,body_p,C8,int(0,C_INT),DEV_HOST)
+            call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
+            call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_vir,nvir,min_occ)
+
+            do i=1,exa_input%nff(1)
+               write(*,*) ""
+               write (*,'(3A,2E12.3)') "    Added finite field ",exa_input%ff_names(i), &
+                                    " with strength ",exa_input%ff(i,iff)
+               write(*,*) ""
+            end do
+
+            call print_date('Finite field added to Fock Matrix')
+         end if
+
+        end subroutine set_fock
 
         subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,moint_scheme,print_level)
 
@@ -2756,7 +2918,10 @@ module talsh_cc
          integer                         :: i
          integer(C_INT), dimension(2)    :: dimA, dimB, dimC
          
-         write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
+         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
+
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
@@ -2986,7 +3151,9 @@ module talsh_cc
          integer, allocatable         :: mo_list(:)
          
 
-         write(*,*) "Note: cholesky based ao to mo transformation fails on iMac16,1"
+         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
@@ -3426,8 +3593,6 @@ module talsh_cc
 !        Evaluate +T, -T and (T) energy terms.
 !        Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
          
-         use talsh_ao_to_mo, only : tensor_norm2
-
          type(talsh_tens_t), intent(inout)  :: t1_tensor, t2_tensor
          type(talsh_tens_t), intent(inout)  :: fov_tensor, ooov_tensor, vovv_tensor, oovv_tensor
          real(8), intent(in)                :: eps_occ(:),eps_vir(:)

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -4158,11 +4158,6 @@ C     Do full CI in open-shell manifold
 C     =================================
 C
  10   CONTINUE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
       OPEN (5,FILE='DIRAC.INP')
       CALL GOSRES(WORK(KFREE),LFREE)
       CLOSE(5,STATUS='KEEP')
@@ -4532,11 +4527,6 @@ C     Do full CI in open-shell manifold
 C     =================================
 C
  10   CONTINUE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-!@d   IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
       OPEN (5,FILE='DIRAC.INP')
 !.s/sya,2007.02.04
 !#    CALL GOSRES(WORK(KFREE),LFREE)
