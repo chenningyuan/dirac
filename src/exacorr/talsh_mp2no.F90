@@ -417,7 +417,7 @@ module talsh_mp2no
 
             real(kind=8)                       :: Sum_N_OCCUPATION_total
             real(kind=8)                       :: Sum_N_OCCUPATION_reduced 
-            real(kind=8)                       :: Ratio_OCCUPATION_reduced
+            real(kind=8)                       :: Perc_OCCUPATION_reduced
             real(kind=8), pointer              :: NOs_MO_reduced(:,:,:)   ! natural orbitals which have occupation number larger than threshold
             real(kind=8), pointer              :: New_cano_MO(:,:,:)      ! new canonical orbital in AO basis
             real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
@@ -436,12 +436,18 @@ module talsh_mp2no
             do i=1, size(N_OCCUPATION_reduced)
                   Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
             end do
-            Ratio_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
 
-            write(*,"(A45,2X,D8.3)") 'Current MP2 occupation number Threshold: ', threshold
-            write(*,"(A39,2X,D8.3)") 'Current MP2 occupation number Sum: ', Sum_N_OCCUPATION_reduced
-            write(*,"(A41,2X,D8.3)") 'Current MP2 occupation number Ratio: ', Ratio_OCCUPATION_reduced
-            write(*,"(A15,2X,I4,2X,A7)") 'The (truncated) space contains ', N_reduced, 'MP2 FVNOs'
+            Perc_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
+            Perc_OCCUPATION_reduced = Perc_OCCUPATION_reduced * 100
+
+            write(*,*) ""
+            write(*,"(A50,2X,D10.4)") 'MP2 occupation number (o.n.) threshold (t) : ', threshold
+            write(*,"(A50,2X,I10)")    'Number of MP2 FVNOs retained (o.n. > t)    : ', N_reduced
+            write(*,*) ""
+            write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., retained NOs (a)    : ', Sum_N_OCCUPATION_reduced
+            write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., all NOs (b)         : ', Sum_N_OCCUPATION_total
+            write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
+            write(*,*) ""
 
             flb = 0                       ! we only read virtual orbital 
             sz = exa_input%nkr_vir        ! the number of virtual orbital 
