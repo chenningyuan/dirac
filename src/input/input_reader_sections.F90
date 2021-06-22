@@ -881,12 +881,12 @@
          exa_input%ccd = .true.
       end if
 
-      if (kw_matches(word, '.MP2NO         ')) then 		
+      if (kw_matches(word, '.MP2NO         ')) then
          exa_input%mp2no = .true.
          call kw_read(word, exa_input%t_mp2no)
       end if
 
-      if (kw_matches(word, '.CC2         ')) then 		!L
+      if (kw_matches(word, '.CC2         ')) then
          exa_input%cc2 = .true.
       end if
 
