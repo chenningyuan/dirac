@@ -668,7 +668,7 @@ module exacorr_mp2no
          !if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(AointSegment) failed!')
 
          !Register the denominator initializer as a method
-         call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,exa_input%level_shift,occ_space_id)
+         call denom%denom_t_init(mo_occ,nocc,mo_vir,nvir,occ_space_id)
          ierr=exatns_method_register('Denominate_mp2',denom)
          if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(Denominate) failed!')
 
