@@ -684,31 +684,6 @@ module exacorr_mp2no
          if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(Unity) failed!')
 
 
-         one_el_exist = exist_one_el(e_core)
-!         if (one_el_exist) then
-            !Register methods to read one electron integrals
-!            call one_el(1)%set_1el_init(mo_occ,nocc,mo_occ,nocc,min_occ)
-!            ierr=exatns_method_register('OE_oo_mp2',one_el(1))
-!            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_oo_mp2) failed!')
-!            call one_el(2)%set_1el_init(mo_occ,nocc,mo_vir,nvir,min_occ)
-!            ierr=exatns_method_register('OE_ov_mp2',one_el(2))
-!            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_ov_mp2) failed!')
-!            call one_el(3)%set_1el_init(mo_vir,nvir,mo_vir,nvir,min_occ)
-!            ierr=exatns_method_register('OE_vv_mp2',one_el(3))
-!            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(OE_vv_mp2) failed!')
-
-            !Register methods to make matrix with orbital energies on the diagonal
-!            call orb_set%set_energy_init(mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,exa_input%level_shift)
-!            ierr=exatns_method_register('OrbSet_mp2',orb_set)
-!            if(ierr.ne.EXA_SUCCESS) call quit('exatns_method_register(OrbSet_mp2) failed!')
-!         end if
-
-         !Register method to add property integrals
-!         call ff_set%set_ff_init(mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,min_occ)
-!         ierr=exatns_method_register('FF_set',ff_set)
-!         if(ierr.ne.EXA_SUCCESS) call quit(ierr,'exatns_method_register(FF_set_mp2) failed!')
-
-         
          !Register method to set to ZERO
          call cmplx_zero%set_zero_init(3)
          ierr=exatns_method_register('ZERO',cmplx_zero)
