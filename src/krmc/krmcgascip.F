@@ -339,7 +339,7 @@ C
      &      ' orbitals (',NASHT,') must be <',MAXASH_GASCIP+1
          CALL QUIT('*** ERROR in GASCIP_GENDET ***')
       END IF
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
 C
 C     Setup bit table
 C     ---------------
@@ -652,7 +652,7 @@ C     Write statistics about determinants
          END DO
          WRITE(LUPRI,9103) NDET, NASTR_T, NBSTR_T
          CALL PRSYMB(LUPRI,'=',75,0)
-         CALL FLSHFO(LUPRI)
+         FLUSH(LUPRI)
       END IF
  9100 FORMAT(//'   Distribution of determinants wrt. MK'
      &        /6X,'MK',T28,'#dets',T37,'#A-str',T47,'#B-str'
@@ -704,7 +704,7 @@ C
  9006 FORMAT(1X,79('='))
 C
 C
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
       RETURN
  1010 FORMAT(I6,I10,32I2)
       END
@@ -1322,7 +1322,7 @@ C
 C
       CALL MEMREL('GASCIP_STARTVEC',WORK,1,KFRSAV,KFREE,LFREE)
 C
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
       CALL QEXIT('GASCIP_STARTVEC')
 C
       RETURN
@@ -1457,7 +1457,7 @@ C
          CALL OUTPUT(WORK(KHI),1,NDET,1,NDET,NDET,NDET,-1,LUPRI)
         END IF
       END IF
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
 C
 C
       CALL GETTIM(CPU1,WALL1)
@@ -1521,7 +1521,7 @@ C
       CALL GETTIM(CPU2,WALL2)
       WRITE (LUPRI,'(/A,2F20.2)')
      &   "CPU and WALL times for full CI:",CPU2-CPU0,WALL2-WALL0
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
       CALL QEXIT('GASCIP_FULLCI')
 C
       RETURN
@@ -2992,7 +2992,7 @@ C
             HAVE_SCVECS = .FALSE.
             GO TO 150 ! skip calculation of sigma vectors
          END IF
-         CALL FLSHFO(LUPRI)
+         FLUSH(LUPRI)
 C
 C        Calculate sigma vector(s)
 C        -------------------------
@@ -3503,7 +3503,7 @@ C
             GOTO 200
          END IF
 C
-         CALL FLSHFO(LUPRI)
+         FLUSH(LUPRI)
 C
          IF ( ITMIC .EQ. MAX_CI_IT ) THEN
             ICONV_TOT = -2
@@ -3521,24 +3521,30 @@ C
      &      'Relative threshold for removing elements in trial vectors',
      &      THR_CVEC
          N_ROOTS_NOT_CONVERGED = 0   !! counter for new trial vectors (only add non-converged roots!)
-         JBCVEC = KBCVEC + N_CRED*NDETQ - 1
+         JBCVEC = KBCVEC + N_CRED*NDETQ - 1 ! address for new trial vectors
          DO I_ROOT = 1,N_ROOTS
+!d          write(lupri,*) 'root, CI norm:', I_ROOT,DNRES(I_ROOT)
             IF ( DNRES(I_ROOT) .LE. THR_CONV ) CYCLE ! this one is converged
             N_ROOTS_NOT_CONVERGED = N_ROOTS_NOT_CONVERGED + 1
             ECIA_I = ECIA(I_ROOT)
+            ! Address for residual vector no. I_ROOT.
             JBCVEC_I = KBCVEC + (N_CRED+I_ROOT-1)*NDETQ - 1
+            ! Zero vector space for next trial vector if not in-place
+            ! (i.e. if at least one previous root was converged)
+            IF (JBCVEC .LT. JBCVEC_I)
+     &         CALL DZERO(WORK(JBCVEC+1),NDETQ)
             THR_CVEC_I = DNRES(I_ROOT) * THR_CVEC
 
-            IF (IPRINT .GE. 5) write(lupri,'(/A,I0,1P,D10.2)')
+            IF (IPRINT .GE. 5) write(lupri,'(/A,I0,A,1P,D10.2)')
      &      'Absolute threshold for removing elements in trial vector ',
-     &      I_ROOT, THR_CVEC_I
+     &      I_ROOT, ':', THR_CVEC_I
 
             I_ZERO = 0
             I_REMOVED = 0
             IF (NZ_in_CI .eq. 2) THEN
                DO I = 1, NDET
-                  RNORM = ABS( WORK(JBCVEC      + I) )
-     &                  + ABS( WORK(JBCVEC+NDET + I) )
+                  RNORM = ABS( WORK(JBCVEC_I      + I) )
+     &                  + ABS( WORK(JBCVEC_I+NDET + I) )
                   IF (RNORM .EQ. 0.0D0) THEN
                      I_ZERO = I_ZERO + 1
                   ELSE IF (RNORM .LE. THR_CVEC_I) THEN
@@ -3554,7 +3560,7 @@ C
                END DO
             ELSE
                DO I = 1, NDET
-                  RNORM = ABS( WORK(JBCVEC      + I) )
+                  RNORM = ABS( WORK(JBCVEC_I    + I) )
                   IF (RNORM .EQ. 0.0D0) THEN
                      I_ZERO = I_ZERO + 1
                   ELSE IF (RNORM .LE. THR_CVEC_I) THEN
@@ -3605,8 +3611,8 @@ C        Orthogonalize trial vector(s)
 C        and remove linear dependent vectors
 C        -----------------------------------
 C
-C        WRITE(LUPRI,*) 'N_CRED, N_ROOTS_NOT_CONVERGED'
-C     &                 ,N_CRED, N_ROOTS_NOT_CONVERGED
+!d       WRITE(LUPRI,*) 'N_CRED, N_ROOTS_NOT_CONVERGED'
+!!d  &                  ,N_CRED, N_ROOTS_NOT_CONVERGED
 #ifndef NO_MORE_ORTHOGONALIZATION
          N_CSIM = N_ROOTS_NOT_CONVERGED
 #else
@@ -3615,7 +3621,7 @@ C     &                 ,N_CRED, N_ROOTS_NOT_CONVERGED
          N_CSIM = 0
          DO J = N_CRED + 1, N_CRED + N_ROOTS_NOT_CONVERGED
 C           loop over new trial vectors
-C      write (lupri,*) 'new vector no. J',J
+!d     write (lupri,*) 'new vector no. J',J
 C
 C           Project out all previous trial vectors
 C
@@ -3637,8 +3643,8 @@ C
      &              - DDOT(NDET,WORK(KBCVEC+(I-1)*NDETQ+NDET),1,   ! -i <B(old,imag)|B(new,real)>
      &                          WORK(KBCVEC+(J-1)*NDETQ),1)
                END IF
-c              write (lupri,*) 'old vector no. I, OVLP real, imag',
-c    &         I,OVLP_real,OVLP_imag
+!d             write (lupri,*) 'old vector no. I, OVLP real, imag',
+!d   &         I,OVLP_real,OVLP_imag
 C
 C              Calculate B(new) = B(new) - OVLP * B(old)
 C
@@ -3658,7 +3664,7 @@ C
             END DO  ! I = 1, J - 1 (previous trial vectors)
 C
             DNAFT = DNORM2(NDETQ,WORK(KBCVEC+(J-1)*NDETQ),1)
-C           write(lupri,*) 'DN after', DNAFT
+!d          write(lupri,*) 'DN after', DNAFT
             IF (DNAFT .LE. THRZER) THEN
                WRITE (LUPRI,'(/A,I0,A,1P,D10.2)')
      &            'INFO: New CI trial vector no. ',J-N_CRED,
@@ -3724,7 +3730,7 @@ C
      &         CALL DCOPY(NDETQ,WORK(KBCVEC+(J    -1)*NDETQ),1,
      &                          WORK(KBCVEC+(J_NEW-1)*NDETQ),1)
          END DO
-C      write (lupri,*) 'All trial vectors test output after Gram-Schmidt'
+C      write (lupri,*)'All trial vectors test output after Gram-Schmidt'
 C                 call output(work(kbcvec),1,ndetq,1,J_NEW,
 C     &                    ndetq,J_NEW,-1,lupri)
 #endif
@@ -3858,7 +3864,7 @@ C
       close(LUGASCIP, status='KEEP')
       LUGASCIP = -1
 
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
 
       IF (PAR_GASCIP) THEN
          CALL GASCIP_RELEASE_NODES()
@@ -3956,6 +3962,10 @@ C
       CALL QENTER('GASCIP_ANACI')
 C
       DMX = DDOT(NZ_in_CI*NDET, CVEC, 1, CVEC, 1)
+      IF (DMX .EQ. 0.0D0) THEN
+         WRITE(LUPRI,'(/A)') 'All CI coefficients are zero'
+         GO TO 8000
+      END IF
       DMN = 0.1D0 * DMX
       DMX = 1.0000001D0 * DMX
       THR_PCI_local = max(THR_PCI_in,1.0D-15) * DMX
@@ -4029,7 +4039,8 @@ C
  9102 FORMAT(I6,'/2',T18,I10,T33,I10)
  9103 FORMAT(1X,48('-') / 5X,'all',T18,I10,T33,I10/1X,48('-'))
 C
-      CALL FLSHFO(LUPRI)
+ 8000 CONTINUE
+      FLUSH(LUPRI)
 C
       CALL QEXIT('GASCIP_ANACI')
       RETURN
@@ -4755,7 +4766,7 @@ C        ... do not print all the small numbers
         END IF
       END IF
 C
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5098,7 +5109,7 @@ C        ... do not print all the small numbers
        END IF
       END IF
 C
-      CALL FLSHFO(LUPRI)
+      FLUSH(LUPRI)
       RETURN
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
