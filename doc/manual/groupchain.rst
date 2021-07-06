@@ -1,5 +1,7 @@
 :orphan:
 
+.. _Symm_handling_corr_level:
+
 Symmetry-handling at the correlated level
 =========================================
 
@@ -26,8 +28,10 @@ Character tables for Abelian double groups
 ------------------------------------------
 
 Below we give character tables for the Abelian double groups handled by DIRAC. The irreps are given in the same order as internally in the correlation modules
-of the program. This means that fermion irreps come before boson irreps. 
-Otherwise, the tables are given according to the conventions of S. L. Altmann and P. Herzig, *Point-Group Theory Tables*, Clarendon Press, Oxford, 1994 
+of the program. This means that fermion irreps come before boson irreps. Note that the latter applies to all correlation
+modules except the :ref:`*KRCI` module. Here, the order is reversed that is boson irreps come **before** fermion irreps.
+
+The tables are given according to the conventions of S. L. Altmann and P. Herzig, *Point-Group Theory Tables*, Clarendon Press, Oxford, 1994 
 (A second corrected edition is now available free of charge `here <http://phaidra.univie.ac.at/o:104731>`_.). The final column of the tables give the irrep labels employed by DIRAC. 
 
 - Real groups :

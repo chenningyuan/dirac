@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -29,7 +29,7 @@
       integer    :: slength
 #endif /* ifdef INT_STAR8 */
       character  :: str(slength)
-	  
+
 #if defined SYS_WINDOWS && defined INT_STAR8
   write(6,*) "forrtwrt: Can not print str(slength) on Windows7 with Integer*8, slength=",slength       
 #else

@@ -70,6 +70,7 @@ character(len=72), allocatable, save, private :: VAR_vecref(:,:)  ! vecref(2,max
 contains
 
   subroutine init_func(ndim)
+  use dircmo
   !==============================================================================!
   !            Initialize module func_PipekMezey for Dirac program               !
   !==============================================================================!
@@ -264,8 +265,7 @@ contains
   !  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
   open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
   if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
-  iopt = 2
-  call REACMO(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,iopt)
+  call REACMO_new(var%lucoef,cmo=cmo)
   close(var%lucoef,status='keep')
   
   ! select orbitals
@@ -1612,6 +1612,7 @@ contains
   !          Write the localised MO coefficients to the DFCOEF file              !
   !                                                                              !
   !==============================================================================!
+   use dircmo
    implicit none
 
    ! Global variables
@@ -1620,7 +1621,7 @@ contains
 
    ! Internal variables
    integer :: ifrp, nz, no, nb, nloc, ier
-   integer :: i, ii, iz, ioff,iopt,ioer
+   integer :: i, ii, iz, ioff,ioer
    real*8  :: toterg
 
    integer, allocatable :: ibeig(:)
@@ -1639,11 +1640,9 @@ contains
   allocate( ibeig(var%norbt), stat=ier ); call errall(ier,'wcmo2file','ibeig')
 
   ! read EIG, IBEIG and TOTERG
-  !  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,2)
   open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
   if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
-  iopt = 14
-  call REACMO(var%lucoef,'DFCOEF',cmo,eig,ibeig,toterg,iopt)
+  call REACMO_new(var%lucoef,eig=eig,ibeig=ibeig,toterg=toterg)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -1660,8 +1659,7 @@ contains
   endif
 
   ! write MO to file and close him
-  !  call wricmo_mod(var%lucoef,cmo,eig,ibeig,toterg)
-  call WRICMO(var%lucoef,CMO,EIG,IBEIG,TOTERG,.FALSE.) ! SSYM=F in C1
+  call WRICMO(var%lucoef,reshape(CMO,(/nb*no*nz/)),EIG,IBEIG,TOTERG)
   close(var%lucoef,status='keep')
 
   ! deallocate arrays
@@ -2082,6 +2080,7 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&!
 
       SUBROUTINE NUMLST_MOD(A,ILIST,NLIST,IRNGE1,IRNGE2,IFRP,IP)
+      use dircmo
 !*****************************************************************************
 !
 !     Original purpose was to read the numbers in the string A which has
@@ -2162,7 +2161,7 @@ contains
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
-            CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBG,DUM,4)
+            call reacmo_new(lucoef,eig=eig)
             CLOSE(LUCOEF,STATUS='KEEP')
             IOFF = VAR%IORB(IFRP)+VAR%NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))

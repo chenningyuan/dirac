@@ -1,7 +1,7 @@
 module exacorr_tensor_methods
 
 !This module contains routines to modify (initialize, scale with denominators, etc.) that can be registered with exatensor
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
         use exatensor
         use, intrinsic:: ISO_C_BINDING
@@ -88,7 +88,6 @@ module exacorr_tensor_methods
         type, extends(tens_method_uni_t), public:: set_energy_t
          real(8), allocatable, private :: eps_occ(:),eps_vir(:)
          integer, private              :: occ_id, vir_id   
-         real(8), private              :: level_shift
          integer, private              :: norb(2) 
          contains
           procedure, public:: set_energy_init
@@ -101,7 +100,6 @@ module exacorr_tensor_methods
         !Scale by denominators:
         type, extends(tens_method_uni_t), public:: denom_t
           real(8), allocatable, private :: eps_occ(:),eps_vir(:)
-          real(8), private              :: level_shift
           integer(INTD), private        :: occ_id
           integer, private              :: norb(2)
           contains
@@ -1381,7 +1379,7 @@ module exacorr_tensor_methods
 
         ! --------------------------------------------------------------------------------
 
-        subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id,level_shift)
+        subroutine set_energy_init(this,mo_occ,nocc,occ_space_id,mo_vir,nvir,vir_space_id)
          
          use exacorr_mo
          use exacorr_global
@@ -1393,13 +1391,11 @@ module exacorr_tensor_methods
          integer, intent(in)      :: nocc, nvir
          integer(INTD),intent(in) :: occ_space_id, vir_space_id
          integer, intent(in)      :: mo_occ(:),mo_vir(:)
-         real(8), intent(in)      :: level_shift
 
          type(cmo)   :: cspinor
 
          this%occ_id=occ_space_id
          this%vir_id=vir_space_id
-         this%level_shift=level_shift
          this%norb(1)=nocc
          this%norb(2)=nvir
 
@@ -1412,8 +1408,6 @@ module exacorr_tensor_methods
          allocate(this%eps_vir(nvir))
          this%eps_vir = cspinor%energy
          call dealloc_mo (cspinor)
-
-         call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
         end subroutine set_energy_init
 
@@ -1429,8 +1423,6 @@ module exacorr_tensor_methods
 
         this%eps_occ = eps_occ
         this%eps_vir = eps_vir
-
-        call shift_orbital_energy(this%eps_vir,this%eps_occ,this%level_shift)
 
       end subroutine set_energy_reset
 
@@ -1562,7 +1554,7 @@ module exacorr_tensor_methods
 
         ! --------------------------------------------------------------------------------
       
-      subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,level_shift,occ_id)
+      subroutine denom_t_init(this,mo_occ,nocc,mo_vir,nvir,occ_id)
 
         use exacorr_mo
         use exacorr_global
@@ -1572,14 +1564,12 @@ module exacorr_tensor_methods
 
         integer, intent(in)          :: nocc, nvir
         integer, intent(in)          :: mo_occ(:),mo_vir(:)
-        real(8), intent(in)          :: level_shift
         integer(INTD), intent(in)    :: occ_id
         class(denom_t), intent(out)  :: this
          
         type(cmo)          :: cspinor
 
         this%occ_id=occ_id
-        this%level_shift=level_shift
         this%norb(1)=nocc
         this%norb(2)=nvir
 
@@ -1592,8 +1582,6 @@ module exacorr_tensor_methods
         allocate(this%eps_vir(nvir))
         this%eps_vir = cspinor%energy
         call dealloc_mo (cspinor)
-
-        call shift_orbital_energy(this%eps_vir,this%eps_occ,level_shift)
 
       end subroutine denom_t_init
 
@@ -1612,8 +1600,6 @@ module exacorr_tensor_methods
 
         this%eps_occ = eps_occ
         this%eps_vir = eps_vir
-
-        call shift_orbital_energy(this%eps_vir,this%eps_occ,this%level_shift)
 
       end subroutine denom_t_reset
 

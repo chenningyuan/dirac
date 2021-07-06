@@ -42,7 +42,7 @@ module talsh_ao_to_mo
          use exacorr_global
          use module_interest_interface
          use module_interest_eri
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif
 
@@ -79,7 +79,7 @@ module talsh_ao_to_mo
 
 !        Initialize global data
          call initialize_global_data
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 #else
          my_MPI_rank = 0
@@ -122,6 +122,9 @@ module talsh_ao_to_mo
 
          else if (.FALSE.) then
             call print_date(' Cholesky method 41')
+            write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+            write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+            write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
             !determine cholesky vectors for ao integrals
             call decompose_cholesky_talsh_vec (chol_tensor, m, th_cholesky, nao, print_level)
             
@@ -192,6 +195,9 @@ module talsh_ao_to_mo
 
          else
             call print_date('Cholesky method 42')
+            write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+            write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+            write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
             !determine cholesky vectors for ao integrals
             call decompose_cholesky_talsh_all (chol_tens, th_cholesky, nao, print_level)
             ierr = talsh_tensor_dimensions(chol_tens,i,dim_chol)

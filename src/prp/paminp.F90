@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1533,7 +1533,7 @@
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,                                      &
-     &          1,1,1,3,3,3,4,4,4,3,1,4),IPTYP
+     &          5,5,5,3,3,3,4,4,4,3,1,4),IPTYP
 !
 !
 !        Operator types: DIAGONAL, SIGMA
@@ -1563,6 +1563,12 @@
 !        Operator types: i BETA ALPHA, i BETA GAMMA5
 !
     4    PCOMB = '0+-0'
+         GO TO 100
+!
+!        Operator types: SIGMA
+!
+    5    PCOMB = '+00+'
+         IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 !
   100    CONTINUE

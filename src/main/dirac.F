@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1646,11 +1646,7 @@ C
         CALL DIST_ENV(0)
       ELSE
 #endif /* VAR_MPI */
-#if defined (SYS_T3D) || defined (SYS_T90)
-        CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
         CALL GETENV ('BASDIR',BASDIR)
-#endif
         LEN_BASDIR = LEN_TRIM(BASDIR)
 !
 !       If string is empty add current directory

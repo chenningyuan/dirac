@@ -4,7 +4,7 @@ module exacc_cfg
 
   implicit none
 
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
   public exacc_sync_cw
 #endif
   public exacc_deallocate_cw
@@ -15,7 +15,7 @@ module exacc_cfg
 
 contains
 
-#ifdef VAR_MPI
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
   subroutine exacc_sync_cw(exa_MPI_rank,my_MPI_rank)
 !
@@ -63,7 +63,7 @@ contains
     call interface_mpi_bcast(exa_input%ff_names,len(exa_input%ff_names(1))*exa_input%nff(1), &
                            exa_MPI_RANK,global_communicator)
     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
-    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2),exa_MPI_RANK,global_communicator)
+    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2)*2,exa_MPI_RANK,global_communicator)
   end if
 
   end subroutine exacc_sync_cw

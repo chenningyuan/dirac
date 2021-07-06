@@ -6,6 +6,9 @@ import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -19,6 +22,9 @@ f.add(from_string = 'SCF energy ( read )',
 f.add(from_string = 'read active occupied spinors',
       num_lines   = 22,
       rel_tolerance   = 1.0e-5)
+
+os.environ["OMP_STACKSIZE"] = "200M"
+os.system('ulimit -s unlimited')
 
 shutil.copyfile(r'h2o-1c.rsd_mos',r'RSD_MOS')
 test.run(['cc_respect_1c.inp'], ['h2o.xyz'], f, args=' --put=RSD_MOS ')

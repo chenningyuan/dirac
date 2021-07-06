@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -313,7 +313,7 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-11)
+      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-7)
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)
@@ -490,13 +490,14 @@ C               Translate to the complex (bar/unbar) notation.
       ENDDO
       ENDIF
 C
-! Printout of complex matrix elements of the transformed operator
+! Printout of complex matrix elements of the MO-transformed operator
          IF (IPRINT.GE.2) THEN
            ! print out all NONZERO matrix elements
             WRITE (LUPRI,1012) ACHAR(25:32)
-            IF ( IPRINT.EQ.2) THEN
+            IF (IPRINT.EQ.2) THEN
               ! print nonzero elemenys
-              WRITE(LUPRI,'(4x,a,d9.3)') 'zero threshold=',ZEROTHRS
+              WRITE(LUPRI,'(A,d9.3)')
+     & 'Printout of nonzero elements...zero threshold=',ZEROTHRS
             ELSE
               WRITE(LUPRI,"(A)")
      &        "Printout of all property elements"
@@ -515,7 +516,24 @@ C
             ENDDO
             WRITE(LUPRI,"(A)")
      &      "End of property elements printout."
-            WRITE (6,*)
+            WRITE (LUPRI,*)
+
+            IF ( IPRINT.EQ.2) THEN
+              ! print nonzero elements INTO ONE LINE for runtest verification
+             WRITE(LUPRI,'(A,A8)')
+     & 'Printout of nonzero MO matrix elements into one line:',
+     &  ACHAR(25:32)
+             DO I = 1, NSTRT1*2
+               DO J = 1, NSTRT2*2
+                 IF ( (DABS(PRCMO(I,J,1)).GT.ZEROTHRS).OR.
+     &                (DABS(PRCMO(I,J,2)).GT.ZEROTHRS) ) THEN
+                    WRITE (LUPRI,"(2E15.6,$)") PRCMO(I,J,1),PRCMO(I,J,2)
+                 ENDIF
+               ENDDO
+             ENDDO
+             WRITE(LUPRI,"(/,A)")
+     &       "End of nonzero matrix elements printout into one line."
+           ENDIF
          ENDIF
 C
 C     WRITE PRCMO TO FILE

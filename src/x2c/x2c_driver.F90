@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -288,6 +288,7 @@ contains
                               lwrk,                        &
                               x2c_prt,                     &
                               x2c_linsym,                  &
+                              x2c_atomic,                  &
                               x2c_mdirac                   &
                              )
 
@@ -482,6 +483,7 @@ contains
                                lwrk,                 &
                                print_lvl,            &
                                linear_sym,           &
+                               atomic_sym,           &                
                                mdirac                &
                               )              
 !**********************************************************************
@@ -524,6 +526,7 @@ contains
      integer, intent(inout) :: lwrk
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
+     logical, intent(in)    :: atomic_sym     
      logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
@@ -623,7 +626,8 @@ contains
                        ipq_off,              &
                        x2c_file_glb,         &
                        print_lvl,            &
-                       linear_sym)
+                       linear_sym,           &
+                       atomic_sym)
 
 !      recover the 4c-Lowdin matrix
        A%xmat = 0.0d0
