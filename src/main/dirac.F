@@ -647,6 +647,7 @@ C
 C        Set up orbital shells for GASCIP
 C
          NRAS1_ELEC = 0
+         IERR = 0
          DO J = 1,NFSYM
 
             DO I = NGAS_CIESR(1),1,-1
@@ -658,7 +659,18 @@ C
                NSSH(J) = NSSH(J) - NGSH_CIESR(J,I,3)
             END DO
 
+            IF (NISH(J) .LT. 0) IERR = 1
+
          END DO ! J = 1, NFSYM
+
+         IF (IERR .GT. 0) THEN
+            WRITE(LUPRI,'(//A,2I5)')
+     &         'FATAL ERROR, the specified GAS spaces'
+     &       //' lead to a negative number of inactive orbitals:',
+     &         NISH(1:NFSYM)
+            CALL QUIT('FATAL ERROR, the specified GAS spaces lead to a'
+     &         //' negative number of inactive orbitals.')
+         END IF
 
          NAELEC = NAELEC + NRAS1_ELEC
 
