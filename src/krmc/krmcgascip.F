@@ -542,8 +542,8 @@ C
          write(lupri,'(/A,3I10)') 'A-, B-electrons, MK2',IAEL,IBEL,MK2
          write(lupri,'(A,3I20)') 'NASTR,NBSTR,NDET',NASTR,NBSTR,NDET
 #endif
-         IF (NASTR .EQ. 0) GOTO 10
-         IF (NBSTR .EQ. 0) GOTO 10
+         IF (NASTR .EQ. 0) GOTO 110
+         IF (NBSTR .EQ. 0) GOTO 110
 C
          CALL GETTIM(CPU1,WLL1)
          DO IA = 1, NASTR
@@ -569,6 +569,7 @@ C
                END IF
             END DO
          END DO
+  110    CONTINUE
 #if GASCIP_DEBUG > 1
          write(lupri,'(A,I60)') 'after check NDET',NDET
          call flshfo(lupri)
@@ -586,7 +587,7 @@ C
             DOK = 100.0D0*NMK2(MK2,3) / (NASTR*NBSTR)
             IF (IPRINT.LE.2) WRITE(LUPRI,'(A)') 
      &' MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3), MDPS, DOK'
-            WRITE(LUPRI,'(I3,2I8,2I15,F10.2,F10.3,4A)') 
+            WRITE(LUPRI,'(I3,2I8,2I15,F10.2,F10.3,1X,4A)') 
      &  MK2, NASTR, NBSTR, NASTR*NBSTR, NMK2(MK2,3),xMDPS, DOK,
      &      CPUTID,'(',WALLTID,')'
          END IF
@@ -2642,8 +2643,6 @@ C     Set general parameters (which later maybe should be set by input?)
 C
 !d      write(lupri,*) 'THR_PCI, THR_CONV', THR_PCI,THR_CONV
       NDETQ  = NZ_in_CI*NDET
-      MAX_HRED = N_ROOTS*(MAX_CI_IT+1) + N_CSIM_EXTRA_START
-      MAX_HRED = MIN(2000, MAX_HRED)
 C
       IF (N_ROOTS .LT. 1 .OR. N_ROOTS .GE. MAX_ROOTS) THEN
 C        MAX_ROOTS must be greater than  N_ROOTS to be sure
@@ -2734,7 +2733,23 @@ C
 
 !     Allocate memory for reduced space and for b- and sigma-vectors
 
-      LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
+      MAX_HRED = N_ROOTS*(MAX_CI_IT+1) + N_CSIM_EXTRA_START
+      MIN_HRED = N_ROOTS*21+N_CSIM_EXTRA_START ! set minimum # of CI iterations to 20
+      MIN_HRED = MIN(MIN_HRED, MAX_HRED)
+      ! now reduce MAX_HRED to what can fit in memory
+   10 CONTINUE
+         LHRED = MAX_HRED*MAX_HRED*NZ_in_CI
+         ! Sum of memory needs for all MEMGET2 calls below
+         LEN_MEM = 5*LHRED + 2*MAX_HRED + 2*NDETQ*MAX_HRED + NDET
+     &      + 100000 ! and for anything else
+         IF (LEN_MEM .GT. LFREE) THEN
+            MAX_HRED = MAX_HRED - 1
+            IF (MAX_HRED < MIN_HRED) THEN
+               CALL QUIT('ERROR: insufficient memory for GASCIP')
+            END IF
+            GO TO 10
+         END IF
+
       CALL MEMGET2('REAL','HRED',KHRED,LHRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','HEIGVL',KEIGVL,MAX_HRED,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','HEIGVC',KEIGVC,LHRED,WORK,KFREE,LFREE)
@@ -3498,8 +3513,8 @@ C
       END IF
 C
          IF (ICONV_TOT .EQ. 1) THEN
-            WRITE(LUPRI,'(/A)')
-     &         ' *** All requested CI roots are converged. ***'
+            WRITE(LUPRI,'(/A,I0,A)')
+     &      ' *** All ',N_ROOTS,' requested CI roots are converged. ***'
             GOTO 200
          END IF
 C
@@ -3781,16 +3796,17 @@ C
       END IF
 C
   210 IF (ICONV_TOT .GT. 0) THEN
-         WRITE(LUPRI,'(//A)')
-     &        ' (GASCIP_RCISTD) Micro iterations converged.'
+         WRITE(LUPRI,'(//A,I0,A)')
+     &        ' (GASCIP_RCISTD) Micro iterations converged in ',
+     &        ITMIC,' iterations.'
       ELSE
          IF (N_CSIM .EQ. 0) THEN
             WRITE(LUPRI,'(//A)') ' (GASCIP_RCISTD) '//
-     &         'WARNING: linear dependency among all new trial vectors.'
+     &         'ERROR: linear dependency among all new trial vectors.'
             CALL QUIT('linear dependency among all new trial vectors.')
          ELSE IF (ICONV_TOT .EQ. -2) THEN
-            WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
-     &           'WARNING: maximum number of micro iterations,',
+            WRITE(LUPRI,'(//A,I0,A)') ' (GASCIP_RCISTD) '//
+     &           'WARNING: maximum number of micro iterations, ',
      &           MAX_CI_IT, ', is reached, CI aborted.'
          ELSE IF (ICONV_TOT .EQ. -3) THEN
             WRITE(LUPRI,'(//A,I4,A)') ' (GASCIP_RCISTD) '//
