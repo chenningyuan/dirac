@@ -71,6 +71,7 @@
          type(tens_rcrsv_t) :: oovv, vovo
          type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
+         type(tens_rcrsv_t) :: foo, fov, fvv
         end type exatns_intg_tens
 
 !       Common blocks between t and lambda
