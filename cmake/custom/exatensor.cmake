@@ -1,4 +1,6 @@
 #Check whether ExaTensor can be used
+option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
+
 if(ENABLE_EXATENSOR)
    if(NOT ENABLE_MPI)
        message(STATUS "Enabling only the TALSH (serial) component of the ExaTENSOR library")
