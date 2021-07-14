@@ -1,4 +1,6 @@
 #Check whether ExaTensor can be used
+option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
+
 if(ENABLE_EXATENSOR)
    if(NOT ENABLE_MPI)
        message(STATUS "Enabling only the TALSH (serial) component of the ExaTENSOR library")
@@ -13,14 +15,18 @@ if(ENABLE_EXATENSOR)
           message(STATUS "Only MPICH (3.2.1+) and OpenMPI (4.1.1+) are currently supported by ExaTENSOR")
           set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
        else()
+         # get MPI TYPE from Python script
+         execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/custom/IdentifyMPI.py
+                                 ${MPIEXEC} OUTPUT_VARIABLE PYTHON_OUTPUT)
          get_filename_component(MPIDIR ${MPIEXEC} DIRECTORY)
          get_filename_component(PATH_MPI ${MPIDIR} DIRECTORY)
-         if (${MPI_TYPE} MATCHES "MPICH")
+         string(STRIP "${PYTHON_OUTPUT}" PYTHON_OUTPUT)
+         if (${PYTHON_OUTPUT} MATCHES "MPICH")
            set(EXATENSOR_MPIENV "MPILIB=MPICH PATH_MPICH=${PATH_MPI}")
-         elseif (${MPI_TYPE} MATCHES "OPENMPI")
+         elseif (${PYTHON_OUTPUT} MATCHES "OPENMPI")
            set(EXATENSOR_MPIENV "MPILIB=OPENMPI PATH_OPENMPI=${PATH_MPI}")
          else()
-           message(STATUS "The MPI package ${MPI_TYPE} is not supported by ExaTENSOR, using only the TALSH (serial) component of the ExaTensor library")
+           message(STATUS "The MPI compiler ${PYTHON_OUTPUT} is not supported by ExaTENSOR")
            message(STATUS "Only MPICH (3.2.1+) and OpenMPI (4.1.1+) are currently supported by ExaTENSOR")
            set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
          endif()
