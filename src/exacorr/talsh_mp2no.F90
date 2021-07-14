@@ -5,10 +5,11 @@ module talsh_mp2no
         use talsh
         use exacorr_datatypes
         use exacorr_utils
-        use intermediates
         use talsh_common_routines
         use exacorr_mo
-        use exacorr_global,only: nfunctions
+        use exacorr_global
+        use matrix_complex_to_quaternion 
+        use write_orbital_to_file
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -34,7 +35,7 @@ module talsh_mp2no
 !       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
 !       Written by Xiang Yuan
-        use exacorr_global
+
         type(exacc_input), intent(in) :: exa_input
         integer, intent(inout)        :: N_cano                  ! number of new canonical orbital
 
@@ -73,11 +74,6 @@ module talsh_mp2no
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
-
-
-         use exacorr_global
-         use talsh_gradient
-
 
          type(exacc_input), intent(in)          :: exa_input
          integer                                :: nocc, nvir              ! the size of the mo basis for occupied and virtual spinors
@@ -200,7 +196,6 @@ module talsh_mp2no
 !    full integral list.
 !    copy from talsh_cc.F90 routine: get_CC_integrals
          
-      use exacorr_global
       use talsh_ao_to_mo
          
       integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
@@ -270,8 +265,6 @@ module talsh_mp2no
       subroutine write_matrix(exa_input,gamma,file_out)
 ! Routine for writing complex density matrix into the file'DM_complex'. 
 
-         use exacorr_global, only : get_nsolutions
-         use exacorr_utils
 
 ! input variables
          type(exacc_input),   intent(in   )  :: exa_input
@@ -349,8 +342,6 @@ module talsh_mp2no
          ! This routine doesn't truncate the new basis set.    
          ! Written by Xiang Yuan   
 
-            use matrix_complex_to_quaternion 
-            use write_orbital_to_file
 
                   character(len=*),intent(in)        :: Matrix_file
                   type(exacc_input), intent(in)      :: exa_input
@@ -369,7 +360,7 @@ module talsh_mp2no
                   call read_matrix_comp(MP2_density_comp,Matrix_file)
                   call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
 
-                  call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
+                  call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
                   call print_date('changed MO DM representation (spinor->quaternion)')
 
                   call diagoanl_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
@@ -401,9 +392,6 @@ module talsh_mp2no
       subroutine get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION_reduced,New_orbital_energy,file_orb,N_reduced)
       ! This routine is used for getting new truncated canonical orbital in AO basis
       ! and the corresponding orbital energy.
-
-            use matrix_complex_to_quaternion 
-            use write_orbital_to_file
 
 
             type(exacc_input), intent(in)      :: exa_input
@@ -481,11 +469,6 @@ module talsh_mp2no
   !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
   !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
   !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-
-         use exacorr_mo
-         use exacorr_datatypes
-         use exacorr_utils
-         use write_orbital_to_file
   
          implicit none
     

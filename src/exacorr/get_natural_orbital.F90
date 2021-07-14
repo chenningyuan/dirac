@@ -1,19 +1,13 @@
 module get_natural_orbital
 !This module contains the routines needed to calculate the natural orbitals, provided quaternion density matrix.  
 
-        use tensor_algebra
-        use talsh
         use exacorr_datatypes
-        use exacorr_utils
-        use intermediates
-        use talsh_common_routines
-        use exacorr_mo
-        use exacorr_global,only: nfunctions
+        use exacorr_global,only: get_nsolutions
+        use matrix_complex_to_quaternion 
+        use write_orbital_to_file
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-
-        private
 
         public get_no_driver
 
@@ -24,7 +18,6 @@ module get_natural_orbital
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
 !       The natural orbitals and occupation numbers are written into 'DFNOSAO' by Module3.
 !       Written by Xiang Yuan
-        use exacorr_global, only : get_nsolutions
         type(exacc_input), intent(in) :: exa_input
 
         integer                :: NORBT, NROOT, N_CORR_OCC
@@ -57,9 +50,6 @@ module get_natural_orbital
          ! NROOT used in dimension of ccden file and norbt is the total correlated orbital number. 
          ! NROOT is always lager than NORBT 
          ! Written by Xiang Yuan   
-
-            use matrix_complex_to_quaternion 
-            use write_orbital_to_file
 
                   integer, intent(in)                :: NROOT,NORBT,N_CORR_OCC
 
@@ -196,11 +186,6 @@ module get_natural_orbital
             !      to replace the old orbital. 
             !      This file only includes the orbital which is correlated in CC. 
             !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-          
-                   use exacorr_mo
-                   use exacorr_datatypes
-                   use exacorr_utils
-                   use write_orbital_to_file
             
                    implicit none
               

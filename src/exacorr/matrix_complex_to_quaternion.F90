@@ -3,14 +3,10 @@ module matrix_complex_to_quaternion
 ! Including quaternion matrix digonalization and multiplication
 ! Written by Xiang Yuan.
 
-        use exacorr_datatypes
-        use intermediates
-        use exacorr_mo
-        use exacorr_global,only: nfunctions
+        use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        private
 
         interface basis_transform
          module procedure basis_transform_vector
@@ -24,7 +20,7 @@ module matrix_complex_to_quaternion
 !------------------------------------------------------------------------------------------------------------------------------------- 
        subroutine read_matrix_comp(Matrix, Matrix_file)
 !       read complex density matrix from 'DM_complex' 
-      use exacorr_utils
+
 
         complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! complex matrix from DM_complex
         character(len=*), intent(in)             :: Matrix_file
@@ -276,11 +272,10 @@ module matrix_complex_to_quaternion
                 
                
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine complex_to_quaternion(exa_input,dm_mo_complex,dm_mo_quater)
+      subroutine complex_to_quaternion(dm_mo_complex,dm_mo_quater)
 !    refer to routine 'talsh_dm_form_ao_diracformat_from_dm_mo' of talsh_gradient.F90 
 
       !input variables
-      type(exacc_input),   intent(in)     :: exa_input
       complex(8), pointer, intent(inout)  :: dm_mo_complex(:,:)
       real(8),pointer,     intent(inout)  :: dm_mo_quater(:,:,:)
 

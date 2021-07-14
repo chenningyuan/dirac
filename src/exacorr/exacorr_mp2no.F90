@@ -9,8 +9,13 @@ module exacorr_mp2no
         use exatensor
         use exacorr_datatypes
         use exacorr_utils
-        use intermediates
-        use exacorr_ao_to_mo,  only : print_tensornorm2
+        use exacorr_mo
+        use exacorr_global
+        use exacorr_ao_to_mo
+        use exacorr_tensor_methods
+        use matrix_complex_to_quaternion 
+        use write_orbital_to_file
+        use interface_to_mpi
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -40,8 +45,6 @@ module exacorr_mp2no
 !       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module write_orb_file.
 !       Written by Xiang Yuan, 2020/2021
-            use exacorr_global
-            use interface_to_mpi
 
             type(exacc_input), intent(in) :: exa_input
             integer, intent(inout)        :: N_cano           ! number of new canonical orbital
@@ -95,14 +98,7 @@ module exacorr_mp2no
 !        The implementation is based on the parallel ExaTensor library
 
 !        Written by Xiang Yuan, 2020/2021
-
-         use interface_to_mpi
-         use exacorr_global
-         use exacorr_tensor_methods
-         use exacorr_ao_to_mo
-         use exacorr_gradient
-         
-
+     
          implicit none
 
          type(exacc_input), intent(in) :: exa_input
@@ -315,12 +311,9 @@ module exacorr_mp2no
         subroutine write_matrix(exa_input,gamma,file_out)
             ! Routine for writing complex density matrix into the file'DM_complex'. 
             
-            use exacorr_global,         only : get_nsolutions
             use talsh
             use tensor_algebra
-            use talsh_common_routines,  only : print_tensor
 #if defined (VAR_MPI)
-            use interface_to_mpi
       
       !     variables for mpi
             integer(C_INT)    :: read_node
@@ -419,10 +412,6 @@ module exacorr_mp2no
 
 !        Written by Lucas Visscher, January 2019: exacorr_cc: exacorr_cc_spaces
 !        Xiang Yuan, 2021
-
-         use interface_to_mpi
-         use exacorr_global
-         use exacorr_ao_to_mo
 
          implicit none
 
@@ -570,9 +559,6 @@ module exacorr_mp2no
 !        Written by Lucas Visscher, January 2019: exacorr_cc: exacorr_cc_methods
 !        Revised by Xiang Yuan, 2021
 
-         use exacorr_global
-         use exacorr_tensor_methods
-         use exacorr_ao_to_mo
 
          implicit none
 
@@ -698,17 +684,12 @@ module exacorr_mp2no
         end subroutine exacorr_mp2no_methods
 
 
-
-
         subroutine get_MP2_integrals (ao_space_id,ao_space,int_t,moint_scheme,print_level)
 
 !        Routine to get integrals needed in MP2 in the form of antisymmetric tensors.
 
 !        Written by Lucas Visscher, summer 2017: exacorr_cc: get_CC_integrals
 !        Revised by Xiang Yuan, 2021
-
-         use exacorr_ao_to_mo
-         use exacorr_global
 
 !        information needed to compute the ao-tensor
          integer(INTD),intent(in)              :: ao_space_id
@@ -940,10 +921,6 @@ module exacorr_mp2no
         subroutine init_fock_exat (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
                               f_delta,denom,orb_set,ff_set,exa_input,scf_energy)
 
-          use exacorr_global
-          use exacorr_tensor_methods
-          use exacorr_ao_to_mo, only : print_tensornorm2
-
           implicit none
   
           type(exatns_comm_tens), intent(inout)  :: comm_t
@@ -1095,9 +1072,6 @@ module exacorr_mp2no
 
         subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
           
-          use exacorr_tensor_methods
-          use exacorr_utils, only : print_orbital_energy
-
           implicit none
 
           type(exatns_comm_tens)                 :: comm_t
@@ -1176,10 +1150,6 @@ module exacorr_mp2no
             ! This routine doesn't truncate the new basis set.    
             ! Written by Xiang Yuan   
    
-               use matrix_complex_to_quaternion 
-               use write_orbital_to_file
-               use interface_to_mpi
-   
                      character(len=*),intent(in)        :: Matrix_file
                      type(exacc_input), intent(in)      :: exa_input
    
@@ -1201,7 +1171,7 @@ module exacorr_mp2no
                      call read_matrix_comp(MP2_density_comp,Matrix_file)
                      call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
    
-                     call complex_to_quaternion(exa_input,MP2_density_comp,MP2_density_quat)
+                     call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
                      call print_date('changed MO DM representation (spinor->quaternion)')
    
                      call diagoanl_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
@@ -1234,11 +1204,6 @@ module exacorr_mp2no
          subroutine get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION_reduced,New_orbital_energy,file_orb,N_reduced)
          ! This routine is used for getting new truncated canonical orbital in AO basis
          ! and the corresponding orbital energy.
-   
-               use matrix_complex_to_quaternion 
-               use write_orbital_to_file
-               use interface_to_mpi
-   
    
                type(exacc_input), intent(in)      :: exa_input
                real(kind=8),intent(in)            :: threshold
@@ -1317,13 +1282,7 @@ module exacorr_mp2no
      !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
      !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
      !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-   
-            use exacorr_mo
-            use exacorr_datatypes
-            use exacorr_utils
-            use write_orbital_to_file
-            use interface_to_mpi
-     
+
             implicit none
        
             type(exacc_input), intent(in)         :: exa_input
@@ -1418,7 +1377,7 @@ module exacorr_mp2no
 #else
         implicit none
 
-        public exacorr_cc_driver
+!        public exacorr_cc_driver
 
        contains
 

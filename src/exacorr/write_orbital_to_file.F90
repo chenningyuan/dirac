@@ -1,12 +1,12 @@
 module write_orbital_to_file
 !This module contains the routines needed to do read and write.
-!In principle, people could add more routines to read or write the information that they want
+!In principle, one could add more routines to read or write the information that they want
 !Written by Xiang Yuan.
 
         use exacorr_datatypes
-        use intermediates
         use exacorr_mo
         use exacorr_global,only: nfunctions
+        use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -36,10 +36,6 @@ module write_orbital_to_file
   !      by reading also the basis set information into gtos
   !      This subroutine is same as routine 'read_from_dirac' of exacorr_dirac.F but ignoring quaternion-complex transform
 
-         use exacorr_mo
-         use exacorr_datatypes
-         use exacorr_global,only: nfunctions
-         use exacorr_utils
   
          implicit none
          character(len=*),intent(in) :: file_name
@@ -252,9 +248,6 @@ module write_orbital_to_file
      !      write mo coefficients in dirac format
      !      refer to subroutine write_mos_to_dirac of exacorr_dirac.F
 
-            use exacorr_mo
-            use exacorr_datatypes
-            use exacorr_utils
      
             implicit none
      
@@ -391,9 +384,6 @@ module write_orbital_to_file
       subroutine quater_read_from_dirac_fock(Fock_HF,sz,k,flb)
 !     routine for only reading orbital energy from DFCOEF and construting the diagonal Fock matrix 
 !     flb =1 we construt the oo block otherwise we build vv block. 
-         use exacorr_mo
-         use exacorr_datatypes
-         use exacorr_global,only: nfunctions
 
             real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)          ! Fock matrix 
             integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
@@ -430,10 +420,6 @@ module write_orbital_to_file
 !     routine for only reading HF orbital coefficient from DFCOEF.
 !     flb =1 we read occupied orbital otherwise we read virtual orbital 
  
-         use exacorr_mo
-         use exacorr_datatypes
-         use exacorr_global,only: nfunctions
-         use exacorr_utils
 
          real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)            ! new canonical orbital 
          integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
@@ -478,7 +464,6 @@ module write_orbital_to_file
       subroutine  quater_write_orbital(orbital_coeff,orbital_eigenval,file_name)
 !     routine for writing new orbital coefficient and eigenvalue into the file.
 
-      use exacorr_utils
 !     input variables
          real(kind=8), pointer              :: orbital_coeff(:,:,:)      ! new orbital coefficient
          real(kind=8), pointer,intent(in)   :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
@@ -508,7 +493,6 @@ module write_orbital_to_file
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine  quater_write_fock(matrix,file_name)
    !     routine for writing fock matrix into the file.
-         use exacorr_utils
 
    !     input variables
          real(kind=8), pointer              :: matrix(:,:,:)      ! in principle any quaternion matrix is possible. 
@@ -539,7 +523,6 @@ module write_orbital_to_file
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine  quater_read_orbital(orbital_coeff,orbital_eigenval,Sum_orbital_eigenval_total,threshold,n_orb_trunca,file_name)
 !     routine for reading the orbital coefficient and eigenvalue from the file according to the threshold.
-      use exacorr_utils
 
 !     input variables
          real(kind=8), pointer              :: orbital_coeff(:,:,:)      
@@ -616,7 +599,6 @@ module write_orbital_to_file
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine  quater_read_matrix(NORBT,matrix)
          !     routine for reading the fock matrix from the file.
-               use exacorr_utils
       
          !     input variables
                real(kind=8), pointer              :: matrix(:,:,:)      ! natural orbital from qdia of DM
