@@ -1,15 +1,16 @@
 #Check whether ExaTensor can be used
 option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
+option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
 
 if(ENABLE_EXATENSOR)
-   if (DEFINED ENV{TALSH_ONLY}) 
-	   if ($ENV{TALSH_ONLY} MATCHES "YES") 
-             message(STATUS "Enabling only the TALSH (serial) component of the ExaTENSOR library")
-             set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
-             # The following weird construction is needed because these cmake variables are otherwise not active inside the environment and make that is called below
-             set(TALSH_COMPILERS "CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER} CMAKE_C_COMPILER=${CMAKE_C_COMPILER} CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
-	   endif()
+
+	if ($ENV{TALSH_ONLY} MATCHES "YES") 
+      message(STATUS "Enabling only the TALSH (serial) component of the ExaTENSOR library")
+      set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
+   # The following weird construction is needed because these cmake variables are otherwise not active inside the environment and make that is called below
+      set(TALSH_COMPILERS "CMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER} CMAKE_C_COMPILER=${CMAKE_C_COMPILER} CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}")
    endif()
+
    if(NOT ENABLE_MPI)
        message(STATUS "Enabling only the TALSH (serial) component of the ExaTENSOR library")
        set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
