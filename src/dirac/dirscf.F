@@ -5471,6 +5471,7 @@ C     NBAS - number of AO-basis functions
 C
 C***********************************************************************
       use quaternion_algebra
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -5490,7 +5491,9 @@ C.....Local variables
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
       INTEGER NNEG,NPOS,NBAS,IDIM(3)
-C
+      integer idims(12)
+      real(8), allocatable :: atom_cmo(:)
+C     
       KFRSAV=KFREE
 C.....Initialize buffer density matrix
       NDMAT=NTBAS(0)*NTBAS(0)*NZ

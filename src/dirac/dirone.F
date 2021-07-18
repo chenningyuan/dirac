@@ -245,6 +245,9 @@ C
 C
       CALL QENTER('NUMINT')
       CALL GETTIM(CPU0,WALL0)
+      IF(num_grid_cfg_numint_print)THEN
+         CALL NUMINTOP !Welcome message
+      ENDIF      
 C      
       NCUTZ = num_grid_cfg_minz
       INTANG=num_grid_cfg_ANGMIN
@@ -306,8 +309,6 @@ C
       NAT = 0
       DO 10 IATOM = 1, NUCIND !change
       DO 10 ISYMOP = 0, MAXOPR ! needed for h2se2
-! ayaki  What is this roop? MXOPR=0 in dftgrd.F
-C     IF (IBTAND(0,ISTBNU(IATOM)).EQ.0) THEN         
        IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
      &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
@@ -345,10 +346,8 @@ C
            ENDDO
 C R**2 is multiplized in NUMPOT
            CALL NUMPOT(IOP,NUMIR,R,CHARGE(IATOM),GEXP,MXNP,IPRINT)
-C           CALL NUMPOT(IOP,NUMIR,R,ZAN(NAT),GEXP,MXNP,IPRINT)
 C Additional R is needed for GRASP grid (QUAD2)
            DO I = 1,MXNP
-C              write(*,*)R(I),NUMIR(I) !debug
               NUMIR(I) = NUMIR(I) * R(I)
            ENDDO
 C
@@ -2687,7 +2686,73 @@ C
      & 'DELTA. RECOMPILE WITH VALUE OF SYMBOL XK GREATER THAN ', I3 )
 C
       END
+C
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C     /* Deck numintop */
+      SUBROUTINE NUMINTOP
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C      
+C Welcome message of numerical integration code
+C
+C Called from: NUMINT
+C
+C A. Sunaga Aug. 2020
+C
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use num_grid_cfg
+#include "priunit.h"
+C      
+       CALL TITLER
+     &   ('Numerical integration for one-electron operators','*',199)
+       WRITE(LUPRI,100)
+ 100   FORMAT(
+     &    3X,'General structure: ',/,
+     &    3X,'    Ayaki Sunaga and Trond Saue ',//,
+     &    3X,'effQED: ',/,
+     &    3X,'    Ayaki Sunaga and Trond Saue',//,
+     &    1X,79('*'))
+       
+       WRITE(LUPRI,200)
+ 200   FORMAT(/' This module is published in:',//
+     &    4X,'effQED: A. Sunaga, M. Salman and T. Saue',/,
+     &    20X,'J Chem Phys to be submitted ',/,
+     &    1X,79('*'),/)
+
+       WRITE(LUPRI,'(A)')
+     &   " ***** SET-UP for NUMERICAL INTEGRATION *****"
+       write(lupri, '(a)') ' - radial quadrature according to'
+C       
+       IF(num_grid_cfg_grasp)THEN
+         write(lupri, '(a)')
+     &'     the GRASP code.'
+       ELSE
+         write(lupri, '(a)')
+     &'     R. Lindh, et al, Theor. Chem. Acc. 106, 178 (2001).'
+         write(lupri, '(a, e12.5)')
+     &'     precision of radial quadrature set to',
+     &           num_grid_cfg_radint
+       ENDIF
+C
+       write(lupri, '(a)')
+     &' - radial integration is truncated by'
+       IF(num_grid_cfg_uehcut)THEN
+         write(lupri, '(a)')
+     &'     Uehling potential '
+       ELSE
+         write(lupri, '(a)')
+     &"     Flambaum-Ginges's low-frequency term"
+       ENDIF 
+C       
+       write(lupri, '(a)')
+     &' - angular quadrature according to'
+       write(lupri, '(a, i2)')
+     &'     the Lebedev scheme exact up to order L = ',
+     &      num_grid_cfg_ANGQED
+       WRITE(LUPRI,'(/,A)')
+     &" ***** SET-UP for EACH ATOM *****"
+C       
+      RETURN         
+      END        
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EFFECTIVE_DENS_NUC(WORK,LWORK,COMB)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
