@@ -4,7 +4,6 @@ module talsh_cis
     use talsh
     use exacorr_datatypes
     use exacorr_utils
-    use intermediates
     use talsh_common_routines
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -26,7 +25,7 @@ module talsh_cis
     ! This routine drives CIS calculation including construction of CIS Hamiltonian and diagnolization
     ! Written by Xiang Yuan, June 2020
         use exacorr_global
-        use talsh_ao_to_mo, only       : tensor_norm2, compute_nelectrons
+        use talsh_ao_to_mo
         use talsh_gradient
 
 
