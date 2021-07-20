@@ -186,7 +186,7 @@ subroutine impmos()
  call carsph_init(nhktmx,minteg)
 
  ! initialze CMOs with 0
- call dzero(cmocar,ncmotq)
+ call dzero(cmocar,ncmotq*nkrblk)
 
  do iz = 1,nzc1
   do imo = 1,nesht*nkrblk
@@ -239,7 +239,7 @@ subroutine impmos()
  ibeig(:) = 0
 
  lucmo = open_seq("DFPCMO",cform="FORMATTED")
- call wripcmo(lucmo,cmocar,eig,ibeig,toterg)
+ call wripcmo(lucmo,cmocar,eig,ibeig,toterg,atomic)
  call releaseunit(lucmo)
 
  ! clean up

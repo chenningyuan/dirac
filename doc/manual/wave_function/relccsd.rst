@@ -44,6 +44,14 @@ Calculate the effective 1-particle density matrix. This option can be used to ca
 molecular properties. For closed-shell MP2 see :cite:`vanStralen2005`. For closed-shell CC 
 see :cite:`Shee2016`.
 
+This calculation generates the file CCDENS, which contains the MP2 or CC ground-state density 
+matrix in AO basis. In this release, CCDENS is used by the property module to calculate 
+ground-state expectation values. 
+
+If saved, CCDENS can be used in a property calculation (see :ref:`PROPERTIES_.RDCCDENS`) 
+without the need to invoke this module.
+
+
 *Default:*
 
 ::
@@ -272,9 +280,12 @@ keyword(EE)
 
 Selects excitation energy calculations. 
 
-Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
 The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
 the different EOM models in the same run.
+
+NB: finding the state symmetry number for EE may require some experimentation, the totally symmetry irrep is always number 1,
+but the order of the other boson irreps depends on the double group that is used and how the molecule is oriented.
 
 *Example:* requesting two excitation energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
 
@@ -296,9 +307,12 @@ keyword(EA)
 
 Selects single electron attachment calculations. 
 
-Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
 The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
 the different EOM models in the same run.
+
+NB: the state symmetry number for EA depends on the ordering of irreps for the spinors, this information is printed at
+the beginning of the RELCCSD output.
 
 
 *Example:* requesting two electron attachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::
@@ -320,10 +334,12 @@ keyword(IP)
 
 Selects electron detachment calculations. 
 
-Expects two integers, the first specifying the state symmetry and the second the number of states for this symmetry.
+Expects two integers, the first specifying the state symmetry number and the second the number of states for this symmetry.
 The keyword should be repeated multiple times if different symmetries are desired. The  implementation does not allow for mixing
 the different EOM models in the same run.
 
+NB: the state symmetry number for IP depends on the ordering of irreps for the spinors, this information is printed at
+the beginning of the RELCCSD output.
 
 
 *Example:* requesting two single electron detachment energies for symmetry 1, four for symmetry 3, and one for symmetry 8::

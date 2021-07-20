@@ -3831,18 +3831,16 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
       DIMENSION C(NP)
 C
       V2 = POL2DER(NORDER,C,XOPT)
       OMEGA = SQRT(V2/UM)
-      TEMP  = V2*XTJ/XTM/XTM
+      TEMP  = V2*XTJ/XTANGM10/XTANGM10
       WRITE(LUPRI,'(A,1P,E18.4,A)') 
      &   '* Force constant  :',TEMP, ' N/m'
       WRITE(ILOGG,'(A,1P,E18.4,A)') 
@@ -3865,12 +3863,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
-      PARAMETER(AMUKG = 1.66054020D-27,ANGM = 1.0D-10)
-      PARAMETER(XTM = XTANG*ANGM)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
 C
       DIMENSION C(NP)
@@ -3907,12 +3903,13 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
       DIMENSION X(NP)
+C
       XDEV=D1/SQRT(UM*OMEGA)
       XMIN=XOPT-XDEV
       XMAX=XOPT+XDEV
@@ -3952,11 +3949,12 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(D2=2.0D0,D4=4.0D0)
+C
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
       WRITE(LUPRI,'(A,2X,E10.4,A)')
@@ -3984,11 +3982,12 @@ C
 C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
+C
       WRITE(LUPRI,'(A)') 
      &  'Polynomial fit: Give order of polynomial '
       READ(LUSTDIN,*) NORDER
@@ -4048,13 +4047,14 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
 #include "priunit.h"
+#include "codata.h"
 C
       PARAMETER(DTOL = 1.0D-4)
 C
       DIMENSION X(NP),Y(NP),C(NP)
+C
 C* Find smallest y-value and take corresponding x-value as start value
 C* for Newton-Raphsons method      
       IYOPT = IDMIN(NP,Y,1)
@@ -4123,7 +4123,7 @@ C
 C     This subroutine goes through an integer array IARR and returns the ordering
 C     index array INDX giving indices from smallest to largest
 C
-C     The array ARR is not touched.
+C     The array IARR is not touched.
 C
 C***********************************************************************
       INTEGER N,INDX(N),M,NSTACK,IARR(N)
@@ -4379,6 +4379,51 @@ C***********************************************************************
       ENDDO
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE LEVI_CEVITA(I,J,K,IJK)
+C***********************************************************************
+C
+C     Given indices i and j, give k and e_ijk
+C
+C     Written by Trond Saue Oct 25 2018      
+C***********************************************************************
+      implicit none
+      integer, intent(in)  :: I,J
+      integer, intent(out) :: K,IJK
+      INTEGER :: IJKTAB(3,3),KTAB(3,3)
+      SAVE IJKTAB,KTAB
+      DATA IJKTAB/ 0,-1, 1, 1, 0,-1,-1, 1, 0/
+      DATA   KTAB/ 0, 3, 2, 3, 0, 1, 2, 1, 0/
+      IF(I.LT.1.OR.I.GT.3) CALL QUIT('LEVI-CEVITA: Not valid I!')
+      IF(J.LT.1.OR.J.GT.3) CALL QUIT('LEVI-CEVITA: Not valid J!')
+      K   = KTAB(I,J)
+      IJK = IJKTAB(I,J)
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE NOISE(A,N,FACTOR)
+C***********************************************************************
+C
+C     Input is an array A of length N. On output noise has been added.
+C     FACTOR controls the magnitude of the noise ("noise level")
+C     Since RANDOM_NUMBER returns numbers in the interval (0,1],
+C     we extend to (-1,1].      
+C
+C     Written by Trond Saue Nov 7 2019
+C
+C***********************************************************************
+      implicit none
+      integer, intent(in)   :: N
+      real*8, intent(in)    :: factor
+      real*8, intent(inout) :: A(N)
+      integer               :: I
+      real*8                :: R
+
+      DO I = 1,N
+        CALL RANDOM_NUMBER(r)
+        A(I) = A(I) + FACTOR*(2.0D00*R-1.0D00)
+      ENDDO
+      RETURN
+      END
 C/* Deck Usym */
       SUBROUTINE USYM(A,LDA,N)
 C***********************************************************************
@@ -4410,3 +4455,4 @@ C***********************************************************************
           ENDDO
        ENDDO
        END
+

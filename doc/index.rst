@@ -128,7 +128,8 @@ Tutorials and walkthrus
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
-  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>`
+  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
+  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |
@@ -150,8 +151,7 @@ Tutorials and walkthrus
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
-  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
-  :doc:`Np atom <tutorials/open_shell_scf/np>`
+  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>` 
 
 * **Coupled-Cluster:**
   :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
@@ -159,7 +159,6 @@ Tutorials and walkthrus
   :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
 
 * **Case studies:**
-  :doc:`W atom <tutorials/case_studies/W>` |
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
   :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
   :doc:`MnO6 system <tutorials/case_studies/MnO6>` |

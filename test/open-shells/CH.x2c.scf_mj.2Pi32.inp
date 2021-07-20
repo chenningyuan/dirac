@@ -26,8 +26,8 @@
 1/2
 .MJSELECTION 
 2
-3 0 
-0 1 
+6 0 
+0 2
 .EVCCNV ! Energy convergence...
 1.0E-9  1.0D-7
 .PRINT

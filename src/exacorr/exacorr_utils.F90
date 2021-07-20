@@ -10,10 +10,14 @@ module exacorr_utils
   public get_free_fileunit
   public print_exacorr_logo
   public print_iteration
+#ifdef VAR_MPI
   public write_tensor
+#endif
   public quicksort
   public print_exainput
   public print_exaoutput
+  public shift_orbital_energy
+  public print_orbital_energy
 
   contains
 
@@ -71,9 +75,10 @@ module exacorr_utils
       print*, "                   ***                                               ***"
       print*, "                   ***  Authors:         - Lucas Visscher            ***"
       print*, "                   ***                   - Anastasios Papadopoulos   ***"
-      print*, "                   ***  Contributors:    - Johann Potoschnig         ***"
+      print*, "                   ***  Contributors:    - Johann Pototschnig        ***"
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Andre S. P. Gomes         ***"
+      print*, "                   ***                   - Michal Repisky            ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
       print*, "                   ***                   - 1DM                       ***"
       print*, "                   ***                   - ReSpect interface         ***"
@@ -93,8 +98,10 @@ module exacorr_utils
 
       type(exacc_input), intent(in) :: exa_input
       integer, intent(in) :: nao
+      integer             :: i
 
       write(*,*) ""
+      write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "      Characteristics of this calculation      "
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
@@ -108,6 +115,14 @@ module exacorr_utils
       end if
       if (exa_input%level_shift.gt.1.0D-14) then
         write(*,'(A,ES10.1)') " - Level Shift :                      ",exa_input%level_shift
+        write(*,'(A)')        " WARNING: MP2 energies are wrong due to level shift"
+      end if
+      if (exa_input%nff(1).gt.0) then
+        write(*,'(A,L1)') " - Adding finite fields                 "
+        do i=1,exa_input%nff(1)
+          write(*,'(A,A8)') " - - Property :                         ",exa_input%ff_names(i)
+          write(*,*) "- - Field strengths :                  ",exa_input%ff(i,1:exa_input%nff(2))
+        end do
       end if
       write(*,*) "" 
       write(*,'(A,I5)') " - Number of atomic orbitals :      ", nao
@@ -140,7 +155,9 @@ module exacorr_utils
       real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
       real(8), intent(in), optional :: t1diag
       real(8), intent(in), optional :: t_energy(3)
-
+      
+      write(*,*) ""
+      write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "     -     Final results from EXACORR     -    "
       write(*,'(A)') "-----------------------------------------------"
       if (talsh) then 
@@ -193,13 +210,14 @@ module exacorr_utils
 
     end subroutine print_exaoutput
 
-    subroutine print_iteration(iteration,convergence,energy)
+    subroutine print_iteration(iteration,convergence,energy,print_level)
     ! Formatted print for iterations
 
       ! input variables
       integer, intent(in)           :: iteration
       real(8), intent(in)           :: convergence
       real(8), intent(in), optional :: energy
+      integer, intent(in), optional :: print_level
 
       if (iteration.eq.1 .and. present(energy)) then
         write(*,*) ""
@@ -218,9 +236,16 @@ module exacorr_utils
       else if (iteration.ne.1) then
         write(*,'(A3,I2,A4,E10.1)') "   ", iteration, "    ", convergence
       end if
+      
+      if (present(print_level)) then
+        if (print_level.gt.4) then
+          call print_date(' CC iteration done')
+        end if
+      end if
 
     end subroutine print_iteration
 
+#ifdef VAR_MPI
     subroutine write_tensor(exa_tensor, i_dims)
 
       use exatensor
@@ -258,6 +283,7 @@ module exacorr_utils
       ierr = talsh_shutdown()
       
     end subroutine write_tensor
+#endif
 
     recursive subroutine quicksort(mo_list, i_beg, i_end)
 
@@ -298,5 +324,69 @@ module exacorr_utils
         if (i<i_end) call quicksort(mo_list, i, i_end)
 
     end subroutine quicksort
+
+    subroutine shift_orbital_energy(eps_vir,eps_occ,level_shift)
+          implicit none
+
+          real(8), intent(inout)   :: eps_vir(:),eps_occ(:)
+          real(8), intent(in)      :: level_shift
+          
+          integer            :: print_level=1
+          integer            :: lumo,i
+          real(8)            :: e_homo, e_lumo
+          real(8), parameter :: THRESHOLD=1.D-8
+          
+          e_homo = maxval(eps_occ)
+          lumo   = minloc(eps_vir,1)
+
+
+          if (level_shift.gt.1.0D-14) then
+            e_lumo = minval(eps_vir)
+
+            do i=1,size(eps_vir)
+              eps_vir(i)=eps_vir(i)+level_shift
+              
+              if (print_level.gt.-1) then
+                  write(*,*) "LUMO shifted from  ", e_lumo," to ",eps_vir(lumo)
+              end if
+
+            end do
+          end if
+          
+          if (eps_vir(lumo)-e_homo<THRESHOLD) then
+            write(*,*) 'WARNING: Negative HOMO-LUMO gap (.LSHIFT possible)'
+          end if
+
+    end subroutine shift_orbital_energy
+
+    subroutine print_orbital_energy(eps_occ,nocc,eps_vir,nvir,info)
+      implicit none
+
+      real(8), intent(in)   :: eps_vir(:),eps_occ(:)
+      integer, intent(in)   :: nocc,nvir,info
+
+      integer :: i
+      
+      if (info==1) then
+        write(*,*) ' --- shifted active occupied spinors --- '
+      else
+        write(*,*) ' --- recomputed active occupied spinors --- '
+      end if 
+      write(*,*) '   #             E   '
+      do i=1,nocc
+        write(*,'(I8,E18.9)') i, eps_occ(i)
+      end do
+
+      if (info==1) then
+        write(*,*) ' --- shifted active virtual spinors --- '
+      else
+        write(*,*) ' --- recomputed active virtual spinors --- '
+      end if
+      write(*,*) '   #             E   '
+      do i=1,nvir
+        write(*,'(I8,E18.9)') i, eps_vir(i)
+      end do
+
+    end subroutine print_orbital_energy
 
 end module exacorr_utils

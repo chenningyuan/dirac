@@ -651,8 +651,8 @@ C
 C     Written by johhe 2002
 C
 C***********************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"

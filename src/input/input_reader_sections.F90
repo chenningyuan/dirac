@@ -199,7 +199,7 @@
 !     --------------------------------------------------------------------------
       integer                          :: i, j
       integer                          :: isym, istart, iend
-      real(8)                          :: f, s, v_12(3), v_13(3)
+      real(8)                          :: f, s, v(3), v_12(3), v_13(3)
       integer                          :: nr_lines
       character(100)                   :: line
       character(80), allocatable       :: word_array(:)
@@ -208,9 +208,12 @@
 
 #include "dgroup.h"
 #include "maxorb.h"
+! orgcom.h : GAGORG
+#include "orgcom.h"
 
       call reset_available_kw_list()
 
+      visual_cfg_gauge_origin(1:3) = GAGORG(1:3) ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
       if (kw_matches(word, '.LIST  ')) then
@@ -406,6 +409,17 @@
          call read_input_visual_helper(iq_bdipz)
       end if
 
+      if (kw_matches(word, '.BEDCOS')) then
+         call read_input_visual_helper(iq_tcos)
+      end if
+      if (kw_matches(word, '.BEDSIN')) then
+         call read_input_visual_helper(iq_tsin)
+      end if
+      if (kw_matches(word, '.BEDFIX')) then
+         call kw_read(word, v(1),v(2),v(3),visual_cfg_freq)
+         CALL ANGLES(v(1),v(2),v(3),visual_cfg_wave_vector,visual_cfg_pol_vector)
+      end if
+
       if (kw_matches(word, '.NDIPX ')) then
          call read_input_visual_helper2(iq_ndipx)
       end if
@@ -453,12 +467,6 @@
       end if
       if (kw_matches(word, '.ESPNRH')) then
          call read_input_visual_helper(iq_espnrho)
-      end if
-
-      if (kw_matches(word, '.GAUGE ')) then
-         call kw_read(word, visual_cfg_gauge_origin(1), &
-                            visual_cfg_gauge_origin(2), &
-                            visual_cfg_gauge_origin(3))
       end if
 
       if (kw_matches(word, '.NICS  ')) then
@@ -848,6 +856,8 @@
 !     --------------------------------------------------------------------------
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
+      integer :: i,j
+      real(8) :: val_real, val_imag
 !     --------------------------------------------------------------------------
 
 #ifndef MOD_EXACORR
@@ -900,8 +910,8 @@
          exa_input%do_triples = .false.
       end if
 
-      if (kw_matches(word, '.NOINTS')) then
-         exa_input%noints = .true.
+      if (kw_matches(word, '.TRIPL_BLOCK')) then
+         call kw_read(word, exa_input%tripl_block)
       end if
 
       if (kw_matches(word, '.EXA_BLOCKSIZE')) then
@@ -932,6 +942,19 @@
 
       if (kw_matches(word, '.TALSH_BUFF')) then
          call kw_read(word, exa_input%talsh_buff)
+      end if
+
+      if (kw_matches(word, '.FF_PROP')) then
+         call kw_read(word, exa_input%nff)
+         allocate(exa_input%ff_names(exa_input%nff(1)))
+         allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
+         do i=1,exa_input%nff(1)
+           call kw_read(word, exa_input%ff_names(i))
+           do j=1,exa_input%nff(2)
+             call kw_read(word, val_real,val_imag)
+             exa_input%ff(i,j)=dcmplx(val_real,val_imag)
+           enddo
+         enddo
       end if
 
       call check_whether_kw_found(word, kw_section)

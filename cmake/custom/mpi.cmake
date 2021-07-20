@@ -23,19 +23,22 @@ if(MPI_FOUND)
     add_definitions(-DVAR_MPI2)
 
     # test whether MPI module is compatible with compiler
+
+     message(STATUS "Compiling ${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-compiler-compatibility.F90 ...")
     file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-compiler-compatibility.F90" _source)
     check_fortran_source_compiles1(
         ${_source}
         MPI_COMPILER_MATCHES
         )
     if(MPI_COMPILER_MATCHES)
-        message(STATUS "mpi.mod matches the current MPI compiler, setting -DUSE_MPI_MOD_F90")
+        message(STATUS "mpi.mod matches the current MPI compiler, employing 'use mpi' and setting -DUSE_MPI_MOD_F90")
         add_definitions(-DUSE_MPI_MOD_F90)
     else()
-        message(STATUS "mpi.mod is compiled with different compiler or compiler flags")
+        message(STATUS "mpi.mod is compiled with different compiler or compiler flags, using '#include \"mpif.h\"' instead")
     endif()
 
     # test whether MPI integer type matches
+    message(STATUS "Compiling ${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-itype-compatibility.F90 ...")
     file(READ "${PROJECT_SOURCE_DIR}/cmake/custom/test-MPI-itype-compatibility.F90" _source)
     check_fortran_source_compiles1(
         ${_source}
@@ -48,6 +51,12 @@ if(MPI_FOUND)
             set(USE_32BIT_MPI_INTERFACE TRUE)
         else()
             message(STATUS "Cannot determine whether MPI is built for 32bit integers, check it yourself ")
+        endif()
+    else()
+        if(ENABLE_64BIT_INTEGERS)
+            message(STATUS "Well, program got compiled with 64-bit integers, but the internal MPI integer compatibility test will be performed inside dirac.x.")
+        else()
+            message(STATUS "Well, program got compiled with 32-bit integers, but the internal MPI integer compatibility test will be performed inside dirac.x.")
         endif()
     endif()
 

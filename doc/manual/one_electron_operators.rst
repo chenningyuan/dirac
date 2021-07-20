@@ -164,7 +164,7 @@ SDFC        Spin-dipole + Fermi contact integrals
 HDO         Half-derivative overlap integrals
 S1MAG       Second order contribution from overlap matrix to magnetic properties
 ANGLON      Angular momentum around the nuclei
-ANGMOM      Electronic angular momentum around the origin
+ANGMOM      Electronic angular momentum around the molecular center of mass
 LONMOM      London orbital contribution to angular momentum
 MAGMOM      One-electron contributions to magnetic moment
 KINENER     Electronic kinetic energy
@@ -180,7 +180,7 @@ ELFGRDS     Electric field gradient at the individual nuclei, spherical
 S1MAGL      Bra-differentiation of overlap matrix with respect to magnetic field
 S1MAGR      Ket-differentiation of overlap matrix with respect to magnetic field
 HDOBR       Ket-differentiation of HDO-integrals with respect to magnetic field
-NUCPOT      Potential energy at the nuclei
+NUCPOT      Potential energy of the interaction of electrons with individual nuclei, divided by the nuclear charge
 HBDO        Half B-differentiated overlap matrix
 SQHDO       Half-derivative overlap integrals not to be antisymmetrized
 DSUSCGO     Diamagnetic susceptibility with common gauge origin

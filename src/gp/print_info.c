@@ -56,6 +56,14 @@ void print_info(void)
     printf("Builtin LAPACK library   | %s\n", ENABLE_BUILTIN_LAPACK);
     printf("Explicit libraries       | %s\n", EXPLICIT_LIBS);
     printf("Compile definitions      | %s\n", DEFINITIONS);
+#if defined ENABLE_EXATENSOR
+    printf("\n");
+    printf("EXACORR dependencies\n");
+    printf("--------------------\n");
+    printf("Exatensor source repo    | %s\n", EXATENSOR_REPO);
+    printf("Exatensor git hash       | %s\n", EXATENSOR_HASH); 
+    printf("Exatensor configuration  | %s\n", EXATENSOR_CONFIG);
+#endif
     printf("\n");
     printf("\n");
 

@@ -124,6 +124,7 @@ class pam_enviroment:
         self.nr_proc = 1  # number of processors, default 1, i.e. serial run
         self.dirac_mpi_command = None # MPI launcher 
         self.distribute_files = False # if there is some distribution of files over different nodes
+        self.own_mpirun = None
 
         # depending on the operating_system, we set a default for the MPI launcher
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
@@ -350,6 +351,8 @@ class pam_enviroment:
         print("    mpirun extra args    ",  self.mpiarg)
         print("    global scratch disk  ",  self.global_scratch_disk)
         print("    Machine file         ", self.machinefile)
+        print("    own mpirun command   ", str(self.own_mpirun))
+
         print("  Profiler            ",  self.profiler)
         print("  Debugger            ",  self.debugger)
         print("  Dirac command       ",  self.dirac_cmd)
@@ -670,16 +673,15 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_mpi',
             default=None,
-            help='set number of MPI processes in parallel run [default: %default]',
+            help='set number of MPI processes in parallel run [default: 1]',
             metavar='INTEGER',
             )
 
         group.add_option('--mpirun',
             type='string',
             action='store',
-            dest='dest_mpirun',
-            default=self.mpirun,
-            help='set the MPI run command [default: %default]',
+            dest='dest_ownmpirun',
+            help='set the MPI run command, can have own arguments [default: see "pam --show" output]',
             metavar='STRING')
 
         group.add_option(
@@ -928,8 +930,8 @@ Options are also read from ~/.diracrc"""
             self.parallel_run = True
             self.dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND') + ' '
 
-        if options.dest_mpirun:
-            self.mpirun = options.dest_mpirun
+        if options.dest_ownmpirun:
+            self.own_mpirun = options.dest_ownmpirun
 
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
@@ -949,8 +951,17 @@ Options are also read from ~/.diracrc"""
         if options.dest_mpi:
             self.parallel_run = True
             self.nr_proc = int(options.dest_mpi)
-            self.dirac_mpi_command = str(self.mpirun) + ' -np ' + str(self.nr_proc) + ' '
-            if self.mpiarg: 
+            if self.own_mpirun:
+                print('Error, pam: you can not combine --mpirun and --mpi flags, use the former flag only ! ')
+                sys.exit(14)
+            else:
+                self.dirac_mpi_command = str(self.mpirun) + ' -np ' + str(self.nr_proc) + ' '
+
+        if self.mpiarg: 
+            if  self.own_mpirun:
+                print('Error, pam: you can not combine --mpirun and --mpiarg flags, use the former flag only ! ')
+                sys.exit(15)
+            else:
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
         # overwrite whatever was specified for MPI because summit does not fit the general scheme
@@ -962,7 +973,10 @@ Options are also read from ~/.diracrc"""
             # always is parallel run if ENABLE_MPI=ON
             self.parallel_run = True
             if self.dirac_mpi_command is None:
-               self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+               if self.own_mpirun:
+                  self.dirac_mpi_command = str(self.own_mpirun) + ' '
+               else:
+                  self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
                 self.global_scratch_disk = False
@@ -1439,9 +1453,6 @@ Options are also read from ~/.diracrc"""
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
         dirac_executable = os.path.join(self.scratch_dir,self.dirac_exe_file)
-        if not os.path.isfile(dirac_executable):
-            print_error_message(dirac_executable+' not found!')
-            sys.exit(13)
 
         # On summit we execute a script that executes dirac.x (to keep things simple...)
         if self.summit:
@@ -1456,18 +1467,28 @@ Options are also read from ~/.diracrc"""
            # create an executable script to set the correct OMP_PLACES before starting dirac.x
            path_to_script = os.path.join(self.scratch_dir,'exec_script.sh')
            with open(path_to_script, 'w') as script:
-               script.write("#!/bin/bash\n")
+               script.write("#!/bin/bash \n")
+               script.write(" \n")
+               script.write("# OpenMP environment \n")
+               script.write("export OMP_PROC_BIND=\""+ os.environ.get('OMP_PROC_BIND') +"\" \n")
                script.write("remainder=$(( $PMIX_RANK % 2 ))\n")
                script.write("if [ $remainder -eq 0 ]; then\n")
                script.write("export OMP_PLACES='{0},{4},{8},{12},{28:56},{16},{20},{24}' \n")
                script.write("else\n")
                script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
                script.write("fi\n")
-               script.write("export OMP_PROC_BIND=\"close,spread,spread\"\n")
+               script.write(" \n")
+               script.write("# echo \" OMP_NUM_THREADS = $OMP_NUM_THREADS \" \n")
+               script.write("# echo \" OMP_DYNAMIC = $OMP_DYNAMIC \" \n")
+               script.write(" \n")
                script.write("./dirac.x\n")
                script.close()
            os.chmod(path_to_script, 509)
            dirac_executable = path_to_script
+
+        if not os.path.isfile(dirac_executable):
+            print_error_message(dirac_executable+' not found!')
+            sys.exit(13)
 
         if self.parallel_run:
             if self.mpirun is None:
@@ -1991,9 +2012,6 @@ class pam_run(pam_enviroment):
     def perform(self):
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            sys.exit()
 
         self.pam_variables.set_dirac_environment()
         self.pam_variables.print_header()
@@ -2004,6 +2022,10 @@ class pam_run(pam_enviroment):
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            self.pam_variables.remove_scratch_dir()
+            sys.exit()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
@@ -2095,7 +2117,7 @@ def process_time_string(time_string):
     except:
         print('error, wrong entering time string:', time_string, file=sys.stderr)
         print('proper examples: 1h2m30s  2m40s 1m40s  1h20s 3h ...', file=sys.stderr)
-        sys.exit(13)
+        sys.exit(15)
 
 def get_username():
     """

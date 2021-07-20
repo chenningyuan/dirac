@@ -15,12 +15,9 @@ f1.add(from_string = 'Total energy',
       rel_tolerance   = 1.0e-9)
 
 f2 = Filter()
-f2.add(from_string = 'Final CCSD energy',
-      num_lines   = 1,
-      rel_tolerance   = 5.0e-9)
-f2.add(from_string = 'SCF energy (',
-      num_lines   = 1,
-      rel_tolerance   = 5.0e-9)
+f2.add(from_string = 'Final results from EXACORR',
+      num_lines   = 8,
+      abs_tolerance   = 1.0e-5)
 f2.add(from_string = 'Norm of Fock matrix (OO',
       num_lines   = 1,
       abs_tolerance   = 1.0e-4)
@@ -30,9 +27,6 @@ f2.add(from_string = 'Norm of Fock matrix (OV',
 f2.add(from_string = 'Norm of Fock matrix (VV',
       num_lines   = 1,
       abs_tolerance   = 1.0e-2)
-
-if (os.getenv('DIRAC_MPI_COMMAND') is None) or (os.getenv('DIRAC_MPI_COMMAND')==''):
-    os.environ['DIRAC_MPI_COMMAND'] = "mpiexec -n 4 "
 
 os.system('ulimit -s unlimited')
 

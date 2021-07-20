@@ -51,7 +51,7 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 10, NTABLE = 40)
+      PARAMETER (NDIR = 10, NTABLE = 41)
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -97,7 +97,9 @@
 !                    33        34        35        36
      &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
-     &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2' /
+     &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
+!                    41        42        43        44
+     &             '.RDCCDE'/
 
 !
       CALL QENTER('PRPINP')
@@ -210,7 +212,8 @@
      &                109,110,111,112,113,114,115,116,                  &
      &                117,118,119,120,121,122,123,124,                  &
      &                125,126,127,128,129,130,131,132,                  &
-     &                133,134,135,136,137,138,139,140), I
+     &                133,134,135,136,137,138,139,140,                  &
+     &                141), I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -361,8 +364,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG rotational g-tensor
-!MI ... at present it is not implemented
+!&&&& ROTG - rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100
@@ -446,6 +448,11 @@
 ! i will have to fix that...
 #endif
             GO TO 100
+  141    CONTINUE
+! quick hack to read CC density matrix without the need to run CC as wavefunction
+            call set_prop_flags_ccsd()
+            GO TO 100
+!
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 180
       ELSE
@@ -466,25 +473,10 @@
       DO I = 1, NPRP_WF
          WRITE(LUPRI,'(I6,2A)') I,': ',PRP_WF(I)
       END DO
-
+!
 !=========================================================================
-!iaa  Set the molecular CM as gauge origin (origin of L angular moment)
-!     for spin-rotations and rotational molecular g-tensors
-!=========================================================================
-      if (spinro.or.rotg) then
-! ... make the center of mass the gauge and dipole origin (default in dalton)
-! ... call the routine in abacus/hergp.F
-        CALL CMMASS(GEOM,MASS,NAT,ISOT,IPRPRP)
-        CALL DCOPY(3,CMXYZ,1,GAGORG,1)
-        CALL DCOPY(3,GAGORG,1,DIPORG,1)
-        write(LUPRI,'(//,1X,A)')                                        &
-     &'Gauge & dipole origin are changed to the molecular CM position'
-        write(LUPRI,'(/A,9X,3F20.15)')                                  &
-     &  ' Gauge & dipole origin (a.u.):',(GAGORG(I), I = 1, 3)
-      end if
-!=========================================================================
-!MI   For magnetic susceptibilities, NMR shielding constants, rotational
-!MI   g-tensors and spin-rotation tensors operator centers might be changed
+!MI   For magnetic susceptibilities, NMR shielding constants and rotational
+!MI   g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'
@@ -593,13 +585,14 @@
       IF(DOXLR) CALL XLRINP(WORD,.TRUE.,WORK,LWORK)
 !MI ... read again the input
       CALL NMRINP(WORD,.TRUE.,WORK,LWORK)
+
 !gosia: i have to reset these variables once again...
 !or always remember to put *NMR .LONDON in the input...
       if (bxlao .or. bylao .or. bzlao) then
         london = .true.
         doxlr  = .true.
       end if
-!
+
       CALL GRDINP(WORD,.TRUE.)
       IF(DOXPP) CALL XPPINP(WORD,.TRUE.,WORK,LWORK)
       IF(DOXQR) CALL XQRINP(WORD,.TRUE.)
@@ -618,10 +611,9 @@
      &      DABS(GAGORGY-GAGORG(2)).GE.THRS1.OR.                        &
      &      DABS(GAGORGZ-GAGORG(3)).GE.THRS1
       IF (CHGO) THEN
-         WRITE (LUPRI,'(1X,A,3F18.10)')                                 &
-     &     '* Operator center:', (ORIGIN(I),I=1,3),                     &
-     &     '* Gauge origin   :', (GAGORG(I),I=1,3),                     &
-     &     '* Dipole origin  :', (DIPORG(I),I=1,3)
+         WRITE (LUPRI,'(A/A,3F18.10)')                                  &
+     &     '   Gauge origin has been changed:',                         &
+     &     ' * Gauge origin   :', (GAGORG(I),I=1,3)
       ENDIF
 
 !     consistency checks
@@ -890,7 +882,8 @@
 !  An operator in 4-component theory is a linear combination
 !  of products of a 4x4 matrix and some scalar operator P.
 !  The 4x4 matrices are the alpha matrices and the identity.
-!  XPRINP recognizes eighteen different kinds of operators:
+!  Generic one-electron operators are defined in subroutine MOPDEF
+!  XPRINP recognizes the following different kinds of operators:
 !
 !    1. DIAGONAL
 !       P             * scalar operator
@@ -2109,6 +2102,9 @@
 !    original  e_EDM operator of Flambaum
       ELSE IF(LABINT(2:6).EQ.'E_EDM') THEN
         CLASLB = 'E_EDM'
+!    complex exponential operator
+      ELSE IF(LABINT(1:4).EQ.'CEXP') THEN
+        CLASLB = 'CXIKR'
 !
 !     Unknown LABINT
 !   
@@ -2724,6 +2720,12 @@
 !
 !     Sort a list of operators in symmetries
 !
+!        IPOP1U - input list of operators
+!        IPOP1S - output list of operators sorted on symmetries        
+!        NOP1T  - total number of operators
+!        NOP1   - number of operators in ISYM
+!        JOP1   - offset to operators in ISYM        
+!      
 !     Written by T.Saue June 28 1996
 !     Last revision - June 26 1996 - tsaue
 !

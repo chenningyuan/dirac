@@ -1,7 +1,9 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
+#if defined (VAR_MPI)
         use exatensor
+#endif
         use talsh
         use, intrinsic:: ISO_C_BINDING
 
@@ -37,27 +39,32 @@
             logical                 :: cc2 = .false.            !L if true CC2
             logical                 :: cis = .false.            ! enables CIS, and branch off away from the CC driver 
             logical                 :: lambda = .false.
-            logical                 :: noints = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             logical                 :: do_triples = .true.
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
-            integer                 :: moint_scheme = 3
+            integer                 :: moint_scheme = 4
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
-
+            integer                 :: tripl_block(1:2) = -1    ! for running triples
+            integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
+            
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
-            
+
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
+
+            complex(8), allocatable   :: ff(:,:)                  ! field strengths
+            character(8), allocatable :: ff_names(:)            ! property labels
         end type exacc_input
 
+#if defined (VAR_MPI)
 !       All two electron integral tensors
         type, public :: exatns_intg_tens
          type(tens_rcrsv_t) :: oooo
@@ -96,6 +103,7 @@
          integer       :: occ_space_id, vir_space_id
          integer(INTL) :: occ_space_root,vir_space_root
         end type space_dims
+#endif
 
 !       All two electron integral tensors
         type, public :: talsh_intg_tens
@@ -139,9 +147,12 @@
 
 !       One electron integrals
         type, public  :: one_el_t
-         integer     :: n_spinor=-1          ! number of spinors, used for consistency checks
-         real(8)     :: e_core               ! energy of the core electrons plus nuclear repulsion energy
-         complex(8), pointer :: h_core(:,:)  ! one-body part of Hamiltonian (kinetic energy + nuclear attraction + core shielding)
+         integer     :: n_spinor=-1           ! number of spinors, used for consistency checks
+         integer     :: n_prop=0              ! number of property matrices that were read
+         real(8)     :: e_core                ! energy of the core electrons plus nuclear repulsion energy
+         complex(8), pointer :: h_core(:,:)   ! one-body part of Hamiltonian (kinetic energy + nuclear attraction + core shielding)
+         complex(8), pointer :: h_prop(:,:,:) ! property integrals to enable adding a finite field perturbation
+         character*8,pointer :: property_labels(:)  ! strings that should correspond to the label as written to MDPROP (or other interface files)
         end type one_el_t
 
        end module exacorr_datatypes

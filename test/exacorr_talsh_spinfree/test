@@ -22,7 +22,7 @@ f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
       rel_tolerance   = 1.0e-6)
 
-test.run(['talsh_cc_rbh.inp'], ['RbH_nosym.mol'], f)
+#test.run(['talsh_cc_rbh.inp'], ['RbH_nosym.mol'], f)
 test.run(['talsh_cc_srh.inp'], ['SrH_nosym.mol'], f)
 
 sys.exit(test.return_code)

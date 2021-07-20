@@ -280,11 +280,11 @@ C
 #include "maxorb.h"
 #include "iratdef.h"
 #include "efield.h"
-      PARAMETER (NTABLE = 96)
+      PARAMETER (NTABLE = 97)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
       CHARACTER LABINT(*)*8, WORD*7, TABLE(NTABLE)*7, MTFORM*6,
-     &          EFDIR*1
+     &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
 #include "shells.h"
@@ -339,7 +339,9 @@ C
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
-     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx'/
+     &            'S2MBRA ', 'S2MKET ', 'S2MMIX ', 'xxxxxxx',
+!                  97
+     &            'CXIKR  '/
 C
 #include "ibtfun.h"
 C
@@ -377,8 +379,8 @@ C
      &              81, 82, 83, 84,
      &              85, 86, 87, 88,
      &              89, 90, 91, 92,
-     &              93, 94, 95, 96
-     &            ), I
+     &              93, 94, 95, 96,
+     &              97), I
          END IF
   100 CONTINUE
       WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -744,12 +746,13 @@ C
          SQUARE = .TRUE.
       GO TO 200
 C
-C     Electronic angular momentum around the origin
-C     ---------------------------------------------
+C     Electronic angular momentum around the molecular center of mass
+C     ---------------------------------------------------------------
 C
  20   CONTINUE
          IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
-     &      ' Calculation of angular momentum around the gauge origin'
+     &     ' Calculation of angular momentum around the molecular'//
+     &     ' center of mass'
          INTTYP = 18
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
@@ -965,7 +968,7 @@ C
       GOTO 200
 C
 C     Electric field at the individual nuclei
-C     --------------------------------------
+C     ---------------------------------------
 C
  31   CONTINUE
          INTTYP = 29
@@ -1053,23 +1056,24 @@ C
          SQUARE = .TRUE.
       GOTO 200
 C
-C     Potential energy at the nuclei
-C     -----------------------------
+C     Potential energy from interaction of electrons with individual nuclei
+C     ---------------------------------------------------------------------
 C
  37   CONTINUE
          INTTYP = 35
          IF (MAXREP .GT. 0) THEN
             WRITE (LUPRI,'(/A/)')
-     &           ' Program cannot calculate potential energy '//
-     &           'with symmetry'
+     &       ' Program cannot calculate potential energy with symmetry'
             CALL QUIT('Cannot calculate potential energy with symmetry')
          ELSE
             IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
-     &           ' Calculation of the potential energy at the nuclei'
+     &       ' Calculation of the potential energy of the interaction'/
+     &      /' of electrons with individual nuclei'
             CALL SETATM(DOATOM,NATOM,INTTYP)
             CALL NPETYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
             ANTI = .FALSE.
          END IF
+      GOTO 200
 C
 C     Half B-differentiated overlap matrix
 C     ------------------------------------
@@ -2231,7 +2235,23 @@ C
       GOTO 200
 
  96   continue
-      go to 200
+C
+C     EXPIKR integrals CXIKR
+C     -------------------------
+C     NOTE: Computes all eight terms in the expansion of exp(ikr)
+C           i.e. real and imaginary components are contained in separate
+C           terms. Integrals 1-4 are the real and 5-8 the imaginary.
+C           The k-vector needs to be specified. 
+C
+  97  CONTINUE
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &      ' Calculation of expikr integrals'
+         INTTYP = 106
+         CALL CEXPINT_INFO(NOPTYP,INTREP,LABINT)
+         CALL NTYPTS(NOPTYP)
+         ANTI   = .FALSE.
+         SQUARE = .FALSE.       !.TRUE. CHECK THIS
+         GO TO 200
 
   200 CONTINUE
 C
@@ -3092,7 +3112,7 @@ C  /* Deck npetyp */
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -3105,12 +3125,11 @@ C
       ITYP = 0
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
-            NAME = NAMEX(3*(IATOM - 1) + 1)(1:2)
             DO 200 IREP = 0, MAXREP
                IF (IBTAND(ISTBNU(IATOM),IREP) .EQ. 0) THEN
                   ITYP = ITYP + 1
                   NPETBL(IATOM,IREP) = ITYP
-                  LABINT(ITYP) = 'POT.E '//NAME
+                  LABINT(ITYP) = 'POT.E '//NAMDEP(NUCPRE(IATOM)+1)(1:2)
                   INTREP(ITYP) = IREP
                END IF
  200        CONTINUE
@@ -3239,7 +3258,7 @@ C
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
-      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+      CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
@@ -4252,6 +4271,34 @@ C  /* Deck effdentyp */
   200    CONTINUE
   100 CONTINUE
 
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE CEXPINT_INFO(NINTS,INTREP,LABINT)
+C***********************************************************************
+#include "implicit.h"
+#include "pgroup.h"
+#include "dgroup.h"
+      DIMENSION INTREP(8)
+      CHARACTER*8 LABINT(8)
+      NFC = NBSYM/NFSYM
+C.....Real part of exponential
+      NINTS = 0
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP  = JFSYM(IS,1) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPR'//REP(IREP)
+      ENDDO
+C.....Imaginary part of exponential
+      DO IS = 1,NFC
+         NINTS = NINTS + 1
+         IREP   = JFSYM(IS,2) - 1
+         INTREP(NINTS) = IREP
+         LABINT(NINTS) = 'CEXPI'//REP(IREP)
+      ENDDO
+      NINTS = 2*NFC
+C
       RETURN
       END
 C --- end of her1pro.F ---

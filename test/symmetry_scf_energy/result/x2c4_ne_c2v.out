@@ -1,9 +1,5 @@
-
-  ** notice ** integer kinds do not match: dirac --> kind = 8 MPI library --> kind =  4
-  ** interface to 32-bit integer MPI enabled **
-
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
-    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -133,7 +129,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
  *    Marta L. Vidal           Technical University of Denmark   Denmark       *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
@@ -163,8 +159,9 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen,         *
  *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
  *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,           *
- *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, M. L. Vidal, S. Villaume, *
- *    O. Visser, T. Winther, and S. Yamamoto (see http://diracprogram.org).    *
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *******************************************************************************
 
@@ -172,41 +169,41 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | master
-Commit hash   | 8743b2c
-Commit author | Radovan Bast
-Commit date   | Wed Apr 29 18:40:41 2020 +0000
+Branch        | master-updates-hj
+Commit hash   | 0201d4000
+Commit author | Hans Joergen Aagard Jensen
+Commit date   | Fri Jun 5 15:23:00 2020 +0200
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | milias
-Compiled on server       | lxir127
-Operating system         | Linux-3.16.0-10-amd64
-CMake version            | 3.0.2
+Who compiled             | agustin
+Compiled on server       | agustin-laptop
+Operating system         | Linux-5.4.0-31-generic
+CMake version            | 3.16.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-04-30 07:36:32.862629
-Python version           | 2.7.9
-Fortran compiler         | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpif90
-Fortran compiler version | 17.0
-Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT  -i8 -w -assume byterecl -g -traceback -DVAR_IFORT  -i8
-C compiler               | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpicc
-C compiler version       | 17.0
-C compiler flags         |  -g -wd981 -wd279 -wd383 -wd1572 -wd177  -g -wd981 -wd279 -wd383 -wd1572 -wd177 
-C++ compiler             | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpicxx
-C++ compiler version     | 17.0.4
-C++ compiler flags       |  -Wno-unknown-pragmas  -Wno-unknown-pragmas 
+Configuration time       | 2020-06-05 13:28:13.740503
+Python version           | 2.7.1
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 9.3.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
+C compiler               | /usr/bin/gcc
+C compiler version       | 9.3.0
+C compiler flags         |  -g -g
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 9.3.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
 Static linking           | False
-64-bit integers          | True
-MPI parallelization      | True
-MPI launcher             | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpiexec
-Math libraries           | unknown
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/liblapack.so;/usr/lib/x86_64-linux-gnu/libblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;VAR_MPI_32BIT_INT;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_LAPLACE
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
 
 
  LAPACK integer*4/8 selftest passed
@@ -216,8 +213,8 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Apr 30 15:06:23 2020
-     Host name              : lxir127                                 
+     Date and time (Linux)  : Sat Jun  6 08:40:03 2020
+     Host name              : agustin-laptop                          
 
 
 Contents of the input file
@@ -263,10 +260,12 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+ The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)
+        Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 
+        Database developed by J. Baker, M. Douma, and S. Kotochigova                       
+  Available at http://physics.nist.gov/constants                                           
+  National Institute of Standards and Technology, Gaithersburg, MD 20899                   
+ * The speed of light :        137.0359992
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -293,6 +292,11 @@ FINISH
  Two-electron integrals not calculated.
 
 
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+
  Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
 
 
@@ -316,7 +320,7 @@ FINISH
 
                                                                           
                                                                           
-  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105707240D+08
+  Nuclear Gaussian exponent for atom of charge  10.000 :    5.2105707753D+08
 
 
   Symmetry Operations
@@ -399,17 +403,6 @@ Point group: C2v
 
 
 
-                                 Isotopic Masses
-                                 ---------------
-
-                           Ne         19.992439
-
-                       Total mass:    19.992439 amu
-                       Natural abundance:  90.480 %
-
- Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
-
-
   Atoms and basis sets
   --------------------
 
@@ -462,7 +455,7 @@ Point group: C2v
   ----------------------------------------------
 
     1
- 
+
 Ne     0.0000000000   0.0000000000   0.0000000000
 
 
@@ -488,6 +481,17 @@ Ne     0.0000000000   0.0000000000   0.0000000000
 
 
   This is an atomic calculation.
+
+                       * Total mass:    19.992439 amu
+                       * Natural abundance:  90.480 %
+
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
 
 
                                 GETLAB: AO-labels
@@ -702,7 +706,7 @@ Ne     0.0000000000   0.0000000000   0.0000000000
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.04400000s and (WALL)  0.04346204s
+Total time used in ONEGEN (CPU)  0.00259200s and (WALL)  0.00200000s
 
 
                        Generating Lowdin canonical matrix:
@@ -776,21 +780,21 @@ Total time used in ONEGEN (CPU)  0.04400000s and (WALL)  0.04346204s
   ### SCF ITERATIONS           ###
   ### NON-RELATIVISTIC APPROX. ###
     1. iteration,  total energy:             0.000000000000
-    2. iteration,  total energy:          -117.923235330936
-    3. iteration,  total energy:          -126.178957670542
+    2. iteration,  total energy:          -117.923235330935
+    3. iteration,  total energy:          -126.178957670541
     4. iteration,  total energy:          -127.908292613566
-    5. iteration,  total energy:          -128.447331276861
+    5. iteration,  total energy:          -128.447331276860
     6. iteration,  total energy:          -128.480052862810
     7. iteration,  total energy:          -128.486820290714
     8. iteration,  total energy:          -128.488338619442
     9. iteration,  total energy:          -128.488744485904
    10. iteration,  total energy:          -128.488768037307
-   11. iteration,  total energy:          -128.488773301932
+   11. iteration,  total energy:          -128.488773301933
    12. iteration,  total energy:          -128.488774478405
    13. iteration,  total energy:          -128.488774794383
    14. iteration,  total energy:          -128.488774811759
    15. iteration,  total energy:          -128.488774815844
-   16. iteration,  total energy:          -128.488774816757
+   16. iteration,  total energy:          -128.488774816756
    17. iteration,  total energy:          -128.488774817896
    17. iteration,  total energy:          -128.488774817015
   ### NON-RELATIVISTIC APPROX. ###
@@ -812,12 +816,8 @@ Total time used in ONEGEN (CPU)  0.04400000s and (WALL)  0.04346204s
   ### EV  OPERATOR RESULT      ###
         11      -0.1286253279D+03      -0.2575394720D+03       0.1289141442D+03      -0.1997759623D+01
       *** AMFIIN: ADDING nucleus    1 with charge  10 to the BSSn Hamiltonian.
- >>> CPU  time used in make_bss is   0.11 seconds
- >>> WALL time used in make_bss is   0.12 seconds
 
   MAKE_H2C: Two-component BSS mode - positronic shells deleted !
- >>> CPU  time used in mk_h2c is   0.11 seconds
- >>> WALL time used in mk_h2c is   0.12 seconds
 
 
       **********************************************************************
@@ -827,8 +827,6 @@ Total time used in ONEGEN (CPU)  0.04400000s and (WALL)  0.04346204s
 No. of positive energy orbitals (NESH):    26
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    26
- >>> CPU  time used in PAMSET is   0.17 seconds
- >>> WALL time used in PAMSET is   0.17 seconds
 
 
  *******************************************************************************
@@ -844,84 +842,84 @@ Total no. of orbitals           (NORB):    26
  Reference: arXiv:2002.02587 (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Thu Apr 30 15:06:23 2020
+########## START ITERATION NO.   1 ##########   Sat Jun  6 08:40:03 2020
 
 E_HOMO...E_LUMO, symmetry 1:     5  -0.37473    6   1.28571
 
 => Calculating sum of orbital energies
-It.    1    -65.30473578026      0.00D+00  0.00D+00  0.00D+00               0.03200000s   Atom. scrpot   Thu Apr 30
+It.    1    -65.30473578156      0.00D+00  0.00D+00  0.00D+00               0.00233100s   Atom. scrpot   Sat Jun  6
 
-########## START ITERATION NO.   2 ##########   Thu Apr 30 15:06:23 2020
+########## START ITERATION NO.   2 ##########   Sat Jun  6 08:40:04 2020
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.82%    0.56%   14.80%   25.93%   0.00800002s
+SOfock:LL  1.00D-12    9.82%    0.56%   14.80%   25.93%   0.00144400s
 E_HOMO...E_LUMO, symmetry 1:     5  -0.87179    6   1.56960
->>> Total wall time:  0.08160210s, and total CPU time :  0.07200000s
+>>> Total wall time:  0.02200000s, and total CPU time :  0.01949800s
 
-########## END ITERATION NO.   2 ##########   Thu Apr 30 15:06:23 2020
+########## END ITERATION NO.   2 ##########   Sat Jun  6 08:40:04 2020
 
-It.    2    -128.6112835684      6.33D+01  4.52D+00  8.61D-01               0.08160210s   LL             Thu Apr 30
+It.    2    -128.6112835697      6.33D+01  4.52D+00  8.61D-01               0.02200000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   3 ##########   Thu Apr 30 15:06:23 2020
+########## START ITERATION NO.   3 ##########   Sat Jun  6 08:40:04 2020
 
     3 *** Differential density matrix. DCOVLP     = 1.0006
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.82%    0.72%   14.80%   25.82%   0.00800002s
+SOfock:LL  1.00D-12    9.82%    0.72%   14.80%   25.82%   0.00162700s
 E_HOMO...E_LUMO, symmetry 1:     5  -0.81531    6   1.60231
->>> Total wall time:  0.02529693s, and total CPU time :  0.01600000s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00321400s
 
-########## END ITERATION NO.   3 ##########   Thu Apr 30 15:06:23 2020
+########## END ITERATION NO.   3 ##########   Sat Jun  6 08:40:04 2020
 
-It.    3    -128.6247200830      1.34D-02  1.32D-01  9.77D-02   DIIS   2    0.02529693s   LL             Thu Apr 30
+It.    3    -128.6247200843      1.34D-02  1.32D-01  9.77D-02   DIIS   2    0.00500000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   4 ##########   Thu Apr 30 15:06:23 2020
+########## START ITERATION NO.   4 ##########   Sat Jun  6 08:40:04 2020
 
     4 *** Differential density matrix. DCOVLP     = 1.0009
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.82%    1.03%   14.76%   25.72%   0.00799999s
+SOfock:LL  1.00D-12    9.82%    1.03%   14.76%   15.59%   0.00164600s
 E_HOMO...E_LUMO, symmetry 1:     5  -0.83013    6   1.59399
->>> Total wall time:  0.02502108s, and total CPU time :  0.01600000s
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00384900s
 
-########## END ITERATION NO.   4 ##########   Thu Apr 30 15:06:23 2020
+########## END ITERATION NO.   4 ##########   Sat Jun  6 08:40:04 2020
 
-It.    4    -128.6252286050      5.09D-04 -6.50D-02  4.40D-02   DIIS   3    0.02502108s   LL             Thu Apr 30
+It.    4    -128.6252286063      5.09D-04 -6.50D-02  4.40D-02   DIIS   3    0.00700000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   5 ##########   Thu Apr 30 15:06:23 2020
+########## START ITERATION NO.   5 ##########   Sat Jun  6 08:40:04 2020
 
     5 *** Differential density matrix. DCOVLP     = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.82%    1.10%   14.76%   25.66%   0.00800002s
+SOfock:LL  1.00D-12    7.41%    1.13%   15.15%   15.94%   0.00143800s
 E_HOMO...E_LUMO, symmetry 1:     5  -0.83003    6   1.59405
->>> Total wall time:  0.02485299s, and total CPU time :  0.01600000s
+>>> Total wall time:  0.00600000s, and total CPU time :  0.00322100s
 
-########## END ITERATION NO.   5 ##########   Thu Apr 30 15:06:23 2020
+########## END ITERATION NO.   5 ##########   Sat Jun  6 08:40:04 2020
 
-It.    5    -128.6253879676      1.59D-04  2.20D-02  8.59D-04   DIIS   4    0.02485299s   LL             Thu Apr 30
+It.    5    -128.6253879689      1.59D-04  2.20D-02  8.59D-04   DIIS   4    0.00600000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   6 ##########   Thu Apr 30 15:06:23 2020
+########## START ITERATION NO.   6 ##########   Sat Jun  6 08:40:04 2020
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    9.82%    2.09%   14.49%   25.35%   0.00799999s
+SOfock:LL  1.00D-12    9.82%    2.09%   14.49%   15.21%   0.00140100s
 E_HOMO...E_LUMO, symmetry 1:     5  -0.83004    6   1.59404
->>> Total wall time:  0.02522683s, and total CPU time :  0.01600000s
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00314700s
 
-########## END ITERATION NO.   6 ##########   Thu Apr 30 15:06:24 2020
+########## END ITERATION NO.   6 ##########   Sat Jun  6 08:40:04 2020
 
-It.    6    -128.6253880529      8.53D-08  4.60D-05  1.24D-04   DIIS   5    0.02522683s   LL             Thu Apr 30
+It.    6    -128.6253880542      8.53D-08 -4.60D-05  1.24D-04   DIIS   5    0.00700000s   LL             Sat Jun  6
 
-########## START ITERATION NO.   7 ##########   Thu Apr 30 15:06:24 2020
+########## START ITERATION NO.   7 ##########   Sat Jun  6 08:40:04 2020
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    7.41%    3.58%   14.48%   15.30%   0.00800002s
->>> Total wall time:  0.02011490s, and total CPU time :  0.01200000s
+SOfock:LL  1.00D-12    9.82%    3.48%   14.12%   25.07%   0.00140900s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00256300s
 
-########## END ITERATION NO.   7 ##########   Thu Apr 30 15:06:24 2020
+########## END ITERATION NO.   7 ##########   Sat Jun  6 08:40:04 2020
 
-It.    7    -128.6253880549      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.02011490s   LL             Thu Apr 30
+It.    7    -128.6253880562      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.00500000s   LL             Sat Jun  6
 
 
                                    SCF - CYCLE
@@ -937,30 +935,30 @@ It.    7    -128.6253880549      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.02
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -65.30473578026      0.00D+00  0.00D+00  0.00D+00               0.03200000s   Atom. scrpot   Thu Apr 30
-It.    2    -128.6112835684      6.33D+01  4.52D+00  8.61D-01               0.08160210s   LL             Thu Apr 30
-It.    3    -128.6247200830      1.34D-02  1.32D-01  9.77D-02   DIIS   2    0.02529693s   LL             Thu Apr 30
-It.    4    -128.6252286050      5.09D-04 -6.50D-02  4.40D-02   DIIS   3    0.02502108s   LL             Thu Apr 30
-It.    5    -128.6253879676      1.59D-04  2.20D-02  8.59D-04   DIIS   4    0.02485299s   LL             Thu Apr 30
-It.    6    -128.6253880529      8.53D-08  4.60D-05  1.24D-04   DIIS   5    0.02522683s   LL             Thu Apr 30
-It.    7    -128.6253880549      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.02011490s   LL             Thu Apr 30
+It.    1    -65.30473578156      0.00D+00  0.00D+00  0.00D+00               0.00233100s   Atom. scrpot   Sat Jun  6
+It.    2    -128.6112835697      6.33D+01  4.52D+00  8.61D-01               0.02200000s   LL             Sat Jun  6
+It.    3    -128.6247200843      1.34D-02  1.32D-01  9.77D-02   DIIS   2    0.00500000s   LL             Sat Jun  6
+It.    4    -128.6252286063      5.09D-04 -6.50D-02  4.40D-02   DIIS   3    0.00700000s   LL             Sat Jun  6
+It.    5    -128.6253879689      1.59D-04  2.20D-02  8.59D-04   DIIS   4    0.00600000s   LL             Sat Jun  6
+It.    6    -128.6253880542      8.53D-08 -4.60D-05  1.24D-04   DIIS   5    0.00700000s   LL             Sat Jun  6
+It.    7    -128.6253880562      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.00500000s   LL             Sat Jun  6
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.03056908s
-      LL           :    0.03368580s
+      No 2-ints    :    0.00200000s
+      LL           :    0.00866667s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -128.62538805494469
+   Electronic energy                        :    -128.62538805622972
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -128.62538805494469
+   Total energy                             :    -128.62538805622972
 
 
                                    Eigenvalues
@@ -969,11 +967,11 @@ It.    7    -128.6253880549      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.02
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
-   -32.80517900191  ( 2)       -1.92400897625  ( 2)       -0.83414273400  ( 2)       -0.83003911444  ( 4)
+   -32.80517900228  ( 2)       -1.92400897630  ( 2)       -0.83414273402  ( 2)       -0.83003911442  ( 4)
   * Virtual eigenvalues, f = 0.0000
-     1.59403982981  ( 2)        1.59710121861  ( 4)        2.00787396856  ( 2)        5.19608077754  ( 4)        5.19713297060  ( 6)
-     9.39860216476  ( 2)        9.41223244544  ( 4)       19.16805764274  ( 2)       52.72300461113  ( 2)       52.83930263324  ( 4)
-    92.59523202766  ( 2)      347.66743384493  ( 2)     1275.03200264857  ( 2)     4956.70309055919  ( 2)    20998.68337596899  ( 2)
+     1.59403982979  ( 2)        1.59710121862  ( 4)        2.00787396850  ( 2)        5.19608077754  ( 4)        5.19713297060  ( 6)
+     9.39860216459  ( 2)        9.41223244540  ( 4)       19.16805764206  ( 2)       52.72300460845  ( 2)       52.83930263164  ( 4)
+    92.59523202169  ( 2)      347.66743379131  ( 2)     1275.03200210944  ( 2)     4956.70308463877  ( 2)    20998.68331778740  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     1.59403983 au (symmetry E1 )
@@ -988,507 +986,35 @@ It.    7    -128.6253880549      1.99D-09  2.61D-05  1.23D-06   DIIS   5    0.02
 
 
  
-     Date and time (Linux)  : Thu Apr 30 15:06:24 2020
-     Host name              : lxir127                                 
+     Date and time (Linux)  : Sat Jun  6 08:40:04 2020
+     Host name              : agustin-laptop                          
 
->>>> Node 0, utime: 0, stime: 0, minflt: 10251, majflt: 206, nvcsw: 833, nivcsw: 937, maxrss: 72804
+>>>> Node 0, utime: 0, stime: 0, minflt: 4063, majflt: 0, nvcsw: 12, nivcsw: 91, maxrss: 25268
 >>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       152.69
+  Mean allocation size (Mb) :       152.62
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      488.28 Mb at subroutine psiscf_+0x1b7                              for WORK in PSISCF                            
-      488.28 Mb at subroutine pamset_+0x559                              for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_+0x138f6                            for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_+0x10e                              for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0x9a3                               for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_+0x112                              for PAMINP WORK array                         
-        0.07 Mb at subroutine butobs_no_work_+0x251                      for buf in butobs                             
-        0.03 Mb at subroutine gtovlx_+0x20e                              for unnamed variable                          
-        0.03 Mb at subroutine xpldef_+0x3fc                              for INTADR in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3cc                              for INTREP in XPLDEF                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.03 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
   
   Peak memory usage:       488.35 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_+0x251                     
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /u/milias/Work/qch/software/dirac/trunk/test/symmetry_scf_energy
-
- ====  below this line is the stderr stream  ====
---------------------------------------------------------------------------
-By default, for Open MPI 4.0 and later, infiniband ports on a device
-are not used by default.  The intent is to use UCX for these devices.
-You can override this policy by setting the btl_openib_allow_ib MCA parameter
-to true.
-
-  Local host:              lxir127
-  Local adapter:           mlx4_0
-  Local port:              1
-
---------------------------------------------------------------------------
---------------------------------------------------------------------------
-WARNING: There was an error initializing an OpenFabrics device.
-
-  Local host:   lxir127
-  Local device: mlx4_0
---------------------------------------------------------------------------
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            0000000000548078  dirctl_                   146  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CAFB5  interface_ao_spec         224  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000029CB47F  interface_ao_spec         227  interface_ao_specific.F90
-dirac.x            00000000009A6521  dhfscf_                  1146  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to SETTASKDISTRIBFLAGS, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000009E78EA  scfcyc_                  1193  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8165  append_basisinfo_         182  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009AB876  predhf_                   634  dirscf.F
-dirac.x            00000000009E8615  scfcyc_1_                1277  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8886  append_basisinfo_         186  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009AB876  predhf_                   634  dirscf.F
-dirac.x            00000000009E8615  scfcyc_1_                1277  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8165  append_basisinfo_         182  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8886  append_basisinfo_         186  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8165  append_basisinfo_         182  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8886  append_basisinfo_         186  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8165  append_basisinfo_         182  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8886  append_basisinfo_         186  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8165  append_basisinfo_         182  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8886  append_basisinfo_         186  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8165  append_basisinfo_         182  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
-forrtl: warning (406): fort: (1): In call to I/O Write routine, an array temporary was created for argument #1
-
-Image              PC                Routine            Line        Source             
-dirac.x            00000000054FFD26  Unknown               Unknown  Unknown
-dirac.x            00000000007D8886  append_basisinfo_         186  dirgp.F
-dirac.x            00000000007D7463  wricmo_                   148  dirgp.F
-dirac.x            00000000009B8B97  dfsolv_                  1083  dirscf.F
-dirac.x            00000000009ED1FB  scfcyc_1_                1574  dirscf.F
-dirac.x            00000000009E7E96  scfcyc_                  1203  dirscf.F
-dirac.x            00000000009A6636  dhfscf_                  1162  dirscf.F
-dirac.x            000000000099DB82  psiscf_                   140  dirscf.F
-dirac.x            0000000000548994  pampsi_                   319  dirac.F
-dirac.x            00000000005487C2  pamdrv_                   218  dirac.F
-dirac.x            0000000000548217  dirctl_                   174  dirac.F
-dirac.x            0000000000547F51  dirac_                    100  dirac.F
-dirac.x            000000000054793D  MAIN__                    176  main.F90
-dirac.x            00000000005472EE  Unknown               Unknown  Unknown
-libc-2.19.so       00007F0B7BEC0B45  __libc_start_main     Unknown  Unknown
-dirac.x            00000000005471E9  Unknown               Unknown  Unknown
+DIRAC pam run in /home/agustin/dirac/build/test/symmetry_scf_energy

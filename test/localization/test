@@ -12,12 +12,12 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 f.add(string = '**** Inverse mean delocalization',
-      rel_tolerance = 1.0e-9)
+      rel_tolerance = 1.0e-7)
 
-# get input files
-tar = tarfile.open('cf.tgz')
-tar.extractall()
-tar.close()
+# prepare reference orbitals
+test.run(['H.inp'], ['H.xyz'], args='--get "DFACMO=cf.H"')
+test.run(['C.inp'], ['C.xyz'], args='--get "DFACMO=cf.C"')
+test.run(['O.inp'], ['O.xyz'], args='--get "DFACMO=cf.O"')
 
 shutil.copy('cf.H', 'DFH1AT')
 shutil.copy('cf.H', 'DFH2AT')

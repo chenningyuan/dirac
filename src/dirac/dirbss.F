@@ -8282,7 +8282,7 @@ C     ... do read the DFCOEF file from previous iterations ...
 C ===================================================
 C   Write 2c->4c transformed coefficients ()
 C ===================================================
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE (LUPRI,'(/2X,A/)')
      & '>>> The DFCOEF file was renewed for restarting 4c SCF'//
@@ -10165,14 +10165,14 @@ C          ... do some check of entering values of NAMFA,IAMFA
           IF (NAMFA.GT.IX) THEN 
            write(lupri,*) ': NAMFA=',NAMFA,
      &     ' is greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of NAMFA !!!')
+           CALL QUIT('AMFI_RELSCF: Wrong value of NAMFA !!!')
           ENDIF
           DO K=1,NAMFA
            IF (IAMFA(K).GT.IX) THEN
              write(lupri,*)
      &       K,'. AMFI-banned nucleus has number=',IAMFA(K),
      &       ' greater than total number of nuclei=',IX
-           CALL QUIT('HAMINP: Wrong value of IAMFA(K) !!!')
+           CALL QUIT('AMFI_RELSCF: Wrong value of IAMFA(K) !!!')
            ENDIF
           ENDDO
           IF (NAMFA.GE.2) THEN
