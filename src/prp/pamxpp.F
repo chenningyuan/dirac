@@ -358,7 +358,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 40,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -388,7 +388,8 @@ C
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
      &            '.GNOISE','.GCLEAN','.BEDCON','.NOVELR',
-     &            '.NOLENR','.ANGPLO','.CHIAVG','.BEDECD'/
+     &            '.NOLENR','.ANGPLO','.CHIAVG','.BEDECD',
+     &            '.VPOLE'/
 C
 #include "ibtfun.h"
 C
@@ -496,7 +497,8 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40) I
+     &                     31,32,33,34,35,36,37,38,39,40,
+     &                     41) I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -715,6 +717,29 @@ C&&&& CHIAVG: makes angular anisotropic ECD plot with chi averaging
 C&&&& BEDECD: Electronic circular dichroism with the full light-matter interaction operator
                BEDECD=.TRUE.
                GO TO 100
+C&&&& VPOLE: Electric multipole moments in the generalised velocity representation               
+ 41            CONTINUE
+               READ(LUCMD,*) IORDER
+               IF (IORDER.EQ.1) THEN
+                    NDEG = 1
+               ELSEIF (IORDER.EQ.2) THEN
+                    NDEG=6
+               ELSE 
+                    NDEG = 9*3
+c                    9*(IORDER*(IORDER-1)/2)
+               ENDIF
+               IF((NPPAPT+NDEG).GT.MAXLPP) THEN
+                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
+     &           'APU out of bounds for velocity representation', 
+     &              'electric multipole of order ',
+     &           IORDER
+                 WRITE(LUPRI,'(A,I5)') 
+     &           'Increase MAXLPP to ',(NPPAPT+NDEG)
+                 CALL QUIT('XPPINP: MAXLPP out of bounds')
+               ENDIF
+               CALL DEF_VPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
+               NPPAPT = NPPAPT + NDEG
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -754,6 +779,8 @@ C        calculate default MAXRM
         WRITE(LUPRI,'(A)') 'XPPINP: Please increase MAX_KVAL !'
         CALL QUIT('XPPINP: MAX_KVAL out of bounds')
       ENDIF
+
+
       IF(DOLENR) THEN
         IEMAX = KVAL_OSC + 1
         IMMAX = KVAL_OSC
