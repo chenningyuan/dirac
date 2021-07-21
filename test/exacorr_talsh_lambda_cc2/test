@@ -5,6 +5,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -16,9 +19,6 @@ f.add(from_string = 'Final L1amp',
 f.add(from_string = 'Total contribution to principal components',
       to_string   = '1 a.u. =',
       rel_tolerance   = 1.0e-6)
-
-os.environ["OMP_STACKSIZE"] = "200M"
-os.system('ulimit -s unlimited')
 
 test.run(['cc2_x2c.inp'], ['h2o.xyz'], f)
 test.run(['cc2_energy_large_cvalue.inp'], ['h2o.xyz'], f)

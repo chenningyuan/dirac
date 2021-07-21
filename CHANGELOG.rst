@@ -1,7 +1,7 @@
 :orphan:
 
 
-21.0 (2021-04-27)
+21.0 (2021-05-28)
 -----------------
 
 New features:
@@ -20,6 +20,7 @@ New features:
 - Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
 - "make latex" for making a latex version of the documenation in "build/latex", used e.g. pdflatex to make a pdf version of the manual. Contributor: Hans Joergen Aa. Jensen
 - Efficient parallel diagonalization of quaternion Fock matrices using openMP. Contributor: Hans Joergen Aa. Jensen.
+- Utility (dirac_data.py) to export DIRAC data into a Python dictionary. Contributor: Lucas Visscher.
 
 Revised features:
 

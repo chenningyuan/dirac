@@ -53,16 +53,20 @@ Two choices: LUCIAREL and GASCIP
 
 keyword(CIROOTS)
 
-number of states (roots) in symmetry X to optimize on. This keyword may be
+specifies the number of states (roots) *Y* in irrep *X* to optimize on. This keyword may be
 repeated several times for multi-root multi-symmetry calculations
 step-by-step. *default:* none.
 
-Example for 5 roots in (boson/fermion) irrep 1:
+Example for calculating *Y* = 5 roots in irrep *X* = 1:
 
 ::
 
     .CIROOTS
     1 5
+
+The KRCI module exploits the character tables for the Abelian double groups handled by DIRAC as detailed here,
+:ref:`Symm_handling_corr_level`. In contrast to other correlation
+modules,  in KRCI the order is reversed that is boson irreps come **before** fermion irreps.
 
 If you run the calculation in **linear symmetry** you have to specify the **2 x OMEGA** value
 of the state to optimize on, and the .CI PROGRAM must be LUCIAREL. The doubling (*2 x*) stems from the fact

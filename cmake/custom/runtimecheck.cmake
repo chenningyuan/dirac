@@ -12,11 +12,10 @@
 #
 #   docopt: "--check Enable runtime checking of compiled executables [default: False]"
 #   define: "'-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check'])"
-#
+
 # Important change, Miro, July 2018: do not append corresponding compiler flags here !
 # Rather append the runtime-check flags separately to source files in corresponding DIRAC modules 
-#
-#
+
 option(ENABLE_RUNTIMECHECK "Enable run-time checking" OFF)
 
 message(STATUS "Enable run-time checking: ${ENABLE_RUNTIMECHECK}")

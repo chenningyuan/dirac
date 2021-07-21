@@ -981,7 +981,7 @@ Options are also read from ~/.diracrc"""
          # and the remaining CPU cores will idle ... observed 03-May-2021)
 
          # if openMPI then use next line
-               #  self.dirac_mpi_command = self.mpirun + '--bind-to none -np ' + str(self.nr_proc) + ' '
+               #  self.dirac_mpi_command = self.mpirun + ' --bind-to none -np ' + str(self.nr_proc) + ' '
          #else use the following line
                   self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
          #endif

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -147,17 +147,11 @@ C     ... SYM: supersymmetry (if known)
       N2BED  = NBED*NEXCF
       CALL MEMGET2('REAL','OSCBED',KBED,N2BED,WORK,KFREE,LFREE)
 C     ... OSCBED: oscillator strengths for each excitation
-      IF(DOBED) THEN
-         NBED=1
-         IF(ORIENTED) THEN
-           NBED = NBED+1
-         ENDIF
-      ELSE
-      ENDIF   
 C
 C     Initialize:
       CALL DZERO(WORK(KPPF),N2PPF)
       CALL DZERO(WORK(KOMEGA),NEXCF)
+      CALL DZERO(WORK(KBED),N2BED)      
       CALL PRPXP1(WORK(KPPF),WORK(KOMEGA),WORK(KCNV),WORK(KPPO),
      &            WORK(KSSYM),WORK(KBED),WORK,KFREE,LFREE)
 C
@@ -2462,7 +2456,7 @@ C.......Full light-matter interaction
             ENDIF
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
-          TOT  = DSUM(NEXCF,OSCBED(1,1,1),1)
+          TOT  = DSUM(NEXCF,OSCBED(1,1,2),1)
           WRITE(LUPRI,'(A,ES12.5)') 'Sum of oscillator strengths '//
      &         '(full light-matter interaction) : ',TOT
         ENDIF  
