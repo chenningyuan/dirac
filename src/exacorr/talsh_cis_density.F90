@@ -17,7 +17,7 @@ module talsh_cis_density
 
     private
 
-    public get_cis_density_exe_exe,get_cis_density_exe_grd
+    public get_cis_density_exe_exe, get_cis_density_exe_grd
 
     contains
 

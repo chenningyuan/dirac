@@ -116,14 +116,15 @@ subroutine read_integral(exa_input,orbital_integral_tens,mo_dims)
     integer                :: ierr
     logical                :: tobe
     integer                :: luone
-    integer                :: total_prop
+    integer                :: total_prop, max_prop
     integer                :: nocc, nvir, orbital_index1, orbital_index2
 
     ierr=NOERROR
 
     nocc = exa_input%nocc
     nvir = exa_input%nvir
-    total_prop = nocc + nvir
+    total_prop = nocc + nvir 
+    max_prop = 100
 
     if (mo_dims(1)==nocc) then
         orbital_index1 = 1
@@ -156,7 +157,7 @@ subroutine read_integral(exa_input,orbital_integral_tens,mo_dims)
 !      count the number of matrices that we need to store
 !      MDROP has a very simple format: record with label followed by record containing the data
     n_prop = 0
-    do while (n_prop <= total_prop)
+    do while (n_prop <= max_prop)
        read (luone,err=10,end=10) label
        if (label(25:32) == 'EOFLABEL') exit
        read (luone,err=10,end=10) h_prop
