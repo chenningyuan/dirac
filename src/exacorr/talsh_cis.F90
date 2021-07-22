@@ -35,6 +35,7 @@ module talsh_cis
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
          integer(C_INT)       :: ierr
          complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:),check_tens(:,:)
+         integer(INTD)       :: fo_dims(1:2),fv_dims(1:2)
          complex(kind=8), pointer :: eValues(:) 
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
@@ -133,9 +134,28 @@ module talsh_cis
          ierr=talsh_tensor_construct(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
 
-!        Compute fock matrix tensor 
-         call get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_foo_tensor,diag_fvv_tensor, &
-                                  int_t, exa_input%print_level)
+!        Get orbital energy
+         call get_orbital_energies(nocc,mo_occ,eps_occ)
+         call get_orbital_energies(nvir,mo_vir,eps_vir)
+
+         fo_dims(1:2) = nocc
+         fv_dims(1:2) = nvir
+
+         ierr=talsh_tensor_construct(diag_foo_tensor,C8,fo_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(diag_foo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
+         h_tens = ZERO
+         do i = 1, nocc
+             h_tens(i,i) = eps_occ(i)
+         end do
+     
+         ierr=talsh_tensor_construct(diag_fvv_tensor,C8,fv_dims,init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(diag_fvv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
+         h_tens = ZERO
+         do i = 1, nvir
+             h_tens(i,i) = eps_vir(i)
+         end do
 
 !        Set one body integral tensor element 
          ierr=talsh_tensor_contract("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
@@ -213,120 +233,6 @@ module talsh_cis
         WORK, LWORK, rwork, INFO)
 
     end subroutine diagoanl_cis_matrix
-
-!-----------------------------------------------------------------------------------------------------------------------
-
-    subroutine get_CIS_fockmatrix (nocc,nvir,mo_occ,mo_vir,diag_mat_occ, diag_mat_vir, &
-        int_t, print_level)
-
-!        Routine to get Fock matrix in MO basis. For CIS, we only need the diagonal entry (orbital energy)
-!        Written by Lucas Visscher, summer 2017 (talsh_cc)
-!        Revised by Xiang Yuan, June 2020
-    use exacorr_global
-
-    implicit none
-
-    integer, intent(in)                  :: nocc,nvir  ! the size of the mo basis for occupied and virtual spinors
-    integer, intent(in)                  :: print_level
-    integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the orbital energies
-
-
-!   target tensors to be filled and given back to the caller
-    type(talsh_tens_t), intent(inout)    :: diag_mat_occ, diag_mat_vir
-    type(talsh_intg_tens), intent(inout) :: int_t
-
-    type(talsh_tens_t)              :: fo_tensor, fv_tensor
-    type(talsh_tens_t)              :: id_mat_occ 
-    integer(INTD)                   :: fo_dims(1:2),fv_dims(1:2)
-    integer(INTD)                   :: ierr
-    logical                         :: one_el_exist
-    real(8), allocatable            :: eps_occ(:),eps_vir(:)
-    real(8)                         :: e_core
-    integer                         :: min_occ
-    type(C_PTR)                     :: body_p
-    complex(8), pointer, contiguous :: h_tens(:,:)
-    integer                         :: i, j, iv, jv, imo, jmo
-
-
-    min_occ=minval(mo_occ)
-    allocate (eps_occ(nocc))
-    allocate (eps_vir(nvir))
-
-!        Get foo tensor
-    fo_dims(1:2) = nocc
-    ierr=talsh_tensor_construct(fo_tensor,C8,fo_dims,init_val=ZERO)
-
-!        Get fvv tensor
-    fv_dims(1:2) = nvir
-    ierr=talsh_tensor_construct(fv_tensor,C8,fv_dims,init_val=ZERO)
-
-!        Get one electron integrals
-    one_el_exist = exist_one_el(e_core)
-
-
-!        Create density (identity) matrix for the occupied space
-    ierr=talsh_tensor_construct(id_mat_occ,C8,fo_dims,init_val=ZERO)
-    ierr=talsh_tensor_get_body_access(id_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-    h_tens = ZERO
-    do i = 1, nocc
-    h_tens(i,i) = ONE
-    end do
-
-!        Create Fock Matrix for the occupied and virtual space
-    ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-    call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
-
-    ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-    call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
-    call print_date('one electron integrals added to Fock Matrix')
-
-    ierr=talsh_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",fo_tensor,int_t%oooo,id_mat_occ, ONE)
-    ierr=talsh_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",fv_tensor,int_t%vovo,id_mat_occ, ONE)
-    call print_date('two electron integrals added to Fock Matrix')
-
-    if (print_level >10) then
-        call print_tensor(fo_tensor, 1.0D-6, 'fo_tensor')
-        call print_tensor(fv_tensor, 1.0D-6, 'fv_tensor')
-    end if
-
-
-!       Set diagonal element of Fock Matrix 
-    ierr=talsh_tensor_get_body_access(fo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-    do i=1,fo_dims(1)
-        eps_occ(i)=h_tens(i,i)
-    end do
-
-    ierr=talsh_tensor_get_body_access(fv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-    do i=1,fv_dims(1)
-        eps_vir(i)=h_tens(i,i)
-    end do
-
-!       Get orbital energy 
-    ierr=talsh_tensor_construct(diag_mat_occ,C8,fo_dims,init_val=ZERO)
-    ierr=talsh_tensor_get_body_access(diag_mat_occ,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
-    h_tens = ZERO
-    do i = 1, nocc
-        h_tens(i,i) = eps_occ(i)
-    end do
-
-    ierr=talsh_tensor_construct(diag_mat_vir,C8,fv_dims,init_val=ZERO)
-    ierr=talsh_tensor_get_body_access(diag_mat_vir,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
-    h_tens = ZERO
-    do i = 1, nvir
-        h_tens(i,i) = eps_vir(i)
-    end do
-
-    ierr=talsh_tensor_destruct(id_mat_occ)
-    if (print_level >0) call print_date('Fock matrix initialized')  
-    end subroutine get_CIS_fockmatrix
-
 
 !-------------------------------------------------------------------------------------------------------------------------------
 
