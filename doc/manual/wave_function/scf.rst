@@ -95,6 +95,31 @@ symmetry there four occupation numbers in line.
 keyword(MJSELE)
 
 In the case of linear supersymmetry give occupation for each :math:`M_J` value.
+The format of  :ref:`SCF_.MJSELE` is illustrated for the case of the CH radical
+in :math:`^2\Pi_{3/2}` state.
+We first provide the usual specification of closed and open shells
+
+::
+   
+   .CLOSED SHELL
+   6
+   .OPEN SHELL
+   1
+   1/2
+
+One can specify the occupation of the open-shell electron in the MO
+that mainly consists of :math:`2\pi_{3/2,3/2}` orbital, as shown below
+
+::
+   
+   .MJSELEC
+   2       # Number of the MJ-splitted orbital
+   1  3    # Absolute values of Mj*2: 1/2, 3/2
+   6  0    # Distribution of closed shell orbitals
+   0  2    # Distribution of orbitals of open shell 1
+
+
+Currently :ref:`SCF_.MJSELE` does not work with inversion symmetry.
 
 keyword(KPSELE)
 
@@ -124,9 +149,9 @@ giving the occupation in terms of :math:`\kappa` - values as shown below
    .KPSELEC
    7                              # Number of the Kappa-splitted orbital
     -1   1  -2   2  -3   3  -4    # Values of Kappa: s   p-  p+  d-  d+  f-  f+
-    14  10  20  12  18   6   8    # Number of the electrons in the closed orbitals
-     0   0   0   0   0   6   8    # Number of the orbitals of open shell 1 (5f^3)
-     0   0   0   4   6   0   0    # Number of the orbitals of open shell 2 (6d^1)
+    14  10  20  12  18   6   8    # Distribution of closed shell orbitals
+     0   0   0   0   0   6   8    # Distribution of orbitals of open shell 1 (5f^3)
+     0   0   0   4   6   0   0    # Distribution of orbitals of open shell 2 (6d^1)
 
    
 keyword(AOC)
