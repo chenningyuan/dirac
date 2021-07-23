@@ -74,8 +74,6 @@ module talsh_cis
 !        DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
          nvir = exa_input%nvir
-         print *,'nocc', nocc
-         print *,'nvir', nvir 
          allocate(mo_occ(nocc))
          allocate(mo_vir(nvir))
          allocate(sigma1(nocc*nvir,nocc*nvir))
@@ -220,6 +218,7 @@ module talsh_cis
         complex(kind=8), pointer :: eVectorsL(:,:)
         character(len=1) :: do_left = 'N', do_right = 'V'
 
+
         vectors_R = size(M,1)
         vectors_L = size(M,2)
         lwork = 100000*vectors_R	
@@ -232,10 +231,17 @@ module talsh_cis
         eVal, eVectorsL, vectors_L, eVectorsR, vectors_R, &
         WORK, LWORK, rwork, INFO)
 
+
+        do i=1, size(eVectorsR,1)
+!            do j=1, size(eVectorsR,2)
+                print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))
+!            end do
+        end do
+
+        
     end subroutine diagoanl_cis_matrix
 
 !-------------------------------------------------------------------------------------------------------------------------------
-
 
     subroutine get_CIS_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level)
 
@@ -292,20 +298,7 @@ module talsh_cis
              call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
              call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
              call print_date('finished ao integral calculation')
-    
-!            Get antisymmetric oooo tensor
-             oooo_dims = nocc
-             ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-             allocate (mo_list(4*nocc))
-             nmo = nocc
-             mo_list(1:nocc)          = mo_occ(1:nocc)
-             mo_list(nocc+1:2*nocc)   = mo_occ(1:nocc)
-             mo_list(2*nocc+1:3*nocc) = mo_occ(1:nocc)
-             mo_list(3*nocc+1:4*nocc) = mo_occ(1:nocc)
-             call get_integral_tensor (aoint_tensor,int_t%oooo,12,nmo,mo_list)
-             deallocate (mo_list)
-             call print_date('finished oooo integrals')
-    
+        
 !            Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !            Get vovo tensor
              vovo_dims(1) = nvir

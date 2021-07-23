@@ -6,6 +6,7 @@ module talsh_cis_property
     use exacorr_utils
     use talsh_common_routines
     use talsh_cis_density
+    use exacorr_global
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
@@ -119,6 +120,9 @@ subroutine read_integral(exa_input,orbital_integral_tens,mo_dims)
     integer                :: total_prop, max_prop
     integer                :: nocc, nvir, orbital_index1, orbital_index2
 
+    call read_mdprop()
+    call add_finitefield()
+
     ierr=NOERROR
 
     nocc = exa_input%nocc
@@ -193,10 +197,14 @@ subroutine read_integral(exa_input,orbital_integral_tens,mo_dims)
         print *, "Error: The number of correlated orbitals in MOLTRA is consisten with Exacorr!!"
     end if 
 
+
+
 end subroutine read_integral  
 !-------------------------------------------------------------------------------------------------------------------
 
-subroutine get_property
+subroutine get_property(exa_input,eValues,pro_orbital_integral_exe_grd_tensor,& 
+                pro_orbital_integral_exe_exe_tensor, Tra_Den_exe_exe_tensor,&
+                Tra_Den_exe_grd_tensor,property_N_state)
 
 
 
