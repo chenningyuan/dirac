@@ -37,6 +37,7 @@ module talsh_cis
          complex(8), pointer :: result_tens(:,:,:,:),sigma1(:,:),check_tens(:,:)
          integer(INTD)       :: fo_dims(1:2),fv_dims(1:2)
          complex(kind=8), pointer :: eValues(:) 
+         complex(kind=8), pointer :: eVectorsR(:,:)
          type(C_PTR):: body_p
          integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
          integer(C_INT):: host_arg_max
@@ -179,18 +180,23 @@ module talsh_cis
          end do 
 
 
-         call diagoanl_cis_matrix(sigma1,eValues) ! Get CIS eigenvector and excitation energy
+         call diagoanl_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
 !        Sort the eigenvector according to the excitation energy 
-         do i=1,size(eValues)-1,1
-            do j=i+1,size(eValues),1
-            tem = abs(eValues(i))
-            if (abs(eValues(i)) > abs(eValues(j))) then
-                tem=eValues(i)
-                eValues(i)=eValues(j)
-                eValues(j)=tem
-            end if 
-            end do 
-         end do
+        !  do i=1,size(eValues)-1,1
+        !     do j=i+1,size(eValues),1
+        !     tem = abs(eValues(i))
+        !     if (abs(eValues(i)) > abs(eValues(j))) then
+        !         tem=eValues(i)
+        !         eValues(i)=eValues(j)
+        !         eValues(j)=tem
+        !     end if 
+        !     end do 
+        !  end do
+         call sort_cis_eig(eValues,eVectorsR)
+         
+        do i=1, size(eVectorsR,1)
+            print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))
+        end do
 
 !       Print CIS energy
         n =10  !number of state print
@@ -205,7 +211,7 @@ module talsh_cis
 
     
 !----------------------------------------------------------------------------------------------------------------------    
-    subroutine diagoanl_cis_matrix(M,eVal)
+    subroutine diagoanl_cis_matrix(M,eVal,eVectorsR)
 
 !       Set parameter needed in zgeev
         integer :: lwork, info,i,j
@@ -232,14 +238,65 @@ module talsh_cis
         WORK, LWORK, rwork, INFO)
 
 
-        do i=1, size(eVectorsR,1)
-!            do j=1, size(eVectorsR,2)
-                print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))
-!            end do
-        end do
-
         
     end subroutine diagoanl_cis_matrix
+
+!-----------------------------------------------------------------------------------------------------------------------
+subroutine sort_cis_eig(eValues,eVectors)
+    complex(kind=8), pointer :: eValues(:) 
+    complex(kind=8), pointer :: eVectors(:,:)
+    complex(kind=8), ALLOCATABLE :: eValues_tem(:) 
+    complex(kind=8), ALLOCATABLE :: eValues_tem_2(:) 
+    complex(kind=8), ALLOCATABLE :: eVectors_tem(:,:)
+    integer, pointer :: index_cis_eig(:)
+    real(8) :: tem, tem_internal
+    integer :: i,j,index_tem,dege
+
+
+    allocate(index_cis_eig(size(eValues)))
+    allocate(eValues_tem(size(eValues)))
+    allocate(eValues_tem_2(size(eValues)))
+    allocate(eVectors_tem(size(eVectors,1),size(eVectors,2)))
+    eValues_tem = eValues
+    eVectors_tem = eVectors
+    do i = 1, size(index_cis_eig),1
+        index_cis_eig(i) = i
+    end do
+
+!        print *, "original index", index_cis_eig
+    dege = 1
+    do i=1,size(eValues)-1,1
+        do j=i+1,size(eValues),1
+        tem = abs(eValues(i))
+        if (abs(eValues(i)) > abs(eValues(j))) then
+            tem=eValues(i)
+            index_tem = index_cis_eig(i)
+            eValues(i)=eValues(j)
+            index_cis_eig(i) = index_cis_eig(j)
+            eValues(j)=tem
+            index_cis_eig(j) =index_tem
+        end if 
+        end do 
+        end do
+
+!        print *, "new index", index_cis_eig
+
+!        print *,"---------------------------------"
+!        print *, "original exc energy", eValues_tem
+!        do i=1,size(index_cis_eig),1
+!            eValues_tem_2(i) = eValues_tem(index_cis_eig(i))
+!        end do
+!        print *,"---------------------------------"
+!        print *, "reorder original exc energy", eValues_tem_2
+
+    do i=1,size(index_cis_eig),1
+        eVectors(:,i) = eVectors_tem(:,index_cis_eig(i))
+    end do
+
+    deallocate(eVectors_tem)
+    deallocate(eValues_tem)
+    deallocate(index_cis_eig)
+end subroutine   
 
 !-------------------------------------------------------------------------------------------------------------------------------
 
