@@ -31,16 +31,32 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors,tar_state)
     complex(kind=8), pointer      :: eVectors(:,:)
     complex(kind=8), pointer      :: eValues(:) 
     integer                       :: tar_state, Total_state, N_state
-
+    integer                       :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
+ 
 
     type(talsh_tens_t)        :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
-    type(talsh_tens_t)        :: pro_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_tensor
-    complex(16)               :: property_N_state, property_All_state
+    type(talsh_tens_t)        :: pro1_orbital_integral_exe_grd_tensor
+    type(talsh_tens_t)        :: pro1_orbital_integral_exe_exe_tensor
+    type(talsh_tens_t)        :: pro2_orbital_integral_exe_grd_tensor
+    type(talsh_tens_t)        :: pro2_orbital_integral_exe_exe_tensor
+    complex(kind=8)           :: term1_N_state, term2_N_state, property_All_state
+    integer                   :: iff
 
+    nvir = exa_input%nvir
+    nocc = exa_input%nocc
+    
     call print_date('Enter CIS transition property routine')
-    call get_prop_integral(exa_input,pro_orbital_integral_exe_grd_tensor,&
-                            pro_orbital_integral_exe_exe_tensor)
+    call get_prop_integral(exa_input,pro1_orbital_integral_exe_grd_tensor,& 
+                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,iff)
+
+    call get_prop_integral(exa_input,pro1_orbital_integral_exe_exe_tensor,&
+                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,iff)
+
+    call get_prop_integral(exa_input,pro2_orbital_integral_exe_grd_tensor,& 
+                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,iff)
+
+    call get_prop_integral(exa_input,pro2_orbital_integral_exe_exe_tensor,&
+                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,iff)
 
     Total_state = size(eVectors,2)
     property_All_state = (0.0,0.0)
@@ -48,10 +64,13 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors,tar_state)
     do N_state =1, Total_state
         call get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_exe_exe_tensor)
         call get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_tensor)
-        call get_property(exa_input,eValues,pro_orbital_integral_exe_grd_tensor,& 
-                        pro_orbital_integral_exe_exe_tensor, Tra_Den_exe_exe_tensor,&
-                        Tra_Den_exe_grd_tensor,property_N_state)
-        property_All_state = property_All_state + property_N_state
+        call get_property(exa_input,eValues,N_state,&
+                        pro1_orbital_integral_exe_grd_tensor,pro2_orbital_integral_exe_exe_tensor,& 
+                        Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,term1_N_state)
+        call get_property(exa_input,eValues,N_state,&
+                        pro2_orbital_integral_exe_grd_tensor,pro1_orbital_integral_exe_exe_tensor,& 
+                        Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,term2_N_state)
+        property_All_state = property_All_state + term1_N_state + term2_N_state
     end do 
 
     call print_date('Leave CIS transition property routine')    
@@ -60,164 +79,81 @@ end subroutine talsh_cis_pro_driver
 
 !-----------------------------------------------------------------------------------------------------------------        
 
-subroutine get_prop_integral(exa_input,orb_int_exe_grd_tensor,orb_int_exe_exe_tensor)
+subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,iff)
     ! Read proporty integrals from  MDPROP file 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_tens_t)        :: orb_int_exe_grd_tensor
-    type(talsh_tens_t)        :: orb_int_exe_exe_tensor
+    type(talsh_tens_t)        :: orb_int_tensor
     
 
     type(C_PTR) :: body_p
     integer(C_INT) :: ierr
-    integer(INTD), dimension(2)  :: vo_dims, vv_dims
     integer                      :: nocc, nvir
-    complex(8), pointer, contiguous :: orbital_integral_exe_grd_tens(:,:)
-    complex(8), pointer, contiguous :: orbital_integral_exe_exe_tens(:,:)  
-
-    nocc = exa_input%nocc
-    nvir = exa_input%nvir
-    vv_dims =nvir
-    vo_dims(1) = nvir
-    vo_dims(2) = nocc
-
-    ierr=talsh_tensor_construct(orb_int_exe_grd_tensor,C8,vo_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(orb_int_exe_exe_tensor,C8,vv_dims,init_val=ZERO)
-
-
-    ierr=talsh_tensor_get_body_access(orb_int_exe_grd_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_point(body_p,orbital_integral_exe_grd_tens,vo_dims)
-    call read_integral(exa_input,orbital_integral_exe_grd_tens,vo_dims,exa_input%mo_vir,exa_input%mo_occ)
-
-
-    ierr=talsh_tensor_get_body_access(orb_int_exe_exe_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_point(body_p,orbital_integral_exe_exe_tens,vv_dims)
-    call read_integral(exa_input,orbital_integral_exe_exe_tens,vv_dims,exa_input%mo_vir,exa_input%mo_vir)
-
-end subroutine get_prop_integral
-
-!------------------------------------------------------------------------------------------------------------------
-
-subroutine read_integral(exa_input,orbital_integral_tens,mo_dims,mo1_list,mo2_list)
-
-    implicit none
-
-!      routine to read property integrals and add these to the int_1el data
-
-    type(exacc_input), intent(in) :: exa_input
-    complex(8), pointer, contiguous :: orbital_integral_tens(:,:)
-    integer(INTD), dimension(2)  :: mo_dims
-    ! integer, parameter     :: NOERROR  = 0 ! no error
-    ! integer, parameter     :: NOTFOUND = 1 ! file not found
-    ! integer, parameter     :: CORRUPT  = 2 ! file unreadable
+    integer                      :: iff
+    complex(kind=8), pointer, contiguous :: orbital_integral_tens(:,:)
 
     integer                :: nmo1          ! the length of the mo basis
     integer                :: mo1_list(:)   ! and their indices
     integer                :: nmo2          ! the length of the mo basis
     integer                :: mo2_list(:)   ! and their indices
     integer                :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+
+    integer(INTD),dimension(2)   :: mo_dims
+
+
+    mo_dims(1) = nmo1
+    mo_dims(2) = nmo2
     
+    ierr=talsh_tensor_construct(orb_int_tensor,C8,mo_dims,init_val=ZERO)
+    ierr=talsh_tensor_get_body_access(orb_int_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_point(body_p,orbital_integral_tens,mo_dims)
 
-    integer :: nkr, n_prop, i_prop
-    ! complex(8), allocatable :: h_prop(:,:)
-
-    character*32           :: label
-    !type(one_el_t), intent(inout) :: int_1el
-    integer                :: ierr
-    ! logical                :: tobe
-    ! integer                :: luone
-    ! integer                :: total_prop, max_prop
-    ! integer                :: nocc, nvir, orbital_index1, orbital_index2
-
-    nmo1 = mo_dims(1)
-    nmo2 = mo_dims(2)
-
-    call read_mdprop(int_1el,ierr)
+    min_occ = minval(exa_input%mo_occ)
     call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
 
 
-!     ierr=NOERROR
-
-!     nocc = exa_input%nocc
-!     nvir = exa_input%nvir
-!     total_prop = nocc + nvir 
-!     max_prop = 100
-
-!     if (mo_dims(1)==nocc) then
-!         orbital_index1 = 1
-!     else 
-!         orbital_index1 = nocc/2 + 1
-!     end if 
-
-!     if (mo_dims(2)==nocc) then
-!         orbital_index2 = 1
-!     else 
-!         orbital_index2 = nocc/2 + 1
-!     end if 
-
-
-! !      open file and read setup infromation
-!     inquire (file='MDPROP',exist=tobe)
-!     if (.not.tobe) then
-!        print*, "error: file MDPROP not found"
-!        ierr = NOTFOUND
-!        return
-!     else
-!        call get_free_fileunit(luone)
-!        open (luone,file='MDPROP',status='OLD',FORM='UNFORMATTED',
-!   &     access='SEQUENTIAL')
-!     end if
-
-! !      allocate auxilliary array to read in
-!     allocate(h_prop(total_prop, total_prop))
-
-! !      count the number of matrices that we need to store
-! !      MDROP has a very simple format: record with label followed by record containing the data
-!     n_prop = 0
-!     do while (n_prop <= max_prop)
-!        read (luone,err=10,end=10) label
-!        if (label(25:32) == 'EOFLABEL') exit
-!        read (luone,err=10,end=10) h_prop
-!        n_prop = n_prop + 1
-!     end do
-!     rewind (luone)
-
-
-! !      store property integrals
-!     if (n_prop == exa_input%nocc + exa_input%nvir) then
-!         allocate(orbital_integral_tens(mo_dims(1),mo_dims(2)))
-!         nkr = total_prop / 2 ! number of Kramers pairs is always half the number of spinors
-
-!         i_prop = orbital_index1 - 1
-!         do while (i_prop < n_prop)
-!             read (luone,err=10,end=10) label
-!             i_prop = i_prop + 1
-!             read (luone,err=10,end=10) h_prop
-!             ! reorder and store in the data type
-!             orbital_integral_tens(1:mo_dims(1):2,1:mo_dims(2):2)
-!         &         = h_prop(orbital_index1:nkr,orbital_index2:nkr)     ! unbar-unbar
-!             orbital_integral_tens(2:mo_dims(1):2,1:mo_dims(2):2)
-!         &         = h_prop(nkr+orbital_index1:total_prop,orbital_index2:nkr)   ! bar-unbar
-!             orbital_integral_tens(1:mo_dims(1):2,2:mo_dims(2):2)
-!         &         = h_prop(orbital_index1:nkr,nkr+orbital_index2:total_prop)   ! unbar-bar
-!             orbital_integral_tens(2:mo_dims(1):2,2:mo_dims(2):2)
-!         &         = h_prop(nkr+orbital_index1:total_prop,nkr+orbital_index2:total_prop) ! bar-bar
-!         end do
-
-!         close (luone,status='KEEP')
-!         deallocate (h_prop)
-!     else
-!         print *, "Error: The number of correlated orbitals in MOLTRA is consisten with Exacorr!!"
-!     end if 
-
-
-
-end subroutine read_integral  
+end subroutine get_prop_integral
 !-------------------------------------------------------------------------------------------------------------------
 
-subroutine get_property(exa_input,eValues,pro_orbital_integral_exe_grd_tensor,& 
+subroutine get_property(exa_input,eValues,N_state,pro_orbital_integral_exe_grd_tensor,& 
                 pro_orbital_integral_exe_exe_tensor, Tra_Den_exe_exe_tensor,&
                 Tra_Den_exe_grd_tensor,property_N_state)
 
+    type(exacc_input), intent(in) :: exa_input
+    complex(kind=8), pointer      :: eValues(:) 
+    integer(C_INT) :: ierr
+    integer(C_INT)     :: one_dims(1)
+    integer :: N_state
 
+
+    type(talsh_tens_t)        :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
+    type(talsh_tens_t)        :: pro_orbital_integral_exe_grd_tensor
+    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_tensor
+    type(talsh_tens_t)        :: TDM_exe_grd_tensor, TDM_exe_exe_tensor
+
+    complex(kind=8), pointer      :: TDM_exe_grd_tens(:), TDM_exe_exe_tens(:)
+    type(C_PTR)                   :: body_p
+    complex(kind=8)               :: property_N_state
+    complex(kind=8)               :: ene_exc
+
+
+
+    one_dims(1) = 1
+    ene_exc = eValues(N_state)
+
+    ierr=talsh_tensor_get_body_access(TDM_exe_grd_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
+    ierr = talsh_tensor_contract("TDM+=OL(a,i)*DM(a,i)",TDM_exe_grd_tensor,pro_orbital_integral_exe_grd_tensor,&
+                                Tra_Den_exe_grd_tensor,scale=ONE)
+
+
+    ierr=talsh_tensor_get_body_access(TDM_exe_exe_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,TDM_exe_exe_tens,one_dims)
+    ierr = talsh_tensor_contract("TDM+=OL(a,b)*DM(a,b)",TDM_exe_exe_tensor,pro_orbital_integral_exe_exe_tensor,&
+                                Tra_Den_exe_exe_tensor,scale=ONE)
+
+
+    property_N_state = TDM_exe_grd_tens(1)*TDM_exe_exe_tens(1)/ene_exc
 
 end subroutine get_property
+
+end module

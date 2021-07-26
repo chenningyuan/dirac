@@ -26,6 +26,8 @@ if(ENABLE_EXATENSOR)
    talsh_gradient.F90
    talsh_cc.F90
    talsh_cis.F90
+   talsh_cis_property.F90
+   talsh_cis_density.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

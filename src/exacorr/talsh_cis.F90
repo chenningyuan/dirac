@@ -5,6 +5,7 @@ module talsh_cis
     use exacorr_datatypes
     use exacorr_utils
     use talsh_common_routines
+    use talsh_cis_property
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                  ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
@@ -26,7 +27,6 @@ module talsh_cis
     ! Written by Xiang Yuan, June 2020
         use exacorr_global
         use talsh_ao_to_mo
-        use talsh_gradient
 
 
         type(exacc_input), intent(in) :: exa_input
@@ -62,6 +62,7 @@ module talsh_cis
 !        CIS control and result variables
          real(8) :: tem
          integer :: ncycles
+         integer :: tar_state
 
 !        Initialize libraries
          buf_size=exa_input%talsh_buff*buf_size
@@ -183,6 +184,9 @@ module talsh_cis
         call diagoanl_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
 !   Sort the eigenvector according to the excitation energy 
         call sort_cis_eig(eValues,eVectorsR)
+        tar_state = 10
+        call talsh_cis_pro_driver(exa_input,eValues,eVectorsR,tar_state)
+
          
         ! do i=1, size(eVectorsR,1)
         !     print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))

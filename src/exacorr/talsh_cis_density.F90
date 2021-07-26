@@ -31,11 +31,11 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_
 
     type(talsh_tens_t)            :: Tra_Den_exe_exe_tensor
 
-    complex(kind=8), pointer      :: Den_eff(:,:)
+    !complex(kind=8), pointer      :: Den_eff(:,:)
     type(C_PTR):: body_p
     integer(C_INT)       :: ierr
-    type(talsh_tens_t) :: CIS_eigen_tensor
-    complex(8), pointer, contiguous :: h_tens(:,:)
+    type(talsh_tens_t) :: CIS_eigen_tensor_left, CIS_eigen_tensor_right
+    !complex(kind=8), pointer, contiguous :: h_tens(:,:)
 
     integer              :: i, j
     integer              :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
@@ -49,13 +49,15 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_
     vv_dims = nvir
 
     ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor,C8,vv_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(CIS_eigen_tensor,C8,cis_eig_dims,init_val=ZERO)
+    ierr=talsh_tensor_construct(CIS_eigen_tensor_left,C8,cis_eig_dims,init_val=ZERO)
+    ierr=talsh_tensor_construct(CIS_eigen_tensor_right,C8,cis_eig_dims,init_val=ZERO)
 
 
     !       Reshape CIS eigenvector matrix
-    call reshape_cis(eVectors,CIS_eigen_tensor,cis_eig_dims,N_state)
+    call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,N_state)
+    call reshape_cis(eVectors,CIS_eigen_tensor_right,cis_eig_dims,tar_state)
 
-    ierr=talsh_tensor_contract("TDM(a,b)+=CISR(a,i)*CISR(b,i)",Tra_Den_exe_exe_tensor,CIS_eigen_tensor,CIS_eigen_tensor,scale=ONE)
+    ierr=talsh_tensor_contract("TDM(a,b)+=CISL(a,i)*CISR(b,i)",Tra_Den_exe_exe_tensor,CIS_eigen_tensor_left,CIS_eigen_tensor_right)
 
     !        ierr=talsh_tensor_get_body_access(Tra_Den_exe_exe_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     !        call c_f_pointer(body_p,h_tens,vv_dims) ! to use as a regular Fortran array
@@ -66,12 +68,13 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_
     !            end do
     !        end do
 
-    ierr=talsh_tensor_destruct(CIS_eigen_tensor)
+    ierr=talsh_tensor_destruct(CIS_eigen_tensor_left)
+    ierr=talsh_tensor_destruct(CIS_eigen_tensor_right)
 
     call print_date('Leave CIS effective excited states density routine')
     
     
-        end subroutine get_cis_density_exe_exe
+    end subroutine get_cis_density_exe_exe
 !---------------------------------------------------------------------------------------------------------------
 
 subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_tensor)
@@ -81,15 +84,15 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     type(talsh_tens_t)            :: Tra_Den_exe_grd_tensor
 
 
-    complex(kind=8), pointer      :: Den_eff(:,:)
+    !complex(kind=8), pointer      :: Den_eff(:,:)
     type(C_PTR):: body_p
     integer(C_INT)       :: ierr
     type(talsh_tens_t) :: Iden_tensor,CIS_eigen_tensor
-    complex(8), pointer, contiguous :: h_tens(:,:), iden_tens(:,:)
+    complex(kind=8), pointer, contiguous :: iden_tens(:,:)
 
     integer :: i, j, k, q
     integer              :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-    real(8), allocatable :: norm_cis(:)
+    real(kind=8), allocatable :: norm_cis(:)
     integer(INTD), dimension(2) :: oo_dims, vv_dims
     integer(INTD), dimension(2) :: cis_eig_dims
     
@@ -100,7 +103,7 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     
 
 !   Reshape CIS eigenvector matrix
-    call reshape_cis(eVectors,CIS_eigen_tensor)
+    call reshape_cis(eVectors,CIS_eigen_tensor,cis_eig_dims,N_state)
 
 !   Identity matrix
     oo_dims = nocc
@@ -137,22 +140,23 @@ subroutine reshape_cis(eVectors,CIS_eigen_tensor,cis_eig_dims,N_state)
 
     type(C_PTR):: body_p
     integer(C_INT)       :: ierr
-    complex(8), pointer, contiguous :: cis_eig_tens(:,:)
+    complex(kind=8), pointer, contiguous :: cis_eig_tens(:,:)
 
     integer :: i, j, q
     
     ierr=talsh_tensor_get_body_access(CIS_eigen_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,cis_eig_tens,cis_eig_dims) ! to use as a regular Fortran array
     cis_eig_tens = ZERO
-        do j = 1, nocc
-            do i = 1, nvir
-                q = (j-1)*nvir + i
+        do j = 1, cis_eig_dims(2)
+            do i = 1, cis_eig_dims(1)
+                q = (j-1)*cis_eig_dims(1) + i
                 cis_eig_tens(i,j) = eVectors(q,N_state)
             end do
         end do
 
 end subroutine reshape_cis    
 
-!---------------------------------------------------------------------------------------------------------
+end module
+
 
 
