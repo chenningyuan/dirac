@@ -180,25 +180,15 @@ module talsh_cis
          end do 
 
 
-         call diagoanl_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
-!        Sort the eigenvector according to the excitation energy 
-        !  do i=1,size(eValues)-1,1
-        !     do j=i+1,size(eValues),1
-        !     tem = abs(eValues(i))
-        !     if (abs(eValues(i)) > abs(eValues(j))) then
-        !         tem=eValues(i)
-        !         eValues(i)=eValues(j)
-        !         eValues(j)=tem
-        !     end if 
-        !     end do 
-        !  end do
-         call sort_cis_eig(eValues,eVectorsR)
+        call diagoanl_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
+!   Sort the eigenvector according to the excitation energy 
+        call sort_cis_eig(eValues,eVectorsR)
          
-        do i=1, size(eVectorsR,1)
-            print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))
-        end do
+        ! do i=1, size(eVectorsR,1)
+        !     print "(*(F6.2,1X),/)", abs(eVectorsR(i,:))
+        ! end do
 
-!       Print CIS energy
+!   Print CIS energy
         n =10  !number of state print
         call print_energy_CIS(eValues,size(eValues),n)
 
