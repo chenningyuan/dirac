@@ -102,10 +102,10 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
 
     mo_dims(1) = nmo1
     mo_dims(2) = nmo2
-    
+
     ierr=talsh_tensor_construct(orb_int_tensor,C8,mo_dims,init_val=ZERO)
     ierr=talsh_tensor_get_body_access(orb_int_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_point(body_p,orbital_integral_tens,mo_dims)
+    call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
     min_occ = minval(exa_input%mo_occ)
     call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
