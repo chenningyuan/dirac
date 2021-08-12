@@ -34,29 +34,41 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors,tar_state)
     integer                       :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
  
 
-    type(talsh_tens_t)        :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
+    type(talsh_dm_tens)       :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
     type(talsh_tens_t)        :: pro1_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro1_orbital_integral_exe_exe_tensor
+    type(talsh_tens_t)        :: pro1_orbital_integral_exe_exe_vv_tensor
+    type(talsh_tens_t)        :: pro1_orbital_integral_exe_exe_oo_tensor
     type(talsh_tens_t)        :: pro2_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro2_orbital_integral_exe_exe_tensor
+    type(talsh_tens_t)        :: pro2_orbital_integral_exe_exe_vv_tensor
+    type(talsh_tens_t)        :: pro2_orbital_integral_exe_exe_oo_tensor
     complex(kind=8)           :: term1_N_state, term2_N_state, property_All_state
-    integer                   :: iff
+    integer                   :: prop_1, prop_2
 
     nvir = exa_input%nvir
     nocc = exa_input%nocc
-    
+    prop_1 = 1
+    prop_2 = 2
+
+
     call print_date('Enter CIS transition property routine')
     call get_prop_integral(exa_input,pro1_orbital_integral_exe_grd_tensor,& 
-                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,iff)
+                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,prop_1)
 
-    call get_prop_integral(exa_input,pro1_orbital_integral_exe_exe_tensor,&
-                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,iff)
+    call get_prop_integral(exa_input,pro1_orbital_integral_exe_exe_vv_tensor,&
+                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,prop_2)
+
+    call get_prop_integral(exa_input,pro1_orbital_integral_exe_exe_oo_tensor,&
+                            nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,prop_2)
 
     call get_prop_integral(exa_input,pro2_orbital_integral_exe_grd_tensor,& 
-                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,iff)
+                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,prop_2)
 
-    call get_prop_integral(exa_input,pro2_orbital_integral_exe_exe_tensor,&
-                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,iff)
+    call get_prop_integral(exa_input,pro2_orbital_integral_exe_exe_vv_tensor,&
+                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,prop_1)
+
+    call get_prop_integral(exa_input,pro2_orbital_integral_exe_exe_oo_tensor,&
+                            nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,prop_1)
+
 
     Total_state = size(eVectors,2)
     property_All_state = (0.0,0.0)
@@ -64,22 +76,28 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors,tar_state)
     do N_state =1, Total_state
         call get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_exe_exe_tensor)
         call get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_tensor)
+
         call get_property(exa_input,eValues,N_state,&
-                        pro1_orbital_integral_exe_grd_tensor,pro2_orbital_integral_exe_exe_tensor,& 
+                        pro1_orbital_integral_exe_grd_tensor,pro2_orbital_integral_exe_exe_vv_tensor,& 
+                        pro2_orbital_integral_exe_exe_oo_tensor,&
                         Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,term1_N_state)
+
         call get_property(exa_input,eValues,N_state,&
-                        pro2_orbital_integral_exe_grd_tensor,pro1_orbital_integral_exe_exe_tensor,& 
+                        pro2_orbital_integral_exe_grd_tensor,pro1_orbital_integral_exe_exe_vv_tensor,& 
+                        pro1_orbital_integral_exe_exe_oo_tensor,&
                         Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,term2_N_state)
+
         property_All_state = property_All_state + term1_N_state + term2_N_state
     end do 
 
+    print *, "print result", property_All_state
     call print_date('Leave CIS transition property routine')    
 
 end subroutine talsh_cis_pro_driver
 
 !-----------------------------------------------------------------------------------------------------------------        
 
-subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,iff)
+subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,i_prop)
     ! Read proporty integrals from  MDPROP file 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_tens_t)        :: orb_int_tensor
@@ -88,7 +106,7 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
     type(C_PTR) :: body_p
     integer(C_INT) :: ierr
     integer                      :: nocc, nvir
-    integer                      :: iff
+    integer                      :: i_prop
     complex(kind=8), pointer, contiguous :: orbital_integral_tens(:,:)
 
     integer                :: nmo1          ! the length of the mo basis
@@ -108,15 +126,18 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
     min_occ = minval(exa_input%mo_occ)
-    call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    call print_date('Get property integrals')    
+
 
 
 end subroutine get_prop_integral
 !-------------------------------------------------------------------------------------------------------------------
 
 subroutine get_property(exa_input,eValues,N_state,pro_orbital_integral_exe_grd_tensor,& 
-                pro_orbital_integral_exe_exe_tensor, Tra_Den_exe_exe_tensor,&
-                Tra_Den_exe_grd_tensor,property_N_state)
+                pro_orbital_integral_exe_exe_vv_tensor,pro_orbital_integral_exe_exe_oo_tensor,&
+                Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,property_N_state)
 
     type(exacc_input), intent(in) :: exa_input
     complex(kind=8), pointer      :: eValues(:) 
@@ -125,12 +146,13 @@ subroutine get_property(exa_input,eValues,N_state,pro_orbital_integral_exe_grd_t
     integer :: N_state
 
 
-    type(talsh_tens_t)        :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
+    type(talsh_dm_tens)       :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
     type(talsh_tens_t)        :: pro_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_tensor
-    type(talsh_tens_t)        :: TDM_exe_grd_tensor, TDM_exe_exe_tensor
+    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_vv_tensor
+    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_oo_tensor
+    type(talsh_tens_t)        :: TDM_exe_grd_tensor, TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
 
-    complex(kind=8), pointer      :: TDM_exe_grd_tens(:), TDM_exe_exe_tens(:)
+    complex(kind=8), pointer      :: TDM_exe_grd_tens(:), TDM_exe_exe_vv_tens(:), TDM_exe_exe_oo_tens(:)
     type(C_PTR)                   :: body_p
     complex(kind=8)               :: property_N_state
     complex(kind=8)               :: ene_exc
@@ -140,19 +162,27 @@ subroutine get_property(exa_input,eValues,N_state,pro_orbital_integral_exe_grd_t
     one_dims(1) = 1
     ene_exc = eValues(N_state)
 
+    ierr=talsh_tensor_construct(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=talsh_tensor_construct(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
+    ierr=talsh_tensor_construct(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
+
     ierr=talsh_tensor_get_body_access(TDM_exe_grd_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
     ierr = talsh_tensor_contract("TDM+=OL(a,i)*DM(a,i)",TDM_exe_grd_tensor,pro_orbital_integral_exe_grd_tensor,&
-                                Tra_Den_exe_grd_tensor,scale=ONE)
+                                Tra_Den_exe_grd_tensor%prime_vo,scale=ONE)
 
 
-    ierr=talsh_tensor_get_body_access(TDM_exe_exe_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,TDM_exe_exe_tens,one_dims)
-    ierr = talsh_tensor_contract("TDM+=OL(a,b)*DM(a,b)",TDM_exe_exe_tensor,pro_orbital_integral_exe_exe_tensor,&
-                                Tra_Den_exe_exe_tensor,scale=ONE)
+    ierr=talsh_tensor_get_body_access(TDM_exe_exe_vv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,TDM_exe_exe_vv_tens,one_dims)
+    ierr = talsh_tensor_contract("TDM+=OL(a,b)*DM(a,b)",TDM_exe_exe_vv_tensor,pro_orbital_integral_exe_exe_vv_tensor,&
+                                Tra_Den_exe_exe_tensor%prime_vv,scale=ONE)
 
+    ierr=talsh_tensor_get_body_access(TDM_exe_exe_oo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,TDM_exe_exe_oo_tens,one_dims)
+    ierr = talsh_tensor_contract("TDM+=OL(i,j)*DM(i,j)",TDM_exe_exe_oo_tensor,pro_orbital_integral_exe_exe_oo_tensor,&
+                                Tra_Den_exe_exe_tensor%prime_oo,scale=ONE)
 
-    property_N_state = TDM_exe_grd_tens(1)*TDM_exe_exe_tens(1)/ene_exc
+    property_N_state = TDM_exe_grd_tens(1)*(TDM_exe_exe_vv_tens(1)+TDM_exe_exe_oo_tens(1))/ene_exc
 
 end subroutine get_property
 
