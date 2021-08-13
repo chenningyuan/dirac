@@ -23,7 +23,7 @@ test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=
 f = Filter()
 
 f.add(from_string = '    -     Final results from EXACORR     -    ',
-      num_lines   = 8,
+      num_lines   = 6,
       rel_tolerance   = 1.0e-8)
 f.add(from_string = '* Dipole moment:',
       num_lines   = 9,
