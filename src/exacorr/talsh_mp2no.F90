@@ -8,7 +8,7 @@ module talsh_mp2no
         use talsh_common_routines
         use exacorr_mo
         use exacorr_global
-        use matrix_complex_to_quaternion 
+        use mp2no_matrixtransforms
         use write_orbital_to_file
         use, intrinsic:: ISO_C_BINDING
 
@@ -353,7 +353,6 @@ module talsh_mp2no
                   real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                   integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
-                  character                          :: mat                     ! flag used for matrix basis transform
                   integer                            :: i
 
                                                         
@@ -378,8 +377,7 @@ module talsh_mp2no
                   call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
                   call print_date('read Fock matrix from DFCOEF')
 
-                  mat = 'Matrix'
-                  call basis_transform(Fock_HF,NOs_MO,Fock_NO,mat)
+                  call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
                   call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
 
                   call quater_write(Fock_NO,"FM_in_NatOrb")
@@ -412,7 +410,6 @@ module talsh_mp2no
             real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
             integer                            :: sz,flb,fl,sz_occ        ! size of matrix and flag for block
-            character                          :: mat                     ! flag used for matrix basis transform
             integer                            :: i,j,k
             
             
@@ -449,15 +446,13 @@ module talsh_mp2no
             call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
             call print_date('read Fock matrix from DFCOEF')
 
-            mat = 'Matrix'
-            call basis_transform(Fock_HF,NOs_MO_reduced,Fock_NO,mat)
+            call basis_transform_matrix(Fock_HF,NOs_MO_reduced,Fock_NO)
             call print_date('transformed Fock matrix into reduced NO basis')
             
             call get_Cano_Orbital(NOs_MO_reduced,New_cano_MO,Fock_NO,New_orbital_energy)
             call print_date('got new Canonical orbital in MO basis')
 
-            fl = 0 
-            call basis_transform(New_cano_MO,HF_AO,NOs_AO,fl)
+            call basis_transform_vector(New_cano_MO,HF_AO,NOs_AO)
             call print_date('got new orbitals in AO basis')
 
             call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)

@@ -1,26 +1,16 @@
-module matrix_complex_to_quaternion
+module mp2no_matrixtransforms
 ! This module contains the routines needed to calculate the mp2 natural orbitals 
 ! Including quaternion matrix digonalization and multiplication
 ! Written by Xiang Yuan.
 
-        use exacorr_utils
-        use, intrinsic:: ISO_C_BINDING
-
         implicit none
 
-        interface basis_transform
-         module procedure basis_transform_vector
-         module procedure basis_transform_matrix
-        end interface
-
-        public read_matrix_comp,sort_values_vectors,basis_transform,diagoanl_matrix_quater, &
-               complex_to_quaternion,get_Cano_Orbital
-
        contains
+
 !------------------------------------------------------------------------------------------------------------------------------------- 
        subroutine read_matrix_comp(Matrix, Matrix_file)
 !       read complex density matrix from 'DM_complex' 
-
+        use exacorr_utils
 
         complex(kind=8), pointer, intent(inout)  :: Matrix(:,:)   ! complex matrix from DM_complex
         character(len=*), intent(in)             :: Matrix_file
@@ -76,21 +66,19 @@ module matrix_complex_to_quaternion
         end subroutine sort_values_vectors
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-        subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out,fl)
+        subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out)
 !        Routine to do basis transform by quaternion matrix multiplication(vectors).
-!        We follows V' = U * V.
-!        V': vectors in new basis;  V: vectors in old basis; U: transform matrix;        
-                
-           !input variables
-           real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! vectors in old basis
-           real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! transform matrix
-           real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! tvectors in new basis
-           integer, intent(inout)                 :: fl
+!        We follow V' = U * V.
+!        V': vectors in new basis;  V: vectors in old basis; U: transformation matrix;        
 
-           integer                   :: LRA, LCA, NZA
-           integer                   :: LRB, LCB, NZB
-           integer                   :: LRC, LCC, NZC
-           integer                   :: re
+           !input variables
+           real(kind=8), intent(in)               :: mat_basis1_in(:,:,:)    ! vectors in old basis
+           real(kind=8), intent(in)               :: basis2_in(:,:,:)        ! transformation matrix
+           real(kind=8), intent(inout), pointer   :: mat_basis2_out(:,:,:)   ! vectors in new basis
+
+           integer                   :: LRA, LCA
+           integer                   :: LRB, LCB
+           integer                   :: LRC, LCC
 
            LRA = size(basis2_in,1)
            LCA = size(basis2_in,2)
@@ -98,151 +86,57 @@ module matrix_complex_to_quaternion
            LCB = size(mat_basis1_in,2)
            LRC = size(basis2_in,1)
            LCC = size(mat_basis1_in,2)
-
-           NZA = 4
-           NZB = 4
-           NZC = 4
-
            allocate(mat_basis2_out(LRC,LCC,4))
 
-           call qua_mat_mulp(basis2_in,mat_basis1_in,mat_basis2_out,fl,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
+           ! We do not use symmetry so NZ is always 4 and the active quaternion units are 1 to 4.
+           call qgemm(LRA,LCB,LCA,1.D0,'N','N',(/1,2,3,4/),basis2_in,LRA,LCA,4, & 
+                      'N','N',(/1,2,3,4/),mat_basis1_in,LRB,LCB,4,0.D0, &
+                      (/1,2,3,4/),mat_basis2_out,LRC,LCC,4)    
                       
         end subroutine basis_transform_vector
 
 
 !-----------------------------------------------------------------------------------------------------------------------------------
-        subroutine basis_transform_matrix (mat_basis1_in,basis2_in,mat_basis2_out,mat)
+        subroutine basis_transform_matrix (mat_basis1_in,basis2_in,mat_basis2_out)
 !        Routine to do basis transform by quaternion matrix multiplication(matrix). 
 !        We do similar Transform follows C = A^{-1}BA
 !        C: matrix in new basis;  B: matrix in old basis; A: change of basis matrix, A should be a unitary matrix;       
-                         
+
          !input variables
-         real(kind=8), pointer, intent(inout)   :: mat_basis1_in(:,:,:)    ! matrix in old basis(matrix_B)
-         real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! change of basis matrix(matrix_A)
-         real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! matrix in new basis(matrix_C)
-         character                              :: mat                     ! flag used for matrix basis transform
+         real(kind=8), pointer, intent(inout)   :: basis2_in(:,:,:)        ! transformation matrix (matrix_A)
+         real(kind=8), pointer, intent(in)      :: mat_basis1_in(:,:,:)    ! matrix in old basis(matrix_B)
+         real(kind=8), pointer, intent(inout)   :: mat_basis2_out(:,:,:)   ! matrix in new basis (matrix_C)
 
-         integer                                :: re,fl
-         real(kind=8), pointer                  :: aux(:,:,:)              ! auxilary matrix used in qgemm
-         integer                                :: LRA, LCA, NZA
-         integer                                :: LRB, LCB, NZB
-         integer                                :: LR_au, LC_au, NZ_au
-         integer                                :: LRC, LCC, NZC
-
+         integer                                :: LRA, LCA
+         integer                                :: LRB, LCB
+         integer                                :: LRC, LCC
+         integer                                :: iprint
 
          LRA = size(basis2_in,1)
          LCA = size(basis2_in,2)
          LRB = size(mat_basis1_in,1)
          LCB = size(mat_basis1_in,2)
-         LR_au = size(basis2_in,2)
-         LC_au = size(mat_basis1_in,2)
          LRC = size(basis2_in,2)
          LCC = size(basis2_in,2)
-
-         NZA =   4
-         NZB =   4
-         NZ_au = 4 
-         NZC =   4
-
-         allocate(aux(LR_au,LC_au,NZ_au))
          allocate(mat_basis2_out(LRC,LCC,4))
+
+         ! We do not use symmetry so NZ is always 4 and the active quaternion units are 1 to 4.
+         iprint = 0
+         call qtrans90('AOMO','S',0.D0,LRB,LCB,LRC,LCC,&
+                        mat_basis1_in,LRB,LCB,4,(/1,2,3,4/), &    
+                        mat_basis2_out,LRC,LCC,4,(/1,2,3,4/), &
+                        basis2_in,LRA,LCA,4,(/1,2,3,4/), & 
+                        basis2_in,LRA,LCA,4,(/1,2,3,4/), & 
+                        iprint)
          
-         fl = 1
-         call qua_mat_mulp(basis2_in,mat_basis1_in,aux,fl,LRA,LCA,NZA,LRB,LCB,NZB,LR_au,LC_au,NZ_au)
-         fl = 0
-         call qua_mat_mulp(aux,basis2_in,mat_basis2_out,fl,LR_au,LC_au,NZ_au,LRA,LCA,NZA,LRC,LCC,NZC) 
-
-         deallocate(aux)
-
         end subroutine basis_transform_matrix
 
 
-!-------------------------------------------------------------------------------------------------------------------------------------            
-      subroutine qua_mat_mulp (A,B,C,flag,LRA,LCA,NZA,LRB,LCB,NZB,LRC,LCC,NZC)
-!        Routine to do quaternion matrix multiplication. 
-!        Use qgemm routine from qalebra.F.
-                         
-         !input variables         
-         real(kind=8), pointer, intent(inout)  :: A(:,:,:), B(:,:,:), C(:,:,:)               ! matrix used in qgemm
-         integer, intent(in)                   :: flag
-         integer, intent(in)                   :: LRA, LCA, NZA
-         integer, intent(in)                   :: LRB, LCB, NZB
-         integer, intent(in)                   :: LRC, LCC, NZC 
-
-
-         integer                   :: M, N, K                              !paramter for blas routine dgemm
-
-         integer, allocatable      :: IQPA(:), IQPB(:), IQPC(:)        
-         real(kind=8)              :: ALPHA, BETA
-         character                 :: FA, FB ,TA ,TB
-         integer                   :: i, tem
-            
-         M = LRA
-         N = LCB
-         K = LCA
-
-
-         FA = 'N'
-         FB = 'N'
-         TA = 'N'
-         TB = 'N'
-         
-         ALPHA = 1.0
-         BETA = 0.0
-         
-         
-         allocate(IQPA(NZA))
-         allocate(IQPB(NZB))
-         allocate(IQPC(NZC)) 
-
-         do i = 1, NZA
-            IQPA(i) = i
-            IQPB(i) = i
-            IQPC(i) = i
-         end do            
-
-!       There three options: 
-!       Case_1 does C=A^{dagger}*B; Case_2 C=A*B^{dagger}; Case_3 does C=A*B
-         if (flag == 1) then ! Case_1
-
-            FA = 'H'
-            tem = M
-            M = K
-            K = tem
-
-            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
-                     FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
-                     IQPC,C,LRC,LCC,NZC)      
-
-         else if (flag == -1) then ! Case_2           
-            FB = 'H'
-            tem = N
-            N = K
-            K = tem
-         
-            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
-                        FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
-                        IQPC,C,LRC,LCC,NZC)     
-
-         else ! Case_3
-            call qgemm(M,N,K,ALPHA,FA,TA,IQPA,A,LRA,LCA,NZA, & 
-                       FB,TB,IQPB,B,LRB,LCB,NZB,BETA, &
-                       IQPC,C,LRC,LCC,NZC)    
-         end if
-
-
-         deallocate(IQPA)
-         deallocate(IQPB)
-         deallocate(IQPC)
-                               
-
-      end subroutine qua_mat_mulp
-         
 !-------------------------------------------------------------------------------------------------------------------------------------                                                   
         subroutine diagoanl_matrix_quater(A,EIG,VEC)
 ! Set parameter needed in qdiag
-                 
-            real(kind=8), intent(in), pointer :: A(:,:,:)
+
+            real(kind=8), intent(in) :: A(:,:,:)
             real(kind=8), pointer :: EIG(:)
             real(kind=8), pointer :: VEC(:,:,:)                 
             integer :: LRA, LCA, LRV, LCV
@@ -326,7 +220,7 @@ module matrix_complex_to_quaternion
 
 !-------------------------------------------------------------------------------------------------------------------------------------     
       subroutine get_Cano_Orbital(orbital_noncano,orbital_cano,Fock_NO,New_orbital_energy)
-! This subroutine is used for constructing the canonical orbital
+! This subroutine is used for constructing the canonical orbitals
 
          !input variables
          real(kind=8), pointer,intent(inout)   :: orbital_noncano(:,:,:)          ! non-canonical orbital in HF mo basis
@@ -334,16 +228,20 @@ module matrix_complex_to_quaternion
          real(kind=8), pointer,intent(out)     :: New_orbital_energy(:)           ! new orbital energy from qdia of Fock matrix in non-canonical orbital basis
          real(kind=8), pointer,intent(inout)   :: Fock_NO(:,:,:)                  ! v-v block of Fock matrix in non-canonical orbital basis
 
-         real(kind=8), pointer              :: orbital_cano_basis_noncano(:,:,:)  ! canonical orbital in non-canonical orbital basis
-         integer                            :: fl, i, j
+         real(kind=8),allocatable     :: orbital_cano_basis_noncano(:,:,:)  ! canonical orbital in non-canonical orbital basis
+         integer                      :: n, ierr
 
          ! Diagonalize new FM to obtain the new canonical orbital 
-         call diagoanl_matrix_quater(Fock_NO, New_orbital_energy, orbital_cano_basis_noncano)
+         N = size(Fock_NO,1)
+         if (size(Fock_NO,2) /= N) stop " non-square matrix in MP2NO "
+         allocate (New_orbital_energy(N))
+         allocate(orbital_cano_basis_noncano(N,N,4))
+         call qdiag90(4,N,Fock_NO,N,N,New_orbital_energy,1,orbital_cano_basis_noncano,N,N,ierr)
+
          ! Transform the new canonical orbital from non-canonical orbital basis into HF mo basis
-         fl = 0
-         call basis_transform(orbital_cano_basis_noncano, orbital_noncano, orbital_cano, fl)         
+         call basis_transform_vector(orbital_cano_basis_noncano, orbital_noncano, orbital_cano)         
+         deallocate (orbital_cano_basis_noncano)
 
       end subroutine get_Cano_Orbital
  
-end module matrix_complex_to_quaternion
-
+end module mp2no_matrixtransforms

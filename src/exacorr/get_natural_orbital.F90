@@ -3,7 +3,7 @@ module get_natural_orbital
 
         use exacorr_datatypes
         use exacorr_global,only: get_nsolutions
-        use matrix_complex_to_quaternion 
+        use mp2no_matrixtransforms 
         use write_orbital_to_file
         use, intrinsic:: ISO_C_BINDING
 
@@ -61,10 +61,6 @@ module get_natural_orbital
                   real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
                   integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
 
-!                  real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-!                  real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-!                  integer                            :: sz,flb                  ! size of matrix and flag for block
-!                  character                          :: mat                     ! flag used for matrix basis transform
                   integer                            :: i,j,k,q,sz_print
                   real                               :: trace,compact
                   real(kind=8)                       :: temp
@@ -75,11 +71,6 @@ module get_natural_orbital
                   call quater_read(NROOT,density_quat_read)
                   call print_date('Read density matrix (quaternion basis)')
                   trace = 0
-      !            do i=1, size(density_quat,1)
-      !                  trace = trace+density_quat(i,i,1)
-      !            end do
-
-      !            print *, "print DM_trace in talsh_no", trace
                   
                   do i=1, NORBT
                      do j =1, NORBT
@@ -91,7 +82,6 @@ module get_natural_orbital
                   end do
 
                   flb = 0                                    
-!                  sz = exa_input%nkr_vir + exa_input%nkr_occ   
                   sz = NORBT
                   sz_occ = N_CORR_OCC
                   call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
@@ -100,11 +90,7 @@ module get_natural_orbital
                   call diagoanl_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
                   call print_date('Diagonalized density matrix (quaternion basis)')       
 
-!                  call sort_values_vectors (N_OCCUPATION,NOs_MO)
-!                  call print_date('Sort quaterbion natural orbital')
-
-                  fl = 0 
-                  call basis_transform(NOs_MO,HF_AO,NOs_AO,fl)
+                  call basis_transform_vector(NOs_MO,HF_AO,NOs_AO)
                   call print_date('Get new orbital in AO basis')
 
                   trace = 0.0
@@ -138,7 +124,6 @@ module get_natural_orbital
                         j= (i-1)*5+1
                         write(*,"(F10.7,3X,F10.7,3X,F10.7,3X,F10.7,3X,F10.7)") N_OCCUPATION(j), N_OCCUPATION(j+1), &
                         N_OCCUPATION(j+2),N_OCCUPATION(j+3), N_OCCUPATION(j+4)
-      !                  print *, ' Orbital',i,'  :Occupation number: ', N_OCCUPATION(i)
                   end do
 
                   j = k*5+1
@@ -163,18 +148,6 @@ module get_natural_orbital
                   print *, "Sum of occupation numbers of occupied orbitals (2)", compact
                   print *, "Note : (1) should equal the total number or correlated electrons"
 
-                    
-!                  flb = 0                     ! we read vv block of Fock matrix
-!                  sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
-!                  call quater_read_from_dirac_fock(Fock_HF,sz,flb)
-!                  call print_date('Read Fock matrix from DFCOEF')
-
-!                  mat = 'Matrix'
-!                  call basis_transform(Fock_HF,NOs_MO,Fock_NO,mat)
-!                  call print_date('Get full vv Fock matrix in natural orbital basis')
-
-!                  call quater_write(Fock_NO,"FM_in_NatOrb")
-!                  call print_date('Write the Full Fock matrix of natural orbital in file FM_in_NatOrb')
                   deallocate(density_quat_read)
                         
       end subroutine get_transform_NO
