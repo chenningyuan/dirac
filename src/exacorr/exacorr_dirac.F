@@ -150,7 +150,10 @@ C***********************************************************************
 
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
+      use talsh_mp2no,only          : talsh_mp2no_driver
+      use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
       use exacorr_utils, only       : print_date
@@ -161,6 +164,7 @@ C***********************************************************************
       implicit none
 
       integer              :: mytid                    ! MPI rank
+      integer              :: n_mp2no,i                 
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
@@ -201,17 +205,27 @@ C
 #endif
 
       if (exa_input%talsh) then
+       if (exa_input%do_no) then
+         call get_no_driver (exa_input)
+       else if (exa_input%mp2no) then
+         call talsh_mp2no_driver (exa_input,n_mp2no)
+       else
          call talsh_cc_driver (exa_input)
+       end if
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
-         if (exa_input%lambda) then 
-           if (mytid == 0) call set_prop_flags_ccsd()
-         end if
+       if (exa_input%lambda) then 
+              if (mytid == 0) call set_prop_flags_ccsd()
+       end if
 
-         call exacorr_cc_driver (exa_input)
+       if (exa_input%mp2no) then
+              call exacorr_mp2no_driver (exa_input,n_mp2no)
+       else
+              call exacorr_cc_driver (exa_input) 
+       end if 
       end if
 
       call exacc_deallocate_cw()
@@ -520,7 +534,6 @@ C
           close (lucoef,status='KEEP')
           call quit ('Error in read_from_dirac')
        endif
-
        close (lucoef,status='KEEP')
 
        call print_date("read from DFCOEF:"//text)
@@ -534,6 +547,7 @@ C
        close (lucoef,status='KEEP')
        return
 
+
        end subroutine read_from_dirac
 
        subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
@@ -541,6 +555,7 @@ C
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_utils
+
 
        implicit none
 

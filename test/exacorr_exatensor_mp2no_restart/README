@@ -1,0 +1,8 @@
+! testing frozen mp2 natural orbital computation in the exatensor mp2no implementation
+! requirements: talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP
+! this is a restart calculation:
+! 1) generate natural orbital file and select and recanonize with a treshold of 1.D-4 (input: hf_get_NOs_MO_ccpvdz_1.0d-4.inp)
+! 2) restart, only select and recanonize (input: hf_get_no_ccpvdz_1.0d-4.inp)
+! 3) calculate CCSD properties using the MP2NO's (input: hf_fno_ccpvdz_1.0d-4.inp)
+! Note that step 2 allows one to use different tresholds without rerunning the costly index transforms to generate the NOs. 
+! For testing purposes we apply the same treshold to check that results are identical in 1) and 2).
