@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -6082,7 +6082,7 @@ C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
 C     References are:
 C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
-C     Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -6108,7 +6108,7 @@ C     nhl 2016 -- calculates integrals over exp(ikr)
 C                 based on GOSINT routine.
 C     References are:
 C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
-C     Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
+C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 C***********************************************************************
 #include "implicit.h"

@@ -1,13 +1,25 @@
 :orphan:
 
+21.1 - WIP for first patch
+--------------------------
 
-20.0 (planned for 2021-01-31)
------------------------------
+Revised features:
+
+- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first.
+  Now pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. H. J. Aa. Jensen.
+
+Error corrections:
+
+- Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
+
+
+21.0 (2021-05-28)
+-----------------
 
 New features:
 
-- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig,A. Papadopoulos,
-   D. I. Lyakh, M. Repisky,L.Halbert,A.S.P. Gomes,H.J.Aa. Jensen, and L. Visscher.
+- New parallel coupled cluster implementation ExaCorr. Contributors: J.V. Pototschnig, A. Papadopoulos,
+   D. I. Lyakh, M. Repisky, L.Halbert, A.S.P. Gomes, H.J.Aa. Jensen, and L. Visscher.
    To be published.
 - Improved start potential with far fewer functions and better accuracy. Contributor: Lucas Visscher.
    S. Lehtola,  L. Visscher and  E. Engel.
@@ -19,6 +31,8 @@ New features:
    J. Chem. Phys. 141, 194103 (2014); http://dx.doi.org/10.1063/1.4901422 doi: 10.1063/1.4901422
 - Improved reading of basis sets to be able to read all EMSL basis sets of type DALTON. Contributor: Hans Joergen Aa. Jensen.
 - "make latex" for making a latex version of the documenation in "build/latex", used e.g. pdflatex to make a pdf version of the manual. Contributor: Hans Joergen Aa. Jensen
+- Efficient parallel diagonalization of quaternion Fock matrices using openMP. Contributor: Hans Joergen Aa. Jensen.
+- Utility (dirac_data.py) to export DIRAC data into a Python dictionary. Contributor: Lucas Visscher.
 
 Revised features:
 

@@ -1,7 +1,7 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
 #endif
         use talsh
@@ -37,10 +37,12 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
+            logical                 :: mp2no = .false.          !L if true mp2 natural orbital
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             logical                 :: do_triples = .true.
+            logical                 :: do_no = .false.          ! if true, generate natural orbital
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -58,12 +60,13 @@
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
+            real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
 
             complex(8), allocatable   :: ff(:,:)                  ! field strengths
             character(8), allocatable :: ff_names(:)            ! property labels
         end type exacc_input
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 !       All two electron integral tensors
         type, public :: exatns_intg_tens
          type(tens_rcrsv_t) :: oooo
@@ -71,6 +74,7 @@
          type(tens_rcrsv_t) :: oovv, vovo
          type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
+         type(tens_rcrsv_t) :: foo, fov, fvv
         end type exatns_intg_tens
 
 !       Common blocks between t and lambda

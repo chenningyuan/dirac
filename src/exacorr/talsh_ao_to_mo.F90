@@ -42,7 +42,7 @@ module talsh_ao_to_mo
          use exacorr_global
          use module_interest_interface
          use module_interest_eri
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
 #endif
 
@@ -79,7 +79,7 @@ module talsh_ao_to_mo
 
 !        Initialize global data
          call initialize_global_data
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
 #else
          my_MPI_rank = 0
@@ -122,6 +122,9 @@ module talsh_ao_to_mo
 
          else if (.FALSE.) then
             call print_date(' Cholesky method 41')
+            write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+            write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+            write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
             !determine cholesky vectors for ao integrals
             call decompose_cholesky_talsh_vec (chol_tensor, m, th_cholesky, nao, print_level)
             
@@ -192,6 +195,9 @@ module talsh_ao_to_mo
 
          else
             call print_date('Cholesky method 42')
+            write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+            write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+            write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
             !determine cholesky vectors for ao integrals
             call decompose_cholesky_talsh_all (chol_tens, th_cholesky, nao, print_level)
             ierr = talsh_tensor_dimensions(chol_tens,i,dim_chol)
@@ -443,7 +449,8 @@ module talsh_ao_to_mo
          integer(INTD) :: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
 
          integer(INTD) :: ierr, tens_rank
-         integer       :: i, imo, nao
+         integer       :: i, imo, nao, j, k 
+         type(C_PTR)                        :: body_p
 
          ! call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
@@ -511,7 +518,8 @@ module talsh_ao_to_mo
 !        Destruct a2 and a3 integrals:
          ierr=talsh_tensor_destruct(a2int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=35; return; endif
          ierr=talsh_tensor_destruct(a3int_tensor); if(ierr.ne.TALSH_SUCCESS) then; ierr=45; return; endif
-         ! call print_date('leaving aomo_transform')
+
+!          call print_date('leaving aomo_transform')
 
         end subroutine aomo_transform
 

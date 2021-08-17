@@ -42,7 +42,6 @@ set(FIXED_ABACUS_FORTRAN_SOURCES
     her2out.F
     her2sym.F
     herbas.F
-    hercen.F
     herdirect.F
     herdrv.F
     hergam.F

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -113,11 +113,6 @@ C
 C
       MAXCORE = MCORE
       allocate(ci(mcore))
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
       OPEN (5,FILE='DIRAC.INP')
       CALL SETUP   (CI,DONE)
       IF (DONE) GOTO 1000

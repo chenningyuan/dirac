@@ -2,17 +2,28 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
-f.add(from_string = 'Spin-rotation constants (kHz) for',
-      to_string   = 'E N D   of   D I R A C  output',
-      rel_tolerance   = 1.0e-4)
+assert version_info.major == 2
 
-test.run(['spinrot.inp'], ['H2_cc-pVDZ-sym.mol', 'HF_cc-pVDZ-sym.mol', 'SF6_3-21G-sym.mol'], f, args='--mw=100 --aw=128')
+f = [
+    get_filter(from_string='Spin-rotation constants (kHz) for',
+               to_string='E N D   of   D I R A C  output',
+               rel_tolerance=1.0e-4)
+]
 
-sys.exit(test.return_code)
+options = cli()
+
+ierr = 0
+for inp in ['spinrot.inp', 'spinrot-LL.inp']:
+    for mol in ['H2_cc-pVDZ-sym.mol', 'HF_cc-pVDZ-sym.mol', 'SF6_3-21G-sym.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    extra_args='--mw=100 --aw=128',
+                    filters={'out': f})
+
+sys.exit(ierr)

@@ -18,7 +18,7 @@ C***********************************************************************
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use exacorr_utils, only       : print_date
       use, intrinsic:: ISO_C_BINDING
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
 
@@ -42,7 +42,7 @@ C***********************************************************************
 
       exa_input%print_level=IPRTRA
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
       call interface_mpi_comm_rank(global_communicator,mytid)
@@ -70,7 +70,7 @@ C     Transfer necessary information from common blocks
 #endif
 
 ! next block is code is only for master
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       if (mytid == 0) then
 #endif
 C
@@ -108,7 +108,7 @@ C     Convert to Kramers unrestricted picture
       deallocate(mo_list_tmp)
       nmo = nmo * 2 ! Kramers unrestricted
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       end if
 #endif
 C
@@ -122,7 +122,7 @@ C
         call talsh_compute_mo_integrals(nmo,mo_list,
      &      exa_input%talsh_buff,exa_input%print_level,rcw,TH_CHOLESKY)
       else
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          !slaves need the same info to get started
          call interface_mpi_bcast(ntmo,1,mparid,global_communicator)
          if (mytid /= 0) allocate(mo_list(ntmo))
@@ -150,19 +150,23 @@ C***********************************************************************
 
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
+      use talsh_mp2no,only          : talsh_mp2no_driver
+      use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
       use exacorr_utils, only       : print_date
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
 
       implicit none
 
       integer              :: mytid                    ! MPI rank
+      integer              :: n_mp2no,i                 
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
       ! the slaves do not have their input set yet, so call them
       ! and let them know whether we use talsh or exatensor
@@ -189,29 +193,39 @@ C
       if (mytid == 0) call print_date("Initialized global data")
 
 ! next block is code is only for master
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       if (mytid == 0) then
 #endif
 
        call make_spinor_list ( exa_input, string_occupied,
      & string_occ_beta, string_virtual, string_vir_beta)
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       end if
 #endif
 
       if (exa_input%talsh) then
+       if (exa_input%do_no) then
+         call get_no_driver (exa_input)
+       else if (exa_input%mp2no) then
+         call talsh_mp2no_driver (exa_input,n_mp2no)
+       else
          call talsh_cc_driver (exa_input)
+       end if
       else
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
-         if (exa_input%lambda) then 
-           if (mytid == 0) call set_prop_flags_ccsd()
-         end if
+       if (exa_input%lambda) then 
+              if (mytid == 0) call set_prop_flags_ccsd()
+       end if
 
-         call exacorr_cc_driver (exa_input)
+       if (exa_input%mp2no) then
+              call exacorr_mp2no_driver (exa_input,n_mp2no)
+       else
+              call exacorr_cc_driver (exa_input) 
+       end if 
       end if
 
       call exacc_deallocate_cw()
@@ -520,7 +534,6 @@ C
           close (lucoef,status='KEEP')
           call quit ('Error in read_from_dirac')
        endif
-
        close (lucoef,status='KEEP')
 
        call print_date("read from DFCOEF:"//text)
@@ -534,6 +547,7 @@ C
        close (lucoef,status='KEEP')
        return
 
+
        end subroutine read_from_dirac
 
        subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
@@ -541,6 +555,7 @@ C
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_utils
+
 
        implicit none
 

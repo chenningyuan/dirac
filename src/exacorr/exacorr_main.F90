@@ -3,13 +3,16 @@
 
    program exacorr_main
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use talsh_cc,only             : talsh_cc_driver
+      use talsh_mp2no,only          : talsh_mp2no_driver
+      use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacc_cfg
       use exacorr_global
       use exacorr_utils
@@ -27,6 +30,7 @@
       integer              :: nesh, kvec
       integer              :: i
       integer              :: ialpha, ibeta
+      integer              :: n_mp2no
 
 !     Temporary hack to call the IAO code
 !      print*,'starting generate iao'
@@ -37,7 +41,7 @@
       mytid   = 0
       numproc = 0
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       call interface_mpi_init()
       call interface_mpi_comm_rank(global_communicator,mytid)
       call interface_mpi_comm_size(global_communicator,numproc)
@@ -59,7 +63,7 @@
         if (.not.input_found) call quit('Input was not found!')
       end if
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,global_communicator)
 #else
 !     serial version of DIRAC
@@ -101,19 +105,33 @@
 
       if (cc_calculation) then
          if (exa_input%talsh) then
-            if (mytid == 0) call talsh_cc_driver (exa_input)
+            if (mytid == 0) then
+                  if (exa_input%mp2no) then
+                    call talsh_mp2no_driver (exa_input,n_mp2no)
+                  else
+                    call talsh_cc_driver (exa_input)
+                  end if   
+                  if (exa_input%do_no) then
+                        call get_no_driver (exa_input)
+                  end if       
+             end if
+ 
          else
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 !           slaves need the same info to get started
             call exacc_sync_cw(0,mytid)
 #endif
-            call exacorr_cc_driver (exa_input)
+            if (exa_input%mp2no) then
+               call exacorr_mp2no_driver (exa_input,n_mp2no)
+            else
+               call exacorr_cc_driver (exa_input) 
+            end if  
          end if
       end if
 
       call exacc_deallocate_cw()
 
-#if defined (VAR_MPI) 
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       call interface_mpi_finalize()
 #endif
 

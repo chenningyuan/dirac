@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -360,7 +360,6 @@ C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include "ivdep.h"
         DO IXOP = 1,NXOP
           IA = JXOP(1,IXOP)
           IM = JXOP(2,IXOP)
@@ -386,7 +385,6 @@ C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ)
 C
       DO IZ = 1,NZ
-#include "ivdep.h"
         DO IXOP = 1,NXOP
           INDI = JXOP(1,IXOP)
           INDA = JXOP(2,IXOP)

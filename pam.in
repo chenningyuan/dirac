@@ -85,7 +85,7 @@ class pam_enviroment:
         # default: do not show pam settings
         self.just_show_settings = False
 
-        # list of environment variables thar are to be set by dirac (useful to specify defaults in .diracrc)
+        # list of environment variables that are to be set by dirac (useful to specify defaults in .diracrc)
         self.environment = []
 
         # supercomputers are special, need to know whether we run on summit
@@ -171,17 +171,21 @@ class pam_enviroment:
         self.dirac_cmd = None
 
        # dirac-executable position (could be reset after flag reading)
-        exec_position=os.path.join(pam_directory, self.dirac_exe_file)
-        if os.path.isfile(exec_position):
-            self.dirac_exe = exec_position
+       # try 1) pam directory;
+       #     2) build subdirectory;
+       #     3) share/dirac directory from a "cmake --install . --prefix <install-directory>
+
+        exec_position1=os.path.join(pam_directory, self.dirac_exe_file)
+        exec_position2=os.path.join(pam_directory, "build", self.dirac_exe_file)
+        exec_position3=os.path.join(pam_directory, "../share/dirac", self.dirac_exe_file)
+        if os.path.isfile(exec_position1):
+            self.dirac_exe = exec_position1
+        elif os.path.isfile(exec_position2):
+            self.dirac_exe = exec_position2
+        elif os.path.isfile(exec_position3):
+            self.dirac_exe = exec_position3
         else:
-            # does not exist, try build directory
-            exec_position=os.path.join(pam_directory, "build", self.dirac_exe_file)
-            if os.path.isfile(exec_position):
-                # assign build/dirac.x
-                self.dirac_exe = exec_position
-            else:
-                self.dirac_exe = None
+            self.dirac_exe = None
 
         # flags for putting/getting files for Dirac calculation
         self.put_files = None
@@ -292,7 +296,7 @@ class pam_enviroment:
     # total spent time for pam script + job execution
         self.start_time=time.time()
 
-    #  variable for the diracrc file, full path
+    #  variable for the .diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
         self.diracrc_args = []
@@ -311,6 +315,17 @@ class pam_enviroment:
             basis_dir= os.path.join(pam_directory, 'basis')
             basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
             basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+':'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+':'+basis_ecp_dir
+            # if dirac was installed with "cmake --install . --prefix EXEDIR"
+            # one gets:  $EXEDIR/bin/pam-dirac, $EXEDIR/share/dirac/dirac.x, and $EXEDIR/share/dirac/basis*
+            basis_dir= os.path.join(pam_directory, '../share/dirac', 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, '../share/dirac', 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, '../share/dirac', 'basis_ecp')
             if os.path.isdir(basis_dir):
                 self.basdir = self.basdir + basis_dir
             if os.path.isdir(basis_dalton_dir):
@@ -358,9 +373,9 @@ class pam_enviroment:
         print("  Dirac command       ",  self.dirac_cmd)
         print("  Dirac executable    ",  self.dirac_exe)
         if self.diracrc_file:
-            print("  sole diracrc file, which was read: ", self.diracrc_file)
+            print("  The .diracrc file, which was read:   ", self.diracrc_file)
         if self.diracrc_args:
-            print("  default pam arguments from this file: ", self.diracrc_args)
+            print("  Default pam arguments from .diracrc: ", self.diracrc_args)
 
     def create_scratch_dir(self):
         ''' create the scratch directory for Dirac run  '''
@@ -505,8 +520,10 @@ class pam_enviroment:
         #-serve as comments.
         """
         fullargs = []
-        paths = [os.path.join(os.path.expanduser('~'), '.diracrc'),  # first try $HOME/.diracrc
-                 os.path.join(pam_directory, '.diracrc')]            # then try .diracrc in the pam directory
+        self.input_directory = os.getcwd()
+        paths = [os.path.join(self.input_directory, '.diracrc'),     # first try a local <jobdir>/.diracrc
+                 os.path.join(os.path.expanduser('~'), '.diracrc'),  # second try a global $HOME/.diracrc
+                 os.path.join(pam_directory, '.diracrc')]            # third try .diracrc in the pam directory
         for path in paths:
             try:
                 f = open(path,'r')
@@ -632,7 +649,7 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='FLOAT',
             )
-        group.add_option(  # default set later - it's --mw setting
+        group.add_option(  # default set later - it's --gb setting
             '--nw',
             type='int',
             action='store',
@@ -970,13 +987,19 @@ Options are also read from ~/.diracrc"""
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
-            # always is parallel run if ENABLE_MPI=ON
+            # always a parallel run if ENABLE_MPI=ON
             self.parallel_run = True
             if self.dirac_mpi_command is None:
                if self.own_mpirun:
                   self.dirac_mpi_command = str(self.own_mpirun) + ' '
                else:
                   self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+            
+         # For openMPI: if --bind-to none is not added, then e.g. "ctest -j 10" for "-np 1" will run all 10 jobs on CPU core 0
+         # and the remaining CPU cores will idle ... observed 03-May-2021)
+            if "@MPI_TYPE@" == "OPENMPI":
+                self.dirac_mpi_command = self.dirac_mpi_command + ' --bind-to none '
+
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
                 self.global_scratch_disk = False
@@ -1533,7 +1556,7 @@ Options are also read from ~/.diracrc"""
                     print_error_message("\n Though debugging wanted, no debugger is assigned - check the flag !")
                     sys.exit(234)
                 if find_executable(self.debugger) is None:
-                    print_error_message('\n no debugger found in the <diracrc> file !')
+                    print_error_message('\n no debugger found in the <.diracrc> file !')
                     sys.exit(235)
                 if not is_windows():                        
                     self.dirac_cmd = self.debugger + ' ' + dirac_executable \

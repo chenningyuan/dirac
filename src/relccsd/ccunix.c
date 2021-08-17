@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2019 by the authors of DIRAC.
+ *     Copyright (c) 2021 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -76,10 +76,8 @@ extern char  *getenv();
 
 /* Check that the large file option is enabled, if not use normal lseek */
 
-#if defined (SMALL_CFILES) || (SYS_DEC) || (SYS_LINUX) || (SYS_DARWIN)
+#if defined (SMALL_CFILES) || (SYS_LINUX) || (SYS_DARWIN)
 typedef off_t off64_t;
-#define lseek64 lseek
-#elif defined (SYS_HPUX)
 #define lseek64 lseek
 #endif
 
