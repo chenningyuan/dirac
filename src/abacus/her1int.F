@@ -4760,7 +4760,7 @@ C
 !   = (grad xhi_a) xhi_b + xhi_a (grad xhi_b) for r=R
 !   = (grad xhi_a)(R) xhi_b(R) + xhi_a(R) (grad xhi_b)(R)
 !
-! MI and HJAaJ, Sep 2020
+! MI and HJAaJ, Sep 2020, Aug 2021
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -4776,8 +4776,8 @@ C
 #include "lmns.h"
 #include "symmet.h"
 #include "nuclei.h"
-      !CTRL_PRINT=.FALSE.
-      CTRL_PRINT=.TRUE.
+      CTRL_PRINT=.FALSE.
+      !CTRL_PRINT=.TRUE.
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -4921,14 +4921,11 @@ C
      &                          INT, INTTYP+3
               endif
               ENDIF
-
-               INTTYP = INTTYP + 3
-
+              INTTYP = INTTYP + 3
             END IF
             END IF
   300       CONTINUE
   200    CONTINUE
-         INT = INT + 1
   100 CONTINUE
       RETURN
       END
