@@ -1,4 +1,4 @@
-module write_orbital_to_file
+module mp2no_fileinterfaces
 !This module contains the routines needed to do read and write.
 !In principle, one could add more routines to read or write the information that they want
 !Written by Xiang Yuan.
@@ -700,5 +700,5 @@ module write_orbital_to_file
 
       
 
-end module write_orbital_to_file
+end module mp2no_fileinterfaces
 

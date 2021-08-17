@@ -1,10 +1,10 @@
-module get_natural_orbital
+module mp2no_driver
 !This module contains the routines needed to calculate the natural orbitals, provided quaternion density matrix.  
 
         use exacorr_datatypes
         use exacorr_global,only: get_nsolutions
         use mp2no_matrixtransforms 
-        use write_orbital_to_file
+        use mp2no_fileinterfaces
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -87,7 +87,7 @@ module get_natural_orbital
                   call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
-                  call diagoanl_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
+                  call diagonal_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
                   call print_date('Diagonalized density matrix (quaternion basis)')       
 
                   call basis_transform_vector(NOs_MO,HF_AO,NOs_AO)
@@ -225,5 +225,5 @@ module get_natural_orbital
       end subroutine write_no_to_newfile
 !----------------------------------------------------------------------------------------------------------
 
-end module get_natural_orbital
+end module mp2no_driver
 

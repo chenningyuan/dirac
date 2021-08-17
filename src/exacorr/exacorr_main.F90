@@ -10,7 +10,7 @@
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use talsh_cc,only             : talsh_cc_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
-      use get_natural_orbital,only  : get_no_driver
+      use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacc_cfg

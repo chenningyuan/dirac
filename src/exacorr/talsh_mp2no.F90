@@ -9,7 +9,7 @@ module talsh_mp2no
         use exacorr_mo
         use exacorr_global
         use mp2no_matrixtransforms
-        use write_orbital_to_file
+        use mp2no_fileinterfaces
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -362,7 +362,7 @@ module talsh_mp2no
                   call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
                   call print_date('changed MO DM representation (spinor->quaternion)')
 
-                  call diagoanl_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
+                  call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
                   call print_date('diagonalized MO DM (quaternion)')
 
                   call sort_values_vectors (N_OCCUPATION,NOs_MO)

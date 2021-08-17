@@ -27,9 +27,9 @@ if(ENABLE_EXATENSOR)
    talsh_gradient.F90
    talsh_cc.F90
    talsh_mp2no.F90
-   get_natural_orbital.F90
-   matrix_complex_to_quaternion.F90
-   write_orbital_to_file.F90
+   mp2no_driver.F90
+   mp2no_matrixtransforms.F90
+   mp2no_fileinterfaces.F90
 
   )
 

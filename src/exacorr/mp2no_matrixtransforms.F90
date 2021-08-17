@@ -5,6 +5,11 @@ module mp2no_matrixtransforms
 
         implicit none
 
+        private
+
+        public basis_transform_vector, basis_transform_matrix
+        public complex_to_quaternion, diagonal_matrix_quater, get_cano_orbital, read_matrix_comp, sort_values_vectors
+
        contains
 
 !------------------------------------------------------------------------------------------------------------------------------------- 
@@ -133,7 +138,7 @@ module mp2no_matrixtransforms
 
 
 !-------------------------------------------------------------------------------------------------------------------------------------                                                   
-        subroutine diagoanl_matrix_quater(A,EIG,VEC)
+        subroutine diagonal_matrix_quater(A,EIG,VEC)
 ! Set parameter needed in qdiag
 
             real(kind=8), intent(in) :: A(:,:,:)
@@ -162,7 +167,7 @@ module mp2no_matrixtransforms
             deallocate(work)
 
 
-      end subroutine diagoanl_matrix_quater
+      end subroutine diagonal_matrix_quater
                 
                
 !-------------------------------------------------------------------------------------------------------------------------------------
