@@ -614,7 +614,7 @@ C
        write (lucoef) text,nsym,npo,qorbital%nmo,
      &                qorbital%nao,qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef) qorbital%coeff
+       write (lucoef) qorbital%coeff_q
        ! write the orbital energies
        write (lucoef) qorbital%energy
        ! write the boson symnmetry information
@@ -688,7 +688,7 @@ C
        write (lucoef,'(7(X,I0))') nsym,npo,qorbital%nmo,qorbital%nao
        write (lucoef,'(E24.16)') qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef,'(6F22.16)') qorbital%coeff
+       write (lucoef,'(6F22.16)') qorbital%coeff_q
        ! write the orbital energies
        write (lucoef,'(6E22.12)') qorbital%energy
        ! write the boson symnmetry information

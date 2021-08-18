@@ -526,19 +526,19 @@ module talsh_mp2no
 
          do j = 1, nocc
             do  i = 1, qorbital%nao
-                  qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)
-                  qorbital%coeff(i,j,2)=qorbital_hf%coeff(i,j,2)
-                  qorbital%coeff(i,j,3)=qorbital_hf%coeff(i,j,3)
-                  qorbital%coeff(i,j,4)=qorbital_hf%coeff(i,j,4)
+                  qorbital%coeff_q(i,j,1)=qorbital_hf%coeff_q(i,j,1)
+                  qorbital%coeff_q(i,j,2)=qorbital_hf%coeff_q(i,j,2)
+                  qorbital%coeff_q(i,j,3)=qorbital_hf%coeff_q(i,j,3)
+                  qorbital%coeff_q(i,j,4)=qorbital_hf%coeff_q(i,j,4)
             enddo
          enddo
 
          do  j = nocc+1, nmo
             do  i = 1, qorbital%nao
-                  qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
-                  qorbital%coeff(i,j,2)=NOs_AO(i,j-nocc,2)
-                  qorbital%coeff(i,j,3)=NOs_AO(i,j-nocc,3)
-                  qorbital%coeff(i,j,4)=NOs_AO(i,j-nocc,4)
+                  qorbital%coeff_q(i,j,1)=NOs_AO(i,j-nocc,1)
+                  qorbital%coeff_q(i,j,2)=NOs_AO(i,j-nocc,2)
+                  qorbital%coeff_q(i,j,3)=NOs_AO(i,j-nocc,3)
+                  qorbital%coeff_q(i,j,4)=NOs_AO(i,j-nocc,4)
             enddo
          enddo
 

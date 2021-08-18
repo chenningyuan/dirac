@@ -127,7 +127,7 @@ module mp2no_fileinterfaces
          call alloc_mo(qorbital,nao,nmo,4)
          qorbital%total_energy = total_energy
          qorbital%index        = index
-         qorbital%coeff        = coeff
+         qorbital%coeff_q      = coeff
          qorbital%energy       = eig
          qorbital%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
   
@@ -327,7 +327,7 @@ module mp2no_fileinterfaces
             label(3) = timex
             label(4) = 'COEFS   '
             write (lucoef) label
-            write (lucoef) qorbital%coeff
+            write (lucoef) qorbital%coeff_q
 
 
             ! write the orbital energies
@@ -431,8 +431,8 @@ module mp2no_fileinterfaces
 
 !     read information of from DFCOEF
          call quater_read_from_dirac_all(ao_basis,qorbital,'DFCOEF',ierr)
-         sz_total_ao = size(qorbital%coeff,1)
-         sz_total_mo = size(qorbital%coeff,2)
+         sz_total_ao = size(qorbital%coeff_q,1)
+         sz_total_mo = size(qorbital%coeff_q,2)
 
          allocate(HF_AO(sz_total_ao,sz,4))
       
@@ -440,20 +440,20 @@ module mp2no_fileinterfaces
          if (flb == 1) then
             do j = 1, sz
                do  i = 1, sz_total_ao
-                  HF_AO(i,j,1) = qorbital%coeff(i,j,1)
-                  HF_AO(i,j,2) = qorbital%coeff(i,j,2)
-                  HF_AO(i,j,3) = qorbital%coeff(i,j,3)
-                  HF_AO(i,j,4) = qorbital%coeff(i,j,4)
+                  HF_AO(i,j,1) = qorbital%coeff_q(i,j,1)
+                  HF_AO(i,j,2) = qorbital%coeff_q(i,j,2)
+                  HF_AO(i,j,3) = qorbital%coeff_q(i,j,3)
+                  HF_AO(i,j,4) = qorbital%coeff_q(i,j,4)
                end do
             end do
          else
 !            k = sz_total_mo - sz
             do j = 1, sz
                do i = 1, sz_total_ao
-                  HF_AO(i,j,1) = qorbital%coeff(i,k+j,1)
-                  HF_AO(i,j,2) = qorbital%coeff(i,k+j,2)
-                  HF_AO(i,j,3) = qorbital%coeff(i,k+j,3)
-                  HF_AO(i,j,4) = qorbital%coeff(i,k+j,4)
+                  HF_AO(i,j,1) = qorbital%coeff_q(i,k+j,1)
+                  HF_AO(i,j,2) = qorbital%coeff_q(i,k+j,2)
+                  HF_AO(i,j,3) = qorbital%coeff_q(i,k+j,3)
+                  HF_AO(i,j,4) = qorbital%coeff_q(i,k+j,4)
                end do
             end do
          end if 

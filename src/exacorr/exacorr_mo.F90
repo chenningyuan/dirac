@@ -15,7 +15,7 @@ module exacorr_mo
     public :: alloc_mo, dealloc_mo, sync_mo, compress_mo
     public :: convert_quaternion_to_complex,convert_complex_to_quaternion,apply_Kramers_operator
 
-    type  :: mo_root
+    type, public  :: cmo
         integer             :: &
          nao, &               ! number of aos
          nmo                  ! number of mos
@@ -25,24 +25,23 @@ module exacorr_mo
          restricted=.true.,    &        ! spinors (or spin-orbitals) are paired
          complex_algebra=.true.         ! coefficients are complex
 
+        character           :: &
+         active_representation='c'     ! c=complex, r=real, q=quaternion
+
         real(8)             :: &
          total_energy         ! total (SCF) energy as stored on the coefficient file
 
         real(8), pointer    :: &
          energy (:)           ! orbital energies
 
-        real(8), pointer :: &
-         coeff_r (:,:,:)      ! coefficients (AO,MO,spin)
-
         complex(8), pointer :: &
-         coeff_c (:,:,:)      ! coefficients (AO,MO,spin)
+         coeff (:,:,:)        ! coefficients (AO,MO,spin) (default complex representation which is always valid)
 
         real(8), pointer :: &
-         coeff_q (:,:,:)      ! coefficients (AO,MO,IZ)
+         coeff_r (:,:,:)      ! coefficients (AO,MO,spin) (alternate real representation, can be used for spinfree calculations)
 
-    end type mo_root
-
-    type, public, extends(mo_root) :: cmo
+        real(8), pointer :: &
+         coeff_q (:,:,:)      ! coefficients (AO,MO,IZ)  (alternate quaternion representation, can be used for Kramers-restricted calculations)
 
         integer, pointer    :: &
          index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
@@ -50,26 +49,13 @@ module exacorr_mo
 
         integer             :: &
          fermion_irrep        ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
-
-        complex(8), pointer :: &
-         coeff (:,:,:)        ! coefficients (AO,MO,spin)
 
     end type cmo
 
-    type, public, extends(mo_root) :: qumo
-
-        integer, pointer    :: &
-         index(:), &          ! index of the spinor in the full list of spinors for this fermion symmetry
-         boson_irrep(:)       ! for spinfree calculations: boson irrep to which the spinor belongs
-
-        integer             :: &
-         fermion_irrep        ! fermion irrep (1=gerade, 2=ungerade) to which the spinors belongs
+    type, public, extends(cmo) :: qumo
 
         integer :: &
          nz                   ! number of active quaternion units
-
-        real(8), pointer :: &
-         coeff   (:,:,:)      ! coefficients (AO,MO,iz)
 
     end type qumo
 
@@ -121,6 +107,9 @@ module exacorr_mo
       nullify  (M%index)
       allocate (M%index(M%nmo))
       M%index = 0
+
+      M%active_representation = 'c'
+
       M%allocated = .true.
 
      end subroutine alloc_mo_complex
@@ -147,9 +136,9 @@ module exacorr_mo
        allocate (M%energy(M%nmo))
        M%energy = 0.0
 
-       nullify  (M%coeff)
-       allocate (M%coeff(M%nao,M%nmo,M%nz))
-       M%coeff = 0.0
+       nullify  (M%coeff_q)
+       allocate (M%coeff_q(M%nao,M%nmo,M%nz))
+       M%coeff_q = 0.0
 
        nullify  (M%boson_irrep)
        allocate (M%boson_irrep(M%nmo))
@@ -158,6 +147,9 @@ module exacorr_mo
        nullify  (M%index)
        allocate (M%index(M%nmo))
        M%index = 0
+
+       M%active_representation = 'q'
+
        M%allocated = .true.
 
      end subroutine alloc_mo_quaternion
@@ -194,7 +186,7 @@ module exacorr_mo
 
 !      Free the memory associated with a block of Mos
        deallocate (M%energy)
-       deallocate (M%coeff)
+       deallocate (M%coeff_q)
        deallocate (M%boson_irrep)
        deallocate (M%index)
        M%allocated = .false.
@@ -256,7 +248,7 @@ module exacorr_mo
       call interface_mpi_bcast (M%index,        M%nmo,my_MPI_master,global_communicator)
       call interface_mpi_bcast (M%energy,       M%nmo,my_MPI_master,global_communicator)
       n_coef = M%nao * M%nmo * M%nz
-      call interface_mpi_bcast (M%coeff,n_coef,my_MPI_master,global_communicator)
+      call interface_mpi_bcast (M%coeff_q,n_coef,my_MPI_master,global_communicator)
 
      end subroutine sync_mo_quaternion
 
@@ -437,10 +429,10 @@ module exacorr_mo
 
       do j = 1, qm%nmo
          do i = 1, qm%nao
-          qm%coeff(i,j,1) =  real(cm%coeff(i,2*j-1,1))
-          qm%coeff(i,j,2) = aimag(cm%coeff(i,2*j-1,1))
-          qm%coeff(i,j,3) = -real(cm%coeff(i,2*j-1,2))
-          qm%coeff(i,j,4) = aimag(cm%coeff(i,2*j-1,2))
+          qm%coeff_q(i,j,1) =  real(cm%coeff(i,2*j-1,1))
+          qm%coeff_q(i,j,2) = aimag(cm%coeff(i,2*j-1,1))
+          qm%coeff_q(i,j,3) = -real(cm%coeff(i,2*j-1,2))
+          qm%coeff_q(i,j,4) = aimag(cm%coeff(i,2*j-1,2))
          end do
       end do
 

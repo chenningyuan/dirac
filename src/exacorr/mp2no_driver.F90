@@ -211,10 +211,10 @@ module mp2no_driver
                              
                    do  j = 1, nmo
                       do  i = 1, qorbital%nao
-                            qorbital%coeff(i,j,1)=NOs_AO(i,j,1)
-                            qorbital%coeff(i,j,2)=NOs_AO(i,j,2)
-                            qorbital%coeff(i,j,3)=NOs_AO(i,j,3)
-                            qorbital%coeff(i,j,4)=NOs_AO(i,j,4)
+                            qorbital%coeff_q(i,j,1)=NOs_AO(i,j,1)
+                            qorbital%coeff_q(i,j,2)=NOs_AO(i,j,2)
+                            qorbital%coeff_q(i,j,3)=NOs_AO(i,j,3)
+                            qorbital%coeff_q(i,j,4)=NOs_AO(i,j,4)
                       enddo
                    enddo
           

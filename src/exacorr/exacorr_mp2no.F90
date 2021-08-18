@@ -1294,7 +1294,7 @@ module exacorr_mp2no
             integer                  :: nocc            ! occupied orbital 
             integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
             integer,allocatable      :: index(:)
-            integer                  :: i,j
+            integer                  :: i,j,iz
             integer                  :: ierr
             integer                  :: nmo_hf
             real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
@@ -1342,22 +1342,20 @@ module exacorr_mp2no
                   end do
             end if 
 
-            do j = 1, nocc
-               do  i = 1, qorbital%nao
-                     qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)
-                     qorbital%coeff(i,j,2)=qorbital_hf%coeff(i,j,2)
-                     qorbital%coeff(i,j,3)=qorbital_hf%coeff(i,j,3)
-                     qorbital%coeff(i,j,4)=qorbital_hf%coeff(i,j,4)
+            do iz = 1, 4
+               do j = 1, nocc
+                  do  i = 1, qorbital%nao
+                     qorbital%coeff_q(i,j,iz)=qorbital_hf%coeff_q(i,j,iz)
+                  enddo
                enddo
             enddo
    
    
-            do  j = nocc+1, nmo
-               do  i = 1, qorbital%nao
-                     qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
-                     qorbital%coeff(i,j,2)=NOs_AO(i,j-nocc,2)
-                     qorbital%coeff(i,j,3)=NOs_AO(i,j-nocc,3)
-                     qorbital%coeff(i,j,4)=NOs_AO(i,j-nocc,4)
+            do iz = 1, 4
+               do  j = nocc+1, nmo
+                  do  i = 1, qorbital%nao
+                     qorbital%coeff_q(i,j,iz)=NOs_AO(i,j-nocc,iz)
+                  enddo
                enddo
             enddo
    
