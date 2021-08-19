@@ -1,5 +1,14 @@
 :orphan:
 
+22.alpha
+--------------------------
+
+Performance improvements:
+
+- New improved code for selection of trial vectors, leading to considerable improvement in performance. Contributor: Andreas Nyvang.
+  New improved code for sigma vector routines in luciarel, leading to improvement in performance. Contributor: Andreas Nyvang.
+  Note that KRMC and KRCI also by default uses luciarel.  (See git hash tag d5d4e3ff75 for all the changes.)
+
 21.1 - WIP for first patch
 --------------------------
 
