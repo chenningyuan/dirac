@@ -24,7 +24,7 @@ module talsh_mp2no
 
         private
 
-        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock
+        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock, write_talsh_matrix
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ module talsh_mp2no
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
 
 !        Intermediate tensors (same notation as in relccsd)
-         type(talsh_dm_tens)         :: MP2_density_tensor
+         type(talsh_tens_t)          :: MP2_vv_density
          type(talsh_tens_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims
          integer(INTD), dimension(2) :: vv_dims
@@ -138,10 +138,7 @@ module talsh_mp2no
          vv_dims(2) = nvir
 
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(MP2_density_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(MP2_density_tensor%prime_vv,body_p,C8,int(0,C_INT),DEV_HOST)
-!         call print_date("Getting orbital energies")
-
+         ierr=talsh_tensor_construct(MP2_vv_density,C8,vv_dims,init_val=ZERO)
 
 !        Get HF orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
@@ -179,14 +176,13 @@ module talsh_mp2no
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 
-         ierr=talsh_tensor_init(MP2_density_tensor%prime_vv)
-         ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv,&
+         ierr=talsh_tensor_init(MP2_vv_density)
+         ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
 
 !        Make some noise so that we know we are proceeding 
          call print_date('finished MP2_DM_VV calculation and save it to file DM_complex')
-         call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
-
+         call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
 
         end subroutine talsh_generate_MP2_VNO_MObasis
 
@@ -264,75 +260,40 @@ module talsh_mp2no
    end subroutine get_MP2_integrals
         
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine write_matrix(exa_input,gamma,file_out)
+      subroutine write_talsh_matrix(nvir,dm_vv,file_out)
 ! Routine for writing complex density matrix into the file'DM_complex'. 
 
 
 ! input variables
-         type(exacc_input),   intent(in   )  :: exa_input
-         type(talsh_dm_tens), intent(inout)  :: gamma
+         integer,intent(in)                  :: nvir
+         type(talsh_tens_t), intent(inout)   :: dm_vv
          character(len=*),intent(in)         :: file_out
 
-! matrix dimensions
-         integer :: nocc, nvir
 ! body pointers
          type(C_PTR)                     :: body_p2
          complex(8), pointer, contiguous :: dm_block(:,:)
          complex(8), allocatable         :: dm_mo_fort(:,:)
 ! error code
          integer :: ierr
-! loop variables
-         integer :: i, j, k
          integer :: mp2dm
-! debug
-         logical :: debug=.false.
 
+         allocate (dm_mo_fort(nvir,nvir))
+         dm_mo_fort = ZERO
          
-      !***************
-      !     set dims *
-      !***************
-            nocc    = 0
-            nvir    = exa_input%nvir
+         ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
+         dm_mo_fort(1:nvir,1:nvir) = dm_block
          
-      !***************************************
-      !     copy DM blocks into one large DM *
-      !***************************************
-         
-            allocate (dm_mo_fort(nvir,nvir))
-            dm_mo_fort = ZERO
-         
-      !-----------
-      !| OO | OV |
-      !-----------
-      !| VO | VV |
-      !-----------
-                  
-      !vv
-            ierr=talsh_tensor_get_body_access(gamma%prime_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-            dm_mo_fort(1:nvir,1:nvir) = dm_block
-         
-            call get_free_fileunit(mp2dm)
-            open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
-      ! write dimension of the matrix 
-            write(mp2dm) nocc+nvir
-      ! write matrix element 
-            write(mp2dm) dm_mo_fort
+         call get_free_fileunit(mp2dm)
+         open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
+         ! write dimension of the matrix 
+         write(mp2dm) nvir
+         ! write matrix element 
+         write(mp2dm) dm_mo_fort
 
-            if (debug) then
-              print *,'<<<<< DM, complete, before formatting to DM_complex'
-                 do j=1,(nocc+nvir)
-                    do i=1,(nocc+nvir)
-                       write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
-                    end do
-                  end do
-                  print *,'>>>>> DM, complete, after formatting to DM_complex'
-            end if
+         close(mp2dm,status='KEEP')
 
-            close(mp2dm,status='KEEP')
-
-        end subroutine write_matrix
-
+        end subroutine write_talsh_matrix
 
 !------------------------------------------------------------------------------------------------------------------------------------
       subroutine get_transform_Fock (exa_input,Matrix_file)

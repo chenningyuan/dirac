@@ -13,7 +13,7 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
-        use talsh_mp2no, only: get_new_orbital, get_transform_Fock
+        use talsh_mp2no, only: get_new_orbital, get_transform_Fock, write_talsh_matrix
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi
@@ -99,6 +99,8 @@ module exacorr_mp2no
 !-------------------------------------------------------------------------------------------
         subroutine exacorr_generate_MP2_VNO_MObasis (exa_input)
 
+         use talsh
+
 !        This subroutine drives the mp2no DM calculation ans MP2 energy as well
 !        The implementation is based on the parallel ExaTensor library
 
@@ -151,6 +153,13 @@ module exacorr_mp2no
          type(denom3_t)     :: denom3
          type(chol_J)       :: j_chol
          type(set_ff_t)     :: ff_set
+
+         ! variables for talsh, density matrix needs to be smaller than buffer size 
+         integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
+         integer(C_INT)                  :: host_arg_max
+         ! talsh tensor to get local copy
+         type(talsh_tens_t)           :: tensor_slice
+         integer(INTD), dimension(2)  :: h_dims
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -258,14 +267,21 @@ module exacorr_mp2no
             write(*,*) "    MP2 energy = ", mp2_energy
             write(*,*) ""
 
-
             ierr=exatns_tensor_transform(int_t%oovv,denom)
             ierr=exatns_tensor_init(MP2_density_tensor%prime_vv,ZERO)
             ierr=exatns_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv, &
                                     int_t%oovv,int_t%oovv,ONE_HALF)               
 !        Make some noise so that we know we are proceeding 
             
-            call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
+            buf_size=exa_input%talsh_buff*buf_size
+            ierr=talsh_init(buf_size,host_arg_max)
+            call print_date('Initialized talsh library')
+            write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+            h_dims=nvir
+            ierr=talsh_tensor_construct(tensor_slice,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
+            ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,tensor_slice)
+
+            call write_talsh_matrix(nvir,tensor_slice,'DM_complex')
             call print_date('Save DM in MO (spinor) basis to file : DM_complex')
 
             ierr=exatns_tensor_destroy(int_t%oooo)
@@ -308,107 +324,8 @@ module exacorr_mp2no
             write(*,*) " Leaving mp2no DM construction routine"
          end if
          return
-                              
 
         end subroutine exacorr_generate_MP2_VNO_MObasis
-
-!------------------------------------------------------------------------------------------------------------------
-
-        subroutine write_matrix(exa_input,gamma,file_out)
-            ! Routine for writing complex density matrix into the file'DM_complex'. 
-            
-            use talsh
-            use tensor_algebra
-#if defined (VAR_MPI)
-      
-      !     variables for mpi
-            integer(C_INT)    :: read_node
-            integer           :: my_MPI_rank
-#endif
-            
-            ! input variables
-                  type(exacc_input),   intent(in   )  :: exa_input
-                  type(exatns_dm_tens)                :: gamma
-                  character(len=*),intent(in)         :: file_out
-            ! talsh tensor to get local copy
-                  type(talsh_tens_t)           :: tensor_slice
-                  integer(INTD), dimension(2)  :: h_dims
-            
-            ! matrix dimensions
-                  integer :: nocc, nvir
-            ! body pointers
-                  type(C_PTR)                     :: body_p2
-                  complex(8), pointer, contiguous :: dm_block(:,:)
-                  complex(8), allocatable         :: dm_mo_fort(:,:)
-            ! error code
-                  integer :: ierr
-            ! loop variables
-                  integer :: i, j, k
-                  integer :: mp2dm
-            ! debug
-                  logical :: debug=.false.
-            ! variables for talsh, density matrix needs to be smaller than buffer size 
-                  integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
-                  integer(C_INT)                  :: host_arg_max
-            
-            
-                  read_node=0
-            !***************
-            !     set dims *
-            !***************
-                  nocc    = 0
-                  nvir    = exa_input%nvir
-                     
-            !***************************************
-            !     copy DM blocks into one large DM *
-            !***************************************
-                     
-                  allocate (dm_mo_fort(nvir,nvir))
-                  dm_mo_fort = ZERO
-                     
-                  buf_size=exa_input%talsh_buff*buf_size
-                  ierr=talsh_init(buf_size,host_arg_max)
-                  call print_date('Initialized talsh library')
-                  write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
-
-                  !-----------
-                  !| OO | OV |
-                  !-----------
-                  !| VO | VV |
-                  !-----------
-                              
-                  !     vv
-                  h_dims=nvir
-                  ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-                  ierr=exatns_tensor_get_slice(gamma%prime_vv,tensor_slice)
-                  ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,read_node,DEV_HOST)
-                  call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
-                  dm_mo_fort(1:nvir,1:nvir) = dm_block
-
-                  
-                  call get_free_fileunit(mp2dm)
-                  open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
-                  ! write dimension of the matrix 
-                  write(mp2dm) nocc+nvir
-                  ! write matrix element 
-                  write(mp2dm) dm_mo_fort
-
-                  ierr=talsh_tensor_destruct(tensor_slice)
-                  ierr=talsh_shutdown()
-            
-                  if (debug) then
-                     print *,'<<<<< DM, complete, before formatting to DM_complex'
-                     do j=1,(nocc+nvir)
-                        do i=1,(nocc+nvir)
-                           write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
-                        end do
-                     end do
-                     print *,'>>>>> DM, complete, after formatting to DM_complex'
-                  end if
-            
-                  close(mp2dm,status='KEEP')
-            
-            end subroutine write_matrix
 
 !-------------------------------------------------------------------------------------------------------------------
 
