@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 ***********************************************************************
 
       SUBROUTINE ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
@@ -2721,15 +2719,18 @@ C     CALL QEXIT('OCCLS')
 #ifdef LUCI_DEBUG
          IF(NTEST.GE.100) WRITE(6,*) ' MNAB,MXAB',MNAB,MXAB
 #endif
-         IF(IMS2.EQ.1) THEN
-           MNELFGP(IGAS) = MNAB
-           MXELFGP(IGAS) = MXAB
-           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
-         ELSE
-           MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
-           MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
-           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
-         END IF
+         MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
+         MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
+         MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
+C         IF(IMS2.EQ.1) THEN
+C           MNELFGP(IGAS) = MNAB
+C           MXELFGP(IGAS) = MXAB
+C           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
+C         ELSE
+C           MNELFGP(IGAS) = MIN(MNELFGP(IGAS),MNAB)
+C           MXELFGP(IGAS) = MAX(MXELFGP(IGAS),MXAB)
+C           MXELFGP(IGAS) = MIN(2*NOBPT(IGAS),MXELFGP(IGAS))
+C         END IF
         END DO
 C       ^ End of loop over gasspaces
       END DO

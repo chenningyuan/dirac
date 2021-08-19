@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 
 ***********************************************************************
 *                                                                     *
@@ -40,6 +38,7 @@
      &           ITERSEOUT
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
+     &           LU6LIST,LU7LIST,
      &           RCCTOS,IT_TTPL,IT_TTOL
 #endif
      &     )
@@ -65,6 +64,7 @@
       DIMENSION ISTAT(MPI_STATUS_SIZE)
       DIMENSION LU1LIST(*), LU2LIST(*), LU3LIST(*)
       DIMENSION LU4LIST(*), LU5LIST(*), LUCLIST(*)
+      DIMENSION LU6LIST(*), LU7LIST(*)
       DIMENSION IT_TTPL(*)
       INTEGER   RCCTOS(*)
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*)
@@ -152,6 +152,11 @@ C              FNDMND(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,SCR,ISCAT,SUBVAL
 C                WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM)
 * Real part
             CALL REWINE(LUDIA,LBLK)
+
+
+!            ISCR1(1) = 80
+!            SCR1(1) = 1.0D0
+!            NDEG = 1
 c           ISCR1(1) = 16
             IAM_REAL = 1
             CALL WRSVCD_REL(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
@@ -244,8 +249,12 @@ C     new stuff for real/complex hermitian matrix diagonalizer
         call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
      &              2,'KAPROJ')
       else
-        call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
-        call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
+        call memmar(KAPROJ,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
+     &              2,'KAPROJ')
+        call memmar(KAPROJI,(MAXVEC*(MAXVEC+1)/2),'ADDL  ',
+     &              2,'KAPROI')
+C        call memmar(KAPROJ,MAPROJI-MAPROJ,'ADDL  ',2,'KAPROJ')
+C        call memmar(KAPROJI,MAVEC-MAPROJI,'ADDL  ',2,'KAPROI')
 C
 C       new stuff for complex hermitian matrix diagonalizer
         call memmar(KCWORK,LCWORK,'ADDL  ',2,'KCWORK')
@@ -261,6 +270,7 @@ C       ... initialize
       CALL DZERO(WORK(KEIGVL),LEIGVL)
 
       call memmar(KAVEC,MWORK-MAVEC,'ADDL  ',2,'KAVECS')
+      call memmar(KAVECO,MWORK-MAVEC,'ADDL  ',2,'KAVECO')
       call memmar(KWORK,MLFRSC-MWORK,'ADDL  ',2,'KWORKS')
       
 #if defined (VAR_MPI2)
@@ -291,10 +301,12 @@ C       REAL DAVIDSON solver
      &                  WORK(KRNRM),WORK(KEIG),
      &                  EROOTS,MXCIIT,NROOTS,
      &                  MAXVEC,istart_nroot,WORK(KAPROJ),WORK(KAVEC),
+     &                  WORK(KAVECO),
      &                  WORK(KWORK),IPRT,NPRDIM,
      &                  IPNTR,LBLK,EIGSHF,THRES_E,
      &                  IBLOCKL,NPARBLOCK,NUM_BLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
+     &                  LU6LIST,LU7LIST,
      &                  LUCLIST,NBATCH,
      &                  WORK(KLVLBT),WORK(KLVLEBT),WORK(KLVI1BT),
      &                  WORK(KLVIBT),RCCTOS,
@@ -326,7 +338,7 @@ C
      &                  WORK(KEIG),SCR2(1),MXCIIT,NDIM,
      &                  NROOTS,MAXVEC,istart_nroot,
      &                  T_CC,T_BUFF,WORK(KAPROJI),WORK(KAPROJ),
-     &                  WORK(KAVEC),
+     &                  WORK(KAVEC),WORK(KAVECO),
      &                  WORK(KWORK),IPRT,NPRDIM,IPNTR,
      &                  LBLK,EIGSHF,IHAM12,
      &                  THRES_E,IBLOCKL,NPARBLOCK,NUM_BLOCKS,
@@ -1310,12 +1322,14 @@ C          real part
       END DO
 C
 C     debug print section 
+      NTEST = 00
       IF( NTEST .ge. 10 )THEN
         WRITE(LUPRI,'(/A/)') ' *** EIGEN_NEW ***: final eigenvalues'
         CALL WRTMATMN(EIGVAL,1,NDIM,1,NDIM,LUPRI)
         WRITE(LUPRI,'(/A/)') ' *** EIGEN_NEW ***: final eigenvectors'
         CALL WRTMATMN(EIGVEC,NDIM,NDIM,NDIM,NDIM,LUPRI)
       END IF
+      NTEST = 00
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -1434,13 +1448,15 @@ C          real and imag part
         END DO
       END DO
 C
-C     debug print section 
+C     debug print section
+      NTEST = 00 
       IF( NTEST .ge. 10 )THEN
         WRITE(LUPRI,'(/A/)') ' *** CEIGEN_NEW ***: final eigenvalues'
         CALL WRTMATMN(EIGVAL,1,N2DIM,1,N2DIM,LUPRI)
         WRITE(LUPRI,'(/A/)') ' *** CEIGEN_NEW ***: final eigenvectors'
         CALL WRTMATMN(EIGVEC,N2DIM,N2DIM,N2DIM,N2DIM,LUPRI)
       END IF
+      NTEST = 0
 C
       END
 ***********************************************************************
@@ -3344,6 +3360,7 @@ C      END IF
        CHARACTER SECTID*12, CPUTID*12, WALLTID*12,FILELAB*8
 *
        call qenter('MICDV4')
+
 *
       write(LUWRT,*)
       write(LUWRT,*) ' ----------------------------------------------'
@@ -3391,8 +3408,17 @@ C      END IF
 !        call wrtvcd(vec1,lu3,1,-1)
 
          CALL REWINE(LU3,-1)
+         call CPU_TIME(sigmatime1)
 
          call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
+
+         call CPU_TIME(sigmatime2)
+
+         sigmatimediff = sigmatime2 - sigmatime1
+
+         WALLTID = SECTID(sigmatimediff)
+         write(LUWRT,*) 'Sigmavector time',WALLTID
+         write(LUWRT,*) 
 *. Move sigma to LU2, LU2 is positioned at end of vector IVEC - 1
 !        WRITE(LUWRT,*) '  sigma vec ...',ivec
 !        CALL WRTVCD(VEC1,LU4,1,LBLK)
@@ -3453,6 +3479,7 @@ C      END IF
 *
 * 1.1 : R = H*X - EIGAPR*X
 *
+        call GETTIM(CPUPART1_1,WALLPART1_1)
        IADD = 0
        CONVER = .TRUE.
        DO 100 IROOT = 1, NROOT
@@ -3620,6 +3647,9 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
 *
          END IF
   100 CONTINUE
+        call GETTIM(CPUPART1_2,WALLPART1_2)
+        CPUPART1 = CPUPART1_2 - CPUPART1_1
+        WALLPART1 = WALLPART1_2 - WALLPART1_1
 
       IF (IPRT .GE. 10) THEN
           WRITE(LUWRT,'(/A,F20.8)')
@@ -3648,11 +3678,14 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
      &   (i,RNRM(ITER-1,i),i=1,NROOT)
        end if
 
+
       IF( CONVER ) GOTO  901
       IF( ITER.GT. MAXIT) THEN
          ITER = MAXIT
          GOTO 1001
       END IF
+
+
 *
 **  2 : Optimal combination of new and old directions
 *
@@ -3663,7 +3696,19 @@ C?       WRITE(6,*) ' MICDV4 : Overlap ', WORK(IVEC)
         CALL REWINE(LU3,LBLK)
         CALL COPVCD(LU1,LU3,VEC1,0,LBLK)
 CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
+
+        call CPU_TIME(sigmatime1)
+
         call sigden_ctrl(VEC1,VEC2,LU3,LU4,T_CC,T_BUFF,1)
+        call CPU_TIME(sigmatime2)
+
+
+        sigmatimediff = sigmatime2 - sigmatime1
+        WALLTID = SECTID(sigmatimediff)
+        write(LUWRT,*) 'Sigmavector time',WALLTID
+        call GETTIM(CPUPART2_1,WALLPART2_1) 
+         !I don't include sigmavector calculation in timing...easier that way
+
         CALL REWINE(LU4,LBLK)
         CALL COPVCD(LU4,LU2,VEC1,0,LBLK)
 *. Augment projected matrix
@@ -3684,6 +3729,11 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
       CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
      &               RWORK,EVL)
 
+      !Timings for part 2!!!!!
+      call GETTIM(CPUPART2_2,WALLPART2_2)
+
+      CPUPART2 = CPUPART2_2 - CPUPART2_1
+      WALLPART2 = WALLPART2_2 - WALLPART2_1
 !     DO 160 IROOT = 1, NROOT
 !       EIG(IROOT,ITER) = WORK(KAPROJ-1+IROOT*(IROOT+1)/2)
 !160  CONTINUE
@@ -3710,7 +3760,12 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
 *
 *. Reset      
 *
+         CPUPART3 = 0.0D0
+         WALLPART3 = 0.0D0
       IF(NVEC+NROOT.GT.MAXVEC .OR. CONVER .OR. MAXIT .EQ.ITER)THEN
+
+
+         call GETTIM(CPUPART3_1,WALLPART3_1)
         CALL REWINE( LU5,LBLK)
         DO 320 IROOT = 1, NROOT
           CALL MVCSMD(LU1,AVEC((IROOT-1)*NVEC+1),
@@ -3755,11 +3810,34 @@ CTF     CALL ENLMD(VEC1,VEC2,LU3,LU4)
         DO 420 IROOT = 1, NROOT
           APROJ(IROOT*(IROOT+1)/2 ) = EIG(IROOT,ITER)
   420   CONTINUE
+         call GETTIM(CPUPART3_2,WALLPART3_2)
+         CPUPART3 = CPUPART3_2 - CPUPART3_1
+         WALLPART3 = WALLPART3_2 - WALLPART3_1
 *
       END IF
 *
 *  Timing of this iteration
       CALL GETTIM(CPUITR2,WALLITR2)
+
+!      WALLTID = SECTID(sigmatime_final)
+!      write(LUWRT,*) 'Sigma vector calculation time',WALLTID
+
+      CPUTID = SECTID(CPUPART1)
+      WALLTID = SECTID(WALLPART1)
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for Part 1',
+     &       '  ',CPUTID,'(',WALLTID,')'
+      CPUTID = SECTID(CPUPART2)
+      WALLTID = SECTID(WALLPART2)
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for Part 2',
+     &       '  ',CPUTID,'(',WALLTID,')'
+      CPUTID = SECTID(CPUPART3)
+      WALLTID = SECTID(WALLPART3)
+      WRITE(LUWRT,'(/A,5A)')
+     &        '                    CPU (Wall) time for Part 3',
+     &       '  ',CPUTID,'(',WALLTID,')'
+
       CPUTID = SECTID(CPUITR2-CPUITR1)
       WALLTID = SECTID(WALLITR2-WALLITR1)
       if (ITERSEOUT.eq.1) then

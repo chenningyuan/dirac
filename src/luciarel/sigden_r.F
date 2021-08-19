@@ -1,4 +1,3 @@
-!dirac_copyright_start
 !      Copyright (c) 2017 by the authors of DIRAC.
 !      All Rights Reserved.
 !
@@ -17,7 +16,6 @@
 !      For information on how to get a license, as well as the
 !      author list and the complete list of contributors to the
 !      DIRAC program, see: http://www.diracprogram.org
-!dirac_copyright_end
 ***********************************************************************
 
       SUBROUTINE CAAB_INCLUDED(IEXOP,INCLUDED_CAAB)
@@ -1143,7 +1141,9 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
 *     ... Must hold strings of given sym for T ops.
       DIMENSION CJRES(*),SIRES(*)
 *
+
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
+
       COMMON/CMXCJ/MXCJ
       INTEGER*8 ITOFF
 *
@@ -1652,6 +1652,2940 @@ C
  9999 RETURN
 !#undef LUCI_DEBUG
       END
+!*****************************************************************
+      SUBROUTINE New_GNSIDE_REL_opt(ISD,IRIS,IRIC,ICA,ICB,IAA,IAB,
+     &           IAOC,IBOC,JAOC,JBOC,
+     &           NIA,NIB,NJA,NJB,
+     &           TB,T_BUFF,T_SCR_CC,IXTP,
+     &           SB,CB,ISSM,ICSM,
+     &           I1,XI1S,I2,XI2S,I3,XI3S,I4,XI4S,
+     &           TBSUB,CJRES,SIRES,MAXLB,
+!     &           TBSUB,CJRES,SIRES,MAXLBORIG,
+     &           ICA_STR,ICB_STR,IAA_STR,IAB_STR,
+     &           KJA,XKJA,KJB,XKJB,KIA,XKIA,KIB,XKIB,
+     &           KJAD,XKJAD,KJBD,XKJBD,KIAD,XKIAD,KIBD,XKIBD,
+     &           SIGN_EXTERNAL,IPRS,IPRD,ISMDST,
+     &           NICA,NICB,NIAA,NIAB,NKA,NKB,
+     &           IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
+     &           NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM,
+     &           L_Sym_Block,L_A_Block,L_B_Block,INum_Sym_A,
+     &           ISym_AA,ISym_AB,IAA_SM_STR_S,IAB_SM_STR_S,
+     &           IAA_SM_STR_E,IAB_SM_STR_E,NSubBlk_A,NStrings_A,
+     &           INum_Sym_C,ISym_CA,ISym_CB,ICA_SM_STR_S,
+     &           ICB_SM_STR_S,ICA_SM_STR_E,ICB_SM_STR_E,NSubBlk_C,
+     &           NStrings_C,CJRES_BAT,SIRES_BAT,T_BAT
+#if defined (VAR_MPI2)
+     &          ,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S
+#endif
+     &           )
+
+      use mospinor_info
+      use symmetry_setup_krci
+      use interface_to_mpi
+      implicit none
+!      implicit real*8(A-H,O-Z)
+#include "ipoist8.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#endif
+*. General input
+#include "mxpdim.inc"
+#include "gasstr.inc"
+#include "cgas.inc"
+#include "ctcc.inc"
+#include "parluci.h"
+#include "krmc_shmem.h"
+*     
+*.Input
+      real(8) CB(*)
+!      double precision CB(*)
+!     dimension CB(*) 
+      integer NIA(*),NIB(*),NJA(*),NJB(*)
+      integer IAOC(*),IBOC(*),JAOC(*),JBOC(*)
+      integer ICA(*),ICB(*),IAA(*),IAB(*)
+      integer ISD, IRIS, IRIC, IPRS, IPRD, ICSM, ISSM !7/5/18 was implicit before
+
+#if defined (VAR_MPI2)
+      integer IACT_C(*), IACT_S(*)
+      integer LEN_TT_BLOCK_PAR
+      integer IOFF_BLK_C, IOFF_BLK_S
+      integer I_BLK_S_SCR, I_BLK_C_SCR
+      real(8) xxxsitime
+      integer IC_Blk
+
+#else
+      integer LEN_T_BUFF !Defined in a common block for MPI
+#endif
+      double precision SIGN_EXTERNAL
+*.Input or Output
+      real(8) SB(*)
+!      double precision SB(*)
+!      DIMENSION SB(*)
+      real(8) TB(*), T_BUFF(*)
+!      double precision TB(*), T_BUFF(*)
+!      dimension TB(*), T_BUFF(*)
+*.Local Scratch
+      integer KAOC(MXPNGAS), KBOC(MXPNGAS)
+      integer KAGP(MXPNGAS), KBGP(MXPNGAS)
+      integer JAGP(MXPNGAS), JBGP(MXPNGAS)
+      integer ICAGP(MXPNGAS),ICBGP(MXPNGAS)
+      integer IAAGP(MXPNGAS),IABGP(MXPNGAS)
+
+*. 
+      integer ICA_EXP(MXNOP),ICB_EXP(MXNOP)
+      integer IAA_EXP(MXNOP),IAB_EXP(MXNOP)
+
+      integer IB_C(MXNDGIRR),IB_S(MXNDGIRR)
+*. Scratch through input 
+      integer I1(*), I2(*), I3(*), I4(*), ISMDST(*)
+      double precision    XI1S(*), XI2S(*), XI3S(*), XI4S(*)
+      real(8)    TBSUB(*), T_SCR_CC(*)
+!      double precision    TBSUB(*), T_SCR_CC(*)
+!      DIMENSION I1(*),XI1S(*),I2(*),XI2S(*)
+!      DIMENSION I3(*),XI3S(*),I4(*),XI4S(*)
+!      DIMENSION TBSUB(*), T_SCR_CC(*)
+!      DIMENSION ISMDST(*)
+      integer MAXLB
+!      Integer, parameter :: MAXLB = 4
+!Change back when done with this subroutine
+      integer    KJA(MAXLB), KJB(MAXLB), KIA(MAXLB), KIB(MAXLB)
+      double precision XKJA(*),XKJB(*),XKIA(*),XKIB(*)
+!      DIMENSION XKJA(*),XKJB(*),XKIA(*),XKIB(*)
+      integer    KJAD(MAXLB), KJBD(MAXLB), KIAD(MAXLB), KIBD(MAXLB)
+!      INTEGER    KJAD(*), KJBD(*), KIAD(*), KIBD(*)
+!      double precisin XKJAD(*),XKJBD(*),XKIAD(*),XKIBD(*)
+      real(8) XKJAD(*),XKJBD(*),XKIAD(*),XKIBD(*)
+!      DIMENSION XKJAD(*),XKJBD(*),XKIAD(*),XKIBD(*)
+
+      integer NICA(MXNDGIRR),NICB(MXNDGIRR)
+      integer NIAA(MXNDGIRR),NIAB(MXNDGIRR)
+      integer NKA(MXNDGIRR), NKB(MXNDGIRR)
+
+      integer IB_CA(MXNDGIRR,MXNDGIRR,MXNOP) 
+      integer IB_CB(MXNDGIRR,MXNDGIRR,MXNOP)
+      integer IB_AA(MXNDGIRR,MXNDGIRR,MXNOP)
+      integer IB_AB(MXNDGIRR,MXNDGIRR,MXNOP)
+      integer IB_T(MXNDGIRR,MXNDGIRR,MXNDGIRR)
+      integer NIKAINTM(MXPOBS,MXNOP),NIKBINTM(MXPOBS,MXNOP)
+      integer NJKAINTM(MXPOBS,MXNOP),NJKBINTM(MXPOBS,MXNOP)
+*. ... Must hold excitations for all intermediate strings of given sym 
+*. and all orbitals of given type
+      integer ICA_STR(*),ICB_STR(*),IAA_STR(*),IAB_STR(*)
+*     ... Must hold strings of given sym for T ops.
+      real(8) CJRES(*),SIRES(*)
+      real(8) CJRES_BAT(MAXLB**4), SIRES_BAT(MAXLB**4)
+      real(8) T_BAT(MAXLB**4)
+!      real(8), allocatable :: CJRES_BAT(:), SIRES_BAT(:)
+!      real(8), allocatable :: T_BAT(:)
+!      DIMENSION CJRES(*),SIRES(*)
+*
+      !Variables for statistics
+      double precision XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
+!      real(8) Batch_time, Cvec_time
+!      real(8) T_time, Sigma_time, 
+      real(8) Time1, Time2
+!      real(8) CalcMatTime
+      COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
+      double precision T_INI, T_END
+
+      COMMON/CMXCJ/MXCJ
+      integer MXCJ, IXTP
+      integer*8 ITOFF
+
+!      integer ISD, IRIS, IRIC, ICA(*), ICB(*), IAA(*),IAB(*)
+!      integer IAOC(*), IBOC(*), JAOC(*), JBOC(*),
+!      integer NIA(*), NIB(*), NJA(*), NJB(*)
+      integer LEN_C, LEN_TT_BLOCK, LEN_S !Length of c and function LEN_TT_BLOCK
+      integer IASM, IBSM, JASM, JBSM, KSM, KASM, IOPSM
+      integer NCA_OP, NCB_OP, NAA_OP, NAB_OP, NPERM !No. of operators
+      integer IKA_ZERO, IKB_ZERO, NKADST, NKBDST, NCADST !Look at these
+      integer NCBDST, NAADST, NABDST, IAB_MAP !And these
+      integer IKA_B, IKA_E, NKA_B, NKA_B0, IKB_B, IKB_E !And these
+      integer NKB_B, NKB_B0, NCA_B, NCB_B, NAA_B, NAB_B 
+      integer IAA_B, IAA_E, IAB_B, IAB_E, IUB_KJ 
+      integer ICA_B, ICA_E, ICB_B, ICB_E
+      integer IZEROKAJA, IZEROKBJB, IZEROKAIA, IZEROKBIB
+      integer NRSUB, NCSUB, LCAB, LAAB, LKAB
+      integer LDA, LDB, LDC
+      integer IAA_SM, IAB_SM, IAB_SM_ADJ,IAA_SM_ADJ,IUB,LIAA_SM2  
+      integer LIAB_SM2, LICA_SM2, LICB_SM2
+      integer IAA_JA_SM, ICA_IA_SM, LKA_SM, KBSM, LKB_SM
+      integer LICA_SM, LICB_SM, LIAA_SM, LIAB_SM, ICA_IA_SM_INVELM
+      integer IAB_JB_SM, ICB_IB_SM, LEN_KA_BAT, LEN_KB_BAT, NKA_BT
+      integer NKB_BT, IKA_BT, IKB_BT 
+      integer ICA_ICB_SM, IAA_IAB_SM, LICA_ICB_TOT, ICA_SM
+      integer ICB_SM, LIAA_IAB_TOT, LEN_ICA_ICB_BT, LEN_IAA_IAB_BT 
+      integer NIAA_IAB_BT, NICA_ICB_BT, Min_Size
+      integer IAA_IAB_BT, ICA_ICB_BT
+      integer LEN_BLOCK LEN_TMP_BT, IOFFC, IOFFR
+      integer ISYM, JSym_A, JSym_C, IBuffer, ISubBlk_A, ISubBlk_C
+      integer INum_Sym_A(100),ISym_AA(NSMST,100),ISym_AB(NSMST,100)
+      integer IAA_SM_STR_S(2,NSMST,100),IAB_SM_STR_S(2,NSMST,100)
+      integer IAA_SM_STR_E(2,NSMST,100),IAB_SM_STR_E(2,NSMST,100)
+      integer NSubBlk_A(NSMST,100),NStrings_A(100)
+      integer INum_Sym_C(100),ISym_CA(NSMST,100),ISym_CB(NSMST,100)
+      integer ICA_SM_STR_S(2,NSMST,100),ICB_SM_STR_S(2,NSMST,100)
+      integer ICA_SM_STR_E(2,NSMST,100),ICB_SM_STR_E(2,NSMST,100)
+      integer NSubBlk_C(NSMST,100),NStrings_C(100)
+      integer L_Sym_Block(NSMST), L_A_Block(NSMST), L_B_Block(NSMST)
+      integer NBat_CA_CB(NSMST), NBat_AA_AB(NSMST), IBatch_not_zero
+
+      integer INum_Sym_A_red,ISym_AA_red(NSMST),ISym_AB_red(NSMST)
+      integer IAA_SM_STR_S_red(2,NSMST),IAB_SM_STR_S_red(2,NSMST)
+      integer IAA_SM_STR_E_red(2,NSMST),IAB_SM_STR_E_red(2,NSMST)
+      integer N_SubBlk_A_red(NSMST),N_Strings_A_red
+
+      integer INum_Sym_C_red,ISym_CA_red(NSMST),ISym_CB_red(NSMST)
+      integer ICA_SM_STR_S_red(2,NSMST),ICB_SM_STR_S_red(2,NSMST)
+      integer ICA_SM_STR_E_red(2,NSMST),ICB_SM_STR_E_red(2,NSMST)
+      integer N_SubBlk_C_red(NSMST), N_Strings_C_red
+
+      integer IZeroKJABMap, IZeroKIABMap, IKJA_Off, IKJB_Off
+      integer IKIA_Off, IKIB_Off
+      logical batch_not_zero
+!      integer, allocatable :: INum_Sym_A(:),ISym_AA(:,:),ISym_AB(:,:) 
+!      integer, allocatable :: IAA_SM_STR_S(:,:,:), IAB_SM_STR_S(:,:,:)
+!      integer, allocatable :: IAA_SM_STR_E(:,:,:), IAB_SM_STR_E(:,:,:)
+!      integer, allocatable :: NSubBlk_A(:,:), NStrings_A(:)
+!      integer, allocatable :: INum_Sym_C(:),ISym_CA(:,:),ISym_CB(:,:) 
+!      integer, allocatable :: ICA_SM_STR_S(:,:,:), ICB_SM_STR_S(:,:,:)
+!      integer, allocatable :: ICA_SM_STR_E(:,:,:), ICB_SM_STR_E(:,:,:)
+!      integer, allocatable :: NSubBlk_C(:,:), NStrings_C(:)
+      !for test purposes
+      integer NTEST, NTESTL
+!      integer Num_C_str_stat, Num_A_str_stat
+      !Transposition/diagonalisation conditions, offsets in arrays
+      integer ISKIP, ITRNSP, IDIAG, ICBOFF, ISBOFF, ICJ_OFF, ISI_OFFC
+      !print indices
+      integer I,J,K 
+      real(8) SIGNXXX, XCNORM, XSNORM, DDOT !implicit real before
+      real(8) FACTORAB, FACTORC !for matrix multiplication
+
+
+      !REMEMBER THE FOLLOWING VARIABLES - might need to be removed
+      integer MAXLBORIG
+      !The following should be allocated further up
+
+      !External function:
+!      real(8) DLANGE
+      real(8) DNRM2, CNORM
+
+      !Last is intermediate of CPU time
+!      double precision, allocatable :: T_BAT(:)
+
+#ifdef GNSIDE_debug
+      write(LUWRT,*) '              Welcome to New_GNSIDE'
+#endif
+
+*
+!     NTESTL = 5000 ! debug
+      NTESTL = 0000 
+!#define LUCI_DEBUG
+      NTEST = MAX(NTESTL,max(IPRS,IPRD))
+*
+      ISKIP = 0
+#if defined (VAR_MPI2)
+      LEN_C = LEN_TT_BLOCK_PAR(ICSM,NJA,NJB,IACT_C,IOFF_BLK_C,0)
+#else
+      LEN_C = LEN_TT_BLOCK(ICSM,NJA,NJB)
+      LEN_T_BUFF = 0
+#endif
+!     print *,'C (input) ==> LEN_C',LEN_C
+!     call wrtmat(CB,1,LEN_C,1,LEN_C)
+C     check norm
+      XCNORM = DDOT(LEN_C,CB,1,CB,1)
+      if(XCNORM.EQ.0.0d0) return 
+*
+C
+C     symmetry of operator (Hamiltonian)
+C     ----------------------------------
+      IOPSM = IDBGMULT(INVELM(ICSM),ISSM)
+!
+!      print '(a,i4)', ' symmetry of Hamiltonian ==>',IOPSM
+!      print '(a,i4)', ' symmetry of c-vector    ==>',ICSM
+!      print '(a,i4)', ' symmetry of s-vector    ==>',ISSM
+!
+C
+C     total length of sigma block
+#if defined (VAR_MPI2)
+      LEN_S = LEN_TT_BLOCK_PAR(ISSM,NIA,NIB,IACT_S,IOFF_BLK_S,1)
+#else
+      LEN_S = LEN_TT_BLOCK(ISSM,NIA,NIB)
+#endif
+!     print *,'LEN_S is',LEN_S
+      if(LEN_S.eq.0) return
+      if(ISD.EQ.2)then ! check S norm (only density runs)
+        XSNORM = DDOT(LEN_S,SB,1,SB,1)
+        if(XSNORM.EQ.0.0D0) return
+      end if
+#if defined (VAR_MPI2)
+C
+C     vector partitioning has been changed! we have to be careful
+C     calculating the proper offset for each block ( sigma and c )!!!
+C
+C     adapted offset of c and sigma routines
+        Time1 = interface_mpi_wtime()
+      call IOFF_SYMBLK_MAT_PAR(NSMST,NJA,NJB,ICSM,IB_C,
+     &                         IACT_C,IOFF_BLK_C,0)
+      call IOFF_SYMBLK_MAT_PAR(NSMST,NIA,NIB,ISSM,IB_S,
+     &                         IACT_S,IOFF_BLK_S,1)
+C
+#else
+C     offset of c and sigma routines
+      call IOFF_SYMBLK_MAT(NSMST,NJA,NJB,ICSM,IB_C)
+      call IOFF_SYMBLK_MAT(NSMST,NIA,NIB,ISSM,IB_S)
+#endif
+C     types of strings in T in groupnotation
+!#define LUCI_DEBUG
+!      write(LUWRT,*) 'CA occupations:'
+      call OCC_TO_GRP(ICA,ICAGP,1)
+!      write(LUWRT,*) 'CB occupations:'
+      call OCC_TO_GRP(ICB,ICBGP,1)
+!      write(LUWRT,*) 'AA occupations:'
+      call OCC_TO_GRP(IAA,IAAGP,1)
+!      write(LUWRT,*) 'AB occupations:'
+      call OCC_TO_GRP(IAB,IABGP,1)
+
+#ifdef LUCI_DEBUG
+      write(6,*) ' GNSID... Output from OCC_TO_GRP : '
+      write(6,*) ' ICA_GRP : ',(ICAGP(I),I=1,NGAS,1)
+      write(6,*) ' ICB_GRP : ',(ICBGP(I),I=1,NGAS,1)
+      write(6,*) ' IAA_GRP : ',(IAAGP(I),I=1,NGAS,1)
+      write(6,*) ' IAB_GRP : ',(IABGP(I),I=1,NGAS,1)
+#endif
+!#undef LUCI_DEBUG
+C     operators in T in expanded form
+      call REF_OP(ICA,ICA_EXP,NCA_OP,NGAS,1,MXNOP)
+      call REF_OP(ICB,ICB_EXP,NCB_OP,NGAS,1,MXNOP)
+      call REF_OP(IAA,IAA_EXP,NAA_OP,NGAS,1,MXNOP)
+      call REF_OP(IAB,IAB_EXP,NAB_OP,NGAS,1,MXNOP)
+!      write(LUWRT,*) 'After REF_OP'
+C          REF_OP(IOPGAS,IOP,NOP,NGAS,IWAY)
+C     sign for bringing operators and amplitudes into new order
+      NPERM =  NAA_OP* NCB_OP 
+     &       + NAA_OP*(NAA_OP-1)/2
+     &       + NAB_OP*(NAB_OP-1)/2
+      if(MOD(NPERM,2).EQ.1) then
+        SIGNXXX  =  -1.0D0*SIGN_EXTERNAL
+!       WRITE(LUWRT,*) ' new SIGNXXX for type IXTP =',IXTP
+      else
+!       WRITE(LUWRT,*) ' old SIGNXXX for type IXTP =',IXTP
+        SIGNXXX = SIGN_EXTERNAL
+      end if
+
+
+
+C     type of Ka and Kb
+      call CCEX_OCC_OCC(JAOC,KAOC,NGAS,IAA,IKA_ZERO)
+      call CCEX_OCC_OCC(JBOC,KBOC,NGAS,IAB,IKB_ZERO)
+
+!      MaxLB = 2
+!      write(LUWRT,*) 'After CCEX_OCC_OCC'
+C     check that annihilation has not acted upon empty GAS:
+!#define GNSIDE_debug
+      if(IKA_ZERO.EQ.0.AND.IKB_ZERO.EQ.0) then
+C       get group of K mapped occupations
+!         write(LUWRT,*) 'Inside if for IK_ZERO'
+        call occ_to_grp(KAOC,KAGP,1)
+        call occ_to_grp(KBOC,KBGP,1)
+C       number of strings in this supergroup (new DBG routine)
+!       NEL_KA = IELSUM(KAOC,NGAS)
+!       NEL_KB = IELSUM(KBOC,NGAS)
+        do KSM = 1, NSMST
+          call nst_spgrp_dbg(NGAS,KAGP,KSM,NSMST,NKA(KSM),NKADST,1)
+!         call getstr2_totsm_spgp_rel(1,KAGP,NGAS,KSM,NEL_KA,
+!    &                                NKA(KSM),NKADST)
+          call nst_spgrp_dbg(NGAS,KBGP,KSM,NSMST,NKB(KSM),NKBDST,2)
+!         call getstr2_totsm_spgp_rel(2,KBGP,NGAS,KSM,NEL_KB,
+!    &                                NKB(KSM),NKBDST)
+        end do
+!        write(LUWRT,*) 'After occ and nst for K strings'
+!       NEL_CA = IELSUM(ICA,NGAS)
+!       NEL_CB = IELSUM(ICB,NGAS)
+!       NEL_AA = IELSUM(IAA,NGAS)
+!       NEL_AB = IELSUM(IAB,NGAS)
+C       number of strings in excitation ops
+        do ISYM = 1, NSMST
+
+!         call getstr2_totsm_spgp_rel(1,ICAGP,NGAS,ISYM,NEL_CA,
+!    &                                NICA(ISYM),NCADST)
+!         call getstr2_totsm_spgp_rel(2,ICBGP,NGAS,ISYM,NEL_CB,
+!    &                                NICB(ISYM),NCBDST)
+!         call getstr2_totsm_spgp_rel(1,IAAGP,NGAS,ISYM,NEL_AA,
+!    &                                NIAA(ISYM),NAADST)
+!         call getstr2_totsm_spgp_rel(2,IABGP,NGAS,ISYM,NEL_AB,
+!    &                                NIAB(ISYM),NABDST)
+          call nst_spgrp_dbg(NGAS,ICAGP,ISYM,NSMST,NICA(ISYM),NCADST,1)
+          call nst_spgrp_dbg(NGAS,ICBGP,ISYM,NSMST,NICB(ISYM),NCBDST,2)
+          call nst_spgrp_dbg(NGAS,IAAGP,ISYM,NSMST,NIAA(ISYM),NAADST,1)
+          call nst_spgrp_dbg(NGAS,IABGP,ISYM,NSMST,NIAB(ISYM),NABDST,2)
+        end do
+!        write(LUWRT,*) 'Number of creation operators:'
+!        do ISYM = 1,NSMST
+!            write(LUWRT,*) ISYM, NICA(ISYM) 
+!        end do
+C       offset for symmetryblocks of T
+        call Z_TCC_OFF_opt(IB_T,NICA,NICB,NIAA,NIAB,IOPSM)
+C            Z_TCC_OFF(IBT,NCA,NCB,NAA,NAB,ITSYM)
+C       creation path from C/S strings to K strings
+C       mappings from !I> to !K> are annihilations mappings 
+
+C       CA : KA => IA mappings in 1
+C            MAP_EXSTR(IOP,IAC,NOP,IREFOC,IX,SX,NK,IB,ISMDST,IAB)
+        IAB_MAP = 1
+        call MAP_EXSTR(ICA_EXP,NCA_OP,IAOC,I1,XI1S,
+     &                 NIKAINTM,IB_CA,ISMDST,IAB_MAP)
+C       CB : KB => IB     
+        IAB_MAP = 2
+        call MAP_EXSTR(ICB_EXP,NCB_OP,IBOC,I2,XI2S,
+     &                 NIKBINTM,IB_CB,ISMDST,IAB_MAP)
+C       AA : KA => JA
+        IAB_MAP = 1
+        call MAP_EXSTR(IAA_EXP,NAA_OP,JAOC,I3,XI3S,
+     &                 NJKAINTM,IB_AA,ISMDST,IAB_MAP)
+C       AB : KB => JB
+        IAB_MAP = 2
+        call MAP_EXSTR(IAB_EXP,NAB_OP,JBOC,I4,XI4S,
+     &                 NJKBINTM,IB_AB,ISMDST,IAB_MAP)
+C       loop over symmetry-blocks of C and Sigma
+#if defined (VAR_MPI2)
+C       initialize offsets for sigma-block loop
+        I_BLK_S_SCR = 0
+        I_BLK_S_SCR = IOFF_BLK_S
+        I_BLK_C_SCR = 0
+        I_BLK_C_SCR = IOFF_BLK_C
+!
+!        C_Blk_Loop do 
+        Time2 = interface_mpi_wtime()
+        Start_Gnside = Start_Gnside + Time2 - Time1
+#endif
+!Now we start the loops        
+
+
+
+!        write(LUWRT,*) 'NBatch = ',NBatch
+!        write(LUWRT,*) 'NSMST  = ',NSMST
+
+
+
+      IBuffer = 1
+      !Buffer parameter so that batches do not get consist of too small
+      !subblocks
+      Min_Size = (MaxLB - IBuffer)**2
+
+!      write(LUWRT,*) 'Entering KA loop'
+
+      do KASM = 1, NSMST !K up symmetry
+
+         LKA_SM = NKA(KASM)
+!         write(LUWRT,*) 'KASM = ',KASM
+!         write(LUWRT,*) 'LKA_SM = ',LKA_SM
+
+         IF(LKA_SM==0) cycle
+         IAA_JA_SM = KASM
+         ICA_IA_SM = INVELM(KASM)
+         ICA_IA_SM_INVELM = INVELM(ICA_IA_SM)
+
+!         write(LUWRT,*) 'KASM, IAA_JA_SM, ICA_IA_SM '
+!     &   , KASM, IAA_JA_SM, ICA_IA_SM
+         !Skip iteration in case there are no K strings
+         !with symmetry KASM
+!         write(LUWRT,*) 'KB loop'
+       KB_SM:  do KBSM = 1, NSMST !K down
+            LKB_SM = NKB(KBSM)
+            IF(LKB_SM==0) cycle 
+
+            IAB_JB_SM = KBSM
+            ICB_IB_SM = INVELM(KBSM)
+
+         Call IZero(NBat_CA_CB,NSMST)
+         Call IZero(NBat_AA_AB,NSMST)
+         IBatch_not_zero = 0
+         Batch_not_zero = .false.
+
+         CA_CB_SM_BT: Do ICA_ICB_SM = 1,NSMST
+
+            IAA_IAB_SM = IDBGMULT(INVELM(ICA_ICB_SM),IOPSM)
+            LICA_ICB_TOT = 0
+!                     write(LUWRT,*) 'Creation length loop'
+!#if defined (VAR_MPI2)
+!            ca_b_sm_start = interface_mpi_wtime()
+!#endif
+            do ICA_SM = 1, NSMST
+
+               IASM =
+     &         IDBGMULT(ICA_SM,ICA_IA_SM_INVELM)
+
+#if defined (VAR_MPI2)
+               I_BLK_S_SCR = 0
+               I_BLK_S_SCR = IOFF_BLK_S + IASM - 1
+               if(IACT_S(I_BLK_S_SCR).ne.MYPROC) then
+!                  write(LUWRT,*) 'IASM, MYPROC',IASM,MYPROC
+!                  write(LUWRT,*) 
+                  cycle !ICA_SM
+               end if
+#endif
+               ICB_SM =
+     &         IDBGMULT(INVELM(ICA_SM),ICA_ICB_SM)
+
+               LICA_SM = NICA(ICA_SM)
+               LICB_SM = NICB(ICB_SM)
+#if defined (VAR_MPI2)
+               if(LICA_SM*LICB_SM==0) cycle !ICA_SM
+#endif
+!                     IASM =
+!     &            IDBGMULT(ICA_SM,KASM)
+               IBSM =
+     &         IDBGMULT(ISSM,INVELM(IASM))
+                              !Checking if the determinant string
+                              !symmetries may mix
+               if(IBSM/=IDBGMULT(ICB_SM,INVELM(ICB_IB_SM))) cycle
+                        
+#if !defined (VAR_MPI2)
+               if(NIA(IASM)*NIB(IBSM)*
+     &         LICA_SM*LICB_SM.eq.0) then 
+
+C     &         NICA(ICA_SM)*NICB(ICB_SM).eq.0) then 
+                  cycle !ICA_SM
+!               else 
+!                     write(LUWRT,*) 'ICA_ICB_SM ',ICA_ICB_SM
+!                     write(LUWRT,*) 'IAA_IAB_SM ',IAA_IAB_SM
+!                        write(LUWRT,*) 'Elements for'
+!                        write(LUWRT,*) 'IASM, IBSM =',IASM,IBSM
+!                        write(LUWRT,*) 
+!                        write(LUWRT,*) 'NIA(IASM),NIB(IBSM) ='
+!                        write(LUWRT,*) NIA(IASM),NIB(IBSM)
+!                        write(LUWRT,*) 'Elements for'
+!                        write(LUWRT,*) 'ICA_SM, ICB_SM=',ICA_SM,ICB_SM
+!                        write(LUWRT,*) 'NICA(ICA_SM),NICB(ICB_SM) ='
+!                        write(LUWRT,*) NICA(ICA_SM),NICB(ICB_SM)
+                              end if
+#endif
+!                        write(LUWRT,*) 'ICA_SM =',ICA_SM
+!                        write(LUWRT,*) 'ICB_SM =',ICB_SM
+!                        write(LUWRT,*) 'NICA(ICA_SM) =',NICA(ICA_SM)
+!                        write(LUWRT,*) 'NICB(ICB_SM) =',NICB(ICB_SM)
+                LICA_ICB_TOT = LICA_ICB_TOT +
+     &          LICA_SM*LICB_SM
+C     &                  NICA(ICA_SM)*NICB(ICB_SM)
+            end do
+
+!#if defined (VAR_MPI2)
+!            ca_b_sm_end = interface_mpi_wtime()
+!            ca_b_sm_tot = ca_b_sm_tot + ca_b_sm_end - ca_b_sm_start
+!#endif
+
+            if(LICA_ICB_TOT==0) then 
+               cycle CA_CB_SM_BT !ASK JEPPE ABOUT THIS!
+!            else
+!               write(LUWRT,*) 'There are creation elements!'
+            end if
+
+!                     write(LUWRT,*) 'LICA_ICB_TOT =', LICA_ICB_TOT
+!Put in some buffer
+!                     LEN_ICA_ICB_BT = MAXLB**2
+
+            LEN_ICA_ICB_BT = Min_Size
+            if(LICA_ICB_TOT < Min_Size) then
+               LEN_ICA_ICB_BT = LICA_ICB_TOT
+            end if
+!Number of creation batches
+            NICA_ICB_BT = LICA_ICB_TOT/LEN_ICA_ICB_BT
+            if(NICA_ICB_BT*LEN_ICA_ICB_BT < LICA_ICB_TOT) then
+               NICA_ICB_BT = NICA_ICB_BT + 1
+            end if
+            if(NICA_ICB_BT>=100) then
+               write(LUWRT,*) 'TOO MANY BATCHES'
+               stop
+            end if
+!Find number of up/down annihilation batches
+!12345 continue
+!                     write(LUWRT,*) 'Annihilation length loop'
+            LIAA_IAB_TOT = 0
+!                     write(LUWRT,*) 'Just before AA and AB section'
+!#if defined (VAR_MPI2)
+!            aa_b_sm_start = interface_mpi_wtime()
+!#endif
+
+            do IAA_SM = 1, NSMST
+               JASM = IDBGMULT(IAA_JA_SM,INVELM(IAA_SM))
+#if defined (VAR_MPI2)
+               I_BLK_C_SCR = 0
+               I_BLK_C_SCR = IOFF_BLK_C + JASM - 1
+               if(IACT_C(I_BLK_C_SCR).eq.0) then
+!                  write(LUWRT,*) 'JASM',JASM
+!                  write(LUWRT,*) 'No s-c connections'
+                  cycle !IAA_SM
+               end if
+#endif
+               IAB_SM = IDBGMULT(IAA_IAB_SM,INVELM(IAA_SM))
+               LIAA_SM = NIAA(INVELM(IAA_SM))
+               LIAB_SM = NIAB(INVELM(IAB_SM))
+#if defined (VAR_MPI2)
+               if(LIAA_SM*LIAB_SM==0) cycle !IAA_SM
+#endif
+
+               JBSM = IDBGMULT(ICSM,INVELM(JASM))
+               !Checking if the determinant string
+               !symmetries may mix
+               if(JBSM/=IDBGMULT(IAB_JB_SM,INVELM(IAB_SM))) cycle
+               !IAA_SM
+!                              JBSM = IDBGMULT(IAB_JB_SM,INVELM(IAB_SM))
+#if !defined (VAR_MPI2)
+               if(NJA(JASM)*NJB(JBSM)*
+     &         LIAA_SM*LIAB_SM.eq.0) then 
+
+!     &         NIAA(INVELM(IAA_SM))*NIAB(INVELM(IAB_SM)).eq.0) then 
+                  cycle !IAA_SM
+!                              else
+!                        write(LUWRT,*) 'Elements for'
+!                        write(LUWRT,*) 'JASM, JBSM =',JASM,JBSM
+!                        write(LUWRT,*) 'NJA(JASM),NJB(JBSM) ='
+!                        write(LUWRT,*) NJA(JASM),NJB(JBSM)
+!                        write(LUWRT,*) 'Elements for'
+!                        write(LUWRT,*) 'IAA_SM, IAB_SM=',IAA_SM,IAB_SM
+!                        write(LUWRT,*) 'NIAA(IAA_SM),NIAB(IAB_SM) ='
+!                        write(LUWRT,*)
+!     &                  NIAA(INVELM(IAA_SM)),NIAB(INVELM(IAB_SM))
+               end if
+#endif
+               LIAA_IAB_TOT = LIAA_IAB_TOT +
+     &         LIAA_SM*LIAB_SM
+
+!     &                  NIAA(INVELM(IAA_SM))*NIAB(INVELM(IAB_SM))
+!         write(LUWRT,*) 'IAA_SM = ',IAA_SM
+!         write(LUWRT,*) 'IAB_SM = ',IAB_SM
+             end do
+!Put in some buffer
+
+!#if defined (VAR_MPI2)
+!             aa_b_sm_end = interface_mpi_wtime()
+!             aa_b_sm_tot = aa_b_sm_tot + aa_b_sm_end - aa_b_sm_start
+!#endif
+             if(LIAA_IAB_TOT==0) then
+!                if(ICA_ICB_SM==NSMST) then
+!                   cycle KB_SM
+!                else    
+                   cycle CA_CB_SM_BT !ASK JEPPE ABOUT THIS!
+!                end if
+             else
+                IBatch_not_zero = 1
+                Batch_not_zero = .true.
+             end if
+
+!            write(LUWRT,*) 'WAHEY, non-zero number elements'
+!            write(LUWRT,*) 'LICA_ICB_TOT = ',LICA_ICB_TOT
+!            write(LUWRT,*) 'LIAA_IAB_TOT = ',LIAA_IAB_TOT
+!            write(LUWRT,*) 'ICA_ICB_SM = ',ICA_ICB_SM
+!            write(LUWRT,*) 'IAA_IAB_SM = ',IAA_IAB_SM
+
+             LEN_IAA_IAB_BT = Min_Size
+             if(LIAA_IAB_TOT < Min_Size) then
+!                write(LUWRT,*) 
+!     &          'Total block length smaller than Min_Size'
+                LEN_IAA_IAB_BT = LIAA_IAB_TOT
+             end if
+
+!                     write(LUWRT,*) 'Length of each Anni. batch '
+!     &               ,LEN_IAA_IAB_BT
+!Number of annihilation batches
+             NIAA_IAB_BT = LIAA_IAB_TOT/LEN_IAA_IAB_BT
+             if(NIAA_IAB_BT*LEN_IAA_IAB_BT < LIAA_IAB_TOT) then
+                NIAA_IAB_BT = NIAA_IAB_BT + 1
+             end if
+
+             if(NIAA_IAB_BT>=100) then
+                write(LUWRT,*) 'TOO MANY BATCHES'
+                stop
+             end if
+
+             NBat_CA_CB(ICA_ICB_SM) = NICA_ICB_BT
+             NBat_AA_AB(ICA_ICB_SM) = NIAA_IAB_BT
+C            End do CA_CB_SM_BT
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_MPI_WTIME()
+#else                     
+                     call CPU_time(Time1)
+#endif
+                     call DST_BLOCKS_OVER_BATCHES(.false.,NIAA_IAB_BT,
+     &                     IAA_IAB_SM,NIAA,NIAB,
+     &                     MaxLB,Min_Size,
+     &                     NJA,NJB,ICSM,IAA_JA_SM,IAB_JB_SM,
+     &                     INum_Sym_A,ISym_AA,ISym_AB,IAA_SM_STR_S,
+     &                     IAB_SM_STR_S,IAA_SM_STR_E,IAB_SM_STR_E,
+     &                     NSubBlk_A,NStrings_A,
+     &                     L_A_Block,L_B_Block,L_Sym_Block
+#if defined (VAR_MPI2)
+     &                     , IOFF_BLK_C,IACT_C
+#endif
+     &                     )
+
+                     !Statistics on number of strings
+                     Do I=1,NIAA_IAB_BT
+                     Num_A_str_stat = Num_A_Str_stat + NStrings_A(I)
+                     End do
+                     Ave_Num_A_str =
+     &                dble(Num_A_str_stat)/dble(NIAA_IAB_BT)
+
+
+
+!                     write(LUWRT,*) 'Back in New_GNSIDE'
+!                     write(LUWRT,*) '  Now NIAA_IAB_BT = ', NIAA_IAB_BT
+!                        write(LUWRT,*) 'INum_Sym_A(1) = ',INum_Sym_A(1)
+!                     do I=1,NIAA_IAB_BT
+!                        write(LUWRT,*) 'Batch number ',I
+!                        write(LUWRT,*) 'INum_Sym_A(I) = ',INum_Sym_A(I)
+!                        do J=1,INum_Sym_A(I)
+!                           write(LUWRT,*) 'SymAA(I) = ', ISym_AA(J,I)
+!                           write(LUWRT,*) 'SymAB(I) = ', ISym_AB(J,I)
+!                           write(LUWRT,*) 'No. of sub blocks
+!     &                     ',NSubBlk_A(J,I)
+!                           do K=1,NSubBlk_A(J,I)
+!                              write(LUWRT,*) 'String start AA = '
+!     &                        ,IAA_SM_STR_S(K,J,I)
+!                              write(LUWRT,*) 'String end AA = '
+!     &                        ,IAA_SM_STR_E(K,J,I)
+!                              write(LUWRT,*) 'String start AB = '
+!     &                        ,IAB_SM_STR_S(K,J,I)
+!                              write(LUWRT,*) 'String end AB = '
+!     &                        ,IAB_SM_STR_E(K,J,I)
+!
+!                           end do
+!                        end do
+!                     end do
+                     NICA_ICB_BT = NBat_CA_CB(ICA_ICB_SM)
+
+                     call DST_BLOCKS_OVER_BATCHES(.true.,NICA_ICB_BT,
+     &                     ICA_ICB_SM,NICA,NICB,
+     &                     MaxLB,Min_Size,
+     &                     NIA,NIB,ISSM,ICA_IA_SM,ICB_IB_SM,                
+     &                     INum_Sym_C,ISym_CA,ISym_CB,ICA_SM_STR_S,
+     &                     ICB_SM_STR_S,ICA_SM_STR_E,ICB_SM_STR_E,
+     &                     NSubBlk_C,NStrings_C,
+     &                     L_A_Block,L_B_Block,L_Sym_Block
+#if defined (VAR_MPI2)
+     &                     , IOFF_BLK_S,IACT_S
+#endif
+     &                     )
+
+                     !Statistics on number of strings
+                     Do I=1,NICA_ICB_BT
+                     Num_C_str_stat = Num_C_Str_stat + NStrings_C(I)
+                     End do
+                     Ave_Num_C_str =
+     &                dble(Num_C_str_stat)/dble(NICA_ICB_BT)
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time2)
+#endif
+                     Batch_time = Batch_time + Time2 - Time1
+
+            if(.not.Batch_not_zero) cycle KB_SM
+            if(IBatch_not_zero==0) cycle KB_SM
+!            write(LUWRT,*) 'KBSM, IAB_JB_SM, ICB_IB_SM ', 
+!     &      KBSM, IAB_JB_SM, ICB_IB_SM
+!            write(LUWRT,*) 'NKA(KASM) = ',NKA(KASM)
+!            write(LUWRT,*) 'NKB(KBSM) = ',NKB(KBSM)
+
+            LEN_KA_BAT = MAXLB
+            LEN_KB_BAT = MAXLB
+
+            !Batching K up and K down
+            if(LKA_SM < MAXLB) then
+               LEN_KA_BAT = LKA_SM
+               LEN_KB_BAT = MIN(LKB_SM,MAXLB*MAXLB/LKA_SM)
+            end if
+
+            if(LKB_SM < MAXLB) then
+               LEN_KB_BAT = LKB_SM
+               LEN_KA_BAT = MIN(LKA_SM,MAXLB*MAXLB/LKB_SM)
+            end if
+
+            NKA_BT = LKA_SM/LEN_KA_BAT
+            if(NKA_BT*LEN_KA_BAT < LKA_SM) NKA_BT = NKA_BT + 1
+            NKB_BT = LKB_SM/LEN_KB_BAT
+            if(NKB_BT*LEN_KB_BAT < LKB_SM) NKB_BT = NKB_BT + 1
+
+!            write(LUWRT,*) 'Number of Ka and Kb batches',
+!     &     NKA_BT, NKB_BT
+#if defined (VAR_MPI2)
+            kabt_start = interface_mpi_wtime()
+#endif
+            do IKA_BT = 1, NKA_BT !K up batches
+!            write(LUWRT,*) 'Now batch loops'
+               IKA_B  = (IKA_BT-1)*LEN_KA_BAT + 1
+               IKA_E  = MIN(LKA_SM,IKA_B + LEN_KA_BAT - 1)
+
+               NKA_B  = IKA_E - IKA_B + 1
+!               write(LUWRT,*) 'IKA_B, IKA_E, NKA_B, LKA_SM, KASM'
+!               write(LUWRT,*) IKA_B, IKA_E, NKA_B, LKA_SM, KASM
+               NKA_B0 = NKA_B
+
+#if defined (VAR_MPI2)
+            kbbt_start = interface_mpi_wtime()
+#endif
+               do IKB_BT = 1, NKB_BT !K down
+! Finding beginning/end and dimension of K up/down batches
+
+                  IKB_B  = (IKB_BT-1)*LEN_KB_BAT + 1
+                  IKB_E  = MIN(LKB_SM,IKB_B +  LEN_KB_BAT - 1)
+                  NKB_B  = IKB_E - IKB_B + 1
+!               write(LUWRT,*) 'IKB_B, IKB_E, NKB_B, LKB_SM, KBSM'
+!               write(LUWRT,*) IKB_B, IKB_E, NKB_B, LKB_SM, KBSM
+                  NKB_B0 = NKB_B
+! Loop over creation up/down symmetry
+!                  write(LUWRT,*) 'Creation loop'
+#if defined (VAR_MPI2)
+            ca_cb_sm_start = interface_mpi_wtime()
+#endif
+!      CA_CB_SM: do ICA_ICB_SM = 1, NSMST
+!                   if((NBat_CA_CB(ICA_ICB_SM)==0).or.
+!     &                (NBat_AA_AB(ICA_ICB_SM)==0)) cycle CA_CB_SM_BT
+
+C                     IAA_IAB_SM = IDBGMULT(INVELM(ICA_ICB_SM),IOPSM)
+
+!                     NIAA_IAB_BT = NBat_AA_AB(ICA_ICB_SM)
+!
+!                     NICA_ICB_BT = NBat_CA_CB(ICA_ICB_SM)
+
+!                    Annihilation batches
+
+                     do IAA_IAB_BT = 1, NIAA_IAB_BT 
+!                     write(LUWRT,*) 'Annihilation batch ',IAA_IAB_BT
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time1)
+#endif
+                     call Reduce_Batch(.false.,MAXLB,
+     &                     IAAGP,LIAA_SM2,IAA_STR,
+     &                     IABGP,LIAB_SM2,IAB_STR,
+     &                     KJAD,XKJAD,KASM,IKA_B,IKA_E,
+     &                     I3,XI3S,IB_AA,NJKAINTM,NAA_OP,
+     &                     KJBD,XKJBD,KBSM,IKB_B,IKB_E,
+     &                     I4,XI4S,IB_AB,NJKBINTM,NAB_OP,
+     &                     INum_Sym_A(IAA_IAB_BT),ISym_AA(:,IAA_IAB_BT),
+     &                     ISym_AB(:,IAA_IAB_BT),
+     &                     IAA_SM_STR_S(:,:,IAA_IAB_BT),
+     &                     IAB_SM_STR_S(:,:,IAA_IAB_BT),
+     &                     IAA_SM_STR_E(:,:,IAA_IAB_BT),
+     &                     IAB_SM_STR_E(:,:,IAA_IAB_BT),
+     &                     NSubBlk_A(:,IAA_IAB_BT),
+     &                     INum_Sym_A_red,
+     &                     ISym_AA_red,       
+     &                     ISym_AB_red,
+     &                     IAA_SM_STR_S_red,IAB_SM_STR_S_red,       
+     &                     IAA_SM_STR_E_red,IAB_SM_STR_E_red,       
+     &                     N_SubBlk_A_red,N_Strings_A_red,
+     &                     IZeroKJABMap)
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time2)
+#endif
+                     Batch_time = Batch_time + Time2 - Time1
+                     if(IZeroKJABMap/=0) cycle !Annihilation batch
+
+!                     if(IZeroKJABMap==0) then
+!                     write(LUWRT,*) 'Diff. in no. strings',
+!     &               NStrings_A(IAA_IAB_BT)-N_Strings_A_red
+!                     write(LUWRT,*) 'IZeroKJABMap ', IZeroKJABMap
+!                     else
+!                        cycle !Annihilation batches
+!                     end if
+!                     write(LUWRT,*) 'Past Annihilation Reduce_Batch'
+
+                        ICJ_OFF = 0 !Column Offset in CJRES_BAT
+                        IKJA_OFF = 0 !Offset in KJAD
+                        IKJB_OFF = 0 !Offset in KJBD
+!                        if(INum_Sym_A(IAA_IAB_BT)>1) then
+!                           write(LUWRT,*) 'Annihilation batch',
+!     &                     IAA_IAB_BT
+!                           write(LUWRT,*) 'More than one symmetry in C'
+!                           write(LUWRT,*) 'Number of symmetries',
+!     &                        INum_Sym_A(IAA_IAB_BT)
+!                        end if
+
+!                        do JSym_A = 1,INum_Sym_A(IAA_IAB_BT)
+!                        LIAA_SM = 
+!     &                  NIAA(INVELM(ISym_AA(JSym_A,IAA_IAB_BT)))
+!                        LIAB_SM = 
+!     &                  NIAB(INVELM(ISym_AB(JSym_A,IAA_IAB_BT)))
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time1)
+#endif
+                        do JSym_A = 1,INum_Sym_A_red
+!                        LIAA_SM = 
+!     &                  NIAA(INVELM(ISym_AA_red(JSym_A)))
+!                        LIAB_SM = 
+!     &                  NIAB(INVELM(ISym_AB_red(JSym_A)))
+!                IUB = 1
+*               we are generating strings of creation operators so 
+!                           IAA_SM = ISym_AA(JSym_A,IAA_IAB_BT)
+                           IAA_SM = ISym_AA_red(JSym_A)
+!
+!
+!                           IAB_SM = ISym_AB_red(JSym_A,IAA_IAB_BT)
+                           IAB_SM = ISym_AB_red(JSym_A)
+                              JASM = IDBGMULT(IAA_JA_SM,INVELM(IAA_SM))
+                              JBSM = IDBGMULT(ICSM,INVELM(JASM))
+                              ICBOFF = IB_C(JASM) !Offset in C vector
+!                  if(JBSM/=IDBGMULT(IAB_JB_SM,INVELM(IAB_SM))) then
+!!                     write(LUWRT,*) 'Rejected JASM = ',JASM
+!                     cycle
+!!                  else
+!!                     write(LUWRT,*) 'NOT rejected JASM = ',JASM
+!!                     write(LUWRT,*) 'NOT rejected JBSM = ',JBSM
+!                  end if
+                           
+!                           do ISubBlk_A = 1,NSubBlk_A(JSym_A,IAA_IAB_BT)
+                      do ISubBlk_A = 1,N_SubBlk_A_red(JSym_A)
+
+!                IAA_B = IAA_SM_STR_S(ISubBlk_A,JSym_A,IAA_IAB_BT)
+!                IAA_E = IAA_SM_STR_E(ISubBlk_A,JSym_A,IAA_IAB_BT)
+                IAA_B = IAA_SM_STR_S_red(ISubBlk_A,JSym_A)
+                IAA_E = IAA_SM_STR_E_red(ISubBlk_A,JSym_A)
+                           NAA_B = IAA_E - IAA_B + 1
+
+!                IAB_B = IAB_SM_STR_S_red(ISubBlk_A,JSym_A,IAA_IAB_BT)
+!                IAB_E = IAB_SM_STR_E_red(ISubBlk_A,JSym_A,IAA_IAB_BT)
+                IAB_B = IAB_SM_STR_S_red(ISubBlk_A,JSym_A)
+                IAB_E = IAB_SM_STR_E_red(ISubBlk_A,JSym_A)
+                           NAB_B = IAB_E - IAB_B + 1
+                           !KA -> JA mapping
+!                           IUB_KJ = 1
+
+!                           write(LUWRT,*) '     SigDen: KA -> JA exists'
+
+
+!                  print *,'JASM, JBSM ==>',JASM,JBSM,NJA(JASM)*NJB(JBSM)
+!           print '(a,6i3)', 
+!     &     ' calc sigma ==>  JASM, JBSM, KASM, KBSM', 
+!     &                       JASM, JBSM, KASM, KBSM
+!           print '(a,6i3)',
+!     &     ' calc sigma ==>  IAA_SM, IAB_SM',
+!     &      IAA_SM, IAB_SM
+
+!                              write(6,*) 'Making CJRES'
+!                              write(LUWRT,*) 'Making CJRES'
+                              call
+     &                        C_TO_CKK(CB(ICBOFF),
+     &                        CJRES_BAT(NKA_B*NKB_B*(ICJ_OFF)+1),1,
+     &                          NJA(JASM),NJB(JBSM),
+     &                          NKA_B,NKB_B,NAA_B,NAB_B,
+     &                  KJAD(IKJA_OFF+1),XKJAD,KJBD(IKJB_OFF+1),XKJBD)
+                           
+!                     write(LUWRT,*) 'C array before adding to batch:'
+!                     call wrtmat(CJRES,NKA_B*NKB_B,NAA_B*NAB_B,
+!     &                           NKA_B*NKB_B,NAA_B*NAB_B)
+                                  ICJ_OFF = ICJ_OFF +
+     &                                     NAA_B*NAB_B
+                                  IKJA_OFF = IKJA_OFF +
+     &                                    NKA_B*NAA_B                                  
+                                  IKJB_OFF = IKJB_OFF +
+     &                                    NKB_B*NAB_B                                  
+!     &                                     NKA_B*NKB_B*NAA_B*NAB_B
+!                                  write(LUWRT,*) 'After CopyVect'
+                              
+                           End do
+                        End do
+
+#ifdef GNSIDE_debug
+                        write(LUWRT,*) 'C vector is'
+                        call 
+     &      wrtmat(CJRES_BAT,NKA_B*NKB_B,ICJ_OFF,NKA_B*NKB_B,MAXLB**2)
+#endif
+                        
+!                        write(LUWRT,*) 'C vector found'
+                        CNORM = DNRM2(NKA_B*NKB_B*ICJ_OFF,CJRES_BAT,1)
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time2)
+#endif
+
+                        Cvec_time = Cvec_time + Time2 - Time1
+                        if(CNORM==0.0D0) cycle !Annihilation batches
+!                        write(LUWRT,*) 'Number of elements in C array:
+!     &                  ',ICJ_OFF
+!                        stop
+
+!                        stop
+!Creation up/down batches
+                     LOOP_CR_BT: do ICA_ICB_BT = 1, NICA_ICB_BT
+!                     write(LUWRT,*) 'Creation batch ',ICA_ICB_BT
+!                           write(LUWRT,*) 'Before creation reduction'
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time1)
+#endif
+                     call Reduce_Batch(.true.,MAXLB,
+     &                     ICAGP,LICA_SM2,ICA_STR,
+     &                     ICBGP,LICB_SM2,ICB_STR,
+     &                     KIAD,XKIAD,KASM,IKA_B,IKA_E,
+     &                     I1,XI1S,IB_CA,NIKAINTM,NCA_OP,
+     &                     KIBD,XKIBD,KBSM,IKB_B,IKB_E,
+     &                     I2,XI2S,IB_CB,NIKBINTM,NCB_OP,
+     &                     INum_Sym_C(ICA_ICB_BT),ISym_CA(:,ICA_ICB_BT),
+     &                     ISym_CB(:,ICA_ICB_BT),
+     &                     ICA_SM_STR_S(:,:,ICA_ICB_BT),
+     &                     ICB_SM_STR_S(:,:,ICA_ICB_BT),
+     &                     ICA_SM_STR_E(:,:,ICA_ICB_BT),
+     &                     ICB_SM_STR_E(:,:,ICA_ICB_BT),
+     &                     NSubBlk_C(:,ICA_ICB_BT),
+     &                     INum_Sym_C_red,
+     &                     ISym_CA_red,       
+     &                     ISym_CB_red,
+     &                     ICA_SM_STR_S_red,ICB_SM_STR_S_red,       
+     &                     ICA_SM_STR_E_red,ICB_SM_STR_E_red,       
+     &                     N_SubBlk_C_red,N_Strings_C_red,
+     &                     IZeroKIABMap)
+
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time2)
+#endif
+                     Batch_time = Batch_time + Time2 - Time1
+                      if(IZeroKIABMap/=0) cycle !Creation batch
+
+!                     if(IZeroKIABMap==0) then
+!                     write(LUWRT,*) 'Diff. in no. strings',
+!     &               NStrings_C(ICA_ICB_BT)-N_Strings_C_red
+!                     write(LUWRT,*) 'IZeroKIABMap ', IZeroKIABMap
+!                     else
+!                        cycle !Creation batches
+!                     end if
+!                     write(LUWRT,*) 'Past Creation Reduce_Batch'
+
+                     !Now for the T matrix
+!                     write(LUWRT,*) 'Inside creation batches'
+                     if(ISD==2) then !Fetching sigma vector
+                       ISI_OFFC = 0
+                       IKIA_Off = 0
+                       IKIB_Off = 0
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time1)
+#endif
+
+                     do Jsym_C = 1,INum_Sym_C_red
+                        
+                        ICA_SM = ISym_CA_red(JSym_C)
+                        ICB_SM = ISym_CB_red(JSym_C)
+                        IASM = IDBGMULT(ICA_SM,ICA_IA_SM_INVELM)
+C                        IASM = IDBGMULT(ICA_SM,INVELM(ICA_IA_SM))
+                        IBSM = IDBGMULT(ISSM,INVELM(IASM))
+!               write(LUWRT,*) 'Symmetry IASM = ',IASM
+!               write(LUWRT,*) 'With elements NIA = ',NIA(IASM)
+!               write(LUWRT,*) 'Symmetry IBSM = ',IBSM
+!               write(LUWRT,*) 'With elements NIB = ',NIB(IBSM)
+!                              write(LUWRT,*) 'Annihilation batch',
+!     &                        IAA_IAB_BT
+!                              write(LUWRT,*) 'Creation batch',
+!     &                        ICA_ICB_BT
+#ifdef GNSIDE_debug
+!Info about what part of the sigma vector elements are now added to
+                        Do JSym_A = 1,INum_Sym_A_red
+                           IAA_SM = ISym_AA_red(JSym_A)
+                           IAB_SM = ISym_AB_red(JSym_A)
+                           JASM = IDBGMULT(IAA_JA_SM,INVELM(IAA_SM))
+                           JBSM = IDBGMULT(ICSM,INVELM(JASM))
+
+!                  print *,'JASM, JBSM ==>',JASM,JBSM,NJA(JASM)*NJB(JBSM)
+!           print '(a,6i3)', 
+!     &     ' calc sigma ==> IASM, IBSM  JASM, JBSM, KASM, KBSM', 
+!     &                      IASM, IBSM, JASM, JBSM, KASM, KBSM
+!           print '(a,6i3)',
+!     &     ' calc sigma ==> ICA_SM, ICB_SM, IAA_SM, IAB_SM',
+!     &      ICA_SM, ICB_SM, IAA_SM, IAB_SM
+
+                        end do
+#endif
+               
+!               write(LUWRT,*) 'NKA_B,NKB_B',NKA_B,NKB_B
+
+                              ISBOFF = IB_S(IASM) !Offset in C vector
+!                              write(LUWRT,*) 'ISBOFF is ',ISBOFF
+                     do ISubBlk_C = 1,N_SubBlk_C_red(JSym_C)
+                     ICA_B = ICA_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICA_E = ICA_SM_STR_E_red(ISubBlk_C,JSym_C)
+                        NCA_B = ICA_E - ICA_B + 1
+
+                     ICB_B = ICB_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICB_E = ICB_SM_STR_E_red(ISubBlk_C,JSym_C)
+!                           write(LUWRT,*) 'ICB_B, ICB_E set'
+                        NCB_B = ICB_E - ICB_B + 1
+#ifdef GNSIDE_debug
+                     write(LUWRT,*) 'IKA_B, IKA_E',IKA_B,IKA_E
+                     write(LUWRT,*) 'IKB_B, IKB_E',IKB_B,IKB_E
+                     write(LUWRT,*) 'ICA_B, ICA_E ',ICA_B,ICA_E
+                     write(LUWRT,*) 'ICB_B, ICB_E ',ICB_B,ICB_E
+                     write(LUWRT,*) 'IAA_B, IAA_E ',IAA_B,IAA_E
+                     write(LUWRT,*) 'IAB_B, IAB_E ',IAB_B,IAB_E
+#endif
+
+
+
+
+!#define GNSIDE_debug
+!                        write(LUWRT,*) 'Before sigma addition'
+#ifdef GNSIDE_debug
+                          write(LUWRT,*) 
+     &                  'Extracting sigmavector with values:'
+                          call 
+     &     wrtmat(SB(ISBOFF),NIA(IASM),NIB(IBSM),NIA(IASM),NIB(IBSM))
+#endif
+C                                   
+!                           write(LUWRT,*) 
+!     &                  'There are K mappings for SIRES!'
+                                  !Copy SIRES_BAT part to SIRES
+
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'NKA_B,NKB_B,NCA_B,NCB_B'
+                           write(LUWRT,*) NKA_B,NKB_B,NCA_B,NCB_B
+
+                           write(LUWRT,*) 'ISI_OFFC'
+                           write(LUWRT,*) ISI_OFFC
+#endif
+!                           write(LUWRT,*) 'Sigma vector'
+!                           call
+!     &   wrtmat(SB(ISBOFF),NIA(IASM),NIB(IBSM),NIA(IASM),NIB(IASM))
+
+
+                         call C_TO_CKK(SB(ISBOFF),
+!     &          SIRES,
+     &          SIRES_BAT(NKA_B*NKB_B*(ISI_OFFC)+1),
+     &                    1,NIA(IASM),NIB(IBSM),
+     &                    NKA_B,NKB_B,NCA_B,
+     &                    NCB_B,KIAD(IKIA_Off+1),XKIAD,KIBD(IKIB_Off+1),
+     &                    XKIBD)
+                                  ISI_OFFC = ISI_OFFC +
+     &                                     NCA_B*NCB_B
+                                  IKIA_OFF = IKIA_OFF +
+     &                                    NKA_B*NCA_B                                  
+                                  IKIB_OFF = IKIB_OFF +
+     &                                    NKB_B*NCB_B                                  
+
+#ifdef GNSIDE_debug
+                          write(LUWRT,*) 'After sigma extraction'
+
+                          write(LUWRT,*) 'Total SIRES_BAT after'
+                          write(LUWRT,*) 'fetching from SB'
+                          write(LUWRT,*) 'ITOFF, ISI_OFFC, ISBOFF'
+                          write(LUWRT,*) ITOFF, ISI_OFFC, ISBOFF
+                          call 
+!     &     wrtmat(SB(ISBOFF),NIA(IASM),NIB(IBSM),NIA(IASM),NIB(IBSM))
+     &     wrtmat(SIRES_BAT,NKA_B*NKB_B,ISI_OFFC,NKA_B*NKB_B,MAXLB**2)
+#endif
+                        end do !Creation sub blocks
+                     end do !Creation symmetry
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time2)
+#endif
+                        Sigma_time = Sigma_time + Time2 - Time1
+!                        write(LUWRT,*) 'ISD=2'
+
+!                        call
+!     &   wrtmat(SIRES_BAT,NKA_B*NKB_B,N_Strings_C_red,
+!     &         NKA_B*NKB_B,N_Strings_C_red)
+
+                     end if !ISD==2 density run
+
+                         IOFFC = 0
+
+!                        Do JSym_A = 1,INum_Sym_A(IAA_IAB_BT)
+!                           IAA_SM = ISym_AA(JSym_A,IAA_IAB_BT)
+!                           IAB_SM = ISym_AB(JSym_A,IAA_IAB_BT)
+                        if(ISD==1) then !Fetch T elements
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time1)
+#endif
+                        Do JSym_A = 1,INum_Sym_A_red
+                           IAA_SM = ISym_AA_red(JSym_A)
+                           IAB_SM = ISym_AB_red(JSym_A)
+                           IAA_SM_ADJ = INVELM(IAA_SM)
+!                           IAB_SM_ADJ = INVELM(IAB_SM)
+!                           JASM = IDBGMULT(IAA_JA_SM,INVELM(IAA_SM))
+!                           JBSM = IDBGMULT(ICSM,INVELM(JASM))
+!                  if(JBSM/=IDBGMULT(IAB_JB_SM,INVELM(IAB_SM))) cycle
+
+!                              if(NJA(JASM)*NJB(JBSM)==0) cycle
+
+!                        LIAA_SM = 
+!     &                  NIAA(invelm(ISym_AA_red(JSym_A,IAA_IAB_BT)))
+!                        LIAB_SM = 
+!     &                  NIAB(invelm(ISym_AB_red(JSym_A,IAA_IAB_BT)))
+                        LIAA_SM = 
+     &                  NIAA(IAA_SM_ADJ)
+                        LIAB_SM = 
+     &                  NIAB(invelm(IAB_SM))
+
+!                        LIAA_SM = 
+!     &                  NIAA(invelm(ISym_AA_red(JSym_A)))
+!                        LIAB_SM = 
+!     &                  NIAB(invelm(ISym_AB_red(JSym_A)))
+
+!         SubBlk_A_Lo:  Do ISubBlk_A = 1,NSubBlk_A(JSym_A,IAA_IAB_BT)
+         SubBlk_A_Lo:  Do ISubBlk_A = 1,N_SubBlk_A_red(JSym_A)
+!                     Num_Sym = INum_sym_C(ICA_ICB_BT)
+                        IOFFR = 0 
+!                  IAA_B = IAA_SM_STR_S(ISubBlk_A,JSym_A,IAA_IAB_BT)
+!                  IAA_E = IAA_SM_STR_E(ISubBlk_A,JSym_A,IAA_IAB_BT)
+                  IAA_B = IAA_SM_STR_S_red(ISubBlk_A,JSym_A)
+                  IAA_E = IAA_SM_STR_E_red(ISubBlk_A,JSym_A)
+!                     write(LUWRT,*) 'IAA_B = ',IAA_B
+!                     write(LUWRT,*) 'IAA_E = ',IAA_E
+                        NAA_B = IAA_E - IAA_B + 1
+
+!                  IAB_B = IAB_SM_STR_S(ISubBlk_A,JSym_A,IAA_IAB_BT)
+!                  IAB_E = IAB_SM_STR_E(ISubBlk_A,JSym_A,IAA_IAB_BT)
+                  IAB_B = IAB_SM_STR_S_red(ISubBlk_A,JSym_A)
+                  IAB_E = IAB_SM_STR_E_red(ISubBlk_A,JSym_A)
+                        NAB_B = IAB_E - IAB_B + 1
+
+                           NCSUB = NAA_B * NAB_B !For T extraction
+!                           IOFFC = IOFFC + NAA_B*NAB_B
+                        !Offsets for row and column in T
+                        !matrix
+                        ISI_OFFC = 0 !Offset in SIRES_BAT
+!                     do Jsym_C = 1,INum_Sym_C(ICA_ICB_BT)
+!                        ICA_SM = ISym_CA(JSym_C,ICA_ICB_BT)
+!                        ICB_SM = ISym_CB(JSym_C,ICA_ICB_BT)
+                     do Jsym_C = 1,INum_Sym_C_red
+                        ICA_SM = ISym_CA_red(JSym_C)
+                        ICB_SM = ISym_CB_red(JSym_C)
+!                              IASM =
+!     &                     IDBGMULT(ICA_SM,INVELM(ICA_IA_SM))
+!                              IASM =
+!     &                     IDBGMULT(ICA_SM,KASM)
+!                              IBSM =
+!     &                     IDBGMULT(ISSM,INVELM(IASM))
+
+!                  if(IBSM/=IDBGMULT(ICB_SM,INVELM(ICB_IB_SM))) then
+!                     write(LUWRT,*) 'Rejected IASM = ',IASM
+!                     cycle
+!                  else
+!                     write(LUWRT,*) 'NOT rejected IASM = ',IASM
+!                     write(LUWRT,*) 'NOT rejected IBSM = ',IBSM
+!                  end if
+!                        if(NIA(IASM)*NIB(IBSM)==0) cycle
+                  
+!                        LICA_SM = 
+!     &                  NICA(ISym_CA(JSym_C,ICA_ICB_BT))
+!                        LICB_SM = 
+!     &                  NICB(ISym_CB(JSym_C,ICA_ICB_BT))
+!                        LICA_SM = 
+!     &                  NICA(ISym_CA_red(JSym_C))
+!                        LICB_SM = 
+!     &                  NICB(ISym_CB_red(JSym_C))
+
+                        LICA_SM = 
+     &                  NICA(ICA_SM)
+                        LICB_SM = 
+     &                  NICB(ICB_SM)
+
+!             SubBlk_C_Lo: do ISubBlk_C = 1,NSubBlk_C(JSym_C,ICA_ICB_BT)
+!
+!                     ICA_B = ICA_SM_STR_S(ISubBlk_C,JSym_C,ICA_ICB_BT)
+!                     ICA_E = ICA_SM_STR_E(ISubBlk_C,JSym_C,ICA_ICB_BT)
+             SubBlk_C_Lo: do ISubBlk_C = 1,N_SubBlk_C_red(JSym_C)
+
+                     ICA_B = ICA_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICA_E = ICA_SM_STR_E_red(ISubBlk_C,JSym_C)
+!                     write(LUWRT,*) 'ICA_B = ',ICA_B
+!                     write(LUWRT,*) 'ICA_E = ',ICA_E
+                        NCA_B = ICA_E - ICA_B + 1
+!                     ICB_B = ICB_SM_STR_S(ISubBlk_C,JSym_C,ICA_ICB_BT)
+!                     ICB_E = ICB_SM_STR_E(ISubBlk_C,JSym_C,ICA_ICB_BT)
+                     ICB_B = ICB_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICB_E = ICB_SM_STR_E_red(ISubBlk_C,JSym_C)
+
+!                           write(LUWRT,*) 'ICB_B, ICB_E set'
+                        NCB_B = ICB_E - ICB_B + 1
+!                        write(LUWRT,*) 'NCB_B ',NCB_B
+!                        write(LUWRT,*) IKA_E - IKA_B + 1
+
+                        ITOFF =
+     &                  IB_T(ICA_SM,ICB_SM,IAA_SM_ADJ)
+!                        write(LUWRT,*)
+!     &                  'output of IB_T for current block', ITOFF
+                        IDIAG = 0
+
+                        IF(ITOFF.lt.0) THEN
+                           ITOFF = -ITOFF
+                           ITRNSP = 1
+                        ELSE
+                           ITRNSP = 0
+                        END IF
+
+!                        write(LUWRT,*) 'ITRNSP = ',ITRNSP
+                           
+                           if ((IRIS.eq.1.and.IRIC.eq.2).or.
+     &                         (IRIS.eq.2.and.IRIC.eq.1)) then
+                              if( SPLIT_IJKL) then
+                               ITOFF = ITOFF + LEN_T_BUFF
+                              end if
+                           end if 
+#ifdef GNSIDE_debug
+                          write(LUWRT,*) 'ITOFF, LICA_SM, NCA_B, ICA_B'
+                          write(LUWRT,*) ITOFF, LICA_SM, NCA_B, ICA_B
+                          write(LUWRT,*) 'LICB_SM, NCB_B, ICB_B' 
+                          write(LUWRT,*) LICB_SM, NCB_B, ICB_B
+                          write(LUWRT,*) 'LIAA_SM, NAA_B, IAA_B'
+                          write(LUWRT,*) LIAA_SM, NAA_B, IAA_B
+                          write(LUWRT,*) 'LIAB_SM, NAB_B, IAB_B, NTEST'
+                          write(LUWRT,*) LIAB_SM, NAB_B, IAB_B, NTEST
+                           write(LUWRT,*) 'Extracting T matrix'
+#endif
+                         call TCC_SUBBLK(TB(ITOFF),
+     &                                 T_BUFF(ITOFF), T_SCR_CC(ITOFF),
+     &                                 TBSUB,1,LICA_SM,
+     &                                 NCA_B,ICA_B,
+     &                                 LICB_SM,NCB_B,ICB_B,
+     &                                 LIAA_SM,NAA_B,IAA_B,
+     &                                 LIAB_SM,NAB_B,IAB_B,
+     &                                 ITRNSP,IDIAG,NTEST)
+                            !Calculate row/column offsets in T_BAT
+                           NRSUB = NCA_B * NCB_B
+
+
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'TBSUB extracted, values:'
+                           call wrtmat(TBSUB,NRSUB,NCSUB,NRSUB,NCSUB)
+#endif
+!                           stop
+                           !Copy T block to T_BAT
+                           call EXTR_OR_CP_MAT(T_BAT,
+     &                                   MAXLB**2,
+     &                                   MAXLB**2,0,TBSUB,
+     &                                   NRSUB,NCSUB,0,
+     &                                   IOFFR+1,IOFFC+1,2)
+!                           write(LUWRT,*) 'IOFFR'
+!                           write(LUWRT,*) 'IOFFC'
+!                           write(LUWRT,*) IOFFR, IOFFC
+!                           write(LUWRT,*) 'IOFFC*MAXLB**2+IOFFR*NCSUB'
+!                           write(LUWRT,*) IOFFC*MAXLB**2+IOFFR*NCSUB
+!                           write(LUWRT,*) 'NRSUB,NCSUB',NRSUB,NCSUB
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'T_BAT:'
+                           call
+     &                     wrtmat(T_BAT(IOFFC*MAXLB**2
+     &                     +IOFFR*NCSUB+1),NRSUB,NCSUB,
+!     &                     NRSUB,NCSUB)
+     &                     MAXLB**2,MAXLB**2)
+#endif GNSIDE_debug
+!                           write(LUWRT,*) 'IOFFR, NCA_B, NCB_B',
+!     &                     IOFFR, NCA_B, NCB_B
+
+                           IOFFR = IOFFR + NCA_B*NCB_B
+!                           write(LUWRT,*) 'Now IOFFR = ',IOFFR
+
+!                           LCAB = IOFFR
+
+                       end do SubBlk_C_Lo
+                       end do   
+                           IOFFC = IOFFC + NAA_B*NAB_B
+!                           write(LUWRT,*) 'IOFFC',IOFFC
+!                           LAAB = IOFFC
+
+                       end do SubBlk_A_Lo
+                       end do
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+#else
+                     call CPU_time(Time2)
+#endif
+                       T_time = T_time + Time2 - Time1
+
+!                       else !density run, initialise T_BAT
+!
+!                          call
+!     &                  dzero(T_BAT,N_Strings_C_red*N_Strings_A_red)
+                       end if
+
+
+!                        LCAB = NStrings_C(ICA_ICB_BT)
+                        LCAB = N_Strings_C_red
+!                        LAAB = NStrings_A(IAA_IAB_BT)
+                        LAAB = N_Strings_A_red
+                       LKAB = NKA_B*NKB_B 
+#ifdef GNSIDE_debug
+                       write(LUWRT,*) 'IOFFR, IOFFC',IOFFR,IOFFC
+                       write (LUWRT,*) 'MAXLB**2 = ',MAXLB**2
+                       write(LUWRT,*) 'LCAB, LAAB',LCAB,LAAB
+                       write(LUWRT,*) '      T matrix of batch:'
+
+                       call
+!     &                 wrtmat(T_BAT,IOFFR,IOFFC,MAXLB**2,MAXLB**2)
+     &                 wrtmat(T_BAT,LCAB,LAAB,MAXLB**2,MAXLB**2)
+#endif
+!                       write(LUWRT,*) 'T_BAT found'
+
+                       FACTORC = 0.0D0
+                       FACTORAB = 1.0D0*SIGNXXX
+
+
+
+                       call CPU_Time(Time1)
+                       call CPU_TIME(T_INI)
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+    
+#else
+                     call CPU_time(Time1)
+#endif
+!Insert new matrix blocks into complete sigma matrix                          
+#if defined (VAR_MPI2)
+                       xxxsitime = interface_MPI_WTIME()
+#endif
+                       !ISD == 1: Sigma vector:
+                       !SIRES(Ka,Kb,Ica,Icb) =
+                       !CJRES(Ka,Kb,Iaa,Iab)*T(Ica,Icb,Iaa,Iab)
+
+                       !ISD == 2: Density:
+                       !T(Ica,Icb,Iaa,Iab)   =
+                       !SIRES(Ka,Kb,Ica,Icb)*CJRES(Ka,Kb,Ica,Icb)
+
+!                       write(LUWRT,*) 
+!     &                  'Just before matrix multiplication'
+
+                       if(ISD.EQ.1) THEN
+                           !input
+
+!                           LDA = MAXLB**2
+                           LDB = MAXLB**2
+                           LDA = max(1,LKAB)
+!                           LDB = max(1,LCAB)
+                           !output
+!                           LDC = MAXLB**2
+                           LDC = max(1,LKAB)
+
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'LKAB, LCAB, LAAB'
+                           write(LUWRT,*) LKAB, LCAB, LAAB
+                           write(LUWRT,*) 'FACTORAB, LDA, LDB'
+                           write(LUWRT,*) FACTORAB, LDA, LDB
+                           write(LUWRT,*) 'FACTORC, LDC'
+                           write(LUWRT,*) FACTORC, LDC
+                           write(LUWRT,*) 'C array'
+                           call
+     &    wrtmat(CJRES_BAT,LKAB,LAAB,LKAB,MAXLB**2)
+!                           call
+!     &    wrtmat(CJRES_BAT,MAXLB**2,MAXLB**2,MAXLB**2,MAXLB**2)
+                           write(LUWRT,*) 'T matrix'
+                           call
+     &    wrtmat(T_BAT,LCAB,LAAB,MAXLB**2,MAXLB**2)
+#endif
+
+                           !Matrix multiply CJRES_BAT and T_BAT
+                           call DGEMM('N','T',LKAB,LCAB,LAAB,
+     &                      FACTORAB,CJRES_BAT,LDA,T_BAT,
+     &                      LDB,FACTORC,SIRES_BAT,LDC)
+!                          end if
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'Total S matrix is'
+                           call
+     &   wrtmat(SIRES_BAT,LKAB,LCAB,LKAB,MAXLB**2)
+#endif
+
+                       else
+!                          write(LUWRT,*) 'Matrix multiplying'
+                          !input
+                      
+                          LDA = MAX(1,LKAB)
+                          LDB = MAX(1,LKAB)
+                          !output
+                          LDC = N_Strings_C_red
+!                          LDC = MAXLB**2
+
+                          !Matrix multiply SIRES_BAT and CJRES_BAT
+                          call DGEMM('T','N',LCAB,LAAB,LKAB,
+     &                               FACTORAB,SIRES_BAT,LDA,CJRES_BAT,
+     &                               LDB,FACTORC,T_BAT,LDC)
+!                          write(LUWRT,*) 'Den. T'
+!                          call
+!     & wrtmat(T_BAT,LCAB,LAAB,LDC,LDC)
+!                          write(LUWRT,*) 'T_BAT calculated'
+                       end if
+
+!                       write(LUWRT,*) 'After matrix multiplication'
+                       call CPU_TIME(T_END)
+                       TMULT = TMULT + T_END - T_INI
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+    
+#else
+                     call CPU_time(Time2)
+#endif
+                       CalcMatTime = CalcMatTime + Time2 - Time1
+
+!                       write(LUWRT,*) 'Time spent on matmult so far is'
+!                       write(LUWRT,*) 'time = ',TMULT
+
+!                       write(LUWRT,*) 'S matrix is'
+!                       call wrtmat(SIRES_BAT,LKAB,LCAB,LDC,LDB)
+#if defined (VAR_MPI2)
+                       xcomputesi = xcomputesi - xxxsitime
+     &                                       + interface_MPI_WTIME()
+#endif
+
+                       IF(ISD.EQ.1) THEN
+                       ISI_OFFC = 0
+                       IKIA_Off = 0
+                       IKIB_Off = 0
+
+!                     do Jsym_C = 1,INum_Sym_C(ICA_ICB_BT)
+!                        
+!                        ICA_SM = ISym_CA(JSym_C,ICA_ICB_BT)
+!                        ICB_SM = ISym_CB(JSym_C,ICA_ICB_BT)
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+    
+#else
+                     call CPU_time(Time1)
+#endif
+                     do Jsym_C = 1,INum_Sym_C_red
+                        
+                        ICA_SM = ISym_CA_red(JSym_C)
+                        ICB_SM = ISym_CB_red(JSym_C)
+                        IASM = IDBGMULT(ICA_SM,ICA_IA_SM_INVELM)
+!                        IASM = IDBGMULT(ICA_SM,INVELM(ICA_IA_SM))
+                        IBSM = IDBGMULT(ISSM,INVELM(IASM))
+!                              IBSM = IDBGMULT(ICB_SM,INVELM(ICB_IB_SM))
+!               write(LUWRT,*) 'Symmetry IASM = ',IASM
+!               write(LUWRT,*) 'With elements NIA = ',NIA(IASM)
+!               write(LUWRT,*) 'Symmetry IBSM = ',IBSM
+!               write(LUWRT,*) 'With elements NIB = ',NIB(IBSM)
+!                              write(LUWRT,*) 'Annihilation batch',
+!     &                        IAA_IAB_BT
+!                              write(LUWRT,*) 'Creation batch',
+!     &                        ICA_ICB_BT
+#ifdef GNSIDE_debug
+!Info about what part of the sigma vector elements are now added to
+!                        Do JSym_A = 1,INum_Sym_A(IAA_IAB_BT)
+!                           IAA_SM = ISym_AA(JSym_A,IAA_IAB_BT)
+!                           IAB_SM = ISym_AB(JSym_A,IAA_IAB_BT)
+                        Do JSym_A = 1,INum_Sym_A_red
+                           IAA_SM = ISym_AA_red(JSym_A)
+                           IAB_SM = ISym_AB_red(JSym_A)
+                           JASM = IDBGMULT(IAA_JA_SM,INVELM(IAA_SM))
+                           JBSM = IDBGMULT(ICSM,INVELM(JASM))
+
+                  print *,'JASM, JBSM ==>',JASM,JBSM,NJA(JASM)*NJB(JBSM)
+           print '(a,6i3)', 
+     &     ' calc sigma ==> IASM, IBSM  JASM, JBSM, KASM, KBSM', 
+     &                      IASM, IBSM, JASM, JBSM, KASM, KBSM
+           print '(a,6i3)',
+     &     ' calc sigma ==> ICA_SM, ICB_SM, IAA_SM, IAB_SM',
+     &      ICA_SM, ICB_SM, IAA_SM, IAB_SM
+
+                        end do
+#endif
+               
+!               write(LUWRT,*) 'NKA_B,NKB_B',NKA_B,NKB_B
+
+                              ISBOFF = IB_S(IASM) !Offset in C vector
+!                              write(LUWRT,*) 'ISBOFF is ',ISBOFF
+
+!                     do ISubBlk_C = 1,NSubBlk_C(JSym_C,ICA_ICB_BT)
+                     do ISubBlk_C = 1,N_SubBlk_C_red(JSym_C)
+!                         write(LUWRT,*) 'Jsym_C,ISubBlk_C'
+!                         write(LUWRT,*) JSym_C,ISubBlk_C 
+!                     ICA_B = ICA_SM_STR_S(ISubBlk_C,JSym_C,ICA_ICB_BT)
+!                     ICA_E = ICA_SM_STR_E(ISubBlk_C,JSym_C,ICA_ICB_BT)
+                     ICA_B = ICA_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICA_E = ICA_SM_STR_E_red(ISubBlk_C,JSym_C)
+                        NCA_B = ICA_E - ICA_B + 1
+!                     ICB_B = ICB_SM_STR_S(ISubBlk_C,JSym_C,ICA_ICB_BT)
+!                     ICB_E = ICB_SM_STR_E(ISubBlk_C,JSym_C,ICA_ICB_BT)
+                     ICB_B = ICB_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICB_E = ICB_SM_STR_E_red(ISubBlk_C,JSym_C)
+!                           write(LUWRT,*) 'ICB_B, ICB_E set'
+                        NCB_B = ICB_E - ICB_B + 1
+#ifdef GNSIDE_debug
+                     write(LUWRT,*) 'IKA_B, IKA_E',IKA_B,IKA_E
+                     write(LUWRT,*) 'IKB_B, IKB_E',IKB_B,IKB_E
+                     write(LUWRT,*) 'ICA_B, ICA_E ',ICA_B,ICA_E
+                     write(LUWRT,*) 'ICB_B, ICB_E ',ICB_B,ICB_E
+                     write(LUWRT,*) 'IAA_B, IAA_E ',IAA_B,IAA_E
+                     write(LUWRT,*) 'IAB_B, IAB_E ',IAB_B,IAB_E
+#endif
+
+
+!#define GNSIDE_debug
+!                        write(LUWRT,*) 'Before sigma addition'
+#ifdef GNSIDE_debug
+                          write(LUWRT,*) 'Total sigma vector before'
+                         write(LUWRT,*) 'addition:'
+                          call 
+     &     wrtmat(SB(ISBOFF),NIA(IASM),NIB(IBSM),NIA(IASM),NIB(IBSM))
+#endif
+
+C                                   
+!                           write(LUWRT,*) 
+!     &                  'There are K mappings for SIRES!'
+
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'NKA_B,NKB_B,NCA_B,NCB_B'
+                           write(LUWRT,*) NKA_B,NKB_B,NCA_B,NCB_B
+
+                           write(LUWRT,*) 'ISI_OFFC'
+                           write(LUWRT,*) ISI_OFFC
+#endif
+
+                         call C_TO_CKK(SB(ISBOFF),
+!     &          SIRES,
+     &          SIRES_BAT(NKA_B*NKB_B*(ISI_OFFC)+1),
+     &                    2,NIA(IASM),NIB(IBSM),
+     &                    NKA_B,NKB_B,NCA_B,
+     &                    NCB_B,KIAD(IKIA_Off+1),XKIAD,KIBD(IKIB_Off+1),
+     &                    XKIBD)
+                                  ISI_OFFC = ISI_OFFC +
+     &                                     NCA_B*NCB_B
+                                  IKIA_OFF = IKIA_OFF +
+     &                                    NKA_B*NCA_B                                  
+                                  IKIB_OFF = IKIB_OFF +
+     &                                    NKB_B*NCB_B                                  
+
+#ifdef GNSIDE_debug
+                          write(LUWRT,*) 'After sigma addition'
+
+                          write(LUWRT,*) 'Total sigma vector after'
+                          write(LUWRT,*) 'addition'
+                          write(LUWRT,*) 'ITOFF, ISI_OFFC, ISBOFF'
+                          write(LUWRT,*) ITOFF, ISI_OFFC, ISBOFF
+                          call 
+     &     wrtmat(SB(ISBOFF),NIA(IASM),NIB(IBSM),NIA(IASM),NIB(IBSM))
+#endif
+!#undef GNSIDE_debug
+
+                        end do !Creation sub blocks
+                     end do !Creation symmetry
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+    
+#else
+                     call CPU_time(Time2)
+#endif
+                        Sigma_time = Sigma_time + Time2 - Time1
+
+                  else !Spreading out T to density block
+
+#if defined (VAR_MPI2)
+                     Time1 = interface_mpi_wtime()
+    
+#else
+                     call CPU_time(Time1)
+#endif
+                         IOFFC = 0
+
+                        Do JSym_A = 1,INum_Sym_A_red
+                           IAA_SM = ISym_AA_red(JSym_A)
+                           IAB_SM = ISym_AB_red(JSym_A)
+                           IAA_SM_ADJ = INVELM(IAA_SM)
+                           IAB_SM_ADJ = INVELM(IAB_SM)
+                           JASM = IDBGMULT(IAA_JA_SM,INVELM(IAA_SM))
+                           JBSM = IDBGMULT(ICSM,INVELM(JASM))
+
+!                        LIAA_SM = 
+!     &                  NIAA(invelm(ISym_AA_red(JSym_A,IAA_IAB_BT)))
+!                        LIAB_SM = 
+!     &                  NIAB(invelm(ISym_AB_red(JSym_A,IAA_IAB_BT)))
+                        LIAA_SM = 
+     &                  NIAA(IAA_SM_ADJ)
+                        LIAB_SM = 
+     &                  NIAB(IAB_SM_ADJ)
+
+                        LIAA_SM = 
+     &                  NIAA(invelm(ISym_AA_red(JSym_A)))
+                        LIAB_SM = 
+     &                  NIAB(invelm(ISym_AB_red(JSym_A)))
+
+!         SubBlk_A_Lo:  Do ISubBlk_A = 1,NSubBlk_A(JSym_A,IAA_IAB_BT)
+                       Do ISubBlk_A = 1,N_SubBlk_A_red(JSym_A)
+!                     Num_Sym = INum_sym_C(ICA_ICB_BT)
+                        IOFFR = 0 
+!                  IAA_B = IAA_SM_STR_S(ISubBlk_A,JSym_A,IAA_IAB_BT)
+!                  IAA_E = IAA_SM_STR_E(ISubBlk_A,JSym_A,IAA_IAB_BT)
+                  IAA_B = IAA_SM_STR_S_red(ISubBlk_A,JSym_A)
+                  IAA_E = IAA_SM_STR_E_red(ISubBlk_A,JSym_A)
+!                     write(LUWRT,*) 'IAA_B = ',IAA_B
+!                     write(LUWRT,*) 'IAA_E = ',IAA_E
+                        NAA_B = IAA_E - IAA_B + 1
+
+!                  IAB_B = IAB_SM_STR_S(ISubBlk_A,JSym_A,IAA_IAB_BT)
+!                  IAB_E = IAB_SM_STR_E(ISubBlk_A,JSym_A,IAA_IAB_BT)
+                  IAB_B = IAB_SM_STR_S_red(ISubBlk_A,JSym_A)
+                  IAB_E = IAB_SM_STR_E_red(ISubBlk_A,JSym_A)
+                        NAB_B = IAB_E - IAB_B + 1
+
+                           NCSUB = NAA_B * NAB_B !For T extraction
+
+                        !Offsets for row and column in T
+                        !matrix
+!                        ISI_OFFC = 0 !Offset in SIRES_BAT
+                     do Jsym_C = 1,INum_Sym_C_red
+                        ICA_SM = ISym_CA_red(JSym_C)
+                        ICB_SM = ISym_CB_red(JSym_C)
+                              IASM =
+     &                     IDBGMULT(ICA_SM,ICA_IA_SM_INVELM)
+C     &                     IDBGMULT(ICA_SM,INVELM(ICA_IA_SM))
+!                              IASM =
+!     &                     IDBGMULT(ICA_SM,KASM)
+                              IBSM =
+     &                     IDBGMULT(ISSM,INVELM(IASM))
+
+                        LICA_SM = 
+     &                  NICA(ICA_SM)
+                        LICB_SM = 
+     &                  NICB(ICB_SM)
+
+!                        LICA_SM = 
+!     &                  NICA(ISym_CA_red(JSym_C))
+!                        LICB_SM = 
+!     &                  NICB(ISym_CB_red(JSym_C))
+
+                      do ISubBlk_C = 1,N_SubBlk_C_red(JSym_C)
+
+                     ICA_B = ICA_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICA_E = ICA_SM_STR_E_red(ISubBlk_C,JSym_C)
+!                     write(LUWRT,*) 'ICA_B = ',ICA_B
+!                     write(LUWRT,*) 'ICA_E = ',ICA_E
+                        NCA_B = ICA_E - ICA_B + 1
+!                     ICB_B = ICB_SM_STR_S(ISubBlk_C,JSym_C,ICA_ICB_BT)
+!                     ICB_E = ICB_SM_STR_E(ISubBlk_C,JSym_C,ICA_ICB_BT)
+                     ICB_B = ICB_SM_STR_S_red(ISubBlk_C,JSym_C)
+                     ICB_E = ICB_SM_STR_E_red(ISubBlk_C,JSym_C)
+
+!                           write(LUWRT,*) 'ICB_B, ICB_E set'
+                        NCB_B = ICB_E - ICB_B + 1
+!                        write(LUWRT,*) 'NCB_B ',NCB_B
+!                        write(LUWRT,*) IKA_E - IKA_B + 1
+
+                        ITOFF =
+     &                  IB_T(ICA_SM,ICB_SM,IAA_SM_ADJ)
+!                        write(LUWRT,*)
+!     &                  'output of IB_T for current block', ITOFF
+                        IDIAG = 0
+
+                        IF(ITOFF.lt.0) THEN
+                           ITOFF = -ITOFF
+                           ITRNSP = 1
+                        ELSE
+                           ITRNSP = 0
+                        END IF
+
+                     if(ITRNSP==0) then
+
+!                        write(LUWRT,*) 'ITRNSP = ',ITRNSP
+                           
+                           if ((IRIS.eq.1.and.IRIC.eq.2).or.
+     &                         (IRIS.eq.2.and.IRIC.eq.1)) then
+                              if( SPLIT_IJKL) then
+                               ITOFF = ITOFF + LEN_T_BUFF
+                              end if
+                           end if 
+
+                           NRSUB = NCA_B * NCB_B
+!                           call EXTR_OR_CP_MAT(T_BAT,
+!     &                                   MAXLB**2,
+!     &                                   MAXLB**2,0,TBSUB,
+!     &                                   NRSUB,NCSUB,0,
+!     &                                   IOFFR+1,IOFFC+1,1)
+                           call EXTR_OR_CP_MAT(T_BAT,
+     &                                   N_Strings_C_red,
+     &                                   N_strings_A_red,0,TBSUB,
+     &                                   NRSUB,NCSUB,0,
+     &                                   IOFFR+1,IOFFC+1,1)
+
+#ifdef GNSIDE_debug
+                          write(LUWRT,*) 'ITOFF, LICA_SM, NCA_B, ICA_B'
+                          write(LUWRT,*) ITOFF, LICA_SM, NCA_B, ICA_B
+                          write(LUWRT,*) 'LICB_SM, NCB_B, ICB_B' 
+                          write(LUWRT,*) LICB_SM, NCB_B, ICB_B
+                          write(LUWRT,*) 'LIAA_SM, NAA_B, IAA_B'
+                          write(LUWRT,*) LIAA_SM, NAA_B, IAA_B
+                          write(LUWRT,*) 'LIAB_SM, NAB_B, IAB_B, NTEST'
+                          write(LUWRT,*) LIAB_SM, NAB_B, IAB_B, NTEST
+                          write(LUWRT,*) 'Extracting T matrix'
+#endif
+!           print '(a,6i3)', 
+!     &     ' calc sigma ==> IASM, IBSM  JASM, JBSM, KASM, KBSM', 
+!     &                      IASM, IBSM, JASM, JBSM, KASM, KBSM
+!           print '(a,6i3)',
+!     &     ' calc sigma ==> ICA_SM, ICB_SM, IAA_SM, IAB_SM',
+!     &      ICA_SM, ICB_SM, IAA_SM, IAB_SM
+!                           write(LUWRT,*)
+!     &               'Den. TB pre-addition'
+!                           call wrtmat
+!     &         (TB(ITOFF),LICA_SM*LICB_SM,LIAA_SM*LIAB_SM,
+!     &            LICA_SM*LICB_SM,LIAA_SM,LIAB_SM)
+                         call TCC_SUBBLK(TB(ITOFF),
+     &                                 T_BUFF(ITOFF), T_SCR_CC(ITOFF),
+     &                                 TBSUB,2,LICA_SM,
+     &                                 NCA_B,ICA_B,
+     &                                 LICB_SM,NCB_B,ICB_B,
+     &                                 LIAA_SM,NAA_B,IAA_B,
+     &                                 LIAB_SM,NAB_B,IAB_B,
+     &                                 ITRNSP,IDIAG,NTEST)
+!                           write(LUWRT,*)
+!     &               'Den. TB POST-addition'
+!                           call wrtmat
+!     &         (TB(ITOFF),LICA_SM*LICB_SM,LIAA_SM*LIAB_SM,
+!     &            LICA_SM*LICB_SM,LIAA_SM,LIAB_SM)
+                            !Calculate row/column offsets in T_BAT
+
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'TBSUB extracted, values:'
+                           call wrtmat(TBSUB,NRSUB,NCSUB,NRSUB,NCSUB)
+#endif
+!                           write(LUWRT,*) 'IOFFR'
+!                           write(LUWRT,*) 'IOFFC'
+!                           write(LUWRT,*) IOFFR, IOFFC
+!                           write(LUWRT,*) 'IOFFC*MAXLB**2+IOFFR*NCSUB'
+!                           write(LUWRT,*) IOFFC*MAXLB**2+IOFFR*NCSUB
+!                           write(LUWRT,*) 'NRSUB,NCSUB',NRSUB,NCSUB
+#ifdef GNSIDE_debug
+                           write(LUWRT,*) 'T_BAT:'
+                           call
+     &                     wrtmat(T_BAT(IOFFC*MAXLB**2
+     &                     +IOFFR*NCSUB+1),NRSUB,NCSUB,
+!     &                     NRSUB,NCSUB)
+     &                     MAXLB**2,MAXLB**2)
+#endif GNSIDE_debug
+!                           write(LUWRT,*) 'IOFFR, NCA_B, NCB_B',
+!     &                     IOFFR, NCA_B, NCB_B
+
+
+                     end if
+
+                           IOFFR = IOFFR + NCA_B*NCB_B
+!                           write(LUWRT,*) 'Now IOFFR = ',IOFFR
+
+                       end do
+                       end do   
+                           IOFFC = IOFFC + NAA_B*NAB_B
+!                           write(LUWRT,*) 'IOFFC',IOFFC
+
+                       end do
+                       end do
+
+#if defined (VAR_MPI2)
+                     Time2 = interface_mpi_wtime()
+    
+#else
+                     call CPU_time(Time2)
+#endif
+                       T_time = T_time + Time2 - Time1
+
+                  end if
+!                        print *,'ISBOFF, length',
+!    &                            ISBOFF,NIA(IASM)*NIB(IBSM)
+                     end do LOOP_CR_BT
+                     end do
+
+
+!                  end do CA_CB_SM
+#if defined (VAR_MPI2)
+            ca_cb_sm_end = interface_mpi_wtime()
+            ca_cb_sm_tot = ca_cb_sm_tot + ca_cb_sm_end - ca_cb_sm_start
+#endif
+               end do !KB batches
+#if defined (VAR_MPI2)
+            kbbt_end = interface_mpi_wtime()
+            kbbt_tot = kbbt_tot + kbbt_end - kbbt_start
+#endif
+            end do !KA batches
+#if defined (VAR_MPI2)
+            kabt_end = interface_mpi_wtime()
+            kabt_tot = kabt_tot + kabt_end - kabt_start
+#endif
+            End do CA_CB_SM_BT
+         end do KB_SM
+      end do  
+!#if defined (VAR_MPI2)
+!      I_BLK_S_SCR = I_BLK_S_SCR + 1
+!#endif 
+
+
+!      else 
+!      write(LUWRT,*) 'DAMN, no elements...'
+      end if
+!#undef GNSIDE_debug      
+
+
+      END SUBROUTINE   
+
+      SUBROUTINE EXTR_OR_CP_MAT(ABIG,LRBIG,LCBIG,ISYMBIG,
+     &                          ASMA,LRSMA,LCSMA,ISYMSMA,
+     &                          IOFFR,IOFFC,IEC)
+*
+*
+* Copy or extract a smaller matrix, ASMA, from/to a larger matrix, ABIG
+*
+* IEC = 1 => Extract from big to small matrix
+* IEC = 2 => Extract from small to big matrix
+*
+*. Dimension of small matrix: LRSMA, LCSMA
+*. Dimension of large matrix: LRBIG, LCBIG
+*
+* ISYMBIG = 1 => Big matrix is symmetric and only lower half is included
+* ISYMSMA = 1 => Small matrix is symmetric and only lower half is included
+*
+* IOFFR, IOFFC: First row/column, where elements of small matrix should be added to /extracted from large matrix
+*
+*. Jeppe Olsen, July 19, 2013
+*
+*      INCLUDE 'implicit.inc'
+      IMPLICIT REAL*8(A-H,O-Z)
+*. Input or output
+      DIMENSION ASMA(*),ABIG(*)
+*
+      NTEST = 000
+      IF(NTEST.GE.100) THEN
+        WRITE(6,*) ' Info from EXTR_OR_CP_MAT'
+        WRITE(6,*) ' ========================'
+        WRITE(6,*) 
+        WRITE(6,*) ' LRBIG, LCBIG = ', LRBIG, LCBIG
+        WRITE(6,*) ' LRSAM, LCSMA = ', LRSMA, LCSMA 
+        WRITE(6,*) ' IOFFR, IOFFC = ', IOFFR, IOFFC
+        WRITE(6,*) ' ISYMBIG, ISYMSMA = ', ISYMBIG,ISYMSMA
+        WRITE(6,*) ' IEC = ', IEC
+      END IF
+      IF(NTEST.GE.1000) THEN
+        WRITE(6,*) ' Input small matrix '
+        IF(ISYMSMA.EQ.0) THEN
+          CALL WRTMAT(ASMA,LRSMA, LCSMA, LRSMA, LCSMA)
+        ELSE
+          CALL PRSYM(ASMA, LRSMA)
+        END IF
+        WRITE(6,*) ' Input Large matrix '
+        IF(ISYMBIG.EQ.0) THEN
+          CALL WRTMAT(ABIG,LRBIG, LCBIG, LRBIG, LCBIG)
+        ELSE
+          CALL PRSYM(ABIG, LRBIG)
+        END IF
+*
+      END IF
+*
+      DO JC_SMA = 1, LCSMA
+        IF(ISYMSMA.EQ.0) THEN
+          JRMIN = 1
+        ELSE
+          JRMIN = JC_SMA
+        END IF
+        DO JR_SMA = JRMIN, LRSMA
+          JC_BIG = JC_SMA + IOFFC - 1
+          JR_BIG = JR_SMA + IOFFR - 1
+          IF(ISYMBIG.EQ.0.OR.(ISYMBIG.EQ.1.AND.JR_BIG.GE.JC_BIG)) THEN
+            IF(ISYMSMA.EQ.0) THEN
+             IADR_SMA = (JC_SMA-1)*LRSMA+JR_SMA
+            ELSE
+             IADR_SMA = JR_SMA*(JR_SMA-1)/2 + JC_SMA
+            END IF
+            IF(ISYMBIG.EQ.0) THEN
+             IADR_BIG = (JC_BIG-1)*LRBIG+JR_BIG
+            ELSE
+             IADR_BIG = JR_BIG*(JR_BIG-1)/2 + JC_BIG
+            END IF
+            IF(IEC.EQ.1) THEN
+             ASMA(IADR_SMA) = ABIG(IADR_BIG)
+            ELSE
+             ABIG(IADR_BIG) =  ASMA(IADR_SMA)
+            END IF
+          END IF
+        END DO
+      END DO
+*
+      IF(NTEST.GE.1000) THEN
+        WRITE(6,*) ' Small and large matrix at return: '
+        CALL WRTMAT(ASMA,LRSMA,LCSMA,LRSMA,LCSMA)
+        WRITE(6,*)
+        CALL WRTMAT(ABIG,LRBIG,LCBIG,LRBIG,LCBIG)
+      END IF
+*
+      RETURN
+      END
+
+*******************************************************************
+      SUBROUTINE Reduce_Batch(Creation,
+     &                     
+     &                           MAXLB,          
+         !For GETSTR2
+     &                           IAGP,LIA_SM2,IA_STR,
+     &                           IBGP,LIB_SM2,IB_STR,
+         !For K_TO_J_TOT         
+     &                           KAD,XKAD,KASM,IKA_B,IKA_E,
+     &                           IA,XIA,IB_OA,NKAINTM,NA_OP,
+     &                           KBD,XKBD,KBSM,IKB_B,IKB_E, 
+     &                           IB,XIB,IB_OB,NKBINTM,NB_OP,
+         !Batch info
+     &                           INum_Sym_in,ISym_A_in,ISym_B_in,
+     &                           IA_SM_STR_S_in,IB_SM_STR_S_in,
+     &                           IA_SM_STR_E_in,IB_SM_STR_E_in,
+     &                           N_SubBlk_in,    
+         !Additional output
+     &                           INum_Sym_out,ISym_A_out,ISym_B_out,
+     &                           IA_SM_STR_S_out,IB_SM_STR_S_out,
+     &                           IA_SM_STR_E_out,IB_SM_STR_E_out,
+     &                           N_SubBlk_out,N_Strings_out,    
+     &                           IKZEROMAP)
+         !Generates operator strings and use the information to find
+         !mappings between K and J strings. Furthermore, it only
+         !includes necessary operator strings so as to to compress the batch size.
+         use symmetry_setup_krci
+         implicit none
+#include "mxpdim.inc"
+#include "parluci.h"
+#include "cgas.inc"
+         !Input: All the batch lists of sub blocks (oh boy..)
+         logical creation
+         integer MAXLB
+         integer IAGP(MXPNGAS),IBGP(MXPNGAS)
+         integer LIA_SM2, LIB_SM2, IA_STR(*), IB_STR(*)
+         integer KASM, KBSM, IKA_B, IKA_E, IKB_B, IKB_E
+         integer IA(*), IB(*), IB_OA(MXNDGIRR,MXNDGIRR,MXNOP)
+         integer IB_OB(MXNDGIRR,MXNDGIRR,MXNOP), NKAINTM(MXPOBS,MXNOP)
+         integer NKBINTM(MXPOBS,MXNOP)
+         integer NA_OP, NB_OP
+         integer, intent(in) :: INum_Sym_in,ISym_A_in(NSMST)
+         integer, intent(in) :: ISym_B_in(NSMST)
+         integer, intent(in) :: IA_SM_STR_S_in(2,NSMST),
+     &                          IB_SM_STR_S_in(2,NSMST)
+         integer, intent(in) :: IA_SM_STR_E_in(2,NSMST),
+     &                          IB_SM_STR_E_in(2,NSMST)
+         integer, intent(in) :: N_SubBlk_in(NSMST)
+         !Output: Array with K_TO_J mappings (if any), compressed batch
+         !lists
+         integer, intent(out) :: INum_Sym_out,ISym_A_out(NSMST)
+         integer, intent(out) :: ISym_B_out(NSMST)
+         integer, intent(out) :: IA_SM_STR_S_out(2,NSMST),
+     &                           IB_SM_STR_S_out(2,NSMST)
+         integer, intent(out) :: IA_SM_STR_E_out(2,NSMST),
+     &                           IB_SM_STR_E_out(2,NSMST)
+         integer, intent(out) :: N_SubBlk_out(NSMST), 
+     &                           N_Strings_out
+         integer IKZeroMap
+         integer, intent(inout) :: KAD(MAXLB**4), KBD(MAXLB**4)
+         real(8) XKAD(*), XKBD(*), XIA, XIB
+
+         !Only used in this subroutine:
+         integer IZEROKA, IZEROKB, KA_Off, KB_Off
+         integer NSym_New, IA_SM, IB_SM, IUB, IUB_KJ
+         integer IA_SM_ADJ, IB_SM_ADJ, NSub_New
+         integer IA_B, IA_E, NA_B
+         integer IB_B, IB_E, NB_B
+         integer IBatch, ISym, ISubBlk
+         integer I,J,K
+
+
+!         do IBatch = 1, NBatch
+
+
+      IKZeroMap = 0
+
+      KA_off = 0
+      KB_off = 0
+      N_Strings_Out = 0
+      Nsym_New = 0
+
+      do ISym = 1, INum_Sym_in
+
+       IA_SM = ISym_A_in(ISym)
+       IB_SM = ISym_B_in(ISym)
+       if(creation) then
+        IUB = 1
+        call getstr2_totsm_spgp_rel(IUB,IAGP,NGAS,IA_SM,
+     &                             NA_OP,LIA_SM2,IA_STR)
+        IUB = 2
+        call getstr2_totsm_spgp_rel(IUB,IBGP,NGAS,IB_SM,
+     &                              NB_OP,LIB_SM2,IB_STR)
+       else !Annihilation batches
+        IA_SM_ADJ = INVELM(IA_SM)
+        IB_SM_ADJ = INVELM(IB_SM)
+
+        IUB = 1
+        call getstr2_totsm_spgp_rel(IUB,IAGP,NGAS,IA_SM_ADJ,
+     &                             NA_OP,LIA_SM2,IA_STR)
+        IUB = 2
+        call getstr2_totsm_spgp_rel(IUB,IBGP,NGAS,IB_SM_ADJ,
+     &                              NB_OP,LIB_SM2,IB_STR)
+       end if
+
+       NSub_New = 0
+
+       do ISubBlk = 1,N_SubBlk_in(ISym)
+        IUB_KJ = 1
+        IA_B = IA_SM_STR_S_in(ISubBlk,ISym)
+        IA_E = IA_SM_STR_E_in(ISubBlk,ISym)
+        NA_B = IA_E - IA_B + 1
+        call k_to_j_tot(KAD(1+KA_Off),XKAD,KASM,IKA_B,IKA_E,
+     &                  IA_STR,NA_B,IA_B,IA_E,
+     &                  IA,XIA,IB_OA,NKAINTM,NA_OP,
+     &                  IZEROKA,IUB_KJ)
+!        write(LUWRT,*) 'IZEROKA',IZEROKA
+
+!        if(IZEROKA==0) then
+        if(IZEROKA/=0) cycle !ISubBlk
+         IUB_KJ = 2
+         
+         IB_B = IB_SM_STR_S_in(ISubBlk,ISym)
+         IB_E = IB_SM_STR_E_in(ISubBlk,ISym)
+         NB_B = IB_E - IB_B + 1
+
+         call k_to_j_tot(KBD(1+KB_Off),XKBD,KBSM,IKB_B,IKB_E,
+     &                   IB_STR,NB_B,IB_B,IB_E,
+     &                   IB,XIB,IB_OB,NKBINTM,NB_OP,
+     &                   IZEROKB,IUB_KJ)
+
+
+!        write(LUWRT,*) 'IZEROKB',IZEROKB
+!         if(IZEROKB==0) then
+         if(IZEROKB/=0) cycle !ISubBlk
+          NSub_New = NSub_New + 1 
+          NSym_New = NSym_New + mod(NSub_New,2) 
+!         write(LUWRT,*) 'KA matrix based on offset:'
+!         call iwrtma(KAD(1+KA_Off),NA_B,IKA_E-IKA_B+1,
+!     &               NA_B,IKA_E-IKA_B+1)
+!         write(LUWRT,*) 'KB matrix based on offset:'
+!         call iwrtma(KBD(1+KB_Off),NB_B,IKB_E-IKB_B+1,
+!     &               NB_B,IKB_E-IKB_B+1)
+         !Modulo since two sub blocks of  the same symmetry should not
+         !contribute to no. of symmetries twice
+          !K mapping offsets
+          KA_Off = KA_Off + 
+     &            (IKA_E - IKA_B + 1)*NA_B             
+          KB_Off = KB_Off + 
+     &            (IKB_E - IKB_B + 1)*NB_B             
+          !Now setting up reduced batch
+          N_Strings_Out = N_Strings_Out + NA_B*NB_B
+          IA_SM_STR_S_out(NSub_New,NSym_New) = IA_B
+          IA_SM_STR_E_out(NSub_New,NSym_New) = IA_E
+
+          IB_SM_STR_S_out(NSub_New,NSym_New) = IB_B
+          IB_SM_STR_E_out(NSub_New,NSym_New) = IB_E
+
+          N_SubBlk_out(NSym_New) = NSub_New
+
+
+
+!         end if
+
+!        end if
+       end do
+
+       if(NSub_New == 0) cycle !ISym
+
+       ISym_A_out(NSym_New) = IA_SM
+       ISym_B_out(NSym_New) = IB_SM
+
+      end do
+
+      INum_Sym_Out = Nsym_New
+
+      if(KB_Off == 0) IKZeroMap = 1
+
+!      if(KB_Off == 0) then 
+!         write(LUWRT,*) 'No mappings'
+!       IKZeroMap = 1 !No mappings
+!      else
+!      write(LUWRT,*) 'Original Number of symmetries',INum_Sym_in
+!      do I = 1,INum_Sym_in
+!       write(LUWRT,*) 'IA_SM',ISym_A_in(I)
+!       write(LUWRT,*) 'IB_SM',ISym_B_in(I)
+!       write(LUWRT,*) 'Sub blocks:',N_SubBlk_in(I)
+!       do J=1,N_SubBlk_in(I)
+!        write(LUWRT,*) 'A start',IA_SM_STR_S_in(J,I)
+!        write(LUWRT,*) 'A end',IA_SM_STR_E_in(J,I)
+!        write(LUWRT,*) 'B start',IB_SM_STR_S_in(J,I)
+!        write(LUWRT,*) 'B end',IB_SM_STR_E_in(J,I)
+!       end do
+!      end do
+!         write(LUWRT,*) 'Reduced batch:'
+!      write(LUWRT,*) 'New Number of symmetries',INum_Sym_out
+!      write(LUWRT,*) 'Now no. of strings',N_Strings_Out
+!
+!      do I = 1,NSub_New
+!      write(LUWRT,*) 'New set'
+!       write(LUWRT,*) 'IA_SM',ISym_A_out(I)
+!       write(LUWRT,*) 'IB_SM',ISym_B_out(I)
+!       write(LUWRT,*) 'Sub blocks:',N_SubBlk_out(I)
+!       do J=1,N_SubBlk_out(I)
+!        write(LUWRT,*) 'A start',IA_SM_STR_S_out(J,I)
+!        write(LUWRT,*) 'A end',IA_SM_STR_E_out(J,I)
+!        write(LUWRT,*) 'B start',IB_SM_STR_S_out(J,I)
+!        write(LUWRT,*) 'B end',IB_SM_STR_E_out(J,I)
+!       end do
+!      end do
+!
+!      end if
+
+!      end do
+         
+
+      END SUBROUTINE
+!*************************************************************************
+      SUBROUTINE DST_BLOCKS_OVER_BATCHES(Creation,N_IA_IB_BT,IA_IB_SM,    
+     &            NIA,NIB,MaxLB,Min_Size,
+     &            NSC_Str_A,NSC_Str_B,ISC_sym,IOpSC_sym_A,IOpSC_sym_B,
+     &            INum_Sym,ISym_A,ISym_B,IA_SM_STR_S,IB_SM_STR_S,
+     &            IA_SM_STR_E, IB_SM_STR_E,N_SubBlk,
+     &            N_Strings,
+     &            L_A_Block,L_B_Block,L_Sym_Block
+#if defined (VAR_MPI2)
+     &            ,IOFF_BLK,IACT
+#endif
+     &            )
+         !Distribute operator symmetry blocks over batches
+         use symmetry_setup_krci
+         implicit none
+#include "parluci.h"
+         !Input:
+         !Number of batches N_IA_IB_BT (also WILL be OUTPUT) 
+         !Total symmetry IA_IB_SM of OA * OB, which is either a creation
+         !or annihilation operator
+         !Total symmetry of sigma or c vector ISC_sym
+         !Symmetry of Creation*sigma or Annihilation*c vector:
+         !  IOpSC_sym_A and IopSC_sym_B
+         !Number of symmetry strings NSMST
+         !Number of strings within each symmetry of A and B: NIA and NIB
+         !Number of sigma or c strings for each symmetry of A and B:
+         !NSC_Str_A and NSC_Str_B
+         logical Creation !Creation is true, annihilation false
+         integer IA_IB_SM, N_IA_IB_BT, NIA(NSMST), NIB(NSMST)
+         integer ISC_sym, NSC_Str_A(NSMST), NSC_Str_B(NSMST)
+         integer IOpSC_sym_A, IOpSC_sym_B
+         integer MaxLB,Min_Size
+
+         !Variables only used in this routine
+         integer IA_SM, IB_SM,I_A_Block_size,I_B_Block_size
+         integer ISCA_SM, ISCB_SM, ISCB_compare !Symmetries of sigma/c strings
+         integer LIA_SM, LIB_SM
+         integer Leftover, ISym_Count, IA_IB_BT
+         integer IBlock_Size, IA_Block_Size, IChunk_Size
+         integer L_A_Block(NSMST), L_B_Block(NSMST) 
+         integer L_Sym_Block(NSMST)
+!         Integer, allocatable :: L_A_Block(:), L_B_Block(:) 
+!         Integer, allocatable :: L_Sym_Block(:)
+!         integer LUWRT
+         !Output
+         !Number of symmetries for batch INum_Sym,
+         !Symmetry A and B: ISym_A and ISym_B
+         !Start/End within Symmetry A, B:
+         !IA_SM_STR_S/IA_SM_STR_E,IB_SM_STR_S/IB_SM_STR_E
+         !N_SubBlk: How many sub blocks in batch of specific symmetry (1
+         !or 2)
+         !N_Strings: Number of strings in batch. Needed for matrix
+         !dimensions
+!         Integer INum_Sym(N_IA_IB_BT), ISym_A(NSMST,N_IA_IB_BT)
+!         Integer ISym_B(NSMST,N_IA_IB_BT)
+!         Integer IA_SM_STR_S(2,NSMST,N_IA_IB_BT), 
+!     &           IB_SM_STR_S(2,NSMST,N_IA_IB_BT)
+!         Integer IA_SM_STR_E(2,NSMST,N_IA_IB_BT), 
+!     &           IB_SM_STR_E(2,NSMST,N_IA_IB_BT),
+!     &           N_SubBlk(NSMST,N_IA_IB_BT)
+!         Integer N_Strings(N_IA_IB_BT)
+         integer INum_Sym(100), ISym_A(NSMST,100)
+         integer ISym_B(NSMST,100)
+         integer IA_SM_STR_S(2,NSMST,100), 
+     &           IB_SM_STR_S(2,NSMST,100)
+         integer IA_SM_STR_E(2,NSMST,100), 
+     &           IB_SM_STR_E(2,NSMST,100),
+     &           N_SubBlk(NSMST,100)
+         integer N_Strings(100)
+         integer I,J,K
+#if defined (VAR_MPI2)
+         integer, intent(in) :: IOFF_BLK, IACT(*)
+         integer I_BLK_SCR
+#endif
+
+!#define Dst_Blk_Debug
+#ifdef Dst_Blk_Debug
+         write(LUWRT,*) '              Inside DST_BLOCKS_OVER_BATCHES'
+         if(Creation) then
+            write(LUWRT,*) '              Handling creation'
+         else
+            write(LUWRT,*) '              Handling annihilation'
+         end if
+         write(*,*) 'LUWRT = ',LUWRT
+         write(LUWRT,*) 'Input variables:'
+         write(LUWRT,*) 'NBATCH = ',N_IA_IB_BT
+         write(LUWRT,*) 'IA_IB_SM = ',IA_IB_SM
+         write(LUWRT,*) 'MaxLB = ',MaxLB
+         write(LUWRT,*) 'Min_Size = ',Min_Size
+#endif
+
+
+!         Allocate(L_Sym_Block(NSMST))
+!         Allocate(L_A_Block(NSMST))
+!         Allocate(L_B_Block(NSMST))
+
+
+!         write(LUWRT,*) 'Allocation ok'
+!Initial conditions
+
+         call izero(L_A_Block,NSMST)
+         call izero(L_B_Block,NSMST)
+         call izero(L_Sym_Block,NSMST)
+         !The three arrays give the lengths of the blocks accounted
+
+
+
+         do IA_IB_BT = 1, N_IA_IB_BT
+            do IA_SM = 1, NSMST
+               N_SubBlk(IA_SM,IA_IB_BT) = 1
+            end do
+         end do
+
+!         write(LUWRT,*) 'Initial number of sub blocks set'
+         IA_SM = 1
+!        
+         !Now: Where to put the symmetry blocks...
+
+!#define Dst_Blk_Debug
+         Batch_loop: do IA_IB_BT = 1, N_IA_IB_BT
+
+!         write(LUWRT,*) 'Entering batch loop'
+!         write(LUWRT,*) 'Batch number = ',IA_IB_BT
+         Leftover = MaxLB**2
+         ISym_Count = 0 !Count how many symmetries will be in batch
+         !How many sub blocks of a particular symmetry in batch
+         IA_SM_Loop: do while(IA_SM <= NSMST)
+
+         
+         IB_SM = IDBGMULT(IA_IB_SM,INVELM(IA_SM))
+ 
+!         write(LUWRT,*) 'IA_SM = ',IA_SM
+!         write(LUWRT,*) 'IB_SM = ',IB_SM
+#if defined (VAR_MPI2)
+         if(Creation) then
+            ISCA_SM =
+     &      IDBGMULT(IA_SM,INVELM(IOpSC_Sym_A))
+
+            I_BLK_SCR = 0
+            I_BLK_SCR = IOFF_BLK + ISCA_SM -1
+            if(IACT(I_BLK_SCR).ne.MYPROC) then
+!               write(LUWRT,*) 'Not my process'
+!               write(LUWRT,*) 'IASM',ISCA_SM
+               IA_SM = IA_SM + 1
+               cycle IA_SM_Loop
+            end if
+            !Not this process
+
+            LIA_SM = NIA(IA_SM)
+            LIB_SM = NIB(IB_SM)
+
+            ISCB_SM =
+     &      IDBGMULT(ISC_sym,INVELM(ISCA_SM))
+
+            ISCB_compare =
+     &      IDBGMULT(IB_SM,INVELM(IopSC_Sym_B))
+
+         else
+            ISCA_SM =
+     &      IDBGMULT(IOpSC_Sym_A,INVELM(IA_SM))
+            I_BLK_SCR = 0
+            I_BLK_SCR = IOFF_BLK + ISCA_SM - 1
+            if(IACT(I_BLK_SCR).eq.0) then
+!               write(LUWRT,*) 'No connection'
+!               write(LUWRT,*) 'JASM',ISCA_SM
+               IA_SM = IA_SM + 1
+               cycle IA_SM_Loop
+            end if !No c connections
+
+            LIA_SM = NIA(INVELM(IA_SM))
+            LIB_SM = NIB(INVELM(IB_SM)) 
+
+            ISCB_SM = 
+     &      IDBGMULT(ISC_sym,INVELM(ISCA_SM))
+
+            ISCB_compare =
+     &      IDBGMULT(IOpSC_Sym_B,INVELM(IB_SM)) 
+         end if
+#else
+!Flag here for either creation/annihilation
+         if(Creation) then
+            LIA_SM = NIA(IA_SM)
+            LIB_SM = NIB(IB_SM)
+
+            ISCA_SM =
+     &      IDBGMULT(IA_SM,INVELM(IOpSC_Sym_A))
+
+            ISCB_SM =
+     &      IDBGMULT(ISC_sym,INVELM(ISCA_SM))
+
+            ISCB_compare =
+     &      IDBGMULT(IB_SM,INVELM(IopSC_Sym_B))
+
+         else
+            LIA_SM = NIA(INVELM(IA_SM))
+            LIB_SM = NIB(INVELM(IB_SM)) 
+
+            ISCA_SM =
+     &      IDBGMULT(IOpSC_Sym_A,INVELM(IA_SM))
+
+            ISCB_SM = 
+     &      IDBGMULT(ISC_sym,INVELM(ISCA_SM))
+
+            ISCB_compare =
+     &      IDBGMULT(IOpSC_Sym_B,INVELM(IB_SM)) 
+         end if
+
+         if( (ISCB_SM/=ISCB_compare)
+     &      .or. 
+#if defined (VAR_MPI2)
+     &      (LIA_SM*LIB_SM==0)
+#else
+     &      (LIA_SM*LIB_SM*
+     &      NSC_Str_A(ISCA_SM)*NSC_Str_B(ISCB_SM)==0)
+#endif
+     &      )then
+            IA_SM = IA_SM + 1
+            cycle IA_SM_Loop
+         end if
+#endif
+
+#ifdef Dst_Blk_Debug
+         if(LIA_SM*LIB_SM/=0) then
+            write(LUWRT,*) 'Non-zero number of elements'
+         write(LUWRT,*) 'IA_SM  = ', IA_SM 
+         write(LUWRT,*) 'IB_SM  = ', IB_SM 
+         write(LUWRT,*) 'LIA_SM = ', LIA_SM 
+         write(LUWRT,*) 'LIB_SM = ', LIB_SM 
+!         write(LUWRT,*) 'LIA_SM and LIB_SM found'
+         end if
+#endif
+
+!         if(LIA_SM * LIB_SM <= 0) then
+!!            write(LUWRT,*) 'No elements for IA_SM = ',IA_SM
+!            IA_SM = IA_SM + 1
+!            cycle IA_SM_Loop
+!         else if(L_Sym_Block(IA_SM)+Leftover>=LIA_SM*LIB_SM) then
+         if(L_Sym_Block(IA_SM)+Leftover>=LIA_SM*LIB_SM) then
+            !Batch is almost full, but the leftover part of the block is 
+            !so small that we might as well put it into the batch
+            continue
+         else if(Leftover-Min_size<=0) then
+!#ifdef Dst_Blk_Debug
+!            write(LUWRT,*) 'Not enough room at IA_SM = ',IA_SM
+!            write(LUWRT,*) 'LIA_SM = ',LIA_SM
+!            write(LUWRT,*) 'LIB_SM = ',LIB_SM
+!#endif
+         !Not enough room in batch -
+         !moving on to the next
+            N_Strings(IA_IB_BT) = MAXLB**2 - Leftover
+!            write(LUWRT,*) 'MAXLB**2 - Leftover',MAXLB**2-Leftover
+            cycle Batch_loop
+         end if
+
+         if(L_Sym_Block(IA_SM)==LIA_SM*LIB_SM) then 
+         !Block has already been taken care of
+            IA_SM = IA_SM + 1
+            cycle IA_SM_Loop
+         end if
+
+         ISym_Count = ISym_Count + 1
+!         write(LUWRT,*) 'Batch number = ',IA_IB_BT
+!         write(LUWRT,*) 'Room to fill up batch!'
+
+         ISym_A(ISym_Count,IA_IB_BT) = IA_SM
+         ISym_B(ISym_Count,IA_IB_BT) = IB_SM
+
+!         write(LUWRT,*) 'Leftover = ',Leftover
+         if(Leftover-LIA_SM*LIB_SM+L_Sym_Block(IA_SM)<0) then
+            !Only room for some of the block
+!            write(LUWRT,*) 'Only room for some of the block'
+            IA_SM_STR_S(1,ISym_Count,IA_IB_BT) =
+     &         min(L_A_Block(IA_SM)+1,LIA_SM)
+
+            !Edited 29/8/18
+            IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+     &         min(L_B_Block(IA_SM)+1,LIB_SM)
+
+            IBlock_size = min(LIA_SM,LIB_SM,int(sqrt(real(Leftover))))
+
+!            if(L_A_Block(IA_SM)>0) then
+!!               write(LUWRT,*) 
+!!     & 'Part of block column has already been batched'
+!!               if(
+!               IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+!     &         min(LIB_SM,
+!     &         IB_SM_STR_S(1,INum_Sym(IA_IB_BT - 1), IA_IB_BT - 1))
+!
+!               IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+!     &         min(IA_SM_STR_S(1,ISym_Count,IA_IB_BT)+IBlock_size-1,
+!     &         LIA_SM)
+!
+!               IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+!     &         min(LIB_SM,
+!     &         IB_SM_STR_E(1,INum_Sym(IA_IB_BT - 1), IA_IB_BT - 1)  )
+!
+!               L_A_Block(IA_SM) = IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+!
+            if(IBlock_size == LIB_SM) then 
+!            if(IBlock_size == LIB_SM) then 
+!               write(LUWRT,*) 'Stretching in A direction'
+               !Need to stretch sub block in
+               !A-direction
+               if(L_A_Block(IA_SM)==0) then
+            IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+     &         min(L_B_Block(IA_SM)+1,LIB_SM)
+
+               I_A_Block_size = Leftover/(LIB_SM-L_B_Block(IA_SM))
+
+               IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &         min(IA_SM_STR_S(1,ISym_Count,IA_IB_BT)-1
+     &         +I_A_Block_size,LIA_SM)
+
+               L_A_Block(IA_SM) = IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+               IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIB_SM
+
+               else
+               I_A_Block_size = Leftover/(LIB_SM-L_B_Block(IA_SM))
+
+                IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+     &          min(LIB_SM,
+     &          IB_SM_STR_S(1,INum_Sym(IA_IB_BT - 1), IA_IB_BT - 1))
+
+                IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &          min(IA_SM_STR_S(1,ISym_Count,IA_IB_BT)+I_A_Block_size-1,
+     &          LIA_SM)
+
+                IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &          min(LIB_SM,
+     &          IB_SM_STR_E(1,INum_Sym(IA_IB_BT - 1), IA_IB_BT - 1)  )
+
+                L_A_Block(IA_SM) = IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+
+               end if
+!               write(LUWRT,*) 'A stretching done'
+
+
+            else if(L_A_Block(IA_SM)>0) then
+!               write(LUWRT,*) 
+!     & 'Part of block column has already been batched'
+!               if(
+               IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+     &         min(LIB_SM,
+     &         IB_SM_STR_S(1,INum_Sym(IA_IB_BT - 1), IA_IB_BT - 1))
+
+               IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &         min(IA_SM_STR_S(1,ISym_Count,IA_IB_BT)+IBlock_size-1,
+     &         LIA_SM)
+
+               IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &         min(LIB_SM,
+     &         IB_SM_STR_E(1,INum_Sym(IA_IB_BT - 1), IA_IB_BT - 1)  )
+
+               L_A_Block(IA_SM) = IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+
+            else if(IBlock_size == LIA_SM) then !Stretch in B
+
+!               write(LUWRT,*) 'Stretching in B direction'
+            IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+     &         min(L_B_Block(IA_SM)+1,LIB_SM)
+
+               I_B_Block_size = Leftover/(LIA_SM-L_A_Block(IA_SM))
+
+               IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIA_SM
+
+
+               IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &         min(IB_SM_STR_S(1,ISym_Count,IA_IB_BT)+I_B_Block_size-1,
+     &         LIB_SM)
+               L_B_Block(IA_SM) = IB_SM_STR_E(1,ISym_Count,IA_IB_BT) 
+!               write(LUWRT,*) 'B stretching done'
+
+            else
+!               write(LUWRT,*) 'Need no stretching in either direction'
+            IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = 
+     &         min(L_B_Block(IA_SM)+1,LIB_SM)
+
+               IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &         min(IA_SM_STR_S(1,ISym_Count,IA_IB_BT)+IBlock_size-1,
+     &         LIA_SM)
+
+               IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &         min(IB_SM_STR_S(1,ISym_Count,IA_IB_BT)+IBlock_size-1,
+     &         LIB_SM)
+
+               L_A_Block(IA_SM) = IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+            end if
+
+#ifdef Dst_Blk_Debug
+            write(LUWRT,*) 'For batch ',IA_IB_BT
+            write(LUWRT,*) 'FIRST printout' 
+            write(LUWRT,*) 'and symmetry IA_SM = ',IA_SM
+            write(LUWRT,*) 'IA start',
+     & IA_SM_STR_S(1,ISym_Count,IA_IB_BT)
+            write(LUWRT,*) 'IA end',
+     & IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB start',
+     & IB_SM_STR_S(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB end',
+     & IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+#endif
+
+            IChunk_size=
+            !How much does the sub block fill up
+     &      (IA_SM_STR_E(1,ISym_Count,IA_IB_BT) -
+     &       IA_SM_STR_S(1,ISym_Count,IA_IB_BT) + 1) 
+     &      * 
+     &      (IB_SM_STR_E(1,ISym_Count,IA_IB_BT) -
+     &      IB_SM_STR_S(1,ISym_Count,IA_IB_BT) + 1)
+
+            Leftover = Leftover - IChunk_size
+
+!           write(LUWRT,*) 'Leftover - chunk = ',Leftover 
+
+           L_Sym_Block(IA_SM) = L_Sym_Block(IA_SM) + IChunk_size
+
+!            write(LUWRT,*) 'Total accumulated symmetry block =',             
+!     &         L_Sym_Block(IA_SM)
+!            write(LUWRT,*) 'End of B is'
+!            write(LUWRT,*) IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+            if(L_A_Block(IA_SM)==LIA_SM) then 
+            !Reset L_A_Block, shift L_B_Block
+!            write(LUWRT,*) 'LIA_SM has been reached, and'
+!            write(LUWRT,*) 'End of B is'
+!            write(LUWRT,*) IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+!            write(LUWRT,*) 'Shifting B block from'
+!            write(LUWRT,*) L_B_Block(IA_SM)
+               L_A_Block(IA_SM) = 0
+               L_B_Block(IA_SM) = IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+!               write(LUWRT,*) 'to'
+!               write(LUWRT,*) L_B_Block(IA_SM)
+!
+!
+            end if
+            INum_sym(IA_IB_BT) = ISym_Count
+            N_Strings(IA_IB_BT) = MAXLB**2 - Leftover
+!            write(LUWRT,*) 'MAXLB**2 - Leftover',MAXLB**2-Leftover
+!            write(LUWRT,*) 'In batch ', IA_IB_BT
+!            write(LUWRT,*) 'There are ',ISym_Count,' symmetries'
+            cycle Batch_Loop
+
+         else 
+!            write(LUWRT,*) 'Room for remainder of block!'
+
+!           if((L_A_Block(IA_SM)==0).and.(L_B_Block(IA_SM)==0)) then
+           if((L_A_Block(IA_SM)==0)) then
+!              write(LUWRT,*) 'Room for WHOLE block!'
+              IA_SM_STR_S(1,ISym_Count,IA_IB_BT) = 1
+              IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = L_B_Block(IA_SM) + 1
+
+              IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIA_SM
+              IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIB_SM
+              
+           else if(IA_SM_STR_E(N_SubBlk(ISym_A(INum_Sym(IA_IB_BT-1),
+     &             IA_IB_BT-1),
+     &             IA_IB_BT-1),
+     &             INum_Sym(IA_IB_BT-1),IA_IB_BT-1) ==LIA_SM) then
+!              write(LUWRT,*) 'End of A strings has been reached'
+              IA_SM_STR_S(1,ISym_Count,IA_IB_BT) = LIA_SM
+              IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = L_B_Block(IA_SM) + 1
+              IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIA_SM
+              IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIB_SM
+           else if(L_Sym_Block(IA_SM)>0) then
+!              write(LUWRT,*) 'Some of the block has been covered'
+              IA_SM_STR_S(1,ISym_Count,IA_IB_BT) = L_A_Block(IA_SM) + 1
+              IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = L_B_Block(IA_SM) + 1
+              IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = LIA_SM
+              IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     & IB_SM_STR_E(N_SubBlk(ISym_B(INum_Sym(IA_IB_BT-1),IA_IB_BT-1)
+     & ,IA_IB_BT-1)
+     &         ,INum_Sym(IA_IB_BT-1),IA_IB_BT-1) 
+
+              !Resetting L_A_Block(IA_SM)
+              L_A_Block(IA_SM) = 0
+
+           else
+!             write(LUWRT,*) 'Room for leftover part of sub block!'
+             !Room for last part, but need to split into two sub blocks
+             IA_SM_STR_S(1,ISym_Count,IA_IB_BT) = L_A_Block(IA_SM) + 1
+             IB_SM_STR_S(1,ISym_Count,IA_IB_BT) = L_B_Block(IA_SM) + 1
+             IBlock_size = int(sqrt(real(Leftover)))
+!             write(LUWRT,*) 'Block size is',IBlock_size
+             IA_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+!     &       min(IA_SM_STR_S(1,IA_IB_BT,ISym_Count)+IBlock_size,
+     &       min(IA_SM_STR_S(1,ISym_Count,IA_IB_BT)+IBlock_size-1,
+     &       LIA_SM)
+             IB_SM_STR_E(1,ISym_Count,IA_IB_BT) = 
+     &       min(IB_SM_STR_S(1,ISym_Count,IA_IB_BT)+IBlock_size-1,
+     &       LIB_SM)
+           end if
+
+#ifdef Dst_Blk_Debug
+            write(LUWRT,*) 'For batch ',IA_IB_BT
+            write(LUWRT,*) 'SECOND printout'
+            write(LUWRT,*) 'and symmetry IA_SM = ',IA_SM
+            write(LUWRT,*) 'IA start',
+     & IA_SM_STR_S(1,ISym_Count,IA_IB_BT)
+            write(LUWRT,*) 'IA end',
+     & IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB start',
+     & IB_SM_STR_S(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB end',
+     & IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+#endif
+            IChunk_size=
+            !How much does the sub block fill up
+     &      (IA_SM_STR_E(1,ISym_Count,IA_IB_BT) -
+     &       IA_SM_STR_S(1,ISym_Count,IA_IB_BT) + 1) 
+     &      * 
+     &      (IB_SM_STR_E(1,ISym_Count,IA_IB_BT) -
+     &      IB_SM_STR_S(1,ISym_Count,IA_IB_BT) + 1)
+
+            Leftover = Leftover - IChunk_size
+            L_Sym_Block(IA_SM) = L_Sym_Block(IA_SM) + IChunk_size
+! Maybe this line               L_A_Block(IA_SM) = IA_SM_STR_E(1,IA_IB_BT,ISym_Count)
+!            L_A_Block(IA_SM) = 
+
+!            write(LUWRT,*) 'Total accumulated symmetry block =',             
+!     &         L_Sym_Block(IA_SM)
+            if(IA_SM_STR_E(1,ISym_Count,IA_IB_BT).lt.LIA_SM) then
+
+!               write(LUWRT,*) '     Need two sub blocks due to A'
+               IA_SM_STR_S(2,ISym_Count,IA_IB_BT) =
+     &            IA_SM_STR_E(1,ISym_Count,IA_IB_BT) + 1
+
+               IB_SM_STR_S(2,ISym_Count,IA_IB_BT) = 
+     &            min(LIB_SM,L_B_Block(IA_SM) + 1)
+
+               IA_SM_STR_E(2,ISym_Count,IA_IB_BT) = LIA_SM
+               IB_SM_STR_E(2,ISym_Count,IA_IB_BT) = LIB_SM
+
+!               write(LUWRT,*) 'THIRD printout'
+               N_SubBlk(ISym_Count,IA_IB_BT) = 2
+
+               IChunk_size=
+               !How much does the sub block fill up
+     &         (IA_SM_STR_E(2,ISym_Count,IA_IB_BT) -
+     &          IA_SM_STR_S(2,ISym_Count,IA_IB_BT) + 1) 
+     &         * 
+     &         (IB_SM_STR_E(2,ISym_Count,IA_IB_BT) -
+     &         IB_SM_STR_S(2,ISym_Count,IA_IB_BT) + 1)
+
+               Leftover = Leftover - IChunk_size
+               L_Sym_Block(IA_SM) = L_Sym_Block(IA_SM) + IChunk_size
+
+#ifdef Dst_Blk_Debug
+            write(LUWRT,*) 'Total accumulated symmetry block =',             
+     &         L_Sym_Block(IA_SM)
+               write(LUWRT,*) 'FOURTH printout'
+            write(LUWRT,*) 'and symmetry IA_SM = ',IA_SM
+            write(LUWRT,*) 'IA start',
+     & IA_SM_STR_S(1,ISym_Count,IA_IB_BT)
+            write(LUWRT,*) 'IA end',
+     & IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB start',
+     & IB_SM_STR_S(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB end',
+     & IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+#endif
+            else if(IB_SM_STR_E(1,ISym_Count,IA_IB_BT).lt.LIB_SM) then 
+!               write(LUWRT,*) '     Need two sub blocks due to B'
+               IA_SM_STR_S(2,ISym_Count,IA_IB_BT) =
+     &            min(LIA_SM,L_A_Block(IA_SM) + 1)
+
+               IB_SM_STR_S(2,ISym_Count,IA_IB_BT) =
+     &            IB_SM_STR_E(1,ISym_Count,IA_IB_BT) + 1
+
+               IA_SM_STR_E(2,ISym_Count,IA_IB_BT) = LIA_SM
+               IB_SM_STR_E(2,ISym_Count,IA_IB_BT) = LIB_SM
+
+
+               N_SubBlk(ISym_Count,IA_IB_BT) = 2
+
+               IChunk_size=
+               !How much does the sub block fill up
+     &         (IA_SM_STR_E(2,ISym_Count,IA_IB_BT) -
+     &          IA_SM_STR_S(2,ISym_Count,IA_IB_BT) + 1) 
+     &         * 
+     &         (IB_SM_STR_E(2,ISym_Count,IA_IB_BT) -
+     &         IB_SM_STR_S(2,ISym_Count,IA_IB_BT) + 1)
+
+               Leftover = Leftover - IChunk_size
+               L_Sym_Block(IA_SM) = L_Sym_Block(IA_SM) + IChunk_size
+#ifdef Dst_Blk_Debug
+            write(LUWRT,*) 'Total accumulated symmetry block =',             
+     &         L_Sym_Block(IA_SM)
+
+               write(LUWRT,*) 'FIFTH printout'
+            write(LUWRT,*) 'and symmetry IA_SM = ',IA_SM
+            write(LUWRT,*) 'IA start',
+     & IA_SM_STR_S(1,ISym_Count,IA_IB_BT)
+            write(LUWRT,*) 'IA end',
+     & IA_SM_STR_E(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB start',
+     & IB_SM_STR_S(1,ISym_Count,IA_IB_BT)
+
+            write(LUWRT,*) 'IB end',
+     & IB_SM_STR_E(1,ISym_Count,IA_IB_BT)
+#endif
+            end if
+!            ISym_Count = ISym_Count + 1
+            INum_sym(IA_IB_BT) = ISym_Count
+!            IA_SM = IA_SM + 1
+            !Hasn't reached end of B strings
+
+!           write(LUWRT,*) 'Leftover - chunk = ',Leftover 
+!            L_Sym_Block(IA_SM) = L_Sym_Block(IA_SM) + IChunk_size
+            IA_SM = IA_SM + 1
+!
+!            L_B_Block(IA_SM) = IB_SM_STR_E(1,IA_IB_BT,ISym_Count)
+!            L_A_Block(IA_SM) = 0
+!
+!            IA_SM_STR_S(2,IA_IB_BT,ISym_Count) = L_A_Block(IA_SM) + 1
+!            IB_SM_STR_S(2,IA_IB_BT,ISym_Count) = L_B_Block(IA_SM) + 1
+!            IA_SM_STR_E(2,IA_IB_BT,ISym_Count) = LIA_SM
+!            IB_SM_STR_E(2,IA_IB_BT,ISym_Count) = LIB_SM
+
+         end if
+!         write(LUWRT,*) 'Almost out of SM loop'
+!            write(LUWRT,*) 'and symmetry IA_SM = ',IA_SM
+!            write(LUWRT,*) 'IA start',
+!     & IA_SM_STR_S(1,IA_IB_BT,ISym_Count)
+!            write(LUWRT,*) 'IA end',
+!     & IA_SM_STR_E(1,IA_IB_BT,ISym_Count)
+!
+!            write(LUWRT,*) 'IB start',
+!     & IB_SM_STR_S(1,IA_IB_BT,ISym_Count)
+!
+!            write(LUWRT,*) 'IB end',
+!     & IB_SM_STR_E(1,IA_IB_BT,ISym_Count)
+         end do IA_SM_Loop
+
+
+         INum_sym(IA_IB_BT) = ISym_Count
+         N_Strings(IA_IB_BT) = MAXLB**2 - Leftover
+!         write(LUWRT,*) 'MAXLB**2 - Leftover',MAXLB**2-Leftover
+!         write(LUWRT,*) 'Symmetry count = ',INum_sym(IA_IB_BT)
+
+            IA_SM = IA_SM + 1
+         if(IA_SM > NSMST) then 
+            !Don't need as many batches as expected
+            !reducing number of batches
+            N_IA_IB_BT = IA_IB_BT
+            exit Batch_Loop
+
+         end if
+         end do Batch_Loop
+
+!#define Dst_Blk_Debug
+#ifdef Dst_Blk_Debug
+         write(LUWRT,*) 'Out of batch loops'
+         write(LUWRT,*) 'FINAL printout'
+!First block
+         if(creation) then
+            write(LUWRT,*) 'For creation:'
+         else
+            write(LUWRT,*) 'For annihilation:'
+         end if
+                     do I=1,N_IA_IB_BT
+                        write(LUWRT,*) 'Batch number ',I
+                        write(LUWRT,*) 'INum_Sym(I) = ',INum_Sym(I)
+                        do J=1,INum_Sym(I)
+                        if(creation) then
+                           write(LUWRT,*) 'SymA(I), No. of str. ', 
+     &                  ISym_A(J,I),NIA(ISym_A(J,I))
+                           write(LUWRT,*) 'SymB(I), No. of str. ', 
+     &                     ISym_B(J,I),NIB(ISym_B(J,I))
+                        else
+                           write(LUWRT,*) 'SymA(I), No. of str. ', 
+     &               ISym_A(J,I),NIA(INVELM(ISym_A(J,I)))
+                           write(LUWRT,*) 'SymB(I), No. of str. ', 
+     &               ISym_B(J,I),NIB(INVELM(ISym_B(J,I)))
+                        end if
+                           write(LUWRT,*) 'No. of sub blocks
+     &                     ',N_SubBlk(J,I)
+                           do K=1,N_SubBlk(J,I)
+                              write(LUWRT,*) 'String start AA = '
+     &                        ,IA_SM_STR_S(K,J,I)
+                              write(LUWRT,*) 'String end AA   = '
+     &                        ,IA_SM_STR_E(K,J,I)
+                              write(LUWRT,*) 'String start AB = '
+     &                        ,IB_SM_STR_S(K,J,I)
+                              write(LUWRT,*) 'String end AB   = '
+     &                        ,IB_SM_STR_E(K,J,I)
+                              if((IA_SM_STR_S(K,J,I)>IA_SM_STR_E(K,J,I))
+     &                           .or.
+     &                  (IB_SM_STR_S(K,J,I)>IB_SM_STR_E(K,J,I)))
+     &                        then
+                              write(6,*) 
+     &         'ERROR - start is bigger than end!!!'
+                              stop
+                              end if
+
+                           end do
+                        end do
+                     end do
+
+                     if(creation) then
+                        do I=1,NSMST
+                           J = IDBGMULT(IA_IB_SM,INVELM(I))
+                           LIA_SM = NIA(I)
+                           LIB_SM = NIB(J)
+                           if((L_Sym_Block(I)/=LIA_SM*LIB_SM)) then
+                              write(LUWRT,*) 'ALARM'
+                              write(LUWRT,*) 'For IA_SM = ',I
+                              write(LUWRT,*) 'Not all strings covered'
+!                              stop
+                           end if
+                        end do
+                     else
+                        do I=1,NSMST
+                           J = IDBGMULT(IA_IB_SM,INVELM(I))
+                           LIA_SM = NIA(INVELM(I))
+                           LIB_SM = NIB(INVELM(J))
+                           if(L_Sym_Block(I)/=LIA_SM*LIB_SM) then
+                              write(LUWRT,*) 'ALARM'
+                              write(LUWRT,*) 'For IA_SM = ',I
+                              write(LUWRT,*) 'Not all strings covered'
+!                              stop
+                           end if
+                           
+                        end do
+                     end if
+#endif
+!#undef Dst_Blk_Debug
+!      deallocate(L_Sym_Block)
+!      deallocate(L_A_Block)
+!      deallocate(L_B_Block)
+
+      END SUBROUTINE
+
 !***********************************************************************
       SUBROUTINE IDIM_TCC_DBG(ITSOSO_TP,NTSOSO_TP,ISYM,
      &                        MX_ST_TSOSO,MX_ST_TSOSO_BLK,MX_TBLK,
@@ -2543,6 +5477,7 @@ C     INTEGER JGRP(MXPNGAS)
       CALL IWRTMA(IOCC,1,NGAS,1,NGAS)
       CALL IWRTMA(IGRP,1,NGAS,1,NGAS) 
 #endif
+
 *
       END 
 ***********************************************************************
@@ -2894,7 +5829,7 @@ C***********************************************************************
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1, IOFF_SCR2
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFF_SCR1_C, IOFF_SCR2_C
-      CHARACTER SECTID*12,WALLTID*12,WALLTID2*12,WALLTID3*12
+      CHARACTER WALLTID2*12,WALLTID3*12
 #endif /* if def VAR_MPI2 */
 #include "parluci.h"
 #include "krciprop.h"
@@ -2902,6 +5837,8 @@ C***********************************************************************
 *
 #include "dgroup.h"
       LOGICAL SBLK_READS2
+
+      CHARACTER SECTID*12,WALLTID*12
 *
 *     batches of sigma
       DIMENSION LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
@@ -2909,6 +5846,9 @@ C***********************************************************************
 *     scratch
       INTEGER IONE, INT_IOFF1, INT_IOFF2
       INTEGER INT_IOFF1_C, INT_IOFF2_C
+      !Statistics
+      integer Num_Det_MS2(NMS2VAL)
+      real(8) Timing_MS2(NMS2VAL)
 *
       IONE        = 1
       INT_IOFF1   = 0
@@ -2917,6 +5857,34 @@ C***********************************************************************
       IBI_MULT_BL = 0
       xreadtimebi = 0.0D0
       xcomputesi  = 0.0D0
+
+      Num_A_str_stat = 0
+      Num_C_str_stat = 0
+      Ave_Num_A_str = 0.0d0
+      Ave_Num_C_str = 0.0d0
+
+      Batch_time = 0.0D0
+      Cvec_time = 0.0D0
+      T_time = 0.0D0
+      Sigma_time = 0.0D0
+      CalcMatTime = 0.0D0
+      gnside_time = 0.0D0
+      start_gnside = 0.0D0
+      kabt_start = 0.0D0
+      kabt_end = 0.0D0
+      kabt_tot = 0.0D0
+      kbbt_start = 0.0D0
+      kbbt_end = 0.0D0
+      kbbt_tot = 0.0D0
+      ca_cb_sm_start = 0.0D0
+      ca_cb_sm_end = 0.0D0
+      ca_cb_sm_tot = 0.0D0
+      ca_b_sm_end = 0.0D0
+      ca_b_sm_start = 0.0D0
+      ca_b_sm_tot = 0.0D0
+      aa_b_sm_end = 0.0D0
+      aa_b_sm_start = 0.0D0
+      aa_b_sm_tot = 0.0D0
 #if defined (VAR_MPI2)
       IOFF_SCR1 = 0
       IOFF_SCR2 = 0
@@ -3091,8 +6059,13 @@ C***********************************************************************
           KSVST = 1
           call memmar(KSBLTP,NSMST,'ADDL  ',1,'SBLTP ')
           CALL ZBLTP_REL(ISMOST(1,ISSM),NSMST,WORK(KSBLTP))
+
+
 *
 * Loop over batches of sigma for this MK2_S projection value
+C          LEN_MK2S_ANDREAS = 0
+C          call CPU_TIME(TIME1MK2S)
+
           do JBATS = 1,NBAT_MS2(IMK2_S)
 *
             JBATABS = JBATABS + 1
@@ -3130,7 +6103,12 @@ C***********************************************************************
 #endif /* if def VAR_MPI2 */
 C
             LS = LEBATS(JBATABS)
+
+
+C            LEN_MK2S_ANDREAS = LEN_MK2S_ANDREAS + LS
             CALL DZERO(HC,LS)
+
+
             if (ISIGDEN.eq.1) then
 #ifdef LUCI_DEBUG
               if (NTEST.ge.500) then
@@ -3154,7 +6132,10 @@ C             because of MK2_DIFF > 4.
 C
 #if !defined (VAR_MPI2)
             call REWINE(LLUC,-1)
+            if(LS==0) goto 60 !Skip calculation for this MK2S
 #endif
+
+!            if(LS==0) goto 60 !Skip calculation for this MK2S
             DO IRIC = 1,IRILP,1
 #if defined LUCI_DEBUG
             if (NTEST.ge.50) then
@@ -3229,6 +6210,7 @@ C                 end of vector mark
 C                 skip blocks with given MK2_C
                   CALL COPNBLKD(LLUC,-1,C,NBL_C,0,LBLK)
                 END IF
+
 #endif /* if def VAR_MPI2 */
                 IF (MK2_DIFF .LE. max_MK2_DIFF)
      &          call sigden_rel2(C,HC,JBATABS,LBATS,LEBATS,I1BATS,
@@ -3343,8 +6325,13 @@ C           skip sigma blocks on disk
 #endif /* if !def VAR_MPI2 */
           END DO
 *         ^ End loop over S batches of given MK2_S value
+C          call CPU_TIME(TIME2MK2S)
+C          WALLTID = SECTID(TIME2MK2S-TIME1MK2S)
+C          write(LUWRT,*) 'MK2_S, No. of determinants, time',
+C     &    MK2_S, LEN_MK2S_ANDREAS, WALLTID
         END DO
 *       ^ End of loop over IMK2_S
+
 *
 #if !defined (VAR_MPI2)
         if (ISIGDEN.eq.1) then
@@ -3363,10 +6350,77 @@ C           skip sigma blocks on disk
       CALL QEXIT('SIGDE')
 #if !defined (VAR_MPI2)
 *     close scratch unit for Right vector
+
       close(unit=LUSC37,status='DELETE')
+!        WALLTID = SECTID(Batch_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for batching       : ', WALLTID
+!        WALLTID = SECTID(Cvec_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for C RI vector       : ', WALLTID
+!        WALLTID = SECTID(T_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for T matrix       : ', WALLTID
+!        WALLTID = SECTID(Sigma_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for Sigma addition       : ', WALLTID
+!        WALLTID = SECTID(CalcMatTime)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for matrix multiplication       : ', WALLTID
+!        WALLTID = SECTID(gnside_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for gnside       : ', WALLTID
+!        write(LUWRT,*) 'Number of annihilation strings', Num_A_str_stat
+!        write(LUWRT,*) 'Number of creation strings', Num_C_str_stat
+!        write(LUWRT,*) 'Annihilation strings per batch,summed',
+!     &               Ave_Num_A_str
+!        write(LUWRT,*) 'Creation strings per batch, summed',
+!     &               Ave_Num_C_str
 *
 #else
 *
+!        WALLTID = SECTID(Start_gnside)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time spent in start of gnside       : ', WALLTID
+!        WALLTID = SECTID(kabt_tot)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time spent in KA batches       : ', WALLTID
+!        WALLTID = SECTID(kbbt_tot)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time spent in KB batches       : ', WALLTID
+!        WALLTID = SECTID(ca_cb_sm_tot)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time spent in ca_cb_sm loops       : ', WALLTID
+!        WALLTID = SECTID(ca_b_sm_tot)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time spent in ca_b_sm loops       : ', WALLTID
+!        WALLTID = SECTID(aa_b_sm_tot)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time spent in aa_b_sm loops       : ', WALLTID
+!        WALLTID = SECTID(Batch_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for batching       : ', WALLTID
+!        WALLTID = SECTID(Cvec_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for C RI vector       : ', WALLTID
+!        WALLTID = SECTID(T_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for T matrix       : ', WALLTID
+!        WALLTID = SECTID(Sigma_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for Sigma addition       : ', WALLTID
+!        WALLTID = SECTID(CalcMatTime)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for matrix multiplication       : ', WALLTID
+!        WALLTID = SECTID(gnside_time)
+!        WRITE(LUWRT,'(2X,A,1X,A)')
+!     &  ' Time for gnside       : ', WALLTID
+!        write(LUWRT,*) 'Number of annihilation strings', Num_A_str_stat
+!        write(LUWRT,*) 'Number of creation strings', Num_C_str_stat
+!        write(LUWRT,*) 'Annihilation strings per batch,summed',
+!     &               Ave_Num_A_str
+!        write(LUWRT,*) 'Creation strings per batch, summed',
+!     &               Ave_Num_C_str
       WALLTID3 = SECTID(BLOCKTIME)
 !     IF( .NOT. DOSIGPROP ) WRITE(LUWRT,80000) WALLTID3
       IF( SHARED_M .and. ISIGDEN .eq. 1 )THEN
@@ -3395,6 +6449,8 @@ C
 C
       END IF
 C
+
+
 *
 50000 FORMAT(' >>>  WALL TIME FOR WRITING SB TO DISK           :
      & ',A)
@@ -3537,6 +6593,7 @@ C           CPU-block - test if non-zero
 *     ^ only for density evaluation
 *
 *     obtain sigma/density for batch of blocks
+!      call CPU_TIME(gnside1)
       CALL SIGDEN_REL3(LBATS(JBATABS),IBATS(1,I1BATS(JBATABS)),1,
      &                 CB,SB,LUC,T,T_BUFF,ISIGDEN,IRIS,IRIC
 #if defined (VAR_MPI2)
@@ -3547,6 +6604,9 @@ C           CPU-block - test if non-zero
      &                ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+!      call CPU_TIME(gnside2)
+!      gnside_time = gnside_time + gnside2 - gnside1
+  
 *
       END
 ***********************************************************************
@@ -3621,8 +6681,20 @@ C
       POINTER (MY_T_SCR_PTR, T_SCR_CC(IDUMMY_BUFF_SZ))
 #endif
       DIMENSION CB(*), HCB(*)
+      real(8), allocatable :: CJRES_BAT(:), SIRES_BAT(:), T_BAT(:)
+      integer, allocatable :: INum_Sym_A(:),ISym_AA(:,:),ISym_AB(:,:)
+      integer, allocatable :: IAA_SM_STR_S(:,:,:), IAB_SM_STR_S(:,:,:)
+      integer, allocatable :: IAA_SM_STR_E(:,:,:), IAB_SM_STR_E(:,:,:)
+      integer, allocatable :: NSubBlk_A(:,:), NStrings_A(:)
+      integer, allocatable :: INum_Sym_C(:),ISym_CA(:,:),ISym_CB(:,:)
+      integer, allocatable :: ICA_SM_STR_S(:,:,:), ICB_SM_STR_S(:,:,:)
+      integer, allocatable :: ICA_SM_STR_E(:,:,:), ICB_SM_STR_E(:,:,:)
+      integer, allocatable :: NSubBlk_C(:,:), NStrings_C(:)
+      Integer, allocatable :: L_A_Block(:), L_B_Block(:)
+      Integer, allocatable :: L_Sym_Block(:)
 C
 C     set memory mark for local scratch
+
       IDUM = 0
       call memmar(KDUM,IDUM,'MARK  ',IDUM,'SIGD3X')
 C
@@ -3705,6 +6777,11 @@ C
 C     T-elements
       INTSCR = MXINKA**4
       INTSCR = MIN(INTSCR,MX_TBLK_MX)
+!      write(LUWRT,*) 'MXINKA = ',MXINKA
+!      write(LUWRT,*) 'MXINKA**4 = ',MXINKA**4
+!      write(LUWRT,*) 'MX_TBLK_MX = ',MX_TBLK_MX
+!      write(LUWRT,*) 'INTSCR = ',INTSCR
+!      write(LUWRT,*) 'MX_ST_TSOSO_BLK_MX = ',MX_ST_TSOSO_BLK_MX
       CALL MEMMAR_I8(KINSCR,INTSCR,'ADDL  ',2,'INSCR ')
 C
 C     arrays for storing occupations of T-operators
@@ -3714,7 +6791,8 @@ C     arrays for storing occupations of T-operators
       call memmar(KTOCC4,MX_ST_TSOSO_BLK_MX,'ADDL  ',1,'TOCC4 ')
 C
 C     arrays for storing NEL consecutive annihilations/creations
-      LSCR4 = MXINKA*MXINKA*MXINKA
+      LSCR4 = MXINKA*MXINKA*MXINKA*MXINKA 
+
       call memmar(KI1G  ,LSCR4,'ADDL  ',1,'I1G   ')
       call memmar(KXI1G,     0,'ADDL  ',2,'XIG   ')
 C
@@ -3728,6 +6806,7 @@ C
       call memmar(KXI4G,     0,'ADDL  ',2,'XI4G  ')
 C
       call memmar(KI1GE  ,LSCR4,'ADDL  ',1,'I1GE  ')
+      
       call memmar(KXI1GE,     0,'ADDL  ',2,'XIGE  ')
 C
       call memmar(KI2GE  ,LSCR4,'ADDL  ',1,'I2GE  ')
@@ -3806,6 +6885,42 @@ C     allocation of resolution matrices: sigma + C
       call memmar(KNIKBINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNIKB ')
       call memmar(KNJKAINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNJKA ')
       call memmar(KNJKBINTM,MXPOBS      * MXNOP   ,'ADDL  ',1,'KNJKB ')
+
+!     Allocation for batch arrays, such as:
+!     Sigma/C and T arrays
+!     Annihilation and creation batches
+!     Scratch arrays for construction of operator batches
+      allocate(CJRES_BAT(MXINKA**4))
+      allocate(SIRES_BAT(MXINKA**4))
+      allocate(T_BAT(MXINKA**4))
+!      write(LUWRT,*) 'Allocating Annihilation arrays'
+      allocate(INum_Sym_A(100))
+      allocate(ISym_AA(NSMST,100))
+      allocate(ISym_AB(NSMST,100))
+      !There can be up to two sub blocks of a certain
+      !symmetry, so:
+      allocate(IAA_SM_STR_S(2,NSMST,100))
+      allocate(IAB_SM_STR_S(2,NSMST,100))
+      allocate(IAA_SM_STR_E(2,NSMST,100))
+      allocate(IAB_SM_STR_E(2,NSMST,100))
+      allocate(NSubBlk_A(NSMST,100))
+      allocate(NStrings_A(100))
+
+!      write(LUWRT,*) 'Allocating Creation arrays'
+      allocate(INum_Sym_C(100))
+      allocate(ISym_CA(NSMST,100))
+      allocate(ISym_CB(NSMST,100))
+      allocate(ICA_SM_STR_S(2,NSMST,100))
+      allocate(ICB_SM_STR_S(2,NSMST,100))
+      allocate(ICA_SM_STR_E(2,NSMST,100))
+      allocate(ICB_SM_STR_E(2,NSMST,100))
+      allocate(NSubBlk_C(NSMST,100))
+      allocate(NStrings_C(100))
+      allocate(L_Sym_Block(NSMST))
+      allocate(L_A_Block(NSMST))
+      allocate(L_B_Block(NSMST))
+
+
 C
 C     set offset for T_BUFF array
       LEN_T_BUFF_NZ = LEN_T_VEC
@@ -3815,6 +6930,7 @@ C     dynamic allocation for scratch T block - MPI info if non-zero
       IF( IT_SHL .ge. 0 ) CALL GET_MEM_T_SCR_CC(0)
 #endif
 C
+
       CALL SIGDEN_REL4(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,
      &                 WORK(KNSTSO(IASTP)),WORK(KNSTSO2(IBSTP)),
      &                 WORK(KNSTSO(IACTP)),WORK(KNSTSO2(IBCTP)),
@@ -3836,7 +6952,13 @@ C
      &                 WORK(KNKA),WORK(KNKB),
      &                 WORK(KIB_CA),WORK(KIB_CB),WORK(KIB_AA),
      &                 WORK(KIB_AB),WORK(KIB_T),WORK(KNIKAINTM),
-     &                 WORK(KNIKBINTM),WORK(KNJKAINTM),WORK(KNJKBINTM)
+     &                 WORK(KNIKBINTM),WORK(KNJKAINTM),WORK(KNJKBINTM),
+     &                 L_Sym_Block,L_A_Block,L_B_Block,INum_Sym_A,
+     &                 ISym_AA,ISym_AB,IAA_SM_STR_S,IAB_SM_STR_S,
+     &                 IAA_SM_STR_E,IAB_SM_STR_E,NSubBlk_A,NStrings_A,
+     &                 INum_Sym_C,ISym_CA,ISym_CB,ICA_SM_STR_S,
+     &                 ICB_SM_STR_S,ICA_SM_STR_E,ICB_SM_STR_E,NSubBlk_C,
+     &                 NStrings_C,CJRES_BAT,SIRES_BAT,T_BAT
 #if defined (VAR_MPI2)
      &                ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                 ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
@@ -3846,9 +6968,36 @@ C
 #endif
      &     )
 C
+      deallocate(L_Sym_Block)
+      deallocate(L_A_Block)
+      deallocate(L_B_Block)
+      deallocate(INum_Sym_A)
+      deallocate(ISym_AA)
+      deallocate(ISym_AB)
+      deallocate(IAA_SM_STR_S)
+      deallocate(IAB_SM_STR_S)
+      deallocate(IAA_SM_STR_E)
+      deallocate(IAB_SM_STR_E)
+      deallocate(NSubBlk_A)
+      deallocate(NStrings_A)
+      deallocate(INum_Sym_C)
+      deallocate(ISym_CA)
+      deallocate(ISym_CB)
+      deallocate(ICA_SM_STR_S)
+      deallocate(ICB_SM_STR_S)
+      deallocate(ICA_SM_STR_E)
+      deallocate(ICB_SM_STR_E)
+      deallocate(NSubBlk_C)
+      deallocate(NStrings_C)
+      deallocate(CJRES_BAT)
+      deallocate(SIRES_BAT)
+      deallocate(T_BAT)
 C     eliminate local memory
       IDUM = 0
+
+!      call memmar(KDUM ,IDUM,'CHECK ',2,'SIGD3Y')
       call memmar(KDUM ,IDUM,'FLUSM ',2,'SIGD3Y')
+
 C
 #if defined (VAR_MPI2)
       IF( IT_SHL .ge. 0 ) CALL REL_MEM_T_SCR(T_SCR_CC)
@@ -3872,7 +7021,13 @@ C
      &                       I4GE,XI4GE,SIGN_NHX,ISMDST,
      &                       NICA,NICB,NIAA,NIAB,NKA,NKB,
      &                       IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
-     &                       NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
+     &                       NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM,
+     &                 L_Sym_Block,L_A_Block,L_B_Block,INum_Sym_A,
+     &                 ISym_AA,ISym_AB,IAA_SM_STR_S,IAB_SM_STR_S,
+     &                 IAA_SM_STR_E,IAB_SM_STR_E,NSubBlk_A,NStrings_A,
+     &                 INum_Sym_C,ISym_CA,ISym_CB,ICA_SM_STR_S,
+     &                 ICB_SM_STR_S,ICA_SM_STR_E,ICB_SM_STR_E,NSubBlk_C,
+     &                 NStrings_C,CJRES_BAT,SIRES_BAT,T_BAT
 #if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
@@ -3964,7 +7119,9 @@ C     general input
 C     scratch
       DIMENSION SB(*),CB(*)
       DIMENSION XINT(*)
+
       DIMENSION I1(*),I2(*),I3(*),I4(*)
+
       DIMENSION XI1S(*),XI2S(*),XI3S(*)
       DIMENSION ISMDST(*)
 C
@@ -3980,7 +7137,9 @@ C
       dimension ITSPOBEX_TP(4*NGAS,*)
       INTEGER ICPL
       INTEGER*8 ITB, ITB_BUFF, ITB_BUFF_ADD, nelm_cc
+      logical New_GNSIDE
 C
+
       ONEM = -1.0D0
       IZERO = 0
       IST_C_BLK_CT = 0
@@ -4013,10 +7172,12 @@ C
 *
 #if !defined (VAR_MPI2)
 #ifdef LUCI_DEBUG
+      NTEST = 000
       IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
       END IF
+      NTEST = 0
 #endif
 *     rewind C file
       REWIND LUC
@@ -4272,8 +7433,18 @@ C                    S_r = (H_r . C_r) - (H_i . C_i)
                  END IF
 C                ^ End if block should be read in 
 C
+
+                 New_GNSIDE = .true.
+#if defined (VAR_MPI2)
+                 gnside1 = interface_mpi_wtime()
+#else
+                 call CPU_TIME(gnside1)
+#endif
                  if(linear.or.dougrp.lt.10)then
-                   CALL GNSIDE_REL_opt(ISIGDEN,IRIS,IRIC,
+
+!                  if(New_GNSIDE.and.(ISIGDEN==1)) then
+!                     write(LUWRT,*) 'calling New_GNSIDE'
+                   CALL New_GNSIDE_REL_opt(ISIGDEN,IRIS,IRIC,
      &                                 ITSPOBEX_TP(ICA_OFF,ITTP),
      &                                 ITSPOBEX_TP(ICB_OFF,ITTP),
      &                                 ITSPOBEX_TP(IAA_OFF,ITTP),
@@ -4297,18 +7468,65 @@ C
      &                                 IB_CA,IB_CB,
      &                                 IB_AA,IB_AB,IB_T,
      &                                 NIKAINTM,NIKBINTM,
-     &                                 NJKAINTM,NJKBINTM
+     &                                 NJKAINTM,NJKBINTM,
+     &                 L_Sym_Block,L_A_Block,L_B_Block,INum_Sym_A,
+     &                 ISym_AA,ISym_AB,IAA_SM_STR_S,IAB_SM_STR_S,
+     &                 IAA_SM_STR_E,IAB_SM_STR_E,NSubBlk_A,NStrings_A,
+     &                 INum_Sym_C,ISym_CA,ISym_CB,ICA_SM_STR_S,
+     &                 ICB_SM_STR_S,ICA_SM_STR_E,ICB_SM_STR_E,NSubBlk_C,
+     &                 NStrings_C,CJRES_BAT,SIRES_BAT,T_BAT
 #if defined (VAR_MPI2)
      &                                ,INT_IOFF1_C+ICBLK-1,
      &                                 IS_OFF_BLK+ISBLK-1,
      &                                 ISCLFAC_GROUP,NPARBLOCK_S
 #endif
      &           )
+!                  else
+!                     write(LUWRT,*) 'ISD=2!!!'
+!                   CALL GNSIDE_REL_opt(ISIGDEN,IRIS,IRIC,
+!     &                                 ITSPOBEX_TP(ICA_OFF,ITTP),
+!     &                                 ITSPOBEX_TP(ICB_OFF,ITTP),
+!     &                                 ITSPOBEX_TP(IAA_OFF,ITTP),
+!     &                                 ITSPOBEX_TP(IAB_OFF,ITTP),
+!     &                                 NELFSPGP(1,ILATP),
+!     &                                 NELFSPGP(1,ILBTP),
+!     &                                 NELFSPGP(1,IRATP),
+!     &                                 NELFSPGP(1,IRBTP),
+!     &                                 NSSOA_S(1,IATP),NSSOB_S(1,IBTP),
+!     &                                 NSSOA_C(1,JATP),NSSOB_C(1,JBTP),
+!     &                                 T(ITB),T_BUFF(ITB_BUFF),T_SCR_CC,
+!     &                                 ITTP,SB(ISOFF),CB(ICOFF),ISSM,
+!     &                                 ICSM,I1,XI1S,I2,XI2S,I3,XI3S,I4,
+!     &                                 XI4S,XINT,CJRES,SIRES,MAXK,
+!     &                                 ITOCC1,ITOCC2,ITOCC3,ITOCC4,
+!     &                                 I1G,XI1G,I2G,XI2G,I3G,XI3G,I4G,
+!     &                                 XI4G,I1GE,XI1GE,I2GE,XI2GE,I3GE,
+!     &                                 XI3GE,I4GE,XI4GE,SIGN_NHX(ITTP),
+!     &                                 IPRS,IPRD,ISMDST,
+!     &                                 NICA,NICB,NIAA,NIAB,NKA,NKB,
+!     &                                 IB_CA,IB_CB,
+!     &                                 IB_AA,IB_AB,IB_T,
+!     &                                 NIKAINTM,NIKBINTM,
+!     &                                 NJKAINTM,NJKBINTM
+!#if defined (VAR_MPI2)
+!     &                                ,INT_IOFF1_C+ICBLK-1,
+!     &                                 IS_OFF_BLK+ISBLK-1,
+!     &                                 ISCLFAC_GROUP,NPARBLOCK_S
+!#endif
+!     &           )
+!                  end if
                  else
                    call quit('*** sigden_rel4: this branch is no'//
      &                       ' longer active.***')
                    CALL GNSIDE_REL()
                  end if
+#if defined (VAR_MPI2)
+                 gnside2 = interface_mpi_wtime()
+#else
+                 call CPU_TIME(gnside2)
+#endif
+
+                 gnside_time = gnside_time + gnside2 - gnside1
 C
 C                ISIGDEN ==2
 C
@@ -4427,7 +7645,7 @@ C           these C blocks were not needed, skip them
 *
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
-      IF(NTEST.GE.500) THEN
+!      IF(NTEST.GE.500) THEN
         WRITE(LUWRT,*) ' Input to TCC_SUBBLK '
         WRITE(LUWRT,*) ' NCA, NCB, NAA, NAB', NCA,NCB,NAA,NAB
         WRITE(LUWRT,*) ' NCA_SUB, NCB_SUB, NAA_SUB, NAB_SUB',
@@ -4444,7 +7662,7 @@ C           these C blocks were not needed, skip them
           WRITE(LUWRT,*) ' TCC input BLOCK'
           CALL WRTMATMN(TCC,NCA*NCB,NAA*NAB,NCA*NCB,NAA*NAB,LUWRT)
         END IF
-      END IF
+!      END IF
 #endif
 *
       IF(IAB_TRNSP.EQ.0.AND.IDIAG.EQ.0) THEN
