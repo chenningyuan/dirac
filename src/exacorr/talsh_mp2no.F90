@@ -47,11 +47,13 @@ module talsh_mp2no
         real(kind=8), pointer  :: New_orbital_energy(:)   ! new orbital energy from qdia of Fock matrix in new orbital basis
         logical                :: alive
         real(kind=8)           :: threshold
-        integer                :: i
+        integer                :: i, nocc
 
         call print_date("Entering MP2_NO Module")
  
         threshold = exa_input%t_mp2no
+        !LV: the line below should be improved, will not work if a user does not give the HOMO as the last orbital
+        nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
 
         inquire(file="NOs_MO", exist=alive)
         if (alive) then
@@ -63,7 +65,7 @@ module talsh_mp2no
         end if
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
-        call write_to_newfile(exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+        call write_to_newfile(nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
 
         call print_date('Leaving MP2_NO Module')
       end subroutine talsh_mp2no_driver
@@ -457,95 +459,6 @@ module talsh_mp2no
 
             call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
       end subroutine
-
-
-!-----------------------------------------------------------------------------------------------------------------------------
-      subroutine write_to_newfile (exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,file_old,file_new)
-  !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
-  !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
-  !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-  
-         implicit none
-    
-         type(exacc_input), intent(in)         :: exa_input
-         character(len=*),intent(in)           :: file_old,file_new
-         real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
-         real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
-         real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
-
-
-         type(basis_set_info_t)   :: ao_basis
-         type(qumo)               :: qorbital        ! save the new canonical orbital 
-         type(qumo)               :: qorbital_hf     ! save the original HF canonical orbital 
-
-         integer                  :: nocc            ! occupied orbital 
-         integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
-         integer,allocatable      :: index(:)
-         integer                  :: i,j
-         integer                  :: ierr
-         integer                  :: nmo_hf
-         real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
-
-
-!        read information of from DFCOEF
-         call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
-
-         nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
-         nao = qorbital_hf%nao
-         nno = size(NOs_AO,2)
-         nmo = nocc+nno
-         nmo_hf = qorbital_hf%nmo
-         allocate(index(nmo))
-         do i = 1, nmo
-            index(i) = i ! we set the index compatible with the fact that we store all mo's
-         end do
-
-         call alloc_mo(qorbital,nao,nmo_hf,4)
-         qorbital%restricted = qorbital_hf%restricted
-         qorbital%complex_algebra = qorbital_hf%complex_algebra
-         qorbital%total_energy = qorbital_hf%total_energy
-         qorbital%fermion_irrep = qorbital_hf%fermion_irrep
-         qorbital%boson_irrep = 0
-         qorbital%index = index
-
-         do i = 1, nocc
-            qorbital%energy(i)=qorbital_hf%energy(i)
-         end do
-
-         do i = nocc+1, nmo
-            qorbital%energy(i)=New_orbital_energy(i-nocc)
-!            qorbital%energy(i)=qorbital_hf%energy(i)
-         end do
-
-         if (nmo < nmo_hf) then
-            do i=nmo+1, nmo_hf
-               qorbital%energy(i)=qorbital_hf%energy(nmo_hf)*100
-!               print *, "removed orbital energy", qorbital%energy(i)
-            end do
-         end if 
-
-         do j = 1, nocc
-            do  i = 1, qorbital%nao
-                  qorbital%coeff_q(i,j,1)=qorbital_hf%coeff_q(i,j,1)
-                  qorbital%coeff_q(i,j,2)=qorbital_hf%coeff_q(i,j,2)
-                  qorbital%coeff_q(i,j,3)=qorbital_hf%coeff_q(i,j,3)
-                  qorbital%coeff_q(i,j,4)=qorbital_hf%coeff_q(i,j,4)
-            enddo
-         enddo
-
-         do  j = nocc+1, nmo
-            do  i = 1, qorbital%nao
-                  qorbital%coeff_q(i,j,1)=NOs_AO(i,j-nocc,1)
-                  qorbital%coeff_q(i,j,2)=NOs_AO(i,j-nocc,2)
-                  qorbital%coeff_q(i,j,3)=NOs_AO(i,j-nocc,3)
-                  qorbital%coeff_q(i,j,4)=NOs_AO(i,j-nocc,4)
-            enddo
-         enddo
-
-         call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
-         call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
-
-        end subroutine write_to_newfile
 
 end module talsh_mp2no
 

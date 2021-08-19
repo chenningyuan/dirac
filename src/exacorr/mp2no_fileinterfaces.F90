@@ -21,228 +21,13 @@ module mp2no_fileinterfaces
             module procedure quater_read_matrix
         end interface
 
-        public quater_read_from_dirac_all,quater_write_mos_to_dirac,quater_read_from_dirac_fock, &
+        public quater_write_mos_to_dirac,quater_read_from_dirac_fock, &
                quater_read_from_dirac_orbital, quater_write, quater_read
 
-        public print_rMP2FVNO
+        public print_rMP2FVNO, write_to_newfile
 
        contains
 
-!-------------------------------------------------------------------------------------------------------------------------------------------
-        subroutine quater_read_from_dirac_all (ao_basis,qorbital,file_name,ierr)
-  !      we need information of ao_basis
-  !      read all positive energy mo coefficients presented on DFCOEF file
-  !      check for imcompatibiklities (use of symmetry) as well and continue
-  !      by reading also the basis set information into gtos
-  !      This subroutine is same as routine 'read_from_dirac' of exacorr_dirac.F but ignoring quaternion-complex transform
-
-  
-         implicit none
-         character(len=*),intent(in) :: file_name
-         type(basis_set_info_t), intent(inout) :: ao_basis
-         type(qumo), intent(inout):: qorbital
-         integer, intent(out)   :: ierr
-
-         integer, parameter     :: NOERROR  = 0 ! no error
-         integer, parameter     :: NOTFOUND = 1 ! file not found
-         integer, parameter     :: CORRUPT  = 2 ! file unreadable
-         integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
-         integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
-         integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
-         integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
-         character              :: text*74      ! holds text read from DFCOEF, only used for printing this
-         integer                :: nsym
-         integer                :: idim(3,2)
-         real(8)                :: total_energy
-         logical                :: tobe
-         integer                :: lucoef
-         integer                :: i, j, k, ishell, iprimstart, iprimend
-         integer                :: nao, nao_bas, nshells, iao, ibas
-         integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
-         integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
-         integer, allocatable   :: jstrt(:), numcf(:)
-         real(8), allocatable   :: coeff(:,:,:),eig(:)
-         integer, allocatable   :: ibeig(:),index(:)
-         integer, allocatable   :: ncent(:),nhkt(:),nuco(:)
-         real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
-         character(8)           :: label(4)
-         logical                :: labeled
-  
-
-         ierr = NOERROR
-  
-         ! open file and read dimension info
-         inquire (file=file_name,exist=tobe)
-         if (.not.tobe) then
-            print*, "error: MO coefficient file"//file_name//" not found"
-            ierr = NOTFOUND
-            return
-         else
-            call get_free_fileunit(lucoef)
-            open (lucoef,file=file_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-          read (lucoef) label
-          if (label(1) == '********') then
-             labeled = .true. ! new format
-             read (lucoef,end=10,err=10) text,nsym,nzbuf,((idim(i,j),i=1,3),j=1,nsym),total_energy
-          else
-             labeled = .false.
-             backspace(lucoef) ! old format (DIRAC19 and earlier)
-             read (lucoef,end=10,err=10) text,nsym,((idim(i,j),i=1,3),j=1,nsym),total_energy
-          endif
-         end if
-  
-         ! check symmetry and get dimensions of the coefficient array
-         if (nsym > 1) then
-            ierr = SYMMETRY
-            close (lucoef,status='KEEP')
-            return
-         else
-            nao = idim(3,1) ! number of basis functions
-            npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
-            nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
-            nto = npo+nmo   ! total number of solutions on this file
-            if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
-         end if
-  
-!         print *,'print nto', nto
-         allocate(coeff(nao,nto,nz))
-         allocate(eig(nto))
-         allocate(ibeig(nto))
-         allocate(index(nmo))
-               
-         ! read the mo coefficients and orbital eigenvalues
-         if (labeled) read (lucoef) label
-         read (lucoef,end=10,err=10) coeff
-         if (labeled) read (lucoef) label
-         read (lucoef,end=10,err=10) eig
-         if (labeled) read (lucoef) label
-         read (lucoef,end=10,err=10) ibeig
-         ! fill in index values
-         do i = 1, nmo
-            index(i) = i ! we set the index compatible with the fact that we store all mo's
-         end do
-
-  
-         ! put in qumo
-         call alloc_mo(qorbital,nao,nmo,4)
-         qorbital%total_energy = total_energy
-         qorbital%index        = index
-         qorbital%coeff_q      = coeff
-         qorbital%energy       = eig
-         qorbital%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
-  
-         deallocate(coeff)
-         deallocate(eig)
-         deallocate(ibeig)
-         deallocate(index)
-
-
-         ! read the basis set information and check for consistency
-         if (labeled) read (lucoef) label
-         read (LUCOEF,err=20,end=20) nao_bas,nshells,npriexp,ncnt 
-         if (nao < nao_bas) then
-            ierr = INCONSIS
-            close (lucoef,status='KEEP')
-            print *,"ierr", ierr     
-            return
-         elseif (nao > nao_bas) then
-            print*,"WARNING: assuming Levy-Leblond Hamiltonian"
-            print*,"Reading fewer basis functions than MO-coefficients"
-         end if
-
-         
-   !     allocate the arrays to read the basis set information in DIRAC format
-         allocate(ncent(nshells))
-         allocate(nhkt(nshells))
-         allocate(nuco(nshells))
-         allocate(numcf(nshells))
-         allocate(jstrt(nshells))
-         allocate(cent(nshells,3))
-         allocate(priexp(npriexp))
-         allocate(priccf(npriexp,ncnt))
-  
-  !      orb_momentum, atom_number, n_primives for all shells
-         read (LUCOEF,err=20,end=20) nhkt,ncent,nuco
-  !      start of exponent values, number of contracted for all shells
-         read (LUCOEF,err=20,end=20) jstrt,numcf
-  !      coordinates (x, y, z) of center for all shells
-         read (LUCOEF,err=20,end=20) cent
-  !      values of the exponents for all shells (packed into a 1-d array)
-         read (LUCOEF,err=20,end=20) priexp
-  !      values of the contraction coefficients for all shells (packed into a 1-d array)
-         read (LUCOEF,err=20,end=20) priccf
-  
-         ! put in gtos
-         ao_basis%nshells       = nshells
-         ao_basis%nao           = nao_bas
-         ao_basis%basis_angular = 1
-         nullify(ao_basis%gtos)
-         allocate(ao_basis%gtos(nshells))
-         do ishell = 1, nshells
-            ao_basis%gtos(ishell)%orb_momentum = nhkt(ishell)
-            ao_basis%gtos(ishell)%atom_number  = ncent(ishell)
-            ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
-            nullify  (ao_basis%gtos(ishell)%exponent) 
-            allocate (ao_basis%gtos(ishell)%exponent(nuco(ishell)))
-            nullify  (ao_basis%gtos(ishell)%coefficient)
-            allocate (ao_basis%gtos(ishell)%coefficient(nuco(ishell)))
-            iPrimStart = jstrt(ishell) + 1
-            iPrimEnd   = jstrt(ishell) + nuco(ishell)
-            k          = numcf(ishell)
-            ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-            ao_basis%gtos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-            ao_basis%gtos(ishell)%coord = cent(ishell,1:3)
-  !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-           call compress_unc_shell (ao_basis%gtos(ishell),ierr)
-            if (ierr == 1) ierr = CONTRAC            
-         end do
-
-         deallocate(ncent)
-         deallocate(nhkt)
-         deallocate(nuco)
-         deallocate(numcf)
-         deallocate(jstrt)
-         deallocate(cent)
-         deallocate(priexp)
-         deallocate(priccf)
-  
-   !      Make array with pointers from a basis function index to its shell
-         nullify(ao_basis%shell_indices)
-         allocate(ao_basis%shell_indices(nao))
-         iao = 0
-         do ishell = 1, nshells
-            do ibas = 1, &
-                   nfunctions(ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
-               iao = iao + 1
-               if (iao.gt.nao) then
-                  ierr = INCONSIS
-                  call quit ('Error in read_from_dirac')
-               endif
-               ao_basis%shell_indices(iao) = ishell
-            end do
-         end do
-         if (iao.gt.nao) then
-            ierr = INCONSIS
-            close (lucoef,status='KEEP')
-            call quit ('Error in read_from_dirac')
-         endif
-  
-         close (lucoef,status='KEEP')
-  
-!         call print_date("read from DFCOEF:"//text)
-         return
-  
-    10   ierr = CORRUPT
-         close (lucoef,status='KEEP')
-         return
-  
-    20   ierr = NOBASIS
-         close (lucoef,status='KEEP')
-         return
-  
-         end subroutine quater_read_from_dirac_all
-
-                
 !-------------------------------------------------------------------------------------------------------------------------------------------
          subroutine quater_write_mos_to_dirac (ao_basis,qorbital,file_out_name)
      !      write mo coefficients in dirac format
@@ -253,7 +38,7 @@ module mp2no_fileinterfaces
      
             character(len=*),intent(in)           :: file_out_name
             type(basis_set_info_t), intent(inout) :: ao_basis
-            type(qumo), intent(inout)             :: qorbital
+            type(cmo), intent(inout)              :: qorbital
 
             integer                :: ierr
             character              :: text*74      ! holds text read from DFCOEF, only used for printing this
@@ -339,13 +124,13 @@ module mp2no_fileinterfaces
             write (lucoef) qorbital%energy
 
 
-            ! write the boson symnmetry information
+            ! write the symnmetry information
             call daytime(datex,timex)
             label(2) = datex
             label(3) = timex
             label(4) = 'SUPERSYM' 
             write (lucoef) label
-            write (lucoef) qorbital%boson_irrep
+            write (lucoef) qorbital%symmetry
 
 
             ! write the ao basis information header
@@ -387,14 +172,15 @@ module mp2no_fileinterfaces
 
             real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)          ! Fock matrix 
             integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
-            type(qumo)                              :: qorbital
+            type(cmo)                               :: qorbital
             type(basis_set_info_t)                  :: ao_basis
             integer                                 :: ierr
             integer                                 :: i,sz_total_energy
 
 
 !     read information from DFCOEF
-            call quater_read_from_dirac_all(ao_basis,qorbital,'DFCOEF',ierr)
+            call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+            call convert_mo_to_quaternion(qorbital)
             sz_total_energy = size(qorbital%energy,1)
 
             allocate(Fock_HF(sz,sz,4))
@@ -423,14 +209,15 @@ module mp2no_fileinterfaces
 
          real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)            ! new canonical orbital 
          integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
-         type(qumo)                              :: qorbital
+         type(cmo)                               :: qorbital
          type(basis_set_info_t)                  :: ao_basis
          integer                                 :: ierr
          integer                                 :: i, j, sz_total_mo, sz_total_ao
 
 
 !     read information of from DFCOEF
-         call quater_read_from_dirac_all(ao_basis,qorbital,'DFCOEF',ierr)
+         call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+         call convert_mo_to_quaternion(qorbital)
          sz_total_ao = size(qorbital%coeff_q,1)
          sz_total_mo = size(qorbital%coeff_q,2)
 
@@ -698,7 +485,67 @@ module mp2no_fileinterfaces
 
       end subroutine 
 
-      
+      subroutine write_to_newfile (nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,file_old,file_new)
+     !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
+     !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
+     !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
+
+            implicit none
+
+            character(len=*),intent(in)           :: file_old,file_new
+            real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
+            real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
+            real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
+
+
+            type(basis_set_info_t)   :: ao_basis
+            type(cmo)                :: qorbital        ! save the new canonical orbital 
+            type(cmo)                :: qorbital_hf     ! save the original HF canonical orbital 
+
+            integer                  :: nocc            ! occupied orbital 
+            integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
+            integer                  :: i,j,iz
+            integer                  :: ierr
+            integer                  :: nmo_hf
+
+
+   !        read information of from DFCOEF
+            call read_from_dirac(ao_basis,qorbital_hf,file_old,ierr)
+            call convert_mo_to_quaternion(qorbital_hf)
+
+            nao = qorbital_hf%nao
+            nno = size(NOs_AO,2)
+            nmo = nocc+nno
+            nmo_hf = qorbital_hf%nmo
+
+            ! make a copy of the Hartree-Fock orbitals
+            call copy_mo(qorbital_hf,qorbital)
+
+            ! replace the orbital energies by the new (recanonized) ones
+            do i = nocc+1, nmo
+               qorbital%energy(i)=New_orbital_energy(i-nocc)
+            end do
+
+            ! we did not recanonize the deleted virtuals, give them a sufficiently high energy to not interfere
+            if (nmo < nmo_hf) then
+                  do i=nmo+1, nmo_hf
+                     qorbital%energy(i)=qorbital_hf%energy(nmo_hf)*100
+                  end do
+            end if
+
+            ! replace the coefficients by the recanonized natural orbital selection
+            do iz = 1, 4
+               do  j = nocc+1, nmo
+                  do  i = 1, qorbital%nao
+                     qorbital%coeff_q(i,j,iz)=NOs_AO(i,j-nocc,iz)
+                  enddo
+               enddo
+            enddo
+
+            call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
+            call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
+
+      end subroutine write_to_newfile
 
 end module mp2no_fileinterfaces
 

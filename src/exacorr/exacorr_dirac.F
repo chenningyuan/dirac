@@ -356,12 +356,11 @@ C
        integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
-       real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
+       real(8), allocatable   :: coeff(:,:,:),eig(:)
        integer, allocatable   :: ibeig(:),index(:)
        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
-       complex(8), allocatable:: scoeff(:,:,:)
        integer, allocatable   :: ao_map(:,:)
        character(8)           :: label(4)
        logical                :: labeled
@@ -407,7 +406,7 @@ C
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
-       allocate(index(2*nmo))
+       allocate(index(nmo))
         
        ! read the mo coefficients and orbital eigenvalues
        if (labeled) read (lucoef) label
@@ -417,30 +416,25 @@ C
        if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
-       do i = 1, 2*nmo
+       do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
 
-!      switch to unrestricted spinor picture
-       allocate(seig(2*nmo))
-       allocate(scoeff(nao,2*nmo,2)) ! nao, 2*nmo, spin
-       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
-     &                                              nao,nmo,npo)
-
-       ! put in cmo
-       call alloc_mo (cspinor,nao,2*nmo)
+       ! put in cmo in quaternion format
+       cspinor%algebra = 'q'
+       call alloc_mo (cspinor,nao,nmo)
        cspinor%total_energy = total_energy
-       cspinor%index        = index
-       cspinor%coeff        = scoeff
-       cspinor%energy       = seig
-       cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
+       cspinor%index        = index(npo+1:nto)
+       cspinor%coeff_q      = coeff(:,npo+1:nto,:)
+       cspinor%energy       = eig(npo+1:nto)
+       cspinor%symmetry     = ibeig(npo+1:nto)
 
        deallocate(coeff)
        deallocate(eig)
        deallocate(ibeig)
        deallocate(index)
-       deallocate(seig)
-       deallocate(scoeff)
+!      switch to unrestricted spinor picture
+       call convert_mo_to_complex(cspinor)
 
        ! read the basis set information and check for consistency
        if (labeled) read (lucoef) label
@@ -564,7 +558,7 @@ C
        character(len=*),intent(in) :: file_name
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
-       type(qumo)             :: qorbital
+       type(cmo)              :: qorbital
        character              :: text*74      ! holds text read from DFCOEF, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
@@ -577,10 +571,11 @@ C
        real(8), allocatable   :: priexp(:),priccf(:)
 
 !      switch to Kramers-restricted format
-       text = "MO coefficients produced by geniao "
+       text = "MO coefficients written by exacorr"
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
        nsym = 1 ! we do not use symmetry, so nsym is always 1
-       call convert_complex_to_quaternion(cspinor,qorbital)
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
        call get_free_fileunit(lucoef)
        inquire (file=file_name,exist=tobe)
@@ -617,8 +612,8 @@ C
        write (lucoef) qorbital%coeff_q
        ! write the orbital energies
        write (lucoef) qorbital%energy
-       ! write the boson symnmetry information
-       write (lucoef) qorbital%boson_irrep
+       ! write the symnmetry information
+       write (lucoef) qorbital%symmetry
        ! write the ao basis information header
        write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
 !      orb_momentum, atom_number, n_primives for all shells
@@ -639,6 +634,7 @@ C
        deallocate(numcf)
        deallocate(priexp)
        deallocate(priccf)
+       call dealloc_mo(qorbital)
 
        close (lucoef,status='KEEP')
 
@@ -657,7 +653,7 @@ C
 
        character(len=*),intent(in) :: file_name
        type(cmo), intent(inout):: cspinor
-       type(qumo)             :: qorbital
+       type(cmo)              :: qorbital
        character              :: text*74      ! holds text read from DFCOEF, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
@@ -670,7 +666,8 @@ C
        text = "MO coefficients produced by geniao "
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
        nsym = 1 ! we do not use symmetry, so nsym is always 1
-       call convert_complex_to_quaternion(cspinor,qorbital)
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
        call get_free_fileunit(lucoef)
        inquire (file=file_name,exist=tobe)
@@ -691,10 +688,11 @@ C
        write (lucoef,'(6F22.16)') qorbital%coeff_q
        ! write the orbital energies
        write (lucoef,'(6E22.12)') qorbital%energy
-       ! write the boson symnmetry information
-       write (lucoef,'(66(X,I0))') qorbital%boson_irrep
+       ! write the symnmetry information
+       write (lucoef,'(66(X,I0))') qorbital%symmetry
 
        close (lucoef,status='KEEP')
+       call dealloc_mo(qorbital)
        return
        
        end subroutine write_mos_to_dirac_formatted
