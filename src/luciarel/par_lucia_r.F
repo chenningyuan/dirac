@@ -8310,7 +8310,7 @@ C
 C      IMPLICIT DOUBLE PRECISION ( A-H,O-Z)
       Implicit none
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
       Real(kind=8) VEC1(*), VEC2(*), SUBSPH(*)
       Integer LBATCH(*), LEBATCH(*), I1BATCH(*), IBATCH(8,*)
@@ -8886,7 +8886,7 @@ C
 C#include "implicit.h"
       implicit none
 #include "infpar.h"
-      DIMENSION ISTAT(df_MPI_STATUS_SIZE)
+      INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 *
 * =====
