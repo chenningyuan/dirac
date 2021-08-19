@@ -76,13 +76,14 @@ module exacorr_mp2no
                 end if 
             else
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
+                if (my_MPI_rank == 0) &
                 call get_transform_Fock(exa_input,'DM_complex')
             end if
 
             if (my_MPI_rank == 0) then
                call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                                     New_orbital_energy,'NOs_MO',N_cano)
-               call write_to_newfile(nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+               call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
                call print_date("Leave MP2_NO Module")
             end if
 
@@ -230,10 +231,11 @@ module exacorr_mp2no
             ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            call init_fock_exat (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, &
-                            f_delta,denom,orb_set,ff_set,exa_input,scf_energy)
+            ierr=exatns_tensor_init(comm_t%foo,ZERO)
+            ierr=exatns_tensor_init(comm_t%fov,ZERO)
+            ierr=exatns_tensor_init(comm_t%fvv,ZERO)
+            call get_scf (scf_energy)
             call print_date('initialized Fock matrix')
-
 
       !     Initialize t2 amplitudes with the MP2 values
             ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
@@ -920,229 +922,6 @@ module exacorr_mp2no
          end if
 
         end subroutine get_MP2_integrals
-
-
-        subroutine init_fock_exat (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                              f_delta,denom,orb_set,ff_set,exa_input,scf_energy)
-
-          implicit none
-  
-          type(exatns_comm_tens), intent(inout)  :: comm_t
-          type(exatns_intg_tens), intent(inout)  :: int_t
-          integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
-          integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
-          type(delta_t)                          :: f_delta
-          type(denom_t)                          :: denom
-          type(set_energy_t)                     :: orb_set
-          type(set_ff_t)                         :: ff_set
-          type(exacc_input), intent(in)          :: exa_input
-          real(8), intent(out)                   :: scf_energy
-          integer                                :: iff=1   !TODO: make a loop for field strngths
-
-          real(8)                    :: ev_energy, off_diag
-          !        scalars (need to be defined as tensor types)
-          type(tens_rcrsv_t)         :: val_tensor, tensor_one, tensor_h
-          !        identity matrix for contraction 
-          type(tens_rcrsv_t)         :: id_mat_occ, orb_tensor
-          integer(INTD)              :: ierr
-          complex(8)                 :: result_val
-          !        finite field stuff
-          integer                    :: i,i_prop
-
-          if (one_el_exist) then
-
-            ! Allocate two auxilliary tensors needed to extract results or multiply by one
-            ierr=exatns_tensor_create(val_tensor,"val_tensor",EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(tensor_one,"tensor_one",EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(tensor_one, ONE)
-
-            ! Make the density matrix (which is an identity matrix in the MO basis)
-            ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_transform(id_mat_occ,'Unity_mp2')
-            if (exa_input%print_level >0) call print_date('Density matrix initialized')
-
-            ! Initialize the sub blocks of the Fock matrix with the (effective) one-electron integrals
-            ierr=exatns_tensor_init(comm_t%foo,'OE_oo_mp2')
-            ierr=exatns_tensor_init(comm_t%fov,'OE_ov_mp2')
-            ierr=exatns_tensor_init(comm_t%fvv,'OE_vv_mp2')
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals failed!')
-            if (exa_input%print_level >0) call print_date('one electron integrals added to Fock Matrix')
-
-            !adding property integrals
-            do i=1,exa_input%nff(1)
-              call get_ff_ind (i_prop,exa_input%ff_names(i))
-              call ff_set%reset(i_prop)
-
-              ierr=exatns_tensor_create(tensor_h,"tensor_h",oo_id,oo_root,EXA_DATA_KIND_C8)
-              write(*,*) 'ff_set create error', ierr
-              ierr=exatns_tensor_init(tensor_h, ff_set)
-              write(*,*) 'ff_set init error', ierr
-              ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%foo,tensor_h,tensor_one,exa_input%ff(i,iff))
-              write(*,*) 'ff_set contract error', ierr
-              write(*,*) " prop =",print_tensornorm2(tensor_h)
-              write(*,*) " field =",exa_input%ff(i,iff)
-              ierr=exatns_tensor_traverse(tensor_h,'PrintTensor_mp2')
-              ierr=exatns_tensor_destroy(tensor_h)
-              write(*,*) " F_oo+prop =",print_tensornorm2(comm_t%foo)
-              write(*,*) 'ff_set destroy error', ierr
-              ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor_mp2')
-            
-            end do
-
-
-            ! Calculate the Hartree-Fock energy
-            ierr=exatns_tensor_init(val_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(i,j)*I(i,j)",val_tensor,comm_t%foo,id_mat_occ)
-            ierr=exatns_tensor_create(tensor_h,"tensor_h",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-            ierr=exatns_tensor_init(tensor_h, ZERO)
-            ierr=exatns_tensor_contract("H(i,j)+=V(i,k,j,l)*I(k,l)",tensor_h,int_t%oooo,id_mat_occ, ONE_HALF)
-            ierr=exatns_tensor_contract("R()+=H(i,j)*I(i,j)",val_tensor,tensor_h,id_mat_occ)
-            ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-            scf_energy=real(result_val,8) ! Casting into real(8)
-            ierr=exatns_tensor_destroy(tensor_h)
-            scf_energy=scf_energy+e_core
-            write(*,*) ""
-            write (*,'(A,F23.15)') "  SCF energy (single determinant, calculated) = ", scf_energy
-            write(*,*) ""
-            ! Make the complete Fock matrix by addding the valence electron contributions
-            ierr=exatns_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",comm_t%fov,int_t%ooov,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
-            if (exa_input%print_level >0) call print_date('two electron integrals added to Fock Matrix')
-
-            if (exa_input%print_level >10) then
-              ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor_mp2')
-              ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor_mp2')
-              ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor_mp2')
-            end if
-
-            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, exa_input%print_level)
-
-            ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
-            ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            ierr=exatns_tensor_init(orb_tensor,orb_set)
-            if(ierr.ne.EXA_SUCCESS) call quit('init_fock: set orbitals failed!')
-            ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,tensor_one, MINUS_ONE)
-            ierr=exatns_tensor_destroy(orb_tensor)
-            ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            ierr=exatns_tensor_init(orb_tensor,orb_set)
-            if(ierr.ne.EXA_SUCCESS) call quit('init_fock: set orbitals failed!')
-            ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,tensor_one, MINUS_ONE)
-            ierr=exatns_tensor_destroy(orb_tensor)
-            if (exa_input%print_level >0) call print_date('orbital energies subtracted from the diagonal')
-            
-            if (exa_input%print_level >0) then
-              ! Compute norms (check whether this single determinant is contructed from optimized orbitals)
-              write(*,*) ""
-              ierr=exatns_tensor_init(val_tensor, ZERO)
-              ierr=exatns_tensor_contract("R()=F(i,j)*F(i,j)",val_tensor,comm_t%foo,comm_t%foo)
-              ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-              off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
-            
-              ierr=exatns_tensor_init(val_tensor, ZERO)
-              ierr=exatns_tensor_contract("R()=F(i,a)*F(i,a)",val_tensor,comm_t%fov,comm_t%fov)
-              ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-              off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (OV, all        ) = ", off_diag
-
-              ierr=exatns_tensor_init(val_tensor, ZERO)
-              ierr=exatns_tensor_contract("R()=F(a,b)*F(a,b)",val_tensor,comm_t%fvv,comm_t%fvv)
-              ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-              off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
-              write(*,*) ""
-            end if 
-            ierr=exatns_tensor_destroy(tensor_h)
-            ierr=exatns_tensor_destroy(id_mat_occ)
-            ierr=exatns_tensor_destroy(val_tensor)
-            ierr=exatns_tensor_destroy(tensor_one)
-          else
-            ierr=exatns_tensor_init(comm_t%foo,ZERO)
-            ierr=exatns_tensor_init(comm_t%fov,ZERO)
-            ierr=exatns_tensor_init(comm_t%fvv,ZERO)
-
-            call get_scf ( scf_energy )
-            write(*,*) ""
-            write (*,'(A,F23.15)') "    SCF energy ( read ) = ", scf_energy
-            write(*,*) ""
-
-          end if
-
-        end subroutine init_fock_exat
-
-        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
-          
-          implicit none
-
-          type(exatns_comm_tens)                 :: comm_t
-          type(delta_t)                          :: f_delta 
-          type(denom_t)                          :: denom
-          type(set_energy_t)                     :: orb_set 
-          integer(INTL),dimension(2), intent(in) :: oo_root, vv_root
-          integer(INTD),dimension(2), intent(in) :: oo_id, vv_id 
-          integer, intent(in)                    :: print_level
-
-          real(8),allocatable        :: eps_occ(:),eps_vir(:)
-          integer                    :: nocc, nvir, i
-          integer(INTL),dimension(2) :: delta_set
-          type(tens_rcrsv_t)         :: d_mat, res_val
-          complex(8)                 :: res
-          integer(INTD)              :: ierr
-
-          nocc=oo_root(1)
-          nvir=vv_root(1)
-
-          allocate(eps_occ(nocc))
-          allocate(eps_vir(nvir))
-
-          ierr=exatns_tensor_create(res_val,"res_val",EXA_DATA_KIND_C8)
-
-          ierr=exatns_tensor_create(d_mat,"d_mat",oo_id,oo_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(d_mat,ZERO)
-          do i = 1, nocc
-              delta_set=i
-              call f_delta%reset(delta_set,2)
-              ierr=exatns_tensor_transform(d_mat,f_delta)
-
-              ierr=exatns_tensor_init(res_val,ZERO)
-              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_val,comm_t%foo,d_mat)
-              ierr=exatns_tensor_get_scalar(res_val,res)
-              eps_occ(i)=real(res,8)
-
-          end do
-          ierr=exatns_tensor_destroy(d_mat)
-
-          ierr=exatns_tensor_create(d_mat,"d_mat",vv_id,vv_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(d_mat,ZERO)
-          do i = 1, nvir
-              delta_set=i
-              call f_delta%reset(delta_set,2)
-              ierr=exatns_tensor_transform(d_mat,f_delta)
-
-              ierr=exatns_tensor_init(res_val,ZERO)
-              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_val,comm_t%fvv,d_mat)
-              ierr=exatns_tensor_get_scalar(res_val,res)
-              eps_vir(i)=real(res,8)
-
-          end do
-          ierr=exatns_tensor_destroy(d_mat)
-          print *, "eps_occ", eps_occ
-          print *, "eps_occ", eps_vir
-          
-          if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,2)
-
-          call denom%reset(eps_occ,eps_vir,nocc,nvir)
-          call orb_set%reset(eps_occ,eps_vir,nocc,nvir)
-
-          deallocate(eps_occ)
-          deallocate(eps_vir)
-          ierr=exatns_tensor_destroy(res_val)
-
-        end subroutine update_eps
 
 !-----------------------------------------------------------------------------------------------------
 #else

@@ -65,7 +65,7 @@ module talsh_mp2no
         end if
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
-        call write_to_newfile(nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+        call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
 
         call print_date('Leaving MP2_NO Module')
       end subroutine talsh_mp2no_driver

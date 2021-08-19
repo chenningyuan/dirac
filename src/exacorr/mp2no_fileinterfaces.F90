@@ -264,7 +264,7 @@ module mp2no_fileinterfaces
 
       end subroutine 
 
-      subroutine write_to_newfile (nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,file_old,file_new)
+      subroutine write_to_newfile (nocc,NOs_AO,New_orbital_energy,file_old,file_new)
      !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
      !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
      !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
@@ -273,13 +273,11 @@ module mp2no_fileinterfaces
 
             character(len=*),intent(in)           :: file_old,file_new
             real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
-            real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
             real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
 
-
             type(basis_set_info_t)   :: ao_basis
-            type(cmo)                :: qorbital        ! save the new canonical orbital 
-            type(cmo)                :: qorbital_hf     ! save the original HF canonical orbital 
+            type(cmo)                :: qorbital        ! the new canonical orbital 
+            type(cmo)                :: qorbital_hf     ! the original HF canonical orbital 
 
             integer                  :: nocc            ! occupied orbital 
             integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
