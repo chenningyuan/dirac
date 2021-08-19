@@ -21,7 +21,7 @@ module mp2no_fileinterfaces
             module procedure quater_read_matrix
         end interface
 
-        public quater_write_mos_to_dirac,quater_read_from_dirac_fock, &
+        public quater_read_from_dirac_fock, &
                quater_read_from_dirac_orbital, quater_write, quater_read
 
         public print_rMP2FVNO, write_to_newfile
@@ -29,141 +29,6 @@ module mp2no_fileinterfaces
        contains
 
 !-------------------------------------------------------------------------------------------------------------------------------------------
-         subroutine quater_write_mos_to_dirac (ao_basis,qorbital,file_out_name)
-     !      write mo coefficients in dirac format
-     !      refer to subroutine write_mos_to_dirac of exacorr_dirac.F
-
-     
-            implicit none
-     
-            character(len=*),intent(in)           :: file_out_name
-            type(basis_set_info_t), intent(inout) :: ao_basis
-            type(cmo), intent(inout)              :: qorbital
-
-            integer                :: ierr
-            character              :: text*74      ! holds text read from DFCOEF, only used for printing this
-            integer                :: nsym
-            real(8)                :: total_energy
-            logical                :: tobe
-            integer                :: lucoef 
-            integer                :: ishell
-            integer                :: nshells, iao, ibas
-            integer                :: npo, nto, npriexp, ncnt, nzbuf
-            integer                :: nao, nmo, nno ! number of atomic orbital; molecular orbital; natural orbital
-            integer, allocatable   :: numcf(:),jstrt(:)
-            integer,allocatable    :: index(:)
-            real(8), allocatable   :: priexp(:),priccf(:)
-            integer                :: i,j
-            integer                :: mp2dm
-            character(8)           :: label(4)
-            character(len=10) :: datex
-            character(len=8)  :: timex
-     
-   
-     !      switch to Kramers-restricted format
-            text = "MO coefficients produced by geniao "
-            npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
-            nsym = 1 ! we do not use symmetry, so nsym is always 1
-            nzbuf = 4
-   
-
-   !        print warning in case we overwrite a file and open the file
-            call get_free_fileunit(lucoef)
-            inquire (file=file_out_name,exist=tobe)
-            if (tobe) then
-               print *, "warning: overwriting file "//file_out_name
-               open (lucoef,file=file_out_name,status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-            else
-               open (lucoef,file=file_out_name,status='NEW',FORM='UNFORMATTED',access='SEQUENTIAL')
-            end if
-     
-            ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
-            ! TODO: change storage on DIRAC side to use the basis set type
-   
-            ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
-            nshells = ao_basis%nshells
-            ncnt = 1
-            npriexp =  nshells
-            allocate(jstrt(nshells))
-            allocate(numcf(nshells))
-            allocate(priexp(nshells))
-            allocate(priccf(nshells))
-            do ishell = 1, nshells
-               jstrt(ishell) = ishell-1
-               numcf(ishell) = 1
-               priexp(ishell) = ao_basis%gtos(ishell)%exponent(1)
-               priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
-            end do
-      
-   
-            ! write the header
-            label(1) = '********'
-            call daytime(datex,timex)
-            label(2) = datex
-            label(3) = timex
-            label(4) = 'INFO    '
-            write (lucoef) label
-            write (lucoef) text,nsym,nzbuf,npo,qorbital%nmo,qorbital%nao,qorbital%total_energy
-
-   
-            ! write the mo-coefficients
-            call daytime(datex,timex)
-            label(2) = datex
-            label(3) = timex
-            label(4) = 'COEFS   '
-            write (lucoef) label
-            write (lucoef) qorbital%coeff_q
-
-
-            ! write the orbital energies
-            call daytime(datex,timex)
-            label(2) = datex
-            label(3) = timex
-            label(4) = 'EVALS   '           
-            write (lucoef) label
-            write (lucoef) qorbital%energy
-
-
-            ! write the symnmetry information
-            call daytime(datex,timex)
-            label(2) = datex
-            label(3) = timex
-            label(4) = 'SUPERSYM' 
-            write (lucoef) label
-            write (lucoef) qorbital%symmetry
-
-
-            ! write the ao basis information header
-            call daytime(datex,timex)
-            label(2) = datex
-            label(3) = timex
-            label(4) = 'BASINFO ' 
-            write (lucoef) label
-            write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
-
-
-
-     !      orb_momentum, atom_number, n_primives for all shells
-            write (lucoef) ao_basis%gtos(:)%orb_momentum,ao_basis%gtos(:)%atom_number,ao_basis%gtos(:)%n_primitives
-     !      start of exponent values, number of contracted for all shells
-            write (lucoef) jstrt,numcf
-     !       write (lucoef) (ao_basis%gtos(ishell)%coord(:),ishell=1,nshells)
-            write (lucoef) (ao_basis%gtos(:)%coord(i),i=1,3)
-     !      values of the exponents for all shells (packed into a 1-d array)
-            write (lucoef) priexp
-     !      values of the contraction coefficients for all shells (packed into a 1-d array)
-            write (lucoef) priccf
-   
-            deallocate(jstrt)
-            deallocate(numcf)
-            deallocate(priexp)
-            deallocate(priccf)
-           
-            close (lucoef,status='KEEP')   
-            return
-   
-           end subroutine quater_write_mos_to_dirac
-   
 
 !----------------------------------------------------------------------------------------------------------------------
       subroutine quater_read_from_dirac_fock(Fock_HF,sz,k,flb)
@@ -542,7 +407,7 @@ module mp2no_fileinterfaces
                enddo
             enddo
 
-            call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
+            call write_mos_to_dirac(ao_basis,qorbital,file_new)
             call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
 
       end subroutine write_to_newfile

@@ -549,7 +549,7 @@ C
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_utils
-
+       use labeled_storage
 
        implicit none
 
@@ -564,16 +564,16 @@ C
        real(8)                :: total_energy
        logical                :: tobe
        integer                :: lucoef
-       integer                :: ishell
+       integer                :: ishell, i
        integer                :: nao, nshells, iao, ibas
-       integer                :: nmo, npo, nto, npriexp, ncnt
+       integer                :: nmo, npo, nto, npriexp, ncnt, ncoeff
        integer, allocatable   :: numcf(:),jstrt(:)
        real(8), allocatable   :: priexp(:),priccf(:)
 
 !      switch to Kramers-restricted format
        text = "MO coefficients written by exacorr"
+       nsym = 1 ! we are not using symmetry, so this is always one
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
-       nsym = 1 ! we do not use symmetry, so nsym is always 1
        call copy_mo(cspinor,qorbital)
        call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
@@ -606,15 +606,19 @@ C
        end do
  
        ! write the header
-       write (lucoef) text,nsym,npo,qorbital%nmo,
+       call lab_write(lucoef,'INFO    ')
+       write (lucoef) text,nsym,qorbital%nz,npo,qorbital%nmo,
      &                qorbital%nao,qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef) qorbital%coeff_q
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+       call lab_write(lucoef,'COEFS   ',
+     &      reshape(qorbital%coeff_q,(/ncoeff/)))
        ! write the orbital energies
-       write (lucoef) qorbital%energy
+       call lab_write(lucoef,'EVALS   ',qorbital%energy)
        ! write the symnmetry information
-       write (lucoef) qorbital%symmetry
+       call lab_write(lucoef,'SUPERSYM',idata=qorbital%symmetry)
        ! write the ao basis information header
+       call lab_write(lucoef,'BASINFO ')
        write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
 !      orb_momentum, atom_number, n_primives for all shells
        write (lucoef) ao_basis%gtos(:)%orb_momentum,
@@ -623,12 +627,12 @@ C
 !      start of exponent values, number of contracted for all shells
        write (lucoef) jstrt,numcf
 !      coordinates (x, y, z) of center for all shells
-       write (lucoef) (ao_basis%gtos(ishell)%coord(:),
-     &                 ishell=1,nshells)
+       write (lucoef) (ao_basis%gtos(:)%coord(i),i=1,3)
 !      values of the exponents for all shells (packed into a 1-d array)
        write (lucoef) priexp
 !      values of the contraction coefficients for all shells (packed into a 1-d array)
        write (lucoef) priccf
+       call lab_write(lucoef,'EOFLABEL')
 
        deallocate(jstrt)
        deallocate(numcf)
