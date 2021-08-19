@@ -8,15 +8,15 @@
       integer, parameter :: my_MPI_OFFSET_KIND  = 8
 #if defined (VAR_MPI2) 
 #if ! defined (SYS_AIX) && ! defined (VAR_XLF)
-      INTEGER(KIND=my_MPI_ADDRESS_KIND) MY_T_PTR,MY_T_D_PTR,
-     &                               MY_T_SCR_PTR,
-     &                               MY_TTPL_PTR, MY_TCTR_PTR,
-     &                               MY_TRED_PTR, MY_RCCTOS_PTR,
-     &                               MY_IAPROC_PTR, MY_TTOL_PTR,
-     &                               MY_CHECK_F_PTR, MY_XT_PTR,
-     &                               MY_VEC1_PTR, MY_VEC2_PTR,
-     &                               MY_BWEIGHT_PTR, MY_DL_PTR,
-     &                               MY_T_PTRXXX 
+      INTEGER(KIND=my_MPI_ADDRESS_KIND) MY_T_PTR,MY_T_D_PTR,            &
+     &                               MY_T_SCR_PTR,                      &
+     &                               MY_TTPL_PTR, MY_TCTR_PTR,          &
+     &                               MY_TRED_PTR, MY_RCCTOS_PTR,        &
+     &                               MY_IAPROC_PTR, MY_TTOL_PTR,        &
+     &                               MY_CHECK_F_PTR, MY_XT_PTR,         &
+     &                               MY_VEC1_PTR, MY_VEC2_PTR,          &
+     &                               MY_BWEIGHT_PTR, MY_DL_PTR,         &
+     &                               MY_T_PTRXXX,MY_BPROC_PTR
 #endif
 !
       COMMON/MPI_MEMPOINTER1/  MY_T_SCR_PTR
@@ -51,9 +51,9 @@
       INTEGER(KIND=my_MPI_OFFSET_KIND) MY_VEC1_BUFF_LEN,MY_VEC2_BUFF_LEN
       INTEGER(KIND=my_MPI_OFFSET_KIND) MY_BWEIGHT_LEN, MY_BPROC_LEN
 !
-      COMMON/IBUFF_LENGTH/ LEN_T_BUFF, LEN_T_D_BUFF, MY_TTPL_LEN,
-     &                     MY_TTOL_LEN, MY_CHECK_F_LEN, MY_XT_BUFF_LEN,
-     &                     MY_VEC1_BUFF_LEN, MY_VEC2_BUFF_LEN, 
+      COMMON/IBUFF_LENGTH/ LEN_T_BUFF, LEN_T_D_BUFF, MY_TTPL_LEN,       &
+     &                     MY_TTOL_LEN, MY_CHECK_F_LEN, MY_XT_BUFF_LEN, &
+     &                     MY_VEC1_BUFF_LEN, MY_VEC2_BUFF_LEN,          &
      &                     MY_BWEIGHT_LEN, MY_BPROC_LEN, MY_DL_TMP_LEN
 !
 #endif

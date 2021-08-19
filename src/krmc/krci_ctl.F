@@ -187,7 +187,9 @@ CTF   DKRCI_THRECI = 1.0d-8
 CTF   DKRCI_THRECI = 0.3d-10   ! Seems to converge P,T-odd properties
 C                                sufficiently well. More testing
 C                                required.
-      DKRCI_THRECI = 0.8d-12
+C      DKRCI_THRECI = 0.8d-12 
+      !September 25 2019: Changed to more moderate value - A. Nyvang
+      DKRCI_THRECI = 1.0d-7 
 C
 C     Initialize /DCOKRCI/
 C     ===================
