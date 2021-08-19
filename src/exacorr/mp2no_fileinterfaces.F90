@@ -21,98 +21,12 @@ module mp2no_fileinterfaces
             module procedure quater_read_matrix
         end interface
 
-        public quater_read_from_dirac_fock, &
-               quater_read_from_dirac_orbital, quater_write, quater_read
-
+        public quater_write, quater_read
         public print_rMP2FVNO, write_to_newfile
 
        contains
 
 !-------------------------------------------------------------------------------------------------------------------------------------------
-
-!----------------------------------------------------------------------------------------------------------------------
-      subroutine quater_read_from_dirac_fock(Fock_HF,sz,k,flb)
-!     routine for only reading orbital energy from DFCOEF and construting the diagonal Fock matrix 
-!     flb =1 we construt the oo block otherwise we build vv block. 
-
-            real(kind=8), pointer, intent(inout)    :: Fock_HF(:,:,:)          ! Fock matrix 
-            integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
-            type(cmo)                               :: qorbital
-            type(basis_set_info_t)                  :: ao_basis
-            integer                                 :: ierr
-            integer                                 :: i,sz_total_energy
-
-
-!     read information from DFCOEF
-            call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
-            call convert_mo_to_quaternion(qorbital)
-            sz_total_energy = size(qorbital%energy,1)
-
-            allocate(Fock_HF(sz,sz,4))
-
-!     construct the FM 
-            Fock_HF = 0.0
-            if (flb == 1) then
-               do i = 1, sz
-                  Fock_HF(i,i,1) = qorbital%energy(i)
-               end do
-            else
-   !            k = sz_total_energy - sz
-               do i = 1, sz
-                  Fock_HF(i,i,1) = qorbital%energy(k+i)
-               end do
-            end if 
-         
-      end subroutine quater_read_from_dirac_fock
-
-
-!-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine quater_read_from_dirac_orbital(HF_AO,sz,k,flb)
-!     routine for only reading HF orbital coefficient from DFCOEF.
-!     flb =1 we read occupied orbital otherwise we read virtual orbital 
- 
-
-         real(kind=8), pointer, intent(inout)    :: HF_AO(:,:,:)            ! new canonical orbital 
-         integer, intent(inout)                  :: sz,flb,k                ! size of matrix and flag for block
-         type(cmo)                               :: qorbital
-         type(basis_set_info_t)                  :: ao_basis
-         integer                                 :: ierr
-         integer                                 :: i, j, sz_total_mo, sz_total_ao
-
-
-!     read information of from DFCOEF
-         call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
-         call convert_mo_to_quaternion(qorbital)
-         sz_total_ao = size(qorbital%coeff_q,1)
-         sz_total_mo = size(qorbital%coeff_q,2)
-
-         allocate(HF_AO(sz_total_ao,sz,4))
-      
-!     constrcut HF orbital matrix
-         if (flb == 1) then
-            do j = 1, sz
-               do  i = 1, sz_total_ao
-                  HF_AO(i,j,1) = qorbital%coeff_q(i,j,1)
-                  HF_AO(i,j,2) = qorbital%coeff_q(i,j,2)
-                  HF_AO(i,j,3) = qorbital%coeff_q(i,j,3)
-                  HF_AO(i,j,4) = qorbital%coeff_q(i,j,4)
-               end do
-            end do
-         else
-!            k = sz_total_mo - sz
-            do j = 1, sz
-               do i = 1, sz_total_ao
-                  HF_AO(i,j,1) = qorbital%coeff_q(i,k+j,1)
-                  HF_AO(i,j,2) = qorbital%coeff_q(i,k+j,2)
-                  HF_AO(i,j,3) = qorbital%coeff_q(i,k+j,3)
-                  HF_AO(i,j,4) = qorbital%coeff_q(i,k+j,4)
-               end do
-            end do
-         end if 
-
-      end subroutine quater_read_from_dirac_orbital
-
-!-------------------------------------------------------------------------------------------------------------------------------------
       subroutine  quater_write_orbital(orbital_coeff,orbital_eigenval,file_name)
 !     routine for writing new orbital coefficient and eigenvalue into the file.
 

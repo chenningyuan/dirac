@@ -60,8 +60,11 @@ module mp2no_driver
                   real(kind=8), pointer              :: NOs_AO(:,:,:)           ! new canonical orbital in AO basis
                   real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
                   integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
+                  integer                            :: nocc, nvirt
 
-                  integer                            :: i,j,k,q,sz_print
+                  type(cmo)                          :: qorbital
+                  type(basis_set_info_t)             :: ao_basis
+                  integer                            :: i,j,k,q,sz_print,ierr
                   real                               :: trace,compact
                   real(kind=8)                       :: temp
 
@@ -81,10 +84,12 @@ module mp2no_driver
                      end do
                   end do
 
-                  flb = 0                                    
-                  sz = NORBT
-                  sz_occ = N_CORR_OCC
-                  call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
+                  nvirt = NORBT
+                  nocc  = N_CORR_OCC
+                  call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+                  call convert_mo_to_quaternion(qorbital)
+                  allocate(HF_AO(qorbital%nao,nvirt,4))
+                  HF_AO = qorbital%coeff_q(:,nocc+1:nocc+nvirt,:)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
                   call diagonal_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    

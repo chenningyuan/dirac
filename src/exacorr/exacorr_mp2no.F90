@@ -13,6 +13,7 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
+        use talsh_mp2no, only: get_new_orbital, get_transform_Fock
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi
@@ -77,13 +78,13 @@ module exacorr_mp2no
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
                 call get_transform_Fock(exa_input,'DM_complex')
             end if
-            call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
-                                  New_orbital_energy,'NOs_MO',N_cano)
-            if (my_MPI_rank == 0) &
-            call write_to_newfile(nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
-    
-            call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-            if (my_MPI_rank == 0) call print_date("Leave MP2_NO Module")
+
+            if (my_MPI_rank == 0) then
+               call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
+                                    New_orbital_energy,'NOs_MO',N_cano)
+               call write_to_newfile(nocc,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+               call print_date("Leave MP2_NO Module")
+            end if
 
             ierr=exatns_method_unregister('ZERO')
             ierr=exatns_method_unregister('Aoint_calculator_mp2')
@@ -1143,138 +1144,6 @@ module exacorr_mp2no
 
         end subroutine update_eps
 
-!------------------------------------------------------------------------------------------------------------------
-        subroutine get_transform_Fock (exa_input,Matrix_file)
-            ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
-            ! The new basis set comes from the digonalization of density matrix.
-            ! The all natural orbitals and occupation numbers are saved in file NOs_MO 
-            ! The transformed Fock matrix are saved in file FM_in_NatOrb
-            ! In principle, this routine is general. Any type complex matrix could be used for getting the new basis and transformed Fock matrix. 
-            ! This routine doesn't truncate the new basis set.    
-            ! Written by Xiang Yuan   
-   
-                     character(len=*),intent(in)        :: Matrix_file
-                     type(exacc_input), intent(in)      :: exa_input
-   
-                     real(kind=8), pointer              :: N_OCCUPATION(:)         ! occupation number from qdia of DM
-                     complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
-                     real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
-                     real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
-                     real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-                     real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-                     integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
-                     integer                            :: i
-                     integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
-   
-                                                           
-                  call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-                  if (my_MPI_rank == 0) then
-
-                     call read_matrix_comp(MP2_density_comp,Matrix_file)
-                     call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
-   
-                     call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
-                     call print_date('changed MO DM representation (spinor->quaternion)')
-   
-                     call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
-                     call print_date('diagonalized MO DM (quaternion)')
-   
-                     call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                     call print_date('Sorted natural orbitals by occupation number')
-   
-                     call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
-                     call print_date('Wrote all natural orbital and occupation number in file NOs_MO')
-                       
-                     flb = 0                     ! we read vv block of Fock matrix
-                     sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
-                     sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-                     call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
-                     call print_date('read Fock matrix from DFCOEF')
-   
-                     call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
-                     call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
-   
-                     call quater_write(Fock_NO,"FM_in_NatOrb")
-                     call print_date('wrote F_VV_NO in file FM_in_NatOrb')
-                  end if 
-                           
-         end subroutine get_transform_Fock
-   
-            
-   !------------------------------------------------------------------------------------------------------------------------------
-         subroutine get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION_reduced,New_orbital_energy,file_orb,N_reduced)
-         ! This routine is used for getting new truncated canonical orbital in AO basis
-         ! and the corresponding orbital energy.
-   
-               type(exacc_input), intent(in)      :: exa_input
-               real(kind=8),intent(in)            :: threshold
-               real(kind=8), pointer,intent(out)  :: NOs_AO(:,:,:)           ! new canonical orbital in AO basis 
-               real(kind=8), pointer,intent(out)  :: N_OCCUPATION_reduced(:) ! occupation number from qdia of DM
-               real(kind=8), pointer,intent(out)  :: New_orbital_energy(:)   ! new orbital energy from qdia of Fock matrix in new orbital basis
-               character(len=*),intent(in)        :: file_orb
-               integer,intent(inout)              :: N_reduced               ! number of reduced natural orbital 
-   
-   
-               real(kind=8)                       :: Sum_N_OCCUPATION_total
-               real(kind=8)                       :: Sum_N_OCCUPATION_reduced 
-               real(kind=8)                       :: Perc_OCCUPATION_reduced
-               real(kind=8), pointer              :: NOs_MO_reduced(:,:,:)   ! natural orbitals which have occupation number larger than threshold
-               real(kind=8), pointer              :: New_cano_MO(:,:,:)      ! new canonical orbital in AO basis
-               real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-               real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-               real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-               integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
-               integer                            :: i,j,k
-               integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
-               
-            call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-            if (my_MPI_rank == 0) then   
-               call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
-                        threshold,N_reduced,file_orb)
-               call print_date('got the truncated NO and occupation number from NOs_MO')
-               Sum_N_OCCUPATION_reduced = 0.0 
-               do i=1, size(N_OCCUPATION_reduced)
-                  Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
-               end do
-               Perc_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
-               Perc_OCCUPATION_reduced = Perc_OCCUPATION_reduced * 100
-
-               write(*,*) ""
-               write(*,"(A50,2X,D10.4)") 'MP2 occupation number (o.n.) threshold (t) : ', threshold
-               write(*,"(A50,2X,I10)")    'Number of MP2 FVNOs retained (o.n. > t)    : ', N_reduced
-               write(*,*) ""
-               write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., retained NOs (a)    : ', Sum_N_OCCUPATION_reduced
-               write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., all NOs (b)         : ', Sum_N_OCCUPATION_total
-               write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
-               write(*,*) ""
-
-               flb = 0                       ! we only read virtual orbital 
-               sz = exa_input%nkr_vir        ! the number of virtual orbital 
-               sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-               call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
-               call print_date('read HF orbital coefficient from DFCOEF')
-               
-               flb = 0                         ! we read vv block of Fock matrix
-               sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
-               sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-               call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
-               call print_date('read Fock matrix from DFCOEF')
-   
-               call basis_transform_matrix(Fock_HF,NOs_MO_reduced,Fock_NO)
-               call print_date('transformed Fock matrix into reduced NO basis')
-               
-               call get_Cano_Orbital(NOs_MO_reduced,New_cano_MO,Fock_NO,New_orbital_energy)
-               call print_date('Got new Canonical orbital in MO basis')
-   
-               call basis_transform_vector(New_cano_MO,HF_AO,NOs_AO)
-               call print_date('Got new orbital in AO basis')
-               
-               call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
-
-            end if
-         end subroutine
-   
-   
 !-----------------------------------------------------------------------------------------------------
 #else
         implicit none
