@@ -1,0 +1,2 @@
+! testing frozen mp2 natural orbital computation in the talsh mp2no implementation
+! requirements: talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP

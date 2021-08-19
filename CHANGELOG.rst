@@ -9,6 +9,19 @@ New features:
 
 -----------------------------------------------------------------------------------------------------
 
+21.1 - WIP for first patch
+--------------------------
+
+Revised features:
+
+- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first.
+  Now pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. H. J. Aa. Jensen.
+
+Error corrections:
+
+- Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
+
+
 21.0 (2021-05-28)
 -----------------
 
