@@ -39,6 +39,7 @@ C***********************************************************************
       integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
       integer              :: i, j, imo, jmo, ntmo, rcw
+      integer              :: numproc
 
       exa_input%print_level=IPRTRA
 
@@ -46,6 +47,12 @@ C***********************************************************************
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
       call interface_mpi_comm_rank(global_communicator,mytid)
+      call interface_mpi_comm_size(global_communicator,numproc)
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes"
+         print*," -> switched to serial mode using only TALSH"
+         exa_input%talsh = .true.
+      end if
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
@@ -163,7 +170,7 @@ C***********************************************************************
 
       implicit none
 
-      integer              :: mytid                    ! MPI rank
+      integer              :: mytid, numproc           ! MPI rank and # processors
       integer              :: n_mp2no,i                 
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
@@ -171,6 +178,13 @@ C***********************************************************************
       ! the slaves do not have their input set yet, so call them
       ! and let them know whether we use talsh or exatensor
       call interface_mpi_comm_rank(global_communicator,mytid)
+      call interface_mpi_comm_size(global_communicator,numproc)
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes"
+         print*," -> switched to serial mode using only TALSH"
+         exa_input%talsh = .true.
+      end if
+
       if (mytid == 0 ) then
          call print_exacorr_logo
          call dirac_parctl( 20 ) 
