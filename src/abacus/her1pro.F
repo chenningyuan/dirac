@@ -335,7 +335,7 @@ C
 !                  81         82         83         84
      &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRAD FC', 
 !                  85         86         87         88
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
+     &            'GRADRHO', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ', 
 !                  93         94         95         96
@@ -2102,7 +2102,25 @@ C     Miro Ilias, Malaya K Nayak
          ANTI = .FALSE.
          SQUARE = .FALSE.
       GO TO 200
+CKG SCHIFF
+C
+C     Nuclear Schiff moment
+C     ------------------------
+!      gradient of the nuclear charge density 
+!      distribution rho(r-R),
+!      "grad rho(r-R)"
+!     ------------------------
+!     Konstantin Gaul, RUG, Aug. 2021
  85   continue
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   'PR1DIR: Calculation of "grad rho(r-R)" operator'
+         INTTYP = 60
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GO TO 200
+CKG SCHIFF
  86   continue
  87   continue
  88   continue
@@ -2862,6 +2880,47 @@ C  /* Deck frmtyp */
       RETURN
       END
 
+CKG SCHIFF
+      SUBROUTINE GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(9*MXCENT),INTADR(*)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = 3*NATOM
+      CALL NTYPTS(NOPTYP)
+C
+      ITYP = 0
+      DO 50 IREP = 0, MAXREP
+         DO 100 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               DO 200 ICOOR = 1, 3
+                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  IF (ISCOOR .GT. 0) THEN
+                     ITYP = ITYP + 1
+                     IFIRST=ISCOOR/100
+                     ISECND=MOD(ISCOOR,100)/10
+                     ITHIRD = MOD(MOD(ISCOOR,100),10)
+                     LABINT(ITYP) = 'DRHO '//CHRNOS(IFIRST)
+     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+                     INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
+                     INTADR(ISCOOR) = ITYP
+                  END IF
+ 200           CONTINUE
+            END IF
+ 100     CONTINUE
+ 50   CONTINUE 
+      RETURN
+      END
+CKG SCHIFF
 C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral

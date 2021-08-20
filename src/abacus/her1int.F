@@ -398,6 +398,13 @@ C     type 58 already defined (NUCFIEL)
          JMAXM = 0 ! we do not need ODC for this property
          DONUC1= .TRUE.
          DOMOM1 = .TRUE.
+CKG SCHIFF Moment integrals as derivative of the nuclear charge density
+      ELSE IF (INTTYP .EQ.60) THEN
+         JMAXD  = 0
+         JMAXM  = 0
+         DONUC1 = .FALSE.
+         DOMOM1 = .FALSE.
+CKG SCHIFF
       ELSE IF (INTTYP .EQ. 62) THEN
          JMAXD = 0
          JMAXM = 0
@@ -829,6 +836,7 @@ C
      &                    .OR. (INTTYP .EQ. 55)
      &                    .OR. (INTTYP .EQ. 56)
      &                    .OR. (INTTYP .EQ. 57)
+     &                    .OR. (INTTYP .EQ. 60) !finite nucleus Schiff
      &                    .or. (inttyp == 101)
      &                    .OR. (INTTYP .EQ. 62)) THEN
          JMAX = NHKTA + NHKTB - 2
@@ -1104,6 +1112,18 @@ C     Integrals for Parity Violation - chirality
      &               LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
      &               TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,
      &               DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1,HUCFAC)
+      ELSE IF (INTTYP .EQ. 60) THEN
+CKG SCHIFF
+C
+C     Schiff moment enhancement integrals
+C     -> DERIVATIVE of the nuclear charge density distribution
+C     ------------------------
+         CALL GRDRHONUC(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
+     &                  WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
+     &                  LABINT,INTTYP,NOPTYP,NBAST,IORDER,DOATOM,IPRINT,
+     &                  TOLS,TOLOG,NATOMC,DISTAB,FACINT,CORCX,CORCY,
+     &                  CORCZ,DIFABX,DIFABY,DIFABZ,DONUC1,DOMOM1)
+CKG SCHIFF
       ELSE IF (INTTYP .NE. 12) THEN ! not DSO
          CALL PR1PRA(WORK(KODC),JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,
      &               WORK(KAHGTF),SHLINT,WORK(KLAST),LWRK,
@@ -4929,6 +4949,172 @@ C
   100 CONTINUE
       RETURN
       END
+CKG SCHIFF
+C  Finite nucleus version of Schiff moment enhancement 
+C  The operator is at nucleus A
+C    <grad psi| grad rho_nuc(r) | psi> + <grad psi| rho_nuc(r) | grad psi>
+C    = <psi| grad rho_nuc,A(r) | psi> 
+C    = <psi| (-2 zeta) (r-rA) rho_nuc,A(r) | psi>
+C For getting the Schiff moment coupling constant W_S the result has to be
+C multiplied by -4 pi, so 
+C W_S = <psi| 8 pi zeta (r-rA) rho_nuc,A(r) | psi>
+C I don't add this factor here, but rather define it in the general way
+C of the derivative of the nuclear charge density distribution
+C The following routine is based on the PR1PRV routine.
+C !Note that this is to be called directly in PR1PRM as the
+C !McMurchie-Davidson coefficients ODC have to be calculated after
+C !evaluating C the Gaussian product role for the triple product of the
+C !two Gaussian basis functions and the Gaussian nuclear charge
+C !distribution.
+      SUBROUTINE GRDRHONUC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
+     &                     SHLINT,WORK,LWORK,LABINT,INTTYP,NOPTYP,
+     &                     NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
+     &                     DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
+     &                     DIFABY,DIFABZ,DONUC1,DOMOM1)
+#include "implicit.h"
+#include "priunit.h"
+#include "aovec.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "mxcent.h"
+#include "pi.h"
+      PARAMETER (D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
+     &           D2INV = 0.50D0)
+      PARAMETER (SMTHR = 1.00D-20)
+      LOGICAL DOATOM(*), DIFODC, DONUC1, DOMOM1, ADDNAI
+      CHARACTER LABINT(NOPTYP)*8
+      DIMENSION WORK(LWORK), TEMP(3),
+     &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
+     &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
+     &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include "onecom.h"
+#include "nuclei.h"
+#include "orgcom.h"
+#include "primit.h"
+#include "symmet.h"
+#include "lmns.h"
+#include "ibtfun.h"
+      DO 50 IATOM = 1, NATOMC
+         ISHIFT = (IATOM - 1) * 3
+C Exponent and coordinates of Spherical Nuclear distribution
+         EXPN = GNUEXP(IATOM) 
+         CORNX = CORCX(IATOM)
+         CORNY = CORCY(IATOM)
+         CORNZ = CORCZ(IATOM)
+         CONTN = DSQRT((EXPN / PI)**3)
+C
+         DIFANX = CORAX - CORNX
+         DIFANY = CORAY - CORNY
+         DIFANZ = CORAZ - CORNZ
+         DISTAN = DIFANX*DIFANX + DIFANY*DIFANY + DIFANZ*DIFANZ
+         DIFBNX = CORBX - CORNX
+         DIFBNY = CORBY - CORNY
+         DIFBNZ = CORBZ - CORNZ
+         DISTBN = DIFBNX*DIFBNX + DIFBNY*DIFBNY + DIFBNZ*DIFBNZ
+C
+         DO 100 IPRIMA = 1,NUCA
+            JPRIMA = JSTA + IPRIMA
+            CONTA = PRICCF(JPRIMA,NUMCFA)
+            EXPA = PRIEXP(JPRIMA)
+         DO 100 IPRIMB = 1,NUCB
+            JPRIMB = JSTB + IPRIMB
+            CONTB = PRICCF(JPRIMB,NUMCFB)
+            EXPB = PRIEXP(JPRIMB)
+            EXPP = EXPA + EXPB + EXPN
+            EXPPI = D1/EXPP
+            EXPABQ = EXPA*EXPB*DISTAB+EXPA*EXPN*DISTAN
+     +             + EXPB*EXPN*DISTBN
+            EXPABQ = EXPABQ*EXPPI
+            IF (EXPABQ.GT.TOLOG) GO TO 200
+            SAAB = CONTA*CONTB*CONTN*DEXP(-EXPABQ)
+            ASAAB = DABS(SAAB)
+            IF (ASAAB.LT.TOLS) GO TO 200
+            SAAB13 = SIGN(ASAAB**D3INV,SAAB)
+C
+C           Calculate coordinates of product Gaussian P
+C
+            EXPAPI = EXPA*EXPPI
+            EXPBPI = EXPB*EXPPI
+            EXPNPI = EXPN*EXPPI
+            CORPX  = EXPAPI*CORAX + EXPBPI*CORBX + EXPNPI*CORNX
+            CORPY  = EXPAPI*CORAY + EXPBPI*CORBY + EXPNPI*CORNY
+            CORPZ  = EXPAPI*CORAZ + EXPBPI*CORBZ + EXPNPI*CORNZ
+
+CKG I think this is not really needed, but it does not hurt.
+C
+C Check for same center (To avoid numerical noise, e.g. nonzero
+C (p_x | \rho | s) on same center since CORPX - CORAX has noise
+C of apprix 10^(-16)
+C
+!         IF(DISTAB.LT.SMTHR) THEN
+!            IF(DISTAN.LT.SMTHR) THEN
+!               IF(DISTBN.LT.SMTHR) THEN
+!                  CORAX = CORNX
+!                  CORAY = CORNY
+!                  CORAZ = CORNZ
+!                  CORBX = CORNX
+!                  CORBY = CORNY
+!                  CORBZ = CORNZ
+!                  CORPX = CORNX
+!                  CORPY = CORNY
+!                  CORPZ = CORNZ
+!               ENDIF
+!            ENDIF
+!         ENDIF
+C     
+C           *********************************************
+C           ***** Overlap Distribution Coefficients *****
+C           *********************************************
+C
+! We set the origin to the actual nucleus
+            TEMP(1) = CORNX 
+            TEMP(2) = CORNY
+            TEMP(3) = CORNZ
+C
+            CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,.FALSE.,
+     &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,
+     &                  EXPPI,WORK,LWORK,CORPX,CORPY,CORPZ,
+     &                  DONUC1,DOMOM1,TEMP,INTTYP)
+C           **********************************************
+C           ***** Calculation of Hermitian integrals *****
+C           **********************************************
+C
+C           Overlap integral
+C
+            SHGTF = DSQRT(PI*EXPPI)
+C
+C           **********************************************
+C           ***** Calculation of Cartesian integrals *****
+C           **********************************************
+C
+C           Schiff integrals
+C           ------------
+C
+            CALL DPLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
+     &                  SHLINT(:, 1 + ISHIFT: 3 +ISHIFT),
+     &                  CORPX,CORPY,CORPZ,TEMP)
+C
+ 200        CONTINUE
+ 100     CONTINUE
+C I do the scaling with the factor (-2 zeta_A) after evaluating the
+C summation as EXPN is a rather large number and can lead to numerical
+C problems otherwise.
+         SHLINT(:, 1 + ISHIFT: 3 +ISHIFT) 
+     =     = SHLINT(:, 1 + ISHIFT: 3 +ISHIFT) * -2D0 * EXPN
+  50  CONTINUE
+C
+C     Print
+C
+      IF (IPRINT .GT. 30) THEN
+         DO 400 I = 1, NOPTYP
+            CALL AROUND('SHLINT for '//LABINT(I)//' in GRDRHONUC')
+            CALL OUTPUT(SHLINT(1,I),1,KCKTA,1,KCKTB,KCKTA,KCKTB,1,LUPRI)
+  400    CONTINUE
+      END IF
+      RETURN
+      END
+CKG SCHIFF
+
 
 C  /* Deck dwnint */
       SUBROUTINE DWNINT(SHLINT,EXPP,XP,YP,ZP,SAAB)
