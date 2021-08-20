@@ -128,9 +128,10 @@ module exacorr_mo
 
 !     Free the memory associated with a block of Mos
       deallocate (M%energy)
-      deallocate (M%coeff)
       deallocate (M%symmetry)
       deallocate (M%index)
+      if (M%algebra == 'c') deallocate (M%coeff)
+      if (M%algebra == 'q') deallocate (M%coeff_q)
       M%allocated = .false.
 
      end subroutine dealloc_mo
