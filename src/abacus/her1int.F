@@ -402,8 +402,8 @@ CKG SCHIFF Moment integrals as derivative of the nuclear charge density
       ELSE IF (INTTYP .EQ.60) THEN
          JMAXD  = 0
          JMAXM  = 0
-         DONUC1 = .FALSE.
-         DOMOM1 = .FALSE.
+         DONUC1 = .TRUE.
+         DOMOM1 = .TRUE.
 CKG SCHIFF
       ELSE IF (INTTYP .EQ. 62) THEN
          JMAXD = 0
@@ -4994,15 +4994,22 @@ C !distribution.
 #include "symmet.h"
 #include "lmns.h"
 #include "ibtfun.h"
-      DO 50 IATOM = 1, NATOMC
-         ISHIFT = (IATOM - 1) * 3
+      NUCPN1 = 0
+      DO 50 IATOM = 1, NUCIND
 C Exponent and coordinates of Spherical Nuclear distribution
+         IF (.NOT.DOATOM(IATOM)) CONTINUE
+         NUCPN1 = NUCPN1 + 1
+         ISHIFT = (NUCPN1 - 1) * 3
          EXPN = GNUEXP(IATOM) 
-         CORNX = CORCX(IATOM)
-         CORNY = CORCY(IATOM)
-         CORNZ = CORCZ(IATOM)
-         CONTN = DSQRT((EXPN / PI)**3)
-C
+         CORNX = CORCX(NUCPN1)
+         CORNY = CORCY(NUCPN1)
+         CORNZ = CORCZ(NUCPN1)
+C        with the scaling with the factor (-2 zeta_A) from the
+C        derivative
+         CONTN = (-2D0*EXPN) * DSQRT((EXPN / PI)**3)
+         DO 60 IREP = 0, MAXREP
+           IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) CONTINUE
+
          DIFANX = CORAX - CORNX
          DIFANY = CORAY - CORNY
          DIFANZ = CORAZ - CORNZ
@@ -5025,6 +5032,17 @@ C
             EXPABQ = EXPA*EXPB*DISTAB+EXPA*EXPN*DISTAN
      +             + EXPB*EXPN*DISTBN
             EXPABQ = EXPABQ*EXPPI
+C Check for same center (To avoid numerical noise, e.g. nonzero
+C (p_x | \rho | s) on same center since CORPX - CORAX has noise
+C of apprix 10^(-16)
+C
+            IF(DISTAB.LT.SMTHR) THEN
+               IF(DISTAN.LT.SMTHR) THEN
+                  IF(DISTBN.LT.SMTHR) THEN
+                    EXPABQ = 0d0
+                  ENDIF
+               ENDIF
+            ENDIF
             IF (EXPABQ.GT.TOLOG) GO TO 200
             SAAB = CONTA*CONTB*CONTN*DEXP(-EXPABQ)
             ASAAB = DABS(SAAB)
@@ -5039,37 +5057,34 @@ C
             CORPX  = EXPAPI*CORAX + EXPBPI*CORBX + EXPNPI*CORNX
             CORPY  = EXPAPI*CORAY + EXPBPI*CORBY + EXPNPI*CORNY
             CORPZ  = EXPAPI*CORAZ + EXPBPI*CORBZ + EXPNPI*CORNZ
-
-CKG I think this is not really needed, but it does not hurt.
 C
 C Check for same center (To avoid numerical noise, e.g. nonzero
 C (p_x | \rho | s) on same center since CORPX - CORAX has noise
 C of apprix 10^(-16)
 C
-!         IF(DISTAB.LT.SMTHR) THEN
-!            IF(DISTAN.LT.SMTHR) THEN
-!               IF(DISTBN.LT.SMTHR) THEN
-!                  CORAX = CORNX
-!                  CORAY = CORNY
-!                  CORAZ = CORNZ
-!                  CORBX = CORNX
-!                  CORBY = CORNY
-!                  CORBZ = CORNZ
-!                  CORPX = CORNX
-!                  CORPY = CORNY
-!                  CORPZ = CORNZ
-!               ENDIF
-!            ENDIF
-!         ENDIF
+            IF(DISTAB.LT.SMTHR) THEN
+               IF(DISTAN.LT.SMTHR) THEN
+                  IF(DISTBN.LT.SMTHR) THEN
+                     CORAX = CORNX
+                     CORAY = CORNY
+                     CORAZ = CORNZ
+                     CORBX = CORNX
+                     CORBY = CORNY
+                     CORBZ = CORNZ
+                     CORPX = CORNX
+                     CORPY = CORNY
+                     CORPZ = CORNZ
+                  ENDIF
+               ENDIF
+            ENDIF
 C     
 C           *********************************************
 C           ***** Overlap Distribution Coefficients *****
 C           *********************************************
 C
-! We set the origin to the actual nucleus
-            TEMP(1) = CORNX 
-            TEMP(2) = CORNY
-            TEMP(3) = CORNZ
+            TEMP(1) = ORIGIN(1) 
+            TEMP(2) = ORIGIN(2)
+            TEMP(3) = ORIGIN(3)
 C
             CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,.FALSE.,
      &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,
@@ -5079,7 +5094,7 @@ C           **********************************************
 C           ***** Calculation of Hermitian integrals *****
 C           **********************************************
 C
-C           Overlap integral
+C           s-Gaussian Overlap integral in one direction
 C
             SHGTF = DSQRT(PI*EXPPI)
 C
@@ -5089,18 +5104,60 @@ C           **********************************************
 C
 C           Schiff integrals
 C           ------------
-C
-            CALL DPLINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
-     &                  SHLINT(:, 1 + ISHIFT: 3 +ISHIFT),
-     &                  CORPX,CORPY,CORPZ,TEMP)
-C
+C I do not call DPLINT due to numerical instabilities
+C See below...
+C The following lines are a copy of DPLINT with some additional
+C neglection thresholds
+               POX = CORPX - CORNX 
+               POY = CORPY - CORNY
+               POZ = CORPZ - CORNZ
+               IF(DISTAB.LT.SMTHR) THEN
+                  IF(DISTAN.LT.SMTHR) THEN
+                     IF(DISTBN.LT.SMTHR) THEN
+                         POX = 0D0 
+                         POY = 0D0 
+                         POZ = 0D0
+                     ENDIF
+                  ENDIF
+               ENDIF
+               INT = 0
+               DO 300 ICOMPA = 1,KCKTA
+                  LVALA = LVALUA(ICOMPA)
+                  MVALA = MVALUA(ICOMPA)
+                  NVALA = NVALUA(ICOMPA)
+               DO 300 ICOMPB = 1, KCKTB
+                  LVALB = LVALUB(ICOMPB)
+                  MVALB = MVALUB(ICOMPB)
+                  NVALB = NVALUB(ICOMPB)
+                  SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+                  SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+                  SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+C Its very important to remove all these contributions for ultra low
+C values of POX,Y,Z as in the case of CORN being at 0,0,0 this leads to
+C numerical instabilties. 
+                  IF (ABS(POX)+ABS(POY)+ABS(POZ).GT.SMTHR) THEN
+                    DX0 = POX*SX0
+                    DY0 = POY*SY0
+                    DZ0 = POZ*SZ0
+                  ELSE
+                    DX0 = 0D0
+                    DY0 = 0D0
+                    DZ0 = 0D0
+                  END IF
+                  IF (LVALA+LVALB.GT.0)
+     &               DX0 = DX0+ SHGTF*ODC(LVALA,LVALB,1,0,0,1)
+                  IF (MVALA+MVALB.GT.0) 
+     &               DY0 = DY0+ SHGTF*ODC(MVALA,MVALB,1,0,0,2)
+                  IF (NVALA+NVALB.GT.0) 
+     &               DZ0 = DZ0+ SHGTF*ODC(NVALA,NVALB,1,0,0,3)
+                  INT = INT + 1
+                  SHLINT(INT,1+ISHIFT)=SHLINT(INT,1+ISHIFT)-DX0*SY0*SZ0
+                  SHLINT(INT,2+ISHIFT)=SHLINT(INT,2+ISHIFT)-SX0*DY0*SZ0
+                  SHLINT(INT,3+ISHIFT)=SHLINT(INT,3+ISHIFT)-SX0*SY0*DZ0
+ 300           CONTINUE
  200        CONTINUE
  100     CONTINUE
-C I do the scaling with the factor (-2 zeta_A) after evaluating the
-C summation as EXPN is a rather large number and can lead to numerical
-C problems otherwise.
-         SHLINT(:, 1 + ISHIFT: 3 +ISHIFT) 
-     =     = SHLINT(:, 1 + ISHIFT: 3 +ISHIFT) * -2D0 * EXPN
+  60  CONTINUE
   50  CONTINUE
 C
 C     Print
