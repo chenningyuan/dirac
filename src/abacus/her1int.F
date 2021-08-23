@@ -4950,6 +4950,7 @@ C
       RETURN
       END
 CKG SCHIFF
+C--------------------------------------------------------------------------
 C  Finite nucleus version of Schiff moment enhancement 
 C  The operator is at nucleus A
 C    <grad psi| grad rho_nuc(r) | psi> + <grad psi| rho_nuc(r) | grad psi>
@@ -4966,6 +4967,11 @@ C !McMurchie-Davidson coefficients ODC have to be calculated after
 C !evaluating C the Gaussian product role for the triple product of the
 C !two Gaussian basis functions and the Gaussian nuclear charge
 C !distribution.
+C--------------------------------------------------------------------------
+!
+! Written by Konstantin Gaul @ RUG, August 2022
+!
+!-------------------------------------------------------------------------------------------
       SUBROUTINE GRDRHONUC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,AHGTF,
      &                     SHLINT,WORK,LWORK,LABINT,INTTYP,NOPTYP,
      &                     NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,

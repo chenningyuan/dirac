@@ -1856,10 +1856,12 @@
       ELSE IF(LABINT(2:3).EQ.'GF') THEN
         CLASLB = 'GRAD FC'
 !
+!KG SCHIFF
 ! gradient of Nuclear density distribution
 !
       ELSE IF(LABINT(1:4).EQ.'DRHO') THEN   
         CLASLB = 'GRADRHO'
+!KG SCHIFF
 !
 !
 !     Paramagnetic spin-orbit integrals
@@ -1933,8 +1935,6 @@
       ELSE IF(LABINT(1:7).EQ.'KINENER') THEN   
         CLASLB = 'KINENER'
 !
-!KGSCHIFF
-
 !     Diamagnetic susceptibility
 !
       ELSE IF(LABINT(4:6).EQ.'SUS') THEN

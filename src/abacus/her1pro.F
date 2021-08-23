@@ -2110,7 +2110,7 @@ C     ------------------------
 !      distribution rho(r-R),
 !      "grad rho(r-R)"
 !     ------------------------
-!     Konstantin Gaul, RUG, Aug. 2021
+!     Konstantin Gaul @ RUG, Aug. 2021
  85   continue
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &   'PR1DIR: Calculation of "grad rho(r-R)" operator'
@@ -2881,6 +2881,12 @@ C  /* Deck frmtyp */
       END
 
 CKG SCHIFF
+!-------------------------------------------------------------------
+! Labels and symmetries of "grad rho(r-R)" operator 
+! (I use continuous numbering here for all nuclear coordinates.)
+!
+! Written by Konstantin Gaul @ RUG, August 2021
+!-------------------------------------------------------------------
       SUBROUTINE GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
 #include "implicit.h"
 #include "priunit.h"
