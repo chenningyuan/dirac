@@ -85,9 +85,9 @@ module exacorr_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -116,14 +116,12 @@ module exacorr_gradient
 
     end subroutine exacorr_dm_driver
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,print_level,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(exatns_dm_tens), intent(inout) :: gamma
       type(tens_rcrsv_t),   intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
-      type(space_dims),     intent(in   ) :: dims
-      logical,              intent(in   ) :: CCD
       integer,              intent(in   ) :: print_level
 !     auxiliary tensors
       type(tens_rcrsv_t) :: one_dm_tensor
@@ -136,7 +134,11 @@ module exacorr_gradient
       integer(INTL), dimension(4) :: vvoo_root
 !     error code
       integer(INTD) :: ierr
+!     CCD switch
+      logical       :: CCD = .false.
 
+       if (.not. present(t1_tensor)) CCD = .true.
+       call t2_tensor%get_space_ids(vvoo_id,vvoo_root,ierr)
 !*********************************
 !     construct auxiliary tensor *
 !*********************************
@@ -144,12 +146,10 @@ module exacorr_gradient
       ierr=exatns_tensor_create(one_dm_tensor,"one_dm",EXA_DATA_KIND_C8)
       ierr=exatns_tensor_init(one_dm_tensor,ONE)
       if (.not.CCD) then
-        oo_id   = (/dims%occ_space_id,   dims%occ_space_id  /)
-        oo_root = (/dims%occ_space_root, dims%occ_space_root/)
-        vv_id   = (/dims%vir_space_id,   dims%vir_space_id  /)
-        vv_root = (/dims%vir_space_root, dims%vir_space_root/)
-        vvoo_id   = (/dims%vir_space_id,   dims%vir_space_id,   dims%occ_space_id,   dims%occ_space_id  /)
-        vvoo_root = (/dims%vir_space_root, dims%vir_space_root, dims%occ_space_root, dims%occ_space_root/)
+        vv_id   = vvoo_id(1:2)
+        vv_root = vvoo_root(1:2)
+        oo_id   = vvoo_id(3:4)
+        oo_root = vvoo_root(3:4)
 
         ierr=exatns_tensor_create(tau2_tensor,"tau2_dm",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(vv_aux_tensor,"vv_aux",vv_id,vv_root,EXA_DATA_KIND_C8)

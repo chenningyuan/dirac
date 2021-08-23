@@ -1404,6 +1404,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
+      use labeled_storage
 C
 C---------------Description--------------------------------------------
 C
@@ -1437,7 +1438,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      REAL*8, ALLOCATABLE:: DMO(:)   ! Density matrix in MO basis
       LOGICAL FND,FNDLAB,ADD_2_FOCK
       CHARACTER*8 LABEL
       CHARACTER*6 FILE_NAME
@@ -1492,15 +1493,13 @@ C---------------Executable code--------------------------------------
 
 C     Read the appropriate correlated density from file
 
-      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      ALLOCATE (DMO(NORBT*NORBT*NZ),STAT=IERR)
       IF (IERR.NE.0) THEN
         CALL QUIT('Error in DMO allocation !')
       ENDIF
       CALL OPNFIL(MCCDENS,FILE_NAME,'OLD','GET_CC')
-      FND =  FNDLAB(LABEL,MCCDENS)
-      CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CALL LAB_READ(MCCDENS,LABEL,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
-!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution
@@ -1625,6 +1624,7 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO)
+      use labeled_storage
 C
 C---------------Description--------------------------------------------
 C
@@ -1673,23 +1673,13 @@ C     without being able to do a replace or check for old data.
 
       CALL OPNFIL(MCCDENS,'CCDENS','UNKNOWN','STORE_')
       IF (.NOT.INIT) THEN
-          CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
+          CALL LAB_WRITE (MCCDENS,EOFLABEL)
           INIT = .TRUE.
       END IF
       REWIND (MCCDENS)
-      IF (FNDLAB(EOFLABEL,MCCDENS))
-     & BACKSPACE MCCDENS
-      CALL NEWLAB(LABEL,MCCDENS,LUPRI)
-! aspg, debug of properties for exacorr
-! keep this code commented out for the moment
-!     write (*,'(3X,A,2I6)') '>>>>> debug : norbt, nz',norbt,nz 
-!     print *,'>>>>> DMO in dirac format'
-!     do i=1, NORBT*NORBT*NZ
-!        write(*,'(3X,I4,2x,F28.10)') i, dmo(i)
-!     end do
-!     print *,'<<<<< DMO in dirac format'
-      CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
-      CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
+      IF (FNDLAB(EOFLABEL,MCCDENS)) BACKSPACE MCCDENS
+      CALL LAB_WRITE(MCCDENS,LABEL,DMO(1:NORBT*NORBT*NZ))
+      CALL LAB_WRITE(MCCDENS,EOFLABEL)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
 C     Switch on evaluation of property output

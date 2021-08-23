@@ -55,9 +55,9 @@ module talsh_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -139,13 +139,13 @@ module talsh_gradient
 
    end subroutine
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(talsh_dm_tens), intent(inout) :: gamma
       type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
       type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
-      integer,             intent(in   ) :: nocc, nvir, print_level
+      integer,             intent(in   ) :: print_level
 !     auxiliary tensors
       type(talsh_tens_t) :: one_tensor
       type(talsh_tens_t) :: tau2_tensor
@@ -154,12 +154,15 @@ module talsh_gradient
       integer(C_INT)              :: one_dims(1)=1
       integer(INTD), dimension(2) :: oo_dims, vv_dims
       integer(INTD), dimension(4) :: vvoo_dims
+      integer(INTD)               :: t2_rank
 !     CCD switch
       logical :: CCD = .false.
 !     error code
       integer :: ierr
 
       if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+      ierr = talsh_tensor_dimensions(t2_tensor,t2_rank,vvoo_dims)
+      if (t2_rank /= 4) stop "t2 tensor corrupted"
 
 !*********************************
 !     construct auxiliary tensor *
@@ -167,12 +170,10 @@ module talsh_gradient
  
       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
       if (.not.CCD) then
-        vvoo_dims(1:2) = nvir
-        vvoo_dims(3:4) = nocc
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-        vv_dims = nvir
+        vv_dims = vvoo_dims(1:2)
         ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-        oo_dims = nocc
+        oo_dims = vvoo_dims(3:4)
         ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
       end if
 
