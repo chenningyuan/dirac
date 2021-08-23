@@ -1,7 +1,7 @@
 INTGRL
    Rn86_Ne-like (76+) cation, BIG NUCLEAR EXPONENT
    ... to simulate with heavy element with few electrons
-C   1   
+C   1    0   
        86.    1   1.0d+99
 Rn     .0000000000        0.0000000000        0.0000000000
 LARGE    3   1   1   1  
