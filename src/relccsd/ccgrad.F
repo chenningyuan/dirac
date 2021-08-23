@@ -1623,12 +1623,12 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE STORE_CC_DENSITY (WF,DMO)
+      SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
       use labeled_storage
 C
 C---------------Description--------------------------------------------
 C
-C     Retrieve relaxed density matrix for processing by other modules
+C     Store relaxed density matrix for processing by other modules
 C     of DIRAC (currenty only first-order properties)
 C
 C---------------Routines called----------------------------------------
@@ -1645,16 +1645,14 @@ C
 #include "files.inc"
 #include "priunit.h"
 #include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------
 C
       CHARACTER*4 WF                     ! Wave function type
       REAL*8 DMO(*)                      ! Density matrix (MO-basis)
+      INTEGER NMO                        ! Size of MO basis
+      INTEGER NZ                         ! Number of active quaternions
 C
 C---------------Local variables--------------------------------------
 C
@@ -1678,7 +1676,7 @@ C     without being able to do a replace or check for old data.
       END IF
       REWIND (MCCDENS)
       IF (FNDLAB(EOFLABEL,MCCDENS)) BACKSPACE MCCDENS
-      CALL LAB_WRITE(MCCDENS,LABEL,DMO(1:NORBT*NORBT*NZ))
+      CALL LAB_WRITE(MCCDENS,LABEL,DMO(1:NMO*NMO*NZ))
       CALL LAB_WRITE(MCCDENS,EOFLABEL)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 

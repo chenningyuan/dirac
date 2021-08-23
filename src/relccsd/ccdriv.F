@@ -3064,7 +3064,7 @@ C
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C        Write density matrix to file for later processing
 C
-         CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
+         CALL STORE_CC_DENSITY ('MP2 ', a_DMO, NORBT, NZ )
 C
 C        Generate natural orbitals, if desired
 C
@@ -3219,7 +3219,7 @@ C        Solve Z-vector equations
 C        Write density matrix to file for later processing
          if (myproc==0) then 
 
-           CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+           CALL STORE_CC_DENSITY ('CCSD', a_DMO, NORBT, NZ )
 
          endif
 
