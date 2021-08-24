@@ -60,8 +60,11 @@ module mp2no_driver
                   real(kind=8), pointer              :: NOs_AO(:,:,:)           ! new canonical orbital in AO basis
                   real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
                   integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
+                  integer                            :: nocc, nvirt
 
-                  integer                            :: i,j,k,q,sz_print
+                  type(cmo)                          :: qorbital
+                  type(basis_set_info_t)             :: ao_basis
+                  integer                            :: i,j,k,q,sz_print,ierr
                   real                               :: trace,compact
                   real(kind=8)                       :: temp
 
@@ -81,10 +84,12 @@ module mp2no_driver
                      end do
                   end do
 
-                  flb = 0                                    
-                  sz = NORBT
-                  sz_occ = N_CORR_OCC
-                  call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
+                  nvirt = NORBT
+                  nocc  = N_CORR_OCC
+                  call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+                  call convert_mo_to_quaternion(qorbital)
+                  allocate(HF_AO(qorbital%nao,nvirt,4))
+                  HF_AO = qorbital%coeff_q(:,nocc+1:nocc+nvirt,:)
                   call print_date('Read HF orbital coefficient from DFCOEF')
 
                   call diagonal_matrix_quater(density_quat,N_OCCUPATION,NOs_MO)    
@@ -170,12 +175,11 @@ module mp2no_driver
           
           
                    type(basis_set_info_t)   :: ao_basis
-                   type(qumo)               :: qorbital        ! save the new canonical orbital 
-                   type(qumo)               :: qorbital_hf     ! save the original HF canonical orbital 
+                   type(cmo)                :: qorbital        ! save the new canonical orbital 
+                   type(cmo)                :: qorbital_hf     ! save the original HF canonical orbital 
           
                    integer                  :: nocc            ! occupied orbital 
                    integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
-                   integer,allocatable      :: index(:)
                    integer                  :: i,j
                    integer                  :: ierr
                    integer                  :: nmo_hf
@@ -183,43 +187,34 @@ module mp2no_driver
           
           
           !        read information of from DFCOEF
-                   call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
+                   call read_from_dirac(ao_basis,qorbital_hf,file_old,ierr)
+                   call convert_mo_to_quaternion(qorbital_hf)
           
                    nocc = exa_input%nkr_occ
                    nao = qorbital_hf%nao
                    nno = size(NOs_AO,2)
                    nmo = nocc+nno
                    nmo_hf = qorbital_hf%nmo
-                   allocate(index(nmo))
-                   do i = 1, nmo
-                      index(i) = i ! we set the index compatible with the fact that we store all mo's
-                   end do
           
-                   call alloc_mo(qorbital,nao,nmo_hf,4)
-                   qorbital%restricted = qorbital_hf%restricted
-                   qorbital%complex_algebra = qorbital_hf%complex_algebra
-                   qorbital%total_energy = qorbital_hf%total_energy
-                   qorbital%fermion_irrep = qorbital_hf%fermion_irrep
-                   qorbital%boson_irrep = 0
-                   qorbital%index = index
-                   
+                   ! create copy of HF orbitals
+                   call copy_mo(qorbital_hf,qorbital)
                    
                    do i = 1, nmo
                       qorbital%energy(i)=N_OCCUPATION(i) !we use occupation number to replace the orbital energy
                    end do
  
                              
+                   ! replace virtuals by NOs
                    do  j = 1, nmo
                       do  i = 1, qorbital%nao
-                            qorbital%coeff(i,j,1)=NOs_AO(i,j,1)
-                            qorbital%coeff(i,j,2)=NOs_AO(i,j,2)
-                            qorbital%coeff(i,j,3)=NOs_AO(i,j,3)
-                            qorbital%coeff(i,j,4)=NOs_AO(i,j,4)
+                            qorbital%coeff_q(i,j,1)=NOs_AO(i,j,1)
+                            qorbital%coeff_q(i,j,2)=NOs_AO(i,j,2)
+                            qorbital%coeff_q(i,j,3)=NOs_AO(i,j,3)
+                            qorbital%coeff_q(i,j,4)=NOs_AO(i,j,4)
                       enddo
                    enddo
           
-          
-                   call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
+                   call write_mos_to_dirac(ao_basis,qorbital,file_new)
                    call print_date('Write natural orbitals into DFNOSAO file like DFCOEF')
           
       end subroutine write_no_to_newfile

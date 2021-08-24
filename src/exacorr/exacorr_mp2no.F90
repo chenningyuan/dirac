@@ -13,6 +13,7 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
+        use talsh_mp2no, only: get_new_orbital, get_transform_Fock, write_talsh_matrix
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi
@@ -58,13 +59,15 @@ module exacorr_mp2no
             real(kind=8), pointer  :: New_orbital_energy(:)   ! new orbital energy from qdia of Fock matrix in new orbital basis
             logical                :: alive
             real(kind=8)           :: threshold
-            integer                :: i
+            integer                :: i, nocc
     
             call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
             if (my_MPI_rank == 0) call print_date("Entering MP2_NO Module")
             
             threshold = exa_input%t_mp2no
-    
+            !LV: the line below should be improved, will not work if a user does not give the HOMO as the last orbital
+            nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
+
             inquire(file="NOs_MO", exist=alive)
             if (alive) then
                 call interface_mpi_comm_rank(global_communicator,my_MPI_rank)  
@@ -73,14 +76,16 @@ module exacorr_mp2no
                 end if 
             else
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
+                if (my_MPI_rank == 0) &
                 call get_transform_Fock(exa_input,'DM_complex')
             end if
-            call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
-                                  New_orbital_energy,'NOs_MO',N_cano)
-            call write_to_newfile(exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
-    
-            call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-            if (my_MPI_rank == 0) call print_date("Leave MP2_NO Module")
+
+            if (my_MPI_rank == 0) then
+               call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
+                                    New_orbital_energy,'NOs_MO',N_cano)
+               call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+               call print_date("Leave MP2_NO Module")
+            end if
 
             ierr=exatns_method_unregister('ZERO')
             ierr=exatns_method_unregister('Aoint_calculator_mp2')
@@ -93,6 +98,8 @@ module exacorr_mp2no
 
 !-------------------------------------------------------------------------------------------
         subroutine exacorr_generate_MP2_VNO_MObasis (exa_input)
+
+         use talsh
 
 !        This subroutine drives the mp2no DM calculation ans MP2 energy as well
 !        The implementation is based on the parallel ExaTensor library
@@ -146,6 +153,13 @@ module exacorr_mp2no
          type(denom3_t)     :: denom3
          type(chol_J)       :: j_chol
          type(set_ff_t)     :: ff_set
+
+         ! variables for talsh, density matrix needs to be smaller than buffer size 
+         integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
+         integer(C_INT)                  :: host_arg_max
+         ! talsh tensor to get local copy
+         type(talsh_tens_t)           :: tensor_slice
+         integer(INTD), dimension(2)  :: h_dims
 
 !        Make some noise so that we know we are here
          call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
@@ -226,10 +240,11 @@ module exacorr_mp2no
             ierr=exatns_tensor_create(comm_t%fov,"fov",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(comm_t%fvv,"fvv",vv_id,vv_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            call init_fock_exat (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root, &
-                            f_delta,denom,orb_set,ff_set,exa_input,scf_energy)
+            ierr=exatns_tensor_init(comm_t%foo,ZERO)
+            ierr=exatns_tensor_init(comm_t%fov,ZERO)
+            ierr=exatns_tensor_init(comm_t%fvv,ZERO)
+            call get_scf (scf_energy)
             call print_date('initialized Fock matrix')
-
 
       !     Initialize t2 amplitudes with the MP2 values
             ierr=exatns_tensor_create(comm_t%t2,"t2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
@@ -252,14 +267,21 @@ module exacorr_mp2no
             write(*,*) "    MP2 energy = ", mp2_energy
             write(*,*) ""
 
-
             ierr=exatns_tensor_transform(int_t%oovv,denom)
             ierr=exatns_tensor_init(MP2_density_tensor%prime_vv,ZERO)
             ierr=exatns_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv, &
                                     int_t%oovv,int_t%oovv,ONE_HALF)               
 !        Make some noise so that we know we are proceeding 
             
-            call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
+            buf_size=exa_input%talsh_buff*buf_size
+            ierr=talsh_init(buf_size,host_arg_max)
+            call print_date('Initialized talsh library')
+            write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+            h_dims=nvir
+            ierr=talsh_tensor_construct(tensor_slice,EXA_DATA_KIND_C8,h_dims,init_val=ZERO)
+            ierr=exatns_tensor_get_slice(MP2_density_tensor%prime_vv,tensor_slice)
+
+            call write_talsh_matrix(nvir,tensor_slice,'DM_complex')
             call print_date('Save DM in MO (spinor) basis to file : DM_complex')
 
             ierr=exatns_tensor_destroy(int_t%oooo)
@@ -302,107 +324,8 @@ module exacorr_mp2no
             write(*,*) " Leaving mp2no DM construction routine"
          end if
          return
-                              
 
         end subroutine exacorr_generate_MP2_VNO_MObasis
-
-!------------------------------------------------------------------------------------------------------------------
-
-        subroutine write_matrix(exa_input,gamma,file_out)
-            ! Routine for writing complex density matrix into the file'DM_complex'. 
-            
-            use talsh
-            use tensor_algebra
-#if defined (VAR_MPI)
-      
-      !     variables for mpi
-            integer(C_INT)    :: read_node
-            integer           :: my_MPI_rank
-#endif
-            
-            ! input variables
-                  type(exacc_input),   intent(in   )  :: exa_input
-                  type(exatns_dm_tens)                :: gamma
-                  character(len=*),intent(in)         :: file_out
-            ! talsh tensor to get local copy
-                  type(talsh_tens_t)           :: tensor_slice
-                  integer(INTD), dimension(2)  :: h_dims
-            
-            ! matrix dimensions
-                  integer :: nocc, nvir
-            ! body pointers
-                  type(C_PTR)                     :: body_p2
-                  complex(8), pointer, contiguous :: dm_block(:,:)
-                  complex(8), allocatable         :: dm_mo_fort(:,:)
-            ! error code
-                  integer :: ierr
-            ! loop variables
-                  integer :: i, j, k
-                  integer :: mp2dm
-            ! debug
-                  logical :: debug=.false.
-            ! variables for talsh, density matrix needs to be smaller than buffer size 
-                  integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
-                  integer(C_INT)                  :: host_arg_max
-            
-            
-                  read_node=0
-            !***************
-            !     set dims *
-            !***************
-                  nocc    = 0
-                  nvir    = exa_input%nvir
-                     
-            !***************************************
-            !     copy DM blocks into one large DM *
-            !***************************************
-                     
-                  allocate (dm_mo_fort(nvir,nvir))
-                  dm_mo_fort = ZERO
-                     
-                  buf_size=exa_input%talsh_buff*buf_size
-                  ierr=talsh_init(buf_size,host_arg_max)
-                  call print_date('Initialized talsh library')
-                  write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
-
-                  !-----------
-                  !| OO | OV |
-                  !-----------
-                  !| VO | VV |
-                  !-----------
-                              
-                  !     vv
-                  h_dims=nvir
-                  ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-                  ierr=exatns_tensor_get_slice(gamma%prime_vv,tensor_slice)
-                  ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,read_node,DEV_HOST)
-                  call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
-                  dm_mo_fort(1:nvir,1:nvir) = dm_block
-
-                  
-                  call get_free_fileunit(mp2dm)
-                  open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
-                  ! write dimension of the matrix 
-                  write(mp2dm) nocc+nvir
-                  ! write matrix element 
-                  write(mp2dm) dm_mo_fort
-
-                  ierr=talsh_tensor_destruct(tensor_slice)
-                  ierr=talsh_shutdown()
-            
-                  if (debug) then
-                     print *,'<<<<< DM, complete, before formatting to DM_complex'
-                     do j=1,(nocc+nvir)
-                        do i=1,(nocc+nvir)
-                           write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
-                        end do
-                     end do
-                     print *,'>>>>> DM, complete, after formatting to DM_complex'
-                  end if
-            
-                  close(mp2dm,status='KEEP')
-            
-            end subroutine write_matrix
 
 !-------------------------------------------------------------------------------------------------------------------
 
@@ -916,457 +839,6 @@ module exacorr_mp2no
          end if
 
         end subroutine get_MP2_integrals
-
-
-        subroutine init_fock_exat (comm_t,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
-                              f_delta,denom,orb_set,ff_set,exa_input,scf_energy)
-
-          implicit none
-  
-          type(exatns_comm_tens), intent(inout)  :: comm_t
-          type(exatns_intg_tens), intent(inout)  :: int_t
-          integer(INTL),dimension(2), intent(in) :: oo_root, ov_root, vv_root
-          integer(INTD),dimension(2), intent(in) :: oo_id, ov_id, vv_id 
-          type(delta_t)                          :: f_delta
-          type(denom_t)                          :: denom
-          type(set_energy_t)                     :: orb_set
-          type(set_ff_t)                         :: ff_set
-          type(exacc_input), intent(in)          :: exa_input
-          real(8), intent(out)                   :: scf_energy
-          integer                                :: iff=1   !TODO: make a loop for field strngths
-
-          real(8)                    :: ev_energy, off_diag
-          !        scalars (need to be defined as tensor types)
-          type(tens_rcrsv_t)         :: val_tensor, tensor_one, tensor_h
-          !        identity matrix for contraction 
-          type(tens_rcrsv_t)         :: id_mat_occ, orb_tensor
-          integer(INTD)              :: ierr
-          complex(8)                 :: result_val
-          !        finite field stuff
-          integer                    :: i,i_prop
-
-          if (one_el_exist) then
-
-            ! Allocate two auxilliary tensors needed to extract results or multiply by one
-            ierr=exatns_tensor_create(val_tensor,"val_tensor",EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(tensor_one,"tensor_one",EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_init(tensor_one, ONE)
-
-            ! Make the density matrix (which is an identity matrix in the MO basis)
-            ierr=exatns_tensor_create(id_mat_occ,"id_mat_occ",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_transform(id_mat_occ,'Unity_mp2')
-            if (exa_input%print_level >0) call print_date('Density matrix initialized')
-
-            ! Initialize the sub blocks of the Fock matrix with the (effective) one-electron integrals
-            ierr=exatns_tensor_init(comm_t%foo,'OE_oo_mp2')
-            ierr=exatns_tensor_init(comm_t%fov,'OE_ov_mp2')
-            ierr=exatns_tensor_init(comm_t%fvv,'OE_vv_mp2')
-            if(ierr.ne.EXA_SUCCESS) call quit(ierr,'Creating one electron integrals failed!')
-            if (exa_input%print_level >0) call print_date('one electron integrals added to Fock Matrix')
-
-            !adding property integrals
-            do i=1,exa_input%nff(1)
-              call get_ff_ind (i_prop,exa_input%ff_names(i))
-              call ff_set%reset(i_prop)
-
-              ierr=exatns_tensor_create(tensor_h,"tensor_h",oo_id,oo_root,EXA_DATA_KIND_C8)
-              write(*,*) 'ff_set create error', ierr
-              ierr=exatns_tensor_init(tensor_h, ff_set)
-              write(*,*) 'ff_set init error', ierr
-              ierr=exatns_tensor_contract("F(p,q)+=P(p,q)*O()",comm_t%foo,tensor_h,tensor_one,exa_input%ff(i,iff))
-              write(*,*) 'ff_set contract error', ierr
-              write(*,*) " prop =",print_tensornorm2(tensor_h)
-              write(*,*) " field =",exa_input%ff(i,iff)
-              ierr=exatns_tensor_traverse(tensor_h,'PrintTensor_mp2')
-              ierr=exatns_tensor_destroy(tensor_h)
-              write(*,*) " F_oo+prop =",print_tensornorm2(comm_t%foo)
-              write(*,*) 'ff_set destroy error', ierr
-              ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor_mp2')
-            
-            end do
-
-
-            ! Calculate the Hartree-Fock energy
-            ierr=exatns_tensor_init(val_tensor, ZERO)
-            ierr=exatns_tensor_contract("R()=F(i,j)*I(i,j)",val_tensor,comm_t%foo,id_mat_occ)
-            ierr=exatns_tensor_create(tensor_h,"tensor_h",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-            ierr=exatns_tensor_init(tensor_h, ZERO)
-            ierr=exatns_tensor_contract("H(i,j)+=V(i,k,j,l)*I(k,l)",tensor_h,int_t%oooo,id_mat_occ, ONE_HALF)
-            ierr=exatns_tensor_contract("R()+=H(i,j)*I(i,j)",val_tensor,tensor_h,id_mat_occ)
-            ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-            scf_energy=real(result_val,8) ! Casting into real(8)
-            ierr=exatns_tensor_destroy(tensor_h)
-            scf_energy=scf_energy+e_core
-            write(*,*) ""
-            write (*,'(A,F23.15)') "  SCF energy (single determinant, calculated) = ", scf_energy
-            write(*,*) ""
-            ! Make the complete Fock matrix by addding the valence electron contributions
-            ierr=exatns_tensor_contract("F(i,j)+=V(i,k,j,l)*I(k,l)",comm_t%foo,int_t%oooo,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(i,a)+=V(k,i,l,a)*I(k,l)",comm_t%fov,int_t%ooov,id_mat_occ, ONE)
-            ierr=exatns_tensor_contract("F(a,b)+=V(a,k,b,l)*I(k,l)",comm_t%fvv,int_t%vovo,id_mat_occ, ONE)
-            if (exa_input%print_level >0) call print_date('two electron integrals added to Fock Matrix')
-
-            if (exa_input%print_level >10) then
-              ierr=exatns_tensor_traverse(comm_t%foo,'PrintTensor_mp2')
-              ierr=exatns_tensor_traverse(comm_t%fov,'PrintTensor_mp2')
-              ierr=exatns_tensor_traverse(comm_t%fvv,'PrintTensor_mp2')
-            end if
-
-            call update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, exa_input%print_level)
-
-            ! Subtract orbital energies from the diagonal (they are moved to the other side of the CC equations)
-            ierr=exatns_tensor_create(orb_tensor,"orb_oo",oo_id,oo_root,EXA_DATA_KIND_C8)
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            ierr=exatns_tensor_init(orb_tensor,orb_set)
-            if(ierr.ne.EXA_SUCCESS) call quit('init_fock: set orbitals failed!')
-            ierr=exatns_tensor_contract("F(i,j)+=E(i,j)*O()",comm_t%foo,orb_tensor,tensor_one, MINUS_ONE)
-            ierr=exatns_tensor_destroy(orb_tensor)
-            ierr=exatns_tensor_create(orb_tensor,"orb_vv",vv_id,vv_root,EXA_DATA_KIND_C8)
-            if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
-            ierr=exatns_tensor_init(orb_tensor,orb_set)
-            if(ierr.ne.EXA_SUCCESS) call quit('init_fock: set orbitals failed!')
-            ierr=exatns_tensor_contract("F(a,b)+=E(a,b)*O()",comm_t%fvv,orb_tensor,tensor_one, MINUS_ONE)
-            ierr=exatns_tensor_destroy(orb_tensor)
-            if (exa_input%print_level >0) call print_date('orbital energies subtracted from the diagonal')
-            
-            if (exa_input%print_level >0) then
-              ! Compute norms (check whether this single determinant is contructed from optimized orbitals)
-              write(*,*) ""
-              ierr=exatns_tensor_init(val_tensor, ZERO)
-              ierr=exatns_tensor_contract("R()=F(i,j)*F(i,j)",val_tensor,comm_t%foo,comm_t%foo)
-              ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-              off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (OO, no diagonal) = ", off_diag
-            
-              ierr=exatns_tensor_init(val_tensor, ZERO)
-              ierr=exatns_tensor_contract("R()=F(i,a)*F(i,a)",val_tensor,comm_t%fov,comm_t%fov)
-              ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-              off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (OV, all        ) = ", off_diag
-
-              ierr=exatns_tensor_init(val_tensor, ZERO)
-              ierr=exatns_tensor_contract("R()=F(a,b)*F(a,b)",val_tensor,comm_t%fvv,comm_t%fvv)
-              ierr=exatns_tensor_get_scalar(val_tensor,result_val)
-              off_diag=real(result_val,8) ! Casting into real(8)
-              write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", off_diag
-              write(*,*) ""
-            end if 
-            ierr=exatns_tensor_destroy(tensor_h)
-            ierr=exatns_tensor_destroy(id_mat_occ)
-            ierr=exatns_tensor_destroy(val_tensor)
-            ierr=exatns_tensor_destroy(tensor_one)
-          else
-            ierr=exatns_tensor_init(comm_t%foo,ZERO)
-            ierr=exatns_tensor_init(comm_t%fov,ZERO)
-            ierr=exatns_tensor_init(comm_t%fvv,ZERO)
-
-            call get_scf ( scf_energy )
-            write(*,*) ""
-            write (*,'(A,F23.15)') "    SCF energy ( read ) = ", scf_energy
-            write(*,*) ""
-
-          end if
-
-        end subroutine init_fock_exat
-
-        subroutine update_eps(comm_t, f_delta, denom, orb_set, oo_root, vv_root, oo_id, vv_id, print_level)
-          
-          implicit none
-
-          type(exatns_comm_tens)                 :: comm_t
-          type(delta_t)                          :: f_delta 
-          type(denom_t)                          :: denom
-          type(set_energy_t)                     :: orb_set 
-          integer(INTL),dimension(2), intent(in) :: oo_root, vv_root
-          integer(INTD),dimension(2), intent(in) :: oo_id, vv_id 
-          integer, intent(in)                    :: print_level
-
-          real(8),allocatable        :: eps_occ(:),eps_vir(:)
-          integer                    :: nocc, nvir, i
-          integer(INTL),dimension(2) :: delta_set
-          type(tens_rcrsv_t)         :: d_mat, res_val
-          complex(8)                 :: res
-          integer(INTD)              :: ierr
-
-          nocc=oo_root(1)
-          nvir=vv_root(1)
-
-          allocate(eps_occ(nocc))
-          allocate(eps_vir(nvir))
-
-          ierr=exatns_tensor_create(res_val,"res_val",EXA_DATA_KIND_C8)
-
-          ierr=exatns_tensor_create(d_mat,"d_mat",oo_id,oo_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(d_mat,ZERO)
-          do i = 1, nocc
-              delta_set=i
-              call f_delta%reset(delta_set,2)
-              ierr=exatns_tensor_transform(d_mat,f_delta)
-
-              ierr=exatns_tensor_init(res_val,ZERO)
-              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_val,comm_t%foo,d_mat)
-              ierr=exatns_tensor_get_scalar(res_val,res)
-              eps_occ(i)=real(res,8)
-
-          end do
-          ierr=exatns_tensor_destroy(d_mat)
-
-          ierr=exatns_tensor_create(d_mat,"d_mat",vv_id,vv_root,EXA_DATA_KIND_C8)
-          ierr=exatns_tensor_init(d_mat,ZERO)
-          do i = 1, nvir
-              delta_set=i
-              call f_delta%reset(delta_set,2)
-              ierr=exatns_tensor_transform(d_mat,f_delta)
-
-              ierr=exatns_tensor_init(res_val,ZERO)
-              ierr=exatns_tensor_contract("R()+=W(p,q)*C(p,q)",res_val,comm_t%fvv,d_mat)
-              ierr=exatns_tensor_get_scalar(res_val,res)
-              eps_vir(i)=real(res,8)
-
-          end do
-          ierr=exatns_tensor_destroy(d_mat)
-          print *, "eps_occ", eps_occ
-          print *, "eps_occ", eps_vir
-          
-          if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,2)
-
-          call denom%reset(eps_occ,eps_vir,nocc,nvir)
-          call orb_set%reset(eps_occ,eps_vir,nocc,nvir)
-
-          deallocate(eps_occ)
-          deallocate(eps_vir)
-          ierr=exatns_tensor_destroy(res_val)
-
-        end subroutine update_eps
-
-!------------------------------------------------------------------------------------------------------------------
-        subroutine get_transform_Fock (exa_input,Matrix_file)
-            ! This routine is used for doing transform of fock matrix from MO basis to NO basis.
-            ! The new basis set comes from the digonalization of density matrix.
-            ! The all natural orbitals and occupation numbers are saved in file NOs_MO 
-            ! The transformed Fock matrix are saved in file FM_in_NatOrb
-            ! In principle, this routine is general. Any type complex matrix could be used for getting the new basis and transformed Fock matrix. 
-            ! This routine doesn't truncate the new basis set.    
-            ! Written by Xiang Yuan   
-   
-                     character(len=*),intent(in)        :: Matrix_file
-                     type(exacc_input), intent(in)      :: exa_input
-   
-                     real(kind=8), pointer              :: N_OCCUPATION(:)         ! occupation number from qdia of DM
-                     complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
-                     real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
-                     real(kind=8), pointer              :: NOs_MO(:,:,:)           ! natural orbital from qdia of DM
-                     real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-                     real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-                     integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
-                     integer                            :: i
-                     integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
-   
-                                                           
-                  call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-                  if (my_MPI_rank == 0) then
-
-                     call read_matrix_comp(MP2_density_comp,Matrix_file)
-                     call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
-   
-                     call complex_to_quaternion(MP2_density_comp,MP2_density_quat)
-                     call print_date('changed MO DM representation (spinor->quaternion)')
-   
-                     call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION,NOs_MO)    
-                     call print_date('diagonalized MO DM (quaternion)')
-   
-                     call sort_values_vectors (N_OCCUPATION,NOs_MO)
-                     call print_date('Sorted natural orbitals by occupation number')
-   
-                     call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
-                     call print_date('Wrote all natural orbital and occupation number in file NOs_MO')
-                       
-                     flb = 0                     ! we read vv block of Fock matrix
-                     sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
-                     sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-                     call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
-                     call print_date('read Fock matrix from DFCOEF')
-   
-                     call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
-                     call print_date('got full VV Fock matrix in natural orbital basis F_VV_NO')
-   
-                     call quater_write(Fock_NO,"FM_in_NatOrb")
-                     call print_date('wrote F_VV_NO in file FM_in_NatOrb')
-                  end if 
-                           
-         end subroutine get_transform_Fock
-   
-            
-   !------------------------------------------------------------------------------------------------------------------------------
-         subroutine get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION_reduced,New_orbital_energy,file_orb,N_reduced)
-         ! This routine is used for getting new truncated canonical orbital in AO basis
-         ! and the corresponding orbital energy.
-   
-               type(exacc_input), intent(in)      :: exa_input
-               real(kind=8),intent(in)            :: threshold
-               real(kind=8), pointer,intent(out)  :: NOs_AO(:,:,:)           ! new canonical orbital in AO basis 
-               real(kind=8), pointer,intent(out)  :: N_OCCUPATION_reduced(:) ! occupation number from qdia of DM
-               real(kind=8), pointer,intent(out)  :: New_orbital_energy(:)   ! new orbital energy from qdia of Fock matrix in new orbital basis
-               character(len=*),intent(in)        :: file_orb
-               integer,intent(inout)              :: N_reduced               ! number of reduced natural orbital 
-   
-   
-               real(kind=8)                       :: Sum_N_OCCUPATION_total
-               real(kind=8)                       :: Sum_N_OCCUPATION_reduced 
-               real(kind=8)                       :: Perc_OCCUPATION_reduced
-               real(kind=8), pointer              :: NOs_MO_reduced(:,:,:)   ! natural orbitals which have occupation number larger than threshold
-               real(kind=8), pointer              :: New_cano_MO(:,:,:)      ! new canonical orbital in AO basis
-               real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
-               real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
-               real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-               integer                            :: sz,flb, fl,sz_occ       ! size of matrix and flag for block
-               integer                            :: i,j,k
-               integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
-               
-            call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-            if (my_MPI_rank == 0) then   
-               call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
-                        threshold,N_reduced,file_orb)
-               call print_date('got the truncated NO and occupation number from NOs_MO')
-               Sum_N_OCCUPATION_reduced = 0.0 
-               do i=1, size(N_OCCUPATION_reduced)
-                  Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
-               end do
-               Perc_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
-               Perc_OCCUPATION_reduced = Perc_OCCUPATION_reduced * 100
-
-               write(*,*) ""
-               write(*,"(A50,2X,D10.4)") 'MP2 occupation number (o.n.) threshold (t) : ', threshold
-               write(*,"(A50,2X,I10)")    'Number of MP2 FVNOs retained (o.n. > t)    : ', N_reduced
-               write(*,*) ""
-               write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., retained NOs (a)    : ', Sum_N_OCCUPATION_reduced
-               write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., all NOs (b)         : ', Sum_N_OCCUPATION_total
-               write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
-               write(*,*) ""
-
-               flb = 0                       ! we only read virtual orbital 
-               sz = exa_input%nkr_vir        ! the number of virtual orbital 
-               sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-               call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
-               call print_date('read HF orbital coefficient from DFCOEF')
-               
-               flb = 0                         ! we read vv block of Fock matrix
-               sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
-               sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-               call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
-               call print_date('read Fock matrix from DFCOEF')
-   
-               call basis_transform_matrix(Fock_HF,NOs_MO_reduced,Fock_NO)
-               call print_date('transformed Fock matrix into reduced NO basis')
-               
-               call get_Cano_Orbital(NOs_MO_reduced,New_cano_MO,Fock_NO,New_orbital_energy)
-               call print_date('Got new Canonical orbital in MO basis')
-   
-               call basis_transform_vector(New_cano_MO,HF_AO,NOs_AO)
-               call print_date('Got new orbital in AO basis')
-               
-               call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
-
-            end if
-         end subroutine
-   
-   
-   !-----------------------------------------------------------------------------------------------------------------------------
-         subroutine write_to_newfile (exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,file_old,file_new)
-     !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
-     !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
-     !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-
-            implicit none
-       
-            type(exacc_input), intent(in)         :: exa_input
-            character(len=*),intent(in)           :: file_old,file_new
-            real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
-            real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
-            real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
-   
-   
-            type(basis_set_info_t)   :: ao_basis
-            type(qumo)               :: qorbital        ! save the new canonical orbital 
-            type(qumo)               :: qorbital_hf     ! save the original HF canonical orbital 
-   
-            integer                  :: nocc            ! occupied orbital 
-            integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
-            integer,allocatable      :: index(:)
-            integer                  :: i,j
-            integer                  :: ierr
-            integer                  :: nmo_hf
-            real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
-            integer       :: my_MPI_rank                    ! needed to start exatensor, MPI should already be started in threaded mode
-   
-
-      call interface_mpi_comm_rank(global_communicator,my_MPI_rank)
-      if (my_MPI_rank == 0) then 
-   !        read information of from DFCOEF
-            call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
-   
-            nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
-            nao = qorbital_hf%nao
-            nno = size(NOs_AO,2)
-            nmo = nocc+nno
-            nmo_hf = qorbital_hf%nmo
-            allocate(index(nmo))
-            do i = 1, nmo
-               index(i) = i ! we set the index compatible with the fact that we store all mo's
-            end do
-   
-            call alloc_mo(qorbital,nao,nmo_hf,4)
-            qorbital%allocated = qorbital_hf%allocated
-            qorbital%restricted = qorbital_hf%restricted
-            qorbital%complex_algebra = qorbital_hf%complex_algebra
-            qorbital%total_energy = qorbital_hf%total_energy
-            qorbital%fermion_irrep = qorbital_hf%fermion_irrep
-            qorbital%boson_irrep = 0
-            qorbital%index = index
-   
-   
-            do i = 1, nocc
-               qorbital%energy(i)=qorbital_hf%energy(i)
-            end do
-   
-            do i = nocc+1, nmo
-               qorbital%energy(i)=New_orbital_energy(i-nocc)
-   !            qorbital%energy(i)=qorbital_hf%energy(i)
-            end do
-   
-            if (nmo < nmo_hf) then
-                  do i=nmo+1, nmo_hf
-                     qorbital%energy(i)=qorbital_hf%energy(nmo_hf)*100
-      !               print *, "removed orbital energy", qorbital%energy(i)
-                  end do
-            end if 
-
-            do j = 1, nocc
-               do  i = 1, qorbital%nao
-                     qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)
-                     qorbital%coeff(i,j,2)=qorbital_hf%coeff(i,j,2)
-                     qorbital%coeff(i,j,3)=qorbital_hf%coeff(i,j,3)
-                     qorbital%coeff(i,j,4)=qorbital_hf%coeff(i,j,4)
-               enddo
-            enddo
-   
-   
-            do  j = nocc+1, nmo
-               do  i = 1, qorbital%nao
-                     qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
-                     qorbital%coeff(i,j,2)=NOs_AO(i,j-nocc,2)
-                     qorbital%coeff(i,j,3)=NOs_AO(i,j-nocc,3)
-                     qorbital%coeff(i,j,4)=NOs_AO(i,j-nocc,4)
-               enddo
-            enddo
-   
-   
-            call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
-            call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
-   
-      end if 
-      end subroutine write_to_newfile
 
 !-----------------------------------------------------------------------------------------------------
 #else
