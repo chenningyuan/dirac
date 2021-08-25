@@ -342,9 +342,9 @@ module talsh_cc
                print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
                print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
             end if
-            print *,'debug: exa_input%eom_input(1)%flavor is',exa_input%eom_input(1)%flavor
+            print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
 
-            if (exa_input%eom_input(1)%flavor.eq."EE" .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
+            if (exa_input%eom_input(1)%flavor.eq."EE    " .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
                call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
             end if
 

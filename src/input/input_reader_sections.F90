@@ -914,32 +914,28 @@
          if (kw_matches(word, '.FLAVOR')) then
             call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%flavor)
             wordtemp = exa_input%eom_input(exa_input%current_eom_input)%flavor
-            print *,'flavor read',wordtemp
-!           if ( .not.(kw_matches(wordtemp, 'EE')      .and. &
-!               &      kw_matches(wordtemp, 'EA')      .and. &
-!               &      kw_matches(wordtemp, 'IP')      .and. &
-!               &      kw_matches(wordtemp, 'DIP')     .and. &
-!               &      kw_matches(wordtemp, 'DEA')     .and. &
-!               &      kw_matches(wordtemp, 'ST-EE')   .and. &
-!               &      kw_matches(wordtemp, 'ST-IP')   .and. &
-!               &      kw_matches(wordtemp, 'ST-EA')   .and. &
-!               &      kw_matches(wordtemp, 'ST-DIP')  .and. &
-!               &      kw_matches(wordtemp, 'ST-DEA')  .and. &
-!               &      kw_matches(wordtemp, 'P2-EE')   .and. &
-!               &      kw_matches(wordtemp, 'P2-EA')   .and. &
-!               &      kw_matches(wordtemp, 'P2-IP')   .and. &
-!               &      kw_matches(wordtemp, 'P-EE')    .and. &
-!               &      kw_matches(wordtemp, 'P-EA')    .and. &
-!               &      kw_matches(wordtemp, 'P-IP')    .and. &
-!               &      kw_matches(wordtemp, 'P-P2-EE') .and. &
-!               &      kw_matches(wordtemp, 'P-P2-EA') .and. &
-!               &      kw_matches(wordtemp, 'P-P2-IP'))) then
-!              call quit(wordtemp//' is an unsupported eomcc flavor')
-!           else
-!              print *,'debug, ',wordtemp,' is a supported flavor'
-!              exa_input%current_eom_input = exa_input%current_eom_input + 1
-!              setup = .true.
-!           end if
+            print '(A)','debug, flavor read:_'//wordtemp//'_'
+            if ( (kw_matches(wordtemp, 'EE     ') .or. &
+                & kw_matches(wordtemp, 'EA     ') .or. &
+                & kw_matches(wordtemp, 'IP     ') .or. &
+                & kw_matches(wordtemp, 'DIP    ') .or. &
+                & kw_matches(wordtemp, 'DEA    ') .or. &
+                & kw_matches(wordtemp, 'ST-EE  ') .or. &
+                & kw_matches(wordtemp, 'P2-EE  ') .or. &
+                & kw_matches(wordtemp, 'P2-EA  ') .or. &
+                & kw_matches(wordtemp, 'P2-IP  ') .or. &
+                & kw_matches(wordtemp, 'P-EE   ') .or. &
+                & kw_matches(wordtemp, 'P-EA   ') .or. &
+                & kw_matches(wordtemp, 'P-IP   ') .or. &
+                & kw_matches(wordtemp, 'P-P2-EE') .or. &
+                & kw_matches(wordtemp, 'P-P2-EA') .or. &
+                & kw_matches(wordtemp, 'P-P2-IP'))) then
+               print '(A)','debug:_'//wordtemp//'_ is a supported flavor'
+               exa_input%current_eom_input = exa_input%current_eom_input + 1
+               setup = .true.
+            else
+               call quit('_'//wordtemp//'_ is an unsupported eomcc flavor')
+            end if
          end if
       else
          call quit('more *EXEOM blocks defined than specified in EXACC input block') 
@@ -1026,7 +1022,7 @@
          call kw_read(word, exa_input%ncycles)
       end if
 
-      if (kw_matches(word, '.EOMCC ')) then
+      if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.
          call kw_read(word, nr_eom_runs)
          print *,'debug: setting up eom inputs:',nr_eom_runs

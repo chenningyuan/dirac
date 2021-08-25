@@ -300,8 +300,9 @@ contains
 
         if (present(solve_linear_sys)) then
             davidson_solve_linear_system = solve_linear_sys
+            if (davidson_solve_linear_system) davidson_solve_values = .false.
         else
-            davidson_solve_linear_system = .true. 
+            davidson_solve_linear_system = .false. 
         end if
         if (davidson_solve_linear_system.and.davidson_solve_values) then
            call quit('inconsistent setup. cannot calculate eigenvalues and solve linear system')
