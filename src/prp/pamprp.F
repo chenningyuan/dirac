@@ -9591,6 +9591,7 @@ C
      &                        //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
      &                        //CHRNOS(MOD(NZ,10))
                               II = II + 1
+c      write(6,*) "PROP1", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC(1)
      &                       ,PLABEL(1),IPVPOL(II),ISYXPR,ITRXPR,IPRINT)          
                               IPTYP = IPTYP + 1
@@ -9624,6 +9625,7 @@ C
      &                        //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
      &                        //CHRNOS(MOD(NZ,10))
                               II = II + 1
+c      write(6,*) "PROP2", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL
      &                           ,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)    
                               IF (L.GT.2) THEN
@@ -9632,6 +9634,7 @@ C
                                     PNAME(5:6) = COMPLAB(IP)(2:2)
      &                                         //COMPLAB(IP)(1:1)
                                     II = II + 1
+c      write(6,*) "PROP3", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
                                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC
      &                          ,PLABEL,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
                               ENDIF    

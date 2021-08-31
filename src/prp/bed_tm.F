@@ -51,9 +51,6 @@ C#include "cbiher.h"
 
 C
 #include "ibtfun.h"
-c    Martin
-		
-c      BEDECD = .TRUE.
 
 c     The parameter NOP represents the real and imaginairy component
 c     of the exponential operator, e1cos(kr) and e1sin(kr). For calculation 
@@ -114,18 +111,6 @@ C
         ISYM = INTREP(II) + 1
         IPSYM2INT(ISYM,2) = II
       ENDDO
-
-c     Martin
-c     For NOP=2, IPSYMINT contains which boson irreps the integrals
-c     span. IPSYM2INT(:,1) contains the information on e1cos(kr), while
-c     IPSYM2INT(:,2) the information on e1sin(kr).
-c     In our case, NOP is 4, so the dimension of IPSYM2INT is increased.
-c     When calculating ECD, additional lines have to be added for
-c     assigning IPSYM2INT(:,3) and IPSYM2INT(:,4).
-c     These lines should be something like:
-c     IPSYM2INT(:,1)=IPSYM2INT(:,3) and IPSYM2INT(:,2)=IPSYM2INT(:,4)
-c     Alternitavely, the IPSYM2INT is kept two dimensional in its second
-c     index, 
 
       IF (BEDECD) THEN
           IPSYM2INT(:,3) = IPSYM2INT(:,1)
@@ -992,7 +977,7 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "maxash.h"
 #include "dcborb.h"
 C
@@ -1353,11 +1338,11 @@ C         ===============================
      &        + EEWT(6)*TMOM(2,2,IEXC)*TMOM(1,1,IEXC) ! (z,y,x)
           IF (ANGPLOT) THEN
             ECD(IP,IEXC) = ECD(IP,IEXC)
-     &    - 4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IEXC)*TMOM(3,2,IEXC)
+     &    - D4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IEXC)*TMOM(3,2,IEXC)
      &    - TMOM(2,2,IEXC)*TMOM(3,1,IEXC))  
-     &    + 4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IEXC)*TMOM(3,2,IEXC)
+     &    + D4*OMEGA(IEXC)*Y(IP)*(TMOM(1,1,IEXC)*TMOM(3,2,IEXC)
      &    - TMOM(3,1,IEXC)*TMOM(1,2,IEXC)) 
-     &    - 4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IEXC)*TMOM(2,2,IEXC)
+     &    - D4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IEXC)*TMOM(2,2,IEXC)
      &    - TMOM(2,1,IEXC)*TMOM(1,2,IEXC))
           ENDIF    
         ELSE

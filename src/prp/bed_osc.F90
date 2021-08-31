@@ -419,6 +419,10 @@
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
           DO IEXC=1,NEXC
+ ! WRITE(6,*) "IEXC ", IEXC, "ISYM ", ISYM 
+ ! WRITE(6,*)  "BED L", TMOML(IEXC,ISYM), "R ", TMOMR(IEXC,ISYM)
+
+
              FOSC(IEXC,ISYM) = FOSC(IEXC,ISYM) + FAC*TMOML(IEXC,ISYM)*TMOMR(IEXC,ISYM)
 !             WRITE(6,*) 'TEST..',K,M,IEXC,ISYM,FOSC(IEXC,ISYM),TMOML(IEXC,ISYM),TMOMR(IEXC,ISYM)
           ENDDO
@@ -457,7 +461,7 @@
             NEXC    = KEXCNV(ISYM)
             DO IEXC=1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
-!             WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
+!      write(6,*) "INDAP;IX;IY;IZ;IP;TMOM",INDAP," ",IX," ",IY," ",IZ," ",IP," ",TMOM(IEXC,ISYM)
             ENDDO
           ENDDO
           IBAB = IBAB*IY/(IB+1)
@@ -466,6 +470,189 @@
       ENDDO
       RETURN
       END SUBROUTINE accBEDMOM
+
+      SUBROUTINE accVMOM(TMOM,ATMPPF,IORDER)
+#include "implicit.h"        
+#include "dgroup.h"
+#include "dcbxpr.h"      
+#include "dcbxpp.h"
+      INTEGER CARPOW(3,3), INDU(3)
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+
+
+      CARPOW = 0.0D0    
+      DO I = 1,3
+        CARPOW(I,I) = 1
+      ENDDO
+      FAC = 1.0D0
+      DO I = 2,IORDER
+        FAC = FAC/I
+      ENDDO
+
+      INDAP = IVPOFF(IORDER)
+      IBKA  = 1
+      DO IA = 0,IORDER - 2
+        IX    = IORDER - 2 - IA
+        IBAB  = 1
+        DO IB = 0,IA
+          IY    = IA - IB 
+          IZ    = IB 
+
+          DO IP = 1, 3
+            INDAP  = INDAP + 1 
+            INDPRA = LPPAPU(INDAP)
+            ISYM   = IPRPSYM(INDPRA)
+            NEXC   = KEXCNV(ISYM)
+            NX = IX + CARPOW(1,IP)
+            NY = IY + CARPOW(2,IP)
+            NZ = IZ + CARPOW(3,IP)
+            TFAC  = (UWAVE(1)**NX)*(UWAVE(2)**NY)*(UWAVE(3)**NZ)*IBKA*IBAB*FAC
+            DO IEXC = 1,NEXC
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!write(6,*) "INDAP;NX;NY;NZ;INDU(IP);ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",INDU(IP)," ",ATMPPF(IEXC,INDAP,ISYM)
+!write(6,*) "INDAP;NX;NY;NZ;TFAC;UPOL;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UPOL(IP,1)," ",ATMPPF(IEXC,INDAP,ISYM) 
+            ENDDO
+          ENDDO
+
+          DO IP = 1, 3
+            INDAP  = INDAP + 1 
+            INDPRA = LPPAPU(INDAP)
+            ISYM   = IPRPSYM(INDPRA)
+            NEXC   = KEXCNV(ISYM)
+            INDU = [2,3,1]
+            JX = CARPOW(2,IP)
+            JY = CARPOW(3,IP)
+            JZ = CARPOW(1,IP)   
+            NX = IX + JX
+            NY = IY + JY
+            NZ = IZ + JZ
+            TFAC  = (UWAVE(1)**NX)*(UWAVE(2)**NY)*(UWAVE(3)**NZ)*IBKA*IBAB*FAC
+            DO IEXC = 1,NEXC
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(INDU(IP),1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!write(6,*) "INDAP;NX;NY;NZ;INDU(IP);ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",INDU(IP)," ",ATMPPF(IEXC,INDAP,ISYM)   
+!write(6,*) "INDAP;NX;NY;NZ;TFAC;UPOL;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UPOL(INDU(IP),1)," ",ATMPPF(IEXC,INDAP,ISYM) 
+            ENDDO
+            IF (IORDER.GT.2) THEN
+              INDAP = INDAP + 1
+            ENDIF
+              TFAC  = (UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB*FAC
+              TFAC = TFAC*(UPOL(1,1)**JX)*(UPOL(2,1)**JY)*(UPOL(3,1)**JZ)
+            DO IEXC = 1,NEXC
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(INDU(IP))*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!write(6,*) "INDAP;NX;NY;NZ;TFAC;UWAVE;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UWAVE(INDU(IP))," ",ATMPPF(IEXC,INDAP,ISYM) 
+
+            ENDDO
+          ENDDO
+          IBAB = IBAB*IY/(IB+1)
+        ENDDO
+        IBKA = IBKA*IX/(IA+1)
+      ENDDO
+
+
+!      DO ISYM = 1,2
+!        NEXC   = KEXCNV(ISYM)
+!        DO IEXC = 1,NEXC
+!
+!        write(6,*) "excitation ", iexc, " order ", IORDER,  " sym ", ISYM, "  ", TMOM(IEXC,ISYM) 
+!      ENDDO 
+!      ENDDO
+
+
+      RETURN
+
+      END SUBROUTINE accVMOM
+
+
+      SUBROUTINE OSC_VPOL(K,FOSC,ATMPPF,OMEGA)
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbxpp.h"
+      real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
+      real*8,allocatable  :: TEMOML(:,:),TMMOML(:,:),TEMOMR(:,:),TMMOMR(:,:),TMOMTESTL(:,:),TMOMTESTR(:,:)
+      PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      allocate(temoml(MAXEXC,NBSYM))
+      allocate(tmmoml(MAXEXC,NBSYM))      
+      allocate(temomr(MAXEXC,NBSYM))
+      allocate(tmmomr(MAXEXC,NBSYM))
+      !allocate(TMOMTESTR(MAXEXC,NBSYM))
+      !allocate(TMOMTESTL(MAXEXC,NBSYM))             
+      K2=K+K
+      DO M = 0,K
+        FAC = D2*(-D1)**M
+        IF(M==0) FAC = D1
+!.......Accumulate left operator .. order (K+M)
+        IORD  = K+M
+!.........Electric multipole        
+          TEMOML = D0
+          IF (IORD.EQ.0) THEN
+            CALL accBEDMOM(TEMOML,ATMPPF,0)
+          ELSE
+            CALL accVMOM(TEMOML,ATMPPF,IORD+1)
+          ENDIF
+!.........Magnetic multipole        
+          TMMOML = D0
+          CALL accMMOM(TMMOML,ATMPPF,IORD)
+!         DEBUG
+         ! CALL accBEDMOM(TMOMTESTL,ATMPPF,IORD)
+
+
+!.......Accumulate right operator .. order (K-M)
+        IORD  = K-M
+!.........Electric multipole        
+          TEMOMR = D0
+          IF (IORD.EQ.0) THEN
+            CALL accBEDMOM(TEMOMR,ATMPPF,0)
+          ELSE
+            CALL accVMOM(TEMOMR,ATMPPF,IORD+1)
+          ENDIF
+!.........Magnetic multipole        
+          TMMOMR = D0
+          CALL accMMOM(TMMOMR,ATMPPF,IORD)
+!         DEBUG
+         ! CALL accBEDMOM(TMOMTESTR,ATMPPF,IORD)
+
+!.......Accumulate oscillator strengths
+        DO ISYM = 1,NBSYM        
+          NEXC=KEXCNV(ISYM)
+          DO IEXC=1,NEXC
+!  WRITE(6,*) "IEXC ", IEXC, "ISYM ", ISYM 
+!  WRITE(6,*)  "VPOLL ", TEMOML(IEXC,ISYM), "MAGNL ", TMMOML(IEXC,ISYM)!, "BED ", TMOMTESTL(IEXC,ISYM)
+!  WRITE(6,*)  "VPOLR ", TEMOMR(IEXC,ISYM), "MAGNR ", TMMOMR(IEXC,ISYM)
+!  write(6,*)  "SUM ",TEMOML(IEXC,ISYM)-TMMOML(IEXC,ISYM)  
+!  !WRITE(6,*) "DEBUG ", "VPOL ", TEMOMR(IEXC,ISYM), "MAGN ", TMMOMR(IEXC,ISYM), "BED ", TMOMTESTR(IEXC,ISYM)
+!  !write(6,*) "SUM ",TEMOMR(IEXC,ISYM)+TMMOMR(IEXC,ISYM)  
+
+
+             FOSC(2,IEXC,ISYM) = FOSC(2,IEXC,ISYM) + FAC*TEMOML(IEXC,ISYM)*TEMOMR(IEXC,ISYM)
+             FOSC(3,IEXC,ISYM) = FOSC(3,IEXC,ISYM) - FAC*(TEMOML(IEXC,ISYM)*TMMOMR(IEXC,ISYM)&
+                                                   +      TMMOML(IEXC,ISYM)*TEMOMR(IEXC,ISYM))
+             FOSC(4,IEXC,ISYM) = FOSC(4,IEXC,ISYM) + FAC*TMMOML(IEXC,ISYM)*TMMOMR(IEXC,ISYM)
+           ENDDO
+        ENDDO
+      ENDDO
+      deallocate(temoml)
+      deallocate(tmmoml)
+      deallocate(temomr)      
+      deallocate(tmmomr)
+      !deallocate(TMOMTESTL)
+      !deallocate(TMOMTESTR)
+      !....Add final factors for oscillator strengths
+      DO ISYM = 1,NBSYM
+        NEXC = KEXCNV(ISYM)
+        DO IEXC = 1,NEXC
+          FAC = (OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0
+          FOSC(2,IEXC,ISYM)=FOSC(2,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(3,IEXC,ISYM)=FOSC(3,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(4,IEXC,ISYM)=FOSC(4,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
+        ENDDO
+      ENDDO   
+      END SUBROUTINE OSC_VPOL
+
+
+
+
 
       SUBROUTINE OSC_MPOL(K,FOSC,ATMPPF,OMEGA)
 #include "implicit.h"
@@ -558,7 +745,7 @@
                 ISYM    = IPRPSYM(INDPRA)
                 NEXC    = KEXCNV(ISYM)
                 DO IEXC=1,NEXC
-                  TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(IS)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+                  TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+IPRS*UWAVE(IS)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !               WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP,1),TFAC,ATMPPF(IEXC,INDAP,ISYM)
                 ENDDO
               ENDIF 
