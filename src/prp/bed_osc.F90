@@ -503,10 +503,10 @@
             INDPRA = LPPAPU(INDAP)
             ISYM   = IPRPSYM(INDPRA)
             NEXC   = KEXCNV(ISYM)
-            NX = IX + CARPOW(1,IP)
-            NY = IY + CARPOW(2,IP)
-            NZ = IZ + CARPOW(3,IP)
-            TFAC  = (UWAVE(1)**NX)*(UWAVE(2)**NY)*(UWAVE(3)**NZ)*IBKA*IBAB*FAC
+            JX = IX + CARPOW(1,IP)
+            JY = IY + CARPOW(2,IP)
+            JZ = IZ + CARPOW(3,IP)
+            TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !write(6,*) "INDAP;NX;NY;NZ;INDU(IP);ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",INDU(IP)," ",ATMPPF(IEXC,INDAP,ISYM)
@@ -520,13 +520,13 @@
             ISYM   = IPRPSYM(INDPRA)
             NEXC   = KEXCNV(ISYM)
             INDU = [2,3,1]
-            JX = CARPOW(2,IP)
-            JY = CARPOW(3,IP)
-            JZ = CARPOW(1,IP)   
-            NX = IX + JX
-            NY = IY + JY
-            NZ = IZ + JZ
-            TFAC  = (UWAVE(1)**NX)*(UWAVE(2)**NY)*(UWAVE(3)**NZ)*IBKA*IBAB*FAC
+            KX = CARPOW(2,IP)
+            KY = CARPOW(3,IP)
+            KZ = CARPOW(1,IP)   
+            JX = IX + CARPOW(2,IP)
+            JY = IY + CARPOW(3,IP)
+            JZ = IZ + CARPOW(1,IP)
+            TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(INDU(IP),1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !write(6,*) "INDAP;NX;NY;NZ;INDU(IP);ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",INDU(IP)," ",ATMPPF(IEXC,INDAP,ISYM)   
@@ -536,7 +536,7 @@
               INDAP = INDAP + 1
             ENDIF
               TFAC  = (UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB*FAC
-              TFAC = TFAC*(UPOL(1,1)**JX)*(UPOL(2,1)**JY)*(UPOL(3,1)**JZ)
+              TFAC = TFAC*(UPOL(1,1)**KX)*(UPOL(2,1)**KY)*(UPOL(3,1)**KZ)
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(INDU(IP))*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !write(6,*) "INDAP;NX;NY;NZ;TFAC;UWAVE;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UWAVE(INDU(IP))," ",ATMPPF(IEXC,INDAP,ISYM) 
