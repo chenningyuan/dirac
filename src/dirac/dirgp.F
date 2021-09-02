@@ -38,6 +38,7 @@ C*****************************************************************************
 
       use memory_allocator
       use dircmo
+      use dirac_cfg, only: dirac_cfg_scf_calculation
 
 #include "implicit.h"
 #include "priunit.h"
@@ -132,16 +133,18 @@ C         Check dimensions
 C
 C     Write coefficients to either KRMCOLD or DFCOEF
 C
-      IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
+                                     IWRTMO = 2
+      IF(DOKRMC.or.DOKRCI.or.DOKRCC) IWRTMO = 1
+      !> if SCF is requested we need a DFCOEF file, no matter what
+      if(dirac_cfg_scf_calculation)  IWRTMO = 2
+      IF(IWRTMO == 1)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         CLOSE (LUKRMC,STATUS='KEEP')
-        IWRTMO = 1
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
         CALL WRICMO(LUCOEF,CMO,EIG,reshape(IBEIG,(/2*NEIG/)),TOTERG)
         CLOSE(LUCOEF,STATUS='KEEP')
-        IWRTMO = 2
       END IF
       deallocate(CMO)
       deallocate(EIG)
