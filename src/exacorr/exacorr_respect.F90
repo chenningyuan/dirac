@@ -169,7 +169,7 @@ module exacorr_respect
       cspinor%coeff(:,:,1) = coeff(1:nao,:)
       cspinor%coeff(:,:,2) = coeff(1+nao:2*nao,:)
       cspinor%energy       = eig(:)
-      cspinor%boson_irrep  = 0 
+      cspinor%symmetry     = 0 
 
       deallocate(coeff)
       deallocate(eig  )

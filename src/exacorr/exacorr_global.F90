@@ -339,10 +339,9 @@ module exacorr_global
       integer, intent(in)     :: nmo,mo_list(nmo)
       type(cmo), intent(inout) :: cspinor
 
-      integer  :: i, nao, nmo_all
+      integer  :: i, nao
 
       nao     = cspinor_all%nao
-      nmo_all = cspinor_all%nmo !WHY IS THIS HERE?
 
       ! allocate arrays in cmo to hold the active MO's specified in mo_list
       call alloc_mo (cspinor,nao,nmo)
@@ -352,7 +351,7 @@ module exacorr_global
          cspinor%index(i)       = mo_list(i)
          cspinor%coeff(:,i,:)   = cspinor_all%coeff(:,mo_list(i),:)
          cspinor%energy(i)      = cspinor_all%energy(mo_list(i))
-         cspinor%boson_irrep(i) = cspinor_all%boson_irrep(mo_list(i))
+         cspinor%symmetry(i)    = cspinor_all%symmetry(mo_list(i))
       enddo
 
       end subroutine get_MO_coefficients

@@ -32,11 +32,6 @@
       integer              :: ialpha, ibeta
       integer              :: n_mp2no
 
-!     Temporary hack to call the IAO code
-!      print*,'starting generate iao'
-!      call generate_iao
-!      stop 'generated local orbitals'
-
 !     Initialize MPI variables
       mytid   = 0
       numproc = 0
@@ -64,6 +59,10 @@
       end if
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes, switched to TALSH only"
+         exa_input%talsh = .true.
+      end if
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,global_communicator)
 #else
 !     serial version of DIRAC

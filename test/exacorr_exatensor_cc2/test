@@ -19,7 +19,7 @@ f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
-      num_lines   = 32,
+      num_lines   = 20,
       rel_tolerance   = 1.0e-5)
 
 # these are longer tests
