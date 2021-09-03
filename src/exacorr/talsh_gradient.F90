@@ -46,11 +46,7 @@ module talsh_gradient
       integer(INTD) :: ierr
 
       CCD = exa_input%CCD
-      if (CCD) then
-         wavefun = "CCD "
-      else
-         wavefun = "CCSD"
-      end if
+      wavefun = "CCSD"
 
 !************************************
 !     construct gamma prime tensors *
