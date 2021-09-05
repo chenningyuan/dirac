@@ -44,17 +44,17 @@
 ! ... number of operator types in DIRAC is now in NOPTYP
 ! These are: 
 ! 1. P, 2. i[alpha_x]P,3. i[alpha_y]P,...19. beta, 20. iS.P,21 iBETAGAMA5
-! 22 (iS.P)d
+!  22,23,24
 ! =========================================================
       INTEGER NOPTYP,NMATTYP
-      PARAMETER (NOPTYP = 22, NMATTYP=16)
+      PARAMETER (NOPTYP = 24, NMATTYP=16)
 
 ! *** 4-component operators : Matrix part ***
 !
 !     M = I_4,iA_z,iA_y,iA_x
 !
 !     JM4REP(0:16) - bosonirrep of matrix operator
-!     JM4TIM(0:16) - tmie reversal symmetry of matrix operator
+!     JM4TIM(0:16) - time reversal symmetry of matrix operator
 !     JM4POS(0:16) - quaternionic position of matrix operator 
 !                   (1,2(i),3(j),4(k))
 !

@@ -1308,6 +1308,29 @@ CTROND      JM4 (1,21)  =  9
       JM4 (1,21)  =  4
       JCOM(1,21)  =  1
 
+C
+C     22  [betaalp_x]P * x-component of beta alpha times scalar operator
+C     ==================================================================
+C
+      MCMP(22)  =  1
+      JM4 (1,22)=  15
+      JCOM(1,22)=  1
+C
+C     23. [betaalp_y]P * y-component of beta alpha times scalar operator
+C     ==================================================================
+C
+      MCMP(23)  =  1
+      JM4 (1,23)=  14
+      JCOM(1,23)=  1
+C
+C     24. [betaalp_z]P * z-component of beta alpha times scalar operator
+C     ===================================================================
+C
+      MCMP(24)  =  1
+      JM4 (1,24)=  13
+      JCOM(1,24)=  1
+
+
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

@@ -948,6 +948,15 @@
 !   21. iBETAGAM
 !       i[beta*gamma5] P           * i beta*gamma5 times scalar operator
 !
+!   22. XBETAAL
+!        [betaalp_x]p * x-component of T+ beta alpha times scalar operator
+!
+!   23. YBETAAL
+!        [betaalp_y]p * y-component of T+ beta alpha times scalar operator
+!
+!   24. ZBETAAL
+!        [betaalp_z]p * z-component of T+ beta alpha times scalar operator
+!
 !
 !  Operator types 5,6 and 7 form the components of a vectorproduct 
 !  of the alpha matrices and some scalar operator.
@@ -975,7 +984,7 @@
 #include "dcbgen.h"
       CHARACTER*7 WORD
 !
-      PARAMETER (NTABKW = 28)
+      PARAMETER (NTABKW = 32)
       CHARACTER*8 TABKW(NTABKW)
       CHARACTER   LINE*80, KEYWD*8, TOKEN16*16, BLANK8*8, BLANK16*16
       DIMENSION PFAC(3)
@@ -991,7 +1000,8 @@
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',        &
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',        &
      &           'XiBETAAL', 'YiBETAAL', 'ZiBETAAL', 'BETA    ',        &
-     &           'SIGMADOT', 'iBETAGAM', 'XXXXXXXX', 'XXXXXXXX'/
+     &           'SIGMADOT', 'iBETAGAM', 'XBETAAL ', 'YBETAAL ',        &
+     &           'ZBETAAL ', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'   /
 !
       CALL QENTER('XPRINP')
 !
@@ -1144,7 +1154,11 @@
      &            1, &   ! ZiBETAAL
      &            1, &   ! BETA
      &            3, &   ! SIGMADOT
-     &            1), I ! iBETAGAM
+     &            1, &   ! iBETAGAM
+     &            1, &   ! XBETAAL
+     &            1, &   ! YBETAAL
+     &            1  &   ! ZBETAAL
+     &              ), I
          END IF
          END DO
          INPERR = INPERR + 1
@@ -1153,7 +1167,7 @@
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
 !&&&&    One component: DIAGONAL, [XYZ]ALPHA, GAMMA5, [XYZ]SIGMA,
-!&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5
+!&&&&                   [XYZ]BETASIG, [XYZ]iBETAAL, BETA, FOCKMAT, iBETAGAMMA5, [XYZ]BETAAL
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1527,12 +1541,12 @@
 !          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200           
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.21) THEN
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.24) THEN
            WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
            CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
          ENDIF
          GO TO (1,2,2,2,2,2,2,2,2,                                      &
-     &          5,5,5,3,3,3,4,4,4,3,1,4),IPTYP
+     &          5,5,5,3,3,3,4,4,4,3,1,4,4,4,4),IPTYP
 !
 !
 !        Operator types: DIAGONAL, SIGMA
@@ -1559,7 +1573,7 @@
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 !
-!        Operator types: i BETA ALPHA, i BETA GAMMA5
+!        Operator types: i BETA ALPHA, i BETA GAMMA5, BETA ALPHA
 !
     4    PCOMB = '0+-0'
          GO TO 100
@@ -2406,6 +2420,12 @@
       END IF
 !MKN/MI Because the operator i*BETA*GAMMA5 is a T-odd by its definion
 
+!MI&KG
+      IF (ITYP.EQ.22.OR.ITYP.EQ.23.OR.ITYP.EQ.24) THEN
+         IATIM = +1
+         WRITE(LUPRI,'(2X,A)')                                          &
+     &   'exception: [XYZ]BETAAL operator, setting IATIM = +1'
+      END IF
       IBTIM = IPRLTYP(IBIND)
       IF(IBTIM.EQ.0) IBTIM = ISCALAROP_TSYM(PRPLBL(IBIND))
 !     Total time reversal symmetry of the 4-comp.operator
@@ -2474,7 +2494,7 @@
       IPRPTIM(INDXPR) = ICTIM(1)
 
 !MI ... control printout is always worth 
-      IF (IPRINT.GE.15) THEN
+      IF (IPRINT.GE.10) THEN
         WRITE(LUPRI,'(2X,A,I3,A,I2,A,I2)')                              &
      &  'Operator index, INDXPR =',INDXPR,                              &
      &  ' and operator type (1-',NOPTYP,                                &
@@ -2563,7 +2583,7 @@
       GOTO 30
       ENDIF
       GO TO (1,2,3,4,5,6,7,8,9,10,11,12,                                &
-     &       13,14,15,16,17,18,19,20,21), ITYP
+     &       13,14,15,16,17,18,19,20,21,22,23,24), ITYP
         WRITE(LUPRI,'(6X,A,I5)')                                        &
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2651,6 +2671,18 @@
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
      &   'BETAGAMMA5 : i[beta gamma5]P'
       GOTO 200
+   22 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'XBETAAL : [beta alpha_x]P'
+      GOTO 200
+   23 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'YBETAAL : [beta alpha_y]P'
+      GOTO 200
+   24 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'ZBETAAL : [beta alpha_z]P'
+      GOTO 200
 !
   200 CONTINUE
 !
@@ -2658,6 +2690,7 @@
 !     ==================
 !
       NLBL   = MCMP(ITYP)
+!      print *,'ITYP=',ITYP,'...NLBL=MCMP(ITYP)=',NLBL
       DO I = 1,NLBL
         FMT = MXFORM(ABS(FACPRP(I,INDXPR)),16)
         KLBL = IPRPLBL(I,INDXPR)

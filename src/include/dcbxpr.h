@@ -25,6 +25,9 @@
 !        17. [betaalp_y]p  * y-component of beta alpha times scalar operator
 !        18. [betaalp_z]p  * z-component of beta alpha times scalar operator 
 !        20. S.P           * dot-product of sigma and vector operator
+!        21. [betaalp_x]p  * x-component of T+ beta alpha times scalar operator 
+!        22. [betaalp_y]p  * y-component of T+ beta alpha times scalar operator
+!        23. [betaalp_z]p  * z-component of T+ beta alpha times scalar operator
 !
 !       IPRPLBL - pointers to property labels
 !       IPRPSYM - boson symmetry of operator  (1 - 8)
