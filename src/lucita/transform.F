@@ -25,6 +25,7 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE T_ROW_TO_H(T,H,K,TKK)
+      use luci_wrkspc
 *
 * Set H integrals
 *
@@ -40,7 +41,6 @@
 *
 #include "mxpdim.inc"
 #include "glbbas.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
 *. Input ( in blocked form)
@@ -87,6 +87,7 @@ C       TKK = 1.0D0
 *                                                                     *
 ***********************************************************************
       SUBROUTINE T_TO_NK_VEC(T,KORB,ISM,ISPC,LUCIN,LUCOUT,C)
+      use luci_wrkspc
 *
 * Evaluate T**(NK_operator) times vector on file LUIN
 * to yield vector on file LUOUT
@@ -106,7 +107,6 @@ C       TKK = 1.0D0
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strinp.inc"
 #include "orbinp.inc"
 #include "cicisp.inc"
@@ -287,6 +287,7 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRA1_SIMPLE(C)
+      use luci_wrkspc
 *
 * Transform one-electron integrals
 *
@@ -299,7 +300,6 @@ C?            WRITE(6,*) ' IA IB IDET',IA,IB,IDET
 *. General Input
 #include "mxpdim.inc"
 #include "orbinp.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
@@ -341,6 +341,7 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRA2_SIMPLE(C)
+      use luci_wrkspc
 *
 * Trivial 2-electron integral transformation
 *
@@ -350,7 +351,6 @@ C     TRAN_SYM_BLOC_MAT3 (AIN,X,NBLOCK,LX_ROW,LX_COL,AOUT,SCR,ISYM)
       IMPLICIT REAL*8(A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
 #include "multd2h.inc"
@@ -501,6 +501,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
+      use luci_wrkspc
 *
 * A rotation matrix X is defining expansion from
 * old to new orbitals
@@ -525,7 +526,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
       IMPLICIT REAL*8 (A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
 #include "clunit.inc"
@@ -582,6 +582,7 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRACI_CTL
+      use luci_wrkspc
 *
 * Master routine for transforming CI vectors to new orbital basis
 *
@@ -593,7 +594,6 @@ C             WRITE(6,*)  'ISM, JSM, KSM, LSM ',ISM,KSM,KSM,LSM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "crun.inc"
 #include "cstate.inc"
@@ -678,6 +678,7 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 ***********************************************************************
       SUBROUTINE TRACID(T,LUCIN,LUCOUT,LUSC1,LUSC2,LUSC3,
      &           VEC1,VEC2)
+      use luci_wrkspc
 *
 * Transform CI vector on LUCIN with T matrix after
 * Docent Malmquist's recipe. Place result as next vector on LUOUT
@@ -693,7 +694,6 @@ C            TRACI(X,LUCIN,LUCOUT,IXSPC,IXSM,VEC1,VEC2)
 * each transformation is
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "oper.inc"
 #include "intform.inc"
@@ -846,6 +846,7 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRAINT
+      use luci_wrkspc
 *
 * Very simple integral transformation for LUCIA
 * - for testing the real one
@@ -858,7 +859,6 @@ C    &             NBROW,NBCOL,FACTORC,FACTORAB,ITRNSP )
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "lucinp.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 *
       IDUM = 1

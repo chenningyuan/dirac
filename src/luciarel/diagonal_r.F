@@ -321,6 +321,7 @@ C?          WRITE(6,*)  ' IA = ', IA
      &           IBLTP,NBLOCK,IBLKFO,T_BUFF,T_BUFF_D,
      &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO,
      &           NPARBLOCK,CPIC_PASS_D)
+      use luci_wrkspc
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -351,7 +352,6 @@ C?          WRITE(6,*)  ' IA = ', IA
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -539,6 +539,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 
       SUBROUTINE GET_DIA_2E(UUUUC,UUUUE,UBBUE,T_BUFF,IDENSI,ISPINFREE,
      &                      NGAS,IPRNT)
+      use luci_wrkspc
 *
 * Obtain 2electron integrals needed for
 * constructing the determinant diagonal
@@ -564,7 +565,6 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
       DIMENSION UBBUE(NTOOB,NTOOB)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
@@ -807,6 +807,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 ***********************************************************************
 
       SUBROUTINE GETH1DIA4(H1DIA_U,H1DIA_B,T_BUFF)
+      use luci_wrkspc
 *
 * Fetch unbarred and barred diagonal one-electron integrals
 *
@@ -817,7 +818,6 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "cprnt.inc"
 #include "glbbas.inc"
