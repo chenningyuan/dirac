@@ -21,7 +21,7 @@ if(ENABLE_EXATENSOR)
          set(EXATENSOR_MPIENV MPILIB=$ENV{MPILIB})
        elseif (NOT (${MPI_Fortran_COMPILER} MATCHES "mpif90" OR ${MPI_Fortran_COMPILER} MATCHES "mpifort"))
           message(STATUS "This MPI compiler is not supported by ExaTENSOR, using only the TALSH (serial) component of the ExaTensor library")
-          message(STATUS "Only MPICH (3.2.1+) and OpenMPI (4.1.1+) are currently supported by ExaTENSOR")
+          message(STATUS "Only MPICH (3.2.1+) and OpenMPI (4.1.1+) are currently supported by ExaTENSOR for employing MPI parallelism")
           set(EXATENSOR_TALSH EXA_TALSH_ONLY=YES)
        else()
          # get MPI TYPE from Python script
