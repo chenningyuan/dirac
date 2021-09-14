@@ -2908,19 +2908,23 @@ C
       DO 50 IREP = 0, MAXREP
          DO 100 IATOM = 1, NUCIND
             IF (DOATOM(IATOM)) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                DO 200 ICOOR = 1, 3
-                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
-                  IF (ISCOOR .GT. 0) THEN
+!                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  ISCOOR = 3*(IPTNUC(IATOM,IREP) - 1) + ICOOR
+                  IF ( ISCOOR .GT. 0 ) THEN
                      ITYP = ITYP + 1
                      IFIRST=ISCOOR/100
                      ISECND=MOD(ISCOOR,100)/10
                      ITHIRD = MOD(MOD(ISCOOR,100),10)
                      LABINT(ITYP) = 'DRHO '//CHRNOS(IFIRST)
      &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
-                     INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
                      INTADR(ISCOOR) = ITYP
+                     INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
                   END IF
  200           CONTINUE
+               ELSE
+               END IF
             END IF
  100     CONTINUE
  50   CONTINUE 

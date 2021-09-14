@@ -4953,9 +4953,9 @@ CKG SCHIFF
 C--------------------------------------------------------------------------
 C  Finite nucleus version of Schiff moment enhancement 
 C  The operator is at nucleus A
-C    <grad psi| grad rho_nuc(r) | psi> + <grad psi| rho_nuc(r) | grad psi>
-C    = <psi| grad rho_nuc,A(r) | psi> 
-C    = <psi| (-2 zeta) (r-rA) rho_nuc,A(r) | psi>
+C   -(<grad psi| grad rho_nuc(r) |psi> + <psi| rho_nuc(r) | grad psi>)
+C    =  <psi| grad rho_nuc,A(r) | psi> 
+C    =  <psi| (-2 zeta) (r-rA) rho_nuc,A(r) | psi>
 C For getting the Schiff moment coupling constant W_S the result has to be
 C multiplied by -4 pi, so 
 C W_S = <psi| 8 pi zeta (r-rA) rho_nuc,A(r) | psi>
@@ -4964,9 +4964,9 @@ C of the derivative of the nuclear charge density distribution
 C The following routine is based on the PR1PRV routine.
 C !Note that this is to be called directly in PR1PRM as the
 C !McMurchie-Davidson coefficients ODC have to be calculated after
-C !evaluating C the Gaussian product role for the triple product of the
+C !evaluating the Gaussian product rule for the triple product of the
 C !two Gaussian basis functions and the Gaussian nuclear charge
-C !distribution.
+C !distribution at atom C.
 C--------------------------------------------------------------------------
 !
 ! Written by Konstantin Gaul @ RUG, August 2022
@@ -5001,112 +5001,112 @@ C--------------------------------------------------------------------------
 #include "lmns.h"
 #include "ibtfun.h"
       NUCPN1 = 0
-      DO 50 IATOM = 1, NUCIND
+      DO 60 IREP = 0, MAXREP
+         IF (IAND(IREP,ISTBNU(IATOM)).NE.0) CONTINUE
+         DO 50 IATOM = 1, NUCIND
 C Exponent and coordinates of Spherical Nuclear distribution
-         IF (.NOT.DOATOM(IATOM)) CONTINUE
-         NUCPN1 = NUCPN1 + 1
-         ISHIFT = (NUCPN1 - 1) * 3
-         EXPN = GNUEXP(IATOM) 
-         CORNX = CORCX(NUCPN1)
-         CORNY = CORCY(NUCPN1)
-         CORNZ = CORCZ(NUCPN1)
+            IF (.NOT.DOATOM(IATOM)) CONTINUE
+            NUCPN1 = NUCPN1 + 1
+            ISHIFT = (NUCPN1 - 1) * 3
+            EXPN = GNUEXP(IATOM) 
 C        with the scaling with the factor (-2 zeta_A) from the
 C        derivative
-         CONTN = (-2D0*EXPN) * DSQRT((EXPN / PI)**3)
-         DO 60 IREP = 0, MAXREP
-           IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) CONTINUE
+            CONTN = (-2D0*EXPN) * DSQRT((EXPN / PI)**3)
+            CORNX = CORCX(NUCPN1)
+            CORNY = CORCY(NUCPN1)
+            CORNZ = CORCZ(NUCPN1)
 
-         DIFANX = CORAX - CORNX
-         DIFANY = CORAY - CORNY
-         DIFANZ = CORAZ - CORNZ
-         DISTAN = DIFANX*DIFANX + DIFANY*DIFANY + DIFANZ*DIFANZ
-         DIFBNX = CORBX - CORNX
-         DIFBNY = CORBY - CORNY
-         DIFBNZ = CORBZ - CORNZ
-         DISTBN = DIFBNX*DIFBNX + DIFBNY*DIFBNY + DIFBNZ*DIFBNZ
+            DIFANX = CORAX - CORNX
+            DIFANY = CORAY - CORNY
+            DIFANZ = CORAZ - CORNZ
+            DISTAN = DIFANX*DIFANX + DIFANY*DIFANY + DIFANZ*DIFANZ
+            DIFBNX = CORBX - CORNX
+            DIFBNY = CORBY - CORNY
+            DIFBNZ = CORBZ - CORNZ
+            DISTBN = DIFBNX*DIFBNX + DIFBNY*DIFBNY + DIFBNZ*DIFBNZ
 C
-         DO 100 IPRIMA = 1,NUCA
-            JPRIMA = JSTA + IPRIMA
-            CONTA = PRICCF(JPRIMA,NUMCFA)
-            EXPA = PRIEXP(JPRIMA)
-         DO 100 IPRIMB = 1,NUCB
-            JPRIMB = JSTB + IPRIMB
-            CONTB = PRICCF(JPRIMB,NUMCFB)
-            EXPB = PRIEXP(JPRIMB)
-            EXPP = EXPA + EXPB + EXPN
-            EXPPI = D1/EXPP
-            EXPABQ = EXPA*EXPB*DISTAB+EXPA*EXPN*DISTAN
-     +             + EXPB*EXPN*DISTBN
-            EXPABQ = EXPABQ*EXPPI
+            DO 100 IPRIMA = 1,NUCA
+               JPRIMA = JSTA + IPRIMA
+               CONTA = PRICCF(JPRIMA,NUMCFA)
+               EXPA = PRIEXP(JPRIMA)
+            DO 100 IPRIMB = 1,NUCB
+               JPRIMB = JSTB + IPRIMB
+               CONTB = PRICCF(JPRIMB,NUMCFB)
+               EXPB = PRIEXP(JPRIMB)
+               EXPP = EXPA + EXPB + EXPN
+               EXPPI = D1/EXPP
+               EXPABQ = EXPA*EXPB*DISTAB+EXPA*EXPN*DISTAN
+     +                + EXPB*EXPN*DISTBN
+               EXPABQ = EXPABQ*EXPPI
 C Check for same center (To avoid numerical noise, e.g. nonzero
 C (p_x | \rho | s) on same center since CORPX - CORAX has noise
-C of apprix 10^(-16)
+C of approx 10^(-16)
 C
-            IF(DISTAB.LT.SMTHR) THEN
-               IF(DISTAN.LT.SMTHR) THEN
-                  IF(DISTBN.LT.SMTHR) THEN
-                    EXPABQ = 0d0
+               IF(DISTAB.LT.SMTHR) THEN
+                  IF(DISTAN.LT.SMTHR) THEN
+                     IF(DISTBN.LT.SMTHR) THEN
+                       EXPABQ = 0d0
+                     ENDIF
                   ENDIF
                ENDIF
-            ENDIF
-            IF (EXPABQ.GT.TOLOG) GO TO 200
-            SAAB = CONTA*CONTB*CONTN*DEXP(-EXPABQ)
-            ASAAB = DABS(SAAB)
-            IF (ASAAB.LT.TOLS) GO TO 200
-            SAAB13 = SIGN(ASAAB**D3INV,SAAB)
+               IF (EXPABQ.GT.TOLOG) GO TO 200
+               SAAB = CONTA*CONTB*CONTN*DEXP(-EXPABQ)
+               ASAAB = DABS(SAAB)
+               IF (ASAAB.LT.TOLS) GO TO 200
+               SAAB13 = SIGN(ASAAB**D3INV,SAAB)
 C
-C           Calculate coordinates of product Gaussian P
+C              Calculate coordinates of product Gaussian P
 C
-            EXPAPI = EXPA*EXPPI
-            EXPBPI = EXPB*EXPPI
-            EXPNPI = EXPN*EXPPI
-            CORPX  = EXPAPI*CORAX + EXPBPI*CORBX + EXPNPI*CORNX
-            CORPY  = EXPAPI*CORAY + EXPBPI*CORBY + EXPNPI*CORNY
-            CORPZ  = EXPAPI*CORAZ + EXPBPI*CORBZ + EXPNPI*CORNZ
+               EXPAPI = EXPA*EXPPI
+               EXPBPI = EXPB*EXPPI
+               EXPNPI = EXPN*EXPPI
+               CORPX  = EXPAPI*CORAX + EXPBPI*CORBX + EXPNPI*CORNX
+               CORPY  = EXPAPI*CORAY + EXPBPI*CORBY + EXPNPI*CORNY
+               CORPZ  = EXPAPI*CORAZ + EXPBPI*CORBZ + EXPNPI*CORNZ
 C
 C Check for same center (To avoid numerical noise, e.g. nonzero
 C (p_x | \rho | s) on same center since CORPX - CORAX has noise
-C of apprix 10^(-16)
+C of approx 10^(-16)
 C
-            IF(DISTAB.LT.SMTHR) THEN
-               IF(DISTAN.LT.SMTHR) THEN
-                  IF(DISTBN.LT.SMTHR) THEN
-                     CORAX = CORNX
-                     CORAY = CORNY
-                     CORAZ = CORNZ
-                     CORBX = CORNX
-                     CORBY = CORNY
-                     CORBZ = CORNZ
-                     CORPX = CORNX
-                     CORPY = CORNY
-                     CORPZ = CORNZ
+               IF(DISTAB.LT.SMTHR) THEN
+                  IF(DISTAN.LT.SMTHR) THEN
+                     IF(DISTBN.LT.SMTHR) THEN
+                        CORAX = CORNX
+                        CORAY = CORNY
+                        CORAZ = CORNZ
+                        CORBX = CORNX
+                        CORBY = CORNY
+                        CORBZ = CORNZ
+                        CORPX = CORNX
+                        CORPY = CORNY
+                        CORPZ = CORNZ
+                     ENDIF
                   ENDIF
                ENDIF
-            ENDIF
 C     
-C           *********************************************
-C           ***** Overlap Distribution Coefficients *****
-C           *********************************************
+C              *********************************************
+C              ***** Overlap Distribution Coefficients *****
+C              *********************************************
 C
-            TEMP(1) = ORIGIN(1) 
-            TEMP(2) = ORIGIN(2)
-            TEMP(3) = ORIGIN(3)
+               TEMP(1) = ORIGIN(1) 
+               TEMP(2) = ORIGIN(2)
+               TEMP(3) = ORIGIN(3)
 C
-            CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,.FALSE.,
-     &                  .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,
-     &                  EXPPI,WORK,LWORK,CORPX,CORPY,CORPZ,
-     &                  DONUC1,DOMOM1,TEMP,INTTYP)
-C           **********************************************
-C           ***** Calculation of Hermitian integrals *****
-C           **********************************************
+               CALL GETODC(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,.FALSE.,
+     &                     .FALSE.,ONECEN,EXPA,EXPB,IPRINT,SAAB13,
+     &                     EXPPI,WORK,LWORK,CORPX,CORPY,CORPZ,
+     &                     DONUC1,DOMOM1,TEMP,INTTYP)
+C              **********************************************
+C              ***** Calculation of Hermitian integrals *****
+C              **********************************************
 C
-C           s-Gaussian Overlap integral in one direction
+C              s-Gaussian Overlap integral in one direction
 C
-            SHGTF = DSQRT(PI*EXPPI)
+               SHGTF = DSQRT(PI*EXPPI)
 C
-C           **********************************************
-C           ***** Calculation of Cartesian integrals *****
-C           **********************************************
+C              **********************************************
+C              ***** Calculation of Cartesian integrals *****
+C              **********************************************
 C
 C           Schiff integrals
 C           ------------
@@ -5163,8 +5163,8 @@ C numerical instabilties.
  300           CONTINUE
  200        CONTINUE
  100     CONTINUE
-  60  CONTINUE
   50  CONTINUE
+  60  CONTINUE
 C
 C     Print
 C
