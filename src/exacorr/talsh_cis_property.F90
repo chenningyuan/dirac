@@ -25,77 +25,229 @@ module talsh_cis_property
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors,tar_state)
-!   Written by Xiang Yuan July 2021, Amsterdam, Netherland  
+subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors)
+!   Written by Xiang Yuan July 2021, Amsterdam, Netherland 
+
     type(exacc_input), intent(in) :: exa_input
     complex(kind=8), pointer      :: eVectors(:,:)
     complex(kind=8), pointer      :: eValues(:) 
-    integer                       :: tar_state, Total_state, N_state
-    integer                       :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
- 
+    integer                       :: All_final_states
+    integer                       :: All_opera
+    integer                       :: f_state
+    complex(kind=8), pointer      :: onetdmee(:,:,:)
+    complex(kind=8), pointer      :: onetdmeg(:,:)
+    complex(kind=8)               :: TPA_one_state
+    complex(kind=8), pointer      :: TPA(:)
 
-    type(talsh_dm_tens)       :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
-    type(talsh_tens_t)        :: pro1_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro1_orbital_integral_exe_exe_vv_tensor
-    type(talsh_tens_t)        :: pro1_orbital_integral_exe_exe_oo_tensor
-    type(talsh_tens_t)        :: pro2_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro2_orbital_integral_exe_exe_vv_tensor
-    type(talsh_tens_t)        :: pro2_orbital_integral_exe_exe_oo_tensor
-    complex(kind=8)           :: term1_N_state, term2_N_state, property_All_state
-    integer                   :: prop_1, prop_2
-
-    nvir = exa_input%nvir
-    nocc = exa_input%nocc
-    prop_1 = 1
-    prop_2 = 2
-
-
+    
     call print_date('Enter CIS transition property routine')
-    call get_prop_integral(exa_input,pro1_orbital_integral_exe_grd_tensor,& 
-                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,prop_1)
-
-    call get_prop_integral(exa_input,pro1_orbital_integral_exe_exe_vv_tensor,&
-                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,prop_2)
-
-    call get_prop_integral(exa_input,pro1_orbital_integral_exe_exe_oo_tensor,&
-                            nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,prop_2)
-
-    call get_prop_integral(exa_input,pro2_orbital_integral_exe_grd_tensor,& 
-                            nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,prop_2)
-
-    call get_prop_integral(exa_input,pro2_orbital_integral_exe_exe_vv_tensor,&
-                            nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,prop_1)
-
-    call get_prop_integral(exa_input,pro2_orbital_integral_exe_exe_oo_tensor,&
-                            nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,prop_1)
-
-
-    Total_state = size(eVectors,2)
-    property_All_state = (0.0,0.0)
-
-    do N_state =1, Total_state
-        call get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_exe_exe_tensor)
-        call get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_tensor)
-
-        call get_property(exa_input,eValues,N_state,&
-                        pro1_orbital_integral_exe_grd_tensor,pro2_orbital_integral_exe_exe_vv_tensor,& 
-                        pro2_orbital_integral_exe_exe_oo_tensor,&
-                        Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,term1_N_state)
-
-        call get_property(exa_input,eValues,N_state,&
-                        pro2_orbital_integral_exe_grd_tensor,pro1_orbital_integral_exe_exe_vv_tensor,& 
-                        pro1_orbital_integral_exe_exe_oo_tensor,&
-                        Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,term2_N_state)
-
-        property_All_state = property_All_state + term1_N_state + term2_N_state
-    end do 
-
-    print *, "print result", property_All_state
+    All_final_states = size(eValues)
+    allocate(TPA(All_final_states))
+    call get_all_one_photon_tdm(exa_input, onetdmeg, onetdmee, All_opera, eVectors)
+    do f_state = 1, All_final_states
+        call get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_state, eValues)
+        TPA(f_state) = TPA_one_state
+    end do
+    print *, "print result", TPA
     call print_date('Leave CIS transition property routine')    
 
 end subroutine talsh_cis_pro_driver
 
-!-----------------------------------------------------------------------------------------------------------------        
+!-----------------------------------------------------------------------------------------------------------------  
+
+subroutine get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_state, eValues)
+    type(exacc_input), intent(in) :: exa_input
+    complex(kind=8), pointer      :: eValues(:) 
+    complex(kind=8), pointer      :: onetdmeg(:,:)
+    complex(kind=8), pointer      :: onetdmee(:,:,:)
+    integer                       :: All_opera
+    integer                       :: f_state
+    integer                       :: ope1, ope2
+    integer                       :: F, G, H
+    integer                       :: S_ty
+    complex(kind=8)               :: S_aabb, S_abab, S_abba
+    complex(kind=8)               :: TPA_one_state
+
+    call print_date('Start the CIS Two photon absorption routine')
+! now we use parallel linearly polarized light, but inprinciple we could use other parameter.
+    F=2
+    G=2
+    H=2
+    do ope1 = 1, All_opera
+        do ope2 = 1, All_opera
+            S_ty = 1
+            call get_trans_streng_matx_S(S_aabb, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
+            S_ty = 2
+            call get_trans_streng_matx_S(S_abab, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
+            S_ty = 3          
+            call get_trans_streng_matx_S(S_abba, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
+            TPA_one_state = (F/30)*S_aabb + (G/30)*S_abab + (H/30)*S_abba
+        end do
+    end do
+    call print_date('Leave CIS TPA routine')
+
+end subroutine get_TPA
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine get_trans_streng_matx_S(S, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
+    complex(kind=8), pointer      :: eValues(:) 
+    complex(kind=8), pointer      :: onetdmeg(:,:)
+    complex(kind=8), pointer      :: onetdmee(:,:,:)
+    integer                       :: f_state
+    integer                       :: ope1, ope2
+    integer                       :: S_ty
+    complex(kind=8)               :: S
+    real(kind=8)                  :: omega1, omega2
+
+    integer                       :: inte_state
+    integer                       :: all_inte_states
+    integer                       :: ope1_obj, ope2_obj, ope3_obj, ope4_obj
+    complex(kind=8)               :: term1, term2
+    complex(kind=8)               :: M0f, Mf0
+
+
+    call print_date('Start the Strength matrix element routine')
+    all_inte_states = size(eValues)
+    ! omega should be in input
+    omega1= 0.0
+    omega2 =0.0
+
+    select case (S_ty)
+        case (1)
+            ope1_obj = ope1
+            ope2_obj = ope1
+            ope3_obj = ope2
+            ope4_obj = ope2
+        case (2)
+            ope1_obj = ope1
+            ope2_obj = ope2
+            ope3_obj = ope1
+            ope4_obj = ope2
+        case (3)
+            ope1_obj = ope1
+            ope2_obj = ope2
+            ope3_obj = ope2
+            ope4_obj = ope1
+    end select
+
+    M0f = (0.0, 0.0)
+    Mf0 = (0.0, 0.0)
+    do inte_state = 1, all_inte_states
+        term1 = -onetdmee(f_state, inte_state, ope2_obj)*onetdmeg(inte_state, ope1_obj)/(eValues(inte_state)-omega1)
+        term2 = -onetdmee(f_state, inte_state, ope1_obj)*onetdmeg(inte_state, ope2_obj)/(eValues(inte_state)-omega2)
+        M0f = M0f + term1 + term2
+    end do
+
+    do inte_state = 1, all_inte_states
+        term1 = -onetdmee(inte_state, f_state, ope4_obj)*onetdmeg(inte_state, ope3_obj)/(eValues(inte_state)-omega1)
+        term2 = -onetdmee(inte_state, f_state, ope3_obj)*onetdmeg(inte_state, ope4_obj)/(eValues(inte_state)-omega2)
+        Mf0 = Mf0 + term1 + term2
+    end do
+
+    S = M0f * Mf0
+
+    call print_date('Leave the Strength matrix element routine')
+
+end subroutine get_trans_streng_matx_S
+
+!---------------------------------------------------------------------------------------------------------------------
+
+subroutine get_all_one_photon_tdm(exa_input, onetdmeg, onetdmee, All_opera, eVectors)
+
+    type(exacc_input), intent(in) :: exa_input
+    complex(kind=8), pointer      :: eVectors(:,:)
+    integer                       :: All_opera
+    complex(kind=8), pointer      :: onetdmee(:,:,:)
+    complex(kind=8), pointer      :: onetdmeg(:,:)
+
+
+    call print_date('Enter One Photon transition moments routine')
+    call get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
+    call get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
+    ! call print_TDM(onetdmeg, onetdmee)
+    call print_date('Leave CIS One Photon transition moments routine')
+
+end subroutine get_all_one_photon_tdm
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
+    type(exacc_input), intent(in) :: exa_input
+    complex(kind=8), pointer      :: eVectors(:,:)
+    integer                       :: All_opera
+    complex(kind=8), pointer      :: onetdmeg(:,:)
+
+    integer                       :: ope 
+    integer                       :: f_state
+    integer                       :: all_state
+    integer                       :: nvir, nocc
+    complex(kind=8)               :: onetdmeg_tem
+
+    type(talsh_dm_tens)       :: Tra_Den_exe_grd_tensor
+    type(talsh_tens_t)        :: orb_inte_exe_grd_tensor
+
+
+    nvir = exa_input%nvir
+    nocc = exa_input%nocc
+    all_state = size(eVectors,2)
+    do ope=1, All_opera
+        do f_state =1, all_state 
+            call get_prop_integral(exa_input, orb_inte_exe_grd_tensor,& 
+                        nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,ope)
+
+            call get_cis_density_exe_grd(exa_input,eVectors,f_state,Tra_Den_exe_grd_tensor)
+
+            call get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_tensor)
+
+            onetdmeg(f_state,ope) = onetdmeg_tem
+        end do
+    end do
+
+end subroutine get_exc_grd
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
+    type(exacc_input), intent(in) :: exa_input
+    complex(kind=8), pointer      :: eVectors(:,:)
+    integer                       :: All_opera
+    complex(kind=8), pointer      :: onetdmee(:,:,:)
+
+    integer                       :: ope 
+    integer                       :: f_state, ini_state
+    integer                       :: all_state
+    integer                       :: nvir, nocc
+    complex(kind=8)               :: onetdmee_tem
+    type(talsh_dm_tens)           :: Tra_Den_exe_exe_tensor
+    type(talsh_tens_t)            :: orb_inte_exe_exe_vv_tensor
+    type(talsh_tens_t)            :: orb_inte_exe_exe_oo_tensor
+
+
+    nvir = exa_input%nvir
+    nocc = exa_input%nocc
+    all_state = size(eVectors,2)
+    do ope=1, All_opera
+        do ini_state =1, all_state
+            do f_state =1, all_state 
+                call get_prop_integral(exa_input,orb_inte_exe_exe_vv_tensor,&
+                nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,ope)
+                
+                call get_prop_integral(exa_input,orb_inte_exe_exe_oo_tensor,&
+                nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,ope)
+
+                call get_cis_density_exe_exe(exa_input,eVectors,f_state,ini_state,Tra_Den_exe_exe_tensor)
+
+                call get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe_oo_tensor, Tra_Den_exe_exe_tensor)
+
+                onetdmee(f_state,ini_state,ope) = onetdmee_tem
+            end do
+        end do
+    end do
+
+end subroutine get_exc_exc
+
+!-----------------------------------------------------------------------------------------------------------------
 
 subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,i_prop)
     ! Read proporty integrals from  MDPROP file 
@@ -135,55 +287,69 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
 end subroutine get_prop_integral
 !-------------------------------------------------------------------------------------------------------------------
 
-subroutine get_property(exa_input,eValues,N_state,pro_orbital_integral_exe_grd_tensor,& 
-                pro_orbital_integral_exe_exe_vv_tensor,pro_orbital_integral_exe_exe_oo_tensor,&
-                Tra_Den_exe_exe_tensor,Tra_Den_exe_grd_tensor,property_N_state)
+subroutine get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_tensor)
 
-    type(exacc_input), intent(in) :: exa_input
-    complex(kind=8), pointer      :: eValues(:) 
+    integer(C_INT) :: ierr
+    integer(C_INT)     :: one_dims(1)
+    integer :: N_state
+    complex(kind=8)               :: onetdmeg_tem
+
+
+    type(talsh_dm_tens)           :: Tra_Den_exe_grd_tensor
+    type(talsh_tens_t)            :: orb_inte_exe_grd_tensor
+    type(talsh_tens_t)            :: TDM_exe_grd_tensor
+
+    complex(kind=8), pointer      :: TDM_exe_grd_tens(:)
+    type(C_PTR)                   :: body_p
+
+    one_dims(1) = 1
+
+    ierr=talsh_tensor_construct(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=talsh_tensor_get_body_access(TDM_exe_grd_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
+
+    ierr = talsh_tensor_contract("TDM+=OL(a,i)*DM(a,i)",TDM_exe_grd_tensor,orb_inte_exe_grd_tensor,&
+                                Tra_Den_exe_grd_tensor%prime_vo,scale=ONE)
+    onetdmeg_tem = TDM_exe_grd_tens(1)
+
+    
+end subroutine get_propeg
+
+!------------------------------------------------------------------------------------------------------------------------
+
+subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe_oo_tensor, Tra_Den_exe_exe_tensor)
+
     integer(C_INT) :: ierr
     integer(C_INT)     :: one_dims(1)
     integer :: N_state
 
 
-    type(talsh_dm_tens)       :: Tra_Den_exe_exe_tensor, Tra_Den_exe_grd_tensor
-    type(talsh_tens_t)        :: pro_orbital_integral_exe_grd_tensor
-    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_vv_tensor
-    type(talsh_tens_t)        :: pro_orbital_integral_exe_exe_oo_tensor
-    type(talsh_tens_t)        :: TDM_exe_grd_tensor, TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
+    complex(kind=8)           :: onetdmee_tem
+    type(talsh_dm_tens)       :: Tra_Den_exe_exe_tensor
+    type(talsh_tens_t)        :: orb_inte_exe_exe_vv_tensor
+    type(talsh_tens_t)        :: orb_inte_exe_exe_oo_tensor
+    type(talsh_tens_t)        :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
 
-    complex(kind=8), pointer      :: TDM_exe_grd_tens(:), TDM_exe_exe_vv_tens(:), TDM_exe_exe_oo_tens(:)
+    complex(kind=8), pointer      :: TDM_exe_exe_vv_tens(:), TDM_exe_exe_oo_tens(:)
     type(C_PTR)                   :: body_p
-    complex(kind=8)               :: property_N_state
-    complex(kind=8)               :: ene_exc
-
-
 
     one_dims(1) = 1
-    ene_exc = eValues(N_state)
 
-    ierr=talsh_tensor_construct(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=talsh_tensor_construct(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
     ierr=talsh_tensor_construct(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
 
-    ierr=talsh_tensor_get_body_access(TDM_exe_grd_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-    call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
-    ierr = talsh_tensor_contract("TDM+=OL(a,i)*DM(a,i)",TDM_exe_grd_tensor,pro_orbital_integral_exe_grd_tensor,&
-                                Tra_Den_exe_grd_tensor%prime_vo,scale=ONE)
-
-
     ierr=talsh_tensor_get_body_access(TDM_exe_exe_vv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,TDM_exe_exe_vv_tens,one_dims)
-    ierr = talsh_tensor_contract("TDM+=OL(a,b)*DM(a,b)",TDM_exe_exe_vv_tensor,pro_orbital_integral_exe_exe_vv_tensor,&
-                                Tra_Den_exe_exe_tensor%prime_vv,scale=ONE)
+    ierr = talsh_tensor_contract("TDM+=OL(a,b)*DM(a,b)",TDM_exe_exe_vv_tensor,orb_inte_exe_exe_vv_tensor,&
+                    Tra_Den_exe_exe_tensor%prime_vv,scale=ONE)
 
     ierr=talsh_tensor_get_body_access(TDM_exe_exe_oo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,TDM_exe_exe_oo_tens,one_dims)
-    ierr = talsh_tensor_contract("TDM+=OL(i,j)*DM(i,j)",TDM_exe_exe_oo_tensor,pro_orbital_integral_exe_exe_oo_tensor,&
-                                Tra_Den_exe_exe_tensor%prime_oo,scale=ONE)
+    ierr = talsh_tensor_contract("TDM+=OL(i,j)*DM(i,j)",TDM_exe_exe_oo_tensor,orb_inte_exe_exe_oo_tensor,&
+                    Tra_Den_exe_exe_tensor%prime_oo,scale=ONE)
 
-    property_N_state = TDM_exe_grd_tens(1)*(TDM_exe_exe_vv_tens(1)+TDM_exe_exe_oo_tens(1))/ene_exc
-
-end subroutine get_property
+    onetdmee_tem = TDM_exe_exe_vv_tens(1)+TDM_exe_exe_oo_tens(1)
+    
+end subroutine get_propee
 
 end module

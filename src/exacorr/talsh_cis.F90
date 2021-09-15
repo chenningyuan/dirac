@@ -184,8 +184,7 @@ module talsh_cis
         call diagoanl_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
 !   Sort the eigenvector according to the excitation energy 
         call sort_cis_eig(eValues,eVectorsR)
-        tar_state = 10
-        call talsh_cis_pro_driver(exa_input,eValues,eVectorsR,tar_state)
+        call talsh_cis_pro_driver(exa_input,eValues,eVectorsR)
 
          
         ! do i=1, size(eVectorsR,1)
