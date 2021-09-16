@@ -31,7 +31,7 @@ How to prepare the patch
 
 1. Bump the version (the version number is kept in file VERSION). Also git grep -i for "orphaned" version numbers in the source code), e.g.::
 
-   $ git grep "21\."
+   $ git grep "21\." src/
 
 2. Verify that CHANGELOG.rst is up to date (you may want to check history since previous version using git log).
 
@@ -42,9 +42,9 @@ At this point, you will have to create a branch in order to commit these changes
   $ git commit
   $ git push
 
-Next create a merge request to merge these changes into the current release branch.  
+Next create a merge request to merge these changes into the current release branch.
 
-Once the merg request has been accepted, we are now ready to create and upload the tarball for the patch. It is strongly recommended to start from a clean clone.
+Once the merge request has been accepted, we are now ready to create and upload the tarball for the patch. It is strongly recommended to start from a clean clone.
 After clone, make sure that you are one the current release branch, e.g.::
 
   $ git checkout release-21
@@ -79,7 +79,3 @@ over to the directory containing the contents of the patch tarball, e.g.::
 
 This directory has now been activated as git repository, allowing us to check what files have been modified (git status) and in what manner (git diff).
 If things are okay, we are ready to upload the patch tarball to the zenodo page of the current release.
-
-
-  
-

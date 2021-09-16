@@ -8,8 +8,8 @@ Release preparation
 Feature freeze
 --------------
 
-Two months before the release (example: DIRAC16), a release branch (example:
-release-16) is created from master. This is a feature freeze and from this
+Two months before the release (example: DIRAC21), a release branch (example:
+release-21) is created from master. This is a feature freeze and from this
 moment on the release branch ideally only receives cosmetics and bugfixes, no
 major new features, no merges from master or other branches (except
 cherry-picks; more about it later). You as developer are responsible to commit
@@ -25,12 +25,12 @@ this reason we will never merge from master to the release branch, only from
 the release branch to master.
 
 
-How to check out the release branch (example release-16 for DIRAC16)
+How to check out the release branch (example release-21 for DIRAC21)
 --------------------------------------------------------------------
 
 Check out the release branch::
 
-  $ git checkout release-16
+  $ git checkout release-21
 
 Now you have it next to master (verify this)::
 
@@ -42,7 +42,7 @@ You can switch back to master::
 
 And then switch back to the release branch::
 
-  $ git checkout release-16
+  $ git checkout release-21
 
 
 How to commit changes and bugfixes that are relevant for the released code
@@ -54,12 +54,12 @@ release branch to master manually. This is not only unnecessary work but it is
 harmful (conflicts)!
 Again, do not commit to master, commit to the release branch::
 
-  $ git checkout release-16
-  $ git pull                      # update the local release-16 branch
+  $ git checkout release-21
+  $ git pull                      # update the local release-21 branch
   $ git commit                    # commit your modifications
-  $ git push                      # push your changes to release-16 branch
+  $ git push                      # push your changes to release-21 branch
   $ git checkout master           # switch to the master branch
-  $ git merge --no-ff release-16  # merge changes to master, fix conflicts if any
+  $ git merge --no-ff release-21  # merge changes to master, fix conflicts if any
   $ git push                      # push your changes to master
 
 Note that by merging your changes to master you might get conflicts. Git points
@@ -70,7 +70,7 @@ What if you accidentally committed something to master which belongs to
 the release? In this case do *not* merge master to the release branch, but
 rather cherry-pick the individual commit(s) to the release branch::
 
-  $ git checkout release-16
+  $ git checkout release-21
   $ git cherry-pick [hash]        # with [hash] that corresponds
                                   # to the commit
 
