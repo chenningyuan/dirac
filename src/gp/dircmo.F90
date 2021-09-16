@@ -58,6 +58,7 @@ module dircmo
       INTEGER   CMO_DIMS(12),IDIM(3,2),NCMOTQ,NORBT,NZ,NFSYM,NSSYM
       LOGICAL   SSYM
       character(len=74) text
+      type(file_info_t), save :: checkpoint_file
 
 !     Check whether we should get some information from the common blocks
       if (present(title)) then
@@ -96,6 +97,20 @@ module dircmo
       CALL LAB_WRITE(IUNIT,'BASINFO ')
       call append_basisinfo_to_dfcoef (IUNIT)
       CALL LAB_WRITE(IUNIT,'EOFLABEL')
+
+      ! test zone: write all data also to an hdf5 file
+      if (checkpoint_file%status == -1) then
+         print*," Opening HDF5 checkpoint file"
+         checkpoint_file%type = 2
+         checkpoint_file%name = "CHECKPOINT.h5"
+      end if
+      print*," Writing DFCOEF data to checkpoint file"
+      call lab_write (checkpoint_file,'CMO_DIMS',idata=cmo_dims)
+      call lab_write (checkpoint_file,'COEFS',rdata=cmo(1:ncmotq))
+      call lab_write (checkpoint_file,'EVALS',rdata=eig(1:norbt))
+      call lab_write (checkpoint_file,'SUPERSYM',idata=ibeig(1:norbt))
+      if (ssym) call lab_write(checkpoint_file,'KAPPA',idata=ibeig(norbt+1:2*norbt))
+      ! end of test zone
 
       RETURN
       END
@@ -161,6 +176,7 @@ module dircmo
       real(8), allocatable :: coefficients(:), eigenvalues(:)
       integer, allocatable :: boson_irreps(:), atom_irreps(:)
       character(len=74)    :: infotext
+      type(file_info_t), save :: checkpoint_file
 
 !     Always read the info text and dimensions (NB: actual size (written part) of idim depends on nfsym)
       rewind iunit
@@ -196,6 +212,15 @@ module dircmo
       if (present(cmo)) then
          allocate (coefficients(ncoef))
          call lab_read(iunit,'COEFS   ',rdata=coefficients)
+         ! test zone: uncomment to read coefs from the hdf5 file
+         ! print*," Reading coeffs from checkpoint file "
+         ! if (checkpoint_file%status == -1) then
+         !    checkpoint_file%type = 2
+         !    checkpoint_file%name = "CHECKPOINT.h5"
+         !    checkpoint_file%status = 0
+         ! end if
+         ! call lab_read (checkpoint_file,'COEFS',rdata=coefficients)
+         ! end of test zone
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)
       end if

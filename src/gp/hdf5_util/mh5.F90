@@ -1,16 +1,11 @@
-!***********************************************************************
-! This file is taken from OpenMolcas.                                  *
-!                                                                      *
-! OpenMolcas is free software; you can redistribute it and/or modify   *
-! it under the terms of the GNU Lesser General Public License, v. 2.1. *
-! OpenMolcas is distributed in the hope that it will be useful, but it *
-! is provided "as is" and without any express or implied warranties.   *
-! For more details see the full text of the license in the file        *
-! LICENSE or in <http://www.gnu.org/licenses/>.                        *
-!***********************************************************************
-
 module mh5
-! Generic interfaces for HDF5 originally written by Ignacio Fdez. Galván for MOLCAS
+
+! Fortran Interface for HDF5 originally written for MOLCAS by
+! Stefan Knecht
+! Steven Vancoillie
+! Ignacio Fdez. Galván
+! Leon Freitag
+!
 ! Slightly modified to be self-contained (removed includes and dependency on OpenMolcas modules), L. Visscher 2021
 ! Note that we always use int64 to make sure the hid_t type ids will fit for any installation of the hdf5 library
 ! Better would be to define sizes of integers for buffers and lengths+dimensions thereof separately from the 

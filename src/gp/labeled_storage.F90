@@ -18,20 +18,78 @@ module labeled_storage
      integer:: type=1                     ! Future use: which type of file type we use (hpf,kf, dirac, ..)
      integer:: status=-1                  ! -1: never used, 0: closed, 1: open
      integer:: unit=0                     ! unit used (for Fortran type writes)
+     integer(kind=8):: id=0               ! id (for hdf5 type writes)
      character(len=:),allocatable :: name ! file name
   end type file_info_t
 
   interface lab_read
-      module procedure read_dirac
       module procedure read_general
+      module procedure read_dirac
   end interface
 
   interface lab_write
-      module procedure write_dirac
       module procedure write_general
+      module procedure write_dirac
   end interface
 
   contains
+
+!!!!!! Definition of the general read / write routines  !!!!!!!!
+
+    subroutine read_general (file_info,label,rdata,idata)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(out), optional          :: rdata(:)
+      integer,intent(out), optional          :: idata(:)
+
+      integer :: ierr
+
+      select case (file_info%type)
+      case (1)
+         ! We use DIRAC files (FORTRAN unformatted sequential)
+         if (present(rdata)) then
+            call read_dirac(file_info%unit,label,rdata=rdata)
+         elseif (present(idata)) then
+            call read_dirac(file_info%unit,label,idata=idata)
+         end if
+      case (2)
+         ! We use HDF5 files
+         if (present(rdata)) then
+            call read_hdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call read_hdf5(file_info,label,idata=idata)
+         end if
+      end select
+
+    end subroutine read_general
+
+    subroutine write_general(file_info,label,rdata,idata)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(in), optional           :: rdata(:)
+      integer,intent(in), optional           :: idata(:)
+
+      integer :: ierr
+
+      select case (file_info%type)
+      case (1)
+         ! We use DIRAC files (FORTRAN unformatted sequential)
+         if (present(rdata)) then
+            call write_dirac(file_info%unit,label,rdata=rdata)
+         elseif (present(idata)) then
+            call write_dirac(file_info%unit,label,idata=idata)
+         end if
+      case (2)
+         ! We use HDF5 files
+         if (present(rdata)) then
+            call write_hdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call write_hdf5(file_info,label,idata=idata)
+          end if
+      end select
+    end subroutine write_general
+
+!!!!!! Selfcontained implementation of The DIRAC format, used for backwards compatibility !!!!!!
 
     subroutine read_dirac (file_unit,label,rdata,idata)
       integer, intent(in)                    :: file_unit
@@ -51,26 +109,8 @@ module labeled_storage
       elseif (present(idata)) then
          if (ierr==0) read (file_unit) idata
       end if
+
     end subroutine read_dirac
-
-    subroutine read_general (file_info,label,rdata,idata)
-      type(file_info_t),intent(in)           :: file_info
-      character*(*),intent(in)               :: label
-      real(8),intent(out), optional          :: rdata(:)
-      integer,intent(out), optional          :: idata(:)
-
-      integer :: ierr
-
-      if (file_info%type == 1) then
-         ! Interfaces to file types different from dirac still to be implemented.
-         if (present(rdata)) then
-            call read_dirac(file_info%unit,label,rdata=rdata)
-         elseif (present(idata)) then
-            call read_dirac(file_info%unit,label,idata=idata)
-         end if
-      end if
-      
-    end subroutine read_general
 
     subroutine write_dirac (file_unit,label,rdata,idata)
       integer, intent(in)                    :: file_unit
@@ -90,25 +130,8 @@ module labeled_storage
       elseif (present(idata)) then
          write (file_unit) idata
       end if
+
     end subroutine write_dirac
-
-    subroutine write_general(file_info,label,rdata,idata)
-      type(file_info_t),intent(in)           :: file_info
-      character*(*),intent(in)               :: label
-      real(8),intent(in), optional           :: rdata(:)
-      integer,intent(in), optional           :: idata(:)
-
-      integer :: ierr
-
-      if (file_info%type == 1) then
-         ! Interfaces to file types different from dirac still to be implemented.
-         if (present(rdata)) then
-            call write_dirac(file_info%unit,label,rdata=rdata)
-         elseif (present(idata)) then
-            call write_dirac(file_info%unit,label,idata=idata)
-         end if
-      end if
-    end subroutine write_general
 
     integer function dirac_labsearch (file_unit,label)
       integer,intent(in)        :: file_unit
@@ -166,5 +189,81 @@ module labeled_storage
          end if
       end do
     end function get_unit
+
+!!!!!! Wrapper around the HDF5 interface !!!!!!
+
+    subroutine read_hdf5 (file_info,label,rdata,idata)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(out), optional          :: rdata(:)
+      integer,intent(out), optional          :: idata(:)
+
+      integer :: ierr
+      integer(kind=8), allocatable :: i8buf(:)
+
+      if (file_info%status == 0) then
+         file_info%id = mh5_open_file_rw(file_info%name)
+         file_info%status = 1
+      end if
+
+      if (present(rdata)) then
+         call mh5_fetch_dset(file_info%id,label,rdata)
+      elseif (present(idata)) then
+         allocate (i8buf(size(idata)))
+         call mh5_fetch_dset(file_info%id,label,i8buf)
+         idata = int(i8buf)
+         deallocate (i8buf)
+      end if
+
+      call mh5_close_file(file_info%id)
+      file_info%status = 0
+
+    end subroutine read_hdf5
+
+    subroutine write_hdf5 (file_info,label,rdata,idata)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(in), optional           :: rdata(:)
+      integer,intent(in), optional           :: idata(:)
+
+      integer :: ierr
+      integer(kind=8) :: file_id, dset_id
+
+      if (file_info%status == -1) then
+         file_info%id = mh5_create_file(file_info%name)
+         file_info%status = 1
+      elseif (file_info%status == 0) then
+         file_info%id = mh5_open_file_rw(file_info%name)
+         file_info%status = 1
+      end if
+
+      file_id = file_info%id
+
+      if (present(rdata)) then
+         dset_id = mh5_exists_dset(file_id, label)
+         if (dset_id == 0) then
+            dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)])
+         else
+            dset_id = mh5_open_dset(file_id, label)
+         end if
+         call mh5_put_dset(dset_id, rdata)
+         call mh5_close_dset(dset_id)
+      elseif (present(idata)) then
+         dset_id = mh5_exists_dset(file_id, label)
+         if (dset_id == 0) then
+            dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)])
+         else
+            dset_id = mh5_open_dset(file_id, label)
+         end if
+         call mh5_put_dset(dset_id, int8(idata))
+         call mh5_close_dset(dset_id)
+      end if
+
+      call mh5_close_file(file_id)
+      file_info%status = 0
+
+    end subroutine write_hdf5
 
 end module labeled_storage

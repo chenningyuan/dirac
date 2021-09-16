@@ -1,22 +1,15 @@
-/***********************************************************************
-* This file is taken from OpenMolcas.                                  *
-*                                                                      *
-* OpenMolcas is free software; you can redistribute it and/or modify   *
-* it under the terms of the GNU Lesser General Public License, v. 2.1. *
-* OpenMolcas is distributed in the hope that it will be useful, but it *
-* is provided "as is" and without any express or implied warranties.   *
-* For more details see the full text of the license in the file        *
-* LICENSE or in <http://www.gnu.org/licenses/>.                        *
-***********************************************************************/
+/* HDF5 C Interface originally written for MOLCAS by
+ Stefan Knecht
+ Steven Vancoillie
+ Ignacio Fdez. Galván
+ Leon Freitag
 
-/* The Molcas HDF5 C interface - author: Ignacio Fdez. Galván              */
-/* Modified to remove dependencies on MOLCAS intrinsics, L. Visscher  2021 */
+ Modified to remove dependencies on OpenMolcas intrinsics, L. Visscher  2021 */
 
 #include <sys/stat.h>
 #include <string.h>
 
 #include "hdf5.h"
-   
 
 /* Version the interface that we use, let this be consistent with releases (best defined elsewhere)  */
 #define _DIRAC_VERSION_ "22.0"
