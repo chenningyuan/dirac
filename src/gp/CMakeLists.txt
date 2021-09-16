@@ -4,6 +4,17 @@ include_directories(
     ${PROJECT_BINARY_DIR}
     )
 
+find_package(HDF5 REQUIRED COMPONENTS C)
+if(HDF5_FOUND)
+   option(ENABLE_HDF5 "Enable HDF5" ON)
+   message(STATUS "HFD5 found, enabling HDF5 interface ")
+   message(STATUS "HDF5 include directory location: ${HDF5_INCLUDE_DIRS} ")
+   include_directories(${HDF5_INCLUDE_DIRS})
+else()
+   option(ENABLE_HDF5 "Enable HDF5" OFF)
+   message(STATUS "HDF5 interface can not be used, no HDF5 installation found")
+endif()
+
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
     SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
     message(STATUS "For libgp.a, objects mode set to 64 bit on IBM AIX with XL Fortran compiler")
@@ -89,6 +100,7 @@ set(FREE_GP_FORTRAN_SOURCES
     xml/xml_parser.F90
     labeled_storage.F90
     dircmo.F90
+    hdf5_util/mh5.F90
 )
 
 set(GP_C_SOURCES
@@ -99,6 +111,7 @@ set(GP_C_SOURCES
     selftest_fortran_c_interoperability.c
     stacktraverse_bsd.c
     trace.c
+    hdf5_util/mh5_capi.c
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
