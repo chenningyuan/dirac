@@ -27,6 +27,7 @@
 ***********************************************************************
       SUBROUTINE GASCI_REL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
+      use luci_wrkspc
 *
 !     external modules
       use memory_allocator
@@ -54,7 +55,6 @@
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "cstate.inc"
 #include "crun.inc"

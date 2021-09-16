@@ -43,6 +43,7 @@
      &           RCCTOS,IT_TTPL,IT_TTOL
 #endif
      &     )
+      use luci_wrkspc
 *
 * Master routine for CI diagonalization
 *
@@ -52,7 +53,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
       DIMENSION VEC1(*), VEC2(*)
       DIMENSION INIDET(100)
       DIMENSION IPNTR(*), ISCR1(*)
