@@ -293,11 +293,7 @@ module exacorr_gradient
       character(len=4)                :: wavefun
 
       CCD = exa_input%CCD
-      if (CCD) then
-         wavefun = "CCD "
-      else
-         wavefun = "CCSD"
-      end if
+      wavefun = "CCSD"
 
       ! Convert to TALSH format and call the TALSH writer
       buf_size=exa_input%talsh_buff*buf_size
