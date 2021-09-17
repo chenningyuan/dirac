@@ -222,8 +222,7 @@ C
       if (exa_input%talsh) then
        if (exa_input%cis) then
          call talsh_cis_driver (exa_input)
-       end if
-       if (exa_input%do_no) then
+       else if (exa_input%do_no) then
          call get_no_driver (exa_input)
        else if (exa_input%mp2no) then
          call talsh_mp2no_driver (exa_input,n_mp2no)
