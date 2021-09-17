@@ -42,6 +42,8 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors)
     
     call print_date('Enter CIS transition property routine')
     All_final_states = size(eValues)
+    ! the number of operator component should be determined by input or here?
+    All_opera = 3 
     allocate(TPA(All_final_states))
     call get_all_one_photon_tdm(exa_input, onetdmeg, onetdmee, All_opera, eVectors)
     do f_state = 1, All_final_states
@@ -166,7 +168,7 @@ subroutine get_all_one_photon_tdm(exa_input, onetdmeg, onetdmee, All_opera, eVec
     call get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
     call get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
     ! call print_TDM(onetdmeg, onetdmee)
-    call print_date('Leave CIS One Photon transition moments routine')
+    call print_date('Leave One Photon transition moments routine')
 
 end subroutine get_all_one_photon_tdm
 
@@ -191,18 +193,22 @@ subroutine get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
     nvir = exa_input%nvir
     nocc = exa_input%nocc
     all_state = size(eVectors,2)
+    call print_date('Enter exc-grd routine')
     do ope=1, All_opera
         do f_state =1, all_state 
             call get_prop_integral(exa_input, orb_inte_exe_grd_tensor,& 
                         nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,ope)
-
+            print *, "get integral"
             call get_cis_density_exe_grd(exa_input,eVectors,f_state,Tra_Den_exe_grd_tensor)
 
+            print *, "get density mat"
             call get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_tensor)
 
+            print *, "get tdm"
             onetdmeg(f_state,ope) = onetdmeg_tem
         end do
     end do
+    call print_date('Leave exc-grd routine')
 
 end subroutine get_exc_grd
 
