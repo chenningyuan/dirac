@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -45,6 +45,7 @@
 ***********************************************************************
 
       SUBROUTINE MEMMAR(KBASE,KADD,TASK,IR,IDENT)
+      use luci_wrkspc
 C
 C     Memory manager routine for LUCIAREL "R"
 C
@@ -89,7 +90,6 @@ C
       REAL*8 work1,work2
 C
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "parluci.h"
 C
       KBASE_LOCAL = 0
@@ -435,6 +435,7 @@ C
 ***********************************************************************
 
       SUBROUTINE MEMMAR_I8(KBASE,KADD,TASK,IR,IDENT)
+      use luci_wrkspc
 C
 C     Memory manager routine for LUCIAREL "R"
 C
@@ -478,7 +479,6 @@ C
       DATA PAD2/0.987654321D0/
 C
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "parluci.h"
 C
 cjp

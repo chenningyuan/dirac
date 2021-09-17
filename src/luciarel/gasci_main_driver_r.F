@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -27,6 +27,7 @@
 ***********************************************************************
       SUBROUTINE GASCI_REL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
+      use luci_wrkspc
 *
 !     external modules
       use memory_allocator
@@ -54,7 +55,6 @@
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "cstate.inc"
 #include "crun.inc"

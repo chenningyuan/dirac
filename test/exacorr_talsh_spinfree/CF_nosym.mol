@@ -1,0 +1,12 @@
+INTGRL
+CF, no symmetry used.                               
+
+C   2    0  X  Y
+        9.    1
+F      0.0000000000         0.0000000000        -0.5000000
+LARGE BASIS dyall.v2z
+        6.    1
+C       0.0000000000         0.0000000000        0.77555
+LARGE BASIS dyall.v2z
+FINISH
+

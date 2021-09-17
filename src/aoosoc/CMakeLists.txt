@@ -39,7 +39,5 @@ add_library(
 #
 # deal with intedependencies
 #
-if (ENABLE_INTEREST)
-    add_dependencies(aoosoc interest)
-endif()
+add_dependencies(aoosoc interest)
 add_dependencies(aoosoc x2c)

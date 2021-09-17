@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,6 +26,7 @@
 ***********************************************************************
       SUBROUTINE DIRDIR(INSPC,IUTSPC,ISM,LUIN,LEVEL,E0,LUSCR,LUSCR2,
      &                  LU1)
+      use luci_wrkspc
 
 
 * A vector is given in space INSPC . Calculate approximations
@@ -49,7 +50,6 @@
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "crun.inc"
 #include "gasstr.inc"
@@ -144,6 +144,7 @@ C         ECORE = ECORE_ORIG + ECCP
      &             S11,S01,RES0,E2,
      &             NOCCLS,IOCCLS,NACTI,IACTI,
      &             NACTO,IACTO,LUSCR,LUSCR2,LEVEL,LU1)
+      use luci_wrkspc
 *
 * Part 1 of double direct CI approach
 *
@@ -164,7 +165,6 @@ C         ECORE = ECORE_ORIG + ECCP
       REAL*8 INPROD, INPRDD
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "crun.inc"
@@ -1850,6 +1850,7 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
       SUBROUTINE SBATCH2_FROM_CBATCH(NLBLOCK,ILOFF,NRBLOCK,IROFF,
      &                               ILBLOCK,IRBLOCK,
      &                               CB,HCB,IRESTRICT)
+      use luci_wrkspc
 *
 * Generate the parts of H times right batch that is in a given
 * left batch
@@ -1888,7 +1889,6 @@ C?    WRITE(6,*) ' GET_SEC : FACTOR ', FACTOR
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"

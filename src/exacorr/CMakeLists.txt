@@ -21,6 +21,7 @@ if(ENABLE_EXATENSOR)
    exacorr_respect.F90
    exacorr_cholesky.F90
    exacorr_cc.F90
+   exacorr_mp2no.F90
    talsh_ao_to_mo.F90
    talsh_common_routines.F90
    talsh_gradient.F90
@@ -28,6 +29,11 @@ if(ENABLE_EXATENSOR)
    talsh_cis.F90
    talsh_cis_property.F90
    talsh_cis_density.F90
+   talsh_mp2no.F90
+   mp2no_driver.F90
+   mp2no_matrixtransforms.F90
+   mp2no_fileinterfaces.F90
+
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -53,4 +59,5 @@ if(ENABLE_EXATENSOR)
 # deal with dependencies
   add_dependencies(exacorr  main)
   add_dependencies(exacorr  exatensor)
+  add_dependencies(exacorr interest)
 endif()

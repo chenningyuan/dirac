@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -230,6 +230,7 @@ C       IJKL_REL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2 + MIN(IJ,KL)
       RETURN
       END
       SUBROUTINE CASPT2_FOCK(CC_AMP,VEC1,VEC2)
+      use luci_wrkspc
 *
 * Setup CASPT2 Fock matrix
 *
@@ -238,7 +239,6 @@ C       IJKL_REL = MAX(IJ,KL)*(MAX(IJ,KL)-1)/2 + MIN(IJ,KL)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "oper.inc"
 #include "cc_exc.inc"
 #include "clunit.inc"
@@ -324,6 +324,7 @@ C     IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV)
       RETURN
       END
       SUBROUTINE SOLVE_PT2_EQ(RHS,C1,VEC1,VEC2,H0,ENOT,S,CC_AMP)
+      use luci_wrkspc
 *
 * Solve first order pt equations
 *
@@ -340,7 +341,6 @@ C     IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV)
 *. General input
 #include "mxpdim.inc"
 #include "crun.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 #include "cc_exc.inc"
 #include "oper.inc"
@@ -454,6 +454,7 @@ C     END IF
       END
 *
       SUBROUTINE LUCIA_ICCI(ISM,ISPC,CALC)
+      use luci_wrkspc
 *
 * Internal contracted calculation with ICCI
 *
@@ -463,7 +464,6 @@ C     END IF
       IMPLICIT REAL*8(A-H,O-Z)
       CHARACTER*6 CALC
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cands.inc"
 #include "oper.inc"
 #include "cc_exc.inc"
@@ -619,6 +619,7 @@ C       CALL CASPT_CHECK
       END
       SUBROUTINE IC_H_T_REF(LUREF,VEC,HVEC,SVEC,VEC1,VEC2,IDOHV,IDOSV,
      &                       IADDREF)
+      use luci_wrkspc
 *
 * Matrix vector routine for Internal contracted formulation
 * Note : reference vector is assumed located on LUREF
@@ -655,7 +656,6 @@ C       CALL CASPT_CHECK
 #include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "cprnt.inc"
 #include "oper.inc"

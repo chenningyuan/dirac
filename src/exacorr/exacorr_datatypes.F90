@@ -1,7 +1,7 @@
 !This module defines the data types used in the ExaCorr module of DIRAC
        module exacorr_datatypes
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
         use exatensor
 #endif
         use talsh
@@ -38,10 +38,12 @@
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
             logical                 :: cis = .false.            ! enables CIS, and branch off away from the CC driver 
+            logical                 :: mp2no = .false.          !L if true mp2 natural orbital
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
             logical                 :: do_triples = .true.
+            logical                 :: do_no = .false.          ! if true, generate natural orbital
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -59,12 +61,13 @@
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
+            real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
 
             complex(8), allocatable   :: ff(:,:)                  ! field strengths
             character(8), allocatable :: ff_names(:)            ! property labels
         end type exacc_input
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 !       All two electron integral tensors
         type, public :: exatns_intg_tens
          type(tens_rcrsv_t) :: oooo
@@ -72,6 +75,7 @@
          type(tens_rcrsv_t) :: oovv, vovo
          type(tens_rcrsv_t) :: vovv
          type(tens_rcrsv_t) :: vvvv
+         type(tens_rcrsv_t) :: foo, fov, fvv
         end type exatns_intg_tens
 
 !       Common blocks between t and lambda
@@ -105,18 +109,19 @@
         end type space_dims
 #endif
 
-!       All two electron integral tensors
+!       All fixed one and two electron integral tensors (defines 2nd quantized Hamiltonian)
         type, public :: talsh_intg_tens
          type(talsh_tens_t) :: oooo
          type(talsh_tens_t) :: ooov
          type(talsh_tens_t) :: oovv, vovo
          type(talsh_tens_t) :: vovv
          type(talsh_tens_t) :: vvvv
+         type(talsh_tens_t) :: foo, fov, fvv
         end type talsh_intg_tens
 
 !       Common blocks between t and lambda
         type, public :: talsh_comm_tens
-         type(talsh_tens_t) :: foo, fov, fvv
+         type(talsh_tens_t) :: foo, fov, fvv ! include finite field perturbations, otherwise identical to f in talsh_intg_tens
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int

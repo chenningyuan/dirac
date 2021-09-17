@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -66,7 +66,7 @@ C
          WRITE (LUPRI,'(2X,A, L5)') 'SHABAB', SHABAB
       END IF
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       NIBUF = 1
       IF (NBASIS .LE. 255) THEN
          NBITS = 8
@@ -1407,7 +1407,7 @@ C
          WRITE (LUPRI,'(2X,A, I5)') 'NDIST ', NDIST
       END IF
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       NIBUF = 1
       IF (NBASIS .LE. 255) THEN
          NBITS = 8

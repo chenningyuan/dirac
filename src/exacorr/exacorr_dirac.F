@@ -18,7 +18,7 @@ C***********************************************************************
       use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
       use exacorr_utils, only       : print_date
       use, intrinsic:: ISO_C_BINDING
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
 
@@ -39,13 +39,20 @@ C***********************************************************************
       integer, allocatable :: mo_list(:), mo_list_tmp(:)
       integer              :: nmo(4)
       integer              :: i, j, imo, jmo, ntmo, rcw
+      integer              :: numproc
 
       exa_input%print_level=IPRTRA
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
 C     Transfer necessary information from common blocks
       call interface_mpi_comm_rank(global_communicator,mytid)
+      call interface_mpi_comm_size(global_communicator,numproc)
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes"
+         print*," -> switched to serial mode using only TALSH"
+         exa_input%talsh = .true.
+      end if
       if (mytid == 0) then
          orbital_string = tra4_indstr(:,1) ! This is to be changed once we have an exacorr-specific input driver
          ! instruct slaves to go to the current routine (exa_moltra) as well
@@ -70,7 +77,7 @@ C     Transfer necessary information from common blocks
 #endif
 
 ! next block is code is only for master
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       if (mytid == 0) then
 #endif
 C
@@ -108,7 +115,7 @@ C     Convert to Kramers unrestricted picture
       deallocate(mo_list_tmp)
       nmo = nmo * 2 ! Kramers unrestricted
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       end if
 #endif
 C
@@ -122,7 +129,7 @@ C
         call talsh_compute_mo_integrals(nmo,mo_list,
      &      exa_input%talsh_buff,exa_input%print_level,rcw,TH_CHOLESKY)
       else
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          !slaves need the same info to get started
          call interface_mpi_bcast(ntmo,1,mparid,global_communicator)
          if (mytid /= 0) allocate(mo_list(ntmo))
@@ -151,23 +158,34 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use talsh_cis,only            : talsh_cis_driver
+      use talsh_mp2no,only          : talsh_mp2no_driver
+      use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
+      use exacorr_mp2no,only        : exacorr_mp2no_driver
       use exacorr_global
       use exacorr_utils, only       : print_exacorr_logo
       use exacorr_utils, only       : print_date
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
 
       implicit none
 
-      integer              :: mytid                    ! MPI rank
+      integer              :: mytid, numproc           ! MPI rank and # processors
+      integer              :: n_mp2no,i                 
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
       ! the slaves do not have their input set yet, so call them
       ! and let them know whether we use talsh or exatensor
       call interface_mpi_comm_rank(global_communicator,mytid)
+      call interface_mpi_comm_size(global_communicator,numproc)
+      if (mytid == 0 .and. numproc < 4 .and. .not. exa_input%talsh) then
+         print*," The EXATENSOR library needs ar least 4 mpi processes"
+         print*," -> switched to serial mode using only TALSH"
+         exa_input%talsh = .true.
+      end if
+
       if (mytid == 0 ) then
          call print_exacorr_logo
          call dirac_parctl( 20 ) 
@@ -190,33 +208,42 @@ C
       if (mytid == 0) call print_date("Initialized global data")
 
 ! next block is code is only for master
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       if (mytid == 0) then
 #endif
 
        call make_spinor_list ( exa_input, string_occupied,
      & string_occ_beta, string_virtual, string_vir_beta)
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       end if
 #endif
 
       if (exa_input%talsh) then
-         if (exa_input%cis) then
-            call talsh_cis_driver (exa_input)
-         else
-            call talsh_cc_driver (exa_input)
-         end if
+       if (exa_input%cis) then
+         call talsh_cis_driver (exa_input)
+       end if
+       if (exa_input%do_no) then
+         call get_no_driver (exa_input)
+       else if (exa_input%mp2no) then
+         call talsh_mp2no_driver (exa_input,n_mp2no)
+       else
+         call talsh_cc_driver (exa_input)
+       end if
       else
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          call exacc_sync_cw(0,mytid)
 #endif
          !if lambda is activated set prop flags
-         if (exa_input%lambda) then 
-           if (mytid == 0) call set_prop_flags_ccsd()
-         end if
+       if (exa_input%lambda) then 
+              if (mytid == 0) call set_prop_flags_ccsd()
+       end if
 
-         call exacorr_cc_driver (exa_input)
+       if (exa_input%mp2no) then
+              call exacorr_mp2no_driver (exa_input,n_mp2no)
+       else
+              call exacorr_cc_driver (exa_input) 
+       end if 
       end if
 
       call exacc_deallocate_cw()
@@ -347,12 +374,11 @@ C
        integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt, nzbuf
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
-       real(8), allocatable   :: coeff(:,:,:),eig(:), seig(:)
+       real(8), allocatable   :: coeff(:,:,:),eig(:)
        integer, allocatable   :: ibeig(:),index(:)
        integer, allocatable   :: ncent(:),nhkt(:),nuco(:),numcf(:)
        integer, allocatable   :: jstrt(:)
        real(8), allocatable   :: cent(:,:),priexp(:),priccf(:,:)
-       complex(8), allocatable:: scoeff(:,:,:)
        integer, allocatable   :: ao_map(:,:)
        character(8)           :: label(4)
        logical                :: labeled
@@ -398,7 +424,7 @@ C
        allocate(coeff(nao,nto,nz))
        allocate(eig(nto))
        allocate(ibeig(nto))
-       allocate(index(2*nmo))
+       allocate(index(nmo))
         
        ! read the mo coefficients and orbital eigenvalues
        if (labeled) read (lucoef) label
@@ -408,30 +434,25 @@ C
        if (labeled) read (lucoef) label
        read (lucoef,end=10,err=10) ibeig
        ! fill in index values
-       do i = 1, 2*nmo
+       do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
        end do
 
-!      switch to unrestricted spinor picture
-       allocate(seig(2*nmo))
-       allocate(scoeff(nao,2*nmo,2)) ! nao, 2*nmo, spin
-       call convert_quaternion_to_complex(coeff,scoeff,eig,seig,
-     &                                              nao,nmo,npo)
-
-       ! put in cmo
-       call alloc_mo (cspinor,nao,2*nmo)
+       ! put in cmo in quaternion format
+       cspinor%algebra = 'q'
+       call alloc_mo (cspinor,nao,nmo)
        cspinor%total_energy = total_energy
-       cspinor%index        = index
-       cspinor%coeff        = scoeff
-       cspinor%energy       = seig
-       cspinor%boson_irrep  = 0 ! because nosym. if there is, include ibeig in converter
+       cspinor%index        = index(npo+1:nto)
+       cspinor%coeff_q      = coeff(:,npo+1:nto,:)
+       cspinor%energy       = eig(npo+1:nto)
+       cspinor%symmetry     = ibeig(npo+1:nto)
 
        deallocate(coeff)
        deallocate(eig)
        deallocate(ibeig)
        deallocate(index)
-       deallocate(seig)
-       deallocate(scoeff)
+!      switch to unrestricted spinor picture
+       call convert_mo_to_complex(cspinor)
 
        ! read the basis set information and check for consistency
        if (labeled) read (lucoef) label
@@ -525,7 +546,6 @@ C
           close (lucoef,status='KEEP')
           call quit ('Error in read_from_dirac')
        endif
-
        close (lucoef,status='KEEP')
 
        call print_date("read from DFCOEF:"//text)
@@ -539,6 +559,7 @@ C
        close (lucoef,status='KEEP')
        return
 
+
        end subroutine read_from_dirac
 
        subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
@@ -546,6 +567,7 @@ C
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_utils
+       use labeled_storage
 
        implicit none
 
@@ -554,23 +576,24 @@ C
        character(len=*),intent(in) :: file_name
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
-       type(qumo)             :: qorbital
+       type(cmo)              :: qorbital
        character              :: text*74      ! holds text read from DFCOEF, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
        integer                :: lucoef
-       integer                :: ishell
+       integer                :: ishell, i
        integer                :: nao, nshells, iao, ibas
-       integer                :: nmo, npo, nto, npriexp, ncnt
+       integer                :: nmo, npo, nto, npriexp, ncnt, ncoeff
        integer, allocatable   :: numcf(:),jstrt(:)
        real(8), allocatable   :: priexp(:),priccf(:)
 
 !      switch to Kramers-restricted format
-       text = "MO coefficients produced by geniao "
+       text = "MO coefficients written by exacorr"
+       nsym = 1 ! we are not using symmetry, so this is always one
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
-       nsym = 1 ! we do not use symmetry, so nsym is always 1
-       call convert_complex_to_quaternion(cspinor,qorbital)
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
        call get_free_fileunit(lucoef)
        inquire (file=file_name,exist=tobe)
@@ -601,15 +624,19 @@ C
        end do
  
        ! write the header
-       write (lucoef) text,nsym,npo,qorbital%nmo,
+       call lab_write(lucoef,'INFO    ')
+       write (lucoef) text,nsym,qorbital%nz,npo,qorbital%nmo,
      &                qorbital%nao,qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef) qorbital%coeff
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+       call lab_write(lucoef,'COEFS   ',
+     &      reshape(qorbital%coeff_q,(/ncoeff/)))
        ! write the orbital energies
-       write (lucoef) qorbital%energy
-       ! write the boson symnmetry information
-       write (lucoef) qorbital%boson_irrep
+       call lab_write(lucoef,'EVALS   ',qorbital%energy)
+       ! write the symnmetry information
+       call lab_write(lucoef,'SUPERSYM',idata=qorbital%symmetry)
        ! write the ao basis information header
+       call lab_write(lucoef,'BASINFO ')
        write (lucoef) ao_basis%nao,ao_basis%nshells,npriexp,ncnt 
 !      orb_momentum, atom_number, n_primives for all shells
        write (lucoef) ao_basis%gtos(:)%orb_momentum,
@@ -618,17 +645,18 @@ C
 !      start of exponent values, number of contracted for all shells
        write (lucoef) jstrt,numcf
 !      coordinates (x, y, z) of center for all shells
-       write (lucoef) (ao_basis%gtos(ishell)%coord(:),
-     &                 ishell=1,nshells)
+       write (lucoef) (ao_basis%gtos(:)%coord(i),i=1,3)
 !      values of the exponents for all shells (packed into a 1-d array)
        write (lucoef) priexp
 !      values of the contraction coefficients for all shells (packed into a 1-d array)
        write (lucoef) priccf
+       call lab_write(lucoef,'EOFLABEL')
 
        deallocate(jstrt)
        deallocate(numcf)
        deallocate(priexp)
        deallocate(priccf)
+       call dealloc_mo(qorbital)
 
        close (lucoef,status='KEEP')
 
@@ -647,7 +675,7 @@ C
 
        character(len=*),intent(in) :: file_name
        type(cmo), intent(inout):: cspinor
-       type(qumo)             :: qorbital
+       type(cmo)              :: qorbital
        character              :: text*74      ! holds text read from DFCOEF, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
@@ -660,7 +688,8 @@ C
        text = "MO coefficients produced by geniao "
        npo = 0  ! number of "positronic orbitals is hardwired to 0 for now
        nsym = 1 ! we do not use symmetry, so nsym is always 1
-       call convert_complex_to_quaternion(cspinor,qorbital)
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
        ! print warning in case we overwrite a file and open the file
        call get_free_fileunit(lucoef)
        inquire (file=file_name,exist=tobe)
@@ -678,13 +707,14 @@ C
        write (lucoef,'(7(X,I0))') nsym,npo,qorbital%nmo,qorbital%nao
        write (lucoef,'(E24.16)') qorbital%total_energy
        ! write the mo-coefficients
-       write (lucoef,'(6F22.16)') qorbital%coeff
+       write (lucoef,'(6F22.16)') qorbital%coeff_q
        ! write the orbital energies
        write (lucoef,'(6E22.12)') qorbital%energy
-       ! write the boson symnmetry information
-       write (lucoef,'(66(X,I0))') qorbital%boson_irrep
+       ! write the symnmetry information
+       write (lucoef,'(66(X,I0))') qorbital%symmetry
 
        close (lucoef,status='KEEP')
+       call dealloc_mo(qorbital)
        return
        
        end subroutine write_mos_to_dirac_formatted

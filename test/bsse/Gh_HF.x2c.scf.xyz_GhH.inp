@@ -39,8 +39,9 @@
 # and the second the one with which to search in basis set files
 .NUCLEUS
 HGh 0.0 1.0
-*UNITS
- AU
+*COORDINATES
+.UNITS
+ A
 *BASIS
 .DEFAULT 
 STO-2G

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -29,6 +29,7 @@
 *
       SUBROUTINE GASCI(ISM,ISPC,IPRNT,EREF,LUWRTOUT,IPROCLIST,
      &                 IGROUPLIST)
+      use luci_wrkspc
 *
 * CI optimization in GAS space number ISPC for symmetry ISM
 *
@@ -41,7 +42,6 @@
       EXTERNAL MV7
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -995,6 +995,7 @@ C
 ***********************************************************************
 *
       SUBROUTINE PAMLU(IUNIN,IUNUT)
+      use luci_wrkspc
 *
 * L U C I A
 *
@@ -1038,7 +1039,6 @@ C
 #include "cgas.inc"
 #include "luctinp.h"
 *.Memory
-#include "wrkspc.inc"
 C     character line and machinename
       CHARACTER*72 CARD
       CHARACTER*255 MACHINENAME
@@ -1047,10 +1047,8 @@ C     character line and machinename
       INTEGER   K_OFFSET,  K_END
       integer global_scratch_disk
 
-      real(8), allocatable :: WRK(:)
-C
       call legacy_lwork_get(LWRK)
-      call alloc(WRK,LWRK,id='WRK in PAMLU')
+      call allocate_wrkspc
 C
       MIN_ONE    = - 1
       NAMELENGTH =   0
@@ -1070,16 +1068,7 @@ C
 
 C     Static memory, initialization and allocation
 
-C     Compute offset from WRK in parameter list
-C     to WORK in common in wrkspc.inc. WORK is used internally in LUCITA.
-C     This offset is added to all Ksomething addresses in WORK(Ksomething)
-C     so that WRK(1:LWRK) are the memory addresses really used.
-
-C     However, the offset K_OFFSET may be too big for i*4.
-C     We test for that and quit if this is the case.
-
-      CALL COMPOFF(WRK,WORK,K8_OFFSET)
-C     *k_offset = (long) (wrk-work+1);
+      k8_offset = 1
       K_OFFSET  = K8_OFFSET
       K_END     = K_OFFSET  + LWRK ! maybe i*4 evaluation
       K8_END    = K8_OFFSET + LWRK ! i*8 evaluation
@@ -1554,7 +1543,6 @@ C     I_RESTRT_CC.EQ.1
         CALL PR_MATML_STAT
       END IF
 *
-      call dealloc(WRK)
       CALL QEXIT('PAMLU ')
 *
 *     eliminate scratch units:
@@ -1572,6 +1560,7 @@ C
       WRITE (LUOUT,*) ' I am home from the loops '
 *
       CALL FLSHFO(LUOUT)
+      call delete_wrkspc
 *
       END
 ***********************************************************************
@@ -5666,6 +5655,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCITA_NODE */
       SUBROUTINE LUCITA_NODE()
+      use luci_wrkspc
 *
 *     LUCITA routine (DIRAC interface) for the slaves
 *
@@ -5695,7 +5685,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "cgas.inc"
 #include "luctinp.h"
 *.Memory
-#include "wrkspc.inc"
 C     DIMENSION IMOKW(NTABLE)
       CHARACTER*10 INTFCE, WORD3*7
       CHARACTER MYWAFFCD*8, MYCALCTP*8, WORD*7, MYSZCALD*3
