@@ -2479,15 +2479,14 @@ C       initialize offsets for sigma-block and c block loop
 !!                     write(LUWRT,*) 'NOT rejected JBSM = ',JBSM
 !                  end if
                            
-!                           do ISubBlk_A = 1,NSubBlk_A(JSym_A,IAA_IAB_BT)
                       do ISubBlk_A = 1,N_SubBlk_A_red(JSym_A)
 
-                IAA_B = IAA_SM_STR_S_red(ISubBlk_A,JSym_A)
-                IAA_E = IAA_SM_STR_E_red(ISubBlk_A,JSym_A)
+                           IAA_B = IAA_SM_STR_S_red(ISubBlk_A,JSym_A)
+                           IAA_E = IAA_SM_STR_E_red(ISubBlk_A,JSym_A)
                            NAA_B = IAA_E - IAA_B + 1
 
-                IAB_B = IAB_SM_STR_S_red(ISubBlk_A,JSym_A)
-                IAB_E = IAB_SM_STR_E_red(ISubBlk_A,JSym_A)
+                           IAB_B = IAB_SM_STR_S_red(ISubBlk_A,JSym_A)
+                           IAB_E = IAB_SM_STR_E_red(ISubBlk_A,JSym_A)
                            NAB_B = IAB_E - IAB_B + 1
 
 
@@ -2500,7 +2499,6 @@ C       initialize offsets for sigma-block and c block loop
 !     &      IAA_SM, IAB_SM
 
 !                              write(6,*) 'Making CJRES'
-!                              write(LUWRT,*) 'Making CJRES'
                               call
      &                        C_TO_CKK(CB(ICBOFF),
      &                        CJRES_BAT(NKA_B*NKB_B*(ICJ_OFF)+1),1,
@@ -2517,8 +2515,8 @@ C       initialize offsets for sigma-block and c block loop
      &                                    NKB_B*NAB_B                                  
 !                                  write(LUWRT,*) 'After C_TO_CKK'
                               
-                           End do
-                        End do
+                           End do !ISubBlk_A
+                        End do !JSym_A
 
 #ifdef GNSIDE_debug
                         write(LUWRT,*) 'C vector is'
@@ -2642,12 +2640,12 @@ C       initialize offsets for sigma-block and c block loop
 !                              write(LUWRT,*) 'ISBOFF is ',ISBOFF
                      do ISubBlk_C = 1,N_SubBlk_C_red(JSym_C)
 
-                     ICA_B = ICA_SM_STR_S_red(ISubBlk_C,JSym_C)
-                     ICA_E = ICA_SM_STR_E_red(ISubBlk_C,JSym_C)
+                        ICA_B = ICA_SM_STR_S_red(ISubBlk_C,JSym_C)
+                        ICA_E = ICA_SM_STR_E_red(ISubBlk_C,JSym_C)
                         NCA_B = ICA_E - ICA_B + 1
 
-                     ICB_B = ICB_SM_STR_S_red(ISubBlk_C,JSym_C)
-                     ICB_E = ICB_SM_STR_E_red(ISubBlk_C,JSym_C)
+                        ICB_B = ICB_SM_STR_S_red(ISubBlk_C,JSym_C)
+                        ICB_E = ICB_SM_STR_E_red(ISubBlk_C,JSym_C)
 !                           write(LUWRT,*) 'ICB_B, ICB_E set'
                         NCB_B = ICB_E - ICB_B + 1
 #ifdef GNSIDE_debug
@@ -2671,11 +2669,11 @@ C
 
 
 #ifdef GNSIDE_debug
-                           write(LUWRT,*) 'NKA_B,NKB_B,NCA_B,NCB_B'
-                           write(LUWRT,*) NKA_B,NKB_B,NCA_B,NCB_B
+                     write(LUWRT,*) 'NKA_B,NKB_B,NCA_B,NCB_B'
+                     write(LUWRT,*) NKA_B,NKB_B,NCA_B,NCB_B
 
-                           write(LUWRT,*) 'ISI_OFFC'
-                           write(LUWRT,*) ISI_OFFC
+                     write(LUWRT,*) 'ISI_OFFC'
+                     write(LUWRT,*) ISI_OFFC
 #endif
 !                           write(LUWRT,*) 'Sigma vector'
 !                           call
@@ -2902,7 +2900,7 @@ C
 !
 !                          call
 !     &                  dzero(T_BAT,N_Strings_C_red*N_Strings_A_red)
-                       end if
+                       end if !ISD == 1
 
 
                        LCAB = N_Strings_C_red
@@ -3167,12 +3165,6 @@ C
                        LIAB_SM = 
      &                 NIAB(IAB_SM_ADJ)
 
-!                       LIAA_SM = 
-!     &                 NIAA(invelm(ISym_AA_red(JSym_A)))
-!                       LIAB_SM = 
-!     &                 NIAB(invelm(ISym_AB_red(JSym_A)))
-
-
                        Do ISubBlk_A = 1,N_SubBlk_A_red(JSym_A)
 
                         IOFFR = 0 
@@ -3246,6 +3238,11 @@ C
      &                                   N_strings_A_red,0,TBSUB,
      &                                   NRSUB,NCSUB,0,
      &                                   IOFFR+1,IOFFC+1,1)
+!                           call EXTR_OR_CP_MAT(T_BAT,
+!     &                                   MAXLB**2,
+!     &                                   MAXLB**2,0,TBSUB,
+!     &                                   NRSUB,NCSUB,0,
+!     &                                   IOFFR+1,IOFFC+1,1)
 
 #ifdef GNSIDE_debug
                           write(LUWRT,*) 'ITOFF, LICA_SM, NCA_B, ICA_B'
@@ -3327,7 +3324,7 @@ C
 #endif
                        T_time = T_time + Time2 - Time1
 
-                  end if
+                  end if !Sigmavector or density run, adding to SB or TB
 !                        print *,'ISBOFF, length',
 !    &                            ISBOFF,NIA(IASM)*NIB(IBSM)
                   end do LOOP_CR_BT
