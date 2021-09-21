@@ -1037,7 +1037,7 @@ C
       DIMENSION WORK(LWORK)
       integer, external :: word_count
       INTEGER   KPMAX(2)
-      INTEGER, allocatable :: SEL_NORB(:,:), KP_NORB(:)
+      INTEGER, allocatable :: SEL_NORB(:,:), KP_NORB(:),MJ_NORB(:)
 C
 #include "nuclei.h"
 #include "dcbgen.h"
@@ -1691,7 +1691,7 @@ C&&& BOSONS: Selection based on (approx.) boson symmetry
                IBOSSEL  = 1
 !     READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL) !old version
                allocate(SEL_NORB(NSUBBL,0:NOPEN))
-               READ(LUCMD,*,IOSTAT=IOS) NSUBBL                
+               READ(LUCMD,*,IOSTAT=IOS) NSUBBL
                READ(LUCMD,*) (SEL_NORB(I,0),I=1,NSUBBL)
                DO I =1,NSUBBL
                  IF(mod(SEL_NORB(I,0),2).eq.1)THEN
@@ -1720,47 +1720,66 @@ C&&& MJSELE: Selection based on Mj symmetry,
 C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
-               READ(LUCMD,*,IOSTAT=IOS) NSUBBL
+               READ(LUCMD,*,IOSTAT=IOS) NMJ
                IF (IOS.NE.0) THEN
-                 WRITE(LUPRI,*) 'Error in reading NSUBBL for .MJSELE !'
-                 CALL QUIT('Error in reading NSUBBL for .MJSELE !')
+                 WRITE(LUPRI,*) 'Error in reading NMJ for .MJSELE !'
+                 CALL QUIT
+     &           ('Write # of Mj type of spinors in first line!')
                ENDIF
-               allocate(SEL_NORB(NSUBBL,0:NOPEN))                             
-!               READ(LUCMD,*,IOSTAT=IOS) (NISH_BOS(I),I=1,NSUBBL)
-               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NSUBBL)
-               DO I =1,NSUBBL
+               allocate(MJ_NORB(NMJ))                             
+               allocate(SEL_NORB(NMJ,0:NOPEN))                             
+               READ(LUCMD,*,IOSTAT=IOS) (MJ_NORB(I),   I=1,NMJ)               
+               READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NMJ)
+               DO I = 1,NMJ
                  IF(mod(SEL_NORB(I,0),2).eq.1)THEN
                    WRITE(LUPRI,*) 'Error in reading .MJSELE !'
-                   CALL QUIT('Number of electrons must be even!')                    
+                   CALL QUIT
+     &             ('Number of electrons (closed shell) must be even!')                    
                  ELSE   
-                   NISH_BOS(I) = SEL_NORB(I,0)/2               
+                   MJ = MJ_NORB(I)
+                   IF(NFSYM.EQ.1)THEN
+                     K = (MJ+1)/2  !(MJ,K)=(1,1)(3,2)(5,3)etc
+                     NISH_BOS(K) = SEL_NORB(I,0)/2
+                   ELSE
+                     CALL QUIT
+     &               ('.MJSELE does not work with inverse symmetry!')                    
+                   ENDIF
                  ENDIF
                ENDDO
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .MJSELE !'
-                 CALL QUIT('Error in reading NISH_BOS(I) for .MJSELE !')
-               ENDIF
+                 CALL QUIT('# of orbitals (closed shell) is wrong !')
+               ENDIF                           
                DO IOPEN = 1,NOPEN
 !                 READ(LUCMD,*,IOSTAT=IOS)
-!     &           (NACSH_BOS(I,IOPEN),I=1,NSUBBL)
+!     &           (NACSH_BOS(I,IOPEN),I=1,NMJ)
                  READ(LUCMD,*,IOSTAT=IOS)
-     &                (SEL_NORB(I,IOPEN),I=1,NSUBBL)                  
-                 DO I =1,NSUBBL
+     &                (SEL_NORB(I,IOPEN),I=1,NMJ)                  
+                 DO I =1,NMJ
                    IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
                      WRITE(LUPRI,*) 'Error in reading .MJSELE !'
-                     CALL QUIT('Number of electrons must be even!')   
-                   ELSE   
-                     NACSH_BOS(I,IOPEN) = SEL_NORB(I,IOPEN)/2
-                   ENDIF
+                     CALL QUIT
+     &               ('Number of electrons (open shell) must be even!')   
+                   ELSE
+                     MJ = MJ_NORB(I)
+                     IF(NFSYM.EQ.1)THEN
+                       K = (MJ+1)/2  !(MJ,K)=(1,1)(3,2)(5,3)etc
+                       NACSH_BOS(K,IOPEN) = SEL_NORB(I,IOPEN)/2
+                     ELSE
+                       CALL QUIT
+     &                 ('.MJSELE does not work with inverse symmetry!')                    
+                     ENDIF
+                     ENDIF
                  ENDDO                  
                  IF (IOS.NE.0) THEN
                    WRITE(LUPRI,*)
      &             'Error in reading NACSH_BOS(I) for .MJSELE !'
                    CALL QUIT(
-     &             'Error in reading NACSH_BOS(I) for .MJSELE !')
+     &             '# of orbitals (open shell) is wrong !')
                  ENDIF
                END DO
+               deallocate(MJ_NORB)     
                deallocate(SEL_NORB)
                GO TO 100
  42            CONTINUE
@@ -1936,7 +1955,8 @@ C readling input
                READ(LUCMD,*,IOSTAT=IOS) NKP
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error in reading NKP for .KPSELE !'
-                 CALL QUIT('Error in reading NKP for .KPSELE !')
+                 CALL QUIT
+     &           ('Write # of Kappa type of spinors in fisrt line!')
                ENDIF
                allocate(KP_NORB(NKP))
                allocate(SEL_NORB(NKP,0:NOPEN))
@@ -1968,20 +1988,20 @@ C readling input
                      ENDIF 
                    ENDIF   
                  ENDIF
-               ENDDO  
+               ENDDO
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .KPSELE !'
-                 CALL QUIT('Error in reading NISH_BOS(I) for .KPSELE !')
-               ENDIF
+                 CALL QUIT('# of orbitals (closed shell) is wrong !')
+               ENDIF              
                DO IOPEN = 1,NOPEN
                  READ(LUCMD,*,IOSTAT=IOS)
      &                (SEL_NORB(I,IOPEN),I=1,NKP)
                  DO I =1,NKP
                    IF(mod(SEL_NORB(I,IOPEN),2).eq.1)THEN
                      WRITE(LUPRI,*) 'Error in reading .KPSELE !'
-                   CALL QUIT
-     &             ('Number of orbitals (open shell) must be even!')                    
+                     CALL QUIT
+     &               ('Number of orbitals (open shell) must be even!')                    
                    ELSE
                      KP = KP_NORB(I)  
                      IF(NFSYM.EQ.1)THEN
@@ -2012,7 +2032,7 @@ C readling input
                    WRITE(LUPRI,*)
      &             'Error in reading NACSH_BOS(I) for .KPSELE !'
                    CALL QUIT(
-     &             'Error in reading NACSH_BOS(I) for .KPSELE !')
+     &             '# of orbitals (open shell) is wrong !')
                  ENDIF
                END DO
                deallocate(KP_NORB)               

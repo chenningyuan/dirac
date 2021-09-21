@@ -2605,6 +2605,7 @@ C     INTEGER JGRP(MXPNGAS)
 ***********************************************************************
 
       SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
+      use luci_wrkspc
 *
 *     Construct orbital excitation types for different choices
 *     of Hamiltonian operator, double group version
@@ -2626,7 +2627,6 @@ C     INTEGER JGRP(MXPNGAS)
 *  
 #include "dgroup.h"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "cprnt.inc"
 C
@@ -2757,6 +2757,7 @@ C
      &                   ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                   )
+      use luci_wrkspc
 *
 * Outer routine for sigma vector generation
 * in SIGDEN formalism
@@ -2782,7 +2783,6 @@ C
 *.Output
 * ======
 *
-#include "wrkspc.inc"
 #include "cstate.inc"
 #include "cands.inc"
 #include "ctcc.inc"
@@ -2844,6 +2844,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+      use luci_wrkspc
 C***********************************************************************
 C
 C     outer routine for sigma (ISIGDEN==1) and density (ISIGDEN==2) 
@@ -2877,7 +2878,6 @@ C***********************************************************************
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3424,6 +3424,7 @@ C
      &                      ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                       )
+      use luci_wrkspc
 *
 * First inner routine for general CC sigma/densi
 *
@@ -3452,7 +3453,6 @@ C
 #include "mxpdim.inc"
 #include "gasstr.inc"
 #include "cstate.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 *. Batches of sigma
       INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
@@ -3561,6 +3561,7 @@ C           CPU-block - test if non-zero
      &                      ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                       )
+      use luci_wrkspc
 *
 * Generate a set of sigma blocks, 
 * The NBLOCK specified in IBLOCK starting from IBOFF,
@@ -3597,7 +3598,6 @@ C           CPU-block - test if non-zero
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3881,6 +3881,7 @@ C
      &                       NPARBLOCK_S
 #endif
      &           )
+      use luci_wrkspc
 *
 *
 * Jeppe Olsen, Summer of 1999
@@ -3944,7 +3945,6 @@ C
 C     general input
 #include "mxpdim.inc"
 #include "gasstr.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "cstate.inc"
 #include "strbas.inc"

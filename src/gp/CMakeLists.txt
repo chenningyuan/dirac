@@ -56,6 +56,7 @@ set(FREE_GP_FORTRAN_SOURCES
     heapsort.F90
     include_h_modules.F90
     kinds.F90
+    luci_wrkspc.F90
     machine_parameters.F90
     memory_allocator.F90
     memory_control.F90

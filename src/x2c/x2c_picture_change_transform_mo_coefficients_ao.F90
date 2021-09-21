@@ -545,6 +545,12 @@ contains
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
        call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,-1)
        close(fh,status='keep')
+!      keep 4C vectors for restart purposes
+#if defined SYS_WINDOWS
+       call system('copy DFCOEF DFCOEF.4C')
+#else
+       call system('cp DFCOEF DFCOEF.4C')
+#endif
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
        ndim_2c_mo_ao = 0
@@ -592,6 +598,12 @@ contains
           call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
        endif
        close(fh,status='keep')
+!      make additional copy of these coefficients for restart purposes
+#if defined SYS_WINDOWS
+       call system('copy DFCOEF DFCOEF.2C')
+#else
+       call system('cp DFCOEF DFCOEF.2C')
+#endif
 
        deallocate(supersymmetry)
 
