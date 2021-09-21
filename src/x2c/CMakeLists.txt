@@ -40,6 +40,7 @@ if (ENABLE_XAMFI)
         ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_utils.F90
         ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_internal_parameters.F90
         ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_environment.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/x_fock.F90
     )
 endif()
 
@@ -63,4 +64,5 @@ add_library(
 
 # add intermodule dependencies
 add_dependencies(x2c gp)
+add_dependencies(x2c grid)
 add_dependencies(x2c interest)

@@ -11,6 +11,7 @@ set(FIXED_XAMFI_FORTRAN_SOURCES
 )
 
 set(FREE_XAMFI_FORTRAN_SOURCES
+     x_fock.F90
      xamfi_utils.F90
      xamfi_driver.F90
      xamfi_environment.F90
@@ -37,3 +38,4 @@ if (ENABLE_INTEREST)
     add_dependencies(x-amfi interest)
 endif()
 add_dependencies(x-amfi x2c)
+add_dependencies(x-amfi grid)

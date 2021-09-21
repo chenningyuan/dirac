@@ -84,7 +84,6 @@ set(FREE_GP_FORTRAN_SOURCES
     unit_test_generator.f90
     unit_testing.F90
     vector_functions.F90
-    x_fock.F90
     xmlout.F90
     xml/xml_file.F90
     xml/xml_structure.F90
