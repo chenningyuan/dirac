@@ -192,7 +192,8 @@ module talsh_cis
         ! end do
 
 !   Print CIS energy
-        n =10  !number of state print
+        ! n =10  !number of state print
+        n = size(eValues)
         call print_energy_CIS(eValues,size(eValues),n)
 
 

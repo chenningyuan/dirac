@@ -42,9 +42,11 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors)
     
     call print_date('Enter CIS transition property routine')
     All_final_states = size(eValues)
+    ! All_final_states = 1
     ! the number of operator component should be determined by input or here?
     All_opera = 3 
     allocate(TPA(All_final_states))
+    
     call get_all_one_photon_tdm(exa_input, onetdmeg, onetdmee, All_opera, eVectors)
     do f_state = 1, All_final_states
         call get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_state, eValues)
@@ -84,6 +86,9 @@ subroutine get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_st
             S_ty = 3          
             call get_trans_streng_matx_S(S_abba, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
             TPA_one_state = (F/30)*S_aabb + (G/30)*S_abab + (H/30)*S_abba
+            ! print *, "S_aabb", S_aabb
+            ! print *, "S_abab", S_abab
+            ! print *, "S_abba", S_abba
         end do
     end do
     ! call print_date('Leave CIS TPA routine')
@@ -164,11 +169,11 @@ subroutine get_all_one_photon_tdm(exa_input, onetdmeg, onetdmee, All_opera, eVec
     complex(kind=8), pointer      :: onetdmeg(:,:)
 
 
-    ! call print_date('Enter One Photon transition moments routine')
+    call print_date('Enter One Photon transition moments routine')
     call get_exc_grd(exa_input, onetdmeg, All_opera, eVectors)
     call get_exc_exc(exa_input, onetdmee, All_opera, eVectors)
-    ! call print_TDM(onetdmeg, onetdmee)
-    ! call print_date('Leave One Photon transition moments routine')
+    call print_onetdm(onetdmeg, onetdmee)
+    call print_date('Leave One Photon transition moments routine')
 
 end subroutine get_all_one_photon_tdm
 
@@ -353,17 +358,17 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
 
     one_dims(1) = 1
 
-    ! print *, "enter gpe with error?"
+
     ierr=talsh_tensor_construct(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
     ierr=talsh_tensor_construct(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
 
-    ! print *, "error before vv?"
+
     ierr=talsh_tensor_get_body_access(TDM_exe_exe_vv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,TDM_exe_exe_vv_tens,one_dims)
     ierr = talsh_tensor_contract("TDM()+=OL(a,b)*DM(a,b)",TDM_exe_exe_vv_tensor,orb_inte_exe_exe_vv_tensor,&
                     Tra_Den_exe_exe_tensor%prime_vv,scale=ONE)
 
-    ! print *, "error before oo?"                
+               
     ierr=talsh_tensor_get_body_access(TDM_exe_exe_oo_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
     call c_f_pointer(body_p,TDM_exe_exe_oo_tens,one_dims)
     ierr = talsh_tensor_contract("TDM()+=OL(i,j)*DM(i,j)",TDM_exe_exe_oo_tensor,orb_inte_exe_exe_oo_tensor,&
@@ -378,5 +383,49 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
     ierr=talsh_tensor_destruct(Tra_Den_exe_exe_tensor%prime_vv)
     ierr=talsh_tensor_destruct(Tra_Den_exe_exe_tensor%prime_oo)
 end subroutine get_propee
+
+!-------------------------------------------------------------------------------------------------------------------------
+
+subroutine print_onetdm(onetdmeg, onetdmee)
+    complex(kind=8), pointer      :: onetdmee(:,:,:)
+    complex(kind=8), pointer      :: onetdmeg(:,:)
+    integer                       :: i,j,k
+
+    call print_date("Print One photon Transition moment (Ground to Excited)")
+
+    do i=1, size(onetdmeg,1)
+        print *, "Groud to ", i, "Excited Transition moment:"
+        do j=1, size(onetdmeg,2)
+            print "(I5,(F27.5))",j, onetdmeg(i,j)
+        end do
+    end do
+
+    ! do j=1, size(onetdmeg,2)
+    !     print *, "Component:", j
+    !     do i =1, size(onetdmeg,1)
+    !         print *, onetdmeg(i,j)
+    !     end do
+    ! end do
+    call print_date("Print One photon Transition moment (Excited to Excited)")
+    do i=1, size(onetdmee,1)
+        do j=1, size(onetdmee,2)
+            print *, "Excited", i, "to", j, "Excited Transition moment:"
+            do k=1, size(onetdmee,3)
+                print "(I5,(F27.5))",k, onetdmee(i,j,k)
+            end do
+        end do
+    end do
+
+    ! do k=1, size(onetdmee,3)
+    !     print *, "Component:", k
+    !     do j =1, size(onetdmee,2)
+    !         do i=1, size(onetdmee,1)
+    !             print *, onetdmee(i,j,k)
+    !         end do 
+    !     end do
+    ! end do
+
+
+end subroutine print_onetdm
 
 end module
