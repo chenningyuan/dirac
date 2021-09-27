@@ -52,7 +52,8 @@ subroutine talsh_cis_pro_driver(exa_input,eValues,eVectors)
         call get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_state, eValues)
         TPA(f_state) = TPA_one_state
     end do
-    print *, "print result", TPA
+
+    call print_two_photon(TPA)
     call print_date('Leave CIS transition property routine')    
 
 end subroutine talsh_cis_pro_driver
@@ -77,6 +78,7 @@ subroutine get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_st
     F=2
     G=2
     H=2
+    TPA_one_state = (0.0,0.0)
     do ope1 = 1, All_opera
         do ope2 = 1, All_opera
             S_ty = 1
@@ -85,10 +87,11 @@ subroutine get_TPA(exa_input, TPA_one_state, onetdmeg, onetdmee, All_opera, f_st
             call get_trans_streng_matx_S(S_abab, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
             S_ty = 3          
             call get_trans_streng_matx_S(S_abba, ope1, ope2, f_state, eValues, onetdmeg, onetdmee, S_ty)
-            TPA_one_state = (F/30)*S_aabb + (G/30)*S_abab + (H/30)*S_abba
-            ! print *, "S_aabb", S_aabb
-            ! print *, "S_abab", S_abab
-            ! print *, "S_abba", S_abba
+            TPA_one_state = TPA_one_state+(F/30.0)*S_aabb + (G/30.0)*S_abab + (H/30.0)*S_abba
+!             print *, "S_aabb", S_aabb
+!             print *, "S_abab", S_abab
+!             print *, "S_abba", S_abba
+!             print *, "TPA_one_state", TPA_one_state 
         end do
     end do
     ! call print_date('Leave CIS TPA routine')
@@ -427,5 +430,21 @@ subroutine print_onetdm(onetdmeg, onetdmee)
 
 
 end subroutine print_onetdm
+!-----------------------------------------------------------------------------------------------------------------------
+
+subroutine print_two_photon(TPA)
+        
+    complex(kind=8), pointer      :: TPA(:)
+    integer                       :: i
+
+    call print_date("Print Two photon cross section") 
+    do i=1, size(TPA,1)
+        print *, i, "Excited Transition moment:"
+            print "(I5,(F27.5))",i, abs(TPA(i))
+    end do
+
+
+end subroutine print_two_photon
+
 
 end module
