@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1345,7 +1345,6 @@ C
 
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
-      use codata
       use memory_allocator
 #include "implicit.h"
 #include "dummy.h"
@@ -1364,6 +1363,7 @@ C  /* Deck runopt */
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
+#include "codata.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -2185,13 +2185,12 @@ C
 C     Prints important information at the end of a
 C     geometry optimization.
 C
-      use codata
-
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
+#include "codata.h"
 
       DIMENSION GEINFO(0:ITRMAX,6)
       CHARACTER NWSMRK*1,BRKMRK*1,REDMRK*1
@@ -7171,7 +7170,6 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7459,7 +7457,6 @@ C
          use dirac_cfg
          use read_xyzfile
 #endif
-      use codata
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7481,6 +7478,7 @@ C
 #include "optinf.h"
 #include "infopt.h"
 #include "numder.h"
+#include "codata.h"
 #ifdef PRG_DIRAC
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -7666,7 +7664,6 @@ CTROND      deallocate(STPCAR)
 
 C     Write an XYZ file
 C
-      use codata
       use read_xyzfile
 #include "implicit.h"
 #include "mxcent.h"
@@ -7676,6 +7673,7 @@ C
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
+#include "codata.h"
 C
 !     XYZ files are written in Angstroms (default) or a user-specified Unit
 !

@@ -1,6 +1,6 @@
 /* dirac_copyright_start */
 /*
- *     Copyright (c) 2019 by the authors of DIRAC.
+ *     Copyright (c) 2021 by the authors of DIRAC.
  *     All Rights Reserved.
  *
  *     This source code is part of the DIRAC program package.
@@ -32,11 +32,8 @@
 */
 
 /* strictly conform to XOPEN ANSI C standard */
-#if !defined(SYS_DEC)
-/* XOPEN compliance is missing on old Tru64 4.0E Alphas */
 #define _XOPEN_SOURCE          500
 #define _XOPEN_SOURCE_EXTENDED 1
-#endif
 
 /* Use BSD's strncasecmp(); if there is a platform that has no strncasecmp()
  * ask pawsa@theochem.kth.se for replacement */
@@ -635,16 +632,6 @@ fort_print(const char* format, ...)
 #endif
     va_list a;
 
-/* DEC does not recognize the vsnprintf command */
-/* unless when linked with -ldb */
-#ifndef SYS_DEC
-    va_start(a, format);
-    vsnprintf(line, sizeof(line), format, a);
-    va_end(a);
-    len = strlen(line);
-    fortwrt_(line, &len);
-    return len;
-#endif
 }
 
 /* ################################################################### */

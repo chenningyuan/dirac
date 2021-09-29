@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_SOURCE_DIR}/src/amfi
     )
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -8,18 +9,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_AMFI_FORTRAN_SOURCES
-    alphac.h 
-    datapow.h  
-    dofuc.h  
-    ired.h  
-    para.h 
-    param.h 
-    Regge.h 
-    relscf_crelop.h 
-    relscf_dim.h  
-    relscf_ijpair.h  
-    relscf_v10.h  
-    scfarr.h
     amfi.F
     amfi1.F
     amfi2.F

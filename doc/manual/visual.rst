@@ -300,6 +300,44 @@ Compute the z-component :math:`m^{[1]}_{z}(\mathbf{r})=-\frac{1}{2}(\mathbf{r}\t
   .BDIPZ
    PAMXVC 1
 
+keyword(BEDCOS)
+
+Compute the Hermitian part of the full effective light-matter interaction
+
+.. math::
+   \hat{T}_{H}\left(\omega\right)=\frac{e}{\omega}\left(c\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\cos\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. In accordance with the quaternion symmetry scheme of DIRAC an imaginary :math:`i` will be inserted in the Hermitian part to make it time-symmetric. It should be noted that this is an *ungerade* operator.
+
+keyword(BEDSIN)
+
+Compute the anti-Hermitian part of the full effective light-matter interaction
+
+.. math::
+
+    \hat{T}_{A}\left(\omega\right)=\frac{e}{\omega}\left(ic\boldsymbol{\alpha}\cdot\boldsymbol{\epsilon}\right)\sin\left(\boldsymbol{k}\cdot\boldsymbol{r}\right)
+
+where appears the wave vector :math:`\mathbf{k}` and the polarization vector
+:math:`\boldsymbol{\epsilon}`. It should be noted that this is a *gerade* operator.
+
+keyword(BEDFIX)
+
+Specify the wave vector :math:`\mathbf{k}` and the polarization vector :math:`\boldsymbol{\epsilon}` when using the full light-matter interaction.
+The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the :ref:`EXCITATION_ENERGIES_.BED` keyword for more details. In addition the user has to specify the angular frequency $\omega$ which fixes the length of the wave vector :math:`\mathbf{k}` since we have
+
+.. math::
+
+   k=\frac{\omega}{c}={2\pi}{\lambda}
+
+For instance, to specify that the wave vector is along the :math:`z` -axis, the polarization vector along the :math:`x` - axis for an excitation energy at :math:`\omega=49.138` a.u. we set
+
+::
+
+    .BEDFIX
+    0.0 0.0 0.0 49.138
+   
+
 keyword(EDIPX)
 
 Compute the x-component :math:`Q^{[1]}_{x}(\mathbf{r})=xn(\mathbf{r})` of the electric dipole.
@@ -379,14 +417,6 @@ Example::
 
   .READJB
    file_name        ! a file with x,y,z-coordinates of grid points and jB vector field
-
-
-keyword(GAUGE)
-
-Specify gauge origin. Example::
-
-  .GAUGE
-   0.0 0.0 0.0
 
 
 keyword(SMALLAO)

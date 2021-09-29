@@ -1,5 +1,6 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
+    ${PROJECT_BINARY_DIR}/src/gp
     ${PROJECT_BINARY_DIR}
     )
 
@@ -32,8 +33,6 @@ set(FIXED_GP_FORTRAN_SOURCES
    qpack.F
    spline.F
    time.F
-   # gpsaue.F needs disotp
-   ${PROJECT_SOURCE_DIR}/src/abacus/hergp.F
 )
 
 set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
@@ -46,6 +45,7 @@ set(FREE_GP_FORTRAN_SOURCES
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
+    dirac_mocoefficients.F90
     dynamic_string.F90
     electrostatic_potential.F90
     exception_handling.F90
@@ -56,6 +56,7 @@ set(FREE_GP_FORTRAN_SOURCES
     heapsort.F90
     include_h_modules.F90
     kinds.F90
+    luci_wrkspc.F90
     machine_parameters.F90
     memory_allocator.F90
     memory_control.F90
@@ -87,6 +88,8 @@ set(FREE_GP_FORTRAN_SOURCES
     xml/xml_file.F90
     xml/xml_structure.F90
     xml/xml_parser.F90
+    labeled_storage.F90
+    dircmo.F90
 )
 
 set(GP_C_SOURCES
@@ -125,6 +128,4 @@ add_library(
 add_dependencies(gp interface_mpi)
 add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
-
 generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
-add_dependencies(gp git_info)

@@ -1,0 +1,2 @@
+! testing finite field implementaion in the exatensor cc implementation
+! requirements: exatensor library (Dmitry Lyakh), efficent with CUDA / OPENMP

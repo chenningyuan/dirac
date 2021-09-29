@@ -19,7 +19,7 @@ f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
       rel_tolerance   = 1.0e-6)
 
-test.run(['cc.inp'], ['N2.ccpVDZ.mol'], f, args='--gb=0.06 --ag=0.08')
+test.run(['cc.inp'], ['N2.ccpVDZ.mol'], f, args='--gb=0.06 --ag=1.0')
 
 my_scratchdir = os.path.join(os.getcwd(), 'x2c_cc_scratchdir')
 if os.path.lexists(my_scratchdir):
@@ -36,13 +36,13 @@ f.add(from_string = 'Eigenvalues',
       num_lines   = 42,
       rel_tolerance   = 1.0e-5)
 
-test.run(['x2c_scf_moltra.inp'], ['N2.ccpVDZ.mol'], f, args='--gb=0.06 --ag=0.08 --keep_scratch --scratchful='+my_scratchdir)
+test.run(['x2c_scf_moltra.inp'], ['N2.ccpVDZ.mol'], f, args='--gb=0.06 --ag=1.0 --keep_scratch --scratchful='+my_scratchdir)
 
 f = Filter()
 f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
       rel_tolerance   = 1.0e-6)
-test.run(['x2c_relcc.inp'], ['N2.ccpVDZ.mol'], f, args='--gb=0.06 --ag=0.08 --keep_scratch --scratchful='+my_scratchdir)
+test.run(['x2c_relcc.inp'], ['N2.ccpVDZ.mol'], f, args='--gb=0.06 --ag=1.0 --keep_scratch --scratchful='+my_scratchdir)
 
 # delete scratch diretcory for restart
 files_to_delete = os.listdir(my_scratchdir)

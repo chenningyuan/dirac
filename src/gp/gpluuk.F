@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -407,13 +407,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       Subroutine DayTime (Datum,Tijd)
       Character Datum*10,Tijd*8
 
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      Call Date(Datum)
-      Call Clock(Tijd)
-#else
-#if defined (SYS_HPUX) || defined (SYS_LINUX) || defined (SYS_DARWIN) \
-   || defined (SYS_DEC) || defined (SYS_IRIX)  || defined (SYS_AIX) \
-   || defined (SYS_SUN) || defined (SYS_SX)
       CHARACTER FDATE*24, String*24
 C
       STRING = FDATE()
@@ -422,11 +415,6 @@ C     format from fdate(): 'Fri Sep 13 00:00:00 1986'
 C     format of DATUM: ' 13 Sep 86'
       TIJD  = STRING(12:19)
 C     format of TIJD: '00:00:00'
-#else
-      Datum = '          '
-      Tijd  = '        '
-#endif
-#endif
       Return
       End
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -442,8 +430,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -732,8 +720,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 C
 C---------------Description--------------------------------------------
 C
@@ -786,7 +774,6 @@ C
       CHARACTER*4 REPNA(*), REPNAO(*)
       INTEGER TSHOLD
       REAL*8 E_OFF
-
 C
 C---------------Local variables--------------------------------------
 C

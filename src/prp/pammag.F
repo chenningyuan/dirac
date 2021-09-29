@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -37,7 +37,6 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use dirac_cfg
-      use codata
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -58,7 +57,7 @@ C*****************************************************************************
 C
 
       PARAMETER (NTABLE = 16)
-      LOGICAL :: SET, NEWDEF, RESET, GORG, LBIT, USECM
+      LOGICAL :: SET, NEWDEF, RESET, LBIT, USECM
       LOGICAL :: INTNMR_SET
       LOGICAL :: oneexi, twoexi, fckexi
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,
@@ -66,10 +65,10 @@ C
       DIMENSION WORK(LWORK)
 C
       SAVE SET
-      DATA TABLE /'.GAUGEO','.NOLOND','.SYMCON','.NOORTH',
+      DATA TABLE /'xXXXXXX','.NOLOND','.SYMCON','.NOORTH',
      &            '.INTFLG','.NOTWO ','.NOONEI','.FULMAT',
      &            '.REGRAD','.LONDON','.USECM ','.MLLSUS',
-     &            '.GO ANG','.SEPTEP','.EXPPED','.XXXXXX'  /
+     &            'xXXXXXX','.SEPTEP','.EXPPED','xXXXXXX'  /
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
@@ -101,7 +100,6 @@ CMI ... by default we use conventional orbitals to ease running DIRAC tests
       NOORTH = .FALSE.
       NOTWOL = .FALSE.
       NOONEI = .FALSE.
-      GORG   = .FALSE.
       USECM  = .FALSE.
       RDSUSLLMOD = .FALSE.
       SEPTEP = .FALSE.
@@ -139,21 +137,12 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     *            '" not recognized in NMRINP.'
+     &            '" not recognized in NMRINP.'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal keyword in NMRINP.')
 
-!              .GAUGEO
+!
     1          CONTINUE
-C ... read user specified gauge origin
-                  READ(LUCMD,*,IOSTAT=IOS) (GAGORG(ICOOR),ICOOR=1,3)
-                  IF (IOS.NE.0) THEN
-                   WRITE(LUPRI,*) '(GAGORG(ICOOR),ICOOR=1,3:',
-     &             (GAGORG(ICOOR),ICOOR=1,3)
-                   CALL QUIT(
-     & 'NMRINP: error in reading (GAGORG(ICOOR),ICOOR=1,3) !')
-                  ENDIF
-                  GORG = .TRUE.
                GO TO 100
 
     2          CONTINUE
@@ -215,26 +204,14 @@ C&&&& .MLLSUS: Activate the nonrelativistic modification of the relativistic RDS
 ! Hamiltonian and with the (RKB,c->infinite) Hamiltonian with the Sternheim's diamagnetic term
                RDSUSLLMOD = .TRUE.
                GO TO 100
-
-!              .GO_ANG
    13          continue
-!              read user specified gauge origin in angstrom
-               read(lucmd, *, iostat=ios) gagorg
-               if (ios /= 0) then
-                 call quit('error in reading .GO_ANG')
-               end if
-!              convert from angstrom to bohr
-               gagorg = gagorg/xtang
-               gorg = .true.
                go to 100
-   14          CONTINUE
-!              .SEPTEP
+   14          CONTINUE ! .SEPTEP
 !              gosia: SEParate T matrix to electronic and positronic blocks
 !              it does not affect shieldings, it is only for analysis.
                SEPTEP = .true.
                GO TO 100
-   15          CONTINUE
-!              .EXPPED
+   15          CONTINUE ! .EXPPED
 !              gosia: export contributions to perturbed density to files
 !              direct-LAO phase factor part write to pertden_direct_lao.FINAL
 !              reorthonormalization part write to pertden_reorth_lao.FINAL
@@ -257,31 +234,28 @@ C
 C     Print section
 C     =============
 C
-C ... header:
-      CALL PRSYMB(LUPRI,'=',75,0)
-      WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
-      CALL PRSYMB(LUPRI,'=',75,0)
-
-      IF (USECM.AND.GORG) THEN
-       WRITE(LUPRI,'(A)')
-     & 'You have asked for center of mass to be the gauge origin!'
-       WRITE(LUPRI,'(A)')
-     & '...your defined gauge origin is then ignored.'
-       GORG = .FALSE.
+C ... header: print out only if relevant (controlled by RESET)
+      IF (.NOT.RESET) THEN
+        CALL PRSYMB(LUPRI,'=',75,0)
+        WRITE(LUPRI,'(3X,A)') 'Magnetic properties:'
+        CALL PRSYMB(LUPRI,'=',75,0)
       ENDIF
 
-      IF (GORG) THEN
-         CALL PRSYMB(LUPRI,'=',75,0)
-         WRITE(LUPRI,'(3X,A,3F12.6)') 'User defined gauge '//
-     &   'origin used (a.u.):',(GAGORG(I), I = 1, 3)
+      IF (USECM.AND.GAGORG_SET) THEN
+       WRITE(LUPRI,'(/A/A)') 'WARNING:'//
+     &    ' You have asked for center of mass to be the gauge origin!',
+     &    'WARNING: ...your defined gauge origin is therefore ignored.'
+       GAGORG_SET = .FALSE.
+      ENDIF
 
+      IF (GAGORG_SET .AND. .NOT.USECM) THEN
          if (maxrep > 0) then
-            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(3X,A,/)')
-     &     'WARNING: User defined gauge '//
+            IF (.NOT.SYMCON.AND.LONDON) WRITE(LUPRI,'(/A/)')
+     &     '   WARNING: User defined gauge '//
      &     'may give wrong results when using symmetry !'   
          end if
 CMI      .... Don't forget to copy GAGORG into the DIPORG !!!
-         CALL DCOPY(3,GAGORG,1,DIPORG,1)
+         DIPORG(:) = GAGORG(:)
       ELSE
        IF (LONDON.OR.USECM) THEN
 C ... make the center of mass the gauge origin (default in dalton)
@@ -295,16 +269,16 @@ C ... call the routine in abacus/hergp.F
          CALL MEMREL('NMRINP.CMMASS',WORK,KWORK,KGEOM,KFREE,LFREE)
          CALL DCOPY(3,CMXYZ,1,GAGORG,1)
          CALL DCOPY(3,GAGORG,1,DIPORG,1)
-         WRITE(LUPRI,'(1X,A,3F12.6)')
-     &  '* Center of mass used for the gauge & dipole '//
-     &  'origin (a.u.) :',(GAGORG(I), I = 1, 3)
+         WRITE(LUPRI,'(A,3F12.6)')
+     &  ' * Center of mass used for the gauge & dipole '//
+     &  'origins (a.u.) :',GAGORG(1:3)
        END IF
       END IF
 
       IF (LONDON) THEN
        IF (NOONEI) THEN
-         WRITE(LUPRI,'(/,1X,A)')
-     &': No calculation of {T(1),H(0)} reorthonormalization'//
+         WRITE(LUPRI,'(/A)')
+     &' : No calculation of {T(1),H(0)} reorthonormalization'//
      &' terms for the H(B) property gradient !'
        ENDIF
 
@@ -322,9 +296,9 @@ C ... call the routine in abacus/hergp.F
        IF ((LEVYLE.OR.BSS.or.x2c).AND.(INTNMR.GT.1)) THEN
          INTNMR=1 ! Include only LL integrals...
          IF (INTNMR_SET) THEN
-           WRITE(LUPRI,'(2X,A)') 'WARNING: For the LevyLe/BSS/x2c '//
-     &     'Hamiltonian only LL integrals '//
-     &     ' for the dg(1,2)/dB terms are needed !'
+           WRITE(LUPRI,'(2X,A)') 'WARNING: For a '//
+     &     'LevyLeblond/BSS/x2c Hamiltonian only LL integrals '//
+     &     'for the dg(1,2)/dB terms are needed !'
          ENDIF
        ENDIF
 
@@ -362,7 +336,7 @@ C   .... defined conventional atomic orbitals (AO), not London AO
      &'  Using conventional atomic orbitals, not London orbitals !',
      &'  WARNING: Calculated magnetic properties are dependent'//
      &  ' on the choice of the gauge origin!',
-     &'  NMRINP: The gauge & dipole origin :', (GAGORG(I), I = 1, 3)
+     &'  NMRINP: The gauge & dipole origin :', GAGORG(1:3)
        END IF
       END IF  !  (LONDON)
 
@@ -514,8 +488,8 @@ C --------------------------------------------
            IREP = ISYM - 1
            IOPSY = JBTOF(ISYM-1,1)
            CALL DZERO(CONMAT,N2ORBXQ)
-           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,.TRUE.,WORK,WORK(KCMO),
+     &                 WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 C --------------------------------------------------------------------
 C ...  calculate the {T(1),h(m_K)}_ic reorthonormalization terms 
 C    as expectation value
@@ -536,14 +510,16 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 #ifdef MOD_LAO_REARRANGED
 !            gosia:
              if (lao_lr_rearrange) then
-               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
 #endif
-             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
@@ -720,8 +696,8 @@ C --------------------------------------------
            IREP = ISYM - 1
            IOPSY = JBTOF(ISYM-1,1)
            CALL DZERO(CONMAT,N2ORBXQ)
-           CALL PRPMAT(INDXPR,IOPSY,CONMAT,WORK(KCMO),WORK(KBEIG),
-     &                  ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+           CALL PRPMAT(INDXPR,IOPSY,CONMAT,.TRUE.,WORK,WORK(KCMO),
+     &                 WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
            IF (IPRINT.GE.5) THEN
             WRITE(LUPRI,'(2A)')
      &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR)
@@ -748,23 +724,19 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
 !            gosia:
 #ifdef MOD_LAO_REARRANGED
              if (lao_lr_rearrange) then
-               CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
 !              gosia: if lao_lr_rearrange, then we asked for 'dS/dB'
 !              integrals in def_d1hblond subroutine
              else
 #endif
-             CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),WORK(KCMO),
-     &             WORK(KBEIG),ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
-CTROND
-            IF(FULMAT) THEN
-              CALL FULMAT2('S',NORBT,NORBT,WORK(KTMAT))
-            ENDIF
-!            WRITE(LUPRI,'(2A,I5)')
-!     &      'GETCON: Get MO matrix of property:', PRPNAM(INDXPR2),IREP2
-!            CALL PRQMAT(WORK(KTMAT),NORBT,NORBT,NORBT,
-!     &              NORBT,NZ,IPQTOQ(1,IREP2),LUPRI )
-CTROND
+                CALL PRPMAT(INDXPR2,IOPSY2,WORK(KTMAT),.TRUE.,WORK,
+     &               WORK(KCMO),WORK(KBEIG),ICMOQ,NORB,
+     &               WORK,KFREE,LFREE,IPRINT)
+                IF(FULMAT) THEN
+                  CALL FULMAT2('S',NORBT,NORBT,WORK(KTMAT))
+                ENDIF
 #ifdef MOD_LAO_REARRANGED
              end if ! if (lao_lr_rearrange)
 #endif
@@ -1166,8 +1138,8 @@ C Allocate memory for storing components of dh(B)/dB_c
          INDXPR=IPLONDON(IX,ICOMP)
          ITIM   = IPRPTIM(INDXPR)
          IREP   = IPRPSYM(INDXPR) - 1
-         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),CMO,
-     &      IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
+         CALL PRPMAT(INDXPR,IOPSY,WORK(KDHBIX),.TRUE.,WORK,
+     &               CMO,IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRPRP)
          IF (IPRPRP.GE.5) THEN
            WRITE(LUPRI,'(/A,A16)') 
      &     'ONELON: *MO-matrix of property ',
@@ -1855,12 +1827,12 @@ C
       IF (IPRINT .GE. 4) THEN
        CALL HEADER('GTCNVD: Final quaternion density matrices.',-1)
        DO IMAT = 1,NFMAT
-         WRITE(LUPRI,'(2X,A,I1,A,I1,A)')
-     &    '**** >>>>> Matrix number(1-cs,2-os1,3-os2...): ',
-     &    IMAT,'/',NFMAT,' <<<<<< ****'
+         WRITE(LUPRI,'(A,I1,A,I1,A)')
+     &    '  **** ----- Matrix number(1-cs,2-os1,3-os2...): ',
+     &    IMAT,'/',NFMAT,' ----- ****'
          DO IZ = 1, 4
-          WRITE(LUPRI,'(/2X,A,I1)')
-     &    '=====  quaternion number (1-4): ',IZ
+          WRITE(LUPRI,'(/A,I1)')
+     &    '  =====  quaternion number (1-4): ',IZ
           CALL OUTPUT(DMAT(1,IZ,IMAT),1,NTBAS(0),1,NTBAS(0),
      &                  NTBAS(0),NTBAS(0),1,LUPRI) 
          END DO
@@ -2416,8 +2388,8 @@ C ....  DO NOT PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
        IREP   = ISYM - 1
        CALL DZERO(WORK(KT2MAT),N2ORBXQ)
 C    --- Get the T(2) symm.connection matrix in MO basis ---
-       CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),CMO,IBEIG,
-     &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
+       CALL PRPMAT(INDXPR,IOPSY,WORK(KT2MAT),.TRUE.,WORK,
+     &             CMO,IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
 C ... Call TTRA 
         AH = .FALSE. ! S(2) is hermitian ...
@@ -2597,7 +2569,7 @@ C DO NOT PERFORM THE PICT.CHANGE TRANSFORMATIN OF CONNECTION MATRIXES!
 C    --- Get the S(1) connection matrix in MO basis ---
        IF (ITIM1.NE.-1)
      &  CALL QUIT('LORDRNT:Wrong TRsymm. of S(1)!')
-       CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+       CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
 
        DO IW1 = 1, 3
@@ -2611,7 +2583,7 @@ C ... it's the natural connection
          IREP2   = ISYM2 - 1 ! 0-7
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis ---
-         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ... it's the symmetric connection
@@ -2623,7 +2595,7 @@ C ... it's the symmetric connection
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the S(1) connection matrix in MO basis ---
          IF (ITIM2.NE.-1) CALL QUIT('LORDRNT: Wrong TR symm. of S(1)!')
-         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+         CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 C  ... make a product of operators S(1)_ir1 W(1)/S(1)_ir2 - 
@@ -2731,7 +2703,7 @@ C     ====   Get F(1)=h(1)+u(1) MO terms ====
         IREP2   = ISYM2 - 1
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
-        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ELSE
         INDXPR2 = IPCON21(IW1) ! Get index of +S(1)
@@ -2742,7 +2714,7 @@ C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         CALL DZERO(WORK(KWMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KWMAT) ---
         IF (ITIM2.NE.-1) CALL QUIT('LORDRNT:Wron TR of s(1)!')
-        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR2,IOPSY2,WORK(KWMAT),.TRUE.,WORK,CMO,IBEIG,
      &                 ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
       ENDIF
 C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
@@ -2839,7 +2811,7 @@ C ...  get W(1)_icomp(I1) into WORK(KSMAT)
         IREP1   = ISYM1 - 1 ! 0-7
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the W(1) connection matrix in MO basis into WORK(KSMAT) ---
-        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ELSE
 C ...  get S(1)_icomp(I1) into WORK(KSMAT)
@@ -2851,7 +2823,7 @@ C ...  get S(1)_icomp(I1) into WORK(KSMAT)
         CALL DZERO(WORK(KSMAT),N2ORBXQ)
 C    --- Get the S(1) connection matrix in MO basis into WORK(KSMAT) ---
         IF (ITIM1.NE.-1) CALL QUIT('LORDRNT: Wrong TR symm. of S(1)!')
-        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),CMO,IBEIG,
+        CALL PRPMAT(INDXPR1,IOPSY1,WORK(KSMAT),.TRUE.,WORK,CMO,IBEIG,
      &             ICMOQ,NORB,WORK,KFREE,LFREE,IPRINT)
        ENDIF
 

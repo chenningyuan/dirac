@@ -68,9 +68,10 @@ some typical configuration scenarios.
 Configure for parallel compilation using MPI (make sure to properly export MPI
 paths)::
 
-  $ ./setup --fc=mpif90 --cc=mpicc --cxx=mpicxx
+  $ ./setup --mpi --fc=mpif90 --cc=mpicc --cxx=mpicxx
 
-There is a shortcut for it::
+These compiler names are in fact default for MPI in Dirac, so there is a shortcut if these
+are the compiler wrappers you want to use::
 
   $ ./setup --mpi
 

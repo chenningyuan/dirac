@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -19,7 +19,7 @@
 !      DIRAC program, see: http://www.diracprogram.org
 !dirac_copyright_end
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE FOLDED (ICURFSS,IHEQ,T1,T2,EPS,FVO,
+      SUBROUTINE FOLDED (ICURFSS,T1,T2,EPS,FVO,
      &                   BUF1,BUF2,BUF3,S1,S2)
 C
       implicit none
@@ -49,15 +49,14 @@ C---------------Calling variables--------------------------------------
 C
       REAL*8 T1(*),T2(*),S1(*),S2(*),EPS(*),FVO(*)
       REAL*8 BUF1(*),BUF2(*),BUF3(*)
-      INTEGER ICURFSS,IHEQ
+      INTEGER ICURFSS
 C
 C---------------Common Blocks--------------------------------------
 C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "ihm.inc"
-#include "ccpar.inc"
+#include "ccpar.inc" ! not needed, because there is no parallelization in this subroutine
 C
 C---------------Local variables--------------------------------------
 C
@@ -301,7 +300,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "results.inc"
 #include "ccpar.inc"
 #include "files.inc"
 C
@@ -315,6 +313,7 @@ C---------------Local variables -----------------------------------
      &                             EIGENVECTORS_LEFT(:),
      &                             EIGENVECTORS_RIGHT(:)
 
+      IF (ICURFSS.NE.1) THEN
            call alloc (HEFF, RCW*IFS_HE2(NREP+1,ICURFSS), id="heff")
            call alloc (EIGENVALUES,  RCW*(IFS_HE(NREP+1,ICURFSS)+1),
      &                 id="eigenvalues" )
@@ -322,6 +321,7 @@ C---------------Local variables -----------------------------------
      &                 id="eigenvectors_left" )
            call alloc (EIGENVECTORS_RIGHT, RCW*IFS_HE2(NREP+1,ICURFSS),
      &                 id="eigenvectors_right" )
+      END IF
 
 C---------------Executable code--------------------------------------
       IF (ICURFSS.EQ.1) THEN
@@ -2602,8 +2602,6 @@ C
 #include "files.inc"
 #include "ccpar.inc"
 #include "dcbxpr.h"
-#include "dcbham.h"
-! The dcbham common block is needed temporarily to check for spinfree (transformation of dipole integrals not debugged yet for spinfree)
 c
 c---------------Calling Variables-----------------------------------
 c 
@@ -2623,7 +2621,7 @@ c---------------Executable code-------------------------------------------------
 c
 
       IF (ICURFSS.EQ.0) RETURN ! No intensities if we only have the ground state
-      IF (SPINFR)       RETURN ! Transformed dipole moment integrals not yet available
+      IF (SPFR)         RETURN ! Transformed dipole moment integrals not yet available
 
       ALLOCATE(PROP(RCW,NSP,NSP),STAT=IERR)
       ALLOCATE(INTENSITY(NDT_TOT),STAT=IERR)

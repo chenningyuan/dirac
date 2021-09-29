@@ -66,7 +66,7 @@ degenerate eigenvectors of different symmetries.
 keyword(QJACO)
 
 Employ pure Jacobi diagonalization of quaternion matrixes. Properly handles
-degenerate eigenvectors. Slower than .DOJACO and exclusive.  Experimental
+degenerate eigenvectors. Slower than .DOJACO and exclusive. Experimental
 option.
 
 
@@ -120,8 +120,19 @@ Speed of light in a.u. Default::
 
 keyword(LOGMEM)
 
-Write out a line in the output for each memory allocation done by DIRAC.  This
+Write out a line in the output for each memory allocation done by DIRAC. This
 is mainly useful for programmers or for solving out-of-memory issues.
+
+
+keyword(CODATA)
+
+Select the fundamental physical constants used througout the code.
+The values are taken from different CODATA sets. Current available data sets are
+CODATA86, CODATA98, CODATA02, CODATA06, CODATA10, CODATA14 and CODATA18.
+Default::
+
+  .CODATA
+   CODATA18
 
 
 keyword(NOSET)

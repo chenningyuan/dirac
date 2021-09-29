@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -940,6 +940,11 @@
 !     The record size needs to be nwords real + (nwords + 2) integer
 !
       IRECL = IRECLEN(NWORDS,NWORDS+2,0)
+      IF (IRECL .LE. 0) THEN
+         write(lupri,*) 'ERROR: bad record length in INITGBF'
+         write(lupri,*) 'NGBFSZ,NPASS,IRECL',NGBFSZ,NPASS,IRECL
+         call quit('ERROR: bad record length in INITGBF')
+      END IF
 !
       FNODE = LFNAM('SCLIN')
       OPEN (UNIT=LGFIL,FILE=FNODE,ACCESS='DIRECT',RECL=IRECL)

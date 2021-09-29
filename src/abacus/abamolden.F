@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -51,8 +51,6 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
-
-      use codata
 #include "implicit.h"
 #include "maxorb.h"
 #include "molde.h"
@@ -67,7 +65,6 @@ C
 #include "cbirea.h"
 #include "nuclei.h"
 #include "primit.h"
-
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI
@@ -142,8 +139,8 @@ c
 
       SUBROUTINE MOATOMS(WORD)
 C 
-      use codata         
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -162,7 +159,6 @@ C
 #include "chrsgn.h"
 #include "chrnos.h"
 #include "ibtfun.h"
-
 
       CHARACTER*2 ASYMB(103)
 
@@ -356,14 +352,15 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #endif /* ifndef PRG_DIRAC */
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
-      use codata
-#include "implicit.h" 
+#include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
 
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
+C
       SXFAMU = SQRT(XFAMU)
       WRITE(LUMOLDEN,'(A)') '[FREQ]'
 
@@ -384,7 +381,6 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
-      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"
@@ -410,7 +406,6 @@ C              note OCCUP(NOCCT) only over occupied orbitals
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
-      use codata
 #include "implicit.h" 
 #include "mxcent.h"
 #include "maxorb.h"

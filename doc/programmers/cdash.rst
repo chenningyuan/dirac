@@ -41,12 +41,8 @@ And we are done with the key::
 Uploading the public key to GitLab
 ----------------------------------
 
-Now upload the public key to https://gitlab.com/dirac/dirac/deploy_keys.  If
-you do not have enough privileges to do this, please send your key to Radovan.
-This URL is also the place to revoke keys.  For those with enough privileges,
-please give the added keys a name which makes it possible to figure out what
-service is behind the key.
-
+Now upload the public key to gitlab.  If are not sure how to do this, please
+consult the documentation at https://docs.gitlab.com/ee/ssh/.
 
 Writing a CDash script
 ----------------------
@@ -55,7 +51,7 @@ A CDash script can in principle be as brief as this::
 
   $ ./setup [--flags]
   $ cd build
-  $ ctest -jN -D Nightly [--track master|--track release-15]
+  $ ctest -jN -D Nightly --track master
 
 The result of appears automatically on the
 `DIRAC Dashboard <https://testboard.org/cdash/index.php?project=DIRAC>`__.
@@ -78,10 +74,8 @@ Edit your crontab with::
 Here is an example::
 
   # m  h  dom mon dow command
-    00 04 *   *   *   /home/user/nightly/cdash_crontab.sh -b 'master'     -p '--adm'     -j 12      -c 'Intel' -n 'Intel-15.0.2' -t 'master'     -k /home/user/.ssh/nightly_rsa
+    00 04 *   *   *   /home/user/nightly/cdash_crontab.sh -b 'master' -j 4  -c 'Intel' -n 'Intel-Mac' -t 'master' -k /home/user/.ssh/nightly_rsa
     55 04 *   *   *   killall -9 dirac.x
-    00 05 *   *   *   /home/user/nightly/cdash_crontab.sh -b 'release-15' -p '--release' -j 12 -r 1 -c 'Intel' -n 'Intel-15.0.2' -t 'release-15' -k /home/user/.ssh/nightly_rsa
-    55 05 *   *   *   killall -9 dirac.x
 
 You can verify your crontab file changes by ::
 

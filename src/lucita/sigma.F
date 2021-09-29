@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1049,6 +1049,7 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
      &                IGROUPLIST,IPROCLIST
 #endif
      &            )
+      use luci_wrkspc
 *
 * Outer routine for sigma vector generation
 * GAS version !!!!
@@ -1080,7 +1081,6 @@ C!    Call Abend2( ' ENFORCED STOP AT END OF DIHDJ ' )
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -5147,6 +5147,7 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
      &                 ,LUCLIST,NPARBLOCK,IBLOCKL
 #endif
      &                  )
+      use luci_wrkspc
 *
 * Generate a set of sigma blocks,
 * The NBLOCK specified in IBLOCK starting from IBOFF,
@@ -5191,7 +5192,6 @@ C?     WRITE(6,*) ' DIATERM2_GAS will be called '
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"

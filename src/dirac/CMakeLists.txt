@@ -1,6 +1,7 @@
 include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
-    )
+    ${PROJECT_SOURCE_DIR}/src/dirac
+)
 
 if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fortran_COMPILER_ID MATCHES XL)
     SET(CMAKE_Fortran_ARCHIVE_CREATE "<CMAKE_AR> -X64 cr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -8,17 +9,6 @@ if (ENABLE_64BIT_INTEGERS AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX" AND CMAKE_Fort
 endif()
 
 set(FIXED_DIRAC_FORTRAN_SOURCES
- dcbana.h 
- dcbind.h 
- dcbmvo.h 
- dcbpop.h 
- dcbreo.h 
- dcbrho1.h 
- dcbrho.h 
- dcbrot.h  
- dcbsph.h 
- dcbvec.h
-# ----------------------
    atom2molecule_utils.F
    dftaux.F
    dirana.F
@@ -54,9 +44,8 @@ set(FREE_DIRAC_FORTRAN_SOURCES
     ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
 )
 
-if(ENABLE_INTEREST)
-    set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
-endif()
+
+set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_DIRAC_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree=f90")
@@ -77,7 +66,9 @@ add_library(
     ${FREE_DIRAC_FORTRAN_SOURCES}
 )
 
-# add intermodule dependendencies
+#
+# Oh, intermodule dependendencies, worth to reduce if possible
+#
 add_dependencies(dirac main)
 add_dependencies(dirac abacus)
 add_dependencies(dirac gp)
@@ -87,9 +78,7 @@ add_dependencies(dirac localization)
 add_dependencies(dirac visual)
 add_dependencies(dirac x2c)
 add_dependencies(dirac interface_mpi)
-if (ENABLE_INTEREST)
-    add_dependencies(dirac interest)
-endif()
+add_dependencies(dirac interest)
 if (ENABLE_PCMSOLVER)
     add_dependencies(dirac pcm_dirac)
 endif()
@@ -106,3 +95,8 @@ endif()
 if (ENABLE_KRCC)
     add_dependencies(dirac krcc)
 endif()
+if(ENABLE_EXATENSOR)
+    add_dependencies(dirac exatensor)
+endif()
+
+

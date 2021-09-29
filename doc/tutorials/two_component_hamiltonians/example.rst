@@ -59,7 +59,7 @@ and those without.
 Results matching the four-component Dirac-Coulomb (DC) Hamiltonian are those
 containing the MFSSO screening term.
 
-For more information, see Refs. [Ilias2001]_, [Ilias2007]_.
+For more information, see Refs. :cite:`Ilias2001`, :cite:`Ilias2007` .
 
 Spin-orbit states of the :math:`Rn^{77+}` cation
 -------------------------------------------------

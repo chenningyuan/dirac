@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -512,13 +512,11 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
-      USE CODATA, ONLY : XFAMU
-C
 #include "implicit.h"
-#include "priunit.h"
+#include "codata.h"
 #include "pi.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D4= 4.0D0, MAXISO = 6, MAXCHR = 118)
-      PARAMETER (DMP = 1.6726231D-27, ECHARGE = 2.60217733D-19)
       PARAMETER (THRESH = 1.0D-10)
 C
       CHARACTER*(*) TYPE
@@ -1701,7 +1699,7 @@ C        or an auxiliary basis set /Mar 2004 hjaaj
          SPIN = DATNUC(3,ISOTOP,IATOM)
          IF (SPIN .GT. THRESH) THEN
             DISOTP = ABS(ECHARGE*DATNUC(4,ISOTOP,IATOM)
-     &                   /(D4*PI*SPIN*DMP))
+     &                   /(D4*PI*SPIN*UMASS*PMASS))
          ELSE
             DISOTP = D0
          END IF
@@ -1770,8 +1768,8 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1784,6 +1782,7 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
+C
       CARTRA = .TRUE.
 C
 C     Atomic polar tensors (au)
@@ -1957,18 +1956,16 @@ C
 C     radovan: AMASS is not used !?
 C     hjaaj:   AMASS is passed on to VIBMAS
 C
-      USE CODATA, ONLY : XFAMU
-C
 #include "implicit.h"
+#include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      DIMENSION GEOM(3*NATOMS), AMASS(NATOMS), NATTYP(NATOMS),
-     &          NUMIS(NATOMS)
+      REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
+      INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
 #include "orgcom.h"
 #include "symmet.h"
-
 C
       ICHTOT = 0
       JATOM  = 0
@@ -1992,7 +1989,7 @@ C
  20      CONTINUE
  10   CONTINUE
 C
-      CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT)
+      CALL VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,JATOM,GEOM,CMXYZ,IPRINT-1)
       TELCMAS = ICHTOT/XFAMU
       TNUCMAS = TOTMAS - TELCMAS
 C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
@@ -2001,8 +1998,8 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
-      USE CODATA, ONLY : XTANG
 #include "implicit.h"
+#include "codata.h"
 C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
@@ -2017,7 +2014,7 @@ C
 #include "cbisol.h"
 #include "nuclei.h"
 C
-      IF (IPRINT .GE. 0) CALL HEADER('Isotopic Masses',-1)
+      IF (IPRINT .GT. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0
       ABUND  = D100
       CALL DZERO(ORIGIN,3)
@@ -2029,13 +2026,13 @@ C
             RMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'MASS')
             AMASS(IATOM) = RMASS
             TOTMAS       = TOTMAS + RMASS
-            PMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
-            ABUND        = ABUND*DP01*PMASS
+            QMASS = DISOTP(NATTYP(IATOM),NUMIS(IATOM),'ABUNDANCE')
+            ABUND        = ABUND*DP01*QMASS
             ORIGIN(1) = ORIGIN(1) + RMASS*GEOM(1,IATOM)
             ORIGIN(2) = ORIGIN(2) + RMASS*GEOM(2,IATOM)
             ORIGIN(3) = ORIGIN(3) + RMASS*GEOM(3,IATOM)
          END IF
-         IF (IPRINT .GE. 0)
+         IF (IPRINT .GT. 0)
      &      WRITE (LUPRI,'(27X,A6,2X,F12.6)')  NAMDEP(IATOM), RMASS
  100  CONTINUE
       IF(TOTMAS.NE.D0) THEN
@@ -2044,13 +2041,12 @@ C
         ORIGIN(3) = ORIGIN(3)/TOTMAS
       ENDIF
       IF (IPRINT .GE. 0) THEN
-        WRITE (LUPRI,'(/23X,A,F12.6,A)') 'Total mass: ',TOTMAS,' amu'
-        WRITE (LUPRI,'( 23X,A,F8.3,A)')  'Natural abundance:',ABUND,' %'
-        WRITE (LUPRI,'(/A,4X,3F20.15)')
-     &     ' Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3)
+        WRITE(LUPRI,'(/23X,A,F12.6,A)')'* Total mass: ',TOTMAS,' amu'
+        WRITE(LUPRI,'( 23X,A,F8.3,A)') '* Natural abundance:',ABUND,' %'
+        WRITE (LUPRI,'(//,(A,4X,3F20.15)))')
+     &    '* Center-of-mass coordinates (a.u.):',(ORIGIN(K),K=1,3),
+     &    '* Center-of-mass coordinates (A)   :',(ORIGIN(K)*XTANG,K=1,3)
       END IF
-      IF (IPRINT .GE. 2) WRITE(LUPRI,'(/A,7X,3F20.15)')
-     &     ' Center-of-mass coordinates (A):',(ORIGIN(K)*XTANG,K=1,3)
       RETURN
       END
       SUBROUTINE TRACOR(CSTRA,SCTRA,ITYPE,NCOOR,IPRINT)

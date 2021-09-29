@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -117,8 +117,8 @@ module fde_data
          fde_grid_sv%w(i)   = gridp(4,i)
       enddo
 
-      write(6,*) "debug, size:",fde_grid_sv%npoints
-      write(6,*) "debug, static vemb:",fde_static_vemb(fde_grid_sv%npoints)
+!     write(6,*) "debug, size:",fde_grid_sv%npoints
+!     write(6,*) "debug, static vemb:",fde_static_vemb(fde_grid_sv%npoints)
 
       deallocate(fde_vtmp)
       deallocate(gridp)

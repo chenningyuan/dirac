@@ -55,11 +55,11 @@ Then you cannot push directly but do not worry and follow these steps:
 * Create a new branch from the branch that you changed and tried to push.
 * Push the newly created branch to https://gitlab.com/dirac/dirac.
 * Create a merge request and point it to the branch you originally meant to modify.
-* Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``::
+* Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``  ::
 
-  $ git checkout master
-  # WARNING! next step will delete commits that came after origin/master
-  $ git reset --hard origin/master
+   $ git checkout master
+   #WARNING! next step will delete commits that came after origin/master
+   $ git reset --hard origin/master
 
 If you do not clean up your local master or release branch, it can start to diverge next time you pull
 since your local history may be different from remote history.
@@ -79,6 +79,19 @@ that you cannot and should not mark the source branch to be deleted upon merge a
 good, since we want to keep the release branches forever (these branches are protected against deletion).
 
 Finally green button: "Submit merge request".
+
+
+How to create a new release branch?
+-----------------------------------
+
+If you create a new release branch (e.g. "release-25" in the year 2025) locally
+using the terminal, you will experience that the repository will refuse to
+accept your ``git push origin -u release-25``. This is because we protect
+``master`` and ``release-*`` against (accidental) direct pushes.
+
+But in this case it will be in your way. You (repository/group admins) can
+temporarily unprotect the matching wild-card pattern at GitLab (Settings ->
+Repository -> Protected branches).
 
 
 Further reading

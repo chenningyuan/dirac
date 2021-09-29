@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -112,7 +112,7 @@ C
      &          RLMTRI(*),RLMBUF(NNBBASX,*),
      &          LVALUE(*),MVALUE(*),NVALUE(*),
      &          RLMMAT(*),RLMNUC(*),CSPH(MAXYZ,MAXLM),IFUN(*),WORK(*)
-      DIMENSION RLMORI(3), IDOINT(2,2)
+      DIMENSION DIPORG_save(3), IDOINT(2,2)
       CHARACTER SECTID*12,INTTID*12
 #include "ibtfun.h"
 C
@@ -138,7 +138,7 @@ C
       IDOINT(2,1) = 0
       ESOLVE = D0
       ESOLVN = D0
-      CALL DCOPY(3,DIPORG,1,RLMORI,1)
+      CALL DCOPY(3,DIPORG,1,DIPORG_save,1)
       CALL DCOPY(3,CAVORG,1,DIPORG,1)
 C     
 C     Reindex real part of density matrix to unsorted basis
@@ -293,7 +293,7 @@ C
   110   CONTINUE
         IOFF = IOFF + NLM
   100 CONTINUE
-      CALL DCOPY(3,RLMORI,1,DIPORG,1)
+      CALL DCOPY(3,DIPORG_save,1,DIPORG,1)
 C
 C     Reindex to sorted basis
 C     -----------------------

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -54,7 +54,6 @@ C                        and block
 C                        (INDA refers to index of SO-orbital)
 C     * CONTROL INFORMATION:
 C       LMP2  = .TRUE. - evaluate MP2 energy
-C       MSOUT = .TRUE. - write transformed integrals to file
 C       EIG            - eigenvalues (for  MP2 calculation)
 C       ANTIS = .TRUE. - anti-symmetrize integrals
 C       INTFLG - flag of what integral types to transform
@@ -161,6 +160,7 @@ C
      &   ' .NOMDCINT not valid for strategy 6 integral transformation')
       END IF
       CALL MDINTI(NSTR,IPRINT)
+
 C
 C     Make index arrays to translate pair index to individual indices
 C

@@ -85,7 +85,7 @@ class pam_enviroment:
         # default: do not show pam settings
         self.just_show_settings = False
 
-        # list of environment variables thar are to be set by dirac (useful to specify defaults in .diracrc)
+        # list of environment variables that are to be set by dirac (useful to specify defaults in .diracrc)
         self.environment = []
 
         # supercomputers are special, need to know whether we run on summit
@@ -124,6 +124,7 @@ class pam_enviroment:
         self.nr_proc = 1  # number of processors, default 1, i.e. serial run
         self.dirac_mpi_command = None # MPI launcher 
         self.distribute_files = False # if there is some distribution of files over different nodes
+        self.own_mpirun = None
 
         # depending on the operating_system, we set a default for the MPI launcher
         # agreed policy (Stefan,Miro,Ulf) - each user is responsible for what he has in $PATH
@@ -170,17 +171,21 @@ class pam_enviroment:
         self.dirac_cmd = None
 
        # dirac-executable position (could be reset after flag reading)
-        exec_position=os.path.join(pam_directory, self.dirac_exe_file)
-        if os.path.isfile(exec_position):
-            self.dirac_exe = exec_position
+       # try 1) pam directory;
+       #     2) build subdirectory;
+       #     3) share/dirac directory from a "cmake --install . --prefix <install-directory>
+
+        exec_position1=os.path.join(pam_directory, self.dirac_exe_file)
+        exec_position2=os.path.join(pam_directory, "build", self.dirac_exe_file)
+        exec_position3=os.path.join(pam_directory, "../share/dirac", self.dirac_exe_file)
+        if os.path.isfile(exec_position1):
+            self.dirac_exe = exec_position1
+        elif os.path.isfile(exec_position2):
+            self.dirac_exe = exec_position2
+        elif os.path.isfile(exec_position3):
+            self.dirac_exe = exec_position3
         else:
-            # does not exist, try build directory
-            exec_position=os.path.join(pam_directory, "build", self.dirac_exe_file)
-            if os.path.isfile(exec_position):
-                # assign build/dirac.x
-                self.dirac_exe = exec_position
-            else:
-                self.dirac_exe = None
+            self.dirac_exe = None
 
         # flags for putting/getting files for Dirac calculation
         self.put_files = None
@@ -282,13 +287,16 @@ class pam_enviroment:
         self.inkrmc = False
         self.outkrmc = False
 
+    # ... qforce files form exatensor
+        self.outqforce = False
+
     # execution time-limit in seconds (TODO: implement general time format)
         self.timeout = None
 
     # total spent time for pam script + job execution
         self.start_time=time.time()
 
-    #  variable for the diracrc file, full path
+    #  variable for the .diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
         self.diracrc_args = []
@@ -307,6 +315,17 @@ class pam_enviroment:
             basis_dir= os.path.join(pam_directory, 'basis')
             basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
             basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+':'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+':'+basis_ecp_dir
+            # if dirac was installed with "cmake --install . --prefix EXEDIR"
+            # one gets:  $EXEDIR/bin/pam-dirac, $EXEDIR/share/dirac/dirac.x, and $EXEDIR/share/dirac/basis*
+            basis_dir= os.path.join(pam_directory, '../share/dirac', 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, '../share/dirac', 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, '../share/dirac', 'basis_ecp')
             if os.path.isdir(basis_dir):
                 self.basdir = self.basdir + basis_dir
             if os.path.isdir(basis_dalton_dir):
@@ -347,14 +366,16 @@ class pam_enviroment:
         print("    mpirun extra args    ",  self.mpiarg)
         print("    global scratch disk  ",  self.global_scratch_disk)
         print("    Machine file         ", self.machinefile)
+        print("    own mpirun command   ", str(self.own_mpirun))
+
         print("  Profiler            ",  self.profiler)
         print("  Debugger            ",  self.debugger)
         print("  Dirac command       ",  self.dirac_cmd)
         print("  Dirac executable    ",  self.dirac_exe)
         if self.diracrc_file:
-            print("  sole diracrc file, which was read: ", self.diracrc_file)
+            print("  The .diracrc file, which was read:   ", self.diracrc_file)
         if self.diracrc_args:
-            print("  default pam arguments from this file: ", self.diracrc_args)
+            print("  Default pam arguments from .diracrc: ", self.diracrc_args)
 
     def create_scratch_dir(self):
         ''' create the scratch directory for Dirac run  '''
@@ -499,8 +520,10 @@ class pam_enviroment:
         #-serve as comments.
         """
         fullargs = []
-        paths = [os.path.join(os.path.expanduser('~'), '.diracrc'),  # first try $HOME/.diracrc
-                 os.path.join(pam_directory, '.diracrc')]            # then try .diracrc in the pam directory
+        self.input_directory = os.getcwd()
+        paths = [os.path.join(self.input_directory, '.diracrc'),     # first try a local <jobdir>/.diracrc
+                 os.path.join(os.path.expanduser('~'), '.diracrc'),  # second try a global $HOME/.diracrc
+                 os.path.join(pam_directory, '.diracrc')]            # third try .diracrc in the pam directory
         for path in paths:
             try:
                 f = open(path,'r')
@@ -626,7 +649,7 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='FLOAT',
             )
-        group.add_option(  # default set later - it's --mw setting
+        group.add_option(  # default set later - it's --gb setting
             '--nw',
             type='int',
             action='store',
@@ -667,16 +690,15 @@ Options are also read from ~/.diracrc"""
             action='store',
             dest='dest_mpi',
             default=None,
-            help='set number of MPI processes in parallel run [default: %default]',
+            help='set number of MPI processes in parallel run [default: 1]',
             metavar='INTEGER',
             )
 
         group.add_option('--mpirun',
             type='string',
             action='store',
-            dest='dest_mpirun',
-            default=self.mpirun,
-            help='set the MPI run command [default: %default]',
+            dest='dest_ownmpirun',
+            help='set the MPI run command, can have own arguments [default: see "pam --show" output]',
             metavar='STRING')
 
         group.add_option(
@@ -778,6 +800,11 @@ Options are also read from ~/.diracrc"""
                          dest='dest_outkrmc', default=False,
                          help='get KRMCSCF and KRMCOLD from scratch directory [default: %default]'
                          )
+        group.add_option('--outqforce', action='store_true',
+                         dest='dest_outqforce', default=False,
+                         help='get qforce.*.log from scratch directory [default: %default]'
+                         )
+
         group.add_option('--keep_scratch', action='store_true',
                          dest='dest_keep_scratch', default=False,
                          help='keep the scratch directory after calculation [default: delete it]'
@@ -920,8 +947,8 @@ Options are also read from ~/.diracrc"""
             self.parallel_run = True
             self.dirac_mpi_command = os.environ.get('DIRAC_MPI_COMMAND') + ' '
 
-        if options.dest_mpirun:
-            self.mpirun = options.dest_mpirun
+        if options.dest_ownmpirun:
+            self.own_mpirun = options.dest_ownmpirun
 
         if options.dest_mpiarg:
             self.mpiarg = options.dest_mpiarg
@@ -941,8 +968,17 @@ Options are also read from ~/.diracrc"""
         if options.dest_mpi:
             self.parallel_run = True
             self.nr_proc = int(options.dest_mpi)
-            self.dirac_mpi_command = str(self.mpirun) + ' -np ' + str(self.nr_proc) + ' '
-            if self.mpiarg: 
+            if self.own_mpirun:
+                print('Error, pam: you can not combine --mpirun and --mpi flags, use the former flag only ! ')
+                sys.exit(14)
+            else:
+                self.dirac_mpi_command = str(self.mpirun) + ' -np ' + str(self.nr_proc) + ' '
+
+        if self.mpiarg: 
+            if  self.own_mpirun:
+                print('Error, pam: you can not combine --mpirun and --mpiarg flags, use the former flag only ! ')
+                sys.exit(15)
+            else:
                 self.dirac_mpi_command = self.dirac_mpi_command + str(self.mpiarg) + ' ' 
 
         # overwrite whatever was specified for MPI because summit does not fit the general scheme
@@ -951,10 +987,19 @@ Options are also read from ~/.diracrc"""
 
         # The CMAKE variable ENABLE_MPI is "True" for "setup --mpi", otherwise it is "False".
         if "@ENABLE_MPI@" == "True" or "@ENABLE_MPI@" == "ON":
-            # always is parallel run if ENABLE_MPI=ON
+            # always a parallel run if ENABLE_MPI=ON
             self.parallel_run = True
             if self.dirac_mpi_command is None:
-               self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+               if self.own_mpirun:
+                  self.dirac_mpi_command = str(self.own_mpirun) + ' '
+               else:
+                  self.dirac_mpi_command = self.mpirun + ' -np ' + str(self.nr_proc) + ' '
+            
+         # For openMPI: if --bind-to none is not added, then e.g. "ctest -j 10" for "-np 1" will run all 10 jobs on CPU core 0
+         # and the remaining CPU cores will idle ... observed 03-May-2021)
+            if "@MPI_TYPE@" == "OPENMPI":
+                self.dirac_mpi_command = self.dirac_mpi_command + ' --bind-to none '
+
             if os.environ.get('LOCAL_SCRATCH_BOOL'):
                 # set local disks for paralell run
                 self.global_scratch_disk = False
@@ -996,6 +1041,7 @@ Options are also read from ~/.diracrc"""
         self.outcmo = options.dest_outcmo
         self.outkrmc = options.dest_outkrmc
         self.inkrmc = options.dest_inkrmc
+        self.outqforce = options.dest_outqforce
 
         self.rcp = options.rcp
         self.rsh = options.rsh
@@ -1430,14 +1476,11 @@ Options are also read from ~/.diracrc"""
         '''set the dirac command to be launched by the system (serial or parallel)'''
 
         dirac_executable = os.path.join(self.scratch_dir,self.dirac_exe_file)
-        if not os.path.isfile(dirac_executable):
-            print_error_message(dirac_executable+' not found!')
-            sys.exit(13)
 
         # On summit we execute a script that executes dirac.x (to keep things simple...)
         if self.summit:
            # assemble the jsrun command that we need and put this at the place of mpirun command
-           mpi_command = "jsrun --smpiargs='-mca common_pami_use_odp 1' -bnone"
+           mpi_command = "jsrun --smpiargs='-async' --smpiargs='-mca common_pami_use_odp 1' -bnone"
            mpi_command =  mpi_command + ' -n ' + str(self.nr_proc)
            mpi_command =  mpi_command + ' -a 1'
            mpi_command =  mpi_command + ' -r ' + os.environ.get('QF_PROCS_PER_NODE')
@@ -1447,17 +1490,28 @@ Options are also read from ~/.diracrc"""
            # create an executable script to set the correct OMP_PLACES before starting dirac.x
            path_to_script = os.path.join(self.scratch_dir,'exec_script.sh')
            with open(path_to_script, 'w') as script:
-               script.write("#!/bin/bash\n")
+               script.write("#!/bin/bash \n")
+               script.write(" \n")
+               script.write("# OpenMP environment \n")
+               script.write("export OMP_PROC_BIND=\""+ os.environ.get('OMP_PROC_BIND') +"\" \n")
                script.write("remainder=$(( $PMIX_RANK % 2 ))\n")
                script.write("if [ $remainder -eq 0 ]; then\n")
                script.write("export OMP_PLACES='{0},{4},{8},{12},{28:56},{16},{20},{24}' \n")
                script.write("else\n")
                script.write("export OMP_PLACES='{88},{92},{96},{100},{116:56},{104},{108},{112}'\n")
                script.write("fi\n")
+               script.write(" \n")
+               script.write("# echo \" OMP_NUM_THREADS = $OMP_NUM_THREADS \" \n")
+               script.write("# echo \" OMP_DYNAMIC = $OMP_DYNAMIC \" \n")
+               script.write(" \n")
                script.write("./dirac.x\n")
                script.close()
            os.chmod(path_to_script, 509)
            dirac_executable = path_to_script
+
+        if not os.path.isfile(dirac_executable):
+            print_error_message(dirac_executable+' not found!')
+            sys.exit(13)
 
         if self.parallel_run:
             if self.mpirun is None:
@@ -1502,7 +1556,7 @@ Options are also read from ~/.diracrc"""
                     print_error_message("\n Though debugging wanted, no debugger is assigned - check the flag !")
                     sys.exit(234)
                 if find_executable(self.debugger) is None:
-                    print_error_message('\n no debugger found in the <diracrc> file !')
+                    print_error_message('\n no debugger found in the <.diracrc> file !')
                     sys.exit(235)
                 if not is_windows():                        
                     self.dirac_cmd = self.debugger + ' ' + dirac_executable \
@@ -1826,6 +1880,18 @@ Options are also read from ~/.diracrc"""
             save_single_file('KRMCSCF')
             save_single_file('KRMCOLD')
 
+        if self.outqforce:
+            qfpath = os.path.join(self.input_directory, 'qfdir')
+            try:
+                os.mkdir(qfpath)
+            except OSError:
+                print ("Creation of the directory %s failed" % qfpath)
+            for p in os.listdir(self.scratch_dir):
+                if 'qforce' in p:
+                    full_file_name_scratch = os.path.join(self.scratch_dir, p)
+                    full_file_name_local = os.path.join(qfpath,p)
+                    self.copy_file(full_file_name_scratch, full_file_name_local)
+
     # take care of individual nodes if parallel run
 
         if self.nodes:
@@ -1969,9 +2035,6 @@ class pam_run(pam_enviroment):
     def perform(self):
         self.pam_variables.process_pam_arguments()
         self.pam_variables.set_output_file()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            sys.exit()
 
         self.pam_variables.set_dirac_environment()
         self.pam_variables.print_header()
@@ -1982,6 +2045,10 @@ class pam_run(pam_enviroment):
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            self.pam_variables.remove_scratch_dir()
+            sys.exit()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()
@@ -2073,7 +2140,7 @@ def process_time_string(time_string):
     except:
         print('error, wrong entering time string:', time_string, file=sys.stderr)
         print('proper examples: 1h2m30s  2m40s 1m40s  1h20s 3h ...', file=sys.stderr)
-        sys.exit(13)
+        sys.exit(15)
 
 def get_username():
     """

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -20,9 +20,9 @@
 !dirac_copyright_end
 
 !     !!! MODULE FOR READING XYZ FILES !!!
-!     Module for reading xyz files. 
+!     Module for reading xyz files.
 !     The coordinates are given in the .xyz file.
-!     The basisset and possible charges and nuclear exponents are 
+!     The basisset and possible charges and nuclear exponents are
 !     specified in the .inp file
 !
 !     In the long run the readingsection for the .inp file move to dirac/dirrdn.F
@@ -30,28 +30,27 @@
 
       MODULE READ_XYZFILE
         USE FILE
-        USE CODATA
         IMPLICIT NONE
 
         PRIVATE
 
-        PUBLIC READ_XYZ
+        PUBLIC READ_XYZ, get_atoms, del_atoms
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
-!       Other lines: atom name, coordinates 
+!       Other lines: atom name, coordinates
 
         INTEGER, PARAMETER :: namelen=8, basislen=32,linelen=192
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
         INTEGER            :: i,ios
 
-        TYPE atom
+        TYPE,public :: atom
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          REAL(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
-          REAL(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
-          REAL(KIND=8)            :: nucexp=0.0
+          REAL(KIND=8)            :: charge=0.0D0    ! this is the actual charge that may be taken zero or fractional
+          REAL(KIND=8)            :: bascharge=0.0D0 ! this is the charge for the specified element that is used when searching the basis set library
+          REAL(KIND=8)            :: nucexp=0.0D0
           TYPE(atom), POINTER     :: next
         END TYPE atom
 
@@ -87,7 +86,16 @@
         INTEGER :: natoms_given
 
 !     The unit conversion global variable is used when reading/writing xyz files
-       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION = 1.D0 / XTANG
+       REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
+
+       INTERFACE GET_ATOMS
+           module procedure READ_XYZ_ATOMS
+       END INTERFACE
+
+#ifdef HAS_PELIB 
+!     Variable for PElib (to ensure symmetry detection is disabled for xyz)
+LOGICAL, PUBLIC :: pelib_sym_xyz
+#endif 
 
       CONTAINS
 
@@ -111,7 +119,7 @@
           newatom%bascharge=find_charge(name)
           newatom%next=>NULL()
 !
-!         This might be the first call, if so: set fatom to this atom 
+!         This might be the first call, if so: set fatom to this atom
 !         and allocate also the last atom pointer
 
           IF (.not. associated(latom)) THEN
@@ -121,7 +129,7 @@
              RETURN
           END IF
 
-!         Find out whether we already have atoms of this type 
+!         Find out whether we already have atoms of this type
           sameatom=>find_atom(fatom, name, .true.)
           IF (associated(sameatom)) THEN
 !            insert after the others of this type
@@ -166,13 +174,13 @@
           TYPE(basistype)    :: bas
           INTEGER            :: JCO(:)
           INTEGER,TARGET,ALLOCATABLE,SAVE :: JCO2(:)
-          
+
           ALLOCATE(bas%jco(SIZE(JCO)))
           bas%jco=JCO
         END SUBROUTINE
 
         SUBROUTINE ADD_FAM(filenum,linelen,bas)
-!     JHS050707 Assigns for different types of family basissets an array FAM. 
+!     JHS050707 Assigns for different types of family basissets an array FAM.
 !               And reads the needed coefficients from file.
           INTEGER,INTENT(IN) :: filenum,linelen
           TYPE(basistype)    :: bas
@@ -233,7 +241,7 @@
         END SUBROUTINE
 
         SUBROUTINE READ_ATOMS(filenum, linelen,fatom,lupri)
-!       Reads atom name and coordinates from the .XYZ file 
+!       Reads atom name and coordinates from the .XYZ file
 !       and writes it to the atoms list.
 !       TODO: better checking for errors in the xyz file
           TYPE(atom), POINTER :: fatom
@@ -242,7 +250,7 @@
           CHARACTER(LEN=namelen)             :: name
           REAL(KIND=8)                       :: x(3)
           INTEGER                            :: ios
- 
+
           CALL QENTER('READ_ATOMS')
 
           latom=>null()
@@ -256,7 +264,7 @@
             READ(filenum, *,iostat=ios) name, x(1), x(2), x(3)
 
             if (ios.eq.0.AND.name.ne.'init') then
-              CALL ADD_ATOM(latom,fatom,name,x)  
+              CALL ADD_ATOM(latom,fatom,name,x)
             end if
           end do
 
@@ -264,11 +272,11 @@
 
         END SUBROUTINE READ_ATOMS
 
-      
+
         FUNCTION find_atom(fatom, name, last)
-!     JHS050707 Returns a pointer to the first (or last)  atom in the list with this name 
-!               or NULL() if is no such atom. 
-           TYPE(atom), POINTER :: fatom 
+!     JHS050707 Returns a pointer to the first (or last)  atom in the list with this name
+!               or NULL() if is no such atom.
+           TYPE(atom), POINTER :: fatom
            TYPE(atom), POINTER :: find_atom
            TYPE(atom), POINTER :: mol
            LOGICAL, OPTIONAL   :: last
@@ -349,7 +357,7 @@
 
 
         SUBROUTINE MAKE_ATOMTYPES(lupri)
-!         Matches basis sets and atoms: an atomtype 
+!         Matches basis sets and atoms: an atomtype
 !         consists of a set of identical nuclei (same charge, same basis)
 
           INTEGER, INTENT(IN),OPTIONAL       :: lupri
@@ -359,7 +367,7 @@
           TYPE(atomtype), POINTER            :: ltype=>NULL(),newtype
           CHARACTER(LEN=namelen)             :: name
           INTEGER                            :: i
-          
+
 !       Find default basis
         defaultbasis=>find_basis(firstbas,'DEFAULT')
         if (.not.(associated(defaultbasis)))                            &
@@ -399,7 +407,7 @@
           INTEGER,OPTIONAL,INTENT(IN) :: LUPRI
           INTEGER :: i
 #include "nucdata.h"
-          
+
           find_charge=0
           DO i=1,SIZE(NUCLABEL)
             IF (atomname==NUCLABEL(i)) THEN
@@ -414,9 +422,10 @@
 
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
-        use codata
+#include "codata.h"
 #include "infpar.h"
 #include "cbirea.h"
+#include "dgroup.h" 
 
 ! using OPTIMI
 #include "dcbgen.h"
@@ -424,7 +433,7 @@
 !     JHS050707 Reads basis names and possibly the coefficients typed in the DIRAC.INP file.
 !               Reads also Charges, nuclear exponents and the units of the XYZ file.
 !     Stores it in the the basis list.
-!     !!! TMP: TESTED FOR: 
+!     !!! TMP: TESTED FOR:
 !                         - 'LARGE BASIS'
 !     (Implemented also for the rest)
 !         Needed to read the basis set information
@@ -437,7 +446,7 @@
           INTEGER,TARGET,ALLOCATABLE         :: JCO(:)
 
 !     FOR UNIT CONVERSION and explicitly defined charges and/or nuclear exponents
-          REAL(KIND=8)      :: ONE=1.0
+          REAL(KIND=8)      :: ONE=1.0d0
           CHARACTER(LEN=32) :: UNITNAME='Angstrom'
           TYPE(atom), POINTER                :: mol
 
@@ -447,12 +456,15 @@
           REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
           LOGICAL                            :: first_call=.TRUE.
+          LOGICAL                            :: inMOLECULE
           CHARACTER(LEN=9) :: symtxt
           SAVE first_call
 
+          UNIT_CONVERSION = 1.D0 / XTANG
+
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
-          
+
           mol=>null()
           bas=>null()
           index=1
@@ -462,40 +474,70 @@
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
           KCHARG=0
-
+#ifdef HAS_PELIB 
+          pelib_sym_xyz = .true.
+#endif 
+          inMOLECULE = .false.
           DO
             read(tmp_file,*,iostat=ios) str
+            !write(6,*) ' --> next line is ',trim(str)
 
             IF (ios.ne.0) THEN
               EXIT
             ELSE IF (str(1:2)=='**') THEN
-              section(1)=str              
+              section(1)=str
+              !> make sure we process only sections related to XYZ
+              if(inMOLECULE)then
+                if(str(1:6) /= '**MOLE') exit
+              end if
+
             ELSE IF (str(1:1)=='*') THEN
               section(2)=str
 !             Reinitialize section after we read an *END
-              IF (str=='*END') section=''
+              IF (str=='*END')then
+                section=''
+                inMOLECULE = .false.
+              END IF
+              !> make sure we  process only section related to XYZ
+              if(inMOLECULE)then
+                select case(str(1:4))
+                    case ('*CHA','*SYM','*BAS','*CEN','*COO')
+                    case default
+                        exit
+                end select
+              endif
             ELSE IF (str(1:1)=='.') THEN
                section(3)=str
+            ELSE
+              if(inMOLECULE)then
+                write(lupri,*) "ERROR in READ_BASIS: unknown keyword ", &
+     &          trim(str)
+                call quit ("Error reading XYZ input in READ_BASIS")
+              end if
             ENDIF
 
-!          
+!
 !           We only need to do something if we are reading a **MOLECULE block.
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
 
+              inMOLECULE = .true.
+
 !             add molecular charge. it is perhaps redundant to have *CHARGE and .CHARGE but i'm not
-!             sure we will not want to add other keywords in the menu later on - plus this keeps in 
+!             sure we will not want to add other keywords in the menu later on - plus this keeps in
 !             line with the other fields that always place keywords (=section(3)) under single-star
-!             menus 
+!             menus
               IF (section(2)=='*CHARGE'.AND.                            &
      &            section(3)=='.CHARGE') THEN
-                      read(tmp_file,*,iostat=ios) KCHARG 
+                      read(tmp_file,*,iostat=ios) KCHARG
 
 !            Symmetry specification (Only NOSYM supported, otherwise automatic recognition)
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
-
+#ifdef HAS_PELIB
+              pelib_sym_xyz = .false.
+#endif
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -503,12 +545,13 @@
 !               like cc-pVDZ etc. This will be the basisset for all atoms that are not
 !               specified in the .SPECIAL section.
                 read(tmp_file,*,iostat=ios) tmpbas%file
-                if (ios.eq.0 .and. tmpbas%file>' ') then         
+                if (ios.eq.0 .and. tmpbas%file>' ') then
                   tmpbas%name='DEFAULT'
                   tmpbas%comp='LARGE'
                   tmpbas%type='BASIS'
                   tmpbas%next=>NULL()
                   CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  if( tmpbas%file(1:3) == 'ecp') read(tmp_file,*,iostat=ios) str
                   CYCLE
                 else if (ios.ne.0) then
                   write(lupri,*) "ERROR(readbasis): ",                  &
@@ -524,7 +567,7 @@
                 tmpbas%type=' '
                 tmpbas%file=' '
                 tmpbas%next=>NULL()
-                
+
                 read(tmp_file,*,iostat=ios) tmpbas%name,tmpbas%type
 
 !               Check whether the user has specified less than two keywords
@@ -539,7 +582,7 @@
                   CASE ('NOBASIS','POINTCHARGE')
                      CALL ADD_BASIS(bas,firstbas,tmpbas)
                   CASE ('BASIS','MOLFBAS')
-                    backspace(tmp_file)               
+                    backspace(tmp_file)
                     read(tmp_file,*,iostat=ios) tmpbas%name,&
      &                                      tmpbas%type,tmpbas%file
                     if (.not.(ios.ne.0) .and. tmpbas%file>' ') then
@@ -548,6 +591,8 @@
                      write(tmp_file,*) "ERROR(readbasis) :",            &
      &                 "Specify a filename for ",tmpbas%type
                     end if
+                    if( tmpbas%file(1:3) == 'ecp') read(tmp_file,*,iostat=ios) str
+                    cycle
                   CASE('INTGRL','EXPLICIT')
 !     FIRST read rest of the line and then read the explicit coefficients.
 !     TMP We read the coefficients in in the old way in write common block
@@ -558,7 +603,7 @@
                       cycle
                     end if
                     ALLOCATE(JCO(iqm))
-                    backspace(tmp_file)               
+                    backspace(tmp_file)
                     read(tmp_file,*,iostat=ios) iqm,JCO(1:iqm)
                     if (ios.ne.0) then
                       write(lupri,*) "ERROR(readbasis) :",           &
@@ -571,10 +616,22 @@
 !                   If we set the section back to empty, the read will skip over the
 !                   explicitly typed basis set (the exponents are read in a different routine)
                     section(3)=' '
-  
+                    !> skip until we reach a new keyword/section
+                    do
+                        read(tmp_file,*,iostat=ios) str
+                        if(ios .ne. 0) exit
+                        SELECT CASE(trim(str(1:1)))
+                          CASE ('*','.')
+                            exit
+                          CASE DEFAULT
+                            CYCLE
+                        END SELECT
+                    end do
+                    backspace(tmp_file)
+
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)
-                    
+
                     read(tmp_file,*,iostat=ios) iqm
                     if (ios.ne.0 .or. iqm==0) then
                       write(lupri,*) "ERROR(readbasis) :",           &
@@ -597,7 +654,7 @@
                     CYCLE
                   END SELECT
                 end if
-                  
+
               ELSE IF (section(2)=='*CENTERS'.AND.                      &
      &                 section(3)=='.NUCLEUS') THEN
 !               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
@@ -605,7 +662,7 @@
                 charge=0.0
                 bascharge=0.0
                 nucexp=0.0
-  
+
                 read(tmp_file,*,iostat=ios) name, charge
                 if (ios.ne.0) then
                     write(lupri,*) "ERROR(readbasis) :",             &
@@ -625,9 +682,9 @@
 
 !               Set charge information for all atoms of this type
                 mol=>firstatom
-                DO 
+                DO
                   mol=>find_atom(mol,name)
-                  IF (associated(mol)) THEN 
+                  IF (associated(mol)) THEN
                     mol%charge=charge
                     mol%bascharge=bascharge
                     mol%nucexp=nucexp
@@ -639,7 +696,7 @@
 
               ELSE IF (section(2)=='*COORDINATES'.AND.                  &
      &                 section(3)=='.UNITS') THEN
-!               If this block is specified, the coordinates in the .XYZ file are given in these 
+!               If this block is specified, the coordinates in the .XYZ file are given in these
 !               units and we have to transform them to a.u.
 !               The conversion factor may be given in Angstrom typed as 'ANGSTROM' or 'A'
 !               Note: Angstroms are known and can be specified by 'A' or 'ANGSTROM'
@@ -671,19 +728,19 @@
 
 !         We want users to specify the default basis, quit if they don't
           IF(.NOT.(ASSOCIATED(firstbas))) THEN
-            WRITE(LUPRI,*) 'No default basisset given in input file.    & 
+            WRITE(LUPRI,*) 'No default basisset given in input file.    &
      &            Specify a basisset in  **MOLECULE *BASIS .DEFAULT'
-            CALL QUIT('*** ERROR READ_BASIS, no defaultbasis given in   & 
+            CALL QUIT('*** ERROR READ_BASIS, no defaultbasis given in   &
      &           input file.')
           END IF
-          
+
 !     We now have add all data that was explicitly added in the .INP file.
-          
+
 !     Convert units
           IF(.NOT.(unitname=='bohr')) THEN
 !            WRITE(LUPRI,*) 'Coordinates were entered in ', unitname
 !            WRITE(LUPRI,*) 'Converting to atomic units with',           &
-!     &                     ' conversion factor=', UNIT_CONVERSION 
+!     &                     ' conversion factor=', UNIT_CONVERSION
             mol=>firstatom
             DO WHILE (ASSOCIATED(mol))
               mol%x=mol%x*UNIT_CONVERSION
@@ -692,6 +749,8 @@
           END IF
 
         first_call = .FALSE.
+        inMOLECULE = .false.
+        close (tmp_file)
 
         END SUBROUTINE READ_BASIS
 
@@ -699,8 +758,6 @@
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
-
-      use codata
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
@@ -752,7 +809,7 @@
 !    WRITE NUCLEAR SHAPE. TMP To be changed, now always D0 is taken
           nq = NINT(mol%charge)
           IF (GAUNUC.AND.nq.GT.0) THEN
-               
+
             IF (mol%nucexp.EQ.D0) THEN
               CALL NUCSIZ(nq,mol%nucexp)
             END IF
@@ -795,7 +852,7 @@
 
         SUBROUTINE POS_FILE(infile,lupri,linelen,section,subsection,name)
 !         Position a file to a specific keyword.
-        
+
           INTEGER, INTENT(IN)   :: infile,lupri,linelen
           CHARACTER(LEN=*), INTENT(IN) ::section,subsection,name
           CHARACTER(LEN=linelen) :: str,pressect,pressub
@@ -813,7 +870,7 @@
        write(lupri,*) 'POS_FILE: name(in)=',name
            call quit('POS_FILE: ios<>0, error in rewind command !')
           endif
-          DO            
+          DO
             read(infile,*,iostat=ios) str
             IF (ios.ne.0) THEN
              WRITE(lupri,*) '*** ERROR KEY NOT FOUND. ***'
@@ -825,7 +882,7 @@
              WRITE(lupri,*) "linelen=",linelen
              CALL QUIT('*** ERROR KEY NOT FOUND. ***')
             ELSE IF (str(1:2)=='**') THEN
-              pressect=str              
+              pressect=str
             ELSE IF (str(1:1)=='*') THEN
               pressub=str
             ELSE IF (pressect==section.AND.pressub==subsection) THEN
@@ -840,10 +897,10 @@
 !               .MOL files, the main difference is the split between reading the files
 !               and writing them to the common blocks
 
-      use codata
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
+#include "codata.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -852,7 +909,7 @@
 #include "symmet.h"
 
 !     COMMON BLOCKS
-! cbirea.h : IPREAD,TOL_SYMADD, ...
+! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
 #include "cbirea.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
@@ -865,7 +922,7 @@
       REAL(KIND=8) :: QEXP=D0
 !Miro: MXSPD is integer, not real, and that was causing problems later with parallel-GNU-compilers !!!
       INTEGER      :: MXSPD
-      LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS,                 & 
+      LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS,                 &
      &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
       CHARACTER(LEN=72) :: TTITLE(2)=' '
       CHARACTER(LEN=11) :: SYMTXT
@@ -876,8 +933,8 @@
       TYPE(atom),POINTER            :: mol
       TYPE(atomtype),POINTER        :: typepointer
 
-      REAL(KIND=8):: WORK(LWORK) 
-      REAL(KIND=8),ALLOCATABLE::                                        & 
+      REAL(KIND=8):: WORK(LWORK)
+      REAL(KIND=8),ALLOCATABLE::                                        &
      &               ALPHA(:,:,:),                                      &
      &               CPRIM(:,:,:,:),                                    &
      &               CPRIMU(:,:,:,:)
@@ -886,6 +943,7 @@
      &                       ISGEN(:)
       LOGICAL,ALLOCATABLE :: SEG(:,:)
       CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
+      CHARACTER(LEN=80)             :: BASNAM
 
 !     JHS050707 For type conversion purposes.
       INTEGER :: int8
@@ -900,9 +958,9 @@
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
-      
+
       katom=count_types(firstatomtype)
 
       ALLOCATE(JCO(KANG,KATOM,KSETS))
@@ -918,7 +976,7 @@
       ALLOCATE(ALPHA(KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIM(KPRIM,KPRIM,KBLOCK,KSETS))
       ALLOCATE(CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS))
-      
+
 !     JHS050707 TMP Initialization (NEEDED?)
 
       NONT=0
@@ -990,7 +1048,7 @@
           IQM(basindex,1)=SIZE(baspointer%jco)
           DO i=1,IQM(basindex,1)
             JCO(i,basindex,1)=baspointer%jco(i)
-          END DO           
+          END DO
           BASNAM='Explicit'
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
 !     Useful check : read iqm once more
@@ -1028,14 +1086,14 @@
      &             NRC(IBLOCK(1),1),SEG(IBLOCK(1),1),                   &
      &             ALPHA(1,IBLOCK(1),1),                                &
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
-     &             NBLOCK,ISGEN(IBLOCK(1)),                             &
+     &             NBLOCK,                                              &
      &             KAOVEC,KPRIM,mol%bascharge,mol%bascharge,            &
-     &             1,DSM,BASREF(1,basindex,1))                         
+     &             DSM,UNCONT,BASNAM,BASREF(1,basindex,1),IPREAD)
           NBLCK(basindex,1) = NBLOCK
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
           CALL GENFAMEXP(infile,0)
-          i=SIZE(baspointer%fam)-1            
+          i=SIZE(baspointer%fam)-1
           FAMPAR(1:i)=baspointer%fam(1:i)
           NFAMEXP(1)=TRANSFER(baspointer%fam(i+1),int8)
           KAOVEC = KBLOCK + 1 - IBLOCK(1)
@@ -1079,7 +1137,7 @@
         IF ( CNTBAS .AND. (IBSFLAG .EQ. 3 .OR. IBSFLAG .EQ. 1 )) THEN
            DIRCON(1) = .TRUE.
         END IF
-          
+
 !       Explicit SC will probably not work, worry about that later
         IF(.NOT.TWOCOMP) THEN
           IF (ASSOCIATED(baspointer%next)) THEN
@@ -1087,7 +1145,7 @@
      &            baspointer=>baspointer%next
           END IF
 
-          IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN 
+          IF (.NOT.(baspointer%comp(1:5)=='SMALL')) THEN
 !       We should typically go via this routine
             IBSFLAG=4
 !
@@ -1098,19 +1156,12 @@
 !           set from kinetic balance.
 !           =======================================================
 !
-            IF(MDIRAC) THEN
-              CALL RKBBAS(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &                    IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,           &
-     &                    NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,             &
-     &                    CNTBAS)
-            ELSE
-              CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &             IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &             NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &             INPTST,CNTBAS)
-            
-              BASREF(1,basindex,2) = ' Derived from large component'
-            END IF
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &           INPTST,CNTBAS)
+
+            BASREF(1,basindex,2) = ' Derived from large component'
 
           ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN
@@ -1118,7 +1169,7 @@
             IQM(basindex,2)=SIZE(baspointer%jco)
             DO i=1,IQM(basindex,2)
               JCO(i,basindex,2)=baspointer%jco(i)
-            END DO            
+            END DO
             BASNAM=baspointer%file
             KAOVEC = KBLOCK + 1 - IBLOCK(2)
 !     Additional check : read iqm once more
@@ -1142,9 +1193,9 @@
      &        CALL STOPIT('BASINP','BFGINP',KLAST,LWORK)
             DIRCON(1) = .TRUE.
             CALL BFGINP(basindex,IBLOCK(1),1,WORK(1),WORK(1+KPRIM),       &
-     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  & 
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
      &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &           baspointer%file,BASREF(1,1,1))                       
+     &           baspointer%file,BASREF(1,1,1))
 
           ELSE IF (.NOT.(baspointer%type(1:6)=='KINBAL')) THEN
             IBSFLAG=4
@@ -1154,16 +1205,16 @@
      &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
      &           INPTST,CNTBAS)
             BASREF(1,basindex,2) = ' Derived from large component'
-          END IF   
+          END IF
 
           NOORBTS = NOORBTS.AND.IQM(basindex,2).EQ.0
 
           NHTYP = MAX(NHTYP,IQM(basindex,2))
-          
+
           IF (IQM(basindex,2).GT.0) THEN
             NHTYP     = MAX(NHTYP,IQM(basindex,2))
           ENDIF
-          
+
           DO i = 1, NBLCK(basindex,2)
             IF ((NUC(i,2).NE.NRC(i,2)).AND.(NRC(i,2).GT.0))               &
      &             CNTBAS = .TRUE.
@@ -1185,12 +1236,13 @@
 
         typepointer=>typepointer%next
         index=index+NONT(basindex)
-        
+
       END DO
 
 
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,                     &
@@ -1221,6 +1273,7 @@
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
+      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****
@@ -1251,7 +1304,7 @@
           CALL RECP_LNK_IRREP(MAXREP)
           CALL RECP_LNK_RDGEO(SYMTXT,NSYMOP,KASYM,blk,                    &
      &            IQM,JCO,KATOM,KANG)
-         
+
 
           DEALLOCATE(JCO)
           DEALLOCATE(JCO2)
@@ -1281,7 +1334,7 @@
           mol=>firstatom
           DO
             IF (associated(mol)) THEN
-              WRITE(lupri,'(a,t9, 5g12.6)')                             & 
+              WRITE(lupri,'(a,t9, 5g12.6)')                             &
      &          TRIM(mol%name), mol%x, mol%charge, mol%nucexp
               mol=>mol%next
             ELSE
@@ -1319,7 +1372,7 @@
 
         SUBROUTINE DEL_ATOMTYPES(ftype)
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
-        
+
           TYPE(atomtype),POINTER :: ftype, typepointer
 
           IF (.NOT.associated(ftype)) RETURN
@@ -1327,7 +1380,7 @@
           typepointer=>ftype
           DO
             IF (associated(typepointer%next)) THEN
-              ftype=>typepointer%next              
+              ftype=>typepointer%next
               DEALLOCATE(typepointer)
               typepointer=>ftype
             ELSE
@@ -1340,7 +1393,7 @@
 
         SUBROUTINE DEL_ATOMS(firstatom)
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
-        
+
           TYPE(atom),POINTER :: firstatom
           TYPE(atom), POINTER :: mol
 
@@ -1349,7 +1402,7 @@
           mol=>firstatom
           DO
             IF (associated(mol%next)) THEN
-              firstatom=>mol%next              
+              firstatom=>mol%next
               DEALLOCATE(mol)
               mol=>firstatom
             ELSE
@@ -1362,7 +1415,7 @@
 
         SUBROUTINE DEL_BASIS(firstbas)
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
-        
+
           TYPE(basistype),POINTER :: firstbas
           TYPE(basistype), POINTER :: bas
 
@@ -1386,7 +1439,7 @@
 
         SUBROUTINE CLEAR_XYZ
 !     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
-        
+
           CALL DEL_ATOMS(firstatom)
           CALL DEL_BASIS(firstbas)
           CALL DEL_ATOMTYPES(firstatomtype)
@@ -1399,7 +1452,7 @@
 
         INTEGER, INTENT(IN) :: molfile,cmdfile,lupri
         INTEGER, INTENT(IN) :: lwork
-        REAL(KIND=8)        :: WORK(LWORK) 
+        REAL(KIND=8)        :: WORK(LWORK)
         INTEGER, INTENT(IN) :: KANG,KSETS,KBLOCK,KPRIM
         LOGICAL, INTENT(IN) :: HERMIT
 
@@ -1444,8 +1497,44 @@
         CALL CLEAR_XYZ()
         CLOSE(inpfile)
 
-       END SUBROUTINE READ_XYZ
+        END SUBROUTINE READ_XYZ
 
+        SUBROUTINE READ_XYZ_ATOMS (molfile,atoms,luprint)
+
+!       Reads the coordinates from an XYZ-FILE and returns them as a linked list
+
+        INTEGER, INTENT(IN) :: molfile
+        INTEGER, INTENT(IN), optional  :: luprint
+        type(atom), pointer, intent(out) :: atoms
+
+        INTEGER             :: lupri
+        INTEGER             :: ios, i
+
+        if (present(luprint)) then
+           lupri = luprint
+        else
+           lupri = 6
+        end if 
+
+!       In the XYZ format coordinates are supposed to start at the third line
+        REWIND (molfile)
+!       Check whether the first line has a number that can be used to check the number of atoms
+        natoms_given = 0
+        READ (molfile,*,iostat=ios) natoms_given
+!       Skip the comment line
+        CALL RDLINE(molfile)
+        CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
+!       Check number of atoms
+        IF (natoms_given .NE. count_atoms(firstatom)) THEN
+          WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
+     &                   " but expected ",natoms_given," atoms"
+          CALL QUIT(' *** ERROR (READ_XYZ_COORDINATES) wrong number of atoms')
+        END IF
+
+        allocate(atoms)
+        atoms=>firstatom
+
+       END SUBROUTINE READ_XYZ_ATOMS
 
       END MODULE READ_XYZFILE
 !  -- End of abacus/hermodules.F90 --

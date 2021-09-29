@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -46,30 +46,29 @@ C***********************************************************************
 #include "dgroup.h"
 
 #ifdef HAVE_OPENMP
-      INTEGER omp_get_num_procs, omp_get_num_threads
-      INTEGER omp_get_thread_limit, omp_get_thread_num
-      CHARACTER*10 my_OMP_NUM_THREADS
+      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_max_threads, omp_get_num_threads
+      INTEGER omp_get_thread_num
 #endif
 
 C     Set up basic information for parallel execution, to be stored in the
 C     common block infpar
 
 #ifdef HAVE_OPENMP
-      MAX_OMP_THREADS = omp_get_num_procs()
-      write(lupri,'(//A,2I5)')
-     &' * openMP activated, number of processes and number of threads'//
-     &' in non-parallel region:',
-     &   MAX_OMP_THREADS, omp_get_num_threads()
+      MAX_OMP_THREADS = omp_get_max_threads()
+      write(lupri,'(//A,3I5)')
+     &' * openMP activated, '//
+     &' thread limit - # processes - # threads: ',
+     & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-      MAX_OMP_THREADS = omp_get_thread_limit()
-      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
-     &'max number of threads and current number of threads:',
-     &   MAX_OMP_THREADS, omp_get_num_threads()
-     & , omp_get_thread_num()
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
 #else
       MAX_OMP_THREADS = 0
 #endif
+
       PARCAL = (IPARCAL .NE. 0)
       MPARID = IMPARID
 C We count the number of slave nodes, subtract the master
@@ -125,6 +124,7 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 
+      logical run_pamset
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
@@ -140,11 +140,13 @@ C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
 C***********************************************************************
-      CALL PAMSET()
-!     write info to files
-!     this is used in dft and visualization
-      call interface_ao_write()
-      call interface_mo_write()
+      IF (RUN_PAMSET()) THEN
+         CALL PAMSET()
+!        write info to files
+!        this is used in dft and visualization
+         call interface_ao_write()
+         call interface_mo_write()
+      END IF
 
 #ifdef HAS_PCMSOLVER
       if (dirac_cfg_pcm) then
@@ -610,8 +612,9 @@ C
             NGASSP(1,J) = NINT(XELEC)
             NGASSP(2,J) = NINT(XELEC)
          END DO
-      ELSE IF (CISELECT .EQ. 'FULLCI') THEN
-C        ... do a full CI in the active space
+      ELSE IF (CISELECT .EQ. 'CASCI') THEN
+C        ... do a full CI in the active space (open shell orbitals);
+C            equivalent to RESOLVE but setting information for GASCIP program
          NGAS_DC  = 1
          OPT_THR_CVEC = 1.0D-4
 
@@ -1134,9 +1137,7 @@ C***********************************************************************
 
 #ifdef MOD_INTEREST
       use module_interest_interface,                                    &
-     &    only: initialize_interest_herd,                               &
-     &          process_two_electron_integrals_4comp_slaves,            &
-     &          process_two_electron_integrals_2comp_slaves 
+     &    only: initialize_interest_herd
 #endif
 !     use fde_evaluators_dirac, only : fde_launch_slave_process
       use fde_mod, only : fde_launch_slave_process
@@ -1166,7 +1167,9 @@ C***********************************************************************
       integer :: IMPARID, INUMNOD, IMYTID, ITASK, IPARCAL, mytid_print
       real*8  :: CPU1, WALL1, TIMSTR, TIMEND
 #ifdef HAVE_OPENMP
-      INTEGER :: omp_get_num_procs, omp_get_num_threads
+      INTEGER omp_get_num_procs, omp_get_thread_limit
+      INTEGER omp_get_max_threads, omp_get_num_threads
+      INTEGER omp_get_thread_num
 #endif
 
       integer :: sleep_time=15
@@ -1179,24 +1182,22 @@ C***********************************************************************
       
       if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
 
+! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
-      MAX_OMP_THREADS = omp_get_num_procs()
-      if (mytid .eq. mytid_print) then
+!     MAX_OMP_THREADS = omp_get_max_threads()
+!     write(lupri,'(//A,3I5)')
+!    &' * openMP activated, '//
+!    &' thread limit - # processes - # threads: ',
+!    & omp_get_thread_limit(), omp_get_num_procs(), MAX_OMP_THREADS
 !$OMP PARALLEL
-!        write(lupri,'(//A,2I5)')
-!    &' * node 10 openMP, number of processes and number of threads:',
-!    &   MAX_OMP_THREADS, omp_get_num_threads()
-!        write(lupri,'(//A,I10)')
-!    &' * node 10 openMP, number of mkl threads:',
-!    &    mkl_get_max_threads()
-!        print *,'node 10 openMP, call omp_set_num_threads(1)'
+!      write(lupri,'(//A,I20,2I5)') ' * openMP parallel region, '//
+!     &' max # threads - current # threads - current thread: ',
+!     &   MAX_OMP_THREADS, omp_get_num_threads(), omp_get_thread_num()
 !$OMP END PARALLEL
-      end if
-      call omp_set_num_threads(1)
-      MAX_OMP_THREADS = 0
 #else
       MAX_OMP_THREADS = 0
 #endif
+
 C
 C     Transfer variables to common blocks
 C
@@ -1343,8 +1344,6 @@ C
 C        start the InteRest two-electron MPI calculation (4-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_4comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
       ELSE IF (ITASK .EQ. 10) THEN
@@ -1352,8 +1351,6 @@ C
 C        start the InteRest two-electron MPI calculation (2-comp version)
 C
 #ifdef MOD_INTEREST
-         call process_two_electron_integrals_2comp_slaves 
-#else
          call quit('ERROR: InteRest lib not available')
 #endif
 #endif /* VAR_MPI2 */
@@ -1445,6 +1442,11 @@ C
 #else
          call exa_cc()
 #endif
+      ELSE IF (ITASK .EQ. 21) THEN
+C
+C        start BEDLEB MPI calculation
+C
+         call bedleb_launch_slave_procs()
 
       ELSE
 C
@@ -1644,11 +1646,7 @@ C
         CALL DIST_ENV(0)
       ELSE
 #endif /* VAR_MPI */
-#if defined (SYS_T3D) || defined (SYS_T90)
-        CALL PXFGETENV ('BASDIR',6,BASDIR,LBASDR,IERR)
-#else
         CALL GETENV ('BASDIR',BASDIR)
-#endif
         LEN_BASDIR = LEN_TRIM(BASDIR)
 !
 !       If string is empty add current directory
@@ -1800,3 +1798,24 @@ C
       CALL QEXIT('TKRCCORB')
       END
 #endif /* MOD_KRCC */
+      LOGICAL FUNCTION RUN_PAMSET()
+!     Checks whether the time-consuming set up is really needed.
+!     Avoids the complicated X2C procedure if we just want to start a CC calculation with EXACC
+!     using already available MO coefficients
+#ifdef MOD_EXACORR
+      use dirac_cfg
+      if (dirac_cfg_exacc) then
+         if (dirac_cfg_scf_calculation.or.
+     &       dirac_cfg_dft_calculation.or.
+     &      dirac_cfg_mcsrdft_calculation) then
+            RUN_PAMSET = .TRUE.
+         else
+            RUN_PAMSET = .FALSE.
+         end if
+      else
+         RUN_PAMSET = .TRUE.
+      end if
+#else
+      RUN_PAMSET = .TRUE.
+#endif
+      END

@@ -47,6 +47,7 @@ contains
 
   SUBROUTINE SELOWN_mod(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,CMOFIL, &
                     CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR)
+  use dircmo
 !***********************************************************************
 !
 !     Select coeffiecients for symmetry independent nucleus INUC
@@ -80,12 +81,13 @@ contains
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(*),NVECS(2), &
                 CSEL(*),ESEL(*),IBSEL(*),IOFF(2)
 !     Local variables
-      LOGICAL LBIT
+      LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION IDIM(3,2)
+      DIMENSION IDIM(3,2),JDIM(2,0:3)
       REAL*8 CMCSCF_MAGIC
 !
       INTEGER, ALLOCATABLE :: KBAS(:)
+      integer idims(12)
 !
 !     flag for MCSCF coefficients on file CMOFIL
       CMCSCF_MAGIC = 137.0D0
@@ -93,17 +95,17 @@ contains
 !     Check if the file is in formatted or unformatted form
 !     =====================================================
 !
-      KEYFORM = 2
-      OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
-      READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
-      READ(IUNIT,*,IOSTAT=IER) IDUM
-!
-      IF(IER /= 0)THEN
-        CLOSE(IUNIT,STATUS='KEEP')
+!      KEYFORM = 2
+!      OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='FORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
+!      READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
+!      READ(IUNIT,*,IOSTAT=IER) IDUM
+
+!      IF(IER /= 0)THEN
+!        CLOSE(IUNIT,STATUS='KEEP')
         OPEN(IUNIT,FILE=CMOFIL,STATUS='OLD',FORM='UNFORMATTED',ACCESS='SEQUENTIAL',IOSTAT=IER)
         IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while opening file')
         KEYFORM = 1
-      ENDIF
+!      ENDIF
 !
       REWIND IUNIT
 !
@@ -111,7 +113,10 @@ contains
 !     ===============
 !
       IF(KEYFORM == 1)THEN
-        READ(IUNIT,END=10,ERR=20) TEXT,NSYM,((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
+        call reacmo_new(iunit,text=text,idims=idims,toterg=toterg)
+        nzbuf = idims(1)
+        nsym  = idims(2)
+        idim  = reshape(idims(7:12),(/3,2/))
       ELSEIF(KEYFORM == 2)THEN
         READ(IUNIT,'(A74)',IOSTAT=IER) TEXT
         IF(IER /= 0) CALL QUIT('SELOWN_mod: ERROR while reading TEXT')
@@ -152,6 +157,10 @@ contains
       NCDIM = 0
       NEDIM = 0
       DO IFRP = 1,NFSYM
+        JDIM(IFRP,1) = IDIM(1,IFRP)
+        JDIM(IFRP,2) = IDIM(2,IFRP)
+        JDIM(IFRP,0) = IDIM(1,IFRP) + IDIM(2,IFRP)
+        JDIM(IFRP,3) = IDIM(3,IFRP)                 
         NEDIM = NEDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))
         NCDIM = NCDIM + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
       ENDDO
@@ -160,32 +169,17 @@ contains
 !     Read coefficients
 !     =================
 !    
-      IF(LBIT(IOPT_TMP,2)) THEN
-        CALL READT_MOD(IUNIT,NCDIM,CMO,KEYFORM)
-      ELSE
-        IF(KEYFORM == 1) READ(IUNIT)
-        IF(KEYFORM == 2) READ(IUNIT,*)
-      ENDIF
+      IF(LBIT(IOPT_TMP,2)) call reacmo_new(iunit,cmo=cmo)
 !
 !     Read eigenvalues
 !     ================
 !
-      IF(LBIT(IOPT_TMP,3)) THEN
-        CALL READT_MOD(IUNIT,NEDIM,EIG,KEYFORM)
-      ELSE
-        IF(KEYFORM == 1) READ(IUNIT)
-        IF(KEYFORM == 2) READ(IUNIT,*)
-      ENDIF
+      IF(LBIT(IOPT_TMP,3)) call reacmo_new(iunit,eig=eig)
 !
 !     Read boson irrep info
 !     =====================
 !
-      IF(LBIT(IOPT_TMP,4)) THEN
-        CALL READI_MOD(IUNIT,NEDIM,IBEIG,KEYFORM)
-      ELSE
-        IF(KEYFORM == 1) READ(IUNIT)
-        IF(KEYFORM == 2) READ(IUNIT,*)
-      ENDIF
+      IF(LBIT(IOPT_TMP,4)) call reacmo_new(iunit,ibeig=ibeig)
 !
 !     Select and adjust format to molecular basis
 !     ===========================================
@@ -453,7 +447,7 @@ contains
   FUNCTION JGET(I)
   INTEGER I, JGET
 !
-#if defined (SYS_CRAY) || defined (INT_STAR8)
+#if defined (INT_STAR8)
       JGET = IAND(ISHFT(I,-32),65535)
 #else
       JGET = IAND(ISHFT(I,-16),255)

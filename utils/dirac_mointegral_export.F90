@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2018 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -33,8 +33,8 @@ module dirac_mointegral_export
   integer, parameter     :: filenumber_mtable  = 25
   integer, parameter     :: filenumber_propint = 26
   integer, parameter     :: filenumber_ccamp = 27
-  logical, parameter     :: generate_full_list = .false.
-  logical, parameter     :: generate_lower_triangular = .true.
+  logical, parameter     :: generate_full_list = .true.
+  logical, parameter     :: generate_lower_triangular = .false.
   logical, parameter     :: sorting_wrt_energy = .false. ! sort wrt spinor's energy.
   logical, parameter     :: sorting_wrt_occupied = .false. ! sort wrt spinor's lowest occupied
   integer, parameter     :: filenumber_55 = 55
@@ -120,7 +120,7 @@ contains
         call make_index
      endif
 
-     write (*,*) " Initialized reading from MRCONEE"
+     write (*,*) " Initialized reading from MRCONEE (version DIRAC20 and later)"
      write (*,*) " Core energy: ", core_energy
      write (*,*) " Breit interaction: ", breit_included
      write (*,*) " Group type (1:real, 2:complex, 4:quaternion) :",group_type
@@ -149,7 +149,11 @@ contains
      real(8), allocatable   :: integral(:,:,:)
 
      allocate (integral(number_of_spinors,number_of_spinors,2))
+     ! NB: changed September 28, 2020. Integrals on MRCONEE were written in c rather than fortran order,
+     ! now they are in Fortran order.
      read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),i=1,number_of_spinors),j=1,number_of_spinors)
+     ! for MRCONEE produced with older DIRAC versions (prior to release 2020) use this:
+     ! read (filenumber_1e) ((integral(i,j,1),integral(i,j,2),j=1,number_of_spinors),i=1,number_of_spinors)
 
      select case (target)
 
@@ -177,93 +181,62 @@ contains
   subroutine process_2e
 
      integer                :: nonzero, ikr, jkr, inz
-     integer                :: i, rcw
-     integer                :: ii, jj, kk, ll
-     integer                :: ij, kl
+     integer                :: icw, rcw
      integer, allocatable   :: indk(:), indl(:)
-     real(8), allocatable   :: integral(:)
-     logical                :: select_integral
+     real(8), allocatable   :: integrals(:,:),integral(:)
+     integer                :: filenumber
 
-     allocate (integral(number_of_spinors**2))
+     if (group_type == 1) then
+        rcw = 1
+     else
+        rcw = 2
+     endif
+ 
+     if (generate_full_list .and. .not.generate_lower_triangular) then
+       write (*,*) " Printing full list of integrals (includes redundant integrals that are related by permutation symmetry)"
+     elseif (generate_full_list .and. generate_lower_triangular) then
+       write (*,*) " Printing reduced list of integrals (lower triangle, integrals related by permutation symmetry are not printed)"
+     elseif (.not.generate_full_list .and. .not.generate_lower_triangular) then
+       write (*,*) " Printing reduced list of integrals (integrals related by Kramers symmetry are not printed)"
+     elseif (.not.generate_full_list .and. generate_lower_triangular) then
+       write (*,*) " Attempting to print reduced list of integrals: this may work for NR integrals (only)"
+        ! LV: Sanity check, only remove after careful checking that a complete list is generated for this combination of options
+        stop 'This combination of reduced list options is not allowed'
+     end if
+
+     allocate (integral(rcw))
+     allocate (integrals(rcw,number_of_spinors**2))
      allocate (indk(number_of_spinors**2))
      allocate (indl(number_of_spinors**2))
 
-     rcw = 1
      select case (target)
+     case ('nwchem')
+        filenumber = filenumber_nw
+     case ('mrcc')
+        filenumber = filenumber_55
+     case ('fcidump')
+        filenumber = filenumber_fcidump
+     end select
 
-        case ('mrcc')
+     do ! Loop over blocks of integrals
+        read (filenumber_2e) ikr,jkr,nonzero,(indk(inz),indl(inz),inz=1,nonzero),((integrals(icw,inz),icw=1,rcw),inz=1,nonzero)
+        if (ikr == 0) exit
+        do inz = 1, nonzero ! Loop over indivdual integrals
+           integral(:) = integrals(:,inz)
+           call print_2e_integral(filenumber,ikr,jkr,indk(inz),indl(inz),integral,rcw)
+!          make also kramers-related integral if desired
+           if (generate_full_list) then
+              integral = integral * sign(1,ikr*jkr*indk(inz)*indl(inz))
+              if (rcw == 2) integral(2) = -integral(2)
+              call print_2e_integral(filenumber,-ikr,-jkr,-indk(inz),-indl(inz),integral,rcw)
+           end if
+        end do ! individual integrals
+     end do ! blocks
 
-           do
-              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero*rcw)
-              if (ikr == 0) exit
-              do inz = 1, nonzero
-                    call print_2e_integral(filenumber_55,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
-
-!                   make also kramers-related integral if desired
-!                   note that we assume real integrals, in which case the kr integral is identical
-                    if (generate_full_list) then
-                       call print_2e_integral(filenumber_55,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
-                    end if
-              end do
-           end do
-
-        case ('nwchem')
-
-           do
-              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero*rcw)
-              if (ikr == 0) exit
-              do inz = 1, nonzero
-                    call print_2e_integral(filenumber_nw,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
-
-
-!                   make also kramers-related integral if desired
-!                   note that we assume real integrals, in which case the kr integral is identical
-                    if (generate_full_list) then
-                       call print_2e_integral(filenumber_nw,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
-                    end if
-              end do
-           end do
-
-        case ('fcidump')
-
-           if (group_type .ne. 1) rcw = 2
-           do
-              read (filenumber_2e) ikr, jkr, nonzero, (indk(inz), indl(inz), inz=1, nonzero), (integral(inz), inz=1, nonzero*rcw)
-              if (ikr == 0) exit
-
-              do inz = 1, nonzero
-
-                 select_integral = .false.
-                 if (generate_lower_triangular) then
-                    ii = kramer_to_spinor(ikr)
-                    jj = kramer_to_spinor(jkr)
-                    kk = kramer_to_spinor(indk(inz))
-                    ll = kramer_to_spinor(indl(inz))
-
-                    ij = ii*(ii-1)/2 + jj
-                    kl = kk*(kk-1)/2 + ll
-
-                    select_integral = (ii .ge. jj).and.(kk .ge. ll).and.(ij .ge. kl)
-                 else
-                    select_integral = .true.
-                 endif
-
-                 if ( select_integral ) then
-                    call print_2e_integral(filenumber_fcidump,ikr,jkr,indk(inz),indl(inz),inz,integral,rcw)
-
-!                   make also kramers-related integral if desired
-!                   note that we assume real integrals, in which case the kr integral is identical
-                    if (generate_full_list) then
-                       call print_2e_integral(filenumber_fcidump,-ikr,-jkr,-indk(inz),-indl(inz),inz,integral,rcw)
-                    end if
-                 end if
-              end do
-           end do
-    end select
-
-    deallocate(integral)
-    deallocate(indk)
-    deallocate(indl)
+     deallocate(integrals)
+     deallocate(integral)
+     deallocate(indk)
+     deallocate(indl)
    
   end subroutine
 
@@ -273,6 +246,13 @@ contains
      integer :: filenumber
      real(8) :: integral(:,:,:)
      integer :: i, j, rcw, end_index
+     character*20 integral_format
+
+     if (rcw == 2) then
+        integral_format = '(1P,2E24.16,4i4)'
+     else
+        integral_format = '(1P,E24.16,4i4)'
+     endif
 
      do i = 1, number_of_spinors
         if ( generate_lower_triangular ) then
@@ -281,54 +261,52 @@ contains
            end_index = number_of_spinors
         end if
         do j = 1, end_index
-           print*,i,j,spinor(i)%index,spinor(j)%index
-           if (abs(integral(i,j,1)) > threshold .or. abs(integral(i,j,2)) > threshold) then
-              if (rcw .ne. 1) then
-                 write (filenumber_fcidump,'(1P,2E20.12,7i4)') &
-                    integral(i,j,1),                &
-                    integral(i,j,2),                &
-!                    i,                              &
-!                    j,                              &
-                    spinor(i)%index,                              &
-                    spinor(j)%index,                              &
-                    0,                              &
-                    0
-              else
-                 write (filenumber_fcidump,'(1P,E20.12,7i4)') &
-                    integral(i,j,1),                &
-!                    i,                              &
-!                    j,                              &
-                    spinor(i)%index,                              &
-                    spinor(j)%index,                              &
-                    0,                              &
-                    0
-              end if
-           end if
+           write (filenumber_fcidump,integral_format) &
+                 integral(i,j,1:rcw),            &
+                 spinor(i)%index,                &
+                 spinor(j)%index,                &
+                 0,                              &
+                 0
         end do
      end do
   end subroutine
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine print_2e_integral(filenumber,ikr,jkr,kkr,lkr,inz,integral,g_type)
+  subroutine print_2e_integral(filenumber,ikr,jkr,kkr,lkr,integral,rcw)
      integer :: filenumber
-     integer :: i, g_type
+     integer :: ii,jj,kk,ll,ij,kl,rcw
      integer :: ikr, jkr, kkr, lkr, inz
-     real(8) :: integral(:)
+     real(8) :: integral(rcw)
+     character*20 integral_format
+     logical :: select_integral
 
-     if ( g_type .ne. 1 ) then
-        write (filenumber,'(1P,2E20.12,7i4)') (integral(g_type*(inz-1)+i), i=1,g_type), &
-              spinor(kramer_to_spinor(ikr))%index,                  &
-              spinor(kramer_to_spinor(jkr))%index,                  &
-              spinor(kramer_to_spinor(kkr))%index,                  &
-              spinor(kramer_to_spinor(lkr))%index
+     if (rcw == 2) then
+        integral_format = '(1P,2E24.16,4i4)'
      else
-        write (filenumber,'(1P,E20.12,7i4)') integral(inz), &
+        integral_format = '(1P,E24.16,4i4)'
+     endif
+
+     ! check triangularity condition (if the KR integrals are generated, needs checking when the KR integrals are not generated
+     ! to make sure no essential integrals are omitted)
+     if (generate_lower_triangular) then
+        ii = spinor(kramer_to_spinor(ikr))%index
+        jj = spinor(kramer_to_spinor(jkr))%index
+        kk = spinor(kramer_to_spinor(kkr))%index
+        ll = spinor(kramer_to_spinor(lkr))%index
+        ij = ii*(ii-1)/2 + jj
+        kl = kk*(kk-1)/2 + ll
+        select_integral = (ii .ge. jj).and.(kk .ge. ll).and.(ij .ge. kl)
+     else
+        select_integral = .true.
+     end if
+
+     if (select_integral) &
+     write (filenumber,integral_format) integral, &
               spinor(kramer_to_spinor(ikr))%index,                  &
               spinor(kramer_to_spinor(jkr))%index,                  &
               spinor(kramer_to_spinor(kkr))%index,                  &
               spinor(kramer_to_spinor(lkr))%index
-     end if
 
   end subroutine
 
@@ -564,16 +542,16 @@ contains
 
   do j = 1, number_of_spinors
     if (group_type .ne. 1) then
-        write (filenumber_fcidump,'(1P,2E20.12,7i4)') (spinor(j)%energy),0.0d0,spinor(j)%index,0,0,0
+        write (filenumber_fcidump,'(1P,2E24.16,4i4)') (spinor(j)%energy),0.0d0,spinor(j)%index,0,0,0
     else
-        write (filenumber_fcidump,'(1P,E20.12,7i4)') (spinor(j)%energy),spinor(j)%index,0,0,0
+        write (filenumber_fcidump,'(1P,E24.16,4i4)') (spinor(j)%energy),spinor(j)%index,0,0,0
     end if
   end do
 
   if (group_type .ne. 1) then
-     write (filenumber_fcidump,'(1P,2E20.12,7i4)') core_energy,0.0d0,0,0,0,0
+     write (filenumber_fcidump,'(1P,2E24.16,4i4)') core_energy,0.0d0,0,0,0,0
   else
-     write (filenumber_fcidump,'(1P,E20.12,7i4)') core_energy,0,0,0,0
+     write (filenumber_fcidump,'(1P,E24.16,4i4)') core_energy,0,0,0,0
   end if
 
   deallocate (multiplication_table)
@@ -631,7 +609,7 @@ contains
       do i = 1, number_of_spinors
          do j = 1, number_of_spinors
             if (abs(propr(i,j)) > threshold .or. abs(propi(i,j)) > threshold) then
-              write (filenumber_propint,'(1P,2E20.12,7i4)') &
+              write (filenumber_propint,'(1P,2E20.12,4i4)') &
                  propr(i,j),                &
                  propi(i,j),                &
                  spinor(i)%index,                              &

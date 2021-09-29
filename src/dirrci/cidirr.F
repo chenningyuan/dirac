@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -122,11 +122,6 @@ CMKN
       call alloc(CI,MCORE,id='CI work space in CIDIRR')
 C
       MAXCORE = MCORE
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IERR = 0
-      CALL ASNUNIT(5,'-Yon',IERR)
-      IF (IERR.NE.0)  WRITE (IW,'(/A,I4/)') ' Assign error ',IERR
-#endif
 CMKN
 C Modified by Malaya .K. Nayak on 4th Feb. 2011
 C This part will calculate normal RASCI energy
@@ -181,6 +176,8 @@ C
 #include "general.inc"
 #include "mempoint.inc"
 C
+      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
+      NAMELIST/GOSCIP/NELACT,NGAS,MINE,MAXE,NGASO,REFDET,IREFE,IPRNT,FCI
       REAL*8 CI(*)
       CHARACTER*8 TIMEX,DATEX*10
       LOGICAL DONE
@@ -190,9 +187,25 @@ C
       WRITE (6,1000) DATEX,TIMEX
       CALL CPUUSED(CPUSET)
 C
+C     ! In case we run GOSCIP: we're done after that calculation
+      NGAS  = 1
+      MINE  = 0
+      MAXE  = 0
+      IGAS  = 0
+      NGASO = 0
+      NELACT = 0
+      REWIND (5)
+      READ (5,GOSCIP,END=1,ERR=1)
+ 1    IF (NELACT.NE.0) THEN
+        CALL PAMGOS(CI,MAXCORE,NELACT,NGAS,IGAS,MINE,MAXE,NGASO)
+        DONE = .TRUE.
+        RETURN
+      ELSE
+        DONE = .FALSE.
+      ENDIF
+C
       CALL SYMMIN
-      CALL USERIN (CI,DONE)
-      IF (DONE) RETURN
+      CALL USERIN
       CALL ORBSIN
       CALL SORTMEM
       CALL SHUFFLE (CI(ITR),CI(ITI),CI(IIK),
@@ -206,9 +219,9 @@ C
      &               ISTART,SELECT,(NSEL(I),I=1,NROOTS)
       WRITE (6,1011) MAXITER,CONVERE,CONVERR,CPUMAX,RESTART
       IF (GETDET) THEN
-	 WRITE (6,1012) GETDET,COMIN,MAKENAT
+         WRITE (6,1012) GETDET,COMIN,MAKENAT
       ELSE 
-	 WRITE (6,1013) GETDET,MAKENAT
+         WRITE (6,1013) GETDET,MAKENAT
       ENDIF
       WRITE (6,1020) NELEC,NORB,NORBR
       IF (NORBR(1).EQ.0) MAXH1=0
@@ -1162,13 +1175,6 @@ C
       DIMENSION IVWU(2*MXREP,0:NORB,0:NELEC)
 C
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      IAND (I, J) = AND (I, J)
-      IOR (I, J) = OR (I, J)
-      NOT(I) = COMPL (I)
-      ISHFT (I, J) = SHIFT (I, J)
-#endif
-C
       DO 10 ID = 1, ND
       JELEC(ID) = NORBR(1)
       IDIND(ID) = 1
@@ -2065,6 +2071,7 @@ C     -------------------------------------------------------------
 	    If (i.NE.0.AND.j.NE.0) Then
 	       ji = norb*(i-1)+j
 	       gmatr(ji) = tintr(jid)
+!LV 28-9-2020: did not modify next line after MRCONEE change, code appeared to have already used Fortran ordering
 	       IF (.NOT.REALAR) gmati(ji) = tinti(jid)
             EndIf
          enddo
@@ -3627,7 +3634,7 @@ C     ******************************************************
       RETURN
       END
 C
-      SUBROUTINE USERIN (CI,DONE)
+      SUBROUTINE USERIN
 C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
@@ -3636,34 +3643,16 @@ C
 #include "general.inc"
 #include "symm.inc"
 C
-      LOGICAL TOBE,DONE
+      LOGICAL TOBE
       CHARACTER*4 IREPNA,VECFIL*11
-CTROND: check this !
       DIMENSION NRAS1(16),NRAS2(16)
-      DIMENSION MINE(16),MAXE(16),IGAS(16),NGASO(256)
 C
-      NAMELIST /GOSCIP/ NELACT,NGAS
       NAMELIST /RASORB/ NELEC,NRAS1,NRAS2,MINH1,MAXH1,MAXE3
       NAMELIST /DIRECT/ MAXITER,CPUMAX,CONVERR,CONVERE,RESTART
       NAMELIST /CIROOT/ NROOTS,NSEL,SELECT,IREPNA,ISTART
       NAMELIST /OPTIM/ IGENEX
       NAMELIST /LEADDET/ GETDET,COMIN
       NAMELIST /NATURAL/ MAKENAT
-C
-      NGAS  = 0
-      NELEC = 0
-      REWIND (5)
-      READ (5,GOSCIP,END=10,ERR=10)
-!     SK - during the merge of the COSCI-TDM this variable renaming
-!     on the NAMELIST slipped my attention.
-      NELEC = MAX(NELEC,NELACT)
- 10   IF (NELEC.NE.0) THEN
-        CALL PAMGOS(CI,MAXCORE,NELEC,NGAS,IGAS,MINE,MAXE,NGASO)
-        DONE = .TRUE.
-        RETURN         
-      ELSE
-        DONE = .FALSE.
-      ENDIF
 C
       NELEC = 0
       DO I = 1, NSYMRP

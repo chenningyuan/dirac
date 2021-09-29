@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -193,6 +193,7 @@ C*****************************************************************************
       use quaternion_algebra
       use xcint_main
       use dirac_cfg
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -352,7 +353,8 @@ C
       IF (NASHT.GT.0) THEN
 C
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
+         ! Needs an array as argument, old trick of passing a pointer does not work
+         CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C
@@ -405,7 +407,7 @@ C
 C
             KCMO = KFVAO
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
+            CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
             CLOSE(LUCOEF,STATUS='KEEP')
 C
             IF (NISH(I).EQ.0) GOTO 20
@@ -444,7 +446,7 @@ C
       CALL DZERO(WORK(KFCAO),N2BBASXQ)
       KCMO = KFVAO
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
+      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
       IF ( IPRINT .GE. 10 ) THEN
          DO I=1,NFSYM
@@ -558,7 +560,7 @@ C
       KDVAO = KDAO + N2BBASXQ
       KCMO  = KDVAO + N2BBASXQ
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
+      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get density matrix
@@ -685,7 +687,7 @@ C
 C     Contruct density matrix
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
+      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
@@ -2011,16 +2013,16 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 C
-      PARAMETER( D0 = 0.0 D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
@@ -2090,16 +2092,17 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use codata
 #include "implicit.h"
+#include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
+#include "consts.h"
 C
-      PARAMETER( D0 = 0.0D00, DP1 = 0.1D00)
+      PARAMETER(DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
@@ -2593,6 +2596,7 @@ C     Get total density matrix in SO basis (used for SCDENS & LCDENS)
 C
 C     31-July-2001 HJAaJ
 C
+      use dircmo
 #include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
@@ -2606,7 +2610,8 @@ C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
-      CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUMMY,DUMMY,DUMMY,3)
+C     Needs an array as argument, old trick of passing a pointer does not work
+      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+N2BBASXQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get total density matrix
