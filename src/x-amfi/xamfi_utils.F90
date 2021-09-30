@@ -1,4 +1,4 @@
-!#define DEBUG_SOC
+#define DEBUG_SOC
 !dirac_copyright_start
 !      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
