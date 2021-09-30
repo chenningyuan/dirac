@@ -2,9 +2,9 @@
 
 .. _DIRAC_TCCM_exercises:
 
-########################
-DIRAC computer exercises
-########################
+************
+Introduction
+************
 
 In order to run a DIRAC calculation you need an input file of arbitrary name, e.g. :file:`dirac.inp` which will be setup in the
 following and which contains the computational directives. In addition, a second file is needed providing the molecular structure.
@@ -254,4 +254,4 @@ We have seen that relativistic effects are dictated by the Lorentz factor
 
 where :math:`v` is the speed of the particle and :math:`c` is the speed of light. We have also seen that for hydrogen-like atoms the speed of the :math:`1s` orbital is :math:`Z` (nuclear charge) in atomic units, to be compared with the speed of light which is around 137 in the same units. The non-relativistic limit can be attained by setting the speed of light to infinity. This is not possible on a computer, so we settle for a large, but finite value. It is also possible to investigate the *ultra-relativistic* case by lowering the speed of light. In DIRAC the speed of light can be adjusted using the :ref:`GENERAL_.CVALUE` keyword.
 
-.. note:: When extracting spectroscopic constants using :ref:`twofit` it is important that the minimum :math:`r_e` is in the interval of selected points, ideally somewhere in the middle, so you may have to add further points to your scan to achieve this.
+.. note:: When extracting spectroscopic constants using :ref:`twofit` it is important that the minimum :math:`r_e` is in the interval of selected points, ideally somewhere in the middle, so you may have to add further points to your scan to achieve this. Relativistic effects are important, so when searching for an unknown minimum, you may first make a rather coarse grid of points (spacing 0.1 Å) and use :ref:`twofit` to guide you in the right direction, where you can put a finer grid (spacing 0.01 Å).
