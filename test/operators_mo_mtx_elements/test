@@ -9,30 +9,111 @@ from runtest_config import configure
 
 assert version_info.major == 2
 
-# miro: checking of degenerate numbers placed in various positions in the printout 
-# for example, matrix elements involving degenerate px,py,pz shells
-f = [
-    get_filter(from_string='Printout of all property elements',
-               to_string   = 'Transformation ended at',
-               ignore_sign = True, ignore_order=True,
-               mask=[3, 4], # skip first two indexes
-               abs_tolerance   = 5.0e-8)
-]
-
 
 options = cli()
 
 ierr = 0
-for inp in ['Ne.dc_rkb.2fs.scf_prptra_alpha_fc.inp', 
-            'Ne.dc_rkb.2fs.scf_prptra_dsigmadot-nucfield.inp', 
-            'Ne.dc_sf.2fs.scf_prptra_x-y-z-dipole.inp',
-            'Ne.levyle.2fs.scf_prptra_xy2z3.inp',
-            'Ne.dc_rkb.2fs.scf_prptra_ibetagama_edm.inp']:
+
+
+# miro: check X/Y/Z DIPLEN elements
+####################################
+f_diplen3 = [
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:XDIPLEN',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:YDIPLEN',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:ZDIPLEN',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8)
+]
+
+for inp in ['Ne.dc_sf.2fs.scf_prptra_x-y-z-dipole.inp']:
     for mol in ['Rn_Ne-like.mol']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],
-                    filters={'out': f})
+                    filters={'out': f_diplen3})
+
+# miro: check "CM010203" elements
+####################################
+f_CM010203_1 = [
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:CM010203',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+]
+
+for inp in ['Ne.levyle.2fs.scf_prptra_xy2z3.inp']:
+    for mol in ['Rn_Ne-like.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f_CM010203_1})
+
+# miro: check "e_EDM" elements
+####################################
+f_eEDM_1 = [
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:e_EDM',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+]
+
+for inp in ['Ne.dc_rkb.2fs.scf_prptra_dsigmadot-nucfield.inp']:
+    for mol in ['Rn_Ne-like.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f_eEDM_1})
+
+# miro: check "Heff_EDM" elements
+####################################
+f_Heff_EDM_1 = [
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:Heff_EDM',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+]
+
+for inp in ['Ne.dc_rkb.2fs.scf_prptra_ibetagama_edm.inp']:
+    for mol in ['Rn_Ne-like.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f_Heff_EDM_1})
+
+# miro: check alpha_fc elements
+####################################
+f_alpha_fc_3 = [
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:xalpha_f',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:yalpha_f',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8),
+
+    get_filter(from_string='Printout of nonzero MO matrix elements into one line:zalpha_f',
+               to_string   = 'End of nonzero matrix elements printout into one line.',
+               ignore_sign = True, ignore_order=True,
+               abs_tolerance   = 5.0e-8)
+]
+
+for inp in ['Ne.dc_rkb.2fs.scf_prptra_alpha_fc.inp']: 
+    for mol in ['Rn_Ne-like.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f_alpha_fc_3})
 
 sys.exit(ierr)
 

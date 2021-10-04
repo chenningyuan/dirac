@@ -4,7 +4,7 @@ use talsh
 use tensor_algebra
 use talsh_common_routines
 use exacorr_datatypes
-use talsh_ao_to_mo, only : tensor_norm2
+use talsh_common_routines, only : tensor_norm2
 
 
 implicit none

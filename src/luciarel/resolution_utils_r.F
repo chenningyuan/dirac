@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -866,6 +866,7 @@ C               LCJBLK = MXSOB*MXKB*MXB
 
 ***********************************************************************
       SUBROUTINE NEWTYP_REL(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
+      use luci_wrkspc
 *
 * an input supergroup is given.
 * apply a string of elementary operators to this supergroup and
@@ -897,7 +898,6 @@ C               LCJBLK = MXSOB*MXKB*MXB
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "strbas.inc"
-#include "wrkspc.inc"
 *. Local scratch
       DIMENSION IEL(MXPNGAS)
 *. output
@@ -940,6 +940,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 ***********************************************************************
 
       SUBROUTINE GTSPGP_REL(IEL,ISPGP,IWAY)
+      use luci_wrkspc
 *
 *
 * Relation between number of electrons in AS1, AS2 ... and
@@ -959,7 +960,6 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 #include "ipoist8.inc"
 *. Generel input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "stinf.inc"
 #include "cgas.inc"

@@ -56,6 +56,7 @@ set(FREE_GP_FORTRAN_SOURCES
     heapsort.F90
     include_h_modules.F90
     kinds.F90
+    luci_wrkspc.F90
     machine_parameters.F90
     memory_allocator.F90
     memory_control.F90
@@ -87,6 +88,8 @@ set(FREE_GP_FORTRAN_SOURCES
     xml/xml_file.F90
     xml/xml_structure.F90
     xml/xml_parser.F90
+    labeled_storage.F90
+    dircmo.F90
 )
 
 set(GP_C_SOURCES

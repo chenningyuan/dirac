@@ -5,6 +5,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -16,7 +19,7 @@ f.add(from_string = 'Electronic energy',
       num_lines   = 8,
       rel_tolerance   = 1.0e-9)
 f.add(from_string = 'Eigenvalues',
-      num_lines   = 32,
+      num_lines   = 20,
       rel_tolerance   = 1.0e-5)
 
 # these are longer tests

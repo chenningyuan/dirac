@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,6 +25,7 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ALLOC_LUCITA
+      use luci_wrkspc
 *
 * Dimensions and
 * Allocation of static memory
@@ -54,7 +55,6 @@
 *. Input
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "cstate.inc"
@@ -180,6 +180,7 @@ CADDE
       END
 ***********************************************************************
       SUBROUTINE MEMMAN(KBASE,KADD,TASK,IR,IDENT)
+      use luci_wrkspc
 *
 * Memory manager routine
 *
@@ -226,7 +227,6 @@ CADDE
 *
 #include "priunit.h"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #ifdef INT_STAR8
       integer, parameter :: rtoi = 1
 #else

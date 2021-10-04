@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -250,6 +250,7 @@ C
 !***********************************************************************
 
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
+      use luci_wrkspc
 !***********************************************************************
 !
 !     property operator matrix in DIRAC (Molfdir format) order. 
@@ -272,7 +273,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 * memory
-#include "wrkspc.inc"
 #include "ipoist8.inc"
 C print flags
 #include "cprnt.inc"
@@ -313,20 +313,16 @@ C
 C     output file handle in KR-CI module
       LUWRT = LUPRI
 
-C     Compute offset from WRK in parameter list
-C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
-C     This offset is added to all Ksomething addresses in WORK(Ksomething)
-C     so that WRK(1:LWRK) are the memory addresses really used.
-
 C     Note that K_OFFSET is in ipoist8.inc and is always i*8
 C     because the offset can be bigger than what can be stored in i*4.
 C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
 C     See also subroutine MEMMAR.
 
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-C     *k_offset = (long) (wrk-work+1);
+      call legacy_lwork_get(LWRK_luci)
+      call allocate_wrkspc
+      k_offset = 1
 
-      MXPWRD = LWRK
+      MXPWRD = LWRK_luci
       KADD = MXPWRD
 
 C     initialize memory
@@ -481,12 +477,14 @@ C     release memory
 C
       IDUM = 0
       CALL MEMMAR(KDUM,IDUM,'FLUSM',IDUM,'PROPRO')
+      call delete_wrkspc
 C
  999  CALL QEXIT('GET_XPROP_REOD_KRCI')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XPROP_KRCI(XPROPMAT,IHTYPE,IPROCLIST,IGROUPLIST,CIRUN,
      &                      MZ)
+      use luci_wrkspc
 C***********************************************************************
 C
 C     calculate property matrix. 
@@ -509,7 +507,6 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 * memory
-#include "wrkspc.inc"
 #include "ipoist8.inc"
 C print flags
 #include "cprnt.inc"

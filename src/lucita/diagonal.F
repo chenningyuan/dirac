@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -26,6 +26,7 @@
 ***********************************************************************
       SUBROUTINE DIA0TRM_GAS(ITASK,LUIN,LUOUT,VEC,VEC2,
      &                       FACTOR)
+      use luci_wrkspc
 *
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 2)
 * Obtain VEC = (DIAGONAL + FACTOR)       VEC (ITASK = 1)
@@ -45,7 +46,6 @@
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -216,6 +216,7 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DIABLK(IASM,IATP,IBSM,IBTP,IFULL,DIAG)
+      use luci_wrkspc
 *
 * Obtain diagonal block of determinant block
 * IASM,IATP,IBSM,IBTP
@@ -240,7 +241,6 @@ C     WRITE(6,*) ' NBLOCKT = ', NBLOCKT
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "crun.inc"
 #include "oper.inc"
@@ -511,6 +511,7 @@ C     COMMON/OPER/I12,IPERTOP
 ***********************************************************************
       SUBROUTINE DIATERM2_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,J12,JDC)
+      use luci_wrkspc
 * = DIATERM_GAS, just J12 added !
 *
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 1)
@@ -532,7 +533,6 @@ C     COMMON/OPER/I12,IPERTOP
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -642,6 +642,7 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 ***********************************************************************
       SUBROUTINE DIATERM_GAS(FACTOR,ITASK,VEC,NBLOCK,IBLOCK,IOFF,
      &                       JPERT,I0CHK,I0BLK)
+      use luci_wrkspc
 *
 * Obtain VEC = (DIAGONAL + FACTOR) ** -1 VEC (ITASK = 1)
 * Obtain VEC = (DIAGONAL + FACTOR)       VEC (ITASK = 2)
@@ -664,7 +665,6 @@ C    &                  IBLOCK,NBLOCK,ITASK,FACTOR,I0CHK,I0BLK)
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1248,6 +1248,7 @@ C         new offset
 ***********************************************************************
       SUBROUTINE GASDIAT(DIAG,LUDIA,ECORE,ICISTR,I12,
      &                   IBLTP,NBLOCK,IBLKFO,NPARBLOCK)
+      use luci_wrkspc
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
 * space ISPC
@@ -1273,7 +1274,6 @@ C         new offset
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1426,6 +1426,7 @@ C            COPDIA(A,VEC,NDIM,IPACK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GT1DIA(H1DIA)
+      use luci_wrkspc
 *
 * Obtain diagonal of one electron matrix over active
 * orbitals
@@ -1433,7 +1434,6 @@ C            COPDIA(A,VEC,NDIM,IPACK)
 *. Dec 97 : obtained from KINT1O
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 
 *.GLobal pointers
 C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1

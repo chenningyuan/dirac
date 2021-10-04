@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -379,6 +379,7 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DENSI2(I12,RHO1,RHO2,L,R,LUL,LUR,EXPS2)
+      use luci_wrkspc
 *
 * Density matrices between L and R
 *
@@ -422,7 +423,6 @@ C       IF(IACTIVE.EQ.1.AND.IJOFF.GE.KLOFF) THEN
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -1106,13 +1106,13 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GETD1(RHO1B,ISM,IGAS,JSM,JGAS)
+      use luci_wrkspc
 *
 * Extract TS block of one-electron density matrix
 *
       IMPLICIT REAL*8(A,H,O-Z)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
 *. output
@@ -1152,6 +1152,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 ***********************************************************************
       SUBROUTINE GETD2(RHO2B,ISM,IGAS,JSM,JGAS,KSM,KGAS,LSM,LGAS,
      &                 ICOUL)
+      use luci_wrkspc
 *. Extract given TS block from the 2e-density matrix
 *.
 *. Jeppe Olsen, Some day in Hfors CITY, winter 1996
@@ -1159,7 +1160,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
       IMPLICIT REAL*8(A-H,O-Z)
 *. Initial implementation, KISS to the MAX !!!
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
 *. Output
@@ -1206,6 +1206,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *                                                                     *
 ***********************************************************************
       FUNCTION GETD2E(I,IGAS,ISM,J,JGAS,JSM,K,KGAS,KSM,L,LGAS,LSM)
+      use luci_wrkspc
 *
 * Obtain element of two-electron density matrix
 * Currently stored without symmetry
@@ -1214,7 +1215,6 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
 *
@@ -2357,6 +2357,7 @@ C    &                  MXTSOB)
 ***********************************************************************
       SUBROUTINE PERTDN
      &(N,LU0,LUN,ISM,ISPC,VEC1,VEC2,RHO1N,RHO2N,LUSC1,LUSC2)
+      use luci_wrkspc
 *
 * Construct one body density matrix of order N
 *
@@ -2371,7 +2372,6 @@ C    &                  MXTSOB)
 *. Should not be called with ICISTR = 1
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 C     INCLUDE 'clunit.inc'
 #include "csm.inc"
@@ -2567,6 +2567,7 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TRADEN(I12,RHO1,RHO2,NL,NR,LUL,LUR)
+      use luci_wrkspc
 *
 * Transition density matrices between the NL states stored on LUL
 * and the NR states stored on LUR
@@ -2596,7 +2597,6 @@ C            PRHONE(H,NFUNC,IHSM,NSM,IPACK)
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "cgas.inc"
 #include "gasstr.inc"

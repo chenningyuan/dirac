@@ -22,6 +22,7 @@ if(ENABLE_EXATENSOR)
    exacorr_respect.F90
    exacorr_cholesky.F90
    exacorr_cc.F90
+   exacorr_mp2no.F90
    talsh_ao_to_mo.F90
    talsh_common_routines.F90
    talsh_sigma_eomccsd.F90
@@ -30,6 +31,10 @@ if(ENABLE_EXATENSOR)
    talsh_gradient.F90
    talsh_cc.F90
    davidson/talsh_davidson.F90
+   talsh_mp2no.F90
+   mp2no_driver.F90
+   mp2no_matrixtransforms.F90
+   mp2no_fileinterfaces.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

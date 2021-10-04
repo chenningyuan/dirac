@@ -562,7 +562,7 @@ module intermediates_eom_ccsd
         use talsh
         use tensor_algebra
         use exacorr_datatypes, only : talsh_comm_tens_t
-        use talsh_ao_to_mo, only       : tensor_norm2
+        use talsh_common_routines, only       : tensor_norm2
 
         type(talsh_tens_t),intent(inout) :: w_vovo
         type(talsh_comm_tens_t),intent(inout) :: comm_t
@@ -595,7 +595,7 @@ module intermediates_eom_ccsd
         use talsh
         use tensor_algebra
         use exacorr_datatypes, only : talsh_intg_tens_t
-        use talsh_ao_to_mo, only       : tensor_norm2
+        use talsh_common_routines, only       : tensor_norm2
 
 !       input variables
         type(talsh_tens_t),    intent(inout) :: w_vovo
@@ -842,7 +842,6 @@ module intermediates_eom_ccsd
           use exacorr_datatypes
           use exacorr_utils
           use talsh_common_routines
-          use talsh_ao_to_mo
 
 ! input variables
           type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
@@ -951,7 +950,6 @@ module intermediates_eom_ccsd
          use exacorr_datatypes
          use exacorr_utils
          use talsh_common_routines
-         use talsh_ao_to_mo
 
 ! input variables
          type(talsh_intermediates_tens_t),  intent(inout) :: interm_t

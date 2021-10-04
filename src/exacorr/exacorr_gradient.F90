@@ -2,7 +2,7 @@ module exacorr_gradient
 
 ! This module contains routines for solving the Lambda equations
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
   use exatensor
   use exacorr_ao_to_mo,  only : print_tensornorm2
@@ -23,6 +23,8 @@ module exacorr_gradient
 
     subroutine exacorr_dm_driver(exa_input,dims,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
 
+      use talsh_gradient
+
 !     Routine for obtaining the density matrices in the MO basis
 
 !     input variables
@@ -35,6 +37,8 @@ module exacorr_gradient
 !     tensor dimensions
       integer(INTD), dimension(2) :: oo_id,  ov_id,  vo_id,  vv_id
       integer(INTL), dimension(2) :: oo_root,ov_root,vo_root,vv_root
+      integer(INTD), dimension(4) :: vvoo_id
+      integer(INTL), dimension(4) :: vvoo_root
 !     CCD switch
       logical :: CCD
 !     error code
@@ -46,15 +50,18 @@ module exacorr_gradient
 !     set ids + roots *
 !**********************
 
-      oo_id   = (/dims%occ_space_id,   dims%occ_space_id  /)
-      oo_root = (/dims%occ_space_root, dims%occ_space_root/)
-      vv_id   = (/dims%vir_space_id,   dims%vir_space_id  /)
-      vv_root = (/dims%vir_space_root, dims%vir_space_root/)
+      call t2_tensor%get_space_ids(vvoo_id,vvoo_root,ierr)
+      vv_id   = vvoo_id(1:2)
+      vv_root = vvoo_root(1:2)
+      oo_id   = vvoo_id(3:4)
+      oo_root = vvoo_root(3:4)
       if (.not.CCD) then
-        ov_id   = (/dims%occ_space_id,   dims%vir_space_id  /)
-        vo_id   = (/dims%vir_space_id,   dims%occ_space_id  /)
-        ov_root = (/dims%occ_space_root, dims%vir_space_root/)
-        vo_root = (/dims%vir_space_root, dims%occ_space_root/)
+        vo_id   = vvoo_id(2:3)
+        vo_root = vvoo_root(2:3)
+        ov_id(1) = vvoo_id(3)
+        ov_id(2) = vvoo_id(1)
+        ov_root(1) = vvoo_root(3)
+        ov_root(2) = vvoo_root(1)
       end if
 
 !************************************
@@ -85,9 +92,9 @@ module exacorr_gradient
 !**************************************
 
       if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level,t1_tensor,l1_tensor)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level,t1_tensor,l1_tensor)
       else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,exa_input%print_level)
+        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level)
       end if
       call print_date("Calculated density matrices in MO basis")
 
@@ -116,14 +123,12 @@ module exacorr_gradient
 
     end subroutine exacorr_dm_driver
 
-    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,dims,CCD,print_level,t1_tensor,l1_tensor)
+    subroutine calc_dm_mo(gamma,t2_tensor,l2_tensor,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(exatns_dm_tens_t), intent(inout) :: gamma
       type(tens_rcrsv_t),   intent(inout) :: t2_tensor, l2_tensor
       type(tens_rcrsv_t),   intent(inout), optional :: t1_tensor, l1_tensor
-      type(space_dims),     intent(in   ) :: dims
-      logical,              intent(in   ) :: CCD
       integer,              intent(in   ) :: print_level
 !     auxiliary tensors
       type(tens_rcrsv_t) :: one_dm_tensor
@@ -136,7 +141,11 @@ module exacorr_gradient
       integer(INTL), dimension(4) :: vvoo_root
 !     error code
       integer(INTD) :: ierr
+!     CCD switch
+      logical       :: CCD = .false.
 
+       if (.not. present(t1_tensor)) CCD = .true.
+       call t2_tensor%get_space_ids(vvoo_id,vvoo_root,ierr)
 !*********************************
 !     construct auxiliary tensor *
 !*********************************
@@ -144,12 +153,10 @@ module exacorr_gradient
       ierr=exatns_tensor_create(one_dm_tensor,"one_dm",EXA_DATA_KIND_C8)
       ierr=exatns_tensor_init(one_dm_tensor,ONE)
       if (.not.CCD) then
-        oo_id   = (/dims%occ_space_id,   dims%occ_space_id  /)
-        oo_root = (/dims%occ_space_root, dims%occ_space_root/)
-        vv_id   = (/dims%vir_space_id,   dims%vir_space_id  /)
-        vv_root = (/dims%vir_space_root, dims%vir_space_root/)
-        vvoo_id   = (/dims%vir_space_id,   dims%vir_space_id,   dims%occ_space_id,   dims%occ_space_id  /)
-        vvoo_root = (/dims%vir_space_root, dims%vir_space_root, dims%occ_space_root, dims%occ_space_root/)
+        vv_id   = vvoo_id(1:2)
+        vv_root = vvoo_root(1:2)
+        oo_id   = vvoo_id(3:4)
+        oo_root = vvoo_root(3:4)
 
         ierr=exatns_tensor_create(tau2_tensor,"tau2_dm",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
         ierr=exatns_tensor_create(vv_aux_tensor,"vv_aux",vv_id,vv_root,EXA_DATA_KIND_C8)
@@ -267,188 +274,48 @@ module exacorr_gradient
 
     subroutine store_dm_mo(exa_input,gamma)
 
-      use exacorr_global,         only : get_nsolutions
       use talsh
-      use tensor_algebra
-      use talsh_common_routines,  only : print_tensor
-#if defined (VAR_MPI)
-      use interface_to_mpi
-
-!     variables for mpi
-      integer(C_INT)    :: read_node
-      integer           :: my_MPI_rank
-#endif
-
+      use talsh_gradient
 
 !     input variables
       type(exacc_input),    intent(in   ) :: exa_input
       type(exatns_dm_tens_t), intent(inout) :: gamma
-!     talsh tensor to get local copy
-      type(talsh_tens_t)           :: tensor_slice
-      integer(INTD), dimension(2)  :: h_dims
-!     matrix dimensions
-      integer :: nocc, nvir, nkr_occ, nkr_vir, nesh
-!     body pointers
-      type(C_PTR)                     :: body_p2
-      complex(8), pointer, contiguous :: dm_block(:,:)
-      complex(8), allocatable         :: dm_mo_fort(:,:)
-      real(8), allocatable            :: dm_diracformat(:,:,:)
-!     complete mo list
-      integer, allocatable :: mo_list(:)
+!     talsh type to get local copy
+      type(talsh_dm_tens_t)          :: talsh_gamma
 !     CCD switch
       logical :: CCD
 !     error code
       integer :: ierr
-!     loop variables
-      integer :: i, j, norbt
-      integer :: i_unbar, j_unbar, j_bar
 !     variables for talsh, density matrix needs to be smaller than buffer size 
       integer(C_SIZE_T)               :: buf_size=1024_8*1024_8*1024_8 
       integer(C_INT)                  :: host_arg_max
+!
+      character(len=4)                :: wavefun
 
       CCD = exa_input%CCD
+      wavefun = "CCSD"
 
-      call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
-      !call interface_mpi_comm_size(global_communicator,read_node)
-      read_node=0
-
-!***************
-!     set dims *
-!***************
-
-      nocc    = exa_input%nocc
-      nvir    = exa_input%nvir
-      nkr_occ = exa_input%nkr_occ
-      nkr_vir = exa_input%nkr_vir
-
-!***************************************
-!     copy DM blocks into one large DM *
-!***************************************
-
-      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
-      dm_mo_fort = ZERO
-
+      ! Convert to TALSH format and call the TALSH writer
       buf_size=exa_input%talsh_buff*buf_size
       ierr=talsh_init(buf_size,host_arg_max)
-      call print_date('Initialized talsh library')
-      write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+      call talsh_dm_initialize_dmtens(exa_input,talsh_gamma)
 
-!     -----------
-!     | OO | OV |
-!     -----------
-!     | VO | VV |
-!     -----------
-!     oo
-      h_dims=nocc
-      ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-      ierr=exatns_tensor_get_slice(gamma%symm_oo,tensor_slice)
-      ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,read_node,DEV_HOST)
-      call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
-      dm_mo_fort(1:nocc,1:nocc) = dm_block
-      ierr=talsh_tensor_destruct(tensor_slice)
-
+!     oo + vv
+      ierr=exatns_tensor_get_slice(gamma%symm_oo,talsh_gamma%symm_oo)
+      ierr=exatns_tensor_get_slice(gamma%symm_vv,talsh_gamma%symm_vv)
 !     vo + ov
       if (.not.CCD) then
-        h_dims(1)=nvir
-        h_dims(2)=nocc
-        ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-        ierr=exatns_tensor_get_slice(gamma%symm_vo,tensor_slice)
-        ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,read_node,DEV_HOST)
-        call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
-        ierr=talsh_tensor_destruct(tensor_slice)
-
-        h_dims(1)=nocc
-        h_dims(2)=nvir
-        ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-        ierr=exatns_tensor_get_slice(gamma%symm_ov,tensor_slice)
-        ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,read_node,DEV_HOST)
-        call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
-        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
-        ierr=talsh_tensor_destruct(tensor_slice)
+         ierr=exatns_tensor_get_slice(gamma%symm_vo,talsh_gamma%symm_vo)
+         ierr=exatns_tensor_get_slice(gamma%symm_ov,talsh_gamma%symm_ov)
       end if
 
-!     vv
-      h_dims=nvir
-      ierr=talsh_tensor_construct(tensor_slice,C8,h_dims,init_val=ZERO)
-      ierr=exatns_tensor_get_slice(gamma%symm_vv,tensor_slice)
-      ierr=talsh_tensor_get_body_access(tensor_slice,body_p2,C8,read_node,DEV_HOST)
-      call c_f_pointer(body_p2,dm_block,h_dims) ! to use <dm_mo_block> as a regular Fortran 2d array
-      dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
-      ierr=talsh_tensor_destruct(tensor_slice)
-      
+      call talsh_dm_store_mo (exa_input,talsh_gamma,wavefun)
+
+      ! Clean up and switch off talsh
+      call talsh_dm_cleanup_dmtens(talsh_gamma,CCD)
       ierr = talsh_shutdown()
-!*****************************************************************************************************************************
-!     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
-!*****************************************************************************************************************************
-      
-      norbt = nkr_occ + nkr_vir
-      allocate(mo_list(norbt))
-      mo_list(1:nkr_occ)                 = exa_input%mokr_occ
-      mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
-
-      nesh = get_nsolutions() / 2
-      allocate (dm_diracformat(nesh,nesh,4))
-      dm_diracformat = ZERO
-      do j = 1, norbt
-        j_unbar = 2*j-1
-        j_bar   = 2*j
-        do i = 1, norbt
-          ! We copy the unbar-unbar part of the density matrix, as well as the unbar-bar part
-          ! This follows from eq. 27 of Shee, Visscher, Saue JCP 145 184107, 2016
-          ! it would be good to test whether the Kramers-restricted assumption holds
-          ! Or even to average over the two density matrices and enforce a Kramers-restricted density
-          i_unbar = 2*i-1
-          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
-          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
-          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
-          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
-        end do
-      end do
-
-      call store_cc_denstiy_exacorr('CCSD',dm_diracformat,nesh,4)
-
-      deallocate (dm_diracformat)
-      deallocate (mo_list)
-      deallocate (dm_mo_fort)
 
     end subroutine store_dm_mo
-
-
-    subroutine store_cc_denstiy_exacorr(wf,dmo,norbt,nz)
-
-    use exacorr_utils,  only : get_free_fileunit
-
-    implicit none 
-
-    character(4)  :: wf
-    real(8)       :: dmo(norbt*norbt*nz)
-    integer       :: norbt
-    integer       :: nz
-    integer       :: ierr
-    integer       :: mccdens
-
-    character(8)  :: label, eoflabel
-
-    WRITE (*,*) "Storing the ",wf," density matrix on file" 
-    label = wf//'DENS'
-    eoflabel = 'EOFLABEL'
-
-    call get_free_fileunit(mccdens)
-
-    OPEN(mccdens,FILE='CCDENS',STATUS='NEW',FORM='UNFORMATTED', &
-      ACCESS='SEQUENTIAL')
-
-    ierr=0
-    REWIND (mccdens)
-    CALL NEWLAB(label,mccdens,ierr)
-    if (ierr.ne.0) write(*,*) "error in store_cc_denstiy_exacorr: ", ierr
-    write (mccdens) dmo
-    CALL NEWLAB(eoflabel,mccdens,ierr)
-    if (ierr.ne.0) write(*,*) "error in store_cc_denstiy_exacorr: ", ierr
-    CLOSE(Unit=mccdens,Status='KEEP')
-
-    end subroutine store_cc_denstiy_exacorr
 
 #endif
 

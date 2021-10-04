@@ -5,6 +5,9 @@ import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
 
 test = TestRun(__file__, sys.argv)
 
@@ -22,7 +25,9 @@ f.add(from_string = ' Overview of calculated energies',
       num_lines   = 12,
       rel_tolerance   = 1.0e-6)
 
+test.run(['talsh_cc_cf_x2c_spinfree.inp'], ['CF_nosym.mol'], f)
+#test.run(['talsh_cc_cf_nonrel.inp'], ['CF_nosym.mol'], f)
 #test.run(['talsh_cc_rbh.inp'], ['RbH_nosym.mol'], f)
-test.run(['talsh_cc_srh.inp'], ['SrH_nosym.mol'], f)
+#test.run(['talsh_cc_srh.inp'], ['SrH_nosym.mol'], f)
 
 sys.exit(test.return_code)

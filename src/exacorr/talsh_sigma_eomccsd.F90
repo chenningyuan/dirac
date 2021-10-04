@@ -3,7 +3,7 @@ module talsh_sigma_eomccsd
   use talsh
   use tensor_algebra
   use exacorr_datatypes
-  use talsh_ao_to_mo, only : tensor_norm2
+  use talsh_common_routines, only : tensor_norm2
   use exacorr_utils,  only : print_date
 
   implicit none

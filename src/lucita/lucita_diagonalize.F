@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -41,6 +41,7 @@
      &           LU7LIST,LUCLIST
 #endif
      &           )
+      use luci_wrkspc
 
 *
 * Master routine for CI diagonalization
@@ -71,7 +72,6 @@ C        /ORBINP/ : NACOB used
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
 C        Used: NSMOB
@@ -1991,6 +1991,7 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
      &                 MP1CSF,MP2CSF,MQCSF,NOCOB,
      &                 NPRCIV,NOCSF,IREFSM,IPRT,IPROCC,
      &                 VEC1,VEC2,H0SCR,IDC,PSSIGN,ECORE)
+      use luci_wrkspc
 * Obtain preconditioner space corresponding to internalt space INTSPC
 * Obtain Hamiltonian matrices correponding to this subspacw
 * Obtain the first Nroot eigensolutions.
@@ -2012,7 +2013,6 @@ C?    write(6,*) ' XH0PSX x1 x2 x3 ', XH0PSX,X1,X2,X3
 #include "stinf.inc"
 #include "spinfo.inc"
 #include "csfbas.inc"
-#include "wrkspc.inc"
 *. Offsets for CSF information
 C     COMMON/CSFBAS/KDFTP,KCFTP,KDTOC,KICONF(MXCNSM),KTPFCN(MXCNSM),
 C    &              KICTS(MXCNSM),KSCTS(MXCNSM),KCNFCN(MXCNSM)
@@ -2127,6 +2127,7 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
      &                MXP1DM,MXP2DM,MXQDM,NP1DM,NP2DM,NQDM,
      &                IASTR,IBSTR,ISTSGN,IASGN,IBSGN,
      &                INTSPC,IPRT,IPROCC)
+      use luci_wrkspc
 *
 * Construct an P1 P2 Q preconditioner matrix in the SD basis
 * and/or find and print the lowest IPROCC elements
@@ -2166,7 +2167,6 @@ C    &            ICISTR,NOCSF,IDIAG,NOINT
 *
 #include "mxpdim.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 *
       CALL QENTER('EXPHAM')
       NTEST = 0
@@ -2436,6 +2436,7 @@ C     END IF
 ***********************************************************************
       SUBROUTINE HINTV(LURHS,LUX,SHIFT,SHIFT_DIA,VECIN,VECOUT,
      &                LBLK,LUPROJ,LUPROJ2)
+      use luci_wrkspc
 *
 * Solve  (H+Shift)X = RHS
 *
@@ -2456,7 +2457,6 @@ C     END IF
 #include "mxpdim.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
-#include "wrkspc.inc"
 #include "clunit.inc"
 * SCRATCH files used : LUSC3,LUSC34,LUSC35,LUSC37
 *. These are not used in SIMPRT !
@@ -2612,6 +2612,7 @@ C?      WRITE(6,*) ' HINTV : MXIT_LOC ',MXIT_LOC
       SUBROUTINE HMATAPR(IASM,IATP,IBSM,IBTP,JASM,JATP,JBSM,JBTP,
      &                   IABSPC,JABSPC,IABOP,JABOP,IIF,JDOH2,
      &                   IDOH2,IMZERO,IDIAG)
+      use luci_wrkspc
 *
 * Decide upon the treatment of matrix element
 *
@@ -2624,7 +2625,6 @@ C?      WRITE(6,*) ' HINTV : MXIT_LOC ',MXIT_LOC
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *
@@ -5376,6 +5376,7 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
 ***********************************************************************
 *
       SUBROUTINE PERTCTL(ISM,ISPC,EREF)
+      use luci_wrkspc
 *
 * Master routine for perturbation calculations
 * (Largest allowed order : 1000)
@@ -5385,7 +5386,6 @@ C              NDIM_1EL_MAT(IHSM,NRPSM,NCPSM,IPACK)
       EXTERNAL MV7
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"

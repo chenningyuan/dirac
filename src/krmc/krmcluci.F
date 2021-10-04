@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -270,6 +270,8 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use luci_wrkspc
+      use memory_allocator
       use mc_energies
       use symmetry_setup_krci
       use os_utils
@@ -282,7 +284,6 @@ C***********************************************************************
 #include "dcbbos.h"
 #include "dgroup.h"
 *.Memory
-#include "../luciarel/wrkspc.inc"
 #include "../luciarel/ipoist8.inc"
 *.File numbers
 #include "../luciarel/clunit.inc"
@@ -327,18 +328,9 @@ C
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
 
-C     Compute offset from WRK in parameter list
-C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
-C     This offset is added to all Ksomething addresses in WORK(Ksomething)
-C     so that WRK(1:LWRK) are the memory addresses really used.
-
-C     Note that K_OFFSET is in ipoist8.inc and is always i*8
-C     because the offset can be bigger than what can be stored in i*4.
-C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
-C     See also subroutine MEMMAR.
-
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-C     *k_offset = (long) (wrk-work+1);
+      k_offset = 1
+      call legacy_lwork_get(lwrk)
+      call allocate_wrkspc
 
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -739,6 +731,7 @@ C     ^ end loop over different T operators (default=1)
 C
 C     release memory
  8888 CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
+      call delete_wrkspc
 C
 #if defined (VAR_MPI2)
 C
