@@ -46,6 +46,9 @@ module x2c_def_h1_4c
       read_4cfock_operator_x2c,       &
       get_saomo_x2c,                  &
       generic_interface_ao2mo_mo2ao
+  use x2cmod_cfg
+  use x2c_2e_soc_interface, only:     &
+      x2c_add_2e_diagonal_atomic
 
   implicit none
 
@@ -85,8 +88,8 @@ contains
 !    purpose: driver routine to obtain a 'defining' h1 matrix in orthonormal MO basis
 !             currently implemented: 
 !               - defining_h1mat == 0: case a. bare-nucleus 1-el Dirac-Hamiltonian
-!         TODO:(- defining_h1mat == 1: case b. (extended) Huckel-start guess)
-!         TODO:(- defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
+!               - defining_h1mat == 1: case b. bare-nucleus 1-el Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+!               - defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
 !               - defining_h1mat == 3: case d. free-particle matrix
 !
 !----------------------------------------------------------------------
@@ -130,7 +133,7 @@ contains
 !
 !             in : defining_h1mat as integer value: 
 !                  0 == case a.; bare-nucleus 4c-h1 
-!                  1 == case b.; not defined yet
+!                  1 == case b.; bare-nucleus 4c-h1 + diagonal (atomic) 2e-mean-field contributions
 !                  2 == case c.; 4c-Dirac-Fock matrix
 !                  3 == case d.; free-particle matrix
 !             out: 4c h1 matrix in SA-AO basis --> h1_saao_bas
@@ -154,7 +157,7 @@ contains
 
 !     step 2: transform h1 to orthonormal MO basis if defining h1 matrix is 
 !             case 0. 1-el. bare nucleus Dirac-Hamiltonian 
-!             case 1. extended Huckel start guess
+!             case 1. 1-el. bare nucleus Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !             case 3. free-particle matrix
 !
 !             in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
@@ -248,7 +251,7 @@ contains
 !    purpose: get 'defining' matrix h1 in symmetry-adapted (SA)-AO basis
 !             currently implemented: 
 !               - defining_h1mat == 0: bare-nucleus 1-el Dirac-Hamiltonian
-!         TODO:(- defining_h1mat == 1: (extended) Huckel-start guess)
+!               - defining_h1mat == 1: bare-nucleus 1-el Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !               - defining_h1mat == 2: 4c-Fock-Dirac operator matrix
 !               - defining_h1mat == 3: free-particle matrix
 !
@@ -280,8 +283,9 @@ contains
 !      give full length for WORK array allocations
        lwrk = is_len_wrk
 
-       if(defining_h1mat == 0)then
-
+       select case(defining_h1mat)
+       case(0)
+!        bare-nucleus 1-el Dirac-Hamiltonian
 #ifdef PRG_DIRAC
          allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
@@ -290,9 +294,33 @@ contains
          deallocate(wrk)
 #endif
 
-       else if(defining_h1mat == 1)then
-!        HUCKEL start guess...
-       else if(defining_h1mat == 2)then
+       case(1)
+!        bare-nucleus 1-el Dirac-Hamiltonian...
+#ifdef PRG_DIRAC
+        allocate(wrk(lwrk))
+        call reset_x2c_cb_onefck(.false.)
+        call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+        call reset_x2c_cb_onefck(.true.)
+        deallocate(wrk)
+#endif
+
+#ifdef MOD_XAMFI
+!       ... + diagonal (atomic) 2e-mean-field contributions
+        call x2c_add_2e_diagonal_atomic(h1_saao_bas,                       &
+                                        naosh_ls,                          &
+                                        nfsym,                             &
+                                        nz,                                &
+                                        x2c_bs_irrep_mat,                  &
+                                        x2c_cb_pq_to_uq,                   &
+                                        x2c_cb_uq_to_pq,                   &
+                                        x2c_iqmult_trip_q,                 &
+                                        x2c_bs_to_fs,                      &
+                                        x2c_pointer_quat,                  &
+                                        num_nuclei,                        &
+                                        type_nuclei,                       &
+                                        print_lvl)
+#endif
+       case(2)
 !        4c-Fock-Dirac Hamiltonian...
 
 !        out: 4c-fock operator in SA-AO basis -> h1_saao_bas
@@ -311,7 +339,7 @@ contains
                                   x2c_file_scr,       &
                                   print_lvl)
 
-       else if(defining_h1mat == 3)then
+       case(3)
 
 #ifdef PRG_DIRAC
 !        Free-particle matrix
@@ -322,7 +350,11 @@ contains
          deallocate(wrk)
 #endif
 
-       end if
+       case default
+         print *, ' get_h1_4c_saao_basis, unkown selection code defining_h1_mat=',&
+         defining_h1mat
+         call quit('get_h1_4c_saao_basis, unkown selection code defining_h1_mat')
+       end select
 
   end subroutine get_h1_4c_saao_basis
 

@@ -34,16 +34,17 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
-#undef DEBUG_SOC
+!#undef DEBUG_SOC
 #endif
 
   implicit none
 
   public get_xamfi_correction
   public put_xamfi_correction
+  public put_atomic_2e_mean_field_correction
 
   private
 
@@ -69,7 +70,7 @@ contains
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
      integer                            :: i
-     real(8), allocatable               :: fmat(:)
+     real(8), allocatable               :: fmat(:), tmp(:)
 !----------------------------------------------------------------------
 
       if(.not. calc_2esoc) return
@@ -119,8 +120,26 @@ contains
                           6                            &
                          )
       end if
-#undef DEBUG_SOC
+!#undef DEBUG_SOC
 #endif
+
+      if(aoo2ediag)then
+        !> save atomic 2e-Fock on file (of atom(1) ... == atomic fragment)
+        !> never mind the confusing naming of the routine that we call...
+        allocate(tmp(nrows*ncols*nr_quat*nr_2e_fock_matrices)); tmp = 0
+        call dcopy(nrows*ncols*nr_quat*nr_2e_fock_matrices,fmat,1,tmp,1)
+        call dump_normalized_2e_soc(                            &
+                                    tmp,                        &
+                                    nrows,                      &
+                                    ncols,                      &
+                                    nr_quat,                    &
+                                    'aoo2e_4c',                 &
+                                    nint(atom(1)%charge),       &
+                                    101,                        &
+                                    .true.                      &
+                                    )
+        aoo2ediag = .false.; deallocate(tmp)
+      end if
 
       !> normalize (picture-change transform) 2e-SO-fock matrix
       call get_normalized_2e_soc(                      &
@@ -289,6 +308,126 @@ contains
 
   end subroutine put_xamfi_correction
 !----------------------------------------------------------------------
+  subroutine put_atomic_2e_mean_field_correction(&
+    Gmat,                        &
+    naosh_ls,                    &
+    nrows_ext,                   &
+    ncols_ext,                   &
+    nr_quat_ext,                 &
+    center_id,                   &
+    center_total,                &
+    print_lvl                    &
+   )
+!**********************************************************************
+real(8), intent(inout)             :: Gmat(*)
+integer, intent(in)                :: naosh_ls
+integer, intent(in)                :: nrows_ext
+integer, intent(in)                :: ncols_ext
+integer, intent(in)                :: nr_quat_ext
+integer, intent(in)                :: center_id
+integer, intent(inout)             :: center_total
+integer, intent(in)                :: print_lvl
+!----------------------------------------------------------------------
+real(8), allocatable               :: Gmat_frag(:)
+real(8), allocatable               :: rbuf(:)
+real(8), allocatable               :: cbuf(:)
+real(8), allocatable               :: ibuf(:)
+real(8), allocatable               :: jbuf(:)
+INTEGER, parameter                 :: nzc1 = 4
+!----------------------------------------------------------------------
+
+
+if(nint(atom(center_total)%charge) > 1)then
+
+allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
+!       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
+
+call read_normalized_2e_soc(           &
+      Gmat_frag,                       &
+      nrows_ext,                       &
+      ncols_ext,                       &
+      nzc1,                            &
+      'aoo2e_4c',                      &
+      nint(atom(center_total)%charge), &
+      101                              &
+     )
+
+#ifdef DEBUG_SOC
+!> debug print
+if(print_lvl > 5)then
+call print_x2cmat(                     &
+Gmat_frag,                             &
+nrows_ext,                             &
+ncols_ext,                             &
+nzc1,                                  &
+aoo_cb_pq_to_uq(1,0),                  &
+'2e-mean-field corrections from file', &
+6                                      &
+)
+end if
+#endif
+
+
+allocate(rbuf(naosh_ls))
+allocate(cbuf(naosh_ls))
+allocate(ibuf(nrows_ext))
+allocate(jbuf(ncols_ext))
+
+rbuf = 0
+cbuf = 0
+ibuf = 0
+jbuf = 0
+
+call put_aoblock(Gmat,           &
+naosh_ls,                        &
+naosh_ls,                        &
+center_total,                    &
+aoo_nont(center_id),             &
+aoo_nucdeg(center_total),        &
+nzc1,                            &
+Gmat_frag,                       &
+nrows_ext,                       &
+nrows_ext,                       &
+-1,                              &
+ncols_ext,                       &
+ncols_ext,                       &
+-1,                              &
+rbuf,                            &
+cbuf,                            &
+ibuf,                            &
+jbuf)
+
+#ifdef DEBUG_SOC
+!> debug print
+if(print_lvl > 5)then
+call print_x2cmat(                     &
+Gmat,                                  &
+naosh_ls,                              &
+naosh_ls,                              &
+nr_quat_ext,                           &
+aoo_cb_pq_to_uq(1,0),                  &
+'2e-mean-field corrections accumulated',    &
+6                                      &
+)
+end if
+#endif
+deallocate(jbuf)
+deallocate(ibuf)
+deallocate(cbuf)
+deallocate(rbuf)
+deallocate(Gmat_frag)
+!write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
+!call flshfo(6)
+
+end if
+
+!     update counter
+center_total = center_total + aoo_nont(center_id)
+
+end subroutine put_atomic_2e_mean_field_correction
+!----------------------------------------------------------------------
+
+
 #ifdef DEBUG_SOC  
 #undef DEBUG_SOC
 #endif

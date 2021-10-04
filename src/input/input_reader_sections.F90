@@ -2160,6 +2160,11 @@
          x2c_add_amfi = 2
       end if
 
+      if (kw_matches(word, '.2ediag')) then
+         aoomod    = .true.
+         aoo2ediag = .true.
+      end if
+
       if (kw_matches(word, '.nofocc')) then
          aoomod       = .true.
          aoofocc      = .false.

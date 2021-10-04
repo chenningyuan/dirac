@@ -1,4 +1,4 @@
-#define DEBUG_SOC
+!#define DEBUG_SOC
 !dirac_copyright_start
 !      Copyright (c) 2019 by the authors of DIRAC.
 !      All Rights Reserved.
@@ -376,7 +376,7 @@ contains
     print '( 18x,a)', ' *** a module for the generation of atomic two-electron            ***'
     print '(18x,a )', ' *** scalar- and spin-orbit corrections                            ***'
     print '(18x,a )', ' ***                                                               ***'
-    print '(18x,a )', ' *** library version: X-AMFI v1.3 (July 2020)                      ***'
+    print '(18x,a )', ' *** library version: X-AMFI v1.4 (October 2021)                   ***'
     print '(18x,a )', ' ***                                                               ***'
     print '(18x,a )', ' *** authors:         - Stefan Knecht (GSI Darmstadt, DE)          ***'
     print '(18x,a )', ' ***                  - Trond Saue ( U Toulouse, F)                ***'

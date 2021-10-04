@@ -146,6 +146,9 @@ contains
 !                 a. x2c_is_defining_h1mat == 0: 1-el Dirac Hamiltonian                           
 !                    ==> default for X2C
 !
+!                 b. x2c_is_defining_h1mat == 1: 1-el Dirac Hamiltonian + diagonal (atomic) 2e-mean-field contributions                 
+!                    ==> optional for X2C
+! 
 !                 b. x2c_is_defining_h1mat == 2: Fock operator after a (converged) [spinfree==sf] SCF 
 !                    ==> default for [sf-]X2Cmmf
 !
@@ -494,6 +497,7 @@ contains
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
+!                                      == 1: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. AO2MO transformation matrices
@@ -568,8 +572,8 @@ contains
 !                                                                  ^ (compute+write if >= 0)
 
 !    allocate remaining required matrices and arrays: TODO: check if dimensions can actually be reduced...
-     j                               = dimension_for_2mat
-     if(defining_h1mat < 1) j = naosh_ls**2 * nz
+                            j = dimension_for_2mat
+     if(defining_h1mat < 2) j = naosh_ls**2 * nz
      allocate(A%scr2mat(naosh_ls**2 * nz))
      allocate(A%scr1mat(j))
 
@@ -681,7 +685,7 @@ contains
 
          close(9,status='delete')
 
-       case (0, 3) ! 1-el Dirac Hamiltonian / free particle
+       case (0, 1, 3) ! 1-el Dirac Hamiltonian / free particle
 
          allocate(wrk(local_lwrk))
          call modham(A%scr1mat,                                         &
@@ -764,7 +768,7 @@ contains
 !                       wrt which the decoupling step is performed.
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
-!                                      == 1: (extended) Huckel start guess (won't be implemented)
+!                                      == 1: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. decoupling matrix "R" in orthonormal MO basis

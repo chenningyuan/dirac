@@ -43,6 +43,7 @@ module x2c_2e_soc_interface
 #include "dcbcls.h"
 
   public x2c_add_2e_so_corrections
+  public x2c_add_2e_diagonal_atomic
 
   private
 
@@ -776,6 +777,162 @@ contains
        deallocate(scr1_mat,scr2_mat,scr3_mat)
 
   end subroutine x2c_interface2aoosoc
+
+!**********************************************************************
+
+  subroutine x2c_add_2e_diagonal_atomic(&
+       h1_4c_defining,        &
+       naosh_ls,              &
+       nfsym,                 &
+       nz,                    &
+       bs_irrep_mat,          &
+       ipq_off_in,            &
+       iqp_off_in,            &
+       iqmult_trip_q,         &
+       op_bs_to_fs,           &
+       quat_pointer,          &
+       nuclei_totnum,         &
+       nuclei_type,           &
+       print_lvl)   
+!**********************************************************************
+!
+!    purpose: interface routine to add 2e-mean field atomic blocks to h1
+!
+!             the outline of this routine may be sketched as follows:
+!
+!             1. retrieve 2e-mean field atomic block from file
+!   "saw"   /   a. transform from simple AO basis to Hermit-sorted SO-AO basis
+!  -------  \   b. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
+!            \  c. insert quaternion phases
+!             2. add atomic block to h1_4c
+! 
+!
+!----------------------------------------------------------------------
+real*8,  INTENT(INOUT)          :: h1_4c_defining(*)
+integer, intent(in)             :: naosh_ls
+integer, intent(in)             :: nfsym
+integer, intent(in)             :: nz
+integer, intent(in)             :: ipq_off_in(4,0:7)
+integer, intent(in)             :: iqp_off_in(4,0:7)
+integer, intent(in)             :: op_bs_to_fs(0:7,1:2)
+integer, intent(in)             :: bs_irrep_mat(4,0:7)
+integer, intent(in)             :: iqmult_trip_q(4,4,4)
+integer, intent(in)             :: quat_pointer(0:7,2)
+integer, intent(in)             :: nuclei_totnum
+integer, intent(in)             :: nuclei_type
+integer, intent(in)             :: print_lvl
+!--------------------------------------------------------------
+real(8), allocatable            :: scr1_mat(:), scr2_mat(:)
+integer, allocatable            :: aooso_info(:)
+integer                         :: i
+integer                         :: j
+integer                         :: iq
+integer                         :: ipq
+integer                         :: iz
+integer                         :: irepd
+integer                         :: nsphcm
+integer                         :: nr_sph
+integer                         :: nrows_frag
+integer                         :: ncols_frag
+integer                         :: center_total
+integer                         :: wf_components
+INTEGER, PARAMETER              :: nzc1 = 4
+character (len=12)              :: flabel
+!**********************************************************************
+
+!      allocate scratch space
+allocate(scr1_mat(naosh_ls*naosh_ls*nzc1),scr2_mat(naosh_ls*naosh_ls*nzc1)); scr1_mat = 0; scr2_mat = 0
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(h1_4c_defining,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - defining h1_4c wo aoosoc contribution',6)
+end if
+
+!      ---------------------------------------------------------------------------------
+!      step 3. read and distribute aoosoc contributions for symmetry independent centers
+!      ---------------------------------------------------------------------------------
+!        out: atomic 2e-mean field blocks  -> scr1_mat
+
+allocate(aooso_info(naosh_ls))
+
+center_total = 1
+scr1_mat     = 0
+
+!> a. read contributions for symmetry independent centers
+do i = 1, nuclei_type
+
+!        count the number of basis functions for center_total
+call labcount(ncols_frag,aooso_info,naosh_ls,1,-1,center_total,1,-1)
+nrows_frag = ncols_frag
+
+#ifdef MOD_XAMFI
+!> read 2e-mean-field contributions (assumed to be exported in C1 symmetry)
+call put_atomic_2e_mean_field_correction(                &
+        scr1_mat,       &
+        naosh_ls,       &
+        nrows_frag,     &
+        ncols_frag,     &
+        nzc1,           &
+        i,              &
+        center_total,   &
+        print_lvl       &
+       )
+#else
+call quit('X-AMFI module not avaliable in this version.')
+#endif
+end do
+
+!      b. transform from AO-basis (C1* symm sorted) to SO-AO basis (symmetry-ordered)
+!      ------------------------------------------------------------------------------
+!        in : 2e_atomic_AO    -> scr1_mat
+!        out: 2e_atomic-SO-AO -> scr2_mat
+i = op_bs_to_fs(0,1)
+do iz = 1, nzc1
+irepd = bs_irrep_mat(iz,0)
+iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+ipq   = iqp_off_in(iq,0)
+call mtaoso(scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
+scr2_mat(1+(naosh_ls*naosh_ls*(ipq-1))),                &
+naosh_ls,                                               &
+irepd,                                                  &
+print_lvl)
+end do
+
+!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      -----------------------------------------------------------
+call butobs_no_work(scr2_mat,nz)
+
+!      d. insert quaternion phase factors
+!      ----------------------------------
+if(nz < 4)then
+do iz = 1, nz                                                
+iq = ipq_off_in(iz,0)
+call q2bphase('F',iq,1,scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))))
+end do           
+end if          
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - 2e-diagonal contributions',6)
+end if
+
+deallocate(aooso_info)
+
+!      -----------------------------------------
+!      step 4. add XAMFI-SO contributions to h1_2c
+!      -----------------------------------------
+
+call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,h1_4c_defining,1)
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(h1_4c_defining,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - h1 + diagonal contribution',6)
+end if
+
+! release scratch space
+deallocate(scr1_mat,scr2_mat)
+
+end subroutine x2c_add_2e_diagonal_atomic
 
 !**********************************************************************
 

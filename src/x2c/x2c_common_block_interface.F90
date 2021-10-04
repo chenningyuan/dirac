@@ -237,12 +237,13 @@ contains
          else if(x2c_free_part_mtx_defh1)then
 !          free-particle matrix
            x2c_is_defining_h1mat  = 3
-!        else if(dohuckel)then
-!          (extended) Huckel start guess
-!          x2c_is_defining_h1mat  = 1
          else
 !          default: bare-nucleus one-electron Dirac-Hamiltonian
            x2c_is_defining_h1mat  = 0
+#ifdef MOD_XAMFI
+           ! extension: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+           if(aoomod.and.aoo2ediag) x2c_is_defining_h1mat  = 1
+#endif
          end if
 ! 
        else 
