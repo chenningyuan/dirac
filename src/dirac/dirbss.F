@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -7683,6 +7683,7 @@ C     ... this flag must be deactivated for BSS2DC calculations
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
+      use dircmo
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
@@ -7730,11 +7731,8 @@ C ================================================================
 C         ... get 4c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
-      IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
-      ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-      ENDIF
+      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C   ... first get the picture change transf.matrix into VMAT
@@ -7901,6 +7899,7 @@ C     ... recalculate necessary off-sets
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
+      use dircmo
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of 2c CMO into 4c CMO
@@ -7944,11 +7943,8 @@ C ================================================================
 C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
-      ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-      ENDIF
+      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 CMI .... do the picture change transformation ...
@@ -8021,11 +8017,8 @@ C ********************************************************
       ELSE IF (INI2C.EQ.4) THEN
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-       IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15)
-       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,14)
-       ENDIF
+       call reacmo_new(lucoef,cmo=tbuf,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
        CLOSE(LUCOEF,STATUS='KEEP')
 
       ELSE
@@ -8194,6 +8187,7 @@ C
 C  Written by Miro Ilias, August, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
@@ -8273,16 +8267,15 @@ C    ... do renew the DFCOEF file !!!
 
 C     ... do read the DFCOEF file from previous iterations ...
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOINI4C')
-      IF(IPRSCF.GE.1) THEN
-         CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,15)
-      ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,14)
-      ENDIF
+      call reacmo_new(lucoef,cmo=tmat,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
+      ! LV: not sure why tmat is read, but kept this as it was when revising reacmo
 
 C ===================================================
 C   Write 2c->4c transformed coefficients ()
 C ===================================================
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+      CALL WRICMO(LUCOEF,CMO(1:NCMOTQ),EIG(1:NORBT),
+     &            IBEIG(1:NORBT),TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE (LUPRI,'(/2X,A/)')
      & '>>> The DFCOEF file was renewed for restarting 4c SCF'//

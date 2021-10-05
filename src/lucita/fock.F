@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,6 +25,7 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FI(FIMAT,ECC,IDOH2)
+      use luci_wrkspc
 *
 *. Construct inactive fockmatrix + core-core interaction energy.
 *. I.e. add contributions from all orbitals
@@ -43,7 +44,6 @@
       DIMENSION FIMAT(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "lucinp.inc"
@@ -61,6 +61,7 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FIFAM(FIFA)
+      use luci_wrkspc
 *
 *. Construct inactive + active fock matrix
 *
@@ -72,7 +73,6 @@
       DIMENSION FIFA(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "glbbas.inc"
 #include "lucinp.inc"
@@ -252,6 +252,7 @@ C?    WRITE(6,*) ' one-electron part to ECC ', ECC
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FOCK_MAT(F,I12)
+      use luci_wrkspc
 *
 * Construct Fock matrix
 *
@@ -265,7 +266,6 @@ C?    WRITE(6,*) ' one-electron part to ECC ', ECC
       IMPLICIT REAL*8(A-H,O-Z)
 *. Input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -456,6 +456,7 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
 *
 * Input
 *       LUN : File containing wave function corrections
+      use luci_wrkspc
 *       LU0 : File containing reference wave funcrtion
 *         N : Max order of expansion
 *      ISM : Symmetry of reference state
@@ -467,7 +468,6 @@ C?   &                      IFOFF-1+(J+IJ-1-1)*NIJS + I+II-1
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"

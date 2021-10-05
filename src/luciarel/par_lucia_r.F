@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -30,6 +30,7 @@ C
 ***********************************************************************
       SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL_S,IBLOCKL_C,
      &                               RCCTOS,IT_TTPL,IGROUPLIST)
+      use luci_wrkspc
 C
 C     Driver routine for non-vanishing TTSS-block distribution among 
 C     all processors.  
@@ -58,7 +59,6 @@ C**********************************************************************
       INTEGER   RCCTOS(*)
 #include "parluci.h"
 #include "typesz_mpi2.h"
-#include "wrkspc.inc"
 #include "ipoist8.inc"
 #include "krmc_shmem.h"
 #include "mxdim_mpi2.h"
@@ -3408,6 +3408,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       SUBROUTINE FIND_IMAT_SC_REL(ISCALFAC_C,ISCALFAC_S,ICCTOS,
      &                            ICWEIGHTF,IAM_BLK_ACT_C,
      &                            IAM_BLK_ACT_S,NDIM)
+      use luci_wrkspc
 C**********************************************************************
 C
 C     Compute connection matrix ICCTOS between the sigma and c vector
@@ -3427,7 +3428,6 @@ C**********************************************************************
       DIMENSION ISCALFAC_C(*),ISCALFAC_S(*),ICCTOS(I_NZERO_LEN_C,*)
       DIMENSION ICWEIGHTF(*), IAM_BLK_ACT_S(*), IAM_BLK_ACT_C(*)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "ipoist8.inc"
 #include "cstate.inc"
 #include "cands.inc"
@@ -3470,6 +3470,7 @@ C
       SUBROUTINE FIND_IMAT_DRV1(NBATS,LBATS,LEBATS,I1BATS,IBATS,ISIGDEN,
      &                          ISCLFAC_C,ISCLFAC_S,ICCTOS,ICWEIGHTF,
      &                          NDIM_B,IAM_BLK_ACT_C,IAM_BLK_ACT_S)
+      use luci_wrkspc
 *
       use symmetry_setup_krci
       use mospinor_info
@@ -3486,7 +3487,6 @@ C
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3662,6 +3662,7 @@ C               keep track of correct offset
      &                         INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
      &                         ICWEIGHTF,INT_IOFF1,NUM_SBLK,
      &                         IAM_BLK_ACT_C,IAM_BLK_ACT_S,CHECK_TSPLIT)
+      use luci_wrkspc
 *
       use symmetry_setup_krci
       use mospinor_info
@@ -3682,7 +3683,6 @@ C               keep track of correct offset
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3842,6 +3842,7 @@ C     release local memory
      &                          ICWEIGHTF,INT_IOFF1,NUM_SBLK,
      &                          IAM_BLK_ACT_C,IAM_BLK_ACT_S,
      &                          CHECK_TSPLIT)
+      use luci_wrkspc
 *
 *
 * =====
@@ -3872,7 +3873,6 @@ C     release local memory
 *. General input
 #include "mxpdim.inc"
 #include "gasstr.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "cstate.inc"
 #include "strbas.inc"
@@ -4345,6 +4345,7 @@ C
       SUBROUTINE FNDMND_PAR_REL(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
      &                          SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
      &                          NBLOCK,NTESTG)
+      use luci_wrkspc
 C
 C     Written by  S. Knecht         - April 30 2007 
 C
@@ -4374,7 +4375,6 @@ C**********************************************************************
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "ipoist8.inc"
-#include "wrkspc.inc"
 
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
       DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)
@@ -8810,6 +8810,7 @@ C
       SUBROUTINE UPDATE_LUC_LIST(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
      &                           NPARBLOCK,IBLOCKL,IGROUPLIST,
      &                           IPROCLIST,IRILP,BLOCKTIME)
+      use luci_wrkspc
 C
 C     make an update of of grouplist for c-vector file based on 
 C     different list gathered from global_communicator
@@ -8825,7 +8826,6 @@ C**********************************************************************
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "wrkspc.inc"
 #include "ipoist8.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*), CB(*)
       INTEGER   RCCTOS(*)
@@ -8919,6 +8919,7 @@ C
      &                           KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
      &                           NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,
      &                           I_SET_L2BLOCK,I_USE_PC,NPARBLOCK)
+      use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM.
@@ -8945,7 +8946,6 @@ C
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
@@ -9109,6 +9109,7 @@ CSK       creation of many many batches
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE Z_BLKFO_XPRP_PAR(IDC,NMS2VAL,ISPC,ISM,LBATX,LEBATX,
      &                            I1BATX,IBATX,NBATX,NPARBLOCK_X,IXCT)
+      use luci_wrkspc
 **********************************************************************
 C
 C     Construct information about batch and block structure of CI space
@@ -9129,7 +9130,6 @@ C**********************************************************************
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "strbas.inc"

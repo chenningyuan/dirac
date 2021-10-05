@@ -366,6 +366,9 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
         read(LUONE) (ONEINT(I),TDUM,I=1,MORB*MORB)
       else if (ISPINFREE.eq.0) then
         read(LUONE) (ONEINT(I),ONEINT(I+NDIMSQ),I=1,MORB*MORB)
+! LV 28-9-2020, changed order of integrals on MRCONEE, this changed the sign on
+! the imaginary part. This change may fix an error in the old code as this did
+! read in Fortran order whereas integrals were in c-order
 *
 * Set IBOSYM array so that U->alpha and B->beta spinors
 *              To get correct Fermion symmetry labeling in

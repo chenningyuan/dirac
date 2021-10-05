@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1454,6 +1454,7 @@ C
       SUBROUTINE UPDATE_LUC_LIST2(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
      &                            NPARBLOCK,IBLOCKL,IGROUPLIST,
      &                            IPROCLIST,IRILP,BLOCKTIME)
+      use luci_wrkspc
 C
 C     make an update of of grouplist for c-vector file based on 
 C     different list gathered from global_communicator
@@ -1469,7 +1470,6 @@ C**********************************************************************
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "wrkspc.inc"
       DIMENSION ISCLFAC_GROUP(*), LUCLIST(*) 
       DIMENSION CB(*)
       DIMENSION NPARBLOCK(*), IBLOCKL(*)
@@ -2130,9 +2130,9 @@ C
 ***********************************************************************
       SUBROUTINE BLOCK_DISTR_DRV(NBLOCK,IBLOCKL,NBLOCKD,IBLOCKS_FNODE,
      &                           SCALFAC,NVAR,IPROCLIST)
+      use luci_wrkspc
 #include "implicit.h"
 #include "parluci.h"
-#include "wrkspc.inc"
       INTEGER*8 IABSOLUTE_WEIGHT
       IABSOLUTE_WEIGHT = 0
 C
@@ -3070,6 +3070,7 @@ C
       SUBROUTINE FNDMND_PAR(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
      &                     SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
      &                     NBLOCK,NTESTG)
+      use luci_wrkspc
 *
 * FIND NSUB LOWEST ELEMENTS OF VECTOR RESIDING ON FILE
 * LU. ENSURE THAT NO DEGENERENCIES ARE SPLIT
@@ -3095,7 +3096,6 @@ C
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "wrkspc.inc"
       
       DIMENSION SEGMNT(*), ISCAT(*),SUBVAL(*),SCR(*),ISCR(*)
       DIMENSION IBLOCKL(NBLOCK), IBLOCKD(NBLOCK)

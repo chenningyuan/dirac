@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -438,6 +438,7 @@ C
 
       SUBROUTINE WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
      &                        IPRNT,IOFF_T_IJKL)
+      use luci_wrkspc
 C**********************************************************************
 C
 C     write sorted integrals back on file - driver routine                         
@@ -464,7 +465,6 @@ C***********************************************************************
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "cprnt.inc"
 #include "cgas.inc"
 #include "gasstr.inc"

@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -24,6 +24,7 @@
       SUBROUTINE EXPCIV_REL(ISM,ISPCIN,LUIN,
      &                  ISPCUT,LUUT,LBLK,
      &                  LUSCR,NROOT,ICOPY,IDC,NTESTG)
+      use luci_wrkspc
 *
 * Expand CI vector in CI space ISPCIN to CI vector in ISPCUT
 * Input vector is supposed to be on LUIN
@@ -40,7 +41,6 @@
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "strbas.inc"
 #include "stinf.inc"

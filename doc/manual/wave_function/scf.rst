@@ -8,8 +8,7 @@ Kohn-Sham calculations are activated by invoking the keyword
 :ref:`HAMILTONIAN_.DFT` under :ref:`**HAMILTONIAN`.
 
 Open-shell calculations correspond to either
-average-of-configurations (:ref:`SCF_.AOC`) or fractional
-occupation (:ref:`SCF_.FOCC`).
+average-of-configurations (:ref:`SCF_.AOC`) (see :ref:`aoc` for theory) or fractional occupation (:ref:`SCF_.FOCC`).
 The former is the default for
 Hartree-Fock calculations, whereas the latter is default for
 Kohn-Sham calculations. Note that average-of-configurations
@@ -95,10 +94,66 @@ symmetry there four occupation numbers in line.
 
 keyword(MJSELE)
 
-Occupation of MJ-splitted fermion irreps (only for the linear
-symmetry). Next line contains sequence of occupation numbers, see
-the SCF output for how many.
+In the case of linear supersymmetry give occupation for each :math:`M_J` value.
+The format of  :ref:`SCF_.MJSELE` is illustrated for the case of the CH radical
+in :math:`^2\Pi_{3/2}` state.
+We first provide the usual specification of closed and open shells
 
+::
+   
+   .CLOSED SHELL
+   6
+   .OPEN SHELL
+   1
+   1/2
+
+One can specify the occupation of the open-shell electron in the MO
+that mainly consists of :math:`2\pi_{3/2,3/2}` orbital, as shown below
+
+::
+   
+   .MJSELEC
+   2       # Number of the MJ-splitted orbital
+   1  3    # Absolute values of Mj*2: 1/2, 3/2
+   6  0    # Distribution of closed shell orbitals
+   0  2    # Distribution of orbitals of open shell 1
+
+
+Currently :ref:`SCF_.MJSELE` does not work with inversion symmetry.
+
+keyword(KPSELE)
+
+In the case of **atomic supersymmetry** give occupation for each :math:`\kappa` - value.
+This option also works in linear supersymmetry when a single atomic center is combined with a ghost atom.
+
+The format of :ref:`SCF_.KPSELE` is illustrated for the case of Uranium (:math:`[Rn]5f^36d^17s^2`). We first provide the
+usual specification of closed and open shells
+
+::
+
+  .CLOSED SHELL
+  44 44
+  .OPEN SHELL
+   2
+   3/0,14
+   1/10,0
+
+The closed shells are those of Radon as well as the outer :math:`7s` shell of Uranium. However, their presence will
+lead to convergence problems because by default orbitals are ordered according to energy, but also with closed shells
+before open ones. This means that the outer :math:`7s` shell of Uranium will end up amongst the open-shell orbitals, whereas
+some :math:`6d` orbitals end up being defined as closed shell, thus creating havoc. This is completely avoided by in addition
+giving the occupation in terms of :math:`\kappa` - values as shown below
+
+::
+   
+   .KPSELEC
+   7                              # Number of the Kappa-splitted orbital
+    -1   1  -2   2  -3   3  -4    # Values of Kappa: s   p-  p+  d-  d+  f-  f+
+    14  10  20  12  18   6   8    # Distribution of closed shell orbitals
+     0   0   0   0   0   6   8    # Distribution of orbitals of open shell 1 (5f^3)
+     0   0   0   4   6   0   0    # Distribution of orbitals of open shell 2 (6d^1)
+
+   
 keyword(AOC)
 
 Average-of-configuration calculation (default for open-shell
@@ -470,18 +525,14 @@ example}.
 
 keyword(OPENFACTOR)
 
-Change the default factor on an open-shell diagonal contribution to the Fock matrix.
-The default factor of one corresponds to a Koopmans interpretation of the orbital energies,
-however, experience shows that one in many case get better convergence without this term,
-so if your open-shell calculation does not converge it can often help to try again with
-a factor of zero on this term (or even e.g. -0.20).
+Change the default factor on an open-shell diagonal contribution to the Fock matrix (see :ref:`aoc` for theory). A factor of one corresponds to a Koopmans interpretation of the orbital energies. However, experience shows convergence can be improved by tuning this factor. DIRAC therefore presently employs a default factor of 1/2.
 
 *Default:*
 
 ::
 
     .OPENFAC
-     1.00
+     0.5
 
 2nd-order optimization
 ======================

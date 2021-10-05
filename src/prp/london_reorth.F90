@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -228,6 +228,8 @@ contains
       call prpmat(indxpr,        &
                   iopsy(icomp),  &
                   tb,            &
+                  .true.,        &
+                  work,           &
                   cmo,           &
                   ibeig,         &
                   icmoq,         &
@@ -804,6 +806,8 @@ contains
       call prpmat(indxpr,           &
                   iopsy(icomp),     &
                   tb,               &
+                  .true.,           &
+                  work,             &
                   cmo,              &
                   ibeig,            &
                   icmoq,            &

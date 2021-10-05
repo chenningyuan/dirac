@@ -1,7 +1,6 @@
 C
 C
 C  /* Deck dnorm2 */
-#if ! ( defined (SYS_DEC) && defined (VAR_DXML) )
 #if !defined (VAR_ESSL)
       FUNCTION DNORM2(N,DX,INCX)
 C
@@ -14,12 +13,7 @@ C
 C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
 C     DNRM2: JACK DONGARRA, LINPACK, 3/11/78.
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &   DNORM2,DX(*),DTEMP
+      REAL*8  DNORM2,DX(*),DTEMP
       INTEGER I,INCX,IX,M,MP1,N
       PARAMETER ( ZERO = 0.0D0 )
 C
@@ -60,12 +54,10 @@ C
       RETURN
       END
 #endif
-#endif /* !( defined(SYS_DEC) && defined(VAR_DXML) ) */
 C  /* Deck daptge */
       SUBROUTINE DAPTGE(N,AAP,AGE)
 C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
-C  900720-hjaaj: NOSYNC directive
 C
 C Purpose: Transform from AP format to GE format, that is:
 C          unpack antisymmetric,   packed (lower triangle) matrix AAP
@@ -74,10 +66,8 @@ C
 #include "implicit.h"
       DIMENSION AAP(*), AGE(N,*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include "nosync.h"
          DO 100 I = 1,J-1
             AGE(I,J) = - AAP(JOFF+I)
             AGE(J,I) =   AAP(JOFF+I)
@@ -99,10 +89,8 @@ C
 #include "implicit.h"
       DIMENSION AAP(*), AGE(N,*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include "nosync.h"
          DO 100 I = 1,J-1
             AGE(I,J) = AGE(I,J) - AAP(JOFF+I)
             AGE(J,I) = AGE(J,I) + AAP(JOFF+I)
@@ -117,7 +105,6 @@ C  /* Deck dsptsi */
       SUBROUTINE DSPTSI(N,ASP,ASI)
 C
 C  8-Feb-1987 Hans Joergen Aa. Jensen
-C  900720-hjaaj: inserted NOSYNC directive.
 C
 C Purpose: Transform from SP format to SI format, that is:
 C          unpack symmetric,   packed matrix ASP
@@ -129,10 +116,8 @@ C
       ENTRY      DSPTGE(N,ASP,ASI)
 C     ... equivalent subroutine name
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include "nosync.h"
          DO 100 I = 1,J-1
             ASI(I,J) = ASP(JOFF+I)
             ASI(J,I) = ASP(JOFF+I)
@@ -156,10 +141,8 @@ C
       ENTRY      DSPPGE(N,ASP,ASI)
 C     ... equivalent subroutine name
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
-#include "nosync.h"
          DO 100 I = 1,J-1
             ASI(I,J) = ASI(I,J) + ASP(JOFF+I)
             ASI(J,I) = ASI(J,I) + ASP(JOFF+I)
@@ -183,7 +166,6 @@ C
       DIMENSION AGE(N,*), AAP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -206,7 +188,6 @@ C
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -227,7 +208,6 @@ C
 #include "implicit.h"
       DIMENSION AGE(N,*), ASP(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -251,7 +231,6 @@ C
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0 )
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -273,7 +252,6 @@ C
       DIMENSION AGE(N,*), ASP(*)
       PARAMETER ( DP5 = 0.5D0)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -298,7 +276,6 @@ C
 #include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -321,7 +298,6 @@ C
 #include "implicit.h"
       DIMENSION ASI(N,*), ASP(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -345,7 +321,6 @@ C
       DIMENSION ASI(N,*), ASP(*)
       PARAMETER (D2 = 2.0D0)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J-1
@@ -356,35 +331,6 @@ C
 C
       RETURN
       END
-#if defined (OLD_DGETRS)
-C  /* Deck dgetrs */
-      SUBROUTINE DGETRS(AGE,NROWA,NRDIMA)
-C
-C  3-Apr-1987 HJAaJ
-C 900108-hjaaj: block with NBLK for reduced paging
-C when virtual memory
-C
-C Replace AGE by AGE(transposed)
-C
-#include "implicit.h"
-      DIMENSION AGE(NRDIMA,*)
-      PARAMETER (NBLK = 128)
-      DO 400 JBLK = 1,NROWA,NBLK
-         JEND = MIN(NROWA,JBLK-1+NBLK)
-         DO 300 IBLK = 1,JBLK,NBLK
-            IEND = MIN(NROWA,IBLK-1+NBLK)
-            DO 200 J = JBLK,JEND
-               DO 100 I = IBLK,MIN(J-1,IEND)
-                  SWAP     = AGE(I,J)
-                  AGE(I,J) = AGE(J,I)
-                  AGE(J,I) = SWAP
-  100          CONTINUE
-  200       CONTINUE
-  300    CONTINUE
-  400 CONTINUE
-      RETURN
-      END
-#endif /* OLD_DGETRS */
 C
 C     HP-UX (and possible other machines) declines to link if
 C     there are any duplicates, and DSUM, IDMIN, IDAMIN, ICOPY, ISCAL
@@ -392,7 +338,6 @@ C     are also present in 'libveclib'.
 C
 #ifndef VAR_LIBVECLIB
 C  /* Deck dsum */
-#if ! ( defined (SYS_DEC) && defined (VAR_DXML) )
 #if !defined (VAR_DXML)
       FUNCTION DSUM(N,DA,INCA)
 C
@@ -401,12 +346,7 @@ C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
 C 30-Apr-1984 -- hjaaj -- based on DDOT from LINPACK
 C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &   DSUM,  DA(*),DTEMP
+      REAL*8  DSUM,  DA(*),DTEMP
       INTEGER I,INCA,IA,M,MP1,N
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -457,12 +397,7 @@ C     890927-Hans Joergen Aa. Jensen
 C     Based on IDAMAX by
 C     JACK DONGARRA, LINPACK, 3/11/78.
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &   DX(*),DMIN
+      REAL*8  DX(*),DMIN
       INTEGER I,INCX,IX,N
 C
       IDAMIN = 0
@@ -503,12 +438,7 @@ C
 C     FINDS THE INDEX OF ELEMENT HAVING MAX. VALUE.
 C     890105 hjaaj, based on IDAMAX by JACK DONGARRA, LINPACK, 3/11/78.
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &   DX(*),DMAX
+      REAL*8  DX(*),DMAX
       INTEGER I,INCX,IX,N
 C
       IDMAX = 0
@@ -548,12 +478,7 @@ C
 C     FINDS THE INDEX OF ELEMENT HAVING MIN. VALUE.
 C     890105 hjaaj, based on IDAMAX by JACK DONGARRA, LINPACK, 3/11/78.
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      REAL
-#else
-      DOUBLE PRECISION
-#endif
-     &   DX(*),DMIN
+      REAL*8  DX(*),DMIN
       INTEGER I,INCX,IX,N
 C
       IDMIN = 0
@@ -586,7 +511,6 @@ C
       RETURN
       END
 #endif
-#endif /* !( defined(SYS_DEC) && defined(VAR_DXML) ) */
 
 C  /* Deck iblas */
       SUBROUTINE ICOPY(N,IX,INCX,IY,INCY)

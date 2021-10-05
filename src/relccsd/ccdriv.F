@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -65,15 +65,15 @@ C
      &/"  - Initial implementation :",T30,
      &"L. Visscher, T.J. Lee and K.G. Dyall, ",
      &"J. Chem. Phys. 105 (1996) 8769."
-     &/"  - Fock Space (FSCC):",T30,
+     &/"  - Fock Space (FSCC)      :",T30,
      &"L. Visscher, E. Eliav and U. Kaldor, ",
      &"J. Chem. Phys. 115 (2002) 9720."
-     &/"  - Intermediate Hamiltonian FSCC :",T30,
-     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
-     &"J. Chem. Phys. 122 (2005) 224113.",
-     &/"  - Parallelization :",T30,
+     &/"  - Parallelization        :",T30,
      &"M. Pernpointner and L. Visscher, ",
      &"J. Comp. Chem. 24 (2003) 754.",
+     &/"  - Intermediate Hamilt. FS:",T30,
+     &"E. Eliav, M. J. Vilkas, Y. Ishikawa, and U. Kaldor, ",
+     &"J. Chem. Phys. 122 (2005) 224113.",
      &/"  - MP2 expectation values :",T30,
      &"J.N.P. van Stralen, L. Visscher, C.V. Larsen and H.J.Aa. Jensen,",
      &" Chem. Phys. 311 (2005) 81."
@@ -82,7 +82,10 @@ C
      &"J. Chem. Phys. 145 (2016) 184107."
      &/"  - EOM-IP/EA/EE energies  :",T30,
      &"A. Shee, T. Saue, L. Visscher, and A.S.P. Gomes, ",
-     &"J. Chem. Phys. 149 (2018) 174113.")
+     &"J. Chem. Phys. 149 (2018) 174113.",
+     &/"  - Core spectra (CVS-EOM) :",T30,
+     &"L. Halbert, M. L. Vidal, A. Shee, S. Coriani, and A.S.P. Gomes,",
+     &" arXiv:2011.08549")
 C
       RETURN
 C---------------Record of modifications made in the code-------------
@@ -3061,7 +3064,7 @@ C
          CALL QHMRST( a_DMO, NORBT,NZ,NORBT,NORBT)
 C        Write density matrix to file for later processing
 C
-         CALL STORE_CC_DENSITY ('MP2 ', a_DMO )
+         CALL STORE_CC_DENSITY ('MP2 ', a_DMO, NORBT, NZ )
 C
 C        Generate natural orbitals, if desired
 C
@@ -3216,7 +3219,7 @@ C        Solve Z-vector equations
 C        Write density matrix to file for later processing
          if (myproc==0) then 
 
-           CALL STORE_CC_DENSITY ('CCSD', a_DMO )
+           CALL STORE_CC_DENSITY ('CCSD', a_DMO, NORBT, NZ )
 
          endif
 
@@ -5061,3 +5064,5 @@ C
 !     print *, 'charge, ncore_elec_cc, nelect_cc, mycharge',
 !    & charge, ncore_elec_cc, nelect_cc, mycharge
       end subroutine
+
+

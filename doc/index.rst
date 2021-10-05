@@ -151,8 +151,7 @@ Tutorials and walkthrus
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
-  :doc:`Nb atom <tutorials/open_shell_scf/nb>` |
-  :doc:`Np atom <tutorials/open_shell_scf/np>`
+  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>` 
 
 * **Coupled-Cluster:**
   :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
@@ -160,7 +159,6 @@ Tutorials and walkthrus
   :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
 
 * **Case studies:**
-  :doc:`W atom <tutorials/case_studies/W>` |
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
   :doc:`CmF molecule <tutorials/case_studies/CmF/CmF>` |
   :doc:`MnO6 system <tutorials/case_studies/MnO6>` |
@@ -227,6 +225,7 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
+  :doc:`Patch preparation <programmers/patch_preparation>` |       
   :doc:`Beta testing <programmers/beta_testing>` |
   :doc:`Where to commit after the release is out <programmers/commit_policy>`
 

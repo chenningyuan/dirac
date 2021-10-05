@@ -1,0 +1,39 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from exacorr_environment import set_exacorr_environment
+
+set_exacorr_environment()
+
+test = TestRun(__file__, sys.argv)
+
+f1 = Filter()
+f1.add(from_string = '@ Total CCSD energy',
+      num_lines   = 3,
+      abs_tolerance   = 5.0e-6)
+
+f2 = Filter()
+f2.add(from_string = 'Final CCSD energy',
+      num_lines   = 5,
+      abs_tolerance   = 1.0e-6)
+f2.add(from_string = 'Norm of Fock matrix (OO',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-4)
+f2.add(from_string = 'Norm of Fock matrix (OV',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-3)
+f2.add(from_string = 'Norm of Fock matrix (VV',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-2)
+
+#test.run(['ccsd_li2.inp'], ['Li2_nosym.mol'], f1, " ")
+test.run(['ccsd_lio.inp'], ['LiO_nosym.mol'], f1, " ")
+test.run(['talsh_cholesky_li2.inp'], ['Li2_nosym.mol'], f2, " ")
+#test.run(['talsh_cholesky_lio.inp'], ['LiO_nosym.mol'], f2, " ")
+
+sys.exit(test.return_code)

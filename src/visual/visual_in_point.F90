@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -582,6 +582,48 @@ contains
                if (visual_cfg_property(imat) == iq_bdipz) then
                   result(0) = result(0) + f*(rx*v(2) - ry*v(1))
                end if
+            end if
+
+!           full light-matter interaction: cosine part
+            if (visual_cfg_property(imat) == iq_tcos) then
+
+               call get_j(v,            &
+                          cval,         &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+
+               f = (visual_cfg_wave_vector(1)*px+   &
+                    visual_cfg_wave_vector(2)*py+   &
+                    visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+               result(0) = result(0) - &
+                    (v(1)*visual_cfg_pol_vector(1)+  &
+                     v(2)*visual_cfg_pol_vector(2)+  &
+                     v(3)*visual_cfg_pol_vector(3))*cos(f)/visual_cfg_freq
+
+            end if
+
+!           full light-matter interaction: sine part
+            if (visual_cfg_property(imat) == iq_tsin) then
+
+               call get_j(v,            &
+                          cval,         &
+                          D(imat)%irep, &
+                          D(imat)%nrow, &
+                          D(imat)%elms, &
+                          buffer,       &
+                          ao)
+
+               f = (visual_cfg_wave_vector(1)*px+   &
+                    visual_cfg_wave_vector(2)*py+   &
+                    visual_cfg_wave_vector(3)*pz)*visual_cfg_freq/cval
+               result(0) = result(0) - &
+                    (v(1)*visual_cfg_pol_vector(1)+  &
+                     v(2)*visual_cfg_pol_vector(2)+  &
+                     v(3)*visual_cfg_pol_vector(3))*sin(f)/visual_cfg_freq
+
             end if
 
 !           responding operator is nuclear magnetic dipole

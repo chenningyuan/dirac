@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1233,7 +1233,7 @@ C
          READ(MRCONEE) ((MULTB(I,J),I=1,2*NREP),J=1,2*NREP)
          READ(MRCONEE) (IRPMO(IMO),IRPAMO(IMO),EPS(IMO),IMO=1,NSPACT)
          READ(MRCONEE)
-     &    ((ONER(IMO,JMO),ONEI(IMO,JMO),JMO=1,NSPACT),IMO=1,NSPACT)
+     &    ((ONER(IMO,JMO),ONEI(IMO,JMO),IMO=1,NSPACT),JMO=1,NSPACT)
          CLOSE(MRCONEE)
       ELSE
          in_fcidump = 1

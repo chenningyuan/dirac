@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1400,8 +1400,8 @@
 !     Get the A operator matrix in MO basis
 !
             CALL MEMGET('REAL',KA,N2ORBXQ,WORK,KFREE,LFREE)
-            CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,IBEIG,ICMOQ,NORB,       &
-            WORK,KFREE,LFREE,IPRXQR)
+            CALL PRPMAT(IAPT,IFERA,WORK(KA),.TRUE.,WORK,CMO,            &
+            IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRXQR)
 !
 !     Get the A operator gradient:  / g*\
 !                                   \ g /
@@ -1787,8 +1787,8 @@
 !
 !     Get the A operator matrix in MO basis
 !
-      CALL PRPMAT(IAPT,IFERA,WORK(KA),CMO,IBEIG,ICMOQ,NORB,             &
-             WORK,KFREE,LFREE,IPRXQR)
+      CALL PRPMAT(IAPT,IFERA,WORK(KA),.TRUE.,WORK,CMO,                  &
+             IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRXQR)
 !
 !     Unpack the C vector into a matrix
 !
@@ -1867,8 +1867,8 @@
 !
 !     Get the B operator matrix in MO basis
 !
-      CALL PRPMAT(IBPT,IFERB,WORK(KB),CMO,IBEIG,ICMOQ,NORB,             &
-             WORK,KFREE,LFREE,IPRXQR)
+      CALL PRPMAT(IBPT,IFERB,WORK(KB),.TRUE.,WORK,CMO,                  &
+             IBEIG,ICMOQ,NORB,WORK,KFREE,LFREE,IPRXQR)
 !
       IF(IPRXQR.GE.10) THEN
          WRITE(LUPRI,'(A)')                                             &

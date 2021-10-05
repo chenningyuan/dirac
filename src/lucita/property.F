@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -25,6 +25,7 @@
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GENH1(XLAMBDA_X)
+      use luci_wrkspc
 *
 * Construct the general one-electron operator
 *
@@ -43,7 +44,6 @@
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -104,12 +104,12 @@
 ***********************************************************************
       SUBROUTINE CI_RESPONS(LU1,LU2,LU3,LU4,LU5,LU6,LU7,LUC,LUDIA,
      &                      VEC1,VEC2,ENOT,CCALC)
+      use luci_wrkspc
 *
 * Master routine for LUCIA calculation of properties
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -252,6 +252,7 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
 *                                                                     *
 ***********************************************************************
       SUBROUTINE DUMP_1EL_INFO(LUH)
+      use luci_wrkspc
 *
 *. Dump one-electron information  on file LUH, LUCIA format
       IMPLICIT REAL*8(A-H,O-Z)
@@ -259,7 +260,6 @@ C?        WRITE(6,*) ' MAXW, MAXV ', MAXW,MAXV
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "crun.inc"
-#include "wrkspc.inc"
       CHARACTER*1 XYZ(3)
       DATA XYZ/'X','Y','Z'/
       CHARACTER*8 LABEL
@@ -402,6 +402,7 @@ C                   GET_H1AO(LABEL,H1AO,IHSM,NBAS)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE EXTKOP
+      use luci_wrkspc
 *
 * Use Extended Koopmaans' theorem to obtain ionization energies
 *
@@ -412,7 +413,6 @@ C                   GET_H1AO(LABEL,H1AO,IHSM,NBAS)
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -1618,6 +1618,7 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ONE_EL_PROP
+      use luci_wrkspc
 *
 * Calculate one-electron properties
 * One-electron density is assumed in WORK(KRHO1)
@@ -1627,7 +1628,6 @@ C       WRITE(6,*) ' IHSM,IRSM,ICSM', IHSM,IRSM,ICSM
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "multd2h.inc"
 #include "glbbas.inc"
@@ -1842,6 +1842,7 @@ C               END IF
 *
 * Input
 *       LUN : File containing wave function corrections
+      use luci_wrkspc
 *       LU0 : File containing reference wave funcrtion
 *         N : Max order of expansion
 *      ISM : Symmetry of reference state
@@ -1854,7 +1855,6 @@ C               END IF
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -2065,6 +2065,7 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 *
 * Input
 *       LUN : File containing wave function corrections
+      use luci_wrkspc
 *       LU0 : File containing reference wave funcrtion
 *         N : Max order of expansion
 *      ISM : Symmetry of reference state
@@ -2085,7 +2086,6 @@ C?      CALL WRTMAT(WORK(KLDEN1P+I*LRHO1),NTOOB,NTOOB,NTOOB,NTOOB)
 *. Nor with inactive orbitals
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -2346,6 +2346,7 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE LTRAPRP
+      use luci_wrkspc
 *
 * Calculate one-electron transition properties
 *
@@ -2353,7 +2354,6 @@ COLD &                WORK(KLDNS+(I-0)*LSYMBLK),LSYMBLK)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "multd2h.inc"
 #include "glbbas.inc"

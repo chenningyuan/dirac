@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -1882,7 +1882,7 @@ C
           IND = IBVEC(IREC)
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(IND,IFREQ)).GT.DTOL) THEN
@@ -1901,7 +1901,7 @@ C
           INDI = 2*IND
           IH  = IBTYP(2,IND)
           IF(IH.EQ.ITYP) THEN
-          CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
+            CALL READ_DX(LUBVEC,IREC+IRECOFF,NBDIM,BVBUF)
             IBOFF = 1
             DO IFREQ = 1,MFREQ
               IF(ABS(EVECR(INDR,IFREQ)).GT.DTOL) THEN

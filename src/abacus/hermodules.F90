@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -34,7 +34,7 @@
 
         PRIVATE
 
-        PUBLIC READ_XYZ
+        PUBLIC READ_XYZ, get_atoms, del_atoms
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
@@ -44,7 +44,7 @@
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
         INTEGER            :: i,ios
 
-        TYPE atom
+        TYPE,public :: atom
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
           CHARACTER(LEN=namelen)  :: name=' '
           REAL(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
@@ -87,6 +87,15 @@
 
 !     The unit conversion global variable is used when reading/writing xyz files
        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
+
+       INTERFACE GET_ATOMS
+           module procedure READ_XYZ_ATOMS
+       END INTERFACE
+
+#ifdef HAS_PELIB 
+!     Variable for PElib (to ensure symmetry detection is disabled for xyz)
+LOGICAL, PUBLIC :: pelib_sym_xyz
+#endif 
 
       CONTAINS
 
@@ -416,6 +425,7 @@
 #include "codata.h"
 #include "infpar.h"
 #include "cbirea.h"
+#include "dgroup.h" 
 
 ! using OPTIMI
 #include "dcbgen.h"
@@ -446,6 +456,7 @@
           REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
           LOGICAL                            :: first_call=.TRUE.
+          LOGICAL                            :: inMOLECULE
           CHARACTER(LEN=9) :: symtxt
           SAVE first_call
 
@@ -463,26 +474,54 @@
           ADDSYM=.TRUE.
           KASYM(:,:)=' '
           KCHARG=0
-
+#ifdef HAS_PELIB 
+          pelib_sym_xyz = .true.
+#endif 
+          inMOLECULE = .false.
           DO
             read(tmp_file,*,iostat=ios) str
+            !write(6,*) ' --> next line is ',trim(str)
 
             IF (ios.ne.0) THEN
               EXIT
             ELSE IF (str(1:2)=='**') THEN
               section(1)=str
+              !> make sure we process only sections related to XYZ
+              if(inMOLECULE)then
+                if(str(1:6) /= '**MOLE') exit
+              end if
+
             ELSE IF (str(1:1)=='*') THEN
               section(2)=str
 !             Reinitialize section after we read an *END
-              IF (str=='*END') section=''
+              IF (str=='*END')then
+                section=''
+                inMOLECULE = .false.
+              END IF
+              !> make sure we  process only section related to XYZ
+              if(inMOLECULE)then
+                select case(str(1:4))
+                    case ('*CHA','*SYM','*BAS','*CEN','*COO')
+                    case default
+                        exit
+                end select
+              endif
             ELSE IF (str(1:1)=='.') THEN
                section(3)=str
+            ELSE
+              if(inMOLECULE)then
+                write(lupri,*) "ERROR in READ_BASIS: unknown keyword ", &
+     &          trim(str)
+                call quit ("Error reading XYZ input in READ_BASIS")
+              end if
             ENDIF
 
 !
 !           We only need to do something if we are reading a **MOLECULE block.
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
+
+              inMOLECULE = .true.
 
 !             add molecular charge. it is perhaps redundant to have *CHARGE and .CHARGE but i'm not
 !             sure we will not want to add other keywords in the menu later on - plus this keeps in
@@ -496,7 +535,9 @@
               ELSE IF (section(2)=='*SYMMETRY'.AND.                     &
      &                 section(3)=='.NOSYM') THEN
                        ADDSYM=.FALSE.
-
+#ifdef HAS_PELIB
+              pelib_sym_xyz = .false.
+#endif
 !             Basis specification
               ELSE IF (section(2)=='*BASIS'.AND.                        &
      &                 section(3)=='.DEFAULT') THEN
@@ -510,6 +551,7 @@
                   tmpbas%type='BASIS'
                   tmpbas%next=>NULL()
                   CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  if( tmpbas%file(1:3) == 'ecp') read(tmp_file,*,iostat=ios) str
                   CYCLE
                 else if (ios.ne.0) then
                   write(lupri,*) "ERROR(readbasis): ",                  &
@@ -549,6 +591,8 @@
                      write(tmp_file,*) "ERROR(readbasis) :",            &
      &                 "Specify a filename for ",tmpbas%type
                     end if
+                    if( tmpbas%file(1:3) == 'ecp') read(tmp_file,*,iostat=ios) str
+                    cycle
                   CASE('INTGRL','EXPLICIT')
 !     FIRST read rest of the line and then read the explicit coefficients.
 !     TMP We read the coefficients in in the old way in write common block
@@ -572,6 +616,18 @@
 !                   If we set the section back to empty, the read will skip over the
 !                   explicitly typed basis set (the exponents are read in a different routine)
                     section(3)=' '
+                    !> skip until we reach a new keyword/section
+                    do
+                        read(tmp_file,*,iostat=ios) str
+                        if(ios .ne. 0) exit
+                        SELECT CASE(trim(str(1:1)))
+                          CASE ('*','.')
+                            exit
+                          CASE DEFAULT
+                            CYCLE
+                        END SELECT
+                    end do
+                    backspace(tmp_file)
 
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)
@@ -693,6 +749,7 @@
           END IF
 
         first_call = .FALSE.
+        inMOLECULE = .false.
         close (tmp_file)
 
         END SUBROUTINE READ_BASIS
@@ -901,7 +958,7 @@
 #include "dgroup.h"
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR
+      LOGICAL LINEAR, ATOMIC
 #endif
 
       katom=count_types(firstatomtype)
@@ -1099,19 +1156,12 @@
 !           set from kinetic balance.
 !           =======================================================
 !
-            IF(MDIRAC) THEN
-              CALL RKBBAS(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &                    IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,           &
-     &                    NBLCK,KATOM,KANG,KBLOCK,KPRIM,INPTST,             &
-     &                    CNTBAS)
-            ELSE
-              CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
-     &             IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
-     &             NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
-     &             INPTST,CNTBAS)
+            CALL KINBAL(basindex,IBLOCK(1),IBLOCK(2),                     &
+     &           IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,                  &
+     &           NBLCK,ISGEN,KATOM,KANG,KBLOCK,KPRIM,                     &
+     &           INPTST,CNTBAS)
 
-              BASREF(1,basindex,2) = ' Derived from large component'
-            END IF
+            BASREF(1,basindex,2) = ' Derived from large component'
 
           ELSE IF (baspointer%comp=='INTGRL'.OR.                          &
      &           baspointer%comp=='EXPLICIT') THEN
@@ -1192,6 +1242,7 @@
 
 
       LINEAR = .FALSE.
+      ATOMIC = .FALSE.
       CLASS = 'N/A'
       IF (ADDSYM) THEN
          CALL SYMADD(WORK,LWORK,NSYMOP,KATOM,KASYM,                     &
@@ -1222,6 +1273,7 @@
       CALL BASPRO(WORK,LWORK,NSYMOP,IQM,NBLCK,JCO,NUC,NRC,              &
      &            SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KSETS,KBLOCK,KPRIM, &
      &            DOOWN, blk)
+      IF (LINEAR.and. NUCDEP .Eq. 1) ATOMIC = .TRUE.
 !
 !     *************************************************
 !     ***** Print orbital and geometry input data *****
@@ -1445,8 +1497,44 @@
         CALL CLEAR_XYZ()
         CLOSE(inpfile)
 
-       END SUBROUTINE READ_XYZ
+        END SUBROUTINE READ_XYZ
 
+        SUBROUTINE READ_XYZ_ATOMS (molfile,atoms,luprint)
+
+!       Reads the coordinates from an XYZ-FILE and returns them as a linked list
+
+        INTEGER, INTENT(IN) :: molfile
+        INTEGER, INTENT(IN), optional  :: luprint
+        type(atom), pointer, intent(out) :: atoms
+
+        INTEGER             :: lupri
+        INTEGER             :: ios, i
+
+        if (present(luprint)) then
+           lupri = luprint
+        else
+           lupri = 6
+        end if 
+
+!       In the XYZ format coordinates are supposed to start at the third line
+        REWIND (molfile)
+!       Check whether the first line has a number that can be used to check the number of atoms
+        natoms_given = 0
+        READ (molfile,*,iostat=ios) natoms_given
+!       Skip the comment line
+        CALL RDLINE(molfile)
+        CALL READ_ATOMS(molfile,linelen,firstatom,lupri)
+!       Check number of atoms
+        IF (natoms_given .NE. count_atoms(firstatom)) THEN
+          WRITE(LUPRI,*) " Read ",count_atoms(firstatom)," atoms",      &
+     &                   " but expected ",natoms_given," atoms"
+          CALL QUIT(' *** ERROR (READ_XYZ_COORDINATES) wrong number of atoms')
+        END IF
+
+        allocate(atoms)
+        atoms=>firstatom
+
+       END SUBROUTINE READ_XYZ_ATOMS
 
       END MODULE READ_XYZFILE
 !  -- End of abacus/hermodules.F90 --
