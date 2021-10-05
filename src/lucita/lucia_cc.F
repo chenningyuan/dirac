@@ -316,6 +316,7 @@ C?   &                    I,J,K,L,IJKL
       SUBROUTINE OPTIM_CC(CC_AMP,VEC1,VEC2)
 *
 * Optimize CC wave function
+      use luci_wrkspc
 *
 * Initial version,Sept 98
 *
@@ -336,7 +337,6 @@ C?   &                    I,J,K,L,IJKL
       IMPLICIT REAL*8(A-H,O-Z)
       REAL*8 INPROD
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -487,6 +487,7 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 * as well as multireference cc expansions
 *
 * The CC vector function reads
+      use luci_wrkspc
 *
 *     <\my! Exp(-T) H Exp (T) !0>
 *
@@ -521,7 +522,6 @@ C            DIAVC2(VECOUT,VECIN,DIAG,SHIFT,NDIM)
 #include "cc_exc.inc"
 #include "clunit.inc"
 #include "glbbas.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "cprnt.inc"
 *
@@ -2090,6 +2090,7 @@ C            WRT_CC_VEC(CC,LU)
       RETURN
       END
       SUBROUTINE LUCIA_CC(ISM,ISPC,IPRNT,ECC,II_RESTRT_CC,I_TRANS_WF)
+      use luci_wrkspc
 *
 * Coupled Cluster calculations with LUCIA
 *
@@ -2099,7 +2100,6 @@ C            WRT_CC_VEC(CC,LU)
       REAL*8 INPRDD
 #include "mxpdim.inc"
 #include "crun.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "cands.inc"
 #include "clunit.inc"

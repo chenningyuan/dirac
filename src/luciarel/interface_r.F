@@ -70,6 +70,7 @@
 *
 *---------------------------------------------------
 *  Written by Timo Fleig (including all subroutines)
+      use luci_wrkspc
 *---------------------------------------------------
 *
 *  Implementation of MPI "shared" memory version 
@@ -85,7 +86,6 @@
 #include "parluci.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "clunit.inc"
 #include "oper.inc"
@@ -565,6 +565,7 @@ C
      &                            T_BUFF,ISTR_CA,ISTR_CB,ISTR_AA,
      &                            ISTR_AB,NASHT,F1,F2,MDIASV,IBOSYM,
      &                            LABEL,CIRUN,IPRNT)
+      use luci_wrkspc
 ***********************************************************************
 * Driver routine for distribution of DIRAC integrals to
 * double group GAS lists
@@ -595,7 +596,6 @@ C
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "glbbas.inc"
@@ -1290,6 +1290,7 @@ C
      &                                T_BUFF,ISTR_CA,ISTR_CB,ISTR_AA,
      &                                ISTR_AB,NASHT,F1,F2,MDIASV,IBOSYM,
      &                                LABEL,CIRUN,IPRNT)
+      use luci_wrkspc
 *
       use mospinor_info
       use symmetry_setup_krci
@@ -1297,7 +1298,6 @@ C
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "glbbas.inc"
@@ -2695,6 +2695,7 @@ C
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                     SIGN_OPREO,ISF,NASHTL,IDEN_TYPE,IPRNT)
+      use luci_wrkspc
 *
 *  Input:  DENS
 *  Output: F1,F2
@@ -2708,7 +2709,6 @@ C
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 *
@@ -2986,6 +2986,7 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       subroutine trnsfdens_no(F1,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                     SIGN_OPREO,ISF,NASHTL,IPRNT)
+      use luci_wrkspc
 *
 *  Input:  DENS
 *  Output: F1
@@ -2999,7 +3000,6 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 *
@@ -3220,6 +3220,7 @@ csk               write(LUWRT,*) ' continuing ...'
       subroutine trnsfdens_no_sm(F1,DENS,IT_TTPL,IT_TTOL,INDEX,
      &                           LABEL,IHINDX,SIGN,IOP_REO,
      &                           SIGN_OPREO,ISF,NASHTL,IPRNT)
+      use luci_wrkspc
 *
 *  Input:  DENS
 *  Output: F1
@@ -3238,7 +3239,6 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "krmc_shmem.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 *
@@ -3486,6 +3486,7 @@ csk               write(LUWRT,*) ' continuing ...'
      &                              LABEL,IHINDX,SIGN,
      &                              IOP_REO,SIGN_OPREO,ISF,NASHTL,
      &                              IPRNT)
+      use luci_wrkspc
 *
 *  Input:  DENS
 *  Output: F1
@@ -3502,7 +3503,6 @@ csk               write(LUWRT,*) ' continuing ...'
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 *
@@ -3756,6 +3756,7 @@ csk               write(LUWRT,*) ' continuing ...'
       subroutine trnsfdens_split(F1,F2,DENS,DENS_SCR,IT_TTPL,
      &                           INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                           SIGN_OPREO,ISF,NASHTL,IPRNT)
+      use luci_wrkspc
 *
 *  Input:  DENS
 *  Output: F1,F2
@@ -3772,7 +3773,6 @@ csk               write(LUWRT,*) ' continuing ...'
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 *
@@ -4069,11 +4069,11 @@ C
 *
       subroutine wrtdens(DENS,INDEX,IHINDX,SIGN,NASHT,LABEL,IOP_REO,
      &                   SIGN_REO,ISF)
+      use luci_wrkspc
 *
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"

@@ -277,6 +277,7 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
 *                                                                     *
 ***********************************************************************
       SUBROUTINE EN_FROM_DENS(E,I12)
+      use luci_wrkspc
 *
 * Obtain energy from densities and integrals
 *
@@ -291,7 +292,6 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
       REAL*8 INPROD
 *. Input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
 #include "cgas.inc"
@@ -415,6 +415,7 @@ C?              write(6,*) ' Updated 2e-energy ', E2
 ***********************************************************************
       SUBROUTINE EXCCLS2(NCLS,IACTIN,IACTOUT,IEXC,
      &                   IBASSPC_MX,IBASSPC)
+      use luci_wrkspc
 * A set of classes ICLS are given with the active
 * classes indicated by nonvanishing elements in IACTIN.
 *
@@ -435,7 +436,6 @@ C?              write(6,*) ' Updated 2e-energy ', E2
       DIMENSION IACTOUT(NCLS)
 *. From the common blocks
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "cgas.inc"
 *
@@ -529,6 +529,7 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE FINMO
+      use luci_wrkspc
 *
 * Obtain final set of orbitals
 *. Density matrix is assumed in place
@@ -550,7 +551,6 @@ C     call iwrtma(icls,ngas,ncls,ngas,ncls)
 
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "glbbas.inc"
 #include "orbinp.inc"
@@ -842,6 +842,7 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GET_3BLKS(KVEC1,KVEC2,KC2)
+      use luci_wrkspc
 *
 * Allocate the three blocks VEC1, VEC2, C2 used in sigma, densi etc
 *
@@ -851,7 +852,6 @@ CTF   print*,'MOMO transformation saved in WORK(KMOMO)'
 *
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "orbinp.inc"
 #include "clunit.inc"
 #include "csm.inc"
@@ -999,6 +999,7 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GTSPGP(IEL,ISPGP,IWAY)
+      use luci_wrkspc
 *
 *
 * Relation between number of electrons in AS1, AS2 ... and
@@ -1017,7 +1018,6 @@ C     LSCR12 = MAX(LBLOCK,2*LSCR2)
       IMPLICIT REAL*8 (A-H,O-Z)
 *. General input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "stinf.inc"
 #include "cgas.inc"
@@ -1235,6 +1235,7 @@ C     END IF
 *                                                                     *
 ***********************************************************************
       SUBROUTINE INTPNT(IPNT1,ISL1,IPNT2,ISL2)
+      use luci_wrkspc
 *
 * Pointers to symmetry blocks of integrals
 * IPNT1 : Pointer to given one-electron block, total symmetric
@@ -1251,7 +1252,6 @@ C     END IF
 * =====
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
@@ -1298,6 +1298,7 @@ C?    CALL MEMCHK
 *                                                                     *
 ***********************************************************************
       SUBROUTINE LCISPC(IPRNT)
+      use luci_wrkspc
 *
 * Number of dets and combinations
 * per symmetry for each type of internal space
@@ -1323,7 +1324,6 @@ C?    CALL MEMCHK
 #include "stinf.inc"
 *./CSTATE/ : IDC is used
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 *
@@ -1520,6 +1520,7 @@ C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR
 *                                                                     *
 ***********************************************************************
       SUBROUTINE MINMAX_FOR_SYM_DIST(NIGRP,IGRP,MNVAL,MXVAL,NDIST)
+      use luci_wrkspc
 *
 * A combination of NIGRP groups are given (IGRP)
 *. Find MIN and MAX for symmetry in each group
@@ -1535,7 +1536,6 @@ C?    WRITE(6,*) ' LCNHCN : LSCR ', LSCR
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 *. Input
       DIMENSION IGRP(NIGRP)
 *.Output
@@ -1803,6 +1803,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
+      use luci_wrkspc
 *
 * an input  supergroup is given.
 * apply an string of elementary operators to this supergroup and
@@ -1833,7 +1834,6 @@ C
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "strbas.inc"
-#include "wrkspc.inc"
 *. Local scratch
       DIMENSION IEL(MXPNGAS)
 *. output
@@ -2703,6 +2703,7 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PERT_SUBSPACE(NPERT,H0,V,S,ECORE)
+      use luci_wrkspc
 *
 * Perturbation calculation has been performed
 * giving a subspace of correction vectors.
@@ -2717,7 +2718,6 @@ C         IOBPTS(ISYM,IGAS) = ITSOFF
       DIMENSION S(*),H0(*),V(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 *
       CALL MEMMAN(IDUM,IDUM,'MARK  ', IDUM,'PERT_S')
 *
@@ -3460,6 +3460,7 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
 ***********************************************************************
       SUBROUTINE SYM_DIST_FOR_SPGRP(IGRP,NIGRP,ISM,NDIST,
      &           IDIST,LDIST,LENGTH,MXDIST)
+      use luci_wrkspc
 *
 * Symmetry distributions of a combination of groups
 *
@@ -3484,7 +3485,6 @@ C            SYMCOM(ITASK,IOBJ,I1,I2,I12)
       IMPLICIT REAL*8(A-H,O-Z)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "csm.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -3776,6 +3776,7 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 ***********************************************************************
       SUBROUTINE Z_BLKFO(ISPC,ISM,IATP,IBTP,KPCLBT,KPCLEBT,
      &                   KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK)
+      use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
 * defined by ISPC,ISM,IATP,IBTP.
@@ -3796,7 +3797,6 @@ C            ZNONAB(INVCEN,MAXMLO,NSMOB)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cicisp.inc"
 #include "stinf.inc"
 #include "cstate.inc"
@@ -4030,6 +4030,7 @@ C?    WRITE(6,*)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE ZNELFSPGP(NTESTG)
+      use luci_wrkspc
 *
 * Generate for each supergroup the number of electrons in each active
 * orbital space and store in NELFSPGP
@@ -4039,7 +4040,6 @@ C?    WRITE(6,*)
       IMPLICIT REAL*8(A-H,O-Z)
 *. input
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "cgas.inc"
 *. Input and Output ( NELFSPGP(MXPNGAS,MXPSTT) )

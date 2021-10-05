@@ -97,7 +97,7 @@ C
 C
       CALL QENTER('EXEDIR')
 C
-C     Delete DFCYCL so we don't restart DIIS
+C     Delete DFCYCL so we do not restart DIIS
 C     also delete MCCRES to avoid restarting in relccsd.
 C     
       CALL DELFILE(LUCYCL,'DFCYCL')
@@ -115,6 +115,14 @@ C
       IF ( FIRST ) THEN
          FIRST = .FALSE.
       ELSE
+         IF (X2CMMF) THEN
+!            we need to restart from the 4C vectors
+#if defined SYS_WINDOWS
+            call system('copy DFCOEF.4C DFCOEF')
+#else
+            call system('cp DFCOEF.4C DFCOEF')
+#endif
+         END IF
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************

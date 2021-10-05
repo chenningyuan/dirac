@@ -98,8 +98,7 @@
      &             '.C6    ','.SPIN-R','.BXLAO ','.BYLAO ',             &
 !                    37        38        39        40
      &             '.BZLAO ','.EFFDEN','.EFFDE2','.SHIEL2',             &
-!                    41        42        43        44
-     &             '.RDCCDE'/
+     &             '.RDCCDM'/
 
 !
       CALL QENTER('PRPINP')

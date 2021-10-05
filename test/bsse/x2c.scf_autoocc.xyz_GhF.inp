@@ -30,8 +30,9 @@
 *BASIS
 .DEFAULT 
 STO-2G 
-*UNITS
-AU
+*COORDINATES
+.UNITS
+A
 *CENTERS
 # F is used as the 'ghost' atom for BSSE correction
 .NUCLEUS
