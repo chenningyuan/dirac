@@ -18,8 +18,6 @@ test.run(['dc_symmetric.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
 inp_files = []
 inp_files.append('vis_jbz_dc_symmetric.inp')
 inp_files.append('vis_jbz_dc_none_from_symmetric.inp')
-inp_files.append('vis_divjbz_dc_nolao.inp')
-inp_files.append('vis_gradjbz_dc_symmetric.inp')
 
 test.run(inp_files, ['h2o.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
 

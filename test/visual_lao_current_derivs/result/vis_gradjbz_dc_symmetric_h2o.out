@@ -1,8 +1,12 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
- of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+  ** interface to 32-bit integer MPI enabled **
 
-Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
-
+DIRAC master    (phlam-s-sakura.univ-lille1.fr) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
+DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
+DIRAC master    (phlam-s-sakura.univ-lille1.fr) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
+ 
+Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
+ 
+DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -129,7 +133,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
  *    Marta L. Vidal           Technical University of Denmark   Denmark       *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
@@ -159,9 +163,8 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen,         *
  *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
  *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,           *
- *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
-  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
- *    (see http://diracprogram.org).                                           *
+ *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, M. L. Vidal, S. Villaume, *
+ *    O. Visser, T. Winther, and S. Yamamoto (see http://diracprogram.org).    *
  *                                                                             *
  *******************************************************************************
 
@@ -169,52 +172,53 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | gosia/visual-mergedmaster
-Commit hash   | a66813830
+Branch        | gosia-visual
+Commit hash   | d5c9b12
 Commit author | gosia olejniczak
-Commit date   | Tue Dec 8 16:31:34 2020 +0100
+Commit date   | Tue Jan 14 15:23:05 2020 +0100
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | gosia
-Compiled on server       | nela
-Operating system         | Linux-4.15.0-72-generic
-CMake version            | 3.11.0
+Compiled on server       | phlam-s-sakura.univ-lille1.fr
+Operating system         | Linux-2.6.32-504.16.2.el6.x86_64
+CMake version            | 3.5.1
 CMake generator          | Unix Makefiles
-CMake build type         | debug
-Configuration time       | 2020-12-08 15:33:26.821502
-Python version           | 3.7.3
-Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 7.5.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -pg -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -g -pg
-C compiler               | /usr/bin/gcc
-C compiler version       | 7.5.0
-C compiler flags         |  -g -g -pg -g -g -pg
-C++ compiler             | /usr/bin/g++
-C++ compiler version     | 7.5.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -pg -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -g -pg
+CMake build type         | release
+Configuration time       | 2020-01-15 10:59:29.357084
+Python version           | 2.7.1
+Fortran compiler         | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiifort
+Fortran compiler version | 15.0
+Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT  -w -assume byterecl -g -traceback -DVAR_IFORT 
+C compiler               | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiicc
+C compiler version       | 15.0
+C compiler flags         |  -g -wd981 -wd279 -wd383 -wd1572 -wd177  -g -wd981 -wd279 -wd383 -wd1572 -wd177 
+C++ compiler             | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiicpc
+C++ compiler version     | 15.0.3
+C++ compiler flags       |  -Wno-unknown-pragmas  -Wno-unknown-pragmas 
 Static linking           | False
 64-bit integers          | False
-MPI parallelization      | False
-MPI launcher             | unknown
-Math libraries           | /usr/lib/x86_64-linux-gnu/libatlas.so;/usr/lib/x86_64-linux-gnu/atlas/liblapack.so;/usr/lib/x86_64-linux-gnu/libf77blas.so;/usr/lib/x86_64-linux-gnu/libcblas.so;/usr/lib/x86_64-linux-gnu/libatlas.so
+MPI parallelization      | True
+MPI launcher             | /share/apps/intel/impi/5.0.3.048/intel64/bin/mpiexec
+Math libraries           | unknown
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+ MPI selftest passed with MPI_INTEGER of the size 4 bytes
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Dec  8 16:36:54 2020
-     Host name              : nela                                    
+     Date and time (Linux)  : Wed Jan 15 12:04:20 2020
+     Host name              : phlam-s-sakura.univ-lille1.fr           
 
 
 Contents of the input file
@@ -236,14 +240,16 @@ Contents of the input file
 .VISUAL                                                                                             
 *VISUAL                                                                                             
 .LIST                                                                                               
-3                                                                                                   
- 1.0  1.0  0.0                                                                                      
--1.0 -1.0  0.0                                                                                      
--1.0  1.0  0.0                                                                                      
-#.J                                                                                                 
-# PAMXVC 1                                                                                          
-#.J                                                                                                 
-# PAMXVC 2                                                                                          
+5                                                                                                   
+ 0.0  0.0  0.0                                                                                      
+ 1.0  0.0  0.0                                                                                      
+-1.0  0.0  0.0                                                                                      
+ 0.0  1.0  0.0                                                                                      
+ 0.0 -1.0  0.0                                                                                      
+.J                                                                                                  
+ PAMXVC 1                                                                                           
+.GRADJ                                                                                              
+ PAMXVC 2                                                                                           
 .GRADJ                                                                                              
  PAMXVC 1                                                                                           
 .GRADJ                                                                                              
@@ -290,6 +296,7 @@ FINISH
  * The speed of light :        137.0359992
    * The speed of light scaled by  5.11D+01 to :  7000.00000000
  * Running in four-component mode
+ * Parallel run with 7 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -336,8 +343,8 @@ FINISH
 
   ..                                                                      
   ..                                                                      
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
-  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248236111D+09
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631427636D+08
+  Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248235902D+09
 
 
                           SYMGRP:Point group information
@@ -388,6 +395,19 @@ Point group: C1
 
   QM-QM nuclear repulsion energy :      9.055004525638
 
+
+
+                                 Isotopic Masses
+                                 ---------------
+
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (a.u.):       0.000000000000000  -0.099054390663707   0.000000000000000
 
 
   Atoms and basis sets
@@ -452,10 +472,10 @@ Point group: C1
   ----------------------------------------------
 
     3
-
-O      0.0000000000  -0.1190150732   0.0000000000
-H      0.7685505223   0.4760599900   0.0000000000
-H     -0.7685505223   0.4760599900   0.0000000000
+ 
+O      0.0000000000  -0.1190150726   0.0000000000
+H      0.7685505185   0.4760599877   0.0000000000
+H     -0.7685505185   0.4760599877   0.0000000000
 
 
    Interatomic separations (in Angstroms):
@@ -489,13 +509,6 @@ H     -0.7685505223   0.4760599900   0.0000000000
 
 
    Nuclear repulsion energy :    9.055004525638 Hartree
-
-                       * Total mass:    18.010565 amu
-                       * Natural abundance:  99.730 %
-
-
-* Center-of-mass coordinates (a.u.):       0.000000000000000  -0.099054390663707   0.000000000000000
-* Center-of-mass coordinates (A)   :       0.000000000000000  -0.052417326179117   0.000000000000000
 
 
                                 GETLAB: AO-labels
@@ -645,6 +658,8 @@ H     -0.7685505223   0.4760599900   0.0000000000
  * Trial vectors read from file DFCOEF
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
+   The final open-shell orbital energies are recalculated with 1.0 scaling,
+   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -698,7 +713,7 @@ H     -0.7685505223   0.4760599900   0.0000000000
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.02998300s and (WALL)  0.03000000s
+Total time used in ONEGEN (CPU)  0.00699900s and (WALL)  0.00670000s
 
 
                        Generating Lowdin canonical matrix:
@@ -724,8 +739,10 @@ No. of negative energy orbitals (NPSH):    24
 Total no. of orbitals           (NORB):    48
 
   *** Visualisation module ***
- --------------------------------------------------------------------------------------
- --------------------------------------------------------------------------------------
+ -------------------------------------------------------------------------------
+ -------
+ -------------------------------------------------------------------------------
+ -------
   Visualisation : DFCOEF file read
  visual: connection matrix (T^B in MO basis) read from TBMO file
  nr_xyz_comp =            1
@@ -738,17 +755,19 @@ Total no. of orbitals           (NORB):    48
                          ! Requested density at point(s) !
                          +-------------------------------+
 
-
+ 
      r_x           r_y           r_z            scalar                     x-component               y-component               z-component              xx-component              xy-component              xz-component              yx-component              yy-component              yz-component              zx-component              zy-component              zz-component
-
-   1.00000000E+000   1.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   9.04157281E-003  -1.67335628E-002   8.26281841E-011   7.68661385E-002  -2.70764798E-002   3.43689474E-011   4.23161640E-011  -1.14009179E-011   3.83852617E-002
-  -1.00000000E+000  -1.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   9.20302901E-002   6.19723780E-002  -1.44700436E-011  -6.95867561E-002  -9.39755213E-002   1.41118265E-011   4.74395744E-011   3.60892870E-011  -4.81906104E-003
-  -1.00000000E+000   1.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000   0.00000000E+000  -9.04157429E-003  -1.67335640E-002  -9.71127086E-011   7.68661402E-002   2.70764800E-002   2.53099853E-011  -2.65120504E-011  -6.50072216E-012  -3.83852597E-002
-
+ 
+  0.000000E+00  0.000000E+00  0.000000E+00       0.000000000000E+000      -3.568905768894E-001      -8.026462517786E-010       2.980130805574E-010       2.467466525693E-007       8.520491952301E+000       6.816262814052E-009      -1.174204976667E-001      -1.189892261921E-007      -7.314448381028E-009      -1.279487523490E-009      -1.848124922776E-009      -1.309255777890E-007
+  0.100000E+01  0.000000E+00  0.000000E+00       0.000000000000E+000       1.541898942308E-001       1.743986987317E-001       3.278547539230E-011      -7.448082078221E-002      -1.398495905498E-001      -4.036939328614E-011      -4.408082887883E-003       8.750694483225E-002      -1.185770256884E-010      -3.512756413622E-011       4.084882873986E-011       5.186566416424E-002
+ -0.100000E+01  0.000000E+00  0.000000E+00       0.000000000000E+000       1.541898950211E-001      -1.743986974615E-001      -4.093266034941E-011       7.448082125608E-002      -1.398495983271E-001       3.282827575447E-011      -4.408090086931E-003      -8.750696064033E-002      -4.780857331796E-011      -1.430031520459E-010       1.518413878361E-010      -5.186564767465E-002
+  0.000000E+00  0.100000E+01  0.000000E+00       0.000000000000E+000      -1.319965672820E-001       4.389469320154E-010      -8.444615092145E-012       4.929576795953E-009       5.966488506698E-002      -5.217892697642E-011      -1.200052445557E-001       1.652674184483E-009       6.290057548218E-011      -6.738655807960E-011      -3.825939449469E-011      -6.261772319162E-009
+  0.000000E+00 -0.100000E+01  0.000000E+00       0.000000000000E+000       1.315262362324E-001      -2.062562268705E-009       3.556999212630E-011       1.345265163059E-008       1.119899640044E-002       2.205800180441E-010       2.970837488929E-001      -2.238878583090E-009      -2.091594234057E-011      -9.622453669706E-011      -7.892282953373E-012      -1.034243283052E-008
+ 
 ----------------------------------------------------------------------------------------------------
-
-
- >>>> time used in plot:   0.01 seconds
+ 
+ 
+ >>>> time used in plot:   0.00 seconds
  >>>> time used in integration:   0.00 seconds
 
 *****************************************************
@@ -757,35 +776,35 @@ Total no. of orbitals           (NORB):    48
 
 
  
-     Date and time (Linux)  : Tue Dec  8 16:36:54 2020
-     Host name              : nela                                    
+     Date and time (Linux)  : Wed Jan 15 12:04:20 2020
+     Host name              : phlam-s-sakura.univ-lille1.fr           
 
->>>> Node 0, utime: 0, stime: 0, minflt: 18411, majflt: 0, nvcsw: 0, nivcsw: 4, maxrss: 90476
+>>>> Node 0, utime: 0, stime: 0, minflt: 6354, majflt: 0, nvcsw: 128, nivcsw: 8, maxrss: 94828
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       102.46
+  Mean allocation size (Mb) :        87.82
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
-        8.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        8.00 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
-        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
-        0.13 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
-        0.07 Mb at subroutine __allocator_track_if_MOD_allocator_registe for unnamed variable                          
+      488.28 Mb at subroutine pamana_+0x97                               for WORK in PAMANA                            
+      488.28 Mb at subroutine pamset_+0x1795                             for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x5a8a                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x91                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0x9a7                               for test allocation of work array in DIRAC mai
+        8.00 Mb at subroutine visual_mp_run_visual_+0x27e6               for unnamed variable                          
+        8.00 Mb at subroutine visual_mp_run_visual_+0x27bc               for unnamed variable                          
+        0.76 Mb at subroutine paminp_+0x89                               for PAMINP WORK array                         
+        0.13 Mb at subroutine butobs_no_work_+0x9a                       for buf in butobs                             
+        0.07 Mb at subroutine gtovlx_+0x159                              for unnamed variable                          
   
   Peak memory usage:       488.41 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+       reached at subroutine : butobs_no_work_+0x9a                      
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/gosia/devel/dirac/build-gosia-visual/test/visual_lao_current
+DIRAC pam run in /home/gosia/programs/dirac/build-intelmpi5.0.3.048-mklparallel-nopcm-gosia-visual/test/visual_lao_current
