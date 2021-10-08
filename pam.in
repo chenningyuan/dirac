@@ -1317,6 +1317,11 @@ Options are also read from ~/.diracrc"""
     # copy dirac.x executable if wanted
         self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
 
+    # create textfile contains labels for checkpoint file for the schema
+        from process_schema import read_schema, write_schema
+        schema, flat_schema = read_schema(os.path.join(pam_directory,"DIRACschema.txt"))
+        write_schema(os.path.join(self.scratch_dir,'schema_labels.txt'),flat_schema)
+
     # restarting stuff
         if self.full_restart:
             copy_single_file(self.archive_name, self.archive_name)

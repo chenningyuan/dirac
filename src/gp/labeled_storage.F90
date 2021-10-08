@@ -296,10 +296,6 @@ module labeled_storage
       if (file_info%status == -1) then
          file_info%id = mh5_create_file(file_info%name)
          file_info%status = 1
-         group_id = mh5_open_group(file_info%id,'/result')
-         group_id = mh5_open_group(file_info%id,'/result/wavefunctions')
-         group_id = mh5_open_group(file_info%id,'/result/wavefunctions/scf')
-         group_id = mh5_open_group(file_info%id,'/result/wavefunctions/scf/mobasis')
       elseif (file_info%status == 0) then
          file_info%id = mh5_open_file_rw(file_info%name)
          file_info%status = 1

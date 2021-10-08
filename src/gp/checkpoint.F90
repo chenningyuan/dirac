@@ -31,10 +31,14 @@ module checkpoint
 
   interface checkpoint_write
       module procedure checkpoint_write
+      module procedure write_single_int
+      module procedure write_single_real
   end interface
 
   interface checkpoint_read
       module procedure checkpoint_read
+      module procedure read_single_int
+      module procedure read_single_real
   end interface
 
   contains
@@ -154,6 +158,50 @@ module checkpoint
 
   end subroutine checkpoint_read
 
+  subroutine write_single_real (label,rdata)
+      ! Wrapper to allow writing of single numbers
+      character*(*),intent(in)               :: label
+      real(8),intent(in)                     :: rdata
+      real(8)                                :: rdata_array(1)
+
+      rdata_array(1) = rdata
+      call checkpoint_write (label,rdata=rdata_array)
+
+  end subroutine write_single_real
+
+  subroutine read_single_real (label,rdata)
+      ! Wrapper to allow reading of single numbers
+      character*(*),intent(in)               :: label
+      real(8),intent(out)                    :: rdata
+      real(8)                                :: rdata_array(1)
+
+      call checkpoint_read (label,rdata=rdata_array)
+      rdata = rdata_array(1)
+
+  end subroutine read_single_real
+
+  subroutine write_single_int (label,idata)
+      ! Wrapper to allow writing of single numbers
+      character*(*),intent(in)               :: label
+      integer,intent(in)                     :: idata
+      integer                                :: idata_array(1)
+
+      idata_array(1) = idata
+      call checkpoint_write (label,idata=idata_array)
+
+  end subroutine write_single_int
+
+  subroutine read_single_int (label,idata)
+      ! Wrapper to allow reading of single numbers
+      character*(*),intent(in)               :: label
+      integer,intent(out)                    :: idata
+      integer                                :: idata_array(1)
+
+      call checkpoint_read (label,idata=idata_array)
+      idata = idata_array(1)
+
+  end subroutine read_single_int
+
 !------- Private procedures ----
 
   subroutine create_all_groups
@@ -162,16 +210,24 @@ module checkpoint
       ! before attempting to write data that is part of this group. Do this for
       ! all groups defined in the schema.
 
+      use mh5
       integer :: unit
       logical :: composite_data = .true.
-      character(len=:),allocatable:: format,label,type,rank,use,description 
+      character(len=:),allocatable:: fformat,label,type,rank,use,description 
+      integer(kind=8) :: group_id
 
-      open(newunit=unit,form='formatted',file=SCHEMA_NAME)
-      read(unit,*) format
+      !open(newunit=unit,form='formatted',file=SCHEMA_NAME)
+      unit = 237
+      open(unit,form='formatted',file=SCHEMA_NAME)
+      read(unit,'(A)') fformat
+      fformat='(A80,4A10,A60)'
+      print*," read format from ",SCHEMA_NAME," :",fformat
       do while (composite_data)
-         read(unit,format) label,type,rank,use,description
+         read(unit,fformat) label,type,rank,use,description
+         print*,label,type,rank,use,description
          composite_data = index(type,'composite').ne.0
          if (composite_data) print*, "create group:",label
+         if (composite_data) group_id = mh5_open_group(checkpoint_file%id,label)
       end do
       
       close(unit)
@@ -191,9 +247,11 @@ module checkpoint
       ! Should be made more efficient than implemented below.
       open(newunit=unit,form='formatted',file=SCHEMA_NAME)
       read(unit,*) format
+      format='(A80,4A10,A60)'
       do while (iostatus > -1)
          read(unit,format,iostat=iostatus) label,type,rank,use,description
          found = index(label,mylabel).ne.0
+         print*,iostatus,found,label,type,rank,use,description
          if (found) exit
       end do
       close(unit)

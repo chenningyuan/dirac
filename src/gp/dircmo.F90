@@ -49,6 +49,7 @@ module dircmo
 !
 !*****************************************************************************
       use labeled_storage
+      use checkpoint
       implicit none
       integer, intent(in) :: iunit,ibeig(*)
       real(8), intent(in) :: toterg,cmo(*),eig(*)
@@ -56,11 +57,10 @@ module dircmo
       integer,intent(in), optional :: idims(:)
 
       INTEGER   CMO_DIMS(12),IDIM(3,2),NCMOTQ,NORBT,NZ,NFSYM,NSSYM
-      integer   ibeig_dim, ifsym
+      integer   ibeig_dim, ifsym, ierr
       integer   n_basis(2),n_mo(2),n_po(2)
       LOGICAL   SSYM
       character(len=74) text
-      type(file_info_t), save :: checkpoint_file
 
 !     Check whether we should get some information from the common blocks
       if (present(title)) then
@@ -101,11 +101,8 @@ module dircmo
       CALL LAB_WRITE(IUNIT,'EOFLABEL')
 
       ! test zone: write all data also to an hdf5 file
-      if (checkpoint_file%status == -1) then
-         print*," Opening HDF5 checkpoint file"
-         checkpoint_file%type = 2
-         checkpoint_file%name = "CHECKPOINT.h5"
-      end if
+      print*," Opening HDF5 checkpoint file"
+      ierr = checkpoint_open()
       print*," Writing DFCOEF data to checkpoint file"
       ! simplify the handling of fermion symmetry by always writing the same size dimension arrays (just padding with zeroes if nfsym==1)
       n_mo = 0
@@ -122,14 +119,14 @@ module dircmo
       else
          ibeig_dim = norbt
       endif
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/energy',rdata=toterg)
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/nz',idata=nz)
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:ibeig_dim))
-      call lab_write (checkpoint_file,'/result/wavefunctions/scf/mobasis/orbitals',rdata=cmo(1:ncmotq))
+      call checkpoint_write ('/result/wavefunctions/scf/energy',rdata=toterg)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:ibeig_dim))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=cmo(1:ncmotq))
       ! end of test zone
 
       RETURN
@@ -185,6 +182,7 @@ module dircmo
 !
 !***********************************************************************
       use labeled_storage
+      use checkpoint
       implicit none
       integer, intent(in)            :: iunit
       character(len=74), intent(out), optional :: text
@@ -233,13 +231,13 @@ module dircmo
          allocate (coefficients(ncoef))
          call lab_read(iunit,'COEFS   ',rdata=coefficients)
          ! test zone: uncomment to read coefs from the hdf5 file
-         ! print*," Reading coeffs from checkpoint file "
+         print*," Reading coeffs from checkpoint file "
          ! if (checkpoint_file%status == -1) then
          !    checkpoint_file%type = 2
          !    checkpoint_file%name = "CHECKPOINT.h5"
          !    checkpoint_file%status = 0
          ! end if
-         ! call lab_read (checkpoint_file,'/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
+         call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
          ! end of test zone
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)
