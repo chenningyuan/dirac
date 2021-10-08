@@ -87,6 +87,7 @@
 
 !     The unit conversion global variable is used when reading/writing xyz files
        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
+       LOGICAL,PUBLIC       :: UNIT_CONVERSION_SET=.FALSE.
 
        INTERFACE GET_ATOMS
            module procedure READ_XYZ_ATOMS
@@ -461,6 +462,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           SAVE first_call
 
           UNIT_CONVERSION = 1.D0 / XTANG
+          UNIT_CONVERSION_SET = .TRUE.
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)

@@ -36,10 +36,13 @@ ubuntu_gnu_parallel32-check:
     - apt-get -qq -y install g++-8
     - apt-get -qq -y install libomp-dev
     - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
-    - apt-get -qq -y install python
+    - apt-get -qq -y install python python3-pip
+    - apt-get -qq -y install python-is-python3
     - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 700
     - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
     - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 800
+    - pip install scipy
+    - pip install h5py
   script:
 #   do the parallel buildup here
 #    ...determine number of processors
@@ -68,6 +71,7 @@ ubuntu_intel_mkl_int64-check:
     - apt-get -qq update
     - apt-get -qq -y install cmake git
     - apt-get -qq -y install python python3-pip
+    - apt-get -qq -y install python-is-python3
     - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
     - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
     - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
@@ -77,6 +81,8 @@ ubuntu_intel_mkl_int64-check:
     - set +e
     - . /opt/intel/oneapi/setvars.sh
     - set -e
+    - pip install scipy
+    - pip install h5py
   script:
     - export TOOLKIT="INTEL"
     - ulimit -s unlimited
