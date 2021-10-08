@@ -57,6 +57,7 @@ INT mh5c_close_file (INT file_id);
 
 /* groups */
 INT mh5c_open_group (INT file_id, char* name);
+INT mh5c_create_group (INT file_id, char* name);
 INT mh5c_close_group (INT group_id);
 
 /* attributes */
@@ -217,7 +218,12 @@ INT mh5c_is_hdf5(char* filename) {
  * groups
  */
 
+INT mh5c_create_group (INT file_id, char* name) {
+        return H5Gcreate(file_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+}
+
 INT mh5c_open_group (INT file_id, char* name) {
+        H5Gcreate(file_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
         return H5Gopen(file_id, name, H5P_DEFAULT);
 }
 
