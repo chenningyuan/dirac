@@ -124,7 +124,7 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 
-      logical run_pamset
+      logical run_pamset, tobe
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
@@ -186,6 +186,11 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
+!     write coordinates in case we don't have them yet
+      INQUIRE(FILE='MOLECULE.XYZ',EXIST=TOBE)
+      if (.not.TOBE) then
+         call write_xyz_fromcommon
+      end if
       call xml_end('run')
       call xml_close_file
 
