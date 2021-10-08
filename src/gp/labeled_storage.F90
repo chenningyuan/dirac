@@ -24,11 +24,15 @@ module labeled_storage
 
   interface lab_read
       module procedure read_general
+      module procedure read_single_real
+      module procedure read_single_int
       module procedure read_dirac
   end interface
 
   interface lab_write
       module procedure write_general
+      module procedure write_single_real
+      module procedure write_single_int
       module procedure write_dirac
   end interface
 
@@ -88,6 +92,54 @@ module labeled_storage
           end if
       end select
     end subroutine write_general
+
+    subroutine write_single_real (file_info,label,rdata)
+      ! Wrapper around write_general to allow writing of single numbers
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(in)                     :: rdata
+      real(8)                                :: rdata_array(1)
+
+      rdata_array(1) = rdata
+      call write_general (file_info,label,rdata=rdata_array)
+
+    end subroutine write_single_real
+
+    subroutine read_single_real (file_info,label,rdata)
+      ! Wrapper around read_general to allow reading of single numbers
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(out)                    :: rdata
+      real(8)                                :: rdata_array(1)
+
+      call read_general (file_info,label,rdata=rdata_array)
+      rdata = rdata_array(1)
+
+    end subroutine read_single_real
+
+    subroutine write_single_int (file_info,label,idata)
+      ! Wrapper around write_general to allow writing of single numbers
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      integer,intent(in)                     :: idata
+      integer                                :: idata_array(1)
+
+      idata_array(1) = idata
+      call write_general (file_info,label,idata=idata_array)
+
+    end subroutine write_single_int
+
+    subroutine read_single_int (file_info,label,idata)
+      ! Wrapper around read_general to allow reading of single numbers
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      integer,intent(out)                    :: idata
+      integer                                :: idata_array(1)
+
+      call read_general (file_info,label,idata=idata_array)
+      idata = idata_array(1)
+
+    end subroutine read_single_int
 
 !!!!!! Selfcontained implementation of The DIRAC format, used for backwards compatibility !!!!!!
 
@@ -229,11 +281,15 @@ module labeled_storage
       integer,intent(in), optional           :: idata(:)
 
       integer :: ierr
-      integer(kind=8) :: file_id, dset_id
+      integer(kind=8) :: file_id, dset_id, group_id
 
       if (file_info%status == -1) then
          file_info%id = mh5_create_file(file_info%name)
          file_info%status = 1
+         group_id = mh5_open_group(file_info%id,'/result')
+         group_id = mh5_open_group(file_info%id,'/result/wavefunctions')
+         group_id = mh5_open_group(file_info%id,'/result/wavefunctions/scf')
+         group_id = mh5_open_group(file_info%id,'/result/wavefunctions/scf/mobasis')
       elseif (file_info%status == 0) then
          file_info%id = mh5_open_file_rw(file_info%name)
          file_info%status = 1
