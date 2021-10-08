@@ -7660,6 +7660,16 @@ CTROND      deallocate(STPCAR)
       RETURN
       END
 
+      SUBROUTINE write_xyz_fromcommon
+
+C     Stupid little wrapper to dump the coordinates sitting in common block nuclei.h
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "nuclei.h"
+      call PNCXYZ(cord)
+      end
+
       SUBROUTINE PNCXYZ (UNIQUE_CORD)
 
 C     Write an XYZ file
@@ -7674,10 +7684,15 @@ C
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"
 #include "codata.h"
+#include "dcbgen.h"
 C
 !     XYZ files are written in Angstroms (default) or a user-specified Unit
 !
-      FAC = 1.D0 / UNIT_CONVERSION
+      IF (UNIT_CONVERSION_SET) THEN
+          FAC = 1.D0 / UNIT_CONVERSION
+      ELSE
+          FAC = XTANG
+      END IF
 
 !     Write the file
 
@@ -7686,8 +7701,8 @@ C
      &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND (LUXYZ)
 
-      WRITE (LUXYZ,'(I10/)') NUCDEP
-      WRITE (LUXYZ,*) " "
+      WRITE (LUXYZ,'(I10)') NUCDEP
+      WRITE (LUXYZ,*) TITLE
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR

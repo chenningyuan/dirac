@@ -116,6 +116,7 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE BVEC(B,IBSM,LUC,LUB,VEC1,VEC2)
+      use luci_wrkspc
 *
 * Construct B defined as
 *
@@ -131,7 +132,6 @@ C       NELMNT = IBLOCK(8,IBLKA(JBLK)-1+IOFF)
       IMPLICIT REAL*8(A-H,O-Z)
       DIMENSION B(*),VEC1(*),VEC2(*)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "glbbas.inc"
 #include "multd2h.inc"
 #include "oper.inc"
@@ -218,6 +218,7 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       SUBROUTINE EXPCIV(ISM,ISPCIN,LUIN,
      &                  ISPCUT,LUUT,LBLK,
      &                  LUSCR,NROOT,ICOPY,IDC,NTESTG)
+      use luci_wrkspc
 *
 * Expand CI vector in CI space ISPCIN to CI vector in ISPCUT
 * Input vector is supposed to be on LUIN
@@ -232,7 +233,6 @@ C?        WRITE(6,*) ' CLASS_PROD : XTERM = ', XTERM
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "strbas.inc"
 #include "stinf.inc"
@@ -633,6 +633,7 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE GASANA(C,NBLOCK,IBLOCK,IBLTP,LUC,ICISTR)
+      use luci_wrkspc
 *
 *
 *
@@ -656,7 +657,6 @@ C       CALL WRTMAT(VECIN,1,NCOMBIN,1,NCOMBIN)
 #include "strinp.inc"
 #include "stinf.inc"
 #include "csm.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "cprnt.inc"
@@ -1081,6 +1081,7 @@ C?        WRITE(6,*) ' Number of elements read in ',IDET
 ***********************************************************************
       SUBROUTINE GET_BLOCKS_FROM_DISC
      &           (LU,NBLOCK,IOFF,IBLOCK,NBLOCKT,C,IREW)
+      use luci_wrkspc
 *
 * Obtain blocks IOFF - IOFF + NBLOCK from file LU
 *
@@ -1091,7 +1092,6 @@ C?        WRITE(6,*) ' Number of elements read in ',IDET
       DIMENSION IBLOCK(8,*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "csm.inc"
@@ -1574,6 +1574,7 @@ CSEPT29 CALL COPVCD(LUSCR1,LUHC,VEC1,1,LBLK)
 *                                                                     *
 ***********************************************************************
       SUBROUTINE H0TVM(VEC1,VEC2,LLUC,LLUHC)
+      use luci_wrkspc
 *
 * Outer routine for zero order operator + shift times vector
 *
@@ -1586,7 +1587,6 @@ CSEPT29 CALL COPVCD(LUSCR1,LUHC,VEC1,1,LBLK)
       DIMENSION VEC1(*),VEC2(*)
 *
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "clunit.inc"
 C
 *. Transfer of zero order energy
@@ -1693,6 +1693,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE HPQTVM(VECIN,VECUT,IDUM,JDUM)
+      use luci_wrkspc
 *
 * Outer routine for Preconditioner times vector
 *
@@ -1702,7 +1703,6 @@ C
 #include "glbbas.inc"
 #include "crun.inc"
 C     COMMON/BIGGY/WORK(MXPWRD)
-#include "wrkspc.inc"
 C     COMMON/GLBBAS/KINT1,KINT2,KPINT1,KPINT2,KLSM1,KLSM2,KRHO1,
 C    &              KSBEVC,KSBEVL,KSBIDT,KSBCNF,KH0,KH0SCR
 C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV,
@@ -2163,6 +2163,7 @@ C     KLL = KFLREE
 *                                                                     *
 ***********************************************************************
       SUBROUTINE TYPE_TO_SYM_REO_MAT(XIN,XOUT)
+      use luci_wrkspc
 *
 *. a matrix XIN is given as NTOOB X NTOOB matrix in type form
 *
@@ -2174,7 +2175,6 @@ C     KLL = KFLREE
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "lucinp.inc"
 #include "orbinp.inc"
 *.
