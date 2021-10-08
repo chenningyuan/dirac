@@ -40,11 +40,12 @@ module labeled_storage
 
 !!!!!! Definition of the general read / write routines  !!!!!!!!
 
-    subroutine read_general (file_info,label,rdata,idata)
+    subroutine read_general (file_info,label,rdata,idata,sdata)
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       real(8),intent(out), optional          :: rdata(:)
       integer,intent(out), optional          :: idata(:)
+      character*(*),intent(out), optional    :: sdata
 
       integer :: ierr
 
@@ -62,16 +63,19 @@ module labeled_storage
             call read_hdf5(file_info,label,rdata=rdata)
          elseif (present(idata)) then
             call read_hdf5(file_info,label,idata=idata)
+         elseif (present(sdata)) then
+            call read_hdf5(file_info,label,sdata=sdata)
          end if
       end select
 
     end subroutine read_general
 
-    subroutine write_general(file_info,label,rdata,idata)
+    subroutine write_general(file_info,label,rdata,idata,sdata)
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       real(8),intent(in), optional           :: rdata(:)
       integer,intent(in), optional           :: idata(:)
+      character*(*),intent(in), optional     :: sdata
 
       integer :: ierr
 
@@ -89,6 +93,8 @@ module labeled_storage
             call write_hdf5(file_info,label,rdata=rdata)
          elseif (present(idata)) then
             call write_hdf5(file_info,label,idata=idata)
+         elseif (present(sdata)) then
+            call write_hdf5(file_info,label,sdata=sdata)
           end if
       end select
     end subroutine write_general
@@ -244,12 +250,13 @@ module labeled_storage
 
 !!!!!! Wrapper around the HDF5 interface !!!!!!
 
-    subroutine read_hdf5 (file_info,label,rdata,idata)
+    subroutine read_hdf5 (file_info,label,rdata,idata,sdata)
       use mh5
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       real(8),intent(out), optional          :: rdata(:)
       integer,intent(out), optional          :: idata(:)
+      character*(*),intent(out), optional    :: sdata
 
       integer :: ierr
       integer(kind=8), allocatable :: i8buf(:)
@@ -266,6 +273,8 @@ module labeled_storage
          call mh5_fetch_dset(file_info%id,label,i8buf)
          idata = int(i8buf)
          deallocate (i8buf)
+      elseif (present(sdata)) then
+         call mh5_fetch_dset(file_info%id,label,sdata)
       end if
 
       call mh5_close_file(file_info%id)
@@ -273,12 +282,13 @@ module labeled_storage
 
     end subroutine read_hdf5
 
-    subroutine write_hdf5 (file_info,label,rdata,idata)
+    subroutine write_hdf5 (file_info,label,rdata,idata,sdata)
       use mh5
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       real(8),intent(in), optional           :: rdata(:)
       integer,intent(in), optional           :: idata(:)
+      character*(*),intent(in), optional     :: sdata
 
       integer :: ierr
       integer(kind=8) :: file_id, dset_id, group_id
@@ -297,24 +307,20 @@ module labeled_storage
 
       file_id = file_info%id
 
+      dset_id = mh5_exists_dset(file_id, label)
+      if (dset_id /= 0) then
+          dset_id = mh5_open_dset(file_id, label)
+      end if
+
       if (present(rdata)) then
-         dset_id = mh5_exists_dset(file_id, label)
-         if (dset_id == 0) then
-            dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)])
-         else
-            dset_id = mh5_open_dset(file_id, label)
-         end if
+         if (dset_id == 0) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)])
          call mh5_put_dset(dset_id, rdata)
-         call mh5_close_dset(dset_id)
       elseif (present(idata)) then
-         dset_id = mh5_exists_dset(file_id, label)
-         if (dset_id == 0) then
-            dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)])
-         else
-            dset_id = mh5_open_dset(file_id, label)
-         end if
+         if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)])
          call mh5_put_dset(dset_id, int8(idata))
-         call mh5_close_dset(dset_id)
+      elseif (present(sdata)) then
+         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
+         call mh5_put_dset(dset_id, sdata)
       end if
 
       call mh5_close_file(file_id)
