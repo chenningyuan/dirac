@@ -85,16 +85,15 @@ def write_schema(file_name,flat_schema):
     Write schema as list of labels and types such that it can be easily read in Fortran
     """
     f = open(file_name,"w")
+    f.write('80 10 10 10 60\n') # length of strings that are written
     # Write all group labels first. Make sure to write them in alphabetical order to faciltate the creation of groups later on.
-    fortran_format = '(A80,4A10,A60)'
-    f.write(fortran_format+'\n')
     for label, dataset in sorted(flat_schema.items()):
         if dataset['type'] == 'composite':
-             f.write("{:<80} {:<10} {:<10} {:<10} #{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
+             f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
      # Then write all other labels
     for label, dataset in sorted(flat_schema.items()):
         if dataset['type'] != 'composite':
-            f.write("{:<80} {:<10} {:<10} {:<10} #{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
+            f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
     f.close()
 
 def data_validity(data):

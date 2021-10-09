@@ -67,7 +67,7 @@ module checkpoint
       ! Inquire whether (a yet unopened) file with this name is present and attempt a restart if it is
       inquire (file=CHECKPOINT_NAME,exist=restart)
       if (restart) then
-         print*," Opening existing HDF5 checkpoint file and checking its contents"
+         print*," Opening existing checkpoint file and checking its contents"
          if (checkpoint_valid(checkpoint_file)) then
             print*, " Checkpoint file is valid, will be used for restart"
             checkpoint_open = SUCCESS
@@ -80,7 +80,7 @@ module checkpoint
       endif 
 
       ! If we come this far we are dealing with a pristine directory and need to create and init the hdf5 file
-      call create_all_groups
+      call create_new_checkpoint
 
       checkpoint_open = SUCCESS
       return
@@ -120,21 +120,21 @@ module checkpoint
          if (valid) then
              call lab_write(checkpoint_file,label,rdata=rdata)
          else
-             print*,"WARNING: invalid real data ",label
+             print*,"WARNING: skipped writing invalid real data ",label
          end if
       elseif (present(idata)) then
          valid =  check_label(label,'integer')
          if (valid) then
              call lab_write(checkpoint_file,label,idata=idata)
          else
-             print*,"WARNING: invalid integer data ",label
+             print*,"WARNING: skipped writing invalid integer data ",label
          end if
       elseif (present(sdata)) then
          valid = check_label(label,'string')
          if (valid) then
              call lab_write(checkpoint_file,label,sdata=sdata)
          else
-             print*,"WARNING: invalid string data ",label
+             print*,"WARNING: skipped writing invalid string data ",label
          end if
       end if
 
@@ -204,35 +204,40 @@ module checkpoint
 
 !------- Private procedures ----
 
-  subroutine create_all_groups
+  subroutine create_new_checkpoint
 
       ! Part of initialization procedure, hdf5 requires that a group is created
       ! before attempting to write data that is part of this group. Do this for
       ! all groups defined in the schema.
 
       use mh5
-      integer :: unit
+      integer :: unit, lengths(5)
       logical :: composite_data = .true.
-      character(len=:),allocatable:: fformat,label,type,rank,use,description 
+      character(len=200) line
+      character(len=:),allocatable:: label,type,rank,use,description
       integer(kind=8) :: group_id
 
-      !open(newunit=unit,form='formatted',file=SCHEMA_NAME)
-      unit = 237
-      open(unit,form='formatted',file=SCHEMA_NAME)
-      read(unit,'(A)') fformat
-      fformat='(A80,4A10,A60)'
-      print*," read format from ",SCHEMA_NAME," :",fformat
+      ! create the hdf5 file
+      checkpoint_file%id = mh5_create_file(checkpoint_file%name)
+      checkpoint_file%status = 1
+
+      ! read the composite labels and initialize the file with these (empty) groups
+      open(newunit=unit,form='formatted',file=SCHEMA_NAME)
+      read(unit,*) lengths
+      if (sum(lengths)>200) stop " error reading "//SCHEMA_NAME
       do while (composite_data)
-         read(unit,fformat) label,type,rank,use,description
-         print*,label,type,rank,use,description
+         read(unit,'(A)') line(1:sum(lengths))
+         label        = line(1                  :lengths(1))
+         type         = line(lengths(1)+1       :sum(lengths(1:2)))
+         rank         = line(sum(lengths(1:2))+1:sum(lengths(1:3)))
+         use          = line(sum(lengths(1:3))+1:sum(lengths(1:4)))
+         description  = line(sum(lengths(1:4))+1:sum(lengths(1:5)))
          composite_data = index(type,'composite').ne.0
-         if (composite_data) print*, "create group:",label
          if (composite_data) group_id = mh5_open_group(checkpoint_file%id,label)
       end do
-      
       close(unit)
 
-  end subroutine create_all_groups
+  end subroutine create_new_checkpoint
 
   logical function check_label(mylabel,mytype)
 
@@ -240,20 +245,26 @@ module checkpoint
 
       character*(*), intent(in) :: mylabel, mytype
       logical :: found = .false.
-      integer :: unit, iostatus=0
+      integer :: unit, lengths(5), iostatus=0
+      character(len=200) line
       character(len=:),allocatable:: format,label,type,rank,use,description 
 
       ! Check existence of mylabel
       ! Should be made more efficient than implemented below.
       open(newunit=unit,form='formatted',file=SCHEMA_NAME)
-      read(unit,*) format
-      format='(A80,4A10,A60)'
+      read(unit,*) lengths
+      if (sum(lengths)>200) stop "error in "//SCHEMA_NAME
       do while (iostatus > -1)
-         read(unit,format,iostat=iostatus) label,type,rank,use,description
+         read(unit,'(A)',iostat=iostatus) line(1:sum(lengths))
+         label        = line(1                  :lengths(1))
+         type         = line(lengths(1)+1       :sum(lengths(1:2)))
+         rank         = line(sum(lengths(1:2))+1:sum(lengths(1:3)))
+         use          = line(sum(lengths(1:3))+1:sum(lengths(1:4)))
+         description  = line(sum(lengths(1:4))+1:sum(lengths(1:5)))
          found = index(label,mylabel).ne.0
-         print*,iostatus,found,label,type,rank,use,description
          if (found) exit
       end do
+
       close(unit)
 
       ! Check whether the type matches

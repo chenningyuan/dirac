@@ -100,10 +100,7 @@ module dircmo
       call append_basisinfo_to_dfcoef (IUNIT)
       CALL LAB_WRITE(IUNIT,'EOFLABEL')
 
-      ! test zone: write all data also to an hdf5 file
-      print*," Opening HDF5 checkpoint file"
-      ierr = checkpoint_open()
-      print*," Writing DFCOEF data to checkpoint file"
+      ! write all data also to an hdf5 file
       ! simplify the handling of fermion symmetry by always writing the same size dimension arrays (just padding with zeroes if nfsym==1)
       n_mo = 0
       n_po = 0
@@ -127,7 +124,6 @@ module dircmo
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:ibeig_dim))
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=cmo(1:ncmotq))
-      ! end of test zone
 
       RETURN
       END
@@ -229,14 +225,9 @@ module dircmo
 
       if (present(cmo)) then
          allocate (coefficients(ncoef))
-         call lab_read(iunit,'COEFS   ',rdata=coefficients)
+         ! call lab_read(iunit,'COEFS   ',rdata=coefficients)
          ! test zone: uncomment to read coefs from the hdf5 file
          print*," Reading coeffs from checkpoint file "
-         ! if (checkpoint_file%status == -1) then
-         !    checkpoint_file%type = 2
-         !    checkpoint_file%name = "CHECKPOINT.h5"
-         !    checkpoint_file%status = 0
-         ! end if
          call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
          ! end of test zone
          cmo(1:ncoef) = coefficients

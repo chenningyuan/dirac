@@ -109,6 +109,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
+      use checkpoint
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
@@ -125,10 +126,13 @@ C  /* Deck dirctl */
 #include "dgroup.h"
 
       logical run_pamset, tobe
+      integer ierr
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
       call xml_begin('run','type="dirac-run"')
+      ierr = checkpoint_open()
+      write (lupri,'(/A,I2)')," * Opened HDF5 checkpoint file ",ierr
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
