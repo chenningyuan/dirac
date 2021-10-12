@@ -2147,7 +2147,9 @@ C
       if(linear.or.spinfr)then
 
         call alloc(orb_sym_vec,norbt)
-        orb_sym_vec = 0
+        if(.not.allocated(orbsymVEC))
+     &  call alloc(orbsymVEC,norbt,'orbital-SYM-KRCI')
+        orb_sym_vec = 0; orbsymVEC = 0
 
 !       read data from master file krmcscf or dfcoef
         if(myproc.eq.master)then
@@ -2185,13 +2187,16 @@ C
             end if
           end if
         end if
+        call ICOPY(norbt,orb_sym_vec,1,orbsymVEC,1)
 !       communicate data
 #ifdef VAR_MPI
         if(isync_nodes .eq. 1)then
-          call interface_mpi_bcast(orb_sym_vec,norbt,master,
+          call interface_mpi_bcast(orbsymVEC,norbt,master,
      &                   global_communicator)
         end if
 #endif
+
+#ifdef BLUBB
 !       store orbital symmetry information on file 'orbsym.xxxx' 
 !       where xxxx is the process id.
         orb_sym_fh = 99
@@ -2201,6 +2206,7 @@ C
      &       form='unformatted',action='readwrite',position='rewind')
         write(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
         close(orb_sym_fh)
+#endif
 
         call dealloc(orb_sym_vec)
       end if

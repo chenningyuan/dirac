@@ -75,8 +75,12 @@ C     set "I/O node master" + "shared memory node master"
       
 !     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
       if(dougrp .ge. 10)then
+      
+        call alloc(orb_sym_vec,norbt); orb_sym_vec = 0
+        call icopy(norbt,orbsymVEC,1,orb_sym_vec,1)
+
+#ifdef BLUBB
         call num2str(myproc,mynum_str)
-        call alloc(orb_sym_vec,norbt)
         write(orb_sym_fn,'(a7,a4)') 'orbsym.',mynum_str
         orb_sym_vec = 0
         orb_sym_fh = 99
@@ -84,6 +88,8 @@ C     set "I/O node master" + "shared memory node master"
      &       form='unformatted',action='readwrite',position='rewind')
         read(orb_sym_fh) (orb_sym_vec(i), i=1,norbt)
         close(orb_sym_fh)
+#endif
+
 !#define LUCI_DEBUG
 #ifdef LUCI_DEBUG
         print *, 'content of orb_sym_vec is: ',myproc

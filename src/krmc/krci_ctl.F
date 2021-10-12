@@ -1410,6 +1410,7 @@ C     Last revision :
 C
 C***********************************************************************
       use memory_allocator
+      use symmetry_setup_krci, only: orbsymVEC
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1616,6 +1617,9 @@ C
 C     ***************************************************
 C     *** Memory deallocation ***************************
 C     ***************************************************
+      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+            if(allocated(orbsymVEC)) deallocate(orbsymVEC)
+      END IF
 C
       CALL MEMREL('KRCI_CALC',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)

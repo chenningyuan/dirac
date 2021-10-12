@@ -311,6 +311,7 @@ C     Last revision :
 C
 C***********************************************************************
       use orbital_rotation_indices
+      use symmetry_setup_krci, only: orbsymVEC
 
 #include "implicit.h"
 #include "priunit.h"
@@ -814,6 +815,10 @@ C
  9300 FORMAT(/'>>> TOTAL CPU (WALL) TIME IN KR-MCSCF: ',A,'(',A,')')
 C
       CALL MEMREL('PSIOP1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
+      !> clean final memory in KRCI
+      IF ( OPT_CIPROGRAM .EQ. 'LUCIAREL' ) THEN
+            if(allocated(orbsymVEC)) deallocate(orbsymVEC)
+      END IF
       CALL QEXIT('PSIOP1')
       RETURN
       END
