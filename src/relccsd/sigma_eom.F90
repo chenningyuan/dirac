@@ -896,6 +896,7 @@ integer :: ierr
   type(Offset) :: f,g
   integer  ::row(nrep), column(nrep)
   real*8, allocatable :: some_buf2(:), some_buf3(:)
+  real*8 :: norm_s, norm_s_prev
 !--------------------------------------------------
 
   N1 = size(sigma1,1)
@@ -904,14 +905,18 @@ integer :: ierr
   ndimr1 = N1/rcw
   ndimr2 = N2/rcw
 
+  norm_s_prev = 0.0d0
 !------------------------------------------
 ! S(a*,i) = S(a*,i) - Fbar_mi(m,i)*r(a*,m)
 !------------------------------------------
 
   call contraction_222 ((/"c1","o2"/),(/"o2","o1"/),(/"c1","o1"/),r1,B%Fbar_mi,sigma1,-1.0d0,1.0d0,nrep)
 
-  if (iprnt.ge.2) &
-  write(iw,*)'diagram 1 ', dot_product(sigma1,sigma1)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma1,sigma1)
+      write(iw,*) "diagram 1 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 !--------------------------------------------
 ! S(a*,i) = S(a*,i) + Fbar_me(m,e)*r2(a*e,im)
 !--------------------------------------------
@@ -919,8 +924,11 @@ integer :: ierr
     call contraction_422 ((/"c1","p2","o1","o2"/),(/"o2","p2"/),(/"c1","o1"/),B%Fbar_me, &
   &                      sigma1,1.0d0,1.0d0,nrep,r2)
 
-  if (iprnt.ge.2) &
-  write(iw,*)'diagram 2 ', dot_product(sigma1,sigma1)
+  if (iprnt.ge.2) then 
+      norm_s = dot_product(sigma1,sigma1)
+      write(iw,*) "diagram 2 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 !-------------------------------------
 !S(a*,i) = S(a*,i) - W_mnie(mn,ie)*r2(a*e,mn)
 !-------------------------------------
@@ -928,8 +936,11 @@ integer :: ierr
     call contraction_442((/"c1","p2","o2","o3"/),(/"o2","o3","o1","p2"/),(/"c1","o1"/),sigma1,-1.0d0,1.0d0,nrep, &
    &         RightTensor=B%W_mnie,LeftTensor=r2)
 
-  if (iprnt.ge.2) &
-  write(iw,*)'diagram 3 ',dot_product(sigma1,sigma1)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma1,sigma1)
+      write(iw,*) "diagram 3 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s 
+  end if
 
 !--------------------------------------------
 !  S(a*b,ij) = S(a*b,ij)-W(mb,ij)*r(a*,m)
@@ -939,8 +950,11 @@ integer :: ierr
   &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
   &    LeftTensor=r1) 
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 4 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 4 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 
 !----------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
@@ -952,8 +966,11 @@ integer :: ierr
 !   call contraction_244 ((/"o3","o2"/),(/"c1","p2","o3","o1"/), &
 !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 5 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 5 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 
 !---------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
@@ -962,8 +979,11 @@ integer :: ierr
       call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
      &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 6 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 6 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 
 !--------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
@@ -972,8 +992,11 @@ integer :: ierr
       call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
      &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn)
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 7 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 
 !------------------------------------------------------
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
@@ -982,8 +1005,11 @@ integer :: ierr
     call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)
 
-       if (iprnt.ge.2) &
-  write(iw,*)'diagram 8 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 8 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 
 !int_1b(a*,f) = int_1b(a*,f) - V(nm,fe)*r2(a*e,nm)  
 !S(a*b,ij) = S(a*b,ij) + int_1b(a*,f)*t2(fb,ij)  
@@ -1002,8 +1028,11 @@ integer :: ierr
     deallocate(int_1b)
    call dealloc_array(e)
 
- if (iprnt.ge.2) &
-  write(iw,*)'diagram 9 ',dot_product(sigma2,sigma2)
+  if (iprnt.ge.2) then
+      norm_s = dot_product(sigma2,sigma2)
+      write(iw,*) "diagram 9 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      norm_s_prev = norm_s
+  end if
 
  end subroutine
 
