@@ -1,0 +1,27 @@
+import os
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Electronic energy',
+      num_lines   = 8,
+      rel_tolerance   = 1.0e-8)
+
+test.run(['hf.inp'], ['h2.mol'], f)
+
+try:
+   import h5py
+   h5py_available = True
+except:
+   h5py_available = False
+
+if h5py_available:
+   checkpoint = h5py.File('hf_h2.h5', 'r')
+   # Read three data sets that each originate from a different file (respectively MOLECULE.XYZ, AOPROPER, DFCOEF)
+   symbols     = checkpoint['/input/molecule/symbols']
+   molfield    = checkpoint['/result/operators/ao_matrices/MOLFIELD']
+   eigenvalues = checkpoint['/result/wavefunctions/scf/mobasis/eigenvalues']
