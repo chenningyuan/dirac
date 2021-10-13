@@ -322,7 +322,6 @@ module talsh_cc
          ierr=talsh_tensor_destruct(comm_t%hoo)
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(comm_t%hov)
-            ierr=talsh_tensor_destruct(comm_t%t1)
          end if
          ierr=talsh_tensor_destruct(comm_t%hvv)
          ierr=talsh_tensor_destruct(comm_t%goo)
@@ -1100,13 +1099,14 @@ module talsh_cc
          call get_fbar_oo(lambda_t%fbar_oo,comm_t,CCD)
          call print_date('Finished calculating fixed intermediates')
 
-         if (print_level.gt.8) then
+!        if (print_level.gt.8) then
+         if (.true.) then
              if (.not.CCD) print*, "T1amp      = ", tensor_norm2(comm_t%t1)
              print*, "T2amp      = ", tensor_norm2(comm_t%t2)*ONE_QUARTER_R
              ! print*, "Tau        = ", tensor_norm2(comm_t%tau)*ONE_QUARTER_R
-             ! print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
+              print*, "Fbar_oo    = ", tensor_norm2(lambda_t%fbar_oo)
              print*, "Fbar_ov    = ", tensor_norm2(lambda_t%fbar_ov)
-             ! print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
+             print*, "Fbar_vv    = ", tensor_norm2(lambda_t%fbar_vv)
              ! print*, "w_vvvv     = ", tensor_norm2(lambda_t%w_vvvv)*ONE_QUARTER_R
              print*, "wbar_vovo  = ", tensor_norm2(lambda_t%wbar_vovo)
              print*, "w_vvvo     = ", tensor_norm2(lambda_t%w_vvvo)*0.5D0
