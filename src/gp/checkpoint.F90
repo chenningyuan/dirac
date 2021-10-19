@@ -40,12 +40,14 @@ module checkpoint
       module procedure checkpoint_write
       module procedure write_single_int
       module procedure write_single_real
+      module procedure write_string_array
   end interface
 
   interface checkpoint_read
       module procedure checkpoint_read
       module procedure read_single_int
       module procedure read_single_real
+      module procedure read_string_array
   end interface
 
   contains
@@ -210,6 +212,32 @@ module checkpoint
       idata = idata_array(1)
 
   end subroutine read_single_int
+
+  subroutine write_string_array (label,sarray,slen)
+      ! Wrapper to write string arrays
+      character*(*),intent(in)               :: label
+      integer                                :: slen
+      character(len=slen),intent(in)         :: sarray(:)
+      logical                                :: valid
+
+      valid = check_label(label,'string')
+      if (valid) then
+         call lab_write(checkpoint_file,label,sarray=sarray,slen=slen)
+      else
+         print*,"WARNING: skipped writing invalid string array ",label
+      end if
+
+  end subroutine write_string_array
+
+  subroutine read_string_array (label,sarray,slen)
+      ! Wrapper to read string arrays
+      character*(*),intent(in)               :: label
+      integer                                :: slen
+      character(len=slen),intent(out)        :: sarray(:)
+
+      call lab_read(checkpoint_file,label,sarray=sarray,slen=slen)
+
+  end subroutine read_string_array
 
 !------- Private procedures ----
 

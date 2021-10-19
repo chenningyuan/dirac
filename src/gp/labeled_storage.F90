@@ -26,6 +26,7 @@ module labeled_storage
       module procedure read_general
       module procedure read_single_real
       module procedure read_single_int
+      module procedure read_string_array
       module procedure read_dirac
   end interface
 
@@ -33,6 +34,7 @@ module labeled_storage
       module procedure write_general
       module procedure write_single_real
       module procedure write_single_int
+      module procedure write_string_array
       module procedure write_dirac
   end interface
 
@@ -56,6 +58,8 @@ module labeled_storage
             call read_dirac(file_info%unit,label,rdata=rdata)
          elseif (present(idata)) then
             call read_dirac(file_info%unit,label,idata=idata)
+         elseif (present(sdata)) then
+            stop "reading strings is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -86,6 +90,8 @@ module labeled_storage
             call write_dirac(file_info%unit,label,rdata=rdata)
          elseif (present(idata)) then
             call write_dirac(file_info%unit,label,idata=idata)
+         elseif (present(sdata)) then
+            stop "writing strings is not supported in DIRAC format"
          end if
       case (2)
          ! We use HDF5 files
@@ -146,6 +152,55 @@ module labeled_storage
       idata = idata_array(1)
 
     end subroutine read_single_int
+
+    subroutine write_string_array (file_info,label,sarray,slen)
+      ! Wrapper around write_hdf5 to allow writing of string arrays
+      ! Fixed length strings only (variable length string arrays are non-existent in Fortran)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      integer,intent(in)                     :: slen
+      character(len=slen),intent(in)         :: sarray(:)
+      character(len=:), allocatable          :: sdata
+      integer                                :: i, sdim
+
+      select case (file_info%type)
+      case (1)
+         stop "writing strings is not supported in DIRAC format"
+      case (2)
+         ! There might be better ways to flatten an array of strings in Fortran, 
+         ! but I could not find one and wasted already enough time on this.
+         sdim = size(sarray)
+         sdata = sarray(1)
+         do i = 2, sdim
+            sdata = sdata // sarray(i)
+         end do
+         call write_hdf5(file_info,label,sdata=sdata,slen=slen,sdim=sdim)
+      end select
+
+    end subroutine write_string_array
+
+    subroutine read_string_array (file_info,label,sarray,slen)
+      ! Wrapper around read_hdf5 to allow reading of string arrays
+      ! Fixed length strings only (variable length string arrays are non-existent in Fortran)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      integer,intent(in)                     :: slen
+      character(len=slen),intent(out)        :: sarray(:)
+      character(len=:), allocatable          :: sdata
+      integer                                :: i,j, sdim
+
+      select case (file_info%type)
+      case (1)
+         stop "reading strings is not supported in DIRAC format"
+      case (2)
+         call read_hdf5(file_info,label,sdata=sdata)
+         sdim = len(sdata)/slen
+         do i = 1, sdim
+            sarray(i) = sdata((i-1)*slen+1:i*slen)
+         end do
+      end select
+
+    end subroutine read_string_array
 
 !!!!!! Selfcontained implementation of The DIRAC format, used for backwards compatibility !!!!!!
 
@@ -282,13 +337,14 @@ module labeled_storage
 
     end subroutine read_hdf5
 
-    subroutine write_hdf5 (file_info,label,rdata,idata,sdata)
+    subroutine write_hdf5 (file_info,label,rdata,idata,sdata,slen,sdim)
       use mh5
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       real(8),intent(in), optional           :: rdata(:)
       integer,intent(in), optional           :: idata(:)
       character*(*),intent(in), optional     :: sdata
+      integer,intent(in),optional            :: slen, sdim
 
       integer :: ierr
       integer(kind=8) :: file_id, dset_id, group_id
@@ -314,6 +370,9 @@ module labeled_storage
       elseif (present(idata)) then
          if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)])
          call mh5_put_dset(dset_id, int8(idata))
+      elseif (present(sdata).and.present(slen).and.present(sdim)) then
+         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen))
+         call mh5_put_dset(dset_id, sdata)
       elseif (present(sdata)) then
          if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
          call mh5_put_dset(dset_id, sdata)

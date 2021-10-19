@@ -7704,7 +7704,7 @@ C
       END DO
 
       ! write the coordinates
-      !call checkpoint_write (group//'/symbols',sdata=symbols)
+      call checkpoint_write (group//'/symbols',sarray=symbols,slen=4)
       call checkpoint_write (group//'/geometry',rdata=geometry)
 
 !     Finish by writing XYZ file in plain text format if it does not exist yet.
