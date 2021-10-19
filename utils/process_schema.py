@@ -102,7 +102,7 @@ def data_validity(data):
     Should be made more rigorous, for now just check whether all required data is present.
     """
     valid = True
-    print (' Checking validiy of data with respect to the DIRAC data schema....')
+    print (' Checking validity of data with respect to the DIRAC data schema....')
     # Check whether all required data have values
     for label, dataset in data.items():
         if dataset['type'] == 'composite':

@@ -2382,7 +2382,7 @@ C
       END IF
 C
 C     *******************************************************
-C     ***** Transform from Cartesian to Spherical EFG's *****
+C     ***** Transform from Cartesian to Spherical EFGs  *****
 C     *******************************************************
 C
       IF (INTTYP .EQ. 31) THEN
@@ -2458,35 +2458,6 @@ C
                END IF
                CALL WRTPRO(SOINT(1,I),NELMNT,LABINT(I),RTNLBL,IPRINT)
   600       CONTINUE
-C
-C        ixx = ksoint - 1 + (intadr(7) - 1)*nnbasx
-C        ixy = ksoint - 1 + (intadr(8) - 1)*nnbasx
-C        ixz = ksoint - 1 + (intadr(9) - 1)*nnbasx
-C        iyx = ksoint - 1 + (intadr(11) - 1)*nnbasx
-C        iyy = ksoint - 1 + (intadr(12) - 1)*nnbasx
-C        iyz = ksoint - 1 + (intadr(13) - 1)*nnbasx
-C        izx = ksoint - 1 + (intadr(16) - 1)*nnbasx
-C        izy = ksoint - 1 + (intadr(17) - 1)*nnbasx
-C        izz = ksoint - 1 + (intadr(18) - 1)*nnbasx
-C        facc = 0.5d0
-C        do 900 i = 1, 14
-C        do 900 j = 1, i
-C           ii = ioden(i)
-C           jj = ioden(j)
-C           iii = max(ii,jj)
-C           jjj = min(ii,jj)
-C           ij = iii*(iii - 1)/2 + jjj
-C           write (6,'(2i3,9f8.4)')
-C    &           i,j,facc*(work1(ixx+ij)-work1(iyy+ij)-work1(izz+ij))
-C    &               work1(ixy+ij),
-C    &               work1(ixz+ij),
-C    &               work1(iyx+ij),
-C    &               facc*(work1(iyy+ij)-work1(ixx+ij)-work1(izz+ij))
-C    &               work1(iyz+ij),
-C    &               work1(izx+ij),
-C    &               work1(izy+ij),
-C    &               facc*(work1(izz+ij)-work1(ixx+ij)-work1(iyy+ij))
-C 900    continue
          END IF
       END IF
 C
@@ -4030,6 +4001,8 @@ C  /* Deck binom */
       END
 C  /* Deck wrtpro */
       SUBROUTINE WRTPRO(AINT,LENGTH,LABEL,RTNLBL,IPRINT)
+
+      use checkpoint
 C
 C     290689 Henrik Koch
 C     241189 tuh
@@ -4077,6 +4050,8 @@ C     We add an extra label to signify EOF
 C
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
 C
+      ! Write also to checkpoint file, rtnlbl(1) is date, not needed.
+      call prop_to_checkpoint(rtnlbl(2)//label,aint,length)
       RETURN
       END
 C  /* Deck dsotst */
@@ -4302,3 +4277,21 @@ C
       RETURN
       END
 C --- end of her1pro.F ---
+
+      subroutine prop_to_checkpoint(label,prop,nelmnt)
+
+      use checkpoint
+
+#include "implicit.h"
+#include "inforb.h"
+
+      character(16), intent(in) :: label
+      real(8), intent(in) :: prop(nelmnt)
+      if (label == 'write_size_only!') then
+         call checkpoint_write (
+     &   '/result/operators/ao_matrices/aobasis_dim',idata=nbast)
+      else
+         call checkpoint_write (
+     &   '/result/operators/ao_matrices/'//label,rdata=prop)
+      end if
+      end

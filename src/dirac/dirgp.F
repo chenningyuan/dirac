@@ -311,6 +311,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine append_basisinfo_to_dfcoef (IUNIT)
 
+      use checkpoint
+
 !      L. Visscher, October 2018
 !      add basis set info to the end of dfcoef to not infere with normal usage
 !      a better solution is to use a keyed-file system, but this is quite some
@@ -343,6 +345,24 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
        write (IUNIT) priexp(1:npriexp)
 !      values of the contraction coefficients for all shells (packed into a 1-d array)
        write (IUNIT) priccf(1:npriexp,1:MXCONT)
+
+!      Also write data to checkpoint file
+       call checkpoint_write ('/input/aobasis/aobasis_id',idata=1)
+       call checkpoint_write ('/input/aobasis/angular',idata=1)
+       call checkpoint_write ('/input/aobasis/n_shells',idata=nlrgsh)
+       call checkpoint_write ('/input/aobasis/n_ao',idata=ntbas(1))
+       call checkpoint_write ('/input/aobasis/n_prim',
+     &      idata=nuco(1:nlrgsh))
+       call checkpoint_write ('/input/aobasis/n_cont',
+     &      idata=numcf(1:nlrgsh))
+       call checkpoint_write ('/input/aobasis/orbmom',
+     &      idata=nhkt(1:nlrgsh))
+       call checkpoint_write ('/input/aobasis/center',rdata=
+     &      reshape(cent(1:nlrgsh,1:3,1),(/3*nlrgsh/)))
+       call checkpoint_write ('/input/aobasis/exponents',
+     &      rdata=priexp(1:npriexp))
+       call checkpoint_write ('/input/aobasis/contractions',rdata=
+     &      reshape(priccf(1:npriexp,1:MXCONT),(/npriexp*MXCONT/)))
 
        end subroutine append_basisinfo_to_dfcoef
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

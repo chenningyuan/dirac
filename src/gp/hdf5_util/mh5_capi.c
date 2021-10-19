@@ -223,7 +223,6 @@ INT mh5c_create_group (INT file_id, char* name) {
 }
 
 INT mh5c_open_group (INT file_id, char* name) {
-        H5Gcreate(file_id, name, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
         return H5Gopen(file_id, name, H5P_DEFAULT);
 }
 

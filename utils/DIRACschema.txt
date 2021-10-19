@@ -67,7 +67,7 @@ scf              composite single    optional    # results for Hartree-Fock and 
 
 *ao_matrices
 aobasis_dim      integer   single    required    # dimension of the matrix representations
-operator_name    real      single    optional    # matrix representation of operator_name (operator_name is a string of length 8)
+operator_name    real      single    generic     # matrix representation of operator_name (operator_name is a string of length 8)
 aobasis_id       integer   single    optional    # pointer to the explicit definition of the aobasis
 *end
 
@@ -75,7 +75,7 @@ aobasis_id       integer   single    optional    # pointer to the explicit defin
 mobasis_dim      integer   single    optional    # dimension of the matrix representations (should become required when checking routines are improved)
 nz               integer   single    optional    # algebra that is used for the matrices (1:real, 2: complex, 4:quaternion)
 method           string    single    optional    # method used to obtain these MO representations (e.g. CCSD for a CCSD density matrix)
-operator_name    real      single    optional    # matrix representation of operator_name (operator_name is a string of length 8)
+operator_name    real      single    generic     # matrix representation of operator_name (operator_name is a string of length 8)
 mobasis_id       integer   single    optional    # pointer to the explicit definition of the mobasis
 *end
 

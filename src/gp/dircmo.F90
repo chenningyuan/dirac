@@ -117,6 +117,7 @@ module dircmo
          ibeig_dim = norbt
       endif
       call checkpoint_write ('/result/wavefunctions/scf/energy',rdata=toterg)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/mobasis_id',idata=1)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)

@@ -116,6 +116,8 @@ C     ===================
      &  '(one-electron integrals) ...will attempt restart.'
         IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
+        ! Write size of ao-matrices to checkpoint file, matrices themselves are written in onegen
+        call prop_to_checkpoint('write_size_only!',dum,1)
         CALL ONEGEN(WORK,LWORK)
       ENDIF
  11   continue

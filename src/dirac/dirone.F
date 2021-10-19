@@ -248,13 +248,6 @@ C         Create total property matrix with correct prefactor
      &               work(konein+(l-1)*nnbbasx),1,
      &               WORK(khelp),1)
           end do
-!         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
-!    &    (
-!    &            WORK(KONEIN          :KONEIN+  NNBBASX-1)
-!    &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
-!    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
-!    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
-!    &    )
 C         Store matrix in AOproper file
           ITYP = ITYP + 1
           CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
