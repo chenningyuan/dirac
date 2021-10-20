@@ -97,6 +97,7 @@ module dircmo
       IF (SSYM) CALL LAB_WRITE(IUNIT,'KAPPA   ',idata=IBEIG(NORBT+1:2*NORBT))
 !     Add additional information about the basis set
       CALL LAB_WRITE(IUNIT,'BASINFO ')
+!     This call introduces a dependency on common blocks, should be moved as soon as the checkpoint file is fully functional
       call append_basisinfo_to_dfcoef (IUNIT)
       CALL LAB_WRITE(IUNIT,'EOFLABEL')
 
@@ -226,10 +227,10 @@ module dircmo
 
       if (present(cmo)) then
          allocate (coefficients(ncoef))
-         ! call lab_read(iunit,'COEFS   ',rdata=coefficients)
+         call lab_read(iunit,'COEFS   ',rdata=coefficients)
          ! test zone: uncomment to read coefs from the hdf5 file
-         print*," Reading coeffs from checkpoint file "
-         call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
+         ! print*," Reading coeffs from checkpoint file "
+         ! call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
          ! end of test zone
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)

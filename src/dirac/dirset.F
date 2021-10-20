@@ -154,6 +154,9 @@ C
 #ifdef MOD_UNRELEASED
       IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
 #endif
+      ! at this point we do know the occupations which will be used in SCF, dump them to file
+      call write_occupations_fromcommon(
+     & '/result/wavefunctions/scf/mobasis')
 C
 C     Prepare for two-electron integrals
 C     ==================================

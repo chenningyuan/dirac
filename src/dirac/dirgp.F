@@ -4595,4 +4595,52 @@ C***********************************************************************
       ENDIF
       RETURN
       END
-! -- end of dirgp.F --
+
+      subroutine write_occupations_fromcommon(group)
+      use checkpoint
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      character(len=*),intent(in) :: group
+      real(8), allocatable :: occupations(:)
+      integer, allocatable :: shell_id(:)
+
+      allocate(occupations(norbt))
+      allocate(shell_id(norbt))
+      ish = 0
+      do ifsym = 1, nfsym
+          ! positronic (negative energy) shells
+          do i = 1, npsh(ifsym)
+             ish = ish + 1
+             shell_id(ish) = -2
+             occupations(ish) = 0.D0
+          enddo
+          ! inactive (closed) shells
+          do i = 1, nish(ifsym)
+             ish = ish + 1
+             shell_id(ish) = -1
+             occupations(ish) = df(0)
+          enddo
+          ! active (open) shells
+          do iopen = 1, nopen
+             do i = 1, nacsh(ifsym,iopen)
+                ish = ish + 1
+                shell_id(ish) = iopen
+                occupations(ish) = df(iopen)
+             enddo
+          enddo
+          ! virtual (secundary) shells
+          do i = 1, nssh(ifsym)
+             ish = ish + 1
+             shell_id(ish) = 0
+             occupations(ish) = 0.D0
+          enddo
+      enddo
+      
+      call checkpoint_write(group//'/shell_id',idata=shell_id)
+      call checkpoint_write(group//'/occupations',rdata=occupations)
+
+      end
+! -- end of dirgp.F -
