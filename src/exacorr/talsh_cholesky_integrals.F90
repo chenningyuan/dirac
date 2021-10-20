@@ -25,7 +25,7 @@ module talsh_cholesky_integrals
 
         public get_CC_integrals_chol_vec
         public get_CC_integrals_chol_all
-        !public get_MP2_vec_chol
+        public get_cholesky_vec
 
        contains
 
@@ -462,5 +462,62 @@ module talsh_cholesky_integrals
          ierr=talsh_tensor_destruct(one_chol)
 
        end subroutine get_CC_integrals_chol_all
+
+   subroutine get_cholesky_vec (nocc,nvir,mo_occ,mo_vir,uov_tensor,t_cholesky,print_level)
+
+!        Written by Johann Pototschnig, summer 2019
+
+         implicit none
+
+         integer, intent(in)                  :: nocc,nvir            ! the size of the mo basis for occupied and virtual spinors
+         integer, intent(in)                  :: mo_occ(:), mo_vir(:) ! the list of occupied and virtual orbitals
+         real(8), intent(in)                  :: t_cholesky           ! cholesky threshold
+         integer, intent(in)                  :: print_level
+         type(talsh_tens_t), intent(out)      :: uov_tensor
+
+         integer(C_INT)                  :: ierr
+         integer                         :: nao
+         type(talsh_tens_t)              :: chol_tensor, temp_tensor
+         integer, dimension(3)           :: chol_dims, dims3
+         integer(C_INT)                  :: rank
+         !integer, allocatable            :: mo_list(:)
+
+         if (print_level.gt.1) call print_date('-Start- uov computation')
+
+         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
+         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
+         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
+
+!        Retrieve basis set information
+         nao     = get_nao()      ! number of basis functions
+
+!        Get cholesky-vectors and copy them in to a talsh tensor
+         call print_date('-Start- Cholesky Decomposition')
+         if (print_level.gt.1) write(*,*) "using complete tensor"
+         call decompose_cholesky_talsh_all (chol_tensor, t_cholesky, nao, print_level)
+         ierr = talsh_tensor_dimensions(chol_tensor,rank,chol_dims)
+         call print_date('-End- Cholesky Decomposition')
+
+!       transform occupied
+        dims3=chol_dims
+        dims3(1)=nocc
+        ierr=talsh_tensor_construct(temp_tensor,C8,dims3,init_val=ZERO)
+        dims3(2)=nvir
+        ierr=talsh_tensor_construct(uov_tensor,C8,dims3,init_val=ZERO)
+
+        call ao2mo_ind(chol_tensor,temp_tensor,nocc,mo_occ,11)
+        call ao2mo_ind(temp_tensor,uov_tensor,nvir,mo_vir,21)
+        ierr=talsh_tensor_init(temp_tensor)
+        call ao2mo_ind(chol_tensor,temp_tensor,nocc,mo_occ,12)
+        call ao2mo_ind(temp_tensor,uov_tensor,nvir,mo_vir,22)
+
+        if (print_level.gt.2) call print_date(' uov done ')
+        if(print_level > 1) write(*,*) "uov=",tensor_norm2(uov_tensor)
+
+
+        if (print_level.gt.1) call print_date('-End- uov computation')
+
+
+   end subroutine get_cholesky_vec
 
 end module talsh_cholesky_integrals

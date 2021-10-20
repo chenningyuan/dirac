@@ -6,9 +6,7 @@ module talsh_mp2lap
         use talsh
         use exacorr_datatypes
         use exacorr_utils
-        use talsh_common_routines
-        use exacorr_mo
-        use exacorr_global
+
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -35,12 +33,15 @@ module talsh_mp2lap
         type(exacc_input), intent(in) :: exa_input
 
         real(8)                       :: threshold
+        type(talsh_tens_t)            :: chol_tensor
 
         call print_date("Entering MP2_LAP Module")
  
         threshold = exa_input%t_cholesky
 
 !       perform cholesk decompostion
+
+        call get_cholesky_vec (exa_input%nocc,exa_input%nvir,exa_input%mo_occ,exa_input%mo_vir,uov,exa_input%t_cholesky,exa_input%print_level)
 
 
         call print_date('Leaving MP2_LAP Module')
