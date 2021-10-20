@@ -882,7 +882,12 @@
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
-         exa_input%mp2no = .true.
+         exa_input%mp2no = 1
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.MP2LAP        ')) then
+         exa_input%mp2no = 2
          call kw_read(word, exa_input%t_mp2no)
       end if
 

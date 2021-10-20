@@ -158,6 +158,7 @@ C***********************************************************************
       use exacc_cfg
       use talsh_cc,only             : talsh_cc_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
+      use talsh_mp2lap,only         : talsh_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
@@ -221,7 +222,7 @@ C
       if (exa_input%talsh) then
        if (exa_input%do_no) then
          call get_no_driver (exa_input)
-       else if (exa_input%mp2no) then
+       else if (exa_input%mp2no == 1) then
          call talsh_mp2no_driver (exa_input,n_mp2no)
        else
          call talsh_cc_driver (exa_input)
@@ -235,8 +236,10 @@ C
               if (mytid == 0) call set_prop_flags_ccsd()
        end if
 
-       if (exa_input%mp2no) then
+       if (exa_input%mp2no == 1) then
               call exacorr_mp2no_driver (exa_input,n_mp2no)
+       elseif (exa_input%mp2no == 2) then
+              call talsh_mp2lap_driver (exa_input)
        else
               call exacorr_cc_driver (exa_input) 
        end if 

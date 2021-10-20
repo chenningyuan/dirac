@@ -37,7 +37,6 @@
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
-            logical                 :: mp2no = .false.          !L if true mp2 natural orbital
             logical                 :: lambda = .false.
             logical                 :: beta_occ = .false.
             logical                 :: beta_vir = .false.
@@ -47,6 +46,7 @@
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
             integer                 :: moint_scheme = 4
+            integer                 :: mp2no = -1               ! if 1 mp2 natural orbital, if 2 with laplace
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
@@ -59,7 +59,7 @@
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
-            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
+            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
 
             complex(8), allocatable   :: ff(:,:)                  ! field strengths
