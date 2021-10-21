@@ -463,7 +463,7 @@ module talsh_cholesky_integrals
 
        end subroutine get_CC_integrals_chol_all
 
-   subroutine get_cholesky_vec (nocc,nvir,mo_occ,mo_vir,uov_tensor,t_cholesky,print_level)
+   subroutine get_cholesky_vec (nocc,nvir,mo_occ,mo_vir,uov_tensor,uvo_tensor,t_cholesky,print_level)
 
 !        Written by Johann Pototschnig, summer 2019
 
@@ -473,7 +473,7 @@ module talsh_cholesky_integrals
          integer, intent(in)                  :: mo_occ(:), mo_vir(:) ! the list of occupied and virtual orbitals
          real(8), intent(in)                  :: t_cholesky           ! cholesky threshold
          integer, intent(in)                  :: print_level
-         type(talsh_tens_t), intent(out)      :: uov_tensor
+         type(talsh_tens_t), intent(out)      :: uov_tensor, uvo_tensor
 
          integer(C_INT)                  :: ierr
          integer                         :: nao
@@ -482,7 +482,7 @@ module talsh_cholesky_integrals
          integer(C_INT)                  :: rank
          !integer, allocatable            :: mo_list(:)
 
-         if (print_level.gt.1) call print_date('-Start- uov computation')
+         if (print_level.gt.1) call print_date('-Start- cholesky computation')
 
          write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
          write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
@@ -514,9 +514,28 @@ module talsh_cholesky_integrals
         if (print_level.gt.2) call print_date(' uov done ')
         if(print_level > 1) write(*,*) "uov=",tensor_norm2(uov_tensor)
 
+        ierr=talsh_tensor_destruct(temp_tensor)
 
-        if (print_level.gt.1) call print_date('-End- uov computation')
+        dims3=chol_dims
+        dims3(1)=nvir
+        ierr=talsh_tensor_construct(temp_tensor,C8,dims3,init_val=ZERO)
+        dims3(2)=nocc
+        ierr=talsh_tensor_construct(uvo_tensor,C8,dims3,init_val=ZERO)
 
+        call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,11)
+        call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,21)
+        ierr=talsh_tensor_init(temp_tensor)
+        call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,12)
+        call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,22)
+
+        if (print_level.gt.2) call print_date(' uvo done ')
+        if(print_level > 1) write(*,*) "uvo=",tensor_norm2(uvo_tensor)
+
+        !clean up
+        ierr=talsh_tensor_destruct(temp_tensor)
+        ierr=talsh_tensor_destruct(chol_tensor)
+
+        if (print_level.gt.1) call print_date('-End- cholesky computation')
 
    end subroutine get_cholesky_vec
 
