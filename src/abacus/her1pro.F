@@ -4051,7 +4051,7 @@ C
       CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
 C
       ! Write also to checkpoint file, rtnlbl(1) is date, not needed.
-      call prop_to_checkpoint(rtnlbl(2)//label,aint,length)
+      call prop_to_checkpoint(label//rtnlbl(2),aint,length)
       RETURN
       END
 C  /* Deck dsotst */
@@ -4283,13 +4283,13 @@ C --- end of her1pro.F ---
       use checkpoint
 
 #include "implicit.h"
-#include "inforb.h"
+#include "dcbbas.h"
 
       character(16), intent(in) :: label
       real(8), intent(in) :: prop(nelmnt)
       if (label == 'write_size_only!') then
          call checkpoint_write (
-     &   '/result/operators/ao_matrices/aobasis_dim',idata=nbast)
+     &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
       else
          call checkpoint_write (
      &   '/result/operators/ao_matrices/'//label,rdata=prop)

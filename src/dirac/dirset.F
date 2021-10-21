@@ -125,6 +125,9 @@ C     ===================
         IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
 
+!     Write basis set information (which includes their centers, so is geometry-dependent) to checkpoint file
+      call write_basis_fromcommon
+
       IF(DOHRM) THEN
         CALL TIMER2('PAMSET',TIMSTR,TIMEND)
         RETURN

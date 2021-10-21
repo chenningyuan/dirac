@@ -15,11 +15,11 @@
 #define _DIRAC_VERSION_ "22.0"
 
 /* molcas buffer data types */
-#define H5T_MOLCAS_INT H5T_NATIVE_INT
+#define H5T_MOLCAS_INT H5T_NATIVE_LONG
 #define H5T_MOLCAS_REAL H5T_NATIVE_DOUBLE
 
 /* file storage data types */
-#define H5T_STORAGE_INT H5T_STD_I32LE
+#define H5T_STORAGE_INT H5T_STD_I64LE
 #define H5T_STORAGE_REAL H5T_IEEE_F64LE
 
 /* 12/12/2016 Leon: Compression can be enabled only if underlying HDF5 library
@@ -144,13 +144,15 @@ herr_t mh5c_get_dset_array(hid_t dset_id, const INT* extents, const INT* offsets
  * dimensions by transposing those that come from Fortran, and convert also
  * from an INT to hsize_t */
 void copy_cast_f2c(int rank, const INT *src, hsize_t *dst) {
-        for (int i=0; i<rank; i++) {
+        int i;
+        for (i=0; i<rank; i++) {
                 dst[rank-(i+1)] = src[i];
         }
 }
 
 void copy_cast_c2f(int rank, const hsize_t *src, INT *dst) {
-        for (int i=0; i<rank; i++) {
+        int i;
+        for (i=0; i<rank; i++) {
                 dst[rank-(i+1)] = src[i];
         }
 }
@@ -161,9 +163,10 @@ void chunk_dimensions(int rank, const hsize_t *src, hsize_t *dst) {
         * last dimension if needed, then any remaining chunk dimension
         * is 1. CAUTION: changing this will affect performance! */
         hsize_t block_size = 1;
-        for (int i=0; i<rank; i++) block_size *= src[i];
+        int i;
+        for (i=0; i<rank; i++) block_size *= src[i];
         if (block_size == 0) {
-                for (int i=0; i<rank; i++) dst[i] = 1;
+                for (i=0; i<rank; i++) dst[i] = 1;
         } else {
                 int idim = 0;
                 hsize_t block_size = src[idim];
@@ -619,7 +622,8 @@ hid_t mh5c_create_dset_array(hid_t file_id, char* name, int rank, const INT* dim
         if (mdim == 0) {
                 space_id = H5Screate_simple(rank, hdims, NULL);
         } else {
-                for (int i=0; i<rank; i++) {
+                int i;
+                for (i=0; i<rank; i++) {
                         kdims[i] = mdim;
                 }
                 space_id = H5Screate_simple(rank, hdims, kdims);
