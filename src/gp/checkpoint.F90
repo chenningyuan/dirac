@@ -360,7 +360,7 @@ module checkpoint
             if (found) exit
          end if
          ! normal case: a complete match is required
-         found = index(labels(i)%label,mylabel).ne.0
+         found = trim(labels(i)%label) == trim(mylabel)
          if (found) exit
       end do
 

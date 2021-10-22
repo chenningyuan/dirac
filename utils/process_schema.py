@@ -210,7 +210,7 @@ def load_AOPROPER(file_name,data):
     data['/result/operators/ao_matrices/aobasis_id']['value']   = 1
     # Fill in the data for the matrix representations
     for key, matrix in aoproper.items():
-        if (key == 'GABAO1XX'):
+        if ('GABAO1XX' in key):
            pass # this is not a matrix representation (has dimension n_shells)
         else:
            # copy the generic dictionary to the specific dictionary used to store the matrix

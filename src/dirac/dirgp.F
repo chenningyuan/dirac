@@ -4651,18 +4651,18 @@ C***********************************************************************
       real(8), allocatable :: coord(:),priexp(:),priccf(:)
       integer :: ishell,i,n
 
-      call checkpoint_write ('/aobasis_id',idata=1)
-      call checkpoint_write ('/angular',idata=1)
-      call checkpoint_write ('/n_shells',idata=ao_basis%nshells)
-      call checkpoint_write ('/n_ao',idata=ao_basis%nao)
-      call checkpoint_write ('/orbmom',
+      call checkpoint_write (group//'/aobasis_id',idata=1)
+      call checkpoint_write (group//'/angular',idata=1)
+      call checkpoint_write (group//'/n_shells',idata=ao_basis%nshells)
+      call checkpoint_write (group//'/n_ao',idata=ao_basis%nao)
+      call checkpoint_write (group//'/orbmom',
      &     idata=ao_basis%gtos(:)%orb_momentum)
-      call checkpoint_write ('/n_prim',
+      call checkpoint_write (group//'/n_prim',
      &     idata=ao_basis%gtos(:)%n_primitives)
       ! We can't handle generally contracted functions yet, set n_cont to 1 (segmented contractions)
       allocate (n_cont(ao_basis%nshells))
       n_cont = 1
-      call checkpoint_write ('/n_cont',idata=n_cont)
+      call checkpoint_write (group//'/n_cont',idata=n_cont)
       ! Concatenate arrays as we always write in 1D
       allocate(coord(3*ao_basis%nshells))
       n = sum(ao_basis%gtos(:)%n_primitives)
@@ -4677,9 +4677,9 @@ C***********************************************************************
      &          ao_basis%gtos(ishell)%coefficient
          i = i + ao_basis%gtos(ishell)%n_primitives
       enddo
-      call checkpoint_write ('/center',rdata=coord)
-      call checkpoint_write ('/exponents',rdata=priexp)
-      call checkpoint_write ('/contractions',rdata=priccf)
+      call checkpoint_write (group//'/center',rdata=coord)
+      call checkpoint_write (group//'/exponents',rdata=priexp)
+      call checkpoint_write (group//'/contractions',rdata=priccf)
 
       deallocate(n_cont,coord,priexp,priccf)
 
