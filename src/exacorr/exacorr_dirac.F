@@ -999,3 +999,84 @@ C
 
        end subroutine read_mdprop
 
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine set_laplace(num,print_level)
+C
+C---------------Description--------------------------------------------
+C
+C   set flags for the computation of laplace points
+C
+C   Johann Pototschnig, Fall 2019
+
+C----------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+C parameters
+#include "priunit.h"
+#include "lapdim.h"
+
+C common blocks
+#include "dcblap.h"
+
+
+      integer  :: num
+      integer  :: print_level
+
+      integer  :: ILAP
+      logical  :: LWGHTS, LXPNTS
+      CHARACTER*7, CHRERR
+      PARAMETER (CHRERR = 'LAPINP>')
+
+C     Initialize /DCBLAP/
+C     ===================
+C
+      IPRLAP = print_level
+      NLAP = num
+      MXITER = 50
+      STEPMX = 0.3D0
+      TOLRNG = 1.D-10
+      TOLPAR = 1.D-15
+
+      ! rather conservative accuracy threshold
+      TOLLAP = 1.D-8
+
+      LWGHTS = .FALSE.
+      LXPNTS = .FALSE.
+
+C     Processing
+C     ====================
+
+!     use pre-tabulated start values
+      INILAP = (.NOT.(LWGHTS.AND.LXPNTS))
+!     determine if points are given or not
+      FNDLAP = (NLAP.LT.1)
+!     print setting
+      IF (IPRLAP.GT.1) THEN
+       WRITE(LUPRI,*) CHRERR,"print level:",IPRLAP
+       WRITE(LUPRI,*) CHRERR,"maximum iteratations:",MXITER
+       WRITE(LUPRI,*) CHRERR,"number of quadrature points:",NLAP
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Maehly algorithms:",TOLRNG 
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Raphson algorithms:",TOLPAR
+       WRITE(LUPRI,*) CHRERR,"accuracy threshold:",TOLLAP 
+       WRITE(LUPRI,*) CHRERR,
+     &  "step length in line search algorithm:",STEPMX 
+       IF (LWGHTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start weights were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,WGHTS(ILAP)
+        END DO
+       END IF
+       IF (LXPNTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start exponents were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,XPNTS(ILAP)
+        END DO
+       END IF
+      END IF
+
+      end subroutine set_laplace
+
