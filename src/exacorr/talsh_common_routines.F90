@@ -704,7 +704,6 @@ module talsh_common_routines
       complex(8), pointer :: tens3(:, :, :)
       complex(8), pointer :: tens4(:, :, :, :)
       complex(8), pointer :: tens6(:, :, :, :, :, :)
-      
 
       rank=talsh_tensor_rank(tensor)
       if (rank.eq.3) then

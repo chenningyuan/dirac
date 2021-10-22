@@ -17,9 +17,11 @@
 .OCCUPIED                                                                                           
 1..5 
 .VIRTUAL                                                                                            
-6..33    
+6..27
 .MP2LAP
 1.0d-4
+.PRINT
+1
 **MOLECULE
 *SYMMETRY
 .NOSYM

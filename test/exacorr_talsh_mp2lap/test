@@ -13,6 +13,7 @@ f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
       num_lines   = 21,
       rel_tolerance   = 1.0e-7)
 
+#test.run(['cc_hf_pvdz.inp'], ['HF.xyz'], f)
 test.run(['mp2lap_hf_pvdz.inp'], ['HF.xyz'], f)
 
 sys.exit(test.return_code)
