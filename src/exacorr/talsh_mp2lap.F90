@@ -149,34 +149,76 @@ module talsh_mp2lap
           ierr=talsh_tensor_add("R(a,i,k)+=O(a,i,k)",L2,uvo_tensor)
           call laplace_mult(L2,laplace%val(i)/2.0d0,eps_vir,eps_occ_neg,zero_chol)
 
-          
-          ierr=talsh_tensor_init(T1,ZERO)
-          ierr=talsh_tensor_contract("M(n,k)+=T+(i,a,n)*V+(i,a,k)",T1,L1,L1)
-          ierr=talsh_tensor_init(T2,ZERO)
-          ierr=talsh_tensor_contract("N(n,k)+=T(a,i,n)*V(a,i,k)",T2,L2,L2)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=M(n,k)*N(k,n)",mp2_tensor,T1,T2,scale=TWO)
-          if (exa_input%print_level>0) write(*,*) ' MP2 contribution: ',mp2_tens(1),', weigth: ',laplace%wei(i)
-          mp2_energy=mp2_energy+laplace%wei(i)*mp2_tens(1)
-
-          ierr=talsh_tensor_init(T1,ZERO)
-          ierr=talsh_tensor_contract("M(n,k)+=T(i,a,n)*V(i,a,k)",T1,L1,L1)
-          ierr=talsh_tensor_init(T2,ZERO)
-          ierr=talsh_tensor_contract("N(n,k)+=T(a,i,n)*V(a,i,k)",T2,L2,L2)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=M(n,k)*N(k,n)",mp2_tensor,T1,T2,scale=TWO)
-          if (exa_input%print_level>0) write(*,*) ' MP2 contribution: ',mp2_tens(1),', weigth: ',laplace%wei(i)
-          
-
-
+          !---------------------------------------------- working, but using expensive contraction
           ierr=talsh_tensor_init(mp2_dens,ZERO)
-          ierr=talsh_tensor_init(temp,ZERO)
           ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",mp2_dens,L1,L2)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*V(a,b,i,j)",mp2_tensor,mp2_dens,mp2_dens)
+          write(*,*) ' MP2 test (sym): ',mp2_tens(1)
           ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",mp2_dens,L1,L2,scale=MINUS_ONE)
           mp2_tens(1)=ZERO
           ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*V(a,b,i,j)",mp2_tensor,mp2_dens,mp2_dens)
-          write(*,*) ' MP2 test: ',mp2_tens(1)
-           
+          write(*,*) ' MP2 test (total): ',mp2_tens(1)
+
+          mp2_energy=mp2_energy+laplace%wei(i)*mp2_tens(1)
+
+          !----------------------------------- not working
+          ierr=talsh_tensor_init(T1,ZERO)
+          ierr=talsh_tensor_contract("N(k,n)+=T+(i,a,k)*V(i,a,n)",T1,L1,L1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M+(k,n)*N(k,n)",mp2_tensor,T1,T1)
+          write(*,*) ' MP2 test a1: ',mp2_tens(1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T1)
+          write(*,*) ' MP2 test a2: ',mp2_tens(1)
+
+          ierr=talsh_tensor_init(T2,ZERO)
+          ierr=talsh_tensor_contract("N(k,n)+=T+(b,j,k)*V(b,j,n)",T2,L2,L2)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M+(k,n)*N(n,k)",mp2_tensor,T2,T2)
+          write(*,*) ' MP2 test b1: ',mp2_tens(1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M(k,n)*N(n,k)",mp2_tensor,T2,T2)
+          write(*,*) ' MP2 test b2: ',mp2_tens(1)
+
+          ierr=talsh_tensor_init(T1,ZERO)
+          ierr=talsh_tensor_contract("M(k,n)+=T+(i,a,k)*V(a,i,n)",T1,L1,L2)
+          ierr=talsh_tensor_init(T2,ZERO)
+          ierr=talsh_tensor_contract("M(k,n)+=T(a,i,k)*V+(i,a,n)",T1,L2,L1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M(k,n)*N(n,k)",mp2_tensor,T1,T2)
+          write(*,*) ' MP2 test a: ',mp2_tens(1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M+(k,n)*N(n,k)",mp2_tensor,T1,T2)
+          write(*,*) ' MP2 test b: ',mp2_tens(1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T2)
+          write(*,*) ' MP2 test c: ',mp2_tens(1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M+(k,n)*N(k,n)",mp2_tensor,T1,T2)
+          write(*,*) ' MP2 test d: ',mp2_tens(1)
+
+          ierr=talsh_tensor_init(temp,ZERO)
+          ierr=talsh_tensor_contract("R(i,j,k,n)+=T+(i,a,k)*V(i,a,n)",temp,L1,L1)
+          ierr=talsh_tensor_contract("R(i,j,k,n)+=T+(j,a,k)*V(a,i,n)",temp,L1,L2,scale=MINUS_ONE)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M+(i,j,k,n)*N(i,j,n,k)",mp2_tensor,temp,temp)
+          write(*,*) ' MP2 test 5: ',mp2_tens(1)
+
+          !------------------------------------------ different test
+          ierr=talsh_tensor_add("R(i,a,k)+=O(a,i,k)",L1,L2,scale=MINUS_ONE)
+
+          ierr=talsh_tensor_init(T1,ZERO)
+          ierr=talsh_tensor_contract("N(k,n)+=T+(i,a,k)*V(a,i,n)",T1,L1,L2)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T1)
+          write(*,*) ' MP2 test f1: ',mp2_tens(1)
+          mp2_tens(1)=ZERO
+          ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T1)
+          write(*,*) ' MP2 test f2: ',mp2_tens(1)
+
+          write(*,*) ' --------------------- '
+
         end do
 
         mp2_energy=-mp2_energy*ONE_QUARTER_R
