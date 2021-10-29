@@ -56,7 +56,13 @@ module talsh_mp2lap
         real(8), allocatable                   :: eps_occ(:),eps_vir(:),eps_occ_neg(:), zero_chol(:)
         type(laplace_info)                     :: laplace
         integer(INTD)                          :: dims4(1:4), dims2(1:2)
-        type(talsh_tens_t)                     :: L1,L2,T1,T2,mp2_dens,R1,R2
+        type(talsh_tens_t)                     :: L1,L2
+
+        !intermediates
+        type(talsh_tens_t)                     :: temp, mp2_dens
+
+        !++++ testing
+        type(talsh_tens_t)                     :: T1,T2,R1,R2
 
         call print_date("Entering MP2_LAP Module")
 
@@ -78,15 +84,12 @@ module talsh_mp2lap
         ierr=talsh_tensor_get_body_access(mp2_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p,mp2_tens,mp2_dims)
 
-        !Create MP2 density matrix
+        !Create MP2 density matrix, temporary
         dims4=nocc
         dims4(1:2)=nvir
-        ierr=talsh_tensor_construct(mp2_dens,C8,dims4,init_val=ZERO)
-        dims4=nchol
-        dims4(1)=nocc
-        dims4(3)=nocc
-        ierr=talsh_tensor_construct(R1,C8,dims4,init_val=ZERO)
-        ierr=talsh_tensor_construct(R2,C8,dims4,init_val=ZERO)
+        ierr=talsh_tensor_construct(temp,C8,dims4,init_val=ZERO)
+        dims2=nvir
+        ierr=talsh_tensor_construct(mp2_dens,C8,dims2,init_val=ZERO)
 
         !perform cholesk decompostion / integral transformation
         call get_cholesky_vec (nocc,nvir,exa_input%mo_occ,exa_input%mo_vir,uov_tensor, uvo_tensor, &
@@ -100,14 +103,23 @@ module talsh_mp2lap
         endif
         write(*,*) 'uov_dims', uov_dims
         nchol=uov_dims(3)
+
         allocate (zero_chol(nchol))
         zero_chol=0.0
-        dims2=nchol
+        
         ierr=talsh_tensor_construct(L1,C8,uov_dims,init_val=ZERO)
         ierr=talsh_tensor_construct(L2,C8,uvo_dims,init_val=ZERO)
+        
+        call print_date("Cholesky vector computed / transformed")
+
+        !+++++++ testing to delete
+        dims4=nchol
+        dims4(1:2)=nocc
+        ierr=talsh_tensor_construct(R1,C8,dims4,init_val=ZERO)
+        ierr=talsh_tensor_construct(R2,C8,dims4,init_val=ZERO)
+        dims2=nchol
         ierr=talsh_tensor_construct(T1,C8,dims2,init_val=ZERO)
         ierr=talsh_tensor_construct(T2,C8,dims2,init_val=ZERO)
-        call print_date("Cholesky vector computed / transformed")
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!testing to dlelete
         !ierr=talsh_tensor_init(uov_tensor,ONE/sqrt(DCMPLX(nchol)))
@@ -151,94 +163,79 @@ module talsh_mp2lap
           call laplace_mult(L2,laplace%val(i)/2.0d0,eps_vir,eps_occ_neg,zero_chol)
 
           !---------------------------------------------- working, but using expensive contraction
-          ierr=talsh_tensor_init(mp2_dens,ZERO)
-          ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",mp2_dens,L1,L2)
+          ierr=talsh_tensor_init(temp,ZERO)
+          ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp,L1,L2)
+          ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",temp,L1,L2,scale=MINUS_ONE)
           mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*V(a,b,i,j)",mp2_tensor,mp2_dens,mp2_dens)
-          write(*,*) ' MP2 test (sym): ',mp2_tens(1)
-          ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",mp2_dens,L1,L2,scale=MINUS_ONE)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*V(a,b,i,j)",mp2_tensor,mp2_dens,mp2_dens)
+          ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*V(a,b,i,j)",mp2_tensor,temp,temp)
           write(*,*) ' MP2 test (total): ',mp2_tens(1)
 
           mp2_energy=mp2_energy+laplace%wei(i)*mp2_tens(1)
 
-          !----------------------------------- not working
+          !---------------------------------------------- MP2 density matrix
+          ierr=talsh_tensor_contract("E(a,b)+=T+(c,b,i,j)*V(c,a,i,j)",mp2_dens,temp,temp)
+
+          !----------------------------------- now working
+          mp2_tens(1)=ZERO
           ierr=talsh_tensor_init(T1,ZERO)
           ierr=talsh_tensor_contract("M(k,n)+=T(i,a,k)*V+(i,a,n)",T1,L1,L1)
           ierr=talsh_tensor_init(T2,ZERO)
           ierr=talsh_tensor_contract("N(k,n)+=T+(b,j,k)*V(b,j,n)",T2,L2,L2)
-          mp2_tens(1)=ZERO
           ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T2)
-          write(*,*) ' MP2 test T1: ',mp2_tens(1)
 
           ierr=talsh_tensor_init(R1,ZERO)
           ierr=talsh_tensor_contract("M(i,j,k,n)+=T+(b,j,k)*V+(i,b,n)",R1,L2,L1)
-          ierr=talsh_tensor_init(R1,ZERO)
+          ierr=talsh_tensor_init(R2,ZERO)
           ierr=talsh_tensor_contract("N(i,j,k,n)+=T(i,a,k)*V(a,j,n)",R2,L1,L2)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=M(i,j,k,n)*N(i,j,k,n)",mp2_tensor,R1,R2)
-          write(*,*) ' MP2 test T2: ',mp2_tens(1)
+          ierr=talsh_tensor_contract("E()+=M(i,j,k,n)*N(i,j,k,n)",mp2_tensor,R1,R2,scale=MINUS_ONE)
 
           ierr=talsh_tensor_init(R1,ZERO)
           ierr=talsh_tensor_contract("M(i,j,k,n)+=T+(a,j,k)*V+(i,a,n)",R1,L2,L1)
-          ierr=talsh_tensor_init(R1,ZERO)
+          ierr=talsh_tensor_init(R2,ZERO)
           ierr=talsh_tensor_contract("N(i,j,k,n)+=T(i,b,k)*V(b,j,n)",R2,L1,L2)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=M(i,j,k,n)*N(i,j,k,n)",mp2_tensor,R1,R2)
-          write(*,*) ' MP2 test T3: ',mp2_tens(1)
+          ierr=talsh_tensor_contract("E()+=M(i,j,k,n)*N(i,j,k,n)",mp2_tensor,R1,R2,scale=MINUS_ONE)
 
           ierr=talsh_tensor_init(T1,ZERO)
           ierr=talsh_tensor_contract("M(k,n)+=T(i,b,k)*V+(i,b,n)",T1,L1,L1)
           ierr=talsh_tensor_init(T2,ZERO)
           ierr=talsh_tensor_contract("N(k,n)+=T+(a,j,k)*V(a,j,n)",T2,L2,L2)
-          mp2_tens(1)=ZERO
           ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T2)
-          write(*,*) ' MP2 test T4: ',mp2_tens(1)
-
-          !------------------------------------------ different test
-          ierr=talsh_tensor_add("R(i,a,k)+=O(a,i,k)",L1,L2,scale=MINUS_ONE)
-
-          ierr=talsh_tensor_init(T1,ZERO)
-          ierr=talsh_tensor_contract("N(k,n)+=T+(i,a,k)*V(a,i,n)",T1,L1,L2)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T1)
-          write(*,*) ' MP2 test f1: ',mp2_tens(1)
-          mp2_tens(1)=ZERO
-          ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T1)
-          write(*,*) ' MP2 test f2: ',mp2_tens(1)
+          write(*,*) ' MP2 test T: ',mp2_tens(1)
 
           write(*,*) ' --------------------- '
 
         end do
 
         mp2_energy=-mp2_energy*ONE_QUARTER_R
-        !minus because the regular denominator is negative
-        !which is of course not possible with Laplace
         write(*,*) '    MP2 energy = ',mp2_energy,'(Laplace)'
 
-        !call laplace_testing(mp2_dens, eps_occ, eps_vir)
+        !call laplace_testing(temp, eps_occ, eps_vir)
 
         mp2_tens(1)=ZERO
-        ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*V(a,b,i,j)",mp2_tensor,mp2_dens,mp2_dens)
+        ierr=talsh_tensor_contract("E()+=T+(a,b)*V(a,b)",mp2_tensor,mp2_dens,mp2_dens)
         write(*,*) ' MP2 test: ',mp2_tens(1)
 
 
         !clean up
-        ierr=talsh_tensor_destruct(L1)
-        ierr=talsh_tensor_destruct(L2)
-        ierr=talsh_tensor_destruct(T1)
-        ierr=talsh_tensor_destruct(T2)
         ierr=talsh_tensor_destruct(mp2_tensor)
         ierr=talsh_tensor_destruct(mp2_dens)
-        ierr=talsh_tensor_destruct(R1)
-        ierr=talsh_tensor_destruct(R2)
+        ierr=talsh_tensor_destruct(temp)
+        !cholesky
         ierr=talsh_tensor_destruct(uvo_tensor)
         ierr=talsh_tensor_destruct(uov_tensor)
+        ierr=talsh_tensor_destruct(L1)
+        ierr=talsh_tensor_destruct(L2)
+        !laplace
         call deallocate_laplace(laplace)
         deallocate(eps_occ)
         deallocate(eps_vir)
         deallocate(zero_chol)
+
+        !++++++++++ testing
+        ierr=talsh_tensor_destruct(T1)
+        ierr=talsh_tensor_destruct(T2)
+        ierr=talsh_tensor_destruct(R1)
+        ierr=talsh_tensor_destruct(R2)
 
 
         !shutdown TALSH
