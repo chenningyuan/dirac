@@ -54,7 +54,7 @@ where appears the ladder operators :math:`s_{\pm}=s_{x}\pm is_{y}`. The spin-1/2
    * :math:`\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{p}}\right)\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{p}}\right)`
    * :math:`\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{\pi}}\right)\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{\pi}}\right)`, where :math:`\hat{\boldsymbol{\pi}}` is mechanical momentum :math:`\hat{\boldsymbol{\pi}}=\hat{\boldsymbol{p}}+e\boldsymbol{A}` and :math:`\boldsymbol{A}` is a vector potential. Show how this expression is simplified in Coulomb gauge: :math:`\boldsymbol{\nabla}\cdot\boldsymbol{A}=0`.
 
-   * Show that :math:`\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{p}}\right)V_{eN}\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{p}}\right)=\hbar\left(\frac{Ze^{2}}{2\pi\varepsilon_{0}r^{3}}\right)\hat{\boldsymbol{s}}\cdot\hat{\boldsymbol{\ell}}`, where :math:`V_{eN}` is the electron-nucleus interaction :math:`V_{en}=-\frac{Ze^{2}}{4\pi\varepsilon_{0}r}` in an atom
+   * Show that :math:`\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{p}}\right)V_{eN}\left(\boldsymbol{\sigma}\cdot\hat{\boldsymbol{p}}\right)=\boldsymbol{p}V_{eN}\cdot\boldsymbol{p}+\hbar\left(\frac{Ze^{2}}{2\pi\varepsilon_{0}r^{3}}\right)\hat{\boldsymbol{s}}\cdot\hat{\boldsymbol{\ell}}`, where :math:`V_{eN}` is the electron-nucleus interaction :math:`V_{en}=-\frac{Ze^{2}}{4\pi\varepsilon_{0}r}` in an atom
 
 
  

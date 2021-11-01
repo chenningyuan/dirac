@@ -40,7 +40,7 @@ Atomic calculations
    The exercises are:
 	  1. Perform 4-component HF-calculations on your series of three atoms. We focus on the *outermost* :math:`p` orbitals: i) How does spin-orbit splitting vary as a function of nuclear charge Z ? ii) How do spin-orbit interaction affect  orbital sizes :math:`<r^2>^{1/2}`of spin-orbit partners down the series ?
 	  2. Perform 4-component *spin-free* and *non-relativistic* HF-calculations on the heaviest atom of your series in order to investigate the effects of spin-orbit coupling and scalar relativistic effects. i) Make a table showing orbital energies and orbital sizes of all orbitals for each of the three Hamiltonians. ii) What orbitals contract (stabilize) and expand (destabilize) ? iii) Plot the densities of the *outermost* :math:`p` orbitals with the three Hamiltonians.
-	  3. Perform 2-component relativistic HF-calculations using the following Hamiltonians: i) X2C ii) second-order Douglas-Kroll-Hess iii) ZORA and iv) scaled ZORA. Make a table of energies of all orbitals obtained with these Hamiltonians comparing with those obtained with the 4-component Dirac-Coulomb Hamiltonian.
+	  3. Perform 2-component relativistic HF-calculations on the heaviest atom of your series using the following Hamiltonians: i) X2C ii) second-order Douglas-Kroll-Hess iii) ZORA and iv) scaled ZORA. Make a table of energies of all orbitals obtained with these Hamiltonians comparing with those obtained with the 4-component Dirac-Coulomb Hamiltonian.
    Helpful information for these exercises is given below !	     
 
 We shall start gently by looking at atoms. It will be useful to recall the form and notation for atomic orbitals. In the non-relativistic
