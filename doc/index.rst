@@ -226,6 +226,7 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
+  :doc:`Patch preparation <programmers/patch_preparation>` |       
   :doc:`Beta testing <programmers/beta_testing>` |
   :doc:`Where to commit after the release is out <programmers/commit_policy>`
 

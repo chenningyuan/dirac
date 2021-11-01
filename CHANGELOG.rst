@@ -1,5 +1,21 @@
 :orphan:
 
+21.1 (2021-09-16)
+-----------------
+
+Revised features:
+
+- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first. pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. (H. J. Aa. Jensen).
+  - added ENABLE_EXATENSOR to the options you can change with 'ccmake --' (H. J. Aa. Jensen).
+  - enable talsh only with unsupported mpi libraries (Andre Gomes)
+  - improved exatensor MPI identification (Johann Pototschnig)
+    
+Error corrections:
+
+- Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
+- Fixed memory management in LUCIA (Lucas Visscher)
+- atomic supersymmetry now works with X2Cmmf (Ayaki Sunaga, Stefan Knecht, Trond Saue)
+
 
 21.0 (2021-05-28)
 -----------------

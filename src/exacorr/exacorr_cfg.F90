@@ -27,6 +27,7 @@ contains
 
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%cc2,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
@@ -54,6 +55,7 @@ contains
   call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%t_mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
 

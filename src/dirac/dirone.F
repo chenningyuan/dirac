@@ -10788,6 +10788,7 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
+      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM
