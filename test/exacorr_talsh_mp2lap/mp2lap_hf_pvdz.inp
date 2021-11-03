@@ -3,8 +3,8 @@
 **INTEGRALS
 .NUCMOD
  1
-*READIN                                                                                             
-.UNCONTRACT  
+*READIN
+.UNCONTRACT
 **HAMILTONIAN
 .X2C
 **WAVE FUNCTION
@@ -12,20 +12,22 @@
 .EXACC
 *SCF
 .EVCCNV
-1.0E-9 1.0E-7  
+1.0E-9 1.0E-7
 **EXACC
-.OCCUPIED                                                                                           
-1..5 
-.VIRTUAL                                                                                            
+.OCCUPIED
+1..5
+.VIRTUAL
 6..27
 .MP2LAP
 1.0d-4
 .PRINT
 1
+.TALSH_BUFF
+1
 **MOLECULE
 *SYMMETRY
 .NOSYM
 *BASIS
-.DEFAULT 
+.DEFAULT
 cc-pVDZ
-*END OF 
+*END OF

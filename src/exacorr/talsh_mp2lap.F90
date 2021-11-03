@@ -111,6 +111,8 @@ module talsh_mp2lap
         allocate (eps_vir(nvir))
         call get_orbital_energies(nocc,exa_input%mo_occ,eps_occ)
         call get_orbital_energies(nvir,exa_input%mo_vir,eps_vir)
+        !using level shifts as recomputation requires all integrals, introduces deviations
+        call shift_orbital_energy(eps_vir,eps_occ,exa_input%level_shift)
         call print_date("retrieved orbital energies")
 
         !Set up Laplace points
