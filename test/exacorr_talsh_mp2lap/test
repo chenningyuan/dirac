@@ -14,7 +14,6 @@ f.add(from_string = 'MP2 energy =',
       rel_tolerance   = 1.0e-7)
 
 test.run(['mp2lap_hf_pvdz.inp'], ['HF.xyz'], f)
-test.run(['mp2lap_beh_pvdz.inp'], ['BeH_nosym.mol'], f)
 
 
 sys.exit(test.return_code)
