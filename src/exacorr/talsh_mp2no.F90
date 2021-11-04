@@ -4,7 +4,7 @@ module talsh_mp2no
         use tensor_algebra
         use talsh
         use exacorr_datatypes
-        use exacorr_utils
+        !use exacorr_utils
         use talsh_common_routines
         use exacorr_mo
         use exacorr_global
@@ -24,7 +24,7 @@ module talsh_mp2no
 
         private
 
-        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock, write_talsh_matrix
+        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
@@ -34,7 +34,9 @@ module talsh_mp2no
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
 !       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
-!       Written by Xiang Yuan
+!       Written by Xiang Yuan, modified by Johann Pototschnig
+
+        use talsh_mp2lap
 
         type(exacc_input), intent(in) :: exa_input
         integer, intent(inout)        :: N_cano                  ! number of new canonical orbital
@@ -60,7 +62,11 @@ module talsh_mp2no
             call print_date('File NOs_MO exists')
         else
             call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
-            call talsh_generate_MP2_VNO_MObasis(exa_input)   
+            if (exa_input%mp2no<9) then
+                  call talsh_generate_MP2_VNO_MObasis(exa_input)
+            else
+                  call mp2lap_get_DM(exa_input)
+            endif   
             call get_transform_Fock(exa_input,'DM_complex')
         end if
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
@@ -258,42 +264,6 @@ module talsh_mp2no
       call print_date('finished oovv integrals')
          
    end subroutine get_MP2_integrals
-        
-!------------------------------------------------------------------------------------------------------------------------------------
-      subroutine write_talsh_matrix(nvir,dm_vv,file_out)
-! Routine for writing complex density matrix into the file'DM_complex'. 
-
-
-! input variables
-         integer,intent(in)                  :: nvir
-         type(talsh_tens_t), intent(inout)   :: dm_vv
-         character(len=*),intent(in)         :: file_out
-
-! body pointers
-         type(C_PTR)                     :: body_p2
-         complex(8), pointer, contiguous :: dm_block(:,:)
-         complex(8), allocatable         :: dm_mo_fort(:,:)
-! error code
-         integer :: ierr
-         integer :: mp2dm
-
-         allocate (dm_mo_fort(nvir,nvir))
-         dm_mo_fort = ZERO
-         
-         ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-         dm_mo_fort(1:nvir,1:nvir) = dm_block
-         
-         call get_free_fileunit(mp2dm)
-         open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
-         ! write dimension of the matrix 
-         write(mp2dm) nvir
-         ! write matrix element 
-         write(mp2dm) dm_mo_fort
-
-         close(mp2dm,status='KEEP')
-
-        end subroutine write_talsh_matrix
 
 !------------------------------------------------------------------------------------------------------------------------------------
       subroutine get_transform_Fock (exa_input,Matrix_file)

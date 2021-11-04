@@ -18,6 +18,7 @@ module talsh_common_routines
     public get_orbital_energies
     public scale_with_denominators
     public print_tensor
+    public write_talsh_matrix
     public get_element
     public Pair_correlation_energies
     public talsh_init_R8
@@ -336,6 +337,56 @@ module talsh_common_routines
         end if
 
       end subroutine print_tensor
+
+      !------------------------------------------------------------------------------------------------------------------------------------
+      subroutine write_talsh_matrix(nvir,dm_vv,file_out,mode)
+! Routine for writing complex density matrix into the file'DM_complex'. 
+! Written by Xiang Yuan
+! Modified by Johann Pototschnig and shifted to talsh_common_routines
+
+       use exacorr_utils
+
+! input variables
+         integer,intent(in)                  :: nvir
+         type(talsh_tens_t), intent(inout)   :: dm_vv
+         character(len=*),intent(in)         :: file_out
+         integer, intent(in), optional       :: mode ! 1:binary, 2:ascii
+
+! body pointers
+         type(C_PTR)                     :: body_p2
+         complex(8), pointer, contiguous :: dm_block(:,:)
+         complex(8), allocatable         :: dm_mo_fort(:,:)
+! error code
+         integer :: ierr
+         integer :: mp2dm
+
+         allocate (dm_mo_fort(nvir,nvir))
+         dm_mo_fort = ZERO
+         
+         ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
+         dm_mo_fort(1:nvir,1:nvir) = dm_block
+         
+         call get_free_fileunit(mp2dm)
+         if (present(mode) .and. mode==2) then
+           open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+           ! write dimension of the matrix 
+           write(mp2dm,*) nvir
+           ! write matrix element
+           do ierr=1,nvir
+             write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
+           end do
+         else 
+           open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
+           ! write dimension of the matrix 
+           write(mp2dm) nvir
+           ! write matrix element 
+           write(mp2dm) dm_mo_fort
+         end if
+
+         close(mp2dm,status='KEEP')
+
+        end subroutine write_talsh_matrix
       
       function get_element(h_tensor, dims) result(val)
 

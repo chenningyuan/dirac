@@ -46,7 +46,7 @@
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
             integer                 :: moint_scheme = 4
-            integer                 :: mp2no = -1               ! if 1 mp2 natural orbital, if 2 with laplace
+            integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
