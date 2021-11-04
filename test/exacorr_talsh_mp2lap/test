@@ -23,8 +23,8 @@ f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
         rel_tolerance   = 1.0e-7)
 
 test.run(['mp2lap_hf_pvdz_get_no_1.0d-4.inp'], ['HF.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
-test.run(['mp2lap_hf_pvtz_get_no_1.0d-4.inp'], ['HF.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvtz_1.0d-4"')
-
+#test.run(['mp2lap_hf_pvtz_get_no_1.0d-4.inp'], ['HF.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvtz_1.0d-4"')
+#test works, also for different indices, but takes time 04.11.2021
 
 f = Filter()  
 f.add(from_string = '* Dipole moment:',
