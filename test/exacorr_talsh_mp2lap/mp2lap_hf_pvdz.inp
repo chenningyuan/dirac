@@ -19,7 +19,6 @@
 .VIRTUAL
 6..27
 .MP2LAP
-1.0d-4
 .PRINT
 1
 .TALSH_BUFF
@@ -31,3 +30,4 @@
 .DEFAULT
 cc-pVDZ
 *END OF
+
