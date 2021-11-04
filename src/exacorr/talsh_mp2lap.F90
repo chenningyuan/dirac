@@ -322,7 +322,7 @@ module talsh_mp2lap
         ierr=talsh_tensor_construct(L1q,C8,uov_dims,init_val=ZERO)
         ierr=talsh_tensor_construct(L2q,C8,uvo_dims,init_val=ZERO)
 
-        if (nvir<nchol) then
+        if (nocc<nchol) then
             dims4=nocc
             dims4(1:2)=nvir
             ierr=talsh_tensor_construct(temp,C8,dims4,init_val=ZERO)
@@ -342,7 +342,6 @@ module talsh_mp2lap
         end if
 
         do i=1,laplace%num
-          write(*,*) "laplace ",laplace%val(i), laplace%wei(i)
 
           ierr=talsh_tensor_init(L1p,ZERO)
           ierr=talsh_tensor_add("R(i,a,k)+=O(i,a,k)",L1p,uov_tensor)
@@ -352,7 +351,7 @@ module talsh_mp2lap
           ierr=talsh_tensor_add("R(a,i,k)+=O(a,i,k)",L2p,uvo_tensor)
           call laplace_mult(L2p,laplace%val(i)/1.0d0,eps_vir,eps_occ_neg,zero_chol)
 
-          if (nvir<nchol) then
+          if (nocc<nchol) then
               !using nooc
               ierr=talsh_tensor_init(temp,ZERO)
               ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp,L1p,L2p)
@@ -370,7 +369,7 @@ module talsh_mp2lap
             ierr=talsh_tensor_add("R(a,i,k)+=O(a,i,k)",L2q,uvo_tensor)
             call laplace_mult(L2q,laplace%val(i1)/1.0d0,eps_vir,eps_occ_neg,zero_chol)
 
-            if (nvir<nchol) then
+            if (nocc<nchol) then
               ierr=talsh_tensor_init(temp1,ZERO)
               ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp1,L1q,L2q)
               ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",temp1,L1q,L2q,scale=MINUS_ONE)
@@ -387,7 +386,7 @@ module talsh_mp2lap
               ierr=talsh_tensor_contract("E(a,b)+=M(k,n)*N(b,a,k,n)",S1,T1,R2, &
                                           scale=ONE_HALF*laplace%wei(i)*laplace%wei(i1))
               ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
-              !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
+              ierr=talsh_tensor_contract("D(a,b)+=E+(b,a)*K()",mp2_dens,S1,one_mp2lap)
           
               ierr=talsh_tensor_init(R1,ZERO)
               ierr=talsh_tensor_contract("M(c,a,k,n)+=V(i,c,k)*T+(i,a,n)",R1,L1p,L1q)
@@ -397,28 +396,7 @@ module talsh_mp2lap
               ierr=talsh_tensor_contract("E(a,b)+=M(c,a,k,n)*N(b,c,k,n)",S1,R1,R2, &
                                           scale=MINUS_ONE_HALF*laplace%wei(i)*laplace%wei(i1))
               ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
-              !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
-
-              ierr=talsh_tensor_init(R1,ZERO)
-              ierr=talsh_tensor_contract("M(b,c,k,n)+=V(i,b,k)*T+(i,c,n)",R1,L1p,L1q)
-              ierr=talsh_tensor_init(R2,ZERO)
-              ierr=talsh_tensor_contract("N(c,a,k,n)+=T+(c,j,k)*V(a,j,n)",R2,L2p,L2q)
-              ierr=talsh_tensor_init(S1,ZERO)
-              ierr=talsh_tensor_contract("E(a,b)+=M(b,c,k,n)*N(c,a,k,n)",S1,R1,R2, &
-                                          scale=MINUS_ONE_HALF*laplace%wei(i)*laplace%wei(i1))
-              ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
-              !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
-
-              
-              ierr=talsh_tensor_init(T1,ZERO)
-              ierr=talsh_tensor_contract("N(k,n)+=T+(c,j,k)*V(c,j,n)",T1,L2p,L2q)
-              ierr=talsh_tensor_init(R2,ZERO)
-              ierr=talsh_tensor_contract("M(b,a,k,n)+=T(i,b,k)*V+(i,a,n)",R2,L1p,L1q)
-              ierr=talsh_tensor_init(S1,ZERO)
-              ierr=talsh_tensor_contract("E(a,b)+=N(k,n)*M(b,a,k,n)",S1,T1,R2, &
-                                          scale=ONE_HALF*laplace%wei(i)*laplace%wei(i1))
-              ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
-              ! !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
+              ierr=talsh_tensor_contract("D(a,b)+=E+(b,a)*K()",mp2_dens,S1,one_mp2lap)
 
             end if
           
@@ -429,7 +407,7 @@ module talsh_mp2lap
         call write_talsh_matrix(nvir,mp2_dens,'DM_complex')
 
         !clean up
-        if (nvir<nchol) then
+        if (nocc<nchol) then
             ierr=talsh_tensor_destruct(temp)
             ierr=talsh_tensor_destruct(temp1)
         else
