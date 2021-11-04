@@ -7,12 +7,16 @@ module talsh_mp2lap
         use exacorr_datatypes
         use exacorr_utils
         use exacorr_global
+        use talsh_cholesky_integrals
+        use talsh_common_routines
+        use type_laplace, only : laplace_info, deallocate_laplace
 
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
 
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
+        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
+                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0)
         real(8), parameter    :: ONE_QUARTER_R=0.25D0
 
         private
@@ -26,10 +30,6 @@ module talsh_mp2lap
        subroutine talsh_mp2lap_driver (exa_input)
 !       This module is used to construct the MP2 density matrix by talsh 
 !       Written by Johann Pototschnig
-
-        use talsh_cholesky_integrals
-        use talsh_common_routines
-        use type_laplace, only : laplace_info, deallocate_laplace
 
         implicit none
    
@@ -228,10 +228,6 @@ module talsh_mp2lap
 !       This module is used to construct the MP2 density matrix by talsh 
 !       Written by Johann Pototschnig
 
-        use talsh_cholesky_integrals
-        use talsh_common_routines
-        use type_laplace, only : laplace_info, deallocate_laplace
-
         implicit none
    
         type(exacc_input), intent(in) :: exa_input
@@ -346,6 +342,7 @@ module talsh_mp2lap
         end if
 
         do i=1,laplace%num
+          write(*,*) "laplace ",laplace%val(i), laplace%wei(i)
 
           ierr=talsh_tensor_init(L1p,ZERO)
           ierr=talsh_tensor_add("R(i,a,k)+=O(i,a,k)",L1p,uov_tensor)
@@ -358,8 +355,8 @@ module talsh_mp2lap
           if (nvir<nchol) then
               !using nooc
               ierr=talsh_tensor_init(temp,ZERO)
-              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp,L1p,L2p,scale=ONE*laplace%wei(i))
-              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",temp,L1p,L2p,scale=MINUS_ONE*laplace%wei(i))
+              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp,L1p,L2p)
+              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",temp,L1p,L2p,scale=MINUS_ONE)
           end if
 
           ! ---------------- MP2 density matrix
@@ -375,29 +372,53 @@ module talsh_mp2lap
 
             if (nvir<nchol) then
               ierr=talsh_tensor_init(temp1,ZERO)
-              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp1,L1q,L2q,scale=ONE*laplace%wei(i1))
-              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",temp1,L1q,L2q,scale=MINUS_ONE*laplace%wei(i1))
+              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,a,k)*V(b,j,k)",temp1,L1q,L2q)
+              ierr=talsh_tensor_contract("D(a,b,i,j)+=T+(i,b,k)*V(a,j,k)",temp1,L1q,L2q,scale=MINUS_ONE)
                 
-              ierr=talsh_tensor_contract("E(a,b)+=T+(a,c,i,j)*V(b,c,i,j)",mp2_dens,temp,temp1,scale=ONE_HALF)
+              ierr=talsh_tensor_contract("E(a,b)+=T+(a,c,i,j)*V(b,c,i,j)",mp2_dens,temp,temp1, &
+                                          scale=ONE_HALF*laplace%wei(i)*laplace%wei(i1))
             else
               !using nchol
               ierr=talsh_tensor_init(R2,ZERO)
-              ierr=talsh_tensor_contract("N(a,b,k,n)+=T+(b,j,k)*V(a,j,n)",R2,L2p,L2q)
+              ierr=talsh_tensor_contract("N(b,a,k,n)+=T+(b,j,k)*V(a,j,n)",R2,L2p,L2q)
               ierr=talsh_tensor_init(T1,ZERO)
               ierr=talsh_tensor_contract("M(k,n)+=T(i,c,k)*V+(i,c,n)",T1,L1p,L1q)
               ierr=talsh_tensor_init(S1,ZERO)
-              ierr=talsh_tensor_contract("E(a,b)+=M(k,n)*N(a,b,k,n)",S1,T1,R2)
+              ierr=talsh_tensor_contract("E(a,b)+=M(k,n)*N(b,a,k,n)",S1,T1,R2, &
+                                          scale=ONE_HALF*laplace%wei(i)*laplace%wei(i1))
               ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
-              ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
+              !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
           
               ierr=talsh_tensor_init(R1,ZERO)
               ierr=talsh_tensor_contract("M(c,a,k,n)+=V(i,c,k)*T+(i,a,n)",R1,L1p,L1q)
               ierr=talsh_tensor_init(R2,ZERO)
               ierr=talsh_tensor_contract("N(b,c,k,n)+=T+(b,j,k)*V(c,j,n)",R2,L2p,L2q)
               ierr=talsh_tensor_init(S1,ZERO)
-              ierr=talsh_tensor_contract("E(a,b)+=M(c,a,k,n)*N(b,c,k,n)",S1,R1,R2,scale=MINUS_ONE)
+              ierr=talsh_tensor_contract("E(a,b)+=M(c,a,k,n)*N(b,c,k,n)",S1,R1,R2, &
+                                          scale=MINUS_ONE_HALF*laplace%wei(i)*laplace%wei(i1))
               ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
-              ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
+              !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
+
+              ierr=talsh_tensor_init(R1,ZERO)
+              ierr=talsh_tensor_contract("M(b,c,k,n)+=V(i,b,k)*T+(i,c,n)",R1,L1p,L1q)
+              ierr=talsh_tensor_init(R2,ZERO)
+              ierr=talsh_tensor_contract("N(c,a,k,n)+=T+(c,j,k)*V(a,j,n)",R2,L2p,L2q)
+              ierr=talsh_tensor_init(S1,ZERO)
+              ierr=talsh_tensor_contract("E(a,b)+=M(b,c,k,n)*N(c,a,k,n)",S1,R1,R2, &
+                                          scale=MINUS_ONE_HALF*laplace%wei(i)*laplace%wei(i1))
+              ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
+              !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
+
+              
+              ierr=talsh_tensor_init(T1,ZERO)
+              ierr=talsh_tensor_contract("N(k,n)+=T+(c,j,k)*V(c,j,n)",T1,L2p,L2q)
+              ierr=talsh_tensor_init(R2,ZERO)
+              ierr=talsh_tensor_contract("M(b,a,k,n)+=T(i,b,k)*V+(i,a,n)",R2,L1p,L1q)
+              ierr=talsh_tensor_init(S1,ZERO)
+              ierr=talsh_tensor_contract("E(a,b)+=N(k,n)*M(b,a,k,n)",S1,T1,R2, &
+                                          scale=ONE_HALF*laplace%wei(i)*laplace%wei(i1))
+              ierr=talsh_tensor_add("D(a,b)+=E(a,b)",mp2_dens,S1)
+              ! !ierr=talsh_tensor_contract("D(a,b)+=E+(a,b)*K()",mp2_dens,S1,one_mp2lap)
 
             end if
           
