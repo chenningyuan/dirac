@@ -1,3 +1,11 @@
+! Fortran Interface for HDF5 originally written for MOLCAS by
+! Stefan Knecht
+! Steven Vancoillie
+! Ignacio Fdez. Galván
+! Leon Freitag
+
+Below the original README.
+
 This Molcas utility adds HDF5 functionality to Molcas.  In short, it
 provides a runfile-like functionality, but for any number of files
 (several HDF5 files can be active at the same time) and without the

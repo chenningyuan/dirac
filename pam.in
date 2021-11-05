@@ -1371,7 +1371,8 @@ Options are also read from ~/.diracrc"""
         # copies files to scratch_dir
         if self.incmo:
             file_name = 'CHECKPOINT.h5'
-            copy_single_file(file_name,file_name)
+            if os.path.isfile(os.path.join(self.input_directory,file_name)):
+               copy_single_file(file_name,file_name)
             file_name = 'DFCOEF'
             copy_single_file(file_name,file_name)
         if self.inkrmc:

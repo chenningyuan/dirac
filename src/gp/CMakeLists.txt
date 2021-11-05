@@ -53,7 +53,6 @@ set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
 )
 
 set(FREE_GP_FORTRAN_SOURCES
-    checkpoint.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
@@ -102,7 +101,6 @@ set(FREE_GP_FORTRAN_SOURCES
     xml/xml_parser.F90
     labeled_storage.F90
     dircmo.F90
-    hdf5_util/mh5.F90
 )
 
 set(GP_C_SOURCES
@@ -113,7 +111,6 @@ set(GP_C_SOURCES
     selftest_fortran_c_interoperability.c
     stacktraverse_bsd.c
     trace.c
-    hdf5_util/mh5_capi.c
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
@@ -129,14 +126,30 @@ if(ENABLE_RUNTIMECHECK)
     set_source_files_properties(${GP_C_SOURCES} PROPERTIES COMPILE_FLAGS ${CMAKE_C_FLAGS_runtimecheck})
 endif()
 
-add_library(
+if(ENABLE_HDF5)
+  add_library(
     gp
     OBJECT
     ${FIXED_GP_FORTRAN_SOURCES}
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}
+    checkpoint.F90
+    hdf5_util/mh5.F90
+    hdf5_util/mh5_capi.c
 )
+else()
+  add_library(
+    gp
+    OBJECT
+    ${FIXED_GP_FORTRAN_SOURCES}
+    ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
+    ${FREE_GP_FORTRAN_SOURCES}
+    ${GP_C_SOURCES}
+    checkpoint_nohdf5.F90
+    hdf5_util/mh5_nohdf5.F90
+)
+endif()
 
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
