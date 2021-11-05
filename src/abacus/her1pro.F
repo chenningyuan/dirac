@@ -692,9 +692,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dBX  '
-         LABINT(2) = 'dS/dBY  '
-         LABINT(3) = 'dS/dBZ  '
+         LABINT(1) = 'dS_dBX  '
+         LABINT(2) = 'dS_dBY  '
+         LABINT(3) = 'dS_dBZ  '
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -711,12 +711,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dB2XX'
-         LABINT(2) = 'dS/dB2XY'
-         LABINT(3) = 'dS/dB2XZ'
-         LABINT(4) = 'dS/dB2YY'
-         LABINT(5) = 'dS/dB2YZ'
-         LABINT(6) = 'dS/dB2ZZ'
+         LABINT(1) = 'dS_dB2XX'
+         LABINT(2) = 'dS_dB2XY'
+         LABINT(3) = 'dS_dB2XZ'
+         LABINT(4) = 'dS_dB2YY'
+         LABINT(5) = 'dS_dB2YZ'
+         LABINT(6) = 'dS_dB2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -796,9 +796,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dh/dBX  '
-         LABINT(2) = 'dh/dBY  '
-         LABINT(3) = 'dh/dBZ  '
+         LABINT(1) = 'dh_dBX  '
+         LABINT(2) = 'dh_dBY  '
+         LABINT(3) = 'dh_dBZ  '
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -911,12 +911,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'XXdh/dB2'
-         LABINT(2) = 'XYdh/dB2'
-         LABINT(3) = 'XZdh/dB2'
-         LABINT(4) = 'YYdh/dB2'
-         LABINT(5) = 'YZdh/dB2'
-         LABINT(6) = 'ZZdh/dB2'
+         LABINT(1) = 'XXdh_dB2'
+         LABINT(2) = 'XYdh_dB2'
+         LABINT(3) = 'XZdh_dB2'
+         LABINT(4) = 'YYdh_dB2'
+         LABINT(5) = 'YZdh_dB2'
+         LABINT(6) = 'ZZdh_dB2'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -1013,9 +1013,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'd<S|/dBX'
-         LABINT(2) = 'd<S|/dBY'
-         LABINT(3) = 'd<S|/dBZ'
+         LABINT(1) = 'd<S|_dBX'
+         LABINT(2) = 'd<S|_dBY'
+         LABINT(3) = 'd<S|_dBZ'
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -1033,9 +1033,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'd|S>/dBX'
-         LABINT(2) = 'd|S>/dBY'
-         LABINT(3) = 'd|S>/dBZ'
+         LABINT(1) = 'd|S>_dBX'
+         LABINT(2) = 'd|S>_dBY'
+         LABINT(3) = 'd|S>_dBZ'
          INTREP(1) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
          INTREP(2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
@@ -1408,9 +1408,9 @@ C     ---------------------------------------------------------
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dEXa '
-         LABINT(2) = 'dS/dEYa '
-         LABINT(3) = 'dS/dEZa '
+         LABINT(1) = 'dS_dEXa '
+         LABINT(2) = 'dS_dEYa '
+         LABINT(3) = 'dS_dEZa '
 C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
@@ -1428,9 +1428,9 @@ C     ---------------------------------------------------------
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dS/dEXb '
-         LABINT(2) = 'dS/dEYb '
-         LABINT(3) = 'dS/dEZb '
+         LABINT(1) = 'dS_dEXb '
+         LABINT(2) = 'dS_dEYb '
+         LABINT(3) = 'dS_dEZb '
 C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
@@ -1449,9 +1449,9 @@ C
          NOPTYP = 3
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = 'dh1/dEX '
-         LABINT(2) = 'dh1/dEY '
-         LABINT(3) = 'dh1/dEZ '
+         LABINT(1) = 'dh1_dEX '
+         LABINT(2) = 'dh1_dEY '
+         LABINT(3) = 'dh1_dEZ '
 C
          INTREP(1) = ISYMAX(1,1)
          INTREP(2) = ISYMAX(2,1)
@@ -2164,12 +2164,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = '<<S/B2XX'
-         LABINT(2) = '<<S/B2XY'
-         LABINT(3) = '<<S/B2XZ'
-         LABINT(4) = '<<S/B2YY'
-         LABINT(5) = '<<S/B2YZ'
-         LABINT(6) = '<<S/B2ZZ'
+         LABINT(1) = '<<S_B2XX'
+         LABINT(2) = '<<S_B2XY'
+         LABINT(3) = '<<S_B2XZ'
+         LABINT(4) = '<<S_B2YY'
+         LABINT(5) = '<<S_B2YZ'
+         LABINT(6) = '<<S_B2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -2188,12 +2188,12 @@ C
          NOPTYP = 6
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = '>>S/B2XX'
-         LABINT(2) = '>>S/B2XY'
-         LABINT(3) = '>>S/B2XZ'
-         LABINT(4) = '>>S/B2YY'
-         LABINT(5) = '>>S/B2YZ'
-         LABINT(6) = '>>S/B2ZZ'
+         LABINT(1) = '>>S_B2XX'
+         LABINT(2) = '>>S_B2XY'
+         LABINT(3) = '>>S_B2XZ'
+         LABINT(4) = '>>S_B2YY'
+         LABINT(5) = '>>S_B2YZ'
+         LABINT(6) = '>>S_B2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))
@@ -2212,15 +2212,15 @@ C
          NOPTYP = 9
          CALL NTYPTS(NOPTYP)
          CALL SETATM(DOATOM,NATOM,INTTYP)
-         LABINT(1) = '<>S/B2XX'
-         LABINT(2) = '<>S/B2XY'
-         LABINT(3) = '<>S/B2XZ'
-         LABINT(4) = '<>S/B2YX'
-         LABINT(5) = '<>S/B2YY'
-         LABINT(6) = '<>S/B2YZ'
-         LABINT(7) = '<>S/B2ZX'
-         LABINT(8) = '<>S/B2ZY'
-         LABINT(9) = '<>S/B2ZZ'
+         LABINT(1) = '<>S_B2XX'
+         LABINT(2) = '<>S_B2XY'
+         LABINT(3) = '<>S_B2XZ'
+         LABINT(4) = '<>S_B2YX'
+         LABINT(5) = '<>S_B2YY'
+         LABINT(6) = '<>S_B2YZ'
+         LABINT(7) = '<>S_B2ZX'
+         LABINT(8) = '<>S_B2ZY'
+         LABINT(9) = '<>S_B2ZZ'
          INTREP(1) = 0
          INTREP(2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
          INTREP(3) = IBTXOR(ISYMAX(1,1),ISYMAX(3,1))

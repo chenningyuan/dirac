@@ -1452,18 +1452,18 @@ C ... some are usable (ZANGMOM)
      &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'d|S>/dBX        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBY        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dBX          ' .OR.
-     &     PROPNAME.EQ.'dS/dBY          ' .OR.
-     &     PROPNAME.EQ.'dS/dBZ          ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XX        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2ZZ        '
+     &     PROPNAME.EQ.'d|S>_dBX        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBY        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dBX          ' .OR.
+     &     PROPNAME.EQ.'dS_dBY          ' .OR.
+     &     PROPNAME.EQ.'dS_dBZ          ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XX        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2ZZ        '
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.4) THEN
