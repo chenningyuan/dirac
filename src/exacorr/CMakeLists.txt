@@ -27,8 +27,8 @@ if(ENABLE_EXATENSOR)
    talsh_common_routines.F90
    talsh_gradient.F90
    talsh_cc.F90
-   talsh_mp2no.F90
    talsh_mp2lap.F90
+   talsh_mp2no.F90
    mp2no_driver.F90
    mp2no_matrixtransforms.F90
    mp2no_fileinterfaces.F90
