@@ -222,9 +222,9 @@ C
       if (exa_input%talsh) then
        if (exa_input%do_no) then
          call get_no_driver (exa_input)
-       else if (exa_input%mp2no == 1) then
+       else if (exa_input%mp2no > 0 ) then
          call talsh_mp2no_driver (exa_input,n_mp2no)
-       elseif (exa_input%mp2no == 2) then
+       elseif (exa_input%mp2no < 0) then
          call talsh_mp2lap_driver (exa_input)
        else
          call talsh_cc_driver (exa_input)
@@ -238,10 +238,8 @@ C
               if (mytid == 0) call set_prop_flags_ccsd()
        end if
 
-       if (exa_input%mp2no == 1) then
+       if (exa_input%mp2no > 0) then
               call exacorr_mp2no_driver (exa_input,n_mp2no)
-       elseif (exa_input%mp2no == 2) then
-              call talsh_mp2lap_driver (exa_input)
        else
               call exacorr_cc_driver (exa_input) 
        end if 
