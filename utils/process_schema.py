@@ -7,7 +7,6 @@ Functions to work with the  DIRAC data schema.
 For instance to create a checkpoint file from DFCOEF, XYZ and AOPROPER files
 """
 
-from dirac_data import read_DFILE, read_DFCOEF
 
 ###### Functions to  the data schema
 
@@ -163,6 +162,7 @@ def load_DFCOEF(file_name,data):
     Open DFCOEF-type file write contents to the flat data dictionary
 
     """   
+    from dirac_data import read_DFCOEF
     # Read DFCOEF (could have either 32 or 64-bit integers, try both)
     try:
         dfcoef = read_DFCOEF(file_name)
@@ -205,6 +205,7 @@ def load_AOPROPER(file_name,data):
     Open AOPROPER-type file write contents to the flat data dictionary
 
     """
+    from dirac_data import read_DFILE
     # Read AOPROPER
     aoproper = read_DFILE(file_name)
     data['/result/operators/ao_matrices/aobasis_id']['value']   = 1
