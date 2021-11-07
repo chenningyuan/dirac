@@ -882,7 +882,16 @@
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
-         exa_input%mp2no = .true.
+         exa_input%mp2no = 1
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.MP2LAP        ')) then
+         exa_input%mp2no = -1
+      end if
+
+      if (kw_matches(word, '.MP2_LAP_NO      ')) then
+         exa_input%mp2no = 10
          call kw_read(word, exa_input%t_mp2no)
       end if
 
@@ -959,6 +968,10 @@
              exa_input%ff(i,j)=dcmplx(val_real,val_imag)
            enddo
          enddo
+      end if
+
+      if (kw_matches(word, '.NLAPLACE')) then
+         call kw_read(word, exa_input%n_laplace)
       end if
 
       call check_whether_kw_found(word, kw_section)
