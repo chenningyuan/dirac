@@ -255,6 +255,9 @@ module talsh_cc
               call print_date('-Start- Triples')
               call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
                               int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
+              if (exa_input%tripl_lap) then 
+                call t3_energy_laplace (t_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
+              end if
               call print_date('-End- Triples')
               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
             else
@@ -2542,7 +2545,7 @@ module talsh_cc
                   ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
                   ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
                   ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
-                  if(print_level > 10) write(*,*) "W[sym] =",tensor_norm2(we_tensor)
+                  if(print_level > 1) write(*,*) "W[sym] =",tensor_norm2(we_tensor)
 
                   ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
                   ierr=talsh_tensor_init(w_tensor)
@@ -2550,18 +2553,18 @@ module talsh_cc
                   ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
                   ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
                   ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
-                  if(print_level > 10) write(*,*) "W[+T ] =",tensor_norm2(w_tensor)
+                  if(print_level > 1) write(*,*) "W[+T ] =",tensor_norm2(w_tensor)
 
                   ! Form Y-intermediate and calculate 5th order -T energy contribution
                   call form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
-                  if(print_level > 10) write(*,*) "Y[-T ] =",tensor_norm2(y_tensor)
+                  if(print_level > 1) write(*,*) "Y[-T ] =",tensor_norm2(y_tensor)
                   ierr=talsh_tensor_init(result_tensor)
                   ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   t_energy(3)=t_energy(3) + result_tens(1)
 
                   ! Form Y-intermediate and calculate 5th order (T) energy contribution
                   call form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
-                  if(print_level > 10) write(*,*) "Y[(T)] =",tensor_norm2(y_tensor)
+                  if(print_level > 1) write(*,*) "Y[(T)] =",tensor_norm2(y_tensor)
                   eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
                   call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
                   ierr=talsh_tensor_init(result_tensor)
@@ -2572,13 +2575,13 @@ module talsh_cc
                   ierr=talsh_tensor_init(y_tensor)
                   ierr=talsh_tensor_add("W(a,b,c)+=W(a,b,c)",y_tensor,w_tensor)
                   call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
-                  if(print_level > 10) write(*,*) " W[/D ] =",tensor_norm2(w_tensor)
+                  if(print_level > 1) write(*,*) " W[/D ] =",tensor_norm2(w_tensor)
                   ierr=talsh_tensor_init(result_tensor)
                   ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
                   t_energy(1)=t_energy(1) + result_tens(1)
                end do
             end do
-            if (print_level >2) write (*,*)  't3_energy:',t_energy
+            if (print_level >1) write (*,*)  't3_energy:',t_energy
          end do
 
 !        We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
@@ -2799,5 +2802,510 @@ module talsh_cc
 
 
        end subroutine get_subtensor
+
+       subroutine t3_energy_laplace (t_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
+
+!       Evaluate +T, -T and (T) energy terms.
+!       Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
+
+        use type_laplace, only : laplace_info, deallocate_laplace
+
+        real(8), intent(out)                 :: t_energy(3)
+        type(talsh_comm_tens), intent(inout) :: comm_t
+        type(talsh_intg_tens), intent(inout) :: int_t
+        real(8), intent(in)                  :: eps_occ(:),eps_vir(:)
+        type(exacc_input), intent(in)        :: exa_input
+
+        !  variables to get laplace points
+        type(laplace_info)    :: laplace
+
+        real(8), allocatable  :: zero_occ(:),zero_vir(:),eps_occ_neg(:)
+        real(8)               :: T(25),Res(25)
+        integer(INTD)         :: ierr, tens_rank
+        integer(INTD)         :: t2_dims(4)
+        integer               :: nocc, nvir, i
+
+!       Testing
+        type(talsh_tens_t)  :: test_sum, test_h
+        real(8)             :: test_val,test_ref
+        integer(INTD)       :: test_ind(1:6), test_dims(6)
+        real(8)             :: test_energy(3)
+
+!       Get nocc and nvir from tensor information
+        ierr = talsh_tensor_dimensions(comm_t%t2,tens_rank,t2_dims)
+        if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
+
+        if (t2_dims(1).eq.t2_dims(2)) then
+          nvir = t2_dims(1)
+        else
+          stop 'error: asymmetric tensor in t3_energy'
+        end if
+        if (t2_dims(3).eq.t2_dims(4)) then
+          nocc = t2_dims(3)
+        else
+          stop 'error: asymmetric tensor in t3_energy'
+        end if
+
+!       get a list of positive occupied orbitals
+        allocate(eps_occ_neg(nocc))
+        eps_occ_neg(1:nocc)=-eps_occ(1:nocc)
+!       create list of empty orbital
+        allocate(zero_occ(nocc))
+        allocate(zero_vir(nvir))
+        zero_occ=0.0
+        zero_vir=0.0
+!       determine Laplace quadrature parameters with the minimax algorithm
+        laplace%bounds(1) = 3.0d0*(eps_vir(1)-eps_occ(nocc))
+        laplace%bounds(2) = 3.0d0*(eps_vir(nvir)-eps_occ(1))
+
+!       Testing
+        test_dims=nocc 
+        test_dims(1:3)=nvir
+        ierr=talsh_tensor_construct(test_sum,C8,test_dims,init_val=ZERO)
+
+
+        if (exa_input%print_level>1) write(*,*) laplace%bounds
+        
+        call set_laplace(exa_input%n_laplace,exa_input%print_level)
+        call lap_driver(laplace)
+
+!       start computation of triples
+        t_energy=0
+        test_energy=0
+        Res=0
+        do i=1,laplace%num
+          write(*,*) 'laplace:',i,laplace%val(i),laplace%wei(i)
+          call laplace_get_T(T,comm_t%t2,int_t%ooov,int_t%vovv,t2_dims, &
+               eps_occ_neg,eps_vir,zero_occ,zero_vir,laplace%val(i)/2,exa_input%print_level)
+          Res(1:19)=Res(1:19)+laplace%wei(i)*T(1:19)
+          t_energy(1)=t_energy(1)+laplace%wei(i)*sum(T)
+
+!          call laplace_total(t_t_energy,eps_occ,eps_vir,comm_t%t1,comm_t%t2,int_t%fov, &
+!                             int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
+!          write(*,*) 'total laplace test:', t_t_energy
+
+          ! Testing
+          ierr=talsh_tensor_construct(test_h,C8,test_dims,init_val=ONE)
+          call laplace_mult (test_h,laplace%val(i),eps_vir,eps_vir,eps_vir,eps_occ_neg,eps_occ_neg,eps_occ_neg)
+          ierr=talsh_tensor_add("R(a,b,c,i,j,k)+=O(a,b,c,i,j,k)",test_sum,test_h,scale=DCMPLX(laplace%wei(i)))
+          ierr=talsh_tensor_destruct(test_h)
+           
+        end do
+
+        !Testing
+        call laplace_testing(test_sum, eps_occ, eps_vir)
+        ierr=talsh_tensor_destruct(test_sum)
+        
+        write(*,*) 'Res: '
+        write(*,'(4e16.8)') Res
+        write(*,*) 'Res: '
+        write(*,'(5e16.8)') sum(Res(1:5)),sum(Res(6:14)),sum(Res(15:19)), &
+                            sum(Res(1:2))+sum(Res(4:5))+Res(7)+sum(Res(10:16))+sum(Res(18:19))
+
+!       clean up
+        call deallocate_laplace(laplace)
+        deallocate(zero_occ)
+        deallocate(zero_vir)
+        deallocate(eps_occ_neg)
+
+    end subroutine t3_energy_laplace
+
+    subroutine laplace_get_T(T,i_t2,i_ooov,i_vovv,t2_dims, &
+               eps_occ,eps_vir,zero_occ,zero_vir,s, print_level)
+
+      real(8), intent(out)              :: T(:)
+      type(talsh_tens_t), intent(inout) :: i_t2,i_ooov,i_vovv
+      real(8), intent(in)               :: eps_occ(:),eps_vir(:),zero_occ(:),zero_vir(:)
+      real(8), intent(in)               :: s
+      integer(INTD), intent(in)         :: t2_dims(4)
+      integer, intent(in)               :: print_level
+
+      type(talsh_tens_t)  :: t2_o,t2_v,ooov_o,vovv_v, I1, I2
+      integer(INTD)       :: ierr
+      integer(INTD)       :: dims4(4), dims2(2)
+      integer             :: nvir, nocc
+
+      ! scalars (need to be defined as tensor types)
+      type(C_PTR)         :: body_p
+      type(talsh_tens_t)  :: T_tensor
+      integer(INTD)       :: T_dims(1)
+      complex(8), pointer :: T_tens(:)
+
+      if (print_level>1) call print_date('Entered laplace_get_T routine')
+      if (print_level>1) write(*,*) '-------------'
+
+      !Initialize scalars that are to be used as tensors in contractions
+      T_dims(1) = 1
+      ierr=talsh_tensor_construct(T_tensor,C8,T_dims(1:0),init_val=ZERO)
+      ierr=talsh_tensor_get_body_access(T_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p,T_tens,T_dims)
+     
+      nvir = t2_dims(1)
+      nocc = t2_dims(3)
+      T=0.0D0
+      T_tens(1)=ZERO
+
+      ! ------------------- compute first transformed integrals and amplitudes
+      ierr=talsh_tensor_construct(t2_v,C8,t2_dims,init_val=ONE/SQRT(DCMPLX(nvir)))
+      !ierr=talsh_tensor_add("R(e,a,i,j)+=O(e,a,i,j)",t2_v,i_t2,scale=ONE)
+      call laplace_mult(t2_v,s,zero_vir,eps_vir,eps_occ,eps_occ)
+
+      dims4=nvir
+      dims4(2)=nocc
+      ierr=talsh_tensor_construct(vovv_v,C8,dims4,init_val=ONE/SQRT(DCMPLX(nvir)))
+      !ierr=talsh_tensor_add("R(e,i,a,b)=O(e,i,a,b)",vovv_v,i_vovv)
+      !ierr=talsh_tensor_contract("R(e,i,a,b)+=O(e,i,a,b)",vovv_v,i_vovv,one_tensor,scale=MINUS_ONE)
+      call laplace_mult(vovv_v,s,zero_vir,eps_occ,eps_vir,eps_vir)
+      ! ------------------- compute first transformed integrals and amplitudes
+
+      ! 0.25 T^{fe}_{}G^{fe}_{}
+      dims2=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims2,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims2,init_val=ZERO)
+      ierr=talsh_tensor_contract("T(f,e)+=X(f,b,j,k)*Y(e,b,j,k)",I1,t2_v,t2_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A1a wrong')
+      ierr=talsh_tensor_contract("G(f,e)+=X(f,i,c,a)*Y(e,i,c,a)",I2,vovv_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A1b wrong')
+      ierr=talsh_tensor_contract("R()+=T(f,e)*G(f,e)",T_tensor,I1,I2,scale=ONE_QUARTER)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A1c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(1)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! 0.50 T^{f\bar{a}e\bar{b}}_{}G^{\bar{b}f\bar{a}e}_{}
+      dims4=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("T(f,a,b,e)+=X(f,a,i,j)*Y(e,b,i,j)",I1,t2_v,t2_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A2a wrong')
+      ierr=talsh_tensor_contract("G(b,f,a,e)+=X(f,k,b,c)*Y(e,k,c,a)",I2,vovv_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A2b wrong')
+      ierr=talsh_tensor_contract("R()+=T(f,a,b,e)*G(b,f,a,e)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A2c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(2)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! 0.50 U^{fe}_{\bar{j}\bar{i}}G^{fe}_{\bar{j}\bar{i}}
+      dims4=nvir
+      dims4(3:4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("U(f,e,j,i)+=X(f,b,j,k)*Y(e,b,k,i)",I1,t2_v,t2_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A3a wrong')
+      ierr=talsh_tensor_contract("G(f,e,j,i)+=X(f,j,c,a)*Y(e,i,c,a)",I2,vovv_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A3b wrong')
+      ierr=talsh_tensor_contract("R()+=U(f,e,j,i)*G(f,e,j,i)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A3c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(3)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      !0.50 N^{f\bar{a}e}_{\bar{i}}O^{e\bar{a}f}_{\bar{i}}
+      dims4=nvir
+      dims4(4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("N(f,a,e,i)+=X(f,c,i,j)*Y(e,j,c,a)",I1,t2_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A4a wrong')
+      ierr=talsh_tensor_contract("O(e,a,f,i)+=X(e,b,k,i)*Y(f,k,a,b)",I2,t2_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A4b wrong')
+      ierr=talsh_tensor_contract("R()+=N(f,a,e,i)*O(e,a,f,i)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A4c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(4)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! 0.50 P^{f\bar{a}e}_{\bar{i}}Q^{e\bar{a}f}_{\bar{i}}
+      dims4=nvir
+      dims4(4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("P(f,a,e,i)+=X(f,c,k,i)*Y(e,k,c,a)",I1,t2_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A5a wrong')
+      ierr=talsh_tensor_contract("Q(e,a,f,i)+=X(e,b,i,j)*Y(f,j,a,b)",I2,t2_v,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A5b wrong')
+      ierr=talsh_tensor_contract("R()+=P(f,a,e,i)*Q(e,a,f,i)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction A5c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(5)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! ------------------- compute next transformed integrals and amplitudes
+      ierr=talsh_tensor_construct(t2_o,C8,t2_dims,init_val=ONE/SQRT(DCMPLX(nocc)))
+      !ierr=talsh_tensor_add("R(a,b,i,m)+=O(a,b,i,m)",t2_o,i_t2)
+      call laplace_mult(t2_o,s,eps_vir,eps_vir,eps_occ,zero_occ)
+
+      dims4=nocc
+      dims4(4)=nvir
+      ierr=talsh_tensor_construct(ooov_o,C8,dims4,init_val=ONE/SQRT(DCMPLX(nocc)))
+      !ierr=talsh_tensor_add("R(i,j,m,a)=O(i,j,m,a)",ooov_o,i_ooov)
+      !ierr=talsh_tensor_contract("R(i,j,m,a)+=O(i,j,m,a)",ooov_o,i_ooov,one_tensor,scale=MINUS_ONE)
+      call laplace_mult(ooov_o,s,eps_occ,eps_occ,zero_occ,eps_vir)
+      ! ------------------- compute next transformed integrals and amplitudes
+
+      ! - 0.5 U^{\bar{a}e}_{m\bar{i}}H^{\bar{a}e}_{\bar{i}m}
+      dims4=nvir
+      dims4(3:4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("U(a,e,m,i)+=Y(a,b,j,m)*X(e,b,i,j)",I1,t2_o,t2_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B1a wrong')
+      ierr=talsh_tensor_contract("H(a,e,i,m)+=X(e,k,c,a)*Y(k,i,m,c)",I2,vovv_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B1b wrong')
+      ierr=talsh_tensor_contract("R()+=U(a,e,m,i)*H(a,e,i,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B1c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(6)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! - 0.5 R^{\bar{a}\bar{b}e}_{m}A^{e\bar{a}\bar{b}}_{m}
+      dims4=nvir
+      dims4(4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("R(a,b,e,m)+=X(c,a,i,m)*Y(e,i,b,c)",I1,t2_o,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B2a wrong')
+      ierr=talsh_tensor_contract("A(a,e,b,m)+=X(e,a,k,i)*Y(k,i,m,b)",I2,t2_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B2b wrong')
+      ierr=talsh_tensor_contract("F()+=R(a,b,e,m)*A(a,e,b,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B2c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(7)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! - 0.5 V^{\bar{a}e}_{m\bar{i}}I^{\bar{a}e}_{\bar{i}m}
+      dims4=nvir
+      dims4(3:4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("V(a,e,m,i)+=X(e,b,k,i)*Y(a,b,k,m)",I1,t2_v,t2_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B3a wrong')
+      ierr=talsh_tensor_contract("I(a,e,i,m)+=X(e,j,c,a)*Y(i,j,m,c)",I2,vovv_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B3b wrong')
+      ierr=talsh_tensor_contract("R()+=V(a,e,m,i)*I(a,e,i,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B3c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(8)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! - 0.5 W^{\bar{a}e}_{m\bar{i}}J^{\bar{a}e}_{\bar{i}m}
+      dims4=nvir
+      dims4(3:4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("V(a,e,m,i)+=X(e,c,i,j)*Y(c,a,j,m)",I1,t2_v,t2_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B4a wrong')
+      ierr=talsh_tensor_contract("J(a,e,i,m)+=X(e,k,a,b)*Y(k,i,m,b)",I2,vovv_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B4b wrong')
+      ierr=talsh_tensor_contract("R()+=V(a,e,m,i)*J(a,e,i,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B4c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(9)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! - 0.5 P^{\bar{a}\bar{b}e}_{m}A^{e\bar{a}\bar{b}}_{m}
+      dims4=nvir
+      dims4(4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("P(a,b,e,m)+=X(a,c,i,m)*Y(e,i,c,b)",I1,t2_o,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B5a wrong')
+      ierr=talsh_tensor_contract("A(e,a,b,m)+=X(e,a,i,j)*Y(i,j,m,b)",I2,t2_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B5b wrong')
+      ierr=talsh_tensor_contract("R()+=P(a,b,e,m)*A(e,a,b,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B5c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(10)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! - 0.5 X^{\bar{a}e}_{m\bar{i}}K^{\bar{a}e}_{\bar{i}m}
+      dims4=nvir
+      dims4(3:4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("X(a,e,m,i)+=Z(e,c,k,i)*Y(c,a,k,m)",I1,t2_v,t2_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B6a wrong')
+      ierr=talsh_tensor_contract("K(a,e,i,m)+=X(e,j,a,b)*Y(i,j,m,b)",I2,vovv_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B6b wrong')
+      ierr=talsh_tensor_contract("R()+=X(a,e,m,i)*K(a,e,i,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B6c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(11)=real(T_tens(1))
+      T_tens(1)=ZERO
+     
+      ! - 0.5 M^{e}_{\bar{i}m\bar{j}}B^{e}_{\bar{i}\bar{j}m}
+      dims4=nocc
+      dims4(1)=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("M(e,i,m,j)+=X(c,a,i,m)*Y(e,j,c,a)",I1,t2_o,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B7a wrong')
+      ierr=talsh_tensor_contract("B(e,i,j,m)+=X(e,a,k,i)*Y(j,k,m,a)",I2,t2_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B7b wrong')
+      ierr=talsh_tensor_contract("R()+=M(e,i,m,j)*B(e,i,j,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B7c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(12)=real(T_tens(1))
+      T_tens(1)=ZERO
+      
+      ! - 0.5 M^{e}_{m}A^{e}_{m}
+      dims2=nocc
+      dims2(1)=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims2,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims2,init_val=ZERO)
+      ierr=talsh_tensor_contract("M(e,m)+=X(c,a,k,m)*Y(e,k,c,a)",I1,t2_o,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B8a wrong')
+      ierr=talsh_tensor_contract("A(e,m)+=X(e,b,i,j)*Y(i,j,m,b)",I2,t2_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B8b wrong')
+      ierr=talsh_tensor_contract("R()+=M(e,m)*A(e,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B8c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(13)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! - 0.5 M^{e}_{\bar{j}m\bar{i}}C^{e}_{\bar{j}\bar{i}m}
+      dims4=nocc
+      dims4(1)=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("M(e,j,m,i)+=X(c,a,j,m)*Y(e,i,c,a)",I1,t2_o,vovv_v)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B9a wrong')
+      ierr=talsh_tensor_contract("C(e,j,i,m)+=X(e,b,j,k)*Y(k,i,m,b)",I2,t2_v,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B9b wrong')
+      ierr=talsh_tensor_contract("R()+=M(e,j,m,i)*C(e,j,i,m)",T_tensor,I1,I2,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction B9c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(14)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! ------------------- delete first transformed integrals and amplitudes
+      ierr=talsh_tensor_destruct(t2_v)
+      ierr=talsh_tensor_destruct(vovv_v)
+      ! ------------------- delete first transformed integrals and amplitudes
+
+      ! 0.25 T^{}_{nm}G^{}_{nm}
+      dims2=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims2,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims2,init_val=ZERO)
+      ierr=talsh_tensor_contract("T(n,m)+=X(b,c,k,n)*Y(b,c,k,m)",I1,t2_o,t2_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C1a wrong')
+      ierr=talsh_tensor_contract("G(n,m)+=X(i,j,n,a)*Y(i,j,m,a)",I2,ooov_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C1b wrong')
+      ierr=talsh_tensor_contract("R()+=T(n,m)*G(n,m)",T_tensor,I1,I2,scale=ONE_QUARTER)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C1c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(15)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! 0.50 T^{}_{\bar{i}m\bar{j}n}G^{}_{\bar{j}m\bar{i}n}
+      dims4=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("T(i,m,j,n)+=X(b,c,i,m)*Y(b,c,j,n)",I1,t2_o,t2_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C2a wrong')
+      ierr=talsh_tensor_contract("G(j,m,i,n)+=X(j,k,m,a)*Y(k,i,n,a)",I2,ooov_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C2b wrong')
+      ierr=talsh_tensor_contract("R()+=T(i,m,j,n)*G(j,m,i,n)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C2c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(16)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! 0.50 X^{\bar{a}\bar{b}}_{mn}G^{\bar{b}\bar{a}}_{mn}
+      dims4=nvir
+      dims4(3:4)=nocc
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("X(a,b,m,n)+=Z(c,a,j,m)*Y(b,c,j,n)",I1,t2_o,t2_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C3a wrong')
+      ierr=talsh_tensor_contract("G(b,a,m,n)+=X(k,i,m,b)*Y(k,i,n,a)",I2,ooov_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C3b wrong')
+      ierr=talsh_tensor_contract("R()+=X(a,b,m,n)*G(b,a,m,n)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C3c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(17)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      ! 0.50 D^{\bar{a}}_{m\bar{i}n}E^{\bar{a}}_{n\bar{i}m}
+      dims4=nocc
+      dims4(1)=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("D(a,m,i,n)+=X(c,a,j,m)*Y(i,j,n,c)",I1,t2_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C4a wrong')
+      ierr=talsh_tensor_contract("E(a,n,i,m)+=X(a,b,k,n)*Y(k,i,m,b)",I2,t2_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C4b wrong')
+      ierr=talsh_tensor_contract("R()+=D(a,m,i,n)*E(a,n,i,m)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C4c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(18)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+
+      ! 0.50 B^{\bar{a}}_{m\bar{i}n}F^{\bar{a}}_{n\bar{i}m}
+      dims4=nocc
+      dims4(1)=nvir
+      ierr=talsh_tensor_construct(I1,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_construct(I2,C8,dims4,init_val=ZERO)
+      ierr=talsh_tensor_contract("B(a,m,i,n)+=X(a,b,j,m)*Y(i,j,n,b)",I1,t2_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C5a wrong')
+      ierr=talsh_tensor_contract("F(a,n,i,m)+=X(c,a,k,n)*Y(k,i,m,c)",I2,t2_o,ooov_o)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C5b wrong')
+      ierr=talsh_tensor_contract("R()+=B(a,m,i,n)*F(a,n,i,m)",T_tensor,I1,I2,scale=ONE_HALF)
+      if (ierr.ne.0) call quit('laplace_get_T: contraction C5c wrong')
+      ierr=talsh_tensor_destruct(I1)
+      ierr=talsh_tensor_destruct(I2)
+      if (print_level>2) write(*,'(A)',advance="no") '-'
+      T(19)=real(T_tens(1))
+      T_tens(1)=ZERO
+
+      write(*,*) 'Terms:'
+      write(*,'(5e12.4)') T
+      
+
+      !clean up
+      ierr=talsh_tensor_destruct(T_tensor)
+      ierr=talsh_tensor_destruct(t2_o)
+      ierr=talsh_tensor_destruct(ooov_o)
+
+    end subroutine laplace_get_T
+
 
 end module talsh_cc
