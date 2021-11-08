@@ -4,7 +4,7 @@ include_directories(
     ${PROJECT_BINARY_DIR}
     )
 
-find_package(HDF5 REQUIRED COMPONENTS C)
+find_package(HDF5 COMPONENTS C)
 if(HDF5_FOUND)
    option(ENABLE_HDF5 "Enable HDF5" ON)
    message(STATUS "HFD5 found, enabling HDF5 interface ")

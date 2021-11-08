@@ -26,7 +26,7 @@ variables:
 ubuntu_gnu_parallel32-check:
   only:
     - merge_requests
-  image: ubuntu:20.04
+  image: ubuntu:21.04
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install git
