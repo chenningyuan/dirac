@@ -34,41 +34,20 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
    huckel.F
 )
 
-if (ENABLE_EXATENSOR)
-   set(FREE_DIRAC_FORTRAN_SOURCES
-      dirimpmos.F90
-      # dirmp2no.F needs 
-       ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
-      # needs also input reader..
-       ${PROJECT_SOURCE_DIR}/src/input/parse_input.F90
-       ${PROJECT_SOURCE_DIR}/src/input/input_reader.F90
-       ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
-)
-else()
-     set(FREE_DIRAC_FORTRAN_SOURCES
-      dirimpmos.F90
-       # dirmp2no.F needs 
-       ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
-       # needs also input reader..
-       ${PROJECT_SOURCE_DIR}/src/input/parse_input.F90
-       ${PROJECT_SOURCE_DIR}/src/input/input_reader.F90
-       ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
-       # We also need some of the datatypes defined in exacorr
-       exacorr_datatypes.F90
+set(FREE_DIRAC_FORTRAN_SOURCES
+   dirimpmos.F90
+   # dirmp2no.F needs 
+    ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
+   # needs also input reader..
+    ${PROJECT_SOURCE_DIR}/src/input/parse_input.F90
+    ${PROJECT_SOURCE_DIR}/src/input/input_reader.F90
+    ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
 )
 
-  if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
-    set_source_files_properties(${FREE_EXACORR_FORTRAN_SOURCES}  EXACORR COMPILE_FLAGS "-qfree=f90")
-    set_source_files_properties(${FIXED_EXACORR_FORTRAN_SOURCES} EXACORR COMPILE_FLAGS "-qfixed")
-  endif()
-
-  add_library(
-    exacorr
-    OBJECT
-    ${FREE_EXACORR_FORTRAN_SOURCES}
-  )
+# We need some of the datatypes defined in exacorr, add this subset here if it is inactive
+if (NOT ENABLE_EXATENSOR)
+   set(FREE_DIRAC_FORTRAN_SOURCES exacorr_datatypes.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
 endif()
-
 
 set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
 
