@@ -39,7 +39,7 @@ ubuntu_gnu_parallel32-check:
     - apt-get -qq -y install python python3-pip
     - apt-get -qq -y install python-is-python3
     - apt-get -qq -y install libhdf5-dev
-    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 700
+    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 700
     - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 800 --slave /usr/bin/g++ g++ /usr/bin/g++-8
     - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 800
     - pip install scipy
