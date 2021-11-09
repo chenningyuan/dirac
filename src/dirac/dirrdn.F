@@ -1937,11 +1937,11 @@ C    NSUBBL = # of subblocks for KP sym.
 C    copied from MJSELE
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
-C initla setup               
-               IF(DOLVC.EQV..TRUE. .OR. IBTAND(INTGEN/4,1).EQ.1)THEN !4c
-                 NSUBBL = (NHTYP-2)*2+1
-               ELSE !2c
+C inital setup               
+               IF(TWOCOMP)THEN !2c
                  NSUBBL = (NHTYP-1)*2+1 
+               ELSE !4c
+                 NSUBBL = (NHTYP-2)*2+1
                ENDIF   
                KPBUF = NSUBBL/2+1
                IF(mod(KPBUF, 2).eq.0)THEN ! Max angular momentum (l) is s,d,g.. 
@@ -1952,7 +1952,7 @@ C initla setup
                  KPMAX(2) = KPBUF-1      
                ENDIF
                IF(NFSYM.EQ.1)KPMAX(1) = MAX(KPMAX(1),KPMAX(2))
-C readling input             
+C reading input             
                READ(LUCMD,*,IOSTAT=IOS) NKP
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error in reading NKP for .KPSELE !'
@@ -1963,6 +1963,7 @@ C readling input
                allocate(SEL_NORB(NKP,0:NOPEN))
                READ(LUCMD,*,IOSTAT=IOS) (KP_NORB(I),   I=1,NKP)
                READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NKP)
+C reading closed shell             
                DO I =1,NKP
                  IF(mod(SEL_NORB(I,0),2).eq.1)THEN
                    WRITE(LUPRI,*) 'Error in reading .KPSELE !'
@@ -1990,6 +1991,7 @@ C readling input
                    ENDIF   
                  ENDIF
                ENDDO
+C reading open shell             
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .KPSELE !'
