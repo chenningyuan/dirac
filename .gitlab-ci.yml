@@ -58,7 +58,7 @@ ubuntu_gnu_parallel32-check:
     - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build_parallel32
     #setting up ExaCorr environment
     - cd build_parallel32
-    - make -j $N_PROC
+    - make -j $N_PROC VERBOSE=1
     - ldd dirac.x
     - export DIRAC_MPI_COMMAND="mpiexec -n 4"
     - echo "The command DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND"
