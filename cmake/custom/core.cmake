@@ -92,7 +92,7 @@ if(ENABLE_HSFS) # note: this functionality depends on the pam flag
     compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${_list_of_executables}")
 endif()
 
-find_package(HDF5 COMPONENTS C)
+find_package(HDF5 COMPONENTS C HL)
 
 foreach(
     _executable
