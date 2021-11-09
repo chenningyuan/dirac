@@ -44,11 +44,6 @@ set(FREE_DIRAC_FORTRAN_SOURCES
     ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
 )
 
-# We need some of the datatypes defined in exacorr, add this subset here if it is inactive
-if (NOT ENABLE_EXATENSOR)
-   set(FREE_DIRAC_FORTRAN_SOURCES exacorr_datatypes.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
-endif()
-
 set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)

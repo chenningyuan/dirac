@@ -4629,7 +4629,7 @@ C***********************************************************************
       subroutine write_basis_fromcommon
 
 !      write basis set stored in common blocks to checkpoint
-       use exacorr_datatypes, only: basis_set_info_t
+       use basis_set_datatypes, only: basis_set_info_t
        use checkpoint
        type(basis_set_info_t) :: ao_basis
 
@@ -4641,7 +4641,7 @@ C***********************************************************************
       subroutine write_basis_tocheckpoint(ao_basis,group)
 
 !     write basis set to checkpoint file in a particular group
-      use exacorr_datatypes, only: basis_set_info_t
+      use basis_set_datatypes, only: basis_set_info_t
       use checkpoint
 
       implicit none
@@ -4690,7 +4690,7 @@ C***********************************************************************
 !      get information from common blocks about the basis set
 !      and return this (after some clean-up) as a basis_set_info_t
 
-       use exacorr_datatypes, only: basis_set_info_t
+       use basis_set_datatypes
 
 #include "implicit.h"
 #include "maxorb.h"
