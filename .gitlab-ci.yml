@@ -30,7 +30,6 @@ ubuntu_gnu_parallel32-check:
   before_script:
     - apt-get -qq update
     - apt-get -qq -y install git
-    - apt-get -qq -y install cmake
     - apt-get -qq -y install gfortran-8
     - apt-get -qq -y install gcc-8
     - apt-get -qq -y install g++-8
@@ -44,6 +43,7 @@ ubuntu_gnu_parallel32-check:
     - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 800
     - pip install scipy
     - pip install h5py
+    - pip install cmake
   script:
 #   do the parallel buildup here
 #    ...determine number of processors
