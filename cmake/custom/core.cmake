@@ -111,7 +111,7 @@ foreach(
     target_link_libraries( ${_executable} objlib.${_executable} ${EXTERNAL_LIBS} )
 
     if(HDF5_FOUND)
-        target_link_libraries(${_executable} ${HDF5_LIBRARIES})
+        target_link_libraries(${_executable} ${HDF5_C_LIBRARIES})
     endif()
 
     if(ENABLE_STATIC_LINKING)
