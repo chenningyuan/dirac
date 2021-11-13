@@ -248,13 +248,6 @@ C         Create total property matrix with correct prefactor
      &               work(konein+(l-1)*nnbbasx),1,
      &               WORK(khelp),1)
           end do
-!         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
-!    &    (
-!    &            WORK(KONEIN          :KONEIN+  NNBBASX-1)
-!    &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
-!    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
-!    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
-!    &    )
 C         Store matrix in AOproper file
           ITYP = ITYP + 1
           CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
@@ -1459,18 +1452,18 @@ C ... some are usable (ZANGMOM)
      &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'d|S>/dBX        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBY        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dBX          ' .OR.
-     &     PROPNAME.EQ.'dS/dBY          ' .OR.
-     &     PROPNAME.EQ.'dS/dBZ          ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XX        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2ZZ        '
+     &     PROPNAME.EQ.'d|S>_dBX        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBY        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dBX          ' .OR.
+     &     PROPNAME.EQ.'dS_dBY          ' .OR.
+     &     PROPNAME.EQ.'dS_dBZ          ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XX        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2ZZ        '
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.4) THEN

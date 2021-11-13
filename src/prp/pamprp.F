@@ -5698,7 +5698,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2XX'
+        PLABEL(1) = 'dS_dB2XX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H1',IPDSUSC(1),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5707,7 +5707,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2XY'
+        PLABEL(1) = 'dS_dB2XY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H1',IPDSUSC(2),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5716,7 +5716,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2XZ'
+        PLABEL(1) = 'dS_dB2XZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H1',IPDSUSC(3),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5725,7 +5725,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2YY'
+        PLABEL(1) = 'dS_dB2YY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H1',IPDSUSC(4),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5734,7 +5734,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2YZ'
+        PLABEL(1) = 'dS_dB2YZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H1',IPDSUSC(5),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5743,7 +5743,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2ZZ'
+        PLABEL(1) = 'dS_dB2ZZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H1',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)

@@ -204,11 +204,12 @@ end interface
   if (iparex .gt. 0) call mpixfinalize()
 #endif
 
- call allocator_report(mytid,0)
+  call allocator_report(mytid,0)
   if (mytid == 0) then
       write (lupri, '(A,F8.2,A)') ' MEMGET high-water mark: ',(high_water_mark()*8)*2.0D0**(-20),' MB'
       write (lupri, '(/a)' ) '*****************************************************'
   endif
+  flush(lupri)
 
    call allocator_cleanup()
 

@@ -1516,7 +1516,7 @@
          PCOMB = '00+0'
         IF (IPRINT.GE.6) WRITE(LUPRI,'(/A)')                            &
      & 'XPRADD: Only the LS block kept for the RDSUSLL operator!'
-      ELSE IF ((PNAME(1:5).EQ.'d|S>/'.OR.PNAME(1:3).EQ.'dS/').AND.BSS)  &
+      ELSE IF ((PNAME(1:5).EQ.'d|S>_'.OR.PNAME(1:3).EQ.'dS_').AND.BSS)  &
      &     THEN
         PCOMB='+000'
         IF (IPRINT.GE.6) WRITE(LUPRI,'(/A)')                            &
@@ -1884,7 +1884,7 @@
 !
 !     Contribution from overlap matrix to magnetic properties
 !
-      ELSE IF(LABINT(1:5).EQ.'dS/dB') THEN
+      ELSE IF(LABINT(1:5).EQ.'dS_dB') THEN
         IF(LABINT(6:6).EQ.'2') THEN
 !
 !       Contribution from overlap matrix to magnetic properties
@@ -1947,7 +1947,7 @@
 !
 !     Angular London orbital contribution to diamagnetic susceptibility
 !
-      ELSE IF(LABINT(3:8).EQ.'dh/dB2') THEN
+      ELSE IF(LABINT(3:8).EQ.'dh_dB2') THEN
         CLASLB = 'DIASUS '
 !
 !     Nuclear shielding integrals without London orbital contribution
@@ -1988,13 +1988,13 @@
 !     Bra-differentiation of overlap matrix with respect to magnetic 
 !     field
 !
-      ELSEIF(LABINT(1:7).EQ.'d<S|/dB') THEN
+      ELSEIF(LABINT(1:7).EQ.'d<S|_dB') THEN
         CLASLB = 'S1MAGL'
 !
 !     Ket-differentiation of overlap matrix with respect to 
 !     magnetic field
 !
-      ELSE IF(LABINT(1:7).EQ.'d|S>/dB') THEN
+      ELSE IF(LABINT(1:7).EQ.'d|S>_dB') THEN
         CLASLB = 'S1MAGR'
 !
 !     Ket-differentation of HDO-integrals with respect to magnetic field
@@ -3078,7 +3078,7 @@
      &   PRPLBL(3:7).EQ.'RM2H3'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUL'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
-     &   PRPLBL(1:7).EQ.'d|S>/dB') THEN
+     &   PRPLBL(1:7).EQ.'d|S>_dB') THEN
          ITIM = -1
       ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.                                 &
      &   PRPLBL(4:7).EQ.'NSNL'.OR.                                      &

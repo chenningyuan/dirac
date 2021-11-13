@@ -7,7 +7,6 @@ Functions to work with the  DIRAC data schema.
 For instance to create a checkpoint file from DFCOEF, XYZ and AOPROPER files
 """
 
-from dirac_data import read_DFILE, read_DFCOEF
 
 ###### Functions to  the data schema
 
@@ -85,14 +84,15 @@ def write_schema(file_name,flat_schema):
     Write schema as list of labels and types such that it can be easily read in Fortran
     """
     f = open(file_name,"w")
+    f.write('80 10 10 10 60\n') # length of strings that are written
     # Write all group labels first. Make sure to write them in alphabetical order to faciltate the creation of groups later on.
     for label, dataset in sorted(flat_schema.items()):
         if dataset['type'] == 'composite':
-             f.write("{:<80} {:<10} {:<10} {:<10} #{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
+             f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
      # Then write all other labels
     for label, dataset in sorted(flat_schema.items()):
         if dataset['type'] != 'composite':
-            f.write("{:<80} {:<10} {:<10} {:<10} #{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
+            f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
     f.close()
 
 def data_validity(data):
@@ -101,7 +101,7 @@ def data_validity(data):
     Should be made more rigorous, for now just check whether all required data is present.
     """
     valid = True
-    print (' Checking validiy of data with respect to the DIRAC data schema....')
+    print (' Checking validity of data with respect to the DIRAC data schema....')
     # Check whether all required data have values
     for label, dataset in data.items():
         if dataset['type'] == 'composite':
@@ -162,6 +162,7 @@ def load_DFCOEF(file_name,data):
     Open DFCOEF-type file write contents to the flat data dictionary
 
     """   
+    from dirac_data import read_DFCOEF
     # Read DFCOEF (could have either 32 or 64-bit integers, try both)
     try:
         dfcoef = read_DFCOEF(file_name)
@@ -204,12 +205,13 @@ def load_AOPROPER(file_name,data):
     Open AOPROPER-type file write contents to the flat data dictionary
 
     """
+    from dirac_data import read_DFILE
     # Read AOPROPER
     aoproper = read_DFILE(file_name)
     data['/result/operators/ao_matrices/aobasis_id']['value']   = 1
     # Fill in the data for the matrix representations
     for key, matrix in aoproper.items():
-        if (key == 'GABAO1XX'):
+        if ('GABAO1XX' in key):
            pass # this is not a matrix representation (has dimension n_shells)
         else:
            # copy the generic dictionary to the specific dictionary used to store the matrix
@@ -260,7 +262,8 @@ def recursively_load_dict_contents_from_group(h5file, data_dict, path):
     import h5py
     for key, item in h5file[path].items():
         if isinstance(item, h5py._hl.dataset.Dataset):
-            data_dict[path+key] = item.value
+            data_dict[path+key] = {}
+            data_dict[path+key]['value'] = item[()]
         elif isinstance(item, h5py._hl.group.Group):
            recursively_load_dict_contents_from_group(h5file, data_dict, path + key + '/')
     return
