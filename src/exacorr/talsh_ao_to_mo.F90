@@ -638,9 +638,9 @@ module talsh_ao_to_mo
 
 !           transform the index
             if (ind.eq.1) then
-              ierr=talsh_tensor_contract("B(p,q)+=A(i,q)*M+(i,p)",mo_tensor,ao_tensor,mocoef_alpha)
+              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_tensor,mocoef_alpha,ao_tensor)
               if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 2a1'
-              ierr=talsh_tensor_contract("B(p,q)+=A(i,q)*M+(i,p)",mo_tensor,ao_tensor,mocoef_beta)
+              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_tensor,mocoef_beta,ao_tensor)
               if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 2b1'
             else if (ind.eq.2) then
                 ierr=talsh_tensor_contract("C(p,q)+=B(p,i)*M(i,q)",mo_tensor,ao_tensor,mocoef_alpha)
@@ -682,10 +682,10 @@ module talsh_ao_to_mo
 
 !           transform index
             if (ind.eq.11) then
-                ierr=talsh_tensor_contract("A(p,s,u)+=C(r,s,u)*M+(r,p)",mo_tensor,ao_tensor,mocoef_alpha)
+                ierr=talsh_tensor_contract("A(p,s,u)+=M+(r,p)*C(r,s,u)",mo_tensor,mocoef_alpha,ao_tensor)
                 if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 3a1'
             else if (ind.eq.12) then
-                ierr=talsh_tensor_contract("A(p,s,u)+=C(r,s,u)*M+(r,p)",mo_tensor,ao_tensor,mocoef_beta)
+                ierr=talsh_tensor_contract("A(p,s,u)+=M+(r,p)*C(r,s,u)",mo_tensor,mocoef_beta,ao_tensor)
                 if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_ind: 3b1'
             else if (ind.eq.21) then
                 ierr=talsh_tensor_contract("D(p,q,u)+=A(p,s,u)*M(s,q)",mo_tensor,ao_tensor,mocoef_alpha)
@@ -750,10 +750,10 @@ module talsh_ao_to_mo
           do i=1,m
 !           transform the index
             if (ind.eq.11) then
-              ierr=talsh_tensor_contract("B(p,q)+=A(i,q)*M+(i,p)",mo_vec(i),ao_vec(i),mocoef_alpha)
+              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_vec(i),mocoef_alpha,ao_vec(i))
               if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_vec: 2a1'
             else if (ind.eq.12) then
-              ierr=talsh_tensor_contract("B(p,q)+=A(i,q)*M+(i,p)",mo_vec(i),ao_vec(i),mocoef_beta)
+              ierr=talsh_tensor_contract("B(p,q)+=M+(i,p)*A(i,q)",mo_vec(i),mocoef_beta,ao_vec(i))
               if(ierr.ne.TALSH_SUCCESS) stop 'error in ao2mo_vec: 2b1'
             else if (ind.eq.21) then
                 ierr=talsh_tensor_contract("C(p,q)+=B(p,i)*M(i,q)",mo_vec(i),ao_vec(i),mocoef_alpha)
