@@ -65,11 +65,6 @@ module talsh_cholesky_integrals
          scalar_dims(1) = 1
          ierr=talsh_tensor_construct(one_chol,C8,scalar_dims(1:0),init_val=ONE)
          
-         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
-         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
-         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
-
-
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
 
@@ -300,11 +295,6 @@ module talsh_cholesky_integrals
          scalar_dims(1) = 1
          ierr=talsh_tensor_construct(one_chol,C8,scalar_dims(1:0),init_val=ONE)
          
-
-         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
-         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
-         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
-
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
 
@@ -483,10 +473,6 @@ module talsh_cholesky_integrals
          !integer, allocatable            :: mo_list(:)
 
          if (print_level.gt.1) call print_date('-Start- cholesky computation')
-
-         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
-         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
-         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
 
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
