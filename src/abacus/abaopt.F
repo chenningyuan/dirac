@@ -7660,15 +7660,61 @@ CTROND      deallocate(STPCAR)
       RETURN
       END
 
-      SUBROUTINE write_xyz_fromcommon
+      SUBROUTINE write_xyz_fromcommon(group)
 
-C     Stupid little wrapper to dump the coordinates sitting in common block nuclei.h
+      use checkpoint
+
+C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
+C     The argument group should define the appropriate group (e.g. '/input/molecule')
 C
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-      call PNCXYZ(cord)
-      end
+#include "codata.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "ibtfun.h"
+
+      character(len=*),intent(in) :: group
+      real(8), allocatable        :: geometry(:)
+      character*4, allocatable    :: symbols(:)
+      logical                     :: tobe
+
+      ! start by writing the number of atoms
+      call checkpoint_write (trim(group)//'/n_atoms',idata=nucdep)
+      ! allocate arrays to store the full list of symbols and coordinates
+      allocate (symbols(nucdep))
+      allocate (geometry(3*nucdep))
+      ! get these from the symmetry-unique list of atoms by applying symmetry operations
+      ! we always write coordinates in Angstroms and convert them from AU using XTANG
+      jcent = 0 ! counter for the dependent atoms
+      DO ICENT = 1, NUCIND
+         MULCNT = ISTBNU(ICENT)
+         DO ISYMOP = 0, MAXOPR
+            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+               DO I = 1, 3
+                 geometry(i+3*jcent) =
+     &           XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+               END DO 
+               jcent = jcent + 1
+               symbols(jcent) = namn(icent)
+            END IF
+         END DO
+      END DO
+
+      ! write the coordinates
+      call checkpoint_write (group//'/symbols',sarray=symbols,slen=4)
+      call checkpoint_write (group//'/geometry',rdata=geometry)
+
+!     Finish by writing XYZ file in plain text format if it does not exist yet.
+      INQUIRE(FILE='MOLECULE.XYZ',EXIST=TOBE)
+      if (.not.TOBE) then
+         call pncxyz(cord)
+      end if
+
+      RETURN
+      END
 
       SUBROUTINE PNCXYZ (UNIQUE_CORD)
 

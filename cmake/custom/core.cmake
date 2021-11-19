@@ -92,6 +92,8 @@ if(ENABLE_HSFS) # note: this functionality depends on the pam flag
     compile_standalone(hsfscc.x src/cc_external/hsfscc/hsfs_main.F90 "${_list_of_executables}")
 endif()
 
+find_package(HDF5 COMPONENTS C HL)
+
 foreach(
     _executable
     ${_list_of_executables}
@@ -107,6 +109,10 @@ foreach(
     add_library(objlib.${_executable} ${EXTERNAL_OBJECTS})
     SET_TARGET_PROPERTIES(objlib.${_executable}  PROPERTIES LINKER_LANGUAGE Fortran)
     target_link_libraries( ${_executable} objlib.${_executable} ${EXTERNAL_LIBS} )
+
+    if(HDF5_FOUND)
+        target_link_libraries(${_executable} HDF5::HDF5)
+    endif()
 
     if(ENABLE_STATIC_LINKING)
         if(ENABLE_OLD_LINKER)

@@ -23,5 +23,5 @@ if h5py_available:
    checkpoint = h5py.File('hf_h2.h5', 'r')
    # Read three data sets that each originate from a different file (respectively MOLECULE.XYZ, AOPROPER, DFCOEF)
    symbols     = checkpoint['/input/molecule/symbols']
-   molfield    = checkpoint['/result/operators/ao_matrices/MOLFIELD']
+   molfield    = checkpoint['/result/operators/ao_matrices/MOLFIELDSY 1TFFT']
    eigenvalues = checkpoint['/result/wavefunctions/scf/mobasis/eigenvalues']

@@ -66,7 +66,11 @@ def read_DFILE(file_name):
         label, date_run, time_run = read_label(f)
         if label == 'EOFLABEL':
             break
-        contents[label] = f.read_reals()
+        if 'AOPROPER' in file_name:
+            # AOPROPER has necessary extra information hacked into the time field
+            contents[label+time_run] = f.read_reals()
+        else:
+            contents[label] = f.read_reals()
         
     return contents
 
@@ -75,10 +79,14 @@ def write_DFILE(file_name,contents):
     Open DIRAC type file and store the dictionary contents
     """
     f = FortranFile(file_name, 'w')
-    # Make a dictionary to store the contents of this fixed format file
+    # Store the dictionary contents on a fixed format file
     label =''
     for label in contents:
-        labels = ['Molecule','xyzcoord',label]
+        if len(label)==8:
+            # Put birthday Dirac in date field
+            labels = ['08081902','12:34:56',label]
+        else:
+            labels = ['08081902',label[8:15],label[0:7]]
         write_data(f,labels,contents[label])
     write_data(f,['EOFLABEL','EOFLABEL','EOFLABEL'],0.0)
     f.close()
