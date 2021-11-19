@@ -128,7 +128,7 @@ subroutine decompose_cholesky_talsh_vec (CD, m, t_cholesky, nao, print_level)
                 !ierr=talsh_tensor_reshape(CD_v,hdims)
                 factor=get_element(CD(i),off2)
                 if (print_level.gt.10) write(*,*) 'factor=',factor
-                ierr=talsh_tensor_contract("L(p,q)+=X(p,q)*Y()",Res,CD(i),one_tensor,scale=factor)
+                ierr=talsh_tensor_add("L(p,q)+=X(p,q)",Res,CD(i),scale=factor)
                 if (print_level.gt.15) call print_tensor(Res, ACC, "Res")
             end do
 
@@ -146,7 +146,7 @@ subroutine decompose_cholesky_talsh_vec (CD, m, t_cholesky, nao, print_level)
             !sum and denominate
             ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
             factor=ONE / zsqrt(D_el)
-            ierr=talsh_tensor_contract("W(p,q)+=V(p,q)",CD(m+1),Temp,one_tensor,scale=factor)
+            ierr=talsh_tensor_add("W(p,q)+=V(p,q)",CD(m+1),Temp,scale=factor)
             
             !update diagonal
             ierr=talsh_tensor_init(Res, ZERO)
@@ -334,7 +334,7 @@ subroutine decompose_cholesky_talsh_vec (CD, m, t_cholesky, nao, print_level)
             ierr=talsh_tensor_contract("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
             ierr=talsh_tensor_init(Res, ZERO)
             denom_fac=ONE / zsqrt(D_el)
-            ierr=talsh_tensor_contract("W(p,q)=V(p,q)",Res,Temp,one_tensor,scale=denom_fac)
+            ierr=talsh_tensor_add("W(p,q)=V(p,q)",Res,Temp,scale=denom_fac)
             if (print_level.gt.15) call print_tensor(Res, ACC, "CD entry")
 
             !add Cholesky vector

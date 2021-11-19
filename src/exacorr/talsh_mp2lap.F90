@@ -71,7 +71,6 @@ module talsh_mp2lap
         buf_size=exa_input%talsh_buff*buf_size
         ierr=talsh_init(buf_size,host_arg_max)
         call print_date('Initialized talsh library')
-        write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
 
         call interest_initialize(.true.)
         call print_date('Initialized interest library')
@@ -95,7 +94,6 @@ module talsh_mp2lap
         else
            stop 'error in talsh_mp2lap_driver: tensor rank wrong'
         endif
-        write(*,*) 'uov_dims', uov_dims
         nchol=uov_dims(3)
 
         allocate (zero_chol(nchol))
@@ -169,16 +167,16 @@ module talsh_mp2lap
               !using nchol
               mp2_tens(1)=ZERO
               ierr=talsh_tensor_init(T1,ZERO)
-              ierr=talsh_tensor_contract("M(k,n)+=T(i,a,k)*V+(i,a,n)",T1,L1,L1)
+              ierr=talsh_tensor_contract("M(k,n)+=V+(i,a,n)*T(i,a,k)",T1,L1,L1)
               ierr=talsh_tensor_init(T2,ZERO)
               ierr=talsh_tensor_contract("N(k,n)+=T+(b,j,k)*V(b,j,n)",T2,L2,L2)
               ierr=talsh_tensor_contract("E()+=M(k,n)*N(k,n)",mp2_tensor,T1,T2)
 
               ierr=talsh_tensor_init(R1,ZERO)
-              ierr=talsh_tensor_contract("M(i,j,k,n)+=T+(b,j,k)*V+(i,b,n)",R1,L2,L1)
+              ierr=talsh_tensor_contract("M(i,j,k,n)+=T(b,j,k)*V(i,b,n)",R1,L2,L1)
               ierr=talsh_tensor_init(R2,ZERO)
               ierr=talsh_tensor_contract("N(i,j,k,n)+=T(i,a,k)*V(a,j,n)",R2,L1,L2)
-              ierr=talsh_tensor_contract("E()+=M(i,j,k,n)*N(i,j,k,n)",mp2_tensor,R1,R2,scale=MINUS_ONE)
+              ierr=talsh_tensor_contract("E()+=M+(i,j,k,n)*N(i,j,k,n)",mp2_tensor,R1,R2,scale=MINUS_ONE)
 
               mp2_tens(1)=mp2_tens(1)*2
 
@@ -283,7 +281,6 @@ module talsh_mp2lap
         else
            stop 'error in talsh_mp2lap_driver: tensor rank wrong'
         endif
-        write(*,*) 'uov_dims', uov_dims
         nchol=uov_dims(3)
 
         allocate (zero_chol(nchol))
@@ -381,7 +378,7 @@ module talsh_mp2lap
               ierr=talsh_tensor_init(R2,ZERO)
               ierr=talsh_tensor_contract("N(b,a,k,n)+=T+(b,j,k)*V(a,j,n)",R2,L2p,L2q)
               ierr=talsh_tensor_init(T1,ZERO)
-              ierr=talsh_tensor_contract("M(k,n)+=T(i,c,k)*V+(i,c,n)",T1,L1p,L1q)
+              ierr=talsh_tensor_contract("M(k,n)+=V+(i,c,n)*T(i,c,k)",T1,L1q,L1p)
               ierr=talsh_tensor_init(S1,ZERO)
               ierr=talsh_tensor_contract("E(a,b)+=M(k,n)*N(b,a,k,n)",S1,T1,R2, &
                                           scale=ONE_HALF*laplace%wei(i)*laplace%wei(i1))
@@ -389,7 +386,7 @@ module talsh_mp2lap
               ierr=talsh_tensor_contract("D(a,b)+=E+(b,a)*K()",mp2_dens,S1,one_mp2lap)
           
               ierr=talsh_tensor_init(R1,ZERO)
-              ierr=talsh_tensor_contract("M(c,a,k,n)+=V(i,c,k)*T+(i,a,n)",R1,L1p,L1q)
+              ierr=talsh_tensor_contract("M(c,a,k,n)+=T+(i,a,n)*V(i,c,k)",R1,L1q,L1p)
               ierr=talsh_tensor_init(R2,ZERO)
               ierr=talsh_tensor_contract("N(b,c,k,n)+=T+(b,j,k)*V(c,j,n)",R2,L2p,L2q)
               ierr=talsh_tensor_init(S1,ZERO)
