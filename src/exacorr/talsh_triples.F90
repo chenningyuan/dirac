@@ -453,6 +453,8 @@ module talsh_triples
         laplace%bounds(2) = 3.0d0*(eps_vir(nvir)-eps_occ(1))
 
         if (exa_input%print_level>1) write(*,*) laplace%bounds
+        if (exa_input%print_level>1) write(*,*) eps_vir
+        if (exa_input%print_level>1) write(*,*) eps_occ
         
         call set_laplace(exa_input%n_laplace,exa_input%print_level)
         call lap_driver(laplace)
@@ -465,48 +467,52 @@ module talsh_triples
           T=DCMPLX(0.0D0)
           call laplace_get_T1(T,comm_t%t2,int_t%ooov,int_t%vovv,t2_dims,  &
                eps_occ_neg,eps_vir,zero_occ,zero_vir,laplace%val(i)/2,exa_input%print_level)
-          Res=Res+laplace%wei(i)*T
           t_energy(1)=t_energy(1)+laplace%wei(i)*real(sum(T))
 
-          write(*,*) 'Sums of Res: '
-          write(*,'(6e16.8)') sum(Res(1:9)),sum(Res(10:19)),sum(Res(20:29)), sum(Res(30:39)), sum(Res)
-       
+          write(*,*) 'Terms*Lapl:'
+          write(*,'(10e10.2)') laplace%wei(i)*T
+
+          Res=Res+laplace%wei(i)*T
+
         end do
         
-        write(*,*) 'Res1: '
-        write(*,'(8e12.4)') Res
+        write(*,*) 'Sums of Res 1: '
+        write(*,'(6e16.8)') sum(Res(1:9)),sum(Res(10:19)),sum(Res(20:29)), sum(Res(30:39)), sum(Res)
 
         Res=DCMPLX(0.0D0)
         do i=1,laplace%num
           T=DCMPLX(0.0D0)
           call laplace_get_T2(T,comm_t%t2,comm_t%t1,comm_t%fov,int_t%ooov,int_t%vovv,int_t%oovv,t2_dims, &
                eps_occ_neg,eps_vir,zero_occ,zero_vir,laplace%val(i)/2,exa_input%print_level)
-          Res=Res+laplace%wei(i)*T
           t_energy(2)=t_energy(2)+laplace%wei(i)*real(sum(T))
+          
+          write(*,*) 'Terms*Lapl:'
+          write(*,'(10e10.2)') laplace%wei(i)*T
 
-          write(*,*) 'Sums of Res: '
-          write(*,'(6e16.8)') sum(Res(1:9)),sum(Res(10:19)),sum(Res(20:29)), sum(Res(30:39)), sum(Res)
+          Res=Res+laplace%wei(i)*T
 
         end do 
 
-        write(*,*) 'Res2: '
-        write(*,'(8e12.4)') Res   
+        write(*,*) 'Sums of Res 2: '
+        write(*,'(6e16.8)') sum(Res(1:9)),sum(Res(10:19)),sum(Res(20:29)), sum(Res(30:39)), sum(Res)
 
         Res=DCMPLX(0.0D0)
         do i=1,laplace%num
           T=DCMPLX(0.0D0)
           call laplace_get_T3(T,comm_t%t2,comm_t%t1,int_t%ooov,int_t%vovv,t2_dims, &
                eps_occ_neg,eps_vir,zero_occ,zero_vir,laplace%val(i)/2,exa_input%print_level)
-          Res=Res+laplace%wei(i)*T
           t_energy(3)=t_energy(3)+laplace%wei(i)*real(sum(T))
 
-          write(*,*) 'Sums of Res: '
-          write(*,'(6e16.8)') sum(Res(1:9)),sum(Res(10:19)),sum(Res(20:29)), sum(Res(30:39)), sum(Res)
+          write(*,*) 'Terms*Lapl:'
+          write(*,'(10e10.2)') laplace%wei(i)*T
+         
+          Res=Res+laplace%wei(i)*T
 
         end do 
 
-        write(*,*) 'Res3: '
-        write(*,'(8e12.4)') Res  
+        write(*,*) 'Sums of Res 3: '
+        write(*,'(6e16.8)') sum(Res(1:8)), sum(Res(9:20)), sum(Res(21:24)), &
+                              sum(Res(25:34)), sum(Res(35:38)), sum(Res)
 
         t_energy=-t_energy  
         write(*,*) 'Energy: ',t_energy
@@ -998,10 +1004,6 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I1)
       ierr=talsh_tensor_destruct(I2)
       T(17)=T_tens(1)
-
-      write(*,*) 'Terms:'
-      write(*,'(10e10.2)') T
-      
 
       !clean up
       ierr=talsh_tensor_destruct(T_tensor)
@@ -1632,10 +1634,6 @@ module talsh_triples
       ierr=talsh_tensor_destruct(t2)
       ierr=talsh_tensor_destruct(fvo)
       !------------------------------------------------------------------------------------------
-
-
-      write(*,*) 'Terms:'
-      write(*,'(10e10.2)') T
       
       !clean up
       ierr=talsh_tensor_destruct(T_tensor)
@@ -1736,7 +1734,7 @@ module talsh_triples
       call laplace_mult(vooo_o,s,eps_vir,zero_occ,eps_occ,eps_occ)
 
       ierr=talsh_tensor_construct(t1,C8,dims_vo,init_val=ZERO)
-      ierr=talsh_tensor_add("R(a,i)+=O(a,i)",t1,i_t1)
+      ierr=talsh_tensor_add("R(a,i)+=O+(a,i)",t1,i_t1)
       call laplace_mult(t1,s,eps_vir,eps_occ)
 
       ! ----------------------------------------------------------------------------------------- compute terms with t1
@@ -2361,10 +2359,6 @@ module talsh_triples
 
       ierr=talsh_tensor_destruct(t2)
       !------------------------------------------------------------------------------------------
-
-
-      write(*,*) 'Terms:'
-      write(*,'(10e10.2)') T
       
       !clean up
       ierr=talsh_tensor_destruct(t1)
