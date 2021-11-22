@@ -1087,7 +1087,7 @@ module talsh_triples
       dims4=nocc
       dims4(1:2)=nvir
       ierr=talsh_tensor_construct(vvoo,C8,dims4,init_val=ZERO)
-      ierr=talsh_tensor_contract("R(a,b,i,j)+=O+(i,j,a,b)",vvoo,i_oovv,one_tripl)
+      ierr=talsh_tensor_contract("R(a,b,i,j)+=O(i,j,a,b)",vvoo,i_oovv,one_tripl)
       call laplace_mult(vvoo,s,eps_vir,eps_vir,eps_occ,eps_occ)
 
       ! 0.25 H1^{mb}_{}U1^{b}_{m}
@@ -1363,7 +1363,7 @@ module talsh_triples
       call laplace_mult(fvo,s,eps_vir,eps_occ)
 
       ierr=talsh_tensor_construct(t2,C8,t2_dims,init_val=ZERO)
-      ierr=talsh_tensor_add("R(a,b,i,j)+=O(a,b,i,j)",t2,i_t2)
+      ierr=talsh_tensor_add("R(a,b,i,j)+=O+(a,b,i,j)",t2,i_t2)
       call laplace_mult(t2,s,eps_vir,eps_vir,eps_occ,eps_occ)
 
       dims2=nvir
@@ -1813,18 +1813,18 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I3)
       T(4)=T_tens(1)
 
-      ! 0.25 M4^{m}_{i}N4^{a}_{m}
+      ! 0.25 M4^{m}_{j}N4^{a}_{m}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_oo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vo,init_val=ZERO)
       ierr=talsh_tensor_construct(I3,C8,dims_oo,init_val=ZERO)
-      ierr=talsh_tensor_contract("T(m,i)+=X(a,m,j,i)*Y(a,j)",I1,vooo_o,t1)
+      ierr=talsh_tensor_contract("T(m,j)+=X(a,m,i,j)*Y(a,i)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M5 wrong')
-      ierr=talsh_tensor_contract("G(a,m)+=X(a,c,k,m)*Y(c,k)",I2,t2_o,t1)
+      ierr=talsh_tensor_contract("G(a,m)+=X(a,b,k,m)*Y(b,k)",I2,t2_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction N5 wrong')
-      ierr=talsh_tensor_contract("K(m,i)+=G(a,m)*Y(a,i)",I3,I2,t1)
+      ierr=talsh_tensor_contract("K(m,j)+=G(a,m)*Y(a,j)",I3,I2,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction X5 wrong')
-      ierr=talsh_tensor_contract("R()+=T(m,i)*K(m,i)",T_tensor,I1,I3,scale=ONE_QUARTER)
+      ierr=talsh_tensor_contract("R()+=T(m,j)*K(m,j)",T_tensor,I1,I3,scale=ONE_QUARTER)
       if (ierr.ne.0) call quit('laplace_get_T: contraction 5 wrong')
       ierr=talsh_tensor_destruct(I1)
       ierr=talsh_tensor_destruct(I2)
@@ -1944,9 +1944,9 @@ module talsh_triples
       ierr=talsh_tensor_construct(I1,C8,dims_vovo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvvo,init_val=ZERO)
       ierr=talsh_tensor_construct(I3,C8,dims_vovo,init_val=ZERO)
-      ierr=talsh_tensor_contract("T(a,m,b,i)+=X(a,m,i,j)*Y(b,j)",I1,vooo_o,t1)
+      ierr=talsh_tensor_contract("T(a,m,b,i)+=X(a,m,j,i)*Y(b,j)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M10m wrong')
-      ierr=talsh_tensor_contract("G(c,b,a,m)+=X(b,c,k,m)*Y(a,k)",I2,t2_o,t1)
+      ierr=talsh_tensor_contract("G(c,b,a,m)+=X(c,b,k,m)*Y(a,k)",I2,t2_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction N10m wrong')
       ierr=talsh_tensor_contract("K(a,m,b,i)+=G(c,b,a,m)*Y(c,i)",I3,I2,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction X10m wrong')
@@ -1964,9 +1964,9 @@ module talsh_triples
       ierr=talsh_tensor_construct(I3,C8,dims_vvvv,init_val=ZERO)
       ierr=talsh_tensor_contract("T(a,b,c,e)+=X(a,b,i,e)*Y(c,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M11 wrong')
-      ierr=talsh_tensor_contract("G(e,c,a,i)+=X(e,c,i,k)*Y(a,k)",I2,t2_v,t1)
+      ierr=talsh_tensor_contract("G(e,c,a,j)+=X(e,c,j,k)*Y(a,k)",I2,t2_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction N11 wrong')
-      ierr=talsh_tensor_contract("K(a,b,c,e)+=G(e,c,a,i)*Y(b,i)",I3,I2,t1)
+      ierr=talsh_tensor_contract("K(a,b,c,e)+=G(e,c,a,j)*Y(b,j)",I3,I2,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction X11 wrong')
       ierr=talsh_tensor_contract("R()+=T(a,b,c,e)*K(a,b,c,e)",T_tensor,I1,I3,scale=MINUS_ONE_TWELFTH)
       if (ierr.ne.0) call quit('laplace_get_T: contraction 13 wrong')
@@ -2000,9 +2000,9 @@ module talsh_triples
       ierr=talsh_tensor_construct(I3,C8,dims_vovo,init_val=ZERO)
       ierr=talsh_tensor_contract("T(a,i,e,j)+=X(a,b,i,e)*Y(b,j)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M12a wrong')
-      ierr=talsh_tensor_contract("G(e,k,i,j)+=X(e,c,j,k)*Y(c,i)",I2,t2_v,t1)
+      ierr=talsh_tensor_contract("G(e,k,j,i)+=X(e,c,k,j)*Y(c,i)",I2,t2_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction N12a wrong')
-      ierr=talsh_tensor_contract("K(a,i,e,j)+=G(e,k,i,j)*Y(a,k)",I3,I2,t1)
+      ierr=talsh_tensor_contract("K(a,i,e,j)+=G(e,k,j,i)*Y(a,k)",I3,I2,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction X12a wrong')
       ierr=talsh_tensor_contract("R()+=T(a,i,e,j)*K(a,i,e,j)",T_tensor,I1,I3,scale=ONE_TWELFTH)
       if (ierr.ne.0) call quit('laplace_get_T: contraction 15 wrong')
@@ -2011,16 +2011,16 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I3)
       T(15)=T_tens(1)
 
-      ! -0.08 M13^{m}_{ijk}N13^{a}_{kmj}
+      ! -0.08 M13^{m}_{ijk}N13^{c}_{kmj}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_oooo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vooo,init_val=ZERO)
       ierr=talsh_tensor_construct(I3,C8,dims_oooo,init_val=ZERO)
       ierr=talsh_tensor_contract("T(m,i,j,k)+=X(a,m,i,j)*Y(a,k)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M13a wrong')
-      ierr=talsh_tensor_contract("G(a,k,m,j)+=X(a,b,k,m)*Y(b,j)",I2,t2_o,t1)
+      ierr=talsh_tensor_contract("G(c,k,m,j)+=X(b,c,k,m)*Y(b,j)",I2,t2_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction N13a wrong')
-      ierr=talsh_tensor_contract("K(m,i,j,k)+=G(a,k,m,j)*Y(a,i)",I3,I2,t1)
+      ierr=talsh_tensor_contract("K(m,i,j,k)+=G(c,k,m,j)*Y(c,i)",I3,I2,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction X13a wrong')
       ierr=talsh_tensor_contract("R()+=T(m,i,j,k)*K(m,i,j,k)",T_tensor,I1,I3,scale=MINUS_ONE_TWELFTH)
       if (ierr.ne.0) call quit('laplace_get_T: contraction 16 wrong')
@@ -2036,7 +2036,7 @@ module talsh_triples
       ierr=talsh_tensor_construct(I3,C8,dims_oooo,init_val=ZERO)
       ierr=talsh_tensor_contract("T(m,i,j,k)+=X(a,m,i,j)*Y(a,k)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M13b wrong')
-      ierr=talsh_tensor_contract("G(a,k,m,i)+=X(a,b,k,m)*Y(b,i)",I2,t2_o,t1)
+      ierr=talsh_tensor_contract("G(a,k,m,i)+=X(b,a,k,m)*Y(b,i)",I2,t2_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction N13b wrong')
       ierr=talsh_tensor_contract("K(m,i,j,k)+=G(a,k,m,i)*Y(a,j)",I3,I2,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction X13b wrong')
@@ -2107,7 +2107,7 @@ module talsh_triples
       ierr=talsh_tensor_add("R(a,b,i,j)+=O(a,b,i,j)",t2,i_t2)
       call laplace_mult(t2,s,eps_vir,eps_vir,eps_occ,eps_occ)
 
-      ! 0.25 E1^{eb}_{}R1^{b}_{e}
+      ! 0.25 K1^{eb}_{}L1^{b}_{e}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vv,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vv,init_val=ZERO)
@@ -2121,7 +2121,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(21)=T_tens(1)  
 
-      ! 0.25 E2^{ea}_{}R1^{a}_{e}
+      ! 0.25 K2^{ea}_{}L2^{a}_{e}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vv,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vv,init_val=ZERO)
@@ -2135,7 +2135,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(22)=T_tens(1)  
 
-      ! 0.25 E3^{}_{mj}R3^{m}_{j}
+      ! 0.25 K3^{}_{mj}L3^{m}_{j}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_oo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_oo,init_val=ZERO)
@@ -2149,7 +2149,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(23)=T_tens(1)  
 
-      ! 0.25 E4^{}_{mi}R4^{m}_{i}
+      ! 0.25 K4^{}_{mi}L4^{m}_{i}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_oo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_oo,init_val=ZERO)
@@ -2163,7 +2163,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(24)=T_tens(1)  
 
-      ! 0.25 E5^{}_{kmij}R5^{m}_{ijk}
+      ! 0.25 K5^{}_{kmij}L5^{m}_{ijk}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_oooo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_oooo,init_val=ZERO)
@@ -2177,7 +2177,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(25)=T_tens(1)  
 
-      ! 0.25 E6^{ecab}_{}R6^{abc}_{e}
+      ! 0.25 K6^{ecab}_{}L6^{abc}_{e}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvvv,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvvv,init_val=ZERO)
@@ -2191,7 +2191,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(26)=T_tens(1)      
 
-      ! 0.25 E7^{eb}_{ki}R7^{b}_{iek}
+      ! 0.25 K7^{eb}_{ki}L7^{b}_{iek}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2205,7 +2205,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(27)=T_tens(1)
 
-      ! 0.25 E8^{eb}_{ji}R8^{b}_{iej}
+      ! 0.25 K8^{eb}_{ji}L8^{b}_{iej}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2219,7 +2219,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(28)=T_tens(1)
 
-      ! 0.25 E9^{ea}_{ki}R9^{a}_{iek}
+      ! 0.25 K9^{ea}_{ki}L9^{a}_{iek}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2233,7 +2233,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(29)=T_tens(1)
 
-      ! 0.25 E10^{ea}_{ji}R10^{a}_{iej}
+      ! 0.25 K10^{ea}_{ji}L10^{a}_{iej}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2247,7 +2247,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(30)=T_tens(1)
 
-      ! 0.25 E11^{ba}_{mj}R11^{amb}_{j}
+      ! 0.25 K11^{ba}_{mj}L11^{amb}_{j}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2261,7 +2261,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(31)=T_tens(1)
 
-      ! 0.25 E12^{ba}_{mi}R12^{amb}_{i}
+      ! 0.25 K12^{ba}_{mi}L12^{amb}_{i}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2275,7 +2275,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(32)=T_tens(1)
 
-      ! 0.25 E13^{ca}_{mj}R13^{amc}_{j}
+      ! 0.25 K13^{ca}_{mj}L13^{amc}_{j}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vvoo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vvoo,init_val=ZERO)
@@ -2303,7 +2303,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(34)=T_tens(1)
 
-      ! 0.25 A1^{}_{ej}S1^{e}_{i}
+      ! 0.25 P1^{}_{ej}Q1^{e}_{i}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vo,init_val=ZERO)
@@ -2317,7 +2317,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(35)=T_tens(1)
 
-      ! 0.25 A2^{}_{ek}S2^{e}_{k}
+      ! 0.25 P2^{}_{ek}Q2^{e}_{k}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_vo,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_vo,init_val=ZERO)
@@ -2331,7 +2331,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(36)=T_tens(1) 
 
-      ! 0.25 A3^{mb}_{}S3^{b}_{m}
+      ! 0.25 P3^{mb}_{}Q3^{b}_{m}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_ov,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_ov,init_val=ZERO)
@@ -2345,7 +2345,7 @@ module talsh_triples
       ierr=talsh_tensor_destruct(I2)
       T(37)=T_tens(1)
 
-      ! 0.25 A4^{mc}_{}S4^{c}_{m}
+      ! 0.25 P4^{mc}_{}Q4^{c}_{m}
       T_tens(1)=ZERO
       ierr=talsh_tensor_construct(I1,C8,dims_ov,init_val=ZERO)
       ierr=talsh_tensor_construct(I2,C8,dims_ov,init_val=ZERO)
