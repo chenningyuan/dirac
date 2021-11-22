@@ -24,5 +24,6 @@ f.add(from_string = 'Eigenvalues',
 
 test.run(['exacc_h2.inp'], ['H2.xyz'], f)
 test.run(['exacc_h2o.inp'], ['H2O_nosym.mol'], f)
+test.run(['exacc_beh.inp'], ['BeH_nosym.mol'], f)
 
 sys.exit(test.return_code)
