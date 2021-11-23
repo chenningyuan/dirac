@@ -500,20 +500,11 @@ module talsh_triples
         write(*,*) 'Sums of Res 2: '
         write(*,'(6e16.8)') sum(Res(1:9)),sum(Res(10:19)),sum(Res(20:29)), sum(Res(30:39)), sum(Res)
 
-        Res=DCMPLX(0.0D0)
-        do i=1,laplace%num
-          T=DCMPLX(0.0D0)
-          call laplace_get_T3(T,comm_t%t2,comm_t%t1,int_t%ooov,int_t%vovv,t2_dims, &
-               eps_occ_neg,eps_vir,zero_occ,zero_vir,laplace%val(i)/2,exa_input%print_level)
-          t_energy(3)=t_energy(3)+laplace%wei(i)*real(sum(T))
+        T=DCMPLX(0.0D0)
+        call laplace_get_T3(T,comm_t%t2,comm_t%t1,int_t%ooov,int_t%vovv,t2_dims,exa_input%print_level)
+        t_energy(3)=t_energy(3)-real(sum(T))
 
-          write(*,*) 'Terms*Lapl:'
-          write(*,'(10e10.2)') laplace%wei(i)*T
-         
-          Res=Res+laplace%wei(i)*T
-
-        end do 
-
+        Res=T
         write(*,*) 'Sums of Res 3: '
         write(*,'(6e16.8)') sum(Res(1:8)), sum(Res(9:20)), sum(Res(21:24)), &
                               sum(Res(25:34)), sum(Res(35:38)), sum(Res)
@@ -1067,15 +1058,15 @@ module talsh_triples
       ierr=talsh_tensor_add("R(e,a,i,j)+=O(e,a,i,j)",t2_v,i_t2)
       call laplace_mult(t2_v,s,zero_vir,eps_vir,eps_occ,eps_occ)
 
+      ierr=talsh_tensor_construct(t2_o,C8,t2_dims,init_val=ZERO)
+      ierr=talsh_tensor_add("R(a,b,i,m)+=O(a,b,i,m)",t2_o,i_t2)
+      call laplace_mult(t2_o,s,eps_vir,eps_vir,eps_occ,zero_occ)
+
       dims4=nvir
       dims4(3)=nocc
       ierr=talsh_tensor_construct(vvov_v,C8,dims4,init_val=ZERO)
       ierr=talsh_tensor_contract("R(a,b,i,e)+=O+(e,i,b,a)",vvov_v,i_vovv,one_tripl)
       call laplace_mult(vvov_v,s,eps_vir,eps_vir,eps_occ,zero_vir)
-
-      ierr=talsh_tensor_construct(t2_o,C8,t2_dims,init_val=ZERO)
-      ierr=talsh_tensor_add("R(a,b,i,m)+=O(a,b,i,m)",t2_o,i_t2)
-      call laplace_mult(t2_o,s,eps_vir,eps_vir,eps_occ,zero_occ)
 
       dims4=nocc
       dims4(1)=nvir
@@ -1649,14 +1640,11 @@ module talsh_triples
       
     end subroutine laplace_get_T2
 
-    subroutine laplace_get_T3(T,i_t2,i_t1,i_ooov,i_vovv,t2_dims, &
-               eps_occ,eps_vir,zero_occ,zero_vir,s, print_level)
+    subroutine laplace_get_T3(T,i_t2,i_t1,i_ooov,i_vovv,t2_dims, print_level)
 
       complex(8), intent(out)           :: T(:)
       type(talsh_tens_t), intent(inout) :: i_t2,i_t1
       type(talsh_tens_t), intent(inout) :: i_ooov,i_vovv
-      real(8), intent(in)               :: eps_occ(:),eps_vir(:),zero_occ(:),zero_vir(:)
-      real(8), intent(in)               :: s
       integer(INTD), intent(in)         :: t2_dims(4)
       integer, intent(in)               :: print_level
 
@@ -1723,24 +1711,18 @@ module talsh_triples
 
       ierr=talsh_tensor_construct(t2_v,C8,t2_dims,init_val=ZERO)
       ierr=talsh_tensor_contract("R(e,a,i,j)+=O(e,a,i,j)*I()",t2_v,i_t2,one_tripl)
-      call laplace_mult(t2_v,s,zero_vir,eps_vir,eps_occ,eps_occ)
 
       ierr=talsh_tensor_construct(t2_o,C8,t2_dims,init_val=ZERO)
       ierr=talsh_tensor_contract("R(a,b,i,m)+=O(a,b,i,m)*I()",t2_o,i_t2,one_tripl)
-      call laplace_mult(t2_o,s,eps_vir,eps_vir,eps_occ,zero_occ)
 
       ierr=talsh_tensor_construct(vvov_v,C8,dims_vvov,init_val=ZERO)
       ierr=talsh_tensor_contract("R(a,b,i,e)+=O+(e,i,b,a)*I()",vvov_v,i_vovv,one_tripl)
-      call laplace_mult(vvov_v,s,eps_vir,eps_vir,eps_occ,zero_vir)
 
       ierr=talsh_tensor_construct(vooo_o,C8,dims_vooo,init_val=ZERO)
       ierr=talsh_tensor_contract("R(a,m,i,j)+=O+(j,i,m,a)*I()",vooo_o,i_ooov,one_tripl)
-      call laplace_mult(vooo_o,s,eps_vir,zero_occ,eps_occ,eps_occ)
 
       ierr=talsh_tensor_construct(t1,C8,dims_vo,init_val=ZERO)
       ierr=talsh_tensor_add("R(a,i)+=O(a,i)",t1,i_t1)
-      call laplace_mult(t1,s,eps_vir,eps_occ)
-
       ! ----------------------------------------------------------------------------------------- compute terms with t1
 
       ! 0.25 M1^{b}_{e}N1^{e}_{j}
@@ -2107,7 +2089,6 @@ module talsh_triples
       ! ----------------------------------------------------------------------------------------- compute terms with t2
       ierr=talsh_tensor_construct(t2,C8,t2_dims,init_val=ZERO)
       ierr=talsh_tensor_add("R(a,b,i,j)+=O(a,b,i,j)",t2,i_t2)
-      call laplace_mult(t2,s,eps_vir,eps_vir,eps_occ,eps_occ)
 
       ! 0.25 K1^{eb}_{}L1^{b}_{e}
       T_tens(1)=ZERO
