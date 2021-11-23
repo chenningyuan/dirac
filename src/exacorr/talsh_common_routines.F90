@@ -769,7 +769,7 @@ module talsh_common_routines
 
          do r = 1, dims2(2)
            do p = 1, dims2(1)
-               tens2(p,r) = tens2(p,r) * EXP(-(orb1(p)+orb2(r))*factor)
+               tens2(p,r) = tens2(p,r) * DEXP(-(orb1(p)+orb2(r))*factor)
            end do
          end do
 
@@ -785,7 +785,7 @@ module talsh_common_routines
          do r = 1, dims3(3)
            do q = 1, dims3(2)
              do p = 1, dims3(1)
-               tens3(p,q,r) = tens3(p,q,r) * EXP(-(orb1(p)+orb2(q)+orb3(r))*factor)
+               tens3(p,q,r) = tens3(p,q,r) * DEXP(-(orb1(p)+orb2(q)+orb3(r))*factor)
              end do
            end do
          end do
@@ -804,7 +804,7 @@ module talsh_common_routines
             do r = 1, dims4(3)
                do q = 1, dims4(2)
                   do p = 1, dims4(1)
-                     tens4(p,q,r,s) = tens4(p,q,r,s) * EXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s))*factor)
+                     tens4(p,q,r,s) = tens4(p,q,r,s) * DEXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s))*factor)
                   end do
                end do
             end do
@@ -829,7 +829,7 @@ module talsh_common_routines
                  do q = 1, dims6(2)
                    do p = 1, dims6(1)
                      tens6(p,q,r,s,t,u) = tens6(p,q,r,s,t,u) * &
-                     EXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s)+orb5(t)+orb6(u))*factor)
+                     DEXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s)+orb5(t)+orb6(u))*factor)
                    end do
                  end do
                end do

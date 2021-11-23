@@ -232,7 +232,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Mon Nov 22 15:41:59 2021
+     Date and time (Linux)  : Tue Nov 23 11:48:24 2021
      Host name              : pototschnig-SH67H                       
 
  * Opening HDF5 checkpoint file 
@@ -265,17 +265,17 @@ BeH molecule. X2C Hamiltonian. CC energies.
 1.0E-9 1.0E-8                                                                                       
 **MOLTRA                                                                                            
 .ACTIVE                                                                                             
-energy -1.0 0.5 0.00001                                                                             
+energy -1.0 2.0 0.001                                                                               
 .NO4IND                                                                                             
 **EXACC                                                                                             
 .OCCUPIED                                                                                           
-2..3                                                                                                
+energy -1.0 -0.3 0.001                                                                              
 .VIRTUAL                                                                                            
-4..10                                                                                               
+energy -0.3 2.0 0.001                                                                               
 .OCC_BETA                                                                                           
-2                                                                                                   
+energy -1.0 0.0 0.001                                                                               
 .VIR_BETA                                                                                           
-3..10                                                                                               
+energy 0.0 2.0 0.001                                                                                
 #.LAP_TRIPL                                                                                         
 .PRINT                                                                                              
 4                                                                                                   
@@ -283,8 +283,8 @@ energy -1.0 0.5 0.00001
 1                                                                                                   
 .PRINT                                                                                              
 2                                                                                                   
-#.NLAPLACE                                                                                          
-#6                                                                                                  
+.NLAPLACE                                                                                           
+6                                                                                                   
 *END OF                                                                                             
 
 
@@ -884,7 +884,7 @@ H      0.0000000000   0.0000000000   0.7090974626
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.02988800s and (WALL)  0.03000000s
+Total time used in ONEGEN (CPU)  0.02961800s and (WALL)  0.03000000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1010,8 +1010,8 @@ Total time used in ONEGEN (CPU)  0.02988800s and (WALL)  0.03000000s
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> CPU  time used in mk_h2c is   0.18 seconds
- >>> WALL time used in mk_h2c is   0.18 seconds
+ >>> CPU  time used in mk_h2c is   0.17 seconds
+ >>> WALL time used in mk_h2c is   0.17 seconds
   Nuclear Gaussian exponent for atom of charge   4.000 :    7.8788791570D+08
   Nuclear Gaussian exponent for atom of charge   1.000 :    2.1248236111D+09
 
@@ -1027,7 +1027,7 @@ Total time used in ONEGEN (CPU)  0.02988800s and (WALL)  0.03000000s
 
                         1 Debye =   2.54177000 a.u. 
 
-Total time used in ONEGEN (CPU)  0.00585400s and (WALL)  0.00600000s
+Total time used in ONEGEN (CPU)  0.00567600s and (WALL)  0.00500000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1043,8 +1043,8 @@ Total time used in ONEGEN (CPU)  0.00585400s and (WALL)  0.00600000s
 No. of positive energy orbitals (NESH):    33
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    33
- >>> CPU  time used in PAMSET is   0.25 seconds
- >>> WALL time used in PAMSET is   0.25 seconds
+ >>> CPU  time used in PAMSET is   0.24 seconds
+ >>> WALL time used in PAMSET is   0.24 seconds
 
 
  *******************************************************************************
@@ -1058,219 +1058,219 @@ Total no. of orbitals           (NORB):    33
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   1 ##########   Tue Nov 23 11:48:25 2021
 
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.68849    3  -0.22354    4  -0.20014
 
 => Calculating sum of orbital energies
-It.    1    -7.239883694372      0.00D+00  0.00D+00  0.00D+00               0.02239800s   Atom. scrpot   Mon Nov 22
+It.    1    -7.239883694372      0.00D+00  0.00D+00  0.00D+00               0.02077900s   Atom. scrpot   Tue Nov 23
 
-########## START ITERATION NO.   2 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   2 ##########   Tue Nov 23 11:48:25 2021
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   67.12%    0.00%    5.03%   0.04270402s
+SOfock:LL  1.00D-12    0.00%   67.12%    0.00%    5.03%   0.04032201s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.44614    3  -0.16725    4   0.09338
->>> Total wall time:  0.06400000s, and total CPU time :  0.06187500s
+>>> Total wall time:  0.06000000s, and total CPU time :  0.05836300s
 
-########## END ITERATION NO.   2 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   2 ##########   Tue Nov 23 11:48:25 2021
 
-It.    2    -14.73914010141      7.50D+00  2.25D+00  6.71D-01               0.06400000s   LL             Mon Nov 22
+It.    2    -14.73914010141      7.50D+00  2.25D+00  6.71D-01               0.06000000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   3 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   3 ##########   Tue Nov 23 11:48:25 2021
 
     3 *** Differential density matrix. DCOVLP     = 0.8005
     3 *** Differential density matrix. DVOVLP( 1) = 0.5577
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   67.23%    0.00%    5.39%   0.04301700s
+SOfock:LL  1.00D-12    0.00%   67.23%    0.00%    5.39%   0.04321000s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.54585    3  -0.19860    4   0.07323
->>> Total wall time:  0.05200000s, and total CPU time :  0.05089100s
+>>> Total wall time:  0.05300000s, and total CPU time :  0.05092900s
 
-########## END ITERATION NO.   3 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   3 ##########   Tue Nov 23 11:48:25 2021
 
-It.    3    -14.82303828339      8.39D-02 -2.35D-01  5.66D-02   DIIS   2    0.05200000s   LL             Mon Nov 22
+It.    3    -14.82303828339      8.39D-02 -2.35D-01  5.66D-02   DIIS   2    0.05300000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   4 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   4 ##########   Tue Nov 23 11:48:25 2021
 
     4 *** Differential density matrix. DCOVLP     = 0.9881
     4 *** Differential density matrix. DVOVLP( 1) = 0.9419
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   67.40%    0.00%    5.05%   0.04365903s
+SOfock:LL  1.00D-12    0.00%   67.40%    0.00%    5.05%   0.04402199s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55184    3  -0.20167    4   0.07135
->>> Total wall time:  0.05400000s, and total CPU time :  0.05142600s
+>>> Total wall time:  0.05300000s, and total CPU time :  0.05179100s
 
-########## END ITERATION NO.   4 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   4 ##########   Tue Nov 23 11:48:25 2021
 
-It.    4    -14.82487671547      1.84D-03 -8.00D-03  1.04D-02   DIIS   3    0.05400000s   LL             Mon Nov 22
+It.    4    -14.82487671547      1.84D-03 -8.00D-03  1.04D-02   DIIS   3    0.05300000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   5 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   5 ##########   Tue Nov 23 11:48:25 2021
 
     5 *** Differential density matrix. DCOVLP     = 0.9971
     5 *** Differential density matrix. DVOVLP( 1) = 0.9804
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   67.47%    0.00%    4.78%   0.04408097s
+SOfock:LL  1.00D-12    0.00%   67.47%    0.00%    4.78%   0.04411495s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55338    3  -0.20145    4   0.07107
->>> Total wall time:  0.05300000s, and total CPU time :  0.05152900s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.05193300s
 
-########## END ITERATION NO.   5 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   5 ##########   Tue Nov 23 11:48:25 2021
 
-It.    5    -14.82500776556      1.31D-04 -3.90D-03  1.83D-03   DIIS   4    0.05300000s   LL             Mon Nov 22
+It.    5    -14.82500776556      1.31D-04 -3.90D-03  1.83D-03   DIIS   4    0.05400000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   6 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   6 ##########   Tue Nov 23 11:48:25 2021
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
     6 *** Differential density matrix. DVOVLP( 1) = 0.9971
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   67.65%    0.00%    3.01%   0.04423803s
+SOfock:LL  1.00D-12    0.00%   67.65%    0.00%    3.01%   0.04509598s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55336    3  -0.20140    4   0.07109
->>> Total wall time:  0.05400000s, and total CPU time :  0.05174700s
+>>> Total wall time:  0.05500000s, and total CPU time :  0.05293300s
 
-########## END ITERATION NO.   6 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   6 ##########   Tue Nov 23 11:48:25 2021
 
-It.    6    -14.82501260546      4.84D-06 -4.09D-04  2.80D-04   DIIS   5    0.05400000s   LL             Mon Nov 22
+It.    6    -14.82501260546      4.84D-06 -4.09D-04  2.80D-04   DIIS   5    0.05500000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   7 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   7 ##########   Tue Nov 23 11:48:25 2021
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
     7 *** Differential density matrix. DVOVLP( 1) = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   68.01%    0.00%    1.18%   0.04496002s
+SOfock:LL  1.00D-12    0.00%   68.01%    0.00%    1.18%   0.04616100s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55336    3  -0.20139    4   0.07109
->>> Total wall time:  0.05400000s, and total CPU time :  0.05263000s
+>>> Total wall time:  0.05600000s, and total CPU time :  0.05390400s
 
-########## END ITERATION NO.   7 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   7 ##########   Tue Nov 23 11:48:25 2021
 
-It.    7    -14.82501270253      9.71D-08 -4.13D-05  5.17D-05   DIIS   6    0.05400000s   LL             Mon Nov 22
+It.    7    -14.82501270253      9.71D-08 -4.13D-05  5.17D-05   DIIS   6    0.05600000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   8 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   8 ##########   Tue Nov 23 11:48:25 2021
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
     8 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   68.46%    0.00%    2.40%   0.04447001s
+SOfock:LL  1.00D-12    0.00%   68.46%    0.00%    2.40%   0.04520398s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.05400000s, and total CPU time :  0.05211300s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.05316100s
 
-########## END ITERATION NO.   8 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   8 ##########   Tue Nov 23 11:48:25 2021
 
-It.    8    -14.82501270574      3.21D-09 -8.25D-06  9.83D-06   DIIS   7    0.05400000s   LL             Mon Nov 22
+It.    8    -14.82501270574      3.21D-09 -8.25D-06  9.83D-06   DIIS   7    0.05400000s   LL             Tue Nov 23
 
-########## START ITERATION NO.   9 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.   9 ##########   Tue Nov 23 11:48:25 2021
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
     9 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   68.97%    0.00%    1.67%   0.04382902s
+SOfock:LL  1.00D-12    0.00%   68.97%    0.00%    1.67%   0.04506701s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.05300000s, and total CPU time :  0.05159700s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.05266100s
 
-########## END ITERATION NO.   9 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.   9 ##########   Tue Nov 23 11:48:25 2021
 
-It.    9    -14.82501270596      2.25D-10 -2.87D-06  2.63D-06   DIIS   8    0.05300000s   LL             Mon Nov 22
+It.    9    -14.82501270596      2.25D-10 -2.87D-06  2.63D-06   DIIS   8    0.05400000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  10 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.  10 ##########   Tue Nov 23 11:48:25 2021
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
    10 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   69.97%    0.02%    1.43%   0.04420000s
+SOfock:LL  1.00D-12    0.00%   69.97%    0.02%    1.43%   0.04466605s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.05400000s, and total CPU time :  0.05199200s
+>>> Total wall time:  0.05500000s, and total CPU time :  0.05237000s
 
-########## END ITERATION NO.  10 ##########   Mon Nov 22 15:41:59 2021
+########## END ITERATION NO.  10 ##########   Tue Nov 23 11:48:25 2021
 
-It.   10    -14.82501270599      2.96D-11 -1.12D-06  1.09D-06   DIIS   9    0.05400000s   LL             Mon Nov 22
+It.   10    -14.82501270599      2.96D-11 -1.12D-06  1.09D-06   DIIS   9    0.05500000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  11 ##########   Mon Nov 22 15:41:59 2021
+########## START ITERATION NO.  11 ##########   Tue Nov 23 11:48:25 2021
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   70.53%    0.01%    1.24%   0.04325300s
+SOfock:LL  1.00D-12    0.00%   70.53%    0.01%    1.24%   0.04373401s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.05300000s, and total CPU time :  0.05088900s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.05199500s
 
-########## END ITERATION NO.  11 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  11 ##########   Tue Nov 23 11:48:25 2021
 
-It.   11    -14.82501270600      7.32D-12  7.60D-07  2.90D-07   DIIS   9    0.05300000s   LL             Mon Nov 22
+It.   11    -14.82501270600      7.32D-12  7.60D-07  2.90D-07   DIIS   9    0.05400000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  12 ##########   Mon Nov 22 15:42:00 2021
+########## START ITERATION NO.  12 ##########   Tue Nov 23 11:48:25 2021
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   71.27%    0.04%    1.42%   0.04299396s
+SOfock:LL  1.00D-12    0.00%   71.27%    0.04%    1.42%   0.04402196s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.05300000s, and total CPU time :  0.05078500s
+>>> Total wall time:  0.05400000s, and total CPU time :  0.05227100s
 
-########## END ITERATION NO.  12 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  12 ##########   Tue Nov 23 11:48:25 2021
 
-It.   12    -14.82501270600      4.19D-13 -2.20D-07  2.12D-08   DIIS   9    0.05300000s   LL             Mon Nov 22
+It.   12    -14.82501270600      4.19D-13 -2.20D-07  2.12D-08   DIIS   9    0.05400000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  13 ##########   Mon Nov 22 15:42:00 2021
+########## START ITERATION NO.  13 ##########   Tue Nov 23 11:48:25 2021
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   74.59%    0.06%    2.70%   0.03859299s
+SOfock:LL  1.00D-12    0.00%   74.59%    0.06%    2.70%   0.04197496s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.04600000s, and total CPU time :  0.04604400s
+>>> Total wall time:  0.05000000s, and total CPU time :  0.04998000s
 
-########## END ITERATION NO.  13 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  13 ##########   Tue Nov 23 11:48:25 2021
 
-It.   13    -14.82501270600     -2.84D-14 -4.93D-09  4.66D-09   DAMP 25%    0.04600000s   LL             Mon Nov 22
+It.   13    -14.82501270600     -2.84D-14 -4.93D-09  4.66D-09   DAMP 25%    0.05000000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  14 ##########   Mon Nov 22 15:42:00 2021
+########## START ITERATION NO.  14 ##########   Tue Nov 23 11:48:25 2021
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
    14 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   77.56%    0.79%    2.31%   0.03658593s
+SOfock:LL  1.00D-12    0.00%   77.56%    0.79%    2.31%   0.03874898s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.04400000s, and total CPU time :  0.04405700s
+>>> Total wall time:  0.04700000s, and total CPU time :  0.04672200s
 
-########## END ITERATION NO.  14 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  14 ##########   Tue Nov 23 11:48:25 2021
 
-It.   14    -14.82501270600     -1.42D-14 -9.68D-10  3.41D-09   DAMP 25%    0.04400000s   LL             Mon Nov 22
+It.   14    -14.82501270600     -1.42D-14 -9.68D-10  3.41D-09   DAMP 25%    0.04700000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  15 ##########   Mon Nov 22 15:42:00 2021
+########## START ITERATION NO.  15 ##########   Tue Nov 23 11:48:25 2021
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
    15 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   81.69%    0.75%    2.60%   0.03345001s
+SOfock:LL  1.00D-12    0.00%   81.69%    0.75%    2.60%   0.03385997s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.04300000s, and total CPU time :  0.04100000s
+>>> Total wall time:  0.04300000s, and total CPU time :  0.04114100s
 
-########## END ITERATION NO.  15 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  15 ##########   Tue Nov 23 11:48:25 2021
 
-It.   15    -14.82501270600      9.59D-13 -4.52D-10  2.09D-09   DAMP 25%    0.04300000s   LL             Mon Nov 22
+It.   15    -14.82501270600      9.59D-13 -4.52D-10  2.09D-09   DAMP 25%    0.04300000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  16 ##########   Mon Nov 22 15:42:00 2021
+########## START ITERATION NO.  16 ##########   Tue Nov 23 11:48:25 2021
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
    16 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   83.54%    1.38%    1.57%   0.03387606s
+SOfock:LL  1.00D-12    0.00%   83.54%    1.38%    1.57%   0.03301609s
 E_HOMO...E_LUMO, symmetry 1:                                  2  -0.55337    3  -0.20140    4   0.07109
->>> Total wall time:  0.04400000s, and total CPU time :  0.04177100s
+>>> Total wall time:  0.04200000s, and total CPU time :  0.04069300s
 
-########## END ITERATION NO.  16 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  16 ##########   Tue Nov 23 11:48:25 2021
 
-It.   16    -14.82501270600      1.12D-12 -3.52D-10  1.31D-09   DAMP 25%    0.04400000s   LL             Mon Nov 22
+It.   16    -14.82501270600      1.12D-12 -3.52D-10  1.31D-09   DAMP 25%    0.04200000s   LL             Tue Nov 23
 
-########## START ITERATION NO.  17 ##########   Mon Nov 22 15:42:00 2021
+########## START ITERATION NO.  17 ##########   Tue Nov 23 11:48:25 2021
 
    17 *** Differential density matrix. DCOVLP     = 1.0000
    17 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.17%   85.14%    1.86%    2.13%   0.03103399s
->>> Total wall time:  0.03500000s, and total CPU time :  0.03292800s
+SOfock:LL  1.00D-12    0.17%   85.14%    1.86%    2.13%   0.03161907s
+>>> Total wall time:  0.03500000s, and total CPU time :  0.03364700s
 
-########## END ITERATION NO.  17 ##########   Mon Nov 22 15:42:00 2021
+########## END ITERATION NO.  17 ##########   Tue Nov 23 11:48:25 2021
 
-It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03500000s   LL             Mon Nov 22
+It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03500000s   LL             Tue Nov 23
 
 
                                    SCF - CYCLE
@@ -1286,28 +1286,28 @@ It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -7.239883694372      0.00D+00  0.00D+00  0.00D+00               0.02239800s   Atom. scrpot   Mon Nov 22
-It.    2    -14.73914010141      7.50D+00  2.25D+00  6.71D-01               0.06400000s   LL             Mon Nov 22
-It.    3    -14.82303828339      8.39D-02 -2.35D-01  5.66D-02   DIIS   2    0.05200000s   LL             Mon Nov 22
-It.    4    -14.82487671547      1.84D-03 -8.00D-03  1.04D-02   DIIS   3    0.05400000s   LL             Mon Nov 22
-It.    5    -14.82500776556      1.31D-04 -3.90D-03  1.83D-03   DIIS   4    0.05300000s   LL             Mon Nov 22
-It.    6    -14.82501260546      4.84D-06 -4.09D-04  2.80D-04   DIIS   5    0.05400000s   LL             Mon Nov 22
-It.    7    -14.82501270253      9.71D-08 -4.13D-05  5.17D-05   DIIS   6    0.05400000s   LL             Mon Nov 22
-It.    8    -14.82501270574      3.21D-09 -8.25D-06  9.83D-06   DIIS   7    0.05400000s   LL             Mon Nov 22
-It.    9    -14.82501270596      2.25D-10 -2.87D-06  2.63D-06   DIIS   8    0.05300000s   LL             Mon Nov 22
-It.   10    -14.82501270599      2.96D-11 -1.12D-06  1.09D-06   DIIS   9    0.05400000s   LL             Mon Nov 22
-It.   11    -14.82501270600      7.32D-12  7.60D-07  2.90D-07   DIIS   9    0.05300000s   LL             Mon Nov 22
-It.   12    -14.82501270600      4.19D-13 -2.20D-07  2.12D-08   DIIS   9    0.05300000s   LL             Mon Nov 22
-It.   13    -14.82501270600     -2.84D-14 -4.93D-09  4.66D-09   DAMP 25%    0.04600000s   LL             Mon Nov 22
-It.   14    -14.82501270600     -1.42D-14 -9.68D-10  3.41D-09   DAMP 25%    0.04400000s   LL             Mon Nov 22
-It.   15    -14.82501270600      9.59D-13 -4.52D-10  2.09D-09   DAMP 25%    0.04300000s   LL             Mon Nov 22
-It.   16    -14.82501270600      1.12D-12 -3.52D-10  1.31D-09   DAMP 25%    0.04400000s   LL             Mon Nov 22
-It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03500000s   LL             Mon Nov 22
+It.    1    -7.239883694372      0.00D+00  0.00D+00  0.00D+00               0.02077900s   Atom. scrpot   Tue Nov 23
+It.    2    -14.73914010141      7.50D+00  2.25D+00  6.71D-01               0.06000000s   LL             Tue Nov 23
+It.    3    -14.82303828339      8.39D-02 -2.35D-01  5.66D-02   DIIS   2    0.05300000s   LL             Tue Nov 23
+It.    4    -14.82487671547      1.84D-03 -8.00D-03  1.04D-02   DIIS   3    0.05300000s   LL             Tue Nov 23
+It.    5    -14.82500776556      1.31D-04 -3.90D-03  1.83D-03   DIIS   4    0.05400000s   LL             Tue Nov 23
+It.    6    -14.82501260546      4.84D-06 -4.09D-04  2.80D-04   DIIS   5    0.05500000s   LL             Tue Nov 23
+It.    7    -14.82501270253      9.71D-08 -4.13D-05  5.17D-05   DIIS   6    0.05600000s   LL             Tue Nov 23
+It.    8    -14.82501270574      3.21D-09 -8.25D-06  9.83D-06   DIIS   7    0.05400000s   LL             Tue Nov 23
+It.    9    -14.82501270596      2.25D-10 -2.87D-06  2.63D-06   DIIS   8    0.05400000s   LL             Tue Nov 23
+It.   10    -14.82501270599      2.96D-11 -1.12D-06  1.09D-06   DIIS   9    0.05500000s   LL             Tue Nov 23
+It.   11    -14.82501270600      7.32D-12  7.60D-07  2.90D-07   DIIS   9    0.05400000s   LL             Tue Nov 23
+It.   12    -14.82501270600      4.19D-13 -2.20D-07  2.12D-08   DIIS   9    0.05400000s   LL             Tue Nov 23
+It.   13    -14.82501270600     -2.84D-14 -4.93D-09  4.66D-09   DAMP 25%    0.05000000s   LL             Tue Nov 23
+It.   14    -14.82501270600     -1.42D-14 -9.68D-10  3.41D-09   DAMP 25%    0.04700000s   LL             Tue Nov 23
+It.   15    -14.82501270600      9.59D-13 -4.52D-10  2.09D-09   DAMP 25%    0.04300000s   LL             Tue Nov 23
+It.   16    -14.82501270600      1.12D-12 -3.52D-10  1.31D-09   DAMP 25%    0.04200000s   LL             Tue Nov 23
+It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03500000s   LL             Tue Nov 23
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   17 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.02300000s
-      LL           :    0.05062500s
+      No 2-ints    :    0.02100000s
+      LL           :    0.05118750s
 
 
                                    TOTAL ENERGY
@@ -1363,31 +1363,35 @@ It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03
      ************************************************************************
 
 
- Transformation started at : Mon Nov 22 15:42:00 2021
+ Transformation started at : Tue Nov 23 11:48:25 2021
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059995869
-* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Mon Nov 22 15:42:00 2021
-     Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
-     Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
-     Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
-     Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
+* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Tue Nov 23 11:48:25 2021
+     Energy selection of active orbitals :       -1.00 < Eps. <         2.00 with a mininum gap of     0.0010 au.
+     Energy selection of active orbitals :       -1.00 < Eps. <         2.00 with a mininum gap of     0.0010 au.
+     Energy selection of active orbitals :       -1.00 < Eps. <         2.00 with a mininum gap of     0.0010 au.
+     Energy selection of active orbitals :       -1.00 < Eps. <         2.00 with a mininum gap of     0.0010 au.
 
 * Orbital ranges for 4-index transformation:
 
 
  * Fermion ircop E1 
 
-      Index 1    9 orbitals
-          2    3    4    5    6    7    8    9   10
+      Index 1   18 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19
 
-      Index 2    9 orbitals
-          2    3    4    5    6    7    8    9   10
+      Index 2   18 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19
 
-      Index 3    9 orbitals
-          2    3    4    5    6    7    8    9   10
+      Index 3   18 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19
 
-      Index 4    9 orbitals
-          2    3    4    5    6    7    8    9   10
+      Index 4   18 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19
 
  (PAMTRA)  Orbitals read from DFCOEF
 
@@ -1416,21 +1420,23 @@ It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03
       **********************************************************************
 
 
- Transformation started at : Mon Nov 22 15:42:00 2021
+ Transformation started at : Tue Nov 23 11:48:25 2021
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059995869
-* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Mon Nov 22 15:42:00 2021
-     Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
-     Energy selection of active orbitals :       -1.00 < Eps. <         0.50 with a mininum gap of     0.0000 au.
+* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Tue Nov 23 11:48:25 2021
+     Energy selection of active orbitals :       -1.00 < Eps. <         2.00 with a mininum gap of     0.0010 au.
+     Energy selection of active orbitals :       -1.00 < Eps. <         2.00 with a mininum gap of     0.0010 au.
 
 
  * Fermion ircop E1 
 
-      Index 1    9 orbitals
-          2    3    4    5    6    7    8    9   10
+      Index 1   18 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19
 
-      Index 2    9 orbitals
-          2    3    4    5    6    7    8    9   10
+      Index 2   18 orbitals
+          2    3    4    5    6    7    8    9   10   11   12   13
+         14   15   16   17   18   19
 
 
     **************************************************************************
@@ -1449,15 +1455,15 @@ It.   17    -14.82501270600      4.26D-13 -1.87D-10  8.30D-10   DAMP 25%    0.03
        ********************************************************************
 
 
- Transformation started at : Mon Nov 22 15:42:00 2021
+ Transformation started at : Tue Nov 23 11:48:25 2021
 
 * REACMO: Coefficients read from file DFCOEF - Total energy: -14.8250127059995869
-* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Mon Nov 22 15:42:00 2021
+* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Tue Nov 23 11:48:25 2021
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
+SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.02971303s
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Mon Nov 22 15:41:59 2021
+* Heading :BeH molecule. X2C Hamiltonian. CC energies.       Tue Nov 23 11:48:25 2021
 
 
  Core energy (includes nuclear repulsion) :            -12.1244318996
@@ -1472,7 +1478,7 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Mon Nov 22 15:42:00 2021
+ Transformation ended at : Tue Nov 23 11:48:25 2021
 
  
  
@@ -1500,19 +1506,19 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
                     *****************************************************
  
  
-  22 Nov 21 15:42:00 Found Dirac SCF orbitals file. using it.
-  22 Nov 21 15:42:00 read from DFCOEF:BeH molecule. X2C Hamiltonian. CC energies.       Mon Nov 22 15:42:00 2021
-  22 Nov 21 15:42:00 retrieved basis set information
-  22 Nov 21 15:42:00 read one el. integrals from MRCONEE
-  22 Nov 21 15:42:00 Initialized global data
+  23 Nov 21 11:48:25 Found Dirac SCF orbitals file. using it.
+  23 Nov 21 11:48:25 read from DFCOEF:BeH molecule. X2C Hamiltonian. CC energies.       Tue Nov 23 11:48:25 2021
+  23 Nov 21 11:48:25 retrieved basis set information
+  23 Nov 21 11:48:25 read one el. integrals from MRCONEE
+  23 Nov 21 11:48:25 Initialized global data
   --- read active occupied spinors --- 
     #             E   
        3  -0.553370399E+00
        4  -0.553370399E+00
-       5  -0.201396738E+00
+       6  -0.201396738E+00
   --- read active virtual spinors --- 
     #             E   
-       6  -0.201396738E+00
+       5  -0.201396738E+00
        7   0.710893761E-01
        8   0.710893761E-01
        9   0.710962029E-01
@@ -1527,8 +1533,26 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
       18   0.327264477E+00
       19   0.482982388E+00
       20   0.482982388E+00
-  22 Nov 21 15:42:00 Entered cc_driver routine
-  22 Nov 21 15:42:00 Initialized talsh library
+      21   0.642058745E+00
+      22   0.642058745E+00
+      23   0.642063844E+00
+      24   0.642063844E+00
+      25   0.654524944E+00
+      26   0.654524944E+00
+      27   0.659277904E+00
+      28   0.659277904E+00
+      29   0.659288148E+00
+      30   0.659288148E+00
+      31   0.110973562E+01
+      32   0.110973562E+01
+      33   0.134640530E+01
+      34   0.134640530E+01
+      35   0.134651299E+01
+      36   0.134651299E+01
+      37   0.170336941E+01
+      38   0.170336941E+01
+  23 Nov 21 11:48:25 Entered cc_driver routine
+  23 Nov 21 11:48:25 Initialized talsh library
   Status           0: Size (Bytes) =    1072693248: Max args in HAB =   12288
 
   Integral module InteRest is initialized
@@ -1537,7 +1561,7 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
   Last commit time        | Oct 16 14:37:58 2018 +0200
   Last update time        | Feb 20 15:39:00 2020 +0200
 
-  22 Nov 21 15:42:00 Initialized interest library
+  23 Nov 21 11:48:25 Initialized interest library
  
 -----------------------------------------------
       Characteristics of this calculation      
@@ -1551,7 +1575,7 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
  
  - Number of atomic orbitals :         34
  - Number of occupied spinors :         3
- - Number of virtual spinors :         15
+ - Number of virtual spinors :         33
  
  Using the single-node TALSH library 
  - TALSH buffer size:                   1 GB
@@ -1563,34 +1587,34 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
  -- nvir ( scheme 4/42 ) :         0 GB
 -----------------------------------------------
  
-  22 Nov 21 15:42:00 Getting orbital energies
-  22 Nov 21 15:42:00 Retrieved orbital energies
-  22 Nov 21 15:42:00 -Start- Integral Transformation
-  22 Nov 21 15:42:00 allocated AO integral tensor
-  22 Nov 21 15:42:00 finished ao integral calculation
-  22 Nov 21 15:42:00 finished oovv integrals
-  22 Nov 21 15:42:00 finished oooo integrals
-  22 Nov 21 15:42:00 finished vovo integrals
-  22 Nov 21 15:42:00 finished vvvv integrals
-  22 Nov 21 15:42:00 finished ooov integrals
-  22 Nov 21 15:42:01 finished vovv integrals
-  22 Nov 21 15:42:01 -End- Integral Transformation
-  22 Nov 21 15:42:01 one electron integrals added to Fock Matrix
-  22 Nov 21 15:42:01 two electron integrals added to Fock Matrix
-  22 Nov 21 15:42:01 Fock matrix initialized
-  22 Nov 21 15:42:01 Succesfully allocated all tensors
+  23 Nov 21 11:48:25 Getting orbital energies
+  23 Nov 21 11:48:25 Retrieved orbital energies
+  23 Nov 21 11:48:25 -Start- Integral Transformation
+  23 Nov 21 11:48:25 allocated AO integral tensor
+  23 Nov 21 11:48:26 finished ao integral calculation
+  23 Nov 21 11:48:26 finished oovv integrals
+  23 Nov 21 11:48:26 finished oooo integrals
+  23 Nov 21 11:48:26 finished vovo integrals
+  23 Nov 21 11:48:27 finished vvvv integrals
+  23 Nov 21 11:48:27 finished ooov integrals
+  23 Nov 21 11:48:28 finished vovv integrals
+  23 Nov 21 11:48:28 -End- Integral Transformation
+  23 Nov 21 11:48:28 one electron integrals added to Fock Matrix
+  23 Nov 21 11:48:28 two electron integrals added to Fock Matrix
+  23 Nov 21 11:48:28 Fock matrix initialized
+  23 Nov 21 11:48:28 Succesfully allocated all tensors
  
-     MP2 energy =   -6.3211961435679278E-003
+     MP2 energy =   -1.7823856395976778E-002
  
 
  =======================================
    Matrix of pair correlation energies
  =============================================
-  0.00E+00 -4.57E-03 -3.04E-04
- -4.57E-03  0.00E+00 -1.43E-03
- -3.04E-04 -1.43E-03  0.00E+00
- Sum of pair correlation energies :   -1.2609206483918337E-002
- Correlation energy               :   -6.3046032419591686E-003
+  0.00E+00 -1.38E-02 -2.69E-03
+ -1.38E-02  0.00E+00 -1.30E-03
+ -2.69E-03 -1.30E-03  0.00E+00
+ Sum of pair correlation energies :   -3.5528997097681765E-002
+ Correlation energy               :   -1.7764498548840883E-002
  =============================================
  =======================================
 
@@ -1599,79 +1623,80 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
  
 
      Norm of Fock matrix (OO, no diagonal) =    3.6289229920424911E-006
-     Norm of Fock matrix (OV, all        ) =    1.2275529635059705E-005
-     Norm of Fock matrix (VV, no diagonal) =    1.7741180036769146E-002
+     Norm of Fock matrix (OV, all        ) =    7.6204710497543236E-005
+     Norm of Fock matrix (VV, no diagonal) =    2.9861064422067540E-002
 
-  22 Nov 21 15:42:01 -Start- CC Iterations
+  23 Nov 21 11:48:28 -Start- CC Iterations
  
  -----------------------------------------------
    It.     Energy                  Convergence  
  -----------------------------------------------
-    1      -0.008336988532936      0.5E-01
-    2      -0.009164996937641      0.3E-01
-    3      -0.010077166330809      0.2E-01
-    4      -0.010087850545773      0.1E-02
-    5      -0.010087764326963      0.3E-03
-    6      -0.010088030054273      0.7E-04
-    7      -0.010088101226186      0.2E-04
-    8      -0.010088136683038      0.7E-05
-    9      -0.010088120419469      0.2E-05
-   10      -0.010088095439540      0.1E-05
-   11      -0.010088086029083      0.3E-06
-   12      -0.010088083664850      0.9E-07
-   13      -0.010088083150753      0.2E-07
-   14      -0.010088083046469      0.9E-08
-   15      -0.010088083013830      0.4E-08
-   16      -0.010088083010674      0.2E-08
-   17      -0.010088083020783      0.1E-08
-   18      -0.010088083025595      0.4E-09
+    1      -0.022763493035882      0.6E-01
+    2      -0.024501933064370      0.3E-01
+    3      -0.025957907287411      0.2E-01
+    4      -0.026004329757613      0.3E-02
+    5      -0.026008006882540      0.5E-03
+    6      -0.026010191701839      0.2E-03
+    7      -0.026010314371575      0.6E-04
+    8      -0.026010281178929      0.2E-04
+    9      -0.026010241886177      0.6E-05
+   10      -0.026010218965409      0.2E-05
+   11      -0.026010194183933      0.1E-05
+   12      -0.026010180965882      0.4E-06
+   13      -0.026010177022372      0.1E-06
+   14      -0.026010176288459      0.4E-07
+   15      -0.026010176236734      0.2E-07
+   16      -0.026010176220664      0.1E-07
+   17      -0.026010176228216      0.5E-08
+   18      -0.026010176252194      0.2E-08
+   19      -0.026010176261524      0.9E-09
  -----------------------------------------------
  
  
-  22 Nov 21 15:42:01 -End- CC Iterations
-  22 Nov 21 15:42:01 -Start- Triples
- W[sym] =   3.5293229382898466E-004
- W[+T ] =   6.3241027939776298E-004
- Y[-T ] =   3.0312351463694475E-006
- Y[(T)] =   2.8048557992581040E-006
-  W[/D ] =   6.3241027939776298E-004
- t3_energy:  -3.0408693581518561E-004   2.3330110906889755E-006   1.5147389482558278E-005
-  22 Nov 21 15:42:01 -End- Triples
+  23 Nov 21 11:48:28 -End- CC Iterations
+  23 Nov 21 11:48:28 -Start- Triples
+ W[sym] =   1.7673693212087221E-003
+ W[+T ] =   5.6401941404284556E-003
+ Y[-T ] =   2.0100955986349341E-005
+ Y[(T)] =   4.3331029074305106E-005
+  W[/D ] =   5.6401941404284556E-003
+ t3_energy:  -2.0266281937786012E-003   2.4481754514766507E-005   1.0263569488296348E-004
+  23 Nov 21 11:48:28 -End- Triples
  
 -----------------------------------------------
      -     Final results from EXACORR     -    
 -----------------------------------------------
  Using the single-node TALSH library 
  
-  MP2 energy :                        -0.006321196143568
-  Final CCSD energy :                 -0.010088083025595
-  4th order triples correction :      -0.000050681155969
-  5th order triples (T) correction :   0.000000388835182
-  5th order triples -T  correction :   0.000002524564914
-  CCSD+T  correlation energy :        -0.010138764181564
-  CCSD(T) correlation energy :        -0.010138375346382
-  CCSD-T  correlation energy :        -0.010136239616650
-  T1 diagnostic      :                 0.000447281458232
+  MP2 energy :                        -0.017823856395977
+  Final CCSD energy :                 -0.026010176261524
+  4th order triples correction :      -0.000337771365630
+  5th order triples (T) correction :   0.000004080292419
+  5th order triples -T  correction :   0.000017105949147
+  CCSD+T  correlation energy :        -0.026347947627154
+  CCSD(T) correlation energy :        -0.026343867334735
+  CCSD-T  correlation energy :        -0.026330841678007
+  T1 diagnostic      :                 0.001078810382129
  
   SCF energy :                       -14.825012705997576
-  Total MP2 energy :                 -14.831333902141145
-  Total CCSD energy :                -14.835100789023171
-  Total CCSD+T  energy :             -14.835151470179140
-  Total CCSD(T) energy :             -14.835151081343959
-  Total CCSD-T  energy :             -14.835148945614225
+  Total MP2 energy :                 -14.842836562393552
+  Total CCSD energy :                -14.851022882259100
+  Total CCSD+T  energy :             -14.851360653624729
+  Total CCSD(T) energy :             -14.851356573332311
+  Total CCSD-T  energy :             -14.851343547675581
  
 -----------------------------------------------
  
  Lambda equations with CC2 wavefunctions not supported in this release
 #MSG(TAL-SH::CP-TAL): Statistics on CPU:
- Number of Flops processed    :      0.20485359120000D+10
- Average GEMM GFlop/s rate    :      0.82301935711029D+01
- Number of Bytes permuted     :      0.14429972800000D+10
- Average permute GB/s rate    :      0.96671139327576D+01
- Average contract GFlop/s rate:      0.40145134990956D+01
+ Number of Flops processed    :      0.91507465200000D+10
+ Average GEMM GFlop/s rate    :      0.96537671494234D+01
+ Number of Bytes permuted     :      0.57052875520000D+10
+ Average permute GB/s rate    :      0.78938102967733D+01
+ Average contract GFlop/s rate:      0.43850054024041D+01
 #END_MSG
  
-  22 Nov 21 15:42:01 Leaving cc_driver routine
+  23 Nov 21 11:48:28 Leaving cc_driver routine
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -1683,11 +1708,11 @@ SOfock:LL  1.00D-12    0.00%   67.37%    0.00%    6.91%   0.03161395s
 
 
  
-     Date and time (Linux)  : Mon Nov 22 15:42:01 2021
+     Date and time (Linux)  : Tue Nov 23 11:48:28 2021
      Host name              : pototschnig-SH67H                       
 
->>>> Node 0, utime: 2, stime: 0, minflt: 55756, majflt: 0, nvcsw: 45, nivcsw: 279, maxrss: 338380
->>>> Total WALL time used in DIRAC: 2s
+>>>> Node 0, utime: 4, stime: 0, minflt: 91592, majflt: 0, nvcsw: 43, nivcsw: 484, maxrss: 481472
+>>>> Total WALL time used in DIRAC: 4s
   
   Dynamical Memory Usage Summary for Master
   

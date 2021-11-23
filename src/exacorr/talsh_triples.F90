@@ -1734,7 +1734,7 @@ module talsh_triples
       call laplace_mult(vooo_o,s,eps_vir,zero_occ,eps_occ,eps_occ)
 
       ierr=talsh_tensor_construct(t1,C8,dims_vo,init_val=ZERO)
-      ierr=talsh_tensor_add("R(a,i)+=O+(a,i)",t1,i_t1)
+      ierr=talsh_tensor_add("R(a,i)+=O(a,i)",t1,i_t1)
       call laplace_mult(t1,s,eps_vir,eps_occ)
 
       ! ----------------------------------------------------------------------------------------- compute terms with t1
