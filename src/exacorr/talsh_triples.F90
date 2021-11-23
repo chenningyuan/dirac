@@ -1710,16 +1710,16 @@ module talsh_triples
       ! ------------------- compute first transformed integrals and amplitudes
 
       ierr=talsh_tensor_construct(t2_v,C8,t2_dims,init_val=ZERO)
-      ierr=talsh_tensor_contract("R(e,a,i,j)+=O(e,a,i,j)*I()",t2_v,i_t2,one_tripl)
+      ierr=talsh_tensor_contract("R(e,a,i,j)+=O+(e,a,i,j)*I()",t2_v,i_t2,one_tripl)
 
       ierr=talsh_tensor_construct(t2_o,C8,t2_dims,init_val=ZERO)
-      ierr=talsh_tensor_contract("R(a,b,i,m)+=O(a,b,i,m)*I()",t2_o,i_t2,one_tripl)
+      ierr=talsh_tensor_contract("R(a,b,i,m)+=O+(a,b,i,m)*I()",t2_o,i_t2,one_tripl)
 
       ierr=talsh_tensor_construct(vvov_v,C8,dims_vvov,init_val=ZERO)
-      ierr=talsh_tensor_contract("R(a,b,i,e)+=O+(e,i,b,a)*I()",vvov_v,i_vovv,one_tripl)
+      ierr=talsh_tensor_contract("R(a,b,i,e)+=O(e,i,b,a)*I()",vvov_v,i_vovv,one_tripl)
 
       ierr=talsh_tensor_construct(vooo_o,C8,dims_vooo,init_val=ZERO)
-      ierr=talsh_tensor_contract("R(a,m,i,j)+=O+(j,i,m,a)*I()",vooo_o,i_ooov,one_tripl)
+      ierr=talsh_tensor_contract("R(a,m,i,j)+=O(j,i,m,a)*I()",vooo_o,i_ooov,one_tripl)
 
       ierr=talsh_tensor_construct(t1,C8,dims_vo,init_val=ZERO)
       ierr=talsh_tensor_add("R(a,i)+=O(a,i)",t1,i_t1)
