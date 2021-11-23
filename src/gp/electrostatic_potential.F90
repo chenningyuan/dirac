@@ -270,6 +270,9 @@ module electrostatic_potential
       else if  (skipss_block) then
 ! Looping only over LL block only
           idxmax = nlrgsh
+      else if  (levyle) then
+! Looping only over LL block only
+          idxmax = nlrgsh
       else 
           idxmax = kmax
       end if

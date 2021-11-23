@@ -293,7 +293,7 @@ C
 !radovan:
 !     comment out this check (= include all shells) if you wish
 !     to calculate the relativistic current with Levy-Leblond
-      IF (MC .EQ. 1) ISHEND = NLRGSH
+      IF (MC .EQ. 1 .or. LEVYLE) ISHEND = NLRGSH
 C
       DO 100 ISHELA = ISHBEGIN,ISHEND
          NHKTA = NHKT(ISHELA)
