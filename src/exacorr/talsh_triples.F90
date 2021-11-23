@@ -449,12 +449,16 @@ module talsh_triples
         zero_occ=0.0
         zero_vir=0.0
 !       determine Laplace quadrature parameters with the minimax algorithm
-        laplace%bounds(1) = 3.0d0*(eps_vir(1)-eps_occ(nocc))
-        laplace%bounds(2) = 3.0d0*(eps_vir(nvir)-eps_occ(1))
+        laplace%bounds(1) = 3.0d0*(MINVAL(eps_vir)-MAXVAL(eps_occ))
+        laplace%bounds(2) = 3.0d0*(MAXVAL(eps_vir)-MINVAL(eps_occ))
 
-        if (exa_input%print_level>1) write(*,*) laplace%bounds
-        if (exa_input%print_level>1) write(*,*) eps_vir
-        if (exa_input%print_level>1) write(*,*) eps_occ
+        if (exa_input%print_level>0) then
+          write(*,*) '--- Laplace bounds :', laplace%bounds
+          write(*,*) '--- occ orb. :', eps_occ
+          write(*,*) '--- vir orb. :', eps_vir
+          write(*,*) '--- limits :',MINVAL(eps_vir),MAXVAL(eps_occ),MAXVAL(eps_vir),MINVAL(eps_occ)
+        end if
+
         
         call set_laplace(exa_input%n_laplace,exa_input%print_level)
         call lap_driver(laplace)
