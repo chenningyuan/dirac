@@ -3126,7 +3126,7 @@ C
       IPTYP    = 1
       NPCOMP   = 1
       PFAC(1)  = -D2*CVAL*CVAL
-      PLABEL(1)= 'dS/dBX'
+      PLABEL(1)= 'dS_dBX'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,1) = INDXPR
@@ -3203,7 +3203,7 @@ C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = -D2*CVAL*CVAL
-      PLABEL(1) = 'dS/dBY'
+      PLABEL(1) = 'dS_dBY'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &       INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,2) = INDXPR
@@ -3278,7 +3278,7 @@ C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = -D2*CVAL*CVAL
-      PLABEL(1) = 'dS/dBZ'
+      PLABEL(1) = 'dS_dBZ'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &      INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,3) = INDXPR
@@ -3355,17 +3355,17 @@ C----------------------------------------------------------------
 #ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
           PFAC(1) = -1.0d0
-          LABELC='dS/dB'
+          LABELC='dS_dB'
           ILABELC = 5
       else
 #endif
         IF (SYMCON) THEN
           PFAC(1) = DMI2
-          LABELC='dS/dB'
+          LABELC='dS_dB'
           ILABELC = 5
         ELSE
           PFAC(1) = -D1
-          LABELC='d|S>/dB'
+          LABELC='d|S>_dB'
           ILABELC = 7
         END IF
 #ifdef MOD_LAO_REARRANGED
@@ -3418,7 +3418,7 @@ C ... Symmetry connection term T(1)=S(1)
        NPCOMP = 1
 C      PFAC(1) = DMI2
        PFAC(1) = D1
-       LABELC='dS/dB'
+       LABELC='dS_dB'
        ILABELC = 5
        PNAME     = LABELC(1:ILABELC)//'X'
        PLABEL(1) = LABELC(1:ILABELC)//'X'
@@ -3444,7 +3444,7 @@ C      PFAC(1) = DMI2
 C ... Natural connection term T(1)=W(1)
 C      PFAC(1) = -D1
        PFAC(1) =  D1
-       LABELC='d|S>/dB'
+       LABELC='d|S>_dB'
        ILABELC = 7
        PNAME     = LABELC(1:ILABELC)//'X'
        PLABEL(1) = LABELC(1:ILABELC)//'X'
@@ -3472,7 +3472,7 @@ C Specify latter PFAC(1)!!!
        IPTYP  = 1
        NPCOMP = 1
        PFAC(1) = DMI2 ! For the  "-1/2 {S(2),H(0)}" term
-       LABELC='dS/dB2'
+       LABELC='dS_dB2'
        ILABELC =6 
        PNAME     = LABELC(1:ILABELC)//'XX'
        PLABEL(1) = LABELC(1:ILABELC)//'XX'

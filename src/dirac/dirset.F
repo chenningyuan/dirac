@@ -116,12 +116,17 @@ C     ===================
      &  '(one-electron integrals) ...will attempt restart.'
         IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
+        ! Write size of ao-matrices to checkpoint file, matrices themselves are written in onegen
+        call prop_to_checkpoint('write_size_only!',dum,1)
         CALL ONEGEN(WORK,LWORK)
       ENDIF
  11   continue
 #ifdef MOD_CAP
         IF (CAP) CALL CAP_STUFF(WORK,LWORK)
 #endif
+
+!     Write basis set information (which includes their centers, so is geometry-dependent) to checkpoint file
+      call write_basis_fromcommon
 
       IF(DOHRM) THEN
         CALL TIMER2('PAMSET',TIMSTR,TIMEND)
@@ -152,6 +157,9 @@ C
 #ifdef MOD_UNRELEASED
       IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
 #endif
+      ! at this point we do know the occupations which will be used in SCF, dump them to file
+      call write_occupations_fromcommon(
+     & '/result/wavefunctions/scf/mobasis')
 C
 C     Prepare for two-electron integrals
 C     ==================================

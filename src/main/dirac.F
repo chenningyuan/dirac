@@ -109,6 +109,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
+      use checkpoint
       use interface_ao_specific
       use interface_mo_specific
       use xmlout
@@ -125,10 +126,13 @@ C  /* Deck dirctl */
 #include "dgroup.h"
 
       logical run_pamset, tobe
+      integer ierr
 C
       CALL QENTER('DIRCTL')
       call xml_open_file('dirac.xml')
       call xml_begin('run','type="dirac-run"')
+      write (lupri,'(/A,I2)')," * Opening HDF5 checkpoint file "
+      call checkpoint_open
 C
 C***********************************************************************
 C*****   I  N  P  U  T    S  E  C  T  I  O  N   ************************
@@ -136,6 +140,8 @@ C***********************************************************************
 C
       CALL PAMINP()
       IF ( INPTES ) RETURN
+!     write input coordinates to checkpoint file (and also to xyz file)
+      call write_xyz_fromcommon('/input/molecule')
 C
 C***********************************************************************
 C*****  S E T U P  -  M O D U L E  *************************************
@@ -186,11 +192,8 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
-!     write coordinates in case we don't have them yet
-      INQUIRE(FILE='MOLECULE.XYZ',EXIST=TOBE)
-      if (.not.TOBE) then
-         call write_xyz_fromcommon
-      end if
+      write (lupri,'(/A,I2)')," * Closing HDF5 checkpoint file "
+      call checkpoint_close
       call xml_end('run')
       call xml_close_file
 
