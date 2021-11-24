@@ -41,4 +41,6 @@ energy 0.0 2.0 0.001
 2
 .NLAPLACE
 8
+.TCONVERG
+1.0E-14
 *END OF
