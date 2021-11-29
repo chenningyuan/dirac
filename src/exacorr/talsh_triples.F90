@@ -452,7 +452,7 @@ module talsh_triples
         laplace%bounds(1) = 3.0d0*(MINVAL(eps_vir)-MAXVAL(eps_occ))
         laplace%bounds(2) = 3.0d0*(MAXVAL(eps_vir)-MINVAL(eps_occ))
 
-        if (exa_input%print_level>0) then
+        if (exa_input%print_level>5) then
           write(*,*) '--- Laplace bounds :', laplace%bounds
           write(*,*) '--- occ orb. :', eps_occ
           write(*,*) '--- vir orb. :', eps_vir

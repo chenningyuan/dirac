@@ -114,12 +114,14 @@ module talsh_mp2lap
         allocate(eps_occ_neg(nocc))
         eps_occ_neg(1:nocc)=-eps_occ(1:nocc)
 !       determine Laplace quadrature parameters with the minimax algorithm
-        laplace%bounds(1) = 2.0d0*(eps_vir(1)-eps_occ(nocc))
-        laplace%bounds(2) = 2.0d0*(eps_vir(nvir)-eps_occ(1))
-        if (exa_input%print_level>10) then
+        laplace%bounds(1) = 2.0d0*(MINVAL(eps_vir)-MAXVAL(eps_occ))
+        laplace%bounds(2) = 2.0d0*(MAXVAL(eps_vir)-MINVAL(eps_occ))
+
+        if (exa_input%print_level>5) then
           write(*,*) '--- Laplace bounds :', laplace%bounds
           write(*,*) '--- occ orb. :', eps_occ
           write(*,*) '--- vir orb. :', eps_vir
+          write(*,*) '--- limits :',MINVAL(eps_vir),MAXVAL(eps_occ),MAXVAL(eps_vir),MINVAL(eps_occ)
         end if
         
 !       get laplace points
@@ -301,12 +303,14 @@ module talsh_mp2lap
         allocate(eps_occ_neg(nocc))
         eps_occ_neg(1:nocc)=-eps_occ(1:nocc)
 !       determine Laplace quadrature parameters with the minimax algorithm
-        laplace%bounds(1) = 2.0d0*(eps_vir(1)-eps_occ(nocc))
-        laplace%bounds(2) = 2.0d0*(eps_vir(nvir)-eps_occ(1))
-        if (exa_input%print_level>10) then
+        laplace%bounds(1) = 2.0d0*(MINVAL(eps_vir)-MAXVAL(eps_occ))
+        laplace%bounds(2) = 2.0d0*(MAXVAL(eps_vir)-MINVAL(eps_occ))
+
+        if (exa_input%print_level>5) then
           write(*,*) '--- Laplace bounds :', laplace%bounds
           write(*,*) '--- occ orb. :', eps_occ
           write(*,*) '--- vir orb. :', eps_vir
+          write(*,*) '--- limits :',MINVAL(eps_vir),MAXVAL(eps_occ),MAXVAL(eps_vir),MINVAL(eps_occ)
         end if
         
 !       get laplace points
