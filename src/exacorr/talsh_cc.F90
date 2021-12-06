@@ -2264,8 +2264,9 @@ module talsh_cc
 
        subroutine diis (t2_tensor,t1_tensor,t_convergence,mode)
 
-         integer, parameter :: maxdim = 5 ! maximum number of tensors that will be stored
-         integer, parameter :: mindim = 3 ! minimum number of tensors to allow extrapolation
+         logical,parameter  :: crop=.true. ! if switching off, also increase dimension of maxdim (used to be 5)
+         integer, parameter :: maxdim = 3 ! maximum number of tensors that are stored
+         integer, parameter :: mindim = 2 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
 
@@ -2413,12 +2414,43 @@ module talsh_cc
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
-           if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
-           ierr=talsh_tensor_init(t2_tensor)
-            do i = 1, ntens
-               if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
-               ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
-            end do
+           if (crop) then
+              ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
+              if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
+              ierr=talsh_tensor_init(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_err_tensor(i),scale=coeff(i))
+                 ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_err_tensor(i),scale=coeff(i))
+              end do
+              if (.not.CCD) ierr=talsh_tensor_copy("T1E(a,i)=T1(a,i)",t1_err_tensor(itens),t1_tensor)
+              ierr=talsh_tensor_copy("T2E(a,b,i,j)=T2(a,b,i,j)",t2_err_tensor(itens),t2_tensor)
+              ! correct the latest row of the b_diis array for the fact that we use an optimized error vector
+              ierr=talsh_tensor_init(scalar_tensor)
+              do i = 1, ntens
+                 ierr=talsh_tensor_init(scalar_tensor)
+                 if (.not.CCD) ierr=talsh_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+                 ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+                 b_diis(itens,i) = scalar_tens(1)
+                 b_diis(i,itens) = dconjg(scalar_tens(1))
+              end do
+              ! replace latest result vector by the optimized result vector, this is also the tensor to be used in the next iteration
+              if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
+              ierr=talsh_tensor_init(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+                 ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+              end do
+              if (.not.CCD) ierr=talsh_tensor_copy("T1R(a,i)=T1(a,i)",t1_res_tensor(itens),t1_tensor)
+              ierr=talsh_tensor_copy("T2R(a,b,i,j)=T2(a,b,i,j)",t2_res_tensor(itens),t2_tensor)
+           else
+              ! make the amplitudes for the new iteration
+              if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
+              ierr=talsh_tensor_init(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+                 ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+              end do
+           end if
          end if
 
 !        the extrapolated amplitudes are the new input tensors
