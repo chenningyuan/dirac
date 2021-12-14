@@ -480,6 +480,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           inMOLECULE = .false.
           DO
             read(tmp_file,*,iostat=ios) str
+            !write(6,*) ' --> next line is ',trim(str)
 
             IF (ios.ne.0) THEN
               EXIT
@@ -615,6 +616,18 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !                   If we set the section back to empty, the read will skip over the
 !                   explicitly typed basis set (the exponents are read in a different routine)
                     section(3)=' '
+                    !> skip until we reach a new keyword/section
+                    do
+                        read(tmp_file,*,iostat=ios) str
+                        if(ios .ne. 0) exit
+                        SELECT CASE(trim(str(1:1)))
+                          CASE ('*','.')
+                            exit
+                          CASE DEFAULT
+                            CYCLE
+                        END SELECT
+                    end do
+                    backspace(tmp_file)
 
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)

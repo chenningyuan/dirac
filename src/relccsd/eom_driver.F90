@@ -174,6 +174,11 @@
 
 ! 1> Determine the minimum energy determinants for IP, EA & EE. The number of them is equal to the number of roots. 
 
+!   print *, 'at very top'
+!   print *, 'eps        :',eps
+!   print *, 'diagonal 1h',H_II(1:ai-1)
+!   print *, 'diagonal total',H_II
+
      i = 1
      ii = 1
      do irep = 1, nrep
@@ -188,6 +193,12 @@
         i  =  i + nv(irep)
         ii =  ii + NV(irep)* nv(irep) * rcw
      enddo
+
+! aspg, debug exacc
+!   print *, 'before case'
+!   print *, 'eps        :',eps
+!   print *, 'diagonal 1h',H_II(1:ai-1)
+!   print *, 'diagonal total',H_II
 
    select case (eomtype)
 
@@ -456,6 +467,10 @@
 
         enddo
     enddo
+! aspg, debug eom exacc
+!   print *, 'after IP setup'
+!   print *, 'eps        :',eps
+!   print *, 'diagonal 1h',H_II(1:ai-1)
 
 !      H_II = -eps(1:(ndimr1*rcw)) !+ 100.0d0
 
@@ -484,6 +499,7 @@
                FAC3 = FAC2 - EPS(BB)
                DO A = 1, NCONT(ARP)
                   FAC = FAC3! - 100.0d0
+! aspg            print *, 'eps_jj:',EPS(JJ),'eps_ii:',EPS(II),'eps_bb:',EPS(BB),'-fac:',-fac
                   H_II(ABIJ) = -FAC
                   ABIJ = ABIJ + rcw
                ENDDO
@@ -493,6 +509,15 @@
       ENDDO
       ENDDO
       ENDDO
+! aspg
+!   print *, 'diagonal total'
+!     do i = 1, abij, rcw
+!        if (rcw.eq.2) then
+!           print *, H_II(i), H_II(i+1) 
+!        else
+!          print *, H_II(i)
+!        end if
+!     end do
 
       if (relcc_mfd_trial_full_matrix) then
 ! New trial vectors for R1 

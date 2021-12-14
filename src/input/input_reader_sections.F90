@@ -37,6 +37,9 @@
         case ('**EXACC')
            call read_input_exacc(word, kw_section)
 
+        case ('*EXEOM')
+           call read_input_exaeomcc(word, kw_section)
+
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
@@ -844,6 +847,103 @@
 
    end subroutine
 
+   subroutine read_input_exaeomcc(word, kw_section)
+
+#ifdef MOD_EXACORR
+      use exacc_cfg
+#endif
+      use input_reader
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+!     --------------------------------------------------------------------------
+      integer :: nfreq, i
+      real(kind=8) :: freq_r, freq_i
+      logical :: setup = .true. 
+      character(kw_length) :: wordtemp
+
+      call reset_available_kw_list()
+
+      if (setup) then
+         print *,'debug: entering setup'
+         setup = .false.
+         print *,'debug: setup not set to ',setup
+         exa_input%current_eom_input = exa_input%current_eom_input + 1
+         print *,'debug: current eom input is',exa_input%current_eom_input
+      end if
+
+!     consistency check on reading
+      print *,'debug, before check:',size(exa_input%eom_input,1),exa_input%current_eom_input
+      if (size(exa_input%eom_input,1).ge.exa_input%current_eom_input) then
+
+         if (kw_matches(word, '.NROOTS')) then
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%nroots) 
+            print *,'read #roots',exa_input%eom_input(exa_input%current_eom_input)%nroots
+         end if
+
+!        expectation values between the number of right
+         if (kw_matches(word, '.RHSFOP')) then
+            exa_input%eom_input(exa_input%current_eom_input)%do_expval = .true.
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%rhs_expval_states)
+            if (  exa_input%eom_input(exa_input%current_eom_input)%rhs_expval_states &
+               & .gt.exa_input%eom_input(exa_input%current_eom_input)%nroots) &
+               call quit('Asked for more states in RHSFOP than those solved for')
+         end if
+
+         if (kw_matches(word, '.LHSFOP')) then
+            exa_input%eom_input(exa_input%current_eom_input)%do_expval = .true.
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%lhs_expval_states)
+            if (  exa_input%eom_input(exa_input%current_eom_input)%lhs_expval_states &
+               & .gt.exa_input%eom_input(exa_input%current_eom_input)%nroots) &
+               call quit('Asked for more states in LHSFOP than those solved for')
+         end if
+
+         if (kw_matches(word, '.LINRSP')) then
+            exa_input%eom_input(exa_input%current_eom_input)%do_linrsp = .true.
+            call kw_read(word, nfreq)
+            allocate(exa_input%eom_input(exa_input%current_eom_input)%rsp_pert_freqs(nfreq))
+            do i = 1, nfreq
+               call kw_read(word, freq_r, freq_i)
+               exa_input%eom_input(exa_input%current_eom_input)%rsp_pert_freqs(i) = cmplx(freq_r, freq_i)
+            end do
+         end if
+
+         if (kw_matches(word, '.FLAVOR')) then
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%flavor)
+            wordtemp = exa_input%eom_input(exa_input%current_eom_input)%flavor
+            print '(A)','debug, flavor read:_'//wordtemp//'_'
+            if ( (kw_matches(wordtemp, 'EE     ') .or. &
+                & kw_matches(wordtemp, 'EA     ') .or. &
+                & kw_matches(wordtemp, 'IP     ') .or. &
+                & kw_matches(wordtemp, 'DIP    ') .or. &
+                & kw_matches(wordtemp, 'DEA    ') .or. &
+                & kw_matches(wordtemp, 'ST-EE  ') .or. &
+                & kw_matches(wordtemp, 'P2-EE  ') .or. &
+                & kw_matches(wordtemp, 'P2-EA  ') .or. &
+                & kw_matches(wordtemp, 'P2-IP  ') .or. &
+                & kw_matches(wordtemp, 'P-EE   ') .or. &
+                & kw_matches(wordtemp, 'P-EA   ') .or. &
+                & kw_matches(wordtemp, 'P-IP   ') .or. &
+                & kw_matches(wordtemp, 'P-P2-EE') .or. &
+                & kw_matches(wordtemp, 'P-P2-EA') .or. &
+                & kw_matches(wordtemp, 'P-P2-IP'))) then
+               print '(A)','debug:_'//wordtemp//'_ is a supported flavor'
+               exa_input%current_eom_input = exa_input%current_eom_input + 1
+               setup = .true.
+            else
+               call quit('_'//wordtemp//'_ is an unsupported eomcc flavor')
+            end if
+         end if
+      else
+         call quit('more *EXEOM blocks defined than specified in EXACC input block') 
+      end if
+      call check_whether_kw_found(word, kw_section)
+
+   end subroutine
+
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
@@ -859,6 +959,7 @@
       integer :: i,j
       real(8) :: val_real, val_imag
 !     --------------------------------------------------------------------------
+      integer :: nr_eom_runs = 0
 
 #ifndef MOD_EXACORR
       call quit(kw_section//' not available in this version')
@@ -934,6 +1035,29 @@
          call kw_read(word, exa_input%ncycles)
       end if
 
+      if (kw_matches(word, '.EXEOM ')) then
+         exa_input%eom = .true.
+         call kw_read(word, nr_eom_runs)
+         print *,'debug: setting up eom inputs:',nr_eom_runs
+         if (nr_eom_runs.ge.1) then
+            allocate(exa_input%eom_input(nr_eom_runs)) 
+            exa_input%current_eom_input = 0
+            print *,'debug: allocated ',nr_eom_runs,' input decks for eom'
+            do i = 1, nr_eom_runs
+               print *,'debug: initialized eom input block',i
+               exa_input%eom_input(i)%nroots = 0
+               exa_input%eom_input(i)%do_expval = .false.
+               exa_input%eom_input(i)%do_linrsp = .false.
+               exa_input%eom_input(i)%do_quarsp = .false.
+               exa_input%eom_input(i)%do_cubrsp = .false.
+               exa_input%eom_input(i)%rhs_expval_states = 0
+               exa_input%eom_input(i)%lhs_expval_states = 0
+               exa_input%eom_input(i)%properties = ''
+               exa_input%eom_input(i)%rsp_pert_freqs => NULL()
+            end do
+         end if
+      end if
+ 
       if (kw_matches(word, '.OCC_BETA')) then
          exa_input%beta_occ = .true.
          call kw_read(word, string_occ_beta)
