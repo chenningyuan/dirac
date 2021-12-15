@@ -91,6 +91,7 @@ contains
 !               - defining_h1mat == 1: case b. bare-nucleus 1-el Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !               - defining_h1mat == 2: case c. 4c-Fock-Dirac operator matrix)
 !               - defining_h1mat == 3: case d. free-particle matrix
+!               - defining_h1mat == 4: case e. bare-nucleus 1-el Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !
 !----------------------------------------------------------------------
 !
@@ -136,6 +137,7 @@ contains
 !                  1 == case b.; bare-nucleus 4c-h1 + diagonal (atomic) 2e-mean-field contributions
 !                  2 == case c.; 4c-Dirac-Fock matrix
 !                  3 == case d.; free-particle matrix
+!                  4 == case e.; bare nucleus Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !             out: 4c h1 matrix in SA-AO basis --> h1_saao_bas
 !     ------------------------------------------------------------------------------
       call get_h1_4c_saao_basis(h1_saao_bas,            &
@@ -157,8 +159,9 @@ contains
 
 !     step 2: transform h1 to orthonormal MO basis if defining h1 matrix is 
 !             case 0. 1-el. bare nucleus Dirac-Hamiltonian 
-!             case 1. 1-el. bare nucleus Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+!             case 1. 1-el. bare nucleus Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions (amfX2C)
 !             case 3. free-particle matrix
+!             case 4. 1-el. bare nucleus Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions (eamfX2C)
 !
 !             in : 4c h1 matrix in SA-AO basis --> h1_saao_bas; transformation matrix --> tra_mat_4cAOMO
 !             out: h1 matrix in 4c-ON MO basis --> h1_onmo_bas
@@ -254,6 +257,7 @@ contains
 !               - defining_h1mat == 1: bare-nucleus 1-el Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
 !               - defining_h1mat == 2: 4c-Fock-Dirac operator matrix
 !               - defining_h1mat == 3: free-particle matrix
+!               - defining_h1mat == 4: bare-nucleus 1-el Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !
 !             note: scrmat1 and scrmat2 are in use exclusively for
 !             defining_h1mat == 2: 4c-fock operator as h1 (defining and/or 'basic' h1)
@@ -348,6 +352,33 @@ contains
          call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
          call reset_x2c_cb_onefck(.true.)
          deallocate(wrk)
+#endif
+        case(4)
+  !        bare-nucleus 1-el Dirac-Hamiltonian...
+#ifdef PRG_DIRAC
+          allocate(wrk(lwrk))
+          call reset_x2c_cb_onefck(.false.)
+          call onefck(h1_saao_bas,print_lvl,wrk,lwrk)
+          call reset_x2c_cb_onefck(.true.)
+          deallocate(wrk)
+#endif
+  
+#ifdef MOD_XAMFI
+  !       ... + first-order (molecular) 2e-mean-field contributions
+  !       FIXME!
+          call x2c_add_2e_diagonal_atomic(h1_saao_bas,                       &
+                                          naosh_ls,                          &
+                                          nfsym,                             &
+                                          nz,                                &
+                                          x2c_bs_irrep_mat,                  &
+                                          x2c_cb_pq_to_uq,                   &
+                                          x2c_cb_uq_to_pq,                   &
+                                          x2c_iqmult_trip_q,                 &
+                                          x2c_bs_to_fs,                      &
+                                          x2c_pointer_quat,                  &
+                                          num_nuclei,                        &
+                                          type_nuclei,                       &
+                                          print_lvl)
 #endif
 
        case default

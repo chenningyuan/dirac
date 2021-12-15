@@ -243,6 +243,8 @@ contains
 #ifdef MOD_XAMFI
            ! extension: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
            if(aoomod.and.aoo2ediag) x2c_is_defining_h1mat  = 1
+           ! extension: bare-nucleus one-electron Dirac-Hamiltonian + first-order molecular 2e-mean-field contributions
+           if(aoomod.and.aooeamf)   x2c_is_defining_h1mat  = 4
 #endif
          end if
 ! 

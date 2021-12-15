@@ -498,6 +498,7 @@ contains
 !
 !                       defining_h1mat == 0: bare-nucleus one-electron Dirac-Hamiltonian
 !                                      == 1: bare-nucleus one-electron Dirac-Hamiltonian + diagonal (atomic) 2e-mean-field contributions
+!                                      == 4: bare-nucleus one-electron Dirac-Hamiltonian + first-order (molecular) 2e-mean-field contributions
 !                                      == 2: converged 4c-Fock-Dirac operator
 !
 !             delivers: a. AO2MO transformation matrices
@@ -685,7 +686,7 @@ contains
 
          close(9,status='delete')
 
-       case (0, 1, 3) ! 1-el Dirac Hamiltonian / free particle
+       case (0, 1, 3, 4) ! 1-el Dirac Hamiltonian (of some flavour) / free-particle h1
 
          allocate(wrk(local_lwrk))
          call modham(A%scr1mat,                                         &

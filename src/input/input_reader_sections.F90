@@ -2178,6 +2178,11 @@
          aoo2ediag = .true.
       end if
 
+      if (kw_matches(word, '.eamf')) then
+         aoomod    = .true.
+         aooeamf   = .true.
+      end if
+
       if (kw_matches(word, '.nofocc')) then
          aoomod       = .true.
          aoofocc      = .false.
