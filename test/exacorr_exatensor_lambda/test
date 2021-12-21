@@ -14,7 +14,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final L1amp',
       num_lines   = 2,
-      rel_tolerance   = 1.0e-9)
+      rel_tolerance   = 1.0e-6)
 
 f.add(from_string = 'Individual (non-zero) components',
       to_string   = 'Total contribution to principal components',

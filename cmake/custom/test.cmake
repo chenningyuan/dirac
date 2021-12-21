@@ -30,6 +30,7 @@ endmacro()
 include(CTest)
 enable_testing()
 # these tests appear also in release-xx versions
+dirac_test(checkpoint_from_Dformat "short" "")
 dirac_test(dft_alda_xcfun "long;dft" "")
 dirac_test(dft_alda "long;dft" "")
 dirac_test(stex "short;stex" "")
