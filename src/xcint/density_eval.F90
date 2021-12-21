@@ -37,6 +37,8 @@ module density_eval
    public get_kin_tau_imag
    public get_gn
    public get_gn_nonhermitian
+   public get_hn
+   public get_hn_nonhermitian
    public get_gj
    public get_gs
    public get_gs_nonhermitian
@@ -520,6 +522,143 @@ contains
 
     gn = 2.0d0*gn
 
+  end subroutine
+
+  subroutine get_hn(n,       &
+                    gn,      &
+                    hn,      &
+                    irep,    &
+                    mat_dim, &
+                    dmat,    &
+                    buffer,  &
+                    ao)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: n
+    real(8), intent(out) :: gn(3)
+    real(8), intent(out) :: hn(3,3)
+    integer, intent(in)  :: irep
+    integer, intent(in)  :: mat_dim
+    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+    real(8), intent(in)  :: buffer(mat_dim,0:3)
+    real(8), intent(in)  :: ao(*)
+!   ----------------------------------------------------------------------------
+    integer              :: nr1, nr2, st1, st2, iblock, ixyz
+    real(8), external    :: ddot
+!   ----------------------------------------------------------------------------
+
+    n  = 0.0d0
+    gn = 0.0d0
+    hn = 0.0d0
+
+    do iblock = 1, nr_ao_blocks
+       nr1 = ao_block_nr(iblock)
+       st1 = ao_block_start(iblock)
+       nr2 = ao_block_nr(llss_block_partner(iblock, 0, irep))
+       st2 = ao_block_start(llss_block_partner(iblock, 0, irep))
+       if ((nr1 < 1) .or. (nr2 < 1)) cycle
+
+       call dgemv('N',                      &
+                  nr1,                      &
+                  nr2,                      &
+                  1.0d0,                    &
+                  dmat(st1, st2, iq(0)),    &
+                  mat_dim,                  &
+                  ao(st2),                  &
+                  1,                        &
+                  0.0d0,                    &
+                  buffer(1:mat_dim,0),      &
+                  1)
+
+       do ixyz = 1, 3
+          call dgemv('N',                      &
+                     nr1,                      &
+                     nr2,                      &
+                     1.0d0,                    &
+                     dmat(st1, st2, iq(0)),    &
+                     mat_dim,                  &
+                     ao(ao_off_g1_m0(ixyz,0)), &
+                     1,                        &
+                     0.0d0,                    &
+                     buffer(1:mat_dim,ixyz),   &
+                     1)
+       end do
+
+       n = n + ddot(nr1, ao(st1), 1, buffer, 1)
+
+       gn(1) = gn(1) + ddot(nr1, ao(ao_off_g1_m0(1, 0) + st1), 1, buffer(1:mat_dim,0), 1)
+       gn(2) = gn(2) + ddot(nr1, ao(ao_off_g1_m0(2, 0) + st1), 1, buffer(1:mat_dim,0), 1)
+       gn(3) = gn(3) + ddot(nr1, ao(ao_off_g1_m0(3, 0) + st1), 1, buffer(1:mat_dim,0), 1)
+
+!      xx
+       hn(1,1) = hn(1,1) + ddot(nr1, ao(ao_off_g2_m0(1, 0) + st1), 1, buffer(1:mat_dim,0), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(1, 0) + st1), 1, buffer(1:mat_dim,1), 1)
+
+!      yy
+       hn(2,2) = hn(2,2) + ddot(nr1, ao(ao_off_g2_m0(4, 0) + st1), 1, buffer(1:mat_dim,0), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(2, 0) + st1), 1, buffer(1:mat_dim,2), 1)
+
+!      zz
+       hn(3,3) = hn(3,3) + ddot(nr1, ao(ao_off_g2_m0(6, 0) + st1), 1, buffer(1:mat_dim,0), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(3, 0) + st1), 1, buffer(1:mat_dim,3), 1)
+
+!      xy
+       hn(1,2) = hn(1,2) + ddot(nr1, ao(ao_off_g2_m0(2, 0) + st1), 1, buffer(1:mat_dim,0), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(1, 0) + st1), 1, buffer(1:mat_dim,2), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(2, 0) + st1), 1, buffer(1:mat_dim,1), 1)
+!      xz
+       hn(1,3) = hn(1,3) + ddot(nr1, ao(ao_off_g2_m0(3, 0) + st1), 1, buffer(1:mat_dim,0), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(1, 0) + st1), 1, buffer(1:mat_dim,3), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(3, 0) + st1), 1, buffer(1:mat_dim,1), 1)
+
+!      yz
+       hn(2,3) = hn(2,3) + ddot(nr1, ao(ao_off_g2_m0(5, 0) + st1), 1, buffer(1:mat_dim,0), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(2, 0) + st1), 1, buffer(1:mat_dim,3), 1) &
+                         + ddot(nr1, ao(ao_off_g1_m0(3, 0) + st1), 1, buffer(1:mat_dim,2), 1)
+    end do
+
+    gn = 2.0d0*gn
+
+    hn(1,1) = 2.0d0*hn(1,1)
+    hn(2,2) = 2.0d0*hn(2,2)
+    hn(3,3) = 2.0d0*hn(3,3)
+    hn(1,2) = 2.0d0*hn(1,2)
+    hn(1,3) = 2.0d0*hn(1,3)
+    hn(2,3) = 2.0d0*hn(2,3)
+    hn(2,1) =       hn(1,2)
+    hn(3,1) =       hn(1,3)
+    hn(3,2) =       hn(2,3)
+
+  end subroutine
+
+  subroutine get_hn_nonhermitian(n,       &
+                                 gn,      &
+                                 hn,      &
+                                 irep,    &
+                                 mat_dim, &
+                                 dmat,    &
+                                 buffer,  &
+                                 ao)
+
+!   ----------------------------------------------------------------------------
+    real(8), intent(out) :: n
+    real(8), intent(out) :: gn(3)
+    real(8), intent(out) :: hn(3,3)
+    integer, intent(in)  :: irep
+    integer, intent(in)  :: mat_dim
+    real(8), intent(in)  :: dmat(mat_dim, mat_dim, *)
+    real(8), intent(in)  :: buffer(mat_dim,0:9)
+    real(8), intent(in)  :: ao(*)
+!   ----------------------------------------------------------------------------
+    integer              :: nr1, nr2, st1, st2, iblock, ixyz
+    real(8), external    :: ddot
+!   ----------------------------------------------------------------------------
+
+    n  = 0.0d0
+    gn = 0.0d0
+    hn = 0.0d0
+
+! todo
   end subroutine
 
    subroutine get_kin_tau(t,       &

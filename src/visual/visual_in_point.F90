@@ -74,15 +74,20 @@ contains
       real(8), intent(out) :: result(0:result_max_dim)
       real(8), intent(in), optional    :: jb_input(3)
 !     --------------------------------------------------------------------------
-      integer              :: imat, i, icomp
+      integer              :: imat, i, j, ij, icomp
       real(8)              :: v(3), v2(3)
       real(8)              :: matrix_33(3, 3)
       real(8)              :: temp_33(3, 3)
       real(8)              :: elf_chi, tau
       real(8)              :: density, esp(1), esp_e(1), esp_n(1)
       real(8)              :: density_gradient(3)
+      real(8)              :: density_hessian(3,3)
+      real(8)              :: eigenvalues(3)
+      real(8)              :: eigenvectors(3,3)
+      real(8)              :: temp(3), temp2(9)
+      integer              :: itemp(3)
       real(8)              :: density_gradient_squared
-      real(8)              :: b, f, distance_to_origin
+      real(8)              :: b, c, f, distance_to_origin
       real(8)              :: rx, ry, rz, r(3)
 
       logical :: gosia_debug_print
@@ -136,6 +141,136 @@ contains
                            ao)               
                result(0)   = result(0) + density
                result(1:3) = result(1:3) + density_gradient
+            end if
+
+!           electron density Hessian
+            if (visual_cfg_property(imat) == iq_density_hessian) then
+!              gosia fixme:
+!              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!              so be careful when applying with property densities
+               call get_hn(density,          &
+                           density_gradient, &
+                           density_hessian,  &
+                           D(imat)%irep,     &
+                           D(imat)%nrow,     &
+                           D(imat)%elms,     &
+                           buffer,           &
+                           ao)               
+               result(0)   = result(0) + density
+               result(1:3) = result(1:3) + density_gradient
+               result(4)   = result(4)   + density_hessian(1,1) ! xx
+               result(5)   = result(5)   + density_hessian(1,2) ! xy
+               result(6)   = result(6)   + density_hessian(1,3) ! xz
+               result(7)   = result(7)   + density_hessian(2,1) ! yx
+               result(8)   = result(8)   + density_hessian(2,2) ! yy
+               result(9)   = result(9)   + density_hessian(2,3) ! yz
+               result(10)  = result(10)  + density_hessian(3,1) ! zx
+               result(11)  = result(11)  + density_hessian(3,2) ! zy
+               result(12)  = result(12)  + density_hessian(3,3) ! zz
+            end if
+
+!           reduced density gradient
+            if (visual_cfg_property(imat) == iq_rdg) then
+               call get_gn(density,          &
+                           density_gradient, &
+                           D(imat)%irep,     &
+                           D(imat)%nrow,     &
+                           D(imat)%elms,     &
+                           buffer,           &
+                           ao)               
+
+               density_gradient_squared = density_gradient(1)*density_gradient(1) &
+                                        + density_gradient(2)*density_gradient(2) &
+                                        + density_gradient(3)*density_gradient(3)
+
+               b = sqrt(density_gradient_squared)
+               c = density**(4.0d0/3.0d0)
+!              0.161620459674d0 = 1/(2.0d0*((3.0d0*pi*pi)**(1.0d0/3.0d0))
+               f = 0.161620459674d0*(b/c)
+               result(0)   = result(0) + f
+            end if
+
+!           sign(lambda2) where lambda2 is the second eogenvalue of the Hessian of the electron density
+            if (visual_cfg_property(imat) == iq_density_sign_lambda2) then
+!              gosia fixme:
+!              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!              so be careful when applying with property densities
+               eigenvalues  = 0.0d0
+               eigenvectors = 1.0d0
+               temp         = 0.0d0
+               temp2        = 0.0d0
+               itemp        = 0
+               call get_hn(density,          &
+                           density_gradient, &
+                           density_hessian,  &
+                           D(imat)%irep,     &
+                           D(imat)%nrow,     &
+                           D(imat)%elms,     &
+                           buffer,           &
+                           ao)               
+               ij = 1
+               do j = 1, 3
+                  do i = 1, 3
+                     temp2(ij) = density_hessian(i,j)
+                     ij = ij + 1
+                  end do
+               end do
+
+               call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+
+               temp(1)        = temp2(1)
+               temp(2)        = temp2(3)
+               temp(3)        = temp2(6)
+               eigenvalues(1) = temp2(1)
+               eigenvalues(2) = temp2(3)
+               eigenvalues(3) = temp2(6)
+               do i = 1, 3
+                  do j = 1, 3
+                     if (j .ne. i) then
+                        if (eigenvalues(i) .lt. eigenvalues(j)) then
+                           eigenvalues(i) = temp(j)
+                        end if  
+                     end if  
+                  end do
+               end do
+
+               if (eigenvalues(2) .gt. 0.0d0) then
+                  result(0)   = result(0) + density
+               else if (eigenvalues(2) .lt. 0.0d0) then
+                  result(0)   = result(0) - density
+               end if
+            end if
+
+!           laplacian of the electron density
+            if (visual_cfg_property(imat) == iq_density_laplacian) then
+!              gosia fixme:
+!              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
+!              so be careful when applying with property densities
+               eigenvalues  = 0.0d0
+               eigenvectors = 1.0d0
+               temp         = 0.0d0
+               temp2        = 0.0d0
+               itemp        = 0
+               call get_hn(density,          &
+                           density_gradient, &
+                           density_hessian,  &
+                           D(imat)%irep,     &
+                           D(imat)%nrow,     &
+                           D(imat)%elms,     &
+                           buffer,           &
+                           ao)
+               ij = 1
+               do j = 1, 3
+                  do i = 1, 3
+                     temp2(ij) = density_hessian(i,j)
+                     ij = ij + 1
+                  end do
+               end do
+
+               call jaco(temp2, eigenvectors, 3, 3, 3, temp, itemp)
+
+               result(0) = result(0) + temp2(1) + temp2(3) + temp2(6)
+
             end if
 
 !           components of current density: -ec \psi^\dag \alpha_q \psi 

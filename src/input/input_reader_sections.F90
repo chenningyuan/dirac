@@ -322,6 +322,23 @@
          call read_input_visual_helper(iq_density_gradient)
       end if
 
+      if (kw_matches(word, '.DENHES')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_density_hessian)
+      end if
+
+      if (kw_matches(word, '.DENLAP')) then
+         call read_input_visual_helper(iq_density_laplacian)
+      end if
+
+      if (kw_matches(word, '.RDG   ')) then
+         call read_input_visual_helper(iq_rdg)
+      end if
+
+      if (kw_matches(word, '.SIGNL2')) then
+         call read_input_visual_helper(iq_density_sign_lambda2)
+      end if
+
       if (kw_matches(word, '.ELF   ')) then
          call read_input_visual_helper(iq_elf)
       end if

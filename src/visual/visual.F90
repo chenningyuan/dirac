@@ -89,25 +89,27 @@ contains
 
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
-       if (                                               &
-           (visual_cfg_property(imat) == iq_elf)     .or. &
-           (visual_cfg_property(imat) == iq_kin)     .or. &
-           (visual_cfg_property(imat) == iq_kin_ls)  .or. &
-           (visual_cfg_property(imat) == iq_kin_sl)  .or. &
-           (visual_cfg_property(imat) == iq_kin_tau) .or. &
-           (visual_cfg_property(imat) == iq_divs)    .or. &
-           (visual_cfg_property(imat) == iq_rots)    .or. &
-           (visual_cfg_property(imat) == iq_divj)    .or. &
-           (visual_cfg_property(imat) == iq_rotj)    .or. &
-           (visual_cfg_property(imat) == iq_gradj)        &
+       if (                                                        &
+           (visual_cfg_property(imat) == iq_elf)              .or. &
+           (visual_cfg_property(imat) == iq_kin)              .or. &
+           (visual_cfg_property(imat) == iq_kin_ls)           .or. &
+           (visual_cfg_property(imat) == iq_kin_sl)           .or. &
+           (visual_cfg_property(imat) == iq_kin_tau)          .or. &
+           (visual_cfg_property(imat) == iq_divs)             .or. &
+           (visual_cfg_property(imat) == iq_rots)             .or. &
+           (visual_cfg_property(imat) == iq_divj)             .or. &
+           (visual_cfg_property(imat) == iq_rotj)             .or. &
+           (visual_cfg_property(imat) == iq_density_gradient) .or. &
+           (visual_cfg_property(imat) == iq_gradj)                 &
           ) then
           if (max_ao_g_order < 1) then
              max_ao_g_order = 1
           end if
        end if
-       if (                                               &
-           (visual_cfg_property(imat) == iq_kin_lap) .or. &
-           (visual_cfg_property(imat) == iq_kin_nr)       &
+       if (                                                       &
+           (visual_cfg_property(imat) == iq_kin_lap)         .or. &
+           (visual_cfg_property(imat) == iq_density_hessian) .or. &
+           (visual_cfg_property(imat) == iq_kin_nr)               &
           ) then
           if (max_ao_g_order < 2) then
              max_ao_g_order = 2

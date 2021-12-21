@@ -211,6 +211,32 @@ Example (unperturbed density gradient)::
   .DENGRA
    DFCOEF
 
+keyword(DENHES)
+
+Compute number density Hessian :math:`H(n(\mathbf{r}))` in addition to the number density :math:`n(\mathbf{r})` and to the number density gradient :math:`\grad n(\mathbf{r})`.
+Example (unperturbed density Hessian)::
+
+  .DENHES
+   DFCOEF
+
+
+keyword(RDG   )
+
+Compute the reduced density gradient :math:`\frac{1}{2(3\pi^2)^{1/3}}\frac{|\grad n(\mathbf{r})|}{n(\mathbf{r})^{4/3}}`.
+Example::
+
+  .RDG   
+   DFCOEF
+
+
+keyword(SIGNL2)
+
+Compute the signed electron density :math:`sign(\lambda_2) * n(\mathbf{r})`, where :math:`\lambda_2` is the second eigenvalue of the number density Hessian :math:`H(n(\mathbf{r}))`.
+Example::
+
+  .SIGNL2
+   DFCOEF
+
 
 keyword(ELF)
 
