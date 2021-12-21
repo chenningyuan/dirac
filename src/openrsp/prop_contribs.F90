@@ -486,27 +486,27 @@ contains
          do i = 0, dp(1)-1
             ! Hamiltonian integrals
 #ifdef PRG_DIRAC
-            integral_label = 'dkin/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dkin_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, A(1))
             T = tiny(0.0d0)*A(1)
-            integral_label = 'dnuc/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dnuc_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, T)
             A(1) = A(1) + T
-            integral_label = 'dbet/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dbet_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, T)
             A(1) = A(1) + T
-            integral_label = 'dvec/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dvec_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, T)
             A(1) = A(1) + T
             T = 0
 #else
-            call load_oneint('dh/dB' // xyz(c(1)+i) // '  ', A(1))
+            call load_oneint('dh_dB' // xyz(c(1)+i) // '  ', A(1))
 #endif
             ! -i/2 Tb in A(1), overlap integrals Sb in A(2)
             if (w(1)==0) then !no -i/2 Tb contribution
-               call load_oneint('dS/dB' // xyz(c(1)+i) // '  ', A(2))
+               call load_oneint('dS_dB' // xyz(c(1)+i) // '  ', A(2))
             else
-               call load_oneint('d|S>/dB' // xyz(c(1)+i), A(2))
+               call load_oneint('d|S>_dB' // xyz(c(1)+i), A(2))
                A(1) = A(1) - w(1)/2 * A(2)
                A(1) = A(1) - w(1)/2 * dag(A(2))
                A(2) = A(2) - dag(A(2))
@@ -609,13 +609,13 @@ contains
 #ifdef PRG_DIRAC
                ij_string = xyz(min(c(1) + i, c(2) + j)) // xyz(max(c(1) + i, c(2) + j))
                ji_string = xyz(max(c(1) + i, c(2) + j)) // xyz(min(c(1) + i, c(2) + j))
-               integral_label = 'dbet/dB2' // ij_string // '      '
+               integral_label = 'dbet_dB2' // ij_string // '      '
                call load_oneint(integral_label, A(1))
                T = tiny(0.0d0)*A(1)
-               integral_label = 'dnuc/dB2' // ij_string // '      '
+               integral_label = 'dnuc_dB2' // ij_string // '      '
                call load_oneint(integral_label, T)
                A(1) = A(1) + T
-               integral_label = 'dkin/dB2' // ij_string // '      '
+               integral_label = 'dkin_dB2' // ij_string // '      '
                call load_oneint(integral_label, T)
                A(1) = A(1) + T
                integral_label = ij_string // 'rdsusll       '
@@ -630,21 +630,21 @@ contains
                T = 0
 #else
                call load_oneint(xyz(min(c(1)+i,c(2)+j)) &
-                        // xyz(max(c(1)+i,c(2)+j)) // 'dh/dB2', A(1))
+                        // xyz(max(c(1)+i,c(2)+j)) // 'dh_dB2', A(1))
 #endif
                ! If both fields static, no -i/2 Tbb to A(1)
                if (w(1)==0 .and. w(2)==0) then
-                  call load_oneint('dS/dB2' // xyz(min(c(1)+i,c(2)+j)) &
+                  call load_oneint('dS_dB2' // xyz(min(c(1)+i,c(2)+j)) &
                                             // xyz(max(c(1)+i,c(2)+j)), A(2))
                else
                   ! only load >> XX XY YY XZ YZ ZZ, use dag(..) for <<
-                  call load_oneint('>>S/B2' // xyz(min(c(1)+i,c(2)+j)) &
+                  call load_oneint('>>S_B2' // xyz(min(c(1)+i,c(2)+j)) &
                                        // xyz(max(c(1)+i,c(2)+j)), A(2))
                   A(1) = A(1) - (w(1)+w(2))/2 * A(2)
                   A(1) = A(1) + (w(1)+w(2))/2 * dag(A(2))
                   A(2) = A(2) + dag(A(2))
                   ! only load <> XX XY YY XZ YZ ZZ, use dag(..) for the others
-                  call load_oneint('<>S/B2' // xyz(min(c(1)+i,c(2)+j)) &
+                  call load_oneint('<>S_B2' // xyz(min(c(1)+i,c(2)+j)) &
                                        // xyz(max(c(1)+i,c(2)+j)), A(3))
                   !ajt1009 Changed sign on these two: (think it's correct)
                   A(1) = A(1) - merge(-1, 1, c(1)+i < c(2)+j) &
@@ -1567,26 +1567,26 @@ contains
       else if (np==1 .and. p(1)=='MAG') then
          do i = 0, dp(1)-1
 #ifdef PRG_DIRAC
-            integral_label = 'dkin/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dkin_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, F(i+1), S0)
             T = tiny(0.0d0)*F(i+1)
-            integral_label = 'dnuc/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dnuc_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, T, S0)
             F(i+1) = F(i+1) + T
-            integral_label = 'dbet/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dbet_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, T, S0)
             F(i+1) = F(i+1) + T
-            integral_label = 'dvec/dB' // xyz(c(1) + i) // '        '
+            integral_label = 'dvec_dB' // xyz(c(1) + i) // '        '
             call load_oneint(integral_label, T, S0)
             F(i+1) = F(i+1) + T
             T = 0
 #else
-            call load_oneint('dh/dB' // xyz(c(1)+i) // '  ', F(i+1), S0)
+            call load_oneint('dh_dB' // xyz(c(1)+i) // '  ', F(i+1), S0)
 #endif
             if (w(1)==0) then !no -i/2 Tb contribution
-               call load_oneint('dS/dB' // xyz(c(1)+i) // '  ', S(i+1), S0)
+               call load_oneint('dS_dB' // xyz(c(1)+i) // '  ', S(i+1), S0)
             else
-               call load_oneint('d|S>/dB' // xyz(c(1)+i), S(i+1), S0)
+               call load_oneint('d|S>_dB' // xyz(c(1)+i), S(i+1), S0)
                F(i+1) = F(i+1) - w(1)/2 * S(i+1)
                F(i+1) = F(i+1) - w(1)/2 * dag(S(i+1))
                S(i+1) = S(i+1) - dag(S(i+1))
@@ -1640,13 +1640,13 @@ contains
                ! Hamiltonian integrals and -i/2 Tbb in A(1), Sbb in A(2)
 #ifdef PRG_DIRAC
                ij_string = xyz(min(c(1) + i, c(2) + j)) // xyz(max(c(1) + i, c(2) + j))
-               integral_label = 'dbet/dB2' // ij_string // '      '
+               integral_label = 'dbet_dB2' // ij_string // '      '
                call load_oneint(integral_label, F(ii), S0)
                T = tiny(0.0d0)*F(ii)
-               integral_label = 'dnuc/dB2' // ij_string // '      '
+               integral_label = 'dnuc_dB2' // ij_string // '      '
                call load_oneint(integral_label, T, S0)
                F(ii) = F(ii) + T
-               integral_label = 'dkin/dB2' // ij_string // '      '
+               integral_label = 'dkin_dB2' // ij_string // '      '
                call load_oneint(integral_label, T, S0)
                F(ii) = F(ii) + T
                integral_label = ij_string // 'rdsusll       '
@@ -1662,17 +1662,17 @@ contains
 #endif
                ! If both fields static, no -i/2 Tbb to A(1)
                if (w(1)==0 .and. w(2)==0) then
-                  call load_oneint('dS/dB2' // xyz(min(c(1)+i,c(2)+j))  &
+                  call load_oneint('dS_dB2' // xyz(min(c(1)+i,c(2)+j))  &
                                             // xyz(max(c(1)+i,c(2)+j)), S(ii), S0)
                else
                   !only load >> XX XY YY XZ YZ ZZ, use dag(..) for <<
-                  call load_oneint('>>S/B2' // xyz(min(c(1)+i,c(2)+j))  &
+                  call load_oneint('>>S_B2' // xyz(min(c(1)+i,c(2)+j))  &
                                             // xyz(max(c(1)+i,c(2)+j)), S(ii), S0)
                   F(ii) = F(ii) - (w(1)+w(2))/2 * S(ii)
                   F(ii) = F(ii) + (w(1)+w(2))/2 * dag(S(ii))
                   S(ii) = S(ii) + dag(S(ii))
                   !only load <> XX XY YY XZ YZ ZZ, use dag(..) for the others
-                  call load_oneint('<>S/B2' // xyz(min(c(1)+i,c(2)+j)) &
+                  call load_oneint('<>S_B2' // xyz(min(c(1)+i,c(2)+j)) &
                                             // xyz(max(c(1)+i,c(2)+j)), A(1), S0)
                   !ajt&kk 0410 Changed sign on these two: (think it's correct)
                   F(ii) = F(ii) - merge(-1, 1, c(1)+i < c(2)+j) &

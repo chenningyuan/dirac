@@ -577,6 +577,37 @@
          visual_cfg_london_skip_kappa = .true.
       end if
 
+      if (kw_matches(word, '.OUTFIL')) then
+         visual_cfg_out_file_custom = .true.
+!        file for scalar field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_scalar_file_name   = trim(line)
+            visual_cfg_out_scalar_file_custom = .true.
+         end if 
+!        file for vector field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_vector_file_name   = trim(line)
+            visual_cfg_out_vector_file_custom = .true.
+         end if 
+!        file for 2ndtensor field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_2ndtensor_file_name   = trim(line)
+            visual_cfg_out_2ndtensor_file_custom = .true.
+         end if 
+      end if
+
+      if (kw_matches(word, '.NOCUBE')) then
+         visual_cfg_london_skip_cube  = .true.
+      end if
+
+      if (kw_matches(word, '.NOVTK ')) then
+         visual_cfg_london_skip_vtk   = .true.
+      end if
+
+
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
@@ -892,7 +923,16 @@
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
-         exa_input%mp2no = .true.
+         exa_input%mp2no = 1
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.MP2LAP        ')) then
+         exa_input%mp2no = -1
+      end if
+
+      if (kw_matches(word, '.MP2_LAP_NO      ')) then
+         exa_input%mp2no = 10
          call kw_read(word, exa_input%t_mp2no)
       end if
 
@@ -969,6 +1009,10 @@
              exa_input%ff(i,j)=dcmplx(val_real,val_imag)
            enddo
          enddo
+      end if
+
+      if (kw_matches(word, '.NLAPLACE')) then
+         call kw_read(word, exa_input%n_laplace)
       end if
 
       call check_whether_kw_found(word, kw_section)

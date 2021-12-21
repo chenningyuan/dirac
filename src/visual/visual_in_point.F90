@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module visual_in_point
@@ -474,6 +469,13 @@ contains
                   end if
                   matrix_33(1:3, 1:3) = matrix_33(1:3, 1:3) + temp_33(1:3, 1:3)
                end if
+
+               ! the order of elements on matrix_33(1:3,1:3) from get_gj* subroutines:
+               !
+               !  (1,1) (1,2) (1,3)        d(jx)/dx d(jy)/dx d(jz)/dx
+               !  (2,1) (2,2) (2,3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
+               !  (3,1) (3,2) (3,3)        d(jx)/dz d(jy)/dz d(jz)/dz
+               !
 
                if (visual_cfg_property(imat) == iq_divj) then
                   result(0) = result(0) + matrix_33(1, 1) + matrix_33(2, 2) + matrix_33(3, 3)
