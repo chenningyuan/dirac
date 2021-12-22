@@ -37,14 +37,13 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 
 set(FREE_DIRAC_FORTRAN_SOURCES
    dirimpmos.F90
-#   dirmp2no.F needs 
+   # dirmp2no.F needs 
     ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
-# needs also input reader..
+   # needs also input reader..
     ${PROJECT_SOURCE_DIR}/src/input/parse_input.F90
     ${PROJECT_SOURCE_DIR}/src/input/input_reader.F90
     ${PROJECT_SOURCE_DIR}/src/input/input_reader_sections.F90
 )
-
 
 set(FREE_DIRAC_FORTRAN_SOURCES ${PROJECT_SOURCE_DIR}/src/interest/module_interest_interface.F90 ${FREE_DIRAC_FORTRAN_SOURCES})
 

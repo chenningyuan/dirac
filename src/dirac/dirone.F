@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2837,13 +2832,6 @@ C         Create total property matrix with correct prefactor
      &               work(konein+(l-1)*nnbbasx),1,
      &               WORK(khelp),1)
           end do
-!         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
-!    &    (
-!    &            WORK(KONEIN          :KONEIN+  NNBBASX-1)
-!    &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
-!    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
-!    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
-!    &    )
 C         Store matrix in AOproper file
           ITYP = ITYP + 1
           CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
@@ -4059,18 +4047,18 @@ C ... some are usable (ZANGMOM)
      &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'d|S>/dBX        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBY        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dBX          ' .OR.
-     &     PROPNAME.EQ.'dS/dBY          ' .OR.
-     &     PROPNAME.EQ.'dS/dBZ          ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XX        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2ZZ        '
+     &     PROPNAME.EQ.'d|S>_dBX        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBY        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dBX          ' .OR.
+     &     PROPNAME.EQ.'dS_dBY          ' .OR.
+     &     PROPNAME.EQ.'dS_dBZ          ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XX        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2ZZ        '
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.4) THEN

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -3126,7 +3121,7 @@ C
       IPTYP    = 1
       NPCOMP   = 1
       PFAC(1)  = -D2*CVAL*CVAL
-      PLABEL(1)= 'dS/dBX'
+      PLABEL(1)= 'dS_dBX'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,1) = INDXPR
@@ -3203,7 +3198,7 @@ C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = -D2*CVAL*CVAL
-      PLABEL(1) = 'dS/dBY'
+      PLABEL(1) = 'dS_dBY'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &       INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,2) = INDXPR
@@ -3278,7 +3273,7 @@ C
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = -D2*CVAL*CVAL
-      PLABEL(1) = 'dS/dBZ'
+      PLABEL(1) = 'dS_dBZ'
       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &      INDXPR,ISYXPR,ITRXPR,IPRINT)
       IPLONDON(1,3) = INDXPR
@@ -3355,17 +3350,17 @@ C----------------------------------------------------------------
 #ifdef MOD_LAO_REARRANGED
       if (lao_lr_rearrange) then
           PFAC(1) = -1.0d0
-          LABELC='dS/dB'
+          LABELC='dS_dB'
           ILABELC = 5
       else
 #endif
         IF (SYMCON) THEN
           PFAC(1) = DMI2
-          LABELC='dS/dB'
+          LABELC='dS_dB'
           ILABELC = 5
         ELSE
           PFAC(1) = -D1
-          LABELC='d|S>/dB'
+          LABELC='d|S>_dB'
           ILABELC = 7
         END IF
 #ifdef MOD_LAO_REARRANGED
@@ -3418,7 +3413,7 @@ C ... Symmetry connection term T(1)=S(1)
        NPCOMP = 1
 C      PFAC(1) = DMI2
        PFAC(1) = D1
-       LABELC='dS/dB'
+       LABELC='dS_dB'
        ILABELC = 5
        PNAME     = LABELC(1:ILABELC)//'X'
        PLABEL(1) = LABELC(1:ILABELC)//'X'
@@ -3444,7 +3439,7 @@ C      PFAC(1) = DMI2
 C ... Natural connection term T(1)=W(1)
 C      PFAC(1) = -D1
        PFAC(1) =  D1
-       LABELC='d|S>/dB'
+       LABELC='d|S>_dB'
        ILABELC = 7
        PNAME     = LABELC(1:ILABELC)//'X'
        PLABEL(1) = LABELC(1:ILABELC)//'X'
@@ -3472,7 +3467,7 @@ C Specify latter PFAC(1)!!!
        IPTYP  = 1
        NPCOMP = 1
        PFAC(1) = DMI2 ! For the  "-1/2 {S(2),H(0)}" term
-       LABELC='dS/dB2'
+       LABELC='dS_dB2'
        ILABELC =6 
        PNAME     = LABELC(1:ILABELC)//'XX'
        PLABEL(1) = LABELC(1:ILABELC)//'XX'

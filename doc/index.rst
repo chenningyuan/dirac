@@ -246,6 +246,9 @@ Developers
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
 
+* **Data schema and the CHECKPOINT file:**
+  :doc:`How data is organized on the checkpoint file <programmers/checkpoint>`
+
 * **Basis sets:**
   :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
 

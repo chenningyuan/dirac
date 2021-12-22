@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -310,6 +305,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine append_basisinfo_to_dfcoef (IUNIT)
+
+      use checkpoint
 
 !      L. Visscher, October 2018
 !      add basis set info to the end of dfcoef to not infere with normal usage
@@ -4575,4 +4572,154 @@ C***********************************************************************
       ENDIF
       RETURN
       END
-! -- end of dirgp.F --
+
+      subroutine write_occupations_fromcommon(group)
+      use checkpoint
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      character(len=*),intent(in) :: group
+      real(8), allocatable :: occupations(:)
+      integer, allocatable :: shell_id(:)
+
+      allocate(occupations(norbt))
+      allocate(shell_id(norbt))
+      ish = 0
+      do ifsym = 1, nfsym
+          ! positronic (negative energy) shells
+          do i = 1, npsh(ifsym)
+             ish = ish + 1
+             shell_id(ish) = -2
+             occupations(ish) = 0.D0
+          enddo
+          ! inactive (closed) shells
+          do i = 1, nish(ifsym)
+             ish = ish + 1
+             shell_id(ish) = -1
+             occupations(ish) = df(0)
+          enddo
+          ! active (open) shells
+          do iopen = 1, nopen
+             do i = 1, nacsh(ifsym,iopen)
+                ish = ish + 1
+                shell_id(ish) = iopen
+                occupations(ish) = df(iopen)
+             enddo
+          enddo
+          ! virtual (secundary) shells
+          do i = 1, nssh(ifsym)
+             ish = ish + 1
+             shell_id(ish) = 0
+             occupations(ish) = 0.D0
+          enddo
+      enddo
+      
+      call checkpoint_write(group//'/shell_id',idata=shell_id)
+      call checkpoint_write(group//'/occupations',rdata=occupations)
+
+      end
+
+      subroutine write_basis_fromcommon
+
+!      write basis set stored in common blocks to checkpoint
+       use basis_set_datatypes, only: basis_set_info_t
+       use checkpoint
+       type(basis_set_info_t) :: ao_basis
+
+       call get_aobasis_fromcommon (ao_basis)
+       call write_basis_tocheckpoint(ao_basis,'/input/aobasis')
+
+      end subroutine write_basis_fromcommon
+
+      subroutine write_basis_tocheckpoint(ao_basis,group)
+
+!     write basis set to checkpoint file in a particular group
+      use basis_set_datatypes, only: basis_set_info_t
+      use checkpoint
+
+      implicit none
+      character(len=*),intent(in) :: group
+      type(basis_set_info_t), intent(in) :: ao_basis
+      integer, allocatable :: n_cont(:)
+      real(8), allocatable :: coord(:),priexp(:),priccf(:)
+      integer :: ishell,i,n
+
+      call checkpoint_write (group//'/aobasis_id',idata=1)
+      call checkpoint_write (group//'/angular',idata=1)
+      call checkpoint_write (group//'/n_shells',idata=ao_basis%nshells)
+      call checkpoint_write (group//'/n_ao',idata=ao_basis%nao)
+      call checkpoint_write (group//'/orbmom',
+     &     idata=ao_basis%gtos(:)%orb_momentum)
+      call checkpoint_write (group//'/n_prim',
+     &     idata=ao_basis%gtos(:)%n_primitives)
+      ! We can't handle generally contracted functions yet, set n_cont to 1 (segmented contractions)
+      allocate (n_cont(ao_basis%nshells))
+      n_cont = 1
+      call checkpoint_write (group//'/n_cont',idata=n_cont)
+      ! Concatenate arrays as we always write in 1D
+      allocate(coord(3*ao_basis%nshells))
+      n = sum(ao_basis%gtos(:)%n_primitives)
+      allocate(priexp(n))
+      allocate(priccf(n))
+      i = 0
+      do ishell = 1, ao_basis%nshells
+         coord(ishell*3-2:ishell*3) = ao_basis%gtos(ishell)%coord
+         priexp(i+1:i+ao_basis%gtos(ishell)%n_primitives) = 
+     &          ao_basis%gtos(ishell)%exponent
+         priccf(i+1:i+ao_basis%gtos(ishell)%n_primitives) = 
+     &          ao_basis%gtos(ishell)%coefficient
+         i = i + ao_basis%gtos(ishell)%n_primitives
+      enddo
+      call checkpoint_write (group//'/center',rdata=coord)
+      call checkpoint_write (group//'/exponents',rdata=priexp)
+      call checkpoint_write (group//'/contractions',rdata=priccf)
+
+      deallocate(n_cont,coord,priexp,priccf)
+
+      end subroutine write_basis_tocheckpoint
+
+      subroutine get_aobasis_fromcommon (ao_basis)
+
+!      get information from common blocks about the basis set
+!      and return this (after some clean-up) as a basis_set_info_t
+
+       use basis_set_datatypes
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "aovec.h"
+#include "primit.h"
+#include "dcbbas.h"
+
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       integer ishell, iPrimStart, iPrimEnd, k, ierr
+
+       ! We only retrieve the LC basis, SC to be generated by kinetic balance
+       ao_basis%nshells       = nlrgsh
+       ao_basis%nao           = ntbas(1)
+       ao_basis%basis_angular = 1
+       nullify(ao_basis%gtos)
+       allocate(ao_basis%gtos(nlrgsh))
+
+       do ishell = 1, nlrgsh
+         ao_basis%gtos(ishell)%orb_momentum = nhkt(ishell)
+         ao_basis%gtos(ishell)%atom_number  = ncent(ishell)
+         ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
+         allocate (ao_basis%gtos(ishell)%exponent(nuco(ishell)))
+         allocate (ao_basis%gtos(ishell)%coefficient(nuco(ishell)))
+         iPrimStart = jstrt(ishell) + 1
+         iPrimEnd   = jstrt(ishell) + nuco(ishell)
+         k          = numcf(ishell)
+         ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
+         ao_basis%gtos(ishell)%coefficient =
+     &         priccf(iPrimStart:iPrimEnd,k)
+         ao_basis%gtos(ishell)%coord = cent(ishell,1:3,1)
+!        Uncontracted shells are stored as quasi-contracted, fix this.
+         call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+       end do
+
+       return
+       end
