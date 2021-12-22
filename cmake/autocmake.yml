@@ -90,7 +90,6 @@ modules:
 - install:
   - source:
     - 'custom/install.cmake'
-    - 'custom/cpack-dirac.cmake'
     - 'custom/pam.cmake'
     - 'custom/test.cmake'
 - save_flags:
