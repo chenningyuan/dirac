@@ -59,7 +59,7 @@ The result of appears automatically on the
 However, typically we need a little bit more because we want it to clone the
 code in an unsupervised fashion or because we
 want to also test the tarball creation. This is the script that Radovan uses:
-https://gitlab.com/dirac/dirac/blob/master/maintenance/cdash/cdash_crontab.sh
+https://gitlab.com/dirac/dirac-private/blob/master/maintenance/cdash/cdash_crontab.sh
 This script takes care of using a specific deploy key and integrates nicely
 with the crontab example given below.
 
