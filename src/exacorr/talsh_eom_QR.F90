@@ -41,7 +41,7 @@ subroutine talsh_eom_QR_driver(exa_input,eValues,eVectors)
     complex(kind=8), pointer      :: TPA(:)
 
     
-    call print_date('Enter CIS transition property routine')
+    call print_date('Enter CC-CI quadratic response')
     
     call form_eom_quarsp_intermediates()
     call solve_eom_linrsp_left()
