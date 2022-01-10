@@ -17,7 +17,7 @@ How to submit a merge request
 * Before you do anything, create a new branch from the branch that you wish to modify.
 * Implement your change and commit to the new branch.
 * Push your new branch.
-* Go to https://gitlab.com/dirac/dirac and click on the blue button "Create merge request" (top right).
+* Go to https://gitlab.com/dirac/dirac-private and click on the blue button "Create merge request" (top right).
 * Describe the change unless it's evident from the commit message.
 * Check the box next to "Remove source branch when merge request is accepted".
 * Make sure it is directed to the right branch.
@@ -53,7 +53,7 @@ What if you committed locally to master or a release branch?
 Then you cannot push directly but do not worry and follow these steps:
 
 * Create a new branch from the branch that you changed and tried to push.
-* Push the newly created branch to https://gitlab.com/dirac/dirac.
+* Push the newly created branch to https://gitlab.com/dirac/dirac-private.
 * Create a merge request and point it to the branch you originally meant to modify.
 * Finally clean up your local branch by rewinding to either ``origin/master`` or ``origin/release-N``  ::
 
@@ -68,7 +68,7 @@ since your local history may be different from remote history.
 How to get changes from a release branch to master?
 ---------------------------------------------------
 
-Visit https://gitlab.com/dirac/dirac/-/merge_requests/new, select the release branch as "Source branch",
+Visit https://gitlab.com/dirac/dirac-private/-/merge_requests/new, select the release branch as "Source branch",
 verify that "Target branch" is the `master` branch, then click the green button "Compare branches and continue".
 
 Scroll down and have a look at the commits whether the changes to be merged are what you expected. Abort if this

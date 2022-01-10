@@ -26,6 +26,7 @@ if(ENABLE_EXATENSOR)
    talsh_cholesky_integrals.F90
    talsh_common_routines.F90
    talsh_gradient.F90
+   talsh_triples.F90
    talsh_cc.F90
    talsh_mp2lap.F90
    talsh_mp2no.F90

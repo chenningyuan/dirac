@@ -745,19 +745,35 @@ module talsh_common_routines
       
       type(talsh_tens_t), intent(inout) :: tensor
       real(8), intent(in)               :: factor
-      real(8), intent(in)               :: orb1(:),orb2(:),orb3(:)
-      real(8), intent(in), optional     :: orb4(:),orb5(:),orb6(:)
+      real(8), intent(in)               :: orb1(:),orb2(:)
+      real(8), intent(in), optional     :: orb3(:),orb4(:),orb5(:),orb6(:)
       
       integer(INTD)       :: ierr, rank
-      integer(INTD)       :: dims3(1:3),dims4(1:4),dims6(1:6)
+      integer(INTD)       :: dims2(1:2),dims3(1:3),dims4(1:4),dims6(1:6)
       integer(INTD)       :: p, q, r, s, t, u
       type(C_PTR)         :: body_p
+      complex(8), pointer :: tens2(:, :)
       complex(8), pointer :: tens3(:, :, :)
       complex(8), pointer :: tens4(:, :, :, :)
       complex(8), pointer :: tens6(:, :, :, :, :, :)
 
       rank=talsh_tensor_rank(tensor)
-      if (rank.eq.3) then
+
+      if (rank.eq.2) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims2)
+         if (size(orb1).ne.dims2(1)) stop 'error in laplace_mult: vector 1 wrong size'
+         if (size(orb2).ne.dims2(2)) stop 'error in laplace_mult: vector 2 wrong size'
+
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens2,dims2)
+
+         do r = 1, dims2(2)
+           do p = 1, dims2(1)
+               tens2(p,r) = tens2(p,r) * DEXP(-(orb1(p)+orb2(r))*factor)
+           end do
+         end do
+
+      else if (rank.eq.3) then
          ierr = talsh_tensor_dimensions(tensor,rank,dims3)
          if (size(orb1).ne.dims3(1)) stop 'error in laplace_mult: vector 1 wrong size'
          if (size(orb2).ne.dims3(2)) stop 'error in laplace_mult: vector 2 wrong size'
@@ -769,7 +785,7 @@ module talsh_common_routines
          do r = 1, dims3(3)
            do q = 1, dims3(2)
              do p = 1, dims3(1)
-               tens3(p,q,r) = tens3(p,q,r) * EXP(-(orb1(p)+orb2(q)+orb3(r))*factor)
+               tens3(p,q,r) = tens3(p,q,r) * DEXP(-(orb1(p)+orb2(q)+orb3(r))*factor)
              end do
            end do
          end do
@@ -788,7 +804,7 @@ module talsh_common_routines
             do r = 1, dims4(3)
                do q = 1, dims4(2)
                   do p = 1, dims4(1)
-                     tens4(p,q,r,s) = tens4(p,q,r,s) * EXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s))*factor)
+                     tens4(p,q,r,s) = tens4(p,q,r,s) * DEXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s))*factor)
                   end do
                end do
             end do
@@ -813,7 +829,7 @@ module talsh_common_routines
                  do q = 1, dims6(2)
                    do p = 1, dims6(1)
                      tens6(p,q,r,s,t,u) = tens6(p,q,r,s,t,u) * &
-                     EXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s)+orb5(t)+orb6(u))*factor)
+                     DEXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s)+orb5(t)+orb6(u))*factor)
                    end do
                  end do
                end do

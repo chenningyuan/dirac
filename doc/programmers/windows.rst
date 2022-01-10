@@ -96,7 +96,7 @@ assuming that the PuTTy package is placed in the default installation space: ::
 
 Also, before using *"git"* refresh your private key in your computer's cache, use ::
 
-  "C:\Program Files (x86)\PuTTY\plink.exe" -agent git@gitlab.com:dirac/dirac.git
+  "C:\Program Files (x86)\PuTTY\plink.exe" -agent git@gitlab.com:dirac/dirac-private.git
   plink -agent git@bitbucket.org
 
 For comfortable commits with the git version control system you should set up the editor.

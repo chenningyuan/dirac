@@ -92,4 +92,4 @@ Because of many basis set files (more than 300) one can not expect all of them w
 
 There are cases of wrong basis sets. For example, 
 the proton number can not be extracted from "basis_dalton/aug-pc-0_emsl".
-For more info about that, see the DIRAC `issue <https://gitlab.com/dirac/dirac/issues/250>`_. 
+For more info about that, see the DIRAC `issue <https://gitlab.com/dirac/dirac-private/issues/250>`_. 
