@@ -1,23 +1,18 @@
 !#define DEBUG_SOC
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 !
 !
@@ -46,6 +41,7 @@ module xamfi_utils
 
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
+  public dump_4c_c1_dens
   public read_normalized_2e_soc
   public xamfi_get_energy_correction
   public hello_xamfi
@@ -286,6 +282,147 @@ contains
 
   end subroutine dump_normalized_2e_soc
 !----------------------------------------------------------------------
+#define DEBUG_SOC
+  subroutine dump_4c_c1_dens(                            &
+    Dmat,                       &
+    nrow,                       &
+    ncol,                       &
+    nz,                         &
+    nr_2e_fock_matrices,        &
+    x_nopen,                    &
+    x_dfopen,                   &
+    file_base,                  &
+    element,                    &
+    fh,                         &
+    final_dump                  &
+   )
+!----------------------------------------------------------------------
+!
+!    purpose: dump (atomic 4c) density matrix in C1 symmetry
+!
+!----------------------------------------------------------------------
+use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
+          aoo_bs_irrep_mat, aoo_pointer_quat,&
+          aoo_iqmult_trip_q, aoo_cb_uq_to_pq
+#ifdef DEBUG_SOC
+use x2c_utils, only: print_x2cmat
+#endif
+real*8 , intent(inout)        :: Dmat(nrow,ncol,nz,nr_2e_fock_matrices)
+integer, intent(in)           :: nrow
+integer, intent(in)           :: ncol
+integer, intent(in)           :: nz
+integer, intent(in)           :: nr_2e_fock_matrices
+integer, INTENT(IN)           :: x_nopen
+real*8 , INTENT(IN)           :: x_dfopen(0:x_nopen)
+integer, intent(in)           :: fh
+integer, intent(in)           :: element
+character (len=8), intent(in) :: file_base
+logical, intent(in)           :: final_dump
+!----------------------------------------------------------------------
+integer                       :: i, irep, iz, iq, ipar, irepd, ipq, j, k
+character (len=3)             :: file_extension
+character (len=12)            :: file_name
+real*8, ALLOCATABLE           :: Dmat_c1(:,:,:)
+integer, PARAMETER            :: nzc1 = 4
+!----------------------------------------------------------------------
+
+!   determine full file name
+write(file_extension,'(i3)') element
+do i = 1, 3
+if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
+end do
+write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
+
+!   dump (fooc) density matrix on file
+open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
+access='sequential',action="readwrite",position='rewind')
+
+!> Start by constructing a fractional occupation density (eqivalent to what is used in an atomic start guess)
+!> that is, add active density matrices to closed-shell density matrix
+do i = 1,x_nopen
+  call daxpy(nrow*ncol*nz,x_dfopen(i),Dmat(1,1,1,i+1),1,Dmat(1,1,1,1),1)
+end do
+
+if(final_dump)then
+allocate(Dmat_c1(nrow,ncol,nzc1)); Dmat_c1 = 0  
+#ifdef DEBUG_SOC
+call print_x2cmat(Dmat, &
+nrow,                   &
+ncol,                   &
+nz,                     &
+aoo_cb_pq_to_uq(1,0),   &
+'aoosoc - DMAT 0',      &
+6                       &
+)
+#endif
+
+! a. insert phases
+IREP=0
+IF (NZ < 4) THEN
+DO  IZ = 1, NZ                                                 
+IQ = aoo_cb_pq_to_uq(IZ,IREP)                                       
+CALL Q2BPHASE('D',IQ,1,Dmat(1,1,iz,1))
+END DO            
+END IF
+#ifdef DEBUG_SOC
+call print_x2cmat(Dmat,                  &
+nrow,                   &
+ncol,                   &
+nz,                     &
+aoo_cb_pq_to_uq(1,0),   &
+'aoosoc - DMAT a',      &
+6                       &
+)
+#endif       
+
+! b. transform to unsorted SO-AO basis
+call bstobu_no_work(Dmat,nz)
+
+#ifdef DEBUG_SOC
+call print_x2cmat(Dmat, &
+nrow,                   &
+ncol,                   &
+nz,                     &
+aoo_cb_pq_to_uq(1,0),   &
+'aoosoc - DMAT b',      &
+6                       &
+)
+#endif
+
+! c. transform from unsorted SO-AO basis to AO (C1* symmetry) basis
+IPAR = aoo_bs_to_fs(IREP,1)
+DO IZ = 1, nzc1
+IREPD = aoo_bs_irrep_mat(IZ,IREP)
+IQ    = aoo_iqmult_trip_q(1,aoo_pointer_quat(IREPD,IPAR),IZ)
+IPQ   = aoo_cb_uq_to_pq(IQ,IREP)
+CALL DTSOAO(Dmat(1,1,IPQ,1),     &
+Dmat_c1(1,1,IZ),   &
+nrow,IREPD,0)
+END DO
+
+#ifdef DEBUG_SOC
+call print_x2cmat(Dmat_c1, &
+nrow,                      &
+ncol,                      &
+nzc1,                      &
+aoo_cb_pq_to_uq(1,0),      &
+'aoosoc - DMAT c',         &
+6                          &
+)
+#undef DEBUG_SOC
+#endif
+
+write(fh) nrow, ncol, nzc1
+write(fh) Dmat_c1
+DEALLOCATE(Dmat_c1)
+else !> final_dump
+write(fh) nrow, ncol, nz
+write(fh) Dmat
+end if
+close(fh,status='keep')
+
+end subroutine dump_4c_c1_dens
+!----------------------------------------------------------------------
 
   subroutine read_normalized_2e_soc(                            &
                                     Gmat,                       &
@@ -416,7 +553,7 @@ contains
     use mpi
 #endif
 
-    character*(*), inten(in) :: text
+    character*(*), intent(in) :: text
 
 #ifdef VAR_MPI
     print *, text

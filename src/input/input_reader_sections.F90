@@ -2182,7 +2182,7 @@
          aoo2ediag = .true.
       end if
 
-      if (kw_matches(word, '.eamf')) then
+      if (kw_matches(word, '.eamf  ')) then
          aoomod    = .true.
          aooeamf   = .true.
       end if
