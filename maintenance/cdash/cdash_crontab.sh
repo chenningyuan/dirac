@@ -51,7 +51,7 @@ mkdir -p $CTEST_TEMP_DIR
 
 export DIRAC_TMPDIR=$CTEST_TEMP_DIR/run
 
-ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac.git $CTEST_TEMP_DIR/compile"
+ssh-agent bash -c "ssh-add ${DEPLOY_KEY}; git clone --recursive -b $BRANCH git@gitlab.com:dirac/dirac-private.git $CTEST_TEMP_DIR/compile"
 
 cd $CTEST_TEMP_DIR/compile
 if [ $MAKE_RELEASE -eq 1 ]; then
