@@ -239,28 +239,23 @@ C
       IF (LBIT(IFLAG,I)) THEN
         DO 20 IFRP = 1,NFSYM
           IF (I.EQ.1) THEN
-            ITEST  = NISH(IFRP)
             ISTART = NPSH(IFRP)+1
             ILOOP  = NISH(IFRP)
           ELSEIF (I.EQ.2) THEN
-            ITEST  = NASH(IFRP)
             ISTART = NPSH(IFRP)+NISH(IFRP)+1
             ILOOP  = NASH(IFRP)
           ELSEIF (I.EQ.3) THEN
-            ITEST  = NSSH(IFRP)
             ISTART = NPSH(IFRP)+NISH(IFRP)+NASH(IFRP)+1
             ILOOP  = NSSH(IFRP)
           ELSEIF (I.EQ.4) THEN
-            ITEST  = NPSH(IFRP)
             ISTART = 1
             ILOOP  = NPSH(IFRP)
           ELSEIF (I.EQ.5) THEN
-            ITEST  = NORB(IFRP)
             ISTART = 1
             ILOOP  = NORB(IFRP)
           ENDIF
-          IF (ITEST.EQ.0) GOTO 20
-CMI ... inserted control print-out of variables
+          ITEST = ITEST + ILOOP
+          IF (ILOOP.EQ.0) GOTO 20
           IF (IPRINT.GE.10) THEN
            WRITE(LUPRI,'(/,8X,A,/)')
      &     '* Output from GENDEN:  before calling DENST1'
@@ -280,11 +275,11 @@ CMI ... inserted control print-out of variables
           CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
      &              D1,FAC,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
      &              ISTART,ILOOP,NFBAS(IFRP,0))
- 20    CONTINUE
-      IF (ITEST.NE.0) FAC= D1
+ 20     CONTINUE
+        IF(ITEST.NE.0) FAC= D1
       ENDIF
  10   CONTINUE
-      IF (IPRINT.GE.10) THEN
+CTROND      IF (IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/,8X,A,/)') '* Output from GENDEN:'
         DO I = 1,6
         IF (LBIT(IFLAG,I)) THEN
@@ -315,7 +310,7 @@ CMI ... inserted control print-out of variables
      &              NFBAS(IFRP,0),NFBAS(IFRP,0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
-      END IF
+CTROND      END IF
 
 C
 C   
