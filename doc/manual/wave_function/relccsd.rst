@@ -510,6 +510,8 @@ Note this value does not have to be the same as for the definition of the frozen
 
 In addition to this, users should make sure to enable root following (see :ref:`CCDIAG_.OVERLAP`) if they want to target states with dominant singly ionized or singly excited character.
 
+When each edge is energetically far apart (e.g., K and L1 edge of heavy elements), one should calculate different edges separately. Otherwise, convergence would not be obtained.
+One can consult with the restart option :ref:`*CCRESTART` for this.
 
 *Example:* requests that all spinors with energies below -10.0 a.u. are considered to be core::
 
