@@ -57,8 +57,6 @@ C
 C
       CALL QENTER('TWOFCK')
 #include "memint.h"
-      iprint_save = iprint
-      !iprint = 5
 C
       IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -267,7 +265,6 @@ C
         ENDIF
       ENDDO
       CALL QEXIT('TWOFCK')
-      iprint = iprint_save
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

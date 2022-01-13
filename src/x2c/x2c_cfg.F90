@@ -57,6 +57,7 @@ module x2cmod_cfg
                                                                  ! but i think it's much nicer (more intuitive name for programmers) 
                                                                  ! to have this logical on the outside of the X2Cmod - stefan, may 2011
   logical, public :: x2c_fock_saao_basis              =  .false.
+  logical, public :: x2c_isDFT                        =  .false.
 
 ! real(8) block
   real(8), public :: x2c_cspeed                       = 0.0d0

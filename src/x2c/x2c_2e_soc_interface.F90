@@ -29,6 +29,7 @@ module x2c_2e_soc_interface
   use picture_change_operations
 #ifdef MOD_XAMFI
   use xamfi_driver
+  use x_fock, only: get_x_fock
 #endif
 
   implicit none
@@ -39,6 +40,7 @@ module x2c_2e_soc_interface
 
   public x2c_add_2e_so_corrections
   public x2c_add_2e_diagonal_atomic
+  public x2c_add_2e_from_atomic_dens
 
   private
 
@@ -70,6 +72,8 @@ contains
                                        x2c_file_amf,            &
                                        x2c_file_glb,            &
                                        cspeed,                  &
+                                       ioff_aomat_x,            &
+                                       isDFT,                   &
                                        print_lvl)
 !**********************************************************************
 !
@@ -97,6 +101,7 @@ contains
      integer, intent(in)     :: iqmult_trip_q(4,4,4)
      integer, intent(in)     :: quat_pointer(0:7,2)
      integer, intent(in)     :: quat_pointer_op(0:7)
+     integer, intent(in)     :: ioff_aomat_x(nfsym,nfsym)
      integer, intent(in)     :: x2c_file_amf
      integer, intent(in)     :: x2c_file_glb
      integer, intent(in)     :: is_len_wrk
@@ -107,12 +112,13 @@ contains
      integer, intent(in)     :: amfi_order_contrib
      integer, intent(in)     :: print_lvl
      logical, intent(in)     :: spherical_on
+     logical, intent(in)     :: isDFT
 !----------------------------------------------------------------------
      integer                 :: i
 !**********************************************************************
  
        if(x2c_add_amfi == 1)then
-!        interface to "old" AMFI (by B. Schimmelpfennig)
+!        interface to "old" AMFI (AMFI was written by the late B. Schimmelpfennig)
          call x2c_interface2old_amfi(naosh_ls,             &
                                      nr_ao_L,              &
                                      naosh_all,            &
@@ -160,7 +166,11 @@ contains
                                    spherical_on,         &
                                    x2c_file_amf,         &
                                    x2c_file_glb,         &
-                                   print_lvl)
+                                   (x2c_add_amfi == 3),  &
+                                   ioff_aomat_x,         &
+                                   isDFT,                &
+                                   10)
+                                   !print_lvl)
 
 #else
          call quit('unknown 2e-SOC interface in x2c module')
@@ -525,26 +535,53 @@ contains
                                   spherical_on,          &
                                   x2c_file_amf,          &
                                   x2c_file_glb,          &
+                                  DOeamf,                &
+                                  ioff_aomat_x,          &
+                                  isDFT,                 &
                                   print_lvl)   
 !**********************************************************************
 !
-!    purpose: interface routine to th oo-order 2e-SOC module written by S. Knecht 
-!             and friends. 
+!    purpose: interface to the (extended) atomic-mean-field picture-change error-correction (PCE)
+!             module. The PCE corrections comprise two-electron scalar- as well as spin-orbit  
+!             contributions.
+!             This work is published in XXX (2022).
+!
+!              amf: atomic mean-field (Algorithm 1 in XXX)
+!             eamf: extended atomic mean-field (Algorithm 2 in XXX)
 !
 !             the outline of this routine may be sketched as follows:
+!      IF
+!             eamf:
+!             =====
 !
-!             1. retrieve 2e-SOC from file
+!      ELSE
+!              amf:
+!             =====
+!             for ATOM in MOLECULE
+!             do
+!                    retrieve amf corrections from file (assumed to be in C1*)
+!                    add atomic block in molecular matrix 
+!             done
+!                                                                           
+!             transform the molecular matrix (C1* symmetry) to actual symmetry
 !   "saw"   /   a. transform from simple AO basis to Hermit-sorted SO-AO basis
 !  -------  \   b. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
 !            \  c. insert quaternion phases
-!             2. read h1_++_saao_cartesian_gaussian from file X2Camfi_scr (in ++ form but 4c-format retained)
-!             3. pick out LL block
-!             4. save h1_++_LL_saao_cartesian_gaussian to file X2CMAT (only LL-block retained)
 !
-!             partly written on the transatlantic flight from Buenos Aires to Paris ...
+!      END IF
+!             
+!             common:
+!             =======
+
+!             1. read h1_++_saao_cartesian_gaussian from file X2Camfi_scr (in ++ form but the 4c-format was kept)
+!             2. pick out ++ block
+!             3. add (e)amf corrections to h1 and save the final h1_++_LL_saao_cartesian_gaussian to file X2CMAT 
+!                (only the ++ block will be kept)
+!
+!             rewritten by S. Knecht, Jan 2022 (first draft from Sep 2014?)
 !
 !----------------------------------------------------------------------
-     real(8), intent(in)             :: cspeed
+     real*8 , intent(in)             :: cspeed
      integer, intent(in)             :: naosh_ls
      integer, intent(in)             :: nr_ao_L
      integer, intent(in)             :: naosh_all(nfsym)
@@ -557,6 +594,7 @@ contains
      integer, intent(in)             :: bs_irrep_mat(4,0:7)
      integer, intent(in)             :: iqmult_trip_q(4,4,4)
      integer, intent(in)             :: quat_pointer(0:7,2)
+     integer, intent(in)             :: ioff_aomat_x(nfsym,nfsym)
      integer, intent(in)             :: x2c_file_amf
      integer, intent(in)             :: x2c_file_glb
      integer, intent(in)             :: is_len_wrk
@@ -567,11 +605,14 @@ contains
      integer, intent(in)             :: amfi_order_contrib
      integer, intent(in)             :: print_lvl
      logical, intent(in)             :: spherical_on
+     logical, intent(in)             :: DOeamf
+     logical, intent(in)             :: isDFT
 !--------------------------------------------------------------
-     real(8), allocatable            :: scr1_mat(:)
-     real(8), allocatable            :: scr2_mat(:)
-     real(8), allocatable            :: scr3_mat(:)
-     real(8), allocatable            :: wrk(:)
+     real*8 , allocatable            :: scr1_mat(:)
+     real*8 , allocatable            :: scr2_mat(:)
+     real*8 , allocatable            :: scr3_mat(:)
+     real*8 , allocatable            :: scr4_mat(:)
+     real*8 , allocatable            :: wrk(:)
      integer, allocatable            :: aooso_info(:)
      integer                         :: i
      integer                         :: j
@@ -586,26 +627,236 @@ contains
      integer                         :: center_total
      integer                         :: lwrk
      integer                         :: wf_components
+     integer                         :: ioff_U
+     integer                         :: op_fer_rep
      INTEGER, PARAMETER              :: nzc1 = 4
      character (len=12)              :: flabel
 !**********************************************************************
  
 !      allocate scratch space
        allocate(scr1_mat(naosh_ls*naosh_ls*nzc1),scr2_mat(naosh_ls*naosh_ls*nzc1),&
-                scr3_mat(nr_ao_L*nr_ao_L*nzc1))
+                scr3_mat(naosh_ls*naosh_ls*nzc1))
        scr1_mat = 0; scr2_mat = 0; scr3_mat = 0
 
-!      -------------------------------------------------------------------------------
-!      step 1. read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
-!      -------------------------------------------------------------------------------
+       lwrk = is_len_wrk;
+
+       if(.not.DOeamf)then ! amf
+
+!             ----------------------------------------------------------------------
+!             read and distribute amf contributions for symmetry independent centers
+!             ----------------------------------------------------------------------
+!             out: atomic-wise amf corrections in molecular matrix -> scr1_mat
+
+              allocate(aooso_info(naosh_ls))
+
+              center_total = 1
+              scr1_mat     = 0
+
+              !> a. read contributions for symmetry independent centers
+              do i = 1, nuclei_type
+
+!             count the number of basis functions for center_total
+              call labcount(ncols_frag,aooso_info,nr_ao_L,1,-1,center_total,1,-1)
+              nrows_frag = ncols_frag
+
+#ifdef MOD_XAMFI
+              !> read X-AMFI contributions (assumed to be exported in C1 symmetry)
+              call put_xamfi_correction(                &
+                                        scr1_mat,       &
+                                        nr_ao_L,        &
+                                        nrows_frag,     &
+                                        ncols_frag,     &
+                                        nzc1,           &
+                                        i,              &
+                                        center_total,   &
+                                        print_lvl       &
+                                       )
+#else
+              call quit('X-AMFI not avaliable in this version.')
+#endif
+              end do
+
+              !> set offsets in atomic basis to two-component mode
+              IPREAD  = IPREAD - 10000
+              TWOCOMP = .TRUE.
+              RDINPC  = .FALSE.
+              CALL READIN(.FALSE.)
+              CALL SETDC1(IPREAD)
+              call getlab(ipread)
+
+!             b. transform from AO-basis (C1* symm sorted) to SO-AO basis (symmetry-ordered)
+!             ------------------------------------------------------------------------------
+!             in : xamfi_AO    -> scr1_mat
+!             out: xamfi-SO-AO -> scr3_mat
+              i = op_bs_to_fs(0,1)
+              do iz = 1, nzc1
+              irepd = bs_irrep_mat(iz,0)
+              iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+              ipq   = iqp_off_in(iq,0)
+              call mtaoso(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
+                          scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
+                          nr_ao_L,                                  &
+                          irepd,                                    &
+                          print_lvl)
+              end do
+
+!             c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!             -----------------------------------------------------------
+              call butobs_no_work(scr3_mat,nz)
+
+!             d. insert quaternion phase factors
+!             ----------------------------------
+              if(nz < 4)then
+                 do iz = 1, nz                                                
+                     iq = ipq_off_in(iz,0)
+                     call q2bphase('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
+                 end do           
+              end if          
+
+              !> restore offsets in atomic basis to four-component mode (for now)
+              TWOCOMP = .FALSE.
+              CALL READIN(.FALSE.)
+              CALL SETDC1(IPREAD)
+              call getlab(ipread)
+ 
+              IPREAD = IPREAD + 10000
+
+!             debug print
+              if(print_lvl > 2)then
+                call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - amf contributions',6)
+              end if
+              deallocate(aooso_info)
+       
+       else ! eamf
+
+              !> our correction term is \Delta F^{2c,2e} = { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++} -  F^{2c,2e}[D^{2c}_(+)atoms]
+
+              !> to save memory we start with the second term: F^{2c,2e}[D^{2c}_(+)atoms]
+!                                                              --------------------------
+              !> set offsets in atomic basis to two-component mode
+              IPREAD  = IPREAD - 10000
+              TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.
+              RDINPC  = .FALSE.
+              CALL READIN(.FALSE.)
+              CALL SETDC1(IPREAD)
+              call getlab(ipread)
+
+              allocate(scr4_mat(nr_ao_L*nr_ao_L*nz)); scr4_mat = 0
+#ifdef MOD_XAMFI
+              ! returns F^{2c,2e}[D^{2c}_(+)atoms] in scr4_mat
+              call x2c_add_2e_from_atomic_dens(scr4_mat,                          &
+                                               nr_ao_L,                           &
+                                               nz,                                &
+                                               bs_irrep_mat,                      &
+                                               ipq_off_in,                        &
+                                               iqp_off_in,                        &
+                                               iqmult_trip_q,                     &
+                                               op_bs_to_fs,                       &
+                                               quat_pointer,                      &
+                                               nuclei_totnum,                     &
+                                               nuclei_type,                       &
+                                               2,                                 & ! Xc-mode
+                                               lwrk,                              & ! lwrk
+                                               isDFT,                             & ! add XC potential (DFT)
+                                               print_lvl)
+#else
+              call quit('X-AMFI not avaliable in this version.')
+#endif
+
+!             debug print
+              if(print_lvl > 2)then
+                call print_x2cmat(scr4_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - eamf term 2 contributions',6)
+              end if
+
+              !> restore offsets in atomic basis to four-component mode (for now)
+              TWOCOMP = .FALSE.; TWOCOMPBSS = .FALSE.
+              CALL READIN(.FALSE.)
+              CALL SETDC1(IPREAD)
+              call getlab(ipread)
+ 
+              IPREAD = IPREAD + 10000
+
+              !> first term: { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++}
+              
+  !           !> read the U matrix
+              ioff_U = 1
+              do i = 1, nfsym
+                write(flabel,'(a11,i1)') 'pctmtAO   1',i
+                if(naosh_all(i) * naosh_L(i) > 0)then
+                  call x2c_read(flabel,scr2_mat(ioff_U),naosh_all(i) * naosh_L(i)*nz,x2c_file_glb)
+                end if
+                ioff_U = ioff_U + naosh_all(i) * naosh_L(i) * nz
+              end do
+
+              !> read F^{4c,2e}[D^{4c}_(+)atoms]
+              open(103,file='eamfX2C_F4c',status='old',form='unformatted',  &
+                   access='sequential',action="readwrite",position='rewind')
+              read(103) scr3_mat(1:naosh_ls*naosh_ls*nz)
+              close(103,status='keep')
+
+              !> picture-change transformation { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++}
+              op_fer_rep = 0
+
+              call perform_pct_saao_bas(scr3_mat,                     & ! on output: { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++}
+                                        scr2_mat,                     & ! U
+                                        scr1_mat,                     & ! scratch
+                                        naosh_ls,                     &
+                                        nr_ao_L,                      &
+                                        naosh_all,                    &
+                                        naosh_L,                      &
+                                        nfsym,                        &
+                                        nz,                           &
+                                        ipq_off_in,                   &
+                                        ioff_aomat_x,                 &
+                                        op_fer_rep,                   &
+                                        op_bs_to_fs,                  &
+                                        .true.,                       &
+                                        print_lvl)
+
+!             debug print
+              if(print_lvl > 2)then
+                call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - eamf term 1 contributions',6)
+              end if
+
+              !> - second term + first term => complete eamf PCE correction
+              call daxpy(nr_ao_L*nr_ao_L*nz,-1.0d0,scr4_mat,1,scr3_mat,1);
+              deallocate(scr4_mat);
+!             debug print
+              if(print_lvl > 2)then
+                call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - eamf contributions',6)
+              end if
+
+       end if
+
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+       open(99,file='soc-contributions',status='replace',form='formatted',  &
+       access='sequential',action="readwrite",position='rewind')
+
+       call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',99)
+       close(99,status='keep')
+#undef DEBUG_SOC
+#endif
+
+       open(99,file='XAMFI-ss-soc-contributions',status='replace',form='unformatted',  &
+       access='sequential',action="readwrite",position='rewind')
+
+       write(99) scr3_mat(1:nr_ao_L*nr_ao_L*nz)
+       close(99,status='keep') 
+
+!      -------------------------------------------------------------------------
+!      read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
+!      -------------------------------------------------------------------------
+
+       scr2_mat = 0; scr1_mat = 0;
 
        i = 0; j = 0
        write(flabel,'(a7,i4,i1)') 'h12cAOa',1,i
        call x2c_read(flabel,scr1_mat,naosh_ls*naosh_ls*nz,x2c_file_amf)
 
-!      --------------------------------------------------------
-!      step 2. select LL-block of h1_++_saao_cartesian_gaussian
-!      --------------------------------------------------------
+!      -----------------------------------------------------------
+!      select ++ block of h1_++_saao_cartesian_gaussian -> h1_{2c}
+!      -----------------------------------------------------------
 !          in: scr1_mat
 !         out: scr2_mat
        call pick_LL_block_saao_bas(scr1_mat,            &
@@ -620,139 +871,28 @@ contains
                                    op_bs_to_fs)
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 wo aoosoc contribution',6)
+         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 w/o (e)amf contribution',6)
        end if
 
-!      ---------------------------------------------------------------------------------
-!      step 3. read and distribute aoosoc contributions for symmetry independent centers
-!      ---------------------------------------------------------------------------------
-!        out: aoosoc  -> scr1_mat
-
-       allocate(aooso_info(naosh_ls))
-
-       center_total = 1
-       scr1_mat     = 0
-
-       !> a. read contributions for symmetry independent centers
-       do i = 1, nuclei_type
-
-!        count the number of basis functions for center_total
-         call labcount(ncols_frag,aooso_info,nr_ao_L,1,-1,center_total,1,-1)
-         nrows_frag = ncols_frag
-
-#ifdef MOD_XAMFI
-         !> read X-AMFI contributions (assumed to be exported in C1 symmetry)
-         call put_xamfi_correction(                &
-                                   scr1_mat,       &
-                                   nr_ao_L,        &
-                                   nrows_frag,     &
-                                   ncols_frag,     &
-                                   nzc1,           &
-                                   i,              &
-                                   center_total,   &
-                                   print_lvl       &
-                                  )
-#else
-         call quit('X-AMFI not avaliable in this version.')
-#endif
-       end do
-
-       !> reset offsets in atomic basis to two-component mode
-       IPREAD  = IPREAD - 10000
-       TWOCOMP = .TRUE.
-       RDINPC  = .FALSE.
-       CALL READIN(.FALSE.)
-       CALL SETDC1(IPREAD)
-       call getlab(ipread)
-
-!      b. transform from AO-basis (C1* symm sorted) to SO-AO basis (symmetry-ordered)
-!      ------------------------------------------------------------------------------
-!        in : xamfi_AO    -> scr1_mat
-!        out: xamfi-SO-AO -> scr3_mat
-       i = op_bs_to_fs(0,1)
-       do iz = 1, nzc1
-         irepd = bs_irrep_mat(iz,0)
-         iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
-         ipq   = iqp_off_in(iq,0)
-         call mtaoso(scr1_mat(1+(nr_ao_L*nr_ao_L*(iz-1))),     &
-                     scr3_mat(1+(nr_ao_L*nr_ao_L*(ipq-1))),    &
-                     nr_ao_L,                                  &
-                     irepd,                                    &
-                     print_lvl)
-       end do
-
-!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
-!      -----------------------------------------------------------
-       call butobs_no_work(scr3_mat,nz)
-
-!      d. insert quaternion phase factors
-!      ----------------------------------
-       if(nz < 4)then
-         do iz = 1, nz                                                
-           iq = ipq_off_in(iz,0)
-           call q2bphase('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
-         end do           
-       end if          
-
-       !> restore offsets in atomic basis to four-component mode (for now)
-       TWOCOMP = .FALSE.
-       CALL READIN(.FALSE.)
-       CALL SETDC1(IPREAD)
-       call getlab(ipread)
-       !> reset NEWPRP to re-initialize AOPROPER
-!      newprp = .true.
-!      call lset(nprpcls,.true.,clscal)
-!      lwrk = is_len_wrk - 3*(naosh_ls*naosh_ls*4)
-!      allocate(wrk(lwrk))
-!      call onegen(wrk,lwrk)
-!      deallocate(wrk)
-
-       IPREAD = IPREAD + 10000
-
-!      debug print
-       if(print_lvl > 2)then
-         call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',6)
-       end if
-
-#ifdef DEBUG_SOC
-       open(99,file='soc-contributions',status='replace',form='formatted',  &
-       access='sequential',action="readwrite",position='rewind')
-
-       call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - X-AMFI contribution',99)
-       close(99,status='keep')
-#endif
-
-       open(99,file='XAMFI-ss-soc-contributions',status='replace',form='unformatted',  &
-       access='sequential',action="readwrite",position='rewind')
-
-       write(99) scr3_mat(1:nr_ao_L*nr_ao_L*nz)
-       close(99,status='keep')
-
-       deallocate(aooso_info)
-
-!      -----------------------------------------
-!      step 4. add XAMFI-SO contributions to h1_2c
-!      -----------------------------------------
-
+!      -----------------------------------
+!      add (e)amf contributions to h1_{2c}
+!      -----------------------------------
        call daxpy(nr_ao_L*nr_ao_L*nz,1.0d0,scr3_mat,1,scr2_mat,1)
 
 !      debug print
        if(print_lvl > 2)then
-         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 + XAMFI contribution',6)
+         call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h1 + (e)amf contributions',6)
        end if
 
-!      -------------------------------------------------------------
-!      step 5. write h1_++_LL_saao_cartesian_gaussian to file X2CMAT 
-!      -------------------------------------------------------------
-
+!      ----------------------------
+!      write h1_{2c} to file X2CMAT 
+!      ----------------------------
        i = 0
        j = 0
        write(flabel,'(a7,i4,i1)') 'h12cAOA',1,i
 
-
        if(spherical_on)then
 
-         lwrk = is_len_wrk
          allocate(wrk(lwrk))
          call sph_iotc(scr2_mat,scr1_mat,nr_sph,print_lvl,wrk,lwrk)
          deallocate(wrk)
@@ -762,7 +902,7 @@ contains
 
 !        debug print
          if(print_lvl > 2)then
-           call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+ooSO',6)
+           call print_x2cmat(scr2_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - h12c+amf',6)
          end if
 
          call x2c_write(flabel,scr2_mat,nr_ao_L**2 * nz,x2c_file_glb)
@@ -844,7 +984,7 @@ call print_x2cmat(h1_4c_defining,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - defining
 end if
 
 !      ---------------------------------------------------------------------------------
-!      step 3. read and distribute aoosoc contributions for symmetry independent centers
+!      step 1. read and distribute aoosoc contributions for symmetry independent centers
 !      ---------------------------------------------------------------------------------
 !        out: atomic 2e-mean field blocks  -> scr1_mat
 
@@ -914,7 +1054,7 @@ end if
 deallocate(aooso_info)
 
 !      -----------------------------------------
-!      step 4. add XAMFI-SO contributions to h1_2c
+!      step 2. add XAMFI-SO contributions to h1_2c
 !      -----------------------------------------
 
 call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr2_mat,1,h1_4c_defining,1)
@@ -928,7 +1068,206 @@ end if
 deallocate(scr1_mat,scr2_mat)
 
 end subroutine x2c_add_2e_diagonal_atomic
+!**********************************************************************
+
+subroutine x2c_add_2e_from_atomic_dens(&
+       h1_Xc,                 &
+       naosh_ls,              &
+       nz,                    &
+       bs_irrep_mat,          &
+       ipq_off_in,            &
+       iqp_off_in,            &
+       iqmult_trip_q,         &
+       op_bs_to_fs,           &
+       quat_pointer,          &
+       nuclei_totnum,         &
+       nuclei_type,           &
+       xcmode,                &
+       lwrk,                  &
+       isDFT,                 &
+       print_lvl)   
+!**********************************************************************
+!
+!    purpose: interface routine to add 2e-molecular mean field contributions to an arbitrary h1 (could be 0)
+!             calculated from a superposition of Xc [X=2,4] atomic densities
+!
+!             the outline of this routine may be sketched as follows:
+!
+!             1. retrieve atomic densities D^Xc_atom from file
+!             2. form molecular density D^Xc_(+)atoms as superposition of atomic densities: D^Xc_(+)atoms = (+) D^Xc_atom
+!   "saw"   /   a. transform from simple AO basis to Hermit-sorted SO-AO basis
+!  -------  \   b. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
+!            \  c. insert quaternion phases
+!             4. compute Fock matrix F^{Xc,2e}[D^Xc_(+)atoms]
+!             5. add F^{Xc,2e}D^Xc_(+)atoms] to h1_Xc
+! 
+!
+!----------------------------------------------------------------------
+real*8,  INTENT(INOUT)          :: h1_Xc(*)
+integer, intent(in)             :: naosh_ls
+integer, intent(in)             :: nz
+integer, intent(in)             :: ipq_off_in(4,0:7)
+integer, intent(in)             :: iqp_off_in(4,0:7)
+integer, intent(in)             :: op_bs_to_fs(0:7,1:2)
+integer, intent(in)             :: bs_irrep_mat(4,0:7)
+integer, intent(in)             :: iqmult_trip_q(4,4,4)
+integer, intent(in)             :: quat_pointer(0:7,2)
+integer, intent(in)             :: nuclei_totnum
+integer, intent(in)             :: nuclei_type
+integer, intent(in)             :: xcmode
+integer, intent(in)             :: lwrk
+integer, intent(in)             :: print_lvl
+logical, intent(in)             :: isDFT
+!--------------------------------------------------------------
+real*8 , allocatable            :: scr1_mat(:), scr2_mat(:)
+integer, allocatable            :: aooso_info(:)
+integer                         :: i, lwrk_
+integer                         :: j
+integer                         :: iq
+integer                         :: ipq
+integer                         :: iz
+integer                         :: irepd
+integer                         :: nsphcm
+integer                         :: nr_sph
+integer                         :: nrows_frag
+integer                         :: ncols_frag
+integer                         :: center_total
+integer                         :: wf_components
+INTEGER, PARAMETER              :: nzc1 = 4
+character (len=12)              :: flabel
+logical                         :: TWOCOMPBSS_
+!**********************************************************************
+
+!      allocate scratch space
+allocate(scr1_mat(naosh_ls*naosh_ls*nzc1),scr2_mat(naosh_ls*naosh_ls*nzc1)); scr1_mat = 0; scr2_mat = 0
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(h1_Xc,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - incoming h1_Xc w/o eamf contributions',6)
+end if
+
+!      ---------------------------------------------------------------------------------
+!      step 1. read and distribute atomic density contributions for symmetry independent centers
+!      ---------------------------------------------------------------------------------
+!        out: molecular density from atomic blocks  -> scr1_mat
+
+allocate(aooso_info(naosh_ls))
+
+center_total = 1
+scr1_mat     = 0
+
+!> a. read contributions for symmetry independent centers
+do i = 1, nuclei_type
+
+!        count the number of basis functions for center_total
+call labcount(ncols_frag,aooso_info,naosh_ls,1,-1,center_total,1,-1)
+
+if(ncols_frag == 0) cycle
+
+nrows_frag = ncols_frag
+
+#ifdef MOD_XAMFI
+!> read atomic density (assumed to be exported in C1 symmetry)
+call put_atomic_density_correction(                &
+        scr1_mat,       &
+        naosh_ls,       &
+        nrows_frag,     &
+        ncols_frag,     &
+        nzc1,           &
+        i,              &
+        center_total,   &
+        xcmode,         &
+        print_lvl       &
+       )
+#else
+call quit('X-AMFI module not avaliable in this version.')
+#endif
+end do
+
+!      b. transform from AO-basis (C1* symm sorted) to SO-AO basis (symmetry-ordered)
+!      ------------------------------------------------------------------------------
+!        in : DM_AO    -> scr1_mat
+!        out: DM-SO-AO -> scr2_mat
+i = op_bs_to_fs(0,1)
+do iz = 1, nzc1
+irepd = bs_irrep_mat(iz,0)
+iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+ipq   = iqp_off_in(iq,0)
+call dtaoso(scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
+scr2_mat(1+(naosh_ls*naosh_ls*(ipq-1))),                &
+naosh_ls,                                               &
+irepd,                                                  &
+print_lvl)
+end do
+
+!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      -----------------------------------------------------------
+call butobs_no_work(scr2_mat,nz)
+
+!      d. insert quaternion phase factors
+!      ----------------------------------
+if(nz < 4)then
+do iz = 1, nz                                                
+iq = ipq_off_in(iz,0)
+call q2bphase('D',iq,1,scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))))
+end do           
+end if          
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - mol DM assembled from atomic DMs',6)
+end if
+
+deallocate(aooso_info)
+
+!      ----------------------------------------------------
+!      step 3. compute Fock matrix F^{Xc,2e}[D^Xc_(+)atoms]
+!      ----------------------------------------------------
+lwrk_ = lwrk;
+TWOCOMPBSS_ = TWOCOMPBSS
+if(xcmode ==4)then
+       TWOCOMPBSS = .false.
+else
+       TWOCOMPBSS = .true.
+end if
+
+call get_x_fock(                        &
+                scr2_mat,               & ! DMAT
+                scr1_mat,               & ! FOCK
+                naosh_ls,               &
+                naosh_ls,               &
+                1,                      & ! one Fock matrix (remember that we use an [approximate] FOCC density matrix)
+                intgen,                 & ! integral flag: which type of integrals to include
+                nz,                     &
+                isDFT,                  & !> if true: add XC potential
+                lwrk_,                  &
+                print_lvl               &
+      )
+TWOCOMPBSS_ = TWOCOMPBSS
+!      ------------------------------------------------------
+!      step 4. add Fock matrix F^{Xc,2e}[D^Xc_(+)atoms] to h1
+!      ------------------------------------------------------
+call daxpy(naosh_ls*naosh_ls*nz,1.0d0,scr1_mat,1,h1_Xc,1)
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(h1_Xc,naosh_ls,naosh_ls,nz,ipq_off_in,&
+                  'x2c - h1 + F^{Xc,2e}[D^Xc_(+)atoms] contribution',6)
+end if
+
+! save F^{Xc,2e}[D^Xc_(+)atoms] on file for possible reuse
+if(xcmode == 4)then
+open(103,file='eamfX2C_F4c',status='replace',form='unformatted',  &
+     access='sequential',action="readwrite",position='rewind')
+write(103) scr1_mat(1:naosh_ls*naosh_ls*nz)
+close(103,status='keep')
+end if
+! release scratch space
+deallocate(scr1_mat,scr2_mat)
+
+end subroutine x2c_add_2e_from_atomic_dens
 
 !**********************************************************************
+
 
 end module x2c_2e_soc_interface

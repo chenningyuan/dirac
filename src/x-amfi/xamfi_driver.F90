@@ -40,6 +40,7 @@ module xamfi_driver
   public get_xamfi_correction
   public put_xamfi_correction
   public put_atomic_2e_mean_field_correction
+  public put_atomic_density_correction
 
   private
 
@@ -67,6 +68,26 @@ contains
      integer                            :: i
      real(8), allocatable               :: fmat(:), tmp(:)
 !----------------------------------------------------------------------
+
+      if(aooeamf)then
+        !> save atomic density matrix (of atom(1) ... == atomic fragment)
+        allocate(tmp(nrows*ncols*nr_quat*nr_2e_fock_matrices)); tmp = 0
+        call dcopy(nrows*ncols*nr_quat*nr_2e_fock_matrices,dmat,1,tmp,1)
+        call dump_Xc_c1_dens(                            &
+                             tmp,                        &
+                             nrows,                      &
+                             ncols,                      &
+                             nr_quat,                    &
+                             nr_2e_fock_matrices,        &
+                             aoo_nopen,                  &
+                             aoo_dfopen(0:aoo_nopen),    &
+                             'aooDM_4c',                 &
+                             nint(atom(1)%charge),       &
+                             102,                        &
+                             .true.                      &
+                             )
+        deallocate(tmp);
+      endif
 
       if(.not. calc_2esoc) return
 
@@ -135,26 +156,6 @@ contains
                                     )
         aoo2ediag = .false.; deallocate(tmp)
       end if
-
-      if(aooeamf)then
-        !> save atomic density matrix (of atom(1) ... == atomic fragment)
-        allocate(tmp(nrows*ncols*nr_quat*nr_2e_fock_matrices)); tmp = 0
-        call dcopy(nrows*ncols*nr_quat*nr_2e_fock_matrices,dmat,1,tmp,1)
-        call dump_4c_c1_dens(                            &
-                             tmp,                        &
-                             nrows,                      &
-                             ncols,                      &
-                             nr_quat,                    &
-                             nr_2e_fock_matrices,        &
-                             aoo_nopen,                  &
-                             aoo_dfopen(0:aoo_nopen),    &
-                             'aooDM_4c',                 &
-                             nint(atom(1)%charge),       &
-                             102,                        &
-                             .true.                      &
-                             )
-        aooeamf = .false.; deallocate(tmp)
-      endif
 
       !> normalize (picture-change transform) 2e-SO-fock matrix
       call get_normalized_2e_soc(                      &
@@ -239,15 +240,15 @@ contains
 
         allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
 !       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
-        call read_normalized_2e_soc(                                 &
-                                    Gmat_frag,                       &
-                                    nrows_ext,                       &
-                                    ncols_ext,                       &
-                                    nzc1,                            &
-                                    file_name_aoo_contributions,     &
-                                    nint(atom(center_total)%charge), &
-                                    aoo_fsoc                         &
-                                   )
+        call read_xamfi_general_matrix(                                 &
+                                       Gmat_frag,                       &
+                                       nrows_ext,                       &
+                                       ncols_ext,                       &
+                                       nzc1,                            &
+                                       file_name_aoo_contributions,     &
+                                       nint(atom(center_total)%charge), &
+                                       aoo_fsoc                         &
+                                      )
 
 #ifdef DEBUG_SOC
       !> debug print
@@ -357,15 +358,15 @@ if(nint(atom(center_total)%charge) > 1)then
 allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
 !       !> get spin-orbit parts from file (of atom(i) ... == atomic fragment)
 
-call read_normalized_2e_soc(           &
-      Gmat_frag,                       &
-      nrows_ext,                       &
-      ncols_ext,                       &
-      nzc1,                            &
-      'aoo2e_4c',                      &
-      nint(atom(center_total)%charge), &
-      101                              &
-     )
+call read_xamfi_general_matrix(               &
+             Gmat_frag,                       &
+             nrows_ext,                       &
+             ncols_ext,                       &
+             nzc1,                            &
+             'aoo2e_4c',                      &
+             nint(atom(center_total)%charge), &
+             101                              &
+                             )
 
 #ifdef DEBUG_SOC
 !> debug print
@@ -440,6 +441,122 @@ end if
 center_total = center_total + aoo_nont(center_id)
 
 end subroutine put_atomic_2e_mean_field_correction
+!----------------------------------------------------------------------
+
+subroutine put_atomic_density_correction(&
+  Gmat,                        &
+  naosh_ls,                    &
+  nrows_ext,                   &
+  ncols_ext,                   &
+  nr_quat_ext,                 &
+  center_id,                   &
+  center_total,                &
+  xcmode,                      &
+  print_lvl                    &
+ )
+!**********************************************************************
+real(8), intent(inout)             :: Gmat(*)
+integer, intent(in)                :: naosh_ls
+integer, intent(in)                :: nrows_ext
+integer, intent(in)                :: ncols_ext
+integer, intent(in)                :: nr_quat_ext
+integer, intent(in)                :: center_id
+integer, intent(inout)             :: center_total
+integer, intent(in)                :: xcmode
+integer, intent(in)                :: print_lvl
+!----------------------------------------------------------------------
+real(8), allocatable               :: Gmat_frag(:)
+real(8), allocatable               :: rbuf(:)
+real(8), allocatable               :: cbuf(:)
+real(8), allocatable               :: ibuf(:)
+real(8), allocatable               :: jbuf(:)
+INTEGER, parameter                 :: nzc1 = 4
+character(len=8)                   :: prefix
+!----------------------------------------------------------------------
+
+allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
+!       !> get atomic density from file (of atom(i) ... == atomic fragment)
+                prefix = 'aooDM_2c'       
+if(xcmode == 4) prefix = 'aooDM_4c'
+call read_xamfi_general_matrix(                  &
+                Gmat_frag,                       &
+                nrows_ext,                       &
+                ncols_ext,                       &
+                nzc1,                            &
+                prefix(1:8),                     &
+                nint(atom(center_total)%charge), &
+                101                              &
+                              )
+
+#ifdef DEBUG_SOC
+!> debug print
+if(print_lvl > 5)then
+call print_x2cmat(                     &
+Gmat_frag,                             &
+nrows_ext,                             &
+ncols_ext,                             &
+nzc1,                                  &
+aoo_cb_pq_to_uq(1,0),                  &
+'atomic density from file',            &
+6                                      &
+)
+end if
+#endif
+
+
+allocate(rbuf(naosh_ls))
+allocate(cbuf(naosh_ls))
+allocate(ibuf(nrows_ext))
+allocate(jbuf(ncols_ext))
+
+rbuf = 0
+cbuf = 0
+ibuf = 0
+jbuf = 0
+
+call put_aoblock(Gmat,           &
+naosh_ls,                        &
+naosh_ls,                        &
+center_total,                    &
+aoo_nont(center_id),             &
+aoo_nucdeg(center_total),        &
+nzc1,                            &
+Gmat_frag,                       &
+nrows_ext,                       &
+nrows_ext,                       &
+-1,                              &
+ncols_ext,                       &
+ncols_ext,                       &
+-1,                              &
+rbuf,                            &
+cbuf,                            &
+ibuf,                            &
+jbuf)
+
+#ifdef DEBUG_SOC
+!> debug print
+if(print_lvl > 5)then
+call print_x2cmat(                           &
+Gmat,                                        &
+naosh_ls,                                    &
+naosh_ls,                                    &
+nr_quat_ext,                                 &
+aoo_cb_pq_to_uq(1,0),                        &
+'atomic density corrections accumulated',    &
+6                                            &
+)
+end if
+#endif
+deallocate(jbuf)
+deallocate(ibuf)
+deallocate(cbuf)
+deallocate(rbuf)
+deallocate(Gmat_frag)
+
+!     update counter
+center_total = center_total + aoo_nont(center_id)
+
+end subroutine put_atomic_density_correction
 !----------------------------------------------------------------------
 
 

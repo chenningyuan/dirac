@@ -322,6 +322,7 @@ contains
                                 x2c_linsym,                &
                                 x2c_mdirac,                &
                                 x2c_spinfree,              &
+                                x2c_isDFT,                 &
                                 x2c_do_spherical)
 !      free memory
        deallocate(x2c_data%scr1mat)
@@ -407,8 +408,8 @@ contains
        end if
 
 !      --------------------------------------------------------------------------------------------------
-!      step 5: add oo-order 2e-SOC or AMFI contributions in case
-!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. 2e-SOC are desired
+!      step 5: add (e)amf picture-change corrections (PCE) or AMFI PCE corrections in case
+!              h1 == bare-nucleus 1e Dirac-Hamiltonian .and. PCE corrections are desired
 !      --------------------------------------------------------------------------------------------------
        if(x2c_add_amfi > 0)then
 
@@ -437,6 +438,8 @@ contains
                                       x2c_famfi,                         &
                                       x2c_funit,                         &
                                       x2c_cspeed,                        &
+                                      ioff_aomat_x,                      &
+                                      x2c_isDFT,                         &
                                       x2c_prt)
       end if
 
@@ -754,6 +757,7 @@ contains
                                  linear_sym,           &
                                  mdirac,               &
                                  spinfree,             &
+                                 isDFT,                &
                                  spherical_on)
 !**********************************************************************
 !
@@ -806,6 +810,7 @@ contains
      logical, intent(in)    :: mdirac
      logical, intent(in)    :: spinfree
      logical, intent(in)    :: spherical_on
+     logical, intent(in)    :: isDFT
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
      integer                :: i,j
@@ -891,6 +896,7 @@ contains
                                     linear_sym,            &
                                     mdirac,                &
                                     spinfree,              &
+                                    isDFT,                 &
                                     print_lvl)
  
 !      allocate scratch matrix with appropriate dimension

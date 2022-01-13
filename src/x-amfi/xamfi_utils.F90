@@ -41,8 +41,8 @@ module xamfi_utils
 
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
-  public dump_4c_c1_dens
-  public read_normalized_2e_soc
+  public dump_Xc_c1_dens
+  public read_xamfi_general_matrix
   public xamfi_get_energy_correction
   public hello_xamfi
   public goodbye_xamfi
@@ -283,7 +283,7 @@ contains
   end subroutine dump_normalized_2e_soc
 !----------------------------------------------------------------------
 #define DEBUG_SOC
-  subroutine dump_4c_c1_dens(                            &
+  subroutine dump_Xc_c1_dens(   &
     Dmat,                       &
     nrow,                       &
     ncol,                       &
@@ -298,7 +298,7 @@ contains
    )
 !----------------------------------------------------------------------
 !
-!    purpose: dump (atomic 4c) density matrix in C1 symmetry
+!    purpose: dump (atomic Xc [X=2,4]) density matrix in C1 symmetry
 !
 !----------------------------------------------------------------------
 use xamfi_internal_parameters, only: aoo_cb_pq_to_uq,  aoo_bs_to_fs,&
@@ -319,7 +319,7 @@ integer, intent(in)           :: element
 character (len=8), intent(in) :: file_base
 logical, intent(in)           :: final_dump
 !----------------------------------------------------------------------
-integer                       :: i, irep, iz, iq, ipar, irepd, ipq, j, k
+integer                       :: i, irep, iz, iq, ipar, irepd, ipq
 character (len=3)             :: file_extension
 character (len=12)            :: file_name
 real*8, ALLOCATABLE           :: Dmat_c1(:,:,:)
@@ -421,18 +421,18 @@ write(fh) Dmat
 end if
 close(fh,status='keep')
 
-end subroutine dump_4c_c1_dens
+end subroutine dump_Xc_c1_dens
 !----------------------------------------------------------------------
 
-  subroutine read_normalized_2e_soc(                            &
-                                    Gmat,                       &
-                                    nrow,                       &
-                                    ncol,                       &
-                                    nzc1,                       &
-                                    file_base,                  &
-                                    element,                    &
-                                    fh                          &
-                                   )
+  subroutine read_xamfi_general_matrix(                            &
+                                       Gmat,                       &
+                                       nrow,                       &
+                                       ncol,                       &
+                                       nzc1,                       &
+                                       file_base,                  &
+                                       element,                    &
+                                       fh                          &
+                                      )
 !----------------------------------------------------------------------
 !
 !    purpose: read two-electron spin-orbit corrections (normalized)
@@ -467,23 +467,23 @@ end subroutine dump_4c_c1_dens
 
      read(fh) nrow_tmp, ncol_tmp, nz_tmp
      if(nrow_tmp >  nrow)then
-       print *, 'read_normalized_2e_soc: row dimension does not fit',nrow_tmp,nrow
-       call quit( 'read_normalized_2e_soc: row dimension does not fit' )
+       print *, 'read_xamfi_general_matrix: row dimension does not fit',nrow_tmp,nrow
+       call quit( 'read_xamfi_general_matrix: row dimension does not fit' )
      end if
      if(ncol_tmp >  ncol)then
-       print *, 'read_normalized_2e_soc: col dimension does not fit',ncol_tmp,ncol
-       call quit( 'read_normalized_2e_soc: col dimension does not fit' )
+       print *, 'read_xamfi_general_matrix: col dimension does not fit',ncol_tmp,ncol
+       call quit( 'read_xamfi_general_matrix: col dimension does not fit' )
      end if
      if(nz_tmp   /= nzc1   )then
-       print *, 'read_normalized_2e_soc: nz  dimension does not fit',nz_tmp,nzc1
-       call quit( 'read_normalized_2e_soc: nz  dimension does not fit' )
+       print *, 'read_xamfi_general_matrix: nz  dimension does not fit',nz_tmp,nzc1
+       call quit( 'read_xamfi_general_matrix: nz  dimension does not fit' )
      end if
 
      read(fh) Gmat
 
      close(fh,status='keep')
 
-  end subroutine read_normalized_2e_soc
+  end subroutine read_xamfi_general_matrix
 !----------------------------------------------------------------------
   function xamfi_get_energy_correction(DMAT,XAMFI_FMAT,      &
                                        DFRAC2,JSHELL,ISHELL, &

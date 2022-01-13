@@ -51,6 +51,7 @@ contains
 
       use quaternion_algebra
       use memory_allocator
+      use dirac_cfg, only: dirac_cfg_dft_calculation
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -106,6 +107,7 @@ contains
            if(aoomod)then ! Dirac oo-order 2e-SOC
              x2c_amfi_order           = aoo_soc_order
              x2c_add_amfi             = 2
+             if(aooeamf) x2c_add_amfi = 3
            else ! AMFI corrections by B. Schimmelpfennig
 #endif
              x2c_tot_charge_for_mfsum = imfch
@@ -242,6 +244,9 @@ contains
            if(aoomod.and.aooeamf)   x2c_is_defining_h1mat  = 4
 #endif
          end if
+
+         !> DFT run
+         x2c_isDFT = dirac_cfg_dft_calculation;
 ! 
        else 
 

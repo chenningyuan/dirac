@@ -131,6 +131,7 @@ contains
                                  basic_h1mat,            &
                                  linear_sym,             &
                                  mdirac,                 &
+                                 .false.,                & ! no XC potential contributions
                                  is_len_wrk,             &
                                  x2c_file_scr,           &
                                  print_lvl)

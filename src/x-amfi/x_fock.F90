@@ -29,6 +29,7 @@ module x_fock
   implicit none
 
   public get_scso_2e_fock
+  public get_x_fock
 
   private
 
@@ -118,10 +119,149 @@ contains
 #ifdef VAR_MPI
        call mpi_initialized(parcal,i)
 #endif
+
+      call get_x_fock(        &
+      dmat,                   &
+      fmat,                   &
+      nrows,                  &
+      ncols,                  &
+      nr_2e_fock_matrices,    &
+      intflg,                 &
+      nz,                     &
+      .false.,                &
+      lwork_ext,              &
+      print_lvl               &
+      )
+       
+      if(nr_2e_fock_matrices > 1)then
+
+        local_lwork = lwork_ext - 10000
+        allocate(work(local_lwork))
+
+        !> Add active two-electron Fock matrices to closed-shell Fock matrix
+        do i = 1,x_nopen
+          !> The factor is DF and not D2*DF because of the multiplication with D2 in TWOFCK.
+          call daxpy(nrows*ncols*nz,x_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
+        end do
+
+        !> Transform AO Fock to MO Fock (taking care of coupling of open shells)
+        !> ---------------------------------------------------------------------
+
+        KWORK = 1; KFREE = KWORK; LFREE = local_lwork
+        CALL MEMGET2('REAL','TMAT' ,KTMAT ,x_N2TMT,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','SAOMO',KSAOMO,x_N2TMT,WORK,KFREE,LFREE)
+
+        CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
+
+        !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
+        CALL READT(isLUTMAT,x_N2TMT,work(ktmat)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
+        CLOSE(isLUTMAT,STATUS='KEEP')
+
+        CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_x*nr_2e_fock_matrices,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
+        CALL MEMGET2('REAL','FMO  ',KFMO  ,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
+        CALL MKMOFK(work(kFMO),fmat,dmat,work(kTMAT),cmo,work(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
+
+        !> Backtransform MO Fock to AO Fock
+        !> --------------------------------
+
+        CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
+        CALL READT(isLUTMAT,x_N2TMT,WORK(KTMAT)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
+        CLOSE(isLUTMAT,STATUS='KEEP')
+
+        CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
+
+        do i = 1,nr_fsym
+           CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
+                       nr_tmo(I),nr_tmo(I),                                                     &
+                       work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
+                       WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
+                       WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
+                       WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
+                       WORK(KFREE),LFREE,print_lvl)
+        end do
+
+        fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)
+
+        deallocate(work)
+      end if
+
+      if(isDFT)then
+          !print *, 'blubb DFT on'
+          call interface_mo_write()
+          call generate_num_grid(dmat)
+#ifdef VAR_MPI
+          if (parcal) call dirac_parctl( XCINT_PAR )
+#endif
+          call xcint_potential_rks(       &
+                                   nrows, &
+                                   dmat,  &
+                                   fmat)
+      end if 
+
+  end subroutine get_scso_2e_fock
+!----------------------------------------------------------------------
+
+  subroutine get_x_fock(    &
+    dmat,                   &
+    fmat,                   &
+    nrows,                  &
+    ncols,                  &
+    nr_2e_fock_matrices,    &
+    intflg,                 &
+    nz,                     &
+    isDFT,                  &
+    lwork_ext,              &
+    print_lvl               &
+    )
+!**********************************************************************
+!    purpose: get 2e-Fock matrix with integral contributions according to
+!             intflg (bit packed integer):
+!             (LL|LL)                     == 1
+!                       (SS|LL)           == 2
+!             (LL|LL) + (SS|LL)           == 3
+!                                 (SS|SS) == 4
+!             (LL|LL)           + (SS|SS) == 5
+!                       (SS|LL) + (SS|SS) == 6
+!             (LL|LL) + (SS|LL) + (SS|SS) == 7
+!
+!             with GAUNT (LS|LS) entering the game (intflg=8) you know what to do by now...
+!
+! !> in : density matrix (inactive + active ones) in AO basis
+!> out: 2e-Fock matrix in AO-basis                            
+!**********************************************************************
+#ifdef VAR_MPI
+#include "mpif.h"
+#include "dirac_partask.h"
+#endif
+real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
+real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
+integer, intent(in)                :: nr_2e_fock_matrices
+integer, intent(in)                :: nrows
+integer, intent(in)                :: ncols
+integer, intent(in)                :: nz
+integer, intent(in)                :: intflg
+integer, intent(in)                :: lwork_ext
+integer, intent(in)                :: print_lvl
+logical, intent(in)                :: isDFT
+!----------------------------------------------------------------------
+integer                            :: i, npos, local_lwork, j, kwork, kfree, lfree, local_print
+real(8), allocatable               :: work(:)
+integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
+logical, allocatable               :: saveflags(:)
+logical                            :: parcal
+!----------------------------------------------------------------------
+       parcal = .false.
+#ifdef VAR_MPI
+       call mpi_initialized(parcal,i)
+#endif
        call SetIntTaskArrayDimension(npos,parcal)
 
        local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices - 10000
-       allocate(work(local_lwork))
+       allocate(work(local_lwork)); work=0;
+
+       !> set common block in Hermit
+       CALL PAOVEC(work,local_lwork,0,0)
 
        !> 2e-fock matrix construction
        allocate(isymop(nr_2e_fock_matrices))
@@ -146,10 +286,9 @@ contains
        call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
        allocate(pos(npos))
 
-
 !      2e-fock matrices (Dirac driver routine)
        call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
-                   pos,intflg,print_lvl,work,local_lwork)
+                   pos,intflg,local_print,work,local_lwork)
 
        if(parcal) call SetTaskDistribFlags(saveflags)
        deallocate(pos)
@@ -158,71 +297,22 @@ contains
        deallocate(ifckop)
        deallocate(isymop)
 
-       if(nr_2e_fock_matrices == 1) goto 9999
-
-       !> Add active two-electron Fock matrices to closed-shell Fock matrix
-       do i = 1,x_nopen
-         !> The factor is DF and not D2*DF because of the multiplication with D2 in TWOFCK.
-         call daxpy(nrows*ncols*nz,x_dfopen(i),fmat(1,1,1,i+1),1,fmat(1,1,1,1),1)
-       end do
-
-       !> Transform AO Fock to MO Fock (taking care of coupling of open shells)
-       !> ---------------------------------------------------------------------
-
-       KWORK = 1; KFREE = KWORK; LFREE = local_lwork
-       CALL MEMGET2('REAL','TMAT' ,KTMAT ,x_N2TMT,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','SAOMO',KSAOMO,x_N2TMT,WORK,KFREE,LFREE)
-
-       CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
-
-       !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
-       CALL READT(isLUTMAT,x_N2TMT,work(ktmat)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
-       CLOSE(isLUTMAT,STATUS='KEEP')
-
-       CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_x*nr_2e_fock_matrices,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
-       CALL MEMGET2('REAL','FMO  ',KFMO  ,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
-       CALL MKMOFK(work(kFMO),fmat,dmat,work(kTMAT),cmo,work(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
-
-       !> Backtransform MO Fock to AO Fock
-       !> --------------------------------
-
-       CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
-       CALL READT(isLUTMAT,x_N2TMT,WORK(KTMAT)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
-       CLOSE(isLUTMAT,STATUS='KEEP')
-
-       CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
-
-       do i = 1,nr_fsym
-         CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
-                     nr_tmo(I),nr_tmo(I),                                                     &
-                     work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
-                     WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
-                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),    &
-                     WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),    &
-                     WORK(KFREE),LFREE,print_lvl)
-       end do
-
-       fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)
-
-9999   deallocate(work)
+       deallocate(work)
 
        if(isDFT)then
-          !print *, 'blubb DFT on'
-          call interface_mo_write()
-          call generate_num_grid(dmat)
+        !print *, 'blubb DFT on'
+        call interface_mo_write()
+        call generate_num_grid(dmat)
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl( XCINT_PAR )
+        if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
-          call xcint_potential_rks(       &
-                                   nrows, &
-                                   dmat,  &
-                                   fmat)
-       end if 
+        call xcint_potential_rks(       &
+                                 nrows, &
+                                 dmat,  &
+                                 fmat)
+        end if 
 
-  end subroutine get_scso_2e_fock
+  end subroutine get_x_fock
 !----------------------------------------------------------------------
-
-  
 
  end module

@@ -2120,8 +2120,9 @@ C*****************************************************************************
       use xamfi_environment
       use xamfi_utils, only:
      &    dump_normalized_2e_soc,
-     &    read_normalized_2e_soc,
-     &    goodbye_xamfi
+     &    read_xamfi_general_matrix,
+     &    goodbye_xamfi,
+     &    dump_Xc_c1_dens 
       use xamfi_driver, only:
      &    get_xamfi_correction
 #endif
@@ -3028,6 +3029,26 @@ C
           !> calculate density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 
+          if(aooeamf)then
+            !> save atomic density matrix (of atom(1) ... == atomic fragment)
+            allocate(dmat_aoosoc(len_fmats)); dmat_aoosoc = 0
+            call dcopy(len_fmats,tbuf_mmf,1,dmat_aoosoc,1)
+            call dump_Xc_c1_dens(                            
+     &                           dmat_aoosoc,                
+     &                           ntbas(0),                   
+     &                           ntbas(0),                   
+     &                           nz,                         
+     &                           nfmat,                      
+     &                           nopen,                      
+     &                           df(0:nopen),            
+     &                           'aooDM_2c',                 
+     &                           nint(charge(1)),            
+     &                           102,                        
+     &                           .true.                      
+     &                           )
+            aooeamf= .false.; deallocate(dmat_aoosoc);
+          endif
+
           allocate(tmat_mmf(len_fmats))
           tmat_mmf    = 0
 
@@ -3135,15 +3156,15 @@ C
             close(lux2c, status='keep')
 
             !> read {U+ G_A[4c] U}^{++}
-            call read_normalized_2e_soc(
-     &                                  tbuf_mmf,
-     &                                  ntbas(0),
-     &                                  ntbas(0),
-     &                                  nz,
-     &                                  'aoo2esoc',
-     &                                  nint(charge(1)),
-     &                                  lux2c
-     &                                 )
+            call read_xamfi_general_matrix(
+     &                                     tbuf_mmf,
+     &                                     ntbas(0),
+     &                                     ntbas(0),
+     &                                     nz,
+     &                                     'aoo2esoc',
+     &                                     nint(charge(1)),
+     &                                     lux2c
+     &                                    )
             !> ~
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)

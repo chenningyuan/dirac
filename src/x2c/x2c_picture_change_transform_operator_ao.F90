@@ -723,7 +723,6 @@ contains
      integer                        :: ioff_pct_mat
      integer                        :: fh
      integer                        :: nz_c1
-     integer                        :: intflg_x2c
      character (len=12)             :: flabel
 !**********************************************************************
 

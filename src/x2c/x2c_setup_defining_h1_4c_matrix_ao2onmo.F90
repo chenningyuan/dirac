@@ -43,7 +43,8 @@ module x2c_def_h1_4c
       generic_interface_ao2mo_mo2ao
   use x2cmod_cfg
   use x2c_2e_soc_interface, only:     &
-      x2c_add_2e_diagonal_atomic
+      x2c_add_2e_diagonal_atomic,     &
+      x2c_add_2e_from_atomic_dens
 
   implicit none
 
@@ -77,6 +78,7 @@ contains
                                      linear_sym,           &
                                      mdirac,               &
                                      spinfree,             &
+                                     isDFT,                &
                                      print_lvl)
 !**********************************************************************
 !
@@ -108,6 +110,7 @@ contains
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
      logical, intent(in)    :: spinfree
+     logical, intent(in)    :: isDFT
 !----------------------------------------------------------------------
      integer                :: ioff_osh1
      integer                :: ioff_osh2
@@ -148,6 +151,7 @@ contains
                                 defining_h1mat,         &
                                 linear_sym,             &
                                 mdirac,                 &
+                                isDFT,                  &
                                 is_len_wrk,             &
                                 x2c_file_scr,           &
                                 print_lvl)
@@ -241,6 +245,7 @@ contains
                                   defining_h1mat,         &
                                   linear_sym,             &
                                   mdirac,                 &
+                                  isDFT,                  &
                                   is_len_wrk,             &
                                   x2c_file_scr,           &
                                   print_lvl)
@@ -271,6 +276,7 @@ contains
      integer, intent(in)    :: defining_h1mat
      logical, intent(in)    :: linear_sym
      logical, intent(in)    :: mdirac
+     logical, intent(in)    :: isDFT
      integer, intent(in)    :: is_len_wrk
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
@@ -357,23 +363,26 @@ contains
           call reset_x2c_cb_onefck(.true.)
           deallocate(wrk)
 #endif
-  
+
+print *, ' get_h1_4c_saao_basis, ready to get eamf ... '
+
 #ifdef MOD_XAMFI
   !       ... + first-order (molecular) 2e-mean-field contributions
-  !       FIXME!
-          call x2c_add_2e_diagonal_atomic(h1_saao_bas,                       &
-                                          naosh_ls,                          &
-                                          nfsym,                             &
-                                          nz,                                &
-                                          x2c_bs_irrep_mat,                  &
-                                          x2c_cb_pq_to_uq,                   &
-                                          x2c_cb_uq_to_pq,                   &
-                                          x2c_iqmult_trip_q,                 &
-                                          x2c_bs_to_fs,                      &
-                                          x2c_pointer_quat,                  &
-                                          num_nuclei,                        &
-                                          type_nuclei,                       &
-                                          print_lvl)
+          call x2c_add_2e_from_atomic_dens(h1_saao_bas,                       &
+                                           naosh_ls,                          &
+                                           nz,                                &
+                                           x2c_bs_irrep_mat,                  &
+                                           x2c_cb_pq_to_uq,                   &
+                                           x2c_cb_uq_to_pq,                   &
+                                           x2c_iqmult_trip_q,                 &
+                                           x2c_bs_to_fs,                      &
+                                           x2c_pointer_quat,                  &
+                                           num_nuclei,                        &
+                                           type_nuclei,                       &
+                                           4,                                 & ! xcmode
+                                           lwrk,                              & ! lwrk
+                                           isDFT,                             & ! add XC potential (DFT)
+                                           10) ! print_lvl
 #endif
 
        case default
