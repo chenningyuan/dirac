@@ -279,7 +279,7 @@ C
         IF(ITEST.NE.0) FAC= D1
       ENDIF
  10   CONTINUE
-CTROND      IF (IPRINT.GE.10) THEN
+      IF (IPRINT.GE.10) THEN
         WRITE(LUPRI,'(/,8X,A,/)') '* Output from GENDEN:'
         DO I = 1,6
         IF (LBIT(IFLAG,I)) THEN
@@ -310,7 +310,7 @@ CTROND      IF (IPRINT.GE.10) THEN
      &              NFBAS(IFRP,0),NFBAS(IFRP,0),
      &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
         ENDDO
-CTROND      END IF
+      END IF
 
 C
 C   
