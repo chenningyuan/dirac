@@ -1,5 +1,11 @@
 :orphan:
 
+22.1 
+----
+
+Bugfix: There was an error in the construction of the projection operator for secondary orbitals using density matrices for the very special case of 4-component relatistic average-of-configuration HF calculations on systems with inversion symmetry and no occupation in ungerade symmetry.
+
+   
 21.1 (2021-09-16)
 -----------------
 

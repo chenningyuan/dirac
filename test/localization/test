@@ -44,8 +44,6 @@ test.run(['H2Olocprj_diag.inp'], ['H2O.mol'], f, '--copy="DFPCMO DFO1AT DFH1AT D
 os.unlink('cf.H')
 os.unlink('cf.C')
 os.unlink('cf.O')
-os.unlink('cf.CH4')
-os.unlink('cf.H2O')
 os.unlink('DFC1AT')
 os.unlink('DFO1AT')
 os.unlink('DFH1AT')
