@@ -644,15 +644,6 @@ C
         AOC      = AOCBUF
         NFMAT    = NFMATBUF
       ENDIF
-C
-C     Add vacuum polarisation in case of ONESYS
-C
-#ifdef MOD_UNRELEASED
-      IF(ONESYS.AND.VACPOL) THEN
-        WRITE(LUPRI,'(/A)') '=> Adding vacuum polarization potential'
-        CALL ONEVAC(CMO,EIG,IBEIG,FOCK,WORK(KFREE),LFREE)
-      ENDIF
-#endif
 CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
       IF (DOHUCKEL.OR.BARNUC.OR.(TRIFCK.AND..NOT.DO4C2C)) THEN
         WRITE(LUPRI,'(/A)') '=> Calculating sum of orbital energies'
@@ -4233,16 +4224,6 @@ C
      &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 C
-#ifdef MOD_UNRELEASED
-          IF(VACPOL) THEN
-            CALL HEADER(
-     &      'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
-            WRITE(LUPRI,'(I5,F25.10)')
-     &      (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
-         ENDIF
-#endif
          IF (DODBG) THEN
           IF (IPRHAM.GE.3) THEN
            CALL HEADER(

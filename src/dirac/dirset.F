@@ -145,14 +145,7 @@ C     Set DCB common blocks - second time
 C     ===================================
 C
       CALL SETDC2(IPRGEN)
-C
-C     If semiclassical QED, write density of bare vacuum to file
-C     ==========================================================
-C
-#ifdef MOD_UNRELEASED
-      IF(VACPOL.AND.VACREF) CALL BARVAC(WORK,LWORK,IPRGEN)      
-#endif
-      ! at this point we do know the occupations which will be used in SCF, dump them to file
+! at this point we do know the occupations which will be used in SCF, dump them to file
       call write_occupations_fromcommon(
      & '/result/wavefunctions/scf/mobasis')
 C
@@ -1452,105 +1445,6 @@ C
 C
       RETURN
 C      
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck barvac */
-      SUBROUTINE BARVAC(WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Generate and write bare vacuum density to file
-C
-C     Written by T. Saue Nov 7 2002
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-      LOGICAL TOBE
-      DIMENSION WORK(LWORK)
-#include "memint.h"
-      INQUIRE(FILE='DFBVAC',EXIST=TOBE)
-      IF(TOBE) THEN
-        WRITE(LUPRI,'(A)')
-     &   '* WARNING: BARVAC found file DFBVAC. '//
-     &   'No reference vacuum generated.'
-      ELSE
-        CALL MEMGET('REAL',KFAO ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KFMO ,N2BBASXQ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KTMAT,N2TMT   ,WORK,KFREE,LFREE)
-        CALL MEMGET('REAL',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
-        CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-        CALL BARVA1(WORK(KFAO),WORK(KFMO),WORK(KTMAT),
-     &            WORK(KEIG),WORK(KIBRP),IPRINT,WORK,KFREE,LFREE)
-        CALL MEMREL('BARVAC',WORK,KWORK,KWORK,KFREE,LFREE)
-      ENDIF
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck barva1 */
-      SUBROUTINE BARVA1(FAO,FMO,TMAT,EIG,IBEIG,IPRINT,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Generate and write bare vacuum density to file
-C
-C     Written by T. Saue Nov 7 2002
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-C
-      DIMENSION FAO(*),FMO(*),TMAT(*),EIG(*),IBEIG(*),WORK(*)
-C
-      LUBUF  = 10
-C
-C     Generate free particle matrix
-C
-      CALL FREEMT(FAO,IPRINT,WORK(KFREE),LFREE)      
-C
-C     Transform to MO-basis FAO --> FMO
-C
-      CALL OPNFIL(LUBUF,'AOMOMAT','OLD','BARVAC')
-      CALL READT(LUBUF,N2TMT,TMAT)
-      CLOSE(LUBUF,STATUS='KEEP')
-      CALL MKMOFK2(FMO,FAO,TMAT,WORK(KFREE),LFREE)
-C
-C     Diagonalize
-C
-      CALL DFDIAG (FMO,EIG,IBEIG,FAO,.FALSE.,WORK,KFREE,LFREE)
-C
-C     Inspect eigenvalues
-C
-      DO I = 1,NFSYM
-        WRITE(LUPRI,*) '* BARVAC fermion ircop :',I
-        DO J = 1,NORB(I)
-          WRITE(6,'(I5,E20.10)') J,EIG(IORB(I)+J)
-        ENDDO
-      ENDDO
-C     Backtransform solutions to FMO
-C
-      DO 10 I = 1,NFSYM
-        IF(NORB(I).EQ.0) GOTO 10
-        CALL BCKTRA(FMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),
-     &              FAO(I2ORBT(I)+1),NORB(I),NORB(I),
-     &              NORB(I),NZ,NORB(I),1,NFBAS(I,0),
-     &              TMAT(I2TMT(I)+1),NFBAS(I,0),NORB(I),NZT,
-     &              IPRINT)
- 10   CONTINUE
-C
-C     Construct bare vacuum density matrix and write to file
-C
-      CALL GENDEN(FAO,FMO,8,IPRINT)
-      CALL OPNFIL(LUBUF,'DFBVAC','UNKNOWN','BARVAC')
-      CALL WRITT(LUBUF,N2BBASXQ,FAO)
-      CLOSE(LUBUF,STATUS='KEEP')
-C
-      RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck gofast */
