@@ -3027,7 +3027,7 @@ C
           close(lucoef,status='keep')
 
           !> calculate inactive (and possibly active) density matrix
-          call denmat(tbuf_mmf,cmo_mmf,10)!iprham)
+          call denmat(tbuf_mmf,cmo_mmf,iprham)
 
           if(aooeamf)then
             !> save atomic density matrix (of atom(1) ... == atomic fragment)
