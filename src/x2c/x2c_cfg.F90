@@ -118,5 +118,7 @@ module x2cmod_cfg
   integer, public :: scf_iter_counter                 =  0
   integer, public :: diis_counter                     =  0
   integer, public :: nr_2e_fock_matrices              =  0
+  integer, public :: x2c_intgen_4c                    = -1
+  integer, public :: x2c_intgen_2c                    =  1
 
 end module

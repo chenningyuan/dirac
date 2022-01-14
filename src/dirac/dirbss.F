@@ -6184,9 +6184,6 @@ C         .... accumulate (and skip) L(isym) blocks
       ENDIF                                   
       ENDDO  
 
-      WRITE(LUPRI,'(A)')
-     &' * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.'
-
       CALL QEXIT('SLSORT')
       RETURN
       END

@@ -345,7 +345,7 @@ C
           CALL MEMGET('INTE',KINDCD,2*NORBC*NORBD,
      &                              WORK,KFREE,LFREE)
 
-CMI          ... here it fails !!!
+CMI          ... here it fails !!! stknecht: what does that mean @Miro???
           CALL GABDR1(GABM,IJOB,WORK(KFREE),LFREE,
      &          UNDIFF,PERTUR,LONDON,SPNORB,EXPECT,SUSCEP,DDFOCK,
      &          DIRFCK,SOFOCK,DISTRI,IATOM,MULE,MULTE,MAXDER,NOCONT,
@@ -1772,7 +1772,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Gabgen */
       SUBROUTINE GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,JATOM,NOCONT,
-     &                  IPRINT,WORK,LWORK)
+     &                  recompute_Gab_,IPRINT,WORK,LWORK)
 C***********************************************************************
 C
 C     This routine will generate the reduced matrix of
@@ -1790,7 +1790,7 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB,NOCONT
+      LOGICAL EXTST,OPTST,FNDLAB,NOCONT, recompute_Gab_
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       CALL QENTER('GABGEN')
@@ -1850,11 +1850,13 @@ C           File AOPROPER is not opened; open it
 C
 C       Search for GAB-integrals; return if they are there
 C
-         DO I = 1,NGAB
-            REWIND LUPROP
-            IF (.NOT. FNDLAB(GABLAB(I),LUPROP)) GOTO 10
-         END DO
-         GOTO 999
+         if(.not.recompute_Gab_)then !> by default we reuse GAB-integrals
+           DO I = 1,NGAB
+              REWIND LUPROP
+              IF (.NOT. FNDLAB(GABLAB(I),LUPROP) ) GOTO 10
+           END DO
+           GOTO 999
+         end if
  10      CONTINUE
          REWIND LUPROP
          IF(FNDLAB('EOFLABEL',LUPROP)) THEN
@@ -1932,12 +1934,17 @@ C     Write label
 C
       IOFF = 0
       DO I = 1,NGAB
+         if(recompute_Gab_ .and. FNDLAB(GABLAB(I),LUPROP))then
+           !> we need to overwrite any existing data
+           backspace luprop
+         end if
          CALL NEWLB2(GABLAB(I),RTNLBL,LUPROP,LUPRI)
          LEN = MAX(4,N2GAB)
          CALL WRITT(LUPROP,LEN,WORK(KGAB+IOFF))
          IOFF = IOFF + N2GAB
       END DO
-      CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
+      if(.not.recompute_Gab_)
+     &CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
 C
       IF(.NOT.OPTST) CLOSE(LUPROP,STATUS='KEEP')
       CALL MEMREL('GABGEN',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -1958,6 +1965,7 @@ C
 C     Written by T.Saue Mar 20 1997
 C
 C***********************************************************************
+      use gab_settings, only: recompute_Gab
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -1974,6 +1982,8 @@ C
 C     Construct label
 C     ---------------
 C
+
+
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
          GABLAB(1) = 'GABXXXXX'
@@ -2000,6 +2010,7 @@ C
       DO I = 1,NGAB
          WRITE(GABLAB(I)(6:6),'(I1)') IGTYP
       ENDDO
+
 C
 C     Check if file AOPROPER is present
 C     ---------------------------------
@@ -2028,7 +2039,7 @@ C     --------------
 C
       DO IGAB = 1, NGAB
          REWIND LUPROP
-         IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
+         IF(FNDLAB(GABLAB(IGAB),LUPROP).and..not.recompute_Gab) THEN
             CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
             IF(IPRINT.GE.5) THEN
 C              reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
@@ -2043,7 +2054,7 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
-     &           IPRINT,WORK,LWORK)
+     &           recompute_Gab,IPRINT,WORK,LWORK)
             REWIND LUPROP
             IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
                CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
@@ -2052,6 +2063,14 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
      &              'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
                CALL QUIT('GETGAB: No GAB on AOPROPER !')
             END IF
+            IF(IPRINT.GE.5) THEN
+C              reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
+C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
+               CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
+               WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+               CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
+     &                  NSYMBL,NSYMBL,-4,LUPRI)
+            ENDIF
          ENDIF
 C
 C

@@ -30,7 +30,9 @@ module x2c_2e_soc_interface
 #ifdef MOD_XAMFI
   use xamfi_driver
   use x_fock, only: get_x_fock
+  use gab_settings, only: recompute_Gab
 #endif
+  use x2cmod_cfg, only: x2c_intgen_2c
 
   implicit none
 
@@ -169,9 +171,7 @@ contains
                                    (x2c_add_amfi == 3),  &
                                    ioff_aomat_x,         &
                                    isDFT,                &
-                                   10)
-                                   !print_lvl)
-
+                                   print_lvl)
 #else
          call quit('unknown 2e-SOC interface in x2c module')
 #endif
@@ -629,6 +629,7 @@ contains
      integer                         :: wf_components
      integer                         :: ioff_U
      integer                         :: op_fer_rep
+     integer                         :: integral_types
      INTEGER, PARAMETER              :: nzc1 = 4
      character (len=12)              :: flabel
 !**********************************************************************
@@ -742,7 +743,12 @@ contains
               call getlab(ipread)
 
               allocate(scr4_mat(nr_ao_L*nr_ao_L*nz)); scr4_mat = 0
+              integral_types = x2c_intgen_2c
 #ifdef MOD_XAMFI
+              !> since we calculated a Fock matrix in 4c mode to compute the defining X2C Hamiltonian
+              !> we need to enforce the recomputation of the GAB matrix in 2c mode
+              recompute_Gab = .true.;
+
               ! returns F^{2c,2e}[D^{2c}_(+)atoms] in scr4_mat
               call x2c_add_2e_from_atomic_dens(scr4_mat,                          &
                                                nr_ao_L,                           &
@@ -756,9 +762,12 @@ contains
                                                nuclei_totnum,                     &
                                                nuclei_type,                       &
                                                2,                                 & ! Xc-mode
+                                               integral_types,                    & ! integral flag
                                                lwrk,                              & ! lwrk
                                                isDFT,                             & ! add XC potential (DFT)
                                                print_lvl)
+              !> ... and reset (we will from here on continue in 2c mode)
+              recompute_Gab = .false.;
 #else
               call quit('X-AMFI not avaliable in this version.')
 #endif
@@ -820,6 +829,9 @@ contains
 
               !> - second term + first term => complete eamf PCE correction
               call daxpy(nr_ao_L*nr_ao_L*nz,-1.0d0,scr4_mat,1,scr3_mat,1);
+              !> DEBUG TEST
+              !call dscal(nr_ao_L*nr_ao_L*nz,-1.0d0,scr3_mat,1);
+              !> DEBUG TEST
               deallocate(scr4_mat);
 !             debug print
               if(print_lvl > 2)then
@@ -1083,6 +1095,7 @@ subroutine x2c_add_2e_from_atomic_dens(&
        nuclei_totnum,         &
        nuclei_type,           &
        xcmode,                &
+       integral_types,        &
        lwrk,                  &
        isDFT,                 &
        print_lvl)   
@@ -1115,6 +1128,7 @@ integer, intent(in)             :: quat_pointer(0:7,2)
 integer, intent(in)             :: nuclei_totnum
 integer, intent(in)             :: nuclei_type
 integer, intent(in)             :: xcmode
+integer, intent(in)             :: integral_types
 integer, intent(in)             :: lwrk
 integer, intent(in)             :: print_lvl
 logical, intent(in)             :: isDFT
@@ -1237,7 +1251,7 @@ call get_x_fock(                        &
                 naosh_ls,               &
                 naosh_ls,               &
                 1,                      & ! one Fock matrix (remember that we use an [approximate] FOCC density matrix)
-                intgen,                 & ! integral flag: which type of integrals to include
+                integral_types,         & ! integral flag: which type of integrals to include
                 nz,                     &
                 isDFT,                  & !> if true: add XC potential
                 lwrk_,                  &

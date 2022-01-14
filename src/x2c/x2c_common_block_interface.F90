@@ -83,7 +83,13 @@ contains
 
        if(init_x2c_cb_blocks)then
 
-!        set AO-labels for large and small components - before x2c_main initialized only for the large component
+         !> set integral flags for two-electron evaluations within the X2C module
+         !> four-component evaluations use the default integral settings stored in intgen_save
+         !>  two-component evaluations use the default integral settings stored in intgen (set to (LL|LL) only in HAMINP for X2C)
+         x2c_intgen_4c = intgen_save
+         x2c_intgen_2c = intgen
+
+         !> set AO-labels for large and small components - before x2c_main initialized only for the large component
          call getlab(-1)
 
          call legacy_lwork_get(len_wrk_f77_x2c)
@@ -97,11 +103,11 @@ contains
          mfsym                 = min(nfsym,2)
          x2c_1e_system         = onesys
 
-!        set value for amfi module (if at all)
+         !> set value for amfi module (if at all)
          if(noamfi)        x2c_add_amfi = -1
          if(x2c_1e_system) x2c_add_amfi = -1 
 
-!        common block variables for Diracs 2e-SOC or the old AMFI
+         !> common block variables for Diracs 2e-SOC or the old AMFI
          if(x2c_add_amfi > 0)then
 #ifdef MOD_XAMFI
            if(aoomod)then ! Dirac oo-order 2e-SOC

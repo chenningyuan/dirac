@@ -739,6 +739,7 @@ contains
 !      initialize offset
        ioff_pct_mat = 1
        do i = 1, nfsym
+         if(naosh_all(i)*naosh_L(i) == 0) cycle
          write(flabel,'(a7,i4,i1)') 'pctmtAO',1,i
          call x2c_read(flabel,pctmat(ioff_pct_mat),naosh_all(i)*naosh_L(i)*nz,x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz

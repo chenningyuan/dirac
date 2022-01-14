@@ -6214,10 +6214,8 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
         WRITE(LUPRI,'(2X,A)') '- BSS with properties !'
        ENDIF
 
-       IF(DO2C4C)THEN
-         IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
-           IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
-         END IF
+       IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
+         IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
        END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR

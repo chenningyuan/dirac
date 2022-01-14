@@ -1499,29 +1499,20 @@ C        ======================
          !write(lupri,*) 'tobe = ',tobe
          if(tobe)then
            open(99,file='XAMFI-ss-soc-contributions',status='old',
-     &     form='unformatted',
-     &     access='sequential',action="readwrite",position='rewind')
+     &          form='unformatted',access='sequential',
+     &          action="readwrite",position='rewind')
            allocate(aoo2esssoc(ntbas(0)**2*nz))
            read(99) aoo2esssoc(1:ntbas(0)**2*nz)
            close(99,status='keep')
            call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
            call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
-!          if(aoc) call quit('AOC not working yet for aoo2esssoc...')
-           !> stefan: enabling this is wrong but not doing it as well...
-           !> NOTE to myself: why did I write this comment in the first place?
-           !> if possible the contributions should be added in the MO basis but how to calculate the energy at this point correctly???
-!          IF (AOC) THEN
-!             DO IOPEN = 1,NOPEN
-!                CALL DAXPY(N2BBASXQ,1.0d0,
-!    &                      aoo2esssoc,1,
-!    &                      FOCK(1+N2BBASXQ*IOPEN),1)
-!              END DO
-!           END IF
            deallocate(aoo2esssoc)
          end if
 C
+         !iprscf_ = iprscf; iprscf = 5;
          ! here F1 is in CMO and F2 is in FOCK
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
+         !iprscf = iprscf_;
 #ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_oper_ao_driver'

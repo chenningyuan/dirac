@@ -3026,8 +3026,8 @@ C
           call reacmo_new(lucoef,cmo=cmo_mmf)
           close(lucoef,status='keep')
 
-          !> calculate density matrix/ces
-          call denmat(tbuf_mmf,cmo_mmf,iprham)
+          !> calculate inactive (and possibly active) density matrix
+          call denmat(tbuf_mmf,cmo_mmf,10)!iprham)
 
           if(aooeamf)then
             !> save atomic density matrix (of atom(1) ... == atomic fragment)
@@ -3428,8 +3428,6 @@ CMI     they are in the order "S1 S2 ... S(nbsym) L1 L2 ... L(nbsym)" instead of
 !       is_defining_h1mat is the control variable for the defining h1
 !       matrix wrt which the decoupling is performed in the X2C module.
 !       see the following lsymad procedure for more comments - SK Aug 2010
-        write(lupri,*) 'is_defining_h1mat is...',is_defining_h1mat,
-     &  LSYMAD
         open(99,file='AOMOSLR',status='replace',form='unformatted',
      &       access='sequential',action='readwrite',
      &       position='rewind')

@@ -245,7 +245,7 @@ integer, intent(in)                :: lwork_ext
 integer, intent(in)                :: print_lvl
 logical, intent(in)                :: isDFT
 !----------------------------------------------------------------------
-integer                            :: i, npos, local_lwork, j, kwork, kfree, lfree, local_print
+integer                            :: i, npos, local_lwork
 real(8), allocatable               :: work(:)
 integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
 logical, allocatable               :: saveflags(:)
@@ -288,7 +288,7 @@ logical                            :: parcal
 
 !      2e-fock matrices (Dirac driver routine)
        call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
-                   pos,intflg,local_print,work,local_lwork)
+                   pos,intflg,print_lvl,work,local_lwork)
 
        if(parcal) call SetTaskDistribFlags(saveflags)
        deallocate(pos)

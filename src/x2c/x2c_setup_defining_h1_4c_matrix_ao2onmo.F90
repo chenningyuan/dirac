@@ -54,9 +54,9 @@ module x2c_def_h1_4c
 
   private
 
-  real(8), parameter :: val_d1      =  1.0d0
-  real(8), parameter :: val_d0      =  0.0d0
-  real(8), parameter :: val_dm1     = -1.0d0
+  real*8, parameter :: val_d1      =  1.0d0
+  real*8, parameter :: val_d0      =  0.0d0
+  real*8, parameter :: val_dm1     = -1.0d0
 
 contains
 
@@ -92,9 +92,9 @@ contains
 !
 !----------------------------------------------------------------------
 !
-     real(8), intent(inout) :: h1_onmo_bas(*)
-     real(8), intent(inout) :: h1_saao_bas(*)
-     real(8), intent(inout) :: tra_mat_4cAOMO(*)
+     real*8 , intent(inout) :: h1_onmo_bas(*)
+     real*8 , intent(inout) :: h1_saao_bas(*)
+     real*8 , intent(inout) :: tra_mat_4cAOMO(*)
      integer, intent(in)    :: naosh_ls
      integer, intent(in)    :: naosh_all(nfsym)
      integer, intent(in)    :: norb_dim(nfsym)
@@ -121,10 +121,6 @@ contains
      integer                :: nbas1_f
      integer                :: ndim_ao
      integer                :: mz
-     real(8)                :: mydummy(2)
-     character (len=12)     :: flabel
-     logical                :: skip_step1 = .false.
-     logical                :: fndlab12
      integer, allocatable   :: boson_info(:)
 !**********************************************************************
 
@@ -263,9 +259,9 @@ contains
 !             defining_h1mat == 2: 4c-fock operator as h1 (defining and/or 'basic' h1)
 !
 !----------------------------------------------------------------------
-     real(8), intent(inout) :: h1_saao_bas(*)
-     real(8), intent(inout) :: scrmat1(*)
-     real(8), intent(inout) :: scrmat2(*)
+     real*8 , intent(inout) :: h1_saao_bas(*)
+     real*8 , intent(inout) :: scrmat1(*)
+     real*8 , intent(inout) :: scrmat2(*)
      integer, intent(in)    :: nfsym
      integer, intent(in)    :: naosh_ls
      integer, intent(in)    :: naosh_all(nfsym)
@@ -281,8 +277,9 @@ contains
      integer, intent(in)    :: x2c_file_scr
      integer, intent(in)    :: print_lvl
 !----------------------------------------------------------------------
-     real(8), allocatable   :: wrk(:)
+     real*8 , allocatable   :: wrk(:)
      integer                :: lwrk
+     integer                :: integral_types
 !**********************************************************************
 
 !      give full length for WORK array allocations
@@ -290,7 +287,7 @@ contains
 
        select case(defining_h1mat)
        case(0)
-!        bare-nucleus 1-el Dirac-Hamiltonian
+!        bare-nucleus h1 Dirac-Hamiltonian
 #ifdef PRG_DIRAC
          allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
@@ -300,7 +297,7 @@ contains
 #endif
 
        case(1)
-!        bare-nucleus 1-el Dirac-Hamiltonian...
+!        bare-nucleus h1 Dirac-Hamiltonian...
 #ifdef PRG_DIRAC
         allocate(wrk(lwrk))
         call reset_x2c_cb_onefck(.false.)
@@ -347,7 +344,7 @@ contains
        case(3)
 
 #ifdef PRG_DIRAC
-!        Free-particle matrix
+!        Free-particle matrix h_fp
          allocate(wrk(lwrk))
          call reset_x2c_cb_onefck(.false.)
          call freemt(h1_saao_bas,print_lvl,wrk,lwrk)
@@ -355,7 +352,7 @@ contains
          deallocate(wrk)
 #endif
         case(4)
-  !        bare-nucleus 1-el Dirac-Hamiltonian...
+  !        bare-nucleus h1 Dirac-Hamiltonian...
 #ifdef PRG_DIRAC
           allocate(wrk(lwrk))
           call reset_x2c_cb_onefck(.false.)
@@ -364,10 +361,9 @@ contains
           deallocate(wrk)
 #endif
 
-print *, ' get_h1_4c_saao_basis, ready to get eamf ... '
-
+          integral_types = x2c_intgen_4c
 #ifdef MOD_XAMFI
-  !       ... + first-order (molecular) 2e-mean-field contributions
+  !       ... + F^{4c,2e}[D^4c_(+)atoms]
           call x2c_add_2e_from_atomic_dens(h1_saao_bas,                       &
                                            naosh_ls,                          &
                                            nz,                                &
@@ -380,9 +376,11 @@ print *, ' get_h1_4c_saao_basis, ready to get eamf ... '
                                            num_nuclei,                        &
                                            type_nuclei,                       &
                                            4,                                 & ! xcmode
+                                           integral_types,                    & ! integral flag
                                            lwrk,                              & ! lwrk
                                            isDFT,                             & ! add XC potential (DFT)
-                                           10) ! print_lvl
+                                           print_lvl                          &
+                                          )
 #endif
 
        case default
