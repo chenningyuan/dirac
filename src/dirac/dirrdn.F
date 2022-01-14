@@ -2349,7 +2349,7 @@ C
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
      &   ('Fermion irrep ',I,':',NFRO_DHF(I),I=1,NFSYM)
       ENDIF
-      IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
+      IF (NELECT_DHF+NAELEC_DHF.EQ.0) THEN
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
@@ -5240,11 +5240,11 @@ C
 !                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
 !                   33        34        35        36
-     &            '.CONT2C','.BEG_2C','.VACPOL','.X2COLD',
+     &            '.CONT2C','.BEG_2C','.XXXXXX','.X2COLD',
 !                   37        38        39        40
-     &            '.X2C   ','.MIXVAC','.CAP   ','.NOVREF',
+     &            '.X2C   ','.XXXXXX','.CAP   ','.NOVREF',
 !                   41        42        43        44
-     &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
+     &            '.XXXXXX','.FDE   ','.IOTC4 ','.NONREL',
 !                   45        46        47        48
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
 !                   49        50        51        52
@@ -5306,10 +5306,6 @@ C
       ONECAP  = .FALSE.
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
-      VACPOL  = .FALSE.
-      MIXVAC  = .FALSE.
-      POSVAC  = .FALSE.
-      VACREF  = .TRUE.
       CAP     = .FALSE.
 !     ECPCALC = .FALSE. - already set in HAMSCAN
       ORIGIN(1:3) = 0.0d0
@@ -5735,10 +5731,6 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
      &                ' information.')
             GO TO 100
   135     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&&& VACPOL: vacuum polarization included
-            VACPOL = .TRUE.
-#endif
             GO TO 100
   136     CONTINUE
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
@@ -5773,11 +5765,6 @@ C            as they need to be picture-changed transformed after the 2c-transfo
              ENDIF
              GO TO 100
   138     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&& MIXVAC: Alternative definition of vacuum polarisation
-             VACPOL = .TRUE.
-             MIXVAC = .TRUE.
-#endif
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -5788,17 +5775,9 @@ C&&& Activate the CAP calculation for the complex Fock space method
 #endif
              GO TO 100
   140     CONTINUE
-C&&& NOVREF: Do not generate reference vacuum
-             VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&& POSVAC: Use positronic vacuum polarisation
-             VACPOL = .TRUE.
-             POSVAC = .TRUE.
-#endif
              GO TO 100
-
 !         .FDE
 !         frozen density embedding
   142     continue
@@ -6448,23 +6427,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
-#ifdef MOD_UNRELEASED
-      IF (VACPOL) THEN
-        WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
-        IF(MIXVAC) THEN
-          WRITE(LUPRI,'(6X,A)')
-     &      '- alternative definition of vacuum polariation.'
-        ENDIF
-        IF(POSVAC) THEN
-          WRITE(LUPRI,'(6X,A)')
-     &      '- using positronic vacuum.'
-        ENDIF
-        IF(.NOT.VACREF) THEN
-          WRITE(LUPRI,'(6X,A)')
-     &      '- no reference vacuum generated.'
-        ENDIF
-      ENDIF
-#endif
 #ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
