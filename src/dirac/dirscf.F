@@ -5085,7 +5085,6 @@ C
 
       RETURN
       END
-#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck onevac */
       SUBROUTINE ONEVAC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
@@ -5158,7 +5157,6 @@ C     Release memory
 C
       RETURN
       END
-#endif
       SUBROUTINE FMO_FREEZE(FMO)
 #include "implicit.h"
 #include "priunit.h"

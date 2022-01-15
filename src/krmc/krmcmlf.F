@@ -1705,7 +1705,6 @@ C
 #endif
 !***********************************************************************
 
-#ifdef MOD_UNRELEASED
       subroutine write_fcidump_file(vmuuuu,hcore,ecore)
 !***********************************************************************
 !
@@ -2046,4 +2045,3 @@ C
       call symmetry_setup_delete()
 C
       END
-#endif
