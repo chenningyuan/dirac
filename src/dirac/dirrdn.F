@@ -5692,11 +5692,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
-#else
-             call quit('block diagonalizing feature not in release!')
-#endif
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...
@@ -7773,10 +7769,6 @@ C
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#ifndef MOD_UNRELEASED
-      IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT !')
-#endif
 
 
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
