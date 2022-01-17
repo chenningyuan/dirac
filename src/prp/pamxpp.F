@@ -352,7 +352,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 40,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -382,8 +382,7 @@ C
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
      &            '.GNOISE','.GCLEAN','.BEDCON','.NOVELR',
-     &            '.NOLENR','.ANGPLO','.CHIAVG','.BEDECD',
-     &            '.VPOLE'/
+     &            '.NOLENR','.ANGPLO','.BEDECD','.VPOLE'/
 C
 #include "ibtfun.h"
 C
@@ -491,8 +490,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41) I
+     &                     31,32,33,34,35,36,37,38,39,40) I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -704,15 +702,11 @@ C&&&& ANGPLOT: prints the data points for the angular dependency of electronic c
                  ANGPLOT=.TRUE.
                GO TO 100
  39            CONTINUE
-C&&&& CHIAVG: makes angular anisotropic ECD plot with chi averaging               
-               CHIAVG=.TRUE.
-               GO TO 100
- 40            CONTINUE
 C&&&& BEDECD: Electronic circular dichroism with the full light-matter interaction operator
                BEDECD=.TRUE.
                GO TO 100
 C&&&& VPOLE: Electric multipole moments in the generalised velocity representation               
- 41            CONTINUE
+ 40            CONTINUE
                READ(LUCMD,*) IORDER
                IF (IORDER.EQ.1) THEN
                     NDEG = 1
@@ -1256,7 +1250,7 @@ C     ..not yet written.....tsaue
 C
 C     BED: Beyond Electric Dipole Approximation
 C
-      IF(DOBED) THEN
+      IF(DOBED .OR. BEDECD) THEN
          CALL BEDLEB(OSCBED(1,JSYMOP,1),OMEGA,ISSYM,WORK(KCMO),
      &        WORK(KIBRP),EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
      &        WORK,KFREE,LFREE)

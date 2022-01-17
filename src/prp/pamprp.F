@@ -10849,7 +10849,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ANGLES(THETA,PHI,CHI,UWAVE,UPOL)
+      SUBROUTINE ANGLES(THETA,PHI,CHI,WAVVEC,POLVEC)
 C***********************************************************************
 C     Define orientation of wave and polarization vector,
 C     based on angles read in degrees.
@@ -10870,38 +10870,38 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION UWAVE(3),UPOL(3,2)
-      LOGICAL BEDECD
-      BEDECD=.TRUE.
+#include "dcbxpp.h"
+      DIMENSION WAVVEC(3),POLVEC(3,2)
+          
 
       FAC      = ACOS(-1.0D0)/180.0D0
       THETA2   = THETA*FAC
       PHI2     = PHI*FAC
       CHI2     = CHI*FAC
-      UWAVE(1) = SIN(THETA2)*COS(PHI2)
-      UWAVE(2) = SIN(THETA2)*SIN(PHI2)
-      UWAVE(3) = COS(THETA2)
+      WAVVEC(1) = SIN(THETA2)*COS(PHI2)
+      WAVVEC(2) = SIN(THETA2)*SIN(PHI2)
+      WAVVEC(3) = COS(THETA2)
       W1       = COS(CHI2)
       W2       = SIN(CHI2)
-      UPOL(1,1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
-      UPOL(2,1)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
-      UPOL(3,1)  =-W1*SIN(THETA2)
+      POLVEC(1,1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
+      POLVEC(2,1)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
+      POLVEC(3,1)  =-W1*SIN(THETA2)
       IF (BEDECD) THEN
-        UPOL(1,2)  = -W2*COS(THETA2)*COS(PHI2) - W1*SIN(PHI2)
-        UPOL(2,2)  = -W2*COS(THETA2)*SIN(PHI2) + W1*COS(PHI2)
-        UPOL(3,2)  = W2*SIN(THETA2)
+        POLVEC(1,2)  = -W2*COS(THETA2)*COS(PHI2) - W1*SIN(PHI2)
+        POLVEC(2,2)  = -W2*COS(THETA2)*SIN(PHI2) + W1*COS(PHI2)
+        POLVEC(3,2)  = W2*SIN(THETA2)
       ENDIF
 C.....Output section
       IF (BEDECD) THEN
         WRITE(LUPRI,'(1X,A,3F18.10)') 
-     &   '* Unit wave vector   :', (UWAVE(I),I=1,3),    
-     &   '* Polarization Vector 1:', (UPOL(I,1),I=1,3),
-     &   '* Polarization vector 2:', (UPOL(I,2),I=1,3)
+     &   '* Unit wave vector   :', (WAVVEC(I),I=1,3),    
+     &   '* Polarization Vector 1:', (POLVEC(I,1),I=1,3),
+     &   '* Polarization vector 2:', (POLVEC(I,2),I=1,3)
       ELSE
 
-      WRITE (LUPRI,'(1X,A,3F18.10)')                                    &
-     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
-     &     '* Polarization vector:', (UPOL(I,1),I=1,3)
+      WRITE (LUPRI,'(1X,A,3F18.10)')                                   
+     &     '* Unit wave vector   :', (WAVVEC(I),I=1,3),                  
+     &     '* Polarization vector:', (POLVEC(I,1),I=1,3)
       ENDIF                   
       RETURN
       END

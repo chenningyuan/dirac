@@ -14,7 +14,6 @@
 .ANALYZE
 .EXCITATION ! A                                                                                   
 1 5
-.BED
 .BEDECD
 .ORIENTED
 0 0 0                                                                                                
