@@ -34,7 +34,7 @@ C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
-     &          WORK(*)
+     &          OSCECD(MAXEXC),WORK(*)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
       real(8), allocatable              :: TMOM(:,:,:)
       character (len=8),  allocatable   :: LABINT(:)
@@ -57,10 +57,10 @@ c     of the exponential operator, e1cos(kr) and e1sin(kr). For calculation
 c     of circular dichoroism,four types of integrals are needes: e1cos(kr), 
 c     e1sin(kr), e2cos(kr) and e2sin(kr). Therefore, NOP needs to equal 4 
 c     when calculating the ECD.     
-      IF (BEDECD) THEN
-        NOP = 4
-      ELSE
+      IF (DOBED) THEN
         NOP = 2
+      ELSE
+        NOP = 4
       ENDIF
 C     
 C     Allocate placeholders for integral labels and irreps 
@@ -168,9 +168,11 @@ c               of e2
       ENDDO
       CALL PRSYMB(LUPRI,'=',80,0)
       CALL HEADER('Full light-matter interaction: Anisotropic case',-1)
-      IF (BEDECD) THEN
+      IF (BEDECD.AND.DOBED) THEN
+        WRITE(LUPRI,'(A)') 'Linearly and circularly polarized light'
+      ELSEIF (BEDECD) THEN
         WRITE(LUPRI,'(A)') 'Circularly polarized light'
-      ELSE  
+      ELSEIF (DOBED) THEN
         WRITE(LUPRI,'(A)') 'Linearly polarized light'
       ENDIF  
       WRITE(LUPRI,'(/A,I2,A,A3/)')
@@ -263,7 +265,7 @@ C
 C
 C         Length wave vector
 C
-		    FACW = OMEGA(IEXC)/CVEL	      !This factor is defnined with CVEL to 
+		FACW = OMEGA(IEXC)/CVEL	          !This factor is defined with CVEL to 
         IF(BEDCHK) then 		          !correctly describe the non-rel limit
            CALL DCOPY(3,D0,0,WAVEVEC,1)
         ELSE
@@ -290,6 +292,7 @@ C
         IF (BEDECD) THEN
           TMOM(3,NPAR+1,IEXC) = D0
           TMOM(4,NPAR+1,IEXC) = D0
+          OSCECD(IEXC)        = D0
         ENDIF
         IPAR = 0
 C
@@ -347,11 +350,20 @@ C       ====================================
 C
 C       Oscillator strength
 C
-        IF (BEDECD) THEN
-          OSCBED(IEXC) =  D4*OMEGA(IEXC)*
+        IF (BEDECD.AND.DOBED) THEN
+          TMP = D0
+          DO IOP = 1,NOP
+            TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
+          ENDDO
+          OSCBED(IEXC) = D2*OMEGA(IEXC)*TMP
+          OSCECD(IEXC) =  D4*OMEGA(IEXC)*
      &                   (TMOM(2,NPAR+1,IEXC)*TMOM(3,NPAR+1,IEXC) 
      &                  - TMOM(4,NPAR+1,IEXC)*TMOM(1,NPAR+1,IEXC))
-        ELSE
+        ELSEIF (BEDECD) THEN
+          OSCECD(IEXC) =  D4*OMEGA(IEXC)*
+     &                   (TMOM(2,NPAR+1,IEXC)*TMOM(3,NPAR+1,IEXC) 
+     &                  - TMOM(4,NPAR+1,IEXC)*TMOM(1,NPAR+1,IEXC))
+        ELSEIF (DOBED) THEN
           TMP = D0
           DO IOP = 1,NOP
             TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
@@ -362,7 +374,7 @@ C
 C
 C     Print section
 C
-      IF (BEDECD) THEN
+      IF (.NOT.DOBED) THEN
         WRITE(LUPRI,'(3X,A,3F18.10)')                                    
      &     '* Unit wave vector   :', (UWAVE(I),I=1,3)
       ELSE
@@ -373,8 +385,36 @@ C
       WRITE(6,'(/A)') '* Transition moments:'
       WRITE(6,'(/A4,1X,A18,24X,3(3X,A5,13X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-
-      IF (BEDECD) THEN
+      IF (BEDECD.AND.DOBED) THEN
+        DO IEXC = 1,NEXCNV
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
+     &     IEXC,OMEGA(IEXC),' (e1cos [kr]): ',
+     &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
+     &     IEXC,OMEGA(IEXC),' (e1sin [kr]): ',
+     &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
+     &     IEXC,OMEGA(IEXC),' (e2cos [kr]): ',
+     &     (-TMOM(3,IPAR,IEXC),IPAR = 1,NPAR+1)
+           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
+     &     IEXC,OMEGA(IEXC),' (e2sin [kr]): ',
+     &     (TMOM(4,IPAR,IEXC),IPAR = 1,NPAR+1)
+        ENDDO   
+        WRITE(6,'(/A)') '* Oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')     
+     &    'Exc.','Frequency (au)    '
+        DO IEXC = 1,NEXCNV
+          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
+     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
+        ENDDO
+        WRITE(6,'(/A)') '* Differential Oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')     
+     &    'Exc.','Frequency (au)    '
+        DO IEXC = 1,NEXCNV
+          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
+     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
+        ENDDO   
+      ELSEIF (BEDECD) THEN
         DO IEXC = 1,NEXCNV
            WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e1cos [kr]): ',
@@ -396,7 +436,7 @@ C
           WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
      &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
         ENDDO   
-      ELSE
+      ELSEIF (DOBED) THEN
         DO IEXC = 1,NEXCNV
            WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' real part (sin[kr]) : ',
