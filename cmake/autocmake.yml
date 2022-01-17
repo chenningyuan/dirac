@@ -60,8 +60,6 @@ modules:
   - source:
     - 'custom/mpi.cmake'
     - 'custom/test.cmake'
-    - 'custom/exported.cmake'
-    - 'custom/unreleased.cmake'
     - 'custom/reset_external_libs.cmake'
     - 'custom/static.cmake'
     - 'custom/definitions.cmake'
