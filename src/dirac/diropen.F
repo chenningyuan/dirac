@@ -62,6 +62,8 @@ C
 #include "memint.h"
 C
       CALL QENTER('MKMOFK')
+
+      iprscf_ = iprscf; iprscf = 50
 C
 C     The various blocks of the Fock matrix in MO-basis is defined in (3.40)
 C     They are constructed in AO-basis using density matrices as projection
@@ -97,9 +99,11 @@ C     ========================
 C
       DO I = 1,NFSYM
       IF(NTMO(I).GT.0) THEN
+          write(lupri,*) 'blubb: 0 ntmo(i) = ',ntmo(i),sub_bl
         IF(SUB_BL) THEN
           CALL TSUBBL(I,FAO,FMO,TMAT,TMAT,WORK(KFREE),LFREE,IPRSCF)
         ELSE
+          write(lupri,*) 'blubb: 1 ntmo(i) = ',ntmo(i)
           CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
      &            NTMO(I),NTMO(I),
      &            FAO(I2BASX(I,I)+1,1),NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),
@@ -411,6 +415,7 @@ C
  30   CONTINUE
       CALL QEXIT('MKMOFK')
       CALL FLSHFO(LUPRI)
+      iprscf = iprscf_
       RETURN
       END
 ! -- end of diropen.F --

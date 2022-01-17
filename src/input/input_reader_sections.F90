@@ -2187,9 +2187,9 @@
          aooeamf   = .true.
       end if
 
-      if (kw_matches(word, '.nofocc')) then
+      if (kw_matches(word, '.noaoc ')) then
          aoomod       = .true.
-         aoofocc      = .false.
+         aoofocc      = .true.
       end if
 
       call check_whether_kw_found(word, kw_section)

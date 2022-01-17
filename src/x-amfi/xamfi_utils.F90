@@ -282,7 +282,7 @@ contains
 
   end subroutine dump_normalized_2e_soc
 !----------------------------------------------------------------------
-#define DEBUG_SOC
+!#define DEBUG_SOC
   subroutine dump_Xc_c1_dens(   &
     Dmat,                       &
     nrow,                       &
@@ -339,6 +339,8 @@ access='sequential',action="readwrite",position='rewind')
 
 !> Start by constructing a fractional occupation density (eqivalent to what is used in an atomic start guess)
 !> that is, add active density matrices to closed-shell density matrix
+write(6,*) 'BLUBB: x_nopen, x_dfopen, nrow, ncol, nz, nr_2e_fock_matrices = ',&
+x_nopen, x_dfopen(0:x_nopen), nrow, ncol, nz, nr_2e_fock_matrices, size(dmat)
 do i = 1,x_nopen
   call daxpy(nrow*ncol*nz,x_dfopen(i),Dmat(1,1,1,i+1),1,Dmat(1,1,1,1),1)
 end do

@@ -29,7 +29,7 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
 !#undef DEBUG_SOC
@@ -122,7 +122,7 @@ contains
                             lwork_ext             = lwork_ext,            &
                             print_lvl             = print_lvl             &
                            )
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
       !> debug print
       if(print_lvl > 0)then

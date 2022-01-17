@@ -3057,6 +3057,9 @@ C
       CALL PRQMAT(TM2,NRAO,NCMO,LR2,LC2,NZTM2,IQTM2,LUPRI)
 #undef DEBUG
 #endif
+      write(6,*) " BLUBB QTRANS: LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO",
+     &LRAO,LCAO,LR1,LC1,LR2,LC2,LRMO,LCMO," columns: AO, MO: ",
+     &NRAO,NCAO,NRMO,NCMO,TREV," ",TYP
 C
 C     Time reversal symmetry of F-matrix
 C

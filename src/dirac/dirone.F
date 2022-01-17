@@ -2778,6 +2778,8 @@ C     Write transformation matrices
 
             !> if requested (.FOCC): density matrix for 2e-SO+scalar corrections
             !> always with fractional occupation for open shell atoms
+            write(lupri,*) ' BLUBB: nfmat, aoofocc, aoc ',
+     &      nfmat, aoofocc, aoc
             if(aoofocc .and. aoc)then
               aoc_save   = aoc
               nfmat_save = nfmat
@@ -2837,7 +2839,7 @@ C     Write transformation matrices
      &                                no1esystem_aoosoc,
      &                                dirac_cfg_dft_calculation,
      &                                lwork_local,
-     &                                iprham
+     &                                10!iprham
      &                               )
 
             !> reset common block variables to 2c mode
@@ -3077,7 +3079,7 @@ C
      &                          isDFT                 = 
      &                          dirac_cfg_dft_calculation,
      &                          lwork_ext             = lfree,
-     &                          print_lvl             = iprham
+     &                          print_lvl             = 10!iprham
      &                         )
 
           !> here we split...
@@ -3154,6 +3156,14 @@ C
      &                                             lux2c, 0,
      &                                             scratch_mmf)
             close(lux2c, status='keep')
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+            CALL HEADER(
+     &      'X-AMFI - G_A[2c]',-1)
+            CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+#undef DEBUG_SOC
+#endif
 
             !> read {U+ G_A[4c] U}^{++}
             call read_xamfi_general_matrix(
@@ -3165,11 +3175,19 @@ C
      &                                     nint(charge(1)),
      &                                     lux2c
      &                                    )
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+            CALL HEADER(
+     &      'X-AMFI - {U+ G_A[4c] U}^{++}',-1)
+            CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
+     &                  IPQTOQ(1,0),LUPRI)
+#undef DEBUG_SOC
+#endif
             !> ~
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-!#define DEBUG_SOC
+#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - 2e-normalized (final)',-1)

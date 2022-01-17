@@ -202,7 +202,7 @@ contains
 !   ----------------------------------------------------------------------------
 !   local variables
 !   ----------------------------------------------------------------------------
-    integer             :: i, j
+    integer             :: i, j, k
     character(len=1)    :: c
 !   ----------------------------------------------------------------------------
 
@@ -231,10 +231,20 @@ contains
                         nfbas(i,2),&
                         ntmo(i),&
                         i2tmt(i),&
-                        i2tmot(i)
+                        i2tmot(i),&
+                        n_sub_bl(i)
                   do j = 1, nr_fsym
                         write(99)&
                         i2basx(i,j)
+                  end do
+                  print *, 'blubb: 0 n_sub_bl(i), i',n_sub_bl(i),i
+                  do k = 1, n_sub_bl(i)
+                     write(99) norb_sub(k,i,0), &
+                               norb_sub(k,i,1), &
+                               norb_sub(k,i,2), &
+                               ntmo_sub(k,i,0), &
+                               ntmo_sub(k,i,1), &
+                               ntmo_sub(k,i,2)
                   end do
             end do
             close(99,status="keep")
@@ -257,10 +267,20 @@ contains
                               nfbas(i,2),&
                               ntmo(i),&
                               i2tmt(i),&
-                              i2tmot(i)
+                              i2tmot(i),&
+                              n_sub_bl(i)
                         do j = 1, nr_fsym
                               read(99)&
                               i2basx(i,j)
+                        end do
+                        print *, 'blubb: 1 n_sub_bl(i), i',n_sub_bl(i),i
+                        do k = 1, n_sub_bl(i)
+                          read(99) norb_sub(k,i,0), &
+                                   norb_sub(k,i,1), &
+                                   norb_sub(k,i,2), &
+                                   ntmo_sub(k,i,0), &
+                                   ntmo_sub(k,i,1), &
+                                   ntmo_sub(k,i,2)
                         end do
                         ICMO(i)  = NCMOT
                         ICMOQ(i) = NCMOT*NZ

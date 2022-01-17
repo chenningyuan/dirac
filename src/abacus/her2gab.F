@@ -1983,6 +1983,9 @@ C     Construct label
 C     ---------------
 C
 
+      iprint_ = iprint;
+      iprint_ = 10
+
 
       IF(ITYPE.EQ.0) THEN
          NGAB = 1
@@ -2041,9 +2044,9 @@ C
          REWIND LUPROP
          IF(FNDLAB(GABLAB(IGAB),LUPROP).and..not.recompute_Gab) THEN
             CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
-            IF(IPRINT.GE.5) THEN
-C              reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
-C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
+            IF(IPRINT_.GE.5) THEN
+C              reduced GAB-matrix is printed for IPRINT_ .ge. 4 in GABGEN
+C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
                CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
                WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
                CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
@@ -2054,7 +2057,7 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
-     &           recompute_Gab,IPRINT,WORK,LWORK)
+     &           recompute_Gab,IPRINT_,WORK,LWORK)
             REWIND LUPROP
             IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
                CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
@@ -2063,9 +2066,9 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
      &              'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
                CALL QUIT('GETGAB: No GAB on AOPROPER !')
             END IF
-            IF(IPRINT.GE.5) THEN
-C              reduced GAB-matrix is printed for IPRINT .ge. 4 in GABGEN
-C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
+            IF(IPRINT_.GE.5) THEN
+C              reduced GAB-matrix is printed for IPRINT_ .ge. 4 in GABGEN
+C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
                CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
                WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
                CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,

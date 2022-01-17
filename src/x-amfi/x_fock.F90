@@ -76,7 +76,7 @@ contains
 !             with GAUNT (LS|LS) entering the game (intflg=8) you know what to do by now...
 !
 ! !> in : density matrix (inactive + active ones) in AO basis
-  !> out: 2e-Fock matrix in AO-basis                            
+  !> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -132,7 +132,8 @@ contains
       lwork_ext,              &
       print_lvl               &
       )
-       
+
+
       if(nr_2e_fock_matrices > 1)then
 
         local_lwork = lwork_ext - 10000
@@ -156,10 +157,14 @@ contains
         !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
         CALL READT(isLUTMAT,x_N2TMT,work(ktmat)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
         CLOSE(isLUTMAT,STATUS='KEEP')
+        print *, 'blubb ,x_N2TMT is ', x_N2TMT
 
         CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_x*nr_2e_fock_matrices,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','FMO  ',KFMO  ,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
+        call dzero(work(KFMO),N2BBASXQ_dim_x)
+        call dzero(work(kDEVEC),N2BBASXQ_dim_x)
+        call dzero(work(KDTEMP),N2BBASXQ_dim_x*nr_2e_fock_matrices)
         CALL MKMOFK(work(kFMO),fmat,dmat,work(kTMAT),cmo,work(KSAOMO),WORK(KDTEMP),WORK(KDEVEC),WORK(KFREE),LFREE)
 
         !> Backtransform MO Fock to AO Fock
@@ -170,6 +175,7 @@ contains
         CLOSE(isLUTMAT,STATUS='KEEP')
 
         CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
+        call dzero(work(kfAO),nrows*ncols*nz)
 
         do i = 1,nr_fsym
            CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
@@ -178,7 +184,7 @@ contains
                        WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
                        WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
                        WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
-                       WORK(KFREE),LFREE,print_lvl)
+                       WORK(KFREE),LFREE,20)!print_lvl)
         end do
 
         fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)

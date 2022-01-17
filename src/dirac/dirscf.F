@@ -817,6 +817,7 @@ C         read LUTMAT rec#2 with SAOMO
       CALL READT(LUTMAT,N2TMT,SAOMO)
       CLOSE(LUTMAT,STATUS='KEEP')
 
+      iprscf_ = iprscf; iprscf = 50
 CMI ... perform all this only if we do not restart BSS from DC-SCF or DC-SCF from BSS-SCF
       IF (.NOT.RESTFCK) THEN
         IF (NASHT.GT.0.AND.AOC) THEN
@@ -880,6 +881,7 @@ C       provide starting for the postDHF-BSS-SCF procedure
         CLOSE(LUBSS,STATUS='KEEP')
         RESTFCK = .FALSE.
       ENDIF 
+      iprscf = iprscf_
 C
 C     Freeze orbitals by zeroing off-diagonal elements of FMO
 C     =======================================================
@@ -1397,8 +1399,10 @@ C
 C           Note that all Fock matrices are multiplied with 2
 C              in TWOFCK.
 C
+            iprscf_ = iprscf; iprscf = 10
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+            iprscf = iprscf_
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
 C
@@ -1509,10 +1513,10 @@ C        ======================
            deallocate(aoo2esssoc)
          end if
 C
-         !iprscf_ = iprscf; iprscf = 5;
+         iprscf_ = iprscf; iprscf = 5;
          ! here F1 is in CMO and F2 is in FOCK
          CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
-         !iprscf = iprscf_;
+         iprscf = iprscf_;
 #ifdef HAS_PCMSOLVER
          if (dirac_cfg_pcm) then
            write(lupri,'(a)') '* Calling pcm_oper_ao_driver'
