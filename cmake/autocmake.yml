@@ -60,8 +60,6 @@ modules:
   - source:
     - 'custom/mpi.cmake'
     - 'custom/test.cmake'
-    - 'custom/exported.cmake'
-    - 'custom/unreleased.cmake'
     - 'custom/reset_external_libs.cmake'
     - 'custom/static.cmake'
     - 'custom/definitions.cmake'
@@ -90,7 +88,6 @@ modules:
 - install:
   - source:
     - 'custom/install.cmake'
-    - 'custom/cpack-dirac.cmake'
     - 'custom/pam.cmake'
     - 'custom/test.cmake'
 - save_flags:

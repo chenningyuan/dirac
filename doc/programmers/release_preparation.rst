@@ -78,107 +78,25 @@ rather cherry-pick the individual commit(s) to the release branch::
 How to exclude code from being released
 ---------------------------------------
 
-You as the developer are responsible for removing your code from the
-release branch that you do not wish to be released. This is *not* done by
-actually removing the code but by using CMake in combination with CPP
-statements. So again, *do not actually delete* code lines, use CPP statements
-as demonstrated below:
+Code that is part of ``master`` is meant to be part of the next release.  There
+is no mechanism anymore to remove code from ``master`` with preprocessing or
+other scripts. This mechanism got removed when we changed the license to LGPL.
 
-Modules can be excluded from the release version by surrounding the appropriate
-parts of code by preprocessor statements, e.g.::
-
-  #ifdef MOD_KRMC
-           CALL TKRMCORB
-           CALL SETDC2(0)
-           CALL PSIOPT('MCSCF',WFCONV,WORK,LWORK)
-           IF(DOANA) CALL PAMANA(WORK,LWORK)
-  #else
-              CALL QUIT(
-       &  'Second order KMCSCF optimization not included in this version')
-  #endif
-
-This means that the calls are included only if MOD_KRMC is defined.
-In the above example, the
-script would remove the actual MOD_KRMC code and what would be left is::
-
-  CALL QUIT('Second order KMCSCF optimization not included in this version')
-
-If you want to protect code from being released which is not part of any CMake
-option, you can use MOD_UNRELEASED::
-
-  #ifdef MOD_UNRELEASED
-  !      secret code; this will not end up in the release tarball
-  #endif
-
-To summarize, you can remove code using either existing CPP filters or using
-MOD_UNRELEASED. Do this on the release branch and merge to the master.
+- Do not send merge requests towards ``master`` for code that you do not with to be released.
+- As a reviewer, please raise a question if a merge request towards ``master`` looks like something
+  that should not be released quite yet.
+- We will not release any of your private development branches on https://gitlab.com/dirac/dirac-private.
+  Place your code there if you do not wish to release it quite yet.
+- By sending a merge request towards ``master`` you signal that this code is meant to be released.
+- Do not send merge requests towards ``master`` of code written by others without asking them.
 
 
-How does the preprocessor-based code removal work?
---------------------------------------------------
-
-Consider this CMake code at the time of writing found in ``src/CMakeLists.txt``::
-
-    cmake_dependent_option(ENABLE_INTEREST "Enable Interest" ON  "ENABLE_UNRELEASED" OFF)
-    if(ENABLE_INTEREST)
-        add_definitions(-DMOD_INTEREST)
-    endif()
-
-    ...
-
-    if(ENABLE_INTEREST)
-        add_subdirectory(${PROJECT_SOURCE_DIR}/src/interest)
-        set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interest> ${EXTERNAL_OBJECTS})
-        dirac_test(mdirac_closed-shell_dft "interest")
-    else()
-        set(CODE_REMOVAL_FLAGS ${CODE_REMOVAL_FLAGS} -UMOD_INTEREST)
-    endif()
-    message(STATUS "Interest library: ${ENABLE_INTEREST}")
-
-This code adds a CMake option ``ENABLE_INTEREST`` to toggle the Interest
-library on or off.  This is a dependent option which depends on
-``ENABLE_UNRELEASED``. This means that Interest library is on by default unless
-``ENABLE_UNRELEASED`` is selected.
-
-We see that selecting ``ENABLE_INTEREST`` defines ``-DMOD_INTEREST`` (among
-other things).  Further down we see that if ``ENABLE_INTEREST`` is false, then
-``-UMOD_INTEREST`` is added to ``CODE_REMOVAL_FLAGS``. This variable is used in
-``cmake/custom/cpack.cmake`` and passed on to the
-``maintenance/remove_unreleased_code`` script which removes code based on these
-flags.  Since ``maintenance/remove_unreleased_code`` works in-place,
-``cmake/custom/cpack.cmake`` first copies the source tree to ``EXPORT_DIR`` to
-make sure we don't delete code in our working directory.
-
-
-How to "remove" entire directories?
+Check copyright headers and version
 -----------------------------------
-
-See ``cmake/custom/cpack.cmake`` and search for ``rm -rf``.
-
-
-How to "remove" tests?
-----------------------
-
-Currently you cannot. If you really want to remove it, list it explicitly
-in ``cmake/custom/cpack.cmake``.
-
-
-How to release or export the code
----------------------------------
-
-Most important rule: treat unpublished code of others with respect.  Do not
-release code of others without asking.
 
 1. Verify copyright headers.
 2. Verify logo (list of authors).
 3. Bump the version (the version number is kept in file VERSION; but also git grep -i for "orphaned" version numbers in the source code).
-
-As a final step create the tarball::
-
-  $ mkdir build
-  $ cd build
-  $ cmake -DENABLE_UNRELEASED=OFF ..
-  $ make release
 
 
 Copyright statements and markers
@@ -202,7 +120,3 @@ copyrights manually. You can update them with the
 This script will overwrite whatever is between
 these markers so it is a bad idea to modify text
 between the markers manually.
-
-These markers are removed by "make release"
-which runs ``maintenance/remove_copyright_tags`` in the background
-(see ``cmake/ConfigPackaging.cmake``).

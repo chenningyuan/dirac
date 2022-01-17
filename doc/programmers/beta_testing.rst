@@ -1,27 +1,18 @@
 :orphan:
- 
+
 
 Checklist for beta-testers
 ==========================
 
 
-Verify that the tarball installs correctly
+Verify that the release installs correctly
 ------------------------------------------
 
 Check out the release branch::
 
-  $ git checkout release(-14)
+  $ git checkout release-22  # adapt name of branch
 
-Create the tarball yourself::
-
-  $ mkdir build
-  $ cd build
-  $ cmake -DENABLE_UNRELEASED=OFF ..
-  $ make release
-
-Please report if the tarball generation is broken.
-
-Extract the generated tarball and install it::
+Try to configure and build the code::
 
   $ ./setup [--fc=ifort --cc=icc --cxx=icpc]
 

@@ -194,7 +194,6 @@ C       2 - 000010: Active density matrix (see bit 6-?)
 C       4 - 000100: Secondary electron density matrix
 C       8 - 001000: Secondary positron density matrix
 C      16 - 010000: C Ct (that is 1 in AO-basis)
-C      32 - 100000: reference vacuum (for QED)
 C
 C     Important: Act. density matrix works only for one open shell.
 C
@@ -220,16 +219,8 @@ C
 C
 C     Initialize matrix
 C
-      IF (LBIT(IFLAG,6).AND.VACREF) THEN
-        LUBVAC = 14
-        CALL OPNFIL(LUBVAC,'DFBVAC','OLD','GENDEN')
-        CALL READT(LUBVAC,N2BBASXQ,DMAT)
-        CLOSE(LUBVAC,STATUS='KEEP')
-        FAC    = DM1
-      ELSE
         CALL DZERO(DMAT,N2BBASXQ)
         FAC    = D0
-      ENDIF
 C
 C
       IF(IFLAG.EQ.0) GOTO 999
@@ -298,8 +289,6 @@ C
           ELSEIF (I.EQ.5) THEN
             WRITE(LUPRI,'(3X,A)') 
      &           '- C Ct (1 in AO-basis)'
-          ELSEIF (I.EQ.6) THEN
-            WRITE(LUPRI,'(3X,A)') '- reference vacuum'
           ENDIF
         ENDIF
         ENDDO
@@ -409,17 +398,7 @@ C
       CALL DZERO(DMAT,N2BBASXQ*NFMAT)
 
       IDEN = 1
-      IF(VACPOL.AND..NOT.MIXVAC) THEN
-        IF(POSVAC) THEN
-          IDEN = IDEN + 4 + 32
-        ELSE
-          IDEN = IDEN + 8 + 32
-        ENDIF
-      ENDIF
       CALL GENDEN(DMAT,CMO,IDEN,IPRINT)
-CTROND...This only works for zero electrons !!!
-      IF(POSVAC) CALL DSCAL(N2BBASXQ,DM1,DMAT,1)
-      IF(MIXVAC) CALL GENMIXVAC(DMAT,CMO,IPRINT)
       IF(AOC) THEN
 C.......Average of Configuration
         DO IOPEN = 1,NOPEN
@@ -746,78 +725,6 @@ C
       ENDIF
       WRITE(LUPRI,'(A,F16.8)') 
      &   'EIGSEP: * Electron number: ',OCC
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck genaltvac */
-      SUBROUTINE GENMIXVAC(DMAT,CMO,IPRINT)
-C*****************************************************************************
-C
-C     Calculate alternative definition of density matrix of 
-C     vacuum polarisation:
-C
-C     The standard definition is:
-C
-C     D(vacpol) = [D(-) - D(-)_ref]
-C
-C     Alternatively:
-C
-C     D(vacpol) = (1/2)[D(-) - D(+)]
-C    
-C
-C     Note that the density matrix is NOT initialized to zero !
-C
-C     Written by  T. Saue Oct 9 2006
-C     Last revision: 1997/11/23 - jth
-C
-C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-      PARAMETER (D1=1.0D00,DM1=-1.0D00,D0=0.0D00,DP5=0.5D0,DPM5=-0.5D0)
-C
-      DIMENSION DMAT(*), CMO(*)
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-C
-#include "ibtfun.h"
-C
-      CALL QENTER('GENMIXVAC')
-C
-C     Calculate negative energy part
-C
-      DO IFRP = 1,NFSYM
-        ITEST  = NPSH(IFRP)
-        ISTART = 1
-        ILOOP  = NPSH(IFRP)
-        IF(ITEST.GT.0) THEN
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
-     &              DP5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &              ISTART,ILOOP,NFBAS(IFRP,0))
-        ENDIF
-        ITEST  = NESH(IFRP)
-        ISTART = NPSH(IFRP)+1
-        ILOOP  = NESH(IFRP)
-        IF(ITEST.GT.0) THEN
-          CALL DENST1(DMAT(I2BASX(IFRP,IFRP)+1),NTBAS(0),NTBAS(0),NZ,
-     &              DPM5,D1,CMO(ICMOQ(IFRP)+1),NFBAS(IFRP,0),NORB(IFRP),
-     &              ISTART,ILOOP,NFBAS(IFRP,0))
-        ENDIF
-      ENDDO
-      IF (IPRINT.GE.10) THEN
-        WRITE(LUPRI,'(A)') '* Output from GENMIXVAC:'
-        DO IFRP = 1,NFSYM
-          WRITE(LUPRI,'(/A,A3)')
-     &      '* Fermion ircop ',FREP(IFRP)
-          CALL PRQMAT(DMAT(I2BASX(IFRP,IFRP)+1),
-     &              NFBAS(IFRP,0),NFBAS(IFRP,0),
-     &              NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
-        ENDDO
-      END IF
-C   
- 999  CONTINUE
-      CALL QEXIT('GENMIXVAC')
-      CALL FLSHFO(LUPRI)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

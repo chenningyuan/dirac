@@ -171,12 +171,7 @@ C        IFLAG = 4 + 8 = 12
 C          4 - 000100: Secondary electron density matrix
 C          8 - 001000: Secondary positron density matrix
 C
-         IF(VACPOL) THEN
-C..........negative energy solutions are occupied
-           IFLAG = 4
-         ELSE
            IFLAG = 12
-         ENDIF
          CALL GENDEN(DTEMP1,CMO,IFLAG,IPRSCF)
 C        This is the inactive projector P^Z of (3.42)
 C
@@ -187,14 +182,7 @@ C
          CALL DSCAL(N2BBASXQ,GAMMA,DTEMP1(1,1),1) ! (a_U-1)*P^Z
 C        Next we add the contribution from the inactive projector
 C        alpha_U f_U P^I to the secondary projector
-         IF(VACPOL) THEN
-C..........negative energy solutions are occupied
-           IFLAG = 9
-           CALL GENDEN(DTEMP1(1,2),CMO,IFLAG,IPRSCF)
-           CALL DAXPY(N2BBASXQ,BETA,DTEMP1(1,2),1,DTEMP1(1,1),1)
-         ELSE
            CALL DAXPY(N2BBASXQ,BETA,DMAT(1,1),1,DTEMP1(1,1),1)
-         ENDIF
 C        Finally we add the contribution from the active projector
 C        of this open shell to complete the first term of (3.42)
 C        From (3.42) it should be noted that this projector is used

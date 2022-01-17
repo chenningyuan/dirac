@@ -4152,9 +4152,7 @@ CMI .. mover before diagonalization which can destroy SMAT
 C
 C     Diagonalize overlap matrix
 C
-#ifdef MOD_UNRELEASED
       IF (.NOT.DOQJACO) THEN
-#endif
          IF (LOWJACO) THEN
             CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT)
          ELSE
@@ -4167,7 +4165,6 @@ c    It would be better to rewrite the code below instead..
                CALL QUIT('Diagonalization of overlap matrix failed')
             ENDIF
          ENDIF
-#ifdef MOD_UNRELEASED
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
@@ -4193,7 +4190,6 @@ CMI   ... (quaternion) Jacobi diagonalization routine
         CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1) ! resort
         CALL MEMREL('LOWGEN',WORK,KSMAT,KSMAT,KFREE,LFREE)
       ENDIF
-#endif
 !    ... ensure V_ij = U_ij/SQRT(s_j)
       NV = 0
       DO I = 1,NS
@@ -6017,9 +6013,7 @@ C
              close(luhm,status="keep")
           ENDIF
 
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL))
@@ -6033,7 +6027,6 @@ C
      &        'LINSYM: Erroneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                   IDUMMY,.TRUE.,IPRHAM)
@@ -6041,8 +6034,7 @@ C
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-#endif
-          IF (IPRHAM.GE.6) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &     '*** Fermion corep ',I,'/',NFSYM
@@ -6092,9 +6084,7 @@ C
              close(luhm,status="keep")
           ENDIF
 
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS))
@@ -6110,7 +6100,6 @@ C
      &        'LINSYM: Erroneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
      &                   .TRUE.,IPRHAM)
@@ -6118,8 +6107,7 @@ C
               EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-#endif
-          IF (IPRHAM.GE.6) THEN
+          IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
      &          '*** Fermion corep ',I,'/',NFSYM
@@ -6588,9 +6576,7 @@ C
             close(luhm,status="keep")
           ENDIF
 
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL))
@@ -6606,7 +6592,6 @@ C
      &        'ATMSYM: Errorneous QDIAG diagonalization of Kappa_LL !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                   IDUMMY,.TRUE.,IPRHAM)
@@ -6614,7 +6599,6 @@ C
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-#endif
           KPMAXL = NINT(MAX(ABS(EIG(IEIGE)),ABS(EIG(IEIGE+NL-1))))
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_LL eigenvalues',-1)
@@ -6675,9 +6659,7 @@ C
             enddo
             close(luhm,status="keep")
           ENDIF
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS))
@@ -6693,7 +6675,6 @@ C
      &        'ATMSYM: Errorneous QDIAG diagonalization of Kappa_SS !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
      &                   .TRUE.,IPRHAM)
@@ -6701,7 +6682,6 @@ C
               EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
          ENDIF
-#endif
           KPMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_SS eigenvalues',-1)
@@ -7059,9 +7039,7 @@ C
      &                   IPQTOQ(1,0),LUPRI)
            ENDIF
 C        
-#ifdef MOD_UNRELEASED
            IF (.NOT.DOQJACO) THEN
-#endif
              IF(DOJACO) THEN
                CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                       WORK(KVLL))
@@ -7077,7 +7055,6 @@ C
      &          'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL !')
                ENDIF
              ENDIF
-#ifdef MOD_UNRELEASED
            ELSE
              CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                    IDUMMY,.TRUE.,IPRHAM)
@@ -7086,7 +7063,6 @@ C
              ENDDO
            ENDIF
            MJMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
-#endif
            IF (IPRHAM.GE.3) THEN
              CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
              WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,IFRP)
@@ -7126,9 +7102,7 @@ C
      &                IPQTOQ(1,0),LUPRI)
            ENDIF
 C     
-#ifdef MOD_UNRELEASED
            IF (.NOT.DOQJACO) THEN
-#endif
              IF(DOJACO) THEN
                CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                     WORK(KVSS))
@@ -7144,7 +7118,6 @@ C
      &           'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS !')
                ENDIF
              ENDIF
-#ifdef MOD_UNRELEASED
            ELSE
              CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
      &                   .TRUE.,IPRHAM)
@@ -7153,7 +7126,6 @@ C
              ENDDO
            ENDIF
            MJMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
-#endif
            IF (IPRHAM.GE.3) THEN
              CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
              WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,IFRP)

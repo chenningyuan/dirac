@@ -44,17 +44,10 @@ At this point, you will have to create a branch in order to commit these changes
 
 Next create a merge request to merge these changes into the current release branch.
 
-Once the merge request has been accepted, we are now ready to create and upload the tarball for the patch. It is strongly recommended to start from a clean clone.
-After clone, make sure that you are one the current release branch, e.g.::
+Once the merge request has been accepted, we are now ready to download the tarball from GitLab and upload it to Zenodo (later we will automate this further).
 
-  $ git checkout release-21
-
-We now build the tarball::
-
-  $ mkdir build
-  $ cd build
-  $ cmake -DENABLE_UNRELEASED=OFF ..
-  $ make release
+As an example, for the 21.1 patch, visit https://gitlab.com/dirac/dirac/-/tree/release-21 and click on the Download icon next to the Clone button.
+Rename the tarball to DIRAC-21.1-Source.tar.gz.
 
 Before uploading the tarball, it is useful to compare to the existing tarball. We shall use the powers of git to do this. First unpack the tarball we just created, e.g.::
 
