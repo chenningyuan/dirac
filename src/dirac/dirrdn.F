@@ -7767,12 +7767,15 @@ C
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
-      IF (DOPRP.AND.TWOCOMP.AND..NOT.is_2c_rel_run) THEN
-       WRITE(LUPRI,'(1X,A/)')
-     & 'NB: Properties & TWOCOMP require non-relativistic'//
-     & ' form of operators !'
+      IF (DOPRP) THEN
+        IF(DKH1) CALL QUIT('Properties not available for DKH1')
+        IF(DKH2) CALL QUIT('Properties not available for DKH2')        
+        IF(TWOCOMP.AND..NOT.is_2c_rel_run) THEN
+          WRITE(LUPRI,'(1X,A/)')
+     &    'NB: Properties & TWOCOMP require non-relativistic'//
+     &    ' form of operators !'
+        ENDIF
       ENDIF
-
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
