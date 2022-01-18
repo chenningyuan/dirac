@@ -57,10 +57,11 @@ c     of the exponential operator, e1cos(kr) and e1sin(kr). For calculation
 c     of circular dichoroism,four types of integrals are needes: e1cos(kr), 
 c     e1sin(kr), e2cos(kr) and e2sin(kr). Therefore, NOP needs to equal 4 
 c     when calculating the ECD.     
-      IF (DOBED) THEN
-        NOP = 2
-      ELSE
+
+      IF (BEDECD) THEN
         NOP = 4
+      ELSEIF (DOBED) THEN
+        NOP = 2
       ENDIF
 C     
 C     Allocate placeholders for integral labels and irreps 
@@ -1232,7 +1233,6 @@ C
       CALL DZERO(ECD,NPOINTS*NEXCNV)
       CALL LEBEDEV(NROTAV,X,Y,Z,WT,NCOUNT)
       IF(NCOUNT.NE.NPOINTS) CALL QUIT('BEDLEB: Grid inconsistency.')
-
       allocate(POINTS(NPOINTS))
 C    List of indicies
       POINT_PER_PROC = NPOINTS
@@ -1254,7 +1254,6 @@ C     Initialize the Slaves (if there are any other than Master)
      &       NELMNT,NPRPINT, CMO, WORK,KFREE,LFREE)
       ENDIF
 #endif
-
 C     ====================================================
 C     LOOP OVER LEBDEV POINTS AND INTEGRATE 
 C     ====================================================
@@ -1456,7 +1455,7 @@ C
       ENDDO
       IF (ANGPLOT) THEN
         DO IEXC = 1,NEXCNV
-          WRITE(6,"(A24, I4)") "Angular plot excitation hoihoi ", IEXC
+          WRITE(6,"(A24, I4)") "Angular plot excitation", IEXC
           WRITE(6,*) "X      Y       Z       ECD"
           DO IP = 1,NPOINTS
              WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP)

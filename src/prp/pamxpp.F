@@ -1250,6 +1250,19 @@ C     ..not yet written.....tsaue
 C
 C     BED: Beyond Electric Dipole Approximation
 C
+c      IF(DOBED .OR. BEDECD) THEN
+c         CALL BEDLEB(OSCBED(1,JSYMOP,1),OMEGA,ISSYM,WORK(KCMO),
+c     &        WORK(KIBRP),EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+c     &        WORK,KFREE,LFREE)
+c        IF(ORIENTED) THEN
+c           CALL GET_BED(OSCBED(1,JSYMOP,2),OMEGA,ISSYM,WORK(KCMO),
+c     &        WORK(KIBRP),EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
+c     &        WORK,KFREE,LFREE)
+c        ENDIF
+c      ENDIF
+c      stop
+
+c original code
       IF(DOBED .OR. BEDECD) THEN
          CALL BEDLEB(OSCBED(1,JSYMOP,1),OMEGA,ISSYM,WORK(KCMO),
      &        WORK(KIBRP),EVECR,IBTYP,IBCVC,IBEVC,IBPVC,
