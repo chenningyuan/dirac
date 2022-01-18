@@ -31,10 +31,10 @@
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,                           &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,                         &
      &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,BEDECD,ANGPLOT,          &
-     &        CHIAVG,GNOISE,GCLEAN,DOVELR,DOLENR
+     &        GNOISE,GCLEAN,DOVELR,DOLENR
       COMMON /XCBLPP/XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG(2),                 &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,XPP_E2CHEK,DOBED,        &
-     &        ORIENTED,BEDCHK,BEDECD,ANGPLOT,CHIAVG,                    &
+     &        ORIENTED,BEDCHK,BEDECD,ANGPLOT,                           &
      &        GNOISE,GCLEAN,DOVELR,DOLENR
       
       COMMON /XCBRPP/THCPP,CNVXPP(2),RESXPP,XPPERG,                     &

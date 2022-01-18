@@ -438,7 +438,6 @@ C
       BEDCHK     = .FALSE.
       BEDECD     = .FALSE.
       ANGPLOT    = .FALSE.
-      CHIAVG     = .FALSE.
       GNOISE     = .FALSE.
       GCLEAN     = .FALSE.
       DOVELR     = .TRUE.
