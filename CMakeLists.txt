@@ -2,7 +2,10 @@
 # Copyright (c) 2015-2018 by Radovan Bast, Roberto Di Remigio, Jonas Juselius, and contributors.
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+if(CMAKE_CACHE_MAJOR_VERSION LESS 3 OR CMAKE_CACHE_MINOR_VERSION LESS 20)
+    message("\n\n\n\n***************** Too low version of CMake on your computer. ****************\nOn many systems you may install the newest version with 'pip install cmake'")
+    cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+endif()
 
 # project name
 project(DIRAC Fortran C CXX)
