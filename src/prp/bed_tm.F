@@ -413,7 +413,7 @@ C
      &    'Exc.','Frequency (au)    '
         DO IEXC = 1,NEXCNV
           WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
-     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
+     &    IEXC,OMEGA(IEXC),OSCECD(IEXC)
         ENDDO   
       ELSEIF (BEDECD) THEN
         DO IEXC = 1,NEXCNV
@@ -435,7 +435,7 @@ C
      &    'Exc.','Frequency (au)    '
         DO IEXC = 1,NEXCNV
           WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
-     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
+     &    IEXC,OMEGA(IEXC),OSCECD(IEXC)
         ENDDO   
       ELSEIF (DOBED) THEN
         DO IEXC = 1,NEXCNV
@@ -981,7 +981,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       INTEGER LWORK, NCOMP, NOPTP,IIP
       character (len=5)                 :: TPAR(3)
-      real(8)             :: BCPU, PBUF(3,2),EEWT(6), TMP
+      real(8)             :: BCPU, PBUF(3,2),EEWT(6,2), TMP
       logical, allocatable              :: first(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE         
       integer  POINT_PER_PROC, MOD_POINT, ITASK, SNODE, PPPP, NPOINTS
@@ -990,7 +990,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       integer, allocatable              :: POINTS(:)
       real(8), allocatable              :: PRPINT(:,:),BBUF(:)
-      real(8), allocatable              :: TMOM(:,:,:),OSC(:)
+      real(8), allocatable              :: TMOM(:,:,:),OSC(:,:)
       character (len=8),  allocatable   :: LABINT(:)
       integer, allocatable              :: INTREP(:),IPSYM2INT(:,:)
       integer, allocatable              :: IVECS(:)
@@ -1055,6 +1055,7 @@ C     ************************************************************
       INTEGER IBEIG(*)
       DIMENSION CMO(*),WORK(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),OSCBED(MAXEXC)
+     &                                     ,OSCECD(MAXEXC)
       real(8)             :: EVECR(NREDM,*), CPUTIME
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       integer   KFRSAV
@@ -1220,8 +1221,8 @@ C     Loop over quadrature points
 C     =============================
 C
       allocate(TMOM(NOP,NC,NEXCNV))
-      allocate(OSC(NEXCNV))
-      CALL DCOPY(NEXCNV,D0,0,OSC,1)
+      allocate(OSC(NEXCNV,2))
+      CALL DCOPY(NEXCNV*2,D0,0,OSC,1)
 
       IF(NZXOPE.GT.0) allocate(GPOE(NZXOPEQ,NOP))
       IF(NZXOPP.GT.0) allocate(GPOP(NZXOPPQ,NOP))      
@@ -1261,20 +1262,22 @@ C     ====================================================
         IP = POINTS(IIP)
 
 C.......Set up chi-average over polarization directions 
-        IF (BEDECD) THEN			! sign determined by Levi-Cevita symbol
-          EEWT(1) =  D2*X(IP)		! (x,y,z)  
-          EEWT(2) =  D2*Y(IP)		! (y,z,x)
-          EEWT(3) =  D2*Z(IP)		! (z,x,y)
-          EEWT(4) = -D2*X(IP)		! (x,z,y)
-          EEWT(5) = -D2*Y(IP)		! (y,x,z)
-          EEWT(6) = -D2*Z(IP)		! (z,y,x)
-        ELSE 
-          EEWT(1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
-          EEWT(2) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
-          EEWT(3) = -X(IP)*Z(IP)                   ! (3,1) ! factor 0.5 cancelled by triangular sum
-          EEWT(4) =  DP5*(X(IP)*X(IP)+Z(IP)*Z(IP)) ! (2,2)
-          EEWT(5) = -Y(IP)*Z(IP)                   ! (3,2) ! factor 0.5 cancelled by triangular sum
-          EEWT(6) =  DP5*(X(IP)*X(IP)+Y(IP)*Y(IP)) ! (3,3)
+c        EEWT = D0 
+        IF (DOBED) THEN		
+          EEWT(1,1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
+          EEWT(2,1) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
+          EEWT(3,1) = -X(IP)*Z(IP)                   ! (3,1) ! factor 0.5 cancelled by triangular sum
+          EEWT(4,1) =  DP5*(X(IP)*X(IP)+Z(IP)*Z(IP)) ! (2,2)
+          EEWT(5,1) = -Y(IP)*Z(IP)                   ! (3,2) ! factor 0.5 cancelled by triangular sum
+          EEWT(6,1) =  DP5*(X(IP)*X(IP)+Y(IP)*Y(IP)) ! (3,3)
+        ENDIF
+        IF (BEDECD) THEN
+          EEWT(1,2) =  D2*X(IP)     ! (x,y,z)            ! sign determined by Levi-Cevita symbol
+          EEWT(2,2) =  D2*Y(IP)     ! (y,z,x)
+          EEWT(3,2) =  D2*Z(IP)     ! (z,x,y)
+          EEWT(4,2) = -D2*X(IP)     ! (x,z,y)
+          EEWT(5,2) = -D2*Y(IP)     ! (y,x,z)
+          EEWT(6,2) = -D2*Z(IP)     ! (z,y,x)         
         ENDIF
         CALL DCOPY(NOP*NC*NEXCNV,D0,0,TMOM,1)
         DO 10 IEXC = 1,NEXCNV
@@ -1366,15 +1369,30 @@ C         ====================================
 C
 C         Accumulate oscillator strengths
 C         ===============================
+
+        TMP = D0
+        IF (DOBED) THEN
+          DO IC = 1,NC
+            TMP = TMP
+     &       + EEWT(1,1)*TMOM(1,IC,IEXC)*TMOM(1,IC,IEXC)
+     &       + EEWT(2,1)*TMOM(2,IC,IEXC)*TMOM(1,IC,IEXC)
+     &       + EEWT(3,1)*TMOM(3,IC,IEXC)*TMOM(1,IC,IEXC)
+     &       + EEWT(4,1)*TMOM(2,IC,IEXC)*TMOM(2,IC,IEXC)
+     &       + EEWT(5,1)*TMOM(3,IC,IEXC)*TMOM(2,IC,IEXC)
+     &       + EEWT(6,1)*TMOM(3,IC,IEXC)*TMOM(3,IC,IEXC)
+          ENDDO
+          OSC(IEXC,1) = OSC(IEXC,1) + WT(IP)*TMP          
+        ENDIF
         TMP = D0
         IF (BEDECD) THEN
           TMP = TMP !   sine                cosine
-     &        + EEWT(1)*TMOM(2,2,IEXC)*TMOM(3,1,IEXC) ! (x,y,z)  
-     &        + EEWT(2)*TMOM(3,2,IEXC)*TMOM(1,1,IEXC) ! (y,z,x)
-     &        + EEWT(3)*TMOM(1,2,IEXC)*TMOM(2,1,IEXC) ! (z,x,y)
-     &        + EEWT(4)*TMOM(3,2,IEXC)*TMOM(2,1,IEXC) ! (x,z,y)
-     &        + EEWT(5)*TMOM(1,2,IEXC)*TMOM(3,1,IEXC) ! (y,x,z)
-     &        + EEWT(6)*TMOM(2,2,IEXC)*TMOM(1,1,IEXC) ! (z,y,x)
+     &        + EEWT(1,2)*TMOM(2,2,IEXC)*TMOM(3,1,IEXC) ! (x,y,z)  
+     &        + EEWT(2,2)*TMOM(3,2,IEXC)*TMOM(1,1,IEXC) ! (y,z,x)
+     &        + EEWT(3,2)*TMOM(1,2,IEXC)*TMOM(2,1,IEXC) ! (z,x,y)
+     &        + EEWT(4,2)*TMOM(3,2,IEXC)*TMOM(2,1,IEXC) ! (x,z,y)
+     &        + EEWT(5,2)*TMOM(1,2,IEXC)*TMOM(3,1,IEXC) ! (y,x,z)
+     &        + EEWT(6,2)*TMOM(2,2,IEXC)*TMOM(1,1,IEXC) ! (z,y,x)
+          OSC(IEXC,2) = OSC(IEXC,2) + WT(IP)*TMP      
           IF (ANGPLOT) THEN
             ECD(IP,IEXC) = ECD(IP,IEXC)
      &    - D4*OMEGA(IEXC)*X(IP)*(TMOM(2,1,IEXC)*TMOM(3,2,IEXC)
@@ -1384,18 +1402,8 @@ C         ===============================
      &    - D4*OMEGA(IEXC)*Z(IP)*(TMOM(1,1,IEXC)*TMOM(2,2,IEXC)
      &    - TMOM(2,1,IEXC)*TMOM(1,2,IEXC))
           ENDIF    
-        ELSE
-          DO IC = 1,NC
-            TMP = TMP
-     &       + EEWT(1)*TMOM(1,IC,IEXC)*TMOM(1,IC,IEXC)
-     &       + EEWT(2)*TMOM(2,IC,IEXC)*TMOM(1,IC,IEXC)
-     &       + EEWT(3)*TMOM(3,IC,IEXC)*TMOM(1,IC,IEXC)
-     &       + EEWT(4)*TMOM(2,IC,IEXC)*TMOM(2,IC,IEXC)
-     &       + EEWT(5)*TMOM(3,IC,IEXC)*TMOM(2,IC,IEXC)
-     &       + EEWT(6)*TMOM(3,IC,IEXC)*TMOM(3,IC,IEXC)
-          ENDDO
         ENDIF
-        OSC(IEXC) = OSC(IEXC) + WT(IP)*TMP
+
  10   CONTINUE                 ! DO 10 IEXC = 1,NEXCNV
       ENDDO ! DO IIP = 1,POINT_PER_PROC
 
@@ -1436,23 +1444,39 @@ C     ********************************************************
 C
 C     Final values for oscillator strengths or circular dichroism
 C
-      DO IEXC = 1,NEXCNV
-        OSCBED(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC)
-      ENDDO
+
+      IF (DOBED) THEN 
+        DO IEXC = 1,NEXCNV
+            OSCBED(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC,1)
+        ENDDO
+      ENDIF 
+      IF (BEDECD) THEN
+        DO IEXC = 1,NEXCNV
+            OSCECD(IEXC) = D2*OMEGA(IEXC)*OSC(IEXC,2)
+        ENDDO
+      ENDIF 
 C
 C     Print section
 C
-      IF (BEDECD) THEN
-        WRITE(6,*) '* Isotropic circular dichroism'
-      ELSE
+      IF (DOBED) THEN
         WRITE(6,*) '* Isotropic oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')
+     &    'Exc.','Frequency (au)    '
+        DO IEXC = 1,NEXCNV
+            WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
+     &      IEXC,OMEGA(IEXC),OSCBED(IEXC)
+        ENDDO        
       ENDIF
-      WRITE(6,'(/A4,1X,A18)')
-     &  'Exc.','Frequency (au)    '
-      DO IEXC = 1,NEXCNV
-         WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
-     &   IEXC,OMEGA(IEXC),OSCBED(IEXC)
-      ENDDO
+      IF (BEDECD) THEN
+        WRITE(6,*) '* Isotropic differential oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')
+     &    'Exc.','Frequency (au)    '
+        DO IEXC = 1,NEXCNV
+            WRITE(6,'(I4,1X,F18.10,3X,ES14.6)')
+     &      IEXC,OMEGA(IEXC),OSCECD(IEXC)
+        ENDDO        
+      ENDIF
+
       IF (ANGPLOT) THEN
         DO IEXC = 1,NEXCNV
           WRITE(6,"(A24, I4)") "Angular plot excitation", IEXC
@@ -1597,7 +1621,7 @@ C
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
-      real(8)             :: TMPCPU
+      real(8)             :: TMPCPU, buff(2)
 #include "maxash.h"
 #include "dcborb.h"
 C
@@ -1650,11 +1674,20 @@ C       *************** Sends ECD ***************
         ENDDO
         ENDDO
 C       *************** Sends OSC ***************
-        DO IEXC = 1,NEXCNV
-          tmp = OSC(IEXC)
-          CALL interface_MPI_SEND(tmp, 1,
+c        IF (DOBED) THEN
+            DO IEXC = 1,NEXCNV
+                buff = OSC(IEXC,:)
+            CALL interface_MPI_SEND(buff, 2,
      &                            MASTER, 28,global_communicator)
-        ENDDO
+            ENDDO
+c        ENDIF
+c        IF (BEDECD) THEN
+c            DO IEXC = 1,NEXCNV
+c                tmp = OSC(IEXC,2)
+c            CALL interface_MPI_SEND(tmp, 1,
+c     &                            MASTER, 28,global_communicator)
+c            ENDDO
+c        ENDIF
         CALL interface_MPI_SEND(CPU, 1,
      &                          MASTER, 28,global_communicator)
 C       *************** Deallocate ***************
@@ -1724,11 +1757,20 @@ C         ------------------------------
 C         ------------------------------
 C         Receive OSC results
 C         ------------------------------
-          DO IEXC = 1,NEXCNV
-            CALL interface_MPI_RECV(TMP,1,
-     &                            SNODE, 28,global_communicator)
-            OSC(IEXC) = OSC(IEXC) + TMP
-          ENDDO
+c          IF (DOBED) THEN
+            DO IEXC = 1,NEXCNV
+                CALL interface_MPI_RECV(buff,2,
+     &                             SNODE, 28,global_communicator)
+                OSC(IEXC,:) = OSC(IEXC,:) + buff
+            ENDDO
+c          ENDIF 
+c          IF (BEDECD) THEN
+c            DO IEXC = 1,NEXCNV
+c                CALL interface_MPI_RECV(TMP,1,
+c     &                             SNODE, 28,global_communicator)
+c                OSC(IEXC,2) = OSC(IEXC,2) + TMP
+c            ENDDO            
+c          ENDIF 
           CALL interface_MPI_RECV(TMPCPU, 1,
      &                          SNODE, 28,global_communicator)
           CPUTIME = CPUTIME + TMPCPU
@@ -1930,7 +1972,7 @@ CCCC     ****************************************************
      &               WORK,KFREE,LFREE)
         
         allocate(TMOM(NOP,NC,NEXCNV))
-        allocate(OSC(NEXCNV))
+        allocate(OSC(NEXCNV,2))
         allocate(X(NPOINTS))
         allocate(Y(NPOINTS))
         allocate(Z(NPOINTS))
@@ -1952,7 +1994,7 @@ CCCC     ****************************************************
       ENDIF
 
       call DZERO(TMOM, NOP*NC*NEXCNV)
-      call interface_mpi_bcast(OSC(1), NEXCNV, 
+      call interface_mpi_bcast(OSC(1,1), NEXCNV*2, 
      &             MASTER, global_communicator)
       call interface_mpi_bcast(X(1), NPOINTS, MASTER,
      &              global_communicator)
