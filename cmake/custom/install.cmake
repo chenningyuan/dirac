@@ -68,3 +68,24 @@ install(
     DESTINATION share/dirac
     PATTERN .git EXCLUDE
     )
+
+install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/utils/dirac_data.py
+    ${PROJECT_SOURCE_DIR}/utils/process_schema.py
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ             GROUP_EXECUTE
+    WORLD_READ             WORLD_EXECUTE
+    )
+
+install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/utils/DIRACschema.txt
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
+    )
