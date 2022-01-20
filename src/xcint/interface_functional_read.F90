@@ -32,7 +32,7 @@ module interface_functional_read
    public set_hf_exchange_factor
  
    real(8), public :: hf_exchange_factor
-   logical, public :: pure_hf_run
+   logical, public :: pure_hf_run = .false.
    logical, save   :: already_checked = .true.
    private
 

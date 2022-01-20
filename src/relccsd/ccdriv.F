@@ -3006,7 +3006,11 @@ C       limitations elsewhere. 20120720
       IF (MYPROC .NE. MASTER) THEN
          NBUF3 = 0
       ELSE
-         NBUF3 = freemem / RCW
+
+         NV5IRP = MAX(JVOVV(NREP+1),JVVVO(NREP+1), 
+     &       JOVVV(NREP+1),JVVOV(NREP+1))
+
+         NBUF3 = MAX(freemem / RCW, NV5IRP)
       END IF
 C
 C     Allocate now also this remaining work array

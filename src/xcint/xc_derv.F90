@@ -38,7 +38,7 @@ module xc_derv
       real(8), allocatable :: output(:, :)
    end type
 
-   logical, public :: fun_is_automatic
+   logical, public :: fun_is_automatic = .false.
 
    type(functional), public :: xc_fun
    type(functional), public :: xc_fun_alda

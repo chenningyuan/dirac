@@ -511,7 +511,7 @@ C     Calculation of C6 dispersion coefficient
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj.or.x2cmmf)
      &  XLR_SKIPEP = .TRUE.
 #ifdef HAS_PCMSOLVER
       if(dirac_cfg_pcm) 
