@@ -409,6 +409,8 @@ C
 C     Called from PAMINP/dirrdn.F
 C
 C*****************************************************************************
+! connection between the scheme of moltra and relccsd       
+      use  relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -685,6 +687,8 @@ C&&&& SCHEME - choose method in 4-index transformation
                    CALL QUIT(
      &             'TRAINP: Error in reading **MOLTRA .SCHEME')
                   ENDIF
+! connection between ISTRAT and interface of relccsd                
+                  WRITE(relcc_integral_interface,'(A,I1)')'DIRAC',ISTRAT
                GO TO 100
    10          CONTINUE
 C&&&& THROUT - Treshold for output of integrals to MDCINT
