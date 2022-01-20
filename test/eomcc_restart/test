@@ -27,13 +27,37 @@ for f in files_to_delete:
    os.unlink(os.path.join(my_scratchdir,f))
 os.rmdir(my_scratchdir)
 
-# commenting this out for now, while tracking the reason for the restart runs to hang for eom-ee and eom-ea
-#test.run(['eom_ee.inp', 'eom_ee_restart.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
-#
-#files_to_delete = os.listdir(my_scratchdir)
-#for f in files_to_delete:
-#   os.unlink(os.path.join(my_scratchdir,f))
-#os.rmdir(my_scratchdir)
+f = Filter()
+f.add(from_string = ' Energy eigenvalues in atomic units',
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance = 1.0e-5)
+
+test.run(['eom_ee.inp', 'eom_ee_restart.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
+
+files_to_delete = os.listdir(my_scratchdir)
+for f in files_to_delete:
+   os.unlink(os.path.join(my_scratchdir,f))
+os.rmdir(my_scratchdir)
+
+f = Filter()
+f.add(from_string = ' Overview of calculated energies',
+      to_string   = '@ Total CCSD-T  energy',
+      rel_tolerance   = 1.0e-7)
+
+test.run(['ccsd.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
+
+f = Filter()
+f.add(from_string = ' Energy eigenvalues in atomic units',
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance = 1.0e-5)
+
+test.run(['eom_ee_restart_from_gs.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
+
+files_to_delete = os.listdir(my_scratchdir)
+for f in files_to_delete:
+   os.unlink(os.path.join(my_scratchdir,f))
+os.rmdir(my_scratchdir)
+
 #
 #test.run(['eom_ea.inp', 'eom_ea_restart.inp'], ['h2o.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
 #
@@ -42,13 +66,18 @@ os.rmdir(my_scratchdir)
 #   os.unlink(os.path.join(my_scratchdir,f))
 #os.rmdir(my_scratchdir)
 #
-# commenting this out for now, while tracking the reason for the restart runs to hang for eom-ee and eom-ea
-#test.run(['eom_ee_linear_0g.inp', 'eom_ee_linear_0g_restart.inp'], ['f2.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
-#
-#files_to_delete = os.listdir(my_scratchdir)
-#for f in files_to_delete:
-#   os.unlink(os.path.join(my_scratchdir,f))
-#os.rmdir(my_scratchdir)
+
+f = Filter()
+f.add(from_string = ' Energy eigenvalues in atomic units',
+      to_re       = 'Relative real eigenvalues in other units;',
+      rel_tolerance = 1.0e-5)
+
+test.run(['eom_ee_linear_0g.inp', 'eom_ee_linear_0g_restart.inp'], ['f2.xyz'], f, args='--mw=110 --keep_scratch --scratchful='+my_scratchdir)
+
+files_to_delete = os.listdir(my_scratchdir)
+for f in files_to_delete:
+   os.unlink(os.path.join(my_scratchdir,f))
+os.rmdir(my_scratchdir)
 
 
 sys.exit(test.return_code)
