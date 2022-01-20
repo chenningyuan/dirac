@@ -42,7 +42,8 @@ module sigma_eom
     integer :: nbuf3
     integer, pointer :: eom_ndet(:)
  
-    character(8) :: eom_intm_file_name = 'EOM_INTM'
+    character(6) :: eom_intm_file_basename = 'EOM_IM'
+    character(11) :: eom_intm_file_name 
     integer :: eom_intm_file = 58
 
    contains
@@ -379,6 +380,7 @@ integer :: ierr
       write (iw,*) " "
       write (iw,*) " reading in checkpointed intermediates for EOM-",eomtype
       A%eomtype = eomtype
+      call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
       call eom_intermediates_read_from_file(A,iprnt)
   else
 
@@ -520,6 +522,7 @@ integer :: ierr
      endif 
 
      write (iw,*) " checkpointed intermediates for EOM-",eomtype
+     call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
      call eom_intermediates_write_to_file(A,iprnt)
      IMSTAT(14) = 3
      call ccdump
@@ -531,27 +534,30 @@ integer :: ierr
 
    end subroutine
 
-   subroutine eom_intermediates_file_set_info(file_name,file_unit)
-      character(8), intent(in) :: file_name 
+   subroutine eom_intermediates_file_set_info(file_basename,file_unit)
+#include "ccpar.inc"
+      character(11), intent(in) :: file_basename 
       integer, intent(in) :: file_unit
 
-      eom_intm_file_name = file_name
-      eom_intm_file      = file_unit
+      write(eom_intm_file_name,'(A6,A1,I1)') file_basename,'.',myproc 
+      eom_intm_file = file_unit
+      print *, " debug, set intermediate file name to ",eom_intm_file_name
    end subroutine 
 
    subroutine eom_intermediates_file_get_info(file_name,file_unit)
-      character(8), intent(out) :: file_name 
-      integer, intent(out) :: file_unit 
+      character(11), intent(inout) :: file_name 
+      integer, intent(inout) :: file_unit 
 
       file_name = eom_intm_file_name
       file_unit = eom_intm_file
+      print *, " debug, set intermediate file name to ",file_name
    end subroutine
 
    subroutine eom_intermediates_file_open
       logical :: tobe = .false.
       integer :: eomtype_len = 8
       integer :: file_unit
-      character(8) :: file_name
+      character(11) :: file_name
 
       call eom_intermediates_file_get_info(file_name,file_unit)
       inquire (file=file_name,exist=tobe)
@@ -568,7 +574,7 @@ integer :: ierr
 
    subroutine eom_intermediates_file_close
       integer :: file_unit
-      character(8) :: file_name
+      character(11) :: file_name
 
       call eom_intermediates_file_get_info(file_name,file_unit)
       close (file_unit,status='KEEP')
