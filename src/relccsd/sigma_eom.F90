@@ -375,19 +375,11 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 integer :: ierr
 
 !-----------------------------------------------------------------------------
-  print *,'imstat(14) a',imstat(14)
-
   if (imstat(14).eq.3) then
       write (iw,*) " "
-      write (iw,*) " reading in stored intermediates for EOM-",eomtype
-#if defined (VAR_MPI)
-     if (myproc.eq.0) then
-#endif
+      write (iw,*) " reading in checkpointed intermediates for EOM-",eomtype
       A%eomtype = eomtype
       call eom_intermediates_read_from_file(A,iprnt)
-#if defined (VAR_MPI)
-     end if
-#endif
   else
 
      nbuf3 = size(local_buf3)
@@ -527,16 +519,9 @@ integer :: ierr
 
      endif 
 
-#if defined (VAR_MPI)
-     if (myproc.eq.0) then
-#endif
-     call eom_intermediates_write_to_file(A)
-#if defined (VAR_MPI)
-     end if
-#endif
-
+     write (iw,*) " checkpointed intermediates for EOM-",eomtype
+     call eom_intermediates_write_to_file(A,iprnt)
      IMSTAT(14) = 3
-     print *,'imstat(14) b',imstat(14)
      call ccdump
 
      deallocate(foo)
@@ -546,6 +531,49 @@ integer :: ierr
 
    end subroutine
 
+   subroutine eom_intermediates_file_set_info(file_name,file_unit)
+      character(8), intent(in) :: file_name 
+      integer, intent(in) :: file_unit
+
+      eom_intm_file_name = file_name
+      eom_intm_file      = file_unit
+   end subroutine 
+
+   subroutine eom_intermediates_file_get_info(file_name,file_unit)
+      character(8), intent(out) :: file_name 
+      integer, intent(out) :: file_unit 
+
+      file_name = eom_intm_file_name
+      file_unit = eom_intm_file
+   end subroutine
+
+   subroutine eom_intermediates_file_open
+      logical :: tobe = .false.
+      integer :: eomtype_len = 8
+      integer :: file_unit
+      character(8) :: file_name
+
+      call eom_intermediates_file_get_info(file_name,file_unit)
+      inquire (file=file_name,exist=tobe)
+      if (tobe) then
+          print*, "warning: overwriting file "//file_name
+          open (file_unit,file=file_name, &
+     &     status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+       else
+          open (file_unit,file=file_name, &
+     &     status='NEW',FORM='UNFORMATTED',access='SEQUENTIAL')
+       end if
+      print*, " opened file",file_name,' on unit',file_unit
+   end subroutine
+
+   subroutine eom_intermediates_file_close
+      integer :: file_unit
+      character(8) :: file_name
+
+      call eom_intermediates_file_get_info(file_name,file_unit)
+      close (file_unit,status='KEEP')
+      print*, " closed file",file_name
+   end subroutine
 
    subroutine eom_intermediates_read_from_file(A,iprnt)
       use labeled_storage
@@ -556,16 +584,7 @@ integer :: ierr
       logical :: tobe = .false.
       integer :: eomtype_len = 8
 
-!      call get_free_fileunit(eom_intm_file)
-       inquire (file=eom_intm_file_name,exist=tobe)
-       if (tobe) then
-          print*, "warning: overwriting file "//eom_intm_file_name
-          open (eom_intm_file,file=eom_intm_file_name, &
-     &     status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-       else
-          open (eom_intm_file,file=eom_intm_file_name, &
-     &     status='NEW',FORM='UNFORMATTED',access='SEQUENTIAL')
-       end if
+      call eom_intermediates_file_open
 
 !     call lab_read(eom_intm_file,'eomtype ',A%eomtype,eomtype_len)
       call lab_read(eom_intm_file,'Fbar_mi ',rdata=A%Fbar_mi)
@@ -577,6 +596,7 @@ integer :: ierr
       call lab_read(eom_intm_file,'W_efam  ',rdata=A%W_efam)
       call lab_read(eom_intm_file,'W_amef  ',rdata=A%W_amef)
       call lab_read(eom_intm_file,'W_mnie  ',rdata=A%W_mnie)
+      call lab_read(eom_intm_file,'W_mbej  ',rdata=A%W_mbej)
       call lab_read(eom_intm_file,'Wbr_mbej',rdata=A%Wbar_mbej)
       call lab_read(eom_intm_file,'t1      ',rdata=A%t1)
       call lab_read(eom_intm_file,'t2      ',rdata=A%t2)
@@ -591,8 +611,8 @@ integer :: ierr
          write (iw,*) "    read in W_mbej    from file",dot_product(A%W_mbej,A%W_mbej)
          write (iw,*) "    read in W_ejmb    from file",dot_product(A%W_ejmb,A%W_ejmb)
          write (iw,*) "    read in W_iemn    from file",dot_product(A%W_iemn,A%W_iemn)
-         write (iw,*) "    read in W_efam    from file",dot_product(A%W_efam,A%W_efam)
          write (iw,*) "    read in W_mnie    from file",dot_product(A%W_mnie,A%W_mnie)
+         write (iw,*) "    read in W_efam    from file",dot_product(A%W_efam,A%W_efam)
          write (iw,*) "    read in W_amef    from file",dot_product(A%W_amef,A%W_amef)
          write (iw,*) "    read in T1        from file",dot_product(A%t1,A%t1)
          write (iw,*) "    read in T2        from file",dot_product(A%t2,A%t2)
@@ -606,31 +626,26 @@ integer :: ierr
          write (iw,*) "    read in W_mbej    from file"
          write (iw,*) "    read in W_ejmb    from file"
          write (iw,*) "    read in W_iemn    from file"
-         write (iw,*) "    read in W_efam    from file"
          write (iw,*) "    read in W_mnie    from file"
+         write (iw,*) "    read in W_efam    from file"
          write (iw,*) "    read in W_amef    from file"
          write (iw,*) "    read in T1        from file"
          write (iw,*) "    read in T2        from file"
          write (iw,*) "    read in H_II      from file"
       end if
+
    end subroutine
 
 
-   subroutine eom_intermediates_write_to_file(A)
+   subroutine eom_intermediates_write_to_file(A,iprnt)
       use labeled_storage
+
+#include "files.inc"
       type(intermediates), intent(inout) :: A
       logical :: tobe = .false.
+      integer, intent(in) :: iprnt
 
-!      call get_free_fileunit(eom_intm_file)
-       inquire (file=eom_intm_file_name,exist=tobe)
-       if (tobe) then
-          print*, "warning: overwriting file "//eom_intm_file_name
-          open (eom_intm_file,file=eom_intm_file_name, &
-     &     status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
-       else
-          open (eom_intm_file,file=eom_intm_file_name, &
-     &     status='NEW',FORM='UNFORMATTED',access='SEQUENTIAL')
-       end if
+      call eom_intermediates_file_open
 
 !     call lab_write(eom_intm_file,'eomtype ')
 !     write (eom_intm_file) A%eomtype
@@ -662,6 +677,9 @@ integer :: ierr
       call lab_write(eom_intm_file,'W_mnie  ')
       write (eom_intm_file) A%W_mnie
 
+      call lab_write(eom_intm_file,'W_mbej  ')
+      write (eom_intm_file) A%W_mbej
+
       call lab_write(eom_intm_file,'Wbr_mbej')
       write (eom_intm_file) A%Wbar_mbej
 
@@ -675,7 +693,43 @@ integer :: ierr
       write (eom_intm_file) A%H_II
 
       call lab_write(eom_intm_file,'EOFLABEL')
-      close (eom_intm_file,status='KEEP')
+
+      call eom_intermediates_file_close
+
+      if (iprnt.ge.2) then
+         write (iw,*) ""
+         write (iw,*) "    Fbar_mi   intermediate written to file",dot_product(A%Fbar_mi,A%Fbar_mi)
+         write (iw,*) "    Fbar_me   intermediate written to file",dot_product(A%Fbar_me,A%Fbar_me)
+         write (iw,*) "    Fbar_ae   intermediate written to file",dot_product(A%Fbar_ae,A%Fbar_ae)
+         write (iw,*) "    W_ijmn    intermediate written to file",dot_product(A%W_ijmn,A%W_ijmn)
+         write (iw,*) "    Wbar_mbej intermediate written to file",dot_product(A%Wbar_mbej,A%Wbar_mbej)
+         write (iw,*) "    W_mbej    intermediate written to file",dot_product(A%W_mbej,A%W_mbej)
+         write (iw,*) "    W_ejmb    intermediate written to file",dot_product(A%W_ejmb,A%W_ejmb)
+         write (iw,*) "    W_iemn    intermediate written to file",dot_product(A%W_iemn,A%W_iemn)
+         write (iw,*) "    W_mnie    intermediate written to file",dot_product(A%W_mnie,A%W_mnie)
+         write (iw,*) "    W_efam    intermediate written to file",dot_product(A%W_efam,A%W_efam)
+         write (iw,*) "    W_amef    intermediate written to file",dot_product(A%W_amef,A%W_amef)
+         write (iw,*) "    T1        intermediate written to file",dot_product(A%t1,A%t1)
+         write (iw,*) "    T2        intermediate written to file",dot_product(A%t2,A%t2)
+         write (iw,*) "    H_II      intermediate written to file",dot_product(A%H_II,A%H_II)
+      else
+         write (iw,*) ""
+         write (iw,*) "    Fbar_mi   intermediate written to file"
+         write (iw,*) "    Fbar_me   intermediate written to file"
+         write (iw,*) "    Fbar_ae   intermediate written to file"
+         write (iw,*) "    W_ijmn    intermediate written to file"
+         write (iw,*) "    Wbar_mbej intermediate written to file"
+         write (iw,*) "    W_mbej    intermediate written to file"
+         write (iw,*) "    W_ejmb    intermediate written to file"
+         write (iw,*) "    W_iemn    intermediate written to file"
+         write (iw,*) "    W_mnie    intermediate written to file"
+         write (iw,*) "    W_efam    intermediate written to file"
+         write (iw,*) "    W_amef    intermediate written to file"
+         write (iw,*) "    T1        intermediate written to file"
+         write (iw,*) "    T2        intermediate written to file"
+         write (iw,*) "    H_II      intermediate written to file"
+      end if
+
    end subroutine
 
    subroutine sigma_ee_1h1p(r1,r2,B,sigma1,sigma2,state_sym)
