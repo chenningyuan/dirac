@@ -437,7 +437,7 @@ contains
      integer                      :: ioff_osh1
      integer                      :: ioff_ao_o_sh1
      integer                      :: ioff_ao_ao_sh1
-     integer                      :: i, j
+     integer                      :: i
      integer                      :: norb1_f
      integer                      :: nbas1_f
      character (len=6)            :: op_mat_on_file
@@ -445,9 +445,6 @@ contains
      character (len=28)           :: debug_string
      logical                      :: fndlab12
 !**********************************************************************
- 
-!     dummy center/fragment counter
-      j = 1
 
       rewind(x2c_file_scr)
       if(fndlab12('h14csAO   11',x2c_file_scr))then
@@ -565,6 +562,11 @@ contains
           nbas1_f = naosh_all(i)
           norb1_f = norb_dim(i)
           if(norb1_f > 0)then
+
+!           save on file x2cscr for use in post-X2Cmmf steps like (e)amf
+            write(flabel,'(a7,i4,i1)') '4cSaomo',1,i
+            call x2c_write(flabel,scrmat2(ioff_ao_o_sh1),nbas1_f*norb1_f * nzt,x2c_file_scr)
+
 !           h1_saao_bas = scrmat2 * scrmat1 * scrmat2^+
             if(.not.x2c_fock_saao_basis)then
             call generic_interface_ao2mo_mo2ao(h1_saao_bas(ioff_ao_ao_sh1),    &
@@ -599,11 +601,9 @@ contains
           ioff_ao_o_sh1  = ioff_ao_o_sh1  + nbas1_f * norb1_f * nzt
         end do
 
-        !> dump the full Fock matrix in AO basis to file (if needed later)
-        open(81,file='4cf1f2AO',status='replace',form='unformatted',         &
-              access='sequential',action='write',position='rewind')
-        write(81) (h1_saao_bas(i),i=1,naosh_ls*naosh_ls*nz)
-        close(81,status="keep")
+        call dzero(scrmat1,naosh_ls**2*nz)
+        call dzero(scrmat2,naosh_ls**2*nz)
+
 !
 !       step 5: read in the "SL resorted" transformation matrix (the calling programs expect it to reside in scrmat2
 !       ------------------------------------------------------------------------------------------------------------

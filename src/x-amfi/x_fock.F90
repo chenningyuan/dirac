@@ -25,6 +25,7 @@ module x_fock
 
   use num_grid_gen
   use interface_mo_specific
+  use x2c_fio, only: x2c_read
 
   implicit none
 
@@ -54,11 +55,14 @@ contains
                              N2BBASXQ_dim_x,         &
                              nr_tmo,                 &
                              nr_ao_all,              &
+                             nr_mo_all,              &
                              ioff_tmot,              &
                              ioff_tmt,               &
                              ioff_aomat_x,           &
                              myAOMOMAT,              &
                              isDFT,                  &
+                             isLoA,                  &
+                             xcmode,                 &
                              lwork_ext,              &
                              print_lvl               &
                              )
@@ -99,20 +103,22 @@ contains
      integer, INTENT(IN)                :: N2BBASXQ_dim_x
      integer, INTENT(IN)                :: nr_tmo(nr_fsym)
      integer, INTENT(IN)                :: nr_ao_all(nr_fsym)
+     integer, INTENT(IN)                :: nr_mo_all(nr_fsym)
      integer, INTENT(IN)                :: ioff_tmot(nr_fsym)
      integer, INTENT(IN)                :: ioff_tmt(nr_fsym)
      integer, INTENT(IN)                :: ioff_aomat_x(nr_fsym,nr_fsym)
      integer, intent(in)                :: lwork_ext
+     integer, intent(in)                :: xcmode
      integer, intent(in)                :: print_lvl
      character(len=10), intent(in)      :: myAOMOMAT
      logical, intent(in)                :: isDFT
+     logical, intent(in)                :: isLoA
 !----------------------------------------------------------------------
-     integer                            :: i, npos, local_lwork, j, kwork, kfree, lfree
+     integer                            :: i, local_lwork, j, k, kwork, kfree, lfree
      integer                            :: kdtemp, kdevec, kfmo, kfao, ktmat, ksaomo, islutmat
      real(8), allocatable               :: work(:)
-     integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
-     logical, allocatable               :: saveflags(:)
      logical                            :: parcal
+     character(len=12)                  :: flabel
 !----------------------------------------------------------------------
 
        parcal = .false.
@@ -157,7 +163,6 @@ contains
         !> read AO2MO transformation matrix TMAT and LUTMAT rec#2 with SAOMO
         CALL READT(isLUTMAT,x_N2TMT,work(ktmat)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
         CLOSE(isLUTMAT,STATUS='KEEP')
-        print *, 'blubb ,x_N2TMT is ', x_N2TMT
 
         CALL MEMGET2('REAL','DTEMP',KDTEMP,N2BBASXQ_dim_x*nr_2e_fock_matrices,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','DEVEC',KDEVEC,N2BBASXQ_dim_x,WORK,KFREE,LFREE)
@@ -170,21 +175,77 @@ contains
         !> Backtransform MO Fock to AO Fock
         !> --------------------------------
 
-        CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
-        CALL READT(isLUTMAT,x_N2TMT,WORK(KTMAT)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
-        CLOSE(isLUTMAT,STATUS='KEEP')
-
         CALL MEMGET2('REAL','FAO  ',KFAO  ,nrows*ncols*nz,WORK,KFREE,LFREE)
         call dzero(work(kfAO),nrows*ncols*nz)
 
+        if(xcmode == 2)then !> two-component mode
+
+            CALL OPNFIL(isLUTMAT,trim(myAOMOMAT),'OLD','XAMFI ')
+            CALL READT(isLUTMAT,x_N2TMT,WORK(KTMAT)); CALL READT(isLUTMAT,x_N2TMT,work(KSAOMO))
+            CLOSE(isLUTMAT,STATUS='KEEP')
+
+        else !> four-component mode
+
+            ! open scratch file x2cscr
+            open(104,file='x2cscr',status='old',form='unformatted',  &
+            access='sequential',action="readwrite",position='rewind')
+
+            if(isLoA)then !> linear or atomic symmetry
+
+                call dzero(work(KDTEMP),N2BBASXQ_dim_x*nr_2e_fock_matrices)
+                call dzero(work(KDEVEC),N2BBASXQ_dim_x)
+
+                k = 1
+                do i = 1, nr_fsym
+
+                     j = nr_mo_all(i)
+                     if(j == 0)cycle
+
+                     write(flabel,'(a7,i4,i1)') '4cMOMOl',1,i
+                     call x2c_read(flabel,work(KDTEMP+k-1),j**2 * nz,104)
+
+!                    work(KDEVEC) (alias 4c-fock_onmo_nonlin) = work(KDTEMP) * work(kfmo) (alias 4c-fock_onmo) * work(KDTEMP)^+
+                     CALL QTRANS('MOAO','S',0.0d0,j,j,                      &
+                                  j,j,                                      &
+                                  work(kdevec+k-1),j,j,NZ,IPQTOQ(1,0),      & !> out  "AO" matrix
+                                  work(kfmo  +k-1),j,j,NZ,IPQTOQ(1,0),      & !> in   "MO" matrix
+                                  work(KDTEMP+k-1),j,j,nz,IPQTOQ(1,0),      & !> TMAT
+                                  work(KDTEMP+k-1),j,j,nz,IPQTOQ(1,0),      & !> TMAT
+                                  WORK(KFREE),LFREE,print_lvl)
+
+!                    update offsets for matrices
+                     k = k + j**2 * nz
+                end do
+
+                call dzero(work(KFMO),N2BBASXQ_dim_x)
+                call dcopy(k-1,work(kdevec),1,work(kfmo),1)
+
+            end if
+
+            !> read the half-transformed overlap matrix
+            k = 1
+            do i = 1, nr_fsym
+
+               if(nr_mo_all(i) == 0)cycle
+
+               write(flabel,'(a7,i4,i1)') '4cSaomo',1,i
+               call x2c_read(flabel,work(ksaomo+k-1),nr_ao_all(i) * nr_mo_all(i) * nzt_x,104)
+
+               k = k + nr_ao_all(i) * nr_mo_all(i) * nzt_x
+            end do
+
+            close(104,status="delete")
+
+        end if
+
         do i = 1,nr_fsym
-           CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
-                       nr_tmo(I),nr_tmo(I),                                                     &
-                       work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
-                       WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
-                       WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
-                       WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
-                       WORK(KFREE),LFREE,20)!print_lvl)
+            CALL QTRANS('MOAO','S',0.0d0,nr_ao_all(I),nr_ao_all(I),                              &
+                        nr_tmo(I),nr_tmo(I),                                                     &
+                        work(kfAO+ioff_aomat_x(I,I)),nrows,ncols,NZ,IPQTOQ(1,0),                 &
+                        WORK(kfmo  +ioff_tmot(I)),nr_tmo(I)   ,nr_tmo(I),NZ,IPQTOQ(1,0),         &
+                        WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
+                        WORK(ksaomo+ioff_tmt(I) ),nr_ao_all(I),nr_tmo(I),nzt_x,IPQTOQ(1,0),      &
+                        WORK(KFREE),LFREE,print_lvl)
         end do
 
         fmat = 0; call dcopy(nrows*ncols*nz,work(kfao),1,fmat(1,1,1,1),1)
@@ -234,7 +295,7 @@ contains
 !             with GAUNT (LS|LS) entering the game (intflg=8) you know what to do by now...
 !
 ! !> in : density matrix (inactive + active ones) in AO basis
-!> out: 2e-Fock matrix in AO-basis                            
+!> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -316,7 +377,7 @@ logical                            :: parcal
                                  nrows, &
                                  dmat,  &
                                  fmat)
-        end if 
+        end if
 
   end subroutine get_x_fock
 !----------------------------------------------------------------------

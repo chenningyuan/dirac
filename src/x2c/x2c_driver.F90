@@ -483,14 +483,14 @@ contains
                                lwrk,                 &
                                print_lvl,            &
                                linear_sym,           &
-                               atomic_sym,           &                
+                               atomic_sym,           &
                                mdirac                &
-                              )              
+                              )
 !**********************************************************************
 !
 !    purpose: full (== molecular approach) X2C transformation initialization routine
 !
-!             requires: 4c-Lowdin matrix; 
+!             requires: 4c-Lowdin matrix;
 !                       value of "defining_h1mat" determines the defining 4c-h1 matrix
 !                       wrt which the decoupling step is performed.
 !
@@ -528,7 +528,7 @@ contains
      integer, intent(inout) :: lwrk
      integer, intent(in)    :: print_lvl
      logical, intent(in)    :: linear_sym
-     logical, intent(in)    :: atomic_sym     
+     logical, intent(in)    :: atomic_sym
      logical, intent(in)    :: mdirac
 !----------------------------------------------------------------------
      real(8), allocatable   :: eigvl(:)
@@ -543,7 +543,7 @@ contains
 !**********************************************************************
 
 !    memory allocation - part 1 - allocate necessary matrices and arrays - xmat for step 1.1 + 1.2
-!    --------------------------------------------------------------------------------------------- 
+!    ---------------------------------------------------------------------------------------------
      dimension_for_2mat   = naosh_ls**2 * nz
      do i = 1, nfsym
        dimension_for_2mat = max(dimension_for_2mat,ioff_aomx(i,i)+1+naosh_ls*naosh_all(i)*nz)
@@ -992,7 +992,11 @@ contains
 !      free scratch memory
        deallocate(eigvl)
 
-       close(x2c_file_scr,status="delete")
+       if(defining_h1mat == 2)then
+         close(x2c_file_scr,status="keep")
+       else
+         close(x2c_file_scr,status="delete")
+       end if
 
   end subroutine x2c_full_x2c_driver
 

@@ -38,6 +38,7 @@ module x2c_utils
   public x2c_lowd2c
   public print_x2cmat
   public print_x2cmtx
+  public insert_matrix_columns_scaled
   public read_1fock_x2c
   public read_4cfock_operator_x2c
   public read_fock_matrices_saao_basis_x2c
@@ -881,37 +882,32 @@ contains
                                                 file_unit,                  &
                                                 print_lvl)
 
-         open(81,file='4cf1AO',status='replace',form='unformatted',         &
-               access='sequential',action='write',position='rewind')
-         write(81) (xmat(i),i=1,nr_ao_total_x2c**2*nr_quat)
-         close(81,status="keep")
-
          close(file_unit, status='keep')
          call dzero(xmat,nr_ao_total_x2c**2*nr_quat)
 
-!      step 1: inquire file and set record number
-!      ------------------------------------------
-       inquire(file=op_mat_on_file,exist=does_exist)
+!        step 1: inquire file and set record number
+!        ------------------------------------------
+         inquire(file=op_mat_on_file,exist=does_exist)
 
-       if(.not.does_exist) &
-         call quit('*** error in read_4cfock_operator_x2c: file with 4c-fock matrix does not exist.***')
+         if(.not.does_exist) &
+           call quit('*** error in read_4cfock_operator_x2c: file with 4c-fock matrix does not exist.***')
 
-!      open file
-       file_unit = 99
-       open(file_unit,file=op_mat_on_file,status='old',form='unformatted',         &
-            access='direct',action='read',recl=real_bytes*n2tmotq)
+!        open file
+         file_unit = 99
+         open(file_unit,file=op_mat_on_file,status='old',form='unformatted',         &
+              access='direct',action='read',recl=real_bytes*n2tmotq)
 
-       record_number = 1
-       if(scf_iter_counter > 0)then
-         record_number = mod(scf_iter_counter-2,diis_counter-1) + 1
-         if(record_number == 0) record_number = 1
-       end if
+         record_number = 1
+         if(scf_iter_counter > 0)then
+           record_number = mod(scf_iter_counter-2,diis_counter-1) + 1
+           if(record_number == 0) record_number = 1
+         end if
 
-!      step 2: read matrix elements from file
-!      --------------------------------------
-       call readac(file_unit,n2tmotq,xmat,record_number)
+!        step 2: read matrix elements from file
+!        --------------------------------------
+         call readac(file_unit,n2tmotq,xmat,record_number)
 
-       close(file_unit,status='keep')
+         close(file_unit,status='keep')
        end if
 
   end subroutine read_4cfock_operator_x2c
@@ -1310,8 +1306,34 @@ contains
   end subroutine make_two_e_fock_so_exclusive
 !**********************************************************************
 
-  subroutine hello_dirx2c()
+  subroutine insert_matrix_columns_scaled(A,B,nra,nca,nrb,ncb,nz,fac,ioff)
+     real*8 , intent(inout)   :: A(nra,nca,nz)
+     real*8 , intent(inout)   :: B(nrb,ncb,nz)
+     real*8 , intent(in)      :: fac
+     integer, intent(in)      :: nra,nrb,nca,ncb,nz
+     integer, intent(in)      :: ioff
+!----------------------------------------------------------------------
+     integer                  :: i, j, k
 !**********************************************************************
+
+
+
+!    write(6,*) 'insert_matrix>: ioff = ',ioff
+     do i = 1, nra
+       do j = 1, nca
+         do k = 1, nz
+!           write(6,*) 'insert_matrix>: old A(',i,',',j,',',k,') = ',A(i,j,k)
+!           write(6,*) 'insert_matrix>: old B(',i+ioff,',',j+ioff,',',k,') = ',B(i+ioff,j+ioff,k)
+            A(i,j,k) = A(i,j,k) + fac*B(ioff+i,ioff+j,k)
+!           write(6,*) 'insert_matrix>: new A(',i,',',j,',',k,') = ',A(i,j,k)
+         end do
+       end do
+     end do
+
+  end subroutine insert_matrix_columns_scaled
+!**********************************************************************
+
+  subroutine hello_dirx2c()
 
     print '(/18x,a)', ' *********************************************************************'
     print '(18x,a )', ' ***   Entering the Exact-Two-Component (X2C) interface in DIRAC   ***'

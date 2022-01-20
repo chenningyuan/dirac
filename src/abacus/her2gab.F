@@ -1983,8 +1983,7 @@ C     Construct label
 C     ---------------
 C
 
-      iprint_ = iprint;
-      iprint_ = 10
+      iprint_ = iprint; !iprint_ = 10
 
 
       IF(ITYPE.EQ.0) THEN

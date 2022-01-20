@@ -230,6 +230,7 @@ contains
                         nfbas(i,1),&
                         nfbas(i,2),&
                         ntmo(i),&
+                        n2tmo(i),&
                         i2tmt(i),&
                         i2tmot(i),&
                         n_sub_bl(i)
@@ -237,7 +238,6 @@ contains
                         write(99)&
                         i2basx(i,j)
                   end do
-                  print *, 'blubb: 0 n_sub_bl(i), i',n_sub_bl(i),i
                   do k = 1, n_sub_bl(i)
                      write(99) norb_sub(k,i,0), &
                                norb_sub(k,i,1), &
@@ -266,6 +266,7 @@ contains
                               nfbas(i,1),&
                               nfbas(i,2),&
                               ntmo(i),&
+                              n2tmo(i),&
                               i2tmt(i),&
                               i2tmot(i),&
                               n_sub_bl(i)
@@ -273,7 +274,6 @@ contains
                               read(99)&
                               i2basx(i,j)
                         end do
-                        print *, 'blubb: 1 n_sub_bl(i), i',n_sub_bl(i),i
                         do k = 1, n_sub_bl(i)
                           read(99) norb_sub(k,i,0), &
                                    norb_sub(k,i,1), &

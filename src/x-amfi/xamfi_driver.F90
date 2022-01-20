@@ -29,10 +29,9 @@ module xamfi_driver
   use xamfi_utils
   use xamfi_internal_parameters
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef  DEBUG_SOC
   use x2c_utils, only: print_x2cmat
-!#undef DEBUG_SOC
 #endif
 
   implicit none
@@ -53,6 +52,7 @@ contains
                                   pct_mat,    &
                                   calc_2esoc, &
                                   isDFT,      &
+                                  isLoA,      &
                                   lwork_ext,  &
                                   print_lvl   &
                                   )
@@ -62,10 +62,10 @@ contains
      real(8), intent(in)                :: pct_mat(*)
      logical, intent(in)                :: calc_2esoc
      logical, intent(in)                :: isDFT
+     logical, intent(in)                :: isLoA
      integer, intent(in)                :: lwork_ext
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
-     integer                            :: i
      real(8), allocatable               :: fmat(:), tmp(:)
 !----------------------------------------------------------------------
 
@@ -114,15 +114,17 @@ contains
                             N2BBASXQ_dim_x        = N2BBASXQ_dim_aoo,     &
                             nr_tmo                = nr_tmo,               &
                             nr_ao_all             = nr_ao_all,            &
+                            nr_mo_all             = dim_oshell,           &
                             ioff_tmot             = ioff_tmot,            &
                             ioff_tmt              = ioff_tmt,             &
                             ioff_aomat_x          = ioff_aomat_x,         &
                             myAOMOMAT             = 'AOMOMATaoo',         &
                             isDFT                 = isDFT,                &
+                            isLoA                 = isLoA,                &
+                            xcmode                = 4,                    &
                             lwork_ext             = lwork_ext,            &
                             print_lvl             = print_lvl             &
                            )
-#define DEBUG_SOC
 #ifdef DEBUG_SOC
       !> debug print
       if(print_lvl > 0)then
@@ -136,7 +138,6 @@ contains
                           6                            &
                          )
       end if
-!#undef DEBUG_SOC
 #endif
 
       if(aoo2ediag)then
@@ -174,7 +175,6 @@ contains
                                  print_lvl             &
                                 )
 
-!#define DEBUG_SOC
 #ifdef DEBUG_SOC
         !> debug print
         call print_x2cmat(                             &
@@ -560,7 +560,7 @@ end subroutine put_atomic_density_correction
 !----------------------------------------------------------------------
 
 
-#ifdef DEBUG_SOC  
+#ifdef DEBUG_SOC
 #undef DEBUG_SOC
 #endif
   end module xamfi_driver

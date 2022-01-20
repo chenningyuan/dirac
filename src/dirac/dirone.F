@@ -66,7 +66,7 @@ C     Loop through list of class labels; calculate only the active ones(CLSCAL)
 C     =========================================================================
 C
       IF (NOSMLV) CALL NOSSNUCATT
-      IF (IPRONE .GT. 0) CALL GETTIM(CPU0,WALL0)
+      IF (IPRONE .GT. 2) CALL GETTIM(CPU0,WALL0)
       DO 10 I = 1,NPRPCLS
       IF(.NOT.CLSCAL(I)) GOTO 10
         IF (IPRONE.GE.2) WRITE(LUPRI,'(/2A,2X,A)')
@@ -150,7 +150,7 @@ C
    10 CONTINUE
 C
       CLOSE(LU1INT,STATUS='KEEP')
-      IF (IPRONE .GT. 0) THEN
+      IF (IPRONE .GT. 2) THEN
          CALL GETTIM(CPUE,WALLE)
          CPUTID  = SECTID(CPUE-CPU0)
          WALLTID = SECTID(WALLE-WALL0)
@@ -1431,36 +1431,41 @@ C*****************************************************************************
 #include "priunit.h"
 
       LOGICAL DOTRANS
-      CHARACTER*16  PROPNAME
+      CHARACTER*16  PROPNAME, TPROPNAME
 
       CALL QENTER('DECIDEPCTR')
 
       DOTRANS = .TRUE.
 
+      TPROPNAME = trim(PROPNAME)
+
 C ... here is list of operators which DO not have to be picture change tranformed
 C ... LL-forms of some operators (Beta matrix, Kinetic energy...) are not usable, however,
 C ... some are usable (ZANGMOM)
 
-      IF ( PROPNAME.EQ.'Overlap matrix  ' .OR.  !
-     &     PROPNAME.EQ.'z-spin'           .OR.  ! overlap * 1/2
-     &     PROPNAME.EQ.'Nuc. attraction ' .OR.
-     &     PROPNAME.EQ.'Beta matrix     ' .OR.
-     &     PROPNAME.EQ.'Kinetic energy  ' .OR.
-     &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'d|S>_dBX        ' .OR.
-     &     PROPNAME.EQ.'d|S>_dBY        ' .OR.
-     &     PROPNAME.EQ.'d|S>_dBZ        ' .OR.
-     &     PROPNAME.EQ.'dS_dBX          ' .OR.
-     &     PROPNAME.EQ.'dS_dBY          ' .OR.
-     &     PROPNAME.EQ.'dS_dBZ          ' .OR.
-     &     PROPNAME.EQ.'dS_dB2XX        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2XY        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2XZ        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2YY        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2YZ        ' .OR.
-     &     PROPNAME.EQ.'dS_dB2ZZ        '
+      IF (TPROPNAME.EQ.'Overlap matrix'   .OR.  !
+     &    TPROPNAME.EQ.'z-spin'           .OR.  ! overlap * 1/2
+     &    TPROPNAME.EQ.'Nuc. attraction'  .OR.
+     &    TPROPNAME.EQ.'Beta matrix'      .OR.
+     &    TPROPNAME.EQ.'Kinetic energy'   .OR.
+     &    TPROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
+     &    TPROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
+     &    TPROPNAME.EQ.'XANGMOM'          .OR.  ! ... XANGMOM
+     &    TPROPNAME.EQ.'YANGMOM'          .OR.  ! ... YANGMOM
+     &    TPROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
+!    &    TPROPNAME.EQ.'Spin-orbit matri' .OR.  ! ... spin-orbit matrix used for kappa matrix
+     &    TPROPNAME.EQ.'d|S>_dBX'         .OR.
+     &    TPROPNAME.EQ.'d|S>_dBY'         .OR.
+     &    TPROPNAME.EQ.'d|S>_dBZ'         .OR.
+     &    TPROPNAME.EQ.'dS_dBX'           .OR.
+     &    TPROPNAME.EQ.'dS_dBY'           .OR.
+     &    TPROPNAME.EQ.'dS_dBZ'           .OR.
+     &    TPROPNAME.EQ.'dS_dB2XX'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2XY'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2XZ'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2YY'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2YZ'         .OR.
+     &    TPROPNAME.EQ.'dS_dB2ZZ'
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.4) THEN
@@ -2479,10 +2484,10 @@ C.........reset NEWPRP to re-initialize AOPROPER
 
         CALL TIMER2('mk_h2c',TIMSTR,TIMEND)
 
-!
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !       -------------------------------------------------------------------------------
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
+
 
           if(x2cmod_mmf)then
             CALL MEMGET2('REAL','TMAT',KTMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2668,45 +2673,15 @@ C.......SUB_BL will be set true if linear symmetry works
           call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
           close(lux2c,status='keep')
         else  
+
           open(99,file='AOMOlin',status='old',form='unformatted',
      &         access='sequential',action='readwrite',
      &         position='rewind')
+
           !> rec # 1: U 
           read(99)
           !> rec # 2: VU
           call readt(99,N2TMT,work(KTMAT))
-!> SK: DEBUG FOR ATOMIC - CAN BE REMOVED ONCE ATMSYM WORKS CORRECTLY
-CCCCCCCC
-C         if(atomic)then
-C          !if(.false.)then
-C
-C            CALL MEMGET2('REAL','TBUF2',KTBUF2,N2BBASXQ,WORK,
-C     &                   KFREE,LFREE)
-C            CALL MEMGET2('REAL','TBUF3',KTBUF3,N2BBASXQ,WORK,
-C     &                   KFREE,LFREE)
-C            CALL MEMGET2('REAL','TBUF2',KTBUF4,N2BBASXQ,WORK,
-C     &                   KFREE,LFREE)
-
-C            !> get V in KTBUF2
-C            call readt(99,N2TMT,work(KTBUF2))
-
-C            !> get V(dagger)S in KTBUF3
-C            call MKSMOAO(WORK(KTBUF3),WORK(KTBUF2),IPRHAM,
-C     &                   WORK(KFREE),LFREE)
-C            !> get U --> V(dagger)S * VU since  V(dagger)S * V = I
-C            call get_umomo(WORK(KTBUF3),WORK(KTMAT),
-C     &                     WORK(KTBUF4),IPRHAM)
-C            rewind(99)
-C            !> U
-C            call writt(99,N2TMT,work(KTBUF4))
-C            !> VU
-C            call writt(99,N2TMT,work(KTMAT))
-C            !> V
-C            call writt(99,N2TMT,work(KTBUF2))
-C
-C            CALL MEMREL('MODHAM',WORK,KTBUF2,KTBUF2,KFREE,LFREE)
-C          end if
-CCCCCCCC
 !         file is needed in the 4c-2c transformation after the 4c-SCF
 !         in order to ensure numerical stability (avoiding double
 !         diagonalization, etc.)
@@ -2778,8 +2753,6 @@ C     Write transformation matrices
 
             !> if requested (.FOCC): density matrix for 2e-SO+scalar corrections
             !> always with fractional occupation for open shell atoms
-            write(lupri,*) ' BLUBB: nfmat, aoofocc, aoc ',
-     &      nfmat, aoofocc, aoc
             if(aoofocc .and. aoc)then
               aoc_save   = aoc
               nfmat_save = nfmat
@@ -2838,8 +2811,9 @@ C     Write transformation matrices
      &                                pctm_aoosoc,
      &                                no1esystem_aoosoc,
      &                                dirac_cfg_dft_calculation,
+     &                                (linear.or.atomic),
      &                                lwork_local,
-     &                                10!iprham
+     &                                iprham
      &                               )
 
             !> reset common block variables to 2c mode
@@ -2900,7 +2874,7 @@ C     Write transformation matrices
           deallocate(scratch_mmf)
           deallocate(tbuf_mmf)
           deallocate(tmat_mmf)
-          
+
           !> step 2
           !> ******
           !> pupose: renew AOMOMAT with matrices of proper dimensions
@@ -2914,7 +2888,7 @@ C     Write transformation matrices
           CLOSE(LUTMAT,STATUS='DELETE')
 
           CALL OPNFIL(LUTMAT,'AOMOMAT','UNKNOWN','GMOTRA')
-          
+
           call x2c_molecular_mean_field_AOMOMAT(
      &            fh    = LUTMAT,
      &            tm1   = tmat_mmf,
@@ -2931,10 +2905,9 @@ C     Write transformation matrices
      &            I2TMT = i2tmt(1:nfsym),
      &            N2TMT = N2TMT,
      &            lupri = lupri,
-     &            debug = iprham > 2          
+     &            debug = iprham > 2
      &            )
-
-          !> NOTE: ORBDAT is called after the reset of dimensions below and eventually AOMOMAT is closed 
+          !> NOTE: ORBDAT is called after the reset of dimensions below and eventually AOMOMAT is closed
           deallocate(scratch_mmf,tbuf_mmf,tmat_mmf)
 
 !         re-allocate
@@ -2949,7 +2922,7 @@ C     Write transformation matrices
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.          
+          if(spinfr .and. atomic) atomic = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -3035,18 +3008,18 @@ C
             !> save atomic density matrix (of atom(1) ... == atomic fragment)
             allocate(dmat_aoosoc(len_fmats)); dmat_aoosoc = 0
             call dcopy(len_fmats,tbuf_mmf,1,dmat_aoosoc,1)
-            call dump_Xc_c1_dens(                            
-     &                           dmat_aoosoc,                
-     &                           ntbas(0),                   
-     &                           ntbas(0),                   
-     &                           nz,                         
-     &                           nfmat,                      
-     &                           nopen,                      
-     &                           df(0:nopen),            
-     &                           'aooDM_2c',                 
-     &                           nint(charge(1)),            
-     &                           102,                        
-     &                           .true.                      
+            call dump_Xc_c1_dens(
+     &                           dmat_aoosoc,
+     &                           ntbas(0),
+     &                           ntbas(0),
+     &                           nz,
+     &                           nfmat,
+     &                           nopen,
+     &                           df(0:nopen),
+     &                           'aooDM_2c',
+     &                           nint(charge(1)),
+     &                           102,
+     &                           .true.
      &                           )
             aooeamf= .false.; deallocate(dmat_aoosoc);
           endif
@@ -3072,14 +3045,18 @@ C
      &                          N2BBASXQ_dim_x        = n2bbasxq,
      &                          nr_tmo                = ntmo,
      &                          nr_ao_all             =nfbas(1:nfsym,0),
+     &                          nr_mo_all             = norb(1:nfsym),
      &                          ioff_tmot             = i2tmot,
      &                          ioff_tmt              = i2tmt,
      &                          ioff_aomat_x          = i2basx,
      &                          myAOMOMAT             = 'AOMOMAT   ',
-     &                          isDFT                 = 
+     &                          isDFT                 =
      &                          dirac_cfg_dft_calculation,
+     &                          isLoA                 =
+     &                          (linear.or.atomic),
+     &                          xcmode                = 2,
      &                          lwork_ext             = lfree,
-     &                          print_lvl             = 10!iprham
+     &                          print_lvl             = iprham
      &                         )
 
           !> here we split...
@@ -3156,13 +3133,12 @@ C
      &                                             lux2c, 0,
      &                                             scratch_mmf)
             close(lux2c, status='keep')
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - G_A[2c]',-1)
             CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &                  IPQTOQ(1,0),LUPRI)
-#undef DEBUG_SOC
 #endif
 
             !> read {U+ G_A[4c] U}^{++}
@@ -3175,19 +3151,16 @@ C
      &                                     nint(charge(1)),
      &                                     lux2c
      &                                    )
-#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - {U+ G_A[4c] U}^{++}',-1)
             CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),NZ,
      &                  IPQTOQ(1,0),LUPRI)
-#undef DEBUG_SOC
 #endif
             !> ~
             !> G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
             call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-#define DEBUG_SOC
 #ifdef DEBUG_SOC
             CALL HEADER(
      &      'X-AMFI - 2e-normalized (final)',-1)
@@ -3207,7 +3180,7 @@ C
      &                                  .true.
      &                                 )
             call goodbye_xamfi(atom(1)%charge)
-            
+
             !> restore logicals
             if(aoofocc)then
               aoc   = aoc_save
@@ -6460,7 +6433,7 @@ C
      &            VMAT(IOFV),NFBAS(IFRP,0),NORB(IFRP),1,IPQTOQ(1,0),
      &            WORK,LWORK,IPRHAM)
 
-        IF (IPRHAM.GE.12) THEN
+        IF (IPRHAM.GE.10) THEN
 
          CALL HEADER(
      &    'ATMSYM: Entering AO->MO transformation matrix',-1)
@@ -6527,6 +6500,7 @@ C
         IEIGE  = IEIGP + NS
         KPMAXL = 0
         KPMAXS = 0
+
 C
 C       Allocate memory for the diagonalization. We want to
 C       have the LL and SS blocks in separate blocks.
@@ -7144,37 +7118,37 @@ C
      &                   IPQTOQ(1,0),LUPRI)
              CALL FLSHFO(LUPRI)
            ENDIF
-         ENDIF                     !NS.GT.0
 C      
-         MJBUF = 0
-         DO IX = IEIGP, IEIGP+NS-1
-           MJ = NINT(D2*EIG(IX))
-           IF(MJ.NE.MJBUF) THEN
-             MJBUF = MJ
-             MJABS = (ABS(MJ)+1)/2
-             ID_SUB_BL(KPADD+MJABS-1,IFRP)=ISKP*(KPOFF+MJABS)
-           ENDIF
-         ENDDO        
+           MJBUF = 0
+           DO IX = IEIGP, IEIGP+NS-1
+             MJ = NINT(D2*EIG(IX))
+             IF(MJ.NE.MJBUF) THEN
+               MJBUF = MJ
+               MJABS = (ABS(MJ)+1)/2
+               ID_SUB_BL(KPADD+MJABS-1,IFRP)=ISKP*(KPOFF+MJABS)
+             ENDIF
+           ENDDO        
 C
-         DO IX = IEIGP, IEIGP+NS-1
-           EIG(IX) = ABS(EIG(IX))
-         ENDDO
+           DO IX = IEIGP, IEIGP+NS-1
+             EIG(IX) = ABS(EIG(IX))
+           ENDDO
 C
-C        The SELBOS routine does just the reordering that we want,
-C        use work(kfss) as scratch, and allocate a few other small
-C        scratch arrays. The IBEIG part will not be used but we will
-C        initialize it to prevent problems with uninitialized data while
-C        sorting it.
+C          The SELBOS routine does just the reordering that we want,
+C          use work(kfss) as scratch, and allocate a few other small
+C          scratch arrays. The IBEIG part will not be used but we will
+C          initialize it to prevent problems with uninitialized data while
+C          sorting it.
 C
-         CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
-         CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
-         MJ = 0
-         CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
-         CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
-     &                WORK(KIBEI),WORK(KVSS),
-     &                WORK(KFSS),WORK(KIDUM),IPRHAM)
-         CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+           CALL MEMGET('INTE',KINDX,NS,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KIDUM,NS,WORK,KFREE,LFREE)
+           CALL MEMGET('INTE',KIBEI,NS,WORK,KFREE,LFREE)
+           MJ = 0
+           CALL ICOPY (NS,MJ,0,WORK(KIBEI),1)
+           CALL SELBOS (IFRP,NS,WORK(KINDX),EIG(IEIGP),
+     &                  WORK(KIBEI),WORK(KVSS),
+     &                  WORK(KFSS),WORK(KIDUM),IPRHAM)
+           CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
+         ENDIF                     !NS.GT.0
 C
 C        Same thing for large component solutions
 C
@@ -7200,8 +7174,8 @@ C
      &                WORK(KIBEI),WORK(KVLL),
      &                WORK(KFLL),WORK(KIDUM),IPRHAM)
          CALL MEMREL('ATMSYM',WORK,KINDX,KINDX,KFREE,LFREE)
-C       
-         DO IC = 0,2
+C
+         DO IC = 0,MC !MC = 1 for L only and 2 for L+S
            NDIM = NORB_SUB(KPADD,IFRP,IC)/IKAP 
            DO IK = 1,IKAP
              NORB_SUB(KPADD+IK-1,IFRP,IC) = NDIM
@@ -7214,16 +7188,18 @@ C     Write information to output
            IF(NORB_SUB(KPADD+IK-1,IFRP,0).NE.0) THEN
              CALL ATOMIC_ID(ID,KP,J,MJ,LL)
              WRITE (LUPRI,1020) 3-2*IFRP,KP,MJ,
-     &             (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,2)
-           ENDIF  
-         ENDDO       
+     &             (NORB_SUB(KPADD+IK-1,IFRP,IC),IC=0,MC)
+           ENDIF
+         ENDDO
 C
          IOFS = 0
          IOFL = 0
          IOFVL = IOFVL + NFBAS(IFRP,0)*NS
+
+
          DO IK = 1,IKAP
            IOFK = KPADD+IK-1
-           IF(NS.GT.0)THEN  
+           IF(NS.GT.0)THEN
              CALL BCKTRA(TMAT(IOFT),NFBAS(IFRP,0),
      &                   NORB_SUB(IOFK,IFRP,2),
      &                   WORK(KVSS+IOFS),NS,NORB_SUB(IOFK,IFRP,2),
@@ -7715,7 +7691,7 @@ C
         ELSEIF(IC.EQ.2)THEN
           MJBLCK_BUF = 0
         ENDIF
-        ITMMJ = IMJ + MJBLCK_BUF !final poionter
+        ITMMJ = IMJ + MJBLCK_BUF !final pointer
 C
         DO I = 1,NINSRT
            CALL DCOPY(NSUB,FSUB(1,I),1,FFUL(ITMKP+1,ITMMJ+I),1)

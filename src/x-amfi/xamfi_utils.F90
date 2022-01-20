@@ -82,7 +82,6 @@ contains
      integer, intent(in)                :: aoo_bs_to_fs(0:7,2)
      integer, intent(in)                :: print_lvl
 !----------------------------------------------------------------------
-     integer, allocatable               :: lvalue_array(:)
 !----------------------------------------------------------------------
 
 !     normalize (picture-change transform) 2e-SO-fock matrix
@@ -339,11 +338,15 @@ access='sequential',action="readwrite",position='rewind')
 
 !> Start by constructing a fractional occupation density (eqivalent to what is used in an atomic start guess)
 !> that is, add active density matrices to closed-shell density matrix
-write(6,*) 'BLUBB: x_nopen, x_dfopen, nrow, ncol, nz, nr_2e_fock_matrices = ',&
-x_nopen, x_dfopen(0:x_nopen), nrow, ncol, nz, nr_2e_fock_matrices, size(dmat)
+
+!write(6,*) 'BLUBB: x_nopen, x_dfopen, nrow, ncol, nz, nr_2e_fock_matrices = ',&
+!x_nopen, x_dfopen(0:x_nopen), nrow, ncol, nz, nr_2e_fock_matrices, size(dmat)
+
+if(nr_2e_fock_matrices > 1)then
 do i = 1,x_nopen
   call daxpy(nrow*ncol*nz,x_dfopen(i),Dmat(1,1,1,i+1),1,Dmat(1,1,1,1),1)
 end do
+endif
 
 if(final_dump)then
 allocate(Dmat_c1(nrow,ncol,nzc1)); Dmat_c1 = 0  
