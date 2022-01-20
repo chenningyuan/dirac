@@ -1,9 +1,7 @@
-
-  ** notice ** integer kinds do not match: dirac --> kind = 8 MPI library --> kind =  4
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
-    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -84,15 +82,15 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
  *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trond Saue               Universite Toulouse III           France        *
  *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
- *    Radovan Bast             UiT The Arctic University of      Norway        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
- *    Ignacio Agustin Aucar    Northeast National University     Argentina     *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
@@ -103,37 +101,42 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Loic Halbert             Universite de Lille               France        *
- *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stanford University               USA           *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
  *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
  *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
  *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
  *    Bruno Senjean            University of Leiden              Netherlands   *
  *    Avijit Shee              University of Michigan            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
  *    Marta L. Vidal           Technical University of Denmark   Denmark       *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
@@ -145,26 +148,30 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC19 (2019), written by                                       *
- *    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,     *
+ *    Release DIRAC21 (2021), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast, and A. S. P. Gomes      *
  *    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *
  *    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *
  *    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *
  *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
- *    M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,           *
- *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, M. L. Vidal, S. Villaume, *
- *    O. Visser, T. Winther, and S. Yamamoto (see http://diracprogram.org).    *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List,          *
+ *    H. S. Nataraj, M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen,          *
+ *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
+ *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *
+ *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*
+ *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
+ *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
  *                                                                             *
  *******************************************************************************
 
@@ -172,52 +179,64 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | master
-Commit hash   | 8743b2c
-Commit author | Radovan Bast
-Commit date   | Wed Apr 29 18:40:41 2020 +0000
+Branch        | WIP-master
+Commit hash   | cc9417cbc
+Commit author | Miroslav Iliaš
+Commit date   | Tue Jan 18 17:07:30 2022 +0000
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | milias
-Compiled on server       | lxir127
-Operating system         | Linux-3.16.0-10-amd64
-CMake version            | 3.0.2
+Who compiled             | hjj
+Compiled on server       | adm-110765.pc.sdu.dk
+Operating system         | Linux-4.15.0-166-generic
+CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-04-30 07:36:32.862629
-Python version           | 2.7.9
-Fortran compiler         | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpif90
-Fortran compiler version | 17.0
-Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFORT  -i8 -w -assume byterecl -g -traceback -DVAR_IFORT  -i8
-C compiler               | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpicc
-C compiler version       | 17.0
-C compiler flags         |  -g -wd981 -wd279 -wd383 -wd1572 -wd177  -g -wd981 -wd279 -wd383 -wd1572 -wd177 
-C++ compiler             | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpicxx
-C++ compiler version     | 17.0.4
-C++ compiler flags       |  -Wno-unknown-pragmas  -Wno-unknown-pragmas 
+Configuration time       | 2022-01-19 09:37:10.331321
+Python version           | 2.7.1
+Fortran compiler         | /home/hjj/my_libs/openmpi/bin/mpif90
+Fortran compiler version | 8.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS  -fopenmp
+C compiler               | /home/hjj/my_libs/openmpi/bin/mpicc
+C compiler version       | 8.4.0
+C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C++ compiler             | /home/hjj/my_libs/openmpi/bin/mpicxx
+C++ compiler version     | 8.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
 Static linking           | False
-64-bit integers          | True
+64-bit integers          | False
 MPI parallelization      | True
-MPI launcher             | /cvmfs/it.gsi.de/openmpi/intel/4.0.1_intel17.4/bin/mpiexec
-Math libraries           | unknown
+MPI launcher             | /home/hjj/my_libs/openmpi/bin/mpiexec
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;VAR_MPI;VAR_MPI2;VAR_MPI_32BIT_INT;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INT_STAR8;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_LAPLACE
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | https://gitlab.com/DmitryLyakh/ExaTensor.git
+Exatensor git hash       | e8e6f6351fabad514be9dd07d3c0a3a9e81c3f52
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT   TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=MPICH PATH_MPICH=/home/hjj/my_libs/openmpi BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
+
+ * openMP activated,  thread limit - # processes - # threads: *****   32    1
+
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Apr 30 11:51:31 2020
-     Host name              : lxir127                                 
+     Date and time (Linux)  : Wed Jan 19 23:51:28 2022
+     Host name              : adm-110765.pc.sdu.dk                    
+
+ * Opening HDF5 checkpoint file 
+    - DIRAC was compiled without hdf5, checkpointing is not possible
 
 
 Contents of the input file
@@ -278,10 +297,10 @@ O       3.15353000      -0.00000000      -1.37000000
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+             Peter J. Mohr, David B. Newell and Barry N. Taylor           
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.0359992
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -303,7 +322,7 @@ O       3.15353000      -0.00000000      -1.37000000
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Gaussian charge distribution.
+ Using default nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -432,8 +451,9 @@ Represented as: C2v
     B2   k
     A2   i
 
-  QM-QM nuclear repulsion energy :   5858.167733933967
+  Nuclear repulsion energy :   5858.167762750048 Hartree
 
+  Nuclear dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -484,91 +504,91 @@ Represented as: C2v
 
    1   Re       x      0.0000000000
    2            y      0.0000000000
-   3            z      2.5889248035
+   3            z      2.5889247907
 
    4   Re       x      0.0000000000
    5            y      0.0000000000
-   6            z     -2.5889248035
+   6            z     -2.5889247907
 
    7   C    1   x      0.0000000000
-   8            y      4.0629390363
-   9            z      2.5889248035
+   8            y      4.0629390163
+   9            z      2.5889247907
 
   10   C    2   x      0.0000000000
-  11            y     -4.0629390363
-  12            z      2.5889248035
+  11            y     -4.0629390163
+  12            z      2.5889247907
 
-  13   C    1   x      4.0629390363
+  13   C    1   x      4.0629390163
   14            y      0.0000000000
-  15            z      2.5889248035
+  15            z      2.5889247907
 
-  16   C    2   x     -4.0629390363
+  16   C    2   x     -4.0629390163
   17            y      0.0000000000
-  18            z      2.5889248035
+  18            z      2.5889247907
 
   19   C        x      0.0000000000
   20            y      0.0000000000
-  21            z      6.6518359914
+  21            z      6.6518359587
 
   22   C        x      0.0000000000
   23            y      0.0000000000
-  24            z     -6.6518359914
+  24            z     -6.6518359587
 
-  25   C    1   x      2.8729254147
-  26            y      2.8729254147
-  27            z     -2.5889248035
+  25   C    1   x      2.8729254006
+  26            y      2.8729254006
+  27            z     -2.5889247907
 
-  28   C    2   x     -2.8729254147
-  29            y      2.8729254147
-  30            z     -2.5889248035
+  28   C    2   x     -2.8729254006
+  29            y      2.8729254006
+  30            z     -2.5889247907
 
-  31   C    3   x      2.8729254147
-  32            y     -2.8729254147
-  33            z     -2.5889248035
+  31   C    3   x      2.8729254006
+  32            y     -2.8729254006
+  33            z     -2.5889247907
 
-  34   C    4   x     -2.8729254147
-  35            y     -2.8729254147
-  36            z     -2.5889248035
+  34   C    4   x     -2.8729254006
+  35            y     -2.8729254006
+  36            z     -2.5889247907
 
   37   O    1   x      0.0000000000
-  38            y      5.9593015138
-  39            z      2.5889248035
+  38            y      5.9593014844
+  39            z      2.5889247907
 
   40   O    2   x      0.0000000000
-  41            y     -5.9593015138
-  42            z      2.5889248035
+  41            y     -5.9593014844
+  42            z      2.5889247907
 
-  43   O    1   x      5.9593015138
+  43   O    1   x      5.9593014844
   44            y      0.0000000000
-  45            z      2.5889248035
+  45            z      2.5889247907
 
-  46   O    2   x     -5.9593015138
+  46   O    2   x     -5.9593014844
   47            y      0.0000000000
-  48            z      2.5889248035
+  48            z      2.5889247907
 
   49   O        x      0.0000000000
   50            y      0.0000000000
-  51            z      8.5481761668
+  51            z      8.5481761247
 
   52   O        x      0.0000000000
   53            y      0.0000000000
-  54            z     -8.5481761668
+  54            z     -8.5481761247
 
-  55   O    1   x      4.2138671369
-  56            y      4.2138671369
-  57            z     -2.5889248035
+  55   O    1   x      4.2138671162
+  56            y      4.2138671162
+  57            z     -2.5889247907
 
-  58   O    2   x     -4.2138671369
-  59            y      4.2138671369
-  60            z     -2.5889248035
+  58   O    2   x     -4.2138671162
+  59            y      4.2138671162
+  60            z     -2.5889247907
 
-  61   O    3   x      4.2138671369
-  62            y     -4.2138671369
-  63            z     -2.5889248035
+  61   O    3   x      4.2138671162
+  62            y     -4.2138671162
+  63            z     -2.5889247907
 
-  64   O    4   x     -4.2138671369
-  65            y     -4.2138671369
-  66            z     -2.5889248035
+  64   O    4   x     -4.2138671162
+  65            y     -4.2138671162
+  66            z     -2.5889247907
 
 
 
@@ -576,7 +596,7 @@ Represented as: C2v
   ----------------------------------------------
 
    22
- 
+
 Re     0.0000000000   0.0000000000   1.3700000000
 Re     0.0000000000   0.0000000000  -1.3700000000
 C      0.0000000000   2.1500147367   1.3700000000
@@ -835,7 +855,15 @@ O     -2.2298824477  -2.2298824477  -1.3700000000
 
 
 
-   Nuclear repulsion energy : 5858.167733933967 Hartree
+   Nuclear repulsion energy : 5858.167762750048 Hartree
+   Nuclear dipole moment    :        0.00000000        0.00000000        0.00000000 a.u.
+
+                       * Total mass:   653.860638 amu
+                       * Natural abundance:  34.251 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
 
 
                                 GETLAB: AO-labels
@@ -1840,6 +1868,11 @@ O     -2.2298824477  -2.2298824477  -1.3700000000
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Dirac-Coulomb Hamiltonian
  * SS integrals neglected:
@@ -1851,9 +1884,6 @@ O     -2.2298824477  -2.2298824477  -1.3700000000
    - LS-integrals:     1
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
-   - uncontracted small component basis set
 
 
  Information about the restricted kinetic balance scheme:
@@ -1879,54 +1909,35 @@ O     -2.2298824477  -2.2298824477  -1.3700000000
 
 
  
-     Date and time (Linux)  : Thu Apr 30 11:51:31 2020
-     Host name              : lxir127                                 
+     Date and time (Linux)  : Wed Jan 19 23:51:28 2022
+     Host name              : adm-110765.pc.sdu.dk                    
 
->>>> Node 0, utime: 0, stime: 0, minflt: 4851, majflt: 193, nvcsw: 736, nivcsw: 1944, maxrss: 49744
+>>>> Node 0, utime: 0, stime: 0, minflt: 77197, majflt: 0, nvcsw: 66, nivcsw: 2, maxrss: 321960
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
   Mean allocation size (Mb) :        48.90
   
-  Largest                    10  allocations
+  Largest          10  allocations
   
-      488.28 Mb at subroutine MAIN__+0x9a3                               for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_+0x112                              for PAMINP WORK array                         
-        0.03 Mb at subroutine xpldef_+0x3fc                              for INTADR in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3cc                              for INTREP in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3fc                              for INTADR in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3cc                              for INTREP in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3fc                              for INTADR in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3cc                              for INTREP in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3fc                              for INTADR in XPLDEF                          
-        0.03 Mb at subroutine xpldef_+0x3cc                              for INTREP in XPLDEF                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
   
   Peak memory usage:       488.28 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : MAIN__+0x9a3                              
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : test allocation of work array in DIRAC mai
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /u/milias/Work/qch/software/dirac/trunk/test/xyz_symmetry_recognition
-
- ====  below this line is the stderr stream  ====
---------------------------------------------------------------------------
-By default, for Open MPI 4.0 and later, infiniband ports on a device
-are not used by default.  The intent is to use UCX for these devices.
-You can override this policy by setting the btl_openib_allow_ib MCA parameter
-to true.
-
-  Local host:              lxir127
-  Local adapter:           mlx4_0
-  Local port:              1
-
---------------------------------------------------------------------------
---------------------------------------------------------------------------
-WARNING: There was an error initializing an OpenFabrics device.
-
-  Local host:   lxir127
-  Local device: mlx4_0
---------------------------------------------------------------------------
+DIRAC pam run in /home/hjj/progs/gitDirac_esr/build_master_myompi/test/xyz_symmetry_recognition
