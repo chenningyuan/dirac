@@ -376,17 +376,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 integer :: ierr
 
 !-----------------------------------------------------------------------------
+  nbuf3 = size(local_buf3)
   if (imstat(14).eq.3) then
       write (iw,*) " "
       write (iw,*) " reading in checkpointed intermediates for EOM-",eomtype
       A%eomtype = eomtype
       call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
       call eom_intermediates_read_from_file(A,iprnt)
-      call flush(iw)
   else
-
-     nbuf3 = size(local_buf3)
-
      allocate (foo(nfoo*rcw))
      allocate (fvo(nfvo*rcw))
      allocate (fvv(nfvv*rcw))
@@ -542,7 +539,6 @@ integer :: ierr
 
       write(eom_intm_file_name,'(A6,A1,I1)') file_basename,'.',myproc 
       eom_intm_file = file_unit
-      print *, " debug, set intermediate file name to ",eom_intm_file_name
    end subroutine 
 
    subroutine eom_intermediates_file_get_info(file_name,file_unit)
@@ -551,7 +547,6 @@ integer :: ierr
 
       file_name = eom_intm_file_name
       file_unit = eom_intm_file
-      print *, " debug, set intermediate file name to ",file_name
    end subroutine
 
    subroutine eom_intermediates_file_open
@@ -563,14 +558,14 @@ integer :: ierr
       call eom_intermediates_file_get_info(file_name,file_unit)
       inquire (file=file_name,exist=tobe)
       if (tobe) then
-          print*, "warning: overwriting file "//file_name
+          print*, " INFO: opening existing file "//file_name
           open (file_unit,file=file_name, &
      &     status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
        else
           open (file_unit,file=file_name, &
      &     status='NEW',FORM='UNFORMATTED',access='SEQUENTIAL')
        end if
-      print*, " opened file",file_name,' on unit',file_unit
+      print*, " INFO: opened file",file_name,' on unit',file_unit
    end subroutine
 
    subroutine eom_intermediates_file_close
@@ -579,7 +574,7 @@ integer :: ierr
 
       call eom_intermediates_file_get_info(file_name,file_unit)
       close (file_unit,status='KEEP')
-      print*, " closed file",file_name
+      print*, " INFO: closed file",file_name
    end subroutine
 
    subroutine eom_intermediates_read_from_file(A,iprnt)
@@ -641,6 +636,9 @@ integer :: ierr
          write (iw,*) "    read in H_II      from file"
       end if
 
+      call eom_intermediates_file_close
+      write (iw,*) " done with reading EOMCC intermediates from file"
+
    end subroutine
 
 
@@ -699,10 +697,6 @@ integer :: ierr
       call lab_write(eom_intm_file,'H_II    ')
       write (eom_intm_file) A%H_II
 
-      call lab_write(eom_intm_file,'EOFLABEL')
-
-      call eom_intermediates_file_close
-
       if (iprnt.ge.2) then
          write (iw,*) ""
          write (iw,*) "    Fbar_mi   intermediate written to file",dot_product(A%Fbar_mi,A%Fbar_mi)
@@ -736,6 +730,10 @@ integer :: ierr
          write (iw,*) "    T2        intermediate written to file"
          write (iw,*) "    H_II      intermediate written to file"
       end if
+
+      call lab_write(eom_intm_file,'EOFLABEL')
+      call eom_intermediates_file_close
+      write (iw,*) " done writing EOMCC intermediates to file" 
 
    end subroutine
 
