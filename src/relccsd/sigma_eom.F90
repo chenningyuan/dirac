@@ -382,6 +382,7 @@ integer :: ierr
       A%eomtype = eomtype
       call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
       call eom_intermediates_read_from_file(A,iprnt)
+      call flush(iw)
   else
 
      nbuf3 = size(local_buf3)
