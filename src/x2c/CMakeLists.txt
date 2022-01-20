@@ -66,3 +66,4 @@ add_library(
 add_dependencies(x2c gp)
 add_dependencies(x2c grid)
 add_dependencies(x2c interest)
+add_dependencies(x2c abacus)
