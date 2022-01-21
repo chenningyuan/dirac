@@ -230,6 +230,11 @@ Performs a closed shell MP2 calculation and generate the reduced frozen natural 
 The FNOs are transformed into atomic orbital basis set and saved in DFCOEF like file MP2NOs\_AO. If you would like to use FNOs to do higher-level computation like CC, pleaserename the file as DFCOEF (we will fix the issue in the near future).  
     
 Code generates the untruncated natural orbitals(MO basis) in file NOs\_MO and the Fock matrix(FNO basis) in file FM\_in\_NatOrb.
+
+::
+
+    .MP2NO
+    1.0d-3
     
 *Default:*
 
