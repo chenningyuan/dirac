@@ -223,5 +223,18 @@ Expert option: Level shift of orbital energies, ignored for values smaller 0.
     .LSHIFT
      0.0D0
 
+keyword(MP2NO)
+
+ Performs a closed shell MP2 calculation and generate the reduced frozen natural orbitals(FNOs) by diagonalization of virtual-virtual block of density matrix according to the occupation number threshold. 
+    
+ The FNOs are transformed into atomic orbital basis set and saved in DFCOEF like file MP2NOs\_AO. If you would like to use FNOs to do higher-level computation like CC, please rename the file as DFCOEF (we will fix the issue in the near future).  
+    
+ Code also generates the untruncated natural orbitals(MO basis) in file NOs\_MO and the Fock matrix(FNO basis) in file FM\_in\_NatOrb.
+    
+*Default:*
+
+::
+
+    MP2FNO is not activated.
 
 
