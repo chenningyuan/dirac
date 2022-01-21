@@ -537,7 +537,7 @@ integer :: ierr
       character(11), intent(in) :: file_basename 
       integer, intent(in) :: file_unit
 
-      write(eom_intm_file_name,'(A6,A1,I1)') file_basename,'.',myproc 
+      write(eom_intm_file_name,'(A6,A1,I4)') file_basename,'.',myproc 
       eom_intm_file = file_unit
    end subroutine 
 
