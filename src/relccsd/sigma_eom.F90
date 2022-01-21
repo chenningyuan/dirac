@@ -534,7 +534,7 @@ integer :: ierr
 
    subroutine eom_intermediates_file_set_info(file_basename,file_unit)
 #include "ccpar.inc"
-      character(11), intent(in) :: file_basename 
+      character(6), intent(in) :: file_basename 
       integer, intent(in) :: file_unit
 
       write(eom_intm_file_name,'(A6,A1,I4)') file_basename,'.',myproc 
