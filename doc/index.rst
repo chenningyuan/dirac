@@ -217,55 +217,55 @@ Exercises
    exercises/index.rst
 
 
-Developers
-==========
+Development
+===========
 
 * **Public and private repositories:**
-  :doc:`Working with multiple remotes <programmers/multiple-remotes>`
+  :doc:`Working with multiple remotes <development/multiple-remotes>`
 
 * **Code review:**
-  :doc:`Code review workflow <programmers/code_review>`
+  :doc:`Code review workflow <development/code_review>`
 
 * **Releasing:**
-  :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Patch preparation <programmers/patch_preparation>` |       
-  :doc:`Beta testing <programmers/beta_testing>` |
-  :doc:`Where to commit after the release is out <programmers/commit_policy>`
+  :doc:`Release preparation <development/release_preparation>` |
+  :doc:`Patch preparation <development/patch_preparation>` |       
+  :doc:`Beta testing <development/beta_testing>` |
+  :doc:`Where to commit after the release is out <development/commit_policy>`
 
 * **Programming:**
-  :doc:`Rules <programmers/rules>` |
-  :doc:`How to add new tests <programmers/testing>` |
-  :doc:`How to add/move/remove sources <programmers/adding_moving_removing_sources>` |
+  :doc:`Rules <development/rules>` |
+  :doc:`How to add new tests <development/testing>` |
+  :doc:`How to add/move/remove sources <development/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
-  :doc:`Input parsing <programmers/input_reading>` |
-  :doc:`Git submodules <programmers/external_projects>` |
-  :doc:`Nightly tests <programmers/cdash>` |
-  :doc:`Dirac on Windows <programmers/windows>` |
-  :doc:`Profiling <programmers/profiling>` |
-  :doc:`Debugging <programmers/debugging>` |
-  :doc:`History <programmers/museum>` |
-  :doc:`Further development <programmers/further_development>` |
-  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
-  :doc:`FAQ <programmers/faq>`
+  :doc:`Input parsing <development/input_reading>` |
+  :doc:`Git submodules <development/external_projects>` |
+  :doc:`Nightly tests <development/cdash>` |
+  :doc:`Dirac on Windows <development/windows>` |
+  :doc:`Profiling <development/profiling>` |
+  :doc:`Debugging <development/debugging>` |
+  :doc:`History <development/museum>` |
+  :doc:`Further development <development/further_development>` |
+  :doc:`Good Fortran 90 practices <development/good_fortran_90_practices>` |
+  :doc:`FAQ <development/faq>`
 
 * **Data schema and the CHECKPOINT file:**
-  :doc:`How data is organized on the checkpoint file <programmers/checkpoint>`
+  :doc:`How data is organized on the checkpoint file <development/checkpoint>`
 
 * **Basis sets:**
-  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
+  :doc:`Testing basis sets in DIRAC <development/test_basis_sets>` 
 
 * **Moving code between machines:**
-  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
+  :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <programmers/dfcoef>` |
-  :doc:`Screening <programmers/screening>` |
-  :doc:`64bit integers <programmers/int8>` |
-  :doc:`Numerical constants <programmers/num_constants>` |
-  :doc:`XML <programmers/xml>` |
-  :doc:`Static linking <programmers/static_linking>` |
-  :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
-  :doc:`How this documentation works <programmers/documentation_howto>`
+  :doc:`DFCOEF <development/dfcoef>` |
+  :doc:`Screening <development/screening>` |
+  :doc:`64bit integers <development/int8>` |
+  :doc:`Numerical constants <development/num_constants>` |
+  :doc:`XML <development/xml>` |
+  :doc:`Static linking <development/static_linking>` |
+  :doc:`Problems with lapack's DSYEVR <development/diag>` |
+  :doc:`How this documentation works <development/documentation_howto>`
 
 
 Bibliography
