@@ -103,7 +103,7 @@ Tutorials and walkthrus
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
   :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
   :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
-  :doc:`Case study <tutorials/two_component_hamiltonians/example>` 
+  :doc:`Case study <tutorials/two_component_hamiltonians/example>`
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
@@ -116,9 +116,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
-  
+
 * **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>`
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -147,16 +147,16 @@ Tutorials and walkthrus
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
   :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
-  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
-  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>` 
+  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>`
 
 * **Coupled-Cluster:**
   :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
   :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
-  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
+  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>`
 
 * **Case studies:**
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
@@ -186,7 +186,7 @@ Tutorials and walkthrus
 
 * **Frozen density embedding (FDE):**
   :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
- 
+
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
@@ -228,7 +228,7 @@ Development
 
 * **Releasing:**
   :doc:`Release preparation <development/release_preparation>` |
-  :doc:`Patch preparation <development/patch_preparation>` |       
+  :doc:`Patch preparation <development/patch_preparation>` |
   :doc:`Beta testing <development/beta_testing>` |
   :doc:`Where to commit after the release is out <development/commit_policy>`
 
@@ -252,7 +252,7 @@ Development
   :doc:`How data is organized on the checkpoint file <development/checkpoint>`
 
 * **Basis sets:**
-  :doc:`Testing basis sets in DIRAC <development/test_basis_sets>` 
+  :doc:`Testing basis sets in DIRAC <development/test_basis_sets>`
 
 * **Moving code between machines:**
   :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
