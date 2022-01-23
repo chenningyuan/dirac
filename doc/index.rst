@@ -220,6 +220,9 @@ Exercises
 Developers
 ==========
 
+* **Public and private repositories:**
+  :doc:`Working with multiple remotes <programmers/multiple-remotes>`
+
 * **Code review:**
   :doc:`Code review workflow <programmers/code_review>`
 
