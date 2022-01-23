@@ -41,6 +41,10 @@ module sigma_eom
     real(kind=8), pointer :: local_buf3(:) 
     integer :: nbuf3
     integer, pointer :: eom_ndet(:)
+ 
+    character(6) :: eom_intm_file_basename = 'EOM_IM'
+    character(11) :: eom_intm_file_name 
+    integer :: eom_intm_file = 58
 
    contains
 
@@ -352,6 +356,7 @@ module sigma_eom
 #include "ccpar.inc"
 #include "files.inc"
 #include "inpt.inc"
+#include "results.inc"
 
 !-----------------------------------------------------------------------------   
 !  In this routine we calculate all the intermediates required for a specific
@@ -371,9 +376,14 @@ real(8), allocatable :: foo(:),fvo(:),fvv(:)
 integer :: ierr
 
 !-----------------------------------------------------------------------------
-
-     nbuf3 = size(local_buf3)
-
+  nbuf3 = size(local_buf3)
+  if (imstat(14).eq.3) then
+      write (iw,*) " "
+      write (iw,*) " reading in checkpointed intermediates for EOM-",eomtype
+      A%eomtype = eomtype
+      call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
+      call eom_intermediates_read_from_file(A,iprnt)
+  else
      allocate (foo(nfoo*rcw))
      allocate (fvo(nfvo*rcw))
      allocate (fvv(nfvv*rcw))
@@ -509,10 +519,221 @@ integer :: ierr
 
      endif 
 
-   deallocate(foo)
-   deallocate(fvo)
-   deallocate(fVV)
+     write (iw,*) " checkpointed intermediates for EOM-",eomtype
+     call eom_intermediates_file_set_info(eom_intm_file_basename,eom_intm_file)
+     call eom_intermediates_write_to_file(A,iprnt)
+     IMSTAT(14) = 3
+     call ccdump
 
+     deallocate(foo)
+     deallocate(fvo)
+     deallocate(fVV)
+   end if
+
+   end subroutine
+
+   subroutine eom_intermediates_file_set_info(file_basename,file_unit)
+#include "ccpar.inc"
+      character(6), intent(in) :: file_basename 
+      integer, intent(in) :: file_unit
+
+      write(eom_intm_file_name,'(A6,A1,I4)') file_basename,'.',myproc 
+      eom_intm_file = file_unit
+   end subroutine 
+
+   subroutine eom_intermediates_file_get_info(file_name,file_unit)
+      character(11), intent(inout) :: file_name 
+      integer, intent(inout) :: file_unit 
+
+      file_name = eom_intm_file_name
+      file_unit = eom_intm_file
+   end subroutine
+
+   subroutine eom_intermediates_file_open
+      logical :: tobe = .false.
+      integer :: eomtype_len = 8
+      integer :: file_unit
+      character(11) :: file_name
+
+      call eom_intermediates_file_get_info(file_name,file_unit)
+      inquire (file=file_name,exist=tobe)
+      if (tobe) then
+          print*, " INFO: opening existing file "//file_name
+          open (file_unit,file=file_name, &
+     &     status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+       else
+          open (file_unit,file=file_name, &
+     &     status='NEW',FORM='UNFORMATTED',access='SEQUENTIAL')
+       end if
+      print*, " INFO: opened file",file_name,' on unit',file_unit
+   end subroutine
+
+   subroutine eom_intermediates_file_close
+      integer :: file_unit
+      character(11) :: file_name
+
+      call eom_intermediates_file_get_info(file_name,file_unit)
+      close (file_unit,status='KEEP')
+      print*, " INFO: closed file",file_name
+   end subroutine
+
+   subroutine eom_intermediates_read_from_file(A,iprnt)
+      use labeled_storage
+
+#include "files.inc"
+      type(intermediates), intent(inout) :: A
+      integer, intent(in) :: iprnt
+      logical :: tobe = .false.
+      integer :: eomtype_len = 8
+
+      call eom_intermediates_file_open
+
+!     call lab_read(eom_intm_file,'eomtype ',A%eomtype,eomtype_len)
+      call lab_read(eom_intm_file,'Fbar_mi ',rdata=A%Fbar_mi)
+      call lab_read(eom_intm_file,'Fbar_me ',rdata=A%Fbar_me)
+      call lab_read(eom_intm_file,'Fbar_ae ',rdata=A%Fbar_ae)
+      call lab_read(eom_intm_file,'W_ijmn  ',rdata=A%W_ijmn)
+      call lab_read(eom_intm_file,'W_ejmb  ',rdata=A%W_ejmb)
+      call lab_read(eom_intm_file,'W_iemn  ',rdata=A%W_iemn)
+      call lab_read(eom_intm_file,'W_efam  ',rdata=A%W_efam)
+      call lab_read(eom_intm_file,'W_amef  ',rdata=A%W_amef)
+      call lab_read(eom_intm_file,'W_mnie  ',rdata=A%W_mnie)
+      call lab_read(eom_intm_file,'W_mbej  ',rdata=A%W_mbej)
+      call lab_read(eom_intm_file,'Wbr_mbej',rdata=A%Wbar_mbej)
+      call lab_read(eom_intm_file,'t1      ',rdata=A%t1)
+      call lab_read(eom_intm_file,'t2      ',rdata=A%t2)
+      call lab_read(eom_intm_file,'H_II    ',rdata=A%H_II)
+
+      if (iprnt.ge.2) then
+         write (iw,*) "    read in Fbar_mi   from file",dot_product(A%Fbar_mi,A%Fbar_mi)
+         write (iw,*) "    read in Fbar_me   from file",dot_product(A%Fbar_me,A%Fbar_me)
+         write (iw,*) "    read in Fbar_ae   from file",dot_product(A%Fbar_ae,A%Fbar_ae)
+         write (iw,*) "    read in W_ijmn    from file",dot_product(A%W_ijmn,A%W_ijmn)
+         write (iw,*) "    read in Wbar_mbej from file",dot_product(A%Wbar_mbej,A%Wbar_mbej)
+         write (iw,*) "    read in W_mbej    from file",dot_product(A%W_mbej,A%W_mbej)
+         write (iw,*) "    read in W_ejmb    from file",dot_product(A%W_ejmb,A%W_ejmb)
+         write (iw,*) "    read in W_iemn    from file",dot_product(A%W_iemn,A%W_iemn)
+         write (iw,*) "    read in W_mnie    from file",dot_product(A%W_mnie,A%W_mnie)
+         write (iw,*) "    read in W_efam    from file",dot_product(A%W_efam,A%W_efam)
+         write (iw,*) "    read in W_amef    from file",dot_product(A%W_amef,A%W_amef)
+         write (iw,*) "    read in T1        from file",dot_product(A%t1,A%t1)
+         write (iw,*) "    read in T2        from file",dot_product(A%t2,A%t2)
+         write (iw,*) "    read in H_II      from file",dot_product(A%H_II,A%H_II)
+      else
+         write (iw,*) "    read in Fbar_mi   from file"
+         write (iw,*) "    read in Fbar_me   from file"
+         write (iw,*) "    read in Fbar_ae   from file"
+         write (iw,*) "    read in W_ijmn    from file"
+         write (iw,*) "    read in Wbar_mbej from file"
+         write (iw,*) "    read in W_mbej    from file"
+         write (iw,*) "    read in W_ejmb    from file"
+         write (iw,*) "    read in W_iemn    from file"
+         write (iw,*) "    read in W_mnie    from file"
+         write (iw,*) "    read in W_efam    from file"
+         write (iw,*) "    read in W_amef    from file"
+         write (iw,*) "    read in T1        from file"
+         write (iw,*) "    read in T2        from file"
+         write (iw,*) "    read in H_II      from file"
+      end if
+
+      call eom_intermediates_file_close
+      write (iw,*) " done with reading EOMCC intermediates from file"
+
+   end subroutine
+
+
+   subroutine eom_intermediates_write_to_file(A,iprnt)
+      use labeled_storage
+
+#include "files.inc"
+      type(intermediates), intent(inout) :: A
+      logical :: tobe = .false.
+      integer, intent(in) :: iprnt
+
+      call eom_intermediates_file_open
+
+!     call lab_write(eom_intm_file,'eomtype ')
+!     write (eom_intm_file) A%eomtype
+
+      call lab_write(eom_intm_file,'Fbar_mi ')
+      write (eom_intm_file) A%Fbar_mi
+
+      call lab_write(eom_intm_file,'Fbar_me ')
+      write (eom_intm_file) A%Fbar_me
+
+      call lab_write(eom_intm_file,'Fbar_ae ')
+      write (eom_intm_file) A%Fbar_ae
+ 
+      call lab_write(eom_intm_file,'W_ijmn  ')
+      write (eom_intm_file) A%W_ijmn
+
+      call lab_write(eom_intm_file,'W_ejmb  ')
+      write (eom_intm_file) A%W_ejmb
+
+      call lab_write(eom_intm_file,'W_iemn  ')
+      write (eom_intm_file) A%W_iemn
+
+      call lab_write(eom_intm_file,'W_efam  ')
+      write (eom_intm_file) A%W_efam
+
+      call lab_write(eom_intm_file,'W_amef  ')
+      write (eom_intm_file) A%W_amef
+
+      call lab_write(eom_intm_file,'W_mnie  ')
+      write (eom_intm_file) A%W_mnie
+
+      call lab_write(eom_intm_file,'W_mbej  ')
+      write (eom_intm_file) A%W_mbej
+
+      call lab_write(eom_intm_file,'Wbr_mbej')
+      write (eom_intm_file) A%Wbar_mbej
+
+      call lab_write(eom_intm_file,'t1      ')
+      write (eom_intm_file) A%t1
+
+      call lab_write(eom_intm_file,'t2      ')
+      write (eom_intm_file) A%t2
+
+      call lab_write(eom_intm_file,'H_II    ')
+      write (eom_intm_file) A%H_II
+
+      if (iprnt.ge.2) then
+         write (iw,*) ""
+         write (iw,*) "    Fbar_mi   intermediate written to file",dot_product(A%Fbar_mi,A%Fbar_mi)
+         write (iw,*) "    Fbar_me   intermediate written to file",dot_product(A%Fbar_me,A%Fbar_me)
+         write (iw,*) "    Fbar_ae   intermediate written to file",dot_product(A%Fbar_ae,A%Fbar_ae)
+         write (iw,*) "    W_ijmn    intermediate written to file",dot_product(A%W_ijmn,A%W_ijmn)
+         write (iw,*) "    Wbar_mbej intermediate written to file",dot_product(A%Wbar_mbej,A%Wbar_mbej)
+         write (iw,*) "    W_mbej    intermediate written to file",dot_product(A%W_mbej,A%W_mbej)
+         write (iw,*) "    W_ejmb    intermediate written to file",dot_product(A%W_ejmb,A%W_ejmb)
+         write (iw,*) "    W_iemn    intermediate written to file",dot_product(A%W_iemn,A%W_iemn)
+         write (iw,*) "    W_mnie    intermediate written to file",dot_product(A%W_mnie,A%W_mnie)
+         write (iw,*) "    W_efam    intermediate written to file",dot_product(A%W_efam,A%W_efam)
+         write (iw,*) "    W_amef    intermediate written to file",dot_product(A%W_amef,A%W_amef)
+         write (iw,*) "    T1        intermediate written to file",dot_product(A%t1,A%t1)
+         write (iw,*) "    T2        intermediate written to file",dot_product(A%t2,A%t2)
+         write (iw,*) "    H_II      intermediate written to file",dot_product(A%H_II,A%H_II)
+      else
+         write (iw,*) ""
+         write (iw,*) "    Fbar_mi   intermediate written to file"
+         write (iw,*) "    Fbar_me   intermediate written to file"
+         write (iw,*) "    Fbar_ae   intermediate written to file"
+         write (iw,*) "    W_ijmn    intermediate written to file"
+         write (iw,*) "    Wbar_mbej intermediate written to file"
+         write (iw,*) "    W_mbej    intermediate written to file"
+         write (iw,*) "    W_ejmb    intermediate written to file"
+         write (iw,*) "    W_iemn    intermediate written to file"
+         write (iw,*) "    W_mnie    intermediate written to file"
+         write (iw,*) "    W_efam    intermediate written to file"
+         write (iw,*) "    W_amef    intermediate written to file"
+         write (iw,*) "    T1        intermediate written to file"
+         write (iw,*) "    T2        intermediate written to file"
+         write (iw,*) "    H_II      intermediate written to file"
+      end if
+
+      call lab_write(eom_intm_file,'EOFLABEL')
+      call eom_intermediates_file_close
+      write (iw,*) " done writing EOMCC intermediates to file" 
 
    end subroutine
 
