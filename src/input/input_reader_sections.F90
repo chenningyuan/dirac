@@ -2164,8 +2164,6 @@
 
       if (kw_matches(word, '.DEBUG ')) then
          aoomod_debug = .true.
-         aoomod       = .true.
-         x2c_add_amfi = 2
       end if
 
       if (kw_matches(word, '.atomic')) then
@@ -2174,13 +2172,20 @@
       end if
 
       if (kw_matches(word, '.2ediag')) then
-         aoomod    = .true.
-         aoo2ediag = .true.
+         aoomod       = .true.
+         aoo2ediag    = .true.
+      end if
+
+      if (kw_matches(word, '.amf   ')) then
+         aoomod       = .true.
+         aoo2ediag    = .true.
+         x2c_add_amfi = 2
       end if
 
       if (kw_matches(word, '.eamf  ')) then
-         aoomod    = .true.
-         aooeamf   = .true.
+         aoomod       = .true.
+         aooeamf      = .true.
+         x2c_add_amfi = 3
       end if
 
       if (kw_matches(word, '.noaoc ')) then
@@ -2191,7 +2196,7 @@
       call check_whether_kw_found(word, kw_section)
 
 #else
-      call quit('Atomic oo-order spin-orbit correction not included in this version')
+      call quit('X-AMFI not included in this version')
 #endif
 
    end subroutine
