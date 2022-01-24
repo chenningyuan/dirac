@@ -227,14 +227,17 @@ keyword(MP2NO)
 
 Performs a closed shell MP2 calculation and generate the reduced frozen natural orbitals(FNOs) by diagonalization of virtual-virtual block of density matrix according to the occupation number threshold. 
 
-The FNOs are transformed into atomic orbital basis set and saved in DFCOEF like file MP2NOs\_AO. If you would like to use FNOs to do higher-level computation like CC, pleaserename the file as DFCOEF (we will fix the issue in the near future).  
-    
-Code generates the untruncated natural orbitals(MO basis) in file NOs\_MO and the Fock matrix(FNO basis) in file FM\_in\_NatOrb.
-
 ::
 
     .MP2NO
     1.0d-3
+
+The FNOs are transformed into atomic orbital basis set and saved file MP2NOs\_AO, which has the same structure as DFCOEF. If you would like to use FNOs to do higher-level computation like CC, please rename the file as DFCOEF (we will fix the issue in the near future).  
+    
+The untruncated FNOs(MO basis) are saved in file NOs\_MO and the Fock matrix(FNO basis) in file FM\_in\_NatOrb. 
+
+User don't have to repeat MP2 calcualtion as long as using NOs\_MO with new threshold. 
+
     
 *Default:*
 
@@ -243,3 +246,12 @@ Code generates the untruncated natural orbitals(MO basis) in file NOs\_MO and th
     MP2FNO is not activated.
 
 
+keyword(DONATORB)
+
+Compute natural orbitals (AO basis) and occupation number, saved in file DFNOSAO. User need to provide quaternion density matrix file CCDENS.
+
+*Default:*
+
+::
+
+    DONATORB is not activated.
