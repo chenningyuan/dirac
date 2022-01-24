@@ -288,12 +288,12 @@ C
         ENDIF
 C
         OSCBED(IEXC)        = D0
+        OSCECD(IEXC)        = D0        
         TMOM(1,NPAR+1,IEXC) = D0
         TMOM(2,NPAR+1,IEXC) = D0
         IF (BEDECD) THEN
           TMOM(3,NPAR+1,IEXC) = D0
           TMOM(4,NPAR+1,IEXC) = D0
-          OSCECD(IEXC)        = D0
         ENDIF
         IPAR = 0
 C
@@ -351,20 +351,12 @@ C       ====================================
 C
 C       Oscillator strength
 C
-        IF (BEDECD.AND.DOBED) THEN
-          TMP = D0
-          DO IOP = 1,NOP
-            TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
-          ENDDO
-          OSCBED(IEXC) = D2*OMEGA(IEXC)*TMP
+        IF (BEDECD) THEN
           OSCECD(IEXC) =  D4*OMEGA(IEXC)*
      &                   (TMOM(2,NPAR+1,IEXC)*TMOM(3,NPAR+1,IEXC) 
      &                  - TMOM(4,NPAR+1,IEXC)*TMOM(1,NPAR+1,IEXC))
-        ELSEIF (BEDECD) THEN
-          OSCECD(IEXC) =  D4*OMEGA(IEXC)*
-     &                   (TMOM(2,NPAR+1,IEXC)*TMOM(3,NPAR+1,IEXC) 
-     &                  - TMOM(4,NPAR+1,IEXC)*TMOM(1,NPAR+1,IEXC))
-        ELSEIF (DOBED) THEN
+        ENDIF
+        IF (DOBED) THEN
           TMP = D0
           DO IOP = 1,NOP
             TMP = TMP + TMOM(IOP,NPAR+1,IEXC)*TMOM(IOP,NPAR+1,IEXC)
@@ -386,7 +378,7 @@ C
       WRITE(6,'(/A)') '* Transition moments:'
       WRITE(6,'(/A4,1X,A18,24X,3(3X,A5,13X))')     
      &  'Exc.','Frequency (au)    ',(TPAR(IPAR),IPAR=1,NPAR+1)
-      IF (BEDECD.AND.DOBED) THEN
+      IF (BEDECD) THEN 
         DO IEXC = 1,NEXCNV
            WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e1cos [kr]): ',
@@ -400,44 +392,8 @@ C
            WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' (e2sin [kr]): ',
      &     (TMOM(4,IPAR,IEXC),IPAR = 1,NPAR+1)
-        ENDDO   
-        WRITE(6,'(/A)') '* Oscillator strengths:'
-        WRITE(6,'(/A4,1X,A18)')     
-     &    'Exc.','Frequency (au)    '
-        DO IEXC = 1,NEXCNV
-          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
-     &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
-        ENDDO
-        WRITE(6,'(/A)') '* Differential Oscillator strengths:'
-        WRITE(6,'(/A4,1X,A18)')     
-     &    'Exc.','Frequency (au)    '
-        DO IEXC = 1,NEXCNV
-          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
-     &    IEXC,OMEGA(IEXC),OSCECD(IEXC)
-        ENDDO   
-      ELSEIF (BEDECD) THEN
-        DO IEXC = 1,NEXCNV
-           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
-     &     IEXC,OMEGA(IEXC),' (e1cos [kr]): ',
-     &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
-           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
-     &     IEXC,OMEGA(IEXC),' (e1sin [kr]): ',
-     &     (TMOM(2,IPAR,IEXC),IPAR = 1,NPAR+1)
-           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
-     &     IEXC,OMEGA(IEXC),' (e2cos [kr]): ',
-     &     (-TMOM(3,IPAR,IEXC),IPAR = 1,NPAR+1)
-           WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
-     &     IEXC,OMEGA(IEXC),' (e2sin [kr]): ',
-     &     (TMOM(4,IPAR,IEXC),IPAR = 1,NPAR+1)
-        ENDDO      
-        WRITE(6,'(/A)') '* Differential Oscillator strengths:'
-        WRITE(6,'(/A4,1X,A18)')     
-     &    'Exc.','Frequency (au)    '
-        DO IEXC = 1,NEXCNV
-          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
-     &    IEXC,OMEGA(IEXC),OSCECD(IEXC)
-        ENDDO   
-      ELSEIF (DOBED) THEN
+        ENDDO  
+      ELSE 
         DO IEXC = 1,NEXCNV
            WRITE(6,'(I4,1X,F18.10,A23,3(3X,ES18.10))')
      &     IEXC,OMEGA(IEXC),' real part (sin[kr]) : ',
@@ -446,6 +402,8 @@ C
      &     ' imag part (cos[kr]) : ',
      &     (-TMOM(1,IPAR,IEXC),IPAR = 1,NPAR+1)
         ENDDO
+      ENDIF
+      IF (DOBED) THEN        
         WRITE(6,'(/A)') '* Oscillator strengths:'
         WRITE(6,'(/A4,1X,A18)')     
      &    'Exc.','Frequency (au)    '
@@ -454,6 +412,15 @@ C
      &    IEXC,OMEGA(IEXC),OSCBED(IEXC)
         ENDDO
       ENDIF
+      IF (BEDECD) THEN
+        WRITE(6,'(/A)') '* Differential Oscillator strengths:'
+        WRITE(6,'(/A4,1X,A18)')     
+     &    'Exc.','Frequency (au)    '
+        DO IEXC = 1,NEXCNV
+          WRITE(6,'(I4,1X,F18.10,(3X,ES14.6))')
+     &    IEXC,OMEGA(IEXC),OSCECD(IEXC)
+        ENDDO  
+      ENDIF  
 C     
 C     Memory deallocation
       IF(NZXOPE.GT.0) THEN
@@ -2053,8 +2020,6 @@ CCCC     ****************************************************
       call interface_mpi_bcast_l0(ANTI, 1,  MASTER,
      &              global_communicator)
       call interface_mpi_bcast_l0(ANGPLOT, 1,  MASTER,
-     &              global_communicator)
-      call interface_mpi_bcast_l0(CHIAVG, 1,  MASTER,
      &              global_communicator)
       call interface_mpi_bcast_l0(SQUARE, 1,  MASTER,
      &              global_communicator)
