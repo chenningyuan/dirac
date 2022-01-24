@@ -225,18 +225,18 @@ Expert option: Level shift of orbital energies, ignored for values smaller 0.
 
 keyword(MP2NO)
 
-Performs a closed shell MP2 calculation and generate the reduced frozen natural orbitals(FNOs) by diagonalization of virtual-virtual block of density matrix according to the occupation number threshold. 
+Perform a closed shell MP2 calculation and generate the reduced frozen natural orbitals(FNOs) by diagonalization of virtual-virtual block of density matrix given the threshold of occupation number. 
 
 ::
 
     .MP2NO
     1.0d-3
 
-The FNOs are transformed into atomic orbital basis set and saved file MP2NOs\_AO, which has the same structure as DFCOEF. If you would like to use FNOs to do higher-level computation like CC, please rename the file as DFCOEF (we will fix the issue in the near future).  
+The FNOs are transformed into AO basis and saved file MP2NOs\_AO, which has the same structure as DFCOEF. If one would like to use FNOs to do higher-level computation like CC, please rename the file as DFCOEF to do restart (we will fix the issue in the near future).  
     
-The untruncated FNOs(MO basis) are saved in file NOs\_MO and the Fock matrix(FNO basis) in file FM\_in\_NatOrb. 
+The untruncated FNOs(MO basis) are saved in file NOs\_MO and the Fock matrix(FNO basis) is in file FM\_in\_NatOrb. 
 
-User don't have to repeat MP2 calcualtion as long as using NOs\_MO with new threshold. 
+Don't have to repeat MP2 calcualtion as long as using NOs\_MO with new threshold. 
 
     
 *Default:*
@@ -248,7 +248,7 @@ User don't have to repeat MP2 calcualtion as long as using NOs\_MO with new thre
 
 keyword(DONATORB)
 
-Compute natural orbitals (AO basis) and occupation number, saved in file DFNOSAO. User need to provide quaternion density matrix file CCDENS.
+Get quaternion natural orbitals (AO basis) and occupation number, saved in file DFNOSAO. User need to provide quaternion density matrix file CCDENS.
 
 *Default:*
 
