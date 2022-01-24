@@ -149,6 +149,27 @@ whereas the average over angles :math:`\theta` and :math:`\phi` is handled by `L
 
 A full account is given in :cite:`List_JCP2020`
 
+
+keyword(BEDECD)
+
+Invoke callculation of the differential oscillator strengths using the full interaction operator. This quantity is calculated as the difference between the oscillator strengths corresponding to left and right-handed circularly polarized light. The differential oscillator strenght is given by
+
+.. math::
+
+\Delta f  = f_{\text{L}}-f_{\text{R}}
+              =-i\frac{2m_e\omega}{\hbar e^2}\mathbf{e}_{k}\cdot\left(\mathbf{T}\times\mathbf{T}^{\ast}\right)
+
+where the transition moments are written in vector form, :math:'\mathbf{T}=\langle f|\frac{e}{\omega} c\boldsymbol{\alpha}e^{i\mathbf{k}\cdot\mathbf{r}}|i\rangle', which allows the compact cross-product form of previous equation.
+
+The isotropic averaging of the differential oscillator strength is handled in an analogous manner as :ref:`EXCITATION_ENERGIES_.BED`, with the main difference being that in the current case, only two angles are required. The redundancy of the angle :math:'\chi' is a manifestation of axial symmetry. The rotational average can be written as 
+
+.. math::
+
+   \left\langle \Delta f_{n\leftarrow 0}\right\rangle _{\theta,\phi} = -i\frac{2m_e\omega}{\hbar e^2}\left\langle n|\mathbf{e}_{k}\cdot\left(\mathbf{T}\times\mathbf{T}^{\ast}\right)\right\rangle _{\theta,\phi}.
+
+For a full account see :cite:`vanHorn2021probing`.
+
+
 keyword(ORIENT)
 
 Specify fixed experimental configuration (no rotational average). The orientation of the wave and polarization vector is given by specification of the angles :math:`\theta`, :math:`\phi` and :math:`\chi`, see the :ref:`EXCITATION_ENERGIES_.BED` keyword for more details. For instance, to specify that the wave vector is along the :math:`z` -axis  and the polarization vector along the :math:`x` - axis, we set
