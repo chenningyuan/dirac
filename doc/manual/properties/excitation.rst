@@ -156,12 +156,11 @@ Invoke callculation of the differential oscillator strengths using the full inte
 
 .. math::
 
-\Delta f  = f_{\text{L}}-f_{\text{R}}
-              =-i\frac{2m_e\omega}{\hbar e^2}\mathbf{e}_{k}\cdot\left(\mathbf{T}\times\mathbf{T}^{\ast}\right)
+    \Delta f= f_{\text{L}}-f_{\text{R}}=-i\frac{2m_e\omega}{\hbar e^2}\mathbf{e}_{k}\cdot\left(\mathbf{T}\times\mathbf{T}^{\ast}\right),
 
-where the transition moments are written in vector form, :math:'\mathbf{T}=\langle f|\frac{e}{\omega} c\boldsymbol{\alpha}e^{i\mathbf{k}\cdot\mathbf{r}}|i\rangle', which allows the compact cross-product form of previous equation.
+where the transition moments are written in vector form, :math:`\mathbf{T}=\langle f|\frac{e}{\omega} c\boldsymbol{\alpha}e^{i\mathbf{k}\cdot\mathbf{r}}|i\rangle`, which allows the compact cross-product form of previous equation.
 
-The isotropic averaging of the differential oscillator strength is handled in an analogous manner as :ref:`EXCITATION_ENERGIES_.BED`, with the main difference being that in the current case, only two angles are required. The redundancy of the angle :math:'\chi' is a manifestation of axial symmetry. The rotational average can be written as 
+The isotropic averaging of the differential oscillator strength is handled in an analogous manner as :ref:`EXCITATION_ENERGIES_.BED`, with the main difference being that in the current case, only two angles are required. The redundancy of the angle :math:`\chi` is a manifestation of axial symmetry. The rotational average can be written as 
 
 .. math::
 
