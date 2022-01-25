@@ -147,7 +147,7 @@ C     ... SYM: supersymmetry (if known)
       N2BED  = NBED*NEXCF
       CALL MEMGET2('REAL','OSCBED',KBED,N2BED,WORK,KFREE,LFREE)
 C     ... OSCBED: oscillator strengths for each excitation
-      CALL MEMGET2('REAL','OSCECD',KBED,N2BED,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','OSCECD',KECD,N2BED,WORK,KFREE,LFREE)
 C     ... OSCECD: differential oscillator strengths for each excitation 
 C
 C     Initialize:
@@ -155,7 +155,7 @@ C     Initialize:
       CALL DZERO(WORK(KOMEGA),NEXCF)
       CALL DZERO(WORK(KBED),N2BED)      
       CALL PRPXP1(WORK(KPPF),WORK(KOMEGA),WORK(KCNV),WORK(KPPO),
-     &            WORK(KSSYM),WORK(KBED),WORK,KFREE,LFREE)
+     &            WORK(KSSYM),WORK(KBED),WORK(KECD),WORK,KFREE,LFREE)
 C
  10   CONTINUE
       IF (XPPANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXPP)
@@ -168,7 +168,7 @@ C         routine in WORK(KPPO), WORK(KPPF), WORK(KCNV), WORK(KOMEGA)
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck PRPXP1 */
-      SUBROUTINE PRPXP1(ATMPPF,OMEGA,RCNV,IORBCL,ISSYM,OSCBED,OSCECD
+      SUBROUTINE PRPXP1(ATMPPF,OMEGA,RCNV,IORBCL,ISSYM,OSCBED,OSCECD,
      &                  WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1133,7 +1133,7 @@ Chj: MAXRM, MXLOAD
 #include "dgroup.h"
       LOGICAL FIRST
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
-     &          OSCBED(MAXEXC,NBSYM,NBED),OSCECD(MAXEXC,NBSYM,NBED)
+     &          OSCBED(MAXEXC,NBSYM,NBED),OSCECD(MAXEXC,NBSYM,NBED),
      &          RCNV(*),ISSYM(*),
      &          IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*),IORBCL(4,*),
      &          OMEGA(*),EVECR(NREDM,*),EIG(*),WORK(*)
