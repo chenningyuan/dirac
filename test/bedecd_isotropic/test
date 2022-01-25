@@ -11,8 +11,8 @@ test = TestRun(__file__, sys.argv)
 
 f = Filter()
 
-f.add(from_string = 'Isotropic differential oscillator strengths',
-      num_lines       = 8,
+f.add(from_string = 'Isotropic differential oscillator strengths (full light-matter interaction) above threshold :',
+      to_string   = 'Sum of differential oscillator strengths (full light-matter interaction) :',
       abs_tolerance   = 1.0e-8)
 
 

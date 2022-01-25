@@ -2097,7 +2097,7 @@ C
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
-      PARAMETER(TTOL=1.0D-8,D2=2.0D0,D2R3 = (2.0D0/3.0D0),
+      PARAMETER(TTOL=1.0D-8,ECDTOL=1.0D-10,D2=2.0D0,D2R3=(2.0D0/3.0D0),
      &          D1=1.0D0,D0=0.0D0)
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
      &          OSCBED(MAXEXC,NBSYM,NBED),OSCECD(MAXEXC,NBSYM,NBED),
@@ -2361,7 +2361,7 @@ C
       IF(BEDECD) THEN
         WRITE(LUPRI,'(/A,ES8.2)')
      &       '* Isotropic differential oscillator strengths '//
-     &        '(full light-matter interaction) above threshold :', TTOL
+     &        '(full light-matter interaction) above threshold :',ECDTOL
         NLIN=90
         CALL PRSYMB(LUPRI,'=',NLIN,0)
         WRITE(LUPRI,'(/A)')
@@ -2372,7 +2372,7 @@ C
           IEXC  = IEERG(1,II)
           ISYM  = IEERG(2,II)
           ECDIL = OSCECD(IEXC,ISYM,1)
-          IF(ABS(ECDIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
+          IF(ABS(ECDIL) .GT. ECDTOL) THEN ! allowing negative oscillator strengths
             ILAB  = ISSYM(IEXC,ISYM)
             WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,2X,ES14.6)') JEXC-1,
@@ -2381,7 +2381,7 @@ C
         ENDDO
         CALL PRSYMB(LUPRI,'-',NLIN,0)
         TOT  = DSUM(NEXCF,OSCECD(1,1,1),1)
-        WRITE(LUPRI,'(A,ES12.5)') 'Sum of differential oscillator'//
+        WRITE(LUPRI,'(A,ES12.5)') 'Sum of differential oscillator '//
      &    'strengths (full light-matter interaction) : ',TOT
       ENDIF
 
@@ -2516,8 +2516,8 @@ C.......Full light-matter interaction
         ENDIF  
         IF(BEDECD) THEN
           WRITE(LUPRI,'(/A,ES8.2)')
-     &      '* Anisotropic oscillator strengths '//
-     &      '(full light-matter interaction) above threshold :', TTOL
+     &      '* Anisotropic differential oscillator strengths '//
+     &      '(full light-matter interaction) above threshold :', ECDTOL
           NLIN=90
           CALL PRSYMB(LUPRI,'=',NLIN,0)
           WRITE(LUPRI,'(/A)')
@@ -2528,7 +2528,7 @@ C.......Full light-matter interaction
             IEXC  = IEERG(1,II)
             ISYM  = IEERG(2,II)
             ECDIL = OSCECD(IEXC,ISYM,2)
-            IF(ABS(ECDIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
+            IF(ABS(ECDIL) .GT. ECDTOL) THEN ! allowing negative oscillator strengths
               ILAB  = ISSYM(IEXC,ISYM)
               WRITE(LUPRI,
      &         '(I5,1X,F16.5,2X,A3,1X,A4,2X,ES14.6)') JEXC-1,
@@ -2537,8 +2537,8 @@ C.......Full light-matter interaction
           ENDDO
           CALL PRSYMB(LUPRI,'-',NLIN,0)
           TOT  = DSUM(NEXCF,OSCECD(1,1,2),1)
-          WRITE(LUPRI,'(A,ES12.5)') 'Sum of oscillator strengths '//
-     &         '(full light-matter interaction) : ',TOT
+          WRITE(LUPRI,'(A,ES12.5)') 'Sum of differential'// 
+     &    ' oscillator strengths (full light-matter interaction) : ',TOT
         ENDIF  
 C.......Generalized velocity gauge        
         IF(DOVELR) THEN

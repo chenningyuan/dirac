@@ -13,7 +13,7 @@
 *EXCITATION ENERGIES                                                                                
 .ANALYZE
 .EXCITATION ! A                                                                                   
-1 5
+2 5
 .BEDECD
 .ORIENTED
 0 0 0                                                                                                
