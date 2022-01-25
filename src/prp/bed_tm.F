@@ -1,6 +1,6 @@
 C  /* Deck getbed */                                                  
-      SUBROUTINE GET_BED(OSCBED,OSCECD,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
-     &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
+      SUBROUTINE GET_BED(OSCBED,OSCECD,OMEGA,ISSYM,CMO,IBEIG,EVECR,
+     &                   IBTYP,IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Build representation matrix of full light-matter interaction
