@@ -171,3 +171,5 @@ add_custom_target(
   git_info
   ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
   )
+
+add_dependencies(gp git_info)
