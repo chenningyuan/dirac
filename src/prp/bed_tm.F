@@ -1,5 +1,5 @@
 C  /* Deck getbed */                                                  
-      SUBROUTINE GET_BED(OSCBED,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+      SUBROUTINE GET_BED(OSCBED,OSCECD,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -971,7 +971,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                                      C
 C  /* Deck bedleb */                                                   C
-      SUBROUTINE BEDLEB(OSCBED,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
+      SUBROUTINE BEDLEB(OSCBED,OSCECD,OMEGA,ISSYM,CMO,IBEIG,EVECR,IBTYP,
      &                   IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1446,7 +1446,7 @@ C
 
       IF (ANGPLOT) THEN
         DO IEXC = 1,NEXCNV
-          WRITE(6,"(A24, I4)") "Angular plot excitation", IEXC
+          WRITE(6,"(A24, I4)") "* Angular plot excitation ", IEXC
           WRITE(6,*) "X      Y       Z       ECD"
           DO IP = 1,NPOINTS
              WRITE(6,"(3F18.10, E18.10)") X(IP), Y(IP), Z(IP)
