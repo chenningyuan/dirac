@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -1404,6 +1399,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
+      use labeled_storage
 C
 C---------------Description--------------------------------------------
 C
@@ -1437,7 +1433,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      REAL*8, ALLOCATABLE:: DMO(:,:,:)   ! Density matrix in MO basis
+      REAL*8, ALLOCATABLE:: DMO(:)   ! Density matrix in MO basis
       LOGICAL FND,FNDLAB,ADD_2_FOCK
       CHARACTER*8 LABEL
       CHARACTER*6 FILE_NAME
@@ -1492,15 +1488,13 @@ C---------------Executable code--------------------------------------
 
 C     Read the appropriate correlated density from file
 
-      ALLOCATE (DMO(NORBT,NORBT,NZ),STAT=IERR)
+      ALLOCATE (DMO(NORBT*NORBT*NZ),STAT=IERR)
       IF (IERR.NE.0) THEN
         CALL QUIT('Error in DMO allocation !')
       ENDIF
       CALL OPNFIL(MCCDENS,FILE_NAME,'OLD','GET_CC')
-      FND =  FNDLAB(LABEL,MCCDENS)
-      CALL READT(MCCDENS,NORBT*NORBT*NZ,DMO)
+      CALL LAB_READ(MCCDENS,LABEL,DMO)
       CLOSE(Unit=MCCDENS,Status='KEEP')
-!      CLOSE(Unit=MCCDENS,Status='DELETE')
 
       
 C     Add the closed shell Hartree-Fock contribution
@@ -1624,11 +1618,12 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
       END
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE STORE_CC_DENSITY (WF,DMO)
+      SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
+      use labeled_storage
 C
 C---------------Description--------------------------------------------
 C
-C     Retrieve relaxed density matrix for processing by other modules
+C     Store relaxed density matrix for processing by other modules
 C     of DIRAC (currenty only first-order properties)
 C
 C---------------Routines called----------------------------------------
@@ -1645,16 +1640,14 @@ C
 #include "files.inc"
 #include "priunit.h"
 #include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------
 C
       CHARACTER*4 WF                     ! Wave function type
       REAL*8 DMO(*)                      ! Density matrix (MO-basis)
+      INTEGER NMO                        ! Size of MO basis
+      INTEGER NZ                         ! Number of active quaternions
 C
 C---------------Local variables--------------------------------------
 C
@@ -1673,23 +1666,13 @@ C     without being able to do a replace or check for old data.
 
       CALL OPNFIL(MCCDENS,'CCDENS','UNKNOWN','STORE_')
       IF (.NOT.INIT) THEN
-          CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
+          CALL LAB_WRITE (MCCDENS,EOFLABEL)
           INIT = .TRUE.
       END IF
       REWIND (MCCDENS)
-      IF (FNDLAB(EOFLABEL,MCCDENS))
-     & BACKSPACE MCCDENS
-      CALL NEWLAB(LABEL,MCCDENS,LUPRI)
-! aspg, debug of properties for exacorr
-! keep this code commented out for the moment
-!     write (*,'(3X,A,2I6)') '>>>>> debug : norbt, nz',norbt,nz 
-!     print *,'>>>>> DMO in dirac format'
-!     do i=1, NORBT*NORBT*NZ
-!        write(*,'(3X,I4,2x,F28.10)') i, dmo(i)
-!     end do
-!     print *,'<<<<< DMO in dirac format'
-      CALL WRITT(MCCDENS,NORBT*NORBT*NZ,DMO)
-      CALL NEWLAB(EOFLABEL,MCCDENS,LUPRI)
+      IF (FNDLAB(EOFLABEL,MCCDENS)) BACKSPACE MCCDENS
+      CALL LAB_WRITE(MCCDENS,LABEL,DMO(1:NMO*NMO*NZ))
+      CALL LAB_WRITE(MCCDENS,EOFLABEL)
       CLOSE(Unit=MCCDENS,Status='KEEP')
 
 C     Switch on evaluation of property output

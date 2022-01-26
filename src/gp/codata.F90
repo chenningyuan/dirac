@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 module codata
@@ -273,56 +268,50 @@ module codata
    if(CODAT.eq.'CODATA86') then
    write(LUPRI,*)   "  The 1986 adjustment of the fundamental physical constants              "
    write(LUPRI,*)   "               E. Richard Cohen and Barry N. Taylor                      "
-   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 59, No. 4, 1987                  "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 59, 1121-1148 (1987)             "
 
    elseif(CODAT.eq.'CODATA98') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 1998  "
    write(LUPRI,*)   "               Peter J. Mohr and Barry N. Taylor                         "
-   write(LUPRI,*)   "  Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 72, 351-495 (2000)               "
 
    elseif(CODAT.eq.'CODATA02') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2002  "
    write(LUPRI,*)   "               Peter J. Mohr and Barry N. Taylor                         "
-   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 77, No. 1, 2005                  "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 77, 1-107 (2005)                 "
 
    elseif(CODAT.eq.'CODATA06') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2006  "
-   write(LUPRI,*)   "            Peter J. Mohr, Barry N. Taylor and David B. Nevell           "
-   write(LUPRI,*)   "  Journal of Physical and Chemical Reference Data, Vol. 37, No. 3, 2008  "
+   write(LUPRI,*)   "            Peter J. Mohr, Barry N. Taylor and David B. Newell           "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 80, 633-730 (2008)               "
 
    elseif(CODAT.eq.'CODATA10') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2010  "
-   write(LUPRI,*)   "            Peter J. Mohr, Barry N. Taylor and David B. Nevell           "
-   write(LUPRI,*)   "  Journal of Physical and Chemical Reference Data, Vol. 41, No. 4, 2012  "
+   write(LUPRI,*)   "            Peter J. Mohr, Barry N. Taylor and David B. Newell           "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 84, 1527-1605 (2012)             "
 
    elseif(CODAT.eq.'CODATA14') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2014  "
    write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
-   write(LUPRI,*)   "  Journal of Physical and Chemical Reference Data, Vol. 45, No. 4, 2016  "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 88, 035009 (2016)                "
 
    elseif(CODAT.eq.'CODATA18') then
-   write(LUPRI,*)   "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
-   write(LUPRI,*)   "       Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 "
-   write(LUPRI,*)   "       Database developed by J. Baker, M. Douma, and S. Kotochigova                       "
-   write(LUPRI,*)   " Available at http://physics.nist.gov/constants                                           "
-   write(LUPRI,*)   " National Institute of Standards and Technology, Gaithersburg, MD 20899                   "
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
+   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
 
 !  Default CODATA values
    elseif(CODAT.eq.'NOCODATA') then
-   write(LUPRI,*)   "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
-   write(LUPRI,*)   "       Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 "
-   write(LUPRI,*)   "       Database developed by J. Baker, M. Douma, and S. Kotochigova                       "
-   write(LUPRI,*)   " Available at http://physics.nist.gov/constants                                           "
-   write(LUPRI,*)   " National Institute of Standards and Technology, Gaithersburg, MD 20899                   "
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
+   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
 
 !  If the user asks for non existing data sets, we set default values and print a WARNING
    else
-   write(LUPRI,*)   " *** WARNING: The CODATA set ", CODAT, " does not exist. Default set is used instead. *** "
-   write(LUPRI,*)   "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
-   write(LUPRI,*)   "       Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor                 "
-   write(LUPRI,*)   "       Database developed by J. Baker, M. Douma, and S. Kotochigova                       "
-   write(LUPRI,*)   " Available at http://physics.nist.gov/constants                                           "
-   write(LUPRI,*)   " National Institute of Standards and Technology, Gaithersburg, MD 20899                   "
+   write(LUPRI,*)   " *** WARNING: CODATA set ", CODAT, " does not exist. Default is used. ***"
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
+   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
    end if
 
   end subroutine print_codata_reference

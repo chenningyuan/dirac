@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -1940,12 +1935,8 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "consts.h"
-      PARAMETER(CORMAX = 1.D5)
-#if defined (SYS_HPUX)
-      PARAMETER (LUERR = 7)
-#else
+      PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
-#endif
 #include "cbirea.h"
 C
 #include "molinp.h"
@@ -1997,7 +1988,7 @@ C        951115-hjaaj: NAMN() must never be read with free format
 C          (otherwise it will on e.g. AIX be filled with nulls:
 C           e.g. ' C  ' would become 'C\NULL\NULL\NULL'; and on
 C           e.g. IRIX free format read of char. var. is not defined).
-#if !defined (SYS_CRAY) && !defined (VAR_NOFREE) && !defined (SYS_T3D)
+#if !defined (VAR_NOFREE)
         READ (MLINE(NMLINE)(5:80),*,ERR=101) (CORD(J,NUCIND),J = 1, 3)
         GO TO 104
 #endif
@@ -3323,7 +3314,7 @@ C
         DO 100 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
               DO M = 1, NRCIJ
@@ -3371,7 +3362,7 @@ C
         DO 300 L = 1, NUCIJ
            CALL RDLINE(LUINFO)
            IF (FREE) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
               ISTART = 1
               CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,ALPHA(L),'REA')
 #else
@@ -5777,7 +5768,7 @@ C
       DATA FIRST /.TRUE./
       SAVE FIRST
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_NOFREE)
+#if defined (VAR_NOFREE)
       DUMMY = 1.0D20
       IDUMMY = - 9 999 999
 #endif
@@ -5792,7 +5783,7 @@ C
       BET(NUCIND)=D0
       READ (MLINE(NMLINE),'(A4)',IOSTAT=IOS) NAMN(NUCIND)
       IF (FIRST) THEN
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
          ISTART = 5
          CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
          CALL FREFRM(MLINE(NMLINE),ISTART,IDUMMY,CHARGE(NUCIND),'REA')
@@ -5811,7 +5802,7 @@ C
          IF(NUCIND .EQ. 3) GO TO 202
          GO TO 203
       END IF
-#if defined (SYS_CRAY) || defined (VAR_NOFREE) || defined (SYS_T3D)
+#if defined (VAR_NOFREE)
  201  ISTART = 5
       CALL FREFRM(MLINE(NMLINE),ISTART,INUM,DUMMY,'INT')
       CALL FREFRM(MLINE(NMLINE),ISTART,IZ(NUCIND,1),DUMMY,'INT')

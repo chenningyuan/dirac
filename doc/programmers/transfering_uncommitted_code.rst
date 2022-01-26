@@ -20,13 +20,6 @@ In other words if you manually tar up a fresh DIRAC clone without .git
 that has never been built, externals will be missing.
 
 
-Using "make release" tarball
-----------------------------
-
-The tarball produced with make release
-does not require Git.
-
-
 Using scp
 ---------
 

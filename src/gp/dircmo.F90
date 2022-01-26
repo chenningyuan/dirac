@@ -1,0 +1,262 @@
+
+! Module to handle file writing (modernized versions of WRICMO and REACMO)
+! Defined as a module to able to use interfaces and optional arguments
+
+! Written by Lucas Visscher, spring 2021, one of the Covid years
+
+module dircmo
+  implicit none
+
+  private
+
+  public wricmo
+  public atomic_wricmo
+  public reacmo_new
+
+  interface wricmo
+      module procedure wricmo
+  end interface
+
+  interface atomic_wricmo
+      module procedure atomic_wricmo
+  end interface
+
+  interface reacmo_new
+      module procedure reacmo
+  end interface
+
+  contains
+
+      SUBROUTINE WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG,TITLE,IDIMS)
+!*****************************************************************************
+!
+!     Write to file:
+!       CMO    - coefficients
+!       EIG    - eigenvalues
+!       IBEIG  - supersymmetry information
+!       TOTERG - total energy
+!       IDIMS  - dimension information (simple integer array to facilitate use
+!                in ancient Fortran pieces of the code)
+!
+!     SSYM = T activates writing of second array of supersymmetry information
+!
+!     IDIM(1,J) - number of positronic solutions
+!     IDIM(2,J) - number of electronic solutions
+!     IDIM(3,J) - number of AO-basis functions
+!
+!     Written by T.Saue Sept 1 1995
+!     Modernized by L.Visscher in 2021
+!
+!*****************************************************************************
+      use labeled_storage
+      use checkpoint
+      implicit none
+      integer, intent(in) :: iunit,ibeig(*)
+      real(8), intent(in) :: toterg,cmo(*),eig(*)
+      character*(*),intent(in), optional :: title
+      integer,intent(in), optional :: idims(:)
+
+      INTEGER   CMO_DIMS(12),IDIM(3,2),NCMOTQ,NORBT,NZ,NFSYM,NSSYM
+      integer   ibeig_dim, ifsym, ierr
+      integer   n_basis(2),n_mo(2),n_po(2)
+      LOGICAL   SSYM
+      character(len=74) text
+
+!     Check whether we should get some information from the common blocks
+      if (present(title)) then
+         text(1:50) = title
+      else
+         call get_title (text)
+      end if
+      CALL GTINFO(TEXT(51:74)) ! Add date & time info to title
+
+      if (present(idims)) then
+         cmo_dims = idims
+      else
+         call get_dimension_info(cmo_dims)
+      end if
+
+!     Unpack the information stored in cmo_dims
+      NZ     = cmo_dims(1) ! Number of active quaternion units (1, 2 or 4)
+      NFSYM  = cmo_dims(2) ! Number of fermion symmetries (no inversion 1, inversion 2)
+      NCMOTQ = cmo_dims(3) ! Size of MO coefficient array
+      NORBT  = cmo_dims(5) ! Total number of orbitals
+      NSSYM  = cmo_dims(6) ! Number of blocks with supersymmetry information
+      ! unpack NPSH, NESH and NFBAS(:,0) for each fermion irrep
+      IDIM(:,1) = cmo_dims(7:9)
+      if (nfsym == 2) IDIM(:,2) = cmo_dims(10:12)
+
+      SSYM   = NSSYM == 2
+
+      REWIND IUNIT
+      CALL LAB_WRITE(IUNIT,'INFO    ')
+      WRITE(IUNIT) TEXT,NFSYM,NZ,IDIM(:,1:NFSYM),TOTERG
+      CALL LAB_WRITE(IUNIT,'COEFS   ',CMO(1:NCMOTQ))
+      CALL LAB_WRITE(IUNIT,'EVALS   ',EIG(1:NORBT))
+      CALL LAB_WRITE(IUNIT,'SUPERSYM',idata=IBEIG(1:NORBT))
+      IF (SSYM) CALL LAB_WRITE(IUNIT,'KAPPA   ',idata=IBEIG(NORBT+1:2*NORBT))
+!     Add additional information about the basis set
+      CALL LAB_WRITE(IUNIT,'BASINFO ')
+!     This call introduces a dependency on common blocks, should be moved as soon as the checkpoint file is fully functional
+      call append_basisinfo_to_dfcoef (IUNIT)
+      CALL LAB_WRITE(IUNIT,'EOFLABEL')
+
+      ! write all data also to an hdf5 file
+      ! simplify the handling of fermion symmetry by always writing the same size dimension arrays (just padding with zeroes if nfsym==1)
+      n_mo = 0
+      n_po = 0
+      n_basis = 0
+      do ifsym = 1, nfsym
+         n_mo(ifsym)    = cmo_dims(4+3*ifsym)+cmo_dims(5+3*ifsym)
+         n_po(ifsym)    = cmo_dims(5+3*ifsym)
+         n_basis(ifsym) = cmo_dims(6+3*ifsym)
+      end do
+      ! handling of atomic symmetry is unfortunately still complicated, but underlying code should first be improved
+      if (ssym) then
+         ibeig_dim = 2*norbt
+      else
+         ibeig_dim = norbt
+      endif
+      call checkpoint_write ('/result/wavefunctions/scf/energy',rdata=toterg)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/mobasis_id',idata=1)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:ibeig_dim))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=cmo(1:ncmotq))
+
+      RETURN
+      END
+
+      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG,TITLE,IDIMS)
+!***********************************************************************
+!
+!     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
+!
+!     Written by Trond Saue March 3 2021
+!***********************************************************************
+      implicit none
+      integer                            :: IUNIT,IBEIG(*)
+      real(8)                            :: CMO(*),EIG(*),toterg
+      integer, allocatable               :: IBEIG2(:,:)
+      integer                            :: i,j,norbt,ll
+      integer,intent(in), optional       :: idims(:)
+      character*(*),intent(in), optional :: title
+      character(len=74) text
+      INTEGER   cmo_dims(12)
+      
+!     Check whether we should get some information from the common blocks
+      if (present(title)) then
+         text(1:50) = title
+      else
+         call get_title (text)
+      end if
+      CALL GTINFO(TEXT(51:74)) ! Add date & time info to title
+
+      if (present(idims)) then
+         cmo_dims = idims
+      else
+         call get_dimension_info(cmo_dims)
+      end if
+      
+      norbt = cmo_dims(5)
+      allocate(IBEIG2(NORBT,2))
+      DO I = 1,NORBT
+        CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
+      ENDDO
+      CALL WRICMO(IUNIT,CMO,EIG,reshape(IBEIG2,(/2*NORBT/)),TOTERG,text,cmo_dims)
+      deallocate(IBEIG2)
+      END
+
+      SUBROUTINE REACMO(IUNIT,TEXT,CMO,EIG,IBEIG,KAPPA,TOTERG,IDIMS)
+!***********************************************************************
+!
+!     Read SCF-coefficients and other information (eigenvalues) from unformatted file
+!
+!     Written by T.Saue Sept 1 1995
+!     Modernized by L.Visscher in 2021
+!
+!***********************************************************************
+      use labeled_storage
+      use checkpoint
+      implicit none
+      integer, intent(in)            :: iunit
+      character(len=74), intent(out), optional :: text
+      integer, intent(out), optional :: ibeig(*),kappa(*),idims(*)
+      real(8), intent(out), optional :: toterg,cmo(*),eig(*)
+
+      integer              :: nfsym, nz, i, ifsym, idim(3,2), norb2(2), ncoef, neig
+      real(8)              :: energy
+      real(8), allocatable :: coefficients(:), eigenvalues(:)
+      integer, allocatable :: boson_irreps(:), atom_irreps(:)
+      character(len=74)    :: infotext
+      type(file_info_t), save :: checkpoint_file
+
+!     Always read the info text and dimensions (NB: actual size (written part) of idim depends on nfsym)
+      rewind iunit
+      call lab_read(iunit,'INFO    ')
+      read(iunit) infotext,nfsym,nz,((idim(i,ifsym),i=1,3),ifsym=1,nfsym),energy
+
+      if (present(toterg)) toterg = energy
+      if (present(text))   text   = infotext
+
+      ! Compute total number of coefficients and eigenvalues
+      neig  = 0
+      ncoef = 0
+      do ifsym = 1, nfsym
+         neig  = neig  +  idim(1,ifsym) + idim(2,ifsym)
+         ncoef = ncoef + (idim(1,ifsym) + idim(2,ifsym)) * idim(3,ifsym)
+      end do
+      ncoef = ncoef * nz
+
+      if (present(idims))  then
+       ! Pack dimension information (can be used to allocate and/or check consistency before reading)
+       ! NB: in the old format no information on sym was stored on dfcoef, this is necessarily
+       ! constrained to be 1 to keep backwards compatibility.
+         idims(1) = nz        ! Number of active quaternion units (1, 2 or 4)
+         idims(2) = nfsym     ! Number of fermion symmetries (no inversion 1, inversion 2)
+         idims(3) = ncoef     ! Size of MO coefficient array
+         idims(4) = 1         ! Used to be NKRBLK, now obsolete.
+         idims(5) = neig      ! Total number of orbitals
+         idims(6) = 1         ! Number of blocks with supersymmetry information (atomic symmetry unsupported, see above)
+         idims(7:9) = idim(:,1) ! npsh, nesh, nfbas for fermion irrep 1
+         if (nfsym == 2) idims(10:12) = idim(:,2) ! npsh, nesh, nfbas for fermion irrep 2
+      end if
+
+      if (present(cmo)) then
+         allocate (coefficients(ncoef))
+         call lab_read(iunit,'COEFS   ',rdata=coefficients)
+         ! test zone: uncomment to read coefs from the hdf5 file
+         ! print*," Reading coeffs from checkpoint file "
+         ! call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
+         ! end of test zone
+         cmo(1:ncoef) = coefficients
+         deallocate(coefficients)
+      end if
+
+      if (present(eig)) then
+         allocate (eigenvalues(neig))
+         call lab_read(iunit,'EVALS   ',rdata=eigenvalues)
+         eig(1:neig) = eigenvalues
+         deallocate(eigenvalues)
+      end if
+
+      if (present(ibeig)) then
+         allocate (boson_irreps(neig))
+         call lab_read(iunit,'SUPERSYM',idata=boson_irreps)
+         ibeig(1:neig) = boson_irreps
+         deallocate(boson_irreps)
+      end if
+
+      if (present(kappa)) then
+         allocate (atom_irreps(neig))
+         call lab_read(iunit,'KAPPA   ',idata=atom_irreps)
+         kappa(1:neig) = atom_irreps
+         deallocate(atom_irreps)
+      end if
+
+      END
+
+end module

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -37,6 +32,8 @@ C
 C*****************************************************************************
 
       use memory_allocator
+      use dircmo
+      use dirac_cfg, only: dirac_cfg_scf_calculation
 
 #include "implicit.h"
 #include "priunit.h"
@@ -65,8 +62,8 @@ C
       OPEN(LUCOEF,FILE='DFPCMO',STATUS='OLD',FORM='FORMATTED',
      +     ACCESS='SEQUENTIAL')
 C
-      allocate(CMO(NCMOTQ*NKRBLK))
-      NEIG=NORBT*NKRBLK
+      allocate(CMO(NCMOTQ))
+      NEIG=NORBT
       allocate(EIG(NEIG))
       allocate(IBEIG(NEIG,2))
       SSYM=.FALSE.
@@ -93,7 +90,7 @@ C         Check dimensions
             NCMOTQ2 = NCMOTQ2 + (IDIM(1,IFRP)+IDIM(2,IFRP))*IDIM(3,IFRP)
           ENDDO
           NCMOTQ2 = NCMOTQ2*NDIM
-          IF(NCMOTQ2.NE.NCMOTQ*NKRBLK) THEN
+          IF(NCMOTQ2.NE.NCMOTQ) THEN
              WRITE(LUPRI,'(25X,A20)')       ' Expected /From file'       
              DO IFRP = 1,NFSYM
                 WRITE(6,'(3X,A22,2I10)') 'Positronic solutions: ',
@@ -131,16 +128,18 @@ C         Check dimensions
 C
 C     Write coefficients to either KRMCOLD or DFCOEF
 C
-      IF(DOKRMC.or.DOKRCI.or.DOKRCC)THEN
+                                     IWRTMO = 2
+      IF(DOKRMC.or.DOKRCI.or.DOKRCC) IWRTMO = 1
+      !> if SCF is requested we need a DFCOEF file, no matter what
+      if(dirac_cfg_scf_calculation)  IWRTMO = 2
+      IF(IWRTMO == 1)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
-        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ*NKRBLK)
+        CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         CLOSE (LUKRMC,STATUS='KEEP')
-        IWRTMO = 1
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,SSYM)
+        CALL WRICMO(LUCOEF,CMO,EIG,reshape(IBEIG,(/2*NEIG/)),TOTERG)
         CLOSE(LUCOEF,STATUS='KEEP')
-        IWRTMO = 2
       END IF
       deallocate(CMO)
       deallocate(EIG)
@@ -189,9 +188,9 @@ C
 
       CALL QENTER('PCMOUT')
 
-      NEIGB=NORBT*NKRBLK
-      NCMOB=NCMOTQ*NKRBLK
-      NDIMB=NZ*NKRBLK
+      NEIGB=NORBT
+      NCMOB=NCMOTQ
+      NDIMB=NZ
       allocate(CMO(NCMOB))
       allocate(EIG(NEIGB))
       allocate(IBEIG(NEIGB,2))
@@ -267,117 +266,47 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck wricmo */
-      SUBROUTINE WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG,SSYM)
-C*****************************************************************************
-C
-C     Write to file:
-C       CMO    - coefficients
-C       EIG    - eigenvalues    
-C       IBEIG  - supersymmetry information 
-C       TOTERG - total energy
-C
-C     SSYM = T activates writing of second array of supersymmetry information
-C
-C     IDIM(1,J) - number of positronic solutions
-C     IDIM(2,J) - number of electronic solutions
-C     IDIM(3,J) - number of AO-basis functions
-C
-C     Written by T.Saue Sept 1 1995
-C
-C*****************************************************************************
+      subroutine get_title (stored_title)
+      ! Retrieve title from common block
+#include "implicit.h"
+#include "dcbgen.h"
+      CHARACTER*50, intent(out) :: stored_title
+      stored_title = title
+      end
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine get_dimension_info (idims)
+      ! Pack dimension info needed in wricmo with information taken from
+      ! common blocks (LV, 2021)
 #include "implicit.h"
 #include "priunit.h"
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbgen.h"
-      CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
-     &          IBEIG(NORBT*NKRBLK,2)
-      DIMENSION IDIM(3,2)
-      LOGICAL   SSYM
-C
-      DO I = 1,NFSYM
-        IDIM(1,I) = NPSH(I)
-        IDIM(2,I) = NESH(I)
-        IDIM(3,I) = NFBAS(I,0)
-      ENDDO
-      TEXT(1:50) = TITLE
-      CALL GTINFO(TEXT(51:74))
-      REWIND IUNIT     
-      CALL NEWLAB('INFO    ',IUNIT,LUPRI)
-      WRITE(IUNIT) TEXT,NFSYM,NZ*NKRBLK,((IDIM(I,J),I = 1,3),J=1,NFSYM),
-     &     TOTERG
-      CALL WRICMO_coefficients(IUNIT,CMO,NCMOTQ*NKRBLK)
-      CALL WRICMO_eigenvalues(IUNIT,EIG,NORBT*NKRBLK)
-      CALL WRICMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NORBT*NKRBLK)
-      IF(SSYM) CALL WRICMO_supersymmetry(IUNIT,'KAPPA   ',
-     &  IBEIG(1,2),NORBT*NKRBLK)
-!     Add additional information about basis set to create a simple interface file
-!     for correlated calculations (like exacorr)
-      CALL WRICMO_basisinfo(IUNIT)
-      CALL NEWLAB('EOFLABEL',IUNIT,LUPRI)                              
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck WRICMO_coeffcients */
-      SUBROUTINE WRICMO_coefficients(IUNIT,CMO,NCMO)
-C***********************************************************************
-C     Write SCF-coefficients to unformatted file
-C     Written by Trond Saue Jan 2021      
-C***********************************************************************
-#include "priunit.h"
-      INTEGER IUNIT,NCMO
-      REAL*8 CMO(NCMO)
-      CALL NEWLAB('COEFS   ',IUNIT,LUPRI)      
-      WRITE(IUNIT) CMO
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck WRICMO_eigenvalues */
-      SUBROUTINE WRICMO_eigenvalues(IUNIT,EIG,NEIG)
-C***********************************************************************
-C     Write SCF-orbital energies to unformatted file
-C     Written by Trond Saue Jan 2021      
-C***********************************************************************
-#include "priunit.h"
-      INTEGER IUNIT,NEIG
-      REAL*8 EIG(NEIG)
-      CALL NEWLAB('EVALS   ',IUNIT,LUPRI)            
-      WRITE(IUNIT) EIG
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck WRICMO_supersymmetry */
-      SUBROUTINE WRICMO_supersymmetry(IUNIT,LABEL,IBEIG,NEIG)
-C***********************************************************************
-C     Write SCF-supersymmetry string to unformatted file
-C     Written by Trond Saue Jan 2021      
-C***********************************************************************
-#include "priunit.h"
-      INTEGER IUNIT,NEIG,IBEIG(NEIG)
-      CHARACTER*8 LABEL
-      CALL NEWLAB(LABEL,IUNIT,LUPRI)                  
-      WRITE(IUNIT) IBEIG
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck WRICMO_basisinfo */
-      SUBROUTINE WRICMO_basisinfo(IUNIT)
-C***********************************************************************
-C     Write SCF-coefficients to unformatted file
-C     Written by Trond Saue Jan 2021      
-C***********************************************************************
-#include "priunit.h"
-      INTEGER IUNIT
-      CALL NEWLAB('BASINFO ',IUNIT,LUPRI)                        
-      call append_basisinfo_to_dfcoef (IUNIT)
-      RETURN
+#include "dcbpsi.h"
+#include "dcbbas.h"
+#include "dcborb.h"`
+#include "dgroup.h"`      
+      integer, intent(out) :: idims(*)
+      IDIMS(1) = NZ
+      IDIMS(2) = NFSYM
+      IDIMS(3) = NCMOTQ
+      IDIMS(4) = 1
+      IDIMS(5) = NORBT
+      IDIMS(6) = 1
+      IF (ATOMIC) IDIMS(6) = 2
+      IDIMS(7) = NPSH(1)
+      IDIMS(8) = NESH(1)
+      IDIMS(9) = NFBAS(1,0)
+      IF (NFSYM == 2) THEN
+         IDIMS(10) = NPSH(2)
+         IDIMS(11) = NESH(2)
+         IDIMS(12) = NFBAS(2,0)
+      ELSE
+         IDIMS(10:12) = 0
+      ENDIF
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine append_basisinfo_to_dfcoef (IUNIT)
+
+      use checkpoint
 
 !      L. Visscher, October 2018
 !      add basis set info to the end of dfcoef to not infere with normal usage
@@ -434,8 +363,8 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcbgen.h"
       CHARACTER TEXT*74
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
-     &          IBEIG(NORBT*NKRBLK,2)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),
+     &          IBEIG(NORBT,2)
       DIMENSION IDIM(3,2)
       LOGICAL   SSYM
 C
@@ -451,17 +380,17 @@ C
       WRITE(IUNIT,'(A8)') 'INFO    '
       WRITE(IUNIT,'(A74)') TEXT
       WRITE(IUNIT,'(8(X,I0))')
-     &      NFSYM,NZ*NKRBLK,((IDIM(I,J),I = 1,3),J=1,NFSYM)
+     &      NFSYM,NZ,((IDIM(I,J),I = 1,3),J=1,NFSYM)
       WRITE(IUNIT,'(E24.16)') TOTERG
       WRITE(IUNIT,'(A8)') 'COEFS   '      
       WRITE(IUNIT,'(6F22.16)') CMO
       WRITE(IUNIT,'(A8)') 'EVALS   '            
       WRITE(IUNIT,'(6E22.12)') EIG
       WRITE(IUNIT,'(A8)') 'SUPERSYM'
-      WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT*NKRBLK)
+      WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,1),I=1,NORBT)
       IF(SSYM) THEN
         WRITE(IUNIT,'(A8)') 'KAPPA   '
-        WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,2),I=1,NORBT*NKRBLK)
+        WRITE(IUNIT,'(66(X,I0))') (IBEIG(I,2),I=1,NORBT)
       ENDIF
 C
       RETURN
@@ -487,6 +416,7 @@ C     Written by T.Saue Sept 1 1995
 C
 C***********************************************************************
          use memory_allocator
+         use dircmo
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -495,47 +425,16 @@ C
 #include "dgroup.h"
       LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
-      DIMENSION CMO(NCMOTQ*NKRBLK),EIG(NORBT*NKRBLK),
-     &          IBEIG(NORBT*NKRBLK,2)
-      DIMENSION IDIM(3,2)
+      DIMENSION CMO(NCMOTQ),EIG(NORBT),
+     &          IBEIG(NORBT,2)
+      DIMENSION IDIM(3,2),IDIMS_DFCOEF(12)
+
+      logical special_psh, special_esh
+      real(8), allocatable :: buf_special(:)
+      integer, allocatable :: ibuf_special(:)
 C
       IF(IOPT.EQ.0) RETURN
-C
-C     Read title line - always done
-C     =============================
-C
-      REWIND IUNIT
-      CALL REACMO_info(IUNIT,TEXT,NSYM,NZBUF,IDIM,TOTERG)
-      IF(IOPT.EQ.-1) RETURN
-C
-C     Compatibility check for NFSYM and NFBAS
-C     =======================================
-C
-      IERR = 0
-      IF(NSYM .NE. NFSYM) THEN
-         IERR = IERR + 1
-         INFO = .TRUE.
-         WRITE(LUPRI,'(/A/A,2I5)')
-     &      'REACMO FATAL ERROR: Incompatible number of fermion ircops',
-     &      ' from file and in this run:',NSYM,NFSYM
-      ELSEIF(NZBUF .NE. NZ*NKRBLK) THEN
-         IERR = IERR + 1
-         INFO = .TRUE.
-         WRITE(LUPRI,'(/A/A,2I5)')
-     &      'REACMO FATAL ERROR: Incompatible NZ parameter',
-     &      ' from file and in this run:',NZBUF/NKRBLK,NZ
-      ELSE
-         DO IFRP = 1,NFSYM
-           IF(IDIM(3,IFRP).NE.NFBAS(IFRP,0)) IERR = IERR + 1
-         END DO
-         IF (IERR.GT.0) THEN
-           INFO = .TRUE.
-           WRITE(LUPRI,'(/A/A,2(/A,I2,2I5))')
-     &     'REACMO FATAL ERROR. Incompatible number of basis functions',
-     &     ' from file and in this run:', (' Fermion ircop no.',IFRP,
-     &     IDIM(3,IFRP),NFBAS(IFRP,0),IFRP=1,NFSYM)
-         END IF
-      END IF
+      call reacmo_new (iunit,text=text,toterg=toterg)
 C
 C     File info
 C     =========
@@ -548,291 +447,133 @@ C
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
       ENDIF
 C
-      IF (IERR.GT.0) CALL QUIT(
-     &'REACMO: old DFCOEF file is not consistent with this calculation')
-C
-      IF(IOPT.LT.2) RETURN
-C
-C     Read coefficients
-C     =================
-C
-      IF(LBIT(IOPT,2)) THEN
-        NCMO=NCMOTQ*NKRBLK
-        CALL REACMO_coefficients(IUNIT,CMO,NCMO,NFSYM,NZ,
-     &           NORB,NFBAS(1,0),NPSH,NESH,IDIM)         
-      ENDIF
-C
-C     Read eigenvalues
-C     ================
-C
-      IF(LBIT(IOPT,3)) THEN
-        NEIG=NORBT*NKRBLK
-        CALL REACMO_eigenvalues(IUNIT,EIG,NEIG,NFSYM,NZ,
-     &           NORB,NPSH,NESH,IDIM)         
-      ENDIF
-C
-C     Read supersymmetry info
-C     =======================
-C
-      IF(LBIT(IOPT,4)) THEN
-        NEIG=NORBT*NKRBLK
-        CALL REACMO_supersymmetry(IUNIT,'SUPERSYM',IBEIG,NEIG,NFSYM,NZ,
-     &       NORB,NPSH,NESH,IDIM)
-      ENDIF
-C
-C     Read second supersymmetry info (kappa atomic)
-C     =============================================
-C
-      IF(LBIT(IOPT,5)) THEN
-        NEIG=NORBT*NKRBLK
-        CALL REACMO_supersymmetry(IUNIT,'KAPPA   ',IBEIG(1,2),
-     &       NEIG,NFSYM,NZ,NORB,NPSH,NESH,IDIM)
-      ENDIF
-C
-      RETURN
-C
-C     Error messages
-C
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck reacmo_info */
-      SUBROUTINE REACMO_info(IUNIT,TEXT,NFSYM,NZ,IDIM,TOTERG)
-      implicit none
-      integer, intent(in)    :: IUNIT
-      integer, intent(out)   :: NFSYM,NZ,IDIM(3,2)
-      character, intent(out) :: TEXT*74
-      real*8, intent(out)    :: TOTERG
-      integer                :: I,J
-      LOGICAL FNDLAB
-      IF(FNDLAB('INFO    ',IUNIT)) THEN
-        READ (IUNIT,END=10,ERR=20) TEXT,NFSYM,NZ,
-     &       ((IDIM(I,J),I = 1,3),J=1,NFSYM),TOTERG
-      ELSE
-        GOTO 20        
-      ENDIF
-      RETURN
- 10   CONTINUE
-      write(6,'(//A/A/A)')
-     &   'REACMO: END OF FILE reading first record on DFCOEF.',
-     &   '        Possible reason: DFCOEF was generated with'//
-     &      ' 32-bit integer Dirac version.',
-     &   '        This Dirac is compiled with 64 bit integers.'
-      CALL QUIT('REACMO: END OF FILE reading first record')
- 20   CONTINUE
-      write(6,'(//A/A/A)')
-     &   'REACMO: ERROR reading first record on DFCOEF.',
-     &   '        Possible reason: DFCOEF was generated with'//
-     &      ' 32-bit integer Dirac version.',
-     &   '        This Dirac is compiled with 64 bit integers.'
-      CALL QUIT('REACMO: ERROR reading first record')
-      END
-      
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck reacmo_coefficients */
-      SUBROUTINE REACMO_coefficients(IUNIT,CMO,NCMO,NFSYM,NZ,
-     &           NORB,NFBAS,NPSH,NESH,IDIM)
-C***********************************************************************
-C
-C     Read coefficients from unformatted file
-C
-C     IDIM(1,IFRP) - number of positronic solutions
-C     IDIM(2,IFRP) - number of electronic solutions
-C     IDIM(3,IFRP) - number of AO-basis functions
-C
-C     Written by T.Saue Jan 2021
-C
-C***********************************************************************
-         use memory_allocator
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION CMO(NCMO)
-      DIMENSION NORB(NFSYM),NFBAS(NFSYM),NPSH(NFSYM),NESH(NFSYM)
-      DIMENSION IDIM(3,NFSYM),NORB2(NFSYM)
-      real(8), allocatable :: buf(:)
-      LOGICAL TEST,FNDLAB
-      IF(FNDLAB('COEFS   ',IUNIT)) THEN
-C
-C     Compatibility tests for number of orbitals
-C
-        TEST = .FALSE.
-        NC = 0
-        DO IFRP = 1,NFSYM
-          NORB2(IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-          IF(NORB2(IFRP).NE.NORB(IFRP)) TEST=.TRUE.
-          NC = NC + NORB2(IFRP)*NFBAS(IFRP)*NZ
-       ENDDO
-       IF(TEST) THEN
-C
-C         If dimensions do not fit, then the coefficients are read
-C         into a buffer and adapted for the correct dimensions    
-C
-          call alloc(BUF,NC)
-          CALL READT(IUNIT,NC,BUF)
-          IC = 1
-          JC = 1
-          DO IFRP = 1,NFSYM
-            CALL ADACMO(NFBAS(IFRP),NZ,
-     &         CMO(IC),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &         BUF(JC),NORB2(IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-            IC = IC + NORB(IFRP) *NFBAS(IFRP)*NZ
-            JC = JC + NORB2(IFRP)*NFBAS(IFRP)*NZ
-          ENDDO
-          call dealloc(buf)
-        ELSE
-C
-C         Default case
-C           
-          READ (IUNIT,END=10,ERR=20) CMO
-       ENDIF
-      ELSE
-        GOTO 20 
-      ENDIF
+      if (iopt.eq.-1) return
 
-      RETURN
- 10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading coefficients')
- 20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading coefficients')
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck reacmo_eigenvalues */
-      SUBROUTINE REACMO_eigenvalues(IUNIT,EIG,NEIG,NFSYM,NZ,
-     &           NORB,NPSH,NESH,IDIM)
-C***********************************************************************
-C
-C     Read eigenvalues from unformatted file
-C
-C     IDIM(1,IFRP) - number of positronic solutions
-C     IDIM(2,IFRP) - number of electronic solutions
-C     IDIM(3,IFRP) - number of AO-basis functions
-C
-C     Written by T.Saue Jan 2021
-C
-C***********************************************************************
-         use memory_allocator
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION EIG(NEIG)
-      DIMENSION NORB(NFSYM),NPSH(NFSYM),NESH(NFSYM)
-      DIMENSION IDIM(3,NFSYM),NORB2(NFSYM)
-      real(8), allocatable :: buf(:)
-      LOGICAL TEST,FNDLAB
-      IF(FNDLAB('EVALS   ',IUNIT)) THEN         
-C
-C     Compatibility tests for number of orbitals
-C
-        TEST = .FALSE.
-        NO = 0
-        DO IFRP = 1,NFSYM
-          NORB2(IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-          IF(NORB2(IFRP).NE.NORB(IFRP)) TEST=.TRUE.
-          NO = NO + NORB2(IFRP)
-        ENDDO
-        IF(TEST) THEN
-C
-C         If dimensions do not fit, then the eigenvalues are read
-C         into a buffer and adapted for the correct dimensions    
-C
-            call alloc(BUF,NO)
-            CALL READT(IUNIT,NO,BUF)
-            IO = 1
-            JO = 1
-            DO IFRP = 1,NFSYM
-              CALL ADAEIG(EIG(IO),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &              BUF(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-              IO = IO + NORB(IFRP)
-              JO = JO + NORB2(IFRP)
-            ENDDO
-            call dealloc(BUF)
-        ELSE
-C
-C         Default case
-C           
-          READ (IUNIT,END=10,ERR=20) EIG
-        ENDIF
-      ELSE
-        GOTO 20 
-      ENDIF
+      ! perform check on consistency of the data on this file with the current calculation
+      call reacmo_new (iunit,idims=idims_dfcoef)
+      if (idims_dfcoef(1) .ne. nz ) then
+         WRITE(LUPRI,*) '* REACMO: Incompatible algebra: '
+         WRITE(LUPRI,*) ' Expected: ',NZ
+         WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(1)
+         call quit ('DFCOEF has incompatible algebra (NZ)')
+      endif
+      if (idims_dfcoef(2) .ne. nfsym ) then
+         WRITE(LUPRI,*) '* REACMO: Incompatible fermion symmetry: '
+         WRITE(LUPRI,*) ' Expected: ',NFSYM
+         WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(2)
+         call quit ('DFCOEF has incompatible symmetry (NFSYM)')
+      endif
+      if (idims_dfcoef(9) .ne. NFBAS(1,0)) then
+         WRITE(LUPRI,*)
+     &     '* REACMO: Incompatible # of basis functions (1): '
+         WRITE(LUPRI,*) ' Expected: ',NFBAS(1,0)
+         WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(9)
+         call quit ('DFCOEF has incompatible # of basis functions(1)')
+      endif
+      if (nfsym == 2) then
+         if (idims_dfcoef(12) .ne. NFBAS(2,0)) then
+           WRITE(LUPRI,*)
+     &     '* REACMO: Incompatible # of basis functions (2): '
+           WRITE(LUPRI,*) ' Expected: ',NFBAS(2,0)
+           WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(12)
+           call quit ('DFCOEF has incompatible # of basis functions(2)')
+         endif
+      end if
 
-      RETURN
- 10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading eigenvalues')
- 20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading eigenvalues')
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck reacmo_supersymmetry */
-      SUBROUTINE REACMO_supersymmetry(IUNIT,LABEL,IBEIG,NEIG,NFSYM,NZ,
-     &           NORB,NPSH,NESH,IDIM)
-C***********************************************************************
-C
-C     Read supersymmetry information from unformatted file
-C
-C     IDIM(1,IFRP) - number of positronic solutions
-C     IDIM(2,IFRP) - number of electronic solutions
-C     IDIM(3,IFRP) - number of AO-basis functions
-C
-C     Written by T.Saue Jan 2021
-C
-C***********************************************************************
-         use memory_allocator
-#include "implicit.h"
-#include "priunit.h"
-C
-      DIMENSION IBEIG(NEIG)
-      CHARACTER*8 LABEL   
-      DIMENSION NORB(NFSYM),NPSH(NFSYM),NESH(NFSYM)
-      DIMENSION IDIM(3,NFSYM),NORB2(NFSYM)
-      integer, allocatable :: buf(:)
-      LOGICAL TEST,FNDLAB
-      IF(FNDLAB(LABEL,IUNIT)) THEN         
-C
-C     Compatibility tests for number of orbitals
-C
-        TEST = .FALSE.
-        NO = 0
-        DO IFRP = 1,NFSYM
-          NORB2(IFRP) = IDIM(1,IFRP)+IDIM(2,IFRP)
-          IF(NORB2(IFRP).NE.NORB(IFRP)) TEST=.TRUE.
-          NO = NO + NORB2(IFRP)
-        ENDDO
-        IF(TEST) THEN
-C
-C         If dimensions do not fit, then the eigenvalues are read
-C         into a buffer and adapted for the correct dimensions    
-C
-            call alloc(BUF,NO)
-            CALL READI(IUNIT,NO,BUF)
-            IO = 1
-            JO = 1
-            DO IFRP = 1,NFSYM
-              CALL ADAIBO(IBEIG(IO),NORB(IFRP),NPSH(IFRP),NESH(IFRP),
-     &              BUF(JO),IDIM(3,IFRP),IDIM(1,IFRP),IDIM(2,IFRP))
-              IO = IO + NORB(IFRP)
-              JO = JO + NORB2(IFRP)
-            ENDDO
-            call dealloc(BUF)
-        ELSE
-C
-C         Default case
-C           
-          READ (IUNIT,END=10,ERR=20) IBEIG
-        ENDIF
-      ELSE
-        GOTO 20 
-      ENDIF
+      ! The file may contain a different number of orbitals, requiring special treatments
+      special_psh = .false.
+      special_esh = .false.
+      do ifrp = 1, nfsym
+         if (idims_dfcoef(4+3*ifrp) .ne. npsh(ifrp))
+     &       special_psh = .true.
+         if (idims_dfcoef(5+3*ifrp) .ne. nesh(ifrp))
+     &       special_esh = .true.
+      end do
 
-      RETURN
- 10   CONTINUE
-      CALL QUIT('REACMO: END OF FILE reading supersymmetry '
-     &  //LABEL)
- 20   CONTINUE
-      CALL QUIT('REACMO: ERROR reading irrep supersymmetry '
-     &  //LABEL)
+      if (.not. (special_psh .or. special_esh)) then
+
+         ! DFCOEF is fully compatible, read directly into cmo
+         if (lbit(iopt,2)) call reacmo_new (iunit,cmo=cmo)
+         if (lbit(iopt,3)) call reacmo_new (iunit,eig=eig)
+         if (lbit(iopt,4)) call reacmo_new (iunit,ibeig=ibeig(:,1))
+         if (lbit(iopt,5)) call reacmo_new (iunit,kappa=ibeig(:,2))
+
+      else
+
+         ! DFCOEF contains a different number of orbitals, read into buffer and reorganize
+         if (lbit(iopt,2)) then
+            allocate (buf_special(idims_dfcoef(3)))
+            call reacmo_new (iunit,cmo=buf_special)
+            ic = 1
+            jc = 1
+            do  ifrp = 1,nfsym
+               np2 = idims_dfcoef(4+3*ifrp)
+               ne2 = idims_dfcoef(5+3*ifrp)
+               no2 = np2 + ne2
+               call adacmo(nfbas(ifrp,0),nz,
+     &              cmo(ic),norb(ifrp),npsh(ifrp),nesh(ifrp),
+     &              buf_special(jc),no2,np2,ne2)
+                ic = ic + norb(ifrp) * nfbas(ifrp,0) * nz
+                jc = jc + no2        * nfbas(ifrp,0) * nz
+            end do
+            deallocate (buf_special)
+         end if
+
+         if (lbit(iopt,3)) then
+            allocate (buf_special(idims_dfcoef(5)))
+            call reacmo_new (iunit,eig=buf_special)
+            id = 1
+            jd = 1
+            do ifrp = 1,nfsym
+               np2 = idims_dfcoef(4+3*ifrp)
+               ne2 = idims_dfcoef(5+3*ifrp)
+               no2 = np2 + ne2
+               call adaeig(eig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
+     &              buf_special,no2,np2,ne2)
+                id = id + norb(ifrp)
+                jd = jd + no2
+            end do
+            deallocate (buf_special)
+         end if
+
+         if (lbit(iopt,4)) then
+            allocate (ibuf_special(idims_dfcoef(5)))
+            call reacmo_new (iunit,ibeig=ibuf_special)
+            id = 1
+            jd = 1
+            do ifrp = 1,nfsym
+               np2 = idims_dfcoef(4+3*ifrp)
+               ne2 = idims_dfcoef(5+3*ifrp)
+               no2 = np2 + ne2
+               call adaibo(ibeig(id,1),norb(ifrp),npsh(ifrp),nesh(ifrp),
+     &              ibuf_special,no2,np2,ne2)
+                id = id + norb(ifrp)
+                jd = jd + no2
+            end do
+            deallocate (ibuf_special)
+         end if
+
+         if (lbit(iopt,5)) then
+            allocate (ibuf_special(idims_dfcoef(5)))
+            call reacmo_new (iunit,kappa=ibuf_special)
+            id = 1
+            jd = 1
+            do ifrp = 1,nfsym
+               np2 = idims_dfcoef(4+3*ifrp)
+               ne2 = idims_dfcoef(5+3*ifrp)
+               no2 = np2 + ne2
+               call adaibo(ibeig(id,2),norb(ifrp),npsh(ifrp),nesh(ifrp),
+     &              ibuf_special,no2,np2,ne2)
+                id = id + norb(ifrp)
+                jd = jd + no2
+            end do
+            deallocate (ibuf_special)
+         end if
+
+      end if
+
       END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pcmout_1 */
       SUBROUTINE PCMOUT_1(CMO,EIG,IBEIG)
@@ -1900,6 +1641,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmout */
       SUBROUTINE ACMOUT()
+      use dircmo
 C*****************************************************************************
 C
 C     Read coefficients from unformatted DFCOEF, 
@@ -1951,7 +1693,7 @@ C
 #include "nuclei.h"
       LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA
       CHARACTER TEXT*74
-      DIMENSION IDIM(3)
+      DIMENSION IDIM(3),IDIMS(12)
       real(8), allocatable :: CSO(:)
       real(8), allocatable :: EIG(:)
       integer, allocatable :: IBEIG(:)
@@ -2044,19 +1786,18 @@ C
       ENDDO
       IDIM(3) = NTBAS(0)
       TEXT(1:50) = TITLE
-      CALL GTINFO(TEXT(51:74))
-      CALL NEWLAB('INFO    ',LUCOEF,LUPRI)
-      NSYM=1
-      NZBUF=4
-      WRITE(LUCOEF) TEXT,NSYM,NZBUF,(IDIM(I),I = 1,3),TOTERG
-      CALL WRICMO_coefficients(LUCOEF,CAO,NTBAS(0)*NORBT*4)
-      CALL WRICMO_eigenvalues(LUCOEF,EIG,NORBT)      
-      CALL WRICMO_supersymmetry(LUCOEF,'SUPERSYM',IBEIG,NORBT)
-!     Add additional information about basis set to create a simple interface file
-!     for correlated calculations (like exacorr)
-      CALL NEWLAB('BASINFO ',LUCOEF,LUPRI)                              
-      call append_basisinfo_to_dfcoef (LUCOEF)
-      CALL NEWLAB('EOFLABEL',LUCOEF,LUPRI)                                    
+      ! Pack dimension info needed in wricmo (NB: differs from
+      ! the info in common blocks in this case, so pack routine
+      ! can not be used !)
+      IDIMS(1) = 4
+      IDIMS(2) = 1
+      IDIMS(3) = NTBAS(0)*NORBT*4
+      IDIMS(4) = 1
+      IDIMS(5) = NORBT
+      IDIMS(6) = 1
+      IDIMS(7:9) = IDIM
+      IDIMS(10:12) = 0
+      CALL WRICMO(LUCOEF,CAO,EIG,IBEIG,TOTERG,TEXT,IDIMS)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -2527,6 +2268,7 @@ C
 C***********************************************************************
 
       use memory_allocator
+      use dircmo
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2575,7 +2317,7 @@ C
       IF(ATOMIC) THEN
         CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       ENDIF   
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -2609,8 +2351,6 @@ C
       real(8), allocatable :: eig(:)
       integer, allocatable :: ibeig(:)
 C
-
-C
 C     check if file KRMCSCF or DFCOEF is present
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
@@ -2638,10 +2378,10 @@ C     Memory deallocation
 C
  1000 CONTINUE
 C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/*Deck Pstor1 */
-      SUBROUTINE PSTOR1(CMO,EIG,IBEIG,read_mcscf)
+      contains
+
+      subroutine pstor1 (cmo,eig,ibeig,read_mcscf)
+      use dircmo
 C***********************************************************************
 C
 C     Post orbital modifications
@@ -2657,8 +2397,9 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbreo.h"
-      DIMENSION CMO(*),EIG(*),IBEIG(*)
-      logical, intent(in) :: read_mcscf
+      real(8)             :: CMO(:),EIG(:)
+      integer             :: IBEIG(:)
+      logical             :: read_mcscf
       logical             :: mcorb, mcorb1, mcorb2, mjava
       logical             :: fndlab, mcci_natorb, boson_irrep_info
 
@@ -2782,13 +2523,14 @@ C
         IF(ATOMIC) THEN
           CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         ELSE
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         ENDIF   
         CLOSE(LUCOEF,STATUS='KEEP')
       end if
 C
       RETURN
-      END
+      END subroutine pstor1
+      END subroutine pstorb
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Orbnum */
       SUBROUTINE ORBNUM(VECREF,IFRP,KVEC,NSTR,WORK,KFREE,LFREE)
@@ -3593,6 +3335,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmoin */
       SUBROUTINE ACMOIN()
+      use dircmo
 C*****************************************************************************
 C
 C     Read coefficients in C1 symmetry from unformatted DFACMO,
@@ -3648,18 +3391,7 @@ C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
       CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
-      IF(FNDLAB('INFO    ',LUCOEF)) THEN
-         READ(LUCOEF) TEXT,NSYM,NZBUF,(IDIM(I),I = 1,3),TOTERG
-      ELSE
-         CALL QUIT('ACMOIN: Error reading info')
-      ENDIF
-      NDIM = NTBAS(0)*NORBT*4
-      CALL REACMO_coefficients(LUCOEF,CMO2,NDIM,1,4,
-     &           NORBT,NTBAS(0),NPSHT,NESHT,IDIM)         
-      CALL REACMO_eigenvalues(LUCOEF,EIG2,NORBT,1,4,
-     &           NORBT,NPSHT,NESHT,IDIM)         
-C      CALL REACMO_supersymmetry(LUCOEF,'SUPERSYM',IBEIG2,NORBT,
-C     &     1,4,NORBT,NPSHT,NESHT,IDIM)
+      call reacmo_new (lucoef,cmo=cmo2,eig=eig2)
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -3729,7 +3461,7 @@ C     about linear or boson symmetry, and the reduction of the variational
 C     space will not work in the default case. This needs some thinking; for 
 C     now I simply set IBEIG1 to zero.
       CALL ICOPY (NORBT,0,0,IBEIG1,1) 
-      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG,ATOMIC)
+      CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     De-allocate arrays
@@ -4042,6 +3774,7 @@ C
 C***********************************************************************
 
       use memory_allocator
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4140,7 +3873,7 @@ C.........Backtransform UKB complement
               IOFF = IOFF + NORB(IFRP)*NORB(IFRP)*NZ
             ENDIF
           ENDDO
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,ATOMIC)
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,TEXT)
 
           deallocate(buf)
           deallocate(cmo)
@@ -4767,27 +4500,6 @@ C***********************************************************************
       CALL ATOMIC_ID_REDUCE(IBEIG2,IBEIG,NORBT)
       deallocate(IBEIG2)
       END     
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck atomic_reacmo */
-      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG)
-C***********************************************************************
-C
-C     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
-C
-C     Written by Trond Saue March 3 2021
-C***********************************************************************
-#include "implicit.h"
-#include "dcborb.h"      
-      DIMENSION CMO(*),EIG(*),IBEIG(NORBT)
-      integer, allocatable :: IBEIG2(:,:)
-      character            :: FILNAM*6
-      allocate(IBEIG2(NORBT,2))
-      DO I = 1,NORBT
-         CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
-      ENDDO
-      CALL WRICMO(IUNIT,CMO,EIG,IBEIG2,TOTERG,.TRUE.)        
-      deallocate(IBEIG2) 
-      END     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck atomic_id_reduce */
       SUBROUTINE ATOMIC_ID_REDUCE(IBEIG2,IBEIG,N)
@@ -4860,4 +4572,154 @@ C***********************************************************************
       ENDIF
       RETURN
       END
-! -- end of dirgp.F --
+
+      subroutine write_occupations_fromcommon(group)
+      use checkpoint
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dcbdhf.h"
+#include "dcborb.h"
+#include "dgroup.h"
+      character(len=*),intent(in) :: group
+      real(8), allocatable :: occupations(:)
+      integer, allocatable :: shell_id(:)
+
+      allocate(occupations(norbt))
+      allocate(shell_id(norbt))
+      ish = 0
+      do ifsym = 1, nfsym
+          ! positronic (negative energy) shells
+          do i = 1, npsh(ifsym)
+             ish = ish + 1
+             shell_id(ish) = -2
+             occupations(ish) = 0.D0
+          enddo
+          ! inactive (closed) shells
+          do i = 1, nish(ifsym)
+             ish = ish + 1
+             shell_id(ish) = -1
+             occupations(ish) = df(0)
+          enddo
+          ! active (open) shells
+          do iopen = 1, nopen
+             do i = 1, nacsh(ifsym,iopen)
+                ish = ish + 1
+                shell_id(ish) = iopen
+                occupations(ish) = df(iopen)
+             enddo
+          enddo
+          ! virtual (secundary) shells
+          do i = 1, nssh(ifsym)
+             ish = ish + 1
+             shell_id(ish) = 0
+             occupations(ish) = 0.D0
+          enddo
+      enddo
+      
+      call checkpoint_write(group//'/shell_id',idata=shell_id)
+      call checkpoint_write(group//'/occupations',rdata=occupations)
+
+      end
+
+      subroutine write_basis_fromcommon
+
+!      write basis set stored in common blocks to checkpoint
+       use basis_set_datatypes, only: basis_set_info_t
+       use checkpoint
+       type(basis_set_info_t) :: ao_basis
+
+       call get_aobasis_fromcommon (ao_basis)
+       call write_basis_tocheckpoint(ao_basis,'/input/aobasis')
+
+      end subroutine write_basis_fromcommon
+
+      subroutine write_basis_tocheckpoint(ao_basis,group)
+
+!     write basis set to checkpoint file in a particular group
+      use basis_set_datatypes, only: basis_set_info_t
+      use checkpoint
+
+      implicit none
+      character(len=*),intent(in) :: group
+      type(basis_set_info_t), intent(in) :: ao_basis
+      integer, allocatable :: n_cont(:)
+      real(8), allocatable :: coord(:),priexp(:),priccf(:)
+      integer :: ishell,i,n
+
+      call checkpoint_write (group//'/aobasis_id',idata=1)
+      call checkpoint_write (group//'/angular',idata=1)
+      call checkpoint_write (group//'/n_shells',idata=ao_basis%nshells)
+      call checkpoint_write (group//'/n_ao',idata=ao_basis%nao)
+      call checkpoint_write (group//'/orbmom',
+     &     idata=ao_basis%gtos(:)%orb_momentum)
+      call checkpoint_write (group//'/n_prim',
+     &     idata=ao_basis%gtos(:)%n_primitives)
+      ! We can't handle generally contracted functions yet, set n_cont to 1 (segmented contractions)
+      allocate (n_cont(ao_basis%nshells))
+      n_cont = 1
+      call checkpoint_write (group//'/n_cont',idata=n_cont)
+      ! Concatenate arrays as we always write in 1D
+      allocate(coord(3*ao_basis%nshells))
+      n = sum(ao_basis%gtos(:)%n_primitives)
+      allocate(priexp(n))
+      allocate(priccf(n))
+      i = 0
+      do ishell = 1, ao_basis%nshells
+         coord(ishell*3-2:ishell*3) = ao_basis%gtos(ishell)%coord
+         priexp(i+1:i+ao_basis%gtos(ishell)%n_primitives) = 
+     &          ao_basis%gtos(ishell)%exponent
+         priccf(i+1:i+ao_basis%gtos(ishell)%n_primitives) = 
+     &          ao_basis%gtos(ishell)%coefficient
+         i = i + ao_basis%gtos(ishell)%n_primitives
+      enddo
+      call checkpoint_write (group//'/center',rdata=coord)
+      call checkpoint_write (group//'/exponents',rdata=priexp)
+      call checkpoint_write (group//'/contractions',rdata=priccf)
+
+      deallocate(n_cont,coord,priexp,priccf)
+
+      end subroutine write_basis_tocheckpoint
+
+      subroutine get_aobasis_fromcommon (ao_basis)
+
+!      get information from common blocks about the basis set
+!      and return this (after some clean-up) as a basis_set_info_t
+
+       use basis_set_datatypes
+
+#include "implicit.h"
+#include "maxorb.h"
+#include "shells.h"
+#include "aovec.h"
+#include "primit.h"
+#include "dcbbas.h"
+
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       integer ishell, iPrimStart, iPrimEnd, k, ierr
+
+       ! We only retrieve the LC basis, SC to be generated by kinetic balance
+       ao_basis%nshells       = nlrgsh
+       ao_basis%nao           = ntbas(1)
+       ao_basis%basis_angular = 1
+       nullify(ao_basis%gtos)
+       allocate(ao_basis%gtos(nlrgsh))
+
+       do ishell = 1, nlrgsh
+         ao_basis%gtos(ishell)%orb_momentum = nhkt(ishell)
+         ao_basis%gtos(ishell)%atom_number  = ncent(ishell)
+         ao_basis%gtos(ishell)%n_primitives = nuco(ishell)
+         allocate (ao_basis%gtos(ishell)%exponent(nuco(ishell)))
+         allocate (ao_basis%gtos(ishell)%coefficient(nuco(ishell)))
+         iPrimStart = jstrt(ishell) + 1
+         iPrimEnd   = jstrt(ishell) + nuco(ishell)
+         k          = numcf(ishell)
+         ao_basis%gtos(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
+         ao_basis%gtos(ishell)%coefficient =
+     &         priccf(iPrimStart:iPrimEnd,k)
+         ao_basis%gtos(ishell)%coord = cent(ishell,1:3,1)
+!        Uncontracted shells are stored as quasi-contracted, fix this.
+         call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+       end do
+
+       return
+       end

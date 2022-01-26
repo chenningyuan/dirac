@@ -225,6 +225,7 @@ Developers
 
 * **Releasing:**
   :doc:`Release preparation <programmers/release_preparation>` |
+  :doc:`Patch preparation <programmers/patch_preparation>` |       
   :doc:`Beta testing <programmers/beta_testing>` |
   :doc:`Where to commit after the release is out <programmers/commit_policy>`
 
@@ -243,6 +244,9 @@ Developers
   :doc:`Further development <programmers/further_development>` |
   :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
   :doc:`FAQ <programmers/faq>`
+
+* **Data schema and the CHECKPOINT file:**
+  :doc:`How data is organized on the checkpoint file <programmers/checkpoint>`
 
 * **Basis sets:**
   :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 

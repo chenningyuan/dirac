@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C  /* Deck ran1 */
@@ -559,12 +554,7 @@ C  /* Deck lset */
    10 CONTINUE
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-#if defined (SYS_CRAY) || defined (SYS_T3D) 
-CSK|| defined (INT_STAR8)
-      REAL FUNCTION GAMMP(A,X)
-#else
-      DOUBLE PRECISION FUNCTION GAMMP(A,X)
-#endif
+      REAL*8 FUNCTION GAMMP(A,X)
 #include "implicit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C****************************************************************C
@@ -707,7 +697,6 @@ C***********************************************************************
 #include "implicit.h"
       DIMENSION AMAT(LDM,N), ATRI(*)
 C
-#include "nosync.h"
       DO 200 J = 1,N
          JOFF = (J*J-J)/2
          DO 100 I = 1,J
@@ -876,7 +865,6 @@ C
             CX= SQRT(DP5   + T)
             SSX= SIGN( SQRT(DP5 - T),T2X2)
   270    CONTINUE
-#include "ivdep.h"
          DO 275 IR=1,IA
             T        = F(IAA+IR)*SSX
             F(IAA+IR)= F(IAA+IR)*CX+F(IBB+IR)*SSX
@@ -956,7 +944,6 @@ Cwas         JAA=(IA-1)*NROWV
 Cwas         JBB=(IB-1)*NROWV
          JAA=(IA-1)*LDM
          JBB=(IB-1)*LDM
-#include "ivdep.h"
 CMI ... ensure that no mem-error happens when we do not want 
 CMI     to calculate eigenvectors!!
        IF (NEVEC.GT.0) THEN
@@ -1695,14 +1682,8 @@ C
 #include "implicit.h"
       CHARACTER TEXT*(*)
 C
-#if defined (SYS_CRAY) || defined (SYS_T3D)
-      TEXT = ' '
-      WRITE(TEXT(1:8),'(A8)') DATE()
-      WRITE(TEXT(12:19),'(A8)') CLOCK()
-#else
       CHARACTER*(24) FDATE
       TEXT = FDATE()
-#endif
 C
       RETURN
       END

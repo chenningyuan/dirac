@@ -1,0 +1,2 @@
+! testing laplace transformed cholesky decomposed MP2 in talsh 
+! requirements: talsh library (Dmitry Lyakh), efficent with CUDA / OPENMP

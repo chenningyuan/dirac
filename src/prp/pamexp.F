@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -930,6 +925,7 @@ C
 C     Written by T. Saue Jan 20 2005 
 C
 C***********************************************************************
+       use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -940,15 +936,17 @@ C
 #include "dcbxpr.h"
 #include "dgroup.h"
       DIMENSION PAO(*),CMO(*),WORK(*)
+      integer, allocatable :: IBP(:)
+      real(8), allocatable :: EIG(:)
 C
       KFRSAV = KFREE
 C
 C     Read eigenvalues and boson irrep information
 C
-      CALL MEMGET('REAL',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBP,NORBT,WORK,KFREE,LFREE)
+      allocate (eig(norbt))
+      allocate (ibp(norbt))
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
-      CALL REACMO(LUCOEF,'DFCOEF',DUM,WORK(KEIG),WORK(KIBP),TOTERG,12)
+      CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBP,TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
         CALL MEMGET('REAL',KPMO,NISH(IFRP)*NISH(IFRP)*NZ,
@@ -966,7 +964,7 @@ C       Select occupied molecular orbitals
         CALL MEMREL('EXPCAN.sel',WORK,KSEL,KSEL,KFREE,LFREE)
 C       Generate canonical property orbitals
         CALL EXPCA1(INDXPR,IFRP,PAO(I2BASX(IFRP,IFRP)+1),
-     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),WORK(KEIG+IORB(IFRP)),
+     &              WORK(KPMO),CMO(ICMOQ(IFRP)+1),EIG(1+IORB(IFRP)),
      &              WORK(KSCO),WORK(KUCO),WORK(KPEI),
      &              IPRINT,WORK,KFREE,LFREE)
 C      
@@ -975,7 +973,7 @@ C
 C     Write new coefficients
       IUNIT = 2
       CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,WORK(KEIG),WORK(KIBP),TOTERG,.FALSE.)
+      CALL WRICMO(IUNIT,CMO,EIG,IBP,TOTERG)
       CLOSE(IUNIT,STATUS='KEEP')
 C     Read old coefficients
       REWIND LUCOEF

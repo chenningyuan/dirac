@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 !     !!! MODULE FOR READING XYZ FILES !!!
@@ -87,6 +82,7 @@
 
 !     The unit conversion global variable is used when reading/writing xyz files
        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION
+       LOGICAL,PUBLIC       :: UNIT_CONVERSION_SET=.FALSE.
 
        INTERFACE GET_ATOMS
            module procedure READ_XYZ_ATOMS
@@ -456,10 +452,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           REAL(KIND=8)                       :: charge, bascharge, nucexp
           LOGICAL                            :: CONT=.FALSE.
           LOGICAL                            :: first_call=.TRUE.
+          LOGICAL                            :: inMOLECULE
           CHARACTER(LEN=9) :: symtxt
           SAVE first_call
 
           UNIT_CONVERSION = 1.D0 / XTANG
+          UNIT_CONVERSION_SET = .TRUE.
 
 !     take out comments from the input file and initialize
          call filter_comments(filenum,tmp_file)
@@ -476,25 +474,51 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #ifdef HAS_PELIB 
           pelib_sym_xyz = .true.
 #endif 
+          inMOLECULE = .false.
           DO
             read(tmp_file,*,iostat=ios) str
+            !write(6,*) ' --> next line is ',trim(str)
 
             IF (ios.ne.0) THEN
               EXIT
             ELSE IF (str(1:2)=='**') THEN
               section(1)=str
+              !> make sure we process only sections related to XYZ
+              if(inMOLECULE)then
+                if(str(1:6) /= '**MOLE') exit
+              end if
+
             ELSE IF (str(1:1)=='*') THEN
               section(2)=str
 !             Reinitialize section after we read an *END
-              IF (str=='*END') section=''
+              IF (str=='*END')then
+                section=''
+                inMOLECULE = .false.
+              END IF
+              !> make sure we  process only section related to XYZ
+              if(inMOLECULE)then
+                select case(str(1:4))
+                    case ('*CHA','*SYM','*BAS','*CEN','*COO')
+                    case default
+                        exit
+                end select
+              endif
             ELSE IF (str(1:1)=='.') THEN
                section(3)=str
+            ELSE
+              if(inMOLECULE)then
+                write(lupri,*) "ERROR in READ_BASIS: unknown keyword ", &
+     &          trim(str)
+                call quit ("Error reading XYZ input in READ_BASIS")
+              end if
             ENDIF
 
 !
 !           We only need to do something if we are reading a **MOLECULE block.
 !           The options and suboptions are flattened out in one if then else if construction.
             IF(section(1)=='**MOLECULE') THEN
+
+              inMOLECULE = .true.
 
 !             add molecular charge. it is perhaps redundant to have *CHARGE and .CHARGE but i'm not
 !             sure we will not want to add other keywords in the menu later on - plus this keeps in
@@ -524,6 +548,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
                   tmpbas%type='BASIS'
                   tmpbas%next=>NULL()
                   CALL ADD_BASIS(bas,firstbas,tmpbas)
+                  if( tmpbas%file(1:3) == 'ecp') read(tmp_file,*,iostat=ios) str
                   CYCLE
                 else if (ios.ne.0) then
                   write(lupri,*) "ERROR(readbasis): ",                  &
@@ -563,6 +588,8 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
                      write(tmp_file,*) "ERROR(readbasis) :",            &
      &                 "Specify a filename for ",tmpbas%type
                     end if
+                    if( tmpbas%file(1:3) == 'ecp') read(tmp_file,*,iostat=ios) str
+                    cycle
                   CASE('INTGRL','EXPLICIT')
 !     FIRST read rest of the line and then read the explicit coefficients.
 !     TMP We read the coefficients in in the old way in write common block
@@ -586,6 +613,18 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !                   If we set the section back to empty, the read will skip over the
 !                   explicitly typed basis set (the exponents are read in a different routine)
                     section(3)=' '
+                    !> skip until we reach a new keyword/section
+                    do
+                        read(tmp_file,*,iostat=ios) str
+                        if(ios .ne. 0) exit
+                        SELECT CASE(trim(str(1:1)))
+                          CASE ('*','.')
+                            exit
+                          CASE DEFAULT
+                            CYCLE
+                        END SELECT
+                    end do
+                    backspace(tmp_file)
 
                 CASE('WELLTEMP','EVENTEMP','GEOM','FAMILY','DUALFAMILY')
                     CALL ADD_FAM(tmp_file,linelen,tmpbas)
@@ -707,6 +746,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
           END IF
 
         first_call = .FALSE.
+        inMOLECULE = .false.
         close (tmp_file)
 
         END SUBROUTINE READ_BASIS

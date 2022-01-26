@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
        SUBROUTINE MAKE_H2C(VMAT,WORK,LWORK)
@@ -426,12 +421,10 @@ C    get H2C Hamiltonian(inf,DKH2,DKH2SO1,DKH1)  in ON ("k"/RKB) basis
 C ===================================================================
       IF (IPZ.EQ.9) THEN
 C       ... infinite order - either block diagonalization, or YR equation solving
-#ifdef MOD_UNRELEASED
         IF (BLOCKD) THEN
          CALL GET_HINF_BD(WORK(KTBUF),WORK(KTMAT),VMAT,WORK(KIBEIG),
      &                    GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
         ELSE
-#endif
 C        ... we need additional integer array...
          ISIZE=NORB(1)
          IF (NFSYM.EQ.2) THEN
@@ -443,9 +436,7 @@ C        ... both for FPM "k" & RKB
      &                   WORK(KEIG),WORK(KIBEIG),FPB,YREQ1,
      &               GETPCTM,SF_BEG,WORK(KFREE),LFREE,IPRHAM)
 
-#ifdef MOD_UNRELEASED
         ENDIF
-#endif
 C =======================================================================
 C       ... second order DKH - only in the free-particle basis
 C =======================================================================
@@ -3595,7 +3586,6 @@ C         ... do transform it to the "k" basis into TBUF !
       CALL QEXIT('DF2ONB')
       RETURN
       END
-#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*          
 C  /* Deck get_hinf_bd */      
       SUBROUTINE GET_HINF_BD(TBUF,TMAT,VMAT,IBEIG,
@@ -3862,7 +3852,6 @@ C Copy VMAT into TBUF as TBUF is leaving this routine...
       CALL QEXIT('GET_HINF_BD')
       RETURN
       END
-#endif
       SUBROUTINE DIAG_h_test(hmat,eigvl,eigvc,ndim,nz,ierr)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       
@@ -7683,6 +7672,7 @@ C     ... this flag must be deactivated for BSS2DC calculations
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
+      use dircmo
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:
@@ -7730,11 +7720,8 @@ C ================================================================
 C         ... get 4c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
-      IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
-      ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-      ENDIF
+      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C   ... first get the picture change transf.matrix into VMAT
@@ -7901,6 +7888,7 @@ C     ... recalculate necessary off-sets
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
+      use dircmo
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C  PURPOSE:   Do the reverse picture change transformation of 2c CMO into 4c CMO
@@ -7944,11 +7932,8 @@ C ================================================================
 C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,15)
-      ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
-      ENDIF
+      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 CMI .... do the picture change transformation ...
@@ -8021,11 +8006,8 @@ C ********************************************************
       ELSE IF (INI2C.EQ.4) THEN
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-       IF(IPRINT.GE.1) THEN
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,15)
-       ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',TBUF,EIG,IBEIG,TOTERG,14)
-       ENDIF
+       call reacmo_new(lucoef,cmo=tbuf,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
        CLOSE(LUCOEF,STATUS='KEEP')
 
       ELSE
@@ -8194,6 +8176,7 @@ C
 C  Written by Miro Ilias, August, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+       use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
@@ -8273,16 +8256,15 @@ C    ... do renew the DFCOEF file !!!
 
 C     ... do read the DFCOEF file from previous iterations ...
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOINI4C')
-      IF(IPRSCF.GE.1) THEN
-         CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,15)
-      ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',TMAT,EIG,IBEIG,TOTERG,14)
-      ENDIF
+      call reacmo_new(lucoef,cmo=tmat,eig=eig,ibeig=ibeig,
+     &                toterg=toterg)
+      ! LV: not sure why tmat is read, but kept this as it was when revising reacmo
 
 C ===================================================
 C   Write 2c->4c transformed coefficients ()
 C ===================================================
-      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+      CALL WRICMO(LUCOEF,CMO(1:NCMOTQ),EIG(1:NORBT),
+     &            IBEIG(1:NORBT),TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE (LUPRI,'(/2X,A/)')
      & '>>> The DFCOEF file was renewed for restarting 4c SCF'//

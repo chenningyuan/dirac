@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 ***********************************************************************
 
@@ -2605,6 +2600,7 @@ C     INTEGER JGRP(MXPNGAS)
 ***********************************************************************
 
       SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
+      use luci_wrkspc
 *
 *     Construct orbital excitation types for different choices
 *     of Hamiltonian operator, double group version
@@ -2626,7 +2622,6 @@ C     INTEGER JGRP(MXPNGAS)
 *  
 #include "dgroup.h"
 #include "mxpdim.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "cprnt.inc"
 C
@@ -2757,6 +2752,7 @@ C
      &                   ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                   )
+      use luci_wrkspc
 *
 * Outer routine for sigma vector generation
 * in SIGDEN formalism
@@ -2782,7 +2778,6 @@ C
 *.Output
 * ======
 *
-#include "wrkspc.inc"
 #include "cstate.inc"
 #include "cands.inc"
 #include "ctcc.inc"
@@ -2844,6 +2839,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                     ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                 )
+      use luci_wrkspc
 C***********************************************************************
 C
 C     outer routine for sigma (ISIGDEN==1) and density (ISIGDEN==2) 
@@ -2877,7 +2873,6 @@ C***********************************************************************
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3424,6 +3419,7 @@ C
      &                      ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                       )
+      use luci_wrkspc
 *
 * First inner routine for general CC sigma/densi
 *
@@ -3452,7 +3448,6 @@ C
 #include "mxpdim.inc"
 #include "gasstr.inc"
 #include "cstate.inc"
-#include "wrkspc.inc"
 #include "strbas.inc"
 *. Batches of sigma
       INTEGER LBATS(*),LEBATS(*),I1BATS(*),IBATS(8,*)
@@ -3561,6 +3556,7 @@ C           CPU-block - test if non-zero
      &                      ,IBLOCKL_S,NPARBLOCK_S
 #endif
      &                       )
+      use luci_wrkspc
 *
 * Generate a set of sigma blocks, 
 * The NBLOCK specified in IBLOCK starting from IBOFF,
@@ -3597,7 +3593,6 @@ C           CPU-block - test if non-zero
 #include "cstate.inc"
 #include "strinp.inc"
 #include "stinf.inc"
-#include "wrkspc.inc"
 #include "crun.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3881,6 +3876,7 @@ C
      &                       NPARBLOCK_S
 #endif
      &           )
+      use luci_wrkspc
 *
 *
 * Jeppe Olsen, Summer of 1999
@@ -3944,7 +3940,6 @@ C
 C     general input
 #include "mxpdim.inc"
 #include "gasstr.inc"
-#include "wrkspc.inc"
 #include "cgas.inc"
 #include "cstate.inc"
 #include "strbas.inc"

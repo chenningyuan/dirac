@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -2084,11 +2079,9 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
-#ifdef MOD_UNRELEASED
       if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
-#endif
 
 C
 C     Check if file of solution vectors is present
@@ -2483,7 +2476,6 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
-#ifdef MOD_UNRELEASED
         if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2506,7 +2498,6 @@ C       Give major orbital rotations in excitations
            write(lupri, '(a, f8.5)') '     lambda = ', 
      &        lambda_numerator/lambda_denominator
         end if
-#endif /* MOD_UNRELEASED */
       ENDIF
  20   CONTINUE
       ENDDO

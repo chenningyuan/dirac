@@ -1,21 +1,18 @@
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!dirac_copyright_start
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
+!dirac_copyright_end
 
 C FILE    : pamprp.F
 C
@@ -128,15 +125,10 @@ C     SCF molecular linear response properties.  The authors accept
 C     no responsibility for the performance of the code or for the
 C     correctness of the results.
 C
-C     The code (in whole or part) is not to be reproduced for
-C     further distribution without the written permission of the authors.
-C
 C     If results obtained with this code are published, an appropriate
 C     citation would be:  H. J. Aa. Jensen and T. Saue,
 C     "XXX version 1.0 1995,
 C      a Dirac-Fock molecular linear response properties program".
-C
-C     This note is not to be removed or altered.
 C
 C     Written by T.Saue June 24 1996
 C     Revision: 1997/09/15 - jth (addition of gradient code)
@@ -5698,7 +5690,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2XX'
+        PLABEL(1) = 'dS_dB2XX'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XXRM2H1',IPDSUSC(1),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5707,7 +5699,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2XY'
+        PLABEL(1) = 'dS_dB2XY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XYRM2H1',IPDSUSC(2),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5716,7 +5708,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2XZ'
+        PLABEL(1) = 'dS_dB2XZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('XZRM2H1',IPDSUSC(3),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5725,7 +5717,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2YY'
+        PLABEL(1) = 'dS_dB2YY'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YYRM2H1',IPDSUSC(4),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5734,7 +5726,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2YZ'
+        PLABEL(1) = 'dS_dB2YZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('YZRM2H1',IPDSUSC(5),LEXPP,NEXPP,INDXPR,MAXEXP)
@@ -5743,7 +5735,7 @@ C     RM2H1 terms, IPDSUSC(1-6)
         IPTYP     = 1
         NPCOMP    = 1
         PFAC(1)   = DM2*CVAL*CVAL
-        PLABEL(1) = 'dS/dB2ZZ'
+        PLABEL(1) = 'dS_dB2ZZ'
         CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
         CALL OP1IND('ZZRM2H1',IPDSUSC(6),LEXPP,NEXPP,INDXPR,MAXEXP)

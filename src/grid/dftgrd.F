@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1240,19 +1235,9 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equivalence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
 #include "ibtfun.h"
 C
       WRITE(LUPRI,*)
@@ -1292,19 +1277,9 @@ C***********************************************************************
 #include "consts.h"
 #include "dcbbas.h"
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NBAST,NBAST),
-     &     GAO(NBAST),SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
 C
 C     Arrays for 2nd order polynomial fit:
 C
@@ -1466,19 +1441,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       PARAMETER(ZERO=0.0D0,ONE=1.0D0)
 C
-#if defined (VAR_G77) || defined (SYS_SX)
-C     g77 fails in the complicated dimension statement that was used
-C     in the original version, make things easier for the compiler with an
-C     equiavelence statment
-      EQUIVALENCE (NBAST,NTBAS(0)),(NBASL,NTBAS(1))
-      DIMENSION GAO(NBAST),DMAT(NBAST,NBAST),
-     &     SMAT(NBASL,NBASL),ASMAT(NAT,NAT),
-     &     ICLAB(NBAST)
-#else
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#endif
       GAO   = 0.0d0
       SMAT  = 0.0d0
       ASMAT = 0.0d0

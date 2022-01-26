@@ -1,24 +1,19 @@
 !define DEBUG_MP2_NO
 
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -352,6 +347,7 @@ C
 C***********************************************************************
 
       use memory_allocator
+      use dircmo
 
 #include "implicit.h"
 #include "priunit.h"
@@ -437,8 +433,7 @@ C          ... boson irrep info (or mj-values if linear symmetry is available)
            CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
-           CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO_TRA),XDUMMY,XDUMMY,
-     &                 XDUMMY,2)
+           CALL REACMO_new(LUCOEF,cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
@@ -584,6 +579,7 @@ C
 C***********************************************************************
       use moltra_labeling
       use relcc_cfg
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -604,6 +600,8 @@ C
 
       CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400
       LOGICAL   TOBE,TOBEK,TRASAM,ACTIVE
+      real(8), allocatable :: cmo(:),eig(:)
+      integer, allocatable :: ibeig(:)
 
 ! 4-index integrals
       INTEGER   NSTR(2,0:2,4),NSTRT(4),
@@ -855,9 +853,9 @@ C
 C
 C     Get all coefficients
 C
-      CALL MEMGET2('REAL','CMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','EIG',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      allocate (CMO(NCMOTQ))
+      allocate (EIG(NORBT))
+      allocate (IBEIG(NORBT))
 C
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
@@ -866,8 +864,7 @@ C
          CALL Abend2('MP2DEN: No MO coefficient file !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14)
+         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
          CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
@@ -876,13 +873,13 @@ C
       DO I = 1, 4  ! 4-index 2-electron integral transformation
         DO IFRP = 1, NFSYM
           IF(NSTR(IFRP,0,I).GT.0) THEN
-             CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
+             CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQ(IFRP,I)),
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -897,10 +894,10 @@ C
 !    &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
 !    &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
 !    &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(WORK(KEIG+IORB(IFRP)),IFRP,
+             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,
      &                   WORK(KE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
      &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
-             CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
      &                   WORK(KIBE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
      &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
           ENDIF
@@ -909,7 +906,9 @@ C
 C
 C     Throw away the complete set, keep only the selected sets
 C
-      CALL MEMREL('MP2DEN.2',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      deallocate (cmo)
+      deallocate (eig)
+      deallocate (ibeig)
 C
 C     If necessary recanonize (virtual) orbitals
 C     Assuming that all sets are equal, we use the first index !!!
@@ -1053,23 +1052,22 @@ C
 C
 C     Get all coefficients
 C
-      CALL MEMGET2('REAL','KCMO',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL MEMGET2('REAL','KEIG',KEIG,NORBT,WORK,KFREE,LFREE)
-      CALL MEMGET2('INTE','KIBEIG',KIBEIG,NORBT,WORK,KFREE,LFREE)
+      allocate (CMO(NCMOTQ))
+      allocate (EIG(NORBT))
+      allocate (IBEIG(NORBT))
       INQUIRE(FILE='DFCOEF',EXIST=TOBE)
       IF (.NOT.TOBE) THEN
          WRITE(LUPRI,'(/A)') 'MO coefficient file not present'
          CALL QUIT('PAMTRA: No MO coefficient file !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &               WORK(KIBEIG),TOTERG,14)
+         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
       ENDIF
 C
 C     Select the set that we need
 C
       DO IFRP = 1, NFSYM
-         CALL SELCFS (WORK(KCMO+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
+         CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,WORK(KQC(IFRP)),
      &                NSPC(IFRP,0),WORK(KVEC(IFRP,5)),
      &                NSPC(IFRP,2),NSPC(IFRP,1),
      &                NFBAS(IFRP,0),NORB(IFRP))
@@ -1077,7 +1075,9 @@ C
 C
 C     Throw away the complete set, keep only the selected sets
 C
-      CALL MEMREL('MP2DEN.5',WORK,KFRSAV,KCMO,KFREE,LFREE)
+      deallocate (cmo)
+      deallocate (eig)
+      deallocate (ibeig)
 C
       CALL FLSHFO(LUPRI)
 
