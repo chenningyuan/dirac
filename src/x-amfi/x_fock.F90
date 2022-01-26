@@ -300,6 +300,7 @@ contains
 #ifdef VAR_MPI
 #include "mpif.h"
 #include "dirac_partask.h"
+#include "siripc.h"
 #endif
 real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
 real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
@@ -322,13 +323,21 @@ logical                            :: parcal
 #ifdef VAR_MPI
        call mpi_initialized(parcal,i)
 #endif
-       call SetIntTaskArrayDimension(npos,parcal)
-
-       local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - npos - 3*nr_2e_fock_matrices - 10000
+       local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - 3*nr_2e_fock_matrices - 20000
        allocate(work(local_lwork)); work=0;
 
        !> set common block in Hermit
        CALL PAOVEC(work,local_lwork,0,0)
+
+       !> has to be after call to paovec: sets among others: NLRGBL, NSMLBL
+       call SetIntTaskArrayDimension(npos,parcal)
+
+       !> Prepare for parallel calculation (set inforb)
+       CALL RELINF
+#ifdef VAR_MPI
+       !> enforces a resynchronization of AO common blocks between master and co-workers
+       NEWGEO = .true.
+#endif
 
        !> 2e-fock matrix construction
        allocate(isymop(nr_2e_fock_matrices))

@@ -4654,6 +4654,7 @@ C
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
+#include "infpar.h"
 #include "nuclei.h"
 #include "frame.h"
 #include "symmet.h"
@@ -4817,11 +4818,18 @@ C
             END IF
          END IF
 C
-         IF (IPREAD .GE. 0) THEN
-            WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
-     &   '   Nuclear repulsion energy :',POTNUC,' Hartree',
-     &   '   Nuclear dipole moment    :',DPNUC(1:3),' a.u.'
+#ifdef VAR_MPI
+!        print only from one process
+         if (mytid == 0) then
+#endif
+           IF (IPREAD .GE. 0) THEN
+              WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
+     &     '   Nuclear repulsion energy :',POTNUC,' Hartree',
+     &     '   Nuclear dipole moment    :',DPNUC(1:3),' a.u.'
+           END IF
+#ifdef VAR_MPI
          END IF
+#endif
       END IF
       RETURN
       END

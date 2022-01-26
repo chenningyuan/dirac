@@ -1932,16 +1932,25 @@ C
 C
 C     Write label
 C
+
       IOFF = 0
       DO I = 1,NGAB
-         if(recompute_Gab_ .and. FNDLAB(GABLAB(I),LUPROP))then
-           !> we need to overwrite any existing data
-           backspace luprop
+         if(recompute_Gab_)then
+            OPEN (104,STATUS='replace',FORM='UNFORMATTED',
+     &            FILE=trim(gablab(i)))
+            rewind(104)
+            CALL NEWLB2(GABLAB(I),RTNLBL,104,LUPRI)
+            LEN = MAX(4,N2GAB)
+            CALL WRITT(104,LEN,WORK(KGAB+IOFF))
+            IOFF = IOFF + N2GAB
+            CALL NEWLB2('EOFLABEL',RTNLBL,104,LUPRI)
+            close(104,status="keep")
+         else
+           CALL NEWLB2(GABLAB(I),RTNLBL,LUPROP,LUPRI)
+           LEN = MAX(4,N2GAB)
+           CALL WRITT(LUPROP,LEN,WORK(KGAB+IOFF))
+           IOFF = IOFF + N2GAB
          end if
-         CALL NEWLB2(GABLAB(I),RTNLBL,LUPROP,LUPRI)
-         LEN = MAX(4,N2GAB)
-         CALL WRITT(LUPROP,LEN,WORK(KGAB+IOFF))
-         IOFF = IOFF + N2GAB
       END DO
       if(.not.recompute_Gab_)
      &CALL NEWLB2('EOFLABEL',RTNLBL,LUPROP,LUPRI)
@@ -2046,8 +2055,9 @@ C
             IF(IPRINT_.GE.5) THEN
 C              reduced GAB-matrix is printed for IPRINT_ .ge. 4 in GABGEN
 C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
-               CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
-               WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+               CALL HEADER('GETGAB: (0) Reduced GAB-matrix',-1)
+               WRITE (LUPRI,'(3A,i0,a,i0)') ' Label : ',GABLAB(IGAB),
+     &         ' dimension : ',nsymbl,' x ',nsymbl
                CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
      &                  NSYMBL,NSYMBL,-4,LUPRI)
             ENDIF
@@ -2057,19 +2067,35 @@ C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,
      &           recompute_Gab,IPRINT_,WORK,LWORK)
-            REWIND LUPROP
-            IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
-               CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
-            ELSE
-               WRITE(LUPRI,'(A,A8,A)')
-     &              'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
-               CALL QUIT('GETGAB: No GAB on AOPROPER !')
-            END IF
+            if(recompute_Gab)then
+              OPEN (104,STATUS='old',FORM='UNFORMATTED',
+     &              FILE=trim(gablab(igab)))
+              rewind(104)
+              IF(FNDLAB(GABLAB(IGAB),104))then
+                CALL READT(104,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
+                close(104,status="delete")
+              ELSE
+                 WRITE(LUPRI,'(A,A8,3A)')
+     &                'GETGAB: Label ',GABLAB,' not found on ',
+     &                 trim(gablab(i)),' !'
+                 CALL QUIT('GETGAB: No GAB on AOPROPER !')
+              END IF
+            else
+              REWIND LUPROP
+              IF(FNDLAB(GABLAB(IGAB),LUPROP)) THEN
+                 CALL READT(LUPROP,NSYMBL * NSYMBL, GABM(1,1,IGAB) )
+              ELSE
+                 WRITE(LUPRI,'(A,A8,A)')
+     &                'GETGAB: Label ',GABLAB,' not found on AOPROPER !'
+                 CALL QUIT('GETGAB: No GAB on AOPROPER !')
+              END IF
+            end if
             IF(IPRINT_.GE.5) THEN
 C              reduced GAB-matrix is printed for IPRINT_ .ge. 4 in GABGEN
 C              we only print later reads if IPRINT_ .ge. 5 /hjaaj apr 2001
-               CALL HEADER('GETGAB:Reduced GAB-matrix',-1)
-               WRITE (LUPRI,'(2A)') ' Label : ',GABLAB(IGAB)
+               CALL HEADER('GETGAB: (1) Reduced GAB-matrix',-1)
+               WRITE (LUPRI,'(3A,i0,a,i0)') ' Label : ',GABLAB(IGAB),
+     &         ' dimension : ',nsymbl,' x ',nsymbl
                CALL OUTPUT(GABM(1,1,IGAB),1,NSYMBL,1,NSYMBL,
      &                  NSYMBL,NSYMBL,-4,LUPRI)
             ENDIF
