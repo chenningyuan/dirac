@@ -356,7 +356,7 @@ C*****************************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 40,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 39,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -386,7 +386,7 @@ C
      &            '.RESFAC','.ORBANA','.ROTAV ','.SKIPEE',
      &            '.MXLOAD','.ONLYSF','.ONLYSG','.BED   ',
      &            '.GNOISE','.GCLEAN','.BEDCON','.NOVELR',
-     &            '.NOLENR','.ANGPLO','.BEDECD','.VPOLE'/
+     &            '.NOLENR','.ANGPLO','.BEDECD'/
 C
 #include "ibtfun.h"
 C
@@ -493,7 +493,7 @@ C
                      GO TO (1, 2, 3, 4, 5, 6, 7, 8, 9,10,
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
-     &                     31,32,33,34,35,36,37,38,39,40) I
+     &                     31,32,33,34,35,36,37,38,39) I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -709,27 +709,6 @@ C&&&& BEDECD: Electronic circular dichroism with the full light-matter interacti
                BEDECD=.TRUE.
                GO TO 100
 C&&&& VPOLE: Electric multipole moments in the generalised velocity representation               
- 40            CONTINUE
-               READ(LUCMD,*) IORDER
-               IF (IORDER.EQ.1) THEN
-                    NDEG = 1
-               ELSEIF (IORDER.EQ.2) THEN
-                    NDEG=6
-               ELSE 
-                    NDEG = 9*(IORDER*(IORDER-1)/2)
-               ENDIF
-               IF((NPPAPT+NDEG).GT.MAXLPP) THEN
-                 WRITE(LUPRI,'(A,A,I3)') 'XPPINP: Pointer array LPP',
-     &           'APU out of bounds for velocity representation', 
-     &              'electric multipole of order ',
-     &           IORDER
-                 WRITE(LUPRI,'(A,I5)') 
-     &           'Increase MAXLPP to ',(NPPAPT+NDEG)
-                 CALL QUIT('XPPINP: MAXLPP out of bounds')
-               ENDIF
-               CALL DEF_VPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
-               NPPAPT = NPPAPT + NDEG
-               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -780,7 +759,6 @@ C        calculate default MAXRM
       ENDIF
       IF(DOVELR) THEN
         IBMAX = KVAL_OSC
-        IVMAX = KVAL_OSC + 1
       ELSE
         IBMAX = 0
       ENDIF
@@ -790,14 +768,6 @@ C.....Calculate total number of operators
         NOP=NOP+3*(IORDER+2)*(IORDER+1)/2
       ENDDO
 
-      IF (IVMAX.EQ.2) THEN
-        NOP = NOP + 6
-      ELSEIF (IVMAX.GT.2) THEN
-        NOP = NOP + 6
-        DO IORDER = 3,IVMAX
-            NOP = NOP + 9*(IORDER-1)*IORDER/2
-        ENDDO
-      ENDIF
       DO IORDER = 1,IEMAX
         NOP=NOP+(IORDER+2)*(IORDER+1)/2
       ENDDO
@@ -832,27 +802,7 @@ C.....Generalized velocity gauge
         CALL DEF_BEDCON(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
         IBDOFF(IORDER)=NPPAPT
         NPPAPT = NPPAPT + NDEG
-      ENDDO
-C.....Generalized velocity representation electric multipole      
-      IF (IVMAX.EQ.2) THEN
-        NDEG = 6
-        CALL DEF_VPOLE(2,LPPAPU(NPPAPT+1),IPRXPP)
-        IVPOFF(2) = NPPAPT
-        NPPAPT = NPPAPT + NDEG
-      ELSEIF (IVMAX.GT.2) THEN
-        NDEG = 6
-        CALL DEF_VPOLE(2,LPPAPU(NPPAPT+1),IPRXPP)
-        IVPOFF(2) = NPPAPT
-        NPPAPT = NPPAPT + NDEG
-        DO IORDER = 3,IVMAX
-            NDEG = 9*(IORDER*(IORDER-1))/2
-            CALL DEF_VPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
-            IVPOFF(IORDER) = NPPAPT
-            NPPAPT = NPPAPT + NDEG
-        ENDDO
-      ENDIF
-
-
+      ENDDO   
 C.....Electric multipoles
       DO IORDER = 1,IEMAX
         NDEG=(IORDER+2)*(IORDER+1)/2
@@ -2582,63 +2532,6 @@ c          write(6,*) "FOSC VEL ", FOSC
         ELSE
           WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
         ENDIF
-C.......Generalized velocity gauge with multipolar separation
-
-        IF(DOVELR) THEN
-          allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
-          FOSC=0.0D0
-          DO IK = 0,K2ORD
-             CALL OSC_VPOL(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
-c            CALL OSC_MPOL(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
-             CALL DAXPY(4*MAXEXC*NBSYM,D1,FOSC(1,1,1,IK),1,
-     &                                  FOSC(1,1,1,-1),1)
-c
-          ENDDO
-c
-cc            write(6,*) "FOSC MULT ", FOSC(:,:,:,-1)
-          NLIN=32+16*(K2ORD+2)
-          WRITE(LUPRI,'(/A,ES8.2)')
-     &       '* Anisotropic oscillator strengths '//
-     &       '(generalized velocity gauge) above threshold :', TTOL
-          WRITE(LUPRI,'(3X,A)')
-     &     '- [f( 0) corresponds to the electric dipole approximation]'
-          CALL PRSYMB(LUPRI,'-',NLIN,0)
-          WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
-     &       'Level    Frequency (eV) Symmetry    f(total)        ',
-     &       ('f(',IK+IK,') ',IK=0,K2ORD)
-          CALL PRSYMB(LUPRI,'-',NLIN,0)
-          DO JEXC = 2,NEXC          ! skip reference state
-            II = INDX(JEXC)
-            IEXC  = IEERG(1,II)
-            ISYM  = IEERG(2,II)
-            OSCIL = FOSC(1,IEXC,ISYM,-1)
-c            IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
-              ILAB  = ISSYM(IEXC,ISYM)
-              WRITE(LUPRI,
-     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
-     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
-     &         (FOSC(1,IEXC,ISYM,IK),IK=0,K2ORD)
-              WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
-     &         'Q-Q',(FOSC(2,IEXC,ISYM,IK),IK=0,K2ORD)
-              WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
-     &         'M-Q',(FOSC(3,IEXC,ISYM,IK),IK=0,K2ORD)
-              WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
-     &         'M-M',(FOSC(4,IEXC,ISYM,IK),IK=0,K2ORD)
-c            ENDIF
-          ENDDO
-          CALL PRSYMB(LUPRI,'-',NLIN,0)
-          TOT = DSUM(NEXCF,FOSC(1,1,1,-1),4)
-          WRITE(LUPRI,'(A,ES12.5)')
-     &     'Sum of oscillator strengths (general velocity) : ',TOT
-         deallocate(fosc)
-        ELSE
-          WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
-        ENDIF
-
-
-
-
-
 C.......Generalized length gauge
         IF(DOLENR) THEN
           allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
