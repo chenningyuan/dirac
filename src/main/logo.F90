@@ -127,6 +127,7 @@ print *, '*    Erik D. Hedegaard        University of Southern Denmark    Denmar
 print *, '*    Trygve Helgaker          University of Oslo                Norway        *'
 print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
+print *, '*    Martin van Horn          Universite Toulouse III           France        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
 print *, '*    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *'

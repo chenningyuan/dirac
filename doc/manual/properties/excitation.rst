@@ -168,6 +168,14 @@ The isotropic averaging of the differential oscillator strength is handled in an
 
 For a full account see :cite:`vanHorn2021probing`.
 
+keyword(ANGPLOT)
+
+Print the anisotropic differential oscillator strength (see. :ref:`EXCITATION_ENERGIES_.BEDECD`) for every point on the Lebedev grid. These points can be used to plot the differential oscillator strength as a function of the incident angle of the radiation. A full account is given in :cite:`vanHorn2021probing`.
+
+
+
+
+
 
 keyword(ORIENT)
 
