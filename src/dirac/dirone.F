@@ -2948,20 +2948,8 @@ C
             call opnfil(lublubb,'DFDENS','OLD','GMOTRA')
             close(lublubb,status='DELETE')
           end if
-!         reset DFT-grid
-          inquire(file='numerical_grid',exist=tobe)
-          if(tobe)then
-            inquire(file='numerical_grid',opened=tobe)
-            if(tobe)then
-            inquire(file='numerical_grid',number=lublubb)
-              CLOSE(lublubb,STATUS='DELETE')
-            else
-              lublubb = 99
-              CALL OPNFIL(lublubb,'numerical_grid','OLD','GMOTRA')
-              CLOSE(lublubb,STATUS='DELETE')
-            end if
-          end if
-          call reset_num_grid()
+!         delete and reset DFT grid
+          call delete_num_grid(); call reset_num_grid()
 !         reset interface-mo
           call interface_mo_write()
 !         reset interface-ao

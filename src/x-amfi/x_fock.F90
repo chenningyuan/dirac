@@ -24,6 +24,7 @@
 module x_fock
 
   use num_grid_gen
+  use interface_ao_specific
   use interface_mo_specific
   use x2c_fio, only: x2c_read
 
@@ -254,8 +255,13 @@ contains
       end if
 
       if(isDFT)then
-          !print *, 'blubb DFT on'
+          !> delete and reset DFT grid
+          call delete_num_grid(); call reset_num_grid()
+          !> reset interface-mo
           call interface_mo_write()
+          !> reset interface-ao
+          call interface_ao_write()
+          !> new grid
           call generate_num_grid(dmat)
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl( XCINT_PAR )
@@ -264,7 +270,7 @@ contains
                                    nrows, &
                                    dmat,  &
                                    fmat)
-      end if 
+      end if
 
   end subroutine get_scso_2e_fock
 !----------------------------------------------------------------------
@@ -376,9 +382,14 @@ logical                            :: parcal
        deallocate(work)
 
        if(isDFT)then
-        !print *, 'blubb DFT on'
-        call interface_mo_write()
-        call generate_num_grid(dmat)
+          !> delete and reset DFT grid
+          call delete_num_grid(); call reset_num_grid()
+          !> reset interface-mo
+          call interface_mo_write()
+          !> reset interface-ao
+          call interface_ao_write()
+          !> new grid
+          call generate_num_grid(dmat)
 #ifdef VAR_MPI
         if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
