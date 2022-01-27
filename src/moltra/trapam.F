@@ -737,8 +737,13 @@ C
 C     If energy threshold, truncate virtual space
 C     ===========================================
 C
-      IF(DMP2_VIRTHR.NE.DUMMY) CALL VIRTHR(WORK,KFREE,LFREE,
+      IF (DMP2_VIRTHR.NE.DUMMY) THEN
+!        NUMLST closes DFCOEF, need to be open for VIRTHR
+!        (note: no problem with OPNFIL call if LUCOEF is already open)
+         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSIMP2')
+         CALL VIRTHR(WORK,KFREE,LFREE,
      &     LUCOEF,NSTR(1,0,2),KVEC(1,2),DMP2_VIRTHR)
+      END IF
 C
 C     Calculate dimensions of coefficient arrays
 C     The coefficients are stored as 2 arrays of two matrices each

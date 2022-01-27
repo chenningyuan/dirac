@@ -128,6 +128,10 @@ Distribution of correlated open shell electrons over the irreps.  This determine
 This input should always be given for average-of-configuration SCF calculations that are followed by a CC calculation. The total number of electrons that is
 given should correspond to the number of open shell electrons.
 
+One should activate either :ref:`RELCC_.NELEC` (total number of correlated electrons) or
+:ref:`RELCC_.NELEC_OPEN` (only open-shell electrons)  for open-shell cases. 
+Do not activate both :ref:`RELCC_.NELEC` and :ref:`RELCC_.NELEC_OPEN` once.
+
 *Arguments:*
 
 ::

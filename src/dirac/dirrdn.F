@@ -2951,6 +2951,7 @@ C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
       use dirac_cfg
+      use x2cmod_cfg, only: x2cmod_mmf
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
@@ -3351,6 +3352,12 @@ C
             END IF
          END DO
       END IF
+
+!>    stop for non-working keyword combination
+      if(x2cmod_mmf)then
+         if(DOKRMC .or. DOGASCIP .or. DOKRCI)
+     &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
+      end if
 C
 C     Process input for various program sections
 C     ==========================================
@@ -7760,12 +7767,15 @@ C
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
-      IF (DOPRP.AND.TWOCOMP.AND..NOT.is_2c_rel_run) THEN
-       WRITE(LUPRI,'(1X,A/)')
-     & 'NB: Properties & TWOCOMP require non-relativistic'//
-     & ' form of operators !'
+      IF (DOPRP) THEN
+        IF(DKH1) CALL QUIT('Properties not available for DKH1')
+        IF(DKH2) CALL QUIT('Properties not available for DKH2')        
+        IF(TWOCOMP.AND..NOT.is_2c_rel_run) THEN
+          WRITE(LUPRI,'(1X,A/)')
+     &    'NB: Properties & TWOCOMP require non-relativistic'//
+     &    ' form of operators !'
+        ENDIF
       ENDIF
-
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
