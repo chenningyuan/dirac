@@ -160,6 +160,7 @@ print *, '*    Sebastien Villaume       Linkoeping University             Sweden
 print *, '*    Olivier Visser           University of Groningen           Netherlands   *'
 print *, '*    Toke Winther             University of Southern Denmark    Denmark       *'
 print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan         *'
+print *, '*    Joel Creutzberg          Lund University                   Sweden        *'
 print *, '*    Xiang Yuan               Universite de Lille               France        *'
 print *, '*                                                                             *'
 print *, '*    For more information about the DIRAC code see http://diracprogram.org    *'
