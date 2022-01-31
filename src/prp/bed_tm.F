@@ -1525,7 +1525,7 @@ C
       LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
 C                                                          
       real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
-      real(8), allocatable :: TMPOSCBED(:)
+      real(8), allocatable :: TMPOSCBED(:),TMPOSCECD(:)
       integer, allocatable :: IBEIG(:)
       INTEGER MAXEXC, I
       call legacy_lwork_get(LWORK)                         
@@ -1536,7 +1536,7 @@ C
 C                                                          
       CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
      &                  global_communicator)
-      allocate(TMPOSCBED(MAXEXC))
+      allocate(TMPOSCBED(MAXEXC),TMPOSCECD(MAXEXC))
       CAll interface_mpi_BCAST(NREDM,1,MPARID,
      &                  global_communicator)
 
@@ -1560,13 +1560,14 @@ C     * IBEIG
 
       allocate(CMO(N2BBASXQ))
       allocate(IBEIG(NTBAS(0)))
-      CALL BEDLEB(TMPOSCBED,OMEGA,TMPISSYM,CMO,IBEIG,EVECR,IBTYP,
+      CALL BEDLEB(TMPOSCBED,TMPOSCECD,OMEGA,TMPISSYM,CMO,IBEIG,EVECR,IBTYP,
      &            IBCVC,IBEVC,IBPVC,WORK,KFREE,LFREE)
       deallocate(TMPISSYM)
       deallocate(OMEGA)
       deallocate(CMO)
       deallocate(IBEIG)
       deallocate(TMPOSCBED)
+      deallocate(TMPOSCECD)
       RETURN
 
       END
@@ -1724,20 +1725,11 @@ C         ------------------------------
 C         ------------------------------
 C         Receive OSC results
 C         ------------------------------
-c          IF (DOBED) THEN
             DO IEXC = 1,NEXCNV
                 CALL interface_MPI_RECV(buff,2,
      &                             SNODE, 28,global_communicator)
                 OSC(IEXC,:) = OSC(IEXC,:) + buff
             ENDDO
-c          ENDIF 
-c          IF (BEDECD) THEN
-c            DO IEXC = 1,NEXCNV
-c                CALL interface_MPI_RECV(TMP,1,
-c     &                             SNODE, 28,global_communicator)
-c                OSC(IEXC,2) = OSC(IEXC,2) + TMP
-c            ENDDO            
-c          ENDIF 
           CALL interface_MPI_RECV(TMPCPU, 1,
      &                          SNODE, 28,global_communicator)
           CPUTIME = CPUTIME + TMPCPU
