@@ -262,7 +262,7 @@ C
 C     
 C         Generate integrals
 C
-
+ 
 C
 C         Length wave vector
 C
@@ -1229,7 +1229,6 @@ C     ====================================================
         IP = POINTS(IIP)
 
 C.......Set up chi-average over polarization directions 
-c        EEWT = D0 
         IF (DOBED) THEN		
           EEWT(1,1) =  DP5*(Y(IP)*Y(IP)+Z(IP)*Z(IP)) ! (1,1)
           EEWT(2,1) = -X(IP)*Y(IP)                   ! (2,1) ! factor 0.5 cancelled by triangular sum
@@ -1312,7 +1311,7 @@ C         ====================================
                 ENDIF
               ENDDO
             ENDDO
-          ENDIF ! IF(NZXOPE.GT.0) THEN
+          ENDIF 
 C
 C          - orbital (e-p) part
 C         ====================================
@@ -1332,7 +1331,7 @@ C         ====================================
                 ENDIF
               ENDDO
             ENDDO
-          ENDIF ! IF(NZXOPP.GT.0) THEN
+          ENDIF 
 C
 C         Accumulate oscillator strengths
 C         ===============================
@@ -1371,8 +1370,8 @@ C         ===============================
           ENDIF    
         ENDIF
 
- 10   CONTINUE                 ! DO 10 IEXC = 1,NEXCNV
-      ENDDO ! DO IIP = 1,POINT_PER_PROC
+ 10   CONTINUE                 
+      ENDDO 
 
 #ifdef VAR_MPI
 C     ********************************************************
@@ -1642,20 +1641,11 @@ C       *************** Sends ECD ***************
         ENDDO
         ENDDO
 C       *************** Sends OSC ***************
-c        IF (DOBED) THEN
             DO IEXC = 1,NEXCNV
                 buff = OSC(IEXC,:)
             CALL interface_MPI_SEND(buff, 2,
      &                            MASTER, 28,global_communicator)
             ENDDO
-c        ENDIF
-c        IF (BEDECD) THEN
-c            DO IEXC = 1,NEXCNV
-c                tmp = OSC(IEXC,2)
-c            CALL interface_MPI_SEND(tmp, 1,
-c     &                            MASTER, 28,global_communicator)
-c            ENDDO
-c        ENDIF
         CALL interface_MPI_SEND(CPU, 1,
      &                          MASTER, 28,global_communicator)
 C       *************** Deallocate ***************
@@ -1733,7 +1723,6 @@ C         ------------------------------
           CALL interface_MPI_RECV(TMPCPU, 1,
      &                          SNODE, 28,global_communicator)
           CPUTIME = CPUTIME + TMPCPU
-C       end SNODE
         ENDDO
       ENDIF
 c     ********************************************************** 
