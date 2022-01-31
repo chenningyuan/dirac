@@ -810,10 +810,6 @@ C&&& STERNC: Sternheimer complement
  37            CONTINUE
 C&&& DAMPING: specify a damping parameter
                READ(LUCMD,*) DMPFRLR
-#ifdef HAS_PELIB
-               !edh testing...
-               IF (PEQM) CALL QUIT('PE damped response not enabled yet')
-#endif
                GO TO 100
  38            CONTINUE
 C&&& FREQ INTERVAL: specify frequencies with start, end, step values
