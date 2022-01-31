@@ -84,6 +84,7 @@ contains
     logical, allocatable :: matrix_is_unperturbed(:)
 !   ----------------------------------------------------------------------------
 
+    write(6,*) 'TEST..run_visual'
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
        if (                                               &
@@ -324,7 +325,10 @@ contains
              TP = 1.0d0*D_mo
              TM = 1.0d0*D_mo
           end if
-
+!trond
+          call print_mat(D_mo,    label = 'debug MO D matrix')
+!trond
+          
           if (nfsym == 2) then
              if (jbtof(D_mo%irep, 1) == 2) then
 !               ungerade perturbation
@@ -345,6 +349,10 @@ contains
           end if
           call copy_matrix_sym(D(imat), D_mo)
 
+!trond
+          call print_mat(D(imat), label = 'debug AO D matrix')          
+!trond
+          
        end if
     end do
 
