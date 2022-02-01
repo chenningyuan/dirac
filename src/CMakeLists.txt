@@ -360,9 +360,10 @@ message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 if(ENABLE_PELIB)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
     set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "medium;scf;pelib" "")
+    dirac_test(pe_energy "short;scf;pelib" "")
     dirac_test(pe_response "medium;polarizabilities;pelib" "")
     dirac_test(pe_exc "short;pelib" "")
+    dirac_test(pe_cpp "medium;pelib" "")
 endif()
 
 #  dirac sources as separate library
