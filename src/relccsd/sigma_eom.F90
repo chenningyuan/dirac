@@ -602,7 +602,6 @@ integer :: ierr
       call lab_read(eom_intm_file,'Wbr_mbej',rdata=A%Wbar_mbej)
       call lab_read(eom_intm_file,'t1      ',rdata=A%t1)
       call lab_read(eom_intm_file,'t2      ',rdata=A%t2)
-      call lab_read(eom_intm_file,'H_II    ',rdata=A%H_II)
 
       if (iprnt.ge.2) then
          write (iw,*) "    read in Fbar_mi   from file",dot_product(A%Fbar_mi,A%Fbar_mi)
@@ -618,7 +617,6 @@ integer :: ierr
          write (iw,*) "    read in W_amef    from file",dot_product(A%W_amef,A%W_amef)
          write (iw,*) "    read in T1        from file",dot_product(A%t1,A%t1)
          write (iw,*) "    read in T2        from file",dot_product(A%t2,A%t2)
-         write (iw,*) "    read in H_II      from file",dot_product(A%H_II,A%H_II)
       else
          write (iw,*) "    read in Fbar_mi   from file"
          write (iw,*) "    read in Fbar_me   from file"
@@ -633,7 +631,6 @@ integer :: ierr
          write (iw,*) "    read in W_amef    from file"
          write (iw,*) "    read in T1        from file"
          write (iw,*) "    read in T2        from file"
-         write (iw,*) "    read in H_II      from file"
       end if
 
       call eom_intermediates_file_close
@@ -694,9 +691,6 @@ integer :: ierr
       call lab_write(eom_intm_file,'t2      ')
       write (eom_intm_file) A%t2
 
-      call lab_write(eom_intm_file,'H_II    ')
-      write (eom_intm_file) A%H_II
-
       if (iprnt.ge.2) then
          write (iw,*) ""
          write (iw,*) "    Fbar_mi   intermediate written to file",dot_product(A%Fbar_mi,A%Fbar_mi)
@@ -712,7 +706,6 @@ integer :: ierr
          write (iw,*) "    W_amef    intermediate written to file",dot_product(A%W_amef,A%W_amef)
          write (iw,*) "    T1        intermediate written to file",dot_product(A%t1,A%t1)
          write (iw,*) "    T2        intermediate written to file",dot_product(A%t2,A%t2)
-         write (iw,*) "    H_II      intermediate written to file",dot_product(A%H_II,A%H_II)
       else
          write (iw,*) ""
          write (iw,*) "    Fbar_mi   intermediate written to file"
@@ -728,7 +721,6 @@ integer :: ierr
          write (iw,*) "    W_amef    intermediate written to file"
          write (iw,*) "    T1        intermediate written to file"
          write (iw,*) "    T2        intermediate written to file"
-         write (iw,*) "    H_II      intermediate written to file"
       end if
 
       call lab_write(eom_intm_file,'EOFLABEL')
