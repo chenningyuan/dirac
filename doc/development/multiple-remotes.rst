@@ -1,5 +1,7 @@
 :orphan:
 
+.. _multiple-remotes:
+
 Working with multiple remotes
 =============================
 
@@ -11,13 +13,13 @@ With the move to LGPL, the repository was split into two:
 
 - Public repository: https://gitlab.com/dirac/dirac/
 
-  - Contains `master` and `release-*` branches
-  - Everything that is on `master` is meant to become the next release
+  - Contains ``master`` and ``release-*`` branches
+  - Everything that is on ``master`` is meant to become the next release
 
 - Private repository: https://gitlab.com/dirac/dirac-private/
 
   - Nothing is public, you decide when to share
-  - No `master` branch, no `release-*` branches
+  - No ``master`` branch, no ``release-*`` branches
 
 
 How to start a new private development branch
@@ -90,6 +92,6 @@ submitted for publication and you want it to become part of the next DIRAC
 release.
 
 - Push the branch to https://gitlab.com/dirac/dirac.git
-- Create merge request towards `master`
+- Create merge request towards ``master``
 - This code will be in the next release (no more code removal in the release process)
 - Then delete the branch on https://gitlab.com/dirac/dirac-private/ (or keep it, up to you)
