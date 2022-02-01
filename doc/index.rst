@@ -221,7 +221,8 @@ Development
 ===========
 
 * **Public and private repositories:**
-  :doc:`Working with multiple remotes <development/multiple-remotes>`
+  :doc:`Working with multiple remotes <development/multiple-remotes>` |
+  :doc:`Contributing changes <development/contributing-changes>`
 
 * **Code review:**
   :doc:`Code review workflow <development/code_review>`

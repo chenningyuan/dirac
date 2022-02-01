@@ -123,11 +123,9 @@ These tests are activated with *ctest -C benchmarks -L benchmark*.
 See and modify the :download:`cmake/custom/benchmarks.cmake file <../../../cmake/custom/benchmarks.cmake>`.
 
 
-2.4 Unreleased and features restricted tests. 
-In the DIRAC development version, unreleased and preprocessor restricted
-features are accompanied with dedicated tests. 
+2.4 Features restricted tests.
+In the DIRAC development version, preprocessor restricted
+features are accompanied with dedicated tests.
 
 How to include them, see
 :download:`src/CMakeLists.tx file <../../../src/CMakeLists.txt>` for feature attached tests and the
-:download:`cmake/custom/unreleased.cmake <../../../cmake/custom/unreleased.cmake>` file for testing of 
-remaining unreleased features.
