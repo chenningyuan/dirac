@@ -131,7 +131,7 @@ moments are real.
 Practical example
 =================
 
-We consider the excitation :math:`1s_{1/2}\rightarrow3p_{3/2}\,(\left|m_{j}\right|=1/2)` 
+We consider the excitation :math:`1s_{1/2}\rightarrow 3p_{3/2}\,(\left|m_{j}\right|=1/2)` 
 of the magnesium atom. We limit attention to boson irrep :math:`B_{1u}`, corresponding to the symmetry of the :math:`z` - coordinate (:math:`\Gamma_z`). 
 We work within the electric dipole approximation and from a character
 table of :math:`D_{2h}` it is clear that we will only get non-zero transition
@@ -149,19 +149,24 @@ and run our calculation using::
 
   pam --inp=ed --mol=Mg.xyz
 
+It can be seen in the menu file `ed.inp` that excitations are only allowed from the first *gerade* orbital (:math:`1s_{1/2}`) to the sixth *ungerade* one (:math:`3p_{3/2,1/2}`).
+The nature of these orbitals can be seen from the Mulliken population analysis in the output.
+
+We have increased the print level significantly in order to be able to look a bit under the hood.
 Let us first look at the property gradient 
 
 .. math::
 
    g_{ai}\rightarrow-\langle3p_{3/2;1/2}|\hat{\mu}_{z}|1s_{1/2;{\color{red}+1/2}}\rangle;\quad g_{a\overline{i}}\rightarrow-\langle3p_{3/2;1/2}|\hat{\mu}_{z}|1s_{1/2;{\color{red}-1/2}}\rangle;\quad\hat{\mu}_{z}=-ez.
 
-In general these matrix elements may be written as
+The matrix element :math:`g_{ai}` may be written as
 
 .. math::
-   
-   g_{ai}=-\int\Omega_{ai}\left(\boldsymbol{r}\right)\hat{\mu}_{z}\left(\boldsymbol{r}\right)d^{3}\boldsymbol{r};\quad\Omega_{ai}\left(\boldsymbol{r}\right)=\phi_{a}^{\dagger}\left(\boldsymbol{r}\right)\phi_{i}\left(\boldsymbol{r}\right)
 
-For present purposes it suffices to think in terms of 2-component
+   g_{ai}=-\int\Omega_{ai}\left(\boldsymbol{r}\right)\hat{\mu}_{z}\left(\boldsymbol{r}\right)d^{3}\boldsymbol{r};
+   \quad\Omega_{ai}\left(\boldsymbol{r}\right)=\phi_{a}^{\dagger}\left(\boldsymbol{r}\right)\phi_{i}\left(\boldsymbol{r}\right)
+
+and similar for :math:`g_{a\overline{i}}`. For present purposes it suffices to think in terms of 2-component
 spinors. Since :math:`s_{1/2}` and :math:`p_{3/2}` have opposite parity, they
 will in the conventions of DIRAC have different symmetry structures
 
@@ -196,7 +201,7 @@ In terms of symmetry the orbital distributions are
 
 In the present case the operator symmetry is :math:`\Gamma_{z}`. Since
 the integrand of the matrix element has
-to be totally symmetric, we see that only the imaginary part of $g_{ai}$
+to be totally symmetric, we see that only the imaginary part of :math:`g_{ai}` 
 will be non-zero; the partner element :math:`g_{a\overline{i}}` is strictly
 zero. The generally complex gradient elements are combined into a
 quaternion one
