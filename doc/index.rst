@@ -214,7 +214,8 @@ Exercises
 .. toctree::
    :maxdepth: 1
 
-   exercises/index.rst
+   exercises/Corrientes2012/index.rst
+   exercises/TCCM2021/index.rst
 
 
 Development
