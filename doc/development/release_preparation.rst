@@ -120,3 +120,22 @@ copyrights manually. You can update them with the
 This script will overwrite whatever is between
 these markers so it is a bad idea to modify text
 between the markers manually.
+
+
+Create the final tarball
+------------------------
+
+In principle we could just let people download the tarball directly from GitLab.
+However, since we include external code through Git submodules, this has the following disadvantages:
+
+- Users would require Git
+- Tarball is not self-contained and not fully reproducible since we have little control over the external
+  repositories and whether they won't disappear in few years
+
+For this reason we create a self-contained tarball using the ``maintenance/create-release-tarball.sh`` script
+and this is then the tarball that we upload to Zenodo.
+
+We then direct users to download the tarball from Zenodo and not from GitLab for two reasons:
+
+- More self-contained and reproducible
+- We get download metrics from Zenodo which we would not get from GitLab

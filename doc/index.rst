@@ -136,6 +136,7 @@ Tutorials and walkthrus
   :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
 
 * **Spectroscopy:**
+  :doc:`Excitation energies at the SCF-level <tutorials/properties/scfexc/tutorial>` |
   :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
@@ -214,14 +215,16 @@ Exercises
 .. toctree::
    :maxdepth: 1
 
-   exercises/index.rst
+   exercises/Corrientes2012/index.rst
+   exercises/TCCM2021/index.rst
 
 
 Development
 ===========
 
 * **Public and private repositories:**
-  :doc:`Working with multiple remotes <development/multiple-remotes>`
+  :doc:`Working with multiple remotes <development/multiple-remotes>` |
+  :doc:`Contributing changes <development/contributing-changes>`
 
 * **Code review:**
   :doc:`Code review workflow <development/code_review>`
