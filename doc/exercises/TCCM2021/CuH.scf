@@ -1,0 +1,46 @@
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-07
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -956.5681555153      0.00D+00  0.00D+00  0.00D+00               0.17635000s   Atom. scrpot   Sat Sep 25
+It.    2    -1655.540673820      6.99D+02 -1.36D+02  6.00D+00               2.29200000s   LL SL          Sat Sep 25
+It.    3    -1655.461930487     -7.87D-02 -5.13D-01  1.02D+00   DIIS   2    1.83020000s   LL SL          Sat Sep 25
+It.    4    -1655.433353314     -2.86D-02  1.04D+00  1.59D+00   DIIS   3    1.83300000s   LL SL          Sat Sep 25
+It.    5    -1655.624584139      1.91D-01 -1.03D+00  6.43D-01   DIIS   4    1.84550000s   LL SL          Sat Sep 25
+It.    6    -1655.669690995      4.51D-02  3.81D-01  1.49D-01   DIIS   5    1.84250000s   LL SL          Sat Sep 25
+It.    7    -1655.671844620      2.15D-03 -1.06D-01  4.39D-02   DIIS   6    1.83240000s   LL SL          Sat Sep 25
+It.    8    -1655.672026017      1.81D-04  2.30D-02  2.57D-03   DIIS   7    1.81630000s   LL SL          Sat Sep 25
+It.    9    -1655.672027185      1.17D-06  2.69D-04  1.64D-03   DIIS   8    1.80900000s   LL SL          Sat Sep 25
+It.   10    -1655.672027456      2.71D-07  7.47D-04  3.34D-04   DIIS   9    1.79780000s   LL SL          Sat Sep 25
+It.   11    -1655.672027483      2.73D-08  1.05D-04  4.66D-05   DIIS   9    1.80330000s   LL SL          Sat Sep 25
+It.   12    -1655.672027484      4.85D-10  1.24D-05  1.21D-05   DIIS   9    1.79280000s   LL SL          Sat Sep 25
+It.   13    -1655.672027484      2.59D-11  6.16D-06  1.12D-06   DIIS   9    1.74590000s   LL SL          Sat Sep 25
+It.   14    -1655.672027484     -5.68D-12 -3.45D-07  2.32D-07   DIIS   9    1.73510000s   LL SL          Sat Sep 25
+It.   15    -1655.672027484      7.96D-12 -7.70D-08  5.29D-08   DIIS   9    1.63110000s   LL SL          Sat Sep 25
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   15 iterations.
+* Average elapsed time per iteration:
+      No 2-ints    :    0.19430000s
+      LL SL        :    1.82906429s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Electronic energy                        :    -1666.1830818801755
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :       10.5110541891692
+   SS Coulombic correction                  :        0.0000002073215
+
+   Sum of all contributions to the energy
+   Total energy                             :    -1655.6720274836848
