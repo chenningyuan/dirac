@@ -136,6 +136,7 @@ Tutorials and walkthrus
   :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
 
 * **Spectroscopy:**
+  :doc:`Excitation energies at the SCF-level <tutorials/properties/scfexc/tutorial>` |
   :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
