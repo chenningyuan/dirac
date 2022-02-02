@@ -1,7 +1,7 @@
 **DIRAC                                                                                             
-.WAVE FUNCTION
-.ANALYZE
-.PROPERTIES
+.WAVE FUNCTION                                                                                      
+.ANALYZE                                                                                            
+.PROPERTIES                                                                                         
 **INTEGRALS                                                                                         
 *READIN                                                                                             
 .UNCONT                                                                                             
@@ -11,27 +11,27 @@
 .CLOSED SHELL                                                                                       
 6 6                                                                                                 
 **PROPERTIES                                                                                        
-*EXCITATION ENERGIES
-.PRINT
-10
+*EXCITATION ENERGIES                                                                                
+.PRINT                                                                                              
+10                                                                                                  
 .OCCUP                                                                                              
 1                                                                                                   
-
-.VIRTUAL
-
-6
-.ANALYZE
-! Excitations s -> p
+                                                                                                    
+.VIRTUAL                                                                                            
+                                                                                                    
+6                                                                                                   
+.ANALYZE                                                                                            
+! Excitations s -> p                                                                                
 .EXCITATION ! B1u                                                                                   
-5 1
-**ANALYZE
-.MULPOP
-*MULPOP
-.VECPOP
-1..oo
-1..oo
+5 1                                                                                                 
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+1..oo                                                                                               
+1..oo                                                                                               
 **MOLECULE                                                                                          
 *BASIS                                                                                              
 .DEFAULT                                                                                            
-dyall.ae2z
-**END OF
+dyall.ae2z                                                                                          
+**END OF                                                                                            

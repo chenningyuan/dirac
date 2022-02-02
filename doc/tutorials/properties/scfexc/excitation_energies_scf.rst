@@ -11,7 +11,7 @@ Excitation energies :math:`\omega_m` are found by solving the generalized eigenv
 
 .. math::
 
-   \left(E_0^{[2]}-\hbar\lambda S^{[2]}\right)X_m=0
+   \left(E_0^{[2]}-\hbar\lambda S^{[2]}\right)X_m=0;\qquad (1)
 
 where the matrices :math:`E_0^{[2]}` and :math:`S^{[2]}` are the electronic Hessian and generalized metric, respectively. From their structure, it can be shown that solution vectors
 come in pairs
@@ -27,7 +27,7 @@ Transition moments associated with operator :math:`\hat{h}_{A}` for transitions 
 
 .. math::
 
-   \langle n|\hat{h}_{A}|0\rangle=\boldsymbol{X}_{+;n}^{\dagger}\boldsymbol{E}_{A}^{[1]}
+   \langle n|\hat{h}_{A}|0\rangle=\boldsymbol{X}_{+;n}^{\dagger}\boldsymbol{E}_{A}^{[1]};\qquad (2)
 
    
 where appears solution vector :math:`\boldsymbol{X}_{+;n}^{\dagger}` and
@@ -110,7 +110,7 @@ and one may therefore distinguish three cases
    0 & ;\quad\Theta_{h1}\Theta_{h2}=-\Theta_{t1}\Theta_{t2}\\
    4Re\left[z\right] & ;\quad\Theta_{h1}\Theta_{h2}=\Theta_{t1}\Theta_{t2}=+1\\
    4iIm\left[z\right] & ;\quad\Theta_{h1}\Theta_{h2}=\Theta_{t1}\Theta_{t2}=-1
-   \end{cases}.
+   \end{cases}.\quad (3)
 
 One may show that Hermiticity is conserved when multiplying such a trial vector
 by the electronic Hessian, whereas it is
@@ -147,9 +147,9 @@ and the xyz-file `Mg.xyz`
 
 and run our calculation using::
 
-  pam --inp=ed --mol=Mg.xyz
+  pam --inp=ed --mol=Mg.xyz --get "DFCOEF PAMXVC"
 
-It can be seen in the menu file `ed.inp` that excitations are only allowed from the first *gerade* orbital (:math:`1s_{1/2}`) to the sixth *ungerade* one (:math:`3p_{3/2,1/2}`).
+We are keeping some file for later use, see below. It can be seen in the menu file `ed.inp` that excitations are only allowed from the first *gerade* orbital (:math:`1s_{1/2}`) to the sixth *ungerade* one (:math:`3p_{3/2,1/2}`).
 The nature of these orbitals can be seen from the Mulliken population analysis in the output.
 
 We have increased the print level significantly in order to be able to look a bit under the hood.
@@ -197,7 +197,7 @@ In terms of symmetry the orbital distributions are
 
 .. math::
 
-\Omega_{\left(p_{3/2};s_{1/2}\right)}=\left(\Gamma_{xyz},\Gamma_{z}\right);\quad\Omega_{\left(p_{3/2};\overline{s_{1/2}}\right)}=\left(\Gamma_{y},\Gamma_{x}\right).
+   \Omega_{\left(p_{3/2};s_{1/2}\right)}=\left(\Gamma_{xyz},\Gamma_{z}\right);\quad\Omega_{\left(p_{3/2};\overline{s_{1/2}}\right)}=\left(\Gamma_{y},\Gamma_{x}\right).
 
 In the present case the operator symmetry is :math:`\Gamma_{z}`. Since
 the integrand of the matrix element has
@@ -210,3 +210,75 @@ quaternion one
 
    ^{Q}g_{AI}=g_{ai}+g_{a\overline{i}}\check{j}
 
+and, indeed, when we look in the output we find
+
+
+.. literalinclude:: propgrad.txt
+
+Here the notation *EpolLnlXnxYnyZnz* refers to a Cartesian electric multipole operator :math:`\hat{Q}^{[nl]}=-ex^{nx}y^{ny}z^{nz};\quad nx+ny+nz=nl`.
+Since this is a time symmetric, Hermitian operator, it will be contracted with the Hermitian part of the solution vector. In this particular case we
+have only a single orbital rotation, and between two orbitals of positive energy, so the relevant part of the solution vector is
+
+.. literalinclude:: E+_solvec.txt
+
+Searching in the output, we find the corresponding calculated transition moment
+
+.. literalinclude:: tmom.txt
+
+which is easily seen to be :math:`2*0.35355084*-0.00682451`. (With respect to Eq.(3) a factor two seems to be missing; this is appears to be connected to the scaling of
+eigenvectors in subroutine XPPORD.)
+
+We may proceed to visualize the transition moment density 
+
+.. math::
+
+   T(\boldsymbol{r})=-\sum_{ai}x^{\ast}_{+;n;ai}\Omega_{ai}\left(\boldsymbol{r}\right)\hat{\mu}_{z}\left(\boldsymbol{r}\right)
+
+as a radial distribution, that is   
+
+.. math::
+
+   T(r) = \int_{0}^{2\pi}\int_{0}^{\pi}T(\mathbf{r})r^2\sin\theta d\theta d\phi
+
+As preparation we first inspect the file PAMXVC of solution vectors
+
+.. literalinclude:: rspread.txt
+
+We see that the Hermitian e-e part of the solution vector E+ is the first vector on the file, which therefore leads us to set up the input file `length.inp` as
+
+.. literalinclude:: length.inp
+
+We now generate the radial distribution using::
+
+  pam --inp=length --mol=Mg.xyz --put "DFCOEF PAMXVC" --get "plot.radial.scalar=length.dat"
+
+First we may note at the end of the output
+
+.. literalinclude:: radint.txt
+
+and so we see that the radial distribution integrates to the value obtained in our previous calculation.
+
+Next, with a suitable plotting program (I used `xmgrace <https://plasma-gate.weizmann.ac.il/Grace/>`_) we can visualize the radial distribution 
+
+.. image:: ztm.png
+
+To get some idea of the extent of the z-electric dipole moment transition density associated with the :math:`1s_{1/2}\rightarrow 3p_{3/2}\,(\left|m_{j}\right|=1/2)` transition, I have included in the input the calculation of orbital sizes as :math:`<r^2>^{1/2}=\left(<x^2>+<y^2>+<z^2>\right)^{1/2}`. Extracting and using the data from the output I obtain the following table (orbital labels are taken
+from the Mulliken analysis of the first calculation):
+
++-----+-----------------+---------------+---------------+---------------+---------------------+
+|Sym. | Orb.            | :math:`<x^2>` | :math:`<y^2>` | :math:`<z^2>` | :math:`<r^2>^{1/2}` |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+| E1g |	 1s 1/2;  1/2   |    0.008      |    0.008	|   0.008	|      0.151          |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+| E1g |	 2s 1/2;  1/2   |    0.190      |    0.190	|   0.190	|      0.754          |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+| E1g |	 3s 1/2;  1/2   |    4.106	|    4.106      |   4.106       |      3.510          |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+| E1u |	 2p 1/2;  1/2   |    0.198	|    0.198      |   0.198       |      0.772          |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+| E1u |	 2p 3/2; -3/2   |    0.240      |    0.240	|   0.120       |      0.774          |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+| E1u |	 3p 3/2;  1/2   |    0.160      |    0.160      |   0.279	|      0.774          |
++-----+-----------------+---------------+---------------+---------------+---------------------+
+
+We see that the radial distribution peaks around 0.25 :math:`a_0` which is slightly outside the size of the :math:`1s_{1/2}` orbital.
