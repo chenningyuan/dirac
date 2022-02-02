@@ -1551,6 +1551,8 @@ C     * ISSYM
 C     * N2BBASXQ for Allocation of CMO
       call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
      &              global_communicator)
+      call interface_mpi_bcast_l0(DOBED, 1,  MPARID,
+     &              global_communicator)
       call interface_mpi_bcast_l0(BEDECD, 1,  MPARID,
      &              global_communicator)
 C     * IBEIG
@@ -1824,6 +1826,8 @@ C       ISSYM
      &                    global_communicator)
 C       Sizes for CMO and IBEIG
         call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+     &                global_communicator)
+        call interface_mpi_bcast_l0(DOBED, 1,  MASTER,
      &                global_communicator)
         call interface_mpi_bcast_l0(BEDECD, 1,  MASTER,
      &                global_communicator)
