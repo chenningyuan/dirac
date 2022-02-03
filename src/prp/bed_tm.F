@@ -1032,7 +1032,6 @@ C
       CALL QENTER('BEDLEB')
 C
 #if defined (VAR_MPI)
-      MPARID = 0
       MASTER = MPARID
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
@@ -1609,7 +1608,8 @@ C
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
-      integer MPARID, MASTER, NMPROC, MYPROC
+#include "infpar.h"
+      integer MASTER, NMPROC, MYPROC
 C
 #include "ibtfun.h"
 
@@ -1619,7 +1619,6 @@ C
       CALL GETTIM(CPU2,WALL2)
       CPU    = CPU2 - BCPU
 
-      MPARID = 0
       MASTER = MPARID
 C     Wait for all processes before doing any Send/Recv
       call interface_mpi_barrier(global_communicator)
@@ -1777,14 +1776,14 @@ C
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
-      integer MPARID, MASTER, NMPROC, MYPROC
+#include "infpar.h"
+      integer MASTER, NMPROC, MYPROC
 C
 #include "ibtfun.h"
 
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
 
-      MPARID = 0
       MASTER = MPARID
 C     * =================================================
 C     *       MASTER ONLY
@@ -1814,18 +1813,18 @@ C       * BEDLED in the first place :
 C       *     -> bedleb_launch_slave_procs() 
 C       ****************************************************     
 C       Sizes for OMEGA
-        CAll interface_mpi_BCAST(MAXEXC,1,MPARID,
+        CAll interface_mpi_BCAST(MAXEXC,1,MASTER,
      &                    global_communicator)
-        CAll interface_mpi_BCAST(NREDM,1,MPARID,
+        CAll interface_mpi_BCAST(NREDM,1,MASTER,
      &                    global_communicator)
 C       OMEGA      
-        CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MPARID,
+        CAll interface_mpi_bcast_r1_work_f77(OMEGA,MAXEXC,MASTER,
      &                    global_communicator)
 C       ISSYM
-        CAll interface_mpi_bcast_r1_work_f77(ISSYM,MAXEXC,MPARID,
+        CAll interface_mpi_bcast_r1_work_f77(ISSYM,MAXEXC,MASTER,
      &                    global_communicator)
 C       Sizes for CMO and IBEIG
-        call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+        call interface_mpi_bcast(N2BBASXQ, 1, MASTER,
      &                global_communicator)
         call interface_mpi_bcast_l0(DOBED, 1,  MASTER,
      &                global_communicator)
@@ -1958,7 +1957,7 @@ CCCC     ****************************************************
      &              global_communicator)
       call interface_mpi_bcast_r2_work_f77(ECD,NPOINTS,NEXCNV, MASTER,
      &              global_communicator)
-      call interface_mpi_bcast(N2BBASXQ, 1, MPARID,
+      call interface_mpi_bcast(N2BBASXQ, 1, MASTER,
      &              global_communicator)
       call interface_mpi_bcast_r1_work_f77(CMO,N2BBASXQ, MASTER,
      &              global_communicator)
