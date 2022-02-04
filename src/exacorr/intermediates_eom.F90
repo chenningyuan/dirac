@@ -82,6 +82,15 @@ module intermediates_eom_ccsd
         module procedure destroy_ccsd_intermediates_talsh
      end interface destroy_ccsd_intermediates
 
+     interface get_eta_ov
+        module procedure get_eta_ov_talsh
+     end interface get_eta_ov
+  
+     interface get_eta_oovv
+        module procedure get_eta_oovv_talsh
+     end interface get_eta_oovv
+
+
 !    top-level driver for forming intermediates with CCSD wavefunctions
      public form_ccsd_intermediates
      public destroy_ccsd_intermediates
@@ -971,5 +980,31 @@ module intermediates_eom_ccsd
          print*, "done destroying ccsd intermediates"
 
       end subroutine
+
+
+      subroutine get_eta_ov_talsh(eta_ov,fbar_ov,ov_dims)
+        use talsh
+
+        type(talsh_tens_t),intent(inout)   :: eta_ov
+        type(talsh_tens_t),intent(inout)   :: fbar_ov
+        integer :: ierr
+        integer(INTD), dimension(2)   :: ov_dims
+
+        ierr=talsh_tensor_construct(eta_ov,C8,ov_dims,init_val=ZERO)
+        ierr=talsh_tensor_add("N(i,a)+=F(i,a)",eta_ov,fbar_ov)
+      end subroutine
+
+
+      subroutine get_eta_oovv_talsh(eta_oovv,int_oovv,oovv_dims)
+        use talsh
+
+        type(talsh_tens_t),intent(inout)   :: eta_oovv
+        type(talsh_tens_t),intent(inout)   :: int_oovv
+        integer :: ierr
+        integer(INTD), dimension(4)   :: oovv_dims
+
+        ierr=talsh_tensor_construct(eta_oovv,C8,oovv_dims,init_val=ZERO)
+        ierr=talsh_tensor_add("N(i,j,a,b)+=V(i,j,a,b)",eta_oovv,int_oovv)
+      end subroutine get_eta_oovv_talsh
 
 end module

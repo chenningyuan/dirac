@@ -162,6 +162,7 @@
          type(talsh_tens_t) :: w_vvvo, w_vovv
          type(talsh_tens_t) :: w_vvvv
          type(talsh_tens_t) :: goo, gvv
+         type(talsh_tens_t) :: eta_ov, eta_oovv
         end type talsh_lambda_tens_t
 
         type, public :: talsh_dm_tens_t
@@ -169,6 +170,10 @@
          type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(talsh_tens_t) :: prime_vv, symm_vv
         end type talsh_dm_tens_t
+
+        type, public :: talsh_orb_prop_integ_tens_t
+         type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv
+        end type talsh_orb_prop_integ_tens_t
 
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
