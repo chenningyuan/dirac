@@ -1569,7 +1569,6 @@ C
 C        start FDE MPI calculation
 C
          call fde_launch_slave_process()
-
       ELSE
 C
 C        Unknown task. Abort execution.
