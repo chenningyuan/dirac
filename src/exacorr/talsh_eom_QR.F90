@@ -32,31 +32,38 @@ subroutine talsh_eom_QR_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,omeg
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    type(exacc_input), intent(in)               :: omega1, omega2, omega3
+    complex(kind=8),INTENT(IN)               :: omega1, omega2, omega3
 
 
 
     type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
     type(talsh_comm_tens_t)       :: tprop_tensor1, tprop_tensor2, tprop_tensor3
     type(talsh_comm_tens_t)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
+    type(talsh_comm_tens_t)       :: bvec_tensor1, bvec_tensor2, bvec_tensor3
     complex(kind=8)               :: eom_qr
 
 
     call print_date('Enter CC-CI quadratic response')
     
-    call form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,
+    call form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,&
                                   int_t, l1_tensor, l2_tensor)
 
-    call solve_eom_lr_right(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3, omega1, omega2, omega3,
-                                tprop_tensor1, tprop_tensor2, tprop_tensor3)
+    call solve_eom_lr_right(interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
+    call solve_eom_lr_right(interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
+    call solve_eom_lr_right(interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
 
-    call solve_eom_lr_left(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3, omega1, omega2, omega3,
-                            tprop_tensor1, tprop_tensor2, tprop_tensor3,  
-                            l1_tensor, l2_tensor, tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3)
+    call get_left_bvec(exa_input,interm_t,interm_t_prop1,l1_tensor,l2_tensor,tprop_tensor1,bvec_tensor1)
+    call get_left_bvec(exa_input,interm_t,interm_t_prop2,l1_tensor,l2_tensor,tprop_tensor2,bvec_tensor2)
+    call get_left_bvec(exa_input,interm_t,interm_t_prop3,l1_tensor,l2_tensor,tprop_tensor3,bvec_tensor3)
 
-    call get_eom_qr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3, 
-                    tprop_tensor1, tprop_tensor2, tprop_tensor3, 
-                    tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3,
+    call solve_eom_lr_left(interm_t, int_t, interm_t_prop1, omega1, bvec_tensor1, tprop_bar_tensor1)
+    call solve_eom_lr_left(interm_t, int_t, interm_t_prop2, omega2, bvec_tensor2, tprop_bar_tensor2)
+    call solve_eom_lr_left(interm_t, int_t, interm_t_prop3, omega3, bvec_tensor3, tprop_bar_tensor3)                          
+
+
+    call get_eom_qr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
+                    tprop_tensor1, tprop_tensor2, tprop_tensor3,& 
+                    tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3,&
                     l1_tensor,l2_tensor,eom_qr)
 
     call print_date('Leave CC-CI quadratic response')    
@@ -226,6 +233,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor2, tp
             complex(8)                  :: term1, term2, term3, term4, term5
 
 
+            one_dims(1) = 1
             ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
             ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,result_tens,one_dims)
