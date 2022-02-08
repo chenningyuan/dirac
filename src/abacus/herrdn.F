@@ -4815,9 +4815,7 @@ C
      &       ,'  WARNING:  maybe coordinates were in Bohr, '//
      &        'but DIRAC were told they were in Angstrom ?'
             END IF
-         END IF
 C
-         IF (IPREAD .GE. 0) THEN
             WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
      &   '   Nuclear repulsion energy                          :',
      &       POTNUC,' Hartree',
