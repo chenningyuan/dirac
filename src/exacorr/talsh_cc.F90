@@ -11,11 +11,11 @@ module talsh_cc
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER=(0.25D0,0.D0), MINUS_ONE_QUARTER=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
+        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),TWO=(2.D0,0.D0), THREE=(3.0,0.0),   &
+                                 SIX=(6.0,0.0), MINUS_ONE=(-1.D0,0.D0), MINUS_TWO=(-2.D0,0.D0),       &
+                                 ONE_HALF=(0.5D0,0.D0), ONE_QUARTER=(0.25D0,0.D0),                    &
+                                 ONE_TWELFTH=(1.D0,0.D0)/12, MINUS_ONE_HALF=(-0.5D0,0.D0),            &
+                                 MINUS_ONE_QUARTER=(-0.25D0,0.D0), MINUS_ONE_TWELFTH=(-1.D0,0.D0)/12
         real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0
 
         type(talsh_tens_t) :: one_tensor
@@ -32,10 +32,6 @@ module talsh_cc
            module procedure diis
         end interface
 
-        interface get_subtensor
-           module procedure get_subtensor
-        end interface
-
        contains
 !-------------------------------------------------------------------------------------------
         subroutine talsh_cc_driver (exa_input)
@@ -48,6 +44,8 @@ module talsh_cc
          use exacorr_global
          use talsh_gradient
          use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
+         use talsh_cholesky_integrals
+         use talsh_triples
 
          type(exacc_input), intent(in) :: exa_input
 
@@ -261,8 +259,12 @@ module talsh_cc
             if (exa_input%do_triples .and. .not.CC2) then
               !Calculate (T) energy correction
               call print_date('-Start- Triples')
-              call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
+              if (exa_input%tripl_lap) then 
+                call t3_energy_laplace (t_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
+              else
+                call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
                               int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
+              end if
               call print_date('-End- Triples')
               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
             else
@@ -2333,439 +2335,11 @@ module talsh_cc
 
        end subroutine get_CC_integrals
 
-       subroutine get_CC_integrals_chol_vec (nocc,nvir,mo_occ,mo_vir,int_t,t_cholesky,print_level)
-
-!        Routine to get integrals needed in CC in the form of antisymmetric tensors.
-!        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
-!        full integral list. We do assume that we deal with a closed shell (Kramers-restricted) case, so nocc and nvir
-!        refer to Kramers pairs rather than spinors.
-
-!        Written by Johann Pototschnig, summer 2019
-
-         use exacorr_global
-         use talsh_ao_to_mo
-         use exacorr_cholesky
-
-         implicit none
-
-         integer, intent(in)                  :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-         type(talsh_intg_tens_t),intent(inout):: int_t !target integral tensors to be filled and given back to the caller
-         real(8), intent(in)                  :: t_cholesky ! cholesky threshold
-         integer, intent(in)                  :: print_level
-
-         integer(C_INT)                :: ierr
-         integer                       :: nao
-         integer(C_INT), dimension(4)  :: oooo_dims,ooov_dims,oovv_dims,ovov_dims,ovvo_dims
-         integer(C_INT), dimension(4)  :: vovo_dims,vovv_dims,vvov_dims,vvvv_dims
-         type(talsh_tens_t)            :: ovvo_tensor
-
-!        cholesky
-         integer(C_INT)                  :: m
-         type(talsh_tens_t)              :: temp_tensor
-         type(talsh_tens_t), allocatable :: chol_tensor(:), temp1_tensor(:)
-         type(talsh_tens_t), allocatable :: uoo_tensor(:), uov_tensor(:), uvo_tensor(:), uvv_tensor(:)
-         integer                         :: i
-         integer(C_INT), dimension(2)    :: dimA, dimB, dimC
-         
-         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
-         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
-         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
-
-
-!        Retrieve basis set information
-         nao     = get_nao()      ! number of basis functions
-
-!        Get cholesky-vectors and copy them in to a talsh tensor
-         call print_date('-Start- Cholesky Decomposition')
-         if (print_level.gt.1) write(*,*) "using vector of tensors"
-         call decompose_cholesky_talsh_vec (chol_tensor, m, t_cholesky, nao, print_level)
-         call print_date('-End- Cholesky Decomposition')
-
-!        allocate intermediate tensors
-         allocate(temp1_tensor(m))
-!        allocate final cholesky tensors
-         allocate(uoo_tensor(m))
-         allocate(uvo_tensor(m))
-         allocate(uov_tensor(m))
-         allocate(uvv_tensor(m))
-
-!        transform v part
-         dimA=nao
-         dimA(1)=nvir
-         dimB=nocc
-         dimB(1)=nvir
-         dimC=nvir
-         do i=1,m
-           ierr=talsh_tensor_construct(temp1_tensor(i),C8,dimA,init_val=ZERO)
-           ierr=talsh_tensor_construct(uvo_tensor(i),C8,dimB,init_val=ZERO)
-           ierr=talsh_tensor_construct(uvv_tensor(i),C8,dimC,init_val=ZERO)
-         end do
-
-         call ao2mo_vec(chol_tensor,temp1_tensor,m,nvir,mo_vir,11)
-         call ao2mo_vec(temp1_tensor,uvo_tensor,m,nocc,mo_occ,21)
-         call ao2mo_vec(temp1_tensor,uvv_tensor,m,nvir,mo_vir,21)
-         do i=1,m
-           ierr=talsh_tensor_init(temp1_tensor(i))
-         end do
-         call ao2mo_vec(chol_tensor,temp1_tensor,m,nvir,mo_vir,12)
-         call ao2mo_vec(temp1_tensor,uvo_tensor,m,nocc,mo_occ,22)
-         call ao2mo_vec(temp1_tensor,uvv_tensor,m,nvir,mo_vir,22)
-
-         if (print_level.gt.2) call print_date(' uvo/uvv done ')
-
-!        transform o part
-         dimA=nao
-         dimA(1)=nocc
-         dimB=nvir
-         dimB(1)=nocc
-         dimC=nocc
-         do i=1,m
-           ierr=talsh_tensor_destruct(temp1_tensor(i))
-           ierr=talsh_tensor_construct(uov_tensor(i),C8,dimB,init_val=ZERO)
-           ierr=talsh_tensor_construct(uoo_tensor(i),C8,dimC,init_val=ZERO)
-           ierr=talsh_tensor_construct(temp1_tensor(i),C8,dimA,init_val=ZERO)
-         end do
-         call ao2mo_vec(chol_tensor,temp1_tensor,m,nocc,mo_occ,11)
-         call ao2mo_vec(temp1_tensor,uoo_tensor,m,nocc,mo_occ,21)
-         call ao2mo_vec(temp1_tensor,uov_tensor,m,nvir,mo_vir,21)
-         do i=1,m
-           ierr=talsh_tensor_init(temp1_tensor(i))
-         end do
-         call ao2mo_vec(chol_tensor,temp1_tensor,m,nocc,mo_occ,12)
-         call ao2mo_vec(temp1_tensor,uoo_tensor,m,nocc,mo_occ,22)
-         call ao2mo_vec(temp1_tensor,uov_tensor,m,nvir,mo_vir,22)
-
-         if (print_level.gt.2) call print_date(' uoo/uvo done ')
-
-!        remove ao cholesky tensor
-         do i=1,m
-           ierr=talsh_tensor_destruct(temp1_tensor(i))
-           ierr=talsh_tensor_destruct(chol_tensor(i))
-         end do
-         deallocate(chol_tensor)
-         deallocate(temp1_tensor)
-
-         if (print_level.gt.1) call print_date(' ao2mo transformation done ')
-
-!        define dims
-!        Note that the dimensions for the tensor are given in physicists notation <12||34>
-         oooo_dims = nocc
-         ooov_dims = nocc
-         ooov_dims(4) = nvir
-         oovv_dims= nocc
-         oovv_dims(3:4) = nvir
-         ovov_dims= nocc
-         ovov_dims(2) = nvir
-         ovov_dims(4) = nvir
-         ovvo_dims = nocc
-         ovvo_dims(2:3) = nvir
-         vovo_dims = nvir
-         vovo_dims(2) = nocc
-         vovo_dims(4) = nocc
-         vovv_dims = nvir
-         vovv_dims(2) = nocc
-         vvov_dims = nvir
-         vvov_dims(3) = nocc
-         vvvv_dims = nvir
-
-!        Get antisymmetric oooo tensor
-         ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,oooo_dims,init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tensor(i),uoo_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%oooo,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' oooo done ')
-
-!        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-         ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uoo_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vovo,0)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ovvo_dims,init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uvo_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,ovvo_tensor,0)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,one_tensor,scale=MINUS_ONE)
-         ierr=talsh_tensor_destruct(ovvo_tensor)
-         if (print_level.gt.2) call print_date(' vovo done ')
-
-!        Get ooov tensor
-         ierr=talsh_tensor_construct(int_t%ooov,C8,ooov_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ooov_dims,init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uoo_tensor(i),uov_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%ooov,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' ooov done ')
-
-!        remove oo tensor
-         do i=1,m
-           ierr=talsh_tensor_destruct(uoo_tensor(i))
-         end do
-         deallocate(uoo_tensor)
-
-!        Get antisymmetric oovv tensor
-         ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ovov_dims,init_val=ZERO)
-         do i=1,m
-           ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvo_tensor(i),uov_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' oovv done ')
-
-!        remove vo tensor
-         do i=1,m
-           ierr=talsh_tensor_destruct(uvo_tensor(i))
-         end do
-         deallocate(uvo_tensor)
-
-!        Get vovv tensor
-         ierr=talsh_tensor_construct(int_t%vovv,C8,vovv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,vvov_dims,init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uov_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vovv,34)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' vovv done ')
-
-!        remove ov tensor
-         do i=1,m
-           ierr=talsh_tensor_destruct(uov_tensor(i))
-         end do
-         deallocate(uov_tensor)
-
-!        Get vvvv tensor
-         ierr=talsh_tensor_construct(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,vvvv_dims,init_val=ZERO)
-         do i=1,m
-            ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p)*L(r,s)",temp_tensor,uvv_tensor(i),uvv_tensor(i))
-         end do
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' vvvv done ')
-
-!        remove vv tensor
-         do i=1,m
-           ierr=talsh_tensor_destruct(uvv_tensor(i))
-         end do
-         deallocate(uvv_tensor)
-
-       end subroutine get_CC_integrals_chol_vec
-
-       subroutine get_CC_integrals_chol_all (nocc,nvir,mo_occ,mo_vir,int_t,t_cholesky,print_level)
-
-!        Written by Johann Pototschnig, summer 2019
-
-         use exacorr_global
-         use talsh_ao_to_mo
-         use exacorr_cholesky
-
-         implicit none
-
-         integer, intent(in)                  :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-         integer, intent(in)                  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-         type(talsh_intg_tens_t),intent(inout)  :: int_t ! arget integral tensors to be filled and given back to the caller
-         real(8), intent(in)                  :: t_cholesky ! cholesky threshold
-         integer, intent(in)                  :: print_level
-
-         integer(C_INT)                :: ierr
-         integer                       :: nao
-         integer(C_INT), dimension(4)  :: oooo_dims,ooov_dims,oovv_dims,ovov_dims,ovvo_dims
-         integer(C_INT), dimension(4)  :: vovo_dims,vovv_dims,vvov_dims,vvvv_dims
-         type(talsh_tens_t)            :: ovvo_tensor
-
-!        cholesky
-         type(talsh_tens_t)              :: chol_tensor, temp_tensor
-         type(talsh_tens_t)              :: uoo_tensor, uov_tensor, uvo_tensor, uvv_tensor
-         integer, dimension(3)           :: chol_dims, dims3
-         integer(C_INT)                  :: rank
-         integer, allocatable         :: mo_list(:)
-         
-
-         write(*,*) "WARNING: Cholesky gives wrong numbers for certain math libraries linked to ExaTensor"
-         write(*,*) "         Please check if the recomputed SCF energy is within 1 Hartree of the orignal"
-         write(*,*) "         working: ATLAS, OPENBLAS, MKL --- not working: NONE"
-
-!        Retrieve basis set information
-         nao     = get_nao()      ! number of basis functions
-
-!        Get cholesky-vectors and copy them in to a talsh tensor
-         call print_date('-Start- Cholesky Decomposition')
-         if (print_level.gt.1) write(*,*) "using complete tensor"
-         call decompose_cholesky_talsh_all (chol_tensor, t_cholesky, nao, print_level)
-         ierr = talsh_tensor_dimensions(chol_tensor,rank,chol_dims)
-         call print_date('-End- Cholesky Decomposition')
-
-!       transform occupied
-        dims3=chol_dims
-        dims3(1)=nocc
-        ierr=talsh_tensor_construct(temp_tensor,C8,dims3,init_val=ZERO)
-        dims3(1:2)=nocc
-        ierr=talsh_tensor_construct(uoo_tensor,C8,dims3,init_val=ZERO)
-        dims3(2)=nvir
-        ierr=talsh_tensor_construct(uov_tensor,C8,dims3,init_val=ZERO)
-
-        call ao2mo_ind(chol_tensor,temp_tensor,nocc,mo_occ,11)
-        call ao2mo_ind(temp_tensor,uoo_tensor,nocc,mo_occ,21)
-        call ao2mo_ind(temp_tensor,uov_tensor,nvir,mo_vir,21)
-        ierr=talsh_tensor_init(temp_tensor)
-        call ao2mo_ind(chol_tensor,temp_tensor,nocc,mo_occ,12)
-        call ao2mo_ind(temp_tensor,uoo_tensor,nocc,mo_occ,22)
-        call ao2mo_ind(temp_tensor,uov_tensor,nvir,mo_vir,22)
-
-        if (print_level.gt.2) call print_date(' uoo/uov done ')
-        if(print_level > 1) write(*,*) "uoo=",tensor_norm2(uoo_tensor)
-        if(print_level > 1) write(*,*) "uov=",tensor_norm2(uov_tensor)
-
-        ierr=talsh_tensor_destruct(temp_tensor)
-
-        dims3=chol_dims
-        dims3(1)=nvir
-        ierr=talsh_tensor_construct(temp_tensor,C8,dims3,init_val=ZERO)
-        dims3(1:2)=nvir
-        ierr=talsh_tensor_construct(uvv_tensor,C8,dims3,init_val=ZERO)
-        dims3(2)=nocc
-        ierr=talsh_tensor_construct(uvo_tensor,C8,dims3,init_val=ZERO)
-
-        call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,11)
-        call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,21)
-        call ao2mo_ind(temp_tensor,uvv_tensor,nvir,mo_vir,21)
-        ierr=talsh_tensor_init(temp_tensor)
-        call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,12)
-        call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,22)
-        call ao2mo_ind(temp_tensor,uvv_tensor,nvir,mo_vir,22)
-
-        if (print_level.gt.2) call print_date(' uvo/uvv done ')
-        if(print_level > 1) write(*,*) "uvo=",tensor_norm2(uvo_tensor)
-        if(print_level > 1) write(*,*) "uvv=",tensor_norm2(uvv_tensor)
-
-        ierr=talsh_tensor_destruct(temp_tensor)
-        ierr=talsh_tensor_destruct(chol_tensor)
-
-
-        if (print_level.gt.1) call print_date(' ao2mo transformation done ')
-
-!        define dims
-!        Note that the dimensions for the tensor are given in physicists notation <12||34>
-         oooo_dims = nocc
-         ooov_dims = nocc
-         ooov_dims(4) = nvir
-         oovv_dims= nocc
-         oovv_dims(3:4) = nvir
-         ovov_dims= nocc
-         ovov_dims(2) = nvir
-         ovov_dims(4) = nvir
-         ovvo_dims = nocc
-         ovvo_dims(2:3) = nvir
-         vovo_dims = nvir
-         vovo_dims(2) = nocc
-         vovo_dims(4) = nocc
-         vovv_dims = nvir
-         vovv_dims(2) = nocc
-         vvov_dims = nvir
-         vvov_dims(3) = nocc
-         vvvv_dims = nvir
-
-!        Get antisymmetric oooo tensor
-         ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uoo_tensor,uoo_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%oooo,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' oooo done ')
-
-!        Get ooov tensor
-         ierr=talsh_tensor_construct(int_t%ooov,C8,ooov_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ooov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uoo_tensor,uov_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%ooov,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' ooov done ')
-
-!        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-         ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uvv_tensor,uoo_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vovo,0)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ovvo_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uvo_tensor,uvo_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,ovvo_tensor,0)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,one_tensor,scale=MINUS_ONE)
-         ierr=talsh_tensor_destruct(ovvo_tensor)
-         if (print_level.gt.2) call print_date(' vovo done ')
-
-!        Clean-up
-         ierr=talsh_tensor_destruct(uoo_tensor)
-
-!        Get antisymmetric oovv tensor
-         ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,ovov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uvo_tensor,uov_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' oovv done ')
-
-!        Clean-up
-         ierr=talsh_tensor_destruct(uvo_tensor)
-
-!        Get vovv tensor
-         ierr=talsh_tensor_construct(int_t%vovv,C8,vovv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,vvov_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uvv_tensor,uov_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vovv,34)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' vvov done ')
-
-!        Clean-up
-         ierr=talsh_tensor_destruct(uov_tensor)
-
-!        Get vvvv tensor
-         ierr=talsh_tensor_construct(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(temp_tensor,C8,vvvv_dims,init_val=ZERO)
-         ierr=talsh_tensor_contract("T(p,q,r,s)+=K+(q,p,u)*L(r,s,u)",temp_tensor,uvv_tensor,uvv_tensor)
-         if (ierr.ne.0) stop 'program error: cholesky not working'
-         call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
-         ierr=talsh_tensor_destruct(temp_tensor)
-         if (print_level.gt.2) call print_date(' vvvv done ')
-
-!        Clean-up
-         ierr=talsh_tensor_destruct(uvv_tensor)
-
-       end subroutine get_CC_integrals_chol_all
-
-
        subroutine diis (t2_tensor,t1_tensor,t_convergence,mode)
 
-         integer, parameter :: maxdim = 5 ! maximum number of tensors that will be stored
-         integer, parameter :: mindim = 3 ! minimum number of tensors to allow extrapolation
+         logical,parameter  :: crop=.true. ! if switching off, also increase dimension of maxdim (used to be 5)
+         integer, parameter :: maxdim = 3 ! maximum number of tensors that are stored
+         integer, parameter :: mindim = 2 ! minimum number of tensors to allow extrapolation
          integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
          real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
 
@@ -2913,12 +2487,43 @@ module talsh_cc
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
-           if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
-           ierr=talsh_tensor_init(t2_tensor)
-            do i = 1, ntens
-               if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
-               ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
-            end do
+           if (crop) then
+              ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
+              if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
+              ierr=talsh_tensor_init(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_err_tensor(i),scale=coeff(i))
+                 ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_err_tensor(i),scale=coeff(i))
+              end do
+              if (.not.CCD) ierr=talsh_tensor_copy("T1E(a,i)=T1(a,i)",t1_err_tensor(itens),t1_tensor)
+              ierr=talsh_tensor_copy("T2E(a,b,i,j)=T2(a,b,i,j)",t2_err_tensor(itens),t2_tensor)
+              ! correct the latest row of the b_diis array for the fact that we use an optimized error vector
+              ierr=talsh_tensor_init(scalar_tensor)
+              do i = 1, ntens
+                 ierr=talsh_tensor_init(scalar_tensor)
+                 if (.not.CCD) ierr=talsh_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+                 ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+                 b_diis(itens,i) = scalar_tens(1)
+                 b_diis(i,itens) = dconjg(scalar_tens(1))
+              end do
+              ! replace latest result vector by the optimized result vector, this is also the tensor to be used in the next iteration
+              if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
+              ierr=talsh_tensor_init(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+                 ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+              end do
+              if (.not.CCD) ierr=talsh_tensor_copy("T1R(a,i)=T1(a,i)",t1_res_tensor(itens),t1_tensor)
+              ierr=talsh_tensor_copy("T2R(a,b,i,j)=T2(a,b,i,j)",t2_res_tensor(itens),t2_tensor)
+           else
+              ! make the amplitudes for the new iteration
+              if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
+              ierr=talsh_tensor_init(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) ierr=talsh_tensor_add("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+                 ierr=talsh_tensor_add("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+              end do
+           end if
          end if
 
 !        the extrapolated amplitudes are the new input tensors
@@ -2932,372 +2537,5 @@ module talsh_cc
          ierr=talsh_tensor_destruct(scalar_tensor)
 
        end subroutine diis
-
-       subroutine t3_energy (t_energy,eps_occ,eps_vir,t1_tensor,t2_tensor,fov_tensor, &
-                             ooov_tensor,vovv_tensor,oovv_tensor,print_level)
-
-!        Evaluate +T, -T and (T) energy terms.
-!        Definitions of terms: L. Visscher, T.J. Lee, K.G. Dyall, J Chem Phys. 105 (1996) 8769.
-         
-         type(talsh_tens_t), intent(inout)  :: t1_tensor, t2_tensor
-         type(talsh_tens_t), intent(inout)  :: fov_tensor, ooov_tensor, vovv_tensor, oovv_tensor
-         real(8), intent(in)                :: eps_occ(:),eps_vir(:)
-         real(8), intent(out)               :: t_energy(3)
-         integer, intent(in)                :: print_level
-
-         integer(INTD)     :: t2_dims(4), abc_dims(3), ab_dims(2), ia_dims(2), abi_dims(3)
-         type(talsh_tens_t):: w_tensor, y_tensor, we_tensor
-         type(talsh_tens_t):: vovv_i_tensor, vovv_j_tensor, vovv_k_tensor
-         type(talsh_tens_t):: ooov_ij_tensor, ooov_jk_tensor, ooov_ki_tensor
-         type(talsh_tens_t):: t2_ij_tensor, t2_jk_tensor, t2_ki_tensor
-         type(talsh_tens_t):: t2_i_tensor, t2_j_tensor, t2_k_tensor
-
-!        scalars (need to be defined as tensor types)
-         type(C_PTR)         :: body_p
-         type(talsh_tens_t)  :: result_tensor
-         integer(INTD)       :: result_dims(1)
-         complex(8), pointer :: result_tens(:)
-
-         real(8)        :: eps_ijk
-         integer(INTD)  :: ierr, tens_rank
-         integer        :: nocc, nvir, i, j, k
-         complex(8), allocatable :: y(:,:,:) ! used in form_y_intermediate, but allocated here to have fewer alloc/dealloc calls
-
-!        Get nocc and nvir from tensor information
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'error: t2 tensor corrupted'
-
-         if (t2_dims(1).eq.t2_dims(2)) then
-            nvir = t2_dims(1)
-         else
-            stop 'error: asymmetric tensor in t3_energy'
-         end if
-
-         if (t2_dims(3).eq.t2_dims(4)) then
-            nocc = t2_dims(3)
-         else
-            stop 'error: asymmetric tensor in t3_energy'
-         end if
-
-!        Initialize scalars that are to be used as tensors in contractions
-         result_dims(1) = 1
-         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,result_tens,result_dims)
-
-!        Allocate tensors of dimension nvir**3 to hold intermediates
-         abc_dims = nvir
-         ierr=talsh_tensor_construct(w_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(y_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(we_tensor,C8,abc_dims,init_val=ZERO)
-         allocate(y(nvir,nvir,nvir))
-
-!        The following is a work-around, we need to implement contraction with restricted range for "inactive" indices
-         ab_dims  = nvir
-         ia_dims(1) = nocc
-         ia_dims(2) = nvir
-         abi_dims(1:2) = nvir
-         abi_dims(3)   = nocc
-         ierr=talsh_tensor_construct(vovv_i_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(vovv_j_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(vovv_k_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t2_jk_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t2_ki_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t2_ij_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(ooov_ij_tensor,C8,ia_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(ooov_jk_tensor,C8,ia_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(ooov_ki_tensor,C8,ia_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t2_i_tensor,C8,abi_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t2_j_tensor,C8,abi_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(t2_k_tensor,C8,abi_dims,init_val=ZERO)
-
-!        Get access to result
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,result_tens,result_dims)
-
-         t_energy = ZERO
-         do k = 3, nocc
-            call get_subtensor (vovv_tensor,vovv_k_tensor,432,k)
-            call get_subtensor (t2_tensor,t2_k_tensor,433,k)
-            do j = 2, k-1
-               call get_subtensor (vovv_tensor,vovv_j_tensor,432,j)
-               call get_subtensor (t2_tensor,t2_j_tensor,433,j)
-               call get_subtensor (t2_tensor,t2_jk_tensor,4334,j,k)
-               call get_subtensor (ooov_tensor,ooov_jk_tensor,4312,j,k)
-               do i = 1, j-1
-                  call get_subtensor (vovv_tensor,vovv_i_tensor,432,i)
-                  call get_subtensor (t2_tensor,t2_i_tensor,433,i)
-                  call get_subtensor (t2_tensor,t2_ij_tensor,4334,i,j)
-                  call get_subtensor (t2_tensor,t2_ki_tensor,4334,k,i)
-                  call get_subtensor (ooov_tensor,ooov_ij_tensor,4312,i,j)
-                  call get_subtensor (ooov_tensor,ooov_ki_tensor,4312,k,i)
-
-                  ! Form w-intermediate, first without symmetrization and minus sign in the auxilliary tensor array we
-                  ierr=talsh_tensor_init(we_tensor)
-                  ! For this term we use the permutation symmetry <vv||ov> = - <vo||vv>*, with vvov(abe:i) = vovv*(eab:i)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_i_tensor,t2_jk_tensor) ! o(3)v(4)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_j_tensor,t2_ki_tensor) ! o(3)v(4)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(e,a,b)*T(e,c)",we_tensor,vovv_k_tensor,t2_ij_tensor) ! o(3)v(4)
-                  ! For this term we use the permutation symmetry <vo||oo> = - <oo||ov>*, with vooo(al:ij) = ooov*(la:ij)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ij_tensor,t2_k_tensor) ! o(4)v(3)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_jk_tensor,t2_i_tensor) ! o(4)v(3)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=V+(l,a)*T(b,c,l)",we_tensor,ooov_ki_tensor,t2_j_tensor) ! o(4)v(3)
-                  if(print_level > 10) write(*,*) "W[sym] =",tensor_norm2(we_tensor)
-
-                  ! Copy into w array to symmetrize and add the minus sign omitted in the above contractions
-                  ierr=talsh_tensor_init(w_tensor)
-                  ! symmetrization via contraction as addition with permutation is not implemented
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(a,b,c)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(b,c,a)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
-                  ierr=talsh_tensor_contract("W(a,b,c)+=W(c,a,b)",w_tensor,we_tensor,one_tensor,scale=MINUS_ONE)
-                  if(print_level > 10) write(*,*) "W[+T ] =",tensor_norm2(w_tensor)
-
-                  ! Form Y-intermediate and calculate 5th order -T energy contribution
-                  call form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
-                  if(print_level > 10) write(*,*) "Y[-T ] =",tensor_norm2(y_tensor)
-                  ierr=talsh_tensor_init(result_tensor)
-                  ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
-                  t_energy(3)=t_energy(3) + result_tens(1)
-
-                  ! Form Y-intermediate and calculate 5th order (T) energy contribution
-                  call form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
-                  if(print_level > 10) write(*,*) "Y[(T)] =",tensor_norm2(y_tensor)
-                  eps_ijk = eps_occ(i) + eps_occ(j) + eps_occ(k)
-                  call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
-                  ierr=talsh_tensor_init(result_tensor)
-                  ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
-                  t_energy(2)=t_energy(2) + result_tens(1)
-
-                  ! Copy w into y array and calculate 4th order +T energy contribution
-                  ierr=talsh_tensor_init(y_tensor)
-                  ierr=talsh_tensor_add("W(a,b,c)+=W(a,b,c)",y_tensor,w_tensor)
-                  call scale_with_denominators (eps_occ,eps_vir,t3_tensor=y_tensor,eps_ijk=eps_ijk)
-                  if(print_level > 10) write(*,*) " W[/D ] =",tensor_norm2(w_tensor)
-                  ierr=talsh_tensor_init(result_tensor)
-                  ierr=talsh_tensor_contract("E()+=W+(a,b,c)*Y(a,b,c)",result_tensor,w_tensor,y_tensor) ! o(3)v(3)
-                  t_energy(1)=t_energy(1) + result_tens(1)
-               end do
-            end do
-            if (print_level >2) write (*,*)  't3_energy:',t_energy
-         end do
-
-!        We looped over all (abc) combinations, scale with the factor of 1/6 needed to go to the unique ones.
-         t_energy = t_energy / SIX
-
-!        Destruct intermediate tensors
-         deallocate(y)
-         ierr=talsh_tensor_destruct(t2_i_tensor)
-         ierr=talsh_tensor_destruct(t2_j_tensor)
-         ierr=talsh_tensor_destruct(t2_k_tensor)
-         ierr=talsh_tensor_destruct(t2_ij_tensor)
-         ierr=talsh_tensor_destruct(t2_jk_tensor)
-         ierr=talsh_tensor_destruct(t2_ki_tensor)
-         ierr=talsh_tensor_destruct(vovv_i_tensor)
-         ierr=talsh_tensor_destruct(vovv_j_tensor)
-         ierr=talsh_tensor_destruct(vovv_k_tensor)
-         ierr=talsh_tensor_destruct(ooov_ij_tensor)
-         ierr=talsh_tensor_destruct(ooov_jk_tensor)
-         ierr=talsh_tensor_destruct(ooov_ki_tensor)
-         ierr=talsh_tensor_destruct(we_tensor)
-         ierr=talsh_tensor_destruct(w_tensor)
-         ierr=talsh_tensor_destruct(y_tensor)
-
-       end subroutine t3_energy
-
-       subroutine form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
-
-!        Get y intermediate for -T fifth order energy correction.
-
-         type(talsh_tens_t), intent(inout) :: t1_tensor, t2_tensor, y_tensor
-         type(talsh_tens_t), intent(inout) :: fov_tensor, oovv_tensor
-         integer, intent(in)               :: i, j, k
-         complex(8), intent(inout)         :: y(:,:,:)
-
-         type(C_PTR):: body_p
-         integer(INTD)        :: ierr, tens_rank
-         complex(8), pointer  :: t1_tens(:,:), t2_tens(:,:,:,:), y_tens(:,:,:)
-         complex(8), pointer  :: fov_tens(:,:),oovv_tens(:,:,:,:)
-         integer(INTD)        :: t1_dims(2), t2_dims(4), y_dims(3), fov_dims(2), oovv_dims(4)
-         integer              :: nvir, a, b, c
-
-!        Determine source dimensions and get direct access to the tensor bodies
-
-         tens_rank = talsh_tensor_rank(t1_tensor)
-         if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
-         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         if (ierr.ne.0) stop 'error in y2_intermediate'
-         call c_f_pointer(body_p,t1_tens,t1_dims)
-
-         tens_rank = talsh_tensor_rank(t2_tensor)
-         if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         if (ierr.ne.0) stop 'error in y2_intermediate'
-         call c_f_pointer(body_p,t2_tens,t2_dims)
-
-         tens_rank = talsh_tensor_rank(y_tensor)
-         if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
-         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         if (ierr.ne.0) stop 'error in y2_intermediate'
-         call c_f_pointer(body_p,y_tens,y_dims)
-
-         tens_rank = talsh_tensor_rank(fov_tensor)
-         if (tens_rank .ne. 2) stop 'Error: fo tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(fov_tensor,tens_rank,fov_dims)
-         ierr=talsh_tensor_get_body_access(fov_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         if (ierr.ne.0) stop 'error in y2_intermediate'
-         call c_f_pointer(body_p,fov_tens,fov_dims)
-
-         tens_rank = talsh_tensor_rank(oovv_tensor)
-         if (tens_rank .ne. 4) stop 'Error: oovv tensor corrupted in form_y2_intermediate'
-         ierr = talsh_tensor_dimensions(oovv_tensor,tens_rank,oovv_dims)
-         ierr=talsh_tensor_get_body_access(oovv_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         if (ierr.ne.0) stop 'error in y2_intermediate'
-         call c_f_pointer(body_p,oovv_tens,oovv_dims)
-
-!        Form the intermediate
-         nvir = t1_dims(1)
-
-!        Formula with only the P_ijk permutation operators
-         do c = 1, nvir
-            do b = 1, nvir
-               do a = 1, nvir
-                  y(a,b,c) =            dconjg(oovv_tens(i,j,a,b))*t1_tens(c,k) + t2_tens(a,b,i,j)*dconjg(fov_tens(k,c))
-                  y(a,b,c) = y(a,b,c) + dconjg(oovv_tens(j,k,a,b))*t1_tens(c,i) + t2_tens(a,b,j,k)*dconjg(fov_tens(i,c))
-                  y(a,b,c) = y(a,b,c) + dconjg(oovv_tens(k,i,a,b))*t1_tens(c,j) + t2_tens(a,b,k,i)*dconjg(fov_tens(j,c))
-               end do
-            end do
-         end do
-
-!        Do the P_abc permutation to fully symmetrize the expression
-         do c = 1, nvir
-            do b = 1, nvir
-               do a = 1, nvir
-                  y_tens(a,b,c)  = y(a,b,c) + y(c,a,b) + y(b,c,a)
-               end do
-            end do
-         end do
-
-       end subroutine form_y2_intermediate
-
-       subroutine form_y3_intermediate (i,j,k,t1_tensor,t2_tensor,y_tensor,y)
-
-!        Get y intermediate for -T fifth order energy correction.
-
-         type(talsh_tens_t), intent(inout) :: t1_tensor, t2_tensor, y_tensor
-         integer, intent(in)               :: i, j, k
-         complex(8), intent(inout)         :: y(:,:,:)
-
-         type(C_PTR):: body_p
-         integer(INTD)        :: ierr, tens_rank
-         complex(8), pointer  :: t1_tens(:,:), t2_tens(:,:,:,:), y_tens(:,:,:)
-         integer(INTD)        :: t1_dims(2), t2_dims(4), y_dims(3)
-         integer              :: nvir, a, b, c
-
-!        Determine source dimensions and get direct access to the tensor bodies
-
-         tens_rank = talsh_tensor_rank(t1_tensor)
-         if (tens_rank .ne. 2) stop 'Error: t1 tensor corrupted in form_y_intermediate'
-         ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
-         ierr=talsh_tensor_get_body_access(t1_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,t1_tens,t1_dims)
-
-         tens_rank = talsh_tensor_rank(t2_tensor)
-         if (tens_rank .ne. 4) stop 'Error: t2 tensor corrupted in form_y_intermediate'
-         ierr = talsh_tensor_dimensions(t2_tensor,tens_rank,t2_dims)
-         ierr=talsh_tensor_get_body_access(t2_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,t2_tens,t2_dims)
-
-         tens_rank = talsh_tensor_rank(y_tensor)
-         if (tens_rank .ne. 3) stop 'Error: y tensor corrupted in form_y_intermediate'
-         ierr = talsh_tensor_dimensions(y_tensor,tens_rank,y_dims)
-         ierr=talsh_tensor_get_body_access(y_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,y_tens,y_dims)
-
-!        Form the intermediate
-         nvir = t1_dims(1)
-
-!        Formula with only the P_ijk and P_ij permutation operators
-         do c = 1, nvir
-            do b = 1, nvir
-               do a = 1, nvir
-                  y(a,b,c) =            t1_tens(a,i)*t1_tens(b,j)*t1_tens(c,k) - t1_tens(a,j)*t1_tens(b,i)*t1_tens(c,k)
-                  y(a,b,c) = y(a,b,c) + t1_tens(a,j)*t1_tens(b,k)*t1_tens(c,i) - t1_tens(a,k)*t1_tens(b,j)*t1_tens(c,i)
-                  y(a,b,c) = y(a,b,c) + t1_tens(a,k)*t1_tens(b,i)*t1_tens(c,j) - t1_tens(a,i)*t1_tens(b,k)*t1_tens(c,j)
-                  y(a,b,c) = y(a,b,c) / THREE
-                  y(a,b,c) = y(a,b,c) + t2_tens(a,b,i,j)*t1_tens(c,k)+t2_tens(a,b,j,k)*t1_tens(c,i)+t2_tens(a,b,k,i)*t1_tens(c,j)
-               end do
-            end do
-         end do
-
-!        Do the P_abc permutation to fully symmetrize the expression
-         do c = 1, nvir
-            do b = 1, nvir
-               do a = 1, nvir
-                  y_tens(a,b,c)  = y(a,b,c) + y(c,a,b) + y(b,c,a)
-               end do
-            end do
-         end do
-
-       end subroutine form_y3_intermediate
-
-       subroutine get_subtensor (tensor,subtensor,mode,i,j)
-
-!        Severely limited implementation of extraction of a subtensor, as needed in t3_energy routine.
-!        No shuffling of indices possible, only 4->3 (mode=1) and 4->2 (mode=2) extraction.
-!        Type of extraction defined by 3 or 4 digit integer mode:
-!        1st integer: dimension of source tensor
-!        2nd integer: dimension of target tensor
-!        3rd integer: passive index #1
-!        4th integer: passive index #2
-
-         type(talsh_tens_t), intent(inout) :: tensor, subtensor
-         integer, intent(in)               :: mode,i
-         integer, intent(in), optional     :: j
-
-         type(C_PTR):: body_p
-         integer(INTD)        :: ierr, tens_rank, subtens_rank
-         complex(8), pointer  :: tens(:,:,:,:), subtens3(:,:,:), subtens2(:,:)
-         integer(INTD)        :: tens_dims(4), subtens_dims(3)
-
-!        Determine source dimensions and get direct access to the tensor body to enable copying
-         tens_rank = talsh_tensor_rank(tensor)
-         if (tens_rank .ne. 4) stop 'Error: Only extraction from 4-dimensional tensors possible'
-         ierr = talsh_tensor_dimensions(tensor,tens_rank,tens_dims)
-         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body_p,tens,tens_dims)
-
-!        Determine target  dimensions and get direct access to the tensor body to enable copying
-         subtens_rank = talsh_tensor_rank(subtensor)
-         if (subtens_rank .eq. 3) then
-            ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
-            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,subtens3,subtens_dims)
-         elseif (subtens_rank .eq. 2) then
-            ierr = talsh_tensor_dimensions(subtensor,subtens_rank,subtens_dims)
-            ierr=talsh_tensor_get_body_access(subtensor,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,subtens2,subtens_dims(1:2))
-         else
-            stop 'Error: Only insertion into 3- or 2-dimensional tensors possible'
-         end if
-
-!        Copy the data into the subtensor
-         if (mode .eq. 433) then
-            subtens3(:,:,:) = tens(:,:,i,:)
-         elseif (mode .eq. 432) then
-            subtens3(:,:,:) = tens(:,i,:,:)
-         elseif (mode .eq. 4312) then
-            subtens2(:,:)   = tens(i,j,:,:)
-         elseif (mode .eq. 4334) then
-            subtens2(:,:)   = tens(:,:,i,j)
-         else
-            write (*,*) mode,' type of tensor extraction is not implemented'
-            stop 'Error in get_subtensor'
-         end if
-
-
-       end subroutine get_subtensor
 
 end module talsh_cc

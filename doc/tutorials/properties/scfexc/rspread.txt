@@ -1,0 +1,8 @@
+dirac 2074>rspread.x PAMXVC
+
+ Solution vectors found on file : PAMXVC
+
+** Solution vector : PP EXCITATIONB1u Irrep:   5 Trev:   1
+  1 Type : E+ Freq.:    48.935572 Rnorm:   0.16E-13 Length:         1
+  2 Type : E- Freq.:    48.935572 Rnorm:   0.16E-13 Length:         1
+

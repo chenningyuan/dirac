@@ -51,7 +51,9 @@ with matrix elements
 
 The modification is manifested in the additional terms :math:`\hat{v}^{\mathrm{PE}}` and
 :math:`\hat{v}^{\mathrm{ind}}`, while :math:`\hat{f}_0` is the usual Fock (or Kohn-Sham)
-operator. A brief, physical explaination of the the two additional terms is given below
+operator. Note however, that for Kohn-Sham theory contributions from the exchange-correlation
+kernel will also be present (these are not shown in the above equation).
+A brief, physical explaination of the the two additional terms is given below
 
 * :math:`\hat{v}^{\mathrm{PE}}=\hat{v}^{\mathrm{es}}+\hat{v}^{\mathrm{ind}}` accounts for
   interactions between multipoles and ground-state density :math:`\hat{v}^{\mathrm{es}}`
@@ -203,6 +205,6 @@ An example is given below for a dipole moment calculation input file ::
 Things to note
 --------------
 
-* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed
-
+* Calculations with transformed two-component Hamiltonians are generally possibly by supplying the program with the requested model under `**HAMILTONIAN`. In such a calculation, :math:`\hat{v}^{\mathrm{PE}}` is not transformed.
+* Calculations with (linear) complex response or complex polarization propagator (CPP) is possible - see the tutorial "Complex response" (no other thing than activating CPP is needed to to PE-CPP calculations). 
 

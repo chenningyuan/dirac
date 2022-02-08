@@ -128,6 +128,10 @@ Distribution of correlated open shell electrons over the irreps.  This determine
 This input should always be given for average-of-configuration SCF calculations that are followed by a CC calculation. The total number of electrons that is
 given should correspond to the number of open shell electrons.
 
+One should activate either :ref:`RELCC_.NELEC` (total number of correlated electrons) or
+:ref:`RELCC_.NELEC_OPEN` (only open-shell electrons)  for open-shell cases. 
+Do not activate both :ref:`RELCC_.NELEC` and :ref:`RELCC_.NELEC_OPEN` once.
+
 *Arguments:*
 
 ::
@@ -510,6 +514,8 @@ Note this value does not have to be the same as for the definition of the frozen
 
 In addition to this, users should make sure to enable root following (see :ref:`CCDIAG_.OVERLAP`) if they want to target states with dominant singly ionized or singly excited character.
 
+When each edge is energetically far apart (e.g., K and L1 edge of heavy elements), one should aim for calculating different edges separately instead of requesting more roots. Otherwise, convergence is likely to be obtained only for the lowest-lying state. 
+Furthermore, if more than one edge is sought, we recommend that is the restart capabilities of the code are employed to avoid the AO to MO transformation step (:ref:`**MOLTRA`) and the integral sorting in RELCCSD (see restart options under :ref:`*CCRESTART`.
 
 *Example:* requests that all spinors with energies below -10.0 a.u. are considered to be core::
 

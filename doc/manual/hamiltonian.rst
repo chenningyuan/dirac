@@ -696,26 +696,6 @@ keyword(BLOCKD)
 .. warning:: documentation missing
 
 
-keyword(VACPOL)
-
-.. warning:: documentation missing
-
-
-keyword(MIXVAC)
-
-.. warning:: documentation missing
-
-
-keyword(NOVREF)
-
-.. warning:: documentation missing
-
-
-keyword(POSVAC)
-
-.. warning:: documentation missing
-
-
 keyword(QDOTS)
 
 .. warning:: documentation missing
