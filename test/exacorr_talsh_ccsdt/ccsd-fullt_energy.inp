@@ -5,6 +5,9 @@
 .TITLE
 X2C Hamiltonian. CC2 energies.
 .WAVE F
+**GENERAL
+.CVALUE
+1.0e8
 **INTEGRALS
 .NUCMOD
  1
@@ -22,9 +25,9 @@ X2C Hamiltonian. CC2 energies.
 30
 **EXACC
 .OCCUPIED
-energy -5.0 0.0 0.001
+energy -100.0 0.0 0.001
 .VIRTUAL
-energy -1.0 5. 0.001
+energy -1.0 100000. 0.001
 #.CCSDfullT
 .CCSDT1
 .PRINT

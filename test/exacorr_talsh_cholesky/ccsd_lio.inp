@@ -23,7 +23,7 @@ LiO molecule. X2C Hamiltonian. CC energies.
 **MOLTRA
 .EXACORR
 .ACTIVE
-energy -5.0 5.0 0.01
+energy -5.0 1.0 0.01
 .PRINT
 1
 .CHOLESKY

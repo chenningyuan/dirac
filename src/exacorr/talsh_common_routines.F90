@@ -22,6 +22,7 @@ module talsh_common_routines
     public Pair_correlation_energies
     public talsh_init_R8
     public talsh_init_C8
+    public tensor_norm2
 
     contains
 
@@ -748,5 +749,56 @@ module talsh_common_routines
         end if
 
       end subroutine talsh_init_R8
+
+      function tensor_norm2(a_tensor) result(a_norm2)
+
+         !compute norm2(complete contraction of a tensor with itself) for debugging purposed
+
+         type(talsh_tens_t), intent(inout):: a_tensor
+
+         integer(INTD) :: a_dims(1:8)
+         integer(INTD) :: ierr, a_rank
+
+!        scalars (need to be defined as tensor types)
+         type(talsh_tens_t)  :: result_tensor
+         integer(C_INT)      :: result_dims(1)
+         complex(8), pointer :: result_tens(:)
+         type(C_PTR):: body_p
+         real(8) :: a_norm2
+
+!        Initialize scalars that are to be used as tensors in contractions
+         result_dims(1) = 1
+         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
+
+         ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
+         select case (a_rank)
+         case (0)
+            ierr=talsh_tensor_contract("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
+         case (1)
+            ierr=talsh_tensor_contract("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
+         case (2)
+            ierr=talsh_tensor_contract("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
+         case (3)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
+         case (4)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
+         case (5)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
+         case (6)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
+         case (7)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
+         case (8)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
+         case default
+            call quit ('wrong dimension in tensor_norm2')
+         end select
+
+         a_norm2 = real(result_tens(1),8)
+         ierr=talsh_tensor_destruct(result_tensor)
+
+     end function tensor_norm2
 
 end module talsh_common_routines
