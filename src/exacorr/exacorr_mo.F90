@@ -201,7 +201,7 @@ module exacorr_mo
 
      end subroutine dealloc_mo_quaternion
 
-#if defined (VAR_MPI)
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
      subroutine sync_mo_complex(M,my_MPI_master)
 

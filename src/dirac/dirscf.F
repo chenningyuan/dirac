@@ -1,5 +1,5 @@
- !Dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!Dirac_copyright_start
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -242,6 +242,7 @@ C*****************************************************************************
       use fde_mod
       use num_grid_gen
       use xmlout
+      use dircmo
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -335,7 +336,7 @@ C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF(ATHUCK) THEN
         DHF_INTTYP = 'Atom. Huckel'
         CALL ADHOC(CMO,EIG,IBEIG,DHFERG,IPRSCF,WORK,KFREE,LFREE)
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,.FALSE.) ! CTROND: check
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         GOTO 100
 C
 C     2) - atomic start
@@ -696,7 +697,7 @@ C
           IF(ATOMIC) THEN
             CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
           ELSE
-            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG,.FALSE.)
+            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
           ENDIF   
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
@@ -912,6 +913,7 @@ C     Last revisions: Mar 09 1995
 C                     Nov. 2005 - MI
 C
 C*****************************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1094,7 +1096,7 @@ C     Write transformed coefficients
       IF(ATOMIC) THEN
         CALL ATOMIC_WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
       ELSE
-        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG,.FALSE.)
+        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
       ENDIF   
 C
 C     Dynamic update of overlap selection matrix, if not converged
@@ -3246,6 +3248,7 @@ C     Written by T.Saue June 18 1998
 C     Last revision : June 18 1998 - tsaue
 C
 C***********************************************************************
+      use dircmo
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0,DM2=-2.0D0,D2=2.0D0)
@@ -3395,7 +3398,7 @@ C
       IF(ATOMIC) THEN
         CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,.FALSE.)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       ENDIF   
       CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -4296,9 +4299,7 @@ C
 C
 C             Diagonalize the isub'th block of parity i
 C
-#ifdef MOD_UNRELEASED
               IF (.NOT.DOQJACO) THEN
-#endif
                 IF (DOJACO) THEN
                   CALL RSJACO(NTMO(I),NBO,NBO,FMO(IMAT),
      &                      EIG(IEIG),1,1,0,FAO(IMAT))
@@ -4307,7 +4308,6 @@ C
      &                   EIG(IEIG),1,FAO(IMAT),NTMO(I),NTMO(I),
      &                   WORK(KFREE),LFREE,IERR)
                 ENDIF
-#ifdef MOD_UNRELEASED
               ELSE
                 CALL MEMGET2('REAL','FMO',KFMO,NBO*NBO,WORK,KFREE,LFREE)
                 CALL MEMGET2('REAL','FA ',KFA, NBO*NBO,WORK,KFREE,LFREE)
@@ -4331,7 +4331,6 @@ C
                 ENDDO
                 CALL MEMREL('DFDIAG',WORK,KFMO,KFMO,KFREE,LFREE)
               ENDIF
-#endif
 
               IF (DODBG) THEN
                 IF (IPRHAM.GE.3) THEN
@@ -5423,6 +5422,7 @@ C.....  Rotate orbitals into place
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
+      use dircmo
 C***********************************************************************
 C
 C     Routine for atomic start
@@ -5447,7 +5447,8 @@ C
 C.....Local variables
       LOGICAL TOBE,FNDLAB
       CHARACTER TEXT*74
-      INTEGER NNEG,NPOS,NBAS,IDIM(3)
+      INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
+      real(8), allocatable :: atom_cmo(:)
 C
       KFRSAV=KFREE
 C.....Say hello
@@ -5477,13 +5478,11 @@ C.......Read atomic coefficients in C1 format
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
-        IF(FNDLAB('INFO    ',LUATOM)) THEN
-           READ(LUATOM) TEXT,NSYM,NZBUF,NNEG,NPOS,NBAS,TOTERG
-        ELSE
-           WRITE(LUPRI,*) 'ATOMIC_START: error reading info ',
-     &                    ATOMFIL(IATOM) 
-          CALL QUIT('ATOMIC START: Error reading info')
-        ENDIF
+        call reacmo_new(luatom,text=text,idims=idims,toterg=toterg)
+        nneg = idims(7)
+        npos = idims(8)
+        nbas = idims(9)
+        nsym = idims(2)
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5506,9 +5505,8 @@ C.......Read atomic coefficients in C1 format
         IDIM(3) = NBAS
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
-        CALL MEMGET2('REAL','CMO ',KCMO,NACMOQ,WORK,KFREE,LFREE)
-        CALL REACMO_coefficients(LUATOM,WORK(KCMO),NACMOQ,1,NZC1,
-     &           NAORB,NBAS,NNEG,NPOS,IDIM)         
+        allocate (atom_cmo(nacmoq))
+        CALL REACMO_new(LUATOM,cmo=atom_cmo)
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
@@ -5525,12 +5523,12 @@ C.........extract selected vectors from CMO and place in CBUF
           CALL MEMGET2('REAL','CBUF',KCBUF,NBAS*NSEL*NZC1,
      &                 WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
-          CALL SELOWC(NZC1,WORK(KCMO),NBAS,NAORB,NNEG,NPOS,
+          CALL SELOWC(NZC1,atom_cmo,NBAS,NAORB,NNEG,NPOS,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
           IF(IPRINT.GE.4) THEN
             WRITE(LUPRI,'(A,I3)') '* Atomic coefficients ',IATOM
-            CALL PRQMAT(WORK(KCMO),NBAS,NAORB,NBAS,NAORB,
+            CALL PRQMAT(atom_cmo,NBAS,NAORB,NBAS,NAORB,
      &                NZ,IPQTOQ(1,0),LUPRI)
             WRITE(LUPRI,'(A,I3)') '* Selected Atomic coefficients',IATOM
             CALL PRQMAT(WORK(KCBUF),NBAS,NSEL,NBAS,NSEL,
@@ -5560,7 +5558,8 @@ C       molecular C1 density matrix
      &                   WORK(KR1BUF),WORK(KC1BUF),
      &                   WORK(KI1BUF),WORK(KJ1BUF))
 C.......Release memory        
-        CALL MEMREL('ATOMIC_START',WORK,1,KCMO,KFREE,LFREE)
+        deallocate (atom_cmo)
+        CALL MEMREL('ATOMIC_START',WORK,1,KADE,KFREE,LFREE)
         CLOSE(LUATOM,STATUS='KEEP')
         ICENT = ICENT+NONT(IATOM)
       ENDDO
@@ -5607,6 +5606,7 @@ C.......transform atomic start to actual symmetry
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
+      use dircmo
 C***********************************************************************
 C
 C     Atomic Huckel start
@@ -5634,7 +5634,7 @@ C
 #include "dgroup.h"
       LOGICAL FNDLAB
       CHARACTER TEXT*74
-      DIMENSION IDIM(3)
+      DIMENSION IDIM(3),idims(12)
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
@@ -5656,14 +5656,10 @@ C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
-        IF(FNDLAB('INFO    ',LUHOC)) THEN
-          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &          NCATOM(2,ITYP),NCATOM(1,ITYP),NAO(ITYP),DUM
-        ELSE
-          WRITE(6,*) 'ADHOC: not able to read info from file ',
-     &                HOCFIL(ITYP)
-          CALL QUIT('ADHOC: Error reading info')
-        ENDIF
+        CALL REACMO_new(LUHOC,text=text,idims=idims)
+        ncatom(1,ityp) = idims(8)
+        ncatom(2,ityp) = idims(7)
+        nao(ityp)      = idims(9)
 C.............NPSH............NESH............NBAS...........TOTERG
         CLOSE(LUHOC,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
@@ -5711,25 +5707,18 @@ C
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
-        IF(FNDLAB('INFO    ',LUHOC)) THEN
-          READ (LUHOC,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &          NNEG,NPOS,NAO(ITYP),DUM
-        ELSE
-          WRITE(6,*) 'ADHOC2: not able to read info from file ',
-     &                HOCFIL(ITYP)
-          CALL QUIT('ADHOC2: Error reading info')
-        ENDIF
+        CALL REACMO_new(LUHOC,text=text,idims=idims)
+        nneg = idims(7)
+        npos = idims(8)
         NTOT = NNEG+NPOS
         IDIM(1) = NNEG
         IDIM(2) = NPOS
         IDIM(3) = NAO(ITYP)
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL REACMO_coefficients(LUHOC,WORK(KQA),NQA,1,4,
-     &           NTOT,NAO(ITYP),NNEG,NPOS,IDIM)         
+        CALL REACMO_new(LUHOC,cmo=WORK(KQA:KQA+NQA-1))
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL REACMO_eigenvalues(LUHOC,WORK(KEA),NTOT,1,4,
-     &           NTOT,NNEG,NPOS,IDIM)         
+        CALL REACMO_new(LUHOC,eig=WORK(KEA:KEA+NTOT-1))
         CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1

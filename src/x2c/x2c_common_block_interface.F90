@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -214,6 +214,7 @@ contains
 
 !        initialize logicals
          x2c_linsym       = linear
+         x2c_atomic       = atomic
          x2c_do_spherical = dosphe
          x2c_prep_bnccorr = bncron.and..not.onesys
          x2c_mdirac       = mdirac

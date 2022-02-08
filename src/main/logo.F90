@@ -1,5 +1,5 @@
 !dirac_copyright_start
-!      Copyright (c) 2019 by the authors of DIRAC.
+!      Copyright (c) 2021 by the authors of DIRAC.
 !      All Rights Reserved.
 !
 !      This source code is part of the DIRAC program package.
@@ -104,11 +104,11 @@ print *, '*                                                                     
 print *, '*                                                                             *'
 print *, '*    Written by:                                                              *'
 print *, '*                                                                             *'
-print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
-print *, '*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *'
-print *, '*    Trond Saue               Universite Toulouse III           France        *'
-print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
 print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
+print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
+print *, '*    Trond Saue               Universite Toulouse III           France        *'
+print *, '*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *'
+print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
@@ -129,7 +129,7 @@ print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. German
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
-print *, '*    Stefan Knecht            ETH Zuerich                       Switzerland   *'
+print *, '*    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *'
 print *, '*    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *'
 print *, '*    Ossama Kullie            University of Kassel              Germany       *'
 print *, '*    Jon K. Laerdahl          University of Oslo                Norway        *'

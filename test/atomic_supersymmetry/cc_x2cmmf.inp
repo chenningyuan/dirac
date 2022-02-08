@@ -1,0 +1,16 @@
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.4INDEX                                                                                             
+**HAMILTONIAN                                                                                       
+.X2Cmmf                                                                                             
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+.RELCCSD                                                                                            
+**SCF
+.CLOSED SHELL
+4 6
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+ dyall.2zp                                                                                          
+**END OF                                                                                            
