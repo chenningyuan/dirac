@@ -25,7 +25,6 @@ public talsh_davidson_workspace_destroy
 
 interface talsh_davidson_driver
     module procedure talsh_get_values_vectors_davidson
-    module procedure talsh_solve_linear_system_davidson
 end interface
 
 interface davidson_print_vectors
@@ -880,7 +879,7 @@ contains
         end if
     end function
 
-    subroutine form_r_tensors(k,eigenvectors_subspace,eigenvalues_subspace,workspace_t)
+    subroutine form_r_tensors(k,eigenvectors_subspace,eigenvalues_subspace,workspace_t,B_small)
 ! we use delta{1,2,...} to store the values of r^k
         integer, intent(in) :: k
         complex(kind=8), intent(in)  :: eigenvectors_subspace(:,:)
@@ -892,6 +891,10 @@ contains
         logical :: debug_form_r = .false.
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
+
+        complex(kind=8), optional, pointer, contiguous :: B_small(:)
+
+        
 
         one_dims(1) = 1
         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
@@ -912,7 +915,11 @@ contains
         do i = 1, workspace_t%L
 
            factor1 =  eigenvectors_subspace(i,k)
-           factor2 = -eigenvalues_subspace(k)*factor1
+           if (B_small) then
+                factor2 = B_small(i)
+           else
+                factor2 = -eigenvalues_subspace(k)*factor1
+           end if
            if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
 
            if (r1_rank.eq.1) then
@@ -985,11 +992,13 @@ contains
 
 
 
-    function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, workspace_t, correct_all)
+    function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, workspace_t, B_small, correct_all)
         integer, intent(in)       :: nroots, output_file_unit
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
         complex(kind=8), intent(in)  :: e_small_M(:)
         complex(kind=8), intent(in)  :: c_small_M(:,:)
+
+        complex(kind=8), optional, intent(in) ::  B_small(:)
         logical, optional, intent(in) :: correct_all
 
         logical, pointer :: correction_to_vectors(:)
@@ -1016,8 +1025,12 @@ contains
            if (debug_correction_vectors) print *,'debug, init workspace_t%delta2(k) to zero, ierr',ierr
         end do
         do k = 1, nroots
-! instead of having a new variable to store r(:,k), we will do collect the results on workspace_t%delta{1,2,...} 
-           call form_r_tensors(k,c_small_M,e_small_M,workspace_t)
+! instead of having a new variable to store r(:,k), we will do collect the results on workspace_t%delta{1,2,...}
+            if (B_small) then 
+                call form_r_tensors(k,c_small_M,e_small_M,workspace_t,B_small)
+            else
+                call form_r_tensors(k,c_small_M,e_small_M,workspace_t)
+            end if
             
 ! get the norm of the whole intermediate r(:,k) tensor, which means to calculate it over the different excitation ranks 
            if (debug_correction_vectors) then
@@ -1643,7 +1656,7 @@ contains
    end subroutine 
 
 
-   subroutine create_subspace_vector_right(C_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+   subroutine create_subspace_vector(C_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
 
       
       complex(kind=8), pointer, contiguous, intent(inout) :: C_small(:)    ! this will be a copy of M, M_small(L,L)
@@ -1722,7 +1735,7 @@ contains
 !      call quit('bb')
 
 
-   end subroutine create_subspace_vector_right
+   end subroutine create_subspace_vector
 
 
    subroutine create_sigma_right(int_t,interm_t,workspace_t)
@@ -2005,149 +2018,20 @@ contains
         close(unit=fileno)
     end subroutine
 
-   subroutine talsh_solve_linear_system_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t1, prop_gradient_t2)
-    !XY: We could combine liear_system and eigenvalue routine later. 
-
-      type(talsh_davidson_results_tens_t) :: results_t
-      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
-      type(talsh_projectors_tens_t), intent(inout) :: projector_t
-      type(talsh_intg_tens_t), intent(inout) :: int_t
-
-      type(talsh_tens_t), intent(inout) :: prop_gradient_t1, prop_gradient_t2
-      complex(kind=8), intent(in) :: frequency
-
-      complex(kind=8), pointer, contiguous :: M_small(:,:)        => NULL()
-      complex(kind=8), pointer, contiguous :: C_small(:)        => NULL()
-        complex(kind=8), pointer, contiguous :: c_small_r(:,:)      => NULL()
-        complex(kind=8), pointer, contiguous :: c_small_l(:,:)      => NULL()
-        complex(kind=8), pointer, contiguous :: e_small(:)          => NULL()
-
-        complex(kind=8), pointer, contiguous :: c_small_r_old(:,:)  => NULL()
-        complex(kind=8), pointer, contiguous :: c_small_l_old(:,:)  => NULL()
-        logical, pointer :: delta(:) => NULL()
-
-        complex(kind=8) :: frequency_local
-        logical :: solve_linear = .false.
-        logical :: solve_eigen  = .true.
-
-        integer :: niter
-        integer :: i, j, k
-        integer :: nroots, ierr
-
-        nroots    = workspace_t%nroots
-
-        if (davidson_solve_linear_system.and..not.present(prop_gradient_t)) then
-            call quit('bla') 
-        end if
-
-        if (present(frequency)) then
-           frequency_local = frequency
-        else
-           frequency_local = (0.0d0,0.0d0) 
-        end if
-!
-! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
-! 
-!!      call davidson_create_results(results,vectors_N,nroots,&
-!!                                   davidson_solve_values,   &
-!!                                   davidson_solve_lhs,      &
-!!                                   davidson_solve_rhs)
-
-        workspace_t%L = nroots
-
-        write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
-        if ( nroots .gt. workspace_t%Nmax ) then 
-           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested larger than matrix order !"
-           return 
-        else if ( nroots .eq. workspace_t%Nmax ) then
-           write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
-        endif
-
-        
-        write(davidson_output_file_unit,*) ""
-        do niter = 1, davidson_max_iterations
-            write(davidson_output_file_unit,*) "Iteration ", niter
-            write(davidson_output_file_unit,*) ""
-
-            if (davidson_solve_rhs) then
-               if (associated(interm_t%sigma_rhs_p)) then
-                  call create_sigma_right(int_t,interm_t,workspace_t)
-                  call create_subspace_matrix_right(M_small,workspace_t,frequency_local) 
-                  call create_subspace_vector_right(C_small,workspace_t,prop_gradient_t1,prop_gradient_t2)
-               else
-                  stop 'RHS sigma vector routine has not been defined prior to calling the solver'  
-               end if
-
-
-!!          if (associated(projector)) call apply_projector(projector,sigma_vector)
-            
-            call calculate_Linear_systems(davidson_output_file_unit,    &
-                                                        M_small,                      &
-                                                        e_small,                      &
-                                                        c_small_r, c_small_l,         &
-                                                        c_small_r_old, c_small_l_old, &
-                                                        davidson_eigenvalues_shift,   &
-                                                        follow_overlap=(davidson_overlap_sorting.and.(niter.gt.1)),  &
-                                                        follow_overlap_scheme=davidson_overlap_sorting_scheme, &
-                                                        apply_evalues_shift=davidson_apply_eigenvalues_shift, &
-                                                        left=davidson_solve_lhs,      &
-                                                        right=davidson_solve_rhs,     &
-                                                        nroots=nroots,                &
-                                                        verbose=.true.)
-!                                                       verbose=davidson_verbose)
-
-            if (davidson_solve_rhs.and.davidson_overlap_sorting) then
-                c_small_r_old = c_small_r
-            end if
-            if (davidson_solve_lhs.and.davidson_overlap_sorting) then
-                c_small_l_old = c_small_l
-            end if
-
-            print *,'debug : before correcting vectors'
-            if (associated(delta)) deallocate(delta)
-            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
-                                                                   e_small, c_small_r, workspace_t)
-
-            print *,'debug : after  correcting vectors'
-            if (.not.associated(delta)) then
-                write(davidson_output_file_unit,*) "All roots converged, stopping."
-                exit
-            end if
-
-            print *,'debug : before updating trial vectors'
-! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
-! new trial vectors
-            if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
-            else
-               call update_trial_vectors(delta,workspace_t)
-            end if
-            print *,'debug : after  updating trial vectors'
-
-            if (workspace_t%L .ge. workspace_t%Lmax) then
-               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
-               exit
-            end if
-
-
-            else if (davidson_solve_lhs) then
-
-            else
-                stop 'unknown choice of side to solve for in davidson'  
-            end if
-
-        end do ! davidson iterations
-        print *,'debug : after  davidson iterations'
-
-        if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
-        if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
-
-        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",workspace_t%L
-
-
-   end subroutine
-
-
+    subroutine talsh_solve_linear_system_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t)
+        type(talsh_davidson_results_tens_t) :: results_t
+        type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+        type(talsh_projectors_tens_t), intent(inout) :: projector_t
+        type(talsh_intg_tens_t), intent(inout) :: int_t
+  
+        type(talsh_tens_t), intent(inout) :: prop_gradient_t
+        complex(kind=8), intent(in) :: frequency
+  
+        call talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t)
+  
+     end subroutine
+  
 
 
 
@@ -2155,14 +2039,14 @@ contains
 ! aspg, 16/04/2019
 ! for the moment we have a long argument list to get it going, later we try to shorten in
 !   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
-   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t)
+   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t1, prop_gradient_t2)
       type(talsh_davidson_results_tens_t) :: results_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(talsh_projectors_tens_t), intent(inout) :: projector_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
 
-      type(talsh_tens_t), intent(inout), optional :: prop_gradient_t
+      type(talsh_tens_t), intent(inout), optional :: prop_gradient_t1, prop_gradient_t2
       complex(kind=8), intent(in), optional :: frequency  
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
@@ -2175,9 +2059,11 @@ contains
 ! "[...] When a pointer is declared its status is undefined, and cannot be safely queried with the associated intrinsic. [...]"
 
         complex(kind=8), pointer, contiguous :: M_small(:,:)        => NULL()
+        complex(kind=8), pointer, contiguous :: B_small(:)          => NULL()
         complex(kind=8), pointer, contiguous :: c_small_r(:,:)      => NULL()
         complex(kind=8), pointer, contiguous :: c_small_l(:,:)      => NULL()
         complex(kind=8), pointer, contiguous :: e_small(:)          => NULL()
+        complex(kind=8), pointer, contiguous :: x_small(:,:)        => NULL()
 
         complex(kind=8), pointer, contiguous :: c_small_r_old(:,:)  => NULL()
         complex(kind=8), pointer, contiguous :: c_small_l_old(:,:)  => NULL()
@@ -2191,9 +2077,13 @@ contains
         integer :: i, j, k
         integer :: nroots, ierr
 
-        nroots    = workspace_t%nroots
+        if (davidson_solve_linear_system) then 
+            nroots = 1
+        else
+            nroots = workspace_t%nroots
+        end if
 
-        if (davidson_solve_linear_system.and..not.present(prop_gradient_t)) then
+        if (davidson_solve_linear_system.and..not.present(prop_gradient_t1)) then
             call quit('bla') 
         end if
 
@@ -2229,7 +2119,12 @@ contains
             if (davidson_solve_rhs) then
                if (associated(interm_t%sigma_rhs_p)) then
                   call create_sigma_right(int_t,interm_t,workspace_t)
-                  call create_subspace_matrix_right(M_small,workspace_t) 
+                  if (davidson_solve_linear_system) then
+                      call create_subspace_matrix_right(M_small,workspace_t,frequency_local) 
+                      call create_subspace_vector(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+                  else
+                       call create_subspace_matrix_right(M_small,workspace_t) 
+                  end if
                else
                   stop 'RHS sigma vector routine has not been defined prior to calling the solver'  
                end if
@@ -2246,7 +2141,10 @@ contains
 
 !!          if (associated(projector)) call apply_projector(projector,sigma_vector)
 
-            call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
+            if (davidson_solve_linear_system) then
+                call calculate_Linear_systems(M_small,B_small,x_small)  
+            else
+                call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
                                                         e_small,                      &
                                                         c_small_r, c_small_l,         &
@@ -2260,6 +2158,7 @@ contains
                                                         nroots=nroots,                &
                                                         verbose=.true.)
 !                                                       verbose=davidson_verbose)
+            end if 
 
             if (davidson_solve_rhs.and.davidson_overlap_sorting) then
                 c_small_r_old = c_small_r
@@ -2269,14 +2168,24 @@ contains
             end if
  
             print *,'debug : before forming preconditioner'
+            if (davidson_solve_linear_system) then
+                allocate(e_small(1))
+                e_small(1) = frequency_local
+            end if
             call form_preconditioner(workspace_t, e_small)
             print *,'debug : after  forming preconditioner'
 
             print *,'debug : before correcting vectors'
             if (associated(delta)) deallocate(delta)
-            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
-                                                                   e_small, c_small_r, workspace_t)
-
+            if (davidson_solve_rhs) then
+                if (davidson_solve_linear_system) then
+                    delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+                                                    e_small, x_small, workspace_t, B_small)
+                else
+                    delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+                                                    e_small, c_small_r, workspace_t)
+                end if 
+            end if
             print *,'debug : after  correcting vectors'
             if (.not.associated(delta)) then
                 write(davidson_output_file_unit,*) "All roots converged, stopping."
@@ -2467,74 +2376,79 @@ contains
     end subroutine
 
 
-    subroutine calculate_Linear_systems(output_file_unit, M, eValues, eVectorsR, eVectorsL, &
-        eVectorsR_old, eVectorsL_old, eValuesShift, left, right,    &
-        sorting_order, nroots, verbose, follow_overlap, follow_overlap_scheme, apply_evalues_shift)
+    ! subroutine calculate_Linear_systems(output_file_unit, M, eValues, eVectorsR, eVectorsL, &
+    !     eVectorsR_old, eVectorsL_old, eValuesShift, left, right,    &
+    !     sorting_order, nroots, verbose, follow_overlap, follow_overlap_scheme, apply_evalues_shift)
+    subroutine calculate_Linear_systems(M, B, Solution)
 
-        complex(kind=8), intent(inout), pointer   :: M(:,:)
-        complex(kind=8), intent(inout), pointer   :: eValues(:)
-        complex(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
-        complex(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
-        real(kind=8), intent(in)   :: eValuesShift(2)
-        logical, optional, intent(in) :: left, right, verbose, follow_overlap, apply_evalues_shift
-        integer, optional, intent(in) :: sorting_order, nroots, follow_overlap_scheme
-        integer, intent(in) :: output_file_unit 
+        complex(kind=8), intent(inout), pointer :: M(:,:)
+        complex(kind=8), intent(inout), pointer :: B(:)
+        complex(kind=8), intent(inout), pointer :: Solution(:,:)
 
-        logical :: left_local, right_local, verbose_local, follow_overlap_local, apply_evalues_shift_local
-        integer :: sorting_order_local, M_nroots, nroot, nroots_to_print, follow_overlap_scheme_local
-        complex(kind=8), allocatable :: overlap(:,:)
+        ! complex(kind=8), intent(inout), pointer   :: M(:,:)
+        ! complex(kind=8), intent(inout), pointer   :: eValues(:)
+        ! complex(kind=8), intent(inout), pointer   :: eVectorsR(:,:), eVectorsL(:,:)
+        ! complex(kind=8), intent(in)   :: eVectorsR_old(:,:), eVectorsL_old(:,:) !old vectors
+        ! real(kind=8), intent(in)   :: eValuesShift(2)
+        ! logical, optional, intent(in) :: left, right, verbose, follow_overlap, apply_evalues_shift
+        ! integer, optional, intent(in) :: sorting_order, nroots, follow_overlap_scheme
+        ! integer, intent(in) :: output_file_unit 
 
-        if (present(apply_evalues_shift)) then
-            apply_evalues_shift_local = apply_evalues_shift
-        else
-            apply_evalues_shift_local = .false.
-        end if
+        ! logical :: left_local, right_local, verbose_local, follow_overlap_local, apply_evalues_shift_local
+        ! integer :: sorting_order_local, M_nroots, nroot, nroots_to_print, follow_overlap_scheme_local
+        ! complex(kind=8), allocatable :: overlap(:,:)
 
-        if (present(follow_overlap)) then
-            follow_overlap_local = follow_overlap
-        else
-            follow_overlap_local = .false.
-        end if
+        ! if (present(apply_evalues_shift)) then
+        !     apply_evalues_shift_local = apply_evalues_shift
+        ! else
+        !     apply_evalues_shift_local = .false.
+        ! end if
 
-        if (present(follow_overlap_scheme)) then
-            follow_overlap_scheme_local = follow_overlap_scheme
-        else
-            follow_overlap_scheme_local = 1 ! 1 = scheme calculating overlap matrix ; 2 = scheme not explicitly calculating overlap matrix
-        end if
+        ! if (present(follow_overlap)) then
+        !     follow_overlap_local = follow_overlap
+        ! else
+        !     follow_overlap_local = .false.
+        ! end if
 
-        if (present(sorting_order)) then
-            sorting_order_local = sorting_order
-        else
-            sorting_order_local = 1 
-        end if
+        ! if (present(follow_overlap_scheme)) then
+        !     follow_overlap_scheme_local = follow_overlap_scheme
+        ! else
+        !     follow_overlap_scheme_local = 1 ! 1 = scheme calculating overlap matrix ; 2 = scheme not explicitly calculating overlap matrix
+        ! end if
 
-        if (present(right)) then
-            right_local = right
-        else
-            right_local = .false.
-        end if
+        ! if (present(sorting_order)) then
+        !     sorting_order_local = sorting_order
+        ! else
+        !     sorting_order_local = 1 
+        ! end if
 
-        if (present(left)) then
-            left_local = left
-        else
-            left_local = .false. 
-        end if
+        ! if (present(right)) then
+        !     right_local = right
+        ! else
+        !     right_local = .false.
+        ! end if
 
-        if (present(verbose)) then
-            verbose_local = verbose
-        else
-            verbose_local = .false. 
-        end if
+        ! if (present(left)) then
+        !     left_local = left
+        ! else
+        !     left_local = .false. 
+        ! end if
 
-        M_nroots = size(M,1) 
+        ! if (present(verbose)) then
+        !     verbose_local = verbose
+        ! else
+        !     verbose_local = .false. 
+        ! end if
 
-        if (present(nroots)) then
-            nroots_to_print = nroots
-        else
-            nroots_to_print = M_nroots
-        end if
+        ! M_nroots = size(M,1) 
 
-        call talsh_solve_Linear_systems(M, eValues, eVectorsR, eVectorsL, left_local)
+        ! if (present(nroots)) then
+        !     nroots_to_print = nroots
+        ! else
+        !     nroots_to_print = M_nroots
+        ! end if
+
+        call talsh_solve_Linear_systems(M, B, Solution)
 
 
 !         if (follow_overlap_local) then
@@ -2575,9 +2489,9 @@ contains
 
 ! debug, print eigenvecturs and eigenvalues from subspace
 !       if (.false.) & 
-        call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-!                                   .false., .false., nroots=nroots_to_print)
-                                    left_local, right_local, nroots=nroots_to_print)
+!         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
+! !                                   .false., .false., nroots=nroots_to_print)
+!                                     left_local, right_local, nroots=nroots_to_print)
 
     end subroutine calculate_Linear_systems
 
