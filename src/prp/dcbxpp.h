@@ -30,18 +30,20 @@
       PARAMETER (MAXLPP = 5316, MAX_KVAL = 20)
       LOGICAL XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG,                           &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,                         &
-     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,GNOISE,GCLEAN,           &
-     &        DOVELR,DOLENR
+     &        XPP_E2CHEK,DOBED,ORIENTED,BEDCHK,BEDECD,ANGPLOT,          &
+     &        GNOISE,GCLEAN,DOVELR,DOLENR
       COMMON /XCBLPP/XPP_SKIPEE,XPP_SKIPEP,XPP_LSFG(2),                 &
      &        XPPNRM,ORBXPP,XPPANA,XPP_TRIPLET,XPP_E2CHEK,DOBED,        &
-     &        ORIENTED,BEDCHK,GNOISE,GCLEAN,DOVELR,DOLENR
+     &        ORIENTED,BEDCHK,BEDECD,ANGPLOT,                           &
+     &        GNOISE,GCLEAN,DOVELR,DOLENR
+      
       COMMON /XCBRPP/THCPP,CNVXPP(2),RESXPP,XPPERG,                     &
-     &        UWAVE(3),UPOL(3),BEDSTP,GNOISE_FAC,GCLEAN_FAC
+     &        UWAVE(3),UPOL(3,2),BEDSTP,GNOISE_FAC,GCLEAN_FAC
       COMMON /XCBIPP/IPRXPP,ITRXPP,MAXEXC,                              &
      &     KEXCNV(8), KEXSIM(8), KEXSTV(8),                             &
      &     LPPAPU(MAXLPP),LPPAPS(MAXLPP),NPPAPT,NPPAP(8),JPPAP(8),      &
      &     INTXPP,ITRIPP(2),NCLS_XPP(2,3,2),KVAL_OSC,                   &
      &     IEPOFF(MAX_KVAL+1),IMPOFF(MAX_KVAL), IBDOFF(0:MAX_KVAL),     &
-     &     NROTAV,NBED
+     &     IVPOFF(MAX_KVAL+1),NROTAV,NBED
       CHARACTER XPP_INDSTR*72, XPPFIL*6
       COMMON/DCCXPP/XPP_INDSTR(3,2),XPPFIL

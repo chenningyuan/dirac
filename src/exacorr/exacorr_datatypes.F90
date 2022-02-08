@@ -42,10 +42,14 @@
             logical                 :: beta_vir = .false.
             logical                 :: do_iterative   = .true.  ! this provides a way to switch off iterative methods, e.g. if we want to do only MP2 
             logical                 :: do_perturbative = .true. ! this generalizes the do_triples
+            logical                 :: do_triples = .true.
+            logical                 :: tripl_lap = .false.
+            logical                 :: do_no = .false.          ! if true, generate natural orbital
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
             integer                 :: moint_scheme = 4
+            integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
             integer                 :: ncycles = 30
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
@@ -64,13 +68,15 @@
 !  aspg, TODO: harmonize this tripl_block with the more general setup of excitation rank
             integer                 :: tripl_block(1:2) = -1    ! for running triples
             integer                 :: nff(1:2) = 0             ! num. prop, num. field strengths
+            integer                 :: n_laplace = 10           ! number of laplace points to use
             
             integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
             integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
 
             real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
             real(REALD)             :: level_shift = 0.D0       ! level shift
-            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky
+            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
+            real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
 
             complex(8), allocatable   :: ff(:,:)                  ! field strengths
             character(8), allocatable :: ff_names(:)            ! property labels

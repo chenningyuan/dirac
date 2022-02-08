@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 subroutine printlogo
@@ -104,22 +99,24 @@ print *, '*                                                                     
 print *, '*                                                                             *'
 print *, '*    Written by:                                                              *'
 print *, '*                                                                             *'
-print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
-print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
 print *, '*    Trond Saue               Universite Toulouse III           France        *'
 print *, '*    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *'
 print *, '*    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *'
+print *, '*    Radovan Bast             UiT The Arctic University of      Norway        *'
+print *, '*    Andre S. P. Gomes        CNRS/Universite de Lille          France        *'
 print *, '*                                                                             *'
 print *, '*    with contributions from:                                                 *'
 print *, '*                                                                             *'
 print *, '*    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *'
 print *, '*    Vebjoern Bakken          University of Oslo                Norway        *'
+print *, '*    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *'
+print *, '*    Joel Creutzberg          University of Southern Denmark    Denmark       *'
 print *, '*    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *'
 print *, '*    Sebastien Dubillard      University of Strasbourg          France        *'
 print *, '*    Ulf Ekstroem             University of Oslo                Norway        *'
 print *, '*    Ephraim Eliav            University of Tel Aviv            Israel        *'
 print *, '*    Thomas Enevoldsen        University of Southern Denmark    Denmark       *'
-print *, '*    Elke Fasshauer           University of Aarhus              Denmark       *'
+print *, '*    Elke Fasshauer           University of Tubingen            Germany       *'
 print *, '*    Timo Fleig               Universite Toulouse III           France        *'
 print *, '*    Olav Fossgaard           UiT The Arctic University of      Norway        *'
 print *, '*    Loic Halbert             Universite de Lille               France        *'
@@ -127,6 +124,7 @@ print *, '*    Erik D. Hedegaard        University of Southern Denmark    Denmar
 print *, '*    Trygve Helgaker          University of Oslo                Norway        *'
 print *, '*    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *'
 print *, '*    Johan Henriksson         Linkoeping University             Sweden        *'
+print *, '*    Martin van Horn          Universite Toulouse III           France        *'
 print *, '*    Miroslav Ilias           Matej Bel University              Slovakia      *'
 print *, '*    Christoph R. Jacob       TU Braunschweig                   Germany       *'
 print *, '*    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *'
@@ -135,7 +133,7 @@ print *, '*    Ossama Kullie            University of Kassel              German
 print *, '*    Jon K. Laerdahl          University of Oslo                Norway        *'
 print *, '*    Christoffer V. Larsen    University of Southern Denmark    Denmark       *'
 print *, '*    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *'
-print *, '*    Nanna Holmgaard List     Stanford University               USA           *'
+print *, '*    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *'
 print *, '*    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *'
 print *, '*    Patrick Norman           Stockholm Inst. of Technology     Sweden        *'
@@ -147,50 +145,53 @@ print *, '*    Young Choon Park         KAIST, Daejeon                    South 
 print *, '*    Jesper K. Pedersen       University of Southern Denmark    Denmark       *'
 print *, '*    Markus Pernpointner      University of Heidelberg          Germany       *'
 print *, '*    Johann V. Pototschnig    Technical University Graz         Austria       *'
-print *, '*    Roberto Di Remigio       UiT The Arctic University of      Norway        *'
+print *, '*    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *'
 print *, '*    Michal Repisky           UiT The Arctic University of      Norway        *'
 print *, '*    Kenneth Ruud             UiT The Arctic University of      Norway        *'
 print *, '*    Pawel Salek              Stockholm Inst. of Technology     Sweden        *'
 print *, '*    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *'
-print *, '*    Bruno Senjean            University of Leiden              Netherlands   *'
-print *, '*    Avijit Shee              University of Michigan            USA           *'
+print *, '*    Bruno Senjean            CNRS/Universite de Montpellier    France        *'
+print *, '*    Avijit Shee              University of Berkeley            USA           *'
 print *, '*    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *'
 print *, '*    Ayaki Sunaga             Kyoto University                  Japan         *'
 print *, '*    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *'
 print *, '*    Joern Thyssen            University of Southern Denmark    Denmark       *'
 print *, '*    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *'
-print *, '*    Marta L. Vidal           Technical University of Denmark   Denmark       *'
+print *, '*    Marta L. Vidal           Cardiff University                UK            *'
 print *, '*    Sebastien Villaume       Linkoeping University             Sweden        *'
 print *, '*    Olivier Visser           University of Groningen           Netherlands   *'
 print *, '*    Toke Winther             University of Southern Denmark    Denmark       *'
 print *, '*    Shigeyoshi Yamamoto      Chukyo University                 Japan         *'
+print *, '*    Joel Creutzberg          Lund University                   Sweden        *'
+print *, '*    Xiang Yuan               Universite de Lille               France        *'
 print *, '*                                                                             *'
 print *, '*    For more information about the DIRAC code see http://diracprogram.org    *'
 print *, '*                                                                             *'
 print *, '*    This is an experimental code. The authors accept no responsibility       *'
 print *, '*    for the performance of the code or for the correctness of the results.   *'
 print *, '*                                                                             *'
-print *, '*    The code (in whole or part) is not to be reproduced for further          *'
-print *, '*    distribution without the written permission of the authors or            *'
-print *, '*    their representatives.                                                   *'
+print *, '*    This program is free software; you can redistribute it and/or            *'
+print *, '*    modify it under the terms of the GNU Lesser General Public               *'
+print *, '*    License version 2.1 as published by the Free Software Foundation.        *'
 print *, '*                                                                             *'
 print *, '*    If results obtained with this code are published, an                     *'
 print *, '*    appropriate citation would be:                                           *'
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
-print *, '*    Release DIRAC21 (2021), written by                                       *'
+print *, '*    Release DIRAC22 (2022), written by                                       *'
 print *, '*    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast, and A. S. P. Gomes      *'
-print *, '*    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *'
-print *, '*    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *'
-print *, '*    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *'
-print *, '*    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *'
-print *, '*    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List,          *'
-print *, '*    H. S. Nataraj, M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen,          *'
-print *, '*    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *'
-print *, '*    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *'
-print *, '*    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*'
-print *, '*    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *'
-print *, '*    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *'
+print *, '*    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *'
+print *, '*    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *'
+print *, '*    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *'
+print *, '*    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *'
+print *, '*    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *'
+print *, '*    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *'
+print *, '*    P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos,     *'
+print *, '*    Y. C. Park, J. K. Pedersen, M. Pernpointner, J. V. Pototschnig,          *' 
+print *, '*    R. Di Remigio, M. Repisky, K. Ruud, P. Salek, B. Schimmelpfennig,        *'
+print *, '*    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *'
+print *, '*    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *'
+print *, '*    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *'
 print *, '*    (see http://diracprogram.org).                                           *'
 print *, '*                                                                             *'
 print *, '*    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *'

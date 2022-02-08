@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -248,13 +243,6 @@ C         Create total property matrix with correct prefactor
      &               work(konein+(l-1)*nnbbasx),1,
      &               WORK(khelp),1)
           end do
-!         WORK(KONEIN:KONEIN+NNBBASX-1) = PREFACTOR *
-!    &    (
-!    &            WORK(KONEIN          :KONEIN+  NNBBASX-1)
-!    &      - 8 * WORK(KONEIN+  NNBBASX:KONEIN+2*NNBBASX-1)
-!    &      + 8 * WORK(KONEIN+2*NNBBASX:KONEIN+3*NNBBASX-1)
-!    &      -     WORK(KONEIN+3*NNBBASX:KONEIN+4*NNBBASX-1)
-!    &    )
 C         Store matrix in AOproper file
           ITYP = ITYP + 1
           CALL WRTPRO(WORK(khelp),NNBBASX,LABINT(ITYP),RTNLBL,IPRHAM)
@@ -1459,18 +1447,18 @@ C ... some are usable (ZANGMOM)
      &     PROPNAME.EQ.'Orbital z-moment' .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'ZANGMOM'          .OR.  ! ... ZANGMOM
      &     PROPNAME.EQ.'z-angular mom'    .OR.  ! ... ZANGMOM
-     &     PROPNAME.EQ.'d|S>/dBX        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBY        ' .OR.
-     &     PROPNAME.EQ.'d|S>/dBZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dBX          ' .OR.
-     &     PROPNAME.EQ.'dS/dBY          ' .OR.
-     &     PROPNAME.EQ.'dS/dBZ          ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XX        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2XZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YY        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2YZ        ' .OR.
-     &     PROPNAME.EQ.'dS/dB2ZZ        '
+     &     PROPNAME.EQ.'d|S>_dBX        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBY        ' .OR.
+     &     PROPNAME.EQ.'d|S>_dBZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dBX          ' .OR.
+     &     PROPNAME.EQ.'dS_dBY          ' .OR.
+     &     PROPNAME.EQ.'dS_dBZ          ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XX        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2XZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YY        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2YZ        ' .OR.
+     &     PROPNAME.EQ.'dS_dB2ZZ        '
      &      ) DOTRANS = .FALSE.
 
       IF (IPRINT.GE.4) THEN
@@ -3935,9 +3923,7 @@ CMI .. mover before diagonalization which can destroy SMAT
 C
 C     Diagonalize overlap matrix
 C
-#ifdef MOD_UNRELEASED
       IF (.NOT.DOQJACO) THEN
-#endif
          IF (LOWJACO) THEN
             CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT)
          ELSE
@@ -3950,7 +3936,6 @@ c    It would be better to rewrite the code below instead..
                CALL QUIT('Diagonalization of overlap matrix failed')
             ENDIF
          ENDIF
-#ifdef MOD_UNRELEASED
       ELSE
 CMI   ... (quaternion) Jacobi diagonalization routine
         NSS=NS*NS
@@ -3976,7 +3961,6 @@ CMI   ... (quaternion) Jacobi diagonalization routine
         CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1) ! resort
         CALL MEMREL('LOWGEN',WORK,KSMAT,KSMAT,KFREE,LFREE)
       ENDIF
-#endif
 !    ... ensure V_ij = U_ij/SQRT(s_j)
       NV = 0
       DO I = 1,NS
@@ -5796,9 +5780,7 @@ C
              close(luhm,status="keep")
           ENDIF
 
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL))
@@ -5812,7 +5794,6 @@ C
      &        'LINSYM: Erroneous QDIAG diagonalization of Jz_LL !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                   IDUMMY,.TRUE.,IPRHAM)
@@ -5820,7 +5801,6 @@ C
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-#endif
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_LL eigenvalues / eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -5871,9 +5851,7 @@ C
              close(luhm,status="keep")
           ENDIF
 
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS))
@@ -5889,7 +5867,6 @@ C
      &        'LINSYM: Erroneous QDIAG diagonalization of Jz_SS !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
      &                   .TRUE.,IPRHAM)
@@ -5897,7 +5874,6 @@ C
               EIG(IEIGP+II-1)=WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-#endif
           IF (IPRHAM.GE.5) THEN
            CALL HEADER('LINSYM: Jz_SS eigenvalues/eigenvectors',-1)
            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
@@ -6366,9 +6342,7 @@ C
             close(luhm,status="keep")
           ENDIF
 
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                  WORK(KVLL))
@@ -6384,7 +6358,6 @@ C
      &        'ATMSYM: Errorneous QDIAG diagonalization of Kappa_LL !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                   IDUMMY,.TRUE.,IPRHAM)
@@ -6392,7 +6365,6 @@ C
               EIG(IEIGE+II-1)=WORK(KFLL+NL*(II-1)+II-1) ! store eigenvalues
             ENDDO
           ENDIF
-#endif
           KPMAXL = NINT(MAX(ABS(EIG(IEIGE)),ABS(EIG(IEIGE+NL-1))))
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_LL eigenvalues',-1)
@@ -6453,9 +6425,7 @@ C
             enddo
             close(luhm,status="keep")
           ENDIF
-#ifdef MOD_UNRELEASED
           IF (.NOT.DOQJACO) THEN
-#endif
             IF(DOJACO) THEN
               CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                  WORK(KVSS))
@@ -6471,7 +6441,6 @@ C
      &        'ATMSYM: Errorneous QDIAG diagonalization of Kappa_SS !')
               ENDIF
             ENDIF
-#ifdef MOD_UNRELEASED
           ELSE
             CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
      &                   .TRUE.,IPRHAM)
@@ -6479,7 +6448,6 @@ C
               EIG(IEIGP+II-1)=  WORK(KFSS+NS*(II-1)+II-1) ! store eigenvalues
             ENDDO
          ENDIF
-#endif
           KPMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
           IF (IPRHAM.GE.3) THEN
             CALL HEADER('ATMSYM: Kappa_SS eigenvalues',-1)
@@ -6844,9 +6812,7 @@ C
      &                   IPQTOQ(1,0),LUPRI)
            ENDIF
 C        
-#ifdef MOD_UNRELEASED
            IF (.NOT.DOQJACO) THEN
-#endif
              IF(DOJACO) THEN
                CALL RSJACO(NL,NL,NL,WORK(KFLL),EIG(IEIGE),1,1,0,
      &                       WORK(KVLL))
@@ -6862,7 +6828,6 @@ C
      &          'ATMSYM: Erroneous QDIAG diagonalization of Mj_LL !')
                ENDIF
              ENDIF
-#ifdef MOD_UNRELEASED
            ELSE
              CALL QJACOBI(WORK(KFLL),WORK(KVLL),NL,1,0,
      &                    IDUMMY,.TRUE.,IPRHAM)
@@ -6871,7 +6836,6 @@ C
              ENDDO
            ENDIF
            MJMAXL = NINT( MAX( ABS(EIG(IEIGE)), ABS(EIG(IEIGE+NL-1)) ) )
-#endif
            IF (IPRHAM.GE.3) THEN
              CALL HEADER('ATMSYM: Mj_LL eigenvalues',-1)
              WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,IFRP)
@@ -6911,9 +6875,7 @@ C
      &                IPQTOQ(1,0),LUPRI)
            ENDIF
 C     
-#ifdef MOD_UNRELEASED
            IF (.NOT.DOQJACO) THEN
-#endif
              IF(DOJACO) THEN
                CALL RSJACO(NS,NS,NS,WORK(KFSS),EIG(IEIGP),1,1,0,
      &                     WORK(KVSS))
@@ -6929,7 +6891,6 @@ C
      &           'ATMSYM: Erroneous QDIAG diagonalization of Mj_SS !')
                ENDIF
              ENDIF
-#ifdef MOD_UNRELEASED
            ELSE
              CALL QJACOBI(WORK(KFSS),WORK(KVSS),NS,1,0,IDUMMY,
      &                   .TRUE.,IPRHAM)
@@ -6938,7 +6899,6 @@ C
              ENDDO
            ENDIF
            MJMAXS=NINT(MAX(ABS(EIG(IEIGP)),ABS(EIG(IEIGP+NS-1))))
-#endif
            IF (IPRHAM.GE.3) THEN
              CALL HEADER('ATMSYM: Mj_SS eigenvalues',-1)
              WRITE(LUPRI,'(A,I2)') ' * Kappa:', ID_SUB_BL(KPADD,IFRP)
@@ -8186,6 +8146,7 @@ C     when there is no subblock ... allows single code
       N2TMT   = 0
       N2TMOTQ = 0      
       ICOFF   = 0
+      IEOFF   = 0
       IVOFF   = 0
       ITEFF = 1
       DO 10 IFRP =  1,NFSYM

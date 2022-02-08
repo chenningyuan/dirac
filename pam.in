@@ -85,7 +85,7 @@ class pam_enviroment:
         # default: do not show pam settings
         self.just_show_settings = False
 
-        # list of environment variables thar are to be set by dirac (useful to specify defaults in .diracrc)
+        # list of environment variables that are to be set by dirac (useful to specify defaults in .diracrc)
         self.environment = []
 
         # supercomputers are special, need to know whether we run on summit
@@ -171,17 +171,21 @@ class pam_enviroment:
         self.dirac_cmd = None
 
        # dirac-executable position (could be reset after flag reading)
-        exec_position=os.path.join(pam_directory, self.dirac_exe_file)
-        if os.path.isfile(exec_position):
-            self.dirac_exe = exec_position
+       # try 1) pam directory;
+       #     2) build subdirectory;
+       #     3) share/dirac directory from a "cmake --install . --prefix <install-directory>
+
+        exec_position1=os.path.join(pam_directory, self.dirac_exe_file)
+        exec_position2=os.path.join(pam_directory, "build", self.dirac_exe_file)
+        exec_position3=os.path.join(pam_directory, "../share/dirac", self.dirac_exe_file)
+        if os.path.isfile(exec_position1):
+            self.dirac_exe = exec_position1
+        elif os.path.isfile(exec_position2):
+            self.dirac_exe = exec_position2
+        elif os.path.isfile(exec_position3):
+            self.dirac_exe = exec_position3
         else:
-            # does not exist, try build directory
-            exec_position=os.path.join(pam_directory, "build", self.dirac_exe_file)
-            if os.path.isfile(exec_position):
-                # assign build/dirac.x
-                self.dirac_exe = exec_position
-            else:
-                self.dirac_exe = None
+            self.dirac_exe = None
 
         # flags for putting/getting files for Dirac calculation
         self.put_files = None
@@ -243,6 +247,9 @@ class pam_enviroment:
     # lu of the DIRAC run output file (open in the "execute_dirac" method)
         self.f = None
 
+    # if possible, create or check the hdf5 checkpoint file
+        self.checkpoint = True
+
     # by default, do backup files
         self.nobackup = False
 
@@ -292,7 +299,7 @@ class pam_enviroment:
     # total spent time for pam script + job execution
         self.start_time=time.time()
 
-    #  variable for the diracrc file, full path
+    #  variable for the .diracrc file, full path
         self.diracrc_file = None
     # variable for the sole diracrc file argument list for pam
         self.diracrc_args = []
@@ -311,6 +318,17 @@ class pam_enviroment:
             basis_dir= os.path.join(pam_directory, 'basis')
             basis_dalton_dir=os.path.join(pam_directory, 'basis_dalton')
             basis_ecp_dir=os.path.join(pam_directory, 'basis_ecp')
+            if os.path.isdir(basis_dir):
+                self.basdir = self.basdir + basis_dir
+            if os.path.isdir(basis_dalton_dir):
+                self.basdir = self.basdir+':'+basis_dalton_dir
+            if os.path.isdir(basis_ecp_dir):
+                self.basdir = self.basdir+':'+basis_ecp_dir
+            # if dirac was installed with "cmake --install . --prefix EXEDIR"
+            # one gets:  $EXEDIR/bin/pam-dirac, $EXEDIR/share/dirac/dirac.x, and $EXEDIR/share/dirac/basis*
+            basis_dir= os.path.join(pam_directory, '../share/dirac', 'basis')
+            basis_dalton_dir=os.path.join(pam_directory, '../share/dirac', 'basis_dalton')
+            basis_ecp_dir=os.path.join(pam_directory, '../share/dirac', 'basis_ecp')
             if os.path.isdir(basis_dir):
                 self.basdir = self.basdir + basis_dir
             if os.path.isdir(basis_dalton_dir):
@@ -358,9 +376,9 @@ class pam_enviroment:
         print("  Dirac command       ",  self.dirac_cmd)
         print("  Dirac executable    ",  self.dirac_exe)
         if self.diracrc_file:
-            print("  sole diracrc file, which was read: ", self.diracrc_file)
+            print("  The .diracrc file, which was read:   ", self.diracrc_file)
         if self.diracrc_args:
-            print("  default pam arguments from this file: ", self.diracrc_args)
+            print("  Default pam arguments from .diracrc: ", self.diracrc_args)
 
     def create_scratch_dir(self):
         ''' create the scratch directory for Dirac run  '''
@@ -505,8 +523,10 @@ class pam_enviroment:
         #-serve as comments.
         """
         fullargs = []
-        paths = [os.path.join(os.path.expanduser('~'), '.diracrc'),  # first try $HOME/.diracrc
-                 os.path.join(pam_directory, '.diracrc')]            # then try .diracrc in the pam directory
+        self.input_directory = os.getcwd()
+        paths = [os.path.join(self.input_directory, '.diracrc'),     # first try a local <jobdir>/.diracrc
+                 os.path.join(os.path.expanduser('~'), '.diracrc'),  # second try a global $HOME/.diracrc
+                 os.path.join(pam_directory, '.diracrc')]            # third try .diracrc in the pam directory
         for path in paths:
             try:
                 f = open(path,'r')
@@ -590,6 +610,10 @@ Options are also read from ~/.diracrc"""
             help='Remote shell program, typically rcp or scp [default: %default or taken from .dirarc]',
             metavar='STRING',
             )
+        group.add_option('--noh5', action='store_true',
+                         dest='dest_noh5', default=False,
+                         help='do not create a h5 acheckpoint file [default: create it]'
+                         )
         group.add_option('--noarch', action='store_true',
                          dest='dest_noarch', default=False,
                          help='do not create a tgz archive [default: create it]'
@@ -632,7 +656,7 @@ Options are also read from ~/.diracrc"""
                   """,
             metavar='FLOAT',
             )
-        group.add_option(  # default set later - it's --mw setting
+        group.add_option(  # default set later - it's --gb setting
             '--nw',
             type='int',
             action='store',
@@ -1001,6 +1025,9 @@ Options are also read from ~/.diracrc"""
 
         self.nobackup = options.dest_nobackup
 
+        if options.dest_noh5:
+            self.checkpoint = False
+
         if options.dest_noarch:
             self.archive = False
 
@@ -1293,6 +1320,11 @@ Options are also read from ~/.diracrc"""
     # copy dirac.x executable if wanted
         self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
 
+    # create textfile contains labels for checkpoint file for the schema
+        from process_schema import read_schema, write_schema
+        schema, flat_schema = read_schema(os.path.join(pam_directory,"DIRACschema.txt"))
+        write_schema(os.path.join(self.scratch_dir,'schema_labels.txt'),flat_schema)
+
     # restarting stuff
         if self.full_restart:
             copy_single_file(self.archive_name, self.archive_name)
@@ -1341,6 +1373,9 @@ Options are also read from ~/.diracrc"""
 
         # copies files to scratch_dir
         if self.incmo:
+            file_name = 'CHECKPOINT.h5'
+            if os.path.isfile(os.path.join(self.input_directory,file_name)):
+               copy_single_file(file_name,file_name)
             file_name = 'DFCOEF'
             copy_single_file(file_name,file_name)
         if self.inkrmc:
@@ -1539,7 +1574,7 @@ Options are also read from ~/.diracrc"""
                     print_error_message("\n Though debugging wanted, no debugger is assigned - check the flag !")
                     sys.exit(234)
                 if find_executable(self.debugger) is None:
-                    print_error_message('\n no debugger found in the <diracrc> file !')
+                    print_error_message('\n no debugger found in the <.diracrc> file !')
                     sys.exit(235)
                 if not is_windows():                        
                     self.dirac_cmd = self.debugger + ' ' + dirac_executable \
@@ -1856,8 +1891,30 @@ Options are also read from ~/.diracrc"""
                     for f in glob.glob(p):
                         save_single_file(f, f)
 
+        if self.checkpoint:
+            from process_schema import load_diracdata, write_hdf5, data_validity
+            chpfile = os.path.join(self.scratch_dir,'CHECKPOINT.h5')
+            if os.path.isfile(chpfile):
+              # Checkpoint file exists, copy to input directory
+              self.copy_file(chpfile,os.path.join(self.input_directory, self.output_name+'.h5'))
+              print('  Native hdf5 checkpoint file was retrieved from scratch directory')
+            else:
+                try:
+                    import h5py
+                    # Load the data from the dirac-style files
+                    data = load_diracdata(self.scratch_dir)
+                    # Write and save the checkpoint file after checking its validity
+                    if data_validity(data):
+                        write_hdf5(os.path.join(self.input_directory, self.output_name+'.h5'),data)
+                        print('  Valid hdf5 checkpoint file was constructed from dirac-files')
+                    else:
+                        print('  Could not construct hdf5 checkpoint file, dataset is incomplete')
+                except:
+                        print('  Could not construct hdf5 checkpoint file, h5py is not installed')
+
         if self.outcmo:
             save_single_file('DFCOEF')
+            save_single_file('CHECKPOINT.h5')
 
         if self.outkrmc:
             save_single_file('KRMCSCF')
@@ -2023,15 +2080,14 @@ class pam_run(pam_enviroment):
         self.pam_variables.print_header()
         self.pam_variables.set_mkl_environment_variables()
         self.pam_variables.set_environment()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            sys.exit()
 
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            self.pam_variables.remove_scratch_dir()
-            sys.exit()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()

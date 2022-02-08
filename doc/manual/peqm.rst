@@ -5,21 +5,24 @@ star(PEQM)
 Polarizable embedding model
 
 This input section controls calculations using the polarizable embedding (PE) model.
+For examples of calculations with different response methods and Hamiltonians, 
+see the tutorial :ref:`PE-TDDFT calculations of excitation energies and solvent shifts`).
+
 In DIRAC it is possible to include the effects from a structured environment on a core
-molecular system using the polarizable embedding (PE) model. The current implemen-
-tation is a layered QM/MM-type embedding model capable of using advanced potentials
+molecular system using the polarizable embedding (PE) model. The current implementation 
+is a layered QM/MM-type embedding model capable of using advanced potentials
 that include an electrostatic component as well as an induction (polarization) component.
-The effects of the environment are included through effective operators that contain an em-
-bedding potential, which is a representation of the environment, thereby directly affecting
-the molecular properties of the core system. The wave function of the core system is opti-
-mized while taking into account the explicit electrostatic interactions and induction effects
+The effects of the environment are included through effective operators that contain an 
+embedding potential, which is a representation of the environment, thereby directly affecting
+the molecular properties of the core system. The wave function of the core system is 
+optimized while taking into account the explicit electrostatic interactions and induction effects
 from the environment in a fully self-consistent manner. The electrostatic and induction
 components are modeled using Cartesian multipole moments and anisotropic dipole-dipole
-polarizabilities, respectively. The electrostatic part models the permanent charge distribu-
-tion of the environment and will polarize the core system, while the induction part also
-allows polarization of the environment. The environment response is included in the effec-
-tive operator as induced dipoles, which arise due to the electric fields from the electrons and
-nuclei in the core system as well as from the environment itself. It is therefore necessary
+polarizabilities, respectively. The electrostatic part models the permanent charge distribution 
+of the environment and will polarize the core system, while the induction part also allows 
+polarization of the environment. The environment response is included in the effective operator 
+as induced dipoles, which arise due to the electric fields from the electrons and nuclei in 
+the core system as well as from the environment itself. It is therefore necessary
 to recalculate the induced dipoles according to the changes in the electron density of the
 core system as they occur in a wave function optimization. Furthermore, since the induced
 dipoles are coupled through the electric fields, it is necessary to solve a set of coupled linear
@@ -29,13 +32,13 @@ that we include many-body effects of the total system.
 The multipoles and polarizabilities can be obtained in many different ways. It is
 possible to use the molecular properties, however, usually distributed/localized properties
 are used because of the better convergence of the multipole expansion. These are typically
-centered on all atomic sites in the environment (and sometimes also bond-midpoints), how-
-ever, the implementation is general in this sense so they can be placed anywhere in space.
-Currently, the PE library supports multipole moments up to fifth order and anisotropic
+centered on all atomic sites in the environment (and sometimes also bond-midpoints), however, 
+the implementation is general in this sense so they can be placed anywhere in space. 
+Currently, the PE library supports multipole moments up to fifth order and anisotropic 
 dipole-dipole polarizabilities are supported. For multipoles up to and including third order
-(octopoles) the trace will be removed if present. Note, that the fourth and fifth order multi-
-pole moments are expected to be traceless. In case polarizabilities are included it might be
-necessary to use an exclusion list to ensure that only relevant sites can polarize each other.
+(octopoles) the trace will be removed if present. Note, that the fourth and fifth order 
+multipole moments are expected to be traceless. In case polarizabilities are included it might be
+necessary to use an exclusion list to ensure that only relevant sites can polarize each other. 
 The format of the POTENTIAL.INP file is demonstrated below.
 
 Keywords

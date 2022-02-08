@@ -30,15 +30,20 @@ contains
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
+
   call interface_mpi_bcast_l0(exa_input%do_perturbative,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_iterative,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%tripl_block,2,exa_MPI_RANK,global_communicator)
 
+  call interface_mpi_bcast_l0(exa_input%tripl_lap,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_triples,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%exa_blocksize,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%talsh_buff,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%moint_scheme,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%ncycles,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%tripl_block,2,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%n_laplace,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%iterative_level,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%iterative_scheme,1,exa_MPI_RANK,global_communicator)
@@ -59,6 +64,7 @@ contains
   call interface_mpi_bcast(exa_input%mo_vir,exa_input%nvir,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%t_mp2no,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
 

@@ -17,7 +17,7 @@ module xc_ac
    private
 
    real(8) :: homo_eigenvalue
-   real(8) :: homo_eigenvalue_previous
+   real(8), save :: homo_eigenvalue_previous = 0.0d0
 
 
 contains
