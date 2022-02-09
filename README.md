@@ -11,17 +11,18 @@
 
 Clone the complete repository:
 ```
-$ git clone --recursive https://gitlab.com/dirac/dirac.git
+$ git clone --recursive git@gitlab.com:dirac/dirac-private.git
 ```
 
 or the latest revision only:
 ```
-$ git clone --depth 1 --recursive https://gitlab.com/dirac/dirac.git
+$ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac-private.git
 ```
 
 or a particular release:
 ```
-$ git clone --recursive --branch v22.0 https://gitlab.com/dirac/dirac.git
+$ git clone --recursive --branch v22.0 git@gitlab.com:dirac/dirac-private.git
+```
 ```
 
 If you have downloaded a zip/tar.gz/tar.bz2/tar archive directly from GitLab,
