@@ -34,7 +34,7 @@ $ git submodule update --init --recursive
 ```
 
 **However, we recommend users who do not plan to make any code changes
-to download from** https://doi.org/10.5281/zenodo.4836495.
+to download from** https://doi.org/10.5281/zenodo.6010449.
 In this case the above extra step is not needed as the release tarballs are
 self-contained, and in addition we get useful download metrics which we can use
 in future funding applications.
