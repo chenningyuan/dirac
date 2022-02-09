@@ -1656,9 +1656,8 @@ contains
    end subroutine 
 
 
-   subroutine create_subspace_vector(C_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
-
-      
+   subroutine create_subspace_vector_right(C_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+   
       complex(kind=8), pointer, contiguous, intent(inout) :: C_small(:)    ! this will be a copy of M, M_small(L,L)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
       type(talsh_tens_t), intent(inout) :: prop_gradient_t1, prop_gradient_t2 ! here we will keep the M(Lmax,Lmax)
@@ -1735,16 +1734,95 @@ contains
 !      call quit('bb')
 
 
-   end subroutine create_subspace_vector
+   end subroutine 
 
 
-   subroutine create_sigma(int_t,interm_t,workspace_t,left)
+   subroutine create_subspace_vector_left(C_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+   
+      complex(kind=8), pointer, contiguous, intent(inout) :: C_small(:)    ! this will be a copy of M, M_small(L,L)
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
+      type(talsh_tens_t), intent(inout) :: prop_gradient_t1, prop_gradient_t2 ! here we will keep the M(Lmax,Lmax)
+
+      integer :: mij_dims(2), mij_rank
+      integer(INTD)      :: one_dims(1)
+      type(talsh_tens_t) :: result_tensor
+      complex(8), pointer ::  ci_result_tens(:)
+      type(C_PTR):: ci_body_p
+
+      integer :: m_dims(2), m_rank
+      complex(8), pointer, contiguous:: m_tens(:,:)
+      type(C_PTR):: m_body_p
+      integer :: ierr, i, j
+      logical :: debug_subspace_matrix = .false.
+
+
+!! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
+!! we also need to conjugate transpose the trial vector 
+       if (debug_subspace_matrix) write (6,*) 'workspace_t%L',workspace_t%L
+
+      if (associated(C_small)) deallocate(C_small)
+      allocate(C_small(workspace_t%L))
+      M_small = ZERO 
+
+!     Initialize scalars that are to be used as tensors in contractions
+      one_dims(1) = 1
+!     ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+      ierr=talsh_tensor_get_body_access(result_tensor,ci_body_p,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(ci_body_p,ci_result_tens,one_dims)
+
+
+! capital letters here are meant to be the roots
+      if (debug_subspace_matrix) then
+         write (6,*) 'foobar, before setup M'
+         write (6,*) 'foobar, workspace_t%L',workspace_t%L
+         write (6,*) 'foobar, workspace_t%Lprev',workspace_t%Lprev
+      end if
+      do i = workspace_t%Lprev + 1, workspace_t%L
+! this will be a reduction to a scalar at each contractions, and we then will build the 
+            ierr=talsh_tensor_contract("CI()+=S+(e)*B(e)",               &
+   &                                                    result_tensor,      &
+   &                                                    prop_gradient_t1,&
+   &                                                    workspace_t%trial1(i))
+            ierr=talsh_tensor_contract("CI()+=S+(a,b,c)*B(a,b,c)",       &
+   &                                                    result_tensor,      &
+   &                                                    prop_gradient_t2,&
+   &                                                    workspace_t%trial2(i))
+            if (debug_subspace_matrix) write (6,*) 'i, c_i:', i,j, ci_result_tens(1)
+            workspace_t%C(i) = ci_result_tens(1) 
+            ci_result_tens(1) = ZERO
+      end do
+
+      C_small = workspace_t%C(1:workspace_t%L)
+
+!     if (debug_subspace_matrix) then
+!       if (.true.) then
+!          write (6,*) 'debug, M small'
+!          do i = 1, workspace_t%L
+!            print "(2x,i6,$)", i
+!            do j = 1, workspace_t%L
+!                call print_complex_vector_element(M_small(i,j))
+!                if (mod(j,4) == 0) then 
+!                   print *, "  "
+! !                 print "(8x,$)",""
+!                end if
+!            end do
+!            print *, ""
+!          end do
+!       end if
+      if (.true.) call dump_to_file(2222, "C_small_EXACC.bin", C_small)
+
+!      call quit('bb')
+
+
+   end subroutine 
+
+   subroutine create_sigma_right(int_t,interm_t,workspace_t)
       use talsh_sigma_eomccsd
 !     use talsh_sigma_eomccsd, only : sigma_eomccsd_right_ip, sigma_eomccsd_right_ea, sigma_eomccsd_right_ee
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
-      character, OPTIONAL ::  left
 
 
       complex(8), pointer, contiguous:: s1_h_p_p(:)
@@ -1840,16 +1918,10 @@ contains
 ! debug info     
 ! aspg
 
-         if (left) then 
-            
-            call interm_t%sigma_lhs_p(int_t,interm_t, &
+        call interm_t%sigma_rhs_p(int_t,interm_t, &
    &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
    &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
-         else
-            call interm_t%sigma_rhs_p(int_t,interm_t, &
-   &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
-   &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
-         end if 
+
 
 ! aspg
 ! debug info     
@@ -1909,7 +1981,175 @@ contains
 
    end subroutine
 
-   subroutine create_subspace_matrix_right(M_small,workspace_t,frequency_local,left)
+
+   
+  subroutine create_sigma_left(int_t,interm_t,workspace_t)
+      use talsh_sigma_eomccsd
+!     use talsh_sigma_eomccsd, only : sigma_eomccsd_right_ip, sigma_eomccsd_right_ea, sigma_eomccsd_right_ee
+      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+      type(talsh_intg_tens_t), intent(inout) :: int_t
+      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+
+
+      complex(8), pointer, contiguous:: s1_h_p_p(:)
+      type(C_PTR):: s1_body_p
+
+      complex(8), pointer, contiguous:: t1_h_p_p(:)
+      type(C_PTR):: t1_body_p
+
+      complex(8), pointer, contiguous:: t2_h_p_p(:,:,:)
+      type(C_PTR):: t2_body_p
+
+      complex(8), pointer, contiguous:: s2_h_p_p(:,:,:)
+      type(C_PTR):: s2_body_p
+
+      integer :: ierr, iroot, i, j, a, b
+      logical :: debug_sigma_right = .true.
+
+      do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
+
+         if (debug_sigma_right) then
+            write (6,*) 'root ',iroot
+! aspg
+! debug info
+            ierr = talsh_tensor_get_body_access(workspace_t%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
+!           write (6,*) 's1_body_p',s1_body_p
+            ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
+            call c_f_pointer(s1_body_p,s1_h_p_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
+
+            ierr = talsh_tensor_get_body_access(workspace_t%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
+!           write (6,*) 't1_body_p',t1_body_p
+            call c_f_pointer(t1_body_p,t1_h_p_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
+
+            ierr = talsh_tensor_get_body_access(workspace_t%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
+!           write (6,*) 's2_body_p',s2_body_p
+           ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
+            call c_f_pointer(s2_body_p,s2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
+
+            ierr = talsh_tensor_get_body_access(workspace_t%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
+!           write (6,*) 't2_body_p',t2_body_p
+            call c_f_pointer(t2_body_p,t2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
+
+            if (.false.) then
+            write (6,*) 'debug >>> t_tens before sigma, root',iroot,' >>>'
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            b = 0
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
+            do i = 1, workspace_t%tens1_dims(1)
+               b = b + 1
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(t1_h_p_p(i))
+               print *, ""
+            end do
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            do i = 1, workspace_t%tens2_dims(3)
+               do j = 1, workspace_t%tens2_dims(2)
+                  do a = 1, workspace_t%tens2_dims(1)
+                     b = b + 1
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(t2_h_p_p(a,j,i))
+                     print *, ""
+                  end do
+               end do
+            end do
+            write (6,*) 'debug <<< t_tens before sigma <<<'
+
+            write (6,*) 'debug >>> s_tens before sigma, root',iroot,' >>>'
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
+            b = 0
+            do i = 1, workspace_t%tens1_dims(1)
+               b = b + 1
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(s1_h_p_p(i))
+               print *, ""
+            end do
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            do i = 1, workspace_t%tens2_dims(3)
+               do j = 1, workspace_t%tens2_dims(2)
+                  do a = 1, workspace_t%tens2_dims(1)
+                     b = b + 1
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(s2_h_p_p(a,j,i))
+                     print *, ""
+                  end do
+               end do
+            end do
+            write (6,*) 'debug <<< s_tens before sigma <<<'
+            else
+               write (6,*) 'debug <<< silenced printout prior to calculation >>>'  
+            end if ! silencing printout prior to calculated vectors
+
+         end if
+! debug info     
+! aspg
+
+        call interm_t%sigma_lhs_p(int_t,interm_t, &
+   &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
+   &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
+
+
+! aspg
+! debug info     
+         if (debug_sigma_right) then
+            write (6,*) 'debug >>> t_tens, root',iroot,' >>>'
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            b = 0
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
+            do i = 1, workspace_t%tens1_dims(1)
+               b = b + 1
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(t1_h_p_p(i))
+               print *, ""
+            end do
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            do i = 1, workspace_t%tens2_dims(3)
+               do j = 1, workspace_t%tens2_dims(2) 
+                  do a = 1, workspace_t%tens2_dims(1)
+                     b = b + 1
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(t2_h_p_p(a,j,i))
+                     print *, ""
+                  end do
+               end do
+            end do
+            write (6,*) 'debug <<< t_tens <<<'
+
+            write (6,*) 'debug >>> s_tens, root',iroot,' >>>'
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            b = 0
+            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
+            do i = 1, workspace_t%tens1_dims(1)
+               b = b + 1
+               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
+               call  print_complex_vector_element(s1_h_p_p(i))
+               print *, ""
+            end do
+!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
+            do i = 1, workspace_t%tens2_dims(3)
+               do j = 1, workspace_t%tens2_dims(2)
+                  do a = 1, workspace_t%tens2_dims(1)
+                     b = b + 1
+                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
+                     call  print_complex_vector_element(s2_h_p_p(a,j,i))
+                     print *, ""
+                  end do
+               end do
+            end do
+            write (6,*) 'debug <<< s_tens <<<'
+         end if
+! debug info     
+! aspg
+
+      end do
+
+!     call quit('bb')
+
+  end subroutine
+
+
+
+   subroutine create_subspace_matrix_right(M_small,workspace_t,frequency_local)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
       complex(kind=8), pointer, contiguous, intent(inout) :: M_small(:,:)    ! this will be a copy of M, M_small(L,L)
 
@@ -1925,7 +2165,7 @@ contains
       integer :: ierr, i, j
       logical :: debug_subspace_matrix = .false.
       complex(kind=8),OPTIONAL :: frequency_local
-      character,OPTIONAL               :: left
+
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -1968,15 +2208,9 @@ contains
 
       ! XY: For linear systems M=M'-omega
       if (frequency_local) then
-        if (left) then
-            do i = workspace_t%Lprev + 1, workspace_t%L
-                workspace_t%M(i,i)=workspace_t%M(i,i)+frequency_local
-            end do
-        else
-            do i = workspace_t%Lprev + 1, workspace_t%L
-                workspace_t%M(i,i)=workspace_t%M(i,i)-frequency_local
-            end do
-        end if 
+        do i = workspace_t%Lprev + 1, workspace_t%L
+            workspace_t%M(i,i)=workspace_t%M(i,i)-frequency_local
+        end do
       end if 
 
       M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
@@ -2000,8 +2234,97 @@ contains
 
 !      call quit('bb')
 
-    end
+    end subroutine
     
+
+    subroutine create_subspace_matrix_left(M_small,workspace_t,frequency_local)
+        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
+        complex(kind=8), pointer, contiguous, intent(inout) :: M_small(:,:)    ! this will be a copy of M, M_small(L,L)
+  
+        integer :: mij_dims(2), mij_rank
+        integer(INTD)      :: one_dims(1)
+        type(talsh_tens_t) :: result_tensor
+        complex(8), pointer :: mij_result_tens(:)
+        type(C_PTR):: mij_body_p
+  
+        integer :: m_dims(2), m_rank
+        complex(8), pointer, contiguous:: m_tens(:,:)
+        type(C_PTR):: m_body_p
+        integer :: ierr, i, j
+        logical :: debug_subspace_matrix = .false.
+        complex(kind=8),OPTIONAL :: frequency_local
+  
+  
+  !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
+  !! we also need to conjugate transpose the trial vector 
+         if (debug_subspace_matrix) write (6,*) 'workspace_t%L',workspace_t%L
+  
+        if (associated(M_small)) deallocate(M_small)
+        allocate(M_small(workspace_t%L,workspace_t%L))
+        M_small = ZERO 
+  
+  !     Initialize scalars that are to be used as tensors in contractions
+        one_dims(1) = 1
+  !     ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+        ierr=talsh_tensor_get_body_access(result_tensor,mij_body_p,C8,int(0,C_INT),DEV_HOST)
+        call c_f_pointer(mij_body_p,mij_result_tens,one_dims)
+  
+  
+  ! capital letters here are meant to be the roots
+        if (debug_subspace_matrix) then
+           write (6,*) 'foobar, before setup M'
+           write (6,*) 'foobar, workspace_t%L',workspace_t%L
+           write (6,*) 'foobar, workspace_t%Lprev',workspace_t%Lprev
+        end if
+        do i = workspace_t%Lprev + 1, workspace_t%L
+           do j = workspace_t%Lprev + 1, workspace_t%L
+  ! this will be a reduction to a scalar at each contractions, and we then will build the 
+              ierr=talsh_tensor_contract("MIJ()+=S+(e)*B(e)",               &
+     &                                                    result_tensor,      &
+     &                                                    workspace_t%sigma1(i),&
+     &                                                    workspace_t%trial1(j))
+              ierr=talsh_tensor_contract("MIJ()+=S+(a,b,c)*B(a,b,c)",       &
+     &                                                    result_tensor,      &
+     &                                                    workspace_t%sigma2(i),&
+     &                                                    workspace_t%trail2(j))
+              if (debug_subspace_matrix) write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
+              workspace_t%M(i,j) = mij_result_tens(1) 
+              mij_result_tens(1) = ZERO
+           end do
+        end do
+  
+        ! XY: For linear systems M=M'+omega
+        if (frequency_local) then
+          do i = workspace_t%Lprev + 1, workspace_t%L
+              workspace_t%M(i,i)=workspace_t%M(i,i)+frequency_local
+          end do
+        end if 
+  
+        M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
+  
+  !     if (debug_subspace_matrix) then
+        if (.true.) then
+           write (6,*) 'debug, M small'
+           do i = 1, workspace_t%L
+             print "(2x,i6,$)", i
+             do j = 1, workspace_t%L
+                 call print_complex_vector_element(M_small(i,j))
+                 if (mod(j,4) == 0) then 
+                    print *, "  "
+  !                 print "(8x,$)",""
+                 end if
+             end do
+             print *, ""
+           end do
+        end if
+        if (.true.) call dump_to_file(2222, "M_small_EXACC.bin", M_small)
+  
+  !      call quit('bb')
+  
+      end subroutine
+
+
     subroutine print_complex_vector_element(ve)
        complex(8), intent(in) :: ve
 
@@ -2133,10 +2456,10 @@ contains
 
             if (davidson_solve_rhs) then
                if (associated(interm_t%sigma_rhs_p)) then
-                  call create_sigma(int_t,interm_t,workspace_t)
+                  call create_sigma_right(int_t,interm_t,workspace_t)
                   if (davidson_solve_linear_system) then
                       call create_subspace_matrix_right(M_small,workspace_t,frequency_local) 
-                      call create_subspace_vector(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+                      call create_subspace_vector_right(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
                   else
                        call create_subspace_matrix_right(M_small,workspace_t) 
                   end if
@@ -2168,10 +2491,10 @@ contains
 
             else if (davidson_solve_lhs) then
                 if (associated(interm_t%sigma_lhs_p)) then
-                    call create_sigma(int_t,interm_t,workspace_t,'left')
+                    call create_sigma_left(int_t,interm_t,workspace_t)
                     if (davidson_solve_linear_system) then
-                        call create_subspace_matrix_left(M_small,workspace_t,frequency_local,'left') 
-                        call create_subspace_vector(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+                        call create_subspace_matrix_left(M_small,workspace_t,frequency_local) 
+                        call create_subspace_vector_left(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
                     else
                          call create_subspace_matrix_left(M_small,workspace_t) 
                     end if
