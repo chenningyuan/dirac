@@ -22,9 +22,7 @@ THIS_FOLDER=${PWD}
 TEMP_FOLDER=$(mktemp -d)
 
 cd ${TEMP_FOLDER}
-# later we will switch to:
-# git clone --recursive --branch ${BRANCH} https://gitlab.com/dirac/dirac.git DIRAC-${VERSION}-Source
-git clone --recursive --branch ${BRANCH} git@gitlab.com:dirac/dirac-private.git DIRAC-${VERSION}-Source
+git clone --recursive --branch ${BRANCH} https://gitlab.com/dirac/dirac.git DIRAC-${VERSION}-Source
 mv DIRAC-${VERSION}-Source/.git git-folder-not-shipped
 tar -cf DIRAC-${VERSION}-Source.tar DIRAC-${VERSION}-Source
 gzip DIRAC-${VERSION}-Source.tar
