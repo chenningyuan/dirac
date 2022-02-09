@@ -1738,12 +1738,14 @@ contains
    end subroutine create_subspace_vector
 
 
-   subroutine create_sigma_right(int_t,interm_t,workspace_t)
+   subroutine create_sigma(int_t,interm_t,workspace_t,left)
       use talsh_sigma_eomccsd
 !     use talsh_sigma_eomccsd, only : sigma_eomccsd_right_ip, sigma_eomccsd_right_ea, sigma_eomccsd_right_ee
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+      character, OPTIONAL ::  left
+
 
       complex(8), pointer, contiguous:: s1_h_p_p(:)
       type(C_PTR):: s1_body_p
@@ -1838,10 +1840,16 @@ contains
 ! debug info     
 ! aspg
 
-
-         call interm_t%sigma_rhs_p(int_t,interm_t, &
+         if (left) then 
+            
+            call interm_t%sigma_lhs_p(int_t,interm_t, &
    &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
    &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
+         else
+            call interm_t%sigma_rhs_p(int_t,interm_t, &
+   &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
+   &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
+         end if 
 
 ! aspg
 ! debug info     
@@ -1901,7 +1909,7 @@ contains
 
    end subroutine
 
-   subroutine create_subspace_matrix_right(M_small,workspace_t,frequency_local)
+   subroutine create_subspace_matrix_right(M_small,workspace_t,frequency_local,left)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
       complex(kind=8), pointer, contiguous, intent(inout) :: M_small(:,:)    ! this will be a copy of M, M_small(L,L)
 
@@ -1917,6 +1925,7 @@ contains
       integer :: ierr, i, j
       logical :: debug_subspace_matrix = .false.
       complex(kind=8),OPTIONAL :: frequency_local
+      character,OPTIONAL               :: left
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -1957,11 +1966,17 @@ contains
          end do
       end do
 
-      ! XY: For linear systems G=G'-omega
+      ! XY: For linear systems M=M'-omega
       if (frequency_local) then
-        do i = workspace_t%Lprev + 1, workspace_t%L
-            workspace_t%M(i,i)=workspace_t%M(i,i)-frequency_local
-        end do
+        if (left) then
+            do i = workspace_t%Lprev + 1, workspace_t%L
+                workspace_t%M(i,i)=workspace_t%M(i,i)+frequency_local
+            end do
+        else
+            do i = workspace_t%Lprev + 1, workspace_t%L
+                workspace_t%M(i,i)=workspace_t%M(i,i)-frequency_local
+            end do
+        end if 
       end if 
 
       M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
@@ -2118,7 +2133,7 @@ contains
 
             if (davidson_solve_rhs) then
                if (associated(interm_t%sigma_rhs_p)) then
-                  call create_sigma_right(int_t,interm_t,workspace_t)
+                  call create_sigma(int_t,interm_t,workspace_t)
                   if (davidson_solve_linear_system) then
                       call create_subspace_matrix_right(M_small,workspace_t,frequency_local) 
                       call create_subspace_vector(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
@@ -2128,23 +2143,14 @@ contains
                else
                   stop 'RHS sigma vector routine has not been defined prior to calling the solver'  
                end if
-            else if (davidson_solve_lhs) then
-               if (associated(interm_t%sigma_lhs_p)) then
-                  stop 'LHS sigma vector in solver not yet implemented'
-               else
-                  stop 'LHS sigma vector routine has not been defined prior to calling the solver'  
-               end if
-! write me
-            else
-               stop 'unknown choice of side to solve for in davidson'  
-            end if
+
 
 !!          if (associated(projector)) call apply_projector(projector,sigma_vector)
 
-            if (davidson_solve_linear_system) then
-                call calculate_Linear_systems(M_small,B_small,x_small)  
-            else
-                call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
+                if (davidson_solve_linear_system) then
+                    call calculate_Linear_systems(M_small,B_small,x_small)  
+                else
+                    call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
                                                         e_small,                      &
                                                         c_small_r, c_small_l,         &
@@ -2158,8 +2164,45 @@ contains
                                                         nroots=nroots,                &
                                                         verbose=.true.)
 !                                                       verbose=davidson_verbose)
-            end if 
+                end if 
 
+            else if (davidson_solve_lhs) then
+                if (associated(interm_t%sigma_lhs_p)) then
+                    call create_sigma(int_t,interm_t,workspace_t,'left')
+                    if (davidson_solve_linear_system) then
+                        call create_subspace_matrix_left(M_small,workspace_t,frequency_local,'left') 
+                        call create_subspace_vector(B_small, workspace_t, prop_gradient_t1, prop_gradient_t2)
+                    else
+                         call create_subspace_matrix_left(M_small,workspace_t) 
+                    end if
+                else
+                       stop 'LHS sigma vector routine has not been defined prior to calling the solver'  
+                end if
+
+                if (davidson_solve_linear_system) then
+                    call calculate_Linear_systems(M_small,B_small,x_small)  
+                 else
+                    call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
+                                                          M_small,                      &
+                                                          e_small,                      &
+                                                          c_small_r, c_small_l,         &
+                                                          c_small_r_old, c_small_l_old, &
+                                                          davidson_eigenvalues_shift,   &
+                                                          follow_overlap=(davidson_overlap_sorting.and.(niter.gt.1)),  &
+                                                          follow_overlap_scheme=davidson_overlap_sorting_scheme, &
+                                                          apply_evalues_shift=davidson_apply_eigenvalues_shift, &
+                                                          left=davidson_solve_lhs,      &
+                                                          right=davidson_solve_rhs,     &
+                                                          nroots=nroots,                &
+                                                          verbose=.true.)
+  !                                                       verbose=davidson_verbose)
+                 end if
+! write me
+            else
+                stop 'unknown choice of side to solve for in davidson'  
+            end if
+
+                  
             if (davidson_solve_rhs.and.davidson_overlap_sorting) then
                 c_small_r_old = c_small_r
             end if

@@ -48,6 +48,7 @@ module talsh_cc
          use exacorr_global
          use talsh_gradient
          use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
+         use talsh_eom_QR
 
          type(exacc_input), intent(in) :: exa_input
 
@@ -83,7 +84,7 @@ module talsh_cc
          real(8) :: t_target_precision
          real(8) :: t1diag
          integer :: ncycles
-         logical :: CCD, lambda, eom
+         logical :: CCD, lambda, eom, eom_qr
          logical :: debug_eom = .false.
          logical :: CC2 
          integer :: iff        ! loop variable to loop over field strengths
@@ -119,6 +120,7 @@ module talsh_cc
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          eom = exa_input%eom
+         eom_qr = exa_input%eom_input%eom_qr
          ncycles = exa_input%ncycles
 
          call print_exainput(exa_input,get_nao())
@@ -310,9 +312,13 @@ module talsh_cc
             call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor)
           end if
 
-          if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
-          ierr=talsh_tensor_destruct(l2_tensor)
-          call print_date('-End- Lambda Equations')
+          if (.not.eom_qr) then
+            if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
+            ierr=talsh_tensor_destruct(l2_tensor)
+            call print_date('-End- Lambda Equations')
+         else
+            call print_date('To solve CC-CI QR property, we keep Lambda tensor')
+         end if
          else
             write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
          end if
@@ -377,6 +383,29 @@ module talsh_cc
 ! TODO: if we want properties etc, now we call other drivers
 
          end if
+
+         if (eom_qr) then 
+            if ( exist_one_el(e_core) ) then
+               fock_mode = 2
+            else
+               fock_mode = 1
+            end if
+            call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+   ! copy Fock matrix to comm, add finite field to the Fock matrix
+            call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+   ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
+            call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+                           exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
+   
+   ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
+            if (exa_input%eom_input(1)%do_expval) then
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
+            else
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
+            end if
+            
+            call talsh_eom_QR_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
+         end if 
 
          if (.not.CCD) then
            ierr=talsh_tensor_destruct(comm_t%t1)

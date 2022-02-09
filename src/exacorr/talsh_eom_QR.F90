@@ -24,7 +24,7 @@ module talsh_eom_QR
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_eom_QR_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,omega1,omega2, omega3)
+subroutine talsh_eom_QR_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
 !   Written by Xiang Yuan Janunary 2022, Lille, France
 
     type(exacc_input), intent(in) :: exa_input
@@ -32,15 +32,20 @@ subroutine talsh_eom_QR_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,omeg
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
-    complex(kind=8),INTENT(IN)               :: omega1, omega2, omega3
+    
 
 
 
+    complex(kind=8)               :: omega1, omega2, omega3
     type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
     type(talsh_comm_tens_t)       :: tprop_tensor1, tprop_tensor2, tprop_tensor3
     type(talsh_comm_tens_t)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
     type(talsh_comm_tens_t)       :: bvec_tensor1, bvec_tensor2, bvec_tensor3
     complex(kind=8)               :: eom_qr
+    
+    omega1=(0.0,0.0)
+    omega2=(0.0,0.0)
+    omega3=(0.0,0.0)
 
 
     call print_date('Enter CC-CI quadratic response')
