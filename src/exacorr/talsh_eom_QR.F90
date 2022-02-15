@@ -89,15 +89,19 @@ subroutine get_eom_qr(exa_input,interm_t,interm_t_prop1, interm_t_prop2, interm_
         type(talsh_tens_t), intent(inout)           :: l2_tensor
         type(talsh_tens_t), intent(inout)           :: l1_tensor
         type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
-        type(talsh_tens_t)            :: tprop_tensor1, tprop_tensor2, tprop_tensor3
-        type(talsh_tens_t)            :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
-        complex(kind=8)               :: eom_qr
+        type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2, tprop_tensor3
+        type(talsh_comm_tens_t)            :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
+        
 
         integer(INTD), dimension(4)   :: oovv_dims
         integer(INTD), dimension(2)   :: ov_dims
         type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor13, sigma_prop_tensor23
         type(talsh_comm_tens_t)       :: sigma_prop_tensor21, sigma_prop_tensor31, sigma_prop_tensor32
         complex(kind=8)               :: quarsp, quarsp_con
+
+        integer                       :: ierr
+
+        complex(kind=8)               :: eom_qr
 
 
         call print_date('Evaluate CC-CI QR')
@@ -131,15 +135,15 @@ subroutine get_eom_qr(exa_input,interm_t,interm_t_prop1, interm_t_prop2, interm_
         call sigma_eomccsd_prop(interm_t_prop3, tprop_tensor2, sigma_prop_tensor32)
 
 
-        call get_quarspf(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3
-                        tprop_tensor1, tprop_tensor2, tprop_tensor3, 
-                        tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3,
-                        sigma_prop_tensor12, sigma_prop_tensor13, sigma_prop_tensor23,
-                        sigma_prop_tensor21, sigma_prop_tensor31, sigma_prop_tensor32, 
+        call get_quarspf(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,&
+                        tprop_tensor1, tprop_tensor2, tprop_tensor3, &
+                        tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3, &
+                        sigma_prop_tensor12, sigma_prop_tensor13, sigma_prop_tensor23, &
+                        sigma_prop_tensor21, sigma_prop_tensor31, sigma_prop_tensor32, &
                         l1_tensor, l2_tensor, quarsp)
 
         quarsp_con=conjg(quarsp)
-        eom_qr=1/2(quarsp+quarsp_con)
+        eom_qr=(quarsp+quarsp_con)*0.5
 
 end subroutine get_eom_qr
 
@@ -157,8 +161,8 @@ subroutine get_quarspf(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,
             type(talsh_tens_t), intent(inout)           :: l2_tensor
             type(talsh_tens_t), intent(inout)           :: l1_tensor
             type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
-            type(talsh_tens_t)            :: tprop_tensor1, tprop_tensor2, tprop_tensor3
-            type(talsh_tens_t)            :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
+            type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2, tprop_tensor3
+            type(talsh_comm_tens_t)            :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
                 
             type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor13, sigma_prop_tensor23
             type(talsh_comm_tens_t)       :: sigma_prop_tensor21, sigma_prop_tensor31, sigma_prop_tensor32
@@ -167,38 +171,38 @@ subroutine get_quarspf(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,
 
 
             !XYZ   X is 1; Y is 2; Z is 3
-            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor2, tprop_tensor3,
-                                tprop_bar_tensor2,sigma_prop_tensor13,l1_tensor,l2_tensor,
+            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor2, tprop_tensor3, &
+                                tprop_bar_tensor2,sigma_prop_tensor13,l1_tensor,l2_tensor, &
                                 interm_t,interm_t_prop1)
             quarsp=quarsp+tem_quarsp_iter
 
             !XZY
-            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor3, tprop_tensor2,
-                                tprop_bar_tensor3,sigma_prop_tensor12,l1_tensor,l2_tensor,
+            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor3, tprop_tensor2, &
+                                tprop_bar_tensor3,sigma_prop_tensor12,l1_tensor,l2_tensor, &
                                 interm_t,interm_t_prop1)
             quarsp=quarsp+tem_quarsp_iter
 
             !YXZ
-            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor2,tprop_tensor1, tprop_tensor3,
-                                tprop_bar_tensor1,sigma_prop_tensor23,l1_tensor,l2_tensor,
+            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor2,tprop_tensor1, tprop_tensor3, &
+                                tprop_bar_tensor1,sigma_prop_tensor23,l1_tensor,l2_tensor, &
                                 interm_t,interm_t_prop2)
             quarsp=quarsp+tem_quarsp_iter
 
             !YZX
-            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor2,tprop_tensor3, tprop_tensor1,
-                                tprop_bar_tensor3,sigma_prop_tensor21,l1_tensor,l2_tensor,
+            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor2,tprop_tensor3, tprop_tensor1, &
+                                tprop_bar_tensor3,sigma_prop_tensor21,l1_tensor,l2_tensor, &
                                 interm_t,interm_t_prop2)
             quarsp=quarsp+tem_quarsp_iter
 
             !ZYX
-            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor3,tprop_tensor2, tprop_tensor1,
-                                tprop_bar_tensor2,sigma_prop_tensor31,l1_tensor,l2_tensor,
+            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor3,tprop_tensor2, tprop_tensor1, &
+                                tprop_bar_tensor2,sigma_prop_tensor31,l1_tensor,l2_tensor, &
                                 interm_t,interm_t_prop3)
             quarsp=quarsp+tem_quarsp_iter
 
             !ZXY
-            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor3,tprop_tensor1, tprop_tensor2,
-                                tprop_bar_tensor1,sigma_prop_tensor32,l1_tensor,l2_tensor,
+            call get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor3,tprop_tensor1, tprop_tensor2, &
+                                tprop_bar_tensor1,sigma_prop_tensor32,l1_tensor,l2_tensor, &
                                 interm_t,interm_t_prop3)
             quarsp=quarsp+tem_quarsp_iter
 
@@ -216,8 +220,8 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor2, tp
             type(talsh_tens_t), intent(inout)              :: l1_tensor
             complex(kind=8)               :: tem_quarsp_iter
 
-            type(talsh_tens_t)            :: tprop_tensor2, tprop_tensor3
-            type(talsh_tens_t)            :: tprop_bar_tensor1, tprop_bar_tensor2
+            type(talsh_comm_tens_t)            :: tprop_tensor2, tprop_tensor3
+            type(talsh_comm_tens_t)            :: tprop_bar_tensor1, tprop_bar_tensor2
                                 
             type(talsh_comm_tens_t)       :: sigma_prop_tensor13
 
@@ -245,10 +249,12 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor2, tp
 
 
         ! Term1: t_barx*ty    XY: do we need to transpose Tlx(i,a)?
-            ierr=talsh_tensor_contract("E()+=Tlx(a,i)*Ty(a,i)",result_tensor,tprop_bar_tensor1%t1,tprop_tensor2%t1,scale=MINUS_ONE)
+            ierr=talsh_tensor_contract("E()+=Tlx(a,i)*Ty(a,i)",& 
+                                    result_tensor,tprop_bar_tensor1%t1,tprop_tensor2%t1,scale=MINUS_ONE)
             term1=result_tens(1)
             ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("E()+=Tlx(a,b,i,j)*Ty(a,b,i,j)",result_tensor,tprop_bar_tensor1%t2,tprop_tensor2%t2,scale=MINUS_ONE)
+            ierr=talsh_tensor_contract("E()+=Tlx(a,b,i,j)*Ty(a,b,i,j)", &
+                                    result_tensor,tprop_bar_tensor1%t2,tprop_tensor2%t2,scale=MINUS_ONE)
             term1=term1+result_tens(1)
 
 
@@ -264,7 +270,7 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_bar_tensor1,tprop_tensor2, tp
         ! Term3: tbary*sigmaxz 
             ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("E()+=Tly(a,i)*Sixz(a,i)",result_tensor,tprop_bar_tensor2%t1,sigma_prop_tensor13%t1)
-            term3=result_tensor(1)
+            term3=result_tens(1)
             ierr=talsh_tensor_init(result_tensor)
             ierr=talsh_tensor_contract("E()+=Tly(a,b,i,j)*Sigxz(a,b,i,j)",result_tensor,tprop_bar_tensor2%t2,sigma_prop_tensor13%t2)
             term3=term3+result_tens(1)
@@ -307,14 +313,14 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 type(talsh_tens_t), intent(inout)           :: l1_tensor
 
                 integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvov_dims, oovv_dims
-                integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, ov_dims
+                integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
 
                 type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1, orb_int_tensor2, orb_int_tensor3 
                 type(talsh_tens_t)                  :: LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo
                 integer                   :: nmo1          ! the length of the mo basis
-                integer                   :: mo1_list(:)   ! and their indices
+                ! integer,allocatable       :: mo1_list(:)   ! and their indices
                 integer                   :: nmo2          ! the length of the mo basis
-                integer                   :: mo2_list(:)   ! and their indices
+                ! integer                   :: mo2_list(:)   ! and their indices
                 integer                   :: i_prop 
         
                 
@@ -364,18 +370,18 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 call construct_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
 
-                call get_epsilon_prop_vo(interm_t_prop1%epsilon_prop_vo,orb_int_tensor1,
+                call get_epsilon_prop_vo(interm_t_prop1%epsilon_prop_vo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
-                call get_epsilon_prop_vo(interm_t_prop2%epsilon_prop_vo,orb_int_tensor2,
+                call get_epsilon_prop_vo(interm_t_prop2%epsilon_prop_vo,orb_int_tensor2,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
-                call get_epsilon_prop_vo(interm_t_prop3%epsilon_prop_vo,orb_int_tensor3,
+                call get_epsilon_prop_vo(interm_t_prop3%epsilon_prop_vo,orb_int_tensor3,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
                                 
-                call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,
+                call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
-                call get_epsilon_prop_vvoo(interm_t_prop2%epsilon_prop_vvoo,orb_int_tensor2,
+                call get_epsilon_prop_vvoo(interm_t_prop2%epsilon_prop_vvoo,orb_int_tensor2,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
-                call get_epsilon_prop_vvoo(interm_t_prop3%epsilon_prop_vvoo,orb_int_tensor3,
+                call get_epsilon_prop_vvoo(interm_t_prop3%epsilon_prop_vvoo,orb_int_tensor3,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
 
@@ -418,13 +424,13 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 ! get Q
                 call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%t2,ovoo_dims)
                 call get_Q_ovoo(interm_t_prop2%Q_ovoo,interm_t_prop2%prop_bar_ov,interm_t%t2,ovoo_dims)
-                call get_Q_ovoo(interm_t_prop3%Q_ovoo,interm_t_prop3%prop_bar_ov,interm_t%t2),ovoo_dims
+                call get_Q_ovoo(interm_t_prop3%Q_ovoo,interm_t_prop3%prop_bar_ov,interm_t%t2,ovoo_dims)
                                 
                 call get_Q_vvov(interm_t_prop1%Q_vvov,interm_t_prop1%prop_bar_ov,interm_t%t2,vvov_dims)
                 call get_Q_vvov(interm_t_prop2%Q_vvov,interm_t_prop2%prop_bar_ov,interm_t%t2,vvov_dims)
                 call get_Q_vvov(interm_t_prop3%Q_vvov,interm_t_prop3%prop_bar_ov,interm_t%t2,vvov_dims)
 
-                call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo)
+                call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
 
 
 end subroutine form_eomccsd_qr_intermediates
@@ -436,8 +442,12 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop)
         type(exacc_input), intent(in)      :: exa_input
         type(talsh_orb_prop_integ_tens_t)  :: orb_int_tensor
         integer                            :: i_prop
+        integer                            :: min_occ
+        integer                            :: nocc, nvir
 
         min_occ = minval(exa_input%mo_occ)
+        nocc = exa_input%nocc
+        nvir = exa_input%nvir
 
         call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,min_occ,i_prop)
         call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop)

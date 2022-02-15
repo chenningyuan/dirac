@@ -4,6 +4,8 @@ module talsh_eom_rspeq_solver
       use tensor_algebra
       use talsh_common_routines
       use exacorr_datatypes 
+      use exacorr_utils
+      use talsh_trial_eomccsd
       
       
       implicit none
@@ -12,9 +14,18 @@ module talsh_eom_rspeq_solver
                          MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
                          MINUS_TWO=(-2.D0,0.D0)
 
+      type, public :: talsh_eom_results_tens_t
+            character, pointer :: flavor(:)
+            type(talsh_davidson_results_tens_t) :: value_vectors_t
+      end type talsh_eom_results_tens_t
+
+      private 
+
       public solve_eom_lr_right
       public solve_eom_lr_left
       public get_left_bvec
+
+      contains
 
 !----------------------------------------------------------------------------------------------------------------
 
@@ -34,7 +45,7 @@ module talsh_eom_rspeq_solver
             type(talsh_rsp_interm_tens_t) :: interm_t_prop
             complex(kind=8), intent(in)               :: omega
 
-            type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+            type(talsh_eom_results_tens_t)  :: results_t
             type(talsh_comm_tens_t)       :: tprop_tensor
 !     workspace
             type(talsh_davidson_workspace_tens_t) :: workspace_t
@@ -61,7 +72,7 @@ module talsh_eom_rspeq_solver
 !     set pointers to sigma vector subroutines 
             interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
 
-            call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, 
+            call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, & 
                                     omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo)
 
             call print_date("Finishing EOM-EE eigenvalue calculation")
@@ -90,7 +101,7 @@ module talsh_eom_rspeq_solver
                   complex(kind=8),INTENT(IN)              :: omega
       
 
-                  type(talsh_eom_results_tens_t), intent(inout)  :: results_t
+                  type(talsh_eom_results_tens_t)  :: results_t
                   type(talsh_comm_tens_t)       :: tprop_bar_tensor
                   type(talsh_comm_tens_t)       :: bvec_tensor
       !     workspace
@@ -118,7 +129,7 @@ module talsh_eom_rspeq_solver
       !     set pointers to sigma vector subroutines 
                   interm_t%sigma_lhs_p => talsh_sigma_eomccsd_lhs_ee
       
-                  call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, 
+                  call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, &
                                           omega, bvec_tensor%t1, bvec_tensor%t2)
                                           
                   call print_date("Finishing EOM-EE eigenvalue calculation")
@@ -153,6 +164,8 @@ module talsh_eom_rspeq_solver
             integer(INTD), dimension(2)   :: ov_dims
             integer(C_INT)              :: one_dims(1)
 
+            integer :: ierr
+
 
             one_dims(1) = 1
             oovv_dims(1:2) = exa_input%nocc
@@ -175,13 +188,13 @@ module talsh_eom_rspeq_solver
 
 
             ierr=talsh_tensor_add('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=MINUS_ONE)   
-            ierr+talsh_tensor_contract("B(i,a)+=l1(i,a)*A2()",bvec_tensor%t1,l1_tensor,Aux_tensor2,scale=ONE)   
-            ierr+talsh_tensor_contract("B(i,a)+=A1()*N(i,a)",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor2,scale=ONE)   
+            ierr=talsh_tensor_contract("B(i,a)+=l1(i,a)*A2()",bvec_tensor%t1,l1_tensor,Aux_tensor2,scale=ONE)   
+            ierr=talsh_tensor_contract("B(i,a)+=A1()*N(i,a)",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor2,scale=ONE)   
 
 
             ierr=talsh_tensor_add('B(i,j,a,b)+=Y(i,j,a,b)',bvec_tensor%t2,interm_t_prop%eta_prop_oovv,scale=MINUS_ONE)   
-            ierr+talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A2()",bvec_tensor%t2,l2_tensor,Aux_tensor2,scale=ONE)   
-            ierr+talsh_tensor_contract("B(i,j,a,b)+=A1()*N(i,j,a,b)",bvec_tensor%t2,interm_t%eta_oovv,Aux_tensor2,scale=ONE) 
+            ierr=talsh_tensor_contract("B(i,j,a,b)+=l2(i,j,a,b)*A2()",bvec_tensor%t2,l2_tensor,Aux_tensor2,scale=ONE)   
+            ierr=talsh_tensor_contract("B(i,j,a,b)+=A1()*N(i,j,a,b)",bvec_tensor%t2,interm_t%eta_oovv,Aux_tensor2,scale=ONE) 
 
             ierr=talsh_tensor_destruct(Aux_tensor1)
             ierr=talsh_tensor_destruct(Aux_tensor2)

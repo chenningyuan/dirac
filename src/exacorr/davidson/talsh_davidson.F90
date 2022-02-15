@@ -892,7 +892,7 @@ contains
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
 
-        complex(kind=8), optional, pointer, contiguous :: B_small(:)
+        complex(kind=8), pointer, contiguous, optional, intent(in) :: B_small(:)
 
         
 
@@ -915,7 +915,7 @@ contains
         do i = 1, workspace_t%L
 
            factor1 =  eigenvectors_subspace(i,k)
-           if (B_small) then
+           if (present(B_small)) then
                 factor2 = B_small(i)
            else
                 factor2 = -eigenvalues_subspace(k)*factor1
@@ -998,7 +998,7 @@ contains
         complex(kind=8), intent(in)  :: e_small_M(:)
         complex(kind=8), intent(in)  :: c_small_M(:,:)
 
-        complex(kind=8), optional, intent(in) ::  B_small(:)
+        complex(kind=8), pointer, contiguous, optional, intent(in) ::  B_small(:)
         logical, optional, intent(in) :: correct_all
 
         logical, pointer :: correction_to_vectors(:)
@@ -1026,11 +1026,8 @@ contains
         end do
         do k = 1, nroots
 ! instead of having a new variable to store r(:,k), we will do collect the results on workspace_t%delta{1,2,...}
-            if (B_small) then 
-                call form_r_tensors(k,c_small_M,e_small_M,workspace_t,B_small)
-            else
-                call form_r_tensors(k,c_small_M,e_small_M,workspace_t)
-            end if
+            call form_r_tensors(k,c_small_M,e_small_M,workspace_t,B_small)
+ 
             
 ! get the norm of the whole intermediate r(:,k) tensor, which means to calculate it over the different excitation ranks 
            if (debug_correction_vectors) then
@@ -1420,15 +1417,15 @@ contains
         integer   ::	N
         integer   ::	NRHS
         integer   ::	LDA
-        complex(kind=8) :: 	AF(ldaf,:)
+        complex(kind=8),allocatable :: 	AF(:,:)
         integer   ::	LDAF
         integer, allocatable   :: 	IPIV(:)
         character ::	EQUED
         real(kind=8), allocatable ::	R(:)
         real(kind=8), allocatable ::	C(:)
-        complex(kind=8)  ::	B(ldb,:)
+        complex(kind=8),allocatable  ::	B(:,:)
         integer ::	LDB
-        complex(kind=8) ::	X(ldx,:)
+        complex(kind=8),allocatable ::	X(:,:)
         integer ::	LDX
         real(kind=8) ::	RCOND
         real(kind=8), allocatable ::	FERR(:)
@@ -1439,7 +1436,7 @@ contains
 
         FACT = 'N'
         TRANS = 'N'
-        N = size(M,1)
+        N = size(A,1)
         NRHS = 1
         LDA = N
         LDAF = N
@@ -1461,12 +1458,12 @@ contains
 
 
         B(:,NRHS) = B_input(:)
-        call zgesvx (FACT, TRANS, N, ,NRHS, A, LDA, AF, &
+        call zgesvx (FACT, TRANS, N, NRHS, A, LDA, AF, &
                     LDAF, IPIV, EQUED, R, C, B, LDB, &
                     X, LDX, RCOND, FERR, BERR,&
-                    WORK, LWORK, rwork, INFO)
+                    WORK, RWORK, INFO)
 
-        Solution(:) = X(:,NRHS)
+        Solution(:,NRHS) = X(:,NRHS)
 
         deallocate(AF)
         deallocate(IPIV)
@@ -1665,11 +1662,11 @@ contains
       integer :: mij_dims(2), mij_rank
       integer(INTD)      :: one_dims(1)
       type(talsh_tens_t) :: result_tensor
-      complex(8), pointer ::  ci_result_tens(:)
+      complex(kind=8), pointer ::  ci_result_tens(:)
       type(C_PTR):: ci_body_p
 
       integer :: m_dims(2), m_rank
-      complex(8), pointer, contiguous:: m_tens(:,:)
+      complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
       logical :: debug_subspace_matrix = .false.
@@ -1681,7 +1678,7 @@ contains
 
       if (associated(C_small)) deallocate(C_small)
       allocate(C_small(workspace_t%L))
-      M_small = ZERO 
+      C_small = ZERO 
 
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
@@ -1729,7 +1726,7 @@ contains
 !            print *, ""
 !          end do
 !       end if
-      if (.true.) call dump_to_file(2222, "C_small_EXACC.bin", C_small)
+    !   if (.true.) call dump_to_file(2222, "C_small_EXACC.bin", C_small)
 
 !      call quit('bb')
 
@@ -1746,11 +1743,11 @@ contains
       integer :: mij_dims(2), mij_rank
       integer(INTD)      :: one_dims(1)
       type(talsh_tens_t) :: result_tensor
-      complex(8), pointer ::  ci_result_tens(:)
+      complex(kind=8), pointer ::  ci_result_tens(:)
       type(C_PTR):: ci_body_p
 
       integer :: m_dims(2), m_rank
-      complex(8), pointer, contiguous:: m_tens(:,:)
+      complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
       logical :: debug_subspace_matrix = .false.
@@ -1762,7 +1759,7 @@ contains
 
       if (associated(C_small)) deallocate(C_small)
       allocate(C_small(workspace_t%L))
-      M_small = ZERO 
+      C_small = ZERO 
 
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
@@ -1810,7 +1807,7 @@ contains
 !            print *, ""
 !          end do
 !       end if
-      if (.true.) call dump_to_file(2222, "C_small_EXACC.bin", C_small)
+    !   if (.true.) call dump_to_file(2222, "C_small_EXACC.bin", C_small)
 
 !      call quit('bb')
 
@@ -1825,16 +1822,16 @@ contains
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
 
 
-      complex(8), pointer, contiguous:: s1_h_p_p(:)
+      complex(kind=8), pointer, contiguous:: s1_h_p_p(:)
       type(C_PTR):: s1_body_p
 
-      complex(8), pointer, contiguous:: t1_h_p_p(:)
+      complex(kind=8), pointer, contiguous:: t1_h_p_p(:)
       type(C_PTR):: t1_body_p
 
-      complex(8), pointer, contiguous:: t2_h_p_p(:,:,:)
+      complex(kind=8), pointer, contiguous:: t2_h_p_p(:,:,:)
       type(C_PTR):: t2_body_p
 
-      complex(8), pointer, contiguous:: s2_h_p_p(:,:,:)
+      complex(kind=8), pointer, contiguous:: s2_h_p_p(:,:,:)
       type(C_PTR):: s2_body_p
 
       integer :: ierr, iroot, i, j, a, b
@@ -1991,16 +1988,16 @@ contains
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
 
 
-      complex(8), pointer, contiguous:: s1_h_p_p(:)
+      complex(kind=8), pointer, contiguous:: s1_h_p_p(:)
       type(C_PTR):: s1_body_p
 
-      complex(8), pointer, contiguous:: t1_h_p_p(:)
+      complex(kind=8), pointer, contiguous:: t1_h_p_p(:)
       type(C_PTR):: t1_body_p
 
-      complex(8), pointer, contiguous:: t2_h_p_p(:,:,:)
+      complex(kind=8), pointer, contiguous:: t2_h_p_p(:,:,:)
       type(C_PTR):: t2_body_p
 
-      complex(8), pointer, contiguous:: s2_h_p_p(:,:,:)
+      complex(kind=8), pointer, contiguous:: s2_h_p_p(:,:,:)
       type(C_PTR):: s2_body_p
 
       integer :: ierr, iroot, i, j, a, b
@@ -2156,11 +2153,11 @@ contains
       integer :: mij_dims(2), mij_rank
       integer(INTD)      :: one_dims(1)
       type(talsh_tens_t) :: result_tensor
-      complex(8), pointer :: mij_result_tens(:)
+      complex(kind=8), pointer :: mij_result_tens(:)
       type(C_PTR):: mij_body_p
 
       integer :: m_dims(2), m_rank
-      complex(8), pointer, contiguous:: m_tens(:,:)
+      complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
       logical :: debug_subspace_matrix = .false.
@@ -2207,11 +2204,13 @@ contains
       end do
 
       ! XY: For linear systems M=M'-omega
-      if (frequency_local) then
+      
+      if (present(frequency_local)) then
         do i = workspace_t%Lprev + 1, workspace_t%L
             workspace_t%M(i,i)=workspace_t%M(i,i)-frequency_local
         end do
       end if 
+      
 
       M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
 
@@ -2244,11 +2243,11 @@ contains
         integer :: mij_dims(2), mij_rank
         integer(INTD)      :: one_dims(1)
         type(talsh_tens_t) :: result_tensor
-        complex(8), pointer :: mij_result_tens(:)
+        complex(kind=8), pointer :: mij_result_tens(:)
         type(C_PTR):: mij_body_p
   
         integer :: m_dims(2), m_rank
-        complex(8), pointer, contiguous:: m_tens(:,:)
+        complex(kind=8), pointer, contiguous:: m_tens(:,:)
         type(C_PTR):: m_body_p
         integer :: ierr, i, j
         logical :: debug_subspace_matrix = .false.
@@ -2287,7 +2286,7 @@ contains
               ierr=talsh_tensor_contract("MIJ()+=S+(a,b,c)*B(a,b,c)",       &
      &                                                    result_tensor,      &
      &                                                    workspace_t%sigma2(i),&
-     &                                                    workspace_t%trail2(j))
+     &                                                    workspace_t%trial2(j))
               if (debug_subspace_matrix) write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
               workspace_t%M(i,j) = mij_result_tens(1) 
               mij_result_tens(1) = ZERO
@@ -2295,7 +2294,7 @@ contains
         end do
   
         ! XY: For linear systems M=M'+omega
-        if (frequency_local) then
+        if (present(frequency_local)) then
           do i = workspace_t%Lprev + 1, workspace_t%L
               workspace_t%M(i,i)=workspace_t%M(i,i)+frequency_local
           end do
@@ -2377,7 +2376,8 @@ contains
 ! aspg, 16/04/2019
 ! for the moment we have a long argument list to get it going, later we try to shorten in
 !   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
-   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, frequency, prop_gradient_t1, prop_gradient_t2)
+   subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, workspace_t, projector_t, &
+                                            frequency, prop_gradient_t1, prop_gradient_t2)
       type(talsh_davidson_results_tens_t) :: results_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t

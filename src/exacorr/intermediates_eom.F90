@@ -94,6 +94,7 @@ module intermediates_eom_ccsd
 !    top-level driver for forming intermediates with CCSD wavefunctions
      public form_ccsd_intermediates
      public destroy_ccsd_intermediates
+     public get_eta_ov, get_eta_oovv
 
      contains
 
@@ -984,6 +985,7 @@ module intermediates_eom_ccsd
 
       subroutine get_eta_ov_talsh(eta_ov,fbar_ov,ov_dims)
         use talsh
+        use tensor_algebra
 
         type(talsh_tens_t),intent(inout)   :: eta_ov
         type(talsh_tens_t),intent(inout)   :: fbar_ov
@@ -997,6 +999,7 @@ module intermediates_eom_ccsd
 
       subroutine get_eta_oovv_talsh(eta_oovv,int_oovv,oovv_dims)
         use talsh
+        use tensor_algebra
 
         type(talsh_tens_t),intent(inout)   :: eta_oovv
         type(talsh_tens_t),intent(inout)   :: int_oovv

@@ -16,6 +16,7 @@ if(ENABLE_EXATENSOR)
    exacorr_tensor_methods.F90
    intermediates.F90
    intermediates_eom.F90
+   intermediates_eom_rsp.F90
    exacorr_ao_to_mo.F90
    exacorr_gradient.F90
    exacorr_mo.F90
@@ -30,6 +31,8 @@ if(ENABLE_EXATENSOR)
    talsh_drivers_eomccsd.F90
    talsh_gradient.F90
    talsh_cc.F90
+   talsh_eom_QR.F90
+   talsh_eom_rspeq_solver.F90
    davidson/talsh_davidson.F90
    talsh_mp2no.F90
    mp2no_driver.F90

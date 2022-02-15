@@ -86,11 +86,13 @@
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: eom = .false.
             integer                 :: current_eom_input = -1
+            logical                 :: eom_qr = .false.
 ! handle one or more *EOMCC blocks 
             type(eom_config_t), allocatable :: eom_input(:)
 
             complex(8), allocatable   :: ff(:,:)                  ! field strengths
             character(8), allocatable :: ff_names(:)            ! property labels
+            
         end type exacc_input
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
@@ -175,6 +177,7 @@
          type(talsh_tens_t) :: prop_oo, prop_ov, prop_vv
         end type talsh_orb_prop_integ_tens_t
 
+        
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
         type, extends(talsh_lambda_tens_t), public :: talsh_intermediates_tens_t
@@ -204,6 +207,15 @@
             end subroutine  
         end interface
 
+        ! intermediates used in eom prop and cc response 
+        type, public :: talsh_rsp_interm_tens_t
+              type(talsh_tens_t) :: prop_bar_vv, prop_bar_oo, prop_bar_ov
+              type(talsh_tens_t) :: Q_vvov, Q_ovoo
+              type(talsh_tens_t) :: eta_ov, eta_oovv
+              type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
+              type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv
+              type(talsh_tens_t) :: O_vo
+       end type talsh_rsp_interm_tens_t
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations
         type, public :: talsh_projectors_tens_t

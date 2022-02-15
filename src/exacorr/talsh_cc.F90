@@ -120,7 +120,7 @@ module talsh_cc
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          eom = exa_input%eom
-         eom_qr = exa_input%eom_input%eom_qr
+         eom_qr = exa_input%eom_qr
          ncycles = exa_input%ncycles
 
          call print_exainput(exa_input,get_nao())
