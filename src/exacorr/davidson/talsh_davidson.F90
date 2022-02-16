@@ -1595,7 +1595,7 @@ contains
       logical, intent(in) :: left,right
       integer :: ierr, iroot
       
-      logical :: debug_sigma = .true., debug_print_before_calculating=.false.
+      logical :: debug_sigma = .false., debug_print_before_calculating=.false.
 
       do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
 

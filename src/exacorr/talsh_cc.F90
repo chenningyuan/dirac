@@ -352,9 +352,9 @@ module talsh_cc
          else
             fock_mode = 1
          end if
-!        call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+         call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
          ! copy Fock matrix to comm, add finite field to the Fock matrix
-!        call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
