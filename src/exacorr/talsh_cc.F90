@@ -214,6 +214,10 @@ module talsh_cc
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
+
+         print*, "t2 tensor after MP2, norm ", tensor_norm2(comm_t%t2)
+         call print_tensor(comm_t%t2, 1.0d-18, "comm_t%t2")
+
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
          mp2_energy=mp2_energy+result_tens(1)
@@ -284,6 +288,9 @@ module talsh_cc
          ! end finite field loop
          end do
 
+         print*, "t2 tensor after CC, norm ", tensor_norm2(comm_t%t2)
+         call print_tensor(comm_t%t2, 1.0d-18, "comm_t%t2")
+
          if (lambda.and..not.CC2) then
           call print_date('-Start- Lambda Equations')
 !         Construct lambda tensor
@@ -313,7 +320,6 @@ module talsh_cc
           end if
 
           if (.not.CCD) ierr=talsh_tensor_destruct(l1_tensor)
-          ierr=talsh_tensor_destruct(l2_tensor)
           call print_date('-End- Lambda Equations')
          else
             write(*,*) 'Lambda equations with CC2 wavefunctions not supported in this release' 
@@ -346,9 +352,9 @@ module talsh_cc
          else
             fock_mode = 1
          end if
-         call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+!        call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
          ! copy Fock matrix to comm, add finite field to the Fock matrix
-         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+!        call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
          ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
          call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),keep_diagonal=.true.)
@@ -362,7 +368,8 @@ module talsh_cc
 
 ! with the ground-state intermediates done, and t amplitudes store
 
-            if (debug_eom) then
+!           if (debug_eom) then
+            if (.true.) then 
                print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
                print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
                print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)

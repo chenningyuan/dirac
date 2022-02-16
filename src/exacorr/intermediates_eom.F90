@@ -883,6 +883,7 @@ module intermediates_eom_ccsd
 
          ierr=talsh_tensor_add("IntmT(a,i)+=T(a,i)",interm_t%t1,comm_t%t1)
          ierr=talsh_tensor_add("IntmT(a,b,i,j)+=T(a,b,i,j)",interm_t%t2,comm_t%t2)
+         print*, "copying t2 tensor, norm ", tensor_norm2(comm_t%t2),tensor_norm2(interm_t%t2)
 
 !  create all fixed intermediates
          ierr=talsh_tensor_construct(interm_t%fbar_oo,C8,oo_dims,init_val=ZERO)

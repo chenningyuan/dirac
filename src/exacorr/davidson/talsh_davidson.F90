@@ -283,7 +283,7 @@ contains
         if (present(max_subspace_size)) then
             davidson_max_subspace_size = max_subspace_size  
         else
-            davidson_max_subspace_size = 8 ! 1024
+            davidson_max_subspace_size = 1024
         end if
 
         if (present(max_iterations)) then
@@ -1434,26 +1434,84 @@ contains
         write(davidson_output_file_unit, "(4x,a)") 'leaving talsh_davidson_workspace_destroy'
     end subroutine 
 
-    subroutine talsh_davidson_workspace_create(workspace_t, nocc, nvirt, flavor, excitation_level)
+    subroutine talsh_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level)
         type(talsh_davidson_workspace_tens_t),  intent(inout) :: workspace_t
         character*2 :: flavor
-        integer, intent(in) :: nocc, nvirt, excitation_level
+        integer, intent(in) :: nocc, nvirt, nroots, excitation_level
         logical :: workspace_create_debug = .false.
 
         integer :: M_dims(2) 
         integer :: ierr, i
+        integer :: n_continuum_occ, n_continuum_virt
+        integer :: excitation_manifold_size
 
-! for the moment for the number of roots to the dimension of the excitation manifold for IP-CCSD
-!       workspace_t%nroots = 2
-        workspace_t%nroots = nocc + nocc*nocc*nvirt 
+! start out by dealing with excitation level
+        allocate(workspace_t%N(excitation_level))
+
+! tensor ranks: for simplicity we will always work with even-ranked tensors.
+!               in cases such as IP and EA, which could be described by
+!               odd-rakned tensors (for single detachment/attachment, or
+!               2h1p/1h2p), we define an extra class called "continuum" that
+!               will denote the particle that is removed/added. this continnum
+!               can have just dimension 1 for IP/EA, 2 for DIP/DEA etc
+! singles
+        workspace_t%tens1_rank = 2
+        allocate(workspace_t%tens1_dims(workspace_t%tens1_rank))
+! doubles
+        workspace_t%tens2_rank = 4
+        allocate(workspace_t%tens2_dims(workspace_t%tens2_rank))
+
+
+        select case(flavor)
+           case("IP")
+              n_continuum_virt = 1
+! singles
+              workspace_t%tens1_dims = (/ n_continuum_virt , nocc /)
+              workspace_t%N(1) = nocc*n_continuum_virt
+! doubles
+              workspace_t%tens2_dims = (/ nvirt, n_continuum_virt, nocc, nocc /)
+              workspace_t%N(2) = nvirt*n_continuum_virt*nocc*nocc
+
+           case("EA")
+! singles
+              workspace_t%tens1_dims = (/ nvirt, n_continuum_occ /)
+              workspace_t%N(1) = nvirt*n_continuum_occ 
+! doubles
+              workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, n_continuum_occ /)
+              workspace_t%N(2) = nvirt*nvirt*nocc*n_continuum_occ
+
+           case("EE")
+! singles
+              workspace_t%tens1_dims = (/ nvirt, nocc /)
+              workspace_t%N(1) = nvirt*nocc
+! doubles
+              workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
+              workspace_t%N(2) = nvirt*nvirt*nocc*nocc
+
+        end select
+
+        excitation_manifold_size = workspace_t%N(1) + workspace_t%N(2)
+
+! now that we know the dimensionality of the excitation manifold (=number of rows in Hbar), start allocating tensors
+! the number of solutions (and solution vectors) depends on the user input.
+! as was the case with relccsd, if we give a negative number for the number of roots, the code will assume we want
+! as many roots as the there are columns in Hbar (=size of the excitation manifold)..
         print *, 'nocc:',nocc
         print *, 'nvirt:',nvirt
-        print *, 'nroots',workspace_t%nroots
-        workspace_t%Lmax   = max(workspace_t%nroots,davidson_max_subspace_size)
-        workspace_t%L      = workspace_t%nroots 
+        print *, 'requested number of roots',nroots
+        if (nroots.lt.0) then
+           print *, 'INFO: number of roots reset to the dimension of Hbar'
+           workspace_t%nroots = excitation_manifold_size
+           workspace_t%Lmax   = excitation_manifold_size
+        else
+           if (nroots.gt.excitation_manifold_size) then
+              print *, 'INFO: number of roots > dimension of Hbar, resetting it'
+           end if
+           workspace_t%nroots = min(nroots,excitation_manifold_size)
+           workspace_t%Lmax   = min(davidson_max_subspace_size,excitation_manifold_size)
+        end if
+        workspace_t%L      = workspace_t%nroots
         workspace_t%Lprev  = 0
-
-        allocate(workspace_t%N(excitation_level))
 
         allocate(workspace_t%trial1(workspace_t%Lmax))
         allocate(workspace_t%trial2(workspace_t%Lmax))
@@ -1471,45 +1529,6 @@ contains
 !       ierr=talsh_tensor_construct(workspace_t%M,C8,M_dims,init_val=ZERO)
         allocate(workspace_t%M(workspace_t%Lmax,workspace_t%Lmax))
         workspace_t%M = ZERO
-        
-        select case(flavor)
-           case("IP")
-! singles
-              workspace_t%tens1_rank = 1
-              allocate(workspace_t%tens1_dims(workspace_t%tens1_rank))
-              workspace_t%tens1_dims = (/ nocc /)
-              workspace_t%N(1) = nocc 
-! doubles
-              workspace_t%tens2_rank = 3
-              allocate(workspace_t%tens2_dims(workspace_t%tens2_rank))
-              workspace_t%tens2_dims = (/ nvirt, nocc, nocc /)
-              workspace_t%N(2) = nvirt*nocc*nocc
-
-           case("EA")
-! singles
-              workspace_t%tens1_rank = 1
-              allocate(workspace_t%tens1_dims(workspace_t%tens1_rank))
-              workspace_t%tens1_dims = (/ nvirt /)
-              workspace_t%N(1) = nvirt 
-! doubles
-              workspace_t%tens2_rank = 3
-              allocate(workspace_t%tens2_dims(workspace_t%tens2_rank))
-              workspace_t%tens2_dims = (/ nvirt, nvirt, nocc /)
-              workspace_t%N(2) = nvirt*nvirt*nocc
-
-           case("EE")
-! singles
-              workspace_t%tens1_rank = 2
-              allocate(workspace_t%tens1_dims(workspace_t%tens1_rank))
-              workspace_t%tens1_dims = (/ nvirt, nocc /)
-              workspace_t%N(1) = nvirt*nocc
-! doubles
-              workspace_t%tens2_rank = 4
-              allocate(workspace_t%tens2_dims(workspace_t%tens2_rank))
-              workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
-              workspace_t%N(2) = nvirt*nvirt*nocc*nocc
-
-        end select
 
 ! singles
         do i = 1, workspace_t%Lmax
@@ -1574,91 +1593,27 @@ contains
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
-
-      complex(8), pointer, contiguous:: s1_h_p_p(:)
-      type(C_PTR):: s1_body_p
-
-      complex(8), pointer, contiguous:: t1_h_p_p(:)
-      type(C_PTR):: t1_body_p
-
-      complex(8), pointer, contiguous:: t2_h_p_p(:,:,:)
-      type(C_PTR):: t2_body_p
-
-      complex(8), pointer, contiguous:: s2_h_p_p(:,:,:)
-      type(C_PTR):: s2_body_p
-
-      integer :: ierr, iroot, i, j, a, b
+      integer :: ierr, iroot
       logical :: debug_sigma_right = .true.
 
       do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
 
          if (debug_sigma_right) then
             write (6,*) 'root ',iroot
-! aspg
-! debug info
-            ierr = talsh_tensor_get_body_access(workspace_t%sigma1(iroot),s1_body_p,C8,0,DEV_HOST)
-!           write (6,*) 's1_body_p',s1_body_p
-            ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-            call c_f_pointer(s1_body_p,s1_h_p_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
 
-            ierr = talsh_tensor_get_body_access(workspace_t%trial1(iroot),t1_body_p,C8,0,DEV_HOST)
-!           write (6,*) 't1_body_p',t1_body_p
-            call c_f_pointer(t1_body_p,t1_h_p_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
-
-            ierr = talsh_tensor_get_body_access(workspace_t%sigma2(iroot),s2_body_p,C8,0,DEV_HOST)
-!           write (6,*) 's2_body_p',s2_body_p
-           ! associating the pointer to sigma1 to the local, fortran s1_p pointer variable
-            call c_f_pointer(s2_body_p,s2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
-
-            ierr = talsh_tensor_get_body_access(workspace_t%trial2(iroot),t2_body_p,C8,0,DEV_HOST)
-!           write (6,*) 't2_body_p',t2_body_p
-            call c_f_pointer(t2_body_p,t2_h_p_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
-
-            if (.false.) then
+            if (.true.) then
             write (6,*) 'debug >>> t_tens before sigma, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            b = 0
-            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
-            do i = 1, workspace_t%tens1_dims(1)
-               b = b + 1
-               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
-               call  print_complex_vector_element(t1_h_p_p(i))
-               print *, ""
-            end do
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            do i = 1, workspace_t%tens2_dims(3)
-               do j = 1, workspace_t%tens2_dims(2)
-                  do a = 1, workspace_t%tens2_dims(1)
-                     b = b + 1
-                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
-                     call  print_complex_vector_element(t2_h_p_p(a,j,i))
-                     print *, ""
-                  end do
-               end do
-            end do
+            print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+            call print_tensor(workspace_t%trial1(iroot), 0.0d-18, "trial1")
+            call print_tensor(workspace_t%trial2(iroot), 0.0d-18, "trial2")
             write (6,*) 'debug <<< t_tens before sigma <<<'
 
             write (6,*) 'debug >>> s_tens before sigma, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
-            b = 0
-            do i = 1, workspace_t%tens1_dims(1)
-               b = b + 1
-               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
-               call  print_complex_vector_element(s1_h_p_p(i))
-               print *, ""
-            end do
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            do i = 1, workspace_t%tens2_dims(3)
-               do j = 1, workspace_t%tens2_dims(2)
-                  do a = 1, workspace_t%tens2_dims(1)
-                     b = b + 1
-                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
-                     call  print_complex_vector_element(s2_h_p_p(a,j,i))
-                     print *, ""
-                  end do
-               end do
-            end do
+            print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+            call print_tensor(workspace_t%sigma1(iroot), 0.0d-18, "sigma1")
+            call print_tensor(workspace_t%sigma2(iroot), 0.0d-18, "sigma2")
             write (6,*) 'debug <<< s_tens before sigma <<<'
             else
                write (6,*) 'debug <<< silenced printout prior to calculation >>>'  
@@ -1668,7 +1623,6 @@ contains
 ! debug info     
 ! aspg
 
-
          call interm_t%sigma_rhs_p(int_t,interm_t, &
    &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
    &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
@@ -1677,49 +1631,15 @@ contains
 ! debug info     
          if (debug_sigma_right) then
             write (6,*) 'debug >>> t_tens, root',iroot,' >>>'
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            b = 0
-            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
-            do i = 1, workspace_t%tens1_dims(1)
-               b = b + 1
-               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
-               call  print_complex_vector_element(t1_h_p_p(i))
-               print *, ""
-            end do
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            do i = 1, workspace_t%tens2_dims(3)
-               do j = 1, workspace_t%tens2_dims(2) 
-                  do a = 1, workspace_t%tens2_dims(1)
-                     b = b + 1
-                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
-                     call  print_complex_vector_element(t2_h_p_p(a,j,i))
-                     print *, ""
-                  end do
-               end do
-            end do
+            print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+            call print_tensor(workspace_t%trial1(iroot), 1.0d-18, "trial1")
+            call print_tensor(workspace_t%trial2(iroot), 1.0d-18, "trial2")
             write (6,*) 'debug <<< t_tens <<<'
 
             write (6,*) 'debug >>> s_tens, root',iroot,' >>>'
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            b = 0
-            print "(2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "vir", "occ","occ"
-            do i = 1, workspace_t%tens1_dims(1)
-               b = b + 1
-               print "(2x,i6,2x,a6,2x,a6,2x,i6,$)", b, "","", i
-               call  print_complex_vector_element(s1_h_p_p(i))
-               print *, ""
-            end do
-!           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-            do i = 1, workspace_t%tens2_dims(3)
-               do j = 1, workspace_t%tens2_dims(2)
-                  do a = 1, workspace_t%tens2_dims(1)
-                     b = b + 1
-                     print "(2x,i6,2x,i6,2x,i6,2x,i6,$)", b, a, j, i
-                     call  print_complex_vector_element(s2_h_p_p(a,j,i))
-                     print *, ""
-                  end do
-               end do
-            end do
+            print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+            call print_tensor(workspace_t%sigma1(iroot), 1.0d-18, "sigma1")
+            call print_tensor(workspace_t%sigma2(iroot), 1.0d-18, "sigma2")
             write (6,*) 'debug <<< s_tens <<<'
          end if
 ! debug info     
@@ -1758,11 +1678,9 @@ contains
 
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
-!     ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
       ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
       ierr=talsh_tensor_get_body_access(result_tensor,mij_body_p,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(mij_body_p,mij_result_tens,one_dims)
-
 
 ! capital letters here are meant to be the roots
       if (debug_subspace_matrix) then
@@ -1773,14 +1691,18 @@ contains
       do i = workspace_t%Lprev + 1, workspace_t%L
          do j = workspace_t%Lprev + 1, workspace_t%L
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
-            ierr=talsh_tensor_contract("MIJ()+=Bdag+(e)*S(e)",               &
-   &                                                    result_tensor,      &
-   &                                                    workspace_t%trial1(i),&
-   &                                                    workspace_t%sigma1(j))
-            ierr=talsh_tensor_contract("MIJ()+=Bdag+(a,b,c)*S(a,b,c)",       &
-   &                                                    result_tensor,      &
-   &                                                    workspace_t%trial2(i),&
-   &                                                    workspace_t%sigma2(j))
+            if (workspace_t%N(1).ne.0) then
+               ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q)*S(p,q)",             &
+   &                                                        result_tensor,        &
+   &                                                        workspace_t%trial1(i),&
+   &                                                        workspace_t%sigma1(j))
+            end if
+            if (workspace_t%N(2).ne.0) then
+               ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q,r,s)*S(p,q,r,s)",        &
+   &                                                       result_tensor,      &
+   &                                                       workspace_t%trial2(i),&
+   &                                                       workspace_t%sigma2(j))
+            end if
             if (debug_subspace_matrix) write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
             workspace_t%M(i,j) = mij_result_tens(1) 
             mij_result_tens(1) = ZERO
@@ -1991,16 +1913,17 @@ contains
             print *,'debug : before updating trial vectors'
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
+            if (workspace_t%L .ge. workspace_t%Lmax) then
+               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
+               exit
+            end if
+
             if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
             else
                call update_trial_vectors(delta,workspace_t)
             end if
             print *,'debug : after  updating trial vectors'
  
-            if (workspace_t%L .ge. workspace_t%Lmax) then
-               write(davidson_output_file_unit, *) "Reached maximum subspace size, stopping."
-               exit
-            end if
         end do ! davidson iterations
         print *,'debug : after  davidson iterations'
 

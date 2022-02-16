@@ -25,10 +25,10 @@ module talsh_eom
 
   contains
 
-    subroutine talsh_steom_eigval_driver (results_t,exa_input,eps_occ,eps_vir,interm_t,int_t)
+    subroutine talsh_steom_eigval_driver (results_t,eom_config,eps_occ,eps_vir,interm_t,int_t)
 
 !     input variables
-      type(exacc_input),     intent(in   )           :: exa_input
+      type(eom_config_t),     intent(in)             :: eom_config
       type(talsh_intg_tens_t), intent(inout)           :: int_t
       real(8),               intent(in)              :: eps_occ(:), eps_vir(:)
       type(talsh_intermediates_tens_t), intent(inout)  :: interm_t
@@ -57,26 +57,25 @@ module talsh_eom
       call talsh_davidson_create_results(eomea_results_t)
 
       call print_date("Setting up RHS EOM-IP run")
-      call eom_ccsd_eigenvalue_ip(eomip_results_t,interm_t,int_t)
+      call eom_ccsd_eigenvalue_ip(eomip_results_t,eom_config%nroots,interm_t,int_t)
       call print_date("Done with  RHS EOM-IP run")
 
       call print_date("Setting up RHS EOM-EA run")
-      call eom_ccsd_eigenvalue_ea(eomea_results_t,interm_t,int_t)
+      call eom_ccsd_eigenvalue_ea(eomea_results_t,eom_config%nroots,interm_t,int_t)
       call print_date("Done with  RHS EOM-EA run")
 
-      if (exa_input%eom_input(0)%do_expval) then
+      if (eom_config%do_expval) then
          call talsh_davidson_setup(unit_output=6, &
                                    solve_right=.false.,&
                                    solve_left=.true.,&
                                    symmetric=.false., &
                                    complex_mode=.true.)
          call print_date("Setting up LHS EOM-IP run")
-         call eom_ccsd_eigenvalue_ip(eomip_results_t,interm_t,int_t)
+         call eom_ccsd_eigenvalue_ip(eomip_results_t,eom_config%nroots,interm_t,int_t)
          call print_date("Done with  LHS EOM-IP run")
 
          call print_date("Setting up LHS EOM-EA run")
-         call talsh_davidson_create_results(eomea_results_t)
-         call eom_ccsd_eigenvalue_ea(eomea_results_t,interm_t,int_t)
+         call eom_ccsd_eigenvalue_ea(eomea_results_t,eom_config%nroots,interm_t,int_t)
          call print_date("Done with  LHS EOM-EA run")
       end if
 
@@ -143,11 +142,11 @@ module talsh_eom
       print *,'debug: eom_input%flavor is__',eom_config%flavor(1:2),'___'
       select case(eom_config%flavor)
          case("IP")
-            call eom_ccsd_eigenvalue_ip(results_t,interm_t,int_t)
+            call eom_ccsd_eigenvalue_ip(results_t,eom_config%nroots,interm_t,int_t)
          case("EA")
-            call eom_ccsd_eigenvalue_ea(results_t,interm_t,int_t)
+            call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
          case("EE")
-            call eom_ccsd_eigenvalue_ee(results_t,interm_t,int_t)
+            call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
          case default
             call quit ('Error: No valid EOM-flavour chosen')
       end select
@@ -160,11 +159,11 @@ module talsh_eom
                                    complex_mode=.true.)
          select case(eom_config%flavor)
             case("IP")
-               call eom_ccsd_eigenvalue_ip(results_t,interm_t,int_t)
+               call eom_ccsd_eigenvalue_ip(results_t,eom_config%nroots,interm_t,int_t)
             case("EA")
-               call eom_ccsd_eigenvalue_ea(results_t,interm_t,int_t)
+               call eom_ccsd_eigenvalue_ea(results_t,eom_config%nroots,interm_t,int_t)
             case("EE")
-               call eom_ccsd_eigenvalue_ee(results_t,interm_t,int_t)
+               call eom_ccsd_eigenvalue_ee(results_t,eom_config%nroots,interm_t,int_t)
             case default
                call quit ('Error: No valid EOM-flavour chosen')
          end select
@@ -176,10 +175,11 @@ module talsh_eom
 
     end subroutine 
 
-    subroutine eom_ccsd_eigenvalue_ip(results_t, interm_t, int_t)
+    subroutine eom_ccsd_eigenvalue_ip(results_t, nroots, interm_t, int_t)
        use talsh_sigma_eomccsd
 
 !     input variables
+      integer, intent(in) :: nroots
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
@@ -192,7 +192,7 @@ module talsh_eom
 
       call print_date("Entering EOM-IP energy calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call talsh_eomccsd_ip_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call talsh_eomccsd_ip_trial_create(workspace_t)
 
@@ -208,10 +208,11 @@ module talsh_eom
     end subroutine eom_ccsd_eigenvalue_ip
 
 
-    subroutine eom_ccsd_eigenvalue_ea(results_t, interm_t, int_t)
+    subroutine eom_ccsd_eigenvalue_ea(results_t, nroots, interm_t, int_t)
        use talsh_sigma_eomccsd
 
 !     input variables
+      integer, intent(in) :: nroots
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
@@ -224,9 +225,9 @@ module talsh_eom
 
       call print_date("Entering EOM-EA eigenvalue calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call talsh_eomccsd_ea_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-!     call talsh_eomccsd_ea_trial_create(workspace_t)
+      call talsh_eomccsd_ee_trial_create(workspace_t)
 
 !     set pointers to sigma vector subroutines 
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ea
@@ -240,10 +241,11 @@ module talsh_eom
     end subroutine eom_ccsd_eigenvalue_ea
 
 
-    subroutine eom_ccsd_eigenvalue_ee(results_t, interm_t, int_t)
+    subroutine eom_ccsd_eigenvalue_ee(results_t, nroots, interm_t, int_t)
        use talsh_sigma_eomccsd
 
 !     input variables
+      integer, intent(in) :: nroots
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
@@ -256,9 +258,9 @@ module talsh_eom
 
       call print_date("Entering EOM-EE eigenvalue calculation")
 
-      call talsh_davidson_workspace_create(workspace_t, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-!     call talsh_eomccsd_ee_trial_create(workspace_t)
+      call talsh_eomccsd_ee_trial_create(workspace_t)
 
 !     set pointers to sigma vector subroutines 
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
