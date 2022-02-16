@@ -1587,21 +1587,21 @@ contains
    end subroutine 
 
 
-   subroutine create_sigma_right(int_t,interm_t,workspace_t)
+   subroutine create_sigma(workspace_t,int_t,interm_t,right,left)
       use talsh_sigma_eomccsd
-!     use talsh_sigma_eomccsd, only : sigma_eomccsd_right_ip, sigma_eomccsd_right_ea, sigma_eomccsd_right_ee
-      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
-      type(talsh_intg_tens_t), intent(inout) :: int_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+      type(talsh_intg_tens_t), intent(inout) :: int_t
+      type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
+      logical, intent(in) :: left,right
       integer :: ierr, iroot
-      logical :: debug_sigma_right = .true.
+      
+      logical :: debug_sigma = .true., debug_print_before_calculating=.false.
 
       do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
 
-         if (debug_sigma_right) then
+         if (debug_sigma) then
             write (6,*) 'root ',iroot
-
-            if (.true.) then
+            if (debug_print_before_calculating) then
             write (6,*) 'debug >>> t_tens before sigma, root',iroot,' >>>'
 !           call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
@@ -1618,18 +1618,31 @@ contains
             else
                write (6,*) 'debug <<< silenced printout prior to calculation >>>'  
             end if ! silencing printout prior to calculated vectors
-
          end if
 ! debug info     
 ! aspg
-
-         call interm_t%sigma_rhs_p(int_t,interm_t, &
+         if (right.and..not.left) then
+            if (associated(interm_t%sigma_rhs_p)) then
+               call interm_t%sigma_rhs_p(int_t,interm_t, &
    &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
    &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
-
+            else
+               stop 'RHS sigma vector routine has not been defined prior to calling the solver'
+            end if
+         else if (left.and..not.right) then
+            if (associated(interm_t%sigma_lhs_p)) then
+               call interm_t%sigma_lhs_p(int_t,interm_t, &
+   &                         workspace_t%trial1(iroot),workspace_t%trial2(iroot),&
+   &                         workspace_t%sigma1(iroot),workspace_t%sigma2(iroot))
+            else
+               stop 'LHS sigma vector routine has not been defined prior to calling the solver'
+            end if
+         else
+               stop  'Calculation of both left and right sigma not implemented'
+         end if
 ! aspg
 ! debug info     
-         if (debug_sigma_right) then
+         if (debug_sigma) then
             write (6,*) 'debug >>> t_tens, root',iroot,' >>>'
             print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
             call print_tensor(workspace_t%trial1(iroot), 1.0d-18, "trial1")
@@ -1652,9 +1665,10 @@ contains
    end subroutine
 
 
-   subroutine create_subspace_matrix_right(M_small,workspace_t)
+   subroutine create_subspace_matrix(M_small,workspace_t,right,left)
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t ! here we will keep the M(Lmax,Lmax)
       complex(kind=8), pointer, contiguous, intent(inout) :: M_small(:,:)    ! this will be a copy of M, M_small(L,L)
+      logical, intent(in) :: right, left
 
       integer :: mij_dims(2), mij_rank
       integer(INTD)      :: one_dims(1)
@@ -1692,17 +1706,33 @@ contains
          do j = workspace_t%Lprev + 1, workspace_t%L
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
             if (workspace_t%N(1).ne.0) then
-               ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q)*S(p,q)",             &
+               if (right.and..not.left) then 
+                  ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q)*S(p,q)",          &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial1(i),&
    &                                                        workspace_t%sigma1(j))
+               else if (left.and..not.right) then 
+                  ierr=talsh_tensor_contract("MIJ()+=S(p,q)*B(p,q)",              &
+   &                                                        result_tensor,        &
+   &                                                        workspace_t%sigma1(i),&
+   &                                                        workspace_t%trial1(j))
+               end if
             end if
+
             if (workspace_t%N(2).ne.0) then
-               ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q,r,s)*S(p,q,r,s)",        &
-   &                                                       result_tensor,      &
-   &                                                       workspace_t%trial2(i),&
-   &                                                       workspace_t%sigma2(j))
+               if (right.and..not.left) then
+                  ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q,r,s)*S(p,q,r,s)",  &
+   &                                                        result_tensor,        &
+   &                                                        workspace_t%trial2(i),&
+   &                                                        workspace_t%sigma2(j))
+               else if (left.and..not.right) then
+                  ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
+   &                                                        result_tensor,        &
+   &                                                        workspace_t%trial2(i),&
+   &                                                        workspace_t%sigma2(j))
+               end if
             end if
+
             if (debug_subspace_matrix) write (6,*) 'i,j, m_ij:', i,j, mij_result_tens(1)
             workspace_t%M(i,j) = mij_result_tens(1) 
             mij_result_tens(1) = ZERO
@@ -1853,23 +1883,8 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
-            if (davidson_solve_rhs) then
-               if (associated(interm_t%sigma_rhs_p)) then
-                  call create_sigma_right(int_t,interm_t,workspace_t)
-                  call create_subspace_matrix_right(M_small,workspace_t) 
-               else
-                  stop 'RHS sigma vector routine has not been defined prior to calling the solver'  
-               end if
-            else if (davidson_solve_lhs) then
-               if (associated(interm_t%sigma_lhs_p)) then
-                  stop 'LHS sigma vector in solver not yet implemented'
-               else
-                  stop 'LHS sigma vector routine has not been defined prior to calling the solver'  
-               end if
-! write me
-            else
-               stop 'unknown choice of side to solve for in davidson'  
-            end if
+            call create_sigma(workspace_t,int_t,interm_t,davidson_solve_rhs,davidson_solve_lhs)
+            call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs) 
 
 !!          if (associated(projector)) call apply_projector(projector,sigma_vector)
 
@@ -1895,11 +1910,11 @@ contains
                 c_small_l_old = c_small_l
             end if
  
-            print *,'debug : before forming preconditioner'
+            print *,'debug : before form_preconditioner()'
             call form_preconditioner(workspace_t, e_small)
-            print *,'debug : after  forming preconditioner'
+            print *,'debug : after  form_preconditioner()'
 
-            print *,'debug : before correcting vectors'
+            print *,'debug : before correction_to_vectors()'
             if (associated(delta)) deallocate(delta)
             if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
                                                                    e_small, c_small_r, workspace_t)
@@ -1910,7 +1925,6 @@ contains
                 exit
             end if
 
-            print *,'debug : before updating trial vectors'
 ! not converged yet, if asked to refresh the trial vectors do it now, otherwise create
 ! new trial vectors
             if (workspace_t%L .ge. workspace_t%Lmax) then
@@ -1919,10 +1933,12 @@ contains
             end if
 
             if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
+                print *,'debug : refreshing trial vectors not implemented in this version'
             else
+               print *,'debug : before updating trial vectors'
                call update_trial_vectors(delta,workspace_t)
+               print *,'debug : after  updating trial vectors'
             end if
-            print *,'debug : after  updating trial vectors'
  
         end do ! davidson iterations
         print *,'debug : after  davidson iterations'
