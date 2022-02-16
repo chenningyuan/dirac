@@ -477,7 +477,7 @@ module talsh_trial_eomccsd
         type(C_PTR):: trial1_body_p, trial2_body_p
 
         logical :: enable_double_manifold = .false.
-        logical :: debug_trial = .false.
+        logical :: debug_trial = .true.
 
         ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
         ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
@@ -533,11 +533,11 @@ module talsh_trial_eomccsd
         if (debug_trial) then 
            do iroot = 1, workspace%nroots
               write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial1(iroot), 1.0d-18, "trial1")
+              call print_tensor(workspace%trial1(iroot), 0.0d-18, "trial1")
               write (6,*) 'debug <<< t1_hp_tens <<<'
 
               write (6,*) 'debug >>> t2_hp_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial2(iroot), 1.0d-18, "trial2")
+              call print_tensor(workspace%trial2(iroot), 0.0d-18, "trial2")
               write (6,*) 'debug <<< t2_hp_tens <<<'
            end do
 
@@ -600,11 +600,11 @@ module talsh_trial_eomccsd
         if (debug_trial) then
            do iroot = 1, workspace%nroots
               write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial1(iroot), 1.0d-18, "trial1")
+              call print_tensor(workspace%trial1(iroot), 0.0d-18, "trial1")
               write (6,*) 'debug <<< t1_hp_tens <<<'
 
               write (6,*) 'debug >>> t2_hp_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial2(iroot), 1.0d-18, "trial2")
+              call print_tensor(workspace%trial2(iroot), 0.0d-18, "trial2")
               write (6,*) 'debug <<< t2_hp_tens <<<'
            end do
         end if

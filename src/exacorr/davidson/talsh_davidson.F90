@@ -1092,8 +1092,8 @@ contains
         integer :: iroot, ja, jb, jc, jd, ierr, b
         integer :: nroots
         real(kind=8) :: x2py2, proj_r, proj_i, eigenvalue_r, eigenvalue_i 
-        logical :: preconditioner_debug = .false.
-        real(kind=8) :: small_number = 1.0d-10
+        logical :: preconditioner_debug = .true.
+        real(kind=8) :: small_number = 1.0d-99
 
 ! careful with dimension 1 of eigenvalues, 
         nroots    = size(eigenvalues,1)
@@ -1168,27 +1168,6 @@ contains
                     end do
                  end do
 
-                 if (preconditioner_debug) then
-                    write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
-                    b = 0
-                    do ja = 1, workspace_t%tens1_dims(1)
-                       b = b + 1
-                       write (6,*) b, preco_1d_p(ja)
-                    end do
-                    write (6,*) 'debug <<< precon1_tens <<<'
-
-                    write (6,*) 'debug >>> precon2_tens  root',iroot,' >>>'
-                    do jc = 1, workspace_t%tens2_dims(3)
-                       do jb = 1, workspace_t%tens2_dims(2)
-                          do ja = 1, workspace_t%tens2_dims(1)
-                              b = b + 1
-                              write (6,*) b, ja, jb, jc, preco_3d_p(ja,jb,jc)   
-                          end do
-                       end do
-                    end do
-                    write (6,*) 'debug <<< precon2_tens <<<'
-                 end if
-
               else if (workspace_t%tens1_rank .eq. 2) then
                  call c_f_pointer(preco1_body_p,preco_2d_p,workspace_t%tens1_dims(1:workspace_t%tens1_rank))
                  call c_f_pointer(preco2_body_p,preco_4d_p,workspace_t%tens2_dims(1:workspace_t%tens2_rank))
@@ -1233,31 +1212,15 @@ contains
                     end do
                  end do
 
-                 if (preconditioner_debug) then
-                    write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
-                    b = 0
-                    do jb = 1, workspace_t%tens1_dims(2)
-                       do ja = 1, workspace_t%tens1_dims(1)
-                          b = b + 1
-                          write (6,*) b, ja, jb, preco_2d_p(ja,jb)
-                       end do
-                    end do
-                    write (6,*) 'debug <<< precon1_tens <<<'
+              end if
 
-                    write (6,*) 'debug >>> precon2_tens  root',iroot,' >>>'
-                    do jd = 1, workspace_t%tens2_dims(4)
-                       do jc = 1, workspace_t%tens2_dims(3)
-                          do jb = 1, workspace_t%tens2_dims(2)
-                             do ja = 1, workspace_t%tens2_dims(1)
-                                 b = b + 1
-                                 write (6,*) b, ja, jb, jc, jd, preco_4d_p(ja,jb,jc,jd) 
-                             end do
-                          end do
-                       end do
-                    end do
-                    write (6,*) 'debug <<< precon2_tens <<<'
-                 end if
-
+              if (preconditioner_debug) then
+                 write (6,*) 'debug >>> precon1_tens  root',iroot,' >>>'
+                 call print_tensor(workspace_t%precond1(iroot), 1.0d-18, "precond1")
+                 write (6,*) 'debug <<< precon1_tens <<<'
+                 write (6,*) 'debug >>> precon2_tens  root',iroot,' >>>'
+                 call print_tensor(workspace_t%precond1(iroot), 1.0d-18, "precond2")
+                 write (6,*) 'debug <<< precon2_tens <<<'
               end if
            end do ! iroot
        end if ! create preconditioner
