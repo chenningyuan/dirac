@@ -426,7 +426,7 @@ C
       LOGICAL INFO,LBIT,TEST,FNDLAB
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION CMO(NCMOTQ),EIG(NORBT),
-     &          IBEIG(NORBT,2)
+     &          IBEIG(NORBT)
       DIMENSION IDIM(3,2),IDIMS_DFCOEF(12)
 
       logical special_psh, special_esh
@@ -495,8 +495,7 @@ C
          ! DFCOEF is fully compatible, read directly into cmo
          if (lbit(iopt,2)) call reacmo_new (iunit,cmo=cmo)
          if (lbit(iopt,3)) call reacmo_new (iunit,eig=eig)
-         if (lbit(iopt,4)) call reacmo_new (iunit,ibeig=ibeig(:,1))
-         if (lbit(iopt,5)) call reacmo_new (iunit,kappa=ibeig(:,2))
+         if (lbit(iopt,4)) call reacmo_new (iunit,ibeig=ibeig)
 
       else
 
@@ -545,24 +544,7 @@ C
                np2 = idims_dfcoef(4+3*ifrp)
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
-               call adaibo(ibeig(id,1),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              ibuf_special,no2,np2,ne2)
-                id = id + norb(ifrp)
-                jd = jd + no2
-            end do
-            deallocate (ibuf_special)
-         end if
-
-         if (lbit(iopt,5)) then
-            allocate (ibuf_special(idims_dfcoef(5)))
-            call reacmo_new (iunit,kappa=ibuf_special)
-            id = 1
-            jd = 1
-            do ifrp = 1,nfsym
-               np2 = idims_dfcoef(4+3*ifrp)
-               ne2 = idims_dfcoef(5+3*ifrp)
-               no2 = np2 + ne2
-               call adaibo(ibeig(id,2),norb(ifrp),npsh(ifrp),nesh(ifrp),
+               call adaibo(ibeig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
      &              ibuf_special,no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
@@ -2297,11 +2279,7 @@ C     Read coefficients, eigenvalues and irrep identification
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREORB')
       IOPT=14
-      IF(ATOMIC) THEN
-        CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
-      ELSE
-        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-      ENDIF
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
 C
 C     Reorder orbitals
 C
@@ -2314,11 +2292,7 @@ C
 C
 C     Write new coefficients
 C
-      IF(ATOMIC) THEN
-        CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      ENDIF   
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 !     Memory deallocation
@@ -2473,11 +2447,7 @@ C     ====================================
       ELSE
         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSTOR1')
         IOPT=14
-        IF(ATOMIC) THEN
-          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
-        ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-        ENDIF
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
       END IF
 C
 C     Reorder orbitals
@@ -2520,11 +2490,7 @@ C
         end if
         close(LUKRMC,status='keep')
       else
-        IF(ATOMIC) THEN
-          CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-        ELSE
-          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-        ENDIF   
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
         CLOSE(LUCOEF,STATUS='KEEP')
       end if
 C
@@ -4480,26 +4446,6 @@ C***********************************************************************
         LL = INDJ-1
       ENDIF
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck atomic_reacmo */
-      SUBROUTINE ATOMIC_REACMO(IUNIT,FILNAM,CMO,EIG,IBEIG,TOTERG,IOPT)
-C***********************************************************************
-C
-C     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
-C
-C     Written by Trond Saue March 3 2021
-C***********************************************************************
-#include "implicit.h"
-#include "dcborb.h"      
-      DIMENSION CMO(*),EIG(*),IBEIG(NORBT)
-      integer, allocatable :: IBEIG2(:,:)
-      character            :: FILNAM*6
-      allocate(IBEIG2(NORBT,2))
-      IOPT2 = IOPT+16
-      CALL REACMO(IUNIT,FILNAM,CMO,EIG,IBEIG2,TOTERG,IOPT2)
-      CALL ATOMIC_ID_REDUCE(IBEIG2,IBEIG,NORBT)
-      deallocate(IBEIG2)
-      END     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck atomic_id_reduce */
       SUBROUTINE ATOMIC_ID_REDUCE(IBEIG2,IBEIG,N)

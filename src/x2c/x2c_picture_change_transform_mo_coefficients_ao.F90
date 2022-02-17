@@ -582,16 +582,11 @@ contains
        dimension_info(3) = ndim_2c_mo_ao
        dimension_info(4) = 1
        dimension_info(5) = ndim_2c_ev
-       dimension_info(6) = 1 ! Hardwired, needs to be changed for atomic calculations
+       dimension_info(6) = 1
 !      write the new DFCOEF file
        open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       if(x2c_atomic) then
-         dimension_info(6) = 2
-         call ATOMIC_WRICMO(fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
-       else
-          call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
-       endif
+       call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
        close(fh,status='keep')
 !      make additional copy of these coefficients for restart purposes
 #if defined SYS_WINDOWS

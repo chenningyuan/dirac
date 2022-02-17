@@ -357,11 +357,7 @@ C       We calculate a regular Fock matrix so we can check convergence ...
 C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
         IOPT = 15
-        IF(ATOMIC) THEN
-          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
-        ELSE
-          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-        ENDIF
+        CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
 C
 C       Generate untransformed coefficients (MO basis)
 C       and prepare for overlap selection
@@ -680,11 +676,7 @@ C
           DO I = 1,NFSYM
             CALL PHATRA(CMO(ICMOQ(I)+1),NFBAS(I,0),NORB(I),NZ)
           ENDDO
-          IF(ATOMIC) THEN
-            CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
-          ELSE
-            CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
-          ENDIF   
+          CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,DHFERG)
         ENDIF
         CLOSE(LUCOEF,STATUS='KEEP')
         CLOSE(LUFCK1,STATUS='KEEP')
@@ -1079,11 +1071,7 @@ C     Write untransformed coefficients
       REWIND LUCMOS
       CALL WRITT(LUCMOS,N2TMOTQ,FAO)
 C     Write transformed coefficients
-      IF(ATOMIC) THEN
-        CALL ATOMIC_WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
-      ELSE
-        CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
-      ENDIF   
+      CALL WRICMO(LUCOEF,FMO,EIG,IBEIG,DHFERG)
 C
 C     Dynamic update of overlap selection matrix, if not converged
 C     (note that DMAT is destroyed)
@@ -3274,11 +3262,7 @@ C
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
          IOPT=14
-         IF(ATOMIC) THEN
-           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
-         ELSE
-           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-         ENDIF
+         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
       ENDIF
       IF(IONMVO) THEN
 C
@@ -3381,11 +3365,7 @@ C
         ENDDO
       END IF
       END DO
-      IF(ATOMIC) THEN
-        CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      ENDIF   
+      CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL QEXIT('MVOGEN')

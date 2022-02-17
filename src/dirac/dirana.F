@@ -397,13 +397,8 @@ C            occupancies
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          IOPT=14
-         IF(ATOMIC) THEN
-           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &          IBEIG,TOTERG,IOPT)
-         ELSE
-           call reacmo_new (lucoef,cmo=CMO,eig=EIG,
-     &                      ibeig=IBEIG,toterg=TOTERG)
-         ENDIF
+         call reacmo_new (lucoef,cmo=CMO,eig=EIG,
+     &                    ibeig=IBEIG,toterg=TOTERG)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        check for energy 137.0D0 - if found we are doing a Mulliken
@@ -2080,13 +2075,8 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       IOPT=14
-      IF(ATOMIC) THEN
-        CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,
-     &                     IBEIG,TOTERG,IOPT)
-      ELSE
-        CALL REACMO_new(LUCOEF,cmo=CMO,eig=EIG,ibeig=IBEIG,
-     &                  toterg=TOTERG)
-      ENDIF
+      CALL REACMO_new(LUCOEF,cmo=CMO,eig=EIG,ibeig=IBEIG,
+     &                toterg=TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
       CALL HEADER('Coefficients from DFCOEF',2)

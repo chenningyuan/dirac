@@ -10,15 +10,10 @@ module dircmo
   private
 
   public wricmo
-  public atomic_wricmo
   public reacmo_new
 
   interface wricmo
       module procedure wricmo
-  end interface
-
-  interface atomic_wricmo
-      module procedure atomic_wricmo
   end interface
 
   interface reacmo_new
@@ -94,7 +89,6 @@ module dircmo
       CALL LAB_WRITE(IUNIT,'COEFS   ',CMO(1:NCMOTQ))
       CALL LAB_WRITE(IUNIT,'EVALS   ',EIG(1:NORBT))
       CALL LAB_WRITE(IUNIT,'SUPERSYM',idata=IBEIG(1:NORBT))
-      IF (SSYM) CALL LAB_WRITE(IUNIT,'KAPPA   ',idata=IBEIG(NORBT+1:2*NORBT))
 !     Add additional information about the basis set
       CALL LAB_WRITE(IUNIT,'BASINFO ')
 !     This call introduces a dependency on common blocks, should be moved as soon as the checkpoint file is fully functional
@@ -111,12 +105,6 @@ module dircmo
          n_po(ifsym)    = cmo_dims(5+3*ifsym)
          n_basis(ifsym) = cmo_dims(6+3*ifsym)
       end do
-      ! handling of atomic symmetry is unfortunately still complicated, but underlying code should first be improved
-      if (ssym) then
-         ibeig_dim = 2*norbt
-      else
-         ibeig_dim = norbt
-      endif
       call checkpoint_write ('/result/wavefunctions/scf/energy',rdata=toterg)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/mobasis_id',idata=1)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
@@ -124,53 +112,13 @@ module dircmo
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
-      call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:ibeig_dim))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:norbt))
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=cmo(1:ncmotq))
 
       RETURN
       END
 
-      SUBROUTINE ATOMIC_WRICMO(IUNIT,CMO,EIG,IBEIG,TOTERG,TITLE,IDIMS)
-!***********************************************************************
-!
-!     Wrapper routine to handle atomic supersymmetry; hope for better solution soon
-!
-!     Written by Trond Saue March 3 2021
-!***********************************************************************
-      implicit none
-      integer                            :: IUNIT,IBEIG(*)
-      real(8)                            :: CMO(*),EIG(*),toterg
-      integer, allocatable               :: IBEIG2(:,:)
-      integer                            :: i,j,norbt,ll
-      integer,intent(in), optional       :: idims(:)
-      character*(*),intent(in), optional :: title
-      character(len=74) text
-      INTEGER   cmo_dims(12)
-      
-!     Check whether we should get some information from the common blocks
-      if (present(title)) then
-         text(1:50) = title
-      else
-         call get_title (text)
-      end if
-      CALL GTINFO(TEXT(51:74)) ! Add date & time info to title
-
-      if (present(idims)) then
-         cmo_dims = idims
-      else
-         call get_dimension_info(cmo_dims)
-      end if
-      
-      norbt = cmo_dims(5)
-      allocate(IBEIG2(NORBT,2))
-      DO I = 1,NORBT
-        CALL ATOMIC_ID(IBEIG(I),IBEIG2(I,2),J,IBEIG2(I,1),LL)
-      ENDDO
-      CALL WRICMO(IUNIT,CMO,EIG,reshape(IBEIG2,(/2*NORBT/)),TOTERG,text,cmo_dims)
-      deallocate(IBEIG2)
-      END
-
-      SUBROUTINE REACMO(IUNIT,TEXT,CMO,EIG,IBEIG,KAPPA,TOTERG,IDIMS)
+      SUBROUTINE REACMO(IUNIT,TEXT,CMO,EIG,IBEIG,TOTERG,IDIMS)
 !***********************************************************************
 !
 !     Read SCF-coefficients and other information (eigenvalues) from unformatted file
@@ -184,7 +132,7 @@ module dircmo
       implicit none
       integer, intent(in)            :: iunit
       character(len=74), intent(out), optional :: text
-      integer, intent(out), optional :: ibeig(*),kappa(*),idims(*)
+      integer, intent(out), optional :: ibeig(*),idims(*)
       real(8), intent(out), optional :: toterg,cmo(*),eig(*)
 
       integer              :: nfsym, nz, i, ifsym, idim(3,2), norb2(2), ncoef, neig
@@ -227,10 +175,11 @@ module dircmo
 
       if (present(cmo)) then
          allocate (coefficients(ncoef))
-         call lab_read(iunit,'COEFS   ',rdata=coefficients)
+         ! call lab_read(iunit,'COEFS   ',rdata=coefficients)
          ! test zone: uncomment to read coefs from the hdf5 file
-         ! print*," Reading coeffs from checkpoint file "
-         ! call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
+         print*," Reading coeffs from checkpoint file "
+         call flush()
+         call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
          ! end of test zone
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)
@@ -238,23 +187,22 @@ module dircmo
 
       if (present(eig)) then
          allocate (eigenvalues(neig))
-         call lab_read(iunit,'EVALS   ',rdata=eigenvalues)
+         ! call lab_read(iunit,'EVALS   ',rdata=eigenvalues)
+         print*," Reading eigenvalues from checkpoint file "
+         call flush()
+         call checkpoint_read ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigenvalues)
          eig(1:neig) = eigenvalues
          deallocate(eigenvalues)
       end if
 
       if (present(ibeig)) then
          allocate (boson_irreps(neig))
-         call lab_read(iunit,'SUPERSYM',idata=boson_irreps)
+         ! call lab_read(iunit,'SUPERSYM',idata=boson_irreps)
+         print*," Reading symmetry info from checkpoint file "
+         call flush()
+         call checkpoint_read ('/result/wavefunctions/scf/mobasis/symmetry',idata=boson_irreps)
          ibeig(1:neig) = boson_irreps
          deallocate(boson_irreps)
-      end if
-
-      if (present(kappa)) then
-         allocate (atom_irreps(neig))
-         call lab_read(iunit,'KAPPA   ',idata=atom_irreps)
-         kappa(1:neig) = atom_irreps
-         deallocate(atom_irreps)
       end if
 
       END

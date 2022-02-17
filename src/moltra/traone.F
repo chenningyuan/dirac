@@ -563,9 +563,13 @@ C     fermion ircops into single arrays
          IF (I.EQ.1) THEN
             ORBE(II)  = ORBE1(J)
             IBORB(II) = IBORB1(J)
+            ! atomic supersymmetry needs to be unpacked into mj only
+            if (atomic) call ATOMIC_ID(iborb1(j),KP,JJ,iborb(ii),LL)
          ELSEIF (I.EQ.2) THEN
             ORBE(II) = ORBE2(J)
             IBORB(II) = IBORB2(J)
+            ! atomic supersymmetry needs to be unpacked into mj only
+            if (atomic) call ATOMIC_ID(iborb2(j),KP,JJ,iborb(ii),LL)
          ELSE
             CALL QUIT ('More than 2 fermion irreps not implemented') 
          ENDIF
@@ -2058,6 +2062,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if( linear .or. spinfr )then
         call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
+        ! atomic labels have kappa and mj packed, unpack and store just mj
+        if (atomic) then
+           do i = 1, norbt
+              call ATOMIC_ID(ibeig(i),KP,J,MJ,LL)
+              ibeig(i) = MJ
+           end do
+        end if
         close(lucoef,STATUS='KEEP')
       end if
 
