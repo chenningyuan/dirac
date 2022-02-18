@@ -494,9 +494,21 @@ contains
 
         integer :: ierr, i
         integer(INTD) :: rank
+        logical :: debug = .true.
 
         rank=talsh_tensor_rank(workspace_t%trial1(1))
         if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
+
+        if (debug) then
+           do i = 1, workspace_t%L
+              write (6,*) 'debug >>> in update_trial_vectors before adding corrections t1 number ',i,' >>>'
+              call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
+              write (6,*) 'debug <<< in update_trial_vectors before adding corrections t1 <<<'
+              write (6,*) 'debug <<< in update_trial_vectors before adding corrections t2 number ',i,' >>>'
+              call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
+              write (6,*) 'debug <<< in update_trial_vectors before adding corrections t2 <<<'
+           end do
+        end if
 
         workspace_t%Lprev = workspace_t%L
         do i = 1, size(delta,1)
@@ -514,8 +526,30 @@ contains
               end if
            end if 
         end do
+
+        if (debug) then
+           do i = 1, workspace_t%L
+              write (6,*) 'debug >>> in update_trial_vectors before orth t1 number ',i,' >>>'
+              call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
+              write (6,*) 'debug <<< in update_trial_vectors before orth t1 <<<'
+              write (6,*) 'debug <<< in update_trial_vectors before orth t2 number ',i,' >>>'
+              call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
+              write (6,*) 'debug <<< in update_trial_vectors before orth t2 <<<'
+           end do
+        end if
+
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, rank, workspace_t%trial1, workspace_t%trial2)
 
+        if (debug) then
+           do i = 1, workspace_t%L
+              write (6,*) 'debug >>> in update_trial_vectors after  orth t1 number ',i,' >>>'
+              call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
+              write (6,*) 'debug <<< in update_trial_vectors after  orth t1 <<<'
+              write (6,*) 'debug <<< in update_trial_vectors after  orth t2 number ',i,' >>>'
+              call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
+              write (6,*) 'debug <<< in update_trial_vectors after  orth t2 <<<'
+           end do
+        end if
     end subroutine
 
 
@@ -887,7 +921,7 @@ contains
         complex(kind=8) :: factor1, factor2
         integer(INTD) :: r1_rank 
         integer :: ierr, i
-        logical :: debug_form_r = .false.
+        logical :: debug_form_r = .true.
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
 
@@ -983,8 +1017,8 @@ contains
 
 
 
-    function correction_to_vectors(output_file_unit, nroots, e_small_M, c_small_M, workspace_t, correct_all)
-        integer, intent(in)       :: nroots, output_file_unit
+    function correction_to_vectors(output_file_unit, e_small_M, c_small_M, workspace_t, correct_all)
+        integer, intent(in)       :: output_file_unit
         type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
         complex(kind=8), intent(in)  :: e_small_M(:)
         complex(kind=8), intent(in)  :: c_small_M(:,:)
@@ -992,10 +1026,10 @@ contains
 
         logical, pointer :: correction_to_vectors(:)
 
-        integer :: ierr, k, unconverged_roots
+        integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .false.
+        logical :: debug_correction_vectors = .true.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1003,6 +1037,7 @@ contains
             correct_all_local = .false. 
         end if
 
+        nroots = workspace_t%nroots
         allocate(correction_to_vectors(nroots))
         correction_to_vectors = .true.
 
@@ -1048,8 +1083,39 @@ contains
            do k = 1, nroots
               print *,'debug: before calculating corrections for root ',k
               if (correction_to_vectors(k)) then
+
+                 if (debug_correction_vectors) then
+                    write (6,*) 'debug >>> in correction_to_vectors, precond1 root',k,' >>>'
+                    call print_tensor_elements(workspace_t%precond1(k))
+                    write (6,*) 'debug <<< in correction_to_vectors, precond1 <<<'
+                    write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
+                    call print_tensor_elements(workspace_t%delta1(k))
+                    write (6,*) 'debug <<< in correction_to_vectors, delta1 <<<'
+                 end if
+
                  call multiply_tensor_elements(workspace_t%delta1(k), workspace_t%precond1(k))
+
+                 if (debug_correction_vectors) then
+                    write (6,*) 'debug >>> in correction_to_vectors, result delta1 root',k,' >>>'
+                    call print_tensor_elements(workspace_t%delta1(k))
+                    write (6,*) 'debug <<< in correction_to_vectors, result delta1 <<<'
+
+                    write (6,*) 'debug >>> in correction_to_vectors, precond2 root',k,' >>>'
+                    call print_tensor_elements(workspace_t%precond2(k))
+                    write (6,*) 'debug <<< in correction_to_vectors, precond2 <<<'
+                    write (6,*) 'debug >>> in correction_to_vectors, delta2 root',k,' >>>'
+                    call print_tensor_elements(workspace_t%delta2(k))
+                    write (6,*) 'debug <<< in correction_to_vectors, delta2 <<<'
+                 end if
+
                  call multiply_tensor_elements(workspace_t%delta2(k), workspace_t%precond2(k))
+
+                 if (debug_correction_vectors) then
+                    write (6,*) 'debug >>> in correction_to_vectors, result delta2 root',k,' >>>'
+                    call print_tensor_elements(workspace_t%delta2(k))
+                    write (6,*) 'debug <<< in correction_to_vectors, result delta2 <<<'
+                 end if
+
               else
                  ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
                  ierr=talsh_tensor_init(workspace_t%delta2(k), ZERO)
@@ -1092,11 +1158,11 @@ contains
         integer :: iroot, ja, jb, jc, jd, ierr, b
         integer :: nroots
         real(kind=8) :: x2py2, proj_r, proj_i, eigenvalue_r, eigenvalue_i 
-        logical :: preconditioner_debug = .true.
+        logical :: preconditioner_debug = .false.
         real(kind=8) :: small_number = 1.0d-99
 
 ! careful with dimension 1 of eigenvalues, 
-        nroots    = size(eigenvalues,1)
+        nroots    = workspace_t%nroots
 
 ! whether or not we want to precondition, we start by setting up the tensor to one
         do iroot = 1, nroots
@@ -1176,12 +1242,23 @@ contains
                     do ja = 1, workspace_t%tens1_dims(1)
                        proj_r = eigenvalue_r - real(hdiag_2d_p(ja,jb))
                        proj_i = eigenvalue_i - aimag(hdiag_2d_p(ja,jb))
+                       if (preconditioner_debug) then
+                          write (6,*) 'debug safe minimum',safe_minimum
+                          write (6,*) 'debug small number',small_number
+                          write (6,*) 'debug for root ',iroot
+                          write (6,*) 'debug E(',eigenvalue_r,',',eigenvalue_i,')'
+                          write (6,*) 'debug Hii',real(hdiag_2d_p(ja,jb)),aimag(hdiag_2d_p(ja,jb))
+                          write (6,*) 'debug projr',proj_r,' proji',proj_i
+                       end if
 ! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
 !       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
                        if (dabs(proj_r).le.small_number) proj_r = 0.0d0
                        if (dabs(proj_i).le.small_number) proj_i = 0.0d0
 
                        x2py2 = proj_r*proj_r + proj_i*proj_i
+                       if (preconditioner_debug) then
+                          write (6,*) 'debug x2py2',x2py2
+                       end if
                        if (dabs(x2py2).gt.safe_minimum) then
                           proj_r =  proj_r / x2py2
                           proj_i = -proj_i / x2py2
@@ -1196,12 +1273,24 @@ contains
                           do ja = 1, workspace_t%tens2_dims(1)
                              proj_r = eigenvalue_r - real(hdiag_4d_p(ja,jb,jc,jd))
                              proj_i = eigenvalue_i - aimag(hdiag_4d_p(ja,jb,jc,jd))
+                       if (preconditioner_debug) then
+                          write (6,*) 'debug safe minimum',safe_minimum
+                          write (6,*) 'debug small number',small_number
+                          write (6,*) 'debug for root ',iroot
+                          write (6,*) 'debug E(',eigenvalue_r,',',eigenvalue_i,')'
+                          write (6,*) 'debug Hii',real(hdiag_4d_p(ja,jb,jc,jd)),aimag(hdiag_4d_p(ja,jb,jc,jd))
+                          write (6,*) 'debug projr',proj_r,' proji',proj_i
+                       end if
+
 ! aspg: added this check to filter out real or imaginary parts that are too small/noisy and would explode as denominators 
 !       worst case this will set the preconditioner of this element to one (due to the initialization, see above)
                              if (dabs(proj_r).le.small_number) proj_r = 0.0d0
                              if (dabs(proj_i).le.small_number) proj_i = 0.0d0
 
                              x2py2 = proj_r*proj_r + proj_i*proj_i
+                       if (preconditioner_debug) then
+                          write (6,*) 'debug x2py2',x2py2
+                       end if
                              if (dabs(x2py2).gt.safe_minimum) then
                                 proj_r =  proj_r / x2py2
                                 proj_i = -proj_i / x2py2
@@ -1219,11 +1308,12 @@ contains
                  call print_tensor(workspace_t%precond1(iroot), 1.0d-18, "precond1")
                  write (6,*) 'debug <<< precon1_tens <<<'
                  write (6,*) 'debug >>> precon2_tens  root',iroot,' >>>'
-                 call print_tensor(workspace_t%precond1(iroot), 1.0d-18, "precond2")
+                 call print_tensor(workspace_t%precond2(iroot), 1.0d-18, "precond2")
                  write (6,*) 'debug <<< precon2_tens <<<'
               end if
            end do ! iroot
        end if ! create preconditioner
+       if (preconditioner_debug) write (6,*) 'debug leaving preconditioner'
 
     end subroutine 
 
@@ -1846,9 +1936,9 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
-            call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
+!           call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
             call create_sigma(workspace_t,int_t,interm_t,davidson_solve_rhs,davidson_solve_lhs)
-            call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
+!           call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
             call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs) 
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
@@ -1879,7 +1969,7 @@ contains
 
             print *,'debug : before correction_to_vectors()'
             if (associated(delta)) deallocate(delta)
-            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, nroots,  &
+            if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, &
                                                                    e_small, c_small_r, workspace_t)
 
             print *,'debug : after  correcting vectors'
@@ -2716,6 +2806,7 @@ contains
        complex(8), pointer :: b_tens3(:,:,:)
        complex(8), pointer :: a_tens4(:,:,:,:)
        complex(8), pointer :: b_tens4(:,:,:,:)
+       complex(8) :: mult_val 
     
        a_rank=talsh_tensor_rank(a_tensor)
        b_rank=talsh_tensor_rank(b_tensor)
@@ -2750,11 +2841,12 @@ contains
     
 ! add test to check dimensions
 !        a_tens2(:,:) = a_tens2(:,:)*b_tens2(:,:)
-         do i = 1, a_dims2(1)
-           do j = 1, a_dims2(2)
-             a_tens2(i,j)=a_tens2(i,j)*b_tens2(i,j)
-           end do
-         end do
+         a_tens2 = a_tens2*b_tens2
+!        do i = 1, a_dims2(1)
+!          do j = 1, a_dims2(2)
+!            a_tens2(i,j)=a_tens2(i,j)*b_tens2(i,j)
+!          end do
+!        end do
     
        else if ((a_rank.eq.3).and.(b_rank.eq.3)) then
          ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims3)
@@ -2790,15 +2882,17 @@ contains
     
 ! add test to check dimensions
 !        a_tens4(:,:,:,:) = a_tens4(:,:,:,:)*b_tens4(:,:,:,:)
-         do i = 1, a_dims4(1)
-            do j = 1, a_dims4(2)
-              do k = 1, a_dims4(3)
-                do l = 1, a_dims4(4)
-                   a_tens4(i,j,k,l)=a_tens4(i,j,k,l)*b_tens4(i,j,k,l)
-                end do
-             end do
-           end do
-         end do
+         a_tens4 =  a_tens4 * b_tens4
+!        do i = 1, a_dims4(1)
+!           do j = 1, a_dims4(2)
+!             do k = 1, a_dims4(3)
+!               do l = 1, a_dims4(4)
+!                  mult_val = a_tens4(i,j,k,l)*b_tens4(i,j,k,l)
+!                  a_tens4(i,j,k,l)=a_tens4(i,j,k,l)*b_tens4(i,j,k,l)
+!               end do
+!            end do
+!          end do
+!        end do
     
        else
           call quit('mismatch in tensor ranks in multiply_tensor')
