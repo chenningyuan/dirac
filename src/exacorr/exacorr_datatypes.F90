@@ -203,6 +203,8 @@
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations
         type, public :: talsh_projectors_tens_t
+          integer, pointer :: p1_dims(:), p2_dims(:)        
+          integer :: p1_rank, p2_rank                       
          type(talsh_tens_t) :: p1, p2
         end type talsh_projectors_tens_t
 

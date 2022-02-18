@@ -1846,10 +1846,10 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
+            call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
             call create_sigma(workspace_t,int_t,interm_t,davidson_solve_rhs,davidson_solve_lhs)
+            call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
             call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs) 
-
-!!          if (associated(projector)) call apply_projector(projector,sigma_vector)
 
             call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
                                                         M_small,                      &
@@ -2525,32 +2525,77 @@ contains
 
     end subroutine
 
-    subroutine apply_projector(projector,b)
-        logical, intent(in) :: projector(:)
-        real(kind=8), intent(inout)  :: b(:,:)
-        integer :: vectors_L, vectors_N, i, j, k 
+    subroutine apply_projector(nvectors, projector_t, target1, target2) 
+       integer, intent(in) :: nvectors
+       type(talsh_projectors_tens_t), intent(inout) :: projector_t
+       type(talsh_tens_t), intent(inout) :: target1(:), target2(:)
 
-! the values of projector mean 
-!  .true. : the entry will remain as is
-! .false. : the entre will be set to zero
+       integer :: p, q, r, s, ierr, i
+       complex(8), pointer, contiguous:: target1_tens(:,:), target2_tens(:,:,:,:)
+       type(C_PTR):: target1_body_p, target2_body_p
+       complex(8), pointer, contiguous:: proj1_tens(:,:), proj2_tens(:,:,:,:)
+       type(C_PTR):: proj1_body_p, proj2_body_p
 
-        vectors_N = size(b,1)
-        vectors_L = size(b,2)
+       logical :: debug = .true.
 
-        if (davidson_complex_mode_with_reals) vectors_N = vectors_N / 2
+       ierr = talsh_tensor_get_body_access(projector_t%p1,proj1_body_p,C8,0,DEV_HOST)
+       ierr = talsh_tensor_get_body_access(projector_t%p2,proj2_body_p,C8,0,DEV_HOST)
+       call c_f_pointer(proj1_body_p,proj1_tens,projector_t%p1_dims(1:projector_t%p1_rank))
+       call c_f_pointer(proj2_body_p,proj2_tens,projector_t%p2_dims(1:projector_t%p2_rank))
 
-        do i = 1, vectors_N
-           if (projector(i).eqv..false.) then
-              if (davidson_complex_mode_with_reals) then
-                 j = 2*(i-1) + 1
-                 k = j + 1
-                 b(j,:) = 0.0d0
-                 b(k,:) = 0.0d0
-              else 
-                 b(i,:) = 0.0d0
-              end if
-           end if
-        end do
+       do i = 1, nvectors
+
+          ierr = talsh_tensor_get_body_access(target1(i),target1_body_p,C8,0,DEV_HOST)
+          ierr = talsh_tensor_get_body_access(target2(i),target2_body_p,C8,0,DEV_HOST)
+
+          call c_f_pointer(target1_body_p,target1_tens,projector_t%p1_dims(1:projector_t%p1_rank))
+          call c_f_pointer(target2_body_p,target2_tens,projector_t%p2_dims(1:projector_t%p2_rank))
+
+          if (debug) then
+             write (6,*) 'debug >>> in apply_projector, before projection, p1 >>>'
+             call print_tensor(projector_t%p1, 1.0d-18, "p1")
+             write (6,*) 'debug <<< in apply_projector, before projection, p1 <<<'
+             write (6,*) 'debug <<< in apply_projector, before projection, vector1 ',i,' >>>'
+             call print_tensor(target1(i), 1.0d-18, "target1")
+             write (6,*) 'debug <<< in apply_projector, before projection, vector1 <<<'
+          end if
+!         ierr=talsh_tensor_contract("T(p,q)+=T(p,q)*P(p,q)",target1(i),target1(i),p1)
+          do q = 1, projector_t%p1_dims(2)
+             do p = 1, projector_t%p1_dims(1)
+                 target1_tens(p,q) = target1_tens(p,q)*proj1_tens(p,q)
+             end do 
+          end do 
+          if (debug) then
+             write (6,*) 'debug <<< in apply_projector, after  projection, vector1 ',i,' >>>'
+             call print_tensor(target1(i), 1.0d-18, "target1")
+             write (6,*) 'debug <<< in apply_projector, after  projection, vector1 <<<'
+          end if
+
+          if (debug) then
+             write (6,*) 'debug >>> in apply_projector, before projection, p2 >>>'
+             call print_tensor(projector_t%p2, 1.0d-18, "p2")
+             write (6,*) 'debug <<< in apply_projector, before projection, p2 <<<'
+             write (6,*) 'debug <<< in apply_projector, before projection, vector2 ',i,' >>>'
+             call print_tensor(target2(i), 1.0d-18, "target1")
+             write (6,*) 'debug <<< in apply_projector, before projection, vector2 <<<'
+          end if
+!         ierr=talsh_tensor_contract("T(p,q,r,s)+=T(p,q,r,s)*P(p,q,r,s)",target2(i),target2(i),p2)
+          do s = 1, projector_t%p2_dims(4)
+             do r = 1, projector_t%p2_dims(3)
+                do q = 1, projector_t%p2_dims(2)
+                   do p = 1, projector_t%p2_dims(1)
+                      target2_tens(p,q,r,s) = target2_tens(p,q,r,s)*proj2_tens(p,q,r,s)
+                   end do 
+                 end do 
+             end do 
+          end do 
+          if (debug) then
+             write (6,*) 'debug <<< in apply_projector, after  projection, vector2 ',i,' >>>'
+             call print_tensor(target2(i), 1.0d-18, "target2")
+             write (6,*) 'debug <<< in apply_projector, after  projection, vector2 <<<'
+          end if
+
+       end do
     end subroutine
 
     subroutine talsh_davidson_get_eigenvalue_shift(apply_shift,shift)
