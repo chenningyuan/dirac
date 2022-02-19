@@ -492,62 +492,91 @@ contains
         type(talsh_davidson_workspace_tens_t) :: workspace_t
         logical, pointer, intent(inout) :: delta(:)
 
-        integer :: ierr, i
+        integer :: ierr, i, j
         integer(INTD) :: rank
-        logical :: debug = .true.
+        logical :: debug = .false.
 
         rank=talsh_tensor_rank(workspace_t%trial1(1))
         if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
 
         if (debug) then
+           write (6,*) ''
+           write (6,*) 'debug >>> in update_trial_vectors '
+           write (6,*) 'debug >>> nroots',workspace_t%nroots
+           write (6,*) 'debug >>> Lprev ',workspace_t%Lprev
+           write (6,*) 'debug >>> L     ',workspace_t%L
+           write (6,*) ''
+ 
            do i = 1, workspace_t%L
-              write (6,*) 'debug >>> in update_trial_vectors before adding corrections t1 number ',i,' >>>'
+              write (6,*) 'debug >>> in update_trial_vectors, before adding corrections, trial vector ',i
               call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-              write (6,*) 'debug <<< in update_trial_vectors before adding corrections t1 <<<'
-              write (6,*) 'debug <<< in update_trial_vectors before adding corrections t2 number ',i,' >>>'
               call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
-              write (6,*) 'debug <<< in update_trial_vectors before adding corrections t2 <<<'
+              write (6,*) ''
            end do
         end if
 
         workspace_t%Lprev = workspace_t%L
+
+        if (debug) then
+           write (6,*) 'debug >>> in update_trial_vectors, before processing correction vectors'
+           write (6,*) 'debug >>> Lprev ',workspace_t%Lprev
+           write (6,*) 'debug >>> L     ',workspace_t%L
+           write (6,*) ''
+        end if
+
         do i = 1, size(delta,1)
            if (delta(i)) then
               workspace_t%L = workspace_t%L + 1
+              j = workspace_t%L
+              if (debug) then
+                 write (6,*) 'debug >>> in update_trial_vectors, processing correction vector ',i
+                 write (6,*) 'debug >>> j             ',j
+                 write (6,*) ''
+              end if
 
-              ierr=talsh_tensor_init(workspace_t%trial1(workspace_t%L), ZERO)
-              ierr=talsh_tensor_init(workspace_t%trial2(workspace_t%L), ZERO)
+              ierr=talsh_tensor_init(workspace_t%trial1(j), ZERO)
+              ierr=talsh_tensor_init(workspace_t%trial2(j), ZERO)
               if (rank.eq.1) then
-                 ierr=talsh_tensor_add("t(a)+=d(a)",workspace_t%trial1(workspace_t%L),workspace_t%delta1(i))
-                 ierr=talsh_tensor_add("t(a,b,c)+=d(a,b,c)",workspace_t%trial2(workspace_t%L),workspace_t%delta2(i))
+                 ierr=talsh_tensor_add("t(a)+=d(a)",        workspace_t%trial1(j),workspace_t%delta1(i))
+                 ierr=talsh_tensor_add("t(a,b,c)+=d(a,b,c)",workspace_t%trial2(j),workspace_t%delta2(i))
               else if (rank.eq.2) then
-                 ierr=talsh_tensor_add("t(a,b)+=d(a,b)",workspace_t%trial1(workspace_t%L),workspace_t%delta1(i))
-                 ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace_t%trial2(workspace_t%L),workspace_t%delta2(i))
+                 ierr=talsh_tensor_add("t(a,b)+=d(a,b)",        workspace_t%trial1(j),workspace_t%delta1(i))
+                 ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace_t%trial2(j),workspace_t%delta2(i))
+              end if
+              
+              if (debug) then
+                 write (6,*) 'debug >>> correction vector ',i,' added to trial vector ',j
+                 call print_tensor(workspace_t%trial1(j),1.0d-18, "new b1")
+                 call print_tensor(workspace_t%trial2(j),1.0d-18, "new b2")
+                 write (6,*) ''
               end if
            end if 
         end do
 
         if (debug) then
+           write (6,*) 'debug >>> in update_trial_vectors, after  processing correction vectors'
+           write (6,*) 'debug >>> Lprev ',workspace_t%Lprev
+           write (6,*) 'debug >>> L     ',workspace_t%L
+           write (6,*) ''
+
+           write (6,*) 'debug >>> in update_trial_vectors, trial vectors before GS orthonormalization'
            do i = 1, workspace_t%L
-              write (6,*) 'debug >>> in update_trial_vectors before orth t1 number ',i,' >>>'
+              write (6,*) 'debug >>> trial vector ',i
               call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-              write (6,*) 'debug <<< in update_trial_vectors before orth t1 <<<'
-              write (6,*) 'debug <<< in update_trial_vectors before orth t2 number ',i,' >>>'
               call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
-              write (6,*) 'debug <<< in update_trial_vectors before orth t2 <<<'
+              write (6,*) ''
            end do
         end if
 
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, rank, workspace_t%trial1, workspace_t%trial2)
 
         if (debug) then
+           write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization'
            do i = 1, workspace_t%L
-              write (6,*) 'debug >>> in update_trial_vectors after  orth t1 number ',i,' >>>'
+              write (6,*) 'debug >>> trial vector ',i
               call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
-              write (6,*) 'debug <<< in update_trial_vectors after  orth t1 <<<'
-              write (6,*) 'debug <<< in update_trial_vectors after  orth t2 number ',i,' >>>'
               call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
-              write (6,*) 'debug <<< in update_trial_vectors after  orth t2 <<<'
+              write (6,*) ''
            end do
         end if
     end subroutine
@@ -626,15 +655,15 @@ contains
 
         if (rank1.gt.2) call quit('rank not implemented in form_r_tensors')
 
-        do j = L, Lnew
+        do j = L+1, Lnew
             do i = 1, j-1
-                call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
+                call gram_schmidt_projection_tensors(factor, trial1(j), trial2(j), trial1(i), trial2(i))
                 if (rank1.eq.1) then
-                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(i),trial1(j),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(i),trial2(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
                 else if (rank1.eq.2) then
-                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
                 end if
             end do
             call renormalize_vectors(trial1(j),trial2(j))
@@ -921,7 +950,7 @@ contains
         complex(kind=8) :: factor1, factor2
         integer(INTD) :: r1_rank 
         integer :: ierr, i
-        logical :: debug_form_r = .true.
+        logical :: debug_form_r = .false.
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
 
@@ -1029,7 +1058,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .true.
+        logical :: debug_correction_vectors = .false.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1070,10 +1099,8 @@ contains
            end if
         end do
         write (davidson_output_file_unit,*) " "
-        print *,'debug: after norm, before determining corrections'
 
         if (any(correction_to_vectors)) then
-           print *,'debug: entering corrections'
            if (correct_all_local) then
                unconverged_roots = nroots
                correction_to_vectors = .true. 
@@ -1081,9 +1108,7 @@ contains
 ! forms delta (the correction vectors which will serve to create new trial vectors
 ! note here that, as seen above, workspace_t%delta{1,2,..} have been used to accumulate r(i,k) 
            do k = 1, nroots
-              print *,'debug: before calculating corrections for root ',k
               if (correction_to_vectors(k)) then
-
                  if (debug_correction_vectors) then
                     write (6,*) 'debug >>> in correction_to_vectors, precond1 root',k,' >>>'
                     call print_tensor_elements(workspace_t%precond1(k))
@@ -1120,7 +1145,6 @@ contains
                  ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
                  ierr=talsh_tensor_init(workspace_t%delta2(k), ZERO)
               end if
-              print *,'debug: after  calculating corrections for root ',k
 
               if (debug_correction_vectors) then
                  write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
@@ -1564,7 +1588,7 @@ contains
            workspace_t%Lmax   = min(davidson_max_subspace_size,excitation_manifold_size)
         end if
         workspace_t%L      = workspace_t%nroots
-        workspace_t%Lprev  = 0
+        workspace_t%Lprev  = workspace_t%nroots
 
         allocate(workspace_t%trial1(workspace_t%Lmax))
         allocate(workspace_t%trial2(workspace_t%Lmax))
@@ -1737,8 +1761,6 @@ contains
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
-       if (debug_subspace_matrix) write (6,*) 'workspace_t%L',workspace_t%L
-
       if (associated(M_small)) deallocate(M_small)
       allocate(M_small(workspace_t%L,workspace_t%L))
       M_small = ZERO 
@@ -1751,12 +1773,14 @@ contains
 
 ! capital letters here are meant to be the roots
       if (debug_subspace_matrix) then
-         write (6,*) 'foobar, before setup M'
-         write (6,*) 'foobar, workspace_t%L',workspace_t%L
-         write (6,*) 'foobar, workspace_t%Lprev',workspace_t%Lprev
+         write (6,*) ''
+         write (6,*) 'debug >>> before setting up subspace Hamiltonian matrix M'
+         write (6,*) 'debug >>> Lprev ',workspace_t%Lprev
+         write (6,*) 'debug >>> L     ',workspace_t%L
+         write (6,*) ''
       end if
-      do i = workspace_t%Lprev + 1, workspace_t%L
-         do j = workspace_t%Lprev + 1, workspace_t%L
+      do i = workspace_t%Lprev, workspace_t%L
+         do j = workspace_t%Lprev, workspace_t%L
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
             if (workspace_t%N(1).ne.0) then
                if (right.and..not.left) then 
@@ -1794,9 +1818,8 @@ contains
 
       M_small = workspace_t%M(1:workspace_t%L,1:workspace_t%L)
 
-!     if (debug_subspace_matrix) then
-      if (.true.) then
-         write (6,*) 'debug, M small'
+      if (debug_subspace_matrix) then
+         write (6,*) ' >>> debug, subspace Hamiltonian matrix M'
          do i = 1, workspace_t%L
            print "(2x,i6,$)", i
            do j = 1, workspace_t%L
@@ -1810,8 +1833,6 @@ contains
          end do
       end if
       if (.true.) call dump_to_file(2222, "M_small_EXACC.bin", M_small)
-
-!      call quit('bb')
 
     end
     
@@ -1953,8 +1974,8 @@ contains
                                                         left=davidson_solve_lhs,      &
                                                         right=davidson_solve_rhs,     &
                                                         nroots=nroots,                &
-                                                        verbose=.true.)
-!                                                       verbose=davidson_verbose)
+                                                        verbose=davidson_verbose)
+!                                                       verbose=.true.)
 
             if (davidson_solve_rhs.and.davidson_overlap_sorting) then
                 c_small_r_old = c_small_r
@@ -1963,16 +1984,12 @@ contains
                 c_small_l_old = c_small_l
             end if
  
-            print *,'debug : before form_preconditioner()'
             call form_preconditioner(workspace_t, e_small)
-            print *,'debug : after  form_preconditioner()'
 
-            print *,'debug : before correction_to_vectors()'
             if (associated(delta)) deallocate(delta)
             if (davidson_solve_rhs) delta => correction_to_vectors(davidson_output_file_unit, &
                                                                    e_small, c_small_r, workspace_t)
 
-            print *,'debug : after  correcting vectors'
             if (.not.associated(delta)) then
                 write(davidson_output_file_unit,*) "All roots converged, stopping."
                 exit
@@ -1988,13 +2005,10 @@ contains
             if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
                 print *,'debug : refreshing trial vectors not implemented in this version'
             else
-               print *,'debug : before updating trial vectors'
                call update_trial_vectors(delta,workspace_t)
-               print *,'debug : after  updating trial vectors'
             end if
  
         end do ! davidson iterations
-        print *,'debug : after  davidson iterations'
 
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
@@ -2158,8 +2172,8 @@ contains
 ! debug, print eigenvecturs and eigenvalues from subspace
 !       if (.false.) & 
         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-!                                   .false., .false., nroots=nroots_to_print)
-                                    left_local, right_local, nroots=nroots_to_print)
+                                    .false., .false., nroots=nroots_to_print)
+!                                   left_local, right_local, nroots=nroots_to_print)
 
     end subroutine
 

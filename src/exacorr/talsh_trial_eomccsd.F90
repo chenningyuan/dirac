@@ -263,7 +263,7 @@ module talsh_trial_eomccsd
       complex(8), pointer, contiguous:: Fmi_p_tens(:,:), Fae_p_tens(:,:) 
       type(C_PTR):: hdiag1_body_p, hdiag2_body_p
       type(C_PTR):: Fmi_body_p, Fae_body_p
-      logical :: debug_hdiag_create = .true.
+      logical :: debug_hdiag_create = .false.
 
 
       diagonal = ZERO
@@ -288,7 +288,8 @@ module talsh_trial_eomccsd
       ncont = workspace%tens2_dims(2)
       nocc  = workspace%tens2_dims(4)
       X = 1 ! continuum
-      print *,'nocc',nocc,'nvir',nvir,'ncont',ncont
+ 
+      if (debug_hdiag_create) print *,'nocc',nocc,'nvir',nvir,'ncont',ncont
 
       do i = 1,  nocc
          diagonal = -fmi_p_tens(i,i)
@@ -425,8 +426,8 @@ module talsh_trial_eomccsd
          end do
       end do
 
-      call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
-      call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
+!     call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
+!     call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
 
     end subroutine
 

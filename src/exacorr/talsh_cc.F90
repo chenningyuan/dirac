@@ -215,9 +215,6 @@ module talsh_cc
          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
 
-         print*, "t2 tensor after MP2, norm ", tensor_norm2(comm_t%t2)
-         call print_tensor(comm_t%t2, 1.0d-18, "comm_t%t2")
-
          ierr=talsh_tensor_init(result_tensor)
          ierr=talsh_tensor_contract("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
          mp2_energy=mp2_energy+result_tens(1)
@@ -287,9 +284,6 @@ module talsh_cc
 
          ! end finite field loop
          end do
-
-         print*, "t2 tensor after CC, norm ", tensor_norm2(comm_t%t2)
-         call print_tensor(comm_t%t2, 1.0d-18, "comm_t%t2")
 
          if (lambda.and..not.CC2) then
           call print_date('-Start- Lambda Equations')
