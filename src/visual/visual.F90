@@ -84,7 +84,6 @@ contains
     logical, allocatable :: matrix_is_unperturbed(:)
 !   ----------------------------------------------------------------------------
 
-    write(6,*) 'TEST..run_visual'
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
        if (                                               &
@@ -722,6 +721,9 @@ contains
 !   ==============================
 
          m = NLEB(num_grid_cfg_angint)
+         write(LUPRI,'(/,4x,a)')  '** Radial distribution **'
+         write(LUPRI,'(6x,A,I3)')  '   Lebedev angular grid L = ',num_grid_cfg_angint
+         write(LUPRI,'(6x,A,I10)') '   Angular points:   ',m       
          allocate(temp(m,4))
          CALL LEBEDEV(num_grid_cfg_angint,temp(1,1),temp(1,2),temp(1,3),temp(1,4),n)
          CALL DSCAL(m,4*ACOS(-1.0D0),temp(1,4),1)
@@ -765,7 +767,7 @@ contains
                q(1:3, 1)
 
          end do
-         write(lupri,*) '  The radial distribution integrates to: ',radtot*s
+         write(lupri,*) '        The radial distribution integrates to: ',radtot*s
          deallocate(temp)
       end if
 
