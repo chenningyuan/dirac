@@ -14,6 +14,383 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+      SUBROUTINE KUPRPEXP(WF,EXPVAL,WORK,LWORK,state)
+C***********************************************************************
+C
+C     Calculate expectation values defined in /CBIEXP/ at the KU level
+C
+C     Written by Chima Chibueze Februari 2022
+C     Last revision Februari 2022 - cchibueze
+C
+C***********************************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+C
+      DIMENSION EXPVAL(*),WORK(LWORK)
+      CHARACTER WF*4
+      INTEGER, OPTIONAL :: state
+      INTEGER :: state_local
+C
+#include "dcbexp.h"
+#include "dcbbas.h"
+#include "dcborb.h"
+#include "dgroup.h"
+C
+      CALL QENTER('PRPEXP')
+#include "memint.h"
+      if (present(state)) then
+          state_local = state
+      else
+          state_local = 1
+      end if
+      CALL KUPRPEX1(WF,EXPVAL,state)
+      CALL QEXIT('PRPEXP')
+C
+      RETURN
+      END
+      
+      SUBROUTINE KUPRPEX1(WF,EXPVAL,state)
+C***********************************************************************
+C
+C     Calculate expectation values defined in /CBIEXP/
+C
+C     Written by Chima Chibueze Februari 2022
+C     Last revision Februari 2022 - cchibueze
+C
+C***********************************************************************
+      use labeled_storage
+      use checkpoint
+      use dircmo
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
+      
+C
+#include "cbihr1.h"
+#include "dgroup.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dcbexp.h"
+#include "dcbgen.h"
+#include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
+#include "dcbprj.h"
+      DIMENSION EXPVAL(*)
+      CHARACTER MXFORM*6,FMT*6
+      CHARACTER WF*4
+      INTEGER :: state
+
+      type(file_info_t), save :: ccdens_file, x2cmat_file, reex_file
+      logical :: tobe_dirac, tobe_respect
+      integer :: i,p,q, indxpr
+      integer :: nmo, nao, nel, chargenuc
+      complex(8) :: expvali
+      real(8), allocatable :: rcoeffvec(:), icoeffvec(:)
+      real(8), allocatable :: rkudmvec(:), ikudmvec(:)
+      real(8), allocatable :: rprpvec(:), iprpvec(:)
+      real(8), allocatable :: qx2cmatvec(:), qcoeffvec(:)
+      real(8), allocatable :: qx2cmat(:,:,:), qcoeffmat(:,:,:)
+      complex(8), allocatable :: ckudmvec(:), ccoeffvec(:), cprpvec(:)
+      complex(8), allocatable ::kudm_mo(:,:),kudm_tmp(:,:),kudm_ao(:,:)
+      complex(8), allocatable :: cx2cmat(:,:), ccoeffmat(:,:)
+      character(len=38) :: dataid1
+      character(len=21) :: dataid2
+      character(len=42) :: dataid3
+      character(len=4)  :: numstr
+      character(len=12) :: prplab
+      character(len=6)  :: reex(3)
+      complex(8), parameter :: DC1 = cmplx(1.0d0,0.0d0)
+      complex(8), parameter :: DC0 = cmplx(0.0d0,0.0d0)
+      complex(8), parameter :: DCI = cmplx(0.0d0,1.0d0)
+      complex(8), parameter :: DCM1 = cmplx(-1.0d0,0.0d0)
+C
+C     Initialize
+C
+C     ==========
+C
+#include "memint.h"
+C
+C
+C     Determining whether DIRAC or ReSpect spinors are used
+C     =====================================================
+C
+      tobe_dirac = .false.
+      tobe_respect = .false. 
+      inquire (file='RSD_MOS',exist=tobe_respect)
+      if (tobe_respect) then
+          write(*,*) "Found ReSpect file: using it"
+      else
+          tobe_dirac = .true.
+          write(*,*) "Using DIRAC MOs"
+      endif
+C
+C
+C     Retrieving dimensionality info
+C     ==============================
+C
+      if (tobe_dirac) then
+          dataid1='/result/wavefunctions/scf/mobasis/n_mo'
+          dataid2='/input/aobasis/n_ao'
+          call checkpoint_read(dataid1,idata=nmo)
+          call checkpoint_read(dataid2,idata=nao)
+      elseif (tobe_respect) then
+
+          ! checking existence of reex density file
+          if (reex_file%status == -1) then
+              reex_file%type = 2
+              reex_file%name = "REEX.h5"
+              reex_file%status = 0
+          endif
+          call lab_read(reex_file,'nmo' ,nmo)
+          call lab_read(reex_file,'nsph',nao)
+          nao = int(nao / 2)
+          nmo = int(nmo / 2)
+      end if
+
+      !counting number of electrons
+      nel = 0
+      chargenuc = 0
+      call rmolchr(chargenuc)
+      nel = chargenuc - kcharg
+      !DEBUG: write(*,*) "nel,chargenuc,totcharge:",nel,chargenuc,kcharg
+      !DEBUG: write(*,*) "nmo (from kuprpex1):", nmo
+      !DEBUG: write(*,*) "nao (from kuprpex1):", nao
+C
+C
+C     Retrieving MO coefficient matrix
+C     ================================
+C
+      if (tobe_dirac) then
+
+          ! allocating MO coefficent arrays
+          allocate(qcoeffvec(nao * nmo * 4))
+          allocate(qcoeffmat(nao, nmo, 4  ))
+          allocate(ccoeffmat(nao*2, nmo*2 ))
+
+          ! reading in coefficient matrix from file from file
+          !dataid3='/result/wavefunctions/scf/mobasis/orbitals'
+          !call checkpoint_read(dataid3,rdata=qcoeffvec)
+          call opnfil(lucoef,'DFCOEF','OLD','KUPRPEX1')
+          qcoeffvec = D0  
+          call reacmo_new(lucoef,cmo=qcoeffvec)
+          close(lucoef,status='KEEP') 
+          qcoeffmat = D0
+          qcoeffmat = reshape(qcoeffvec, shape=(/nao,nmo,4/),
+     &                order=(/1,2,3/))
+          deallocate(qcoeffvec)
+          ccoeffmat = DC0
+
+          ! converting from quaternion to complex format
+          call qtoc(qcoeffmat,ccoeffmat,1,nao,nmo,nao,nmo,4)
+          !DEBUG: write(*,*) "ccoeffmat(9,62)",ccoeffmat(9,62)
+          deallocate(qcoeffmat) 
+
+      elseif (tobe_respect) then
+
+          ! allocating coefficient arrays
+          allocate(rcoeffvec(4*nao*nmo  ))
+          allocate(icoeffvec(4*nao*nmo  ))
+          allocate(ccoeffvec(4*nao*nmo  ))
+          allocate(ccoeffmat(2*nao,2*nmo))
+
+          ! reading in MO coefficients from file
+          rcoeffvec = D0
+          icoeffvec = D0
+          call lab_read (reex_file,'sphMO _RE',rdata=rcoeffvec)
+          call lab_read (reex_file,'sphMO _IM',rdata=icoeffvec)
+          ccoeffvec = DC0
+          ccoeffvec = cmplx(rcoeffvec,icoeffvec,kind=kind(1.0d0))
+          deallocate(rcoeffvec)
+          deallocate(icoeffvec)
+          ccoeffmat = DC0
+          ccoeffmat = reshape(ccoeffvec,shape=(/2*nao,2*nmo/),
+     &                order=(/1,2/))
+          deallocate(ccoeffvec)
+          !DEBUG: write(*,*) "ccoeffmat(18,42):", ccoeffmat(18,42)
+
+      endif ! (tobe...)
+C
+C
+C     Retrieving DHF or CCSD density
+C     ==============================
+C
+      nmo = nmo * 2 !nao stays the same; alpha basis = beta basis
+
+      ! allocating density arrays
+      allocate(kudm_mo(nmo,nmo))
+      allocate(kudm_tmp(nao*2,nmo))
+      allocate(kudm_ao(nao*2,nao*2))
+      
+      ! check if WF = DHF otherwise go on for CCSD 
+      kudm_mo = DC0
+      if (wf .eq. 'DHF') then
+
+          write(*,*) "Expectation values at the KU DHF level"
+          do i = 1, nel
+              kudm_mo(i,i) = kudm_mo(i,i) + DC1
+          enddo
+
+      else ! (wf .eq. 'CCSD') then
+
+          write(*,*) "Expectation values at the KU X2C-CCSD level"
+
+          ! allocating CC density intermediate arrays        
+          allocate(rkudmvec(nmo**2))
+          allocate(ikudmvec(nmo**2))
+          allocate(ckudmvec(nmo**2))
+
+          ! checking existence of cc density file
+          if (ccdens_file%status == -1) then
+              ccdens_file%type = 2
+              ccdens_file%name = "CCDENS.h5"
+              ccdens_file%status = 0
+          end if
+     
+          ! reading in cc density from file
+          rkudmvec = D0
+          ikudmvec = D0
+          call lab_read (ccdens_file,'CCDENS_RE',rdata=rkudmvec)
+          call lab_read (ccdens_file,'CCDENS_IM',rdata=ikudmvec)
+          ckudmvec = DC0
+          ckudmvec = cmplx(rkudmvec,ikudmvec,kind=kind(1.0d0))
+          deallocate(rkudmvec)
+          deallocate(ikudmvec)
+          kudm_mo = DC0
+          kudm_mo(1:nmo,1:nmo) = 
+     &           reshape(ckudmvec,shape=(/nmo,nmo/),order=(/2,1/))
+          deallocate(ckudmvec)
+          !DEBUG: write(*,*) "kudm_mo(18,42):", kudm_mo(18,42)
+         
+          ! add hf contribution 
+          do i=1,nel
+              kudm_mo(i,i) = kudm_mo(i,i) + DC1
+          enddo
+          
+      endif ! (WF == CCSD... see upper WF specifier for density)
+
+      ! transforming density matrix from mo to ao (or x2c) basis
+      kudm_ao  = DC0
+      kudm_tmp = DC0
+C      call zgemm('N','N',nao*2,nmo,nmo,1,ccoeffmat,max(1,nao*2),
+C     &            kudm_mo,max(1,nmo),0,kudm_tmp,max(1,nao*2))
+      kudm_tmp = matmul(ccoeffmat,kudm_mo)
+      deallocate(kudm_mo)
+      kudm_ao = matmul(kudm_tmp,transpose(dconjg(ccoeffmat)))
+C      call zgemm('N','C',nao*2,nao*2,nmo,1,kudm_tmp,max(1,nao*2),
+C     &            ccoeffmat,max(1,nao*2),0,kudm_ao,max(1,nao*2))
+      deallocate(kudm_tmp)
+      deallocate(ccoeffmat)
+      !DEBUG: write(*,*) "kudm_ao(9,62):", kudm_ao(9,62)
+C
+C
+C     Obtaining Expectation Values
+C     ============================
+C
+      if (tobe_dirac) then
+
+          ! allocating property integral arrays
+          allocate(qx2cmatvec(nao**2 * 4))
+          allocate(qx2cmat(nao, nao, 4))
+          allocate(cx2cmat(nao*2, nao*2 )) 
+
+          ! checking existence of property matrices file
+          if (x2cmat_file%status == -1) then
+              x2cmat_file%type = 2
+              x2cmat_file%name = "X2CMAT.h5"
+              x2cmat_file%status = 0
+          end if
+
+      elseif (tobe_respect) then
+
+          ! allocating property integral arrays
+          allocate(rprpvec(nao**2 * 4))
+          allocate(iprpvec(nao**2 * 4))
+          allocate(cprpvec(nao**2 * 4))
+          allocate(cx2cmat(nao*2, nao*2))
+          reex(1) = 'sphRx '
+          reex(2) = 'sphRy '
+          reex(3) = 'sphRz '
+
+      endif ! (tobe...)
+
+      CALL TITLER('Expectation values','*',127)
+
+      do i = 1, nexpp
+
+          indxpr = lexpp(i)
+
+          if (tobe_dirac) then
+
+              call num2str(indxpr,numstr)
+              prplab = 'prpint2c'//numstr
+              ! reading in property matrices from file
+              qx2cmatvec = D0
+              call lab_read (x2cmat_file,prplab,rdata=qx2cmatvec)
+              qx2cmat = D0
+              qx2cmat = reshape(qx2cmatvec, shape=(/nao,nao,4/),
+     &                  order=(/1,2,3/))
+              !DEBUG: write(*,*) "qx2cmat(24,15,2):", qx2cmat(24,15,2)
+              cx2cmat = DC0
+              ! converting property matrix from
+              ! quaternion to complex format
+              call qtoc(qx2cmat,cx2cmat,1,nao,nao,nao,nao,4)
+              !DEBUG: write(*,*) "cx2cmat(9,62):", cx2cmat(9,62)
+
+          elseif (tobe_respect) then
+
+              ! reading in property matrices from file
+              rprpvec = D0
+              iprpvec = D0
+              call lab_read (reex_file,reex(i)//'_RE',rdata=rprpvec)
+              call lab_read (reex_file,reex(i)//'_IM',rdata=iprpvec)
+              cprpvec = DC0
+              cprpvec = cmplx(rprpvec,iprpvec,kind=kind(1.0d0))
+              cx2cmat = DC0
+              cx2cmat = reshape(cprpvec,shape=(/2*nao,2*nao/),
+     &                  order=(/1,2/))
+              cx2cmat = cx2cmat * DCM1
+              !DEBUG: write(*,*) "cx2cmat(18,42):", cx2cmat(18,42)
+
+          endif ! (tobe...)
+
+          ! carry out the contraction between prop. and dens. matrices
+          expvali = DC0
+          do p=1,nao*2
+              do q=1,nao*2
+                  expvali = expvali + cx2cmat(p,q) * kudm_ao(q,p)
+              enddo
+          enddo
+          expval(i) = dreal(expvali)
+          
+          ! printing out the expectation value
+          FMT = MXFORM(EXPVAL(I),15)
+          WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4)')
+     &       PRPNAM(INDXPR),' : ',EXPVAL(I),'a.u.'
+          !CALL FLUSH(LUPRI)
+
+      enddo ! (for i = 1, nexpp)
+
+      CALL PRSYMB(LUPRI,'-',75,4)
+      WRITE(LUPRI,'(4X,A)')
+     &   'Done calculating expectation values'
+C     WRITE(LUPRI,'(4X,A)')
+C    &   'Ready for passing expectation values to other subroutines'
+
+      !deallocating property (intermediate) arrays
+      if (tobe_dirac) then
+          deallocate(qx2cmatvec,qx2cmat)
+      elseif (tobe_respect) then
+          deallocate(rprpvec,iprpvec,cprpvec)
+      endif
+      deallocate(cx2cmat,kudm_ao)
+
+      RETURN
+      END
+
+
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpexp */
@@ -65,6 +442,7 @@ CHJ TODO : check if 2 DMAT or NOPEN+1 DMAT is the correct ...
       CALL PRPEX1(WF,EXPVAL,WORK(KEXPST),WORK(KCMO),WORK(KEIG),
      &            WORK(KDMAT),WORK(KPMAT),WORK(KFIRST),
      &            WORK(KFREE),LFREE,state_local)
+      
 #ifdef ANALYZE_PROPERTY_GRADIENT
       CLOSE(LUNIT,STATUS = 'KEEP')
 #endif

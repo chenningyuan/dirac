@@ -35,6 +35,7 @@ C
 C Used in common blocks:
 C dcbprp.h: NPRP_WF, PRP_WF(*)
 C
+#include "dcbpsi.h"
 #include "dcbprp.h"
 C
       CHARACTER WF*4
@@ -65,31 +66,34 @@ C
      &     3X,'* Molecular gradient',/,
      &     6X,'Joern Thyssen',//,
      &     3X,'* Additional contributions from:',/,
-     &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//)
+     &     6X,'Thomas Enevoldsen, Miroslav Ilias (London orbitals)'//
+     &     3X,'* First-order exp. val. contribution from:',/,
+     &     6X,'Chima Chibueze (KU DHF and KU CCSD)'//)
 C
-
       DO I = 1, NPRP_WF
          WF = PRP_WF(I)
 C
-         IF (WF .EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
-            CALL TDHFORB('CASCI')
-            ! for doing a "RESOLVE" with GASCIP code,
-            ! CI information is only used if requested.
-            CALL SETDC2(0)
-         ELSE IF (WF .EQ. 'KRMC') THEN
-            CALL TKRMCORB
-            CALL SETDC2(0)
-         ELSE IF (WF .EQ. 'MP2 ') THEN
-            IF (DOESR) cycle
-            CALL SETDC2(0)
-         ELSE IF (WF .EQ. 'CCSD') THEN
-            CALL SETDC2(0)
-         ELSE IF (WF .EQ. 'EOM ') THEN
-            CALL SETDC2(0)
-         ELSE
-            CALL QUIT('*** ERROR in PAMPRP *** ' //
+         if (.not.doexacc) then
+           IF (WF .EQ. 'DHF' .OR. WF .EQ. 'HF' .OR. WF .EQ. 'DFT') THEN
+              CALL TDHFORB('CASCI')
+              ! for doing a "RESOLVE" with GASCIP code,
+              ! CI information is only used if requested.
+              CALL SETDC2(0)
+           ELSE IF (WF .EQ. 'KRMC') THEN
+              CALL TKRMCORB
+              CALL SETDC2(0)
+           ELSE IF (WF .EQ. 'MP2 ') THEN
+              IF (DOESR) cycle
+              CALL SETDC2(0)
+           ELSE IF (WF .EQ. 'CCSD') THEN
+              CALL SETDC2(0)
+           ELSE IF (WF .EQ. 'EOM ') THEN
+              CALL SETDC2(0)
+           ELSE
+              CALL QUIT('*** ERROR in PAMPRP *** ' //
      &           'Unknown wave function: ' // WF)
-         END IF
+           END IF
+         endif !(if .not.doexacc)
          CALL TITLER('Properties for ' // WF // ' wave function',
      &        '*',110)
 
@@ -185,7 +189,11 @@ C***********************************************************************
 C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
-         CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE)
+         if (doexacc) then
+             call kuprpexp(wf, work(kexp), work(kfree), lfree, state)
+         else
+             CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE) 
+         endif
       ELSE
          KEXP = KFREE
       END IF

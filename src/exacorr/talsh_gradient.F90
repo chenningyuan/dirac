@@ -69,7 +69,7 @@ module talsh_gradient
 !***********************
 
       call talsh_dm_store_mo(exa_input,gamma,wavefun)
-
+      call talsh_kudm_store_mo(exa_input,gamma,wavefun) !also storing KU format!
 !     cleanup
       call talsh_dm_cleanup_dmtens(gamma,CCD)
 
@@ -623,6 +623,113 @@ module talsh_gradient
 
     end subroutine
 
+!CHIMA'S STUFF
 
+    subroutine talsh_kudm_store_mo (exa_input,gamma,wavefun)
+
+      use exacorr_global, only : get_nsolutions
+
+!     input variables
+      type(exacc_input),   intent(in   )  :: exa_input
+      type(talsh_dm_tens), intent(inout)  :: gamma
+      character*(*), intent(in)           :: wavefun
+!     matrix dimensions
+      integer :: nocc, nvir, nesh
+!     body pointers
+      type(C_PTR)                     :: body_p2
+      complex(8), pointer, contiguous :: dm_block(:,:)
+      complex(8), allocatable         :: dm_mo_fort(:,:)
+      real(8),allocatable             :: dm_storeformat(:,:,:)
+!     complete mo list
+      integer, allocatable :: mo_list(:)
+!     CCD switch
+      logical :: CCD
+!     error code
+      integer :: ierr
+!     loop variables
+      integer :: i, j, norbt
+! debug
+      logical :: debug=.false.
+      integer :: k
+
+      CCD = exa_input%CCD
+
+!***************
+!     set dims *
+!***************
+
+      nocc    = exa_input%nocc
+      nvir    = exa_input%nvir
+
+! set up storage for density matrices in MO and AO bases, in fortran
+! storage
+      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
+      dm_mo_fort = ZERO
+
+      norbt = nocc + nvir
+      allocate(mo_list(norbt))
+      mo_list(1:nocc) = exa_input%mo_occ
+      mo_list(nocc+1:norbt) = exa_input%mo_vir
+
+      nesh = get_nsolutions()
+      allocate (dm_storeformat(nesh,nesh,2))
+      dm_storeformat = real(ZERO)
+
+! form MO basis density matrix
+      call talsh_dm_form_mo_fort_from_tensors(dm_mo_fort, gamma, nocc, nvir, CCD)
+! form AO basis density matrix
+      call talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat, dm_mo_fort, mo_list, norbt)
+! save AOm basis density matrix to file
+      call talsh_store_kucc_density (wavefun, dm_storeformat, nesh)
+
+      deallocate (dm_storeformat)
+      deallocate (mo_list)
+      deallocate (dm_mo_fort)
+
+    end subroutine talsh_kudm_store_mo
+
+    subroutine talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat,dm_mo_fort, mo_list, norbt)
+      complex(8), allocatable, intent(in) :: dm_mo_fort(:,:)
+      integer, allocatable, intent(in) :: mo_list(:)
+      real(8),allocatable, intent(inout)  :: dm_storeformat(:,:,:)
+      integer, intent(in) :: norbt
+!     loop variables
+      integer :: i, j
+
+!*****************************************************************************************************************************
+!     Determine where an element of the MO density matrix  should go in the full
+!     list of MOs
+!*****************************************************************************************************************************
+
+      do j = 1, norbt
+        do i = 1, norbt
+          ! Extracting real and imaginary parts of KU-DM
+          dm_storeformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i,j))
+          dm_storeformat(mo_list(i),mo_list(j),2) = dimag(dm_mo_fort(i,j))
+        end do
+      end do
+    end subroutine
+
+    subroutine talsh_store_kucc_density(wavefun, dm_storeformat, nmo)
+      use labeled_storage
+      implicit none
+
+      character(len=4) :: wavefun
+      real(8), allocatable, intent(inout) :: dm_storeformat(:,:,:)
+      integer, intent(in)                 :: nmo
+      type(file_info_t), save             :: ccdens_file     
+     
+ 
+      if (ccdens_file%status == -1) then
+         write(*,*) " Opening HDF5 CCDENS file"
+         ccdens_file%type = 2
+         ccdens_file%name = "CCDENS.h5"
+      end if
+
+      write(*,*) " Writing CCDENS data to CCDENS file"
+      call lab_write (ccdens_file,'CCDENS_RE',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
+      call lab_write (ccdens_file,'CCDENS_IM',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
+      
+    end subroutine
 
 end module talsh_gradient

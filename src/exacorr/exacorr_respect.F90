@@ -14,7 +14,7 @@ module exacorr_respect
   contains
 
     subroutine read_from_respect (ao_basis,cspinor,ierr)
-
+      use labeled_storage
 !     Routine to read coefficients and ao_basis data from ReSpect
 
       use exacorr_mo
@@ -35,9 +35,11 @@ module exacorr_respect
       integer                 :: lucoef
 !     data to be read/stored
       complex(8), allocatable :: coeff(:,:)
+      complex(8), allocatable :: sphcoeff(:), overlap(:), &
+                                 diplenx(:), dipleny(:), diplenz(:)
       integer                 :: nao, nelms, nshells, iao, ibas
       integer                 :: npriexp, ncnt
-      integer                 :: ncentr, ncoeff
+      integer                 :: ncentr, ncoeff,nvec
       integer, allocatable    :: index(:)
       integer, allocatable    :: ncent(:), nhkt(:)
       integer, allocatable    :: natomc(:)
@@ -47,7 +49,11 @@ module exacorr_respect
       real(8), allocatable    :: eig(:)
 !     summation/count variables
       integer                 :: i, j, ishell, nfunctions
-
+!     ReSpect HDF5 data variables
+      logical                 :: doreex=.true.
+      character(6)            :: reex(6)
+      type(file_info_t), save :: reex_file
+  
       ierr = NOERROR
 
 !****************
@@ -131,13 +137,45 @@ module exacorr_respect
       end do
 
 !     read MO coefficients
-      read (lucoef,*,end=10,err=10) ncoeff ! ncoeff = 2*nao * nelms = 2*nao * 2*nmo
+      read (lucoef,*,end=10,err=10) reex(1), ncoeff ! ncoeff = 2*nao * nelms = 2*nao * 2*nmo
 
       if (2*nao*nelms /= ncoeff) goto 10 ! sanity check
 
       allocate(coeff(2*nao,nelms))
       read (lucoef,*,end=10,err=10) coeff
 
+!************************************************************************
+!     read MO coefficients and property matrices in the spherical basis *
+!************************************************************************
+      if (doreex) then
+
+!     read MO coefficients in the spherical basis
+      read (lucoef,*,end=10,err=10) reex(2), nvec !nvec = no. array elements
+      allocate(sphcoeff(nvec))
+      read (lucoef,*,end=10,err=10) sphcoeff
+
+!     read overlap matrix in the spherical basis
+      read (lucoef,*,end=10,err=10) reex(3), nvec !nvec = no. array elements
+      allocate(overlap(nvec))
+      read (lucoef,*,end=10,err=10) overlap
+
+!     read dipole length x matrix in the spherical basis
+      read (lucoef,*,end=10,err=10) reex(4), nvec !nvec = no. array elements
+      allocate(diplenx(nvec))
+      read (lucoef,*,end=10,err=10) diplenx
+
+!     read dipole length y matrix in the spherical basis
+      read (lucoef,*,end=10,err=10) reex(5), nvec !nvec = no. array elements
+      allocate(dipleny(nvec))
+      read (lucoef,*,end=10,err=10) dipleny
+
+!     read dipole length z matrix in the spherical basis
+      read (lucoef,*,end=10,err=10) reex(6), nvec !nvec = no. array elements
+      allocate(diplenz(nvec))
+      read (lucoef,*,end=10,err=10) diplenz
+
+      endif
+  
 !*********************************************
 !       sort and create all necessary arrays *
 !*********************************************
@@ -161,7 +199,47 @@ module exacorr_respect
 !***********************************************
 !     store all data in derived type arguments *
 !***********************************************
+!     CHIMA STUFF
+!     Write ExaCorr sorted (w.r.t. AO basis) coefficients to (HDF5) file!
+      write(*,*) "Writing ReSpect Coefficients to file!"
+      !write(*,*) "nao:", 2*nao
+      !write(*,*) "nmo:", nelms
 
+      if (reex_file%status == -1) then
+         write(*,*) " Opening HDF5 REEX file"
+         reex_file%type = 2
+         reex_file%name = "REEX.h5"
+      end if
+
+      write(*,*) " Writing REEX data to REEX file"
+      call lab_write (reex_file,'nmo',idata=nelms)
+      call lab_write (reex_file,'nsph',idata=int(sqrt(real(nvec))))
+      call lab_write (reex_file,reex(1)//'_RE',rdata=reshape(transpose(real(coeff,8)), shape=(/2*nao*nelms/) ) )
+      call lab_write (reex_file,reex(1)//'_IM',rdata=reshape(transpose(dimag(coeff )), shape=(/2*nao*nelms/) ) )
+
+      if (doreex) then
+!*****************************************************************************
+!     store MO coefficients and property matrices in spherical basis on file *
+!*****************************************************************************
+
+!     coefficients
+      call lab_write (reex_file,reex(2)//'_RE',rdata=reshape(real( sphcoeff,8), shape=(/nvec/) ) )
+      call lab_write (reex_file,reex(2)//'_IM',rdata=reshape(dimag(sphcoeff  ), shape=(/nvec/) ) )
+!     overlap
+      call lab_write (reex_file,reex(3)//'_RE',rdata=reshape(real( overlap, 8), shape=(/nvec/) ) )
+      call lab_write (reex_file,reex(3)//'_IM',rdata=reshape(dimag(overlap   ), shape=(/nvec/) ) )
+!     dipole x
+      call lab_write (reex_file,reex(4)//'_RE',rdata=reshape(real( diplenx, 8), shape=(/nvec/) ) )
+      call lab_write (reex_file,reex(4)//'_IM',rdata=reshape(dimag(diplenx   ), shape=(/nvec/) ) )
+!     dipole y
+      call lab_write (reex_file,reex(5)//'_RE',rdata=reshape(real( dipleny, 8), shape=(/nvec/) ) )
+      call lab_write (reex_file,reex(5)//'_IM',rdata=reshape(dimag(dipleny   ), shape=(/nvec/) ) )
+!     dipole z      
+      call lab_write (reex_file,reex(6)//'_RE',rdata=reshape(real( diplenz, 8), shape=(/nvec/) ) )
+      call lab_write (reex_file,reex(6)//'_IM',rdata=reshape(dimag(diplenz   ), shape=(/nvec/) ) )
+      
+      endif
+  
 !     put in cmo
       call alloc_mo(cspinor,nao,nelms)
       cspinor%total_energy = total_energy
