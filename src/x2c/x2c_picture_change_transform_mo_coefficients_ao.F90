@@ -345,13 +345,15 @@ contains
        offset_1 = 1
        offset_2 = 1
        do i = 1, nfsym
-         call dcopy(nesh_dim(i),original_eigen_values(offset_1+norb_dim(i)-nesh_dim(i)),1,scratch4(offset_2),1) 
-         call dcopy(nesh_dim(i),scratch4(offset_2),1,original_eigen_values(offset_2),1)
-         if(print_lvl > 2)then
-           do l = 1, nesh_dim(i) 
-             print *, ' orig boson irrep val of element # ',offset_1+norb_dim(i)-nesh_dim(i)+l-1, & 
-                        scratch5(offset_1+norb_dim(i)-nesh_dim(i)+l-1)
-           end do
+         if(nesh_dim(i) > 0)then
+           call dcopy(nesh_dim(i),original_eigen_values(offset_1+norb_dim(i)-nesh_dim(i)),1,scratch4(offset_2),1)
+           call dcopy(nesh_dim(i),scratch4(offset_2),1,original_eigen_values(offset_2),1)
+           if(print_lvl > 2)then
+             do l = 1, nesh_dim(i) 
+               print *, ' orig boson irrep val of element # ',offset_1+norb_dim(i)-nesh_dim(i)+l-1, &
+                          scratch5(offset_1+norb_dim(i)-nesh_dim(i)+l-1)
+             end do
+           end if
          end if
          offset_1 = offset_1 + norb_dim(i)
          offset_2 = offset_2 + nesh_dim(i)
