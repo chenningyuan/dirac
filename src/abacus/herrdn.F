@@ -4816,20 +4816,12 @@ C
      &       ,'  WARNING:  maybe coordinates were in Bohr, '//
      &        'but DIRAC were told they were in Angstrom ?'
             END IF
+            WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
+     &   '   Nuclear repulsion energy                          :',
+     &       POTNUC,' Hartree',
+     &   '   Nuclear contribution to electric dipole moment    :',
+     &       DPNUC(1:3),' a.u.'
          END IF
-C
-#ifdef VAR_MPI
-!        print only from one process
-         if (mytid == 0) then
-#endif
-           IF (IPREAD .GE. 0) THEN
-              WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
-     &     '   Nuclear repulsion energy :',POTNUC,' Hartree',
-     &     '   Nuclear dipole moment    :',DPNUC(1:3),' a.u.'
-           END IF
-#ifdef VAR_MPI
-         END IF
-#endif
       END IF
       RETURN
       END
@@ -6330,16 +6322,16 @@ C
      &           DIPNUC(1,1)**2 + DIPNUC(2,1)**2 + DIPNUC(3,1)**2)
               if (DIPNORM .ge. 1000.D0) then
                  WRITE(LUPRI,'(/A,F20.12,A//A,1P,3D18.9,A)')
-     &        '  Nuclear repulsion energy :',EPOT_QM_QM,
-     &           ' Hartree',
-     &        '  Nuclear dipole moment :',DIPNUC(1:3,1),
-     &           ' a.u.;  origin (0,0,0)'
+     &        '  Nuclear repulsion energy                       :',
+     &           EPOT_QM_QM,' Hartree',
+     &        '  Nuclear contribution to electric dipole moment :',
+     &           DIPNUC(1:3,1),' a.u.;  origin (0,0,0)'
               else
                  WRITE(LUPRI,'(/A,F20.12,A//A,3F18.12,A)')
-     &        '  Nuclear repulsion energy :',EPOT_QM_QM,
-     &           ' Hartree',
-     &        '  Nuclear dipole moment :',DIPNUC(1:3,1),
-     &           ' a.u.;  origin (0,0,0)'
+     &        '  Nuclear repulsion energy                       :',
+     &           EPOT_QM_QM,' Hartree',
+     &        '  Nuclear contribution to electric dipole moment :',
+     &           DIPNUC(1:3,1),' a.u.;  origin (0,0,0)'
               end if
            else if ( (dabs(epot_qm_qm) == 0.0d0)
      &         .and. (dabs(epot_qm_pc) == 0.0d0)

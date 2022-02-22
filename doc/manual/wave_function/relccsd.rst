@@ -515,7 +515,7 @@ Note this value does not have to be the same as for the definition of the frozen
 In addition to this, users should make sure to enable root following (see :ref:`CCDIAG_.OVERLAP`) if they want to target states with dominant singly ionized or singly excited character.
 
 When each edge is energetically far apart (e.g., K and L1 edge of heavy elements), one should aim for calculating different edges separately instead of requesting more roots. Otherwise, convergence is likely to be obtained only for the lowest-lying state. 
-Furthermore, if more than one edge is sought, we recommend that is the restart capabilities of the code are employed to avoid the AO to MO transformation step (:ref:`*MOLTRA`) and the integral sorting in RELCCSD (see restart options under :ref:`*CCRESTART``.
+Furthermore, if more than one edge is sought, we recommend that is the restart capabilities of the code are employed to avoid the AO to MO transformation step (:ref:`**MOLTRA`) and the integral sorting in RELCCSD (see restart options under :ref:`*CCRESTART`.
 
 *Example:* requests that all spinors with energies below -10.0 a.u. are considered to be core::
 
