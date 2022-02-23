@@ -48,7 +48,7 @@ module talsh_cc
          use exacorr_global
          use talsh_gradient
          use talsh_eom,      only       : talsh_eom_results_tens_t, talsh_eom_eigval_driver
-         use talsh_eom_QR
+         use talsh_cc_ci
 
          type(exacc_input), intent(in) :: exa_input
 

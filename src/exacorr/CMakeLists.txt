@@ -31,7 +31,9 @@ if(ENABLE_EXATENSOR)
    talsh_drivers_eomccsd.F90
    talsh_gradient.F90
    talsh_cc.F90
+   talsh_cc_ci.F90
    talsh_eom_QR.F90
+   talsh_eom_LR.F90
    talsh_eom_rspeq_solver.F90
    davidson/talsh_davidson.F90
    talsh_mp2no.F90
