@@ -220,7 +220,7 @@
 #include "dcbxpp.h"
 #include "dcbxpr.h"      
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
-      integer :: indices(k2),ind(3)
+      integer :: indices(k2),ind(3),IOFF(3)
       CHARACTER*10 DENOM
       PARAMETER(D2=2.0D0,D1=1.0D0)
       K=K2/2
@@ -275,12 +275,13 @@
                 CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)
                 IF (IORD.GT.2.AND.IJKL.EQ.-1) THEN
                   IOFF = [5,1,3]
-                  INDAPE = IVPOFF(IORD) + IOFF[IP] + 9*(IB+(IA+1)*IA/2)
+                  INDAPE = IVPOFF(IORD)+IOFF(IP)+9*(IB+(IA+1)*IA/2)
                 ELSEIF(IORD.GT.2.AND.IJKL.EQ.1) THEN 
                   IOFF = [4,6,2]
-                  INDAPE = IVPOFF(IORD) + IOFF[IP] + 9*(IB+(IA+1)*IA/2)
+                  INDAPE = IVPOFF(IORD)+IOFF(IP) + 9*(IB+(IA+1)*IA/2)
                 ENDIF
               ENDIF 
+            ENDIF 
               INDPEL  = LPPAPU(INDAPE)
               ISYMEL  = IPRPSYM(INDPEL)
               FACEL   = D1/GAMMA(REAL(IORD+1))
