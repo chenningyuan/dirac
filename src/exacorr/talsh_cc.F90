@@ -404,7 +404,7 @@ module talsh_cc
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
             end if
             
-            call talsh_eom_QR_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
+            call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
          end if 
 
          if (.not.CCD) then
