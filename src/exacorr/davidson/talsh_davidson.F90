@@ -657,13 +657,13 @@ contains
 
         do j = L+1, Lnew
             do i = 1, j-1
-                call gram_schmidt_projection_tensors(factor, trial1(j), trial2(j), trial1(i), trial2(i))
+                call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
                 if (rank1.eq.1) then
-                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
+                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(i),trial1(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(i),trial2(j),scale=-factor)
                 else if (rank1.eq.2) then
-                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=-factor)
                 end if
             end do
             call renormalize_vectors(trial1(j),trial2(j))
@@ -1757,7 +1757,7 @@ contains
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .false.
+      logical :: debug_subspace_matrix = .true.
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -1942,6 +1942,7 @@ contains
 !!                                   davidson_solve_rhs)
 
         workspace_t%L = nroots
+        workspace_t%Lprev = 1
 
         write(davidson_output_file_unit,"(4x,a,i6,a)") "Requested ",nroots," eigenvales"
         if ( nroots .gt. workspace_t%Nmax ) then 
@@ -2170,9 +2171,8 @@ contains
         end if
 
 ! debug, print eigenvecturs and eigenvalues from subspace
-!       if (.false.) & 
         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-                                    .false., .false., nroots=nroots_to_print)
+                                    .false.,.false., nroots=nroots_to_print)
 !                                   left_local, right_local, nroots=nroots_to_print)
 
     end subroutine

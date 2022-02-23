@@ -195,7 +195,7 @@ module talsh_eom
       call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call talsh_eomccsd_ip_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call talsh_eomccsd_ip_trial_create(workspace_t)
-      call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
+!     call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
 
 !     set pointers to sigma vector subroutines 
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ip
@@ -318,7 +318,7 @@ module talsh_eom
       call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call talsh_eomccsd_ee_trial_create(workspace_t)
-      call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
+!     call talsh_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
 
 !     set pointers to sigma vector subroutines 
       interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
