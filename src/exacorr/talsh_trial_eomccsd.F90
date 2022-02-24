@@ -77,7 +77,7 @@ module talsh_trial_eomccsd
         do i = 1, workspace%tens1_dims(2) 
            do X = 1, workspace%tens1_dims(1) 
               b = b + 1
-              diagonal(b) = realpart(hdiag1_h_p_tens(X,i))
+              diagonal(b) = real(hdiag1_h_p_tens(X,i))
            end do
         end do
 
@@ -92,7 +92,7 @@ module talsh_trial_eomccsd
                   do X = 1, workspace%tens2_dims(2)
                      do a = 1, workspace%tens2_dims(1)
                         b = b + 1
-                        diagonal(b) = realpart(hdiag2_h_p_tens(a,X,j,i))
+                        diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
                      end do
                   end do
                end do
