@@ -5,7 +5,7 @@
 !      modify it under the terms of the GNU Lesser General Public
 !      License version 2.1 as published by the Free Software Foundation.
 !
-!      This program is distributed in the hope that it will be useful,
+!      This program is distributed in the hope that it will be useful, 
 !      but WITHOUT ANY WARRANTY; without even the implied warranty of
 !      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 !      Lesser General Public License for more details.
@@ -71,7 +71,7 @@ contains
       real(8)              :: ao(*)
       real(8)              :: buffer(*)
       integer, intent(in)  :: result_max_dim
-      real(8), intent(out) :: result(0:result_max_dim)
+      real(8), intent(out):: result(0:result_max_dim)
       real(8), intent(in), optional    :: jb_input(3)
 !     --------------------------------------------------------------------------
       integer              :: imat, i, j, ij, icomp
@@ -81,16 +81,16 @@ contains
       real(8)              :: elf_chi, tau
       real(8)              :: density, esp(1), esp_e(1), esp_n(1)
       real(8)              :: density_gradient(3)
-      real(8)              :: density_hessian(3,3)
+      real(8)              :: density_hessian(3, 3)
       real(8)              :: eigenvalues(3)
-      real(8)              :: eigenvectors(3,3)
+      real(8)              :: eigenvectors(3, 3)
       real(8)              :: temp(3), temp2(9)
       integer              :: itemp(3)
       real(8)              :: density_gradient_squared
       real(8)              :: b, c, f, distance_to_origin
       real(8)              :: rx, ry, rz, r(3)
 
-      logical :: gosia_debug_print
+      logical:: gosia_debug_print
 !     --------------------------------------------------------------------------
       gosia_debug_print = .false.
 
@@ -147,7 +147,6 @@ contains
             if (visual_cfg_property(imat) == iq_density_hessian) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!              so be careful when applying with property densities
                call get_hn(density,          &
                            density_gradient, &
                            density_hessian,  &
@@ -158,15 +157,15 @@ contains
                            ao)               
                result(0)   = result(0) + density
                result(1:3) = result(1:3) + density_gradient
-               result(4)   = result(4)   + density_hessian(1,1) ! xx
-               result(5)   = result(5)   + density_hessian(1,2) ! xy
-               result(6)   = result(6)   + density_hessian(1,3) ! xz
-               result(7)   = result(7)   + density_hessian(2,1) ! yx
-               result(8)   = result(8)   + density_hessian(2,2) ! yy
-               result(9)   = result(9)   + density_hessian(2,3) ! yz
-               result(10)  = result(10)  + density_hessian(3,1) ! zx
-               result(11)  = result(11)  + density_hessian(3,2) ! zy
-               result(12)  = result(12)  + density_hessian(3,3) ! zz
+               result(4)   = result(4)   + density_hessian(1, 1)  ! xx
+               result(5)   = result(5)   + density_hessian(1, 2)  ! xy
+               result(6)   = result(6)   + density_hessian(1, 3)  ! xz
+               result(7)   = result(7)   + density_hessian(2, 1)  ! yx
+               result(8)   = result(8)   + density_hessian(2, 2)  ! yy
+               result(9)   = result(9)   + density_hessian(2, 3)  ! yz
+               result(10)  = result(10)  + density_hessian(3, 1)  ! zx
+               result(11)  = result(11)  + density_hessian(3, 2)  ! zy
+               result(12)  = result(12)  + density_hessian(3, 3)  ! zz
             end if
 
 !           reduced density gradient
@@ -194,7 +193,6 @@ contains
             if (visual_cfg_property(imat) == iq_density_sign_lambda2) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!              so be careful when applying with property densities
                eigenvalues  = 0.0d0
                eigenvectors = 1.0d0
                temp         = 0.0d0
@@ -211,8 +209,8 @@ contains
                ij = 1
                do j = 1, 3
                   do i = 1, 3
-                     temp2(ij) = density_hessian(i,j)
-                     ij = ij + 1
+                     temp2(ij) = density_hessian(i, j)
+                     ij = ij+1
                   end do
                end do
 
@@ -245,8 +243,6 @@ contains
             if (visual_cfg_property(imat) == iq_density_laplacian) then
 !              gosia fixme:
 !              density Hessian is implemented for hermitian density matrices (such as the unperturbed density matrix)
-!              so be careful when applying with property densities
-               eigenvalues  = 0.0d0
                eigenvectors = 1.0d0
                temp         = 0.0d0
                temp2        = 0.0d0
@@ -262,8 +258,8 @@ contains
                ij = 1
                do j = 1, 3
                   do i = 1, 3
-                     temp2(ij) = density_hessian(i,j)
-                     ij = ij + 1
+                     temp2(ij) = density_hessian(i, j)
+                     ij = ij+1
                   end do
                end do
 
@@ -352,12 +348,12 @@ contains
 
 !                  2.87123400018819d0 = 0.3d0*((3.0d0*pi*pi)**(2.0d0/3.0d0))
                f = 2.87123400018819d0*(density**(5.0d0/3.0d0))
-               elf_chi = (tau - b)/f
+               elf_chi = (tau-b)/f
 
-               result(0) = result(0) + 1.0d0/(1.0d0 + elf_chi*elf_chi)
+               result(0) = result(0) + 1.0d0/(1.0d0+elf_chi*elf_chi)
             end if
 
-!           electrostatic potential - total
+!           electrostatic potential-total
             if ((visual_cfg_property(imat) == iq_esp) .or. &
                 (visual_cfg_property(imat) == iq_esprho)) then
                call get_esp(1, esp_e,     &
@@ -374,10 +370,10 @@ contains
                             (/px, py, pz/), &
                             include_nuc_part=.true., &
                             include_el_part=.false.)
-               esp = esp_e*0.5d0 + esp_n
+               esp = esp_e*0.5d0+esp_n
             end if
 
-!           electrostatic potential - electronic part
+!           electrostatic potential-electronic part
             if ((visual_cfg_property(imat) == iq_espe) .or. &
                 (visual_cfg_property(imat) == iq_esperho)) then
                call get_esp(1, esp_e,     &
@@ -390,7 +386,7 @@ contains
                esp = esp_e*0.5d0
             end if
 
-!           electrostatic potential - nuclear part
+!           electrostatic potential-nuclear part
             if ((visual_cfg_property(imat) == iq_espn) .or. &
                 (visual_cfg_property(imat) == iq_espnrho)) then
                call get_esp(1, esp_n,     &
@@ -513,13 +509,13 @@ contains
                end if
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
-                     call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
+                     call get_jblao_ll(visual_cfg_london_component, D_0%elms,                      &
                                        ntbas(0),                      &
                                        ao, &
                                        (/px, py, pz/),                &
                                        v2)
                   else
-                     call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
+                     call get_jblao(visual_cfg_london_component, cval, D_0%elms,                      &
                                     ntbas(0),                      &
                                     ao, &
                                     (/px, py, pz/),                &
@@ -529,7 +525,7 @@ contains
                end if
                result(1:3) = result(1:3) + v(1:3)
                if (gosia_debug_print) then
-                 ! gosia: "v2" contribution depends on D_0 - be careful when calculaing more than 1 density
+                 ! gosia: "v2" contribution depends on D_0-be careful when calculaing more than 1 density
                  ! at once (see 'collect matrices for identical densities to save time' in visual.F90)
                  write(*, *) 'after iq_j: visual_cfg_london_component, v2: ', visual_cfg_london_component, v2 
                  write(*, *) 'result1 after iq_j: ', result(1)
@@ -605,11 +601,11 @@ contains
                   matrix_33(1:3, 1:3) = matrix_33(1:3, 1:3) + temp_33(1:3, 1:3)
                end if
 
-               ! the order of elements on matrix_33(1:3,1:3) from get_gj* subroutines:
+               ! the order of elements on matrix_33(1:3, 1:3) from get_gj*subroutines:
                !
-               !  (1,1) (1,2) (1,3)        d(jx)/dx d(jy)/dx d(jz)/dx
-               !  (2,1) (2,2) (2,3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
-               !  (3,1) (3,2) (3,3)        d(jx)/dz d(jy)/dz d(jz)/dz
+               !  (1, 1) (1, 2) (1, 3)        d(jx)/dx d(jy)/dx d(jz)/dx
+               !  (2, 1) (2, 2) (2, 3)  -->   d(jx)/dy d(jy)/dy d(jz)/dy
+               !  (3, 1) (3, 2) (3, 3)        d(jx)/dz d(jy)/dz d(jz)/dz
                !
 
                if (visual_cfg_property(imat) == iq_divj) then
@@ -697,9 +693,9 @@ contains
                             ao)
                end if
 
-               rx = px - visual_cfg_gauge_origin(1)
-               ry = py - visual_cfg_gauge_origin(2)
-               rz = pz - visual_cfg_gauge_origin(3)
+               rx = px-visual_cfg_gauge_origin(1)
+               ry = py-visual_cfg_gauge_origin(2)
+               rz = pz-visual_cfg_gauge_origin(3)
 
                f = -0.5d0
 
@@ -785,19 +781,19 @@ contains
                end if
                if (visual_cfg_london .and. .not. visual_cfg_london_skip_direct) then
                   if (levyle) then
-                     call get_jblao_ll(visual_cfg_london_component,D_0%elms,                      &
+                     call get_jblao_ll(visual_cfg_london_component, D_0%elms,                      &
                                        ntbas(0),                      &
                                        ao, &
                                        (/px, py, pz/),                &
                                        v2)
-                     v = v2 - v
+                     v = v2-v
                   else
-                     call get_jblao(visual_cfg_london_component,cval,D_0%elms,                      &
+                     call get_jblao(visual_cfg_london_component, cval, D_0%elms,                      &
                                     ntbas(0),                      &
                                     ao, &
                                     (/px, py, pz/),                &
                                     v2)
-                     v = v2 + v
+                     v = v2+v
                   end if
                end if
 
@@ -805,16 +801,16 @@ contains
 !              or a "NICS" value in a given point
 !              (for a true NICS value multiply by "-1")
                if (visual_cfg_nics) then
-                  rx = px - visual_cfg_nics_origin(1)
-                  ry = py - visual_cfg_nics_origin(2)
-                  rz = pz - visual_cfg_nics_origin(3)
+                  rx = px-visual_cfg_nics_origin(1)
+                  ry = py-visual_cfg_nics_origin(2)
+                  rz = pz-visual_cfg_nics_origin(3)
                else
-                  rx = px - cord(1, visual_cfg_ref_nucleus(imat))
-                  ry = py - cord(2, visual_cfg_ref_nucleus(imat))
-                  rz = pz - cord(3, visual_cfg_ref_nucleus(imat))
+                  rx = px-cord(1, visual_cfg_ref_nucleus(imat))
+                  ry = py-cord(2, visual_cfg_ref_nucleus(imat))
+                  rz = pz-cord(3, visual_cfg_ref_nucleus(imat))
                end if
                   
-               f = -1.0d0/((rx*rx + ry*ry + rz*rz)**1.5d0)
+               f = -1.0d0/((rx*rx+ry*ry+rz*rz)**1.5d0)
                
                if (visual_cfg_property(imat) == iq_ndipx) then
                   result(0) = result(0) + f*(ry*v(3) - rz*v(2))
@@ -853,13 +849,13 @@ contains
 !              or a "NICS" value in a given point
 !              (for a true NICS value multiply by "-1")
                if (visual_cfg_nics) then
-                  r(1) = px - visual_cfg_nics_origin(1)
-                  r(2) = py - visual_cfg_nics_origin(2)
-                  r(3) = pz - visual_cfg_nics_origin(3)
+                  r(1) = px-visual_cfg_nics_origin(1)
+                  r(2) = py-visual_cfg_nics_origin(2)
+                  r(3) = pz-visual_cfg_nics_origin(3)
                else
-                  r(1) = px - cord(1, visual_cfg_ref_nucleus(imat))
-                  r(2) = py - cord(2, visual_cfg_ref_nucleus(imat))
-                  r(3) = pz - cord(3, visual_cfg_ref_nucleus(imat))
+                  r(1) = px-cord(1, visual_cfg_ref_nucleus(imat))
+                  r(2) = py-cord(2, visual_cfg_ref_nucleus(imat))
+                  r(3) = pz-cord(3, visual_cfg_ref_nucleus(imat))
                end if
 
                v2(1) = r(2)*v(3) - r(3)*v(2)
@@ -883,14 +879,14 @@ contains
       end do
 
 !     Multiply with Cartesian powers
-      do i = 1,visual_cfg_cartesian_power(1)
-        result = px * result    
+      do i = 1, visual_cfg_cartesian_power(1)
+        result = px*result    
       enddo
-      do i = 1,visual_cfg_cartesian_power(2)
-        result = py * result    
+      do i = 1, visual_cfg_cartesian_power(2)
+        result = py*result    
       enddo
-      do i = 1,visual_cfg_cartesian_power(3)
-        result = pz * result    
+      do i = 1, visual_cfg_cartesian_power(3)
+        result = pz*result    
       enddo
       
 !     Scale result 
