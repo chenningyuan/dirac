@@ -4028,6 +4028,7 @@ C
 #include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
+#include "orgcom.h"
 C     
 C
 C
