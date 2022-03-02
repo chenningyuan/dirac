@@ -160,38 +160,38 @@
       integer :: j,k,k2,iterm,jterm
       iterm = 0
       jterm = 0
-!      K2=K+K
-!      IF(IPRXPP.GE.4) THEN
-!        WRITE(6,'(/A,I4)') 'GENOSC_MPOL: Rotational weights of order: ',K2
-!        CALL PRSYMB(6,'-',60,0)
-!        WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
-!      ENDIF
-!!.....Accumulate oscillator strengths
-!      FOSC=0.0D0
-!      IF(K.EQ.0) THEN
-!        allocate(indices(1))
-!        call rotfac_mpol(indices,0,iterm,jterm,FOSC,ATMPPF,OMEGA)
-!        deallocate(indices)
-!      ELSE
-!        allocate(indices(k2))
-!        call mpolloop(1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
-!        deallocate(indices)
-!     ENDIF
-!!....Add final factors for oscillator strengths
-!     DO ISYM = 1,NBSYM
-!       NEXC = KEXCNV(ISYM)
-!       DO IEXC = 1,NEXC
-!         FAC = (OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0
-!         FOSC(2,IEXC,ISYM)=FOSC(2,IEXC,ISYM)*FAC*OMEGA(IEXC,ISYM)
-!         FOSC(3,IEXC,ISYM)=FOSC(3,IEXC,ISYM)*FAC
-!         FOSC(4,IEXC,ISYM)=FOSC(4,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
-!         FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
-!       ENDDO
-!     ENDDO
-!     IF(IPRXPP.GE.4) THEN
-!       WRITE(6,*) 'Total/non-zero terms: ',ITERM,JTERM
-!       CALL PRSYMB(6,'-',60,0)
-!     ENDIF
+      K2=K+K
+      IF(IPRXPP.GE.4) THEN
+        WRITE(6,'(/A,I4)') 'GENOSC_VPOL: Rotational weights of order: ',K2
+        CALL PRSYMB(6,'-',60,0)
+        WRITE(6,'(18X,100A1)') (' ',J=1,K2+2),'P','Q'
+      ENDIF
+!.....Accumulate oscillator strengths
+      FOSC=0.0D0
+      IF(K.EQ.0) THEN
+        allocate(indices(1))
+        call rotfac_vpol(indices,0,iterm,jterm,FOSC,ATMPPF,OMEGA)
+        deallocate(indices)
+      ELSE
+        allocate(indices(k2))
+        call vpolloop(1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
+        deallocate(indices)
+     ENDIF
+!....Add final factors for oscillator strengths
+     DO ISYM = 1,NBSYM
+       NEXC = KEXCNV(ISYM)
+       DO IEXC = 1,NEXC
+         FAC = (OMEGA(IEXC,ISYM)/CVAL)**K2*2.0D0
+         FOSC(2,IEXC,ISYM)=FOSC(2,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+         FOSC(3,IEXC,ISYM)=FOSC(3,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+         FOSC(4,IEXC,ISYM)=FOSC(4,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+         FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
+       ENDDO
+     ENDDO
+     IF(IPRXPP.GE.4) THEN
+       WRITE(6,*) 'Total/non-zero terms: ',ITERM,JTERM
+       CALL PRSYMB(6,'-',60,0)
+     ENDIF
      END SUBROUTINE GENOSC_VPOL
 
       recursive subroutine vpolloop(m,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
@@ -199,18 +199,18 @@
 #include "dcbxpp.h"
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       integer :: indices(k2),ind(3),k2
-!      if(m==k2) then
-!        do i=1,3
-!           indices(m) = i
-!           call rotfac_mpol(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
-!        enddo
-!        return
-!      else
-!        do i=1,3
-!          indices(m) = i
-!          call mpolloop(m+1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
-!        enddo
-!      endif 
+      if(m==k2) then
+        do i=1,3
+           indices(m) = i
+           call rotfac_vpol(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
+        enddo
+        return
+      else
+        do i=1,3
+          indices(m) = i
+          call vpolloop(m+1,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
+        enddo
+      endif 
       END SUBROUTINE VPOLLOOP
       
       SUBROUTINE ROTFAC_VPOL(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
@@ -220,7 +220,7 @@
 #include "dcbxpp.h"
 #include "dcbxpr.h"      
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
-      integer :: indices(k2),ind(3),IOFF(3)
+      integer :: indices(k2),ind(3),IOFF(3,2)
       CHARACTER*10 DENOM
       PARAMETER(D2=2.0D0,D1=1.0D0)
       K=K2/2
@@ -271,14 +271,19 @@
               IB      = IND(3)
               IF (IP.EQ.INDICES(K+M)) THEN 
                 INDAPE = IVPOFF(IORD) + IP + 9*(IB+(IA+1)*IA/2)
-              ELSE               
-                CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)
-                IF (IORD.GT.2.AND.IJKL.EQ.-1) THEN
-                  IOFF = [5,1,3]
-                  INDAPE = IVPOFF(IORD)+IOFF(IP)+9*(IB+(IA+1)*IA/2)
-                ELSEIF(IORD.GT.2.AND.IJKL.EQ.1) THEN 
-                  IOFF = [4,6,2]
-                  INDAPE = IVPOFF(IORD)+IOFF(IP) + 9*(IB+(IA+1)*IA/2)
+              ELSE  
+                CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)             
+                IF (IORD.EQ.2) THEN
+                  IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF)) 
+                ELSE 
+                  IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF))
+                ENDIF 
+                IF (IJKL.EQ.1) THEN
+!                  IOFF = [5,1,3]
+                  INDAPE = IVPOFF(IORD)+IOFF(IP,1) + 3 + 9*(IB+(IA+1)*IA/2)
+                ELSEIF(IJKL.EQ.-1) THEN 
+!                  IOFF = [4,6,2]
+                  INDAPE = IVPOFF(IORD)+IOFF(IP,2) + 3 + 9*(IB+(IA+1)*IA/2)
                 ENDIF
               ENDIF 
             ENDIF 
@@ -287,15 +292,35 @@
               FACEL   = D1/GAMMA(REAL(IORD+1))
 !...........Right EPOL operator: order (K-M+1)
             IORD    = K - M + 1
-            IND     = 0
-            IND(IQ) = IND(IQ) + 1
-            DO L = K+M+1,K2
-              J      = INDICES(L)
-              IND(J) = IND(J) + 1
-            ENDDO
-            IA = IORD - IND(1)
-            IB = IND(3)
-            INDBPE  = IEPOFF(IORD) + IB + 1 + (IA+1)*IA/2
+            IF (IORD.EQ.1) THEN
+              INDBPE = IBDOFF(0)+IQ
+            ELSE
+              IND     = 0
+              DO L = K+M+1,K2-1
+                J      = INDICES(L)
+                IND(J) = IND(J) + 1
+              ENDDO
+              LE = IORD - 2
+              IA = LE - IND(1)
+              IB = IND(3)
+              IF (IQ.EQ.INDICES(K2)) THEN 
+                INDBPE = IVPOFF(IORD) + IQ + 9*(IB+(IA+1)*IA/2)
+              ELSE  
+                  CALL LEVI_CEVITA(IQ,INDICES(K2),IR,IJKL)             
+                  IF (IORD.EQ.2) THEN
+                    IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF)) 
+                  ELSE 
+                    IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF))
+                  ENDIF 
+                  IF (IJKL.EQ.1) THEN
+!                    IOFF = [5,1,3]
+                    INDBPE = IVPOFF(IORD)+IOFF(IQ,1) + 3 + 9*(IB+(IA+1)*IA/2)
+                  ELSEIF(IJKL.EQ.-1) THEN 
+!                    IOFF = [4,6,2]
+                    INDBPE = IVPOFF(IORD)+IOFF(IQ,2) + 3 + 9*(IB+(IA+1)*IA/2)
+                  ENDIF
+                ENDIF 
+            ENDIF 
             INDPER  = LPPAPU(INDBPE)
             ISYMER  = IPRPSYM(INDPER)
             FACER   = D1/GAMMA(REAL(IORD+1))
@@ -348,23 +373,45 @@
               ENDIF
             ENDIF
 !...........Form product
-            IF(IPRXPP.GE.5) THEN            
+! original code
+!            IF(IPRXPP.GE.5) THEN            
+!              IF(INDAPM.GT.0) THEN            
+!                 WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
+!                      K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
+!              ELSE
+!                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1)
+!              ENDIF
+!              IF(INDBPM.GT.0) THEN
+!                 WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Right: ',&
+!                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR
+!              ELSE
+!                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER),REP(ISYMER-1)
+!              ENDIF
+!            ENDIF
+
+            IF(IPRXPP.GE.5) THEN   
+              WRITE(6,*)'INDICES: ', INDICES        
+              WRITE(6,'(A3,I2,1X,A3,I2)')'IP=',IP,'IQ=',IQ
               IF(INDAPM.GT.0) THEN            
                  WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
                       K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
               ELSE
-                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1)
+                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL)&
+                ,REP(ISYMEL-1)
               ENDIF
               IF(INDBPM.GT.0) THEN
                  WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Right: ',&
-                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR
+                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR            
               ELSE
-                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER),REP(ISYMER-1)
+                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER)&
+                ,REP(ISYMER-1)
               ENDIF
             ENDIF
+
+
             ISYM=ISYMEL           
             NEXC=KEXCNV(ISYM)
-            IF(ISYMER.NE.ISYMEL.AND.ISYMML.NE.ISYMEL.AND.ISYMMR.NE.ISYMEL) CALL QUIT('ROTFAC_MPOL: Symmetry problem !')
+            IF(ISYMER.NE.ISYMEL.AND.ISYMML.NE.ISYMEL.AND.ISYMMR.NE.ISYMEL) CALL QUIT('ROTFAC_VPOL: Symmetry problem !')
 !           Q-Q part
             FACQQ =  FAC*WROT*FACEL*FACER
             DO IEXC = 1,NEXC
