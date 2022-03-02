@@ -257,7 +257,7 @@ C
 #include "dcborb.h"
 #include "dcbreo.h"
       type(fde_import) :: itmp
-      LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF
+      LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF, tobe
       CHARACTER CPUTID*12,WALTID*12,DAYTID*24,SECTID*12
       INTEGER NOCCUP(8)
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -268,6 +268,7 @@ C
 #ifdef HAS_PCMSOLVER
       real(8), allocatable :: fock_pcm(:, :, :)
 #endif
+      real*8 , allocatable :: aoo2esssoc(:)
 
       real(8) :: TIMSTR(2), TIMEND(2)
 
@@ -275,14 +276,14 @@ C
       CALL QENTER('PREDHF')
 C
 #include "memint.h"
-C     
+C
 C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
 C     ****************************************************
 C
       TDXC=D0
       CALL DHFTST(DSCFON,ICHKCNV,BMAT,IPRSCF)
-CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch     
+CMI    no bare nucleus screening when 2c-4c/4c-2c SCF switch
       IF (RESTFCK) THEN
          BARNUC  =.FALSE.
          DOHUCKEL=.FALSE.
@@ -300,8 +301,8 @@ C
 C
 C       Open files necessary for Dirac-Fock calculation
 C
-!        N2TMOTQ = N2TMO(I)*NZ        
-!        N2TMOTQ = N2TMO(I)*NZ        
+!        N2TMOTQ = N2TMO(I)*NZ
+!        N2TMOTQ = N2TMO(I)*NZ
         OPEN (LUEVEC, FILE='DFEVEC', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
         CALL OPNFIL(LUFCK2,'DFFCK2','UNKNOWN','PREDHF')
@@ -326,7 +327,7 @@ C
 C     Get 2-electron Fock matrix (save in CMO)
 C     ========================================
       DOSEL = .FALSE.
-C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true. 
+C ... skip the generation of 2-el.Fock matrix when RESTFCK=.true.
       IF (.NOT.RESTFCK) THEN
       IF(ATHUCK) THEN
         DHF_INTTYP = 'Atom. Huckel'
@@ -344,7 +345,7 @@ C.......In the open-shell case use fractional occupation in first iteration; res
         NFMATBUF   = NFMAT
         NFMAT      = 1
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
-        !fixme: michal for InteRest                            
+        !fixme: michal for InteRest
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
      &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C
@@ -358,7 +359,7 @@ C
         IF (ICHKCNV.EQ.0) ICHKCNV = -1
         IOPT = 15
         IF(ATOMIC) THEN
-          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
+          CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
         ELSE
           CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
         ENDIF
@@ -550,13 +551,31 @@ C       ... read 1-electron Fock matrix into FOCK ...
 C     MI     ... get 1-electron Fock matrix into CMO ...
          CALL REAFCK(LUFCK1,CMO,.FALSE.,1)
 C
-C     Calculate correction according to the One-center app. models 
-C     ============================================================
 C
         IF (TRIVEC.OR.ATOMST) THEN
+C          Calculate correction according to the One-center app. models
+C          ============================================================
            IF (ONECAP.AND. .NOT.SMLV1C) THEN
               CALL CATCORR(CMO,FOCK,DMAT,WORK(KFREE),LFREE,IPRSCF)
            END IF
+
+C          Calculate total energy
+C          ======================
+           inquire(file='XAMFI-ss-soc-contributions',exist=tobe)
+           if(tobe)then
+             open(99,file='XAMFI-ss-soc-contributions',status='old',
+     &            form='unformatted',access='sequential',
+     &            action="readwrite",position='rewind')
+             allocate(aoo2esssoc(ntbas(0)**2*nz))
+             read(99) aoo2esssoc(1:ntbas(0)**2*nz)
+             close(99,status='keep')
+             !> subtract the PCE corrections from the effective F[1] ...
+             call daxpy(ntbas(0)**2*nz,-1.0d0,aoo2esssoc,1,cmo,1)
+             !> ... and add the PCE corrections to F[2]
+             call daxpy(ntbas(0)**2*nz, 1.0d0,aoo2esssoc,1,fock,1)
+             deallocate(aoo2esssoc)
+           end if
+
            CALL ERGCAL(CMO,FOCK,DMAT,WORK(KFREE),LFREE)
         END IF
 
@@ -600,14 +619,6 @@ C
             CALL DAXPY(N2BBASXQ,DF(IOPEN),
      &                 FOCK(1+N2BBASXQ*IOPEN),1,FOCK,1)
           END DO
-
-#ifdef DEBUG_SOC
-        CALL DAXPY(N2BBASXQ,-1.0d0,CMO,1,FOCK,1)
-        CALL HEADER('PREDHF: BLUX F[2] matrix in SA-AO basis',-1)
-        CALL PRQMAT(FOCK,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
-     &                  NZ,IPQTOQ(1,0),LUPRI)
-        CALL DAXPY(N2BBASXQ,1.0d0,CMO,1,FOCK,1)
-#endif
 
         ENDIF
 C
