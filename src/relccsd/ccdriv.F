@@ -843,7 +843,9 @@ C
 
 !! Activate EOMCC calculation 
 
+      DOEOMCCSD=.FALSE.
       IF (relcc_do_eomcc) THEN
+         DOEOMCCSD=.TRUE.
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
@@ -2509,6 +2511,18 @@ C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
 ! aspg changed
+         if (DOEOMCCSD) then
+            if ((IMSTAT(14).NE.3).AND.(IMSTAT(6).EQ.3)) then
+!        if we have not yet reached the EOM-CCSD intermediates checkpont (IMSTAT(14)==3)
+!        we mark the CCSD amplitudes as not completely converged to ensure the intermediates will 
+!        be correctly calculated, since there appears to be an issue with eom-ee when restarting
+!        the eom part while having skipped the ccsd iterations. since the amplitudes are converged,
+!        this typically results in one or two additional iterations.
+               IMSTAT(6) = 2
+               write (iw,*) " INFO: resetting IMSTAT(6) to ",IMSTAT(6)
+            end if
+         end if
+
          IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
@@ -3006,7 +3020,11 @@ C       limitations elsewhere. 20120720
       IF (MYPROC .NE. MASTER) THEN
          NBUF3 = 0
       ELSE
-         NBUF3 = freemem / RCW
+
+         NV5IRP = MAX(JVOVV(NREP+1),JVVVO(NREP+1), 
+     &       JOVVV(NREP+1),JVVOV(NREP+1))
+
+         NBUF3 = MAX(freemem / RCW, NV5IRP)
       END IF
 C
 C     Allocate now also this remaining work array

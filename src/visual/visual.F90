@@ -87,6 +87,7 @@ contains
     logical, allocatable :: matrix_is_unperturbed(:)
 !   ----------------------------------------------------------------------------
 
+    write(6,*) 'TEST..run_visual'
     max_ao_g_order = 0
     do imat = 1, visual_cfg_nr_dmat
        if (                                                        &
@@ -350,7 +351,6 @@ contains
                      - (Csg*(TM*dag(Cig)))
           end if
           call copy_matrix_sym(D(imat), D_mo)
-
        end if
     end do
 

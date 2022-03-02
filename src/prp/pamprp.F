@@ -125,15 +125,10 @@ C     SCF molecular linear response properties.  The authors accept
 C     no responsibility for the performance of the code or for the
 C     correctness of the results.
 C
-C     The code (in whole or part) is not to be reproduced for
-C     further distribution without the written permission of the authors.
-C
 C     If results obtained with this code are published, an appropriate
 C     citation would be:  H. J. Aa. Jensen and T. Saue,
 C     "XXX version 1.0 1995,
 C      a Dirac-Fock molecular linear response properties program".
-C
-C     This note is not to be removed or altered.
 C
 C     Written by T.Saue June 24 1996
 C     Revision: 1997/09/15 - jth (addition of gradient code)
@@ -10721,7 +10716,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ANGLES(THETA,PHI,CHI,UWAVE,UPOL)
+      SUBROUTINE ANGLES(THETA,PHI,CHI,WAVVEC,POLVEC)
 C***********************************************************************
 C     Define orientation of wave and polarization vector,
 C     based on angles read in degrees.
@@ -10742,23 +10737,39 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      DIMENSION UWAVE(3),UPOL(3)
+#include "dcbxpp.h"
+      DIMENSION WAVVEC(3),POLVEC(3,2)
+          
+
       FAC      = ACOS(-1.0D0)/180.0D0
       THETA2   = THETA*FAC
       PHI2     = PHI*FAC
       CHI2     = CHI*FAC
-      UWAVE(1) = SIN(THETA2)*COS(PHI2)
-      UWAVE(2) = SIN(THETA2)*SIN(PHI2)
-      UWAVE(3) = COS(THETA2)
+      WAVVEC(1) = SIN(THETA2)*COS(PHI2)
+      WAVVEC(2) = SIN(THETA2)*SIN(PHI2)
+      WAVVEC(3) = COS(THETA2)
       W1       = COS(CHI2)
       W2       = SIN(CHI2)
-      UPOL(1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
-      UPOL(2)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
-      UPOL(3)  =-W1*SIN(THETA2)
+      POLVEC(1,1)  = W1*COS(THETA2)*COS(PHI2) - W2*SIN(PHI2)
+      POLVEC(2,1)  = W1*COS(THETA2)*SIN(PHI2) + W2*COS(PHI2)
+      POLVEC(3,1)  =-W1*SIN(THETA2)
+      IF (BEDECD) THEN
+        POLVEC(1,2)  = -W2*COS(THETA2)*COS(PHI2) - W1*SIN(PHI2)
+        POLVEC(2,2)  = -W2*COS(THETA2)*SIN(PHI2) + W1*COS(PHI2)
+        POLVEC(3,2)  = W2*SIN(THETA2)
+      ENDIF
 C.....Output section
-      WRITE (LUPRI,'(5X,A,3F18.10)')                                    &
-     &     '* Unit wave vector   :', (UWAVE(I),I=1,3),                  &
-     &     '* Polarization vector:', (UPOL(I),I=1,3)                   
+      IF (BEDECD) THEN
+        WRITE(LUPRI,'(1X,A,3F18.10)') 
+     &   '* Unit wave vector   :', (WAVVEC(I),I=1,3),    
+     &   '* Polarization Vector 1:', (POLVEC(I,1),I=1,3),
+     &   '* Polarization vector 2:', (POLVEC(I,2),I=1,3)
+      ELSE
+
+      WRITE (LUPRI,'(1X,A,3F18.10)')                                   
+     &     '* Unit wave vector   :', (WAVVEC(I),I=1,3),                  
+     &     '* Polarization vector:', (POLVEC(I,1),I=1,3)
+      ENDIF                   
       RETURN
       END
 C  /* Deck  nucspr */

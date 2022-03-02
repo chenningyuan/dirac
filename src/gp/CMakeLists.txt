@@ -156,4 +156,20 @@ endif()
 add_dependencies(gp interface_mpi)
 add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
-generate_git_info_header(${PROJECT_BINARY_DIR} git_info.h)
+
+# generates git information
+add_custom_command(
+  OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+    ALL
+  COMMAND
+  ${CMAKE_COMMAND} -D INPUT_DIR=${PROJECT_SOURCE_DIR}/cmake/downloaded -D OUTPUT_DIR=${PROJECT_BINARY_DIR} -P ${PROJECT_SOURCE_DIR}/cmake/downloaded/git-hash.cmake
+  WORKING_DIRECTORY
+    ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+add_custom_target(
+  git_info
+  ALL DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/git_info.h
+  )
+
+add_dependencies(gp git_info)
