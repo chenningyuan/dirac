@@ -265,7 +265,7 @@ C               - common block NUCLEI:
 C                       - added GAUNUC, GNUEXP(MXCENT)
 C                       - added NAMN(MXCENT)
 C               - NEW common block FRAME
-C                       - added POTNUC, DPNUC(3)
+C                       - added POTNUC
 C               - common block CBIREA:
 C                       - IPRINT changed to IPREAD
 C                       - added INPTST,FAMILY
@@ -4049,7 +4049,6 @@ C     * 30      - loop over second symmetry independent centre
 C     * 40+IF   - loop over dependent centers
 C     ************************************************************
 C
-      DPNUC(1:3)= 0.0D0
       NUCDEP    = 0
       NUCPRE(1) = 0
       NFLOAT    = 0
@@ -4064,12 +4063,6 @@ C
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (NINT(CHARGE(N)) .EQ. 0 .AND. NAMN(N) .NE. 'cav')
      &        NFLOAT = NFLOAT + 1
-         IF (ISYMAX(1,1) .EQ. 0) DPNUC(1) = DPNUC(1)
-     &      + (CORD(1,N) - DIPORG(1))*CHARGE(N)*FMULT(IVARB)
-         IF (ISYMAX(2,1) .EQ. 0) DPNUC(2) = DPNUC(2)
-     &      + (CORD(2,N) - DIPORG(2))*CHARGE(N)*FMULT(IVARB)
-         IF (ISYMAX(3,1) .EQ. 0) DPNUC(3) = DPNUC(3)
-     &      + (CORD(3,N) - DIPORG(3))*CHARGE(N)*FMULT(IVARB)
          II = 0
          DO 200 LA = 0,MAXREP
            IF (IAND(IVARB,LA) .EQ. 0) THEN ! filter out generator products containing generators that stabilise the center
@@ -4813,11 +4806,9 @@ C
      &        'but DIRAC were told they were in Angstrom ?'
             END IF
 C
-            WRITE(LUPRI,'(/A,F18.12,A/A,3F18.8,A)')
+            WRITE(LUPRI,'(/A,F18.12,A)')
      &   '   Nuclear repulsion energy                          :',
-     &       POTNUC,' Hartree',
-     &   '   Nuclear contribution to electric dipole moment    :',
-     &       DPNUC(1:3),' a.u.'
+     &       POTNUC,' Hartree'
          END IF
       END IF
       RETURN
