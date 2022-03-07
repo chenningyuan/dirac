@@ -195,7 +195,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "medium;gascip;ci" "")
+    dirac_test(esr "short;gascip;ci" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
