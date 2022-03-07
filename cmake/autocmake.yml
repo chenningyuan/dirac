@@ -51,7 +51,6 @@ modules:
     - '%(url_root)modules/int64.cmake'
     - 'custom/mathlibs-integer-compatibility.cmake'
     - '%(url_root)modules/safeguards.cmake'
-    - '%(url_root)modules/git_info/git_info.cmake'
     - '%(url_root)modules/version.cmake'
 - explicit:
   - docopt: "--explicit-libs=<LIBS> Explicit linker specification for extra libraries passed directly to the linker [default: off]."
@@ -60,8 +59,6 @@ modules:
   - source:
     - 'custom/mpi.cmake'
     - 'custom/test.cmake'
-    - 'custom/exported.cmake'
-    - 'custom/unreleased.cmake'
     - 'custom/reset_external_libs.cmake'
     - 'custom/static.cmake'
     - 'custom/definitions.cmake'
@@ -90,7 +87,6 @@ modules:
 - install:
   - source:
     - 'custom/install.cmake'
-    - 'custom/cpack-dirac.cmake'
     - 'custom/pam.cmake'
     - 'custom/test.cmake'
 - save_flags:

@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -270,7 +265,7 @@ C               - common block NUCLEI:
 C                       - added GAUNUC, GNUEXP(MXCENT)
 C                       - added NAMN(MXCENT)
 C               - NEW common block FRAME
-C                       - added POTNUC, DPNUC(3)
+C                       - added POTNUC
 C               - common block CBIREA:
 C                       - IPRINT changed to IPREAD
 C                       - added INPTST,FAMILY
@@ -1031,9 +1026,6 @@ C
             IF (NINT(Q) .GT. 18) THEN
               NSETS = 1
               DOHUCKEL = .FALSE.
-culfek: Not relevant for Dirac at this point.
-c              WRITE (LUPRI,'(/A)') ' No Huckel start guess due to '//
-c     &             'nuclear charge larger than 18'
             END IF
           ENDIF
         ENDIF
@@ -4025,7 +4017,6 @@ C******************************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
@@ -4037,6 +4028,7 @@ C
 #include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
+#include "orgcom.h"
 C     
 C
 C
@@ -4057,9 +4049,6 @@ C     * 30      - loop over second symmetry independent centre
 C     * 40+IF   - loop over dependent centers
 C     ************************************************************
 C
-      DPNUC(1) = D0
-      DPNUC(2) = D0
-      DPNUC(3) = D0
       NUCDEP    = 0
       NUCPRE(1) = 0
       NFLOAT    = 0
@@ -4074,9 +4063,6 @@ C
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (NINT(CHARGE(N)) .EQ. 0 .AND. NAMN(N) .NE. 'cav')
      &        NFLOAT = NFLOAT + 1
-         DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
-         DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
-         DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
          II = 0
          DO 200 LA = 0,MAXREP
            IF (IAND(IVARB,LA) .EQ. 0) THEN ! filter out generator products containing generators that stabilise the center
@@ -4111,7 +4097,7 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
-      IF (LINEAR .EQV. .TRUE.) THEN
+      IF (LINEAR) THEN
         IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
      &    ATOMIC = .TRUE.
       ENDIF
@@ -4207,7 +4193,6 @@ C*************************************************************************
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
@@ -4260,7 +4245,7 @@ C
                 NVAR = MOD(NVALUE(J),2)*ISYMAX(3,1)
                 DO 220 K = 1, KHK(I)
                    IJK = IJK + 1
-                   IF (ABS(CSP(IJK)).GT.D0) THEN
+                   IF (ABS(CSP(IJK)).GT.0.0D0) THEN
                       IF (ISYMAO(I,K) .EQ. -1) THEN
                          ISYMAO(I,K) = IEOR(LVAR,IEOR(MVAR,NVAR))
                       ELSE
@@ -4820,10 +4805,11 @@ C
      &       ,'  WARNING:  maybe coordinates were in Bohr, '//
      &        'but DIRAC were told they were in Angstrom ?'
             END IF
-         END IF
 C
-         IF (IPREAD .GT. 0) WRITE(LUPRI,'(/A,F18.12,A)')
-     &   '   Nuclear repulsion energy :',POTNUC,' Hartree'
+            WRITE(LUPRI,'(/A,F18.12,A)')
+     &   '   Nuclear repulsion energy                          :',
+     &       POTNUC,' Hartree'
+         END IF
       END IF
       RETURN
       END
@@ -6254,7 +6240,8 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "infpar.h"
-      DIMENSION Q(*)
+      REAL*8   Q(*)
+      REAL*8   DIPNUC(3,2)
 C
       CALL QENTER('GETPOT')
       N_IDENT   = 0
@@ -6262,7 +6249,22 @@ C
       EPOT_QM_QM = D0 ! QM is charge with orbitals
       EPOT_QM_PC = D0 ! PC is point charge without orbitals
       EPOT_PC_PC = D0
+      DIPNUC     = D0
       DO 10 N = 1, NUCIND
+
+! Nuclear dipole moment, from atoms and any point charges
+         DO KB = 0,MAXREP
+            IF (IAND(KB,ISTBNU(N)) .NE. 0) CYCLE
+            IF (NOORBT(N)) THEN ! point charge
+               DIPNUC(1:3,2) = DIPNUC(1:3,2)
+     &            + Q(N)*CORD(1:3,N)*PT(IAND(ISYMAX(1:3,1),KB))
+            ELSE ! nucleus
+               DIPNUC(1:3,1) = DIPNUC(1:3,1)
+     &            + Q(N)*CORD(1:3,N)*PT(IAND(ISYMAX(1:3,1),KB))
+            END IF
+         END DO
+
+! Potential energy:
          DO 20 M = N, NUCIND
             Q_MN = Q(M)*Q(N)
          IF (Q_MN .EQ. D0) GO TO 20
@@ -6303,21 +6305,46 @@ C
            if (      (dabs(epot_pc_pc) == 0.0d0)
      &         .and. (dabs(epot_qm_pc) == 0.0d0)
      &        ) then
-              WRITE(LUPRI,'(4(/A,F20.12))')
-     &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM
+              ! if only QM-QM, no reason to duplicate print from PRICAR
+              DIPNORM = SQRT(
+     &           DIPNUC(1,1)**2 + DIPNUC(2,1)**2 + DIPNUC(3,1)**2)
+              if (DIPNORM .ge. 1000.D0) then
+                 WRITE(LUPRI,'(/A,F20.12,A//A,1P,3D18.9,A)')
+     &        '  Nuclear repulsion energy                       :',
+     &           EPOT_QM_QM,' Hartree',
+     &        '  Nuclear contribution to electric dipole moment :',
+     &           DIPNUC(1:3,1),' a.u.;  origin (0,0,0)'
+              else
+                 WRITE(LUPRI,'(/A,F20.12,A//A,3F18.12,A)')
+     &        '  Nuclear repulsion energy                       :',
+     &           EPOT_QM_QM,' Hartree',
+     &        '  Nuclear contribution to electric dipole moment :',
+     &           DIPNUC(1:3,1),' a.u.;  origin (0,0,0)'
+              end if
            else if ( (dabs(epot_qm_qm) == 0.0d0)
      &         .and. (dabs(epot_qm_pc) == 0.0d0)
      &         .and. (dabs(epot_pc_pc) == 0.0d0)
      &        ) then
-!             don't print anything if there is
+!             do not print anything if there is
 !             only one atom and no point charges
            else
-              WRITE(LUPRI,'(4(/A,F20.12))')
+              WRITE(LUPRI,'(/A,F20.12,A,3(/A,F20.12))')
      &        '  QM-QM nuclear repulsion energy :',EPOT_QM_QM,
+     &           ' Hartree',
      &        '  QM-pc interaction energy       :',EPOT_QM_PC,
      &        '  pc-pc interaction energy       :',EPOT_PC_PC,
      &        '  Total interaction energy       :',
      &              EPOT_QM_QM+EPOT_QM_PC+EPOT_PC_PC
+              WRITE(LUPRI,'(/A/A,F20.12)')
+     &        '  The pc-pc interaction energy will be ignored;',
+     &        '  revised nuclear repulsion en.:',
+     &        EPOT_QM_QM + EPOT_QM_PC
+              WRITE(LUPRI,'(/A,3F20.12,A,2(/A,3F20.12))')
+     &        '  QM    nuclear dipole moment    :',DIPNUC(1:3,1),
+     &            ' a.u.;  origin (0,0,0)',
+     &        '  pc    nuclear dipole moment    :',DIPNUC(1:3,2),
+     &        '  Total nuclear dipole moment    :',
+     &           DIPNUC(1:3,1)+DIPNUC(1:3,2)
               IF (N_IDENT .GT. 0) WRITE (LUPRI,*) N_IDENT,
      &    ' interactions neglected because between same physical center'
            end if

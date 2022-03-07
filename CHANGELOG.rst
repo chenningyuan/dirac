@@ -3,11 +3,55 @@
 hjaaj-esr branch:
 -----------------
 
-New features:
+New ESR features (Contributor: H. J. Aa. Jensen):
 - .MAXMK2 for \*ESR
 - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt = 1000 ppm accuracy
 
 -----------------------------------------------------------------------------------------------------
+
+22.0 (2022-02-08)
+-----------------
+
+New features:
+
+- New licence: GNU Lesser General Public License v2.1
+- Electronic circular dichroism (ECD) beyond lowest-order -- full light-matter interaction
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List
+   - Reference: `M. van Horn, T. Saue, N. H. List., Probing Chirality across the
+     Electromagnetic Spectrum with the Full Semiclassical Light-Matter
+     Interaction. J. Chem. Phys. (in press) (2022) <https://doi.org/10.1063/5.0077502>`__, `ChemRxiv <https://doi.org/10.33774/chemrxiv-2021-j1hcz-v2>`__
+- MP2 frozen virtual natural orbitals via the ExaCorr module
+   - Contributors: Xiang Yuan, Lucas Visscher, André Severo Pereira Gomes.
+   - Reference: `X. Yuan, L. Visscher, A. S. P. Gomes., Assessing MP2 frozen
+     natural orbitals in relativistic correlated electronic structure calculations.
+     <https://arxiv.org/abs/2202.01146>`__
+   - Manual: `.MP2NO <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#mp2no>`__
+     and `.DONATORB <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#donatorb>`__
+- Polarizable Embedding with Complex Polarization Propagator
+   - Contributors: Joel Creutzberg, Erik D. Hedegård
+   - Reference: `Polarizable embedding complex polarization propagator in four-
+     and two-component frameworks. <https://arxiv.org/abs/2112.07721>`__
+
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file and DIRAC data scheme, python utilities to extract data
+   - Contributor: Lucas Visscher
+   - Manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-22/development/checkpoint.html>`__
+
+Improvements:
+
+- DIIS replaced by `CROP <https://pubs.acs.org/doi/10.1021/ct501114q>`__ algorithm in ExaCorr module.
+   - Contributors: Chima Chibueze and Lucas Visscher.
+   - Reference: `Pototschnig et al., J. Chem. Theory Comput. 17 (2021) 5509−5529. <https://doi.org/10.1021/acs.jctc.1c00260>`__
+   - Manual: `EXACC <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html>`__
+
+Bugfix:
+
+- There was an error in the construction of the projection operator for
+  secondary orbitals using density matrices for the very special case of
+  4-component relatistic average-of-configuration HF calculations on systems
+  with inversion symmetry and no occupation in ungerade symmetry.
+
 
 21.1 (2021-09-16)
 -----------------

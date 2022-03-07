@@ -103,7 +103,7 @@ Tutorials and walkthrus
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
   :doc:`Molecular mean-field X2C <tutorials/two_component_hamiltonians/molecular_mean_field>` |
   :doc:`Selecting a 2-component Hamiltonian other than X2C <tutorials/two_component_hamiltonians/hamiltonians>` |
-  :doc:`Case study <tutorials/two_component_hamiltonians/example>` 
+  :doc:`Case study <tutorials/two_component_hamiltonians/example>`
 
 * **Relativistic effective core potentials:**
   :doc:`Getting started <tutorials/ecp/first>`
@@ -116,9 +116,9 @@ Tutorials and walkthrus
   :doc:`BSSE <tutorials/dft/bsse>` |
   :doc:`CAM functional <tutorials/dft/cam>` |
   :doc:`Troubleshooting <tutorials/dft/troubleshooting>`
-  
+
 * **Frozen orbitals:**
-  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>` 
+  :doc:`Frozen orbitals <tutorials/frozen_orbitals/tutorial>`
 
 * **Long-range WFT/short-range DFT:**
   :doc:`General <tutorials/srDFT/general>`
@@ -136,6 +136,7 @@ Tutorials and walkthrus
   :doc:`Core electron excitations and ionization in water at the HF and DFT levels <tutorials/x_ray/water_Kedge/tutorial>`
 
 * **Spectroscopy:**
+  :doc:`Excitation energies at the SCF-level <tutorials/properties/scfexc/tutorial>` |
   :doc:`Electronic excitations using the POLPRP module <tutorials/polprp/general>` |
   :doc:`Full scope application: Excitation spectrum of an osmium complex <tutorials/polprp/osmium>`
 
@@ -147,16 +148,16 @@ Tutorials and walkthrus
   :doc:`Orbital densities <tutorials/visual/orbital_densities/tutorial>` |
   :doc:`Magnetizability density <tutorials/visual/magnetizability_density/tutorial>` |
   :doc:`Molecular electrostatic potential <tutorials/visual/mep/tutorial>` |
-  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`     
+  :doc:`Radial distributions <tutorials/visual/radial_distributions/tutorial>`
 
 * **Open-shell SCF:**
   :doc:`Basics <tutorials/open_shell_scf/aoc>` |
-  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>` 
+  :doc:`Converging atoms <tutorials/open_shell_scf/converging_atoms>`
 
 * **Coupled-Cluster:**
   :doc:`The high spin oxygen molecule <tutorials/highspin_cc/O2>` |
   :doc:`Coupled Cluster memory count <tutorials/cc_memory_count/count_cc_memory>` |
-  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>` 
+  :doc:`Hybrid-parallel run <tutorials/hybrid_parallel_cc_run/hybrid_parallel_cc_run>`
 
 * **Case studies:**
   :doc:`Ir(16+) cation <tutorials/case_studies/Ir_16plus>` |
@@ -186,7 +187,7 @@ Tutorials and walkthrus
 
 * **Frozen density embedding (FDE):**
   :doc:`NMR shieldings in Frozen Density Embedding (FDE) scheme with London atomic orbitals (LAOs) <tutorials/fde_nmr/tutorial>`
- 
+
 * **Davidson corrections for relCI (LUCITA and KRCI):**
   :doc:`+Q corrections <tutorials/relci_q_corrections/q_corrections>`
 
@@ -214,52 +215,60 @@ Exercises
 .. toctree::
    :maxdepth: 1
 
-   exercises/index.rst
+   exercises/Corrientes2012/index.rst
+   exercises/TCCM2021/index.rst
 
 
-Developers
-==========
+Development
+===========
+
+* **Public and private repositories:**
+  :doc:`Working with multiple remotes <development/multiple-remotes>` |
+  :doc:`Contributing changes <development/contributing-changes>`
 
 * **Code review:**
-  :doc:`Code review workflow <programmers/code_review>`
+  :doc:`Code review workflow <development/code_review>`
 
 * **Releasing:**
-  :doc:`Release preparation <programmers/release_preparation>` |
-  :doc:`Patch preparation <programmers/patch_preparation>` |       
-  :doc:`Beta testing <programmers/beta_testing>` |
-  :doc:`Where to commit after the release is out <programmers/commit_policy>`
+  :doc:`Release preparation <development/release_preparation>` |
+  :doc:`Patch preparation <development/patch_preparation>` |
+  :doc:`Beta testing <development/beta_testing>` |
+  :doc:`Where to commit after the release is out <development/commit_policy>`
 
 * **Programming:**
-  :doc:`Rules <programmers/rules>` |
-  :doc:`How to add new tests <programmers/testing>` |
-  :doc:`How to add/move/remove sources <programmers/adding_moving_removing_sources>` |
+  :doc:`Rules <development/rules>` |
+  :doc:`How to add new tests <development/testing>` |
+  :doc:`How to add/move/remove sources <development/adding_moving_removing_sources>` |
   `runtest_dirac.py <http://runtest.readthedocs.org/en/latest/doc/adding_tests/dirac.html>`_ |
-  :doc:`Input parsing <programmers/input_reading>` |
-  :doc:`Git submodules <programmers/external_projects>` |
-  :doc:`Nightly tests <programmers/cdash>` |
-  :doc:`Dirac on Windows <programmers/windows>` |
-  :doc:`Profiling <programmers/profiling>` |
-  :doc:`Debugging <programmers/debugging>` |
-  :doc:`History <programmers/museum>` |
-  :doc:`Further development <programmers/further_development>` |
-  :doc:`Good Fortran 90 practices <programmers/good_fortran_90_practices>` |
-  :doc:`FAQ <programmers/faq>`
+  :doc:`Input parsing <development/input_reading>` |
+  :doc:`Git submodules <development/external_projects>` |
+  :doc:`Nightly tests <development/cdash>` |
+  :doc:`Dirac on Windows <development/windows>` |
+  :doc:`Profiling <development/profiling>` |
+  :doc:`Debugging <development/debugging>` |
+  :doc:`History <development/museum>` |
+  :doc:`Further development <development/further_development>` |
+  :doc:`Good Fortran 90 practices <development/good_fortran_90_practices>` |
+  :doc:`FAQ <development/faq>`
+
+* **Data schema and the CHECKPOINT file:**
+  :doc:`How data is organized on the checkpoint file <development/checkpoint>`
 
 * **Basis sets:**
-  :doc:`Testing basis sets in DIRAC <programmers/test_basis_sets>` 
+  :doc:`Testing basis sets in DIRAC <development/test_basis_sets>`
 
 * **Moving code between machines:**
-  :doc:`Transfering uncommitted code <programmers/transfering_uncommitted_code>`
+  :doc:`Transfering uncommitted code <development/transfering_uncommitted_code>`
 
 * **Notes:**
-  :doc:`DFCOEF <programmers/dfcoef>` |
-  :doc:`Screening <programmers/screening>` |
-  :doc:`64bit integers <programmers/int8>` |
-  :doc:`Numerical constants <programmers/num_constants>` |
-  :doc:`XML <programmers/xml>` |
-  :doc:`Static linking <programmers/static_linking>` |
-  :doc:`Problems with lapack's DSYEVR <programmers/diag>` |
-  :doc:`How this documentation works <programmers/documentation_howto>`
+  :doc:`DFCOEF <development/dfcoef>` |
+  :doc:`Screening <development/screening>` |
+  :doc:`64bit integers <development/int8>` |
+  :doc:`Numerical constants <development/num_constants>` |
+  :doc:`XML <development/xml>` |
+  :doc:`Static linking <development/static_linking>` |
+  :doc:`Problems with lapack's DSYEVR <development/diag>` |
+  :doc:`How this documentation works <development/documentation_howto>`
 
 
 Bibliography
