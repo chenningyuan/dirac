@@ -593,7 +593,6 @@ C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
-C  BRANCH CODE
         jm1 = 3
         j0  = 2
         jp1 = 1
@@ -618,53 +617,11 @@ c         WRITE(lupri,*)'GCORR(K,1)', GCORR(K,1),
 c    &      'GCORR(K,2)', GCORR(K,2),
 c    &      'GCORR(K,3)', GCORR(K,3)
         ENDDO
-C   END BRANCH CODE
-C  TRUNK CODE
-C        Find Sigma_Z expectation values for the three states:
-C         I = IPSIGMA(3)
-C         WRITE (LUPRI,*) 'Analysis to find triplet components'
-C         JMS(-1) = -1
-C         JMS( 0) = -1
-C         JMS( 1) = -1
-C         DO K = 1,3
-C            SZK  = ESRVAL(K,K,1,I)
-C            ISZK = NINT(SZK)
-C            WRITE (LUPRI,*)'State, <Sigma_Z>, S_Z(eff)',K,SZK,ISZK
-C            IF (ISZK .GT. 1 .OR. ISZK .LT. -1) THEN
-C               CALL QUIT('error: S_Z(eff) too big to triplet')
-C            ELSE IF (JMS(ISZK) .NE. -1) THEN
-C               CALL QUIT('error: same S_Z(eff) twice!!!')
-C            END IF
-C            JMS(ISZK) = K
-C         END DO
-C         jm1 = jMS(-1)
-C         j0  = jMS( 0)
-C         jp1 = jMS( 1)
-C
-C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
-C     (2) Get the QED correction in GCORR
-C
-C      D2SQRT2 = D2*SQRT(D2)
-C      DO K = 1,3
-C        ... for B field in direction k (x,y,z)
-C         I = IPESR(MXCOOR+K,1)
-C         GTENSOR(K,1) = -D2SQRT2*ESRVAL(jp1,j0 ,1,I)
-C         GTENSOR(K,2) =  D2SQRT2*ESRVAL(jm1,j0 ,2,I)
-C         GTENSOR(K,3) =  D2*ESRVAL(jp1,jp1,1,I)
-c??      GTENSOR(K,3) =  ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
-C         J = IPESR(MXCOOR+K,2)
-C         GCORR(K,1)   =  -D2SQRT2*ESRVAL(jp1,j0,1,J)
-c         GCORR(K,2)   =   D2SQRT2*ESRVAL(jm1,j0,2,J)
-c         GCORR(K,3)   =   D2*ESRVAL(jp1,jp1,1,J)
-c      ENDDO
-
-C  END TRUNK CODE
 C
 C     ***************************************
 C     Zero-field-splitting parameters D and E
 C     ***************************************
 C
-C  BRANCH CODE
         EM1 = WORK(KHCI)
         E0  = WORK(KHCI+  MULTIPESR+1)
         EP1 = WORK(KHCI+2*MULTIPESR+2)
@@ -677,23 +634,7 @@ C  BRANCH CODE
         WRITE (LUPRI,'(2(A,F25.8,A/))')
      &   '  ZFS parameter D:      ',ZFS_DCM, ' cm-1 ',
      &   '  ZFS parameter E:      ',ZFS_ECM, ' cm-1 '
-C   END BRANCH CODE
-C
-C   TRUNK CODE
-C      ZFS_D = -(WORK(KEIGVL) - (WORK(KEIGVL+1)+WORK(KEIGVL+2))/D2)
-C..   ZFS_D = EIGVAL(1) - (EIGVAL(2)+EIGVAL(3))/D2
-C      ZFS_E = (WORK(KEIGVL+1)-WORK(KEIGVL+2))/D2
-C      ZFS_DCM = ZFS_D*XTKAYS
-C      ZFS_ECM = ZFS_E*XTKAYS
-C      CALL HEADER('Zero field splitting parameters:',1)
-C         WRITE (LUPRI,'(5(/A,F15.8,A))')
-C     &   ' ZFS parameter D:                ',ZFS_DCM,  '(cm-1) '
-C         WRITE (LUPRI,'(5(/A,F15.8,A))')
-C     &   ' ZFS parameter E:                ',ZFS_ECM,  '(cm-1) '
-C     print *, 'ZERO-FIELD D= ',ZFS_DCM, '(cm-1)'
-C   END TRUNK CODE
 
-C
       ELSE IF (MULTIPESR .EQ. 4) THEN
 C     .... quartet molecules (S_eff = 3/2)
 C
