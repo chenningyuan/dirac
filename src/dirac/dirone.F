@@ -2126,10 +2126,12 @@ C*****************************************************************************
       use xamfi_utils, only:
      &    dump_normalized_2e_soc,
      &    read_xamfi_general_matrix,
+     &    dump_delta_xc_energy,
      &    goodbye_xamfi,
-     &    dump_Xc_c1_dens 
+     &    dump_Xc_c1_dens
       use xamfi_driver, only:
      &    get_xamfi_correction
+      use xcint_main, only: get_xc_energy
 #endif
 !
 #include "implicit.h"
@@ -2181,6 +2183,7 @@ C   PAMIOU: LUTMAT
       real(8), allocatable :: pctm_aoosoc(:)
       logical              :: no1esystem_aoosoc, aoc_save
       logical              :: x2c_save
+      real*8               :: delta_xc_energy_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
 
@@ -2816,6 +2819,11 @@ C     Write transformation matrices
      &                                iprham
      &                               )
 
+            !> save XC_energy_4c
+            delta_xc_energy_aoosoc = 0.0d0
+            if(dirac_cfg_dft_calculation) delta_xc_energy_aoosoc =
+     &      delta_xc_energy_aoosoc + get_xc_energy()
+
             !> reset common block variables to 2c mode
             call xamfi_set_cb("get-2c")
 
@@ -3046,6 +3054,11 @@ C
      &                          lwork_ext             = lfree,
      &                          print_lvl             = iprham
      &                         )
+#ifdef MOD_XAMFI
+          !> subtract XC_energy_2c
+          if(dirac_cfg_dft_calculation) delta_xc_energy_aoosoc =
+     &    delta_xc_energy_aoosoc - get_xc_energy()
+#endif
 
           !> here we split...
           !> a. either construct H1_mmf_X2C_AO for post-SCF X2Cmmf calculation ...
@@ -3167,6 +3180,24 @@ C
      &                                  lux2c,
      &                                  .true.
      &                                 )
+            if(dirac_cfg_dft_calculation)then
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+              WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XC energy: ',delta_xc_energy_aoosoc
+#undef DEBUG_SOC
+#endif
+
+              call dump_delta_xc_energy(
+     &                                  delta_xc_energy_aoosoc,
+     &                                  'aooDLXCE',
+     &                                  nint(charge(1)),
+     &                                  lux2c,
+     &                                  .true.
+     &                                 )
+            end if
+
+
             call goodbye_xamfi(atom(1)%charge)
 
             !> restore logicals

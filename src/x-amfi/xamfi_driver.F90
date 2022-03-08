@@ -40,6 +40,7 @@ module xamfi_driver
   public put_xamfi_correction
   public put_atomic_2e_mean_field_correction
   public put_atomic_density_correction
+  public collect_delta_xc_energy
 
   private
 
@@ -559,6 +560,55 @@ center_total = center_total + aoo_nont(center_id)
 end subroutine put_atomic_density_correction
 !----------------------------------------------------------------------
 
+  function collect_delta_xc_energy(                             &
+                                   center_id,                   &
+                                   center_total,                &
+                                   print_lvl                    &
+   ) result(delta_xc_e)
+!**********************************************************************
+integer, intent(in)                :: center_id
+integer, intent(inout)             :: center_total
+integer, intent(in)                :: print_lvl
+!----------------------------------------------------------------------
+real*8                             :: delta_xc_e
+!----------------------------------------------------------------------
+
+
+delta_xc_e = 0.0d0
+
+if(nint(atom(center_total)%charge) > 1)then
+
+delta_xc_e =  read_xamfi_general_scalar(                                 &
+                                        'aooDLXCE',                      &
+                                        nint(atom(center_total)%charge), &
+                                        101                              &
+                                       )
+!> debug print
+if(print_lvl > 1)then
+write(6,'(/a,f12.9)')&
+'DELTA XC energy correction from file', delta_xc_e
+end if
+
+
+!write(6,*) 'done correction for center ',center_total,aoo_nont(center_id),center_id,aoo_nucdeg(center_total)
+!call flshfo(6)
+
+!> multiply the correction term with the degeneracy factor for this center
+delta_xc_e = delta_xc_e * aoo_nucdeg(center_total)
+
+!> debug print
+if(print_lvl > 1)then
+write(6,'(/a,f12.9)')&
+'DELTA XC energy correction multiplied with degeneracy of nuclear center', delta_xc_e
+end if
+
+end if !> for nuclear charge of center > 1
+
+!     update counter
+center_total = center_total + aoo_nont(center_id)
+
+end function collect_delta_xc_energy
+!----------------------------------------------------------------------
 
 #ifdef DEBUG_SOC
 #undef DEBUG_SOC

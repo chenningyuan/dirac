@@ -33,6 +33,7 @@ module x2c_2e_soc_interface
   use gab_settings, only: recompute_Gab
 #endif
   use x2cmod_cfg, only: x2c_intgen_2c
+  use xcint_main, only: set_xc_energy_delta
 
   implicit none
 
@@ -613,6 +614,7 @@ contains
      real*8 , allocatable            :: scr3_mat(:)
      real*8 , allocatable            :: scr4_mat(:)
      real*8 , allocatable            :: wrk(:)
+     real*8                          :: delta_xc_e
      integer, allocatable            :: aooso_info(:)
      integer                         :: i
      integer                         :: j
@@ -708,18 +710,18 @@ contains
 !             d. insert quaternion phase factors
 !             ----------------------------------
               if(nz < 4)then
-                 do iz = 1, nz                                                
+                 do iz = 1, nz
                      iq = ipq_off_in(iz,0)
                      call q2bphase('F',iq,1,scr3_mat(1+(nr_ao_L*nr_ao_L*(iz-1))))
-                 end do           
-              end if          
+                 end do
+              end if
 
               !> restore offsets in atomic basis to four-component mode (for now)
               TWOCOMP = .FALSE.
               CALL READIN(.FALSE.)
               CALL SETDC1(IPREAD)
               call getlab(ipread)
- 
+
               IPREAD = IPREAD + 10000
 
 !             debug print
@@ -727,7 +729,7 @@ contains
                 call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - amf contributions',6)
               end if
               deallocate(aooso_info)
-       
+
        else ! eamf
 
               !> our correction term is \Delta F^{2c,2e} = { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++} -  F^{2c,2e}[D^{2c}_(+)atoms]
@@ -782,11 +784,11 @@ contains
               CALL READIN(.FALSE.)
               CALL SETDC1(IPREAD)
               call getlab(ipread)
- 
+
               IPREAD = IPREAD + 10000
 
               !> first term: { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++}
-              
+
   !           !> read the U matrix
               ioff_U = 1
               do i = 1, nfsym
@@ -829,15 +831,25 @@ contains
 
               !> - second term + first term => complete eamf PCE correction
               call daxpy(nr_ao_L*nr_ao_L*nz,-1.0d0,scr4_mat,1,scr3_mat,1);
-              !> DEBUG TEST
-              !call dscal(nr_ao_L*nr_ao_L*nz,-1.0d0,scr3_mat,1);
-              !> DEBUG TEST
               deallocate(scr4_mat);
 !             debug print
               if(print_lvl > 2)then
                 call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - eamf contributions',6)
               end if
 
+       end if
+
+       !> collect correction term for XC energy
+       if(isDFT)then
+         delta_xc_e   = 0.0d0
+         center_total = 1
+         do i = 1, nuclei_type
+           delta_xc_e  = delta_xc_e + collect_delta_xc_energy(i,              &
+                                                              center_total,   &
+                                                              print_lvl       &
+                                                             )
+         end do
+         call set_xc_energy_delta(delta_xc_e)
        end if
 
 #define DEBUG_SOC
@@ -1052,11 +1064,11 @@ call butobs_no_work(scr2_mat,nz)
 !      d. insert quaternion phase factors
 !      ----------------------------------
 if(nz < 4)then
-do iz = 1, nz                                                
+do iz = 1, nz
 iq = ipq_off_in(iz,0)
 call q2bphase('F',iq,1,scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))))
-end do           
-end if          
+end do
+end if
 
 !      debug print
 if(print_lvl > 2)then
@@ -1098,7 +1110,7 @@ subroutine x2c_add_2e_from_atomic_dens(&
        integral_types,        &
        lwrk,                  &
        isDFT,                 &
-       print_lvl)   
+       print_lvl)
 !**********************************************************************
 !
 !    purpose: interface routine to add 2e-molecular mean field contributions to an arbitrary h1 (could be 0)
@@ -1113,7 +1125,7 @@ subroutine x2c_add_2e_from_atomic_dens(&
 !            \  c. insert quaternion phases
 !             4. compute Fock matrix F^{Xc,2e}[D^Xc_(+)atoms]
 !             5. add F^{Xc,2e}D^Xc_(+)atoms] to h1_Xc
-! 
+!
 !
 !----------------------------------------------------------------------
 real*8,  INTENT(INOUT)          :: h1_Xc(*)
@@ -1221,11 +1233,11 @@ call butobs_no_work(scr2_mat,nz)
 !      d. insert quaternion phase factors
 !      ----------------------------------
 if(nz < 4)then
-do iz = 1, nz                                                
+do iz = 1, nz
 iq = ipq_off_in(iz,0)
 call q2bphase('D',iq,1,scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))))
-end do           
-end if          
+end do
+end if
 
 !      debug print
 if(print_lvl > 2)then

@@ -42,7 +42,9 @@ module xamfi_utils
   public get_normalized_2e_soc
   public dump_normalized_2e_soc
   public dump_Xc_c1_dens
+  public dump_delta_xc_energy
   public read_xamfi_general_matrix
+  public read_xamfi_general_scalar
   public xamfi_get_energy_correction
   public hello_xamfi
   public goodbye_xamfi
@@ -195,7 +197,7 @@ contains
          access='sequential',action="readwrite",position='rewind')
 
     if(final_dump)then
-        allocate(Gmat_c1(nrow,ncol,nzc1)); Gmat_c1 = 0  
+        allocate(Gmat_c1(nrow,ncol,nzc1)); Gmat_c1 = 0
 #ifdef DEBUG_SOC
         call print_x2cmat(Gmat, &
         nrow,                   &
@@ -209,10 +211,10 @@ contains
         ! a. insert phases
         IREP=0
         IF (NZ < 4) THEN
-            DO  IZ = 1, NZ                                                 
-                IQ = aoo_cb_pq_to_uq(IZ,IREP)                                       
+            DO  IZ = 1, NZ
+                IQ = aoo_cb_pq_to_uq(IZ,IREP)
                 CALL Q2BPHASE('F',IQ,1,Gmat(1,1,iz))
-            END DO            
+            END DO
         END IF
 #ifdef DEBUG_SOC
        call print_x2cmat(Gmat,                  &
@@ -223,8 +225,8 @@ contains
                         'aoosoc - 2e-SOC a',    &
                         6                       &
                        )
-#endif       
-  
+#endif
+
         ! b. transform to unsorted SO-AO basis
         call bstobu_no_work(Gmat,nz)
 
@@ -237,7 +239,7 @@ contains
         'aoosoc - 2e-SOC b',    &
         6                       &
        )
-#endif 
+#endif
         ! c. transform from unsorted SO-AO basis to AO (C1* symmetry) basis
         IPAR = aoo_bs_to_fs(IREP,1)
         DO IZ = 1, nzc1
@@ -349,7 +351,7 @@ end do
 endif
 
 if(final_dump)then
-allocate(Dmat_c1(nrow,ncol,nzc1)); Dmat_c1 = 0  
+allocate(Dmat_c1(nrow,ncol,nzc1)); Dmat_c1 = 0
 #ifdef DEBUG_SOC
 call print_x2cmat(Dmat, &
 nrow,                   &
@@ -364,10 +366,10 @@ aoo_cb_pq_to_uq(1,0),   &
 ! a. insert phases
 IREP=0
 IF (NZ < 4) THEN
-DO  IZ = 1, NZ                                                 
-IQ = aoo_cb_pq_to_uq(IZ,IREP)                                       
+DO  IZ = 1, NZ
+IQ = aoo_cb_pq_to_uq(IZ,IREP)
 CALL Q2BPHASE('D',IQ,1,Dmat(1,1,iz,1))
-END DO            
+END DO
 END IF
 #ifdef DEBUG_SOC
 call print_x2cmat(Dmat,                  &
@@ -378,7 +380,7 @@ aoo_cb_pq_to_uq(1,0),   &
 'aoosoc - DMAT a',      &
 6                       &
 )
-#endif       
+#endif
 
 ! b. transform to unsorted SO-AO basis
 call bstobu_no_work(Dmat,nz)
@@ -427,6 +429,48 @@ end if
 close(fh,status='keep')
 
 end subroutine dump_Xc_c1_dens
+!----------------------------------------------------------------------
+
+  subroutine dump_delta_xc_energy(                           &
+                                  Gscalar,                   &
+                                  file_base,                 &
+                                  element,                   &
+                                  fh,                        &
+                                  final_dump                 &
+                                  )
+!----------------------------------------------------------------------
+!
+!    purpose: dump DELTA of XC energy
+!
+!----------------------------------------------------------------------
+     real(8), intent(in)           :: Gscalar
+     integer, intent(in)           :: fh
+     integer, intent(in)           :: element
+     character (len=8), intent(in) :: file_base
+     logical, intent(in)           :: final_dump
+!----------------------------------------------------------------------
+     integer                       :: i
+     character (len=3)             :: file_extension
+     character (len=12)            :: file_name
+!----------------------------------------------------------------------
+
+!   determine full file name
+    write(file_extension,'(i3)') element
+    do i = 1, 3
+        if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
+    end do
+    write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
+
+!   dump DELTA XC on file
+    open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
+         access='sequential',action="readwrite",position='rewind')
+
+    if(final_dump)then
+        write(fh) Gscalar
+    end if
+    close(fh,status='keep')
+
+  end subroutine dump_delta_xc_energy
 !----------------------------------------------------------------------
 
   subroutine read_xamfi_general_matrix(                            &
@@ -490,13 +534,53 @@ end subroutine dump_Xc_c1_dens
 
   end subroutine read_xamfi_general_matrix
 !----------------------------------------------------------------------
+
+  function read_xamfi_general_scalar(                            &
+                                     file_base,                  &
+                                     element,                    &
+                                     fh                          &
+                                    )result(Gscalar)
+!----------------------------------------------------------------------
+!
+!    purpose: read some scalar value from file
+!
+!----------------------------------------------------------------------
+     integer, intent(in)           :: fh
+     integer, intent(in)           :: element
+     character (len=8), intent(in) :: file_base
+!----------------------------------------------------------------------
+     real*8                        :: Gscalar
+     integer                       :: i
+     character (len=3)             :: file_extension
+     character (len=12)            :: file_name
+!----------------------------------------------------------------------
+
+!    determine full file name
+     write(file_extension,'(i3)') element
+     do i = 1, 3
+        if(file_extension(i:i) .eq. ' ') file_extension(i:i) = '0'
+     end do
+     write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
+
+!    read 2e-soc from file
+     open(fh,file=file_name(1:12),status='old',form='unformatted',      &
+          access='sequential',action="readwrite",position='rewind')
+
+     Gscalar = 0.0d0
+     read(fh) Gscalar
+
+     close(fh,status='keep')
+
+  end function read_xamfi_general_scalar
+!----------------------------------------------------------------------
+
   function xamfi_get_energy_correction(DMAT,XAMFI_FMAT,      &
                                        DFRAC2,JSHELL,ISHELL, &
                                        NZ,N2BBASX,NFMAT) result(e2tmp)
-  
+
     real*8,  intent(in) :: DMAT(N2BBASX,NZ,NFMAT),XAMFI_FMAT(N2BBASX,NZ,1)
     real*8,  intent(in) :: DFRAC2
-    integer, intent(in) :: JSHELL, ISHELL, NZ, N2BBASX, NFMAT                                  
+    integer, intent(in) :: JSHELL, ISHELL, NZ, N2BBASX, NFMAT
     real*8              :: e2tmp
     real*8,  external   :: ddot
     integer             :: iz

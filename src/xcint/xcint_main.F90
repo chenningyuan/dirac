@@ -27,6 +27,7 @@ module xcint_main
 
    public integrate_xc
    public get_xc_energy
+   public set_xc_energy_delta
    public get_xc_mat_energy
    public get_nr_electrons_integrated
    public get_susc2el_integrated
@@ -62,6 +63,7 @@ module xcint_main
    real(8) :: tau_integral
    real(8) :: nr_electrons_integrated
    real(8) :: xc_energy
+   real(8) :: xc_energy_delta = 0.0d0
    real(8) :: xc_mat_energy
 
    real(8) :: susc2el_xc_integrated(3, 3)
@@ -1859,7 +1861,7 @@ contains
       if (do_potential) then
          write(file_unit, '(3x, a, f26.16)')                        &
                'DFT exchange-correlation energy:               = ', &
-               xc_energy
+               get_xc_energy()
       end if
 
       write(file_unit, '(3x, a, f26.16)')                        &
@@ -1915,8 +1917,13 @@ contains
 
    function get_xc_energy()
       real(8) :: get_xc_energy
-      get_xc_energy = xc_energy
+      get_xc_energy = xc_energy + xc_energy_delta
    end function
+
+   subroutine set_xc_energy_delta(delta)
+      real(8), intent(in) :: delta
+      xc_energy_delta = delta
+   end subroutine set_xc_energy_delta
 
    function get_xc_mat_energy()
       real(8) :: get_xc_mat_energy
