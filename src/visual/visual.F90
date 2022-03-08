@@ -755,32 +755,16 @@ contains
 
          write(lupri, *)
          if (visual_cfg_tensor) then
-           write(lupri, '(a8, 2a14, a18, a32, 11a26)') &
-              'r_x',                                  &
-              'r_y',                                  &
-              'r_z',                                  &
-              'scalar',                               &
-              'x-component',                          &
-              'y-component',                          &
-              'z-component',                          &
-              'xx-component',                         &
-              'xy-component',                         &
-              'xz-component',                         &
-              'yx-component',                         &
-              'yy-component',                         &
-              'yz-component',                         &
-              'zx-component',                         &
-              'zy-component',                         &
-              'zz-component'
+           write(lupri, '(a200)') &
+                'in columns: r_x, r_y, r_z, '//&
+                'scalar, x-component, y-component, z-component, '//&
+                'xx-component, xy-component, xz-component, '//&
+                'yx-component, yy-component, yz-component, '//&
+                'zx-component, zy-component, zz-component'
          else
-           write(lupri, '(a8, 2a14, a18, a32, 2a26)') &
-              'r_x',                                  &
-              'r_y',                                  &
-              'r_z',                                  &
-              'scalar',                               &
-              'x-component',                          &
-              'y-component',                          &
-              'z-component'
+           write(lupri, '(a80)') &
+                'in columns: r_x, r_y, r_z, '//&
+                'scalar, x-component, y-component, z-component'
          end if
 
          write(lupri, *)
