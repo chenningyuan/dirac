@@ -236,7 +236,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Mar  9 12:27:59 2022
+     Date and time (Linux)  : Wed Mar  9 13:48:45 2022
      Host name              : nela                                    
 
  * Opening HDF5 checkpoint file 
@@ -780,7 +780,7 @@ Ne     0.0000000000   0.0000000000   0.0000000000
 
                     All dipole components are zero by symmetry
 
-Total time used in ONEGEN (CPU)  0.01980900s and (WALL)  0.02000000s
+Total time used in ONEGEN (CPU)  0.02007000s and (WALL)  0.02000000s
 
 
                        Generating Lowdin canonical matrix:
@@ -847,7 +847,7 @@ Total no. of orbitals      (NORB):    28      24      52
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   1 ##########   Wed Mar  9 13:48:45 2022
 
 
 * AUTOCC( 0) : Initial occupation:
@@ -858,108 +858,108 @@ E_HOMO...E_LUMO, symmetry 1:                                 16  -1.21872   17  
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.37476   44   1.28548
 
 => Calculating sum of orbital energies
-It.    1    -65.31207277963      0.00D+00  0.00D+00  0.00D+00               0.04833500s   Atom. scrpot   Wed Mar  9
+It.    1    -65.31207277963      0.00D+00  0.00D+00  0.00D+00               0.04852000s   Atom. scrpot   Wed Mar  9
 
-########## START ITERATION NO.   2 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   2 ##########   Wed Mar  9 13:48:45 2022
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    0.61%    3.05%   27.92%   0.00358999s
+SOfock:LL  1.00D-12    2.85%    0.61%    3.05%   27.92%   0.00354397s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.97020   17   1.97274
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.87738   44   1.56444
->>> Total wall time:  0.05300000s, and total CPU time :  0.05080100s
+>>> Total wall time:  0.05300000s, and total CPU time :  0.05121500s
 
-########## END ITERATION NO.   2 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   2 ##########   Wed Mar  9 13:48:45 2022
 
 It.    2    -128.6743356784      6.34D+01 -2.24D+01  1.61D+00               0.05300000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   3 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   3 ##########   Wed Mar  9 13:48:45 2022
 
     3 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    0.77%    3.05%   27.80%   0.00352201s
+SOfock:LL  1.00D-12    2.85%    0.77%    3.05%   27.80%   0.00397900s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.91103   17   2.01463
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.81728   44   1.59905
->>> Total wall time:  0.02800000s, and total CPU time :  0.02679800s
+>>> Total wall time:  0.02900000s, and total CPU time :  0.02759200s
 
-########## END ITERATION NO.   3 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   3 ##########   Wed Mar  9 13:48:45 2022
 
-It.    3    -128.6881250855      1.38D-02  1.69D-01  1.06D-01   DIIS   2    0.02800000s   LL             Wed Mar  9
+It.    3    -128.6881250855      1.38D-02  1.69D-01  1.06D-01   DIIS   2    0.02900000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   4 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   4 ##########   Wed Mar  9 13:48:45 2022
 
     4 *** Differential density matrix. DCOVLP     = 1.0009
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    1.11%    3.00%   27.69%   0.00350702s
+SOfock:LL  1.00D-12    2.85%    1.11%    3.00%   27.69%   0.00347400s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.92843   17   2.00318
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.83344   44   1.58998
->>> Total wall time:  0.02900000s, and total CPU time :  0.02662600s
+>>> Total wall time:  0.02800000s, and total CPU time :  0.02672200s
 
-########## END ITERATION NO.   4 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   4 ##########   Wed Mar  9 13:48:45 2022
 
-It.    4    -128.6887466884      6.22D-04 -7.69D-02  4.70D-02   DIIS   3    0.02900000s   LL             Wed Mar  9
+It.    4    -128.6887466884      6.22D-04 -7.69D-02  4.70D-02   DIIS   3    0.02800000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   5 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   5 ##########   Wed Mar  9 13:48:45 2022
 
     5 *** Differential density matrix. DCOVLP     = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    1.16%    3.00%   27.64%   0.00348100s
+SOfock:LL  1.00D-12    2.85%    1.16%    3.00%   27.64%   0.00344500s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.92799   17   2.00349
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.83277   44   1.59036
->>> Total wall time:  0.02800000s, and total CPU time :  0.02659800s
+>>> Total wall time:  0.02900000s, and total CPU time :  0.02670800s
 
-########## END ITERATION NO.   5 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   5 ##########   Wed Mar  9 13:48:45 2022
 
-It.    5    -128.6889260774      1.79D-04  2.65D-02  1.75D-03   DIIS   4    0.02800000s   LL             Wed Mar  9
+It.    5    -128.6889260774      1.79D-04  2.65D-02  1.75D-03   DIIS   4    0.02900000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   6 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   6 ##########   Wed Mar  9 13:48:45 2022
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    1.86%    2.86%   27.35%   0.00348401s
+SOfock:LL  1.00D-12    2.85%    1.86%    2.86%   27.35%   0.00351000s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.92804   17   2.00345
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.83278   44   1.59035
->>> Total wall time:  0.02900000s, and total CPU time :  0.02681700s
+>>> Total wall time:  0.02900000s, and total CPU time :  0.02689600s
 
-########## END ITERATION NO.   6 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   6 ##########   Wed Mar  9 13:48:45 2022
 
 It.    6    -128.6889263496      2.72D-07 -7.53D-04  1.45D-04   DIIS   5    0.02900000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   7 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   7 ##########   Wed Mar  9 13:48:45 2022
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    3.85%    2.74%   26.93%   0.00361100s
+SOfock:LL  1.00D-12    2.85%    3.85%    2.74%   26.93%   0.00353700s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.92804   17   2.00345
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.83278   44   1.59035
->>> Total wall time:  0.02900000s, and total CPU time :  0.02735600s
+>>> Total wall time:  0.02800000s, and total CPU time :  0.02677600s
 
-########## END ITERATION NO.   7 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   7 ##########   Wed Mar  9 13:48:45 2022
 
-It.    7    -128.6889263523      2.66D-09  4.06D-05  4.03D-06   DIIS   6    0.02900000s   LL             Wed Mar  9
+It.    7    -128.6889263523      2.66D-09  4.06D-05  4.03D-06   DIIS   6    0.02800000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   8 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   8 ##########   Wed Mar  9 13:48:45 2022
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%    9.83%    2.11%   26.19%   0.00342301s
+SOfock:LL  1.00D-12    2.85%    9.83%    2.11%   26.19%   0.00445300s
 E_HOMO...E_LUMO, symmetry 1:                                 16  -1.92804   17   2.00345
 E_HOMO...E_LUMO, symmetry 2:                                 43  -0.83278   44   1.59035
->>> Total wall time:  0.02800000s, and total CPU time :  0.02661400s
+>>> Total wall time:  0.03000000s, and total CPU time :  0.02783800s
 
-########## END ITERATION NO.   8 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   8 ##########   Wed Mar  9 13:48:45 2022
 
-It.    8    -128.6889263523      2.67D-12 -7.25D-07  9.52D-07   DIIS   7    0.02800000s   LL             Wed Mar  9
+It.    8    -128.6889263523      2.67D-12 -7.25D-07  9.52D-07   DIIS   7    0.03000000s   LL             Wed Mar  9
 
-########## START ITERATION NO.   9 ##########   Wed Mar  9 12:28:00 2022
+########## START ITERATION NO.   9 ##########   Wed Mar  9 13:48:45 2022
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    2.85%   13.41%    1.68%   25.96%   0.00348300s
->>> Total wall time:  0.00500000s, and total CPU time :  0.00515900s
+SOfock:LL  1.00D-12    2.85%   13.41%    1.68%   25.96%   0.00343400s
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00508200s
 
-########## END ITERATION NO.   9 ##########   Wed Mar  9 12:28:00 2022
+########## END ITERATION NO.   9 ##########   Wed Mar  9 13:48:45 2022
 
 It.    9    -128.6889263523     -3.13D-13  1.52D-07  1.76D-08   DIIS   7    0.00500000s   LL             Wed Mar  9
 
@@ -977,20 +977,20 @@ It.    9    -128.6889263523     -3.13D-13  1.52D-07  1.76D-08   DIIS   7    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -65.31207277963      0.00D+00  0.00D+00  0.00D+00               0.04833500s   Atom. scrpot   Wed Mar  9
+It.    1    -65.31207277963      0.00D+00  0.00D+00  0.00D+00               0.04852000s   Atom. scrpot   Wed Mar  9
 It.    2    -128.6743356784      6.34D+01 -2.24D+01  1.61D+00               0.05300000s   LL             Wed Mar  9
-It.    3    -128.6881250855      1.38D-02  1.69D-01  1.06D-01   DIIS   2    0.02800000s   LL             Wed Mar  9
-It.    4    -128.6887466884      6.22D-04 -7.69D-02  4.70D-02   DIIS   3    0.02900000s   LL             Wed Mar  9
-It.    5    -128.6889260774      1.79D-04  2.65D-02  1.75D-03   DIIS   4    0.02800000s   LL             Wed Mar  9
+It.    3    -128.6881250855      1.38D-02  1.69D-01  1.06D-01   DIIS   2    0.02900000s   LL             Wed Mar  9
+It.    4    -128.6887466884      6.22D-04 -7.69D-02  4.70D-02   DIIS   3    0.02800000s   LL             Wed Mar  9
+It.    5    -128.6889260774      1.79D-04  2.65D-02  1.75D-03   DIIS   4    0.02900000s   LL             Wed Mar  9
 It.    6    -128.6889263496      2.72D-07 -7.53D-04  1.45D-04   DIIS   5    0.02900000s   LL             Wed Mar  9
-It.    7    -128.6889263523      2.66D-09  4.06D-05  4.03D-06   DIIS   6    0.02900000s   LL             Wed Mar  9
-It.    8    -128.6889263523      2.67D-12 -7.25D-07  9.52D-07   DIIS   7    0.02800000s   LL             Wed Mar  9
+It.    7    -128.6889263523      2.66D-09  4.06D-05  4.03D-06   DIIS   6    0.02800000s   LL             Wed Mar  9
+It.    8    -128.6889263523      2.67D-12 -7.25D-07  9.52D-07   DIIS   7    0.03000000s   LL             Wed Mar  9
 It.    9    -128.6889263523     -3.13D-13  1.52D-07  1.76D-08   DIIS   7    0.00500000s   LL             Wed Mar  9
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.04800000s
-      LL           :    0.02862500s
+      No 2-ints    :    0.04900000s
+      LL           :    0.02887500s
 
 
                                    TOTAL ENERGY
@@ -1142,7 +1142,7 @@ Ne      1   0.462E-06   0.684E+01   0.117E+00     123    4464
 ----------------------------------------------------------------------------------------------------
 
 
- >>>> time used in integration:   0.36 seconds
+ >>>> time used in integration:   0.37 seconds
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -1154,10 +1154,10 @@ Ne      1   0.462E-06   0.684E+01   0.117E+00     123    4464
 
 
  
-     Date and time (Linux)  : Wed Mar  9 12:28:01 2022
+     Date and time (Linux)  : Wed Mar  9 13:48:47 2022
      Host name              : nela                                    
 
->>>> Node 0, utime: 1, stime: 0, minflt: 44663, majflt: 0, nvcsw: 15, nivcsw: 15, maxrss: 288460
+>>>> Node 0, utime: 1, stime: 0, minflt: 44668, majflt: 0, nvcsw: 15, nivcsw: 20, maxrss: 288616
 >>>> Total WALL time used in DIRAC: 2s
   
   Dynamical Memory Usage Summary for Master
