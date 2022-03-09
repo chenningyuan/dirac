@@ -184,9 +184,9 @@ Version information
 -------------------
 
 Branch        | gosia/visual
-Commit hash   | a497d931e
+Commit hash   | 3aa13b775
 Commit author | gosia olejniczak
-Commit date   | Wed Mar 2 11:18:14 2022 +0100
+Commit date   | Tue Mar 8 10:08:14 2022 +0100
 
 
 Configuration and build information
@@ -195,10 +195,10 @@ Configuration and build information
 Who compiled             | gosia
 Compiled on server       | nela
 Operating system         | Linux-5.4.0-100-generic
-CMake version            | 3.20.2
+CMake version            | 3.23.0-rc2
 CMake generator          | Unix Makefiles
 CMake build type         | debug
-Configuration time       | 2022-03-02 10:49:22.258085
+Configuration time       | 2022-03-09 10:28:28.730630
 Python version           | 3.8.1
 Fortran compiler         | /usr/bin/gfortran-8
 Fortran compiler version | 8.4.0
@@ -207,7 +207,7 @@ C compiler               | /usr/bin/gcc-8
 C compiler version       | 8.4.0
 C compiler flags         |  -g -fopenmp -g -pg -g -fopenmp -g -pg
 C++ compiler             | /usr/bin/g++
-C++ compiler version     | 9.3.0
+C++ compiler version     | 9.4.0
 C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -g -pg -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -g -pg
 Static linking           | False
 64-bit integers          | False
@@ -236,7 +236,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Mar  2 12:10:54 2022
+     Date and time (Linux)  : Wed Mar  9 13:26:57 2022
      Host name              : nela                                    
 
  * Opening HDF5 checkpoint file 
@@ -264,6 +264,9 @@ Contents of the input file
 9.50000000E-001   0.00000000E+000   0.00000000E+000                                                 
 3.50000000E+000   0.00000000E+000   0.00000000E+000                                                 
 4.50000000E+000   0.00000000E+000   0.00000000E+000                                                 
+#.3D_IMP                                                                                            
+#grid_file                                                                                          
+#au                                                                                                 
 *END OF                                                                                             
 
 
@@ -738,7 +741,7 @@ Ne     0.0000000000   0.0000000000   0.0000000000
 
                     All dipole components are zero by symmetry
 
-Total time used in ONEGEN (CPU)  0.01171600s and (WALL)  0.01100000s
+Total time used in ONEGEN (CPU)  0.01153400s and (WALL)  0.01100000s
 
 
                        Generating Lowdin canonical matrix:
@@ -789,7 +792,7 @@ Total no. of orbitals      (NORB):    28      24      52
                          +-------------------------------+
 
 
-     r_x           r_y           r_z            scalar                     x-component               y-component               z-component
+        in columns: r_x, r_y, r_z, scalar, x-component, y-component, z-component
 
    5.00000000E-002   0.00000000E+000   0.00000000E+000   5.24947580E-001   0.00000000E+000   0.00000000E+000   0.00000000E+000
    9.50000000E-001   0.00000000E+000   0.00000000E+000   6.67690167E-001   0.00000000E+000   0.00000000E+000   0.00000000E+000
@@ -819,10 +822,10 @@ Total no. of orbitals      (NORB):    28      24      52
 
 
  
-     Date and time (Linux)  : Wed Mar  2 12:10:54 2022
+     Date and time (Linux)  : Wed Mar  9 13:26:57 2022
      Host name              : nela                                    
 
->>>> Node 0, utime: 0, stime: 0, minflt: 43950, majflt: 0, nvcsw: 0, nivcsw: 2, maxrss: 283732
+>>>> Node 0, utime: 0, stime: 0, minflt: 43935, majflt: 0, nvcsw: 0, nivcsw: 1, maxrss: 282740
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
