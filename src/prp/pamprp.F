@@ -9532,6 +9532,46 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DEF_VPOLE(L,IPVPOL,IPRINT)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+C     Define electric multipole moment in the generalized velocity representation.
+C     Multipole moments of this type are given by
+C     
+C     Q^[n+1]_(j1...jn;p) = -e/omega*r_j1...r_(jn-1)(r_jn*(ca_p) + n*(ca_jn)r_p)
+C
+C     where r_i represent the ith component of a Cartesian coordinate and ca_i
+C     the ith alpha matrix multiplied with the speed of light.
+C     For a given combination of (j1...j_(n-1)), we can generate nine unique
+C     multipole moments
+C
+C     1: (n+1)x*ca_x               2: (n+1)y*ca_y            3: (n+1)z*ca_z 
+C     4: (z*(ca_y) + n*(ca_z)y)    5: (y*(ca_z) + n*(ca_y)z) 6: (x*(ca_z) + n*(ca_x)z) 
+C     7: (z*(ca_x) + n*(ca_z)x)    8: (y*(ca_x) + n*(ca_y)x) 9: (x*(ca_y) + n*(ca_x)y)
+C
+C     Note that for a given set of (j1...j_(n-1)), the multipole moments are stored in the
+C     order above. To each of these terms, we associate the following label
+C
+C     1: xx    2: yy    3: zz
+C     4: zy    5: yz    6: xz 
+C     7: zx    8: yx    9: xy
+C
+C     For example, a multipole moment of the form 
+C
+C     Q^[5]_(xyyz;x) = -e/omega*xy^2(z*(ca_x) + n*(ca_z)x)
+C
+C     gets the following name 
+C
+C     VpolzxX01Y02Z00
+C
+C     This operator is symmetric with respect to the indices (j1...j_(n-1)),
+C     thus the possible combinations are stored in lower triangular form.
+C     Therefore, at order L, we have 9*(L-1)L/2 unique multipoles.
+C     
+C     However, there are two exceptions to this rule: L=1 and L=2.
+C     For the former, the multipole operator reduces to the set (ca_x,ca_y,ca_z),
+C     while for the latter, we have 6 unique multipole moments, because 
+C     Q^[2]_{ij} is symmetric with respect to its two indices. 
+C
+C     Note that this routine does not check if IPVPOL goes out of 
+C     bounds. This has to be done outside the routine.
 C
 C     Written by Martin van Horn July 16 2021
 C***********************************************************************
@@ -9545,11 +9585,11 @@ C***********************************************************************
 C
       II = 0
       PFAC  = CVAL
-      PNAME       = 'VpolXXX00Y00Z00'
+      PNAME       = 'VpolxxX00Y00Z00'
       PLABEL = 'CM000000'
 
-      IF (L.EQ.1) THEN
-            COMPLAB = ['X1','Y1','Z1']
+      IF (L.EQ.1) THEN ! for L=1 the set of multipoles reduces to (ca_x,ca_y,ca_z)
+            COMPLAB = ['x1','y1','z1']
             NPCOMP = 1
             IPTYP = 2
             DO IP = 1, 3
@@ -9561,19 +9601,19 @@ C
             ENDDO
       ELSE 
             IPTYP = 2
-            COMPLAB = ['XX','YY','ZZ']
+            COMPLAB = ['xx','yy','zz']
             CARPOW = 0.0D0    
             DO I = 1,3
                   CARPOW(I,I) = 1
             ENDDO
 
-            DO IA = 0,L-2
+            DO IA = 0,L-2   
                   IX = L - 2 - IA
-                  DO IB = 0,IA
+                  DO IB = 0,IA     !Loops over lower triangle
                         IY = IA - IB
                         IZ = IB
                         IPTYP = 2
-                        DO IP = 1,3
+                        DO IP = 1,3  !define multipole moments xx yy and zz
                               PNAME(5:6) = COMPLAB(IP)                                           
                               PNAME( 8:9) = CHRNOS(IX/10)
      &                                     //CHRNOS(MOD(IX,10))
@@ -9591,14 +9631,13 @@ C
      &                        //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
      &                        //CHRNOS(MOD(NZ,10))
                               II = II + 1
-c      write(6,*) "PROP1", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC(1)
      &                       ,PLABEL(1),IPVPOL(II),ISYXPR,ITRXPR,IPRINT)          
                               IPTYP = IPTYP + 1
                         ENDDO
 
-                        COMPLAB = ['ZY','XZ','YX']
-                        DO IP = 1,3
+                        COMPLAB = ['zy','xz','yx']
+                        DO IP = 1,3    !define multipole moments zy yz xz zx yx xy
                               NPCOMP = 2
                               PFAC(1) = CVAL 
                               PFAC(2) = -(L-1)*CVAL
@@ -9625,16 +9664,14 @@ c      write(6,*) "PROP1", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
      &                        //CHRNOS(MOD(NY,10))//CHRNOS(NZ/10)
      &                        //CHRNOS(MOD(NZ,10))
                               II = II + 1
-c      write(6,*) "PROP2", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL
      &                           ,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)    
-                              IF (L.GT.2) THEN
+                              IF (L.GT.2) THEN !yz, zx and xy are not defined for L=2
                                     PFAC(1) = (L-1)*CVAL 
                                     PFAC(2) = -CVAL
                                     PNAME(5:6) = COMPLAB(IP)(2:2)
      &                                         //COMPLAB(IP)(1:1)
                                     II = II + 1
-c      write(6,*) "PROP3", PNAME,' ',IPTYP,' ',PFAC,' ',PLABEL
                                     CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC
      &                          ,PLABEL,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
                               ENDIF    

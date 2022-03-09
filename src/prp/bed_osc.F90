@@ -152,6 +152,13 @@
 
 
       SUBROUTINE GENOSC_VPOL(K,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!
+!     Driver for the calculation of the isotropic oscilattor strength at
+!     order 2K in the generalized velocity representation
+!
+!     written by Martin van Horn 2022
+!***********************************************************************     
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -195,6 +202,16 @@
      END SUBROUTINE GENOSC_VPOL
 
       recursive subroutine vpolloop(m,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!
+!     The evaluation of the rotational averaging of the 2nth order oscillator 
+!     strenght, hinges on the contraction of two tensorial quantities of
+!     order 2n. In this subroutine, all possible index combinations
+!     are generated recursively, hence avoiding the use of excesive loops 
+!
+!     written by Martin van Horn 2022
+!***********************************************************************      
+
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -214,6 +231,15 @@
       END SUBROUTINE VPOLLOOP
       
       SUBROUTINE ROTFAC_VPOL(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!
+!     For a given set of indices, calculates the contribution to the 
+!     isotropic oscillator strength at order k2. The multipole moments
+!     used for this quantity are written in the generalized velocity
+!     representation.
+!
+!     written by Martin van Horn 2022
+!***********************************************************************  
 #include "implicit.h"
 #include "pgroup.h"
 #include "dgroup.h"
@@ -228,9 +254,9 @@
         DO IQ = 1,3
           iterm = iterm + 1
           IND = 0
-          DO L = 1,K2
+          DO L = 1,K2 
             J = INDICES(L)
-            IND(J) = IND(J) + 1
+            IND(J) = IND(J) + 1 !counts the amount of x, y and z indices
           ENDDO
           IND(IP) = IND(IP) + 1
           IND(IQ) = IND(IQ) + 1               
@@ -258,7 +284,7 @@
             IF(M.EQ.0) FAC = D1
 !...........Left EPOL operator: order (K+M+1)
             IORD    = K + M + 1
-            IF (IORD.EQ.1) THEN
+            IF (IORD.EQ.1) THEN  ! for L=1 EPOL reduces to (ca_x,ca_y,ca_z)
               INDAPE = IBDOFF(0)+IP
             ELSE
               IND     = 0
@@ -269,20 +295,18 @@
               LE = IORD - 2
               IA      = LE - IND(1)
               IB      = IND(3)
-              IF (IP.EQ.INDICES(K+M)) THEN 
+              IF (IP.EQ.INDICES(K+M)) THEN  ! condition to select multipole moments xx, yy and zz
                 INDAPE = IVPOFF(IORD) + IP + 9*(IB+(IA+1)*IA/2)
               ELSE  
-                CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)             
-                IF (IORD.EQ.2) THEN
-                  IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF)) 
-                ELSE 
-                  IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF))
-                ENDIF 
-                IF (IJKL.EQ.1) THEN
-!                  IOFF = [5,1,3]
+                CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)     ! Levi-Civita symbol is used do distinguish           
+                IF (IORD.EQ.2) THEN                           ! zy from yz ; xz from zx ; yx from xy  
+                  IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF)) !
+                ELSE                                          !
+                  IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF)) ! numbers in IOFF are defined such that the indicex
+                ENDIF                                         ! IP is mapped to the right multipole moment, i.e. 
+                IF (IJKL.EQ.1) THEN                           ! (zy, yz, xz, zx, yx, xy)
                   INDAPE = IVPOFF(IORD)+IOFF(IP,1) + 3 + 9*(IB+(IA+1)*IA/2)
                 ELSEIF(IJKL.EQ.-1) THEN 
-!                  IOFF = [4,6,2]
                   INDAPE = IVPOFF(IORD)+IOFF(IP,2) + 3 + 9*(IB+(IA+1)*IA/2)
                 ENDIF
               ENDIF 
@@ -292,7 +316,7 @@
               FACEL   = D1/GAMMA(REAL(IORD+1))
 !...........Right EPOL operator: order (K-M+1)
             IORD    = K - M + 1
-            IF (IORD.EQ.1) THEN
+            IF (IORD.EQ.1) THEN ! for L=1 EPOL reduces to (ca_x,ca_y,ca_z)
               INDBPE = IBDOFF(0)+IQ
             ELSE
               IND     = 0
@@ -303,20 +327,18 @@
               LE = IORD - 2
               IA = LE - IND(1)
               IB = IND(3)
-              IF (IQ.EQ.INDICES(K2)) THEN 
+              IF (IQ.EQ.INDICES(K2)) THEN ! condition to select multipole moments xx, yy and zz
                 INDBPE = IVPOFF(IORD) + IQ + 9*(IB+(IA+1)*IA/2)
               ELSE  
-                  CALL LEVI_CEVITA(IQ,INDICES(K2),IR,IJKL)             
-                  IF (IORD.EQ.2) THEN
-                    IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF)) 
-                  ELSE 
-                    IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF))
-                  ENDIF 
-                  IF (IJKL.EQ.1) THEN
-!                    IOFF = [5,1,3]
+                  CALL LEVI_CEVITA(IQ,INDICES(K2),IR,IJKL)        ! Levi-Civita symbol is used do distinguish      
+                  IF (IORD.EQ.2) THEN                             ! zy from yz ; xz from zx ; yx from xy  
+                    IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF))   !
+                  ELSE                                            !
+                    IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF))   ! numbers in IOFF are defined such that the indicex
+                  ENDIF                                           ! IP is mapped to the right multipole moment, i.e. 
+                  IF (IJKL.EQ.1) THEN                             ! (zy, yz, xz, zx, yx, xy)
                     INDBPE = IVPOFF(IORD)+IOFF(IQ,1) + 3 + 9*(IB+(IA+1)*IA/2)
                   ELSEIF(IJKL.EQ.-1) THEN 
-!                    IOFF = [4,6,2]
                     INDBPE = IVPOFF(IORD)+IOFF(IQ,2) + 3 + 9*(IB+(IA+1)*IA/2)
                   ENDIF
                 ENDIF 
@@ -373,42 +395,20 @@
               ENDIF
             ENDIF
 !...........Form product
-! original code
-!            IF(IPRXPP.GE.5) THEN            
-!              IF(INDAPM.GT.0) THEN            
-!                 WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
-!                      K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
-!              ELSE
-!                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1)
-!              ENDIF
-!              IF(INDBPM.GT.0) THEN
-!                 WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Right: ',&
-!                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR
-!              ELSE
-!                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER),REP(ISYMER-1)
-!              ENDIF
-!            ENDIF
-
-            IF(IPRXPP.GE.5) THEN   
-              WRITE(6,*)'INDICES: ', INDICES        
-              WRITE(6,'(A3,I2,1X,A3,I2)')'IP=',IP,'IQ=',IQ
+            IF(IPRXPP.GE.5) THEN            
               IF(INDAPM.GT.0) THEN            
                  WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Left : ',&
                       K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1),K+M,PRPNAM(INDPML),REP(ISYMML-1),IJKL
               ELSE
-                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL)&
-                ,REP(ISYMEL-1)
+                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Left : ',K+M+1,PRPNAM(INDPEL),REP(ISYMEL-1)
               ENDIF
               IF(INDBPM.GT.0) THEN
                  WRITE(6,'(A,2(2X,I3,2X,A16,2X,A3),I3)') 'Right: ',&
-                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR            
+                      K-M+1,PRPNAM(INDPER),REP(ISYMER-1),K-M,PRPNAM(INDPMR),REP(ISYMMR-1),IJKR
               ELSE
-                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER)&
-                ,REP(ISYMER-1)
+                WRITE(6,'(A,(2X,I3,2X,A16,2X,A3))')  'Right: ',K-M+1,PRPNAM(INDPER),REP(ISYMER-1)
               ENDIF
             ENDIF
-
-
             ISYM=ISYMEL           
             NEXC=KEXCNV(ISYM)
             IF(ISYMER.NE.ISYMEL.AND.ISYMML.NE.ISYMEL.AND.ISYMMR.NE.ISYMEL) CALL QUIT('ROTFAC_VPOL: Symmetry problem !')
@@ -773,6 +773,23 @@
       END SUBROUTINE accBEDMOM
 
       SUBROUTINE accVMOM(TMOM,ATMPPF,IORDER)
+!***********************************************************************
+!     
+!     Accumulates the electric multipole moments in the generalized
+!     velocity representation.
+!
+!     The electric component of the transition moment in the velocity 
+!     representation is given by
+!
+!     T_Q = k_j1...k_jn*eps_p*Q^[n+1]_(j1...jn;p) 
+!     
+!     To calculate this quantity, we need to contract the wave and polarization
+!     vector with the relevant multipole moments. In this subroutine, 
+!     all components of this contraction are summed up. 
+!
+!     written by Martin van Horn 2021
+!***********************************************************************
+
 #include "implicit.h"        
 #include "dgroup.h"
 #include "dcbxpr.h"      
@@ -791,15 +808,15 @@
       ENDDO
 
       INDAP = IVPOFF(IORDER)
-      IBKA  = 1
+      IBKA  = 1    ! Binomial coefficient (IORDER-2 A)
       DO IA = 0,IORDER - 2
         IX    = IORDER - 2 - IA
-        IBAB  = 1
-        DO IB = 0,IA
+        IBAB  = 1  ! Binomial coefficient (A B)
+        DO IB = 0,IA     ! loops over lower triangle 
           IY    = IA - IB 
           IZ    = IB 
 
-          DO IP = 1, 3
+          DO IP = 1, 3   ! loops over multipole moments xx yy and zz
             INDAP  = INDAP + 1 
             INDPRA = LPPAPU(INDAP)
             ISYM   = IPRPSYM(INDPRA)
@@ -809,13 +826,11 @@
             JZ = IZ + CARPOW(3,IP)
             TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC
             DO IEXC = 1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
-!write(6,*) "INDAP;NX;NY;NZ;INDU(IP);ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",INDU(IP)," ",ATMPPF(IEXC,INDAP,ISYM)
-!write(6,*) "INDAP;NX;NY;NZ;TFAC;UPOL;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UPOL(IP,1)," ",ATMPPF(IEXC,INDAP,ISYM) 
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM) 
             ENDDO
           ENDDO
 
-          DO IP = 1, 3
+          DO IP = 1, 3 ! loops multipole moments zy yz xz zx yx xy
             INDAP  = INDAP + 1 
             INDPRA = LPPAPU(INDAP)
             ISYM   = IPRPSYM(INDPRA)
@@ -827,57 +842,47 @@
             JX = IX + CARPOW(2,IP)
             JY = IY + CARPOW(3,IP)
             JZ = IZ + CARPOW(1,IP)
-            TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC
+            TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC ! factor for zy, xz and yx
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(INDU(IP),1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
-!write(6,*) "INDAP;NX;NY;NZ;INDU(IP);ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",INDU(IP)," ",ATMPPF(IEXC,INDAP,ISYM)   
-!write(6,*) "INDAP;NX;NY;NZ;TFAC;UPOL;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UPOL(INDU(IP),1)," ",ATMPPF(IEXC,INDAP,ISYM) 
             ENDDO
-            IF (IORDER.GT.2) THEN
-              INDAP = INDAP + 1
+            IF (IORDER.GT.2) THEN ! for L=2, the  multipole moments (zy,yz); (xz,zx) and (yx,xy)
+              INDAP = INDAP + 1   ! are equivalent 
             ENDIF
-              TFAC  = (UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB*FAC
+              TFAC  = (UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB*FAC ! factor for yz, zx and xy
               TFAC = TFAC*(UPOL(1,1)**KX)*(UPOL(2,1)**KY)*(UPOL(3,1)**KZ)
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(INDU(IP))*TFAC*ATMPPF(IEXC,INDAP,ISYM)
-!write(6,*) "INDAP;NX;NY;NZ;TFAC;UWAVE;ATMPPF",INDAP," ",NX," ",NY," ",NZ," ",TFAC," ",UWAVE(INDU(IP))," ",ATMPPF(IEXC,INDAP,ISYM) 
-
             ENDDO
           ENDDO
           IBAB = IBAB*IY/(IB+1)
         ENDDO
         IBKA = IBKA*IX/(IA+1)
       ENDDO
-
-
-!      DO ISYM = 1,2
-!        NEXC   = KEXCNV(ISYM)
-!        DO IEXC = 1,NEXC
-!
-!        write(6,*) "excitation ", iexc, " order ", IORDER,  " sym ", ISYM, "  ", TMOM(IEXC,ISYM) 
-!      ENDDO 
-!      ENDDO
-
-
       RETURN
-
       END SUBROUTINE accVMOM
 
 
       SUBROUTINE OSC_VPOL(K,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!      
+!     Calculates oscillator strength for oriented sample.
+!     The multipole moments used to construct this quantity are written
+!     in the generalized velocity representation.
+!
+!     written by Martin van Horn 2021
+!***********************************************************************        
 #include "implicit.h"
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
-      real*8,allocatable  :: TEMOML(:,:),TMMOML(:,:),TEMOMR(:,:),TMMOMR(:,:),TMOMTESTL(:,:),TMOMTESTR(:,:)
+      real*8,allocatable  :: TEMOML(:,:),TMMOML(:,:),TEMOMR(:,:),TMMOMR(:,:)
       PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
       allocate(temoml(MAXEXC,NBSYM))
       allocate(tmmoml(MAXEXC,NBSYM))      
       allocate(temomr(MAXEXC,NBSYM))
-      allocate(tmmomr(MAXEXC,NBSYM))
-      !allocate(TMOMTESTR(MAXEXC,NBSYM))
-      !allocate(TMOMTESTL(MAXEXC,NBSYM))             
+      allocate(tmmomr(MAXEXC,NBSYM))            
       K2=K+K
       DO M = 0,K
         FAC = D2*(-D1)**M
@@ -894,10 +899,6 @@
 !.........Magnetic multipole        
           TMMOML = D0
           CALL accMMOM(TMMOML,ATMPPF,IORD)
-!         DEBUG
-         ! CALL accBEDMOM(TMOMTESTL,ATMPPF,IORD)
-
-
 !.......Accumulate right operator .. order (K-M)
         IORD  = K-M
 !.........Electric multipole        
@@ -910,21 +911,10 @@
 !.........Magnetic multipole        
           TMMOMR = D0
           CALL accMMOM(TMMOMR,ATMPPF,IORD)
-!         DEBUG
-         ! CALL accBEDMOM(TMOMTESTR,ATMPPF,IORD)
-
 !.......Accumulate oscillator strengths
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
           DO IEXC=1,NEXC
-!  WRITE(6,*) "IEXC ", IEXC, "ISYM ", ISYM 
-!  WRITE(6,*)  "VPOLL ", TEMOML(IEXC,ISYM), "MAGNL ", TMMOML(IEXC,ISYM)!, "BED ", TMOMTESTL(IEXC,ISYM)
-!  WRITE(6,*)  "VPOLR ", TEMOMR(IEXC,ISYM), "MAGNR ", TMMOMR(IEXC,ISYM)
-!  write(6,*)  "SUM ",TEMOML(IEXC,ISYM)-TMMOML(IEXC,ISYM)  
-!  !WRITE(6,*) "DEBUG ", "VPOL ", TEMOMR(IEXC,ISYM), "MAGN ", TMMOMR(IEXC,ISYM), "BED ", TMOMTESTR(IEXC,ISYM)
-!  !write(6,*) "SUM ",TEMOMR(IEXC,ISYM)+TMMOMR(IEXC,ISYM)  
-
-
              FOSC(2,IEXC,ISYM) = FOSC(2,IEXC,ISYM) + FAC*TEMOML(IEXC,ISYM)*TEMOMR(IEXC,ISYM)
              FOSC(3,IEXC,ISYM) = FOSC(3,IEXC,ISYM) - FAC*(TEMOML(IEXC,ISYM)*TMMOMR(IEXC,ISYM)&
                                                    +      TMMOML(IEXC,ISYM)*TEMOMR(IEXC,ISYM))
@@ -936,8 +926,6 @@
       deallocate(tmmoml)
       deallocate(temomr)      
       deallocate(tmmomr)
-      !deallocate(TMOMTESTL)
-      !deallocate(TMOMTESTR)
       !....Add final factors for oscillator strengths
       DO ISYM = 1,NBSYM
         NEXC = KEXCNV(ISYM)

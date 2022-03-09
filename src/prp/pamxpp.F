@@ -708,7 +708,7 @@ C&&&& ANGPLOT: prints the data points for the angular dependency of electronic c
 C&&&& BEDECD: Electronic circular dichroism with the full light-matter interaction operator
                BEDECD=.TRUE.
                GO TO 100
-C&&&& VPOLE: Electric multipole moments in the generalised velocity representation               
+C&&&& VPOLE: Electric multipole moments in the generalized velocity representation               
  40            CONTINUE
                READ(LUCMD,*) IORDER
                IF (IORDER.EQ.1) THEN
@@ -833,7 +833,7 @@ C.....Generalized velocity gauge
         IBDOFF(IORDER)=NPPAPT
         NPPAPT = NPPAPT + NDEG
       ENDDO
-C.....Generalized velocity representation electric multipole      
+C.....Generalized velocity representation electric multipoles     
       IF (IVMAX.EQ.2) THEN
         NDEG = 6
         CALL DEF_VPOLE(2,LPPAPU(NPPAPT+1),IPRXPP)
@@ -853,7 +853,7 @@ C.....Generalized velocity representation electric multipole
       ENDIF
 
 
-C.....Electric multipoles
+C.....Generalized length repsresentation electric multipoles 
       DO IORDER = 1,IEMAX
         NDEG=(IORDER+2)*(IORDER+1)/2
         CALL DEF_EPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
