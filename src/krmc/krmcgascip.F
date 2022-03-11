@@ -2126,9 +2126,11 @@ C
 C     INPUT:
 C            CIVEC    :     CI eigenvectors
 C            N_CIVEC  :     Number of CI eigenvectors
+C            NDET     :     Number of determinants
 C            IDET     :     Determinant strings
-C            P1MAT_MO :     One electron property integrals
+C            N_P1MAT_CI :   Dimension of P1MAT_CI (.le. N_CIVEC)
 C            IHRM_P1  :     Hermiticity of P1 when NZ_in_CI .eq. 1
+C            P1MAT_MO :     One electron property integrals
 C            ACCURACY :     Minimum accuracy (number of digits) of P1MAT_CI
 C            IPRINT   :     Print level
 C
@@ -2159,6 +2161,13 @@ C
       LOGICAL   PAR_GASCIP
 
 C***********************************************************************
+      CALL QENTER('GASCIP_MAKE_P1MAT')
+
+      IF (N_P1MAT_CI .GT. N_CIVEC) THEN
+         WRITE(LUPRI,*) 'GASCIP_MAKE_P1MAT error; N_P1MAT_CI > N_CIVEC',
+     &   N_P1MAT_CI, N_CIVEC
+         CALL QUIT('GASCIP_MAKE_P1MAT error; N_P1MAT_CI > N_CIVEC')
+      END IF
 C
 C     Memory initialization
 C     =====================
@@ -2167,7 +2176,7 @@ C
       KFREE = KWORK
       LFREE = LWORK
 C
-       CALL MEMGET2('REAL','SVECPRP',KSVECPRP ,NZ_in_CI*NDET*N_CIVEC,
+       CALL MEMGET2('REAL','SVECPRP',KSVECPRP ,NZ_in_CI*NDET*N_P1MAT_CI, ! could be just one vector (N_P1MAT_CI = 1)
      &      WORK,KFREE,LFREE)
        CALL MEMGET2('REAL','BVECPRP',KBVECPRP ,NZ_in_CI*NDET,
      &      WORK,KFREE,LFREE)
@@ -2213,13 +2222,14 @@ C
      &      NDET,' determinants (< 10,000)'
       END IF
 
-C      Make sigma vectors from property matrix and CI vectors
-       DO I = 1,N_CIVEC
-          CALL DCOPY(NDET,CIVEC(1,I,1),1,WORK(KBVECPRP),1)
-          IF (NZ_in_CI .EQ. 2) THEN
-             CALL DCOPY(NDET,CIVEC(1,I,2),1,WORK(KBVECPRP_I),1)
-          END IF
-          IF (PAR_GASCIP) THEN
+C     Make sigma vectors from property matrix and CI vectors
+
+      DO I = 1,N_P1MAT_CI
+         CALL DCOPY(NDET,CIVEC(1,I,1),1,WORK(KBVECPRP),1)
+         IF (NZ_in_CI .EQ. 2) THEN
+            CALL DCOPY(NDET,CIVEC(1,I,2),1,WORK(KBVECPRP_I),1)
+         END IF
+         IF (PAR_GASCIP) THEN
              CALL GASCIP_PAR_CISIG(1,NDET,
      &            WORK(KSVECPRP+(I-1)*NDET*NZ_in_CI),
      &            WORK(KBVECPRP),IPRINT_slaves)
@@ -2240,13 +2250,13 @@ C     &           DO2EL,NDET,IDET,THRSCR,IPRINT)
      &           .FALSE.,DUMMY,DUMMY,DUMMY,DUMMY,
      &           .FALSE.,NDET,IDET,IHRM_P1,IPRINT)
          END IF
-       END DO
+      END DO
 #if GASCIP_DEBUG > 20
        WRITE(LUPRI,'(/A)')
      &   ' GASCIP_MAKE_P1MAT: Sigma vectors = P * CI vectors'
        IF (NZ_in_CI.GT.1)
      & WRITE(LUPRI,'(A)')' Order: Real s_1, Imag s_1, Real s_2, etc.'
-       CALL OUTPUT(WORK(KSVECPRP),1,NDET,1,NZ_in_CI*N_CIVEC,
+       CALL OUTPUT(WORK(KSVECPRP),1,NDET,1,NZ_in_CI*N_P1MAT_CI,
      &             NDET,NZ_in_CI*N_CIVEC,-1,LUPRI)
 #endif
 C
@@ -2322,6 +2332,7 @@ C                  P1MAT_CI(I,J,1) = -P1MAT_CI(I,J,1) ! apparently we have minus
 
 C     MEMREL for sigma vectors
       CALL MEMREL('GASCIP_MAKE_P1MAT',WORK,KWORK,KWORK,KFREE,LFREE)
+      CALL QEXIT('GASCIP_MAKE_P1MAT')
       RETURN
       END
 
