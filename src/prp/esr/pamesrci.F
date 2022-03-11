@@ -44,6 +44,9 @@ C
 C
       IPROPT = IPRINT
       IF (WF(1:3) .NE. 'DHF' .AND. WF .NE. 'DFT') THEN
+         ! note March 2022:: WF is not properly implemented in property module,
+         ! except for RELCCSD. Otherwise it is always DHF
+         ! if not set explicitly in input, no matter if DFT or KRMC ...
          CALL QUIT('ESR only implemented for DHF and DFT so far')
       END IF
 C

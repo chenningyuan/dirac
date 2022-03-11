@@ -1,4 +1,4 @@
-#define notESR_DEBUG
+#define ESR_DEBUG -1
 !dirac_copyright_start
 !      Copyright (c) by the authors of DIRAC.
 !
@@ -41,7 +41,7 @@ C
       PARAMETER (NTABLE = 18)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER, g_10ppm
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-      DIMENSION WORK(LWORK)
+      REAL*8    WORK(LWORK)
 C
       SAVE SET
       DATA TABLE /'xXXXXXX','.PRINT ','.OPERAT','.MULTIP','.SPINPO',
@@ -160,7 +160,7 @@ C&&&& Singles and doubles CI
                   READ(LUCMD,*) (NGSH_CIESR(I,1,3),I=1,NFSYM) ! electron orbitals
                GO TO 100
 C&&&& MAX CI ITERATIONS
-    7          CONTINUE ! .MAX CI ITERATIONS 
+    7          CONTINUE ! .MAX CI ITERATIONS
                   ! negative value is code for doing full CI
                   ! zero value is code for generate list of determinants but no CI
                   READ(LUCMD,*) MAX_CIESR_IT
@@ -376,9 +376,20 @@ C  /* Deck prpesr */
       SUBROUTINE PRPESR(WF,ESRVAL,WORK,KFREE,LFREE)
 C***********************************************************************
 C
-C     Calculate expectation values defined in /CBIESR/
+C     First version by Anette Noerager - Mar 2000
+C     Last revision: March 2022, Hans Joergen Aa. Jensen
 C
-C     Written by Anette Noerager - Mar 2000
+C     Calculate expectation values defined in dcbesr.h(/CBIESR/)
+C
+C     Input:
+C        WF : wave function type (text)
+C
+C     Output:
+C        ESRVAL : the complex quasi-degenerate expectation values
+C                 for requested NESRP properties
+C
+C     Note that the ESR property matrix ESRVAL is complex,
+C     also when NZ=1.
 C
 C***********************************************************************
 #include "implicit.h"
@@ -387,19 +398,20 @@ C***********************************************************************
 #include "mxcent.h"
 #include "consts.h"
 C     for PRQMAT print of complex matrices:
-      PARAMETER (NZCMPLX = 2)
-      DIMENSION IQINDX(NZCMPLX)
-      SAVE IQINDX
-      DATA IQINDX /1,2/
+      integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
+      integer, parameter ::max_MULTIPESR = 9 ! corresponding to max S_eff = 4
 C
-      DIMENSION ESRVAL(MULTIPESR,MULTIPESR,NZCMPLX,*),WORK(*)
+      REAL*8    ESRVAL(MULTIPESR,MULTIPESR,NZCMPLX,*),WORK(*)
       CHARACTER WF*4, PPM_OR_PPT*3
       LOGICAL   FILEX
-      DIMENSION GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
-     &          GEVEC(3,3), GCOR(3),JMS(-5:5)
+      REAL*8    GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
+     &          GEVEC(3,3), GCOR(3)
+      INTEGER   JMS(-4:4)
+      REAL*8    PHASE_FAC(MULTIPESR,2) ! automatic array
 C
 C Used from common blocks:
-C  dcbgen : LUCOEF
+C  dcbgen.h : LUCOEF
+C  dcbesr.h : MULTIPESR, ...
 C
 #include "dcbgen.h"
 #include "dcbxpr.h"
@@ -416,6 +428,7 @@ C
       CALL QENTER('PRPESR')
 !d    write (lupri,*) 'DEBUG 1 NZ, NZ_in_CI',NZ,NZ_in_CI
 C
+      IPRESR = MAX(IPRESR, ESR_DEBUG )
       KFRSAV = KFREE
 !d    print *,'PRPESR  KFREE,LFREE',KFREE,LFREE
 !d    call memchk('prpesr 1',work,1)
@@ -497,7 +510,7 @@ C
       CALL MEMGET2('REAL','PMAT',KPMAT,NZ*N2ASHX ,WORK,KFREE,LFREE)
 C
 C
-#ifdef ESR_DEBUG
+#if ESR_DEBUG > 20
        WRITE(LUPRI,*)
      &   'PRPESR: Real part of the N_CIESR CI vectors'
        CALL OUTPUT(WORK(KEIGVC),1,NZCONF,1,N_CIESR,
@@ -510,9 +523,9 @@ C
      &             NZCONF,N_CIESR,-1,LUPRI)
        END IF
 #endif
-      CALL ESRPHASE(ESRVAL,WORK(KCMO), WORK(KPMAT),
+      CALL ESRPHASE(ESRVAL,PHASE_FAC,WORK(KCMO), WORK(KPMAT),
      &              WORK(KHCI),WORK(KEIGVC),WORK,KFREE,LFREE)
-C     CALL ESRPHASE(ESRVAL,CMO,PMAT,
+C     CALL ESRPHASE(ESRVAL,PHASE_factors,CMO,PMAT,
 C    &              HCI,CIEVEC,WORK,KFREE,LFREE)
 C
 C     Memory allocation for PRPESR1
@@ -533,9 +546,9 @@ C
         ENDDO
       END IF
 C
-      CALL PRPESR1(ESRVAL,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
+      CALL PRPESR1(ESRVAL,PHASE_FAC,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
      &             WORK(KEIGVC),WORK,KFREE,LFREE)
-C     CALL PRPESR1(ESRVAL,LESRST,CMO,PMAT,
+C     CALL PRPESR1(ESRVAL,PHASE_factors,LESRST,CMO,PMAT,
 C    &             CIEVEC,WORK,KFREE,LFREE)
 C
       IF (IPRESR .GT. 1) THEN
@@ -548,8 +561,6 @@ C
      &       'Operator no.',I,':',PRPNAM(INDXPR)
           CALL PRSYMB(LUPRI,'.',75,0)
           CALL WRIXPR(I,INDXPR)
-cq        WRITE(LUPRI,'(4X,A,4F15.6)')
-cq   &       'Quaternion value:',(ESRVAL(J,I),J=1,4)
           CALL PRQMAT(ESRVAL(1,1,1,I),N_CIESR,N_CIESR,
      &                N_CIESR,N_CIESR,NZCMPLX,IQINDX,LUPRI)
         ENDDO
@@ -573,18 +584,18 @@ C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
-        jmhlf = 1
-        jphlf = 2
+        jmhlf = 2
+        jphlf = 1
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) =  D4*ESRVAL(jphlf,jmhlf,1,I)
-          GTENSOR(K,2) = -D4*ESRVAL(jphlf,jmhlf,2,I)
-          GTENSOR(K,3) =  D4*ESRVAL(jphlf,jphlf,1,I)
+          GTENSOR(K,1) =  4.0D0*ESRVAL(jphlf,jmhlf,1,I)
+          GTENSOR(K,2) = -4.0D0*ESRVAL(jphlf,jmhlf,2,I)
+          GTENSOR(K,3) =  4.0D0*ESRVAL(jphlf,jphlf,1,I)
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   =  D4*ESRVAL(jphlf,jmhlf,1,J)
-          GCORR(K,2)   = -D4*ESRVAL(jphlf,jmhlf,2,J)
-          GCORR(K,3)   =  D4*ESRVAL(jphlf,jphlf,1,J)
+          GCORR(K,1)   =  4.0D0*ESRVAL(jphlf,jmhlf,1,J)
+          GCORR(K,2)   = -4.0D0*ESRVAL(jphlf,jmhlf,2,J)
+          GCORR(K,3)   =  4.0D0*ESRVAL(jphlf,jphlf,1,J)
         ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 3) THEN
@@ -596,13 +607,13 @@ C
         jm1 = 3
         j0  = 2
         jp1 = 1
-        D2SQRT2 = D2*SQRT(D2)
+        D2SQRT2 = 2.0D0*SQRT(2.0D0)
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
           GTENSOR(K,1) = D2SQRT2*ESRVAL(j0 ,jm1,1,I)
           GTENSOR(K,2) = D2SQRT2*ESRVAL(j0 ,jm1,2,I)
-          GTENSOR(K,3) =      D2*ESRVAL(jp1,jp1,1,I)
+          GTENSOR(K,3) =   2.0D0*ESRVAL(jp1,jp1,1,I)
 c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
 c         WRITE(lupri,*)'K =', K
 c         WRITE(lupri,*)'GTENSOR(K,1)', GTENSOR(K,1),
@@ -611,7 +622,7 @@ c    &                  'GTENSOR(K,3)', GTENSOR(K,3)
           J = IPESR(MXCOOR+K,2)
           GCORR(K,1)   = D2SQRT2*ESRVAL(j0 ,jm1,1,J)
           GCORR(K,2)   = D2SQRT2*ESRVAL(j0 ,jm1,2,J)
-          GCORR(K,3)   =      D2*ESRVAL(jp1,jp1,1,J)
+          GCORR(K,3)   =   2.0D0*ESRVAL(jp1,jp1,1,J)
 c         WRITE(lupri,*)'K =', K
 c         WRITE(lupri,*)'GCORR(K,1)', GCORR(K,1),
 c    &      'GCORR(K,2)', GCORR(K,2),
@@ -625,8 +636,8 @@ C
         EM1 = WORK(KHCI)
         E0  = WORK(KHCI+  MULTIPESR+1)
         EP1 = WORK(KHCI+2*MULTIPESR+2)
-        ZFS_D = -(E0-(EP1+EM1)/D2)
-        ZFS_E = (EP1-EM1)/D2
+        ZFS_D = -(E0-(EP1+EM1)/2.0D0)
+        ZFS_E = (EP1-EM1)/2.0D0
         ZFS_DCM = ZFS_D*XTKAYS
         ZFS_ECM = ZFS_E*XTKAYS
 
@@ -641,17 +652,21 @@ C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
+        jm3hlf = 4
+        jm1hlf = 3
+        jp1hlf = 2
+        jp3hlf = 1
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) =  D2*ESRVAL(2,3,1,I)
-          GTENSOR(K,2) = -D2*ESRVAL(2,3,2,I)
-          GTENSOR(K,3) =  D4*ESRVAL(2,2,1,I)
+          GTENSOR(K,1) =  2.0D0*ESRVAL(2,3,1,I)
+          GTENSOR(K,2) = -2.0D0*ESRVAL(2,3,2,I)
+          GTENSOR(K,3) =  4.0D0*ESRVAL(2,2,1,I)
 c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   =  D2*ESRVAL(2,3,1,J)
-          GCORR(K,2)   = -D2*ESRVAL(2,3,2,J)
-          GCORR(K,3)   =  D4*ESRVAL(2,2,1,J)
+          GCORR(K,1)   =  2.0D0*ESRVAL(2,3,1,J)
+          GCORR(K,2)   = -2.0D0*ESRVAL(2,3,2,J)
+          GCORR(K,3)   =  4.0D0*ESRVAL(2,2,1,J)
         ENDDO
 C
       ELSE
@@ -667,13 +682,13 @@ C
          FAC_GSHIFT = 1.D6
          WRITE(LUPRI,'(/A,F5.1,A)')
      &   '* g-shifts converged to approximately +/-',
-     &   (THR_CIESR/1.D-7),' ppm' ! 
+     &   (THR_CIESR/1.D-7),' ppm' !
       ELSE
          PPM_OR_PPT = 'ppt'
          FAC_GSHIFT = 1.D3
          WRITE(LUPRI,'(/A,F5.1,A)')
      &   '* g-shifts converged to approximately +/-',
-     &   (THR_CIESR/1.D-4),' ppt' ! 
+     &   (THR_CIESR/1.D-4),' ppt' !
       END IF
 C
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
@@ -700,8 +715,8 @@ C
         GEIG(I) = SQRT(GEIG(I))
         GSHIFT(I) = (GEIG(I) - 2.0D0)*FAC_GSHIFT
       ENDDO
-      GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / D3
-      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
+      GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / 3.0D0
+      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / 3.0D0
       WRITE (LUPRI,
      &   '(/A//A//5X,4F18.8//3A//5X,4F18.1//A/,3(/5X,3F18.8))')
      &   '* The Dirac equation g values corresponding to g_e = 2',
@@ -718,8 +733,8 @@ C
         GCOR(I) = (GEIG(I)/2)*GFAC
         GSHIFT(I) = (GCOR(I) - GFAC)*FAC_GSHIFT
       ENDDO
-      GISO = (GCOR(1) + GCOR(2) + GCOR(3)) / D3
-      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
+      GISO = (GCOR(1) + GCOR(2) + GCOR(3)) / 3.0D0
+      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / 3.0D0
       WRITE (LUPRI,'(/A,F13.10,A//A//5X,4F18.8//3A//5X,4F18.1))')
      &   '* The corrected g values scaled with',GFAC,' / 2',
      &   '  The corrected g values (x, y, z, iso):',
@@ -760,8 +775,8 @@ C
         GEIG(I) = SQRT(GEIG(I))
         GSHIFT(I) = (GEIG(I) - GFAC)*FAC_GSHIFT
       ENDDO
-      GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / D3
-      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / D3
+      GISO = (GEIG(1) + GEIG(2) + GEIG(3)) / 3.0D0
+      GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / 3.0D0
       WRITE (LUPRI,
      &   '(/A,F13.10/A//5X,4F18.8//3A//5X,4F18.1//A/,3(/5X,3F18.8))')
      &   '* The g_1 corrected Dirac eq. g values corresponding to g_e ='
@@ -794,28 +809,47 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ESRPHASE(ESRVAL,CMO,PMAT,HCI,CIEVEC,
+      SUBROUTINE ESRPHASE(ESRVAL,PHASE_factors,CMO,PMAT,HCI,CIEVEC,
      &                    WORK,KFREE,LFREE)
 C*****************************************************************************
 C
-C     --- Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
-C         Modify phases acc. to convention so <M_S + 1 | S_x | M_S > .gt. 0
+C     --- 1) Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
+C         2) Modify phases acc. to convention for <M_S + 1 | S_x | M_S >
+C         and  <M_S + 1 | S_y | M_S >.
+C
+C     Input :
+C        CMO, HCI, CIEVEC
+C
+C     Output:
+C        PHASE_factors : phase factors for each CI vector in S_eff basis, i.e. in S_z
+C                       order such that S_x and S_y are have the conventional structure
+C                       (if this is not ensured, some g values and HFCC values
+C                        might have incorrect sign compared to the standard
+C                        spin Hamiltonians based on relativistic perturbations to
+C                        to non-relativistic eigenfunctions with exact M_S values.
+C                        Wrong signs also affect the calculation of isotropic values.)
+C                        NOTE: we do not multiply the CI eigenvectors with this factor,
+C                        because this makes it possible to still use real CI eigenvectors
+C                        when NZ = 4.
+C        CIEVEC : CI eigenvectors transformed to S_eff basis
+C        ESRVAL(:,:,2,1:4) : S_x, S_y, S_z, S^2 CI property matrices
+C
+C      Last revision March 2022 by Hans Joergen Aa. Jensen,
+C      based on derivations by Jacob Kaldau.
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 C     for PRQMAT print of complex matrices:
-      PARAMETER (NZCMPLX = 2)
-      DIMENSION IQINDX(NZCMPLX)
-      SAVE IQINDX
-      DATA IQINDX /1,2/
+      integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
+      PARAMETER( THR_ZERO=1.D-12 )
 C
       LOGICAL   REAL_PMLF
-      DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,4),CMO(*),PMAT(*),
-     &          HCI(MULTIPESR,MULTIPESR,NZ_in_CI),
+      REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,4),
+     &          PHASE_factors(MULTIPESR,2),
+     &          CMO(*),PMAT(*),HCI(MULTIPESR,MULTIPESR,NZ_in_CI),
      &          CIEVEC(NZCONF,N_CIESR,NZ_in_CI),
      &          WORK(*)
       CHARACTER MXFORM*6,FMT*6
@@ -851,14 +885,17 @@ C
          WRITE(LUPRI,*) 'ERROR: N_CIESR.lt.MULTIPESR',N_CIESR,MULTIPESR
          CALL QUIT('N_CIESR .lt. MULTIPESR')
       END IF
-      IF (NPSIGMA.NE. 3)      CALL QUIT('NPSIGMA .ne. 3')
+      IF (NPSIGMA .NE. 3)      CALL QUIT('NPSIGMA .ne. 3')
       N2MULT  = MULTIPESR ** 2
       CALL DZERO(ESRVAL,N2MULT*2*NPSIGMA)
 C
-      I = IPSIGMA(3)
+C     Step 1: Diagonalize S_z operator and transform to M_S(eff) : -M_S(eff) CI basis
+C     ======
+C
+      I = IPSIGMA(3) ! S_z operator index
       INDXPR = LESRP(I)
 
-#ifdef ESR_DEBUG
+#if ESR_DEBUG > 20
        WRITE(LUPRI,*)
      &   'ESRPHASE: Real part of the N_CIESR CI vectors'
        CALL OUTPUT(CIEVEC(1,1,1),1,NZCONF,1,N_CIESR,
@@ -870,23 +907,27 @@ C
      &             NZCONF,N_CIESR,-1,LUPRI)
        END IF
 #endif
-      CALL ESRTRANS(INDXPR,ESRVAL,CMO,PMAT,CIEVEC,
+
+      PHASE_factors(:,1) = 1.0D0 ! no phase changes in ESRTRANS yet
+      PHASE_factors(:,2) = 0.0D0
+      CALL ESRTRANS(INDXPR,ESRVAL,PHASE_factors,CMO,PMAT,CIEVEC,
      &              WORK,KFREE,LFREE)
-C       temp. use ESRVAL(...,2:3) for eigenvalues and eigenvectors
+C       <i|S_z|j> is now in ESRVAL(...,1)
+C       temp. use ESRVAL(...,2:3) for eigenvectors and eigenvalues
 C       note: using NZ_in_CI in QDIAG and not 2 because we know Sigma_z
 C             is a real operator
       CALL QDIAG(NZ_in_CI,MULTIPESR,ESRVAL,MULTIPESR,MULTIPESR,
-     &           ESRVAL(1,1,1,2),1,ESRVAL(1,1,1,3),
+     &           ESRVAL(1,1,1,3),1,ESRVAL(1,1,1,2),
      &           MULTIPESR,MULTIPESR,WORK(KFREE),LFREE,IERR)
       ! Change order in S_Z to decreasing instead of increasing value
       ! to follow usual convention
       DO I = 1, MULTIPESR/2
          J = MULTIPESR + 1 -I
-         TEMP = ESRVAL(I,1,1,2)
-         ESRVAL(I,1,1,2) = ESRVAL(J,1,1,2)
-         ESRVAL(J,1,1,2) = TEMP
+         TEMP = ESRVAL(I,1,1,3)
+         ESRVAL(I,1,1,3) = ESRVAL(J,1,1,3)
+         ESRVAL(J,1,1,3) = TEMP
          DO K = 1,NZ_in_CI
-            CALL DSWAP(MULTIPESR,ESRVAL(1,J,K,3),1,ESRVAL(1,I,K,3),1)
+            CALL DSWAP(MULTIPESR,ESRVAL(1,J,K,2),1,ESRVAL(1,I,K,2),1)
          END DO
       END DO
 
@@ -894,39 +935,41 @@ C             is a real operator
         DO I = 2,3
           write (lupri,'(A,I2/A)')
      &     ' test output after qdiag for S_z; ESRVAL matrix',I,
-     &     ' (2 ~ eigenvalues, 3 ~ eigenvectors)'
+     &     ' (2 ~ eigenvectors, 3 ~ eigenvalues)'
           CALL PRQMAT(ESRVAL(1,1,1,I),MULTIPESR,MULTIPESR,
      &                MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,LUPRI)
         END DO
       END IF
 
 C
-C     Transform the first HCI matrix to the new CI basis
+C     Transform the HCI energy matrix to the new CI basis
 C
-      CALL DCOPY(N2MULT*NZ_in_CI,HCI,1,ESRVAL,1)
-      CALL QTRANS('AOMO','S',D0,MULTIPESR,MULTIPESR,MULTIPESR,MULTIPESR,
+      CALL DCOPY(N2MULT*NZ_in_CI,HCI,1,ESRVAL,1) ! using ESRVAL as work space
+      CALL QTRANS('AOMO','S',0.0D0,
+     &        MULTIPESR,MULTIPESR,MULTIPESR,MULTIPESR,
      &        ESRVAL,         MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
      &        HCI,            MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
-     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
-     &        ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
+     &        ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
+     &        ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,
      &        WORK(KFREE),LFREE,-1)
       IF (IPRESR .GT. 3) THEN
-        write (lupri,*) ' H_CI matrix after transform. to S_z basis'
+        CALL HEADER(' H_CI matrix after transform. to S_z basis ',1)
         CALL PRQMAT(HCI,MULTIPESR,MULTIPESR,
      &              MULTIPESR,MULTIPESR,NZ_in_CI,IQINDX,LUPRI)
       END IF
 C
 C     Transform the first MULTIPESR CI eigenvectors to S_z basis
+C     (S_z is a real operator, so no problem in keeping NZ_in_CI)
 C
       L_CIVEC2 = NZCONF * N_CIESR * NZ_in_CI
       CALL MEMGET2('REAL','CIVEC2',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
       CALL DCOPY(L_CIVEC2,CIEVEC,1,WORK(KCIVEC2),1)
-      CALL QGEMM(NZCONF,MULTIPESR,MULTIPESR,D1,
+      CALL QGEMM(NZCONF,MULTIPESR,MULTIPESR,1.0D0,
      &           'N','N',IQINDX,
      &           WORK(KCIVEC2),NZCONF,N_CIESR,NZ_in_CI,
      &           'N','N',IQINDX,
-     &           ESRVAL(1,1,1,3),MULTIPESR,MULTIPESR,NZ_in_CI,
-     &           D0,IQINDX, CIEVEC,NZCONF,N_CIESR,NZ_in_CI)
+     &           ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,NZ_in_CI,
+     &           0.0D0,IQINDX, CIEVEC,NZCONF,N_CIESR,NZ_in_CI)
       CALL MEMREL('ESRPHASE-1',WORK,1,KCIVEC2,KFREE,LFREE)
       IF (IPRESR .GT. 10) THEN
         write (lupri,*) ' CIEVEC after transform. to S_z basis'
@@ -934,10 +977,24 @@ C
      &              NZCONF,N_CIESR,NZ_in_CI,IQINDX,LUPRI)
       END IF
 C
-C     Calculate S_x, S_y, S_z matrices in CIEVEC basis,
-C     using ESRVAL(...,1:3)
+C     Step 2: Calculate S_x, S_y matrices in CIEVEC basis, using ESRVAL(...,1:3)
+C     ======
+C     (for print levels > 3, also calculate S_z matrix again, only relevant for testing
+C     if code above is correct.)
 C
-        DO I = 1,NPSIGMA
+      IF (IPRESR .GT. 3) THEN
+         I_end = 3 ! S_x, S_y, S_z - S_z only to verify transformation in Step 1 was correct
+      ELSE
+         I_end = 2 ! only S_x and S_y
+         ! S_z matrix is in ESRVAL(:,:,2,3) from Step 1
+      END IF
+#if ESR_DEBUG > 3
+      WRITE(LUPRI,*) 'Initial phase factors, should be (1,0):'
+      do i = 1, multipesr
+         write(lupri,*) phase_factors(i,1:2)
+      end do
+#iendif
+      DO I = 1,I_end
           I1 = IPSIGMA(I)
           INDXPR = LESRP(I1)
 C
@@ -952,9 +1009,9 @@ C
             CALL WRIXPR(I,INDXPR)
           END IF
 C
-          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
+          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),PHASE_factors,CMO,PMAT,
      &                  CIEVEC,WORK,KFREE,LFREE)
-        ENDDO
+      ENDDO
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
 C
@@ -974,7 +1031,7 @@ C
       IERR = 0
       DO J = 1,MULTIPESR
          SZJ = ESRVAL(J,J,1,3)
-         K   = NINT(-SZJ+SEFF+D1)
+         K   = NINT(-SZJ+SEFF+1.0D0)
          WRITE (LUPRI,'(A,I5,F15.10,I5)')
      &     ' State no., <Sigma_Z>, index S_Z(eff) :',J,SZJ,K
          IF (K .NE. J) THEN
@@ -988,106 +1045,148 @@ C
 C
 C     ... Check relative phases using Sigma_X
 C
-C       Use Sigma_X and Sigma_Y to determine phase of M_J .gt. -J_eff
-C       using the requirement that Re(<J+1|S_x|J>) .gt. 0 and Im(<J+1|S_y|J>) .lt. 0 and 
+C       Use Sigma_X and Sigma_Y to determine phase of M_S .gt. -J_eff
+C       using the requirement that Re(<J+1|S_x|J>) .gt. 0 and Im(<J+1|S_y|J>) .gt. 0
+C       (as for non-rel <2|S_x|1> = 0.5 and  <2|S_y|1> = 0.5 i)
 C
-      PHASE_J_R = 1.0D0 ! keep eigenvector for M_J = -J as it is
+      PHASE_J_R = 1.0D0 ! keep eigenvector for M_S = -S (J = 1) as it is
       PHASE_J_I = 0.0D0
+      PHASE_factors(1,1) = PHASE_J_R
+      PHASE_factors(1,2) = PHASE_J_I
+
       DO J = 1,MULTIPESR-1  ! M_S = -S, ..., S-1
+      ! Find phase factor for eigenvector J+1
+      ! Start with phase factors for j+1 same as for j
         JP1 = J+1 ! M_S + 1
-        SX_R = ESRVAL(JP1,J,1,1)
-        SY_I = ESRVAL(JP1,J,2,2)
+        SX_R = ESRVAL(J,JP1,1,1)*PHASE_J_R - ESRVAL(J,JP1,2,1)*PHASE_J_I
+        SX_I = ESRVAL(J,JP1,1,1)*PHASE_J_I + ESRVAL(J,JP1,2,1)*PHASE_J_R
+        SY_R = ESRVAL(J,JP1,1,2)*PHASE_J_R - ESRVAL(J,JP1,2,2)*PHASE_J_I
+        SY_I = ESRVAL(J,JP1,1,2)*PHASE_J_I + ESRVAL(J,JP1,2,2)*PHASE_J_R
+
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " JP1,J,<JP1|S_x|J>  :",JP1,J,SX_R,
-     &                            ' + i',ESRVAL(JP1,J,2,1)
+     &     " J,JP1,<J|S_x|JP1>  :",J,JP1,SX_R,' + i',SX_I
         WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
-     &     " JP1,J,<JP1|S_y|J>  :",JP1,J,ESRVAL(JP1,J,1,2),
-     &                            ' + i',SY_I
-        ! from below:
-        ! SX_R = SX_R(old)*P_R(old) - SY_I(old)*P_I(old)
-        ! SY_I = SY_R(old)*P_I(old) + SX_I(old)*P_R(old)
-        ! four cases:
+     &     " J,JP1,<J|S_y|JP1>  :",J,JP1,SY_R,' + i',SY_I
+
+        ! Using (a+ib)(c+is) = (ac-bs) + i(as+ib)
+        ! make <jp1|S_x|jp> value purely real
+        ! and  <jp1|S_y|jp> value purely imaginary
+        IF (ABS(SX_I) .gt. THR_ZERO) THEN
+           PHI = -ATAN(SX_I,SX_R)
+           C_PHI = COS(PHI)
+           S_PHI = SIN(PHI)
+           SX_R_new = C_PHI*SX_R - S_PHI*SX_I
+           SX_I_new = C_PHI*SX_I + S_PHI*SX_R
+           SY_R_new = C_PHI*SY_R - S_PHI*SY_I
+           SY_I_new = C_PHI*SY_I + S_PHI*SY_R
+           IF (ABS(SX_I_new) .gt. THR_ZERO) THEN
+              write(lupri,*) 'ESRPHASE: error in Sx phase',
+     &        SX_R_new,XS_I_new
+              CALL QUIT('ESRPHASE: error in Sx phase')
+           END IF
+           SX_R = SX_R_new
+           SX_I = 0.0D0
+           SY_R = SY_R_new
+           SY_I = SY_I_new
+
+           PHASE_R =  C_PHI*PHASE_J_R - S_PHI*PHASE_J_I
+           PHASE_I =  C_PHI*PHASE_J_I + S_PHI*PHASE_J_R
+        ELSE
+           SX_I = 0.0D0 ! remove numerical noise
+
+           PHASE_R =  PHASE_J_R
+           PHASE_I =  PHASE_J_I
+        END IF
+
+        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
+     &     "/J,JP1,<JP1|S_x|J>  :",J,JP1,SX_R,' + i',SX_I
+        WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
+     &     "/J,JP1,<JP1|S_y|J>  :",J,JP1,SY_R,' + i',SY_I
+
+        IF (ABS(SY_R) .gt. THR_ZERO) THEN
+           write(lupri,*)'ESRPHASE error: S_y not purely imaginary'//
+     &        ' although S_x is purely real'
+           write(lupri,*) 'S_x',SX_R,SX_I
+           write(lupri,*) 'S_y',SY_R,SY_I
+           CALL QUIT('ESRPHASE error: S_y not purely imaginary'//
+     &        ' although S_x is purely real')
+        ELSE
+           SY_R = 0.0D0 ! remove numerical noise
+        END IF
+
+        ! Next fix sign so S_x and S_y values are according to convention
         IF      (SX_R .gt. 0.0D0 .and. SY_I .lt. 0.0D0) then
            ! OK, do nothing, (a - ib)
-            PHASE_JP1_R =  PHASE_J_R
-            PHASE_JP1_I =  PHASE_J_I
+            PHASE_JP1_R = +PHASE_R
+            PHASE_JP1_I = +PHASE_I
         ELSE IF (SX_R .gt. 0.0D0 .and. SY_I .gt. 0.0D0) then
-           ! (a - ib) = (b + ia)*(-i)
-            PHASE_JP1_R = +PHASE_J_I
-            PHASE_JP1_I = -PHASE_J_R
+           ! (a + ib) = (b + ia)*(-i)
+            PHASE_JP1_R = +PHASE_I
+            PHASE_JP1_I = -PHASE_R
         ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .lt. 0.0D0) then
            ! (a - ib) = (-b - ia)*(i)
-            PHASE_JP1_R = -PHASE_J_I
-            PHASE_JP1_I = -PHASE_J_R
+            PHASE_JP1_R = -PHASE_I
+            PHASE_JP1_I = -PHASE_R
         ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .gt. 0.0D0) then
            ! (a -ib) = (-a + ib)*(-1)
-            PHASE_JP1_R = -PHASE_J_R
-            PHASE_JP1_I = -PHASE_J_I
+            PHASE_JP1_R = -PHASE_R
+            PHASE_JP1_I = -PHASE_I
         ELSE
            CALL QUIT('One of Sx and Sy is zero.')
         END IF
+        PHASE_factors(JP1,1) = PHASE_JP1_R
+        PHASE_factors(JP1,2) = PHASE_JP1_I
+
+      WRITE (LUPRI,'(A,2I3,2F15.10)')
+     &   ' J, JP1, Phase factors on JP1',J,JP1,PHASE_JP1_R, PHASE_JP1_I
+      WRITE (LUPRI,'(A,2I3,4F15.10)')
+     &   ' J, JP1, SX_R,SX_I,SY_R,SY_I',J,JP1,SX_R,SX_I,SY_R,SY_I
+
+C       for next J in do loop
         PHASE_J_R = PHASE_JP1_R
         PHASE_J_I = PHASE_JP1_I
-
-
 C       ... here PHASE is new phase of vector MJ+1
-!       WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-!    &     " JP1,J,<JP1|S_x|J'> :",JP1,J,PHASE_JP1_R,' + i',PHASE_JP1_I
-!       PHASE_J_NORM = SQRT(PHASE_J_R**2 + PHASE_J_I**2)
-!       PHASE_J_R  = PHASE_J_R / PHASE_J_NORM
-!       PHASE_J_I  = PHASE_J_I / PHASE_J_NORM
-!          Seff_M = (J - 1) - Seff
-!          CPLUS = SQRT( SEFF*(SEFF+1.0D0)-Seff_M*(Seff_M+1.0D0) ) / 2
-!          write(lupri,*) 'CPLUS / 2 ', CPLUS
-!          WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10,A,2F15.10)')
-!    &     " JP1,J,<JP1|S_x|J'> :",JP1,J,PHASE_J_R,' + i',PHASE_J_I,
-!    &     '; PHASE_J_NORM',PHASE_J_NORM, PHASE_J_NORM - CPLUS
-C
-      WRITE (LUPRI,'(A,2I3,2F15.10)')
-     &   ' J, JP1, Phase factors',J,JP1,PHASE_J_R, PHASE_J_I
-        IF (NZ_in_CI .EQ. 2) THEN
-           SX_R = ESRVAL(JP1,J,1,1)
-!          SX_I = ESRVAL(JP1,J,2,1)
-!          SY_R = ESRVAL(JP1,J,1,2)
-           SY_I = ESRVAL(JP1,J,2,2)
-           ESRVAL(JP1,J,1,1) = SX_R*PHASE_J_R - SY_I*PASE_J_I
-!          ESRVAL(JP1,J,2,1)
-!          ESRVAL(JP1,J,1,2)
-           ESRVAL(JP1,J,2,2) = SY_I*PHASE_J_R + SX_R*PASE_J_I
-           DO M = 1, NZCONF
-              C_M_R = CIEVEC(M,JP1,1)
-              C_M_I = CIEVEC(M,JP1,2)
-              CIEVEC(M,JP1,1) = PHASE_J_R*C_M_R - PHASE_J_I*C_M_I
-              CIEVEC(M,JP1,2) = PHASE_J_R*C_M_I + PHASE_J_I*C_M_R
-           END DO
-        ELSE
-           IF (PHASE_J_R .LT. 0) THEN
-           ESRVAL(JP1,J,1,1) = -ESRVAL(JP1,J,1,1)
-           ESRVAL(JP1,J,2,2) = -ESRVAL(JP1,J,2,2)
-           DO IZ = 1,NZ_in_CI
-              CALL DSCAL(NZCONF,-1.0d0,CIEVEC(1,JP1,IZ),1)
-           END DO
-           END IF
-        END IF
-        ESRVAL(J,JP1,1,1) =  ESRVAL(JP1,J,1,1)
-        ESRVAL(J,JP1,2,2) = -ESRVAL(JP1,J,2,2)
+
+C       re-evaluate S_x and S_y values for JP1 for print
+        SX_R = ESRVAL(J,JP1,1,1)*PHASE_J_R - ESRVAL(J,JP1,2,1)*PHASE_J_I
+        SX_I = ESRVAL(J,JP1,1,1)*PHASE_J_I + ESRVAL(J,JP1,2,1)*PHASE_J_R
+        SY_R = ESRVAL(J,JP1,1,2)*PHASE_J_R - ESRVAL(J,JP1,2,2)*PHASE_J_I
+        SY_I = ESRVAL(J,JP1,1,2)*PHASE_J_I + ESRVAL(J,JP1,2,2)*PHASE_J_R
+
         WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " JP1,J,<JP1|S_x|J>  :",JP1,J,ESRVAL(JP1,J,1,1),
-     &                            ' + i',ESRVAL(JP1,J,2,1)
+     &     " J,JP1,<J|S_x|JP1>  :",J,JP1,SX_R,' + i',SX_I
         WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
-     &     " JP1,J,<JP1|S_y|J>  :",JP1,J,ESRVAL(JP1,J,1,2),
-     &                            ' + i',ESRVAL(JP1,J,2,2)
-      END DO
+     &     " J,JP1,<J|S_y|JP1>  :",J,JP1,SY_R,' + i',SY_I
+
+      END DO ! J = 1, MULTIPESR-1
+
+      IF (IPRESR .GT. 1) THEN
+         WRITE(LUPRI,*) 'Final phase factors:'
+         do i = 1, multipesr
+            write(lupri,*) phase_factors(i,1:2)
+         end do
+
+         CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,1), MULTIPESR) ! S_x
+         CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,2), MULTIPESR) ! S_y
+
+         CALL HEADER('Phase updated property matrix for S_x',1)
+         CALL PRQMAT(ESRVAL(1,1,1,1),MULTIPESR,MULTIPESR,
+     &            MULTIPESR,MULTIPESR,2,IQINDX,LUPRI)
+
+         CALL HEADER('Phase updated property matrix for S_y',1)
+         CALL PRQMAT(ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,
+     &            MULTIPESR,MULTIPESR,2,IQINDX,LUPRI)
+      END IF
 C
 C **  Form S**2 matrix in ESRVAL(...,4) in CIEVEC basis
 C
-      FAC  = D0
+      FAC  = 0.0D0
       DO I = 1,3
-        CALL QGEMM(MULTIPESR,MULTIPESR,MULTIPESR,D1,
+        CALL QGEMM(MULTIPESR,MULTIPESR,MULTIPESR,1.0D0,
      &           'N','N',IQINDX, ESRVAL(1,1,1,I),MULTIPESR,MULTIPESR,2,
      &           'N','N',IQINDX, ESRVAL(1,1,1,I),MULTIPESR,MULTIPESR,2,
      &           FAC,    IQINDX, ESRVAL(1,1,1,4),MULTIPESR,MULTIPESR,2)
-        FAC = D1
+        FAC = 1.0D0
       END DO
 C
       CALL HEADER(' S**2 matrix in CI basis ',1)
@@ -1101,7 +1200,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesr1 */
-      SUBROUTINE PRPESR1(ESRVAL,LESRST,CMO,PMAT,
+      SUBROUTINE PRPESR1(ESRVAL,PHASE_factors,LESRST,CMO,PMAT,
      &                   CIEVEC,WORK,KFREE,LFREE)
 C***********************************************************************
 C
@@ -1115,10 +1214,11 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0)
 C
       LOGICAL LESRST(2,*),REAL_PMLF
-      DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,*),CMO(*),PMAT(*),
+      REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
+     &          PHASE_factors(MULTIPESR,2),
+     &          CMO(*),PMAT(*),
      &          CIEVEC(NZCONF,N_CIESR,*), WORK(*)
       CHARACTER MXFORM*6,FMT*6
       INTEGER   IPCMO(2)
@@ -1165,6 +1265,8 @@ C      CLOSE(LUCOEF,STATUS='KEEP')
 C     Expectation values normal procedure
 C    ************************************
 C
+C     TEMPLATE for later, when calculation of transition density matrices have been implemented
+C
 c       CALL MEMGET('REAL',KDMAT,NZ*N2BBASX*(NOPEN+1),WORK,KFREE,LFREE)
 c       CALL GENDEN(work(kDMAT),CMO,1,IPRESR)
 c       DO IOPEN = 1,NOPEN
@@ -1204,7 +1306,7 @@ chj       IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
      &         ISYM,IOPSY,ITIM
           END IF
 C
-          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
+          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),PHASE_factors,CMO,PMAT,
      &                  CIEVEC,WORK,KFREE,LFREE)
 C
 c
@@ -1282,7 +1384,7 @@ C             JZ = 2
 Cunoedvendig CALL DZERO(ESRVAL(1,1,1,I),N2CIESR)
 C          END IF
 C
-C          CALL QTRANS('AOMO','S',D0,N_CIESR,N_CIESR,N_CIESR,N_CIESR,
+C          CALL QTRANS('AOMO','S',0.0D0,N_CIESR,N_CIESR,N_CIESR,N_CIESR,
 C     &        WORK(KPR),N_CIESR,N_CIESR,NZ_in_CI,IQINDX(JZ),
 C     &        ESRVAL(1,1,1,I),N_CIESR,N_CIESR,2,IQINDX,
 C     &        CIEVEC,N_CIESR,N_CIESR,NZ_in_CI,IQINDX,
@@ -1323,7 +1425,7 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ESRTRANS(INDXPR,ESRVAL,CMO,PMAT,CIEVEC,
+      SUBROUTINE ESRTRANS(INDXPR,ESRVAL,PHASE_factors,CMO,PMAT,CIEVEC,
      &                    WORK,KFREE,LFREE)
 C*****************************************************************************
 C
@@ -1332,6 +1434,7 @@ C     and return result in ESRVAL.
 C
 C     Input:
 C       INDXPR : index of property operator
+C       PHASE_factors : phase factor for each CI vector
 C       CMO    : MO coefficients
 C       CIEVEC : CI vectors
 C
@@ -1349,15 +1452,11 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 C     for PRQMAT print of complex matrices:
-      PARAMETER (NZCMPLX = 2)
-      DIMENSION IQINDX(NZCMPLX)
-      SAVE IQINDX
-      DATA IQINDX /1,2/
-C
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0)
+      integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
       LOGICAL   REAL_PMLF
-      DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2),CMO(*),PMAT(*),
+      REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2),
+     &          PHASE_factors(MULTIPESR,2),CMO(*),PMAT(*),
      &          CIEVEC(NZCONF,N_CIESR,*), WORK(*)
       CHARACTER MXFORM*6,FMT*6
       INTEGER   IPCMO(2)
@@ -1487,25 +1586,25 @@ C           CIEVEC(NZCONF, N_CIESR, NZ_in_CI)
 C           ESRVAL(MULTIPESR, MULTIPESR, 2)
 C
 
-#ifdef ESR_DEBUG
+#if ESR_DEBUG > 20
          write(lupri,*)
      &   'Check hermiticity before GASCIP_MAKE_P1MAT ', IHRM
          write(lupri,*)
      &    'N_CIESR,NZCONF,KZCONF,MULTIPESR,IHRM,KPMLF',
      &    N_CIESR,NZCONF,KZCONF,MULTIPESR,IHRM,KPMLF
-       WRITE(LUPRI,*)
+         WRITE(LUPRI,*)
      &   'GASCIP_MAKE_P1MAT: Real part of the N_CIESR CI vectors'//
      &   ' before MAKE_P1MAT'
-       CALL OUTPUT(CIEVEC,1,NZCONF,1,N_CIESR,
+         CALL OUTPUT(CIEVEC,1,NZCONF,1,N_CIESR,
      &             NZCONF,N_CIESR,-1,LUPRI)
-       IF (NZ_in_CI .EQ. 2) THEN
+         IF (NZ_in_CI .EQ. 2) THEN
           WRITE(LUPRI,*)
      &      'GASCIP_MAKE_P1MAT: Imag part of the N_CIESR CI vectors'//
      &      '  BEFORE MAKE_P1MAT'
           CALL OUTPUT(CIEVEC(1,1,2),1,NZCONF,1,N_CIESR,
      &                NZCONF,N_CIESR,-1,LUPRI)
-       END IF
-       write(lupri,*) 'N_CIESR, NZCONF', N_CIESR, NZCONF
+         END IF
+         write(lupri,*) 'N_CIESR, NZCONF', N_CIESR, NZCONF
 #endif
          CALL GASCIP_MAKE_P1MAT(CIEVEC,N_CIESR,NZCONF,WORK(KZCONF),
      &                         ESRVAL(1,1,JZ),MULTIPESR,IHRM,
@@ -1551,13 +1650,23 @@ C
 C        Transform to eigenvector basis
 C
 
-         CALL QTRANS('AOMO','S',D0,NZCONF,NZCONF,MULTIPESR,MULTIPESR,
+         CALL QTRANS('AOMO','S',0.0D0,NZCONF,NZCONF,MULTIPESR,MULTIPESR,
      &        WORK(KPR),NZCONF,NZCONF,NZ_in_CI,IQINDX(JZ),
      &        ESRVAL,   MULTIPESR,MULTIPESR, 2,IQINDX,
      &        CIEVEC,   NZCONF,N_CIESR,     NZ_in_CI,IQINDX,
      &        CIEVEC,   NZCONF,N_CIESR,     NZ_in_CI,IQINDX,
      &        WORK(KFREE),LFREE,-1)
        END IF
+C
+C      Multiply with phase factors
+C
+       IF (IPRESR .GE. 5) THEN
+          WRITE(LUPRI,'(/A)') 'ESRTRANS: ESRVAL before phase factors'
+          CALL PRQMAT(ESRVAL,MULTIPESR,MULTIPESR,
+     &                MULTIPESR,MULTIPESR,NZCMPLX,IQINDX,LUPRI)
+       END IF
+
+       CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL, MULTIPESR)
 C
        IF (IPRESR .GE. 0) THEN
           CALL HEADER('ESRTRANS results in CI eigenvector basis',1)
@@ -1588,6 +1697,46 @@ C
       RETURN
       END
 
+      SUBROUTINE ESR_PHASE_TRANS(PHASE_factors, ESRVAL, MULTIPESR)
+
+!     ESRVAL_new(i,j) = P*(i) ESRVAL(i,j) P(j)
+
+      implicit none
+      REAL*8  PHASE_factors(MULTIPESR,2), ESRVAL(MULTIPESR,MULTIPESR,2)
+      INTEGER MULTIPESR
+
+      INTEGER I,J
+      REAL*8  VAL_IJ_R, VAL_IJ_I
+
+#if ESR_DEBUG > 2
+      WRITE(6,*) 'ESR_PHASE_TRANS Phase factors:'
+      do i = 1, multipesr
+         write(6,*) phase_factors(i,1:2)
+      end do
+#endif
+
+      DO j = 1, MULTIPESR
+         DO i = 1, MULTIPESR
+
+            VAL_IJ_R =
+     &         PHASE_factors(i,1)*PHASE_factors(j,1)*ESRVAL(I,J,1)
+     &       + PHASE_factors(i,2)*PHASE_factors(j,2)*ESRVAL(I,J,1)
+     &       - PHASE_factors(i,1)*PHASE_factors(j,2)*ESRVAL(I,J,2)
+     &       + PHASE_factors(i,2)*PHASE_factors(j,1)*ESRVAL(I,J,2)
+            VAL_IJ_I =
+     &         PHASE_factors(i,1)*PHASE_factors(j,1)*ESRVAL(I,J,2)
+     &       + PHASE_factors(i,1)*PHASE_factors(j,2)*ESRVAL(I,J,1)
+     &       - PHASE_factors(i,2)*PHASE_factors(j,1)*ESRVAL(I,J,1)
+     &       + PHASE_factors(i,2)*PHASE_factors(j,2)*ESRVAL(I,J,2)
+
+            ESRVAL(I,J,1) = VAL_IJ_R
+            ESRVAL(I,J,2) = VAL_IJ_I
+
+         END DO
+      END DO
+      RETURN
+      END
+
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prpesrodd */
       SUBROUTINE PRPESRODD(ESRVAL,IREP,ITIM,PMLF)
@@ -1597,14 +1746,13 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0)
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
+      REAL*8    ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
       LOGICAL   REAL_PMLF
 C
       if (2*NASHT .ne. N_CIESR) then
@@ -1670,14 +1818,13 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0)
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
-      DIMENSION ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
+      REAL*8    ESRVAL(N_CIESR,N_CIESR,2),PMLF(NASHT,2,NASHT,2,*)
       LOGICAL   REAL_PMLF
 C
       CALL QUIT(
@@ -1716,7 +1863,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
 C
 #include "mxcent.h"
 #include "dcbxpr.h"
@@ -1726,7 +1872,7 @@ C
 #include "dcborb.h"
 C
       LOGICAL   FIRST(4),LESRST(2), RODHF
-      DIMENSION DMAT(N2BBASX,NZ,*),PMAT(N2BBASX,NZ),
+      REAL*8    DMAT(N2BBASX,NZ,*),PMAT(N2BBASX,NZ),
      &          PTRI(NNBBASX,NZ),OP1INT(NNBBASX),
      &          WORK(LWORK)
 C
@@ -1736,7 +1882,7 @@ C
 C
 C     Check symmetry
 C
-      PVAL = D0
+      PVAL = 0.0D0
 C
 C     1. Molecular point group symmetry
 C
@@ -1806,7 +1952,7 @@ C
 #include "dcbesr.h"
 #include "nuclei.h"
 C
-      DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
+      REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
       CALL MEMGET2('REAL','TMAT',KTMAT,NCMAT,WORK,KFREE,LFREE)
@@ -1853,13 +1999,12 @@ C
 #include "dcbesr.h"
 #include "dcborb.h"
 C
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
       LOGICAL TEST,DOATOM(NUCIND)
-      DIMENSION ESRVAL(MULTIPESR,MULTIPESR,2,*),
+      REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
      &          TMPMAT(3,*),TMAT(3,3,NUCDEP),
-     &          TISO(NUCDEP),IATINF(3,NUCDEP),RATINF(3,5,NUCDEP),
-     &          IBUFA(3*NUCDEP),IBUFB(3),CSTRA(NUCDEP*NUCDEP*9),
-     &          SCTRA(NUCDEP*NUCDEP*9)
+     &          TISO(NUCDEP),RATINF(3,5,NUCDEP),
+     &          CSTRA(NUCDEP*NUCDEP*9),SCTRA(NUCDEP*NUCDEP*9)
+      INTEGER   IATINF(3,NUCDEP), IBUFA(3*NUCDEP),IBUFB(3)
 #include "nuclei.h"
 #include "symmet.h"
 C
@@ -1961,14 +2106,14 @@ C
       IF (MULTIPESR .EQ. 2) THEN
 C     ....doublet molecules (Seff = 1/2)
 C
-         jmhlf = 1
-         jphlf = 2
+         jmhlf = 2
+         jphlf = 1
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) =  D2*ESRVAL(jphlf,jmhlf,1,KA)
-            TMPMAT(IPTAX(2,2),JA) = -D2*ESRVAL(jphlf,jmhlf,2,KA)
-            TMPMAT(IPTAX(3,2),JA) =  D2*ESRVAL(jphlf,jphlf,1,KA)
+            TMPMAT(IPTAX(1,2),JA) =  2.0D0*ESRVAL(jphlf,jmhlf,1,KA)
+            TMPMAT(IPTAX(2,2),JA) = -2.0D0*ESRVAL(jphlf,jmhlf,2,KA)
+            TMPMAT(IPTAX(3,2),JA) =  2.0D0*ESRVAL(jphlf,jphlf,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 3) THEN
@@ -1977,7 +2122,7 @@ C     .... triplet molecules (Seff = 1)
          j0  = 2
          jp1 = 3
 C
-         SQRT2 = SQRT(D2)
+         SQRT2 = SQRT(2.0D0)
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
@@ -1989,12 +2134,16 @@ C
       ELSE IF (MULTIPESR .EQ. 4) THEN
 C     .... quartet molecules (Seff = 3/2)
 C
+         jm3hlf = 4
+         jm1hlf = 3
+         jp1hlf = 2
+         jp3hlf = 1
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) =    ESRVAL(2,3,1,KA)
-            TMPMAT(IPTAX(2,2),JA) =   -ESRVAL(2,3,2,KA)
-            TMPMAT(IPTAX(3,2),JA) = D2*ESRVAL(3,3,1,KA)
+            TMPMAT(IPTAX(1,2),JA) =       ESRVAL(2,3,1,KA)
+            TMPMAT(IPTAX(2,2),JA) =      -ESRVAL(2,3,2,KA)
+            TMPMAT(IPTAX(3,2),JA) = 2.0D0*ESRVAL(3,3,1,KA)
          ENDDO
       ELSE
          WRITE(LUPRI,'(//A/A)') '@ WARNING:'//
@@ -2052,14 +2201,13 @@ C***********************************************************************
 #include "codata.h"
 #include "priunit.h"
 C
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0)
       CHARACTER NAME*6, NAMEX(3)*6
-      DIMENSION TMAT(3,3), TMATNY(3,3), IATINF(3), RATINF(3,*),
-     &          TMATX(3,3)
+      REAL*8    TMAT(3,3), TMATNY(3,3), RATINF(3,*), TMATX(3,3)
+      INTEGER   IATINF(3)
 #include "chrxyz.h"
 C
 C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
-      FACTOR = ALPHAC*ALPHAC/(D2*XFMP)
+      FACTOR = ALPHAC*ALPHAC/(2.0D0*XFMP)
 C
 C     Multiply with FACTOR
 C
@@ -2077,7 +2225,7 @@ C
               TMATX(I,J)=(XTHZ*1.0D-6) * TMATNY(I,J)
            ENDDO
          ENDDO
-         AVETOT = (TMATNY(1,1)+TMATNY(2,2)+TMATNY(3,3))/D3
+         AVETOT = (TMATNY(1,1)+TMATNY(2,2)+TMATNY(3,3))/3.0D0
          AVETOTX= (XTHZ*1.0D-6) * AVETOT
 
 C
