@@ -563,12 +563,14 @@ end subroutine put_atomic_density_correction
   function collect_delta_xc_energy(                             &
                                    center_id,                   &
                                    center_total,                &
+                                   file_base,                   &
                                    print_lvl                    &
    ) result(delta_xc_e)
 !**********************************************************************
 integer, intent(in)                :: center_id
 integer, intent(inout)             :: center_total
 integer, intent(in)                :: print_lvl
+character (len=8), intent(in)      :: file_base
 !----------------------------------------------------------------------
 real*8                             :: delta_xc_e
 !----------------------------------------------------------------------
@@ -579,7 +581,7 @@ delta_xc_e = 0.0d0
 if(nint(atom(center_total)%charge) > 1)then
 
 delta_xc_e =  read_xamfi_general_scalar(                                 &
-                                        'aooDLXCE',                      &
+                                        file_base,                       &
                                         nint(atom(center_total)%charge), &
                                         101                              &
                                        )

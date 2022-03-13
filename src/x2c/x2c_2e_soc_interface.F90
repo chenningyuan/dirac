@@ -615,6 +615,7 @@ contains
      real*8 , allocatable            :: scr4_mat(:)
      real*8 , allocatable            :: wrk(:)
      real*8                          :: delta_xc_e
+     real*8                          :: delta_xc_mat_e
      integer, allocatable            :: aooso_info(:)
      integer                         :: i
      integer                         :: j
@@ -841,15 +842,24 @@ contains
 
        !> collect correction term for XC energy
        if(isDFT)then
-         delta_xc_e   = 0.0d0
+         delta_xc_e   = 0.0d0; delta_xc_mat_e   = 0.0d0
          center_total = 1
          do i = 1, nuclei_type
-           delta_xc_e  = delta_xc_e + collect_delta_xc_energy(i,              &
-                                                              center_total,   &
-                                                              print_lvl       &
-                                                             )
+           delta_xc_e      =     delta_xc_e + collect_delta_xc_energy(i,              &
+                                                                      center_total,   &
+                                                                      'aooDLXCE',     &
+                                                                      print_lvl       &
+                                                                     )
          end do
-         call set_xc_energy_delta(delta_xc_e)
+         center_total = 1
+         do i = 1, nuclei_type
+           delta_xc_mat_e  = delta_xc_mat_e + collect_delta_xc_energy(i,              &
+                                                                      center_total,   &
+                                                                      'aooDLXCM',     &
+                                                                      print_lvl       &
+                                                                     )
+         end do
+         call set_xc_energy_delta(delta_xc_e,delta_xc_mat_e)
        end if
 
 #define DEBUG_SOC

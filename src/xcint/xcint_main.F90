@@ -65,6 +65,7 @@ module xcint_main
    real(8) :: xc_energy
    real(8) :: xc_energy_delta = 0.0d0
    real(8) :: xc_mat_energy
+   real(8) :: xc_mat_energy_delta = 0.0d0
 
    real(8) :: susc2el_xc_integrated(3, 3)
    real(8) :: susc2el_xc_integrated_sdft(3, 3)
@@ -1920,14 +1921,15 @@ contains
       get_xc_energy = xc_energy + xc_energy_delta
    end function
 
-   subroutine set_xc_energy_delta(delta)
-      real(8), intent(in) :: delta
-      xc_energy_delta = delta
+   subroutine set_xc_energy_delta(delta,delta2)
+      real(8), intent(in) :: delta,delta2
+      xc_energy_delta     = delta
+      xc_mat_energy_delta = delta2
    end subroutine set_xc_energy_delta
 
    function get_xc_mat_energy()
       real(8) :: get_xc_mat_energy
-      get_xc_mat_energy = xc_mat_energy
+      get_xc_mat_energy = xc_mat_energy + xc_mat_energy_delta
    end function
 
    function get_susc2el_integrated() result(r)

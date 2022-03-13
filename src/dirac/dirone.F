@@ -2184,6 +2184,7 @@ C   PAMIOU: LUTMAT
       logical              :: no1esystem_aoosoc, aoc_save
       logical              :: x2c_save
       real*8               :: delta_xc_energy_aoosoc
+      real*8               :: delta_xc_mat_energy_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
 
@@ -2820,9 +2821,14 @@ C     Write transformation matrices
      &                               )
 
             !> save XC_energy_4c
-            delta_xc_energy_aoosoc = 0.0d0
-            if(dirac_cfg_dft_calculation) delta_xc_energy_aoosoc =
-     &      delta_xc_energy_aoosoc + get_xc_energy()
+            delta_xc_energy_aoosoc     = 0.0d0
+            delta_xc_mat_energy_aoosoc = 0.0d0
+            if(dirac_cfg_dft_calculation)then
+              delta_xc_energy_aoosoc =
+     &        delta_xc_energy_aoosoc + get_xc_energy()
+              delta_xc_mat_energy_aoosoc =
+     &        delta_xc_mat_energy_aoosoc + xcint_get_xc_mat_energy()
+            end if
 
             !> reset common block variables to 2c mode
             call xamfi_set_cb("get-2c")
@@ -3056,8 +3062,12 @@ C
      &                         )
 #ifdef MOD_XAMFI
           !> subtract XC_energy_2c
-          if(dirac_cfg_dft_calculation) delta_xc_energy_aoosoc =
-     &    delta_xc_energy_aoosoc - get_xc_energy()
+          if(dirac_cfg_dft_calculation)then
+            delta_xc_energy_aoosoc =
+     &      delta_xc_energy_aoosoc - get_xc_energy()
+            delta_xc_mat_energy_aoosoc =
+     &      delta_xc_mat_energy_aoosoc - xcint_get_xc_mat_energy()
+          end if
 #endif
 
           !> here we split...
@@ -3185,12 +3195,22 @@ C
 #ifdef DEBUG_SOC
               WRITE(LUPRI,'(/a,f12.9)')
      &        'X-AMFI - DELTA XC energy: ',delta_xc_energy_aoosoc
+              WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XC mat energy: ',
+     &                                     delta_xc_mat_energy_aoosoc
 #undef DEBUG_SOC
 #endif
 
               call dump_delta_xc_energy(
      &                                  delta_xc_energy_aoosoc,
      &                                  'aooDLXCE',
+     &                                  nint(charge(1)),
+     &                                  lux2c,
+     &                                  .true.
+     &                                 )
+              call dump_delta_xc_energy(
+     &                                  delta_xc_mat_energy_aoosoc,
+     &                                  'aooDLXCM',
      &                                  nint(charge(1)),
      &                                  lux2c,
      &                                  .true.
