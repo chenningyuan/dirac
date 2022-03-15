@@ -42,4 +42,6 @@ module amfDataStorage
 
         end type
 
+        integer, parameter                      :: amfpathDim = 5
+
 end module amfDataStorage
