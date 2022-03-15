@@ -11,17 +11,18 @@
 
 Clone the complete repository:
 ```
-$ git clone --recursive https://gitlab.com/dirac/dirac.git
+$ git clone --recursive git@gitlab.com:dirac/dirac-private.git
 ```
 
 or the latest revision only:
 ```
-$ git clone --depth 1 --recursive https://gitlab.com/dirac/dirac.git
+$ git clone --depth 1 --recursive git@gitlab.com:dirac/dirac-private.git
 ```
 
 or a particular release:
 ```
-$ git clone --recursive --branch v22.0 https://gitlab.com/dirac/dirac.git
+$ git clone --recursive --branch v22.0 git@gitlab.com:dirac/dirac-private.git
+```
 ```
 
 If you have downloaded a zip/tar.gz/tar.bz2/tar archive directly from GitLab,
@@ -33,7 +34,7 @@ $ git submodule update --init --recursive
 ```
 
 **However, we recommend users who do not plan to make any code changes
-to download from** https://doi.org/10.5281/zenodo.4836495.
+to download from** https://doi.org/10.5281/zenodo.6010449.
 In this case the above extra step is not needed as the release tarballs are
 self-contained, and in addition we get useful download metrics which we can use
 in future funding applications.
