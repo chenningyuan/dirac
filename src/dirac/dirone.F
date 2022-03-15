@@ -2132,6 +2132,7 @@ C*****************************************************************************
       use xamfi_driver, only:
      &    get_xamfi_correction
       use xcint_main, only: get_xc_energy
+      use aobasis_collector, only: deallocate_aobasis_container
 #endif
 !
 #include "implicit.h"
@@ -3281,6 +3282,7 @@ C     Memory deallocation
 
 #ifdef MOD_XAMFI
       if(aoomod) call xamfi_finalize()
+      call deallocate_aobasis_container()
 #endif
 
       CALL QEXIT('GMOTRA')
