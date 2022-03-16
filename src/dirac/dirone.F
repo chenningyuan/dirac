@@ -2185,7 +2185,6 @@ C   PAMIOU: LUTMAT
       logical              :: no1esystem_aoosoc, aoc_save
       logical              :: x2c_save
       real*8               :: delta_xc_energy_aoosoc
-      real*8               :: delta_xc_mat_energy_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
 
@@ -2823,12 +2822,9 @@ C     Write transformation matrices
 
             !> save XC_energy_4c
             delta_xc_energy_aoosoc     = 0.0d0
-            delta_xc_mat_energy_aoosoc = 0.0d0
             if(dirac_cfg_dft_calculation)then
               delta_xc_energy_aoosoc =
      &        delta_xc_energy_aoosoc + get_xc_energy()
-              delta_xc_mat_energy_aoosoc =
-     &        delta_xc_mat_energy_aoosoc + xcint_get_xc_mat_energy()
             end if
 
             !> reset common block variables to 2c mode
@@ -3066,8 +3062,6 @@ C
           if(dirac_cfg_dft_calculation)then
             delta_xc_energy_aoosoc =
      &      delta_xc_energy_aoosoc - get_xc_energy()
-            delta_xc_mat_energy_aoosoc =
-     &      delta_xc_mat_energy_aoosoc - xcint_get_xc_mat_energy()
           end if
 #endif
 
@@ -3193,17 +3187,14 @@ C
      &                                  .true.
      &                                 )
             if(dirac_cfg_dft_calculation)then
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
               WRITE(LUPRI,'(/a,f12.9)')
      &        'X-AMFI - DELTA XC energy: ',delta_xc_energy_aoosoc
-              WRITE(LUPRI,'(/a,f12.9)')
-     &        'X-AMFI - DELTA XC mat energy: ',
-     &                                     delta_xc_mat_energy_aoosoc
 #undef DEBUG_SOC
 #endif
               tbuf_mmf = 0; tmat_mmf = 0
-              !> read {U+ G_A[4c] U}^{++}
+              !> read {U+ V_A[4c] U}^{++}
               call read_xamfi_general_matrix(
      &                                       tbuf_mmf,
      &                                       ntbas(0),
@@ -3218,10 +3209,10 @@ C
      &        access='sequential',action='readwrite',
      &        form='unformatted',position='rewind')
 
-              !> read G_A[2c]
+              !> read V_A[2c]
               read(103) tmat_mmf(1:ntbas(0)*ntbas(0)*nz)
               close(103,status="delete")
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
               CALL HEADER(
      &        'X-AMFI - Vxc-tilde             ',-1)
@@ -3237,7 +3228,7 @@ C
               !> V_A^{++} = {U+ V_A[4c] U}^{++} - V_A[2c]
               call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
 
-#define DEBUG_SOC
+!#define DEBUG_SOC
 #ifdef DEBUG_SOC
               CALL HEADER(
      &        'X-AMFI - Vxc-normalized (final)',-1)
@@ -3283,15 +3274,6 @@ C
      &                                  lux2c,
      &                                  .true.
      &                                 )
-              call dump_delta_xc_energy(
-     &                                  delta_xc_mat_energy_aoosoc,
-     &                                  'aooDLXCM',
-     &                                  nint(charge(1)),
-     &                                  lux2c,
-     &                                  .true.
-     &                                 )
-            end if
-
 
             call goodbye_xamfi(atom(1)%charge)
             call deallocate_aobasis_container()
