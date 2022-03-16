@@ -2529,7 +2529,7 @@ C
           CALL READIN(.FALSE.)
           !> stknecht: take care of 2c-mmf-sf for a linear molecule
           if(spinfr .and. linear) linear = .false.
-          if(spinfr .and. atomic) atomic = .false.          
+          if(spinfr .and. atomic) atomic = .false.
           CALL SETDC1(IPREAD)
 !         set AO-labels for large components - in x2c_main initialized for large and small components
           call getlab(ipread)
@@ -2614,7 +2614,7 @@ C.........do canonical orthonormalization
 C
 C     ** End of branching **
 C=======================================================================
-C     
+C
       CALL MEMGET2('REAL','TBUF',KTBUF,N2BBASXQ,WORK,KFREE,LFREE)
 
       N2TMT   = 0
@@ -2662,10 +2662,10 @@ C.......SUB_BL will be set true if linear symmetry works
 !       out: AO2MO                         --> KTBUF
 !     out: MO2MO linear symmetry adapted --> KTBUF2 (discarded if not x2c-mmf)
 
-        IF(ATOMIC)THEN        
+        IF(ATOMIC)THEN
           CALL GATMSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
      &                WORK(KFREE),LFREE)
-        ELSE        
+        ELSE
           CALL GLINSM(WORK(KTMAT),WORK(KTBUF),WORK(KTBUF2),WORK(KEIG),
      &                WORK(KFREE),LFREE)
         ENDIF
@@ -2677,13 +2677,13 @@ C.......SUB_BL will be set true if linear symmetry works
      &         position='rewind')
           call x2c_read('2cLWAOl   10',work(KTMAT),ndim_lowdinmat,lux2c)
           close(lux2c,status='keep')
-        else  
+        else
 
           open(99,file='AOMOlin',status='old',form='unformatted',
      &         access='sequential',action='readwrite',
      &         position='rewind')
 
-          !> rec # 1: U 
+          !> rec # 1: U
           read(99)
           !> rec # 2: VU
           call readt(99,N2TMT,work(KTMAT))
