@@ -120,6 +120,7 @@ contains
      real(8), allocatable               :: work(:)
      logical                            :: parcal
      character(len=12)                  :: flabel
+     character(len=1)                   :: suffix
 !----------------------------------------------------------------------
 
        parcal = .false.
@@ -266,10 +267,19 @@ contains
 #ifdef VAR_MPI
           if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
+          allocate(work(nrows*ncols*nz)); work = 0
           call xcint_potential_rks(       &
                                    nrows, &
                                    dmat,  &
-                                   fmat)
+                                   work)
+          call daxpy(nrows*ncols*nz,1.0d0,work,1,fmat,1)
+          !> write F^{Xc,2e} aka V_xc
+          write(suffix,'(i0)') xcmode
+          open(103,file='amfVxc'//suffix,status='replace',form='unformatted',  &
+          access='sequential',action="write",position='rewind')
+          write(103) work(1:nrows*ncols*nz)
+          close(103,status='keep')
+          deallocate(work)
       end if
 
   end subroutine get_scso_2e_fock

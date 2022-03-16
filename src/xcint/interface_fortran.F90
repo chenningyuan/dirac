@@ -57,6 +57,21 @@ function xcint_get_xc_mat_energy()
   xcint_get_xc_mat_energy = get_xc_mat_energy()
 end function
 
+subroutine xcint_set_xc_mat_energy_delta(dXCpot)
+  use xcint_main
+  implicit none
+  real(8), intent(in) :: dXCpot
+  call set_xc_energy_delta(dXCpot=dXCpot)
+end subroutine
+
+subroutine xcint_set_xc_energy_delta(dXC)
+  use xcint_main
+  implicit none
+  real(8), intent(in) :: dXC
+  call set_xc_energy_delta(dXC=dXC)
+end subroutine
+
+
 function xcint_get_nr_electrons_integrated()
   use xcint_main
   implicit none

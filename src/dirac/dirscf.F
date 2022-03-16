@@ -1752,7 +1752,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-      LOGICAL LVCON, XAMFI_CORRECTIONS
+      LOGICAL LVCON, XAMFI_CORRECTIONS, XAMFI_VXC_
       CHARACTER M(4)*2,FMT*6,MXFORM*6
       DIMENSION F1(N2BBASX,NZ),F2(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
@@ -1764,7 +1764,7 @@ c     besterg is the lowest energy we encountered so far
 #ifdef HAS_PCMSOLVER
       real(8)      :: pcm_energy
 #endif
-      REAL(8) :: PE_TOT_NRG, PE_EL_NRG
+      REAL(8) :: PE_TOT_NRG, PE_EL_NRG, XAMFI_Vxc_delta
       REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
       REAL(8), DIMENSION(:), ALLOCATABLE :: XAMFI_FMAT
       type(fde_import) :: itmp
@@ -1850,16 +1850,28 @@ C
         deallocate(XAMFI_FMAT)
       end if
 
-!     correct for contribution from ks potential to two-electron energy
-      if (dirac_cfg_dft_calculation) then
-!Miro: separate this contribution into own variable, xcint_xc_energy
-!     the density for calculation is the same as for xcint_xc_contribution to the 2el Fock matrix
-        xcint_xc_energy=xcint_get_xc_mat_energy()
+      !> correct for contribution from ks potential to two-electron energy
+      if(dirac_cfg_dft_calculation)then
+
+
+         !> ... and correct for contribution from the PC correction to the ks potential
+         inquire(file='XAMFI-Vxc-contributions',exist=XAMFI_VXC_)
+         if(XAMFI_VXC_)then
+           open(99,file='XAMFI-Vxc-contributions',status='old',
+     &          form='unformatted',access='sequential',
+     &          action="readwrite",position='rewind')
+           allocate(XAMFI_FMAT(N2BBASXQ));read(99)XAMFI_FMAT(1:N2BBASXQ)
+           close(99,status='keep')
+           XAMFI_Vxc_delta = ddot(N2BBASXQ,DMAT,1,XAMFI_FMAT,1)
+           call xcint_set_xc_mat_energy_delta(XAMFI_Vxc_delta)
+           deallocate(XAMFI_FMAT)
+         end if
+
+         xcint_xc_energy=xcint_get_xc_mat_energy()
+
         e(1, 2, 0) = e(1, 2, 0) - xcint_xc_energy
-        !print *
-        !print *,'ERGCAL: xcint_get_xc_mat_energy()=',xcint_xc_energy
-        !print *
       end if
+
       DO IZ = 1,NZ
         DO IOPEN = 0,ITOP
            E1PART = E1PART + E(IZ,1,IOPEN)

@@ -41,6 +41,7 @@ module xamfi_driver
   public put_xamfi_correction
   public put_atomic_2e_mean_field_correction
   public put_atomic_density_correction
+  public put_atomic_Vxc_correction
   public collect_delta_xc_energy
 
   private
@@ -206,6 +207,44 @@ contains
                                  )
 
       deallocate(fmat)
+
+      !> DFT XC potential part
+      if(isDFT)then
+        allocate(fmat(nrows*ncols*nr_quat)); fmat = 0
+        open(103,file='amfVxc4',status='old',form='unformatted',  &
+        access='sequential',action="read",position='rewind')
+        read(103) fmat(1:nrows*ncols*nr_quat)
+        close(103,status='keep')
+
+        !> normalize (picture-change transform) 4c-Vxc matrix
+        call get_normalized_2e_soc(                      &
+                                   fmat,                 &
+                                   pct_mat,              &
+                                   dmat,                 &
+                                   nr_ao_total_aoo,      &
+                                   nr_ao_large_aoo,      &
+                                   nr_ao_all,            &
+                                   nr_ao_l,              &
+                                   nr_fsym,              &
+                                   nr_quat,              &
+                                   aoo_cb_pq_to_uq,      &
+                                   ioff_aomat_x,         &
+                                   aoo_bs_to_fs,         &
+                                   print_lvl             &
+                                  )
+
+        !> save \tilde{Vxc} on file (of atom(1) ... == atomic fragment)
+        call dump_normalized_2e_soc(                            &
+                                    fmat,                       &
+                                    nr_ao_large_aoo,            &
+                                    nr_ao_large_aoo,            &
+                                    nr_quat,                    &
+                                    'amftVxc2',                 &
+                                    nint(atom(1)%charge),       &
+                                    103,                        &
+                                    .false.                     &
+                                   )
+      end if
 
       !call goodbye_xamfi()
 
@@ -481,7 +520,7 @@ character(len=8)                   :: prefix
 
 allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
 !       !> get atomic density from file (of atom(i) ... == atomic fragment)
-                prefix = 'aooDM_2c'       
+                prefix = 'aooDM_2c'
 if(xcmode == 4) prefix = 'aooDM_4c'
 call read_xamfi_general_matrix(                  &
                 Gmat_frag,                       &
@@ -562,6 +601,119 @@ deallocate(Gmat_frag)
 center_total = center_total + aoo_nont(center_id)
 
 end subroutine put_atomic_density_correction
+!----------------------------------------------------------------------
+
+subroutine put_atomic_Vxc_correction(&
+  Gmat,                        &
+  naosh_ls,                    &
+  nrows_ext,                   &
+  ncols_ext,                   &
+  nr_quat_ext,                 &
+  center_id,                   &
+  center_total,                &
+  print_lvl                    &
+ )
+!**********************************************************************
+real(8), intent(inout)             :: Gmat(*)
+integer, intent(in)                :: naosh_ls
+integer, intent(in)                :: nrows_ext
+integer, intent(in)                :: ncols_ext
+integer, intent(in)                :: nr_quat_ext
+integer, intent(in)                :: center_id
+integer, intent(inout)             :: center_total
+integer, intent(in)                :: print_lvl
+!----------------------------------------------------------------------
+real(8), allocatable               :: Gmat_frag(:)
+real(8), allocatable               :: rbuf(:)
+real(8), allocatable               :: cbuf(:)
+real(8), allocatable               :: ibuf(:)
+real(8), allocatable               :: jbuf(:)
+INTEGER, parameter                 :: nzc1 = 4
+character(len=8)                   :: prefix
+!----------------------------------------------------------------------
+
+allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
+!       !> get atomic Vxc from file (of atom(i) ... == atomic fragment)
+                prefix = 'aooVxcMA'
+call read_xamfi_general_matrix(                  &
+                Gmat_frag,                       &
+                nrows_ext,                       &
+                ncols_ext,                       &
+                nzc1,                            &
+                prefix(1:8),                     &
+                nint(atom(center_total)%charge), &
+                101                              &
+                              )
+
+#ifdef DEBUG_SOC
+!> debug print
+if(print_lvl > 5)then
+call print_x2cmat(                     &
+Gmat_frag,                             &
+nrows_ext,                             &
+ncols_ext,                             &
+nzc1,                                  &
+aoo_cb_pq_to_uq(1,0),                  &
+'atomic Vxc from file',                &
+6                                      &
+)
+end if
+#endif
+
+
+allocate(rbuf(naosh_ls))
+allocate(cbuf(naosh_ls))
+allocate(ibuf(nrows_ext))
+allocate(jbuf(ncols_ext))
+
+rbuf = 0
+cbuf = 0
+ibuf = 0
+jbuf = 0
+
+call put_aoblock(Gmat,           &
+naosh_ls,                        &
+naosh_ls,                        &
+center_total,                    &
+aoo_nont(center_id),             &
+aoo_nucdeg(center_total),        &
+nzc1,                            &
+Gmat_frag,                       &
+nrows_ext,                       &
+nrows_ext,                       &
+-1,                              &
+ncols_ext,                       &
+ncols_ext,                       &
+-1,                              &
+rbuf,                            &
+cbuf,                            &
+ibuf,                            &
+jbuf)
+
+#ifdef DEBUG_SOC
+!> debug print
+if(print_lvl > 5)then
+call print_x2cmat(                           &
+Gmat,                                        &
+naosh_ls,                                    &
+naosh_ls,                                    &
+nr_quat_ext,                                 &
+aoo_cb_pq_to_uq(1,0),                        &
+'atomic Vxc corrections accumulated',        &
+6                                            &
+)
+end if
+#endif
+deallocate(jbuf)
+deallocate(ibuf)
+deallocate(cbuf)
+deallocate(rbuf)
+deallocate(Gmat_frag)
+
+!     update counter
+center_total = center_total + aoo_nont(center_id)
+
+end subroutine put_atomic_Vxc_correction
 !----------------------------------------------------------------------
 
   function collect_delta_xc_energy(                             &

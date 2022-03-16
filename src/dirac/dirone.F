@@ -3144,6 +3144,7 @@ C
      &                                             len_fmat, 1,
      &                                             lux2c, 0,
      &                                             scratch_mmf)
+            deallocate(scratch_mmf)
             close(lux2c, status='keep')
 !#define DEBUG_SOC
 #ifdef DEBUG_SOC
@@ -3201,6 +3202,79 @@ C
      &                                     delta_xc_mat_energy_aoosoc
 #undef DEBUG_SOC
 #endif
+              tbuf_mmf = 0; tmat_mmf = 0
+              !> read {U+ G_A[4c] U}^{++}
+              call read_xamfi_general_matrix(
+     &                                       tbuf_mmf,
+     &                                       ntbas(0),
+     &                                       ntbas(0),
+     &                                       nz,
+     &                                       'amftVxc2',
+     &                                       nint(charge(1)),
+     &                                       103
+     &                                      )
+
+              open(103,file='amfVxc2',status='old',
+     &        access='sequential',action='readwrite',
+     &        form='unformatted',position='rewind')
+
+              !> read G_A[2c]
+              read(103) tmat_mmf(1:ntbas(0)*ntbas(0)*nz)
+              close(103,status="delete")
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+              CALL HEADER(
+     &        'X-AMFI - Vxc-tilde             ',-1)
+              CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                    NZ,IPQTOQ(1,0),LUPRI)
+              CALL HEADER(
+     &        'X-AMFI - Vxc2                  ',-1)
+              CALL PRQMAT(tmat_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                    NZ,IPQTOQ(1,0),LUPRI)
+#endif
+
+              !> ~
+              !> V_A^{++} = {U+ V_A[4c] U}^{++} - V_A[2c]
+              call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
+
+#define DEBUG_SOC
+#ifdef DEBUG_SOC
+              CALL HEADER(
+     &        'X-AMFI - Vxc-normalized (final)',-1)
+              CALL PRQMAT(tbuf_mmf,NTBAS(0),NTBAS(0),NTBAS(0),NTBAS(0),
+     &                    NZ,IPQTOQ(1,0),LUPRI)
+
+              allocate(cmo_mmf(ncmotq))
+              allocate(scratch_mmf(len_fmats))
+
+              cmo_mmf     = 0
+              scratch_mmf = 0
+              !> read 2c-mos
+              call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
+              call reacmo_new(lucoef,cmo=cmo_mmf)
+              close(lucoef,status='keep')
+              !> calculate inactive (and possibly active) density matrix
+              call denmat(scratch_mmf,cmo_mmf,iprham)
+
+              xxxBLUBB = ddot(len_fmat,scratch_mmf,1,tbuf_mmf,1)
+              WRITE(LUPRI,'(/a,f12.9)')
+     &        'X-AMFI - DELTA XCmat (PCE) energy: ',xxxBLUBB
+              deallocate(scratch_mmf)
+              deallocate(cmo_mmf)
+#undef DEBUG_SOC
+#endif
+
+              call dump_normalized_2e_soc(
+     &                                    tbuf_mmf,
+     &                                    ntbas(0),
+     &                                    ntbas(0),
+     &                                    nz,
+     &                                    'aooVxcMA',
+     &                                    nint(charge(1)),
+     &                                    103,
+     &                                    .true.
+     &                                   )
+
 
               call dump_delta_xc_energy(
      &                                  delta_xc_energy_aoosoc,
@@ -3228,7 +3302,6 @@ C
               nfmat = nfmat_save
             end if
 
-            deallocate(scratch_mmf)
             deallocate(tbuf_mmf)
             deallocate(tmat_mmf)
           end if ! check for atomic run

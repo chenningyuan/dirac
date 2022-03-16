@@ -714,6 +714,7 @@ contains
          if (do_potential) then
             save_ddot2    = ddot(mat_dim*mat_dim, dmat_0(1,1,1), 1, fmat, 1)
             xc_mat_energy = save_ddot2 - save_ddot1
+            !print *, 'xc_mat_energy is ',xc_mat_energy, save_ddot2,save_ddot1
          end if
 
          call report()
@@ -1921,10 +1922,10 @@ contains
       get_xc_energy = xc_energy + xc_energy_delta
    end function
 
-   subroutine set_xc_energy_delta(delta,delta2)
-      real(8), intent(in) :: delta,delta2
-      xc_energy_delta     = delta
-      xc_mat_energy_delta = delta2
+   subroutine set_xc_energy_delta(dXC,dXCpot)
+      real(8), intent(in), optional :: dXC,dXCpot
+      if(present(dXC   )) xc_energy_delta     = dXC
+      if(present(dXCpot)) xc_mat_energy_delta = dXCpot
    end subroutine set_xc_energy_delta
 
    function get_xc_mat_energy()

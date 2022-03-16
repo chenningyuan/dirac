@@ -33,7 +33,6 @@ module x2c_2e_soc_interface
   use gab_settings, only: recompute_Gab
 #endif
   use x2cmod_cfg, only: x2c_intgen_2c
-  use xcint_main, only: set_xc_energy_delta
 
   implicit none
 
@@ -563,14 +562,14 @@ contains
 !                    retrieve amf corrections from file (assumed to be in C1*)
 !                    add atomic block in molecular matrix 
 !             done
-!                                                                           
+!
 !             transform the molecular matrix (C1* symmetry) to actual symmetry
 !   "saw"   /   a. transform from simple AO basis to Hermit-sorted SO-AO basis
 !  -------  \   b. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
 !            \  c. insert quaternion phases
 !
 !      END IF
-!             
+!
 !             common:
 !             =======
 
@@ -840,7 +839,7 @@ contains
 
        end if
 
-       !> collect correction term for XC energy
+       !> collect correction terms for XC energy and XC potential contribution
        if(isDFT)then
          delta_xc_e   = 0.0d0; delta_xc_mat_e   = 0.0d0
          center_total = 1
@@ -851,15 +850,40 @@ contains
                                                                       print_lvl       &
                                                                      )
          end do
-         center_total = 1
-         do i = 1, nuclei_type
-           delta_xc_mat_e  = delta_xc_mat_e + collect_delta_xc_energy(i,              &
-                                                                      center_total,   &
-                                                                      'aooDLXCM',     &
-                                                                      print_lvl       &
-                                                                     )
-         end do
-         call set_xc_energy_delta(delta_xc_e,delta_xc_mat_e)
+         !print *, 'XC energy delta: ',delta_xc_e
+         call xcint_set_xc_energy_delta(delta_xc_e)
+
+         allocate(scr4_mat(nr_ao_L*nr_ao_L*nz)); scr4_mat = 0
+
+         !> set offsets in atomic basis to two-component mode
+         IPREAD  = IPREAD - 10000
+         TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.; RDINPC  = .FALSE.
+         CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
+         call x2c_prepare_delta_Vxc_from_atomic_blocks(scr4_mat,                  &
+                                               nr_ao_L,                           &
+                                               nz,                                &
+                                               bs_irrep_mat,                      &
+                                               ipq_off_in,                        &
+                                               iqp_off_in,                        &
+                                               iqmult_trip_q,                     &
+                                               op_bs_to_fs,                       &
+                                               quat_pointer,                      &
+                                               nuclei_totnum,                     &
+                                               nuclei_type,                       &
+                                               print_lvl)
+         !> restore offsets in atomic basis to four-component mode (for now)
+         TWOCOMP = .FALSE.; TWOCOMPBSS = .FALSE.
+         CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
+         IPREAD = IPREAD + 10000
+
+         open(99,file='XAMFI-Vxc-contributions',status='replace',form='unformatted',  &
+         access='sequential',action="readwrite",position='rewind')
+
+         write(99) scr4_mat(1:nr_ao_L*nr_ao_L*nz)
+         close(99,status='keep') 
+
+         deallocate(scr4_mat)
+
        end if
 
 #define DEBUG_SOC
@@ -1302,6 +1326,146 @@ end if
 deallocate(scr1_mat,scr2_mat)
 
 end subroutine x2c_add_2e_from_atomic_dens
+
+!**********************************************************************
+
+subroutine x2c_prepare_delta_Vxc_from_atomic_blocks(&
+       Vxc,                   &
+       naosh_ls,              &
+       nz,                    &
+       bs_irrep_mat,          &
+       ipq_off_in,            &
+       iqp_off_in,            &
+       iqmult_trip_q,         &
+       op_bs_to_fs,           &
+       quat_pointer,          &
+       nuclei_totnum,         &
+       nuclei_type,           &
+       print_lvl)
+!**********************************************************************
+!
+!    purpose: interface routine to assemble molecular Vxc from a superposition of atomic Vxcs
+!
+!             the outline of this routine may be sketched as follows:
+!
+!             1. retrieve atomic Vxc_atom from file
+!             2. form molecular Vxc_(+)atoms as superposition of atomic Vxcs: Vxc_(+)atoms = (+) Vxc_atom
+!   "saw"   /   a. transform from simple AO basis to Hermit-sorted SO-AO basis
+!  -------  \   b. transform from Hermit-sorted SO-AO basis to Dirac-sorted AO (SA-AO) basis
+!            \  c. insert quaternion phases
+!             3. add Vxc_(+)atoms to Vxc
+!
+!
+!----------------------------------------------------------------------
+real*8,  INTENT(INOUT)          :: Vxc(*)
+integer, intent(in)             :: naosh_ls
+integer, intent(in)             :: nz
+integer, intent(in)             :: ipq_off_in(4,0:7)
+integer, intent(in)             :: iqp_off_in(4,0:7)
+integer, intent(in)             :: op_bs_to_fs(0:7,1:2)
+integer, intent(in)             :: bs_irrep_mat(4,0:7)
+integer, intent(in)             :: iqmult_trip_q(4,4,4)
+integer, intent(in)             :: quat_pointer(0:7,2)
+integer, intent(in)             :: nuclei_totnum
+integer, intent(in)             :: nuclei_type
+integer, intent(in)             :: print_lvl
+!--------------------------------------------------------------
+real*8 , allocatable            :: scr1_mat(:), scr2_mat(:)
+integer, allocatable            :: aooso_info(:)
+integer                         :: i,j
+integer                         :: iq
+integer                         :: ipq
+integer                         :: iz
+integer                         :: irepd
+integer                         :: nsphcm
+integer                         :: nr_sph
+integer                         :: nrows_frag
+integer                         :: ncols_frag
+integer                         :: center_total
+integer                         :: wf_components
+INTEGER, PARAMETER              :: nzc1 = 4
+character (len=12)              :: flabel
+!**********************************************************************
+
+!      allocate scratch space
+allocate(scr1_mat(naosh_ls*naosh_ls*nzc1),scr2_mat(naosh_ls*naosh_ls*nzc1)); scr1_mat = 0; scr2_mat = 0
+
+!      ---------------------------------------------------------------------------------
+!      step 1. read and distribute atomic Vxcs contributions for symmetry independent centers
+!      ---------------------------------------------------------------------------------
+!        out: molecular Vxc from atomic blocks  -> scr1_mat
+
+allocate(aooso_info(naosh_ls))
+
+center_total = 1
+scr1_mat     = 0
+
+!> a. read contributions for symmetry independent centers
+do i = 1, nuclei_type
+
+!        count the number of basis functions for center_total
+call labcount(ncols_frag,aooso_info,naosh_ls,1,-1,center_total,1,-1)
+
+if(ncols_frag == 0) cycle
+
+nrows_frag = ncols_frag
+
+#ifdef MOD_XAMFI
+!> read atomic Vxc (assumed to be exported in C1 symmetry)
+call put_atomic_Vxc_correction(&
+        scr1_mat,       &
+        naosh_ls,       &
+        nrows_frag,     &
+        ncols_frag,     &
+        nzc1,           &
+        i,              &
+        center_total,   &
+        print_lvl       &
+       )
+#else
+call quit('X-AMFI module not avaliable in this version.')
+#endif
+end do
+
+!      b. transform from AO-basis (C1* symm sorted) to SO-AO basis (symmetry-ordered)
+!      ------------------------------------------------------------------------------
+!        in : DM_AO    -> scr1_mat
+!        out: DM-SO-AO -> scr2_mat
+i = op_bs_to_fs(0,1)
+do iz = 1, nzc1
+irepd = bs_irrep_mat(iz,0)
+iq    = iqmult_trip_q(1,quat_pointer(irepd,i),iz)
+ipq   = iqp_off_in(iq,0)
+call mtaoso(scr1_mat(1+(naosh_ls*naosh_ls*(iz-1))),     &
+scr2_mat(1+(naosh_ls*naosh_ls*(ipq-1))),                &
+naosh_ls,                                               &
+irepd,                                                  &
+print_lvl)
+end do
+
+!      c. transform from Hermit-sorted AO to DIRAC-sorted AO basis
+!      -----------------------------------------------------------
+call butobs_no_work(scr2_mat,nz)
+
+!      d. insert quaternion phase factors
+!      ----------------------------------
+if(nz < 4)then
+do iz = 1, nz
+iq = ipq_off_in(iz,0)
+call q2bphase('F',iq,1,scr2_mat(1+(naosh_ls*naosh_ls*(iz-1))))
+end do
+end if
+
+!      debug print
+if(print_lvl > 2)then
+call print_x2cmat(scr2_mat,naosh_ls,naosh_ls,nz,ipq_off_in,'x2c - mol Vxc assembled from atomic Vxcs',6)
+end if
+
+call dcopy(naosh_ls*naosh_ls*nz,scr2_mat,1,Vxc,1)
+
+deallocate(aooso_info, scr1_mat,scr2_mat)
+
+end subroutine x2c_prepare_delta_Vxc_from_atomic_blocks
 
 !**********************************************************************
 
