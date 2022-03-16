@@ -12,6 +12,8 @@ set(FIXED_XAMFI_FORTRAN_SOURCES
 
 set(FREE_XAMFI_FORTRAN_SOURCES
      x_fock.F90
+     amfDataStorage.F90
+     amfH5Interface.F90
      xamfi_utils.F90
      xamfi_driver.F90
      xamfi_environment.F90

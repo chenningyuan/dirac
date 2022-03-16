@@ -31,6 +31,7 @@ module xamfi_utils
                                        nr_fsym, nr_ao_all, nr_tmo, ioff_aomat_x,&
                                        lutmat_aoo, N2BBASXQ_dim_aoo,            &
                                        ioff_tmot, ioff_tmt, nzt_aoo
+  use amfDataStorage
   
 #ifdef DEBUG_SOC
   use x2c_utils, only: print_x2cmat

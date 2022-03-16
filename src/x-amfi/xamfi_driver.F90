@@ -28,6 +28,7 @@ module xamfi_driver
   use xamfi_global_parameters
   use xamfi_utils
   use xamfi_internal_parameters
+  use xamfi_environment, only: xamfi_set_e_configuration
 
 !#define DEBUG_SOC
 #ifdef  DEBUG_SOC
@@ -69,6 +70,9 @@ contains
 !----------------------------------------------------------------------
      real(8), allocatable               :: fmat(:), tmp(:)
 !----------------------------------------------------------------------
+
+      !> atomic run - there is only one center
+      call xamfi_set_e_configuration(center = 1)
 
       if(aooeamf)then
         !> save atomic density matrix (of atom(1) ... == atomic fragment)

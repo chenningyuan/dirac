@@ -16,6 +16,8 @@
 
 module xamfi_internal_parameters
 
+
+  use amfDataStorage      
   implicit none
 
   save
@@ -111,5 +113,7 @@ module xamfi_internal_parameters
 
   integer            :: ioff_aomat_x_save(1:2,1:2) = 0
 
+  !> for HDF5 file handling
+  type(hdfDataStorage), allocatable :: amfH5Data(:)
 
 end module

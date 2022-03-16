@@ -41,6 +41,9 @@ if (ENABLE_XAMFI)
         ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_internal_parameters.F90
         ${PROJECT_SOURCE_DIR}/src/x-amfi/xamfi_environment.F90
         ${PROJECT_SOURCE_DIR}/src/x-amfi/x_fock.F90
+	${PROJECT_SOURCE_DIR}/src/x-amfi/amfDataStorage.F90
+        ${PROJECT_SOURCE_DIR}/src/x-amfi/amfH5Interface.F90
+
     )
 endif()
 
