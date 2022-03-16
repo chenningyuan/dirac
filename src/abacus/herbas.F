@@ -112,7 +112,7 @@ C
 C     control print in BASLIB, usually IPRBAS = IPREAD = IPRUSR + 1 = 1
 C     from calling routine
       IPRINT = IPRBAS
-      IPRINT = 10
+      !IPRINT = 10
       IF (BASNAM(1:1).eq.' ') IPRINT = 5
       INTQ   = NINT(Q)
       IF (abs(Q-INTQ) .gt. 1.d-8) then

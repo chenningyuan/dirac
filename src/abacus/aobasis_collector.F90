@@ -33,7 +33,7 @@ contains
 #include "mxcent.h"
 
       if(.not.allocated(aobasis_container).and.aobasis_container_reallocate) &
-      allocate(aobasis_container(MXATOM))
+      allocate(aobasis_container(MXATOM));aobasis_container = ""
       aobasis_container_reallocate = .false.
     end subroutine allocate_container
 
@@ -48,7 +48,7 @@ contains
       else
         return
       end if
-      aobasis_container(aobasis_counter)(1:len(trim(aobasis))) = trim(aobasis)
+      aobasis_container(aobasis_counter) = trim(aobasis)
       aobasis_counter = aobasis_counter + 1
     end subroutine add_aobasis2container
 

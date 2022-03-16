@@ -29,16 +29,16 @@ module amfDataStorage
                 integer                 :: ndim = -1
                 real(8), allocatable    :: mat(:)
         end type dataStorage
-           
+
 
         type, public                            :: hdfDataStorage
                 character(len= 7)               :: fname = "amfPCEC"
-                character(len = 20),allocatable :: path(:)
+                character(len = 40),allocatable :: path(:)
                ! integer                         :: pathDim = 5
                 integer(kind=8)                 :: fileId
                 integer(kind=8),allocatable     :: groupId(:)
                 integer(kind=8),allocatable     :: dsetId(:)
-                type(dataStorage),allocatable   :: dataStorage(:)               
+                type(dataStorage),allocatable   :: dataStorage(:)
 
         end type
 

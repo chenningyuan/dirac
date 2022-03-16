@@ -128,7 +128,7 @@ contains
 
 !     initialize logicals
       aoo_mdirac       = mdirac
-  
+
 !     initialize real*8
       aoo_cspeed = cval
 
@@ -158,7 +158,7 @@ contains
          atom(i) = type_atom( charge(i), &
                               cord(1,i), &
                               cord(2,i), &
-                              cord(3,i)  &   
+                              cord(3,i)  &
                             )
        end do
        allocate( aoo_nont(mxatom), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: aoo_nont(:)'
@@ -186,10 +186,10 @@ contains
         end if
     ! element
        ! amfH5Data(i)%path(2)(1:20) = ""
-        write(amfH5Data(i)%path(2),'(i0)') atom(i)%charge
+        write(amfH5Data(i)%path(2),'(i0)') nint(atom(i)%charge)
     ! basis
        ! amfH5Data(i)%path(3)(1:20) = ""
-        write(amfH5Data(i)%path(3),'(a)') aobasis_container(i)(1:len(trim(aobasis_container(i))))
+        amfH5Data(i)%path(3)(1:40) = trim(aobasis_container(i))
     ! nuclei model
        ! amfH5Data(i)%path(4)(1:20) = ""
         if(gaunuc)then
@@ -201,7 +201,7 @@ contains
     end do
 
 
-! 
+!
   end subroutine xamfi_init
 !**********************************************************************
 
