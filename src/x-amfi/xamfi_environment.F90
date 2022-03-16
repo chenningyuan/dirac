@@ -32,6 +32,7 @@ module xamfi_environment
   public xamfi_init
   public xamfi_finalize
   public xamfi_set_cb
+  public xamfi_set_e_configuration
 
   private
 
@@ -41,6 +42,7 @@ contains
 
       use quaternion_algebra
       use dirac_cfg, only: dirac_cfg_dft_calculation
+      use aobasis_collector
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -61,7 +63,6 @@ contains
 !   ----------------------------------------------------------------------------
     integer             :: i, j, k, l, m
     integer             :: ier
-    character(len=20)   :: ncl1, ncl2
 !   ----------------------------------------------------------------------------
 
       aoo_prt               = iprham
@@ -188,7 +189,7 @@ contains
         write(amfH5Data(i)%path(2),'(i0)') atom(i)%charge
     ! basis
        ! amfH5Data(i)%path(3)(1:20) = ""
-        amfH5Data(i)%path(3)(1:5) = "dummy"
+        write(amfH5Data(i)%path(3),'(a)') aobasis_container(i)(1:len(trim(aobasis_container(i))))
     ! nuclei model
        ! amfH5Data(i)%path(4)(1:20) = ""
         if(gaunuc)then
@@ -196,15 +197,6 @@ contains
         else
                 amfH5Data(i)%path(4)(1:5) = "point"
         end if
-    ! electronic configuration
-        amfH5Data(i)%path(5)(1:20) = ""
-        write(ncl1,'(i0)') 2*nesh(1)
-        write(ncl2,'(i0)') 2*nesh(2)
-        if(nopen > 0)then
-          amfH5Data(i)%path(5)(1:20) = "C"//trim(ncl1)//trim(ncl2)//"O1"
-        else
-          amfH5Data(i)%path(5)(1:20) = "C"//trim(ncl1)//trim(ncl2)//"O0"
-        endif
 
     end do
 
@@ -212,6 +204,23 @@ contains
 ! 
   end subroutine xamfi_init
 !**********************************************************************
+
+  subroutine xamfi_set_e_configuration(center)
+#include "dcborb.h"
+        integer, intent(in) :: center
+        character(len=20)   :: ncl1, ncl2, no1,no2
+    ! electronic configuration
+        amfH5Data(center)%path(5)(1:20) = ""
+        write(ncl1,'(i0)') 2*nish(1)
+        write(ncl2,'(i0)') 2*nish(2)
+        if(sum(nash) > 0)then
+          write(no1,'(i0)') 2*nash(1)
+          write(no2,'(i0)') 2*nash(2)
+          amfH5Data(center)%path(5)(1:20) = "C"//trim(ncl1)//trim(ncl2)//"O1"//trim(no1)//trim(no2)
+        else
+          amfH5Data(center)%path(5)(1:20) = "C"//trim(ncl1)//trim(ncl2)//"O0"
+        endif
+  end subroutine xamfi_set_e_configuration
 
   subroutine xamfi_finalize()
 

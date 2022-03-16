@@ -3220,6 +3220,7 @@ C
 
 
             call goodbye_xamfi(atom(1)%charge)
+            call deallocate_aobasis_container()
 
             !> restore logicals
             if(aoofocc)then
@@ -3282,7 +3283,6 @@ C     Memory deallocation
 
 #ifdef MOD_XAMFI
       if(aoomod) call xamfi_finalize()
-      call deallocate_aobasis_container()
 #endif
 
       CALL QEXIT('GMOTRA')
