@@ -34,7 +34,7 @@ module amfDataStorage
         type, public                            :: hdfDataStorage
                 character(len= 7)               :: fname = "amfPCEC"
                 character(len = 20),allocatable :: path(:)
-                integer                         :: pathDim = 5
+               ! integer                         :: pathDim = 5
                 integer(kind=8)                 :: fileId
                 integer(kind=8),allocatable     :: groupId(:)
                 integer(kind=8),allocatable     :: dsetId(:)

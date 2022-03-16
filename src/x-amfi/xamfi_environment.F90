@@ -174,28 +174,29 @@ contains
     do i = 1, j
         allocate(amfH5Data(i)%path(amfpathDim), stat=ier ); if( ier.ne.0 ) &
                                                          stop ' aoosoc init: Error in allocation: amfH5Data(:)%path'
+        amfH5Data(i)%path = ""
 
     ! method
-        amfH5Data(i)%path(1)(1:20) = ""
+       ! amfH5Data(i)%path(1)(1:20) = ""
         if(dirac_cfg_dft_calculation)then
             amfH5Data(i)%path(1)(1:3) = "DFT"
         else
             amfH5Data(i)%path(1)(1:2) = "HF"
         end if
-    !           element
-        amfH5Data(i)%path(2)(1:20) = ""
+    ! element
+       ! amfH5Data(i)%path(2)(1:20) = ""
         write(amfH5Data(i)%path(2),'(i0)') atom(i)%charge
-    !                   basis
-        amfH5Data(i)%path(3)(1:20) = ""
+    ! basis
+       ! amfH5Data(i)%path(3)(1:20) = ""
         amfH5Data(i)%path(3)(1:5) = "dummy"
-    !                           nuclei model
-        amfH5Data(i)%path(4)(1:20) = ""
+    ! nuclei model
+       ! amfH5Data(i)%path(4)(1:20) = ""
         if(gaunuc)then
                 amfH5Data(i)%path(4)(1:6) = "finite"
         else
                 amfH5Data(i)%path(4)(1:5) = "point"
         end if
-    !                                           electronic configuration
+    ! electronic configuration
         amfH5Data(i)%path(5)(1:20) = ""
         write(ncl1,'(i0)') 2*nesh(1)
         write(ncl2,'(i0)') 2*nesh(2)

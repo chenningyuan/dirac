@@ -15,7 +15,7 @@
 !dirac_copyright_end
 !
 !
-! interafe to write HDF5 used to create an hdf5 file directory 
+! interaface to create an hdf5 file directory 
 !
 ! written by Kai N. Spauszus (and stknecht) March 2022
 !
@@ -40,9 +40,9 @@ subroutine write_hdf5(hdfData)
         integer                                 :: i 
 
         hdfData%fileId = mh5_open_file_a(hdfData%fname)   ! append file
-        allocate(hdfData%groupId(0:hdfData%pathDim)); hdfData%groupId(0) = hdfData%fileId
+        allocate(hdfData%groupId(0:amfpathDim)); hdfData%groupId(0) = hdfData%fileId
         
-        do i=1,hdfData%pathDim   ! create directory according to path                
+        do i=1,amfpathDim   ! create directory according to path                
                 hdfData%groupId(i) = mh5_create_group(hdfData%groupId(i-1), trim(hdfData%path(i)))
         end do
                 
@@ -50,22 +50,21 @@ subroutine write_hdf5(hdfData)
 
         do i=1, size(hdfData%dataStorage)   !write data according to size of dset and add size as attribute
                 if(size(hdfData%dataStorage(i)%mat) == 1) then
-                        hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(hdfData%pathDim)        ,&
-                                                                hdfData%dataStorage(i)%dataName          ,&
-                                                                int8(1)                                  ,&
-                                                                [size(hdfData%dataStorage(i)%mat         ,&
-                                                                kind=8)                                   &
-                                                                ])
+                        hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(amfpathDim)              ,&
+                                                                 hdfData%dataStorage(i)%dataName          ,&
+                                                                 int8(1)                                  ,&
+                                                                 [size(hdfData%dataStorage(i)%mat         ,&
+                                                                  kind=8)                                  &
+                                                                 ])
                         call mh5_init_attr(hdfData%dsetId(i), "DESCRIPTION", "scalar:f*8") 
                 else if(size(hdfData%dataStorage(i)%mat)==3) then
-                        hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(hdfData%pathDim)         ,&
+                        hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(amfpathDim)              ,&
                                                                  hdfData%dataStorage(i)%dataName          ,&
                                                                  int8(3)                                  ,&
                                                                  [int8(hdfData%dataStorage(i)%nrow)       ,&
                                                                   int8(hdfData%dataStorage(i)%ncol)       ,&
                                                                   int8(hdfData%dataStorage(i)%ndim)]       &
                                                                  )
-                      
                         write(rows, "(i0)") hdfData%dataStorage(i)%nrow
                         write(cols, "(i0)") hdfData%dataStorage(i)%ncol
                         write(dims, "(i0)") hdfData%dataStorage(i)%ndim
