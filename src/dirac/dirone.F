@@ -3089,7 +3089,7 @@ C
      &                                              lux2c, 0)
             close(lux2c, status='keep')
 
-          !> ... or 
+          !> ... or
           !> b. save the G_A[2c] contribution to calculate the final 2e-SO+scalar atomic correction below
           else !
             open(lux2c,file='D2FCK_mmf',status='unknown',
@@ -3117,7 +3117,7 @@ C
 
         end if ! x2c_2c_mmf_mos == .true.
 
-#ifdef MOD_XAMFI 
+#ifdef MOD_XAMFI
         !>                                                              ~
         !>  final step for atomic 2e-spin-orbit and scalar corrections: G_A^{++} = {U+ G_A[4c] U}^{++} - G_A[2c]
 
@@ -3274,6 +3274,8 @@ C
      &                                  lux2c,
      &                                  .true.
      &                                 )
+
+            end if
 
             call goodbye_xamfi(atom(1)%charge)
             call deallocate_aobasis_container()
