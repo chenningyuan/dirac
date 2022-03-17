@@ -39,6 +39,8 @@ subroutine write_hdf5(hdfData)
         character(len =  3)                     :: rows, cols, dims
         integer                                 :: i 
 
+        print *, 'hdfData%fname = ',hdfData%fname
+
         hdfData%fileId = mh5_open_file_a(hdfData%fname)   ! append file
         allocate(hdfData%groupId(0:amfpathDim)); hdfData%groupId(0) = hdfData%fileId
         
@@ -46,7 +48,7 @@ subroutine write_hdf5(hdfData)
                 hdfData%groupId(i) = mh5_create_group(hdfData%groupId(i-1), trim(hdfData%path(i)))
         end do
                 
-        allocate(hdfData%dsetId(size(hdfData%dataStorage)))
+        print *, 'hdfData%sizedatastorage = ',size(hdfData%dataStorage)
 
         do i=1, size(hdfData%dataStorage)   !write data according to size of dset and add size as attribute
                 if(size(hdfData%dataStorage(i)%mat) == 1) then
@@ -57,7 +59,14 @@ subroutine write_hdf5(hdfData)
                                                                   kind=8)                                  &
                                                                  ])
                         call mh5_init_attr(hdfData%dsetId(i), "DESCRIPTION", "scalar:f*8") 
-                else if(size(hdfData%dataStorage(i)%mat)==3) then
+                else!if(size(hdfData%dataStorage(i)%mat)==3) then
+                        print *, 'hdfData%sizedatastorageMAT = ',size(hdfData%dataStorage(i)%mat)
+                        print *, 'hdfData%groupID            = ',hdfData%groupId(0:amfpathDim), amfpathDim
+                        print *, 'hdfData%dataNAME           = ',hdfData%dataStorage(i)%dataName
+                        print *, 'hdfData%datanrow           = ',hdfData%dataStorage(i)%nrow
+                        print *, 'hdfData%datancol           = ',hdfData%dataStorage(i)%ncol
+                        print *, 'hdfData%datandim           = ',hdfData%dataStorage(i)%ndim
+                        print *, 'hdfData%datamat(1:10)      = ',hdfData%dataStorage(i)%mat(1:10)
                         hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(amfpathDim)              ,&
                                                                  hdfData%dataStorage(i)%dataName          ,&
                                                                  int8(3)                                  ,&

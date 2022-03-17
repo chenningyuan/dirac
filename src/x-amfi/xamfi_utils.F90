@@ -30,8 +30,8 @@ module xamfi_utils
   use xamfi_internal_parameters, only: aoo_dfopen, aoo_nopen, aoo_n2tmt,        &
                                        nr_fsym, nr_ao_all, nr_tmo, ioff_aomat_x,&
                                        lutmat_aoo, N2BBASXQ_dim_aoo,            &
-                                       ioff_tmot, ioff_tmt, nzt_aoo
-  use amfDataStorage
+                                       ioff_tmot, ioff_tmt, nzt_aoo, amfh5Data
+  use amfH5Interface
   
 #ifdef DEBUG_SOC
   use x2c_utils, only: print_x2cmat
@@ -272,6 +272,18 @@ contains
         6                          &
        )
 #endif
+
+        !> HDF5 data dump   
+        allocate(amfh5Data(1)%dataStorage(1))
+        allocate(amfh5Data(1)%dataStorage(1)%mat(nrow*ncol*nzc1)); amfh5Data(1)%dataStorage(1)%mat = 0
+        amfh5Data(1)%dataStorage(1)%nrow=nrow; amfh5Data(1)%dataStorage(1)%ncol     = ncol
+        amfh5Data(1)%dataStorage(1)%ndim=nzc1; amfh5Data(1)%dataStorage(1)%dataName = file_base
+
+        call dcopy(nrow*ncol*nzc1,Gmat_c1,1,amfh5Data(1)%dataStorage(1)%mat,1)
+
+        call write_hdf5(amfh5Data(1))
+
+        deallocate(amfh5Data)
 
         write(fh) nrow, ncol, nzc1
         write(fh) Gmat_c1
