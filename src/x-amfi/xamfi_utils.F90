@@ -274,18 +274,11 @@ contains
 #endif
 
         !> HDF5 data dump
-        allocate(amfh5Data(1)%dataStorage(1))
-        nullify(amfh5Data(1)%dataStorage(1)%mat)
-        amfh5Data(1)%dataStorage(1)%mat => Gmat_c1
-
-        amfh5Data(1)%dataStorage(1)%nrow=nrow; amfh5Data(1)%dataStorage(1)%ncol     = ncol
-        amfh5Data(1)%dataStorage(1)%ndim=nzc1; amfh5Data(1)%dataStorage(1)%dataName = file_base
+        call set_data_hdf5(hdfData=amfh5Data(1),xdata=Gmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
 
         call write_hdf5(amfh5Data(1))
 
-        if(associated(amfh5Data(1)%dataStorage(1)%mat)) nullify(amfh5Data(1)%dataStorage(1)%mat)
-
-        deallocate(amfh5Data(1)%dataStorage)
+        call release_data_hdf5(hdfData=amfh5Data(1))
 
         write(fh) nrow, ncol, nzc1
         write(fh) Gmat_c1
@@ -435,18 +428,11 @@ aoo_cb_pq_to_uq(1,0),      &
 #endif
 
 !> HDF5 data dump
-allocate(amfh5Data(1)%dataStorage(1))
-nullify(amfh5Data(1)%dataStorage(1)%mat)
-amfh5Data(1)%dataStorage(1)%mat => Dmat_c1
-
-amfh5Data(1)%dataStorage(1)%nrow=nrow; amfh5Data(1)%dataStorage(1)%ncol     = ncol
-amfh5Data(1)%dataStorage(1)%ndim=nzc1; amfh5Data(1)%dataStorage(1)%dataName = file_base
+call set_data_hdf5(hdfData=amfh5Data(1),xdata=Dmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
 
 call write_hdf5(amfh5Data(1))
 
-if(associated(amfh5Data(1)%dataStorage(1)%mat)) nullify(amfh5Data(1)%dataStorage(1)%mat)
-
-deallocate(amfh5Data(1)%dataStorage)
+call release_data_hdf5(hdfData=amfh5Data(1))
 
 write(fh) nrow, ncol, nzc1
 write(fh) Dmat_c1
@@ -499,18 +485,12 @@ end subroutine dump_Xc_c1_dens
 
     if(final_dump)then
         !> HDF5 data dump
-        allocate(amfh5Data(1)%dataStorage(1))
-        nullify(amfh5Data(1)%dataStorage(1)%mat)
-        amfh5Data(1)%dataStorage(1)%mat => Gscalar3d
 
-        amfh5Data(1)%dataStorage(1)%nrow=1; amfh5Data(1)%dataStorage(1)%ncol     = 1
-        amfh5Data(1)%dataStorage(1)%ndim=1; amfh5Data(1)%dataStorage(1)%dataName = file_base
+        call set_data_hdf5(hdfData=amfh5Data(1),xdata=Gscalar3d,nrow=1,ncol=1,ndim=1,dataName=file_base)
 
         call write_hdf5(amfh5Data(1))
 
-        if(associated(amfh5Data(1)%dataStorage(1)%mat)) nullify(amfh5Data(1)%dataStorage(1)%mat)
-
-        deallocate(amfh5Data(1)%dataStorage)
+        call release_data_hdf5(hdfData=amfh5Data(1))
 
         write(fh) Gscalar
     end if

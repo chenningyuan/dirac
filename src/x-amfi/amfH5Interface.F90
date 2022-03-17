@@ -29,8 +29,33 @@ module amfH5Interface
         implicit none
 
         public write_hdf5
+        public set_data_hdf5
+        public release_data_hdf5
 
 contains
+
+subroutine set_data_hdf5(hdfData,xdata,nrow,ncol,ndim,dataName)
+        type(hdfDataStorage),intent(inout)      :: hdfData
+        real*8 ,             intent(in), target :: xdata(:,:,:)
+        integer,             intent(in)         :: nrow, ncol, ndim
+        character(len=8),    intent(in)         :: dataName
+
+        allocate(hdfData%dataStorage(1))
+        nullify(hdfData%dataStorage(1)%mat)
+        hdfData%dataStorage(1)%mat => xdata
+
+        hdfData%dataStorage(1)%nrow=nrow; hdfData%dataStorage(1)%ncol     = ncol
+        hdfData%dataStorage(1)%ndim=ndim; hdfData%dataStorage(1)%dataName = dataName
+
+end subroutine set_data_hdf5
+
+subroutine release_data_hdf5(hdfData)
+        type(hdfDataStorage),intent(inout)      :: hdfData
+
+        if(associated(hdfData%dataStorage(1)%mat)) nullify(hdfData%dataStorage(1)%mat)
+        deallocate(hdfData%dataStorage)
+
+end subroutine release_data_hdf5
 
 subroutine write_hdf5(hdfData)
 
@@ -57,7 +82,7 @@ subroutine write_hdf5(hdfData)
                                                                   kind=8)                                  &
                                                                  ])
                         call mh5_init_attr(hdfData%dsetId(i), "DESCRIPTION", "scalar:f*8") 
-                else!if(size(hdfData%dataStorage(i)%mat)==3) then
+                else
                         hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(amfpathDim)              ,&
                                                                  hdfData%dataStorage(i)%dataName          ,&
                                                                  int8(3)                                  ,&
