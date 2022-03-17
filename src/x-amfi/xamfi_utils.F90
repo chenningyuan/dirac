@@ -182,7 +182,7 @@ contains
      integer                       :: i, irep, iz, iq, ipar, irepd, ipq, j, k
      character (len=3)             :: file_extension
      character (len=12)            :: file_name
-     real*8, ALLOCATABLE           :: Gmat_c1(:,:,:)
+     real*8, ALLOCATABLE,target    :: Gmat_c1(:,:,:)
      integer, PARAMETER            :: nzc1 = 4
 !----------------------------------------------------------------------
 
@@ -273,17 +273,19 @@ contains
        )
 #endif
 
-        !> HDF5 data dump   
+        !> HDF5 data dump
         allocate(amfh5Data(1)%dataStorage(1))
-        allocate(amfh5Data(1)%dataStorage(1)%mat(nrow*ncol*nzc1)); amfh5Data(1)%dataStorage(1)%mat = 0
+        nullify(amfh5Data(1)%dataStorage(1)%mat)
+        amfh5Data(1)%dataStorage(1)%mat => Gmat_c1
+
         amfh5Data(1)%dataStorage(1)%nrow=nrow; amfh5Data(1)%dataStorage(1)%ncol     = ncol
         amfh5Data(1)%dataStorage(1)%ndim=nzc1; amfh5Data(1)%dataStorage(1)%dataName = file_base
 
-        call dcopy(nrow*ncol*nzc1,Gmat_c1,1,amfh5Data(1)%dataStorage(1)%mat,1)
-
         call write_hdf5(amfh5Data(1))
 
-        deallocate(amfh5Data)
+        if(associated(amfh5Data(1)%dataStorage(1)%mat)) nullify(amfh5Data(1)%dataStorage(1)%mat)
+
+        deallocate(amfh5Data(1)%dataStorage)
 
         write(fh) nrow, ncol, nzc1
         write(fh) Gmat_c1
@@ -336,7 +338,7 @@ logical, intent(in)           :: final_dump
 integer                       :: i, irep, iz, iq, ipar, irepd, ipq
 character (len=3)             :: file_extension
 character (len=12)            :: file_name
-real*8, ALLOCATABLE           :: Dmat_c1(:,:,:)
+real*8, ALLOCATABLE,target    :: Dmat_c1(:,:,:)
 integer, PARAMETER            :: nzc1 = 4
 !----------------------------------------------------------------------
 
@@ -432,6 +434,20 @@ aoo_cb_pq_to_uq(1,0),      &
 #undef DEBUG_SOC
 #endif
 
+!> HDF5 data dump
+allocate(amfh5Data(1)%dataStorage(1))
+nullify(amfh5Data(1)%dataStorage(1)%mat)
+amfh5Data(1)%dataStorage(1)%mat => Dmat_c1
+
+amfh5Data(1)%dataStorage(1)%nrow=nrow; amfh5Data(1)%dataStorage(1)%ncol     = ncol
+amfh5Data(1)%dataStorage(1)%ndim=nzc1; amfh5Data(1)%dataStorage(1)%dataName = file_base
+
+call write_hdf5(amfh5Data(1))
+
+if(associated(amfh5Data(1)%dataStorage(1)%mat)) nullify(amfh5Data(1)%dataStorage(1)%mat)
+
+deallocate(amfh5Data(1)%dataStorage)
+
 write(fh) nrow, ncol, nzc1
 write(fh) Dmat_c1
 DEALLOCATE(Dmat_c1)
@@ -463,6 +479,7 @@ end subroutine dump_Xc_c1_dens
      logical, intent(in)           :: final_dump
 !----------------------------------------------------------------------
      integer                       :: i
+     real(8), allocatable, target  :: Gscalar3d(:,:,:)
      character (len=3)             :: file_extension
      character (len=12)            :: file_name
 !----------------------------------------------------------------------
@@ -474,14 +491,32 @@ end subroutine dump_Xc_c1_dens
     end do
     write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
 
+    allocate(Gscalar3d(1,1,1)); Gscalar3d = Gscalar
+
 !   dump DELTA XC on file
     open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
          access='sequential',action="readwrite",position='rewind')
 
     if(final_dump)then
+        !> HDF5 data dump
+        allocate(amfh5Data(1)%dataStorage(1))
+        nullify(amfh5Data(1)%dataStorage(1)%mat)
+        amfh5Data(1)%dataStorage(1)%mat => Gscalar3d
+
+        amfh5Data(1)%dataStorage(1)%nrow=1; amfh5Data(1)%dataStorage(1)%ncol     = 1
+        amfh5Data(1)%dataStorage(1)%ndim=1; amfh5Data(1)%dataStorage(1)%dataName = file_base
+
+        call write_hdf5(amfh5Data(1))
+
+        if(associated(amfh5Data(1)%dataStorage(1)%mat)) nullify(amfh5Data(1)%dataStorage(1)%mat)
+
+        deallocate(amfh5Data(1)%dataStorage)
+
         write(fh) Gscalar
     end if
     close(fh,status='keep')
+
+    deallocate(Gscalar3d)
 
   end subroutine dump_delta_xc_energy
 !----------------------------------------------------------------------

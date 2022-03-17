@@ -27,12 +27,12 @@ module amfDataStorage
                 integer                 :: nrow = -1
                 integer                 :: ncol = -1
                 integer                 :: ndim = -1
-                real(8), allocatable    :: mat(:)
+                real(8), pointer        :: mat(:,:,:)
         end type dataStorage
 
 
         type, public                            :: hdfDataStorage
-                character(len= 7)               :: fname = "amfPCEC"
+                character(len=10)               :: fname = "amfPCEC.h5"
                 character(len = 40),allocatable :: path(:)
                ! integer                         :: pathDim = 5
                 integer(kind=8)                 :: fileId

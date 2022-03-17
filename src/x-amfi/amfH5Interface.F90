@@ -35,20 +35,18 @@ contains
 subroutine write_hdf5(hdfData)
 
         type(hdfDataStorage),intent(inout)      :: hdfData
-        character(len = 50)                     :: description
-        character(len =  3)                     :: rows, cols, dims
-        integer                                 :: i 
-
-        print *, 'hdfData%fname = ',hdfData%fname
+        character(len = 80)                     :: description
+        character(len =  8)                     :: rows, cols, dims
+        integer                                 :: i
 
         hdfData%fileId = mh5_open_file_a(hdfData%fname)   ! append file
         allocate(hdfData%groupId(0:amfpathDim)); hdfData%groupId(0) = hdfData%fileId
-        
-        do i=1,amfpathDim   ! create directory according to path                
+
+        do i=1,amfpathDim   ! create directory according to path
                 hdfData%groupId(i) = mh5_create_group(hdfData%groupId(i-1), trim(hdfData%path(i)))
         end do
-                
-        print *, 'hdfData%sizedatastorage = ',size(hdfData%dataStorage)
+
+        allocate(hdfData%dsetId(size(hdfData%dataStorage))); hdfData%dsetId = -1
 
         do i=1, size(hdfData%dataStorage)   !write data according to size of dset and add size as attribute
                 if(size(hdfData%dataStorage(i)%mat) == 1) then
@@ -60,13 +58,6 @@ subroutine write_hdf5(hdfData)
                                                                  ])
                         call mh5_init_attr(hdfData%dsetId(i), "DESCRIPTION", "scalar:f*8") 
                 else!if(size(hdfData%dataStorage(i)%mat)==3) then
-                        print *, 'hdfData%sizedatastorageMAT = ',size(hdfData%dataStorage(i)%mat)
-                        print *, 'hdfData%groupID            = ',hdfData%groupId(0:amfpathDim), amfpathDim
-                        print *, 'hdfData%dataNAME           = ',hdfData%dataStorage(i)%dataName
-                        print *, 'hdfData%datanrow           = ',hdfData%dataStorage(i)%nrow
-                        print *, 'hdfData%datancol           = ',hdfData%dataStorage(i)%ncol
-                        print *, 'hdfData%datandim           = ',hdfData%dataStorage(i)%ndim
-                        print *, 'hdfData%datamat(1:10)      = ',hdfData%dataStorage(i)%mat(1:10)
                         hdfData%dsetId(i) = mh5_create_dset_real(hdfData%groupId(amfpathDim)              ,&
                                                                  hdfData%dataStorage(i)%dataName          ,&
                                                                  int8(3)                                  ,&
@@ -77,13 +68,15 @@ subroutine write_hdf5(hdfData)
                         write(rows, "(i0)") hdfData%dataStorage(i)%nrow
                         write(cols, "(i0)") hdfData%dataStorage(i)%ncol
                         write(dims, "(i0)") hdfData%dataStorage(i)%ndim
-                        description = "arranged matrix of size["//rows//","//cols//","//dims//"]"
-                        call mh5_init_attr(hdfData%dsetId(i), "DESCRIPTION" , description)
+                        description = "arranged matrix of size["//trim(rows)//","//trim(cols)//","//trim(dims)//"]"
+                        call mh5_init_attr(hdfData%dsetId(i), "DESCRIPTION" , trim(description))
                 end if
-                call mh5_put_dset(hdfData%dsetId(i),hdfData%dataStorage(i)%dataName)
+                call mh5_put_dset(hdfData%dsetId(i),hdfData%dataStorage(i)%mat)
         end do
 
         call mh5_close_file(hdfData%fileId)
+
+        deallocate(hdfData%groupId,hdfData%dsetId)
 
 end subroutine write_hdf5
 
