@@ -274,11 +274,11 @@ contains
 #endif
 
         !> HDF5 data dump
-        call set_data_hdf5(hdfData=amfh5Data(1),xdata=Gmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
+        call amf_set_data_hdf5(hdfData=amfh5Data(1),xdata=Gmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
 
-        call write_hdf5(amfh5Data(1))
+        call amf_write_hdf5(amfh5Data(1))
 
-        call release_data_hdf5(hdfData=amfh5Data(1))
+        call amf_release_data_hdf5(hdfData=amfh5Data(1))
 
         write(fh) nrow, ncol, nzc1
         write(fh) Gmat_c1
@@ -428,11 +428,11 @@ aoo_cb_pq_to_uq(1,0),      &
 #endif
 
 !> HDF5 data dump
-call set_data_hdf5(hdfData=amfh5Data(1),xdata=Dmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
+call amf_set_data_hdf5(hdfData=amfh5Data(1),xdata=Dmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
 
-call write_hdf5(amfh5Data(1))
+call amf_write_hdf5(amfh5Data(1))
 
-call release_data_hdf5(hdfData=amfh5Data(1))
+call amf_release_data_hdf5(hdfData=amfh5Data(1))
 
 write(fh) nrow, ncol, nzc1
 write(fh) Dmat_c1
@@ -486,11 +486,11 @@ end subroutine dump_Xc_c1_dens
     if(final_dump)then
         !> HDF5 data dump
 
-        call set_data_hdf5(hdfData=amfh5Data(1),xdata=Gscalar3d,nrow=1,ncol=1,ndim=1,dataName=file_base)
+        call amf_set_data_hdf5(hdfData=amfh5Data(1),xdata=Gscalar3d,nrow=1,ncol=1,ndim=1,dataName=file_base)
 
-        call write_hdf5(amfh5Data(1))
+        call amf_write_hdf5(amfh5Data(1))
 
-        call release_data_hdf5(hdfData=amfh5Data(1))
+        call amf_release_data_hdf5(hdfData=amfh5Data(1))
 
         write(fh) Gscalar
     end if

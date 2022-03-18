@@ -22,24 +22,22 @@
 module amfDataStorage
         implicit none
 
-        type, public                    :: dataStorage
-                character(len= 8)       :: dataName
-                integer                 :: nrow = -1
-                integer                 :: ncol = -1
-                integer                 :: ndim = -1
-                real(8), pointer        :: mat(:,:,:)
+        type, public                            :: dataStorage
+                integer(kind=8)                 :: dsetId
+                character(len= 8)               :: dataName
+                integer                         :: nrow = -1
+                integer                         :: ncol = -1
+                integer                         :: ndim = -1
+                real(8), pointer                :: mat(:,:,:)
         end type dataStorage
 
 
         type, public                            :: hdfDataStorage
                 character(len=10)               :: fname = "amfPCEC.h5"
-                character(len = 40),allocatable :: path(:)
-               ! integer                         :: pathDim = 5
                 integer(kind=8)                 :: fileId
+                character(len = 40),allocatable :: path(:)
                 integer(kind=8),allocatable     :: groupId(:)
-                integer(kind=8),allocatable     :: dsetId(:)
-                type(dataStorage),allocatable   :: dataStorage(:)
-
+                type(dataStorage)               :: dataStorage
         end type
 
         integer, parameter                      :: amfpathDim = 5

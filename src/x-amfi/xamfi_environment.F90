@@ -190,6 +190,11 @@ contains
     ! basis
        ! amfH5Data(i)%path(3)(1:20) = ""
         amfH5Data(i)%path(3)(1:40) = trim(aobasis_container(i))
+
+        !do while (index(amfH5Data(i)%path(3), '-') /= 0)
+        !    k = index(amfH5Data(i)%path(3), '-')
+        !    amfH5Data(i)%path(3)(k:k) = '_'
+        !end do
     ! nuclei model
        ! amfH5Data(i)%path(4)(1:20) = ""
         if(gaunuc)then
