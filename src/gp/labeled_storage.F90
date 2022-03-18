@@ -6,6 +6,7 @@
 ! Written by Lucas Visscher, spring 2021, one of the Covid years
 
 module labeled_storage
+
   implicit none
 
   private
@@ -25,6 +26,7 @@ module labeled_storage
   interface lab_read
       module procedure read_general
       module procedure read_single_real
+      module procedure read_3d_real
       module procedure read_single_int
       module procedure read_string_array
       module procedure read_dirac
@@ -51,6 +53,7 @@ module labeled_storage
 
       integer :: ierr
 
+      !write(6,*) '#0 read_general ',(present(rdata)); call flush(6)
       select case (file_info%type)
       case (1)
          ! We use DIRAC files (FORTRAN unformatted sequential)
@@ -64,6 +67,7 @@ module labeled_storage
       case (2)
          ! We use HDF5 files
          if (present(rdata)) then
+            !write(6,*) '#1 read_general ',(present(rdata)); call flush(6)
             call read_hdf5(file_info,label,rdata=rdata)
          elseif (present(idata)) then
             call read_hdf5(file_info,label,idata=idata)
@@ -124,10 +128,27 @@ module labeled_storage
       real(8),intent(out)                    :: rdata
       real(8)                                :: rdata_array(1)
 
+      write(6,*) '#0 read_single '; call flush(6)
       call read_general (file_info,label,rdata=rdata_array)
       rdata = rdata_array(1)
 
     end subroutine read_single_real
+
+    subroutine read_3d_real (file_info,label,rdata)
+      ! Wrapper around read_general to allow reading of 3d arrays
+      use, intrinsic :: ISO_C_BINDING
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(out),target             :: rdata(:,:,:)
+      real(8),            pointer            :: rdata1d(:)
+
+      nullify(rdata1d)
+      call C_F_POINTER (C_LOC(rdata), rdata1d, [size(rdata)])
+      !write(6,*) '#0 read_3d     '; call flush(6)
+      call read_general (file_info,label,rdata=rdata1d)
+      if(associated(rdata1d)) nullify(rdata1d)
+
+    end subroutine read_3d_real
 
     subroutine write_single_int (file_info,label,idata)
       ! Wrapper around write_general to allow writing of single numbers
@@ -320,6 +341,8 @@ module labeled_storage
          file_info%id = mh5_open_file_rw(file_info%name)
          file_info%status = 1
       end if
+
+      !write(6,*) '#0 read_hdf5 ',file_info%id,label; call flush(6)
 
       if (present(rdata)) then
          call mh5_fetch_dset(file_info%id,label,rdata)

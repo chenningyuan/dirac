@@ -197,7 +197,7 @@ subroutine amf_read_general(hdfData)
 
         label = trim(create_data_label(hdfData))
 
-        call lab_read(local_info,label,rdata=hdfData%dataStorage%mat(1,1,1))
+        call lab_read(local_info,label,rdata=hdfData%dataStorage%mat)
 
         deallocate(local_info%name)
 
@@ -209,7 +209,7 @@ function create_data_label(hdfData) result(label)
         if(amfpathDim /= 5) call quit('ERROR in create_data_label - PATH dimension /= 5!')
         label = trim(hdfData%path(1))//"/"//trim(hdfData%path(2))//"/"//trim(hdfData%path(3))//"/"//&
                 trim(hdfData%path(4))//"/"//trim(hdfData%path(5))//"/"//trim(hdfData%dataStorage%dataName)
-        !write(6,*) ' full label is ',label; call flush(6)
+        write(6,*) ' full label is ',label; call flush(6)
 
 end function create_data_label
 

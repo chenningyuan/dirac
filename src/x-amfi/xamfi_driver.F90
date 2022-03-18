@@ -291,7 +291,8 @@ contains
                                        nzc1,                            &
                                        file_name_aoo_contributions,     &
                                        nint(atom(center_total)%charge), &
-                                       aoo_fsoc                         &
+                                       aoo_fsoc,                        &
+                                       center_total                     &
                                       )
 
 #ifdef DEBUG_SOC
@@ -409,7 +410,8 @@ call read_xamfi_general_matrix(               &
              nzc1,                            &
              'aoo2e_4c',                      &
              nint(atom(center_total)%charge), &
-             101                              &
+             101,                             &
+             center_total                     &
                              )
 
 #ifdef DEBUG_SOC
@@ -529,7 +531,8 @@ call read_xamfi_general_matrix(                  &
                 nzc1,                            &
                 prefix(1:8),                     &
                 nint(atom(center_total)%charge), &
-                101                              &
+                101,                             &
+                center_total                     &
                               )
 
 #ifdef DEBUG_SOC
@@ -642,7 +645,8 @@ call read_xamfi_general_matrix(                  &
                 nzc1,                            &
                 prefix(1:8),                     &
                 nint(atom(center_total)%charge), &
-                101                              &
+                101,                             &
+                center_total                     &
                               )
 
 #ifdef DEBUG_SOC
@@ -739,7 +743,8 @@ if(nint(atom(center_total)%charge) > 1)then
 delta_xc_e =  read_xamfi_general_scalar(                                 &
                                         file_base,                       &
                                         nint(atom(center_total)%charge), &
-                                        101                              &
+                                        101,                             &
+                                        center_total                     &
                                        )
 !> debug print
 if(print_lvl > 1)then

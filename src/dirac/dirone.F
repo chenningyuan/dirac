@@ -3156,7 +3156,8 @@ C
      &                                     nz,
      &                                     'aoo2esoc',
      &                                     nint(charge(1)),
-     &                                     lux2c
+     &                                     lux2c,
+     &                                     1 !> atomic center id
      &                                    )
 #ifdef DEBUG_SOC
             CALL HEADER(
@@ -3202,7 +3203,8 @@ C
      &                                       nz,
      &                                       'amftVxc2',
      &                                       nint(charge(1)),
-     &                                       103
+     &                                       103,
+     &                                       1 !> atomic center id
      &                                      )
 
               open(103,file='amfVxc2',status='old',
@@ -3271,8 +3273,7 @@ C
      &                                  delta_xc_energy_aoosoc,
      &                                  'aooDLXCE',
      &                                  nint(charge(1)),
-     &                                  lux2c,
-     &                                  .true.
+     &                                  lux2c
      &                                 )
 
             end if

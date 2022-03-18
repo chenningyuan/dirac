@@ -280,6 +280,9 @@ contains
         write(fh) Gmat_c1
         DEALLOCATE(Gmat_c1)
     else
+        !> HDF5 data dump
+        call amf_write_hdf5(amfh5Data(1),Gmat,nrow,ncol,nz,file_base)
+
         write(fh) nrow, ncol, nz
         write(fh) Gmat
     end if
@@ -430,6 +433,9 @@ write(fh) nrow, ncol, nzc1
 write(fh) Dmat_c1
 DEALLOCATE(Dmat_c1)
 else !> final_dump
+
+!> HDF5 data dump
+call amf_write_hdf5(amfh5Data(1),Dmat(1,1,1,1),nrow,ncol,nz,file_base)
 write(fh) nrow, ncol, nz
 write(fh) Dmat
 end if
@@ -442,8 +448,7 @@ end subroutine dump_Xc_c1_dens
                                   Gscalar,                   &
                                   file_base,                 &
                                   element,                   &
-                                  fh,                        &
-                                  final_dump                 &
+                                  fh                         &
                                   )
 !----------------------------------------------------------------------
 !
@@ -454,7 +459,6 @@ end subroutine dump_Xc_c1_dens
      integer, intent(in)           :: fh
      integer, intent(in)           :: element
      character (len=8), intent(in) :: file_base
-     logical, intent(in)           :: final_dump
 !----------------------------------------------------------------------
      integer                       :: i
      character (len=3)             :: file_extension
@@ -472,12 +476,10 @@ end subroutine dump_Xc_c1_dens
     open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
          access='sequential',action="readwrite",position='rewind')
 
-    if(final_dump)then
-        !> HDF5 data dump
-        call amf_write_hdf5(amfh5Data(1),Gscalar,1,1,1,file_base)
+    !> HDF5 data dump
+    call amf_write_hdf5(amfh5Data(1),Gscalar,1,1,1,file_base)
 
-        write(fh) Gscalar
-    end if
+    write(fh) Gscalar
     close(fh,status='keep')
 
   end subroutine dump_delta_xc_energy
@@ -490,7 +492,8 @@ end subroutine dump_Xc_c1_dens
                                        nzc1,                       &
                                        file_base,                  &
                                        element,                    &
-                                       fh                          &
+                                       fh,                         &
+                                       atom_id                     &
                                       )
 !----------------------------------------------------------------------
 !
@@ -502,7 +505,7 @@ end subroutine dump_Xc_c1_dens
      integer, intent(in)           :: ncol
      integer, intent(in)           :: nzc1
      integer, intent(in)           :: fh
-     integer, intent(in)           :: element
+     integer, intent(in)           :: element, atom_id
      character (len=8), intent(in) :: file_base
 !----------------------------------------------------------------------
      integer                       :: i
@@ -542,13 +545,22 @@ end subroutine dump_Xc_c1_dens
 
      close(fh,status='keep')
 
+     !print *, ' atom_id => ', atom_id,' #0 first 4  elements of Gmat ==> ',Gmat(1,1,1),Gmat(2,1,1),Gmat(1,2,1),Gmat(2,2,1)
+     !write(6,*) ' read Gmat... '; call flush(6)
+     !Gmat = 0
+     call amf_read_hdf5(amfH5Data(atom_id),Gmat,file_base)
+     !print *, ' atom_id => ', atom_id,' #1 first 4  elements of Gmat ==> ',Gmat(1,1,1),Gmat(2,1,1),Gmat(1,2,1),Gmat(2,2,1)
+     !write(6,*) ' read Gmat... '; call flush(6)
+
+
   end subroutine read_xamfi_general_matrix
 !----------------------------------------------------------------------
 
   function read_xamfi_general_scalar(                            &
                                      file_base,                  &
                                      element,                    &
-                                     fh                          &
+                                     fh,                         &
+                                     atom_id                     &
                                     )result(Gscalar)
 !----------------------------------------------------------------------
 !
@@ -556,7 +568,7 @@ end subroutine dump_Xc_c1_dens
 !
 !----------------------------------------------------------------------
      integer, intent(in)           :: fh
-     integer, intent(in)           :: element
+     integer, intent(in)           :: element, atom_id
      character (len=8), intent(in) :: file_base
 !----------------------------------------------------------------------
      real*8                        :: Gscalar
@@ -580,6 +592,11 @@ end subroutine dump_Xc_c1_dens
      read(fh) Gscalar
 
      close(fh,status='keep')
+
+     !print *, ' atom_id => ', atom_id,' #0 Gscalar ==> ',Gscalar
+     !Gscalar = 0
+     call amf_read_hdf5(amfH5Data(atom_id),Gscalar,file_base)
+     !print *, ' atom_id => ', atom_id,' #1 Gscalar ==> ',Gscalar
 
   end function read_xamfi_general_scalar
 !----------------------------------------------------------------------
