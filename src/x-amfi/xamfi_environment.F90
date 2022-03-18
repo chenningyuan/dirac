@@ -195,6 +195,12 @@ contains
                 amfH5Data(i)%path(4)(1:5) = "point"
         end if
 
+     ! electronic configuration (of each atom type) to be set here in a molecular run
+     ! could be an input option for amfX2C, TODO!
+        if(nucdep > 1)then
+            call xamfi_set_e_configuration(i)
+        end if
+
     end do
 
 
