@@ -182,7 +182,7 @@ contains
      integer                       :: i, irep, iz, iq, ipar, irepd, ipq, j, k
      character (len=3)             :: file_extension
      character (len=12)            :: file_name
-     real*8, ALLOCATABLE,target    :: Gmat_c1(:,:,:)
+     real*8, ALLOCATABLE           :: Gmat_c1(:,:,:)
      integer, PARAMETER            :: nzc1 = 4
 !----------------------------------------------------------------------
 
@@ -274,11 +274,7 @@ contains
 #endif
 
         !> HDF5 data dump
-        call amf_set_data_hdf5(hdfData=amfh5Data(1),xdata=Gmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
-
-        call amf_write_hdf5(amfh5Data(1))
-
-        call amf_release_data_hdf5(hdfData=amfh5Data(1))
+        call amf_write_hdf5(amfh5Data(1),Gmat_c1,nrow,ncol,nzc1,file_base)
 
         write(fh) nrow, ncol, nzc1
         write(fh) Gmat_c1
@@ -331,7 +327,7 @@ logical, intent(in)           :: final_dump
 integer                       :: i, irep, iz, iq, ipar, irepd, ipq
 character (len=3)             :: file_extension
 character (len=12)            :: file_name
-real*8, ALLOCATABLE,target    :: Dmat_c1(:,:,:)
+real*8, ALLOCATABLE           :: Dmat_c1(:,:,:)
 integer, PARAMETER            :: nzc1 = 4
 !----------------------------------------------------------------------
 
@@ -428,11 +424,7 @@ aoo_cb_pq_to_uq(1,0),      &
 #endif
 
 !> HDF5 data dump
-call amf_set_data_hdf5(hdfData=amfh5Data(1),xdata=Dmat_c1,nrow=nrow,ncol=ncol,ndim=nzc1,dataName=file_base)
-
-call amf_write_hdf5(amfh5Data(1))
-
-call amf_release_data_hdf5(hdfData=amfh5Data(1))
+call amf_write_hdf5(amfh5Data(1),Dmat_c1,nrow,ncol,nzc1,file_base)
 
 write(fh) nrow, ncol, nzc1
 write(fh) Dmat_c1
@@ -465,7 +457,6 @@ end subroutine dump_Xc_c1_dens
      logical, intent(in)           :: final_dump
 !----------------------------------------------------------------------
      integer                       :: i
-     real(8), allocatable, target  :: Gscalar3d(:,:,:)
      character (len=3)             :: file_extension
      character (len=12)            :: file_name
 !----------------------------------------------------------------------
@@ -477,26 +468,17 @@ end subroutine dump_Xc_c1_dens
     end do
     write(file_name,'(a8,a1,a3)') file_base,'.',file_extension
 
-    allocate(Gscalar3d(1,1,1)); Gscalar3d = Gscalar
-
 !   dump DELTA XC on file
     open(fh,file=file_name(1:12),status='replace',form='unformatted',      &
          access='sequential',action="readwrite",position='rewind')
 
     if(final_dump)then
         !> HDF5 data dump
-
-        call amf_set_data_hdf5(hdfData=amfh5Data(1),xdata=Gscalar3d,nrow=1,ncol=1,ndim=1,dataName=file_base)
-
-        call amf_write_hdf5(amfh5Data(1))
-
-        call amf_release_data_hdf5(hdfData=amfh5Data(1))
+        call amf_write_hdf5(amfh5Data(1),Gscalar,1,1,1,file_base)
 
         write(fh) Gscalar
     end if
     close(fh,status='keep')
-
-    deallocate(Gscalar3d)
 
   end subroutine dump_delta_xc_energy
 !----------------------------------------------------------------------

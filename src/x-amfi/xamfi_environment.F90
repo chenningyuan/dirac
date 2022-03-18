@@ -170,7 +170,7 @@ contains
        aoo_nucdeg(1:mxcent) = nucdeg(1:mxcent)
     !> end
 
-    !> FOR HDF5 we need: 
+    !> FOR HDF5 we need:
     allocate(amfH5Data(j), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: amfH5Data(:)'
     do i = 1, j
         allocate(amfH5Data(i)%path(amfpathDim), stat=ier ); if( ier.ne.0 ) &
@@ -190,11 +190,6 @@ contains
     ! basis
        ! amfH5Data(i)%path(3)(1:20) = ""
         amfH5Data(i)%path(3)(1:40) = trim(aobasis_container(i))
-
-        !do while (index(amfH5Data(i)%path(3), '-') /= 0)
-        !    k = index(amfH5Data(i)%path(3), '-')
-        !    amfH5Data(i)%path(3)(k:k) = '_'
-        !end do
     ! nuclei model
        ! amfH5Data(i)%path(4)(1:20) = ""
         if(gaunuc)then

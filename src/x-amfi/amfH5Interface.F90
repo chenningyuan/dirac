@@ -31,43 +31,103 @@ module amfH5Interface
 
         public amf_write_hdf5
         public amf_read_hdf5
-        public amf_set_data_hdf5
-        public amf_release_data_hdf5
+
+        interface amf_write_hdf5
+            module procedure amf_write_1d
+            module procedure amf_write_3d
+        end interface amf_write_hdf5
+
+        interface amf_read_hdf5
+            module procedure amf_read_1d
+            module procedure amf_read_3d
+        end interface amf_read_hdf5
+
 
 contains
 
-subroutine amf_set_data_hdf5(hdfData,xdata,nrow,ncol,ndim,dataName)
+!> public interface routines
+
+subroutine amf_write_1d(hdfData,data_1d,nrow,ncol,ndim,dataName)
+
         type(hdfDataStorage),intent(inout)      :: hdfData
-        real*8 ,             intent(in), target :: xdata(:,:,:)
-        integer,             intent(in)         :: nrow, ncol, ndim
-        character(len=8),    intent(in)         :: dataName
+        real*8              ,intent(in)         :: data_1d
+        integer             ,intent(in)         :: nrow, ncol, ndim
+        character(len=8)    ,intent(in)         :: dataName
+
+        real*8, target                          :: data_1d_local(1,1,1)
+
+        data_1d_local(1,1,1) = data_1d
 
         nullify(hdfData%dataStorage%mat)
-        hdfData%dataStorage%mat => xdata
+        hdfData%dataStorage%mat => data_1d_local
 
         hdfData%dataStorage%nrow=nrow; hdfData%dataStorage%ncol     = ncol
         hdfData%dataStorage%ndim=ndim; hdfData%dataStorage%dataName = dataName
 
-end subroutine amf_set_data_hdf5
-
-subroutine amf_release_data_hdf5(hdfData)
-        type(hdfDataStorage),intent(inout)      :: hdfData
+        call amf_write_general(hdfData)
 
         if(associated(hdfData%dataStorage%mat)) nullify(hdfData%dataStorage%mat)
 
-end subroutine amf_release_data_hdf5
+end subroutine amf_write_1d
 
-function create_data_label(hdfData) result(label)
-        type(hdfDataStorage),intent(in)         :: hdfData
-        character(len=250)                      :: label
-        if(amfpathDim /= 5) call quit('ERROR in create_data_label - PATH dimension /= 5!')
-        label = trim(hdfData%path(1))//"/"//trim(hdfData%path(2))//"/"//trim(hdfData%path(3))//"/"//&
-                trim(hdfData%path(4))//"/"//trim(hdfData%path(5))//"/"//trim(hdfData%dataStorage%dataName)
-        !write(6,*) ' full label is ',label; call flush(6)
+subroutine amf_write_3d(hdfData,data_3d,nrow,ncol,ndim,dataName)
 
-end function create_data_label
+        type(hdfDataStorage),intent(inout)      :: hdfData
+        real*8, target      ,intent(in)         :: data_3d(nrow,ncol,ndim)
+        integer             ,intent(in)         :: nrow, ncol, ndim
+        character(len=8)    ,intent(in)         :: dataName
 
-subroutine amf_write_hdf5(hdfData)
+        nullify(hdfData%dataStorage%mat)
+        hdfData%dataStorage%mat => data_3d
+
+        hdfData%dataStorage%nrow=nrow; hdfData%dataStorage%ncol     = ncol
+        hdfData%dataStorage%ndim=ndim; hdfData%dataStorage%dataName = dataName
+
+        call amf_write_general(hdfData)
+
+        if(associated(hdfData%dataStorage%mat)) nullify(hdfData%dataStorage%mat)
+
+end subroutine amf_write_3d
+
+subroutine amf_read_1d(hdfData,data_1d,dataName)
+
+        type(hdfDataStorage),intent(inout)      :: hdfData
+        real*8              ,intent(out)        :: data_1d
+        character(len=8)    ,intent(in)         :: dataName
+
+        real*8, target                          :: data_1d_local(1,1,1)
+
+        nullify(hdfData%dataStorage%mat)
+        hdfData%dataStorage%mat => data_1d_local
+        hdfData%dataStorage%dataName = dataName
+
+        call amf_read_general(hdfData)
+
+        data_1d = data_1d_local(1,1,1)
+
+        if(associated(hdfData%dataStorage%mat)) nullify(hdfData%dataStorage%mat)
+
+end subroutine amf_read_1d
+
+subroutine amf_read_3d(hdfData,data_3d,dataName)
+
+        type(hdfDataStorage),intent(inout)      :: hdfData
+        real*8, target      ,intent(out)        :: data_3d(:,:,:)
+        character(len=8)    ,intent(in)         :: dataName
+
+        nullify(hdfData%dataStorage%mat)
+        hdfData%dataStorage%mat => data_3d
+        hdfData%dataStorage%dataName = dataName
+
+        call amf_read_general(hdfData)
+
+        if(associated(hdfData%dataStorage%mat)) nullify(hdfData%dataStorage%mat)
+
+end subroutine amf_read_3d
+
+!> private routines
+
+subroutine amf_write_general(hdfData)
 
         type(hdfDataStorage),intent(inout)      :: hdfData
         character(len = 80)                     :: description
@@ -124,9 +184,9 @@ subroutine amf_write_hdf5(hdfData)
 
         deallocate(hdfData%groupId)
 
-end subroutine amf_write_hdf5
+end subroutine amf_write_general
 
-subroutine amf_read_hdf5(hdfData)
+subroutine amf_read_general(hdfData)
 
         type(hdfDataStorage),intent(inout)      :: hdfData
 
@@ -141,6 +201,16 @@ subroutine amf_read_hdf5(hdfData)
 
         deallocate(local_info%name)
 
-end subroutine amf_read_hdf5
+end subroutine amf_read_general
+
+function create_data_label(hdfData) result(label)
+        type(hdfDataStorage),intent(in)         :: hdfData
+        character(len=250)                      :: label
+        if(amfpathDim /= 5) call quit('ERROR in create_data_label - PATH dimension /= 5!')
+        label = trim(hdfData%path(1))//"/"//trim(hdfData%path(2))//"/"//trim(hdfData%path(3))//"/"//&
+                trim(hdfData%path(4))//"/"//trim(hdfData%path(5))//"/"//trim(hdfData%dataStorage%dataName)
+        !write(6,*) ' full label is ',label; call flush(6)
+
+end function create_data_label
 
 end module amfH5Interface
