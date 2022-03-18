@@ -15,8 +15,7 @@ python merge_amf.py atom1/amfPCEC.h5 atom2/amfPCEC.h5 atom3/amfPCEC.h5
 """
 
 import h5py
-import glob
-from sys import argv
+from sys import argv, exit
 
 def h5py_dataset_iterator(g, prefix=''):
     for name, h5obj in g.items():
@@ -31,12 +30,11 @@ with h5py.File('amfPCEC.h5', mode='w') as h5w:
 
     print("Total number of input files passed :", len(argv)-1)
     if(len(argv)-1 == 0):
-        sys.exit('no input .h5 files are given! I need at least two files.')
+        exit('no input .h5 files are given! I need at least two files.')
     print("Input files are:")
     for value in argv[1:]:
         print(value)
 
-#   for h5source in glob.iglob('*.h5'):
     for h5source in argv[1:]:
         print(f'\nWorking on file: {h5source}')
         with h5py.File(h5source, mode='r') as h5r:
