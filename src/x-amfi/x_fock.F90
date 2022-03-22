@@ -334,6 +334,7 @@ real(8), allocatable               :: work(:)
 integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
 logical, allocatable               :: saveflags(:)
 logical                            :: parcal
+character(len=1)                   :: suffix
 !----------------------------------------------------------------------
        parcal = .false.
 #ifdef VAR_MPI
@@ -401,12 +402,26 @@ logical                            :: parcal
           !> new grid
           call generate_num_grid(dmat)
 #ifdef VAR_MPI
-        if (parcal) call dirac_parctl( XCINT_PAR )
+          if (parcal) call dirac_parctl( XCINT_PAR )
 #endif
-        call xcint_potential_rks(       &
-                                 nrows, &
-                                 dmat,  &
-                                 fmat)
+          allocate(work(nrows*ncols*nz)); work = 0
+          call xcint_potential_rks(       &
+                                   nrows, &
+                                   dmat,  &
+                                   work)
+          call daxpy(nrows*ncols*nz,1.0d0,work,1,fmat,1)
+          !> write F^{Xc,2e} aka V_xc
+          if(intflg == 1)then
+            write(suffix,'(i0)') 2
+          else
+            write(suffix,'(i0)') 4
+          end if
+          open(103,file='eamfVxc'//suffix,status='replace',form='unformatted',  &
+          access='sequential',action="write",position='rewind')
+          write(103) work(1:nrows*ncols*nz)
+          close(103,status='keep')
+          deallocate(work)
+
         end if
 
   end subroutine get_x_fock

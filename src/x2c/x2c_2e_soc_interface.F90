@@ -615,6 +615,7 @@ contains
      real*8 , allocatable            :: wrk(:)
      real*8                          :: delta_xc_e
      real*8                          :: delta_xc_mat_e
+     real*8, external                :: xcint_get_xc_energy
      integer, allocatable            :: aooso_info(:)
      integer                         :: i
      integer                         :: j
@@ -730,12 +731,64 @@ contains
               end if
               deallocate(aooso_info)
 
+             !> collect correction terms for XC energy and XC potential contribution
+             if(isDFT)then
+                delta_xc_e   = 0.0d0; delta_xc_mat_e   = 0.0d0
+                center_total = 1
+                do i = 1, nuclei_type
+                    delta_xc_e      =     delta_xc_e + collect_delta_xc_energy(i,              &
+                                                                               center_total,   &
+                                                                               'aooDLXCE',     &
+                                                                               print_lvl       &
+                                                                               )
+                end do
+                !print *, 'XC energy delta: ',delta_xc_e
+                call xcint_set_xc_energy_delta(delta_xc_e)
+
+                allocate(scr4_mat(nr_ao_L*nr_ao_L*nz)); scr4_mat = 0
+
+                !> set offsets in atomic basis to two-component mode
+                IPREAD  = IPREAD - 10000
+                TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.; RDINPC  = .FALSE.
+                CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
+                call x2c_prepare_delta_Vxc_from_atomic_blocks(scr4_mat,                          &
+                                                              nr_ao_L,                           &
+                                                              nz,                                &
+                                                              bs_irrep_mat,                      &
+                                                              ipq_off_in,                        &
+                                                              iqp_off_in,                        &
+                                                              iqmult_trip_q,                     &
+                                                              op_bs_to_fs,                       &
+                                                              quat_pointer,                      &
+                                                              nuclei_totnum,                     &
+                                                              nuclei_type,                       &
+                                                              print_lvl)
+                !> restore offsets in atomic basis to four-component mode (for now)
+                TWOCOMP = .FALSE.; TWOCOMPBSS = .FALSE.
+                CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
+                IPREAD = IPREAD + 10000
+
+                open(99,file='XAMFI-Vxc-contributions',status='replace',form='unformatted',  &
+                access='sequential',action="readwrite",position='rewind')
+
+                write(99) scr4_mat(1:nr_ao_L*nr_ao_L*nz)
+                close(99,status='keep')
+
+                deallocate(scr4_mat)
+
+       end if
+
        else ! eamf
 
               !> our correction term is \Delta F^{2c,2e} = { U+ F^{4c,2e}[D^{4c}_(+)atoms] U }^{++} -  F^{2c,2e}[D^{2c}_(+)atoms]
 
               !> to save memory we start with the second term: F^{2c,2e}[D^{2c}_(+)atoms]
 !                                                              --------------------------
+
+              !> DFT case - store 4c XC value first since we below recompute it in 2c mode
+              if(isdft) delta_xc_e = xcint_get_xc_energy();
+
+
               !> set offsets in atomic basis to two-component mode
               IPREAD  = IPREAD - 10000
               TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.
@@ -770,6 +823,9 @@ contains
                                                print_lvl)
               !> ... and reset (we will from here on continue in 2c mode)
               recompute_Gab = .false.;
+
+              !> DFT case - get 2c XC value and compute the difference
+              if(isdft) delta_xc_e = delta_xc_e - xcint_get_xc_energy();
 #else
               call quit('X-AMFI not avaliable in this version.')
 #endif
@@ -837,54 +893,60 @@ contains
                 call print_x2cmat(scr3_mat,nr_ao_L,nr_ao_L,nz,ipq_off_in,'x2c - eamf contributions',6)
               end if
 
+              !> prepare DFT specific corrections
+              if(isDFT)then
+                !print *, 'XC energy delta: ',delta_xc_e
+                call xcint_set_xc_energy_delta(delta_xc_e)
+
+                allocate(scr4_mat(naosh_ls*naosh_ls*nz));
+
+                !> read V_{xc}^{4c,2e}[D^{4c}_(+)atoms]
+                open(103,file='eamfVxc4',status='old',form='unformatted',  &
+                     access='sequential',action="readwrite",position='rewind')
+                read(103) scr4_mat(1:naosh_ls*naosh_ls*nz)
+                close(103,status='keep')
+
+                !> picture-change transformation { U+ V_{xc}^{4c,2e}[D^{4c}_(+)atoms] U }^{++}
+                op_fer_rep = 0
+
+                call perform_pct_saao_bas(scr4_mat,                     & ! on output: { U+ V_{xc}^{4c,2e}[D^{4c}_(+)atoms] U }^{++}
+                                          scr2_mat,                     & ! U
+                                          scr1_mat,                     & ! scratch
+                                          naosh_ls,                     &
+                                          nr_ao_L,                      &
+                                          naosh_all,                    &
+                                          naosh_L,                      &
+                                          nfsym,                        &
+                                          nz,                           &
+                                          ipq_off_in,                   &
+                                          ioff_aomat_x,                 &
+                                          op_fer_rep,                   &
+                                          op_bs_to_fs,                  &
+                                          .true.,                       &
+                                          print_lvl)
+
+                scr1_mat = 0;
+                !> read V_{xc}^{2c,2e}[D^{2c}_(+)atoms]
+                open(103,file='eamfVxc2',status='old',form='unformatted',  &
+                     access='sequential',action="readwrite",position='rewind')
+                read(103) scr1_mat(1:nr_ao_L*nr_ao_L*nz)
+                close(103,status='keep')
+
+                !> \Delta V_{xc} = V_{xc}^{4c,2e} - V_{xc}^{2c,2e}
+                call daxpy(nr_ao_L*nr_ao_L*nz,-1.0d0,scr1_mat,1,scr4_mat,1)
+
+                open(99,file='XAMFI-Vxc-contributions',status='replace',form='unformatted',  &
+                access='sequential',action="readwrite",position='rewind')
+
+                write(99) scr4_mat(1:nr_ao_L*nr_ao_L*nz)
+                close(99,status='keep')
+
+                deallocate(scr4_mat)
+
+              end if
+
        end if
 
-       !> collect correction terms for XC energy and XC potential contribution
-       if(isDFT)then
-         delta_xc_e   = 0.0d0; delta_xc_mat_e   = 0.0d0
-         center_total = 1
-         do i = 1, nuclei_type
-           delta_xc_e      =     delta_xc_e + collect_delta_xc_energy(i,              &
-                                                                      center_total,   &
-                                                                      'aooDLXCE',     &
-                                                                      print_lvl       &
-                                                                     )
-         end do
-         !print *, 'XC energy delta: ',delta_xc_e
-         call xcint_set_xc_energy_delta(delta_xc_e)
-
-         allocate(scr4_mat(nr_ao_L*nr_ao_L*nz)); scr4_mat = 0
-
-         !> set offsets in atomic basis to two-component mode
-         IPREAD  = IPREAD - 10000
-         TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.; RDINPC  = .FALSE.
-         CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
-         call x2c_prepare_delta_Vxc_from_atomic_blocks(scr4_mat,                  &
-                                               nr_ao_L,                           &
-                                               nz,                                &
-                                               bs_irrep_mat,                      &
-                                               ipq_off_in,                        &
-                                               iqp_off_in,                        &
-                                               iqmult_trip_q,                     &
-                                               op_bs_to_fs,                       &
-                                               quat_pointer,                      &
-                                               nuclei_totnum,                     &
-                                               nuclei_type,                       &
-                                               print_lvl)
-         !> restore offsets in atomic basis to four-component mode (for now)
-         TWOCOMP = .FALSE.; TWOCOMPBSS = .FALSE.
-         CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
-         IPREAD = IPREAD + 10000
-
-         open(99,file='XAMFI-Vxc-contributions',status='replace',form='unformatted',  &
-         access='sequential',action="readwrite",position='rewind')
-
-         write(99) scr4_mat(1:nr_ao_L*nr_ao_L*nz)
-         close(99,status='keep') 
-
-         deallocate(scr4_mat)
-
-       end if
 
 #define DEBUG_SOC
 #ifdef DEBUG_SOC
@@ -900,10 +962,10 @@ contains
        access='sequential',action="readwrite",position='rewind')
 
        write(99) scr3_mat(1:nr_ao_L*nr_ao_L*nz)
-       close(99,status='keep') 
+       close(99,status='keep')
 
 !      -------------------------------------------------------------------------
-!      read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions 
+!      read h1_2c_saao_cartesian_gaussian from file and add aoosoc contributions
 !      -------------------------------------------------------------------------
 
        scr2_mat = 0; scr1_mat = 0;
