@@ -9587,7 +9587,6 @@ C
       PFAC  = CVAL
       PNAME       = 'VpolxxX00Y00Z00'
       PLABEL = 'CM000000'
-
       IF (L.EQ.1) THEN ! for L=1 the set of multipoles reduces to (ca_x,ca_y,ca_z)
             COMPLAB = ['x1','y1','z1']
             NPCOMP = 1
@@ -9606,7 +9605,6 @@ C
             DO I = 1,3
                   CARPOW(I,I) = 1
             ENDDO
-
             DO IA = 0,L-2   
                   IX = L - 2 - IA
                   DO IB = 0,IA     !Loops over lower triangle
@@ -9635,14 +9633,12 @@ C
      &                       ,PLABEL(1),IPVPOL(II),ISYXPR,ITRXPR,IPRINT)          
                               IPTYP = IPTYP + 1
                         ENDDO
-
                         COMPLAB = ['zy','xz','yx']
                         DO IP = 1,3    !define multipole moments zy yz xz zx yx xy
                               NPCOMP = 2
                               PFAC(1) = CVAL 
                               PFAC(2) = -(L-1)*CVAL
-                              PNAME(5:6) = COMPLAB(IP)(1:1)
-     &                                   //COMPLAB(IP)(2:2)
+                              PNAME(5:6) = COMPLAB(IP)
                               PNAME( 8:9) = CHRNOS(IX/10)
      &                                     //CHRNOS(MOD(IX,10))
                               PNAME(11:12) = CHRNOS(IY/10)
@@ -9666,29 +9662,18 @@ C
                               II = II + 1
                               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL
      &                           ,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)    
-                              IF (L.GT.2) THEN !yz, zx and xy are not defined for L=2
-                                    PFAC(1) = (L-1)*CVAL 
-                                    PFAC(2) = -CVAL
-                                    PNAME(5:6) = COMPLAB(IP)(2:2)
-     &                                         //COMPLAB(IP)(1:1)
-                                    II = II + 1
-                                    CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC
+                              PFAC(1) = (L-1)*CVAL 
+                              PFAC(2) = -CVAL
+                              PNAME(5:6) = COMPLAB(IP)(2:2)
+     &                                   //COMPLAB(IP)(1:1)
+                              II = II + 1
+                              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC
      &                          ,PLABEL,IPVPOL(II),ISYXPR,ITRXPR,IPRINT)
-                              ENDIF    
                               IPTYP = IPTYP + 1
                         ENDDO
                   ENDDO
             ENDDO
       ENDIF
-
-
-
-
-
-
-
-
-
       END 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DEF_MPOLE(L,IPMPOL,IPRINT)

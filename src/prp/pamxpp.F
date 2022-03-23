@@ -834,17 +834,8 @@ C.....Generalized velocity gauge
         NPPAPT = NPPAPT + NDEG
       ENDDO
 C.....Generalized velocity representation electric multipoles     
-      IF (IVMAX.EQ.2) THEN
-        NDEG = 6
-        CALL DEF_VPOLE(2,LPPAPU(NPPAPT+1),IPRXPP)
-        IVPOFF(2) = NPPAPT
-        NPPAPT = NPPAPT + NDEG
-      ELSEIF (IVMAX.GT.2) THEN
-        NDEG = 6
-        CALL DEF_VPOLE(2,LPPAPU(NPPAPT+1),IPRXPP)
-        IVPOFF(2) = NPPAPT
-        NPPAPT = NPPAPT + NDEG
-        DO IORDER = 3,IVMAX
+      IF (IVMAX.GT.2) THEN
+        DO IORDER = 2,IVMAX
             NDEG = 9*(IORDER*(IORDER-1))/2
             CALL DEF_VPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
             IVPOFF(IORDER) = NPPAPT

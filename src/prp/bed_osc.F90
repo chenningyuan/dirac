@@ -246,7 +246,7 @@
 #include "dcbxpp.h"
 #include "dcbxpr.h"      
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
-      integer :: indices(k2),ind(3),IOFF(3,2)
+      integer :: indices(k2),ind(3),IOFF(3,-1:1)
       CHARACTER*10 DENOM
       PARAMETER(D2=2.0D0,D1=1.0D0)
       K=K2/2
@@ -282,9 +282,9 @@
           DO M = 0,K
             FAC = D2*(-D1)**M
             IF(M.EQ.0) FAC = D1
-!...........Left EPOL operator: order (K+M+1)
+!...........Left VPOL operator: order (K+M+1)
             IORD    = K + M + 1
-            IF (IORD.EQ.1) THEN  ! for L=1 EPOL reduces to (ca_x,ca_y,ca_z)
+            IF (IORD.EQ.1) THEN  ! for L=1 VPOL reduces to (ca_x,ca_y,ca_z)
               INDAPE = IBDOFF(0)+IP
             ELSE
               IND     = 0
@@ -294,29 +294,17 @@
               ENDDO
               LE = IORD - 2
               IA      = LE - IND(1)
-              IB      = IND(3)
-              IF (IP.EQ.INDICES(K+M)) THEN  ! condition to select multipole moments xx, yy and zz
-                INDAPE = IVPOFF(IORD) + IP + 9*(IB+(IA+1)*IA/2)
-              ELSE  
-                CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)     ! Levi-Civita symbol is used do distinguish           
-                IF (IORD.EQ.2) THEN                           ! zy from yz ; xz from zx ; yx from xy  
-                  IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF)) !
-                ELSE                                          !
-                  IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF)) ! numbers in IOFF are defined such that the indicex
-                ENDIF                                         ! IP is mapped to the right multipole moment, i.e. 
-                IF (IJKL.EQ.1) THEN                           ! (zy, yz, xz, zx, yx, xy)
-                  INDAPE = IVPOFF(IORD)+IOFF(IP,1) + 3 + 9*(IB+(IA+1)*IA/2)
-                ELSEIF(IJKL.EQ.-1) THEN 
-                  INDAPE = IVPOFF(IORD)+IOFF(IP,2) + 3 + 9*(IB+(IA+1)*IA/2)
-                ENDIF
-              ENDIF 
+              IB      = IND(3)                              !Levi-Civita symbol is used to
+              CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)     !distinguish 9 unique components VPOL
+              IOFF = RESHAPE((/8,4,6,IP,IP,IP,7,9,5/),SHAPE(IOFF)) ! numbers in IOFF are defined 
+              INDAPE = IVPOFF(IORD) + IOFF(IP,-IJKL) + 9*(IB+(IA+1)*IA/2) !such that it maps to the right multipole
             ENDIF 
               INDPEL  = LPPAPU(INDAPE)
               ISYMEL  = IPRPSYM(INDPEL)
               FACEL   = D1/GAMMA(REAL(IORD+1))
-!...........Right EPOL operator: order (K-M+1)
+!...........Right VPOL operator: order (K-M+1)
             IORD    = K - M + 1
-            IF (IORD.EQ.1) THEN ! for L=1 EPOL reduces to (ca_x,ca_y,ca_z)
+            IF (IORD.EQ.1) THEN ! for L=1 VPOL reduces to (ca_x,ca_y,ca_z)
               INDBPE = IBDOFF(0)+IQ
             ELSE
               IND     = 0
@@ -326,22 +314,10 @@
               ENDDO
               LE = IORD - 2
               IA = LE - IND(1)
-              IB = IND(3)
-              IF (IQ.EQ.INDICES(K2)) THEN ! condition to select multipole moments xx, yy and zz
-                INDBPE = IVPOFF(IORD) + IQ + 9*(IB+(IA+1)*IA/2)
-              ELSE  
-                  CALL LEVI_CEVITA(IQ,INDICES(K2),IR,IJKL)        ! Levi-Civita symbol is used do distinguish      
-                  IF (IORD.EQ.2) THEN                             ! zy from yz ; xz from zx ; yx from xy  
-                    IOFF = RESHAPE((/3,1,2,2,3,1/),SHAPE(IOFF))   !
-                  ELSE                                            !
-                    IOFF = RESHAPE((/5,1,3,4,6,2/),SHAPE(IOFF))   ! numbers in IOFF are defined such that the indicex
-                  ENDIF                                           ! IP is mapped to the right multipole moment, i.e. 
-                  IF (IJKL.EQ.1) THEN                             ! (zy, yz, xz, zx, yx, xy)
-                    INDBPE = IVPOFF(IORD)+IOFF(IQ,1) + 3 + 9*(IB+(IA+1)*IA/2)
-                  ELSEIF(IJKL.EQ.-1) THEN 
-                    INDBPE = IVPOFF(IORD)+IOFF(IQ,2) + 3 + 9*(IB+(IA+1)*IA/2)
-                  ENDIF
-                ENDIF 
+              IB = IND(3)                              !Levi-Civita symbol is used to
+              CALL LEVI_CEVITA(IQ,INDICES(K2),IR,IJKR) !distinguish 9 unique components VPOL                                               !
+              IOFF = RESHAPE((/8,4,6,IQ,IQ,IQ,7,9,5/),SHAPE(IOFF)) ! numbers in IOFF are defined 
+              INDBPE = IVPOFF(IORD) + IOFF(IQ,-IJKR) + 9*(IB+(IA+1)*IA/2) !such that it maps to the right multipole
             ENDIF 
             INDPER  = LPPAPU(INDBPE)
             ISYMER  = IPRPSYM(INDPER)
@@ -846,9 +822,7 @@
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(INDU(IP),1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
             ENDDO
-            IF (IORDER.GT.2) THEN ! for L=2, the  multipole moments (zy,yz); (xz,zx) and (yx,xy)
-              INDAP = INDAP + 1   ! are equivalent 
-            ENDIF
+            INDAP = INDAP + 1   
               TFAC  = (UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB*FAC ! factor for yz, zx and xy
               TFAC = TFAC*(UPOL(1,1)**KX)*(UPOL(2,1)**KY)*(UPOL(3,1)**KZ)
             DO IEXC = 1,NEXC
