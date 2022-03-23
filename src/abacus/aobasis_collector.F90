@@ -42,14 +42,15 @@ contains
     end subroutine deallocate_aobasis_container
 
     subroutine add_aobasis2container(aobasis)
+#include "mxcent.h"
       character(len=80), intent(in) :: aobasis
       if(aobasis_container_reallocate)then
         call allocate_container()
-      else
-        return
       end if
-      aobasis_container(aobasis_counter) = trim(aobasis)
-      aobasis_counter = aobasis_counter + 1
+      if(aobasis_counter <= MXATOM)then
+        aobasis_container(aobasis_counter) = trim(aobasis)
+        aobasis_counter = aobasis_counter + 1
+      end if
     end subroutine add_aobasis2container
 
 end module aobasis_collector

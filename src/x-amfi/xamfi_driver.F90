@@ -635,6 +635,8 @@ INTEGER, parameter                 :: nzc1 = 4
 character(len=8)                   :: prefix
 !----------------------------------------------------------------------
 
+if(nint(atom(center_total)%charge) > 1)then
+
 allocate(Gmat_frag(nrows_ext*ncols_ext*nzc1)); Gmat_frag = 0
 !       !> get atomic Vxc from file (of atom(i) ... == atomic fragment)
                 prefix = 'aooVxcMA'
@@ -713,6 +715,8 @@ deallocate(ibuf)
 deallocate(cbuf)
 deallocate(rbuf)
 deallocate(Gmat_frag)
+
+end if !> for nuclear charge of center > 1
 
 !     update counter
 center_total = center_total + aoo_nont(center_id)
