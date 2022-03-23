@@ -25,6 +25,7 @@
 module x2c_pct_ao
 
   use x2c_fio
+  use x2cmod_cfg, only: x2c_1e_system
   use x2c_cb_interface, only:            &
       init_x2c_cb,                       &
       reset_x2c_cb_onefck
@@ -156,7 +157,7 @@ contains
                                          .false.,             &
                                          mdirac,              &
                                          flabel,              &
-                                         print_lvl)   
+                                         print_lvl)
          deallocate(scr_mat1)
        end if
 
@@ -813,85 +814,88 @@ contains
 
 !      !> TRANSFORM 2-ELECTRON FOCK MATRICES
 !      -------------------------------------
+       if(.not.x2c_1e_system)then
 
-!      read the 4c 2-electron fock matrix from file
-!      --------------------------------------------
-       fh       = 99
-       open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
-            access='sequential',action="readwrite",position='rewind')
-       call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
-                                              naosh_ls**2*nz,        &
-                                              nr_2e_fock_matrices,   &
-                                              fh,                    &
-                                              print_lvl)
-       close(fh,status='keep')
 
-       do i = 1,nr_2e_fock_matrices
-!      debug print
-         if(print_lvl > 2)then
-           write(6,*) '* Transforming 2-electron Fock matrix no. ',i
-           call prsymb(6,'-',60,0) 
-           call print_x2cmat(scr_mat1(1,i),naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2 ',6)
-         end if
+!        read the 4c 2-electron fock matrix from file
+!        --------------------------------------------
+         fh       = 99
+         open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
+              access='sequential',action="readwrite",position='rewind')
+         call read_fock_matrices_saao_basis_x2c(scr_mat1,              &
+                                                naosh_ls**2*nz,        &
+                                                nr_2e_fock_matrices,   &
+                                                fh,                    &
+                                                print_lvl)
+         close(fh,status='keep')
 
-!        perform the pct: f_2c^++ == U+ * f_4c * U
-!        -----------------------------------------
+         do i = 1,nr_2e_fock_matrices
+!          debug print
+           if(print_lvl > 2)then
+             write(6,*) '* Transforming 2-electron Fock matrix no. ',i
+             call prsymb(6,'-',60,0) 
+             call print_x2cmat(scr_mat1(1,i),naosh_ls,naosh_ls,nz,ipq_off_in(1,0),'x2c - 4cfock2 ',6)
+           end if
+
+!          perform the pct: f_2c^++ == U+ * f_4c * U
+!          -----------------------------------------
 !                in : f_4c    --> scr_mat1; U --> pctmat
 !                out: f_2c^++ --> scr_mat1
 
-         op_fer_rep = 0
+           op_fer_rep = 0
 
-         call perform_pct_saao_bas(scr_mat1(1,i),                &
-                                   pctmat,                       &
-                                   scr_mat2,                     &
-                                   naosh_ls,                     &
-                                   nr_ao_L,                      &
-                                   naosh_all,                    &
-                                   naosh_L,                      &
-                                   nfsym,                        &
-                                   nz,                           &
-                                   ipq_off_in,                   &
-                                   ioff_aomx,                    &
-                                   op_fer_rep,                   &
-                                   op_bs_to_fs,                  &
-                                   .true.,                       &
-                                   print_lvl)
+           call perform_pct_saao_bas(scr_mat1(1,i),                &
+                                     pctmat,                       &
+                                     scr_mat2,                     &
+                                     naosh_ls,                     &
+                                     nr_ao_L,                      &
+                                     naosh_all,                    &
+                                     naosh_L,                      &
+                                     nfsym,                        &
+                                     nz,                           &
+                                     ipq_off_in,                   &
+                                     ioff_aomx,                    &
+                                     op_fer_rep,                   &
+                                     op_bs_to_fs,                  &
+                                     .true.,                       &
+                                     print_lvl)
 
-!        debug print
-         if(print_lvl > 2)then
-           call print_x2cmat(scr_mat1(1,i),nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2ch2 ',6)
-         end if
-       enddo
-       deallocate(scr_mat2)
-       
-!      store the picture-change transformed 2e fock matrix on file
-!      --------------------------------------------------------------
-       open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
-            access='sequential',action="readwrite",position='rewind')
-       if(nr_2e_fock_matrices==1) then
-         call write_fock_matrices_saao_basis_x2c(scr_mat1,            &
-                                               nr_ao_L**2*nz,         &
-                                               1,                     &
-                                              'F[2]',                 &
-                                               fh,                    &
-                                               print_lvl)
-       else ! we need to squash the matrices together
-          ndim=nr_ao_L**2*nz
-          allocate(scr_mat2(ndim,nr_2e_fock_matrices))
-          do i = 1,nr_2e_fock_matrices
-            call dcopy(ndim,scr_mat1(1,i),1,scr_mat2(1,i),1)
-          enddo
-          call write_fock_matrices_saao_basis_x2c(scr_mat2,            &
-                                                  ndim,                &
-                                                  nr_2e_fock_matrices, &
-                                                  'F[2]',              &
-                                                  fh,                  &
-                                                  print_lvl)
-          deallocate(scr_mat2)
-       endif  
-       close(fh,status='keep')
-       !> end
-       
+!          debug print
+           if(print_lvl > 2)then
+             call print_x2cmat(scr_mat1(1,i),nr_ao_L,nr_ao_L,nz,ipq_off_in(1,0),'x2c - 2ch2 ',6)
+           end if
+         enddo
+         deallocate(scr_mat2)
+
+!        store the picture-change transformed 2e fock matrix on file
+!        --------------------------------------------------------------
+         open(fh,file=file_name_2e_fock_matrices,status='old',form='unformatted',  &
+              access='sequential',action="readwrite",position='rewind')
+         if(nr_2e_fock_matrices==1) then
+           call write_fock_matrices_saao_basis_x2c(scr_mat1,              &
+                                                   nr_ao_L**2*nz,         &
+                                                   1,                     &
+                                                  'F[2]',                 &
+                                                   fh,                    &
+                                                   print_lvl)
+         else ! we need to squash the matrices together
+            ndim=nr_ao_L**2*nz
+            allocate(scr_mat2(ndim,nr_2e_fock_matrices))
+            do i = 1,nr_2e_fock_matrices
+              call dcopy(ndim,scr_mat1(1,i),1,scr_mat2(1,i),1)
+            enddo
+            call write_fock_matrices_saao_basis_x2c(scr_mat2,            &
+                                                    ndim,                &
+                                                    nr_2e_fock_matrices, &
+                                                    'F[2]',              &
+                                                    fh,                  &
+                                                    print_lvl)
+            deallocate(scr_mat2)
+         endif
+         close(fh,status='keep')
+         !> end
+       end if !> not 1e system
+
        deallocate(scr_mat1)
        deallocate(pctmat)
 
