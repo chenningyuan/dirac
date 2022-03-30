@@ -137,7 +137,9 @@ module fde_input_dirac
                read(lucmd,*) itmp%im_format
 
             CASE ('.EXONLY')
+               !read(lucmd,*) ftmp%export%gridfile
                read(lucmd,*) ftmp%export%name
+               read(lucmd,*) etmp%ex_property
                dirac_cfg_fde_export = .true.
                etmp%do_grid_out = .true.
 ! doprp is part of dcbgen.h
