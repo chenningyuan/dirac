@@ -680,7 +680,7 @@ module talsh_gradient
 ! form AO basis density matrix
       call talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat, dm_mo_fort, mo_list, norbt)
 ! save AOm basis density matrix to file
-      call talsh_store_kucc_density (wavefun, dm_storeformat, nesh)
+      call talsh_store_kucc_density (wavefun, dm_storeformat, nesh, mo_list, nocc)
 
       deallocate (dm_storeformat)
       deallocate (mo_list)
@@ -710,23 +710,29 @@ module talsh_gradient
       end do
     end subroutine
 
-    subroutine talsh_store_kucc_density(wavefun, dm_storeformat, nmo)
+    subroutine talsh_store_kucc_density(wavefun, dm_storeformat, nmo, mo_list, nocc)
       use labeled_storage
+      use exacorr_datatypes
       implicit none
 
       character(len=4) :: wavefun
       real(8), allocatable, intent(inout) :: dm_storeformat(:,:,:)
-      integer, intent(in)                 :: nmo
+      integer, intent(in)                 :: nmo, nocc
+      integer, allocatable, intent(in) :: mo_list(:)
       type(file_info_t), save             :: ccdens_file     
-     
+      
+      
  
       if (ccdens_file%status == -1) then
          write(*,*) " Opening HDF5 CCDENS file"
          ccdens_file%type = 2
          ccdens_file%name = "CCDENS.h5"
       end if
+      
 
       write(*,*) " Writing CCDENS data to CCDENS file"
+      call lab_write (ccdens_file,'nocc',idata=nocc)
+      call lab_write (ccdens_file,'mo_occ',idata=mo_list(1:nocc))
       call lab_write (ccdens_file,'CCDENS_RE',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
       call lab_write (ccdens_file,'CCDENS_IM',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
       

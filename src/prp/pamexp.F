@@ -85,9 +85,10 @@ C
 
       type(file_info_t), save :: ccdens_file, x2cmat_file, reex_file
       logical :: tobe_dirac, tobe_respect
-      integer :: i,p,q, indxpr
-      integer :: nmo, nao, nel, chargenuc
+      integer :: i,j,p,q, indxpr
+      integer :: nmo, nao, nel, nocc_ccsd, ninact, chargenuc
       complex(8) :: expvali
+      integer, allocatable :: mo_occ(:)
       real(8), allocatable :: rcoeffvec(:), icoeffvec(:)
       real(8), allocatable :: rkudmvec(:), ikudmvec(:)
       real(8), allocatable :: rprpvec(:), iprpvec(:)
@@ -265,8 +266,19 @@ C
           !DEBUG: write(*,*) "kudm_mo(18,42):", kudm_mo(18,42)
          
           ! add hf contribution 
-          do i=1,nel
+          call lab_read (ccdens_file,'nocc',idata=nocc_ccsd)
+          allocate(mo_occ(nocc_ccsd))
+          call lab_read (ccdens_file,'mo_occ',idata=mo_occ)
+          ninact = nel - nocc_ccsd
+          do i=1,ninact
+              !write(*,*) i
               kudm_mo(i,i) = kudm_mo(i,i) + DC1
+          enddo
+          !write(*,*) "actpart"
+          do i=1,nocc_ccsd
+              j = mo_occ(i)
+              !write(*,*) j
+              kudm_mo(j,j) = kudm_mo(j,j) + DC1
           enddo
           
       endif ! (WF == CCSD... see upper WF specifier for density)
@@ -364,7 +376,7 @@ C
               enddo
           enddo
           expval(i) = dreal(expvali)
-          
+          write(*,*) "expval (cmplx): ", expvali 
           ! printing out the expectation value
           FMT = MXFORM(EXPVAL(I),15)
           WRITE(LUPRI,'(4X,A16,A3,3X,'//FMT//',1X,A4)')
