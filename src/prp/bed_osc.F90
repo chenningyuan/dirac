@@ -297,7 +297,7 @@
               IB      = IND(3)                              !Levi-Civita symbol is used to
               CALL LEVI_CEVITA(IP,INDICES(K+M),IR,IJKL)     !distinguish 9 unique components VPOL
               IOFF = RESHAPE((/8,4,6,IP,IP,IP,7,9,5/),SHAPE(IOFF)) ! numbers in IOFF are defined 
-              INDAPE = IVPOFF(IORD) + IOFF(IP,-IJKL) + 9*(IB+(IA+1)*IA/2) !such that it maps to the right multipole
+              INDAPE = IVPOFF(IORD) + IOFF(IP,-IJKL) + 9*(IB+(IA+1)*IA/2) !such that it maps IP to the right multipole
             ENDIF 
               INDPEL  = LPPAPU(INDAPE)
               ISYMEL  = IPRPSYM(INDPEL)
@@ -317,7 +317,7 @@
               IB = IND(3)                              !Levi-Civita symbol is used to
               CALL LEVI_CEVITA(IQ,INDICES(K2),IR,IJKR) !distinguish 9 unique components VPOL                                               !
               IOFF = RESHAPE((/8,4,6,IQ,IQ,IQ,7,9,5/),SHAPE(IOFF)) ! numbers in IOFF are defined 
-              INDBPE = IVPOFF(IORD) + IOFF(IQ,-IJKR) + 9*(IB+(IA+1)*IA/2) !such that it maps to the right multipole
+              INDBPE = IVPOFF(IORD) + IOFF(IQ,-IJKR) + 9*(IB+(IA+1)*IA/2) !such that it maps IQ to the right multipole
             ENDIF 
             INDPER  = LPPAPU(INDBPE)
             ISYMER  = IPRPSYM(INDPER)
