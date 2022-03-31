@@ -4017,7 +4017,6 @@ C******************************************************************************
 #include "maxorb.h"
 #include "aovec.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
@@ -4029,6 +4028,7 @@ C
 #include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
+#include "orgcom.h"
 C     
 C
 C
@@ -4049,9 +4049,7 @@ C     * 30      - loop over second symmetry independent centre
 C     * 40+IF   - loop over dependent centers
 C     ************************************************************
 C
-      DPNUC(1) = D0
-      DPNUC(2) = D0
-      DPNUC(3) = D0
+      DPNUC(1:3)= 0.0D0
       NUCDEP    = 0
       NUCPRE(1) = 0
       NFLOAT    = 0
@@ -4066,12 +4064,12 @@ C
          NUCPRE(N + 1) = NUCPRE(N) + NDEG
          IF (NINT(CHARGE(N)) .EQ. 0 .AND. NAMN(N) .NE. 'cav')
      &        NFLOAT = NFLOAT + 1
-         IF (ISYMAX(1,1) .EQ. 0)
-     &   DPNUC(1) = DPNUC(1) + CORD(1,N)*CHARGE(N)*FMULT(IVARB)
-         IF (ISYMAX(1,1) .EQ. 0)
-     &   DPNUC(2) = DPNUC(2) + CORD(2,N)*CHARGE(N)*FMULT(IVARB)
-         IF (ISYMAX(1,1) .EQ. 0)
-     &   DPNUC(3) = DPNUC(3) + CORD(3,N)*CHARGE(N)*FMULT(IVARB)
+         IF (ISYMAX(1,1) .EQ. 0) DPNUC(1) = DPNUC(1)
+     &      + (CORD(1,N) - DIPORG(1))*CHARGE(N)*FMULT(IVARB)
+         IF (ISYMAX(2,1) .EQ. 0) DPNUC(2) = DPNUC(2)
+     &      + (CORD(2,N) - DIPORG(2))*CHARGE(N)*FMULT(IVARB)
+         IF (ISYMAX(3,1) .EQ. 0) DPNUC(3) = DPNUC(3)
+     &      + (CORD(3,N) - DIPORG(3))*CHARGE(N)*FMULT(IVARB)
          II = 0
          DO 200 LA = 0,MAXREP
            IF (IAND(IVARB,LA) .EQ. 0) THEN ! filter out generator products containing generators that stabilise the center
@@ -4106,7 +4104,7 @@ C             when total NUCDEP is known. /hjaaj Jan 2010
   200    CONTINUE
   100 CONTINUE
       NATOMS = NUCDEP - NFLOAT
-      IF (LINEAR .EQV. .TRUE.) THEN
+      IF (LINEAR) THEN
         IF((NATOMS .Eq. 1).OR.((NATOMS.EQ.0).AND.(NFLOAT.EQ.1))) 
      &    ATOMIC = .TRUE.
       ENDIF
@@ -4202,7 +4200,6 @@ C*************************************************************************
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0)
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
@@ -4255,7 +4252,7 @@ C
                 NVAR = MOD(NVALUE(J),2)*ISYMAX(3,1)
                 DO 220 K = 1, KHK(I)
                    IJK = IJK + 1
-                   IF (ABS(CSP(IJK)).GT.D0) THEN
+                   IF (ABS(CSP(IJK)).GT.0.0D0) THEN
                       IF (ISYMAO(I,K) .EQ. -1) THEN
                          ISYMAO(I,K) = IEOR(LVAR,IEOR(MVAR,NVAR))
                       ELSE

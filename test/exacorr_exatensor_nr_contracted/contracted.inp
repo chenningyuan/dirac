@@ -1,0 +1,23 @@
+**DIRAC
+.WAVE FUNCTION
+**HAMILTONIAN
+.LEVY-LEBLOND
+**WAVE FUNCTION
+.SCF
+.EXACC
+*SCF
+.EVCCNV
+1.0E-9 1.0E-8  
+**EXACC
+.OCCUPIED                                                                                           
+2..5 
+.VIRTUAL                                                                                            
+6..19   
+.EXATENSOR
+**MOLECULE
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT 
+cc-pVDZ
+*END OF 
