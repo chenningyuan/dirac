@@ -102,7 +102,7 @@ module dircmo
       n_basis = 0
       do ifsym = 1, nfsym
          n_mo(ifsym)    = cmo_dims(4+3*ifsym)+cmo_dims(5+3*ifsym)
-         n_po(ifsym)    = cmo_dims(5+3*ifsym)
+         n_po(ifsym)    = cmo_dims(4+3*ifsym)
          n_basis(ifsym) = cmo_dims(6+3*ifsym)
       end do
       call checkpoint_write ('/result/wavefunctions/scf/energy',rdata=toterg)
@@ -118,46 +118,49 @@ module dircmo
       RETURN
       END
 
-      SUBROUTINE REACMO(IUNIT,TEXT,CMO,EIG,IBEIG,TOTERG,IDIMS)
+      SUBROUTINE REACMO(TEXT,CMO,EIG,IBEIG,TOTERG,IDIMS)
 !***********************************************************************
 !
-!     Read SCF-coefficients and other information (eigenvalues) from unformatted file
+!     Read SCF-coefficients and other information (eigenvalues) from CHECKPOINT file
 !
 !     Written by T.Saue Sept 1 1995
 !     Modernized by L.Visscher in 2021
 !
 !***********************************************************************
-      use labeled_storage
       use checkpoint
       implicit none
-      integer, intent(in)            :: iunit
       character(len=74), intent(out), optional :: text
       integer, intent(out), optional :: ibeig(*),idims(*)
       real(8), intent(out), optional :: toterg,cmo(*),eig(*)
 
-      integer              :: nfsym, nz, i, ifsym, idim(3,2), norb2(2), ncoef, neig
+      integer              :: nfsym, nz, idim(3,2), ncoef, neig
+      integer              :: n_mo(2),n_po(2),n_basis(2)
       real(8)              :: energy
       real(8), allocatable :: coefficients(:), eigenvalues(:)
       integer, allocatable :: boson_irreps(:), atom_irreps(:)
       character(len=74)    :: infotext
-      type(file_info_t), save :: checkpoint_file
 
-!     Always read the info text and dimensions (NB: actual size (written part) of idim depends on nfsym)
-      rewind iunit
-      call lab_read(iunit,'INFO    ')
-      read(iunit) infotext,nfsym,nz,((idim(i,ifsym),i=1,3),ifsym=1,nfsym),energy
+      infotext = ' Data read from the checkpoint file '
 
-      if (present(toterg)) toterg = energy
+      call checkpoint_read ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
+      call checkpoint_read ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+      call checkpoint_read ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+      call checkpoint_read ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+      call checkpoint_read ('/result/wavefunctions/scf/energy',rdata=energy)
+
+      neig  = sum(n_mo)
+      ncoef = nz * sum(n_basis*n_mo)
+      if (n_basis(2) == 0) then
+         nfsym = 1
+      else
+         nfsym = 2
+      end if
+      idim(1,:) = n_po
+      idim(2,:) = n_mo-n_po
+      idim(3,:) = n_basis
+
       if (present(text))   text   = infotext
-
-      ! Compute total number of coefficients and eigenvalues
-      neig  = 0
-      ncoef = 0
-      do ifsym = 1, nfsym
-         neig  = neig  +  idim(1,ifsym) + idim(2,ifsym)
-         ncoef = ncoef + (idim(1,ifsym) + idim(2,ifsym)) * idim(3,ifsym)
-      end do
-      ncoef = ncoef * nz
+      if (present(toterg)) toterg = energy
 
       if (present(idims))  then
        ! Pack dimension information (can be used to allocate and/or check consistency before reading)
@@ -170,26 +173,18 @@ module dircmo
          idims(5) = neig      ! Total number of orbitals
          idims(6) = 1         ! Number of blocks with supersymmetry information (atomic symmetry unsupported, see above)
          idims(7:9) = idim(:,1) ! npsh, nesh, nfbas for fermion irrep 1
-         if (nfsym == 2) idims(10:12) = idim(:,2) ! npsh, nesh, nfbas for fermion irrep 2
+         if (nfsym == 2) idims(10:12) = idim(:,2) ! npsh, nssh, nfbas for fermion irrep 2
       end if
 
       if (present(cmo)) then
          allocate (coefficients(ncoef))
-         ! call lab_read(iunit,'COEFS   ',rdata=coefficients)
-         ! test zone: uncomment to read coefs from the hdf5 file
-         print*," Reading coeffs from checkpoint file "
-         call flush()
          call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
-         ! end of test zone
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)
       end if
 
       if (present(eig)) then
          allocate (eigenvalues(neig))
-         ! call lab_read(iunit,'EVALS   ',rdata=eigenvalues)
-         print*," Reading eigenvalues from checkpoint file "
-         call flush()
          call checkpoint_read ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigenvalues)
          eig(1:neig) = eigenvalues
          deallocate(eigenvalues)
@@ -197,9 +192,6 @@ module dircmo
 
       if (present(ibeig)) then
          allocate (boson_irreps(neig))
-         ! call lab_read(iunit,'SUPERSYM',idata=boson_irreps)
-         print*," Reading symmetry info from checkpoint file "
-         call flush()
          call checkpoint_read ('/result/wavefunctions/scf/mobasis/symmetry',idata=boson_irreps)
          ibeig(1:neig) = boson_irreps
          deallocate(boson_irreps)

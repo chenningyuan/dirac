@@ -339,7 +339,6 @@ contains
        end do
        allocate(original_eigen_values(l))
        open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-!      call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,4)
        call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
        close(fh,status='keep')
        offset_1 = 1

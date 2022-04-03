@@ -434,7 +434,7 @@ C
       integer, allocatable :: ibuf_special(:)
 C
       IF(IOPT.EQ.0) RETURN
-      call reacmo_new (iunit,text=text,toterg=toterg)
+      call reacmo_new (text=text,toterg=toterg)
 C
 C     File info
 C     =========
@@ -450,7 +450,7 @@ C
       if (iopt.eq.-1) return
 
       ! perform check on consistency of the data on this file with the current calculation
-      call reacmo_new (iunit,idims=idims_dfcoef)
+      call reacmo_new (idims=idims_dfcoef)
       if (idims_dfcoef(1) .ne. nz ) then
          WRITE(LUPRI,*) '* REACMO: Incompatible algebra: '
          WRITE(LUPRI,*) ' Expected: ',NZ
@@ -493,16 +493,16 @@ C
       if (.not. (special_psh .or. special_esh)) then
 
          ! DFCOEF is fully compatible, read directly into cmo
-         if (lbit(iopt,2)) call reacmo_new (iunit,cmo=cmo)
-         if (lbit(iopt,3)) call reacmo_new (iunit,eig=eig)
-         if (lbit(iopt,4)) call reacmo_new (iunit,ibeig=ibeig)
+         if (lbit(iopt,2)) call reacmo_new (cmo=cmo)
+         if (lbit(iopt,3)) call reacmo_new (eig=eig)
+         if (lbit(iopt,4)) call reacmo_new (ibeig=ibeig)
 
       else
 
          ! DFCOEF contains a different number of orbitals, read into buffer and reorganize
          if (lbit(iopt,2)) then
             allocate (buf_special(idims_dfcoef(3)))
-            call reacmo_new (iunit,cmo=buf_special)
+            call reacmo_new (cmo=buf_special)
             ic = 1
             jc = 1
             do  ifrp = 1,nfsym
@@ -520,7 +520,7 @@ C
 
          if (lbit(iopt,3)) then
             allocate (buf_special(idims_dfcoef(5)))
-            call reacmo_new (iunit,eig=buf_special)
+            call reacmo_new (eig=buf_special)
             id = 1
             jd = 1
             do ifrp = 1,nfsym
@@ -537,7 +537,7 @@ C
 
          if (lbit(iopt,4)) then
             allocate (ibuf_special(idims_dfcoef(5)))
-            call reacmo_new (iunit,ibeig=ibuf_special)
+            call reacmo_new (ibeig=ibuf_special)
             id = 1
             jd = 1
             do ifrp = 1,nfsym
@@ -1623,7 +1623,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmout */
       SUBROUTINE ACMOUT()
-      use dircmo
+      use checkpoint
 C*****************************************************************************
 C
 C     Read coefficients from unformatted DFCOEF, 
@@ -1681,16 +1681,16 @@ C
       integer, allocatable :: IBEIG(:)
       real(8), allocatable :: CAO(:)
 C
-C     First check if file KRMCSCF or DFCOEF is there
+C     First check if file KRMCSCF is there
 C
       MCORB = .FALSE.
       MJAVA = .FALSE.
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
       IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
         WRITE(LUPRI,'(A)') 
-     &  'ACMOUT: Unformatted file DFCOEF/KRMCSCF not found !'
-        CALL QUIT('ACMOUT: Unformatted file DFCOEF/KRMCSCF not found !')
+     &  'ACMOUT: Unformatted file CHECKPOINT/KRMCSCF not found !'
+        CALL QUIT('ACMOUT: file CHECKPOINT/KRMCSCF not found !')
       ENDIF
 C     Allocate arrays
       allocate(CSO(NCMOTQ))
@@ -1735,9 +1735,7 @@ C.......boson/linear symmetry
         END IF
         CLOSE (LUKRMC,STATUS='KEEP')
       ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ACMOUT')
         CALL REACMO(LUCOEF,'DFCOEF',CSO,EIG,IBEIG,TOTERG,14)
-        CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
       END IF
 C.....Transform SO-coefficients to C1
@@ -1755,46 +1753,25 @@ C.......if more than one fermion ircop merge orbital classes
         IF(NFSYM.EQ.2) CALL ACMOU3(EIG,CAO,NTBAS(0),NORBT)
       END IF
 C
-C     Write coefficients etc. to file
-C     ===============================
+C     Write coefficients and reordered other data to checkpoint
 C
-      CALL OPNFIL(LUCOEF,'DFACMO','UNKNOWN','ACMOUT')
-      DO I = 1,2
-        IDIM(I) = 0
-      ENDDO
-      DO IFRP = 1,NFSYM
-        IDIM(1) = IDIM(1) + NPSH(IFRP)  
-        IDIM(2) = IDIM(2) + NESH(IFRP)  
-      ENDDO
-      IDIM(3) = NTBAS(0)
-      TEXT(1:50) = TITLE
-      ! Pack dimension info needed in wricmo (NB: differs from
-      ! the info in common blocks in this case, so pack routine
-      ! can not be used !)
-      IDIMS(1) = 4
-      IDIMS(2) = 1
-      IDIMS(3) = NTBAS(0)*NORBT*4
-      IDIMS(4) = 1
-      IDIMS(5) = NORBT
-      IDIMS(6) = 1
-      IDIMS(7:9) = IDIM
-      IDIMS(10:12) = 0
-      CALL WRICMO(LUCOEF,CAO,EIG,IBEIG,TOTERG,TEXT,IDIMS)
-      CLOSE(LUCOEF,STATUS='KEEP')
+      call checkpoint_write 
+     & ('/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     &  rdata=eig(1:norbt))
+      call checkpoint_write 
+     & ('/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &  rdata=cao(1:ndim))
 C
       CALL PRSYMB(LUPRI,'=',75,0)
       IF( IREADMO .eq. 1 )THEN
         WRITE(LUPRI,'(A)')
-     &      '* ACMOU1: MCSCF orb. coefficients read from KRMCSCF',
-     &      '          and written to unformatted DFACMO (no symmetry)'
+     & '* ACMOU1: MCSCF orb. coefficients written without symmetry (C1)'
       ELSE IF( IREADMO .eq. 2)THEN
         WRITE(LUPRI,'(A)')
-     &      '* ACMOU1: Coefficients read from unformatted DFCOEF ',
-     &      '          and written to unformatted DFACMO (no symmetry)'
+     & '* ACMOU1: Orbitals written without symmetry (C1)'
       ELSE IF( IREADMO .eq. 3)THEN
         WRITE(LUPRI,'(A)')
-     &      '* ACMOU1: MC natural orb. coefficients read from KRMCSCF',
-     &      '          and written to unformatted DFACMO (no symmetry)'
+     & '* ACMOU1: MC natural orb. written without symmetry (C1)'
       END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 C
@@ -3357,7 +3334,7 @@ C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
       CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
-      call reacmo_new (lucoef,cmo=cmo2,eig=eig2)
+      call reacmo_new (cmo=cmo2,eig=eig2)
       CALL IZERO(IBEIG2,NORBT)
       CLOSE(LUCOEF,STATUS='KEEP')
 

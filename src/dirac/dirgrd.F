@@ -349,7 +349,7 @@ C
 C
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
          ! Needs an array as argument, old trick of passing a pointer does not work
-         CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
+         CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
          CLOSE(LUCOEF,STATUS='KEEP')
 C
 C
@@ -402,7 +402,7 @@ C
 C
             KCMO = KFVAO
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-            CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
+            CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
             CLOSE(LUCOEF,STATUS='KEEP')
 C
             IF (NISH(I).EQ.0) GOTO 20
@@ -441,7 +441,7 @@ C
       CALL DZERO(WORK(KFCAO),N2BBASXQ)
       KCMO = KFVAO
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
       IF ( IPRINT .GE. 10 ) THEN
          DO I=1,NFSYM
@@ -555,7 +555,7 @@ C
       KDVAO = KDAO + N2BBASXQ
       KCMO  = KDVAO + N2BBASXQ
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get density matrix
@@ -682,7 +682,7 @@ C
 C     Contruct density matrix
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
-      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+NCMOTQ-1))
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
@@ -2606,7 +2606,7 @@ C
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
 C     Needs an array as argument, old trick of passing a pointer does not work
-      CALL REACMO_new(LUCOEF,cmo=WORK(KCMO:KCMO+N2BBASXQ-1))
+      CALL REACMO_new(cmo=WORK(KCMO:KCMO+N2BBASXQ-1))
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get total density matrix

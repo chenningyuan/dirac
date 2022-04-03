@@ -7720,7 +7720,7 @@ C ================================================================
 C         ... get 4c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR2C')
-      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+      call reacmo_new(cmo=cmo,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -7932,7 +7932,7 @@ C ================================================================
 C         ... get 2c MO from the "DFCOEF" file into CMO
 C ================================================================
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-      call reacmo_new(lucoef,cmo=cmo,eig=eig,ibeig=ibeig,
+      call reacmo_new(cmo=cmo,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
       CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -8006,7 +8006,7 @@ C ********************************************************
       ELSE IF (INI2C.EQ.4) THEN
 C    ... read 2c CMO into TBUF ...
        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOTR4C')
-       call reacmo_new(lucoef,cmo=tbuf,eig=eig,ibeig=ibeig,
+       call reacmo_new(cmo=tbuf,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
        CLOSE(LUCOEF,STATUS='KEEP')
 
@@ -8256,7 +8256,7 @@ C    ... do renew the DFCOEF file !!!
 
 C     ... do read the DFCOEF file from previous iterations ...
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CMOINI4C')
-      call reacmo_new(lucoef,cmo=tmat,eig=eig,ibeig=ibeig,
+      call reacmo_new(cmo=tmat,eig=eig,ibeig=ibeig,
      &                toterg=toterg)
       ! LV: not sure why tmat is read, but kept this as it was when revising reacmo
 

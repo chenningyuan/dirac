@@ -262,11 +262,7 @@ contains
   endif
 
   ! Read coefficients
-  !  call reacmo_mod(var%lucoef,cmo,eig,ibeig,toterg,1)
-  open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
-  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
-  call REACMO_new(var%lucoef,cmo=cmo)
-  close(var%lucoef,status='keep')
+  call REACMO_new(cmo=cmo)
   
   ! select orbitals
   isel(1:nloc) = itmp(1:nloc)
@@ -1642,7 +1638,7 @@ contains
   ! read EIG, IBEIG and TOTERG
   open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
   if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
-  call REACMO_new(var%lucoef,eig=eig,ibeig=ibeig,toterg=toterg)
+  call REACMO_new(eig=eig,ibeig=ibeig,toterg=toterg)
 
   ! reorganize MO
   ioff = var%npsh(ifrp)
@@ -2161,7 +2157,7 @@ contains
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
          ELSE
             CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
-            call reacmo_new(lucoef,eig=eig)
+            call reacmo_new(eig=eig)
             CLOSE(LUCOEF,STATUS='KEEP')
             IOFF = VAR%IORB(IFRP)+VAR%NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))

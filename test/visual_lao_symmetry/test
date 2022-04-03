@@ -13,8 +13,8 @@ f.add(from_string = 'Requested density at point(s)',
       num_lines   = 10,
       rel_tolerance   = 5.0e-3)
 
-test.run(['response_london_bz.inp'], ['co2_d2h.mol'],    args=' --get="DFCOEF PAMXVC TBMO"')
-test.run(['vis_shield_natural_zz.inp'], ['co2_d2h.mol'], f, args='--copy="DFCOEF PAMXVC TBMO"')
+test.run(['response_london_bz.inp'], ['co2_d2h.mol'],    args=' --get="CHECKPOINT.h5 PAMXVC TBMO"')
+test.run(['vis_shield_natural_zz.inp'], ['co2_d2h.mol'], f, args='--copy="CHECKPOINT.h5 PAMXVC TBMO"')
 
 mol_files = []
 mol_files.append('co2_d2h.mol')
@@ -26,11 +26,11 @@ mol_files.append('co2_cs.mol')
 mol_files.append('co2_d2.mol')
 
 for mol in mol_files:
-    test.run(['response_london_symcon_bz.inp'], [mol], args=' --get="DFCOEF PAMXVC TBMO"')
-    test.run(['vis_shield_symmetric_zz.inp', 'vis_shield_none_zz.inp'], [mol], f, args='--copy="DFCOEF PAMXVC TBMO"')
+    test.run(['response_london_symcon_bz.inp'], [mol], args=' --get="CHECKPOINT.h5 PAMXVC TBMO"')
+    test.run(['vis_shield_symmetric_zz.inp', 'vis_shield_none_zz.inp'], [mol], f, args='--copy="CHECKPOINT.h5 PAMXVC TBMO"')
 
 # cleanup
-os.unlink('DFCOEF')
+os.unlink('CHECKPOINT.h5')
 os.unlink('PAMXVC')
 os.unlink('TBMO')
 

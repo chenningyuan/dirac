@@ -1667,17 +1667,17 @@ C
 C     Read coefficients
 C     =================
 C    
-      IF(LBIT(IOPT_TMP,2)) CALL REACMO_new(IUNIT,cmo=CMO)
+      IF(LBIT(IOPT_TMP,2)) CALL REACMO_new(cmo=CMO)
 C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT_TMP,3)) CALL REACMO_new(IUNIT,eig=EIG)
+      IF(LBIT(IOPT_TMP,3)) CALL REACMO_new(eig=EIG)
 C
 C     Read boson irrep info
 C     =====================
 C
-      IF(LBIT(IOPT_TMP,4)) CALL REACMO_new(IUNIT,ibeig=IBEIG)
+      IF(LBIT(IOPT_TMP,4)) CALL REACMO_new(ibeig=IBEIG)
 C
 C     Select and adjust format to molecular basis
 C     ===========================================

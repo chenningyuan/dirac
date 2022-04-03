@@ -397,7 +397,7 @@ C            occupancies
          KRMC_FLG = 0
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          IOPT=14
-         call reacmo_new (lucoef,cmo=CMO,eig=EIG,
+         call reacmo_new (cmo=CMO,eig=EIG,
      &                    ibeig=IBEIG,toterg=TOTERG)
          CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -2075,7 +2075,7 @@ C     Read coefficients
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       IOPT=14
-      CALL REACMO_new(LUCOEF,cmo=CMO,eig=EIG,ibeig=IBEIG,
+      CALL REACMO_new(cmo=CMO,eig=EIG,ibeig=IBEIG,
      &                toterg=TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -2276,7 +2276,7 @@ C
 C     Read coefficients + give info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GT1RHO')
-      CALL REACMO_new(LUCOEF,cmo=CMO,toterg=TOTERG)
+      CALL REACMO_new(cmo=CMO,toterg=TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
@@ -2510,7 +2510,7 @@ C
 C     Read coefficients + give restart info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_new(LUCOEF,cmo=CMO,toterg=TOTERG)
+      CALL REACMO_new(cmo=CMO,toterg=TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
@@ -2591,7 +2591,7 @@ C
 C     Read coefficients + give restart info
 C
       CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
-      CALL REACMO_new(LUCOEF,cmo=CMO,toterg=TOTERG)
+      CALL REACMO_new(cmo=CMO,toterg=TOTERG)
       CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Get cube parameters
@@ -4413,9 +4413,9 @@ C.........Read C1 coefficients and orbitalenergies
           IDIM(2) = NPOS
           IDIM(3) = NAO(IREFS)
           CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-          call reacmo_new (LUCOEF,cmo=WORK(KQA:KQA+NQA-1))
+          call reacmo_new (cmo=WORK(KQA:KQA+NQA-1))
           CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
-          call reacmo_new (LUCOEF,eig=WORK(KEA:KEA+NTOT-1))
+          call reacmo_new (eig=WORK(KEA:KEA+NTOT-1))
           CLOSE(LUCOEF,STATUS='KEEP')
 C.........Make pointer array to selected reference orbitals
           NDIM = NTOT+1

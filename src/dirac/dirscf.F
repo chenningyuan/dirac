@@ -5432,7 +5432,7 @@ C.......Read atomic coefficients in C1 format
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
         CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
-        call reacmo_new(luatom,text=text,idims=idims,toterg=toterg)
+        call reacmo_new(text=text,idims=idims,toterg=toterg)
         nneg = idims(7)
         npos = idims(8)
         nbas = idims(9)
@@ -5460,7 +5460,7 @@ C.......Read atomic coefficients in C1 format
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
         allocate (atom_cmo(nacmoq))
-        CALL REACMO_new(LUATOM,cmo=atom_cmo)
+        CALL REACMO_new(cmo=atom_cmo)
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)
@@ -5610,7 +5610,7 @@ C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
-        CALL REACMO_new(LUHOC,text=text,idims=idims)
+        CALL REACMO_new(text=text,idims=idims)
         ncatom(1,ityp) = idims(8)
         ncatom(2,ityp) = idims(7)
         nao(ityp)      = idims(9)
@@ -5661,7 +5661,7 @@ C
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
         CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
-        CALL REACMO_new(LUHOC,text=text,idims=idims)
+        CALL REACMO_new(text=text,idims=idims)
         nneg = idims(7)
         npos = idims(8)
         NTOT = NNEG+NPOS
@@ -5670,9 +5670,9 @@ C.......Read C1 coefficients and orbitalenergies
         IDIM(3) = NAO(ITYP)
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL REACMO_new(LUHOC,cmo=WORK(KQA:KQA+NQA-1))
+        CALL REACMO_new(cmo=WORK(KQA:KQA+NQA-1))
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL REACMO_new(LUHOC,eig=WORK(KEA:KEA+NTOT-1))
+        CALL REACMO_new(eig=WORK(KEA:KEA+NTOT-1))
         CLOSE(LUHOC,STATUS='KEEP')
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1

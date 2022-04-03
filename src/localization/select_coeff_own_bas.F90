@@ -113,7 +113,7 @@ contains
 !     ===============
 !
       IF(KEYFORM == 1)THEN
-        call reacmo_new(iunit,text=text,idims=idims,toterg=toterg)
+        call reacmo_new(text=text,idims=idims,toterg=toterg)
         nzbuf = idims(1)
         nsym  = idims(2)
         idim  = reshape(idims(7:12),(/3,2/))
@@ -169,17 +169,17 @@ contains
 !     Read coefficients
 !     =================
 !    
-      IF(LBIT(IOPT_TMP,2)) call reacmo_new(iunit,cmo=cmo)
+      IF(LBIT(IOPT_TMP,2)) call reacmo_new(cmo=cmo)
 !
 !     Read eigenvalues
 !     ================
 !
-      IF(LBIT(IOPT_TMP,3)) call reacmo_new(iunit,eig=eig)
+      IF(LBIT(IOPT_TMP,3)) call reacmo_new(eig=eig)
 !
 !     Read boson irrep info
 !     =====================
 !
-      IF(LBIT(IOPT_TMP,4)) call reacmo_new(iunit,ibeig=ibeig)
+      IF(LBIT(IOPT_TMP,4)) call reacmo_new(ibeig=ibeig)
 !
 !     Select and adjust format to molecular basis
 !     ===========================================

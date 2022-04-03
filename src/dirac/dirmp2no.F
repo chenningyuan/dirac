@@ -433,7 +433,7 @@ C          ... boson irrep info (or mj-values if linear symmetry is available)
            CALL IREAKRMC(LUKRMC,'IBEIGORI',work(kibeig),NORBT)
 C          ... MO coefficients
            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2NOG')
-           CALL REACMO_new(LUCOEF,cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
+           CALL REACMO_new(cmo=WORK(KCMO_TRA:KCMO_TRA+NCMOTQ-1))
            CLOSE(LUCOEF,STATUS='KEEP')
 C
 C          transformation 
@@ -864,7 +864,7 @@ C
          CALL Abend2('MP2DEN: No MO coefficient file !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
+         CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
          CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
@@ -1061,7 +1061,7 @@ C
          CALL QUIT('PAMTRA: No MO coefficient file !')
       ELSE
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MP2DEN')
-         CALL REACMO_new(LUCOEF,cmo=cmo,eig=eig,ibeig=ibeig)
+         CALL REACMO_new(cmo=cmo,eig=eig,ibeig=ibeig)
       ENDIF
 C
 C     Select the set that we need

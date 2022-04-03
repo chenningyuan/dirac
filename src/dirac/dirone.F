@@ -2743,7 +2743,7 @@ C
             cmo_aoosoc  = 0.0d0
 !           read coefficients
             call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
-            call reacmo_new(lucoef,cmo=cmo_aoosoc)
+            call reacmo_new(cmo=cmo_aoosoc)
             close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
@@ -2904,7 +2904,7 @@ C
           tbuf_mmf    = 0
           !> read 2c-mos
           call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
-          call reacmo_new(lucoef,cmo=cmo_mmf)
+          call reacmo_new(cmo=cmo_mmf)
           close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
