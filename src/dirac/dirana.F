@@ -320,7 +320,7 @@ C
       ELSE
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       END IF
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
       allocate (cmo(N2BBASXQ))
@@ -395,11 +395,9 @@ C            occupancies
          CLOSE (LUKRMC)
       ELSE
          KRMC_FLG = 0
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
          IOPT=14
          call reacmo_new (cmo=CMO,eig=EIG,
      &                    ibeig=IBEIG,toterg=TOTERG)
-         CLOSE(LUCOEF,STATUS='KEEP')
 C
 C        check for energy 137.0D0 - if found we are doing a Mulliken
 C        population analysis of MCSCF/CI natural orbitals in C1
@@ -1263,6 +1261,7 @@ C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
+      use labeled_storage
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0,DM1=-1.0D0,D1=1.0D0)
@@ -1280,6 +1279,8 @@ C
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
      &          NVECS(2,0:2),IOFF(2),IDIM(3,2)
       CHARACTER TEXT*74
+      type(file_info_t)    :: fragfile
+      integer              :: n_mo(2),n_po(2)
       KFRSAV=KFREE
 C
 C
@@ -1296,16 +1297,15 @@ C     this is needed in the case when 'all' or 'oo'
 C     is used in the orbital strings
 C
       DO I = 1,NREFS
-        CALL OPNFIL(LUCOEF,REFFIL(I),'OLD','ANAPRJ')
-        IF(FNDLAB('INFO    ',LUCOEF)) THEN         
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &       (NSTR(J,2,I),NSTR(J,1,I),IDUM,J=1,NSYM),DUM
-C.............NPSH........NESH........NBAS...........TOTERG
-       ELSE
-          WRITE(6,*) 'PRJSOB: Error reading first record on ',REFFIL(I)     
-          CALL QUIT('PRJSOB: Error reading info')
-        ENDIF
-        CLOSE(LUCOEF,STATUS='KEEP')
+        fragfile%type = 2
+        fragfile%name = REFFIL(I)
+        fragfile%status = 0
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        nstr(:,1,i) = n_mo - n_po(1:2) ! nesh
+        nstr(:,2,i) = n_po             ! npsh
       ENDDO
       DO IFRP = 1,NFSYM
         NVECS(IFRP,1) = 0
@@ -1368,7 +1368,7 @@ C     Note that integer arrays IOFF is used to get correct
 C     positioning...
 C
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
-     &             1,NSTR(1,0,0),'DFCOEF',.FALSE.,1,IOPT,
+     &             1,NSTR(1,0,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &             IOFF,KRMC_FLG,WORK,KFREE,LFREE)
 C

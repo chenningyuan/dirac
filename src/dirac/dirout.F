@@ -1587,11 +1587,14 @@ C       IDIM(3,IFRP) = NFBAS(IFRP,0) : number of AO-basis functions
 C
 C     modified for MCSCF coefficients, occupation numbers and mj-values 
 C     by S. Knecht - April 2010
+C     L. Visscher (2022) - reading from hdf5 file
+C     MCSCF still to be done
 C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
        use dircmo
+       use labeled_storage
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1606,29 +1609,49 @@ C     Local variables
       CHARACTER TEXT*74,CMOFIL*6,FMT*6,MXFORM*6
       DIMENSION IDIM(3,2),JDIM(2,0:3)
       REAL*8 CMCSCF_MAGIC
+      integer              :: nzbuf, nsym, n_mo(2), n_po(2), n_basis(2)
+      type(file_info_t)    :: fragfile
 !
+!     LV: this following ugly hack for MCSCF should be reprogrammed
 !     flag for MCSCF coefficients on file CMOFIL
-      CMCSCF_MAGIC = 137.0D0
+!     CMCSCF_MAGIC = 137.0D0
 C
+
       KFRSAV = KFREE
-      REWIND IUNIT
+
 C
-C     Read title line
-C     ===============
+C     Read dimension information
+C     ==========================
 C
-      IF(FNDLAB('INFO    ',IUNIT)) THEN      
-        READ (IUNIT,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &          ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-      ELSE
-         CALL QUIT('SELOWN: Error reading info')
-      ENDIF
-      
+      fragfile%type = 2
+      fragfile%name = CMOFIL
+      fragfile%status = 0
+      call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/nz',
+     & idata=nzbuf)
+      call lab_read (fragfile,
+     & '/result/wavefunctions/scf/mobasis/n_basis',
+     & idata=n_basis)
+      call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     & idata=n_mo)
+      call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     & idata=n_po)
+      call lab_read (fragfile,'/result/wavefunctions/scf/energy',energy)
+      if (n_basis(2) == 0) then
+         nsym = 1
+      else
+         nsym = 2
+      end if
+      idim(1,:) = n_po
+      idim(2,:) = n_mo-n_po
+      idim(3,:) = n_basis
+      text = 'Fragment MO coefficient file used: '//CMOFIL
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
 !
 !     found MCSCF coefficients on file CMOFIL?
-      IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
+!     IF( TOTERG .eq. CMCSCF_MAGIC ) IOPT_TMP = 14
+!
 C
 C     File info
 C     =========
@@ -1667,17 +1690,23 @@ C
 C     Read coefficients
 C     =================
 C    
-      IF(LBIT(IOPT_TMP,2)) CALL REACMO_new(cmo=CMO)
+      IF(LBIT(IOPT_TMP,2)) call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/orbitals',
+     &      rdata=cmo(1:ncdim))
 C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT_TMP,3)) CALL REACMO_new(eig=EIG)
+      IF(LBIT(IOPT_TMP,3)) call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues',
+     &      rdata=eig(1:nedim))
 C
 C     Read boson irrep info
 C     =====================
 C
-      IF(LBIT(IOPT_TMP,4)) CALL REACMO_new(ibeig=IBEIG)
+      IF(LBIT(IOPT_TMP,4)) call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/symmetry',
+     &     idata=ibeig(1:nedim))
 C
 C     Select and adjust format to molecular basis
 C     ===========================================

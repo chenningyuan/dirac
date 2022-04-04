@@ -347,7 +347,7 @@ C  /* Deck wripcmo */
       SUBROUTINE WRIPCMO(IUNIT,CMO,EIG,IBEIG,TOTERG,SSYM)
 C*****************************************************************************
 C
-C     Write SCF-coefficients and eigenvalues to unformatted file
+C     Write SCF-coefficients and eigenvalues to formatted file
 C
 C     IDIM(1,J) - number of positronic solutions
 C     IDIM(2,J) - number of electronic solutions
@@ -2558,6 +2558,7 @@ C
 C     Written by Trond Saue Sep 6 2006
 C
 C***********************************************************************
+      use labeled_storage
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2567,11 +2568,12 @@ C
 #include "dgroup.h"
 #include "dcbham.h"
       LOGICAL TOBE,OWNBAS,LBIT
-      CHARACTER FRAGFIL(NFRAG)*6
+      CHARACTER*(*) FRAGFIL(NFRAG)
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
       DIMENSION IOFF(2)
       REAL*8 CMCSCF_MAGIC
+      type(file_info_t)    :: fragfile
 !
 !     flag for MCSCF coefficents present on fragment/molecular
 !     coefficients file
@@ -2598,7 +2600,9 @@ C.....loop over fragments
            CALL QUIT('SELFRAG: No fragment coefficients !')
         ENDIF
 C
-        CALL OPNFIL(LUCOEF,FRAGFIL(IFRAG),'OLD','SELFRAG')
+        fragfile%type = 2
+        fragfile%name = FRAGFIL(IFRAG)
+        fragfile%status = 0
         IF(LBIT(IOPT,1)) THEN
           WRITE(LUPRI,'(A,A6)') 
      &       '* SELFRAG: Coefficients from file: ',FRAGFIL(IFRAG)
@@ -2612,15 +2616,24 @@ C.......Fragment orbitals in own basis
 C.......Fragment orbitals in molecular basis
         ELSE
 !
+!         LV: have not tried to port the following weird construction
+!         MCSCF has still its own vector format that somebody should port to hdf5
 !         check for MCSCF coefficients on fragment/molecule file
-          CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-     &                TOTERG,-1)
+!         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
+!    &                TOTERG,-1)
 !
 !         found MCSCF coefficients on file CMOFIL?
-          IF( TOTERG .eq. CMCSCF_MAGIC ) KRMC_FLG = 1
-          CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-     &                TOTERG,IOPT)
+!         IF( TOTERG .eq. CMCSCF_MAGIC ) KRMC_FLG = 1
+!         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
+!    &                TOTERG,IOPT)
 !
+          IF(LBIT(IOPT,2)) call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/orbitals',cmo(1:ncmotq))
+          IF(LBIT(IOPT,3)) call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues',eig(1:norbt))
+          IF(LBIT(IOPT,4)) call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/symmetry',
+     &     idata=ibeig(1:norbt))
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
@@ -2654,7 +2667,6 @@ C       Select boson irrep information
         DO IFRP = 1,NFSYM
           IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,IFRAG)
         ENDDO
-        CLOSE(LUCOEF,STATUS='KEEP')
  12     CONTINUE
         INUC = INUC + NUCFRAG(IFRAG)
  10   CONTINUE
@@ -3278,6 +3290,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmoin */
       SUBROUTINE ACMOIN()
+      use labeled_storage
       use dircmo
 C*****************************************************************************
 C
@@ -3310,6 +3323,7 @@ C
       integer, allocatable :: IBEIG1(:)
       integer, allocatable :: IBEIG2(:)
       integer, allocatable :: IBUF(:)
+      type(file_info_t)    :: dfacmo
 C
       IPRINT = IPRGEN
 C
@@ -3333,10 +3347,14 @@ C
 C     Get coefficients from DFACMO --> stored in CMO2
 C     ===============================================
 C
-      CALL OPNFIL(LUCOEF,'DFACMO','OLD','ACMOIN')
-      call reacmo_new (cmo=cmo2,eig=eig2)
+      dfacmo%type = 2
+      dfacmo%name = 'DFACMO'
+      dfacmo%status = 0
+      call lab_read (dfacmo,
+     & '/result/wavefunctions/scf/mobasis/orbitals_C1',cmo2)
+      call lab_read (dfacmo,
+     & '/result/wavefunctions/scf/mobasis/eigenvalues_C1',eig2)
       CALL IZERO(IBEIG2,NORBT)
-      CLOSE(LUCOEF,STATUS='KEEP')
 
       IF(IPRINT.GE.3) THEN
         WRITE(LUPRI,'(A)') 
@@ -3397,7 +3415,6 @@ C
         ENDDO
       ENDIF
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','ACMOIN')
 C     tsaue:
 C     A possible source of error is that IBEIG1 may contain information
 C     about linear or boson symmetry, and the reduction of the variational
@@ -3405,7 +3422,6 @@ C     space will not work in the default case. This needs some thinking; for
 C     now I simply set IBEIG1 to zero.
       CALL ICOPY (NORBT,0,0,IBEIG1,1) 
       CALL WRICMO(LUCOEF,CMO1,EIG1,IBEIG1,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     De-allocate arrays
       deallocate(CMO1)
