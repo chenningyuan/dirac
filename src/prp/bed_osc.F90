@@ -687,11 +687,11 @@
 !.......Accumulate left operator .. order (K+M)
         IORD  = K+M
         TMOML = D0
-        CALL accBEDMOM(TMOML,ATMPPF,IORD)
+        CALL accBEDMOM(TMOML,ATMPPF,IORD,UPOL(:,1))
 !.......Accumulate right operator .. order (K-M)
         IORD  = K-M
         TMOMR = D0
-        CALL accBEDMOM(TMOMR,ATMPPF,IORD)
+        CALL accBEDMOM(TMOMR,ATMPPF,IORD,UPOL(:,1))
 !.......Accumulate oscillator strengths
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
@@ -716,12 +716,13 @@
       ENDDO   
       END SUBROUTINE OSC_BED
 
-      SUBROUTINE accBEDMOM(TMOM,ATMPPF,IORDER)
+
+      SUBROUTINE accBEDMOM(TMOM,ATMPPF,IORDER,VEC)
 #include "implicit.h"        
 #include "dgroup.h"
 #include "dcbxpr.h"      
 #include "dcbxpp.h"
-      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),VEC(3)
       INDAP = IBDOFF(IORDER)
       IBKA = 1     ! Binomial coefficient (IORDER A)
       DO IA = 0,IORDER
@@ -737,7 +738,7 @@
             ISYM    = IPRPSYM(INDPRA)
             NEXC    = KEXCNV(ISYM)
             DO IEXC=1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+VEC(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !      write(6,*) "INDAP;IX;IY;IZ;IP;TMOM",INDAP," ",IX," ",IY," ",IZ," ",IP," ",TMOM(IEXC,ISYM)
             ENDDO
           ENDDO
@@ -748,7 +749,7 @@
       RETURN
       END SUBROUTINE accBEDMOM
 
-      SUBROUTINE accVMOM(TMOM,ATMPPF,IORDER)
+      SUBROUTINE accVMOM(TMOM,ATMPPF,IORDER,VEC)
 !***********************************************************************
 !     
 !     Accumulates the electric multipole moments in the generalized
@@ -757,7 +758,7 @@
 !     The electric component of the transition moment in the velocity 
 !     representation is given by
 !
-!     T_Q = k_j1...k_jn*eps_p*Q^[n+1]_(j1...jn;p) 
+!     T_Q = 1/(n+1)!k_j1...k_jn*eps_p*Q^[n+1]_(j1...jn;p) 
 !     
 !     To calculate this quantity, we need to contract the wave and polarization
 !     vector with the relevant multipole moments. In this subroutine, 
@@ -771,7 +772,7 @@
 #include "dcbxpr.h"      
 #include "dcbxpp.h"
       INTEGER CARPOW(3,3), INDU(3)
-      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),VEC(3)
 
 
       CARPOW = 0.0D0    
@@ -802,7 +803,7 @@
             JZ = IZ + CARPOW(3,IP)
             TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC
             DO IEXC = 1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM) 
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+VEC(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM) 
             ENDDO
           ENDDO
 
@@ -820,11 +821,11 @@
             JZ = IZ + CARPOW(1,IP)
             TFAC  = (UWAVE(1)**JX)*(UWAVE(2)**JY)*(UWAVE(3)**JZ)*IBKA*IBAB*FAC ! factor for zy, xz and yx
             DO IEXC = 1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(INDU(IP),1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+VEC(INDU(IP))*TFAC*ATMPPF(IEXC,INDAP,ISYM)
             ENDDO
             INDAP = INDAP + 1   
               TFAC  = (UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB*FAC ! factor for yz, zx and xy
-              TFAC = TFAC*(UPOL(1,1)**KX)*(UPOL(2,1)**KY)*(UPOL(3,1)**KZ)
+              TFAC = TFAC*(VEC(1)**KX)*(VEC(2)**KY)*(VEC(3)**KZ)
             DO IEXC = 1,NEXC
               TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(INDU(IP))*TFAC*ATMPPF(IEXC,INDAP,ISYM)
             ENDDO
@@ -866,25 +867,25 @@
 !.........Electric multipole        
           TEMOML = D0
           IF (IORD.EQ.0) THEN
-            CALL accBEDMOM(TEMOML,ATMPPF,0)
+            CALL accBEDMOM(TEMOML,ATMPPF,0,UPOL(:,1))
           ELSE
-            CALL accVMOM(TEMOML,ATMPPF,IORD+1)
+            CALL accVMOM(TEMOML,ATMPPF,IORD+1,UPOL(:,1))
           ENDIF
 !.........Magnetic multipole        
           TMMOML = D0
-          CALL accMMOM(TMMOML,ATMPPF,IORD)
+          CALL accMMOM(TMMOML,ATMPPF,IORD,UPOL(:,1))
 !.......Accumulate right operator .. order (K-M)
         IORD  = K-M
 !.........Electric multipole        
           TEMOMR = D0
           IF (IORD.EQ.0) THEN
-            CALL accBEDMOM(TEMOMR,ATMPPF,0)
+            CALL accBEDMOM(TEMOMR,ATMPPF,0,UPOL(:,1))
           ELSE
-            CALL accVMOM(TEMOMR,ATMPPF,IORD+1)
+            CALL accVMOM(TEMOMR,ATMPPF,IORD+1,UPOL(:,1))
           ENDIF
 !.........Magnetic multipole        
           TMMOMR = D0
-          CALL accMMOM(TMMOMR,ATMPPF,IORD)
+          CALL accMMOM(TMMOMR,ATMPPF,IORD,UPOL(:,1))
 !.......Accumulate oscillator strengths
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
@@ -914,6 +915,102 @@
       END SUBROUTINE OSC_VPOL
 
 
+      SUBROUTINE ECD_VPOL(K,FOSC,ATMPPF,OMEGA)
+!***********************************************************************
+!      
+!     Calculates electronic circular dichroism for oriented sample.
+!     The multipole moments used to construct this quantity are written
+!     in the generalized velocity representation.
+!
+!     written by Martin van Horn 2021
+!***********************************************************************        
+#include "implicit.h"
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcbxpp.h"
+      real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
+      real*8,allocatable  :: TEMOML(:,:,:),TMMOML(:,:,:),TEMOMR(:,:,:),TMMOMR(:,:,:)
+      PARAMETER(D4=4.0D0,D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      allocate(temoml(MAXEXC,NBSYM,2))
+      allocate(tmmoml(MAXEXC,NBSYM,2))      
+      allocate(temomr(MAXEXC,NBSYM,2))
+      allocate(tmmomr(MAXEXC,NBSYM,2))            
+      NORD = 2*K + 1
+      DO M = 0,K
+        FAC = D4*(-D1)**M
+!.......Accumulate left operator .. order (K+M+1)
+        IORD  = K+M+1
+!.........Electric multipole        
+          TEMOML = D0
+          !perhaps this if statement is redundant 
+          IF (IORD.EQ.0) THEN
+            CALL accBEDMOM(TEMOML(:,:,1),ATMPPF,0,UPOL(:,1))
+            CALL accBEDMOM(TEMOML(:,:,2),ATMPPF,0,UPOL(:,2))
+          ELSE
+            CALL accVMOM(TEMOML(:,:,1),ATMPPF,IORD+1,UPOL(:,1))
+            CALL accVMOM(TEMOML(:,:,2),ATMPPF,IORD+1,UPOL(:,2))
+          ENDIF
+!.........Magnetic multipole        
+          TMMOML = D0
+          CALL accMMOM(TMMOML(:,:,1),ATMPPF,IORD,UPOL(:,1))
+          CALL accMMOM(TMMOML(:,:,2),ATMPPF,IORD,UPOL(:,2))
+!.......Accumulate right operator .. order (K-M)
+        IORD  = K-M
+!.........Electric multipole        
+          TEMOMR = D0
+          IF (IORD.EQ.0) THEN
+            CALL accBEDMOM(TEMOMR(:,:,1),ATMPPF,0,UPOL(:,1))
+            CALL accBEDMOM(TEMOMR(:,:,2),ATMPPF,0,UPOL(:,2))            
+          ELSE
+            CALL accVMOM(TEMOMR(:,:,1),ATMPPF,IORD+1,UPOL(:,1))
+            CALL accVMOM(TEMOMR(:,:,2),ATMPPF,IORD+1,UPOL(:,2))
+          ENDIF
+!.........Magnetic multipole        
+          TMMOMR = D0
+          CALL accMMOM(TMMOMR(:,:,1),ATMPPF,IORD,UPOL(:,1))
+          CALL accMMOM(TMMOMR(:,:,2),ATMPPF,IORD,UPOL(:,2))
+!.......Accumulate oscillator strengths
+
+!below still needs to be changed
+        DO ISYM = 1,NBSYM        
+          NEXC=KEXCNV(ISYM)
+          DO IEXC=1,NEXC
+            FOSC(2,IEXC,ISYM) = FOSC(2,IEXC,ISYM) + FAC*TEMOML(IEXC,ISYM,1)*TEMOMR(IEXC,ISYM,2)
+            FOSC(2,IEXC,ISYM) = FOSC(2,IEXC,ISYM) - FAC*TEMOML(IEXC,ISYM,2)*TEMOMR(IEXC,ISYM,1)
+
+            FOSC(3,IEXC,ISYM) = FOSC(3,IEXC,ISYM) - FAC*(TEMOML(IEXC,ISYM,1)*TMMOMR(IEXC,ISYM,2)&
+                                                   +      TMMOML(IEXC,ISYM,1)*TEMOMR(IEXC,ISYM,2))
+            FOSC(3,IEXC,ISYM) = FOSC(3,IEXC,ISYM) + FAC*(TEMOML(IEXC,ISYM,2)*TMMOMR(IEXC,ISYM,1)&
+                                                   +      TMMOML(IEXC,ISYM,2)*TEMOMR(IEXC,ISYM,1))
+
+            FOSC(4,IEXC,ISYM) = FOSC(4,IEXC,ISYM) + FAC*TMMOML(IEXC,ISYM,1)*TMMOMR(IEXC,ISYM,2)
+            FOSC(4,IEXC,ISYM) = FOSC(4,IEXC,ISYM) + FAC*TMMOML(IEXC,ISYM,2)*TMMOMR(IEXC,ISYM,1)
+           ENDDO
+        ENDDO
+      ENDDO
+      deallocate(temoml)
+      deallocate(tmmoml)
+      deallocate(temomr)      
+      deallocate(tmmomr)
+      !....Add final factors for oscillator strengths
+      DO ISYM = 1,NBSYM
+        NEXC = KEXCNV(ISYM)
+        DO IEXC = 1,NEXC
+          FAC = (OMEGA(IEXC,ISYM)/CVAL)**NORD
+          FOSC(2,IEXC,ISYM)=FOSC(2,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(3,IEXC,ISYM)=FOSC(3,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(4,IEXC,ISYM)=FOSC(4,IEXC,ISYM)*FAC/OMEGA(IEXC,ISYM)
+          FOSC(1,IEXC,ISYM)=FOSC(2,IEXC,ISYM)+FOSC(3,IEXC,ISYM)+FOSC(4,IEXC,ISYM)
+        ENDDO
+      ENDDO   
+      END SUBROUTINE ECD_VPOL
+
+
+
+
+
+
+
 
 
 
@@ -940,7 +1037,7 @@
           CALL accEMOM(TEMOML,ATMPPF,IORD+1)
 !.........Magnetic multipole        
           TMMOML = D0
-          CALL accMMOM(TMMOML,ATMPPF,IORD)
+          CALL accMMOM(TMMOML,ATMPPF,IORD,UPOL(:,1))
 !.......Accumulate right operator .. order (K-M)
         IORD  = K-M
 !.........Electric multipole        
@@ -948,7 +1045,7 @@
           CALL accEMOM(TEMOMR,ATMPPF,IORD+1)
 !.........Magnetic multipole        
           TMMOMR = D0
-          CALL accMMOM(TMMOMR,ATMPPF,IORD)
+          CALL accMMOM(TMMOMR,ATMPPF,IORD,UPOL(:,1))
 !.......Accumulate oscillator strengths
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
@@ -977,13 +1074,13 @@
       ENDDO   
       END SUBROUTINE OSC_MPOL
 
-      SUBROUTINE accMMOM(TMOM,ATMPPF,IORDER)
+      SUBROUTINE accMMOM(TMOM,ATMPPF,IORDER,VEC)
 !     Accumulate magnetic multipole contributions to order IORDER        
 #include "implicit.h"        
 #include "dgroup.h"
 #include "dcbxpr.h"      
 #include "dcbxpp.h"
-      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM)
+      real*8  :: TMOM(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),VEC(3)
       IF(IORDER.EQ.0) RETURN  
       FAC = 1.0D0
       DO I = 2,IORDER
@@ -999,7 +1096,7 @@
           DO IB = 0,IA
             IY = IA - IB
             IZ = IB
-            TFAC=FAC*UPOL(IP,1)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
+            TFAC=FAC*VEC(IP)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
             DO IR = 1,3
               INDAP   = INDAP + 1
               CALL LEVI_CEVITA(IP,IR,IS,IPRS)

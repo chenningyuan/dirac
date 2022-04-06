@@ -834,7 +834,7 @@ C.....Generalized velocity gauge
         NPPAPT = NPPAPT + NDEG
       ENDDO
 C.....Generalized velocity representation electric multipoles     
-      IF (IVMAX.GT.2) THEN
+      IF (IVMAX.GT.1) THEN
         DO IORDER = 2,IVMAX
             NDEG = 9*(IORDER*(IORDER-1))/2
             CALL DEF_VPOLE(IORDER,LPPAPU(NPPAPT+1),IPRXPP)
@@ -2675,7 +2675,57 @@ c            ENDIF
           WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
         ENDIF
 
-
+c...... ECD velocity representation
+        IF(DOVELR.AND.KVAL_OSC.GT.0) THEN
+          allocate(fosc(4,MAXEXC,NBSYM,-1:K2ORD))
+          FOSC=0.0D0
+          DO IK = 0,K2ORD
+             CALL ECD_VPOL(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
+c            CALL OSC_MPOL(IK,FOSC(1,1,1,IK),ATMPPF,OMEGA)
+             CALL DAXPY(4*MAXEXC*NBSYM,D1,FOSC(1,1,1,IK),1,
+     &                                  FOSC(1,1,1,-1),1)
+c
+          ENDDO
+c
+cc            write(6,*) "FOSC MULT ", FOSC(:,:,:,-1)
+          NLIN=32+16*(K2ORD+2)
+          WRITE(LUPRI,'(/A,ES8.2)')
+     &       '* Anisotropic truncated ECD '//
+     &       '(generalized velocity gauge) above threshold :', TTOL
+          WRITE(LUPRI,'(3X,A)')
+     &     '- [f( 0) corresponds to the electric dipole approximation]'
+          CALL PRSYMB(LUPRI,'-',NLIN,0)
+          WRITE(LUPRI,'(/A,'//FMT//'(A2,I2,A2,10X))')
+     &       'Level    Frequency (eV) Symmetry    f(total)        ',
+     &       ('f(',IK+IK,') ',IK=0,K2ORD)
+          CALL PRSYMB(LUPRI,'-',NLIN,0)
+          DO JEXC = 2,NEXC          ! skip reference state
+            II = INDX(JEXC)
+            IEXC  = IEERG(1,II)
+            ISYM  = IEERG(2,II)
+            OSCIL = FOSC(1,IEXC,ISYM,-1)
+c            IF(ABS(OSCIL) .GT. TTOL) THEN ! allowing negative oscillator strengths
+              ILAB  = ISSYM(IEXC,ISYM)
+              WRITE(LUPRI,
+     &         '(I5,1X,F16.5,2X,A3,1X,A4,'//FMT//'(2X,ES14.6))') JEXC-1,
+     &         OMEGA(IEXC,ISYM)*XTEV,REP(ISYM-1),SYMLAB(ILAB),OSCIL,
+     &         (FOSC(1,IEXC,ISYM,IK),IK=0,K2ORD)
+              WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
+     &         'Q-Q',(FOSC(2,IEXC,ISYM,IK),IK=0,K2ORD)
+              WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
+     &         'M-Q',(FOSC(3,IEXC,ISYM,IK),IK=0,K2ORD)
+              WRITE(LUPRI,'(43X,A3,2X,'//FMT//'(2X,ES14.6))') 
+     &         'M-M',(FOSC(4,IEXC,ISYM,IK),IK=0,K2ORD)
+c            ENDIF
+          ENDDO
+          CALL PRSYMB(LUPRI,'-',NLIN,0)
+          TOT = DSUM(NEXCF,FOSC(1,1,1,-1),4)
+          WRITE(LUPRI,'(A,ES12.5)')
+     &     'Sum of oscillator strengths (general velocity) : ',TOT
+         deallocate(fosc)
+        ELSE
+          WRITE(LUPRI,'(A)') ' * Velocity representation not active.'
+        ENDIF
 
 
 
