@@ -119,9 +119,9 @@ C
                  GO TO 100
                END IF
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
-     &            '" not recognized in ESRINP.'
+     &            '" not recognized for *ESR'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal keyword in ESRINP.')
+               CALL QUIT('Illegal keyword for *ESR')
     1          CONTINUE !
                GO TO 100
     2          CONTINUE ! .PRINT
@@ -251,9 +251,9 @@ C&&&& calculate g tensor with 10 ppm accuracy
                GO TO 300
             ELSE
                WRITE (LUPRI,'(/,3A,/)') ' Prompt "',WORD,
-     &            '" not recognized in ESRINP.'
+     &            '" not recognized for *ESR'
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT('Illegal prompt in ESRINP.')
+               CALL QUIT('Illegal prompt for *ESR')
             END IF
       END IF
   300 CONTINUE
@@ -496,7 +496,7 @@ C
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
 
-      IF (IPRESR .GT. 3) THEN
+      IF (IPRESR .GT. 0) THEN
          WRITE(lupri,*) 'H_CI after ESR_RESOLVE:'
          CALL OUTPUT(WORK(KHCI),1,MULTIPESR,1,MULTIPESR,
      &               MULTIPESR,MULTIPESR,-1,LUPRI)
@@ -508,7 +508,6 @@ C
 C     Memory allocation for ESRPHASE and PRPESR1
 C
       CALL MEMGET2('REAL','PMAT',KPMAT,NZ*N2ASHX ,WORK,KFREE,LFREE)
-C
 C
 #if ESR_DEBUG > 20
        WRITE(LUPRI,*)
@@ -604,6 +603,8 @@ C
 C     (1) Get the Dirac equation g tensor (corresponding to GFAC = 2.0)
 C     (2) Get the QED correction in GCORR
 C
+C QUESTION: would it not be better to average jp1-j0 and j0-jm1 values ???
+C
         jm1 = 3
         j0  = 2
         jp1 = 1
@@ -611,18 +612,18 @@ C
         DO K = 1,3
 C       ... for B field in direction k (x,y,z)
           I = IPESR(MXCOOR+K,1)
-          GTENSOR(K,1) = D2SQRT2*ESRVAL(j0 ,jm1,1,I)
-          GTENSOR(K,2) = D2SQRT2*ESRVAL(j0 ,jm1,2,I)
-          GTENSOR(K,3) =   2.0D0*ESRVAL(jp1,jp1,1,I)
+          GTENSOR(K,1) =  D2SQRT2*ESRVAL(j0 ,jm1,1,I)
+          GTENSOR(K,2) = -D2SQRT2*ESRVAL(j0 ,jm1,2,I)
+          GTENSOR(K,3) =    2.0D0*ESRVAL(jp1,jp1,1,I)
 c??       GTENSOR(K,3) = ESRVAL(jp1,jp1,1,I) - ESRVAL(jm1,jm1,1,I)
 c         WRITE(lupri,*)'K =', K
 c         WRITE(lupri,*)'GTENSOR(K,1)', GTENSOR(K,1),
 c    &                  'GTENSOR(K,2)', GTENSOR(K,2),
 c    &                  'GTENSOR(K,3)', GTENSOR(K,3)
           J = IPESR(MXCOOR+K,2)
-          GCORR(K,1)   = D2SQRT2*ESRVAL(j0 ,jm1,1,J)
-          GCORR(K,2)   = D2SQRT2*ESRVAL(j0 ,jm1,2,J)
-          GCORR(K,3)   =   2.0D0*ESRVAL(jp1,jp1,1,J)
+          GCORR(K,1)   =  D2SQRT2*ESRVAL(j0 ,jm1,1,J)
+          GCORR(K,2)   = -D2SQRT2*ESRVAL(j0 ,jm1,2,J)
+          GCORR(K,3)   =    2.0D0*ESRVAL(jp1,jp1,1,J)
 c         WRITE(lupri,*)'K =', K
 c         WRITE(lupri,*)'GCORR(K,1)', GCORR(K,1),
 c    &      'GCORR(K,2)', GCORR(K,2),
@@ -814,8 +815,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C*****************************************************************************
 C
 C     --- 1) Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
-C         2) Modify phases acc. to convention for <M_S + 1 | S_x | M_S >
-C         and  <M_S + 1 | S_y | M_S >.
+C         2) Modify phases acc. to convention for <M_S | S_x | M_S - 1 >
+C         and  <M_S | S_y | M_S - 1 >.
 C
 C     Input :
 C        CMO, HCI, CIEVEC
@@ -982,12 +983,14 @@ C     ======
 C     (for print levels > 3, also calculate S_z matrix again, only relevant for testing
 C     if code above is correct.)
 C
-      IF (IPRESR .GT. 3) THEN
+C --- current code only ok for I_end = 3, see S_eff test below (S_z from
+C above has been destroyed !
+!     IF (IPRESR .GT. 3) THEN
          I_end = 3 ! S_x, S_y, S_z - S_z only to verify transformation in Step 1 was correct
-      ELSE
-         I_end = 2 ! only S_x and S_y
+!     ELSE
+!        I_end = 2 ! only S_x and S_y
          ! S_z matrix is in ESRVAL(:,:,2,3) from Step 1
-      END IF
+!     END IF
 #if ESR_DEBUG > 3
       WRITE(LUPRI,*) 'Initial phase factors, should be (1,0):'
       do i = 1, multipesr
@@ -1054,56 +1057,98 @@ C
       PHASE_factors(1,1) = PHASE_J_R
       PHASE_factors(1,2) = PHASE_J_I
 
-      DO J = 1,MULTIPESR-1  ! M_S = -S, ..., S-1
+      DO J = 1,MULTIPESR-1  ! M_S = S,S-1, ...,-S+1
       ! Find phase factor for eigenvector J+1
-      ! Start with phase factors for j+1 same as for j
-        JP1 = J+1 ! M_S + 1
-        SX_R = ESRVAL(J,JP1,1,1)*PHASE_J_R - ESRVAL(J,JP1,2,1)*PHASE_J_I
-        SX_I = ESRVAL(J,JP1,1,1)*PHASE_J_I + ESRVAL(J,JP1,2,1)*PHASE_J_R
-        SY_R = ESRVAL(J,JP1,1,2)*PHASE_J_R - ESRVAL(J,JP1,2,2)*PHASE_J_I
-        SY_I = ESRVAL(J,JP1,1,2)*PHASE_J_I + ESRVAL(J,JP1,2,2)*PHASE_J_R
+      ! Start with left transformation using established phase factors for j
+      ! i.e. multiply with complex conjugate: PHASE_J_R - i PHASE_J_I
+        JP1 = J+1 ! M_S - 1
+        SX_R = ESRVAL(J,JP1,1,1)*PHASE_J_R + ESRVAL(J,JP1,2,1)*PHASE_J_I
+        SX_I =-ESRVAL(J,JP1,1,1)*PHASE_J_I + ESRVAL(J,JP1,2,1)*PHASE_J_R
+        SY_R = ESRVAL(J,JP1,1,2)*PHASE_J_R + ESRVAL(J,JP1,2,2)*PHASE_J_I
+        SY_I =-ESRVAL(J,JP1,1,2)*PHASE_J_I + ESRVAL(J,JP1,2,2)*PHASE_J_R
 
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JP1,<J|S_x|JP1>  :",J,JP1,SX_R,' + i',SX_I
-        WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
-     &     " J,JP1,<J|S_y|JP1>  :",J,JP1,SY_R,' + i',SY_I
+!       IF (IPRESR .GT. 0) THEN
+           WRITE (LUPRI,'(/A,F4.1,A)')
+     &     "  Initial values before phase transformation"//
+     &     "  for M_Seff =",SEFF-DFLOAT(J-1)
+           WRITE (LUPRI,'(/A,F15.10,A,F15.10)')
+     &     " <M_Seff|S_x|M_Seff - 1>  :",SX_R,' + i',SX_I
+           WRITE (LUPRI,'( A,F15.10,A,F15.10)')
+     &     " <M_Seff|S_y|M_Seff - 1>  :",SY_R,' + i',SY_I
+!        END IF
 
-        ! Using (a+ib)(c+is) = (ac-bs) + i(as+ib)
-        ! make <jp1|S_x|jp> value purely real
-        ! and  <jp1|S_y|jp> value purely imaginary
+      ! Now find phase factors for j+1 from the right
+      ! so we get the desired structures for S_x and S_y
+
+        ! Using (a+ib)(c+is) = (ac-bs) + i(as+bc)
+        ! make <j|S_x|jp1> value purely real
+        ! and  <j|S_y|jp1> value purely imaginary
         IF (ABS(SX_I) .gt. THR_ZERO) THEN
            PHI = -ATAN(SX_I,SX_R)
            C_PHI = COS(PHI)
            S_PHI = SIN(PHI)
-           SX_R_new = C_PHI*SX_R - S_PHI*SX_I
-           SX_I_new = C_PHI*SX_I + S_PHI*SX_R
-           SY_R_new = C_PHI*SY_R - S_PHI*SY_I
-           SY_I_new = C_PHI*SY_I + S_PHI*SY_R
-           IF (ABS(SX_I_new) .gt. THR_ZERO) THEN
+           SX_R_tmp = C_PHI*SX_R - S_PHI*SX_I
+           SX_I_tmp = C_PHI*SX_I + S_PHI*SX_R
+           SY_R_tmp = C_PHI*SY_R - S_PHI*SY_I
+           SY_I_tmp = C_PHI*SY_I + S_PHI*SY_R
+           IF (ABS(SX_I_tmp) .gt. THR_ZERO) THEN
               write(lupri,*) 'ESRPHASE: error in Sx phase',
-     &        SX_R_new,XS_I_new
+     &        SX_R_tmp,SX_I_tmp
               CALL QUIT('ESRPHASE: error in Sx phase')
            END IF
-           SX_R = SX_R_new
+           SX_R = SX_R_tmp
            SX_I = 0.0D0
-           SY_R = SY_R_new
-           SY_I = SY_I_new
+           SY_R = SY_R_tmp
+           SY_I = SY_I_tmp
 
-           PHASE_R =  C_PHI*PHASE_J_R - S_PHI*PHASE_J_I
-           PHASE_I =  C_PHI*PHASE_J_I + S_PHI*PHASE_J_R
+!          PHASE_R =  C_PHI*PHASE_J_R - S_PHI*PHASE_J_I
+!          PHASE_I =  C_PHI*PHASE_J_I + S_PHI*PHASE_J_R
+           PHASE_R =  C_PHI
+           PHASE_I =  S_PHI
         ELSE
            SX_I = 0.0D0 ! remove numerical noise
 
-           PHASE_R =  PHASE_J_R
-           PHASE_I =  PHASE_J_I
+!          PHASE_R =  PHASE_J_R
+!          PHASE_I =  PHASE_J_I
+           PHASE_R =  1.0D0
+           PHASE_I =  0.0D0
         END IF
 
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     "/J,JP1,<JP1|S_x|J>  :",J,JP1,SX_R,' + i',SX_I
-        WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
-     &     "/J,JP1,<JP1|S_y|J>  :",J,JP1,SY_R,' + i',SY_I
+!       IF (IPRESR .GT. 1) THEN
+           WRITE (LUPRI,'(/A)')
+     &     "  After phase rotations; without sign fix:"
+           WRITE (LUPRI,'(/A,F15.10,A,F15.10)')
+     &     " <M_Seff|S_x|M_Seff - 1>  :",SX_R,' + i',SX_I
+           WRITE (LUPRI,'( A,F15.10,A,F15.10)')
+     &     " <M_Seff|S_y|M_Seff - 1>  :",SY_R,' + i',SY_I
+!       END IF
 
-        IF (ABS(SY_R) .gt. THR_ZERO) THEN
+        ! Next fix sign so S_x and S_y values are according to convention
+        IF      (SX_R .gt. 0.0D0 .and. SY_I .lt. 0.0D0) then
+           ! OK, do nothing, (a - ib)
+            PHASE_JP1_R = +PHASE_R
+            PHASE_JP1_I = +PHASE_I
+        ELSE IF (SX_R .gt. 0.0D0 .and. SY_I .gt. 0.0D0) then
+           ! (a - ib) = (b + ia)*(-i)
+            PHASE_JP1_R = +PHASE_I
+            PHASE_JP1_I = -PHASE_R
+        ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .lt. 0.0D0) then
+           ! (a - ib) = (-b - ia)*(i)
+            PHASE_JP1_R = -PHASE_I
+            PHASE_JP1_I = +PHASE_R
+        ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .gt. 0.0D0) then
+           ! (a -ib) = (-a + ib)*(-1)
+            PHASE_JP1_R = -PHASE_R
+            PHASE_JP1_I = -PHASE_I
+        ELSE
+           CALL QUIT('One of Sx and Sy is zero.')
+        END IF
+
+        PHASE_factors(JP1,1) = PHASE_JP1_R
+        PHASE_factors(JP1,2) = PHASE_JP1_I
+
+!       IF (ABS(SY_R) .gt. THR_ZERO) THEN
+        IF (ABS(SY_R) .gt. 1.0D-5) THEN
            write(lupri,*)'ESRPHASE error: S_y not purely imaginary'//
      &        ' although S_x is purely real'
            write(lupri,*) 'S_x',SX_R,SX_I
@@ -1114,56 +1159,38 @@ C
            SY_R = 0.0D0 ! remove numerical noise
         END IF
 
-        ! Next fix sign so S_x and S_y values are according to convention
-        IF      (SX_R .gt. 0.0D0 .and. SY_I .lt. 0.0D0) then
-           ! OK, do nothing, (a - ib)
-            PHASE_JP1_R = +PHASE_R
-            PHASE_JP1_I = +PHASE_I
-        ELSE IF (SX_R .gt. 0.0D0 .and. SY_I .gt. 0.0D0) then
-           ! (a + ib) = (b + ia)*(-i)
-            PHASE_JP1_R = +PHASE_I
-            PHASE_JP1_I = -PHASE_R
-        ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .lt. 0.0D0) then
-           ! (a - ib) = (-b - ia)*(i)
-            PHASE_JP1_R = -PHASE_I
-            PHASE_JP1_I = -PHASE_R
-        ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .gt. 0.0D0) then
-           ! (a -ib) = (-a + ib)*(-1)
-            PHASE_JP1_R = -PHASE_R
-            PHASE_JP1_I = -PHASE_I
-        ELSE
-           CALL QUIT('One of Sx and Sy is zero.')
-        END IF
-        PHASE_factors(JP1,1) = PHASE_JP1_R
-        PHASE_factors(JP1,2) = PHASE_JP1_I
+C       re-evaluate S_x and S_y values for JP1 for print
+C       1) multiply from left with phase factors for J, complex conjugated:
+        SXR = ESRVAL(J,JP1,1,1)*PHASE_J_R + ESRVAL(J,JP1,2,1)*PHASE_J_I
+        SXI =-ESRVAL(J,JP1,1,1)*PHASE_J_I + ESRVAL(J,JP1,2,1)*PHASE_J_R
+        SYR = ESRVAL(J,JP1,1,2)*PHASE_J_R + ESRVAL(J,JP1,2,2)*PHASE_J_I
+        SYI =-ESRVAL(J,JP1,1,2)*PHASE_J_I + ESRVAL(J,JP1,2,2)*PHASE_J_R
+C       1) multiply from left with phase factors for J, complex conjugated:
+        SX_R = SXR*PHASE_JP1_R - SXI*PHASE_JP1_I
+        SX_I = SXR*PHASE_JP1_I + SXI*PHASE_JP1_R
+        SY_R = SYR*PHASE_JP1_R - SYI*PHASE_JP1_I
+        SY_I = SYR*PHASE_JP1_I + SYI*PHASE_JP1_R
 
-      WRITE (LUPRI,'(A,2I3,2F15.10)')
-     &   ' J, JP1, Phase factors on JP1',J,JP1,PHASE_JP1_R, PHASE_JP1_I
-      WRITE (LUPRI,'(A,2I3,4F15.10)')
-     &   ' J, JP1, SX_R,SX_I,SY_R,SY_I',J,JP1,SX_R,SX_I,SY_R,SY_I
+        WRITE (LUPRI,'(/A,F4.1,A)')
+     &     "  Final values after phase transformation"//
+     &     "  for M_Seff =",SEFF-DFLOAT(J-1)
+        WRITE (LUPRI,'(/A,F15.10,A,F15.10)')
+     &     " <M_Seff|S_x|M_Seff - 1>  :",SX_R,' + i',SX_I
+        WRITE (LUPRI,'( A,F15.10,A,F15.10)')
+     &     " <M_Seff|S_y|M_Seff - 1>  :",SY_R,' + i',SY_I
 
 C       for next J in do loop
         PHASE_J_R = PHASE_JP1_R
         PHASE_J_I = PHASE_JP1_I
-C       ... here PHASE is new phase of vector MJ+1
-
-C       re-evaluate S_x and S_y values for JP1 for print
-        SX_R = ESRVAL(J,JP1,1,1)*PHASE_J_R - ESRVAL(J,JP1,2,1)*PHASE_J_I
-        SX_I = ESRVAL(J,JP1,1,1)*PHASE_J_I + ESRVAL(J,JP1,2,1)*PHASE_J_R
-        SY_R = ESRVAL(J,JP1,1,2)*PHASE_J_R - ESRVAL(J,JP1,2,2)*PHASE_J_I
-        SY_I = ESRVAL(J,JP1,1,2)*PHASE_J_I + ESRVAL(J,JP1,2,2)*PHASE_J_R
-
-        WRITE (LUPRI,'(/A,2I5,F15.10,A,F15.10)')
-     &     " J,JP1,<J|S_x|JP1>  :",J,JP1,SX_R,' + i',SX_I
-        WRITE (LUPRI,'( A,2I5,F15.10,A,F15.10)')
-     &     " J,JP1,<J|S_y|JP1>  :",J,JP1,SY_R,' + i',SY_I
+C       ... here PHASE is new phase of vector MJ-1
 
       END DO ! J = 1, MULTIPESR-1
 
-      IF (IPRESR .GT. 1) THEN
-         WRITE(LUPRI,*) 'Final phase factors:'
-         do i = 1, multipesr
-            write(lupri,*) phase_factors(i,1:2)
+!     IF (IPRESR .GT. 1) THEN
+         WRITE(LUPRI,'(/A)') '  M_Seff : Final phase factor on |M_Seff>'
+         do j = 1, multipesr
+            write(lupri,'(F5.1,A,2F15.10)')
+     &         SEFF-DFLOAT(J-1),' :',phase_factors(j,1:2)
          end do
 
          CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,1), MULTIPESR) ! S_x
@@ -1176,7 +1203,7 @@ C       re-evaluate S_x and S_y values for JP1 for print
          CALL HEADER('Phase updated property matrix for S_y',1)
          CALL PRQMAT(ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,
      &            MULTIPESR,MULTIPESR,2,IQINDX,LUPRI)
-      END IF
+!     END IF
 C
 C **  Form S**2 matrix in ESRVAL(...,4) in CIEVEC basis
 C
