@@ -190,7 +190,7 @@ C
       IF (DOEXP) THEN
          CALL MEMGET('REAL',KEXP,NEXPP,WORK,KFREE,LFREE)
          if (doexacc) then
-             call kuprpexp(wf, work(kexp), work(kfree), lfree, state)
+            call kuprpexp(wf, work(kexp), work(kfree), lfree, state)
          else
              CALL PRPEXP(WF,WORK(KEXP),WORK(KFREE),LFREE,STATE) 
          endif

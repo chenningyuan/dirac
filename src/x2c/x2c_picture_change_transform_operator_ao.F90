@@ -268,7 +268,6 @@ contains
 !             equation: f_2c^++ = U+ * f_4c * U
 !
 !----------------------------------------------------------------------
-     use labeled_storage
      integer, intent(in)            :: prop_op_dgsym(num_prp_op)
      integer, intent(in)            :: prop_op_trsym(num_prp_op)
      logical, intent(in)            :: prop_op_triang(num_prp_op)
@@ -307,8 +306,8 @@ contains
      character (len=12)             :: flabel
      character (len=4)              :: numstr
 !**********************************************************************
-!    CHIMA'S STUFF: X2CMAT.h5
-     type(file_info_t), save        :: x2cmat_file
+
+
 !      test if any one-particle operator integrals have been created 
        inquire(file="AOPROPER",exist=aoprop_avail)
        if(.not.aoprop_avail) return
@@ -354,14 +353,6 @@ contains
        allocate(scr_mat2(naosh_ls**2 * nz))
        scr_mat1        = 0
        scr_mat2        = 0
-
-       write(*,*) "Writing X2C matrices to file!"
-
-       if (x2cmat_file%status == -1) then
-          write(*,*) " Opening HDF5 X2CMAT file"
-          x2cmat_file%type = 2
-          x2cmat_file%name = "X2CMAT.h5"
-       end if
 
 !      loop over all pre-defined property operator f
        do i = 1, num_prp_op
@@ -456,10 +447,6 @@ contains
          call num2str(i,numstr)
          write(flabel,'(a8,a4)') 'prpint2c',numstr
          
-         write(*,*) 'prp real name  : ', prop_op_name(i)
-         write(*,*) 'prp string code: ', 'prpint2c', numstr
-         write(*,*) ''
-
          if(spherical_on)then
 
            lwrk = is_len_wrk - naosh_ls**2*nz*2 - ioff_pct_mat
@@ -469,10 +456,8 @@ contains
            
 
            call x2c_write(flabel,scr_mat2,nr_sph**2  * nz,x2c_file_glb)
-           call lab_write (x2cmat_file,flabel,rdata=scr_mat2)
          else
            call x2c_write(flabel,scr_mat1,nr_ao_L**2 * nz,x2c_file_glb)
-           call lab_write (x2cmat_file,flabel,rdata=reshape(scr_mat1, shape=(/nr_ao_L**2 * nz/) ) )
          end if
 
 !        reset logical array

@@ -623,8 +623,7 @@ module talsh_gradient
 
     end subroutine
 
-!CHIMA'S STUFF
-
+!ROUTINES FOR STORING CCDENS IN KUFORMAT ON EXACC FILE
     subroutine talsh_kudm_store_mo (exa_input,gamma,wavefun)
 
       use exacorr_global, only : get_nsolutions
@@ -661,8 +660,7 @@ module talsh_gradient
       nocc    = exa_input%nocc
       nvir    = exa_input%nvir
 
-! set up storage for density matrices in MO and AO bases, in fortran
-! storage
+! set up storage for density matrices in MO and AO bases, in fortran storage
       allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
       dm_mo_fort = ZERO
 
@@ -712,29 +710,27 @@ module talsh_gradient
 
     subroutine talsh_store_kucc_density(wavefun, dm_storeformat, nmo, mo_list, nocc)
       use labeled_storage
-      use exacorr_datatypes
+      !use exacorr_datatypes
       implicit none
 
       character(len=4) :: wavefun
       real(8), allocatable, intent(inout) :: dm_storeformat(:,:,:)
       integer, intent(in)                 :: nmo, nocc
       integer, allocatable, intent(in) :: mo_list(:)
-      type(file_info_t), save             :: ccdens_file     
+      type(file_info_t), save             :: exacc_file     
       
-      
+      call print_date("Writing CCDENS data to EXACC file")
  
-      if (ccdens_file%status == -1) then
-         write(*,*) " Opening HDF5 CCDENS file"
-         ccdens_file%type = 2
-         ccdens_file%name = "CCDENS.h5"
+      if (exacc_file%status == -1) then
+         write(*,*) " Opening HDF5 EXACC file"
+         exacc_file%type = 2
+         exacc_file%name = "EXACC.h5"
+         exacc_file%status = 0
       end if
-      
 
-      write(*,*) " Writing CCDENS data to CCDENS file"
-      call lab_write (ccdens_file,'nocc',idata=nocc)
-      call lab_write (ccdens_file,'mo_occ',idata=mo_list(1:nocc))
-      call lab_write (ccdens_file,'CCDENS_RE',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
-      call lab_write (ccdens_file,'CCDENS_IM',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
+      call lab_write (exacc_file,'nmo',nmo)
+      call lab_write (exacc_file,'CCDENS_RE',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
+      call lab_write (exacc_file,'CCDENS_IM',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
       
     end subroutine
 
