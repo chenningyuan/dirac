@@ -7,8 +7,8 @@ if(CMAKE_CACHE_MAJOR_VERSION LESS 3 OR CMAKE_CACHE_MINOR_VERSION LESS 20)
     cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
 endif()
 
-# project name
-project(DIRAC Fortran C CXX)
+# project name and languages
+project(DIRAC LANGUAGES Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)

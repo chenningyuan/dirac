@@ -104,6 +104,14 @@ set(FREE_GP_FORTRAN_SOURCES
     dircmo.F90
 )
 
+# later we can take quaternion_algebra.F90 out of "gp" and link against quaternion_algebra
+add_library(quaternion_algebra)
+
+target_sources(quaternion_algebra
+  PRIVATE
+    quaternion_algebra.F90
+  )
+
 set(GP_C_SOURCES
     execinfo_bsd.c
     gpc.c

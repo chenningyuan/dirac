@@ -5,7 +5,7 @@
 !      modify it under the terms of the GNU Lesser General Public
 !      License version 2.1 as published by the Free Software Foundation.
 !
-!      This program is distributed in the hope that it will be useful,
+!      This program is distributed in the hope that it will be useful, 
 !      but WITHOUT ANY WARRANTY; without even the implied warranty of
 !      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 !      Lesser General Public License for more details.
@@ -31,9 +31,9 @@ module visual_london
 #include "dgroup.h"
 #include "dcbbas.h"
 
-  integer :: nr_xyz_comp
-  integer :: which_icomp
-  logical :: sum_ep_rn
+  integer:: nr_xyz_comp
+  integer:: which_icomp
+  logical:: sum_ep_rn
 
 contains
 
@@ -48,8 +48,8 @@ contains
     logical                 :: debug_me, dummy
 
 !   gosia, note for me:
-!   if natural connection - T^B matrix was built from 'd|S>/dB' integrals
-!   if symmetric connection - T^B matrix was built from 'dS/dB' integrals
+!   if natural connection-T^B matrix was built from 'd|S>/dB' integrals
+!   if symmetric connection-T^B matrix was built from 'dS/dB' integrals
 !   ----------------------------------------------------------------------------
 
 !   read T^B matrix in MO basis to D_con_mo
@@ -161,13 +161,13 @@ contains
 
   subroutine partition_connection_matrix(T, T_ai, T_ji, sum_ep_rn)
 !    ---------------------------------------------------------------------------
-     real(8), intent(inout) :: T(norbt, norbt, nz)
-     real(8), intent(inout) :: T_ai(norbt, norbt, nz)
-     real(8), intent(inout) :: T_ji(norbt, norbt, nz)
+     real(8), intent(inout):: T(norbt, norbt, nz)
+     real(8), intent(inout):: T_ai(norbt, norbt, nz)
+     real(8), intent(inout):: T_ji(norbt, norbt, nz)
      logical, intent(in)    :: sum_ep_rn
 
-     integer :: ip(2), ap(2), ie(2), ae(2)
-     integer :: ifrp, iz, i, j
+     integer:: ip(2), ap(2), ie(2), ae(2)
+     integer:: ifrp, iz, i, j
 !    ---------------------------------------------------------------------------
 
      call dcopy(norbt*norbt*nz, T, 1, T_ji, 1)
@@ -179,17 +179,17 @@ contains
         ie(ifrp) = ip(ifrp) + npsh(ifrp)
         ae(ifrp) = ie(ifrp) + nish(ifrp)
 
-        write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
-        write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
-        write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
-        write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
-        write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
-        write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
-        write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
+        !write(*, *) 'ifrp, ip = ', ifrp, ip(ifrp)
+        !write(*, *) 'ifrp, ap = ', ifrp, ap(ifrp)
+        !write(*, *) 'ifrp, ie = ', ifrp, ie(ifrp)
+        !write(*, *) 'ifrp, ae = ', ifrp, ae(ifrp)
+        !write(*, *) 'ifrp, nish = ', ifrp, nish(ifrp)
+        !write(*, *) 'ifrp, npsh = ', ifrp, npsh(ifrp)
+        !write(*, *) 'ifrp, norb = ', ifrp, norb(ifrp)
      end do
 
 ! todo:
-!    if .not. sum_ep_rn - reorthonormalization only over electronic shells
+!    if .not. sum_ep_rn-reorthonormalization only over electronic shells
 !    (so i can zero-out blocks corresponding to positronic shells)
 
 !    'ai' blocks (zero-out 'ij' blocks)
@@ -269,7 +269,7 @@ contains
 !      here build density matrix modified by first-order overlap
 !      (c^+_\mu j)*(S^B)_ij*(c_\nu i) where (S^B)_ij = (T^B)_ij + (T^B+)_ij
 
-       D_con = D_con_mo - dag(D_con_mo)
+       D_con = D_con_mo-dag(D_con_mo)
 !      check that it gives the same regardless of connection used
 !      due to: T^B + (T^B)^+ = -S^B
 !      call print_mat(D_con, label = '-S^B')
@@ -295,11 +295,11 @@ contains
        if (nfsym == 2) then
           D_con = C*(D_con_mo*dag(Cig)) &
                 + C*(D_con_mo*dag(Ciu))
-          D_con = D_con - dag(D_con)
+          D_con = D_con-dag(D_con)
        else
 
           D_con = C*(D_con_mo*dag(Cig))
-          D_con = D_con - dag(D_con)
+          D_con = D_con-dag(D_con)
 
        end if
 
