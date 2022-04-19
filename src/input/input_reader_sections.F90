@@ -5,8 +5,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       select case (kw_section)
@@ -21,7 +21,7 @@
            call read_input_grid(word, kw_section)
 
 !       *VISUAL is for backward compatibility
-!       *VISUAL used to be under **ANALYZE
+!       *VISUAL used to be under**ANALYZE
         case ('**VISUA', '*VISUAL')
            call read_input_visual(word, kw_section)
 
@@ -112,8 +112,8 @@
       implicit none
 
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     ---------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -158,7 +158,7 @@
 
       if (kw_matches(word, '.4CGRID')) then
 !        include small component in the grid generation
-!        also for 1- and 2-c dft calculations
+!        also for 1-and 2-c dft calculations
          num_grid_cfg_force_4c_grid = .true.
       end if
 
@@ -194,8 +194,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i, j
       integer                          :: isym, istart, iend
@@ -213,7 +213,7 @@
 
       call reset_available_kw_list()
 
-      visual_cfg_gauge_origin(1:3) = GAGORG(1:3) ! use magnetic gauge origin defined globally in Dirac
+      visual_cfg_gauge_origin(1:3) = GAGORG(1:3)  ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
       if (kw_matches(word, '.LIST  ')) then
@@ -246,7 +246,7 @@
          read(get_file_unit(), *) visual_cfg_2d_p_top(1:3)
          read(get_file_unit(), *) visual_cfg_2d_nr_top
 !        check that angle between 1-2 and 1-3 is 90 degs
-         v_12 = visual_cfg_2d_p_right - visual_cfg_2d_p_origin
+         v_12 = visual_cfg_2d_p_right-visual_cfg_2d_p_origin
          v_13 = visual_cfg_2d_p_top   - visual_cfg_2d_p_origin
          s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
          if (s > tiny(0.0d0)) then
@@ -263,7 +263,7 @@
          read(get_file_unit(), *) visual_cfg_2d_integration_nr_top
          read(get_file_unit(), *) visual_cfg_2d_integration_order
 !        check that angle between 1-2 and 1-3 is 90 degs
-         v_12 = visual_cfg_2d_integration_p_right - visual_cfg_2d_integration_p_origin
+         v_12 = visual_cfg_2d_integration_p_right-visual_cfg_2d_integration_p_origin
          v_13 = visual_cfg_2d_integration_p_top   - visual_cfg_2d_integration_p_origin
          s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
          if (s > tiny(0.0d0)) then
@@ -311,7 +311,7 @@
 
       if (kw_matches(word, '.DSCALE ')) then
          call kw_read(word, visual_cfg_scale)
-         visual_cfg_scale=1.0D0/visual_cfg_scale
+         visual_cfg_scale = 1.0D0/visual_cfg_scale
       end if
 
       if (kw_matches(word, '.DENSIT')) then
@@ -443,8 +443,8 @@
          call read_input_visual_helper(iq_tsin)
       end if
       if (kw_matches(word, '.BEDFIX')) then
-         call kw_read(word, v(1),v(2),v(3),visual_cfg_freq)
-         CALL ANGLES(v(1),v(2),v(3),visual_cfg_wave_vector,visual_cfg_pol_vector)
+         call kw_read(word, v(1), v(2), v(3), visual_cfg_freq)
+         CALL ANGLES(v(1), v(2), v(3), visual_cfg_wave_vector, visual_cfg_pol_vector)
       end if
 
       if (kw_matches(word, '.NDIPX ')) then
@@ -594,6 +594,13 @@
          visual_cfg_london_skip_kappa = .true.
       end if
 
+      if (kw_matches(word, '.ADDGRE')) then
+         visual_cfg_add_grid_points_grad_ed = .true.
+      end if
+      if (kw_matches(word, '.ADDGRS')) then
+         visual_cfg_add_grid_points_grad_ed_scaled = .true.
+      end if
+
       if (kw_matches(word, '.OUTFIL')) then
          visual_cfg_out_file_custom = .true.
 !        file for scalar field
@@ -637,13 +644,13 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      integer, intent(in) :: j
+      integer, intent(in):: j
 !     --------------------------------------------------------------------------
       integer             :: i
       character(80)       :: line
 !     --------------------------------------------------------------------------
 
-      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
+      visual_cfg_nr_dmat = visual_cfg_nr_dmat+1
       i = visual_cfg_nr_dmat
       visual_cfg_property(i) = j
       read(get_file_unit(), *) line
@@ -665,12 +672,12 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      integer, intent(in) :: j
+      integer, intent(in):: j
 !     --------------------------------------------------------------------------
       integer             :: i
 !     --------------------------------------------------------------------------
 
-      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
+      visual_cfg_nr_dmat = visual_cfg_nr_dmat+1
       i = visual_cfg_nr_dmat
       visual_cfg_property(i) = j
       read(get_file_unit(), *) visual_cfg_ref_nucleus(i), &
@@ -689,8 +696,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
 !     --------------------------------------------------------------------------
@@ -912,10 +919,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
-      integer :: i,j
-      real(8) :: val_real, val_imag
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      integer:: i, j
+      real(8):: val_real, val_imag
 !     --------------------------------------------------------------------------
 
 #ifndef MOD_EXACORR
@@ -1022,12 +1029,12 @@
       if (kw_matches(word, '.FF_PROP')) then
          call kw_read(word, exa_input%nff)
          allocate(exa_input%ff_names(exa_input%nff(1)))
-         allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
-         do i=1,exa_input%nff(1)
+         allocate(exa_input%ff(exa_input%nff(1), exa_input%nff(2)))
+         do i = 1, exa_input%nff(1)
            call kw_read(word, exa_input%ff_names(i))
-           do j=1,exa_input%nff(2)
-             call kw_read(word, val_real,val_imag)
-             exa_input%ff(i,j)=dcmplx(val_real,val_imag)
+           do j = 1, exa_input%nff(2)
+             call kw_read(word, val_real, val_imag)
+             exa_input%ff(i, j)=dcmplx(val_real, val_imag)
            enddo
          enddo
       end if
@@ -1050,9 +1057,9 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
-      logical :: explicitly_set_energy = .false.
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      logical:: explicitly_set_energy = .false.
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -1156,8 +1163,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1183,15 +1190,15 @@
       end if
 
       if (kw_matches(word, '.MAXIT ')) then
-         read(get_file_unit(),'(i5)') relcc_ccener_max_iterations
+         read(get_file_unit(), '(i5)') relcc_ccener_max_iterations
       end if
 
       if (kw_matches(word, '.MAXDIM')) then
-         read(get_file_unit(),'(i5)') relcc_ccener_max_dimension_diis
+         read(get_file_unit(), '(i5)') relcc_ccener_max_dimension_diis
       end if
 
       if (kw_matches(word, '.NTOL  ')) then
-         read(get_file_unit(),'(i5)') relcc_ccener_desired_convergence
+         read(get_file_unit(), '(i5)') relcc_ccener_desired_convergence
       end if
 
 ! miro (luuk) - expert's keyword
@@ -1212,8 +1219,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1243,19 +1250,19 @@
       end if
 
       if (kw_matches(word, '.NEOPER')) then
-         read(get_file_unit(),'(i5)') relcc_ne_oper
+         read(get_file_unit(), '(i5)') relcc_ne_oper
       end if
 
       if (kw_matches(word, '.MAXIT ')) then
-         read(get_file_unit(),'(i5)') relcc_fopr_max_iterations
+         read(get_file_unit(), '(i5)') relcc_fopr_max_iterations
       end if
 
       if (kw_matches(word, '.MAXDIM')) then
-         read(get_file_unit(),'(i5)') relcc_fopr_max_dimension_diis
+         read(get_file_unit(), '(i5)') relcc_fopr_max_dimension_diis
       end if
 
       if (kw_matches(word, '.NTOL  ')) then
-         read(get_file_unit(),'(i5)') relcc_fopr_desired_convergence
+         read(get_file_unit(), '(i5)') relcc_fopr_desired_convergence
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1271,10 +1278,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
-       integer                          :: nr_roots(2) ! number of roots in each symmetry 
+       integer                          :: nr_roots(2)  ! number of roots in each symmetry 
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1316,10 +1323,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
-       integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry 
+       integer   :: nr_roots_prop(2), nr_roots_left(2), nr_roots_right(2)  ! number of roots in each symmetry 
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1355,8 +1362,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1400,7 +1407,7 @@
 
       call check_whether_kw_found(word, kw_section)
 
-      if (relcc_projectors_do_restricted_excitation_window.and.relcc_projectors_do_core_valence_separation) & 
+      if (relcc_projectors_do_restricted_excitation_window .and. relcc_projectors_do_core_valence_separation) & 
           call quit('Only one projection scheme (CVS/REW) allowed at a time !')
 
 
@@ -1415,8 +1422,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1508,9 +1515,9 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
-      integer :: i
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      integer:: i
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1525,15 +1532,15 @@
          relcc_no_recompute   = .true.
       end if
 
-! miro&luuk: expert option - adding finite field perturbation operators
+! miro&luuk: expert option-adding finite field perturbation operators
       if (kw_matches(word, '.NFFOPER')) then
          call kw_read(word, relcc_nffoper)
          relcc_ADD_FINITE_FIELD = .TRUE.
          ! after reading the number of perturbative operators
          ! read each one after one  - property name and its complex field strength
-         do i=1,relcc_nffoper
+         do i = 1, relcc_nffoper
            call kw_read(word, relcc_FF_PROP_NAMES(i))
-           call kw_read(word, relcc_FF_PROP_STRENGTHS(1,i),relcc_FF_PROP_STRENGTHS(2,i))
+           call kw_read(word, relcc_FF_PROP_STRENGTHS(1, i), relcc_FF_PROP_STRENGTHS(2, i))
          enddo
       end if
 
@@ -1549,8 +1556,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
       integer                          :: j
@@ -1650,8 +1657,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
 !     --------------------------------------------------------------------------
@@ -1681,7 +1688,7 @@
       end if
 
       if (kw_matches(word, '.FSSECT ')) then
-         read(get_file_unit(),*) (relcc_fs_fssect(i), i=1,6)
+         read(get_file_unit(), *) (relcc_fs_fssect(i), i = 1, 6)
       end if
 
       if (kw_matches(word, '.DOIH  ')) then
@@ -1697,47 +1704,47 @@
       end if
 
       if (kw_matches(word, '.MAXIT ')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max_iterations
       end if
 
       if (kw_matches(word, '.MXIT02')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max02_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max02_iterations
       end if
 
       if (kw_matches(word, '.MXIT01')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max01_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max01_iterations
       end if
 
       if (kw_matches(word, '.MXIT20')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max20_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max20_iterations
       end if
 
       if (kw_matches(word, '.MXIT10')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max10_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max10_iterations
       end if
 
       if (kw_matches(word, '.MXIT11')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max11_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max11_iterations
       end if
 
       if (kw_matches(word, '.MXIT00')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max00_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max00_iterations
       end if
 
       if (kw_matches(word, '.MAXDIM')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max_dimension_diis
+         read(get_file_unit(), '(i5)') relcc_fs_max_dimension_diis
       end if
 
       if (kw_matches(word, '.NTOL  ')) then
-         read(get_file_unit(),'(i5)') relcc_fs_desired_convergence
+         read(get_file_unit(), '(i5)') relcc_fs_desired_convergence
       end if
 
       if (kw_matches(word, '.TSHOLD')) then
-         read(get_file_unit(),'(i5)') relcc_fs_tshold
+         read(get_file_unit(), '(i5)') relcc_fs_tshold
       end if
 
       if (kw_matches(word, '.GESTAT')) then
-         read(get_file_unit(),'(i5)') relcc_fs_select_state_for_numgrad_energy
+         read(get_file_unit(), '(i5)') relcc_fs_select_state_for_numgrad_energy
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1752,8 +1759,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -1761,59 +1768,59 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.IHSCHE')) then
-         read(get_file_unit(),'(i5)') relcc_ih_scheme
+         read(get_file_unit(), '(i5)') relcc_ih_scheme
       end if
 
       if (kw_matches(word, '.SH_H11')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_h11
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_h11
       end if
 
       if (kw_matches(word, '.SH_H12')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_h12
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_h12
       end if
 
       if (kw_matches(word, '.SH_P11')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_p11
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_p11
       end if
 
       if (kw_matches(word, '.SH_P12')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_p12
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_p12
       end if
 
       if (kw_matches(word, '.SH_P2 ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_p2
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_p2
       end if
 
       if (kw_matches(word, '.SH_H2 ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_h2
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_h2
       end if
 
       if (kw_matches(word, '.SH_HP ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_hp
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_hp
       end if
 
       if (kw_matches(word, '.AIH   ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_aih
+         read(get_file_unit(), '(f15.8)') relcc_ih_aih
       end if
 
       if (kw_matches(word, '.EHMIN ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_eh_min
+         read(get_file_unit(), '(f15.8)') relcc_ih_eh_min
       end if
 
       if (kw_matches(word, '.EHMAX ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_eh_max
+         read(get_file_unit(), '(f15.8)') relcc_ih_eh_max
       end if
 
       if (kw_matches(word, '.EPMIN ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_ep_min
+         read(get_file_unit(), '(f15.8)') relcc_ih_ep_min
       end if
 
       if (kw_matches(word, '.EPMAX ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_ep_max
+         read(get_file_unit(), '(f15.8)') relcc_ih_ep_max
       end if
 
       if (kw_matches(word, '.NIH   ')) then
-         read(get_file_unit(),'(i5)') relcc_ih_nih
+         read(get_file_unit(), '(i5)') relcc_ih_nih
       end if
 
       if (kw_matches(word, '.NACTHI')) then
@@ -1838,10 +1845,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
-      integer                          :: i, j, k !counters
+      integer                          :: i, j, k  ! counters
       character(100)                   :: line
       integer                          :: temp, already
       integer                          :: user_req_symmetries
@@ -1850,7 +1857,7 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.ADCLEV')) then
-         read(get_file_unit(),'(i5)') reladc_adclevel
+         read(get_file_unit(), '(i5)') reladc_adclevel
       end if
 
       if (kw_matches(word, '.DOSIPS')) then
@@ -1897,19 +1904,19 @@
       end if
 
       if (kw_matches(word, '.VCONV ')) then
-         read(get_file_unit(),'(f15.8)') reladc_vconv
+         read(get_file_unit(), '(f15.8)') reladc_vconv
       end if
 
       if (kw_matches(word, '.ADCTHR')) then
-         read(get_file_unit(),'(f18.6)') reladc_adcthr
+         read(get_file_unit(), '(f18.6)') reladc_adcthr
       end if
 
       if (kw_matches(word, '.FANOIN')) then
          call kw_read(word, reladc_fano_inrep)
-         reladc_no_sipreps = reladc_no_sipreps + 1
+         reladc_no_sipreps = reladc_no_sipreps+1
          reladc_sipreps(reladc_no_sipreps) = reladc_fano_inrep
          reladc_sipeigv(reladc_no_sipreps) = 0
-         call kw_read(word, reladc_fano_inrelsp) ! use relative spinor numbers
+         call kw_read(word, reladc_fano_inrelsp)  ! use relative spinor numbers
       end if
 
       if (kw_matches(word, '.FANOCHNL')) then
@@ -1920,29 +1927,29 @@
          reladc_fano_groups = 0
          call kw_read(word, reladc_fano_groups, reladc_fano_nrgroups)
          reladc_fano_nrchannels = SUM(reladc_fano_groups)
-         allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
+         allocate(reladc_fano_channels(reladc_fano_nrchannels, 2))
          reladc_fano_channels = 0
          already = 0
          print *, ''
          print *, 'Absolute spinor numbers of Fano final states: '
          do k = 1, reladc_fano_nrgroups
-           call kw_read(word,reladc_fano_labels(k))
+           call kw_read(word, reladc_fano_labels(k))
            do i = 1, reladc_fano_groups(k)
               ! read every line
               read(get_file_unit(), '(a)') line
               ! read the absolute spinor numbers of the final states
-              read(line,*) (reladc_fano_channels(i+already,j), j = 1, 2)
-              if (reladc_fano_channels(i+already,1) < reladc_fano_channels(i+already,2)) then
-                temp = reladc_fano_channels(i+already,1)
-                reladc_fano_channels(i+already,1) = reladc_fano_channels(i+already,2)
-                reladc_fano_channels(i+already,2) = temp
+              read(line, *) (reladc_fano_channels(i+already, j), j = 1, 2)
+              if (reladc_fano_channels(i+already, 1) < reladc_fano_channels(i+already, 2)) then
+                temp = reladc_fano_channels(i+already, 1)
+                reladc_fano_channels(i+already, 1) = reladc_fano_channels(i+already, 2)
+                reladc_fano_channels(i+already, 2) = temp
               end if 
-              print *, (reladc_fano_channels(i+already,j), j=1,2)
-              if (reladc_fano_channels(i+already,1) == reladc_fano_channels(i+already,2)) then
+              print *, (reladc_fano_channels(i+already, j), j = 1, 2)
+              if (reladc_fano_channels(i+already, 1) == reladc_fano_channels(i+already, 2)) then
                 call quit ( 'Equal spinors in one channel -> Unphysical choice')
               end if
            end do
-           already = already + reladc_fano_groups(k)
+           already = already+reladc_fano_groups(k)
          end do
       end if
 
@@ -1976,8 +1983,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: user_req_symmetries
 !     --------------------------------------------------------------------------
@@ -1994,7 +2001,7 @@
       end if
 
       if (kw_matches(word, '.WRITET')) then
-         read(get_file_unit(),'(f15.8)') polprp_writethr
+         read(get_file_unit(), '(f15.8)') polprp_writethr
       end if
 
       if (kw_matches(word, '.NODIAG')) then
@@ -2028,8 +2035,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: user_req_symmetries
       character(100)                   :: line
@@ -2040,11 +2047,11 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.SIPITER')) then
-         read(get_file_unit(),'(i8)') reladc_sipiter
+         read(get_file_unit(), '(i8)') reladc_sipiter
       end if
 
       if (kw_matches(word, '.DIPITER')) then
-         read(get_file_unit(),'(i8)') reladc_dipiter
+         read(get_file_unit(), '(i8)') reladc_dipiter
       end if
 
       if (kw_matches(word, '.SIPEIGV')) then
@@ -2053,8 +2060,8 @@
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
-            read(line,*) (reladc_md_sip_eeigv(i,j), j = 1, 2)
-            print *, (reladc_md_sip_eeigv(i,j), j=1,2)
+            read(line, *) (reladc_md_sip_eeigv(i, j), j = 1, 2)
+            print *, (reladc_md_sip_eeigv(i, j), j = 1, 2)
          end do
       end if
 
@@ -2064,19 +2071,19 @@
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
-            read(line,*) (reladc_md_dip_eeigv(i,j), j = 1, 2)
-            print *, (reladc_md_dip_eeigv(i,j), j=1,2)
+            read(line, *) (reladc_md_dip_eeigv(i, j), j = 1, 2)
+            print *, (reladc_md_dip_eeigv(i, j), j = 1, 2)
          end do
-         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !read(get_file_unit(), '(i8)') user_req_symmetries
          !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.SIPPRNT')) then
-         read(get_file_unit(),'(f18.6)') reladc_sipprnt
+         read(get_file_unit(), '(f18.6)') reladc_sipprnt
       end if
 
       if (kw_matches(word, '.DIPPRNT')) then
-         read(get_file_unit(),'(f18.6)') reladc_dipprnt
+         read(get_file_unit(), '(f18.6)') reladc_dipprnt
       end if
 
       if (kw_matches(word, '.DOINCORE')) then
@@ -2084,7 +2091,7 @@
       end if
 
       if (kw_matches(word, '.LANCMEM')) then
-         read(get_file_unit(),'(i12)') reladc_lancmem
+         read(get_file_unit(), '(i12)') reladc_lancmem
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -2103,30 +2110,30 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
 
       if (kw_matches(word, '.DVROOTS')) then
-         read(get_file_unit(),'(i12)') reladc_davroots
+         read(get_file_unit(), '(i12)') reladc_davroots
          polprp_davroots = reladc_davroots
       end if
 
       if (kw_matches(word, '.DVMAXSP')) then
-         read(get_file_unit(),'(i12)') reladc_davmaxsp
+         read(get_file_unit(), '(i12)') reladc_davmaxsp
          polprp_davmaxsp = reladc_davmaxsp
       end if
 
       if (kw_matches(word, '.DVMAXIT')) then
-         read(get_file_unit(),'(i12)') reladc_davmaxit
+         read(get_file_unit(), '(i12)') reladc_davmaxit
          polprp_davmaxit = reladc_davmaxit
       end if
 
       if (kw_matches(word, '.DVCONV')) then
-         read(get_file_unit(),'(f18.6)') reladc_davconv
+         read(get_file_unit(), '(f18.6)') reladc_davconv
          polprp_davconv = reladc_davconv
       end if
 
@@ -2153,8 +2160,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -2212,8 +2219,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
 #ifdef MOD_AOOSOC
@@ -2246,10 +2253,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
-      character(len=400)               :: input_line
+      character(len = 400)               :: input_line
       integer                          :: i, j, la, lb
       integer                          :: ios, islash, ibar
 !     --------------------------------------------------------------------------
@@ -2272,7 +2279,7 @@
 
         allocate(nash_qcorr(nfsym))
 
-        open(1234,file='refvec.luci',status='old',form='unformatted',    &
+        open(1234, file='refvec.luci',status='old',form='unformatted',    &
         access='sequential',action="read",position='rewind')
 
         read(1234) nref_qcorr, nash_qcorr(1:nfsym)
@@ -2286,23 +2293,23 @@
 #undef DEBUG_QCORR
 #endif
 !       read # reference configurations
-        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_qcorr(nref_qcorr, 2))
         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
         do i = 1, nref_qcorr
-          read(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),  &
+          read(1234) la, lb, ref_wavefunction_qcorr(i, 1)(1:la), ref_wavefunction_qcorr(i, 2)(1:lb),  &
                            ref_wavefunction_coeff_qcorr(i)
 
 !#define DEBUG_QCORR
 #ifdef DEBUG_QCORR
-          print *, ref_wavefunction_qcorr(i,1)(1:la)
-          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_qcorr(i, 1)(1:la)
+          print *, ref_wavefunction_qcorr(i, 2)(1:lb)
           print *, ref_wavefunction_coeff_qcorr(i)
 #undef DEBUG_QCORR
 #endif
 
         end do
 
-        close(1234,status="keep")
+        close(1234, status="keep")
         deallocate(ref_wavefunction_qcorr)
         deallocate(ref_wavefunction_coeff_qcorr)
         deallocate(reference_energy_qcorr)
@@ -2323,76 +2330,76 @@
         end do
 !       read # reference configurations
         call kw_read(word, nref_qcorr)
-        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_qcorr(nref_qcorr, 2))
         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
-!       read reference configurations + coefficients
+!       read reference configurations+coefficients
 
-!       process the reference configuration / coefficient
+!       process the reference configuration/coefficient
         do i = 1, nref_qcorr
 
-          read(get_file_unit(),'(a)') input_line
+          read(get_file_unit(), '(a)') input_line
           call upcase(input_line)
 
 !         print *, 'ref input line is',input_line
 
-          islash = index(input_line,'/')
-          ibar   = index(input_line,'|')
+          islash = index(input_line, '/')
+          ibar   = index(input_line, '|')
           if(islash <= 1)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a "/":',                         &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a "/":',                         &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
           if(ibar <= 1)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a "|":',                         &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a "|":',                         &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
 !         alpha string
-          read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,1)
+          read(input_line(1:ibar-1), '(a)',iostat = ios) ref_wavefunction_qcorr(i, 1)
 
           if(ios /= 0)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain an alpha string',                &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain an alpha string',                &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
 !         beta string
-          read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
+          read(input_line(ibar+1:islash-1), '(a)',iostat = ios) ref_wavefunction_qcorr(i, 2)
 
           if(ios /= 0)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a beta string',                  &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a beta string',                  &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
 !         coefficient of reference configuration
-          read(input_line(islash+1:),*,iostat=ios) ref_wavefunction_coeff_qcorr(i)
+          read(input_line(islash+1:), *,iostat = ios) ref_wavefunction_coeff_qcorr(i)
 
           if(ios /= 0)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a coefficient',                  &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a coefficient',                  &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
         end do
 
-        open(1234,file='refvec.luci',status='replace',form='unformatted',    &
+        open(1234, file='refvec.luci',status='replace',form='unformatted',    &
         access='sequential',action="readwrite",position='rewind')
 
         write(1234) nref_qcorr, nash_qcorr(1:nfsym)
@@ -2401,23 +2408,23 @@
 !       write # reference configurations
         do i = 1, nref_qcorr
 
-          la = len(trim(ref_wavefunction_qcorr(i,1)))
-          lb = len(trim(ref_wavefunction_qcorr(i,2)))
+          la = len(trim(ref_wavefunction_qcorr(i, 1)))
+          lb = len(trim(ref_wavefunction_qcorr(i, 2)))
 
-          write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
+          write(1234) la, lb, ref_wavefunction_qcorr(i, 1)(1:la), ref_wavefunction_qcorr(i, 2)(1:lb),               &
                       ref_wavefunction_coeff_qcorr(i)
 
 !#define DEBUG_QCORR
 #ifdef DEBUG_QCORR
-          print *, ref_wavefunction_qcorr(i,1)(1:la)
-          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_qcorr(i, 1)(1:la)
+          print *, ref_wavefunction_qcorr(i, 2)(1:lb)
           print *, ref_wavefunction_coeff_qcorr(i)
 #undef DEBUG_QCORR
 #endif
 
         end do
 
-        close(1234,status="keep")
+        close(1234, status="keep")
         deallocate(ref_wavefunction_qcorr)
         deallocate(ref_wavefunction_coeff_qcorr)
         deallocate(reference_energy_qcorr)
@@ -2439,8 +2446,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       dirac_cfg_pcm = .true.
@@ -2485,8 +2492,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       pcmmod_host_provides_input = .true.
@@ -2579,8 +2586,8 @@
       implicit none
 
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     ---------------------------------------------------------------------------
       character(80)                    :: line
       character(4)                     :: first_4
@@ -2638,8 +2645,8 @@
          dft_cfg_asymptote_is_lbalpha    = .true.
          dft_cfg_alda_hs                 = .true.
          dft_cfg_alda_ha                 = .true.
-         call setaldahs(.true.) !activate alda for the h+ part
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldahs(.true.)  ! activate alda for the h+part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 #endif
 
@@ -2659,31 +2666,31 @@
       if (kw_matches(word, '.ALDA  ')) then
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
-         call setaldahs(.true.) !activate alda for the h+ part
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldahs(.true.)  ! activate alda for the h+part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.XALDA ')) then
-!        use        (1-f)*S + VWN + f*HFx
-!        instead of       S + VWN
+!        use        (1-f)*S+VWN+f*HFx
+!        instead of       S+VWN
          dft_cfg_xalda   = .true.
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
          call setxalda(.true.)
-         call setaldahs(.true.) !activate alda for the h+ part
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldahs(.true.)  ! activate alda for the h+part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.ALDA+ ')) then
 !        use alda only for the      hermitian part
          dft_cfg_alda_hs = .true.
-         call setaldahs(.true.) !activate alda for the h+ part
+         call setaldahs(.true.)  ! activate alda for the h+part
       end if
 
       if (kw_matches(word, '.ALDA- ')) then
 !        use alda only for the anti-hermitian part
          dft_cfg_alda_ha = .true.
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.XALDA+')) then
@@ -2691,7 +2698,7 @@
          dft_cfg_xalda   = .true.
          dft_cfg_alda_hs = .true.
          call setxalda(.true.)
-         call setaldahs(.true.) !activate alda for the h+ part
+         call setaldahs(.true.)  ! activate alda for the h+part
       end if
 
       if (kw_matches(word, '.XALDA-')) then
@@ -2699,7 +2706,7 @@
          dft_cfg_xalda   = .true.
          dft_cfg_alda_ha = .true.
          call setxalda(.true.)
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.GAUNTS')) then
@@ -2732,8 +2739,8 @@
       use diagmod
       implicit none
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     ---------------------------------------------------------------------------
       call reset_available_kw_list()
 

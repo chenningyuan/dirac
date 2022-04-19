@@ -554,6 +554,7 @@ contains
       real(8), allocatable:: xyz(:, :)
       real(8), allocatable:: xyzk(:, :)
       real(8)              :: acos, dsum
+      real(8)              :: norm_grad
       integer              :: nleb
       integer              :: nr_points_gridimp
       logical              :: is_open
@@ -1396,6 +1397,47 @@ contains
                      else
                        temp2(icube, jcube, kcube, 1:3) = q(1:3, kcube)
                      end if
+
+                     if ((visual_cfg_add_grid_points_grad_ed .or. &
+                          visual_cfg_add_grid_points_grad_ed_scaled).and.      &
+                        (visual_cfg_property(1) == iq_density_gradient)) then
+                        if (visual_cfg_add_grid_points_grad_ed_scaled) then
+                           norm_grad = q(1, kcube)*q(1, kcube) &
+                                     + q(2, kcube)*q(2, kcube) &
+                                     + q(3, kcube)*q(3, kcube)
+                           norm_grad = sqrt(norm_grad)
+                           r(1) = r(1) + q(1, kcube)/norm_grad
+                           r(2) = r(2) + q(2, kcube)/norm_grad
+                           r(3) = r(3) + q(3, kcube)/norm_grad
+                        else
+                           r(1) = r(1) + q(1, kcube)
+                           r(2) = r(2) + q(2, kcube)
+                           r(3) = r(3) + q(3, kcube)
+                        end if
+                        call get_quantity_in_point(visual_cfg_nr_dmat, &
+                                                   D,                  &
+                                                   D_0,                &
+                                                   r(1),               &
+                                                   r(2),               &
+                                                   r(3),               &
+                                                   ao,                 &
+                                                   buffer,             &
+                                                   q_max_dim,          &
+                                                   q(0, kcube))
+
+                        write(lunit_3d_vector, '(6ES18.8E3)') &
+                           r(1:3),                                    &
+                           q(1:3, kcube)
+                        write(lunit_3d_scalar, '(4ES18.8E3)')  &
+                           r(1:3),                                    &
+                           q(0, kcube)
+                        if (visual_cfg_tensor) then
+                          write(lunit_3d_tensor, '(12ES18.8E3)')  &
+                             r(1:3),                                    &
+                             q(4:12, kcube)
+                        end if
+                     end if
+
                   end do
                end if
                if (.not. visual_cfg_london_skip_cube) then
