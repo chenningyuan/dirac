@@ -13,7 +13,8 @@ module exacorr_mp2no
         use exacorr_global
         use exacorr_ao_to_mo
         use exacorr_tensor_methods
-        use talsh_mp2no, only: get_new_orbital, get_transform_Fock, write_talsh_matrix
+        use talsh_common_routines, only: write_talsh_matrix
+        use talsh_mp2no, only: get_new_orbital, get_transform_Fock
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use interface_to_mpi

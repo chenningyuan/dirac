@@ -886,7 +886,16 @@
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
-         exa_input%mp2no = .true.
+         exa_input%mp2no = 1
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.MP2LAP        ')) then
+         exa_input%mp2no = -1
+      end if
+
+      if (kw_matches(word, '.MP2_LAP_NO      ')) then
+         exa_input%mp2no = 10
          call kw_read(word, exa_input%t_mp2no)
       end if
 
@@ -920,6 +929,10 @@
 
       if (kw_matches(word, '.TRIPL_BLOCK')) then
          call kw_read(word, exa_input%tripl_block)
+      end if
+
+      if (kw_matches(word, '.LAP_TRIPL   ')) then
+         exa_input%tripl_lap = .true.
       end if
 
       if (kw_matches(word, '.EXA_BLOCKSIZE')) then
@@ -963,6 +976,10 @@
              exa_input%ff(i,j)=dcmplx(val_real,val_imag)
            enddo
          enddo
+      end if
+
+      if (kw_matches(word, '.NLAPLACE')) then
+         call kw_read(word, exa_input%n_laplace)
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1456,7 +1473,6 @@
 
 ! miro&luuk: expert option - adding finite field perturbation operators
       if (kw_matches(word, '.NFFOPER')) then
-#ifdef MOD_UNRELEASED
          call kw_read(word, relcc_nffoper)
          relcc_ADD_FINITE_FIELD = .TRUE.
          ! after reading the number of perturbative operators
@@ -1465,9 +1481,6 @@
            call kw_read(word, relcc_FF_PROP_NAMES(i))
            call kw_read(word, relcc_FF_PROP_STRENGTHS(1,i),relcc_FF_PROP_STRENGTHS(2,i))
          enddo
-#else
-         call quit('.NFFOPER keyword not in the Dirac release version !')
-#endif
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -2649,11 +2662,9 @@
          dft_cfg_pointwise = .true.
       end if
 
-#ifdef MOD_UNRELEASED
       if (kw_matches(word, '.OVLDIA')) then
          dft_cfg_overlap_diagnostic = .true.
       end if
-#endif
 
       call check_whether_kw_found(word, kw_section)
 
@@ -2663,7 +2674,6 @@
 ! reading subroutine for the standalone testing program of diagonalization
 ! routines (miro ilias)
      subroutine read_input_diagonalization_tests(word, kw_section)
-#ifdef MOD_UNRELEASED
       use input_reader
       use diagmod
       implicit none
@@ -2715,7 +2725,4 @@
      end if
 
      call check_whether_kw_found(word, kw_section)
-#else
-     call quit('read_input_diagonalization_tests not in release version')
-#endif  /* MOD_UNRELEASED */
    end subroutine

@@ -419,6 +419,10 @@
         DO ISYM = 1,NBSYM        
           NEXC=KEXCNV(ISYM)
           DO IEXC=1,NEXC
+ ! WRITE(6,*) "IEXC ", IEXC, "ISYM ", ISYM 
+ ! WRITE(6,*)  "BED L", TMOML(IEXC,ISYM), "R ", TMOMR(IEXC,ISYM)
+
+
              FOSC(IEXC,ISYM) = FOSC(IEXC,ISYM) + FAC*TMOML(IEXC,ISYM)*TMOMR(IEXC,ISYM)
 !             WRITE(6,*) 'TEST..',K,M,IEXC,ISYM,FOSC(IEXC,ISYM),TMOML(IEXC,ISYM),TMOMR(IEXC,ISYM)
           ENDDO
@@ -456,8 +460,8 @@
             ISYM    = IPRPSYM(INDPRA)
             NEXC    = KEXCNV(ISYM)
             DO IEXC=1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
-!             WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+!      write(6,*) "INDAP;IX;IY;IZ;IP;TMOM",INDAP," ",IX," ",IY," ",IZ," ",IP," ",TMOM(IEXC,ISYM)
             ENDDO
           ENDDO
           IBAB = IBAB*IY/(IB+1)
@@ -466,6 +470,7 @@
       ENDDO
       RETURN
       END SUBROUTINE accBEDMOM
+
 
       SUBROUTINE OSC_MPOL(K,FOSC,ATMPPF,OMEGA)
 #include "implicit.h"
@@ -549,7 +554,7 @@
           DO IB = 0,IA
             IY = IA - IB
             IZ = IB
-            TFAC=FAC*UPOL(IP)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
+            TFAC=FAC*UPOL(IP,1)*(UWAVE(1)**IX)*(UWAVE(2)**IY)*(UWAVE(3)**IZ)*IBKA*IBAB
             DO IR = 1,3
               INDAP   = INDAP + 1
               CALL LEVI_CEVITA(IP,IR,IS,IPRS)
@@ -558,7 +563,7 @@
                 ISYM    = IPRPSYM(INDPRA)
                 NEXC    = KEXCNV(ISYM)
                 DO IEXC=1,NEXC
-                  TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UWAVE(IS)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+                  TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+IPRS*UWAVE(IS)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
 !               WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
                 ENDDO
               ENDIF 
@@ -604,8 +609,10 @@
             ISYM    = IPRPSYM(INDPRA)
             NEXC    = KEXCNV(ISYM)
             DO IEXC=1,NEXC
-              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
-!              WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP),TFAC,ATMPPF(IEXC,INDAP,ISYM)
+              TMOM(IEXC,ISYM) = TMOM(IEXC,ISYM)+UPOL(IP,1)*TFAC*ATMPPF(IEXC,INDAP,ISYM)
+
+
+!              WRITE(6,*) 'TEST2..',IORDER,IX,IY,IZ,IEXC,ISYM,TMOM(IEXC,ISYM),UPOL(IP,1),TFAC,ATMPPF(IEXC,INDAP,ISYM)
             ENDDO
           ENDDO
           IBAB = IBAB*IY/(IB+1)

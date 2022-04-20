@@ -21,7 +21,5 @@ Generic closed shell molecule. Restricted kinetic balance.
 1.E-12
 **RELCCSD
 .TIMING
-.INTERFACE
-DIRAC
 *END OF
 

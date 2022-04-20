@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -183,17 +178,16 @@ C
       REAL*8 EHMIN,EHMAX,EPMIN,EPMAX
       REAL*8 SHIFTH11,SHIFTH2,SHIFTP11,SHIFTP2,SHIFTH12,SHIFTHP,SHIFTP12
 C
+      DOUBLE PRECISION D0
+      PARAMETER (D0 = 0.0D00)
+      INTEGER   NACTH(16),NACTP(16)
+      INTEGER   NACTHI(16),NACTPI(16)
+      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
+     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD, NTOL
 !     This namelist is the only one kept for backward compatibility (old HF Hessian).
 !     This is to be replaced when a real CC or MP2 Hessian becomes available.
       NAMELIST/CCSOPR/ NAOPER,NBOPER,NFREQ,NAMEA,NAMEB,EFREQ,
      &                 MAXIT,MAXDIM,NTOL
-      DOUBLE PRECISION D0
-      PARAMETER (D0 = 0.0D00)
-      INTEGER NACTH,NACTP,NACTHI,NACTPI,NTOL
-      DIMENSION NACTH(16),NACTP(16)
-      DIMENSION NACTHI(16),NACTPI(16)
-      INTEGER MAXIT00,MAXIT01,MAXIT10,MAXIT11,MAXIT20,MAXIT02,I,IFREQ,
-     &        ISECT,IPRP_WF,IOPER,MAXDIM,MAXIT,TSHOLD
 
       Logical, SAVE :: FirstCall=.TRUE.
 
@@ -849,7 +843,9 @@ C
 
 !! Activate EOMCC calculation 
 
+      DOEOMCCSD=.FALSE.
       IF (relcc_do_eomcc) THEN
+         DOEOMCCSD=.TRUE.
          MXCORR1 = 0
          CALL eom_ee(ICALC,MXCORR1,eps)
          MXCORR = MAX(MXCORR,MXCORR1)
@@ -2515,6 +2511,18 @@ C  Solve relativistic CCSD equations
 C
    11 IF (DOCCSD) THEN
 ! aspg changed
+         if (DOEOMCCSD) then
+            if ((IMSTAT(14).NE.3).AND.(IMSTAT(6).EQ.3)) then
+!        if we have not yet reached the EOM-CCSD intermediates checkpont (IMSTAT(14)==3)
+!        we mark the CCSD amplitudes as not completely converged to ensure the intermediates will 
+!        be correctly calculated, since there appears to be an issue with eom-ee when restarting
+!        the eom part while having skipped the ccsd iterations. since the amplitudes are converged,
+!        this typically results in one or two additional iterations.
+               IMSTAT(6) = 2
+               write (iw,*) " INFO: resetting IMSTAT(6) to ",IMSTAT(6)
+            end if
+         end if
+
          IF (IMSTAT(6).EQ.3) THEN
             WRITE (IW,1011)
             GOTO 20
@@ -3012,7 +3020,11 @@ C       limitations elsewhere. 20120720
       IF (MYPROC .NE. MASTER) THEN
          NBUF3 = 0
       ELSE
-         NBUF3 = freemem / RCW
+
+         NV5IRP = MAX(JVOVV(NREP+1),JVVVO(NREP+1), 
+     &       JOVVV(NREP+1),JVVOV(NREP+1))
+
+         NBUF3 = MAX(freemem / RCW, NV5IRP)
       END IF
 C
 C     Allocate now also this remaining work array

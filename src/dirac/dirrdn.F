@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 C
@@ -1937,11 +1932,11 @@ C    NSUBBL = # of subblocks for KP sym.
 C    copied from MJSELE
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
-C initla setup               
-               IF(DOLVC.EQV..TRUE. .OR. IBTAND(INTGEN/4,1).EQ.1)THEN !4c
-                 NSUBBL = (NHTYP-2)*2+1
-               ELSE !2c
+C inital setup               
+               IF(TWOCOMP)THEN !2c
                  NSUBBL = (NHTYP-1)*2+1 
+               ELSE !4c
+                 NSUBBL = (NHTYP-2)*2+1
                ENDIF   
                KPBUF = NSUBBL/2+1
                IF(mod(KPBUF, 2).eq.0)THEN ! Max angular momentum (l) is s,d,g.. 
@@ -1952,7 +1947,7 @@ C initla setup
                  KPMAX(2) = KPBUF-1      
                ENDIF
                IF(NFSYM.EQ.1)KPMAX(1) = MAX(KPMAX(1),KPMAX(2))
-C readling input             
+C reading input             
                READ(LUCMD,*,IOSTAT=IOS) NKP
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error in reading NKP for .KPSELE !'
@@ -1963,6 +1958,7 @@ C readling input
                allocate(SEL_NORB(NKP,0:NOPEN))
                READ(LUCMD,*,IOSTAT=IOS) (KP_NORB(I),   I=1,NKP)
                READ(LUCMD,*,IOSTAT=IOS) (SEL_NORB(I,0),I=1,NKP)
+C reading closed shell             
                DO I =1,NKP
                  IF(mod(SEL_NORB(I,0),2).eq.1)THEN
                    WRITE(LUPRI,*) 'Error in reading .KPSELE !'
@@ -1990,6 +1986,7 @@ C readling input
                    ENDIF   
                  ENDIF
                ENDDO
+C reading open shell             
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*)
      &           'Error in reading NISH_BOS(I) for .KPSELE !'
@@ -2352,7 +2349,7 @@ C
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
      &   ('Fermion irrep ',I,':',NFRO_DHF(I),I=1,NFSYM)
       ENDIF
-      IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
+      IF (NELECT_DHF+NAELEC_DHF.EQ.0) THEN
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
@@ -2954,6 +2951,7 @@ C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
       use dirac_cfg
+      use x2cmod_cfg, only: x2cmod_mmf
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
@@ -3354,6 +3352,12 @@ C
             END IF
          END DO
       END IF
+
+!>    stop for non-working keyword combination
+      if(x2cmod_mmf)then
+         if(DOKRMC .or. DOGASCIP .or. DOKRCI)
+     &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
+      end if
 C
 C     Process input for various program sections
 C     ==========================================
@@ -5243,11 +5247,11 @@ C
 !                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
 !                   33        34        35        36
-     &            '.CONT2C','.BEG_2C','.VACPOL','.X2COLD',
+     &            '.CONT2C','.BEG_2C','.XXXXXX','.X2COLD',
 !                   37        38        39        40
-     &            '.X2C   ','.MIXVAC','.CAP   ','.NOVREF',
+     &            '.X2C   ','.XXXXXX','.CAP   ','.NOVREF',
 !                   41        42        43        44
-     &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
+     &            '.XXXXXX','.FDE   ','.IOTC4 ','.NONREL',
 !                   45        46        47        48
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
 !                   49        50        51        52
@@ -5309,10 +5313,6 @@ C
       ONECAP  = .FALSE.
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
-      VACPOL  = .FALSE.
-      MIXVAC  = .FALSE.
-      POSVAC  = .FALSE.
-      VACREF  = .TRUE.
       CAP     = .FALSE.
 !     ECPCALC = .FALSE. - already set in HAMSCAN
       ORIGIN(1:3) = 0.0d0
@@ -5699,11 +5699,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
-#else
-             call quit('block diagonalizing feature not in release!')
-#endif
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...
@@ -5738,10 +5734,6 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
      &                ' information.')
             GO TO 100
   135     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&&& VACPOL: vacuum polarization included
-            VACPOL = .TRUE.
-#endif
             GO TO 100
   136     CONTINUE
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
@@ -5776,11 +5768,6 @@ C            as they need to be picture-changed transformed after the 2c-transfo
              ENDIF
              GO TO 100
   138     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&& MIXVAC: Alternative definition of vacuum polarisation
-             VACPOL = .TRUE.
-             MIXVAC = .TRUE.
-#endif
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -5791,17 +5778,9 @@ C&&& Activate the CAP calculation for the complex Fock space method
 #endif
              GO TO 100
   140     CONTINUE
-C&&& NOVREF: Do not generate reference vacuum
-             VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&& POSVAC: Use positronic vacuum polarisation
-             VACPOL = .TRUE.
-             POSVAC = .TRUE.
-#endif
              GO TO 100
-
 !         .FDE
 !         frozen density embedding
   142     continue
@@ -6451,23 +6430,6 @@ CMI       ... take care of AMFI CSC test transformation, if specified through th
       IF (ICHANG.GT.0) WRITE(LUPRI,'(3X,A)')
      &    'with the following modifications:'
 
-#ifdef MOD_UNRELEASED
-      IF (VACPOL) THEN
-        WRITE(LUPRI,'(3X,A)') 'Vacuum polarization added.'
-        IF(MIXVAC) THEN
-          WRITE(LUPRI,'(6X,A)')
-     &      '- alternative definition of vacuum polariation.'
-        ENDIF
-        IF(POSVAC) THEN
-          WRITE(LUPRI,'(6X,A)')
-     &      '- using positronic vacuum.'
-        ENDIF
-        IF(.NOT.VACREF) THEN
-          WRITE(LUPRI,'(6X,A)')
-     &      '- no reference vacuum generated.'
-        ENDIF
-      ENDIF
-#endif
 #ifdef MOD_CAP
 CMI ...  CAP processing
       IF (CAP) THEN
@@ -7805,19 +7767,18 @@ C
       is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
-      IF (DOPRP.AND.TWOCOMP.AND..NOT.is_2c_rel_run) THEN
-       WRITE(LUPRI,'(1X,A/)')
-     & 'NB: Properties & TWOCOMP require non-relativistic'//
-     & ' form of operators !'
+      IF (DOPRP) THEN
+        IF(DKH1) CALL QUIT('Properties not available for DKH1')
+        IF(DKH2) CALL QUIT('Properties not available for DKH2')        
+        IF(TWOCOMP.AND..NOT.is_2c_rel_run) THEN
+          WRITE(LUPRI,'(1X,A/)')
+     &    'NB: Properties & TWOCOMP require non-relativistic'//
+     &    ' form of operators !'
+        ENDIF
       ENDIF
-
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#ifndef MOD_UNRELEASED
-      IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT !')
-#endif
 
 
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
