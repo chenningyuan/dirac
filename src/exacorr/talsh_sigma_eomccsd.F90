@@ -70,6 +70,7 @@ module talsh_sigma_eomccsd
 !     error code
       integer :: ierr
       real(kind=8) :: norm_s, norm_s_prev
+      logical :: debug=.false.
 
 !***************
 !     r1_sigma *
@@ -84,7 +85,7 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(X,i)+=F(m,i)*R(X,m)",sigma1_tensor,interm_t%fbar_oo,r1_tensor,scale=MINUS_ONE)
       norm_s = tensor_norm2(sigma1_tensor)
-      print*, "norm contraction 1 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
+      if (debug) print*, "norm contraction 1 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
       norm_s_prev = norm_s
 
 !------------------------------------------
@@ -93,7 +94,7 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(X,i)+=F(m,e)*R(e,X,i,m)",sigma1_tensor,interm_t%fbar_ov,r2_tensor)
       norm_s = tensor_norm2(sigma1_tensor)
-      print*, "norm contraction 2 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
+      if (debug) print*, "norm contraction 2 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
       norm_s_prev = norm_s
 
 
@@ -103,7 +104,7 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",sigma1_tensor,interm_t%w_ooov,r2_tensor,scale=ONE_HALF)
       norm_s = tensor_norm2(sigma1_tensor)
-      print*, "norm contraction 3 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
+      if (debug) print*, "norm contraction 3 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
       norm_s_prev = norm_s
 
 !***************
@@ -116,7 +117,7 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,j,i)*R(X,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE)
       norm_s = tensor_norm2(sigma2_tensor)
-      print*, "norm contraction 4 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "norm contraction 4 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
       norm_s_prev = norm_s
 
 !---------------------------------------------------------
@@ -126,7 +127,7 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_contract("S(a,X,i,j)+=F(m,i)*r(a,X,j,m)",sigma2_tensor,interm_t%fbar_oo,r2_tensor,scale=MINUS_ONE)
       ierr=talsh_tensor_contract("S(a,X,i,j)+=F(m,j)*r(a,X,m,i)",sigma2_tensor,interm_t%fbar_oo,r2_tensor)
       norm_s = tensor_norm2(sigma2_tensor)
-      print*, "norm contraction 5 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "norm contraction 5 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
       norm_s_prev = norm_s
 
 
@@ -136,7 +137,7 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,n,i,j)*r(a,X,m,n)",sigma2_tensor,interm_t%w_oooo,r2_tensor)
       norm_s = tensor_norm2(sigma2_tensor)
-      print*, "norm contraction 6 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "norm contraction 6 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
       norm_s_prev = norm_s
 
 
@@ -147,7 +148,7 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",sigma2_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,m,i)",sigma2_tensor,interm_t%w_vovo,r2_tensor)
       norm_s = tensor_norm2(sigma2_tensor)
-      print*, "norm contraction 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "norm contraction 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
       norm_s_prev = norm_s
 
 !--------------------------------------------------
@@ -156,7 +157,7 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_contract("S(a,X,i,j)+=F(a,e)*R(e,X,i,j)",sigma2_tensor,interm_t%fbar_vv,r2_tensor)
       norm_s = tensor_norm2(sigma2_tensor)
-      print*, "norm contraction 8 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "norm contraction 8 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
       norm_s_prev = norm_s
 
 
@@ -170,12 +171,12 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_destruct(v_aux)
 
       norm_s = tensor_norm2(sigma2_tensor)
-      print*, "norm contraction 9 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "norm contraction 9 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
       norm_s_prev = norm_s
 
 
       ! debug
-      if (.true.) then
+      if (debug) then
         print*, "norm r1_sigma", tensor_norm2(sigma1_tensor)
         print*, "norm r2_sigma", tensor_norm2(sigma2_tensor),tensor_norm2(sigma2_tensor)*ONE_QUARTER
         print*, "norm r_sigma ", (tensor_norm2(sigma1_tensor) + tensor_norm2(sigma2_tensor))

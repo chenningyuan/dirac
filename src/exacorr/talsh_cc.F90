@@ -221,6 +221,7 @@ module talsh_cc
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
+         call print_tensor(comm_t%t2, 1.0d-18, "t2 mp2")
 !=====================
 !        Calculate the pair correlation energy for each pair of occupied spin-orbits
          call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
@@ -618,12 +619,15 @@ module talsh_cc
           else
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
           end if
+          call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs before diis")
 
           if (.not.CCD) then
             call diis (comm_t%t2,comm_t%t1,t_convergence=t_convergence)
           else
             call diis (comm_t%t2,t_convergence=t_convergence)
           end if
+
+         call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, after diis")
 
           if (.not.CCD) then
             ierr=talsh_tensor_init(result_tensor)
@@ -660,6 +664,7 @@ module talsh_cc
             ierr=talsh_tensor_destruct(hov_aux_tensor)
          end if
          ierr=talsh_tensor_destruct(result_tensor)
+         call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, leaving")
 
         end subroutine
 
@@ -2462,6 +2467,7 @@ module talsh_cc
             ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
             b_diis(itens,i) = scalar_tens(1)
             b_diis(i,itens) = dconjg(scalar_tens(1))
+            print *,'b_diis(',i,',',itens,'):',b_diis(i,itens)
          end do
 
          if (present(t_convergence)) then
@@ -2488,6 +2494,7 @@ module talsh_cc
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
+           print *,'coeff:',coeff
            if (crop) then
               ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
               if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)
