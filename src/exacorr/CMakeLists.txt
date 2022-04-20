@@ -13,6 +13,7 @@ if(ENABLE_EXATENSOR)
    exacorr_global.F90
    exacorr_cfg.F90
    exacorr_utils.F90
+   exacorr_eri.F90
    exacorr_tensor_methods.F90
    intermediates.F90
    intermediates_eom.F90

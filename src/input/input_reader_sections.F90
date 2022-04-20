@@ -299,6 +299,7 @@
       if (kw_matches(word, '.3D_IMP')) then
          visual_cfg_3d_gridimp = .true.
          read(get_file_unit(), *) visual_cfg_3d_gridfil
+         read(get_file_unit(), *) visual_cfg_3d_grid_units
       end if
 
       if (kw_matches(word, '.SCALE ')) then
@@ -318,6 +319,27 @@
 
       if (kw_matches(word, '.DENSIT')) then
          call read_input_visual_helper(iq_density)
+      end if
+
+      if (kw_matches(word, '.DENGRA')) then
+         call read_input_visual_helper(iq_density_gradient)
+      end if
+
+      if (kw_matches(word, '.DENHES')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_density_hessian)
+      end if
+
+      if (kw_matches(word, '.DENLAP')) then
+         call read_input_visual_helper(iq_density_laplacian)
+      end if
+
+      if (kw_matches(word, '.RDG   ')) then
+         call read_input_visual_helper(iq_rdg)
+      end if
+
+      if (kw_matches(word, '.SIGNL2')) then
+         call read_input_visual_helper(iq_density_sign_lambda2)
       end if
 
       if (kw_matches(word, '.ELF   ')) then
@@ -378,6 +400,11 @@
 
       if (kw_matches(word, '.ROTJ  ')) then
          call read_input_visual_helper(iq_rotj)
+      end if
+
+      if (kw_matches(word, '.GRADJ ')) then
+         visual_cfg_tensor = .true.
+         call read_input_visual_helper(iq_gradj)
       end if
 
       if (kw_matches(word, '.S     ')) then
@@ -569,6 +596,37 @@
       if (kw_matches(word, '.NOKAPP')) then
          visual_cfg_london_skip_kappa = .true.
       end if
+
+      if (kw_matches(word, '.OUTFIL')) then
+         visual_cfg_out_file_custom = .true.
+!        file for scalar field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_scalar_file_name   = trim(line)
+            visual_cfg_out_scalar_file_custom = .true.
+         end if 
+!        file for vector field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_vector_file_name   = trim(line)
+            visual_cfg_out_vector_file_custom = .true.
+         end if 
+!        file for 2ndtensor field
+         read(get_file_unit(), '(a)') line
+         if (len_trim(line) > 0) then
+            visual_cfg_out_2ndtensor_file_name   = trim(line)
+            visual_cfg_out_2ndtensor_file_custom = .true.
+         end if 
+      end if
+
+      if (kw_matches(word, '.NOCUBE')) then
+         visual_cfg_london_skip_cube  = .true.
+      end if
+
+      if (kw_matches(word, '.NOVTK ')) then
+         visual_cfg_london_skip_vtk   = .true.
+      end if
+
 
       call check_whether_kw_found(word, kw_section)
 

@@ -18,8 +18,8 @@ ierr += run(options,
             extra_args='--get="DFCOEF PAMXVC"')
 
 f = [
-    get_filter(from_string='r_x           r_y           r_z            scalar',
-               num_lines=7,
+    get_filter(from_string='Requested density at point(s)',
+               num_lines=10,
                rel_tolerance=1.0e-4),
 ]
 
@@ -37,8 +37,8 @@ for inp in ['visual_1z_bz.inp',
                 filters={'out': f})
 
 f = [
-    get_filter(from_string='r_x           r_y           r_z            scalar',
-               num_lines=7,
+    get_filter(from_string='Requested density at point(s)',
+               num_lines=10,
                rel_tolerance=1.0e-4,
                skip_below=1.0e-8),
 ]
