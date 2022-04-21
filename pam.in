@@ -247,6 +247,9 @@ class pam_enviroment:
     # lu of the DIRAC run output file (open in the "execute_dirac" method)
         self.f = None
 
+    # if possible, create or check the hdf5 checkpoint file
+        self.checkpoint = True
+
     # by default, do backup files
         self.nobackup = False
 
@@ -607,6 +610,10 @@ Options are also read from ~/.diracrc"""
             help='Remote shell program, typically rcp or scp [default: %default or taken from .dirarc]',
             metavar='STRING',
             )
+        group.add_option('--noh5', action='store_true',
+                         dest='dest_noh5', default=False,
+                         help='do not create a h5 acheckpoint file [default: create it]'
+                         )
         group.add_option('--noarch', action='store_true',
                          dest='dest_noarch', default=False,
                          help='do not create a tgz archive [default: create it]'
@@ -1018,6 +1025,9 @@ Options are also read from ~/.diracrc"""
 
         self.nobackup = options.dest_nobackup
 
+        if options.dest_noh5:
+            self.checkpoint = False
+
         if options.dest_noarch:
             self.archive = False
 
@@ -1310,6 +1320,11 @@ Options are also read from ~/.diracrc"""
     # copy dirac.x executable if wanted
         self.copy_file(self.dirac_exe, os.path.join(self.scratch_dir,self.dirac_exe_file))
 
+    # create textfile contains labels for checkpoint file for the schema
+        from process_schema import read_schema, write_schema
+        schema, flat_schema = read_schema(os.path.join(pam_directory,"DIRACschema.txt"))
+        write_schema(os.path.join(self.scratch_dir,'schema_labels.txt'),flat_schema)
+
     # restarting stuff
         if self.full_restart:
             copy_single_file(self.archive_name, self.archive_name)
@@ -1358,6 +1373,9 @@ Options are also read from ~/.diracrc"""
 
         # copies files to scratch_dir
         if self.incmo:
+            file_name = 'CHECKPOINT.h5'
+            if os.path.isfile(os.path.join(self.input_directory,file_name)):
+               copy_single_file(file_name,file_name)
             file_name = 'DFCOEF'
             copy_single_file(file_name,file_name)
         if self.inkrmc:
@@ -1873,8 +1891,30 @@ Options are also read from ~/.diracrc"""
                     for f in glob.glob(p):
                         save_single_file(f, f)
 
+        if self.checkpoint:
+            from process_schema import load_diracdata, write_hdf5, data_validity
+            chpfile = os.path.join(self.scratch_dir,'CHECKPOINT.h5')
+            if os.path.isfile(chpfile):
+              # Checkpoint file exists, copy to input directory
+              self.copy_file(chpfile,os.path.join(self.input_directory, self.output_name+'.h5'))
+              print('  Native hdf5 checkpoint file was retrieved from scratch directory')
+            else:
+                try:
+                    import h5py
+                    # Load the data from the dirac-style files
+                    data = load_diracdata(self.scratch_dir)
+                    # Write and save the checkpoint file after checking its validity
+                    if data_validity(data):
+                        write_hdf5(os.path.join(self.input_directory, self.output_name+'.h5'),data)
+                        print('  Valid hdf5 checkpoint file was constructed from dirac-files')
+                    else:
+                        print('  Could not construct hdf5 checkpoint file, dataset is incomplete')
+                except:
+                        print('  Could not construct hdf5 checkpoint file, h5py is not installed')
+
         if self.outcmo:
             save_single_file('DFCOEF')
+            save_single_file('CHECKPOINT.h5')
 
         if self.outkrmc:
             save_single_file('KRMCSCF')
@@ -2040,15 +2080,14 @@ class pam_run(pam_enviroment):
         self.pam_variables.print_header()
         self.pam_variables.set_mkl_environment_variables()
         self.pam_variables.set_environment()
+        if self.pam_variables.just_show_settings:
+            self.pam_variables.show_settings()
+            sys.exit()
 
         self.pam_variables.copy_files()
         if self.pam_variables.distribute_files:
             self.pam_variables.distribute_scratch_dir()
         self.pam_variables.set_dirac_cmd()
-        if self.pam_variables.just_show_settings:
-            self.pam_variables.show_settings()
-            self.pam_variables.remove_scratch_dir()
-            sys.exit()
         self.pam_variables.execute_dirac()
         self.pam_variables.save_files()
         self.pam_variables.remove_scratch_dir()

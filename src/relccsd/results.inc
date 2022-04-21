@@ -23,7 +23,8 @@
 !     11 - fock-space sector 11 and T1 + T2 amplitudes
 !     12 - fock-space sector 02 and T1 + T2 amplitudes
 !     13 - fock-space sector 20 and T1 + T2 amplitudes
-!     14 - 30 reserved for future use
+!     14 - CCSD intemediates (used in EOM code)
+!     15 - 30 reserved for future use
 !
       INTEGER :: NSTATS,IMSTAT
       PARAMETER (NSTATS=30)

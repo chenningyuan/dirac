@@ -49,6 +49,7 @@ module dircmo
 !
 !*****************************************************************************
       use labeled_storage
+      use checkpoint
       implicit none
       integer, intent(in) :: iunit,ibeig(*)
       real(8), intent(in) :: toterg,cmo(*),eig(*)
@@ -56,6 +57,8 @@ module dircmo
       integer,intent(in), optional :: idims(:)
 
       INTEGER   CMO_DIMS(12),IDIM(3,2),NCMOTQ,NORBT,NZ,NFSYM,NSSYM
+      integer   ibeig_dim, ifsym, ierr
+      integer   n_basis(2),n_mo(2),n_po(2)
       LOGICAL   SSYM
       character(len=74) text
 
@@ -94,8 +97,35 @@ module dircmo
       IF (SSYM) CALL LAB_WRITE(IUNIT,'KAPPA   ',idata=IBEIG(NORBT+1:2*NORBT))
 !     Add additional information about the basis set
       CALL LAB_WRITE(IUNIT,'BASINFO ')
+!     This call introduces a dependency on common blocks, should be moved as soon as the checkpoint file is fully functional
       call append_basisinfo_to_dfcoef (IUNIT)
       CALL LAB_WRITE(IUNIT,'EOFLABEL')
+
+      ! write all data also to an hdf5 file
+      ! simplify the handling of fermion symmetry by always writing the same size dimension arrays (just padding with zeroes if nfsym==1)
+      n_mo = 0
+      n_po = 0
+      n_basis = 0
+      do ifsym = 1, nfsym
+         n_mo(ifsym)    = cmo_dims(4+3*ifsym)+cmo_dims(5+3*ifsym)
+         n_po(ifsym)    = cmo_dims(5+3*ifsym)
+         n_basis(ifsym) = cmo_dims(6+3*ifsym)
+      end do
+      ! handling of atomic symmetry is unfortunately still complicated, but underlying code should first be improved
+      if (ssym) then
+         ibeig_dim = 2*norbt
+      else
+         ibeig_dim = norbt
+      endif
+      call checkpoint_write ('/result/wavefunctions/scf/energy',rdata=toterg)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/mobasis_id',idata=1)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig(1:ibeig_dim))
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=cmo(1:ncmotq))
 
       RETURN
       END
@@ -150,6 +180,7 @@ module dircmo
 !
 !***********************************************************************
       use labeled_storage
+      use checkpoint
       implicit none
       integer, intent(in)            :: iunit
       character(len=74), intent(out), optional :: text
@@ -161,6 +192,7 @@ module dircmo
       real(8), allocatable :: coefficients(:), eigenvalues(:)
       integer, allocatable :: boson_irreps(:), atom_irreps(:)
       character(len=74)    :: infotext
+      type(file_info_t), save :: checkpoint_file
 
 !     Always read the info text and dimensions (NB: actual size (written part) of idim depends on nfsym)
       rewind iunit
@@ -196,6 +228,10 @@ module dircmo
       if (present(cmo)) then
          allocate (coefficients(ncoef))
          call lab_read(iunit,'COEFS   ',rdata=coefficients)
+         ! test zone: uncomment to read coefs from the hdf5 file
+         ! print*," Reading coeffs from checkpoint file "
+         ! call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
+         ! end of test zone
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)
       end if

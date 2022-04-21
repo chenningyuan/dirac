@@ -612,11 +612,9 @@ contains
       fmat = 0.0d0
 #endif
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
          call overlap_diagnostic_init(parallel_xc, xc_mpi_is_master())
       end if
-#endif
 
       if (london_direct_export .or. london_reorth_export) then
          call london_export_open_files(london_direct_export, london_reorth_export)
@@ -633,7 +631,6 @@ contains
 #endif
       end if
 
-#ifdef MOD_UNRELEASED
       if (do_overlap_diagnostic) then
 #ifdef VAR_MPI
          if (parallel_xc) then
@@ -644,7 +641,6 @@ contains
             call o_matrix_to_disc()
          end if
       end if
-#endif /* MOD_UNRELEASED */
 
 #ifdef VAR_MPI
       if (parallel_xc) then
@@ -1054,11 +1050,9 @@ contains
                                     xc_energy                 &
                                    )
 
-#ifdef MOD_UNRELEASED
          if (do_overlap_diagnostic) then
             call integrate_o_matrix(block_length, rw(ipoint), ao)
          end if
-#endif
 
          deallocate(ao)
          deallocate(buffer)
@@ -1138,7 +1132,6 @@ contains
          w(1) = rw(ipoint)
 
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             call get_kin_tau(tau,     &
                          0,       &
                          mat_dim, &
@@ -1146,9 +1139,6 @@ contains
                          buffer,  &
                          ao)
             tau_integral = tau_integral + w(1)*tau
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
 !       number of electrons
@@ -1220,11 +1210,7 @@ contains
             u%gn(:, 1) = 2.0d0*derv(1, d0010000)*gn_0_pointwise
           end if
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             u%tn(1) = derv(1, d0000010)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
         end if !exchange-correlation potential
@@ -2526,16 +2512,12 @@ contains
       if (calculate_qr) then
 
          if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
             call get_kin_tau(t_b,     &
                          isym(im) - 1,             &
                          mat_dim, &
                          dmaterturbed(1 + im_off), &
                          buffer,  &
                          ao)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
          end if
 
          if (is_gga_qr) then
@@ -2580,15 +2562,11 @@ contains
         end if
 
         if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
            u%tn(im) = u%tn(im) + derv(1, d0000020)*t_b
            u%tn(im) = u%tn(im) + derv(1, d1000010)*r_b
            u%tn(im) = u%tn(im) + derv(1, d0010010)*z_b
            u%n(im)  = u%n(im)  + derv(1, d1000010)*t_b
            u%gn(1:3, im) = u%gn(1:3, im) + 2.0d0*gn_0_pointwise(1:3)*t_b*derv(1, d0010010)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
         end if
 
       end if !end of qr contribution
@@ -2624,16 +2602,12 @@ contains
                    ao)
         end if
         if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
            call get_kin_tau_imag(ts_b,     &
                              isym(im) - 1,             &
                              mat_dim, &
                              dmaterturbed(1 + im_off), &
                              buffer,  &
                              ao)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
         end if
 
         do k = k_start, 3
@@ -2651,15 +2625,11 @@ contains
                                                   + 2.0d0*gs_b(1:3, k)*derv(1, d0000100)
            end if
            if (fun_is_tau_mgga(xc_fun)) then
-#ifdef MOD_UNRELEASED
               u%ts(k, im) = u%ts(k, im) + derv(1, d0000002)*ts_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0100001)*s_b(k)
               u%ts(k, im) = u%ts(k, im) + derv(1, d0001001)*y_b(k)
               u%s(k, im) = u%s(k, im) + derv(1, d0100001)*ts_b(k)
               u%gs(1:3, k, im) = u%gs(1:3, k, im) + gn_0_pointwise(1:3)*ts_b(k)*derv(1, d0001001)
-#else
-            call quit('tau_mgga not available in this version')
-#endif
            end if
         end do
 

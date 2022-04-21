@@ -3,6 +3,11 @@ file(COPY ${PROJECT_SOURCE_DIR}/basis_dalton DESTINATION ${PROJECT_BINARY_DIR})
 file(COPY ${PROJECT_SOURCE_DIR}/basis_ecp    DESTINATION ${PROJECT_BINARY_DIR})
 message(STATUS "Copied DIRAC basis set directories into the build directory")
 
+file(COPY ${PROJECT_SOURCE_DIR}/utils/DIRACschema.txt    DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/utils/dirac_data.py      DESTINATION ${PROJECT_BINARY_DIR})
+file(COPY ${PROJECT_SOURCE_DIR}/utils/process_schema.py  DESTINATION ${PROJECT_BINARY_DIR})
+message(STATUS "Copied data schema and python utilities into the build directory")
+
 foreach(
     EXECUTABLE
     ${_list_of_executables}
@@ -62,4 +67,25 @@ install(
     ${PROJECT_SOURCE_DIR}/basis_ecp
     DESTINATION share/dirac
     PATTERN .git EXCLUDE
+    )
+
+install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/utils/dirac_data.py
+    ${PROJECT_SOURCE_DIR}/utils/process_schema.py
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE OWNER_EXECUTE
+    GROUP_READ             GROUP_EXECUTE
+    WORLD_READ             WORLD_EXECUTE
+    )
+
+install(
+    FILES
+    ${PROJECT_SOURCE_DIR}/utils/DIRACschema.txt
+    DESTINATION share/dirac
+    PERMISSIONS
+    OWNER_READ OWNER_WRITE
+    GROUP_READ
+    WORLD_READ
     )

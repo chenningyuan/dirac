@@ -53,7 +53,7 @@ module talsh_eom_rspeq_solver
 !     error code
             integer :: ierr
             character(len=2) :: flavor = "EE"
-
+            integer :: nroot = 1
 
             call talsh_davidson_setup(unit_output=6, &
                         solve_right=.true.,&
@@ -65,7 +65,7 @@ module talsh_eom_rspeq_solver
 
             call print_date("Entering EOM-EE eigenvalue calculation")
 
-            call talsh_davidson_workspace_create(workspace_t, interm_t%nocc, interm_t%nvir, flavor, 2)
+            call talsh_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
             call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
 !     call talsh_eomccsd_ee_trial_create(workspace_t)
 
@@ -109,8 +109,8 @@ module talsh_eom_rspeq_solver
                   type(talsh_projectors_tens_t) :: projector_t
       !     error code
                   integer :: ierr
+                  integer :: nroots = 1
                   character(len=2) :: flavor = "EE"
-      
                  
                   call talsh_davidson_setup(unit_output=6, &
                               solve_right=.false.,&
@@ -122,7 +122,7 @@ module talsh_eom_rspeq_solver
       
                   call print_date("Entering EOM-EE eigenvalue calculation")
       
-                  call talsh_davidson_workspace_create(workspace_t, interm_t%nocc, interm_t%nvir, flavor, 2)
+                  call talsh_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
                   call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       !     call talsh_eomccsd_ee_trial_create(workspace_t)
       

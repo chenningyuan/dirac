@@ -2,10 +2,13 @@
 # Copyright (c) 2015-2018 by Radovan Bast, Roberto Di Remigio, Jonas Juselius, and contributors.
 
 # set minimum cmake version
-cmake_minimum_required(VERSION 3.7 FATAL_ERROR)
+if(CMAKE_CACHE_MAJOR_VERSION LESS 3 OR CMAKE_CACHE_MINOR_VERSION LESS 20)
+    message("\n\n\n\n***************** Too low version of CMake on your computer. ****************\nOn many systems you may install the newest version with 'pip install cmake'")
+    cmake_minimum_required(VERSION 3.20 FATAL_ERROR)
+endif()
 
-# project name
-project(DIRAC Fortran C CXX)
+# project name and languages
+project(DIRAC LANGUAGES Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -55,12 +58,9 @@ include(runtimecheck)
 include(autocmake_int64)
 include(mathlibs-integer-compatibility)
 include(autocmake_safeguards)
-include(autocmake_git_info)
 include(autocmake_version)
 include(mpi)
 include(test)
-include(exported)
-include(unreleased)
 include(reset_external_libs)
 include(static)
 include(definitions)
@@ -82,7 +82,6 @@ include(core)
 include(doxygen)
 include(sphinx)
 include(install)
-include(cpack-dirac)
 include(pam)
 include(test)
 include(autocmake_save_flags)

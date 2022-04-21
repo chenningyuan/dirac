@@ -159,6 +159,7 @@ C***********************************************************************
       use talsh_cc,only             : talsh_cc_driver
 !       use talsh_cis,only            : talsh_cis_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
+      use talsh_mp2lap,only         : talsh_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
@@ -224,8 +225,10 @@ C
        !   call talsh_cis_driver (exa_input)
        else if (exa_input%do_no) then
          call get_no_driver (exa_input)
-       else if (exa_input%mp2no) then
+       else if (exa_input%mp2no > 0 ) then
          call talsh_mp2no_driver (exa_input,n_mp2no)
+       elseif (exa_input%mp2no < 0) then
+         call talsh_mp2lap_driver (exa_input)
        else
          call talsh_cc_driver (exa_input)
        end if
@@ -238,7 +241,7 @@ C
               if (mytid == 0) call set_prop_flags_ccsd()
        end if
 
-       if (exa_input%mp2no) then
+       if (exa_input%mp2no > 0) then
               call exacorr_mp2no_driver (exa_input,n_mp2no)
        else
               call exacorr_cc_driver (exa_input) 
@@ -581,7 +584,7 @@ C
        real(8)                :: total_energy
        logical                :: tobe
        integer                :: lucoef
-       integer                :: ishell, i
+       integer                :: i, ishell, iprimstart, iprimend
        integer                :: nao, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, ncnt, ncoeff
        integer, allocatable   :: numcf(:),jstrt(:)
@@ -608,18 +611,25 @@ C
        ! convert basis set info to 1-d lists used by DIRAC (assuming uncontracted basis sets)
        ! TODO: change storage on DIRAC side to use the basis set type
        nshells = ao_basis%nshells
-       ! we always have uncontracted basis sets, so can hardwire the next variable and equate the number of exponents to the number of shells
+       ! we do not support general contraction so ncnt is always 1
        ncnt = 1
-       npriexp =  nshells
+       ! first count the number of exponents (is also number of contraction coefficients) and set jstrt
        allocate(jstrt(nshells))
        allocate(numcf(nshells))
-       allocate(priexp(nshells))
-       allocate(priccf(nshells))
+       npriexp = 0
        do ishell = 1, nshells
-          jstrt(ishell) = ishell-1
+          jstrt(ishell) = npriexp
+          npriexp = npriexp + ao_basis%gtos(ishell)%n_primitives
           numcf(ishell) = 1
-          priexp(ishell) = ao_basis%gtos(ishell)%exponent(1)
-          priccf(ishell) = ao_basis%gtos(ishell)%coefficient(1)
+       end do
+       ! now copy the exponents and contraction coefficients into the 1-d lists
+       allocate(priexp(npriexp))
+       allocate(priccf(npriexp))
+       do ishell = 1, nshells
+        iPrimStart = jstrt(ishell) + 1
+        iPrimEnd   = jstrt(ishell) + ao_basis%gtos(ishell)%n_primitives
+        priexp(iPrimStart:iPrimEnd)=ao_basis%gtos(ishell)%exponent(:)
+        priccf(iPrimStart:iPrimEnd)=ao_basis%gtos(ishell)%coefficient(:)
        end do
  
        ! write the header
@@ -996,4 +1006,85 @@ C
        return
 
        end subroutine read_mdprop
+
+
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      subroutine set_laplace(num,print_level)
+C
+C---------------Description--------------------------------------------
+C
+C   set flags for the computation of laplace points
+C
+C   Johann Pototschnig, Fall 2019
+
+C----------------------------------------------------------------------
+
+      IMPLICIT NONE
+
+C parameters
+#include "priunit.h"
+#include "lapdim.h"
+
+C common blocks
+#include "dcblap.h"
+
+
+      integer  :: num
+      integer  :: print_level
+
+      integer  :: ILAP
+      logical  :: LWGHTS, LXPNTS
+      CHARACTER*7, CHRERR
+      PARAMETER (CHRERR = 'LAPINP>')
+
+C     Initialize /DCBLAP/
+C     ===================
+C
+      IPRLAP = print_level
+      NLAP = num
+      MXITER = 50
+      STEPMX = 0.3D0
+      TOLRNG = 1.D-10
+      TOLPAR = 1.D-15
+
+      ! rather conservative accuracy threshold
+      TOLLAP = 1.D-8
+
+      LWGHTS = .FALSE.
+      LXPNTS = .FALSE.
+
+C     Processing
+C     ====================
+
+!     use pre-tabulated start values
+      INILAP = (.NOT.(LWGHTS.AND.LXPNTS))
+!     determine if points are given or not
+      FNDLAP = (NLAP.LT.1)
+!     print setting
+      IF (IPRLAP.GT.1) THEN
+       WRITE(LUPRI,*) CHRERR,"print level:",IPRLAP
+       WRITE(LUPRI,*) CHRERR,"maximum iteratations:",MXITER
+       WRITE(LUPRI,*) CHRERR,"number of quadrature points:",NLAP
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Maehly algorithms:",TOLRNG 
+       WRITE(LUPRI,*) CHRERR,
+     &  "threshold for converging Newton-Raphson algorithms:",TOLPAR
+       WRITE(LUPRI,*) CHRERR,"accuracy threshold:",TOLLAP 
+       WRITE(LUPRI,*) CHRERR,
+     &  "step length in line search algorithm:",STEPMX 
+       IF (LWGHTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start weights were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,WGHTS(ILAP)
+        END DO
+       END IF
+       IF (LXPNTS) THEN
+        WRITE(LUPRI,*) CHRERR, "start exponents were given:"
+        DO ILAP = 1,NLAP
+         WRITE(LUPRI,*) CHRERR,ILAP,XPNTS(ILAP)
+        END DO
+       END IF
+      END IF
+
+      end subroutine set_laplace
 

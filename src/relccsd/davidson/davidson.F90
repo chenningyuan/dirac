@@ -1502,16 +1502,13 @@ contains
             sigma_vector => create_sigma_vector(A, b, sigma_vector, state_sym)
             if (associated(projector)) call apply_projector(projector,sigma_vector)
 
-!           if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
-            if (.true.) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
+            if (davidson_debug) call davidson_print_vectors(sigma_vector, label="debug:  sigma vector          ")
 
             if (davidson_solve_rhs) M_small => create_reduced_problem(b, sigma_vector)
             if (davidson_solve_lhs) M_small => create_reduced_problem(sigma_vector, b)
 
-!           if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
-!           if (davidson_debug) call dump_to_file(2222, "M_small__.bin", M_small)
-            if (.true.) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
-            if (.true.) call dump_to_file(2222, "M_small_RELCCSD.bin", M_small)
+            if (davidson_debug) call davidson_print_vectors(M_small, label="debug:  small matrix M        ")
+            if (davidson_debug) call dump_to_file(2222, "M_small__.bin", M_small)
 
             if (davidson_debug) print *,"niter, follow overlap",niter,(davidson_overlap_sorting.and.(niter.gt.1))
 

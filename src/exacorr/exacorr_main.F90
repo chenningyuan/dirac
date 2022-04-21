@@ -11,6 +11,7 @@
       use talsh_cc,only             : talsh_cc_driver
       ! use talsh_cis,only            : talsh_cis_driver
       use talsh_mp2no,only          : talsh_mp2no_driver
+      use talsh_mp2lap,only         : talsh_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
@@ -104,12 +105,13 @@
 
       if (cc_calculation) then
          if (exa_input%talsh) then
-            if (mytid == 0) then 
+            if (mytid == 0) then
                   if (exa_input%cis) then
                   !   call talsh_cis_driver (exa_input)
-                  end if
-                  if (exa_input%mp2no) then
+                  elseif (exa_input%mp2no > 0) then
                     call talsh_mp2no_driver (exa_input,n_mp2no)
+                  elseif (exa_input%mp2no < 0) then
+                    call talsh_mp2lap_driver (exa_input)
                   else
                     call talsh_cc_driver (exa_input)
                   end if   
@@ -123,7 +125,7 @@
 !           slaves need the same info to get started
             call exacc_sync_cw(0,mytid)
 #endif
-            if (exa_input%mp2no) then
+            if (exa_input%mp2no > 0) then
                call exacorr_mp2no_driver (exa_input,n_mp2no)
             else
                call exacorr_cc_driver (exa_input) 
