@@ -8,6 +8,8 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
+   auto_ccd_spinor.F90
+   auto_ccsd_spinor.F90
    exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90
