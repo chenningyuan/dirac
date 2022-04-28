@@ -1,5 +1,14 @@
 :orphan:
 
+22.1.beta
+---------
+
+Bugfix:
+
+- Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
+  based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
+
+
 22.0 (2022-02-08)
 -----------------
 
