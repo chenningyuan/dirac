@@ -7597,7 +7597,8 @@ C     and the density of the orbitals given by VECMVO.
         IF(NOCC(I).EQ.0) THEN
           VECMVO(I) = '1 '
         ELSEIF(NOCC(I).GT.0) THEN
-          WRITE(VECMVO(I),'(A3,I4)') '1..',NOCC(I)
+          WRITE(VECMVO(I),'(A3,I0)') '1..',NISH(I)
+          ! exclude active orbitals for default IONMVO
         ENDIF
       ENDDO
 C
@@ -7605,6 +7606,16 @@ C     Process input from CBIMVO
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*MVOCAL')
+
+      IF (DOMVO .AND. .NOT.NEWDEF .AND. NASHT.EQ.0) THEN
+         DOMVO = .FALSE.
+         WRITE(LUPRI,'(/A)')
+     &   ' INFO: .MVO option ignored because .VECMVO not specified'//
+     &   ' for closed shell SCF calculation',
+     &   '       (i.e. MVO orbitals would be identical to'//
+     &   ' canonical orbitals)'
+      END IF
+
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -7677,8 +7688,10 @@ C&&& WEIGHT: Give weight of the VECMVO density, the rest is inactive density
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in MVOINP.')
             END IF
-      END IF
+      END IF ! NEWDEF
   300 CONTINUE
+
+      IF (.NOT.DOMVO) GOTO 999 ! *MVOCAL input is ignored if not .MVO
 C
 C     Process section
 C
@@ -7688,7 +7701,6 @@ C
 C     Print section
 C     =============
 C
-      IF(.NOT.DOMVO) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') ' MVOGEN: Modified virtual orbitals'
       CALL PRSYMB(LUPRI,'=',75,0)
