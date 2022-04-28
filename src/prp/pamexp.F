@@ -65,6 +65,9 @@ C
 #include "dcborb.h"
 #include "dcbexp.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
+#include "dcbham.h"
+#include "dcbgen.h"
       DIMENSION EXPVAL(*)
       CHARACTER MXFORM*6,FMT*6
       CHARACTER WF*4
@@ -73,20 +76,29 @@ C
       type(file_info_t), save :: exacc_file
       type(file_info_t), save ::  x2cmat_file, reex_file
       logical :: tobe_dirac, tobe_respect, prp_hdf5=.false.
-      integer :: i,j,p,q, indxpr
+      logical :: fndlab
+      integer :: i,j,p,q, indxpr,pq
       integer :: nmo, nao, nel, nocc_ccsd, ninact, chargenuc
       complex(8) :: expvali
       integer , dimension(1) :: nocc_cc
       integer, allocatable :: mo_occ(:)
       real(8), allocatable :: rcoeffvec(:), icoeffvec(:)
+      
+      integer              :: prp_fer_rep, prp_mat_dim
+      logical              :: prp_triang
+      logical, dimension(4):: quat_array_filled = .false.
+      real(8), allocatable :: scr_mat1(:,:)
+      real(8), allocatable :: scr_mat2(:)
+
       real(8), allocatable :: rkudmvec(:), ikudmvec(:)
       real(8), allocatable :: rprpvec(:), iprpvec(:)
       real(8), allocatable :: qx2cmatvec(:), qcoeffvec(:)
+      real(8), allocatable :: aopropervec(:)
       real(8), allocatable :: qqx2cmatvec(:,:) 
       real(8), allocatable :: qx2cmat(:,:,:), qcoeffmat(:,:,:)
       complex(8), allocatable :: ckudmvec(:), ccoeffvec(:), cprpvec(:)
       complex(8), allocatable ::kudm_mo(:,:),kudm_tmp(:,:),kudm_ao(:,:)
-      complex(8), allocatable :: cx2cmat(:,:), ccoeffmat(:,:)
+      complex(8), allocatable :: cprpmat(:,:), ccoeffmat(:,:)
       character(len=38) :: dataid1
       character(len=21) :: dataid2
       character(len=42) :: dataid3
@@ -290,10 +302,20 @@ C
       if (tobe_dirac) then
 
           ! allocating property integral arrays
-          allocate(qx2cmatvec(nao**2 * 4))
-          allocate(qx2cmat(nao, nao, 4))
-          allocate(qqx2cmatvec(nao**2,4))
-          allocate(cx2cmat(nao*2, nao*2 )) 
+          if (x2c) then
+              allocate(qx2cmatvec(nao**2 * 4))
+              allocate(qx2cmat(nao, nao, 4))
+              allocate(qqx2cmatvec(nao**2,4))
+          else if (nonrel) then
+            luprop = lu1int
+            open(luprop,file='AOPROPER',status='old',form='unformatted',
+     &            action="read",position='rewind')
+
+              allocate(scr_mat1(nao**2,4))
+              allocate(scr_mat2(nao* nao * 4))
+          else
+              allocate(aopropervec(nao*(nao+1)/2))
+          endif
 
           ! checking existence of property matrices file 
           if (prp_hdf5) then
@@ -304,50 +326,83 @@ C
                   x2cmat_file%status = 0
               end if
           endif
+
       elseif (tobe_respect) then
 
           ! allocating property integral arrays
           allocate(rprpvec(nao**2 * 4))
           allocate(iprpvec(nao**2 * 4))
           allocate(cprpvec(nao**2 * 4))
-          allocate(cx2cmat(nao*2, nao*2))
           reex(1) = 'sphRx '
           reex(2) = 'sphRy '
           reex(3) = 'sphRz '
 
       endif ! (tobe...)
-
+      allocate(cprpmat(nao*2, nao*2))
+      
       CALL TITLER('Expectation values','*',127)
 
       do i = 1, nexpp
 
           indxpr = lexpp(i)
-          
+          !reading in property matrices from file
           if (tobe_dirac) then
-              call num2str(indxpr,numstr)
-              prplab = 'prpint2c'//numstr
-              ! reading in property matrices from file
-
-              if (.not.prp_hdf5) then
-              open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &            access='sequential',action="read",position='rewind')
+              ! Either X2C or NONREL Hamiltonians!
+              if (x2c) then
+                  !Getting integrals from X2CMAT!
+                  call num2str(indxpr,numstr)
+                  prplab = 'prpint2c'//numstr
+                  open(lux2c,file='X2CMAT',status='old',
+     &                 form='unformatted',access='sequential',
+     &                 action="read",position='rewind')
                   qqx2cmatvec = D0
                   call x2c_read(prplab,qqx2cmatvec,nao*nao*4,lux2c)
                   close(lux2c,status="keep")
                   qx2cmat = reshape(qqx2cmatvec, shape=(/nao,nao,4/),
-     &                      order=(/1,2,3/))
-               else
-                  qx2cmatvec = D0
-                  call lab_read (x2cmat_file,prplab,rdata=qx2cmatvec)
-                  qx2cmat = D0
-                  qx2cmat = reshape(qx2cmatvec, shape=(/nao,nao,4/),
-     &                      order=(/1,2,3/))
-              endif
-
-              cx2cmat = DC0
+     &                              order=(/1,2,3/))
+              cprpmat = DC0
               ! converting property matrix from
               ! quaternion to complex format
-              call qtoc(qx2cmat,cx2cmat,1,nao,nao,nao,nao,4)
+              call qtoc(qx2cmat,cprpmat,1,nao,nao,nao,nao,4)
+
+              else if (nonrel) then
+                  ! Getting integrals from AOPROPER calling PRPMAO!
+                  prp_fer_rep = iprpsym(indxpr) - 1
+                  prp_triang  = abs(iprltyp(indxpr)).eq.1
+                  quat_array_filled(1) = .true.
+                  scr_mat1 = 0
+                  scr_mat2 = 0
+                  if (prp_triang) then
+                      prp_mat_dim = nao*(nao+1)/2
+                      call prpmao(luprop,indxpr,.true.,scr_mat1,
+     &                prp_triang,prp_mat_dim,scr_mat1,scr_mat2,
+     &                quat_array_filled,4)
+                      call tri2sq(scr_mat1,scr_mat2,quat_array_filled,
+     &                            prp_fer_rep,iprptim(indxpr))
+                  else
+                      prp_mat_dim = nao**2
+                      call prpmao(luprop,indxpr,.true.,scr_mat1,
+     &                prp_triang,prp_mat_dim,scr_mat1,scr_mat2,
+     &                quat_array_filled,4)
+                      do j = 1,4
+                          if(quat_array_filled(j)) then
+                              call dzero(scr_mat1(1,j),prp_mat_dim)
+                          endif
+                      enddo
+                  endif
+                  
+                  cprpmat = DC0
+                  ! converting property matrix from
+                  ! quaternion to complex format
+                  call qtoc(scr_mat1,cprpmat,1,nao,nao,nao,nao,4)
+
+
+              else ! non-relativistic reading from AOPROPER!
+ 
+                  call quit("Error in KUPRPEX1, no suitable
+     &                       Hamiltonian found!")
+              
+              endif ! x2c or nonrel
 
           elseif (tobe_respect) then
 
@@ -358,10 +413,10 @@ C
               call lab_read (reex_file,reex(i)//'_IM',rdata=iprpvec)
               cprpvec = DC0
               cprpvec = cmplx(rprpvec,iprpvec,kind=kind(1.0d0))
-              cx2cmat = DC0
-              cx2cmat = reshape(cprpvec,shape=(/2*nao,2*nao/),
+              cprpmat = DC0
+              cprpmat = reshape(cprpvec,shape=(/2*nao,2*nao/),
      &                  order=(/1,2/))
-              cx2cmat = cx2cmat * DCM1
+              cprpmat = cprpmat * DCM1
 
           endif ! (tobe...)
 
@@ -369,7 +424,7 @@ C
           expvali = DC0
           do p=1,nao*2
               do q=1,nao*2
-                  expvali = expvali + cx2cmat(p,q) * kudm_ao(q,p)
+                  expvali = expvali + cprpmat(p,q) * kudm_ao(q,p)
               enddo
           enddo
 
@@ -393,11 +448,17 @@ C
 
       !deallocating property (intermediate) arrays
       if (tobe_dirac) then
-          deallocate(qx2cmatvec,qqx2cmatvec,qx2cmat)
+          if (x2c) then
+              deallocate(qx2cmatvec,qqx2cmatvec,qx2cmat)
+          else if (nonrel)  then
+              deallocate(scr_mat1,scr_mat2)
+          else
+              deallocate(aopropervec)
+          endif
       elseif (tobe_respect) then
           deallocate(rprpvec,iprpvec,cprpvec)
       endif
-      deallocate(cx2cmat,kudm_ao)
+      deallocate(cprpmat,kudm_ao)
 
       RETURN
       END
