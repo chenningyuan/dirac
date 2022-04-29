@@ -12,6 +12,7 @@
 !  N_CIESR        : number of CI roots to converge ( .ge. MULTIPESR)
 !  MULTIPESR      : "multiplicity", number of CI roots to use
 !                   in quasi-degenerate first order perturbation theory
+!  STATE_ESR      : first CI root belonging to multiplet, default 1
 !
 !  ESR CI space definition:
 !
@@ -42,14 +43,14 @@
 
       REAL*8  THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
       INTEGER IPRESR,NESRP,LESRP(maxesr),IPSIGMA(npsigma)
-      INTEGER N_CIESR, MULTIPESR, MAX_CIESR_IT
+      INTEGER N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR
       INTEGER NGAS_CIESR(3), LVL_CIESR(maxgas_esr,3)
       INTEGER NGSH_CIESR(2,maxgas_esr,3), MAXMK2_ESR
       LOGICAL USE_KRAMERS_CONJ
 
       COMMON /DCBESR/ THR_CIESR,THR_CVEC_ESR,THRPCI_ESR,                &
      &        IPRESR,   NESRP, LESRP, IPSIGMA,                          &
-     &        N_CIESR, MULTIPESR, MAX_CIESR_IT,                         &
+     &        N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR,              &
      &        NGAS_CIESR, LVL_CIESR, NGSH_CIESR, MAXMK2_ESR,            &
      &        USE_KRAMERS_CONJ
 ! --- end of dcbesr.h ---

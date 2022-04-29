@@ -600,7 +600,7 @@ C        ... include exactly those determinants which was included
 C            in the 'average-of-configuration' SCF
          NGAS_DC  = NOPEN
          OPT_THR_CVEC = 1.0D-4
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NACSH(I,J)
@@ -625,7 +625,7 @@ C            equivalent to RESOLVE but setting information for GASCIP program
 C        ... set CI program in charge
 !        OPT_CIPROGRAM = 'GASCIP'
 
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
          DO J = 1, NGAS_DC
             DO I = 1,NFSYM
                NGSH(I,J) = NASH(I)
@@ -679,7 +679,7 @@ C
 
 C        Set min and max accumulated no. of electrons in each gas space
 
-         CALL IZERO(NGSHT,MXGAS)
+         NGSHT(1:MXGAS) = 0
 
          NGAS_DC = 0
          NAELEC_ACCUM = 0
@@ -693,6 +693,9 @@ C        Set min and max accumulated no. of electrons in each gas space
             END DO
 
             NGASSP(1,NGAS_DC) = MAX(0, NAELEC_ACCUM-LVL_CIESR(I,1)) ! subtract max number of holes in this RAS1-GAS space
+            ! minimum number of electrons cannot be less than for a previous GAS space
+            IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &         MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
             NGASSP(2,NGAS_DC) = NAELEC_ACCUM
          END DO
 
@@ -704,6 +707,8 @@ C        Set min and max accumulated no. of electrons in each gas space
 
          IF (NGAS_CIESR(3) > 0) THEN
             NGASSP(1,NGAS_DC) = MAX(0,NAELEC-LVL_CIESR(1,3))
+            IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &         MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
          ELSE ! no RAS3-GAS orbitals, i.e. last GAS space
             NGASSP(1,NGAS_DC) = NAELEC
          END IF
@@ -718,6 +723,8 @@ C        Set min and max accumulated no. of electrons in each gas space
 
             IF (I < NGAS_CIESR(3)) THEN
                NGASSP(1,NGAS_DC) = MAX(0, NAELEC-LVL_CIESR(I+1,3)) ! subtract max number of electrons in next RAS3-GAS space
+               IF (NGAS_DC .GT. 1) NGASSP(1,NGAS_DC) =
+     &            MAX(NGASSP(1,NGAS_DC),NGASSP(1,NGAS_DC-1))
             ELSE ! last RAS1-GAS space
                NGASSP(1,NGAS_DC) = NAELEC
             END IF
@@ -902,7 +909,7 @@ C
       IOPT_MK2DEL = NKRMC_MK2DEL
       IOPT_MINMK2 = NKRMC_MINMK2
       IOPT_MAXMK2 = NKRMC_MAXMK2
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRMCISH(I)
          NASH(I) = NKRMCASH(I)
@@ -1031,7 +1038,7 @@ C
       IOPT_MINMK2 = NKRCI_MINMK2
       IOPT_MAXMK2 = NKRCI_MAXMK2
 
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRCIISH(I)
          NASH(I) = NKRCIASH(I)
@@ -1727,7 +1734,7 @@ C since there are some variables with the same name we will call a routine for t
       IOPT_MK2DEL = NKRCC_MK2DEL
       IOPT_MINMK2 = NKRCC_MINMK2
       IOPT_MAXMK2 = NKRCC_MAXMK2
-      CALL IZERO(NGSHT,MXGAS)
+      NGSHT(1:MXGAS) = 0
       DO I = 1,NFSYM
          NISH(I) = NKRCCISH(I)
          NASH(I) = NKRCCASH(I)

@@ -4,6 +4,8 @@ hjaaj-esr branch:
 -----------------
 
 New ESR features (Contributor: H. J. Aa. Jensen):
+- Added .STATE option for \*ESR, defining first CI state belonging to ESR multiplet
+  (for example if a "singlet" state is below the "triplet" multiplet).
 - .MAXMK2 for \*ESR
 - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt = 1000 ppm accuracy
 

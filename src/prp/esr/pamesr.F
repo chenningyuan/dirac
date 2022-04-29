@@ -38,7 +38,7 @@ C
 #include "dcbesr.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 18)
+      PARAMETER (NTABLE = 19)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER, g_10ppm
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       REAL*8    WORK(LWORK)
@@ -47,7 +47,7 @@ C
       DATA TABLE /'xXXXXXX','.PRINT ','.OPERAT','.MULTIP','.SPINPO',
      &            '.SDCI  ','.MAX CI','.CI ROO','.THRCVE','.THRCI ',
      &            '.SDTCI ','.SDT*CI','.ESR CI','.MY CI ','.THRPCI',
-     &            '.KR-CON','.MAXMK2','.G10PPM'/
+     &            '.KR-CON','.MAXMK2','.G10PPM','.STATE '/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -76,6 +76,7 @@ C
       THR_CVEC_ESR = 1.0D-4  ! trial vector threshold
       THRPCI_ESR   = 1.0D-3  ! print of CI vector threshold
       THR_CIESR    = -1.0D0  ! default depends on g_10ppm true or false
+      STATE_ESR    = 1       ! first CI root belonging to multiplet
 
 C     variables for spin polarization and correlation in CI
       NGAS_CIESR(1)  = 0  ! RAS1_GAS
@@ -111,7 +112,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                      11,12,13,14,15,16,17,18), I
+     &                      11,12,13,14,15,16,17,18,19), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -247,6 +248,10 @@ C&&&& calculate g tensor with 10 ppm accuracy
    18          CONTINUE ! .G10PPM
                   g_10ppm = .TRUE.
                GO TO 100
+C&&&& first CI root belonging to multiplet
+   19          CONTINUE ! .STATE
+                  READ(LUCMD,*) STATE_ESR
+               GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
             ELSE
@@ -269,14 +274,20 @@ C
          WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP not (correctly) specified'
          INPERR = INPERR + 1
       END IF
+      IF (STATE_ESR .NE. 1) THEN
+      WRITE(LUPRI,'(/A,I0)')
+     & '* Lowest CI root belonging to multiplet is CI root no.  '
+     & ,STATE_ESR
+      END IF
       NGAS_CIESR_T = NGAS_CIESR(1) + NGAS_CIESR(3)
       IF (NGAS_CIESR_T .gt. 0 .OR. MULTIPESR .ne. 2) THEN
       !  NGAS_CIESR_T test because o.k. with no CI if just doublet one open-shell DHF or DFT
-         IF (N_CIESR < 0) N_CIESR = MULTIPESR
+         IF (N_CIESR < 0) N_CIESR = MULTIPESR + (STATE_ESR-1)
          WRITE(LUPRI,'(/A,I8)')
      & '* Number of roots to converge in CI:', N_CIESR
          IF (N_CIESR .lt. MULTIPESR) THEN
-            WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS'
+            WRITE(LUPRI,*) 'INPUT ERROR: .MULTIP > .CI ROOTS',
+     &         MULTIPESR, N_CIESR
             INPERR = INPERR + 1
          END IF
          IF (THR_CIESR .LT. 0.0D0) THEN
@@ -491,7 +502,7 @@ C
       CALL MEMGET2('REAL','H_CI',KHCI,
      &   NZ_in_CI*MULTIPESR*MULTIPESR,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KHCI),NZ_in_CI*MULTIPESR*MULTIPESR)
-      DO I = 1, MULTIPESR
+      DO I = STATE_ESR, STATE_ESR - 1 + MULTIPESR
          II = KHCI + (I-1)*MULTIPESR + (I-1)
          WORK(II) = WORK(KEIGVL-1 + I)
       END DO
@@ -860,6 +871,7 @@ C Used from common blocks:
 C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C  dgroup : NZ,NZ_in_CI
+C  dcbesr : ...,STATE_ESR,...
 C
 #include "dcbgen.h"
 #include "dcbopt.h"
@@ -882,7 +894,7 @@ C     ==========
 C     (using first NPSIGMA elements of ESRVAL for IPSIGMA properties,
 C     later reused for the NESRP requested properties)
 C
-      IF (N_CIESR .LT. MULTIPESR) THEN
+      IF (N_CIESR .LT. MULTIPESR+(STATE_ESR-1)) THEN
          WRITE(LUPRI,*) 'ERROR: N_CIESR.lt.MULTIPESR',N_CIESR,MULTIPESR
          CALL QUIT('N_CIESR .lt. MULTIPESR')
       END IF
@@ -962,19 +974,26 @@ C
 C     Transform the first MULTIPESR CI eigenvectors to S_z basis
 C     (S_z is a real operator, so no problem in keeping NZ_in_CI)
 C
-      L_CIVEC2 = NZCONF * N_CIESR * NZ_in_CI
+      L_CIVEC2_R = NZCONF * MULTIPESR
+      L_CIVEC2   = L_CIVEC2_R * NZ_in_CI
       CALL MEMGET2('REAL','CIVEC2',KCIVEC2 ,L_CIVEC2,WORK,KFREE,LFREE)
-      CALL DCOPY(L_CIVEC2,CIEVEC,1,WORK(KCIVEC2),1)
+      CALL DCOPY(L_CIVEC2_R,CIEVEC(1,STATE_ESR,1),1,WORK(KCIVEC2),1)
+      IF (NZ_in_CI .eq. 2) THEN
+         KCIVEC2_I = KCIVEC2 + L_CIVEC2_R
+         CALL DCOPY(L_CIVEC2_R,CIEVEC(1,STATE_ESR,2),1,
+     &      WORK(KCIVEC2_I),1)
+      END IF
       CALL QGEMM(NZCONF,MULTIPESR,MULTIPESR,1.0D0,
      &           'N','N',IQINDX,
-     &           WORK(KCIVEC2),NZCONF,N_CIESR,NZ_in_CI,
+     &           WORK(KCIVEC2),NZCONF,MULTIPESR,NZ_in_CI,
      &           'N','N',IQINDX,
      &           ESRVAL(1,1,1,2),MULTIPESR,MULTIPESR,NZ_in_CI,
-     &           0.0D0,IQINDX, CIEVEC,NZCONF,N_CIESR,NZ_in_CI)
+     &           0.0D0,IQINDX,
+     &           CIEVEC(1,STATE_ESR,1),NZCONF,N_CIESR,NZ_in_CI)
       CALL MEMREL('ESRPHASE-1',WORK,1,KCIVEC2,KFREE,LFREE)
       IF (IPRESR .GT. 10) THEN
         write (lupri,*) ' CIEVEC after transform. to S_z basis'
-        CALL PRQMAT(CIEVEC,NZCONF,MULTIPESR,
+        CALL PRQMAT(CIEVEC(1,STATE_ESR,1),NZCONF,MULTIPESR,
      &              NZCONF,N_CIESR,NZ_in_CI,IQINDX,LUPRI)
       END IF
 C
@@ -1195,8 +1214,8 @@ C       ... here PHASE is new phase of vector MJ-1
 !     IF (IPRESR .GT. 1) THEN
          WRITE(LUPRI,'(/A)') '  M_Seff : Final phase factor on |M_Seff>'
          do j = 1, multipesr
-            write(lupri,'(F5.1,A,2F15.10)')
-     &         SEFF-DFLOAT(J-1),' :',phase_factors(j,1:2)
+            write(lupri,'(F6.1,A,2F15.10)')
+     &         SEFF-DFLOAT(J-1),'   :',phase_factors(j,1:2)
          end do
 
          CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,1), MULTIPESR) ! S_x
@@ -1639,7 +1658,8 @@ C
          END IF
          write(lupri,*) 'N_CIESR, NZCONF', N_CIESR, NZCONF
 #endif
-         CALL GASCIP_MAKE_P1MAT(CIEVEC,N_CIESR,NZCONF,WORK(KZCONF),
+         CALL GASCIP_MAKE_P1MAT(CIEVEC(1,STATE_ESR,1),N_CIESR,NZCONF,
+     &                         WORK(KZCONF),
      &                         ESRVAL(1,1,JZ),MULTIPESR,IHRM,
      &                         WORK(KPMLF),ACCURACY,
      &                         WORK(KFREE),LFREE,IPRESR)
@@ -1685,9 +1705,9 @@ C
 
          CALL QTRANS('AOMO','S',0.0D0,NZCONF,NZCONF,MULTIPESR,MULTIPESR,
      &        WORK(KPR),NZCONF,NZCONF,NZ_in_CI,IQINDX(JZ),
-     &        ESRVAL,   MULTIPESR,MULTIPESR, 2,IQINDX,
-     &        CIEVEC,   NZCONF,N_CIESR,     NZ_in_CI,IQINDX,
-     &        CIEVEC,   NZCONF,N_CIESR,     NZ_in_CI,IQINDX,
+     &        ESRVAL, MULTIPESR,MULTIPESR, 2,IQINDX,
+     &        CIEVEC(1,STATE_ESR,1), NZCONF,N_CIESR, NZ_in_CI,IQINDX,
+     &        CIEVEC(1,STATE_ESR,1), NZCONF,N_CIESR, NZ_in_CI,IQINDX,
      &        WORK(KFREE),LFREE,-1)
        END IF
 C

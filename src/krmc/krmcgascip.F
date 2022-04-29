@@ -2218,7 +2218,7 @@ C
      &            .FALSE.,NDET,IDET,ACCURACY,IPRINT_slaves)
       ELSE IF (PARCAL) THEN
          WRITE(LUPRI,'(/A,I0,A)')
-     &      'GASCIP in sequential mode because only',
+     &      'GASCIP in sequential mode because only ',
      &      NDET,' determinants (< 10,000)'
       END IF
 
