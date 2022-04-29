@@ -1141,22 +1141,28 @@ C
             PHASE_JP1_R = -PHASE_R
             PHASE_JP1_I = -PHASE_I
         ELSE
-           CALL QUIT('One of Sx and Sy is zero.')
+           CALL QUIT('One of Sx and Sy is zero.'//
+     &        ' Probably pseudo-singlet state included.')
         END IF
 
         PHASE_factors(JP1,1) = PHASE_JP1_R
         PHASE_factors(JP1,2) = PHASE_JP1_I
 
 !       IF (ABS(SY_R) .gt. THR_ZERO) THEN
-        IF (ABS(SY_R) .gt. 1.0D-5) THEN
+        IF (ABS(SY_R) .gt. 1.0D-4) THEN
            write(lupri,*)'ESRPHASE error: S_y not purely imaginary'//
      &        ' although S_x is purely real'
            write(lupri,*) 'S_x',SX_R,SX_I
            write(lupri,*) 'S_y',SY_R,SY_I
            CALL QUIT('ESRPHASE error: S_y not purely imaginary'//
      &        ' although S_x is purely real')
-        ELSE
-           SY_R = 0.0D0 ! remove numerical noise
+        ELSE IF (ABS(SY_R) .gt. 1.0D-6) THEN
+           write(lupri,*)'ESRPHASE info: S_y not purely imaginary'//
+     &        ' although S_x is purely real'
+           write(lupri,*) 'S_x',SX_R,SX_I
+           write(lupri,*) 'S_y',SY_R,SY_I
+           write(lupri,*)'ESRPHASE info: Calculation continues,'//
+     &        ' assuming deviation is numerical noise.'
         END IF
 
 C       re-evaluate S_x and S_y values for JP1 for print
