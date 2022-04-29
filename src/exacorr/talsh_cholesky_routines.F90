@@ -400,7 +400,7 @@ subroutine talsh_get_diag(Diag)
   use talsh
   use exacorr_datatypes
   use exacorr_global
-  use module_interest_eri
+  use exacorr_eri
 
   implicit none
 
@@ -421,7 +421,6 @@ subroutine talsh_get_diag(Diag)
   integer :: lq, lp, nq, np, q, p
   integer :: i, j, ijij
   integer :: ioff, joff
-  real(8) :: eq,ep,cq,cp
   real(8) :: xq,yq,zq,xp,yp,zp
   real(8),save :: gout(21*21*21*21) ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), parameter :: FIJKL = 1.0
@@ -452,29 +451,25 @@ subroutine talsh_get_diag(Diag)
   joff = 0
   do q = 1, nshells
      lq   =  gto(q)%orb_momentum
-     eq   =  gto(q)%exponent(1)
      xq   =  gto(q)%coord(1)
      yq   =  gto(q)%coord(2)
      zq   =  gto(q)%coord(3)
-     cq   =  gto(q)%coefficient(1)
      nq   =  nfunctions(lq,basis_angular)
 
      ioff = 0
      do p = 1, nshells
         lp   =  gto(p)%orb_momentum
-        ep   =  gto(p)%exponent(1)
         xp   =  gto(p)%coord(1)
         yp   =  gto(p)%coord(2)
         zp   =  gto(p)%coord(3)
-        cp   =  gto(p)%coefficient(1)
         np   =  nfunctions(lp,basis_angular)
 
         !get eri values
-        call interest_eri('llll',FIJKL,gout,&
-                          lp,ep,xp,yp,zp,cp,&
-                          lq,eq,xq,yq,zq,cq,&
-                          lp,ep,xp,yp,zp,cp,&
-                          lq,eq,xq,yq,zq,cq )
+        call compute_eri('llll',FIJKL,gout(1:np*nq*np*nq),&
+                         lp,gto(p)%exponent,xp,yp,zp,gto(p)%coefficient,&
+                         lq,gto(q)%exponent,xq,yq,zq,gto(q)%coefficient,&
+                         lp,gto(p)%exponent,xp,yp,zp,gto(p)%coefficient,&
+                         lq,gto(q)%exponent,xq,yq,zq,gto(q)%coefficient )
 
         do j = 1, nq
           do i = 1, np
@@ -584,7 +579,7 @@ subroutine talsh_get_shell(Dshell, lsh, ksh)
   use talsh
   use exacorr_datatypes
   use exacorr_global
-  use module_interest_eri
+  use exacorr_eri
 
   implicit none 
 
@@ -610,13 +605,13 @@ subroutine talsh_get_shell(Dshell, lsh, ksh)
   integer(8)         :: ish,jsh
   integer(8)         :: kshell,lshell
   integer            :: i, ni, li
-  real(8)            :: ei, ci, xi, yi, zi
+  real(8)            :: xi, yi, zi
   integer            :: j, nj, lj
-  real(8)            :: ej, cj, xj, yj, zj
+  real(8)            :: xj, yj, zj
   integer            :: k, nk, lk
-  real(8)            :: ek, ck, xk, yk, zk
+  real(8)            :: xk, yk, zk
   integer            :: l, nl, ll
-  real(8)            :: el, cl, xl, yl, zl
+  real(8)            :: xl, yl, zl
   real(8), parameter :: FIJKL = 1.0
   integer, parameter :: LMAX = 21 ! hardwired for maximum  l-value of 5 ? (s=1,p=3,d=6,f=10,g=15,h=21)
   real(8), save      :: gout(LMAX*LMAX*LMAX*LMAX) 
@@ -635,11 +630,9 @@ subroutine talsh_get_shell(Dshell, lsh, ksh)
     loff = loff + nl
   end do
   ll   =  gto(lsh)%orb_momentum
-  el   =  gto(lsh)%exponent(1)
   xl   =  gto(lsh)%coord(1)
   yl   =  gto(lsh)%coord(2)
   zl   =  gto(lsh)%coord(3)
-  cl   =  gto(lsh)%coefficient(1)
   nl   =  nfunctions(ll,basis_angular)
 
   koff=0
@@ -649,11 +642,9 @@ subroutine talsh_get_shell(Dshell, lsh, ksh)
     koff = koff + nk
   end do
   lk   =  gto(ksh)%orb_momentum
-  ek   =  gto(ksh)%exponent(1)
   xk   =  gto(ksh)%coord(1)
   yk   =  gto(ksh)%coord(2)
   zk   =  gto(ksh)%coord(3)
-  ck   =  gto(ksh)%coefficient(1)
   nk   =  nfunctions(lk,basis_angular)
 
   ! get acces to the tensor
@@ -677,29 +668,25 @@ subroutine talsh_get_shell(Dshell, lsh, ksh)
   joff = 0
   do jsh = 1, nshells
     lj   =  gto(jsh)%orb_momentum
-    ej   =  gto(jsh)%exponent(1)
     xj   =  gto(jsh)%coord(1)
     yj   =  gto(jsh)%coord(2)
     zj   =  gto(jsh)%coord(3)
-    cj   =  gto(jsh)%coefficient(1)
     nj   =  nfunctions(lj,basis_angular)
 
     ioff = 0
     do ish = 1, nshells
       li   =  gto(ish)%orb_momentum
-      ei   =  gto(ish)%exponent(1)
       xi   =  gto(ish)%coord(1)
       yi   =  gto(ish)%coord(2)
       zi   =  gto(ish)%coord(3)
-      ci   =  gto(ish)%coefficient(1)
       ni   =  nfunctions(li,basis_angular)
 
 !     output order of eri is (5,c,d,5,a,b), so input k,l first and then i,j to get the order that we want
-      call interest_eri('llll',FIJKL,gout,&
-                        lk,ek,xk,yk,zk,ck,&
-                        ll,el,xl,yl,zl,cl,&
-                        li,ei,xi,yi,zi,ci,&
-                        lj,ej,xj,yj,zj,cj )
+      call compute_eri('llll',FIJKL,gout(1:ni*nj*nk*nl),&
+                       lk,gto(ksh)%exponent,xk,yk,zk,gto(ksh)%coefficient,&
+                       ll,gto(lsh)%exponent,xl,yl,zl,gto(lsh)%coefficient,&
+                       li,gto(ish)%exponent,xi,yi,zi,gto(ish)%coefficient,&
+                       lj,gto(jsh)%exponent,xj,yj,zj,gto(jsh)%coefficient )
 
       !save all elements for this shell pair
       do k = 1, nk
