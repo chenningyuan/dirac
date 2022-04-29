@@ -166,10 +166,10 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,n,i,j)*r(a,X,m,n)",sigma2_tensor,interm_t%w_oooo,r2_tensor)
 
       !Test
-      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,n,i,j)*r(a,X,m,n)",test_tensor,interm_t%w_oooo,r2_tensor)
+      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,n,i,j)*r(a,X,m,n)",test_tensor,interm_t%w_oooo,r2_tensor)
       norm_s = tensor_norm2(sigma2_tensor)
       if (debug) print*, "norm contraction 6 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      if (debug) print*, "test contraction 6 :",test_tens
+      ! if (debug) print*, "test contraction 6 :",test_tens
       norm_s_prev = norm_s
 
 
@@ -181,8 +181,14 @@ module talsh_sigma_eomccsd
       ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,m,i)",sigma2_tensor,interm_t%w_vovo,r2_tensor)
 
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,m,i)",sigma2_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)!XY
+
+
+      ! Test
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",test_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,m,i)",test_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
       norm_s = tensor_norm2(sigma2_tensor)
       if (debug) print*, "norm contraction 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
+      if (debug) print*, "test contraction 7 :",test_tens
       norm_s_prev = norm_s
 
 !--------------------------------------------------
