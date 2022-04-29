@@ -8,9 +8,9 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-f = Filter()
-f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
-      num_lines   = 21,
+f1 = Filter()
+f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
+      num_lines   = 17,
       rel_tolerance   = 1.0e-7)
 
 # Right now, we separate the mp2no and cc modules. The test have two parts, first round only generates truncatd MP2FNO 
@@ -21,16 +21,16 @@ f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
 #test.run(['hf_energy_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="CCDENS=CCDENS_all-active_hf-ccpvdz_0.0d \
 #         MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
 
-test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
+test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f1, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
 #test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
 #test.run(['hf_get_no_ccpvdz_0.0d_subv.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv"')
 
-f = Filter()
+f2 = Filter()
 
-f.add(from_string = '* Dipole moment:',
+f2.add(from_string = '* Dipole moment:',
       num_lines   = 9,
       rel_tolerance   = 1.0e-6)
-f.add(from_string = '           Total contribution to principal components',
+f2.add(from_string = '           Total contribution to principal components',
       num_lines   = 15,
       rel_tolerance   = 1.0e-6)
 
@@ -40,7 +40,7 @@ f.add(from_string = '           Total contribution to principal components',
 #         MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
 
 #test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
-test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
+test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f2, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
 #test.run(['hf_fno_ccpvdz_0.0_subv.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv=DFCOEF" --get="CCDENS=\
 #CCDENS_hf_ccpvdz_0.0_subv"')
 
@@ -51,4 +51,8 @@ test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="MP2NOs_A
 #      rel_tolerance   = 1.0e-6)
 #
 #test.run(['hf_fno_ccpvdz_0.0_subv_ana.inp'], ['hf.xyz'], f, args='--put="CCDENS_hf_ccpvdz_0.0_subv=CCDENS"')
+
+#LV: unclear what the idea is with all this commented out stuff, am just adding a non-relativistic contracted test as well
+test.run(['hf_nr.inp'], ['hf.xyz'], f1, args='--get="MP2NOs_AO=MP2NOs_AO_nr"')
+test.run(['property_nr.inp'], ['hf.xyz'], f2, args='--put="MP2NOs_AO_nr=DFCOEF"')
 sys.exit(test.return_code)

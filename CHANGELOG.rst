@@ -8,6 +8,14 @@ New ESR features (Contributor: H. J. Aa. Jensen):
 - .G10PPM for \*ESR : request g-shifts to 10 ppm accuracy instead of default of 1 ppt = 1000 ppm accuracy
 
 -----------------------------------------------------------------------------------------------------
+22.1.beta
+---------
+
+Bugfix:
+
+- Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
+  based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
+
 
 22.0 (2022-02-08)
 -----------------

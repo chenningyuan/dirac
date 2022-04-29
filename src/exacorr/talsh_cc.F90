@@ -39,14 +39,14 @@ module talsh_cc
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
 
 !        Written by Lucas Visscher, winter 2016/2017
-
+         use labeled_storage
          use exacorr_global
          use talsh_gradient
          use talsh_cholesky_integrals
          use talsh_triples
 
          type(exacc_input), intent(in) :: exa_input
-
+         type(file_info_t), save :: exacc_file
          integer                :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable  :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
 
@@ -112,6 +112,14 @@ module talsh_cc
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
+
+         call print_date("MO occupation data to EXACC file")
+         if (exacc_file%status == -1) then
+            exacc_file%type = 2
+            exacc_file%name = "EXACC.h5"
+         end if
+         call lab_write(exacc_file,'nocc',idata=nocc)
+         call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 
          call print_exainput(exa_input,get_nao())
 

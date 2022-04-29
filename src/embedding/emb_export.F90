@@ -30,6 +30,11 @@ module fde_export_data
    public fde_export_to_file
 
    private
+   private fde_export_data_as_txt
+   interface fde_export_data_as_txt
+      module procedure fde_export_data_as_txt_full
+      module procedure fde_export_data_as_txt_scope
+   end interface
    
    contains
 
@@ -51,13 +56,21 @@ module fde_export_data
 !       product potential * density by the electron charge when calculating the
 !       energy. with this, the potentials will be in line with those obtained
 !       e.g. with adf 
-            call fde_prepare_export(level,fde_grid_ex,gf_export)
+            if (etmp%ex_property .eq. 'density') then
+                call fde_prepare_export_rho(level,fde_grid_ex,gf_export)
+            else
+                call fde_prepare_export(level,fde_grid_ex,gf_export)
+            end if
 
             call fde_get_export_info(etmp) 
             if (etmp%ex_format.eq.'XML') then
                call fde_export_data_as_xml(fde_grid_ex,gf_export)
             else if (etmp%ex_format.eq.'TXT') then
-               call fde_export_data_as_txt(fde_grid_ex,gf_export)
+               if (etmp%ex_property .eq. 'density') then
+                  call fde_export_data_as_txt(fde_grid_ex,gf_export,'density')
+               else
+                  call fde_export_data_as_txt(fde_grid_ex,gf_export)
+               end if
             else
                call fde_quit('unrecognized export format')
             endif
@@ -66,6 +79,18 @@ module fde_export_data
                write (*,*) 'skipping'
          endif
       end subroutine fde_export_to_file
+
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_prepare_export_rho(level,grid,gf)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(inout) :: gf
+         type(fde_grid), intent(in)         :: grid
+         character(len=4)                   :: level
+
+        call fde_get_density(level,grid,gf)
+
+      end subroutine fde_prepare_export_rho
 
 
 !   ----------------------------------------------------------------------------
@@ -227,7 +252,7 @@ module fde_export_data
 
 
 !   ----------------------------------------------------------------------------
-      subroutine fde_export_data_as_txt(grid,gf)
+      subroutine fde_export_data_as_txt_full(grid,gf)
 !   ----------------------------------------------------------------------------
          type(grid_function), intent(in) :: gf
          type(fde_grid), intent(in)      :: grid 
@@ -336,7 +361,88 @@ module fde_export_data
          write(log_unit,*) 'closing plaintext file'
          call fde_close_file(export_unit)
 
-      end subroutine fde_export_data_as_txt
+      end subroutine fde_export_data_as_txt_full
+      
+
+!   ----------------------------------------------------------------------------
+      subroutine fde_export_data_as_txt_scope(grid,gf, scope)
+!   ----------------------------------------------------------------------------
+         type(grid_function), intent(in) :: gf
+         type(fde_grid), intent(in)      :: grid 
+         character(len=7), intent(in)    :: scope
+
+         type(fde_files)  :: ftmp
+         type(fde_export) :: etmp
+
+         integer :: i, j, k, l
+         integer :: nr_variables
+         real(kind=8) :: v_pc_array = 0.0d0
+         integer :: export_unit, log_unit
+         character(len=60)  :: export_name, log_name
+       
+         nr_variables = 6
+
+         if (.not.associated(grid%r)) &
+            call fde_quit('grid not available in fde export')
+
+         select case (scope)
+         case ('density')
+            if (.not.associated(gf%n)) &
+               call fde_quit('density not available in fde export')
+         case default
+            if (.not.associated(gf%n)) &
+               call fde_quit('density not available in fde export')
+            
+            if (.not.associated(gf%gn)) &
+               call fde_quit('density gradient not available in fde export')
+            
+            if (.not.associated(gf%hn)) &
+               call fde_quit('density gradient not available in fde export')
+            
+            if (.not.associated(gf%elpot)) &
+               call fde_quit('potential not available in fde export')
+         end select
+
+         
+         call fde_get_files_info(ftmp)
+         call fde_get_export_info(etmp)
+      
+         export_unit = ftmp%export%unit
+         export_name = ftmp%export%name
+
+         log_unit    = ftmp%logfile%unit
+         log_name    = ftmp%logfile%name
+
+         WRITE(log_unit,*) 'Output FDE data to text file:',trim(export_name)
+
+         call fde_test_export
+
+         call fde_open_file(export_name,export_unit)
+         write (export_unit,'(2I8)') grid%npoints, nr_variables
+
+         select case (scope)
+         case ('density')
+           do i = 1, grid%npoints
+               ! only grid coordinates + electron density
+               write (export_unit,'(4ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               gf%n(i)
+           end do
+         case default
+           do i = 1, grid%npoints
+               write (export_unit,'(10ES30.20E3)') (grid%r(j,i), j = 1,3), &
+                                               grid%w(i),             &
+                                               gf%elpot(i),          &
+                                               v_pc_array,            &
+                                               gf%n(i),               &
+                                               (gf%gn(j,i), j = 1,3)
+           end do
+         end select
+
+         write(log_unit,*) 'done writing plaintext file'       
+         write(log_unit,*) 'closing plaintext file'
+         call fde_close_file(export_unit)
+
+      end subroutine fde_export_data_as_txt_scope
       
 
 end module fde_export_data 

@@ -30,6 +30,15 @@ module visual_cfg
    logical,      public            :: visual_cfg_skip(max_para) = .false.
    integer,      public            :: visual_cfg_property_to_matrix(max_para) = 0
    integer,      public            :: visual_cfg_irep_xvector(max_para)
+   logical,      public            :: visual_cfg_out_file_custom = .false.
+   logical,      public            :: visual_cfg_out_scalar_file_custom = .false.
+   logical,      public            :: visual_cfg_out_vector_file_custom = .false.
+   logical,      public            :: visual_cfg_out_2ndtensor_file_custom = .false.
+   character(60), public           :: visual_cfg_out_scalar_file_name
+   character(60), public           :: visual_cfg_out_vector_file_name
+   character(60), public           :: visual_cfg_out_2ndtensor_file_name
+   logical,      public            :: visual_cfg_london_skip_cube = .false.
+   logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
    integer, public :: iq_gamma5   =  1
    integer, public :: iq_density  =  2
@@ -73,6 +82,12 @@ module visual_cfg
    integer, public :: iq_jz       = 40
    integer, public :: iq_tcos     = 41
    integer, public :: iq_tsin     = 42   
+   integer, public :: iq_density_gradient     =  43
+   integer, public :: iq_density_hessian      =  44
+   integer, public :: iq_density_laplacian    =  45
+   integer, public :: iq_density_sign_lambda2 =  46
+   integer, public :: iq_rdg      = 47
+   integer, public :: iq_gradj    = 48
    
 !                     visualization in 2d
    logical, public :: visual_cfg_2d             = .false.
@@ -99,6 +114,7 @@ module visual_cfg
    logical, public :: visual_cfg_3d_gridimp = .false.
    logical, public :: visual_cfg_3d_readjb  = .false.
    character(80), public :: visual_cfg_3d_gridfil
+   character(80), public :: visual_cfg_3d_grid_units
    character(80), public :: visual_cfg_3d_jbfile
 
 !                     integration in 3d
@@ -144,6 +160,8 @@ module visual_cfg
 
    logical, public              :: visual_cfg_use_orbital_string = .false.
    real(8), public, allocatable :: visual_cfg_occupation(:, :)
+
+   logical,      public :: visual_cfg_tensor          = .false.
 
    private
 

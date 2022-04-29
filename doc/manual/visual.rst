@@ -114,6 +114,16 @@ Scalar and vector densities are written to files ``plot.3d.scalar`` and ``plot.3
    
 Scalar densities are also written to a Gaussian cube file ``plot.3d.cube``.
 
+keyword(3D_IMP)
+
+Calculate various densities in 3D on an imported grid and write to text file format (imported grid does not have to be regular).
+Example:
+
+  .3D_IMP
+   numerical_grid    ! a grid file on which various densities will be calculated; the file should have 3 columns with x, y, z coordinates of grid points 
+   grid_units        ! grid units (choose from: 'angstrom' or 'au')
+
+
 keyword(3DFAST)
 
 Fast evaluation of the molecular electrostatic potential.
@@ -191,6 +201,41 @@ Another example (perturbed density, first response vector)::
 
   .DENSITY
    PAMXVC 1
+
+   
+keyword(DENGRA)
+
+Compute number density gradient :math:`\grad n(\mathbf{r})` in addition to the number density :math:`n(\mathbf{r})`.
+Example (unperturbed density gradient)::
+
+  .DENGRA
+   DFCOEF
+
+keyword(DENHES)
+
+Compute number density Hessian :math:`H(n(\mathbf{r}))` in addition to the number density :math:`n(\mathbf{r})` and to the number density gradient :math:`\grad n(\mathbf{r})`.
+Example (unperturbed density Hessian)::
+
+  .DENHES
+   DFCOEF
+
+
+keyword(RDG   )
+
+Compute the reduced density gradient :math:`\frac{1}{2(3\pi^2)^{1/3}}\frac{|\grad n(\mathbf{r})|}{n(\mathbf{r})^{4/3}}`.
+Example::
+
+  .RDG   
+   DFCOEF
+
+
+keyword(SIGNL2)
+
+Compute the signed electron density :math:`sign(\lambda_2) * n(\mathbf{r})`, where :math:`\lambda_2` is the second eigenvalue of the number density Hessian :math:`H(n(\mathbf{r}))`.
+Example::
+
+  .SIGNL2
+   DFCOEF
 
 
 keyword(ELF)
