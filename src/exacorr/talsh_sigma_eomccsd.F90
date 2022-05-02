@@ -3,7 +3,7 @@ module talsh_sigma_eomccsd
   use talsh
   use tensor_algebra
   use exacorr_datatypes
-  use talsh_common_routines, only : tensor_norm2
+  use talsh_common_routines, only : tensor_norm2, print_tensor
   use exacorr_utils,  only : print_date
 
   implicit none
@@ -74,25 +74,11 @@ module talsh_sigma_eomccsd
       logical :: debug=.true.
 
 !     test tensor
-      type(talsh_tens_t) :: test_tensor, intermd_tensor
-      complex(8), pointer :: test_tens(:,:,:,:), test_tens2(:,:,:,:) 
-      type(C_PTR):: body_p, body_p2
-      integer(INTD), dimension(4) :: test_dims, test_dims2
+      type(talsh_tens_t) :: test_tensor
 
-
-      test_dims(1) = interm_t%nvir
-      test_dims(2) = 1
-      test_dims(3) = interm_t%nocc
-      test_dims(4) = interm_t%nocc
-
-      test_dims2(1) = interm_t%nvir
-      test_dims2(2) = interm_t%nocc
-      test_dims2(3) = interm_t%nvir
-      test_dims2(4) = interm_t%nocc
 
       ierr=talsh_tensor_construct(test_tensor,C8,(/interm_t%nvir,1,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
-      ierr=talsh_tensor_get_body_access(test_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
-      call c_f_pointer(body_p,test_tens,test_dims)
+
 
 
 !***************
@@ -193,17 +179,11 @@ module talsh_sigma_eomccsd
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",test_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
       ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,m,i)",test_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
 
-      ierr=talsh_tensor_get_body_access(interm_t%w_vovo,body_p2,C8,int(0,C_INT),DEV_HOST)
-      call c_f_pointer(body_p2,test_tens2,test_dims2)
 
       norm_s = tensor_norm2(sigma2_tensor)
       if (debug) print*, "norm contraction 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      if (debug) print*, "test contraction 7 :",test_tens
-      if (debug) print*, "test size 1 w_vovo :",size(test_tens2,1)
-      if (debug) print*, "test size 2 w_vovo :",size(test_tens2,2)
-      if (debug) print*, "test size 3 w_vovo :",size(test_tens2,3)
-      if (debug) print*, "test size 4 w_vovo :",size(test_tens2,4)
-      if (debug) print*, "test w_vovo :",test_tens2
+      if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm7")
+      if (debug) call print_tensor(interm_t%w_vovo, 1.0d-10, "w_ovov")
       norm_s_prev = norm_s
 
 !--------------------------------------------------
