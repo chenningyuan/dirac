@@ -627,7 +627,7 @@ module intermediates_eom_ccsd
         print*, "debug: t2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t2_tensor)
         if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
         print*, "debug: tau2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(tau2_tensor)
-        ! ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
+        ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
 
         ierr=talsh_tensor_destruct(tau2_tensor)
         print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh_scratch)", tensor_norm2(w_vovo)
