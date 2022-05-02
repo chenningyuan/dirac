@@ -283,8 +283,8 @@
 !   w_ovvo(mb,ej) = w_voov(mb,ej) - V(mn,ej)*T1(b,n)
 !---------------------------------------------------
 
-  !  call contraction_424 ((/"o2","o3","p2","o1"/),(/"p1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
-  !           &      -1.0d0,1.0d0,nrep,RightTensor=t1)
+   call contraction_424 ((/"o2","o3","p2","o1"/),(/"p1","o3"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+            &      -1.0d0,1.0d0,nrep,RightTensor=t1)
 
 !-------------------------------------------------------------------------------------
 !  w_ovvo(mb,ej) = w_ovvo(mb,ej) - V(mn,ef)*(T2(bf,nj)+T1(f,j)*T1(b,n))
@@ -312,8 +312,8 @@
 !  w_ovvo(mb,ej) = w(mb,ej) + V(mb,ef)*t(f,j) 
 !--------------------------------------------------
 
-  ! call contraction_424 ((/"o2","p1","p2","p3"/),(/"p3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
-  !            &      1.0d0,1.0d0,nrep,RightTensor=t1)
+  call contraction_424 ((/"o2","p1","p2","p3"/),(/"p3","o1"/),(/"o2","p1","p2","o1"/),w_ovvo, &
+             &      1.0d0,1.0d0,nrep,RightTensor=t1)
 
 
  end subroutine
