@@ -42,6 +42,8 @@ module visual_cfg
    logical,      public            :: visual_cfg_london_skip_cube = .false.
    logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
+   character(len = 4), public           :: visual_cfg_out_format
+
    integer, public:: iq_gamma5   =  1
    integer, public:: iq_density  =  2
    integer, public:: iq_elf      =  3
@@ -98,6 +100,7 @@ module visual_cfg
    real(8), public:: visual_cfg_2d_p_top(3)    = 0.0d0
    integer, public:: visual_cfg_2d_nr_right    = 0
    integer, public:: visual_cfg_2d_nr_top      = 0
+   character(len = 6), public:: visual_cfg_2d_data_types(4) = [character(len = 6):: 'scalar', 'vector', 'tensor', 'flow']
 
 !                     integration in 2d
    logical, public:: visual_cfg_2d_integration             = .false.
@@ -118,6 +121,7 @@ module visual_cfg
    character(80), public:: visual_cfg_3d_gridfil
    character(80), public:: visual_cfg_3d_grid_units
    character(80), public:: visual_cfg_3d_jbfile
+   !character(len = 10), dimension(5), public:: visual_cfg_3d_data_types = (/'scalar', 'vector', 'tensor', 'cube', 'vector_vtk'/) 
 
 !                     integration in 3d
    logical, public:: visual_cfg_3d_integration = .false.
@@ -127,6 +131,7 @@ module visual_cfg
    real(8), public:: visual_cfg_line_from(3)  = 0.0d0
    real(8), public:: visual_cfg_line_to(3)    = 0.0d0
    integer, public:: visual_cfg_line_nr_steps = 0
+   !character(len = 6), dimension(3), public:: visual_cfg_line_data_types = (/'scalar', 'vector', 'tensor'/)
 
 !                                  densities for a list of points
    logical, public              :: visual_cfg_list              = .false.
@@ -138,6 +143,7 @@ module visual_cfg
    real(8), public:: visual_cfg_radial_from(3)  = 0.0d0
    integer, public:: visual_cfg_radial_nr_steps = 0
    real(8), public:: visual_cfg_radial_length   = 0
+   !character(len = 6), dimension(3), public:: visual_cfg_radial_data_types = (/'scalar', 'vector', 'tensor'/)
    
    real(8),       public:: visual_cfg_scale              = 1.0d0
    real(8),       public:: visual_cfg_cartesian_power(3) = 0.0   

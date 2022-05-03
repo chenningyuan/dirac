@@ -30,6 +30,9 @@ module visual
   use electrostatic_potential
   use num_grid_cfg
 
+  use visual_io
+  use visual_datatypes
+
   implicit none
 
   public run_visual
@@ -558,7 +561,12 @@ contains
       integer              :: nleb
       integer              :: nr_points_gridimp
       logical              :: is_open
+
+      logical              :: refactoring
+      type(visual_plot_file), allocatable:: visual_plot_files(:)
 !     --------------------------------------------------------------------------
+
+      refactoring = .true.
 
       i = 1
       if (visual_cfg_ncube(3) > 0) then
@@ -592,9 +600,16 @@ contains
       end if
 
 
+      if (refactoring) then
+         call open_plot_files(.false.,visual_plot_files)
+         !call open_plot_files(.true.,visual_plot_files)
+         call print_plot_files_info(visual_plot_files)
+      else
       lunit_2d_scalar     = 14
       lunit_2d_vector     = 15
+      lunit_2d_tensor     = 27
       lunit_2d_flow       = 16
+      end if  !if (refactoring) then
       lunit_3d_cube       = 17
       lunit_3d_scalar     = 18
       lunit_3d_vector     = 19
@@ -605,7 +620,6 @@ contains
       lunit_radial_scalar = 24
       lunit_radial_vector = 25
       lunit_3d_jbfile     = 26
-      lunit_2d_tensor     = 27
       lunit_3d_tensor     = 28
       lunit_line_tensor   = 29
       lunit_radial_tensor = 30
@@ -614,6 +628,7 @@ contains
       lunit_outfil_custom_2ndtensor = 33
 
       if (.not.visual_cfg_out_file_custom) then
+         if (.not. refactoring) then
          if (visual_cfg_2d) then
             open(lunit_2d_scalar,           &
                  file   = 'plot.2d.scalar', &
@@ -636,6 +651,7 @@ contains
                  access = 'sequential',     &
                  form   = 'formatted')
          end if
+         end if  ! if (.not. refactoring) then
          
          if (visual_cfg_3d .or. visual_cfg_3d_fast) then
             if (.not. visual_cfg_london_skip_cube) then
@@ -1491,21 +1507,25 @@ contains
       inquire(lunit_radial_tensor, opened = is_open)
       if (is_open) close(lunit_radial_tensor, status = 'keep')
 
-      is_open=.false.
-      inquire(lunit_2d_scalar, opened = is_open)
-      if (is_open) close(lunit_2d_scalar, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_2d_vector, opened = is_open)
-      if (is_open) close(lunit_2d_vector, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_2d_flow, opened = is_open)
-      if (is_open) close(lunit_2d_flow, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_2d_tensor, opened = is_open)
-      if (is_open) close(lunit_2d_tensor, status = 'keep')
+      if (refactoring) then
+         call close_plot_txt_files(visual_plot_files)
+      else
+         is_open=.false.
+         inquire(lunit_2d_scalar, opened = is_open)
+         if (is_open) close(lunit_2d_scalar, status = 'keep')
+         
+         is_open=.false.
+         inquire(lunit_2d_vector, opened = is_open)
+         if (is_open) close(lunit_2d_vector, status = 'keep')
+         
+         is_open=.false.
+         inquire(lunit_2d_flow, opened = is_open)
+         if (is_open) close(lunit_2d_flow, status = 'keep')
+         
+         is_open=.false.
+         inquire(lunit_2d_tensor, opened = is_open)
+         if (is_open) close(lunit_2d_tensor, status = 'keep')
+      end if  ! if (refactoring) then
 
       is_open=.false.
       inquire(lunit_3d_cube, opened = is_open)
