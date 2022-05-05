@@ -1169,14 +1169,14 @@ integer :: ierr
   &    LeftTensor=r1) 
 
   !test
-  ! call contraction_244 ((/"c1","o3"/),(/"o3","p2","o1","o2"/), &
-  ! &    (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
-  ! &    LeftTensor=r1) 
+  call contraction_244 ((/"c1","o3"/),(/"o3","p2","o1","o2"/), &
+  &    (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,1.0d0,nrep,RightTensor=B%W_iemn, &
+  &    LeftTensor=r1) 
 
   if (iprnt.ge.2) then
       norm_s = dot_product(sigma2,sigma2)
       write(iw,*) "diagram 4 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      ! write(iw,*) "test diagram 4 ", sigma_test
+      write(iw,*) "test diagram 4 ", sigma_test
       norm_s_prev = norm_s
   end if
 
@@ -1191,13 +1191,13 @@ integer :: ierr
 !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
 
   !test
-   call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
-   & (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
+  !  call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
+  !  & (/"c1","p2","o1","o2"/),sigma_test,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)
 
   if (iprnt.ge.2) then
       norm_s = dot_product(sigma2,sigma2)
       write(iw,*) "diagram 5 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      write(iw,*) "test diagram 5 ", sigma_test
+      ! write(iw,*) "test diagram 5 ", sigma_test
       norm_s_prev = norm_s
   end if
 
