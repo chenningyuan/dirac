@@ -2498,7 +2498,6 @@ module talsh_cc
          type(talsh_tens_t) :: s2_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
-         type(talsh_tens_t) :: one_tensor
          integer(INTD)      :: result_dims(1)
          !Tensor dimensions
          integer(C_INT)     :: one_dims(1)
@@ -2524,16 +2523,16 @@ module talsh_cc
          integer (INTD)       :: ierr
 
 !        Initialize scalars that are to be used as tensors in contractions
-         one_dims(1) = 1
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+!        one_dims(1) = 1
+!        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+!        print *,'ierr   1:',ierr
 
          result_dims = 1
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         print *,'ierr   2:',ierr
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         print *,'ierr   3:',ierr
          call c_f_pointer(body_p,result_tens,result_dims)
-
-         one_dims(1) = 1
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
          if (.not.CCD) then
             oo_dims = (/nocc, nocc/)
@@ -2542,28 +2541,45 @@ module talsh_cc
             vo_dims = (/nvir, nocc/)
 
             ierr=talsh_tensor_construct(hvo_aux_tensor,C8,vo_dims,init_val=ZERO)
+         print *,'ierr   5:',ierr
             ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
+         print *,'ierr   6:',ierr
 
             vvov_dims = (/nvir, nvir, nocc, nvir/)
             vooo_dims = (/nvir, nocc, nocc, nocc/)
 
+            ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+         print *,'ierr  b7:',ierr
+            ierr=talsh_tensor_construct(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+         print *,'ierr  c7:',ierr
             ierr=talsh_tensor_init(vvov_aux_tensor)
+         print *,'ierr  a7:',ierr
             ierr=talsh_tensor_init(vooo_aux_tensor)
+         print *,'ierr   8:',ierr
             ierr=talsh_tensor_contract("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,one_tensor)
+         print *,'ierr   9:',ierr
             ierr=talsh_tensor_contract("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,one_tensor)
+         print *,'ierr  10:',ierr
          end if
          vvoo_dims = (/nvir, nvir, nocc, nocc/)
          oovv_dims = (/nocc, nocc, nvir, nvir/)
          voov_dims = (/nvir, nocc, nocc, nvir/)
 
          ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,oovv_dims,init_val=ZERO)
+         print *,'ierr  11:',ierr
+         ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+         print *,'ierr  12:',ierr
          ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
+         print *,'ierr  13:',ierr
 
          ierr=talsh_tensor_init(vvoo_aux_tensor)
+         print *,'ierr  14:',ierr
          ierr=talsh_tensor_init(voov_aux_tensor)
+         print *,'ierr  15:',ierr
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",vvoo_aux_tensor, int_t%oovv,one_tensor)
+         print *,'ierr  16:',ierr
          ierr=talsh_tensor_contract("T(a,i,j,b)+=V(a,i,b,j)", voov_aux_tensor, int_t%vovo,one_tensor)
+         print *,'ierr  17:',ierr
 
 
          do iccsd = 1, ncycles
@@ -2579,6 +2595,7 @@ module talsh_cc
           end if
 
           ierr=talsh_tensor_init(result_tensor)
+         print *,'ierr  18:',ierr
 
           if (.not.CCD) then
             call talsh_CCSD_codegen(nocc,nvir,          &
@@ -2616,10 +2633,14 @@ module talsh_cc
 
           if (.not.CCD) then
             ierr=talsh_tensor_init(comm_t%t1)
+         print *,'ierr  18:',ierr
             ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
+         print *,'ierr  19:',ierr
           end if
           ierr=talsh_tensor_init(comm_t%t2)
+         print *,'ierr  20:',ierr
           ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
+         print *,'ierr  21:',ierr
 
 ! result_tens comes from the codegen routines
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
@@ -2650,14 +2671,22 @@ module talsh_cc
 
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(s1_tensor)
+         print *,'ierr  22:',ierr
             ierr=talsh_tensor_destruct(hvo_aux_tensor)
+         print *,'ierr  23:',ierr
             ierr=talsh_tensor_destruct(vooo_aux_tensor)
+         print *,'ierr  24:',ierr
             ierr=talsh_tensor_destruct(vvov_aux_tensor)
+         print *,'ierr  25:',ierr
          end if
          ierr=talsh_tensor_destruct(vvoo_aux_tensor)
+         print *,'ierr  26:',ierr
          ierr=talsh_tensor_destruct(voov_aux_tensor)
+         print *,'ierr  27:',ierr
          ierr=talsh_tensor_destruct(s2_tensor)
+         print *,'ierr  28:',ierr
          ierr=talsh_tensor_destruct(result_tensor)
+         print *,'ierr  29:',ierr
 
         end subroutine
 ! aspg
