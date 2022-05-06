@@ -2596,6 +2596,8 @@ module talsh_cc
           end if
 
           ierr=talsh_tensor_init(result_tensor)
+          ierr=talsh_tensor_init(s1_tensor)
+          ierr=talsh_tensor_init(s2_tensor)
 
           if (.not.CCD) then
             call talsh_CCSD_codegen(nocc,nvir,          &
