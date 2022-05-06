@@ -2559,8 +2559,8 @@ module talsh_cc
             ierr=talsh_tensor_construct(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
             ierr=talsh_tensor_init(vvov_aux_tensor)
             ierr=talsh_tensor_init(vooo_aux_tensor)
-            ierr=talsh_tensor_contract("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,one_tensor)
-            ierr=talsh_tensor_contract("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,one_tensor)
+            ierr=talsh_tensor_contract("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,one_tensor,scale=MINUS_ONE)
+            ierr=talsh_tensor_contract("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,one_tensor,scale=MINUS_ONE)
          end if
          vvoo_dims = (/nvir, nvir, nocc, nocc/)
          oovv_dims = (/nocc, nocc, nvir, nvir/)
