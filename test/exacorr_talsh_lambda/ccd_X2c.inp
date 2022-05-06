@@ -23,6 +23,8 @@ Water molecule. X2C Hamiltonian. CC energies.
 1
 .CCDOUBLES
 .LAMBDA
+.PRINT
+4
 **PROPERTIES
 .DIPOLE
 .EFG
