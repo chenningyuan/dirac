@@ -32,6 +32,7 @@ module visual
 
   use visual_io
   use visual_datatypes
+  use visual_dirac_input
 
   implicit none
 
@@ -147,7 +148,7 @@ contains
     end if
 
     write(LUPRI, '(/,2x, a)') '*** Visualisation module ***'
-    call write_visual_cfg()
+    call verify_input_keywords()
 
 !   get coefficients
 
@@ -1802,40 +1803,5 @@ contains
 
   end subroutine
 
-  subroutine write_visual_cfg()
-
-     write(lupri, *)    '--------------------------------------------------------------------------------------'
-
-     if (visual_cfg_3d) then
-        write(lupri, *) 'Visualization in 3d done with the following settings:'
-        write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
-                                                                   visual_cfg_ncube(2), &
-                                                                   visual_cfg_ncube(3) 
-        write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
-        write(lupri, *) 'Gauge origin is ', visual_cfg_gauge_origin(1), &
-                                            visual_cfg_gauge_origin(2), &
-                                            visual_cfg_gauge_origin(3)
-     end if
-     if (visual_cfg_3d_fast) then 
-        write(lupri, *) 'Visualization in 3d with fast evaluation of the molecular electrostatic potential', &
-                        ' done with the following settings:'
-        write(lupri, *) 'Number of points in x, y, z direction: ', visual_cfg_ncube(1), &
-                                                                   visual_cfg_ncube(2), &
-                                                                   visual_cfg_ncube(3) 
-        write(lupri, *) 'Space around the cube file is ', visual_cfg_add_3d
-     end if
-
-     if (visual_cfg_3d_gridimp) then
-        write(lupri, *) 'Visualization in 3d done on the grid imported from file ', visual_cfg_3d_gridfil
-     end if
-
-     if (visual_cfg_3d_readjb) then
-        write(lupri, *) 'Visualization in 3d done on the grid imported from file ', visual_cfg_3d_jbfile
-        write(lupri, *) 'And the magnetically-induced current density written on that file is used'
-     end if
-
-     write(lupri, *)    '--------------------------------------------------------------------------------------'
-
-  end subroutine
 
 end module

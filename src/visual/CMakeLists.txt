@@ -19,6 +19,7 @@ set(FREE_VISUAL_FORTRAN_SOURCES
     visual_io.F90
     visual_datatypes.F90
     visual_utils.F90
+    visual_dirac_input.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
