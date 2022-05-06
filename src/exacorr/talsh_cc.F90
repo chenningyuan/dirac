@@ -234,12 +234,18 @@ module talsh_cc
             call diis (comm_t%t2,mode=1)
          end if
 
-         if (.not.CC2) then
-            call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                cc_energy,CCD,ncycles,exa_input%print_level)
-         else if (CC2) then
-            call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                cc_energy,CCD,ncycles,exa_input%print_level)
+!        if (exa_input%automatic_kernels) then
+         if (.true.) then
+            call solve_t_equations_automatic_ccd_ccsd(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
+                                t_target_precision,cc_energy,CCD,ncycles,exa_input%print_level)
+         else
+            if (.not.CC2) then
+               call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
+                                   cc_energy,CCD,ncycles,exa_input%print_level)
+            else if (CC2) then
+               call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
+                                   cc_energy,CCD,ncycles,exa_input%print_level)
+            end if
          end if
          call print_date('-End- CC Iterations')
 
@@ -2465,5 +2471,196 @@ module talsh_cc
          ierr=talsh_tensor_destruct(scalar_tensor)
 
        end subroutine diis
+
+
+! aspg
+        subroutine solve_t_equations_automatic_ccd_ccsd(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
+                                         t_target_precision,ccsd_energy,CCD,ncycles,print_level)
+
+!        Routine for solving the t amplitude equations
+
+         complex(8), pointer :: result_tens(:)
+         type(C_PTR):: body_p
+         integer, intent(in) :: nocc, nvir
+!        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
+         type(talsh_comm_tens), intent(inout) :: comm_t
+         type(talsh_intg_tens), intent(inout) :: int_t
+!        intermediate tensors (same notation as in relccsd)
+!        temporarily using tensors with permutations required by the automatically generated code
+!        the next update to the code generator is expected to handle index permutations/conjugation 
+         type(talsh_tens_t) :: vvoo_aux_tensor
+         type(talsh_tens_t) :: voov_aux_tensor 
+         type(talsh_tens_t) :: vooo_aux_tensor 
+         type(talsh_tens_t) :: vvov_aux_tensor 
+         type(talsh_tens_t) :: hvo_aux_tensor
+!        solution tensors
+         type(talsh_tens_t) :: s1_tensor
+         type(talsh_tens_t) :: s2_tensor
+!        scalars (need to be defined as tensor types)
+         type(talsh_tens_t) :: result_tensor
+         type(talsh_tens_t) :: one_tensor
+         integer(INTD)      :: result_dims(1)
+         !Tensor dimensions
+         integer(C_INT)     :: one_dims(1)
+         !Tensor dimensions
+         integer(INTD), dimension(2) :: oo_dims
+         integer(INTD), dimension(2) :: ov_dims
+         integer(INTD), dimension(2) :: vo_dims
+         integer(INTD), dimension(4) :: vvoo_dims
+         integer(INTD), dimension(4) :: ovoo_dims
+         integer(INTD), dimension(4) :: oovv_dims
+         integer(INTD), dimension(4) :: voov_dims
+         integer(INTD), dimension(4) :: vvov_dims
+         integer(INTD), dimension(4) :: vooo_dims
+         !Orbital energies for scaling
+         real(8), intent(in)   :: eps_occ(:), eps_vir(:)
+         integer :: iccsd
+         integer, intent(in) :: ncycles
+         real(8), intent(in) :: t_target_precision
+         real(8) :: t_convergence
+         real(8), intent(out) :: ccsd_energy
+         logical, intent(in)  :: CCD
+         integer, intent(in)  :: print_level
+         integer (INTD)       :: ierr
+
+!        Initialize scalars that are to be used as tensors in contractions
+         one_dims(1) = 1
+         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+         result_dims = 1
+         ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,result_tens,result_dims)
+
+         one_dims(1) = 1
+         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+         if (.not.CCD) then
+            oo_dims = (/nocc, nocc/)
+            vo_dims = (/nvir, nocc/)
+            ov_dims = (/nocc, nvir/)
+            vo_dims = (/nvir, nocc/)
+
+            ierr=talsh_tensor_construct(hvo_aux_tensor,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
+
+            vvov_dims = (/nvir, nvir, nocc, nvir/)
+            vooo_dims = (/nvir, nocc, nocc, nocc/)
+
+            ierr=talsh_tensor_init(vvov_aux_tensor)
+            ierr=talsh_tensor_init(vooo_aux_tensor)
+            ierr=talsh_tensor_contract("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,one_tensor)
+            ierr=talsh_tensor_contract("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,one_tensor)
+         end if
+         vvoo_dims = (/nvir, nvir, nocc, nocc/)
+         oovv_dims = (/nocc, nocc, nvir, nvir/)
+         voov_dims = (/nvir, nocc, nocc, nvir/)
+
+         ierr=talsh_tensor_construct(s2_tensor,C8,vvoo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,oovv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
+
+         ierr=talsh_tensor_init(vvoo_aux_tensor)
+         ierr=talsh_tensor_init(voov_aux_tensor)
+         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",vvoo_aux_tensor, int_t%oovv,one_tensor)
+         ierr=talsh_tensor_contract("T(a,i,j,b)+=V(a,i,b,j)", voov_aux_tensor, int_t%vovo,one_tensor)
+
+
+         do iccsd = 1, ncycles
+
+          if (print_level.gt.6) then
+            if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
+            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
+          end if
+
+          if (ierr.ne.TALSH_SUCCESS) then
+             write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
+             return
+          end if
+
+          ierr=talsh_tensor_init(result_tensor)
+
+          if (.not.CCD) then
+            call talsh_CCSD_codegen(nocc,nvir,          &
+                                    int_t%oovv,         &   ! H24 OOVV 
+                                    comm_t%t1,          &   ! S43 VO
+                                    comm_t%fov,         &   ! H15 OV
+                                    comm_t%t2,          &   ! S44 VVOO
+                                    hvo_aux_tensor,     &   ! H2  VO
+                                    comm_t%fvv,         &   ! H1  VV
+                                    int_t%vovv,         &   ! H17 VOVV
+                                    voov_aux_tensor,    &   ! H18 VOOV
+                                    int_t%ooov,         &   ! H25 OOOV
+                                    comm_t%foo,         &   ! H16 OO
+                                    vvoo_aux_tensor,    &   ! H5  VVOO
+                                    int_t%vvvv,         &   ! H3  VVVV
+                                    vooo_aux_tensor,    &   ! H19 VOOO
+                                    vvov_aux_tensor,    &   ! H4  VVOV
+                                    int_t%oooo,         &   ! H26 OOOO
+                                    result_tensor,      &   ! Z48 UnitTensor
+                                    s1_tensor,          &   ! Z49 VO
+                                    s2_tensor)              ! Z50 VVOO
+          else
+            call talsh_CCD_codegen_call(nocc,nvir,      &
+                                        comm_t%t2,      &   ! S23 
+                                        int_t%oovv,     &   ! H13   OOVV
+                                        vvoo_aux_tensor,&   ! H3    VVOO
+                                        int_t%vvvv,     &   ! H2    VVVV
+                                        int_t%oooo,     &   ! H14   OOOO 
+                                        comm_t%fvv,     &   ! H1    VV
+                                        comm_t%foo,     &   ! H9    OO
+                                        voov_aux_tensor,&   ! H10   VOOV
+                                        result_tensor,  &   ! Z26   unit tensor
+                                        s2_tensor)          ! Z27   VVOO
+          end if
+
+          if (.not.CCD) then
+            ierr=talsh_tensor_init(comm_t%t1)
+            ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
+          end if
+          ierr=talsh_tensor_init(comm_t%t2)
+          ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
+
+! result_tens comes from the codegen routines
+          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
+
+          if (.not.CCD) then
+            call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
+          else
+            call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
+          end if
+
+          if (.not.CCD) then
+            call diis (comm_t%t2,comm_t%t1,t_convergence=t_convergence)
+          else
+            call diis (comm_t%t2,t_convergence=t_convergence)
+          end if
+
+          call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
+          if (t_convergence .lt. t_target_precision) exit
+
+         end do
+
+         write(*,*) "-----------------------------------------------"
+         write(*,*) ""
+
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
+         write(*,*) ""
+
+
+         if (.not.CCD) then
+            ierr=talsh_tensor_destruct(s1_tensor)
+            ierr=talsh_tensor_destruct(hvo_aux_tensor)
+            ierr=talsh_tensor_destruct(vooo_aux_tensor)
+            ierr=talsh_tensor_destruct(vvov_aux_tensor)
+         end if
+         ierr=talsh_tensor_destruct(vvoo_aux_tensor)
+         ierr=talsh_tensor_destruct(voov_aux_tensor)
+         ierr=talsh_tensor_destruct(s2_tensor)
+         ierr=talsh_tensor_destruct(result_tensor)
+
+        end subroutine
+! aspg
+
 
 end module talsh_cc
