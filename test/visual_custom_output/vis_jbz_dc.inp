@@ -18,6 +18,10 @@
 2 2 2
 .OUTFIL
 
-vector_field
+vector_field.txt
 
+#.PLTFMT
+#txt
+#.PLTTXT
+#3D vector vector_field.txt
 *END OF

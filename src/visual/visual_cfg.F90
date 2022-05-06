@@ -42,7 +42,23 @@ module visual_cfg
    logical,      public            :: visual_cfg_london_skip_cube = .false.
    logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
-   character(len = 4), public           :: visual_cfg_out_format
+
+!  options for plot files
+   logical,      public                     :: visual_cfg_plot_file_custom = .false.
+
+   character(len = :), allocatable, public  :: visual_cfg_plot_file_format
+   character(len = 4), public               :: visual_cfg_plot_file_formats(2) = [character(len = 4):: 'txt', 'hdf5']
+
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_customname
+
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_manifold
+   character(len = 6), public               :: visual_cfg_txt_plot_file_manifolds(4) = &
+                                               [character(len = 6):: '2D', '3D', 'line', 'radial']
+
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_datatype
+   character(len = 6), public               :: visual_cfg_txt_plot_file_datatypes(4) = &
+                                               [character(len = 6):: 'scalar', 'vector', 'tensor', 'flow']
+
 
    integer, public:: iq_gamma5   =  1
    integer, public:: iq_density  =  2

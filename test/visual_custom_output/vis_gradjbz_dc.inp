@@ -19,5 +19,9 @@
 .OUTFIL
 
 
-tensor_field
+tensor_field.txt
+#.PLTFMT
+#txt
+#.PLTTXT
+#3D tensor tensor_field.txt
 *END OF

@@ -16,7 +16,11 @@
 .NOCUBE
 .NOVTK
 .OUTFIL
-scalar_field
+scalar_field.txt
 
 
+#.PLTFMT
+#txt
+#.PLTTXT
+#3D scalar scalar_field.txt
 *END OF

@@ -601,6 +601,7 @@
          visual_cfg_add_grid_points_grad_ed_scaled = .true.
       end if
 
+!will be removed:
       if (kw_matches(word, '.OUTFIL')) then
          visual_cfg_out_file_custom = .true.
 !        file for scalar field
@@ -631,6 +632,22 @@
          visual_cfg_london_skip_vtk   = .true.
       end if
 
+      if (kw_matches(word, '.PLTFMT')) then
+         call kw_read(word, visual_cfg_plot_file_format)
+      end if
+
+      if (kw_matches(word, '.PLTTXT')) then
+         read(get_file_unit(), '(a)') line
+         nr_words = word_count(line)
+         allocate(word_array(nr_words))
+         read(line, *) (word_array(j), j = 1, nr_words)
+         visual_cfg_txt_plot_file_manifold = trim(word_array(1))
+         visual_cfg_txt_plot_file_datatype = trim(word_array(2))
+         if (nr_words == 3) then 
+            visual_cfg_txt_plot_file_customname = trim(word_array(3))
+         end if
+         deallocate(word_array)
+      end if
 
       call check_whether_kw_found(word, kw_section)
 
