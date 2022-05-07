@@ -234,8 +234,7 @@ module talsh_cc
             call diis (comm_t%t2,mode=1)
          end if
 
-!        if (exa_input%automatic_kernels) then
-         if (.true.) then
+         if (exa_input%auto_kernels) then
             call solve_t_equations_automatic_ccd_ccsd(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
                                 t_target_precision,cc_energy,CCD,ncycles,exa_input%print_level)
          else
@@ -2538,6 +2537,10 @@ module talsh_cc
 !        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 !        print *,'ierr   1:',ierr
 
+         print *,''
+         print *,'CCD/CCSD implementation with automatically generated residual equations'
+         print *,''
+
          result_dims = 1
          ierr=talsh_tensor_construct(result_tensor,C8,result_dims(1:0),init_val=ZERO)
          ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
@@ -2577,12 +2580,9 @@ module talsh_cc
 
          do iccsd = 1, ncycles
 
-          call get_tau(comm_t,CCD)
-
           if (print_level.gt.2) then
             if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-            write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
           end if
 
           if (print_level.gt.2) then
@@ -2637,9 +2637,6 @@ module talsh_cc
             if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
             write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
           end if
-! result_tens comes from the codegen routines
-!         ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
-          print *,' >>> debug, from result_tens',result_tens(1)
 
 !         prepare for next iteration
           if (.not.CCD) then
@@ -2661,20 +2658,8 @@ module talsh_cc
             call diis (comm_t%t2,t_convergence=t_convergence)
           end if
 
-          if (.not.CCD) then
-            ierr=talsh_tensor_init(result_tensor)
-            ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
-            ccsd_energy=result_tens(1)
-          else
-            ccsd_energy = 0.D0
-          end if
-
-!         Update tau
-          call get_tau(comm_t,CCD)
-
-          ierr=talsh_tensor_init(result_tensor)
-          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
-          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
+! coming from Z26/Z48
+          ccsd_energy = result_tens(1)
 
           call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
           if (t_convergence .lt. t_target_precision) exit

@@ -8,11 +8,11 @@ if(ENABLE_EXATENSOR)
   )
 
   set(FREE_EXACORR_FORTRAN_SOURCES
-   auto_ccd_spinor.F90
-   auto_ccsd_spinor.F90
-   auto_ccsdt_spinor.F90
-   auto_ccsdtq_spinor.F90
-   auto_ccsdtq5_spinor.F90
+   talsh_auto_ccd_spinor.F90
+   talsh_auto_ccsd_spinor.F90
+   talsh_auto_ccsdt_spinor.F90
+#  talsh_auto_ccsdtq_spinor.F90
+#  talsh_auto_ccsdtq5_spinor.F90
    exacorr_main.F90
    exacorr_datatypes.F90
    exacorr_global.F90

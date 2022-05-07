@@ -43,6 +43,7 @@
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
+            logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh

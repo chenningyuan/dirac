@@ -935,6 +935,10 @@
          exa_input%talsh = .false.
       end if
 
+      if (kw_matches(word, '.AUTOKERNELS')) then
+         exa_input%auto_kernels = .true.
+      end if
+
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
       end if
