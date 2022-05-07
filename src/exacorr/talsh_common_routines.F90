@@ -29,20 +29,23 @@ module talsh_common_routines
 
     contains
 
-      subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor,eps_ijk)
+      subroutine scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor,t2_tensor,t3_tensor,full_t3_tensor,full_t4_tensor,eps_ijk)
 
        type(talsh_tens_t), optional, intent(inout)  :: t1_tensor, t2_tensor, t3_tensor
+       type(talsh_tens_t), optional, intent(inout)  :: full_t3_tensor, full_t4_tensor
        real(8), intent(in)                          :: eps_occ(:),eps_vir(:)
        real(8), intent(in), optional                :: eps_ijk
 
        real(8)  :: denominator
        complex(8), pointer, contiguous:: t1_tens(:,:), t2_tens(:,:,:,:), t3_tens(:,:,:)
+       complex(8), pointer, contiguous:: full_t3_tens(:,:,:,:,:,:), full_t4_tens(:,:,:,:,:,:,:,:)
        type(C_PTR):: body_p
 
        integer(INTD) :: t1_dims(1:2), t2_dims(1:4), t3_dims(1:3)
+       integer(INTD) :: full_t3_dims(1:6), full_t4_dims(1:8)
 
        integer(INTD) :: ierr, tens_rank
-       integer       :: a, b, c, i, j
+       integer       :: a, b, c, d, i, j, k, l
 
        integer, optional, intent(in) :: nocc
 
@@ -106,6 +109,108 @@ module talsh_common_routines
                end do
              end do
            end do
+          end if
+
+       end if
+
+       if (present(full_t3_tensor)) then
+
+          ierr = talsh_tensor_dimensions(full_t3_tensor,tens_rank,full_t3_dims)
+          if (ierr.ne.0 .or. tens_rank.ne.6) stop 'program error: full t3 tensor corrupted'
+          ierr=talsh_tensor_get_body_access(full_t3_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,full_t3_tens,full_t3_dims(1:6)) 
+
+          if (full_t3_dims(4) .eq. nocc) then
+            !t amplitudes
+            do k = 1, full_t3_dims(6)
+              do j = 1, full_t3_dims(5)
+                do i = 1, full_t3_dims(4)
+                  do c = 1, full_t3_dims(3)
+                    do b = 1, full_t3_dims(2)
+                      do a = 1, full_t3_dims(1)
+                        denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) 
+                        denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c)
+                        full_t3_tens(a,b,c,i,j,k) = full_t3_tens(a,b,c,i,j,k) / denominator
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          else
+            !Lambda
+            do i = 1, full_t3_dims(1)
+              do j = 1, full_t3_dims(2)
+                do k = 1, full_t3_dims(3)
+                  do a = 1, full_t3_dims(4)
+                    do b = 1, full_t3_dims(5)
+                      do c = 1, full_t3_dims(6)
+                        denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) 
+                        denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c)
+                        full_t3_tens(i,j,k,a,b,c) = full_t3_tens(i,j,k,a,b,c) / denominator
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          end if
+
+       end if
+
+       if (present(full_t4_tensor)) then
+
+          ierr = talsh_tensor_dimensions(full_t4_tensor,tens_rank,full_t4_dims)
+          if (ierr.ne.0 .or. tens_rank.ne.8) stop 'program error: full t4 tensor corrupted'
+          ierr=talsh_tensor_get_body_access(full_t4_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+          call c_f_pointer(body_p,full_t4_tens,full_t4_dims(1:8))
+
+          if (full_t4_dims(5) .eq. nocc) then
+            !t amplitudes
+            do l = 1, full_t4_dims(8)
+              do k = 1, full_t4_dims(7)
+                do j = 1, full_t4_dims(6)
+                  do i = 1, full_t4_dims(5)
+                    do d = 1, full_t4_dims(4)
+                      do c = 1, full_t4_dims(3)
+                        do b = 1, full_t4_dims(2)
+                          do a = 1, full_t4_dims(1)
+                            denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) + eps_occ(l) 
+                            denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c) - eps_vir(d)
+                            full_t4_tens(a,b,c,d,i,j,k,l) = full_t4_tens(a,b,c,d,i,j,k,l) / denominator
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
+          else
+            !Lambda
+            do i = 1, full_t3_dims(1)
+              do j = 1, full_t3_dims(2)
+                do k = 1, full_t3_dims(3)
+                  do l = 1, full_t3_dims(4)
+                    do a = 1, full_t3_dims(5)
+                      do b = 1, full_t3_dims(6)
+                        do c = 1, full_t3_dims(7)
+                          do d = 1, full_t3_dims(8)
+                            denominator = eps_occ(i) + eps_occ(j) + eps_occ(k) + eps_occ(l) 
+                            denominator = denominator - eps_vir(a) - eps_vir(b) - eps_vir(c) - eps_vir(d)
+                            full_t4_tens(i,j,k,l,a,b,c,d) = full_t4_tens(i,j,k,l,a,b,c,d) / denominator
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+
           end if
 
        end if
@@ -704,7 +809,7 @@ module talsh_common_routines
 
          type(talsh_tens_t), intent(inout):: a_tensor
 
-         integer(INTD) :: a_dims(1:4)
+         integer(INTD) :: a_dims(1:8)
          integer(INTD) :: ierr, a_rank
 
 !        scalars (need to be defined as tensor types)
@@ -732,6 +837,14 @@ module talsh_common_routines
             ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
          case (4)
             ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
+         case (5)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t)*A(p,q,r,s,t)",result_tensor,a_tensor,a_tensor)
+         case (6)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u)*A(p,q,r,s,t,u)",result_tensor,a_tensor,a_tensor)
+         case (7)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v)*A(p,q,r,s,t,u,v)",result_tensor,a_tensor,a_tensor)
+         case (8)
+            ierr=talsh_tensor_contract("R()+=A+(p,q,r,s,t,u,v,x)*A(p,q,r,s,t,u,v,x)",result_tensor,a_tensor,a_tensor)
          case default
             call quit ('wrong dimension in tensor_norm2')
          end select

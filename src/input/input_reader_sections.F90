@@ -941,6 +941,24 @@
 
       if (kw_matches(word, '.CCDOUBLES')) then
          exa_input%ccd = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 20
+      end if
+
+      if (kw_matches(word, '.ITLEVEL')) then
+         call kw_read(word, exa_input%iterative_level)
+      end if
+
+      if (kw_matches(word, '.ITSCHEME')) then
+         call kw_read(word, exa_input%iterative_scheme)
+      end if
+
+      if (kw_matches(word, '.PTLEVEL')) then
+         call kw_read(word, exa_input%perturbative_level)
+      end if
+
+      if (kw_matches(word, '.PTSCHEME')) then
+         call kw_read(word, exa_input%perturbative_scheme)
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
@@ -959,6 +977,33 @@
 
       if (kw_matches(word, '.CC2         ')) then
          exa_input%cc2 = .true.
+         exa_input%iterative_level  = 2
+         exa_input%iterative_scheme = 22
+      end if
+
+      if (kw_matches(word, '.CCSDfullTQ')) then 
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 40
+      end if
+
+      if (kw_matches(word, '.CCSDfullT')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 30
+      end if
+
+      if (kw_matches(word, '.CCSDT1A')) then
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 33
+      end if
+
+      if (kw_matches(word, '.CCSDT1A')) then
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 32
+      end if
+
+      if (kw_matches(word, '.CCSDT1')) then 
+         exa_input%iterative_level  = 3
+         exa_input%iterative_scheme = 31
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
@@ -975,6 +1020,14 @@
 
       if (kw_matches(word, '.LAMBDA')) then
          exa_input%lambda = .true.
+      end if
+
+      if (kw_matches(word, '.NOITERT')) then
+         exa_input%do_iterative = .false.
+      end if
+
+      if (kw_matches(word, '.NOPERTT')) then
+         exa_input%do_perturbative = .false.
       end if
 
       if (kw_matches(word, '.DONATORB')) then

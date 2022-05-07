@@ -112,7 +112,7 @@ module exacorr_utils
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A,L1)') " - Solve CCD equations :                ", exa_input%ccd
       write(*,'(A,L1)') " - Solve Lambda equations :             ", exa_input%lambda
-      write(*,'(A,L1)') " - Compute perturbative Triples :       ", exa_input%do_triples
+      write(*,'(A,L1)') " - Compute perturbative corrections :   ", exa_input%do_perturbative
       write(*,'(A,I5)') " - Integral transformation scheme : ", exa_input%moint_scheme
       write(*,'(A,I5)') " - Maximum number of cycles :       ", exa_input%ncycles
       write(*,'(A,ES10.1)') " - Target precision of amplitudes :  ", exa_input%t_econv
