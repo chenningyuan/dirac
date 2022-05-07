@@ -3307,7 +3307,7 @@ module talsh_cc
 
          if (CCSDT) then
             vvvooo_dims = (/nvir, nvir, nvir, nocc, nocc, nocc/)
-            ierr=talsh_tensor_construct(s2_tensor,C8,vvvooo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
          end if
 
          do iccsd = 1, ncycles
