@@ -15,7 +15,8 @@ module talsh_cc
                                  ONE_HALF=(0.5D0,0.D0), ONE_QUARTER=(0.25D0,0.D0),                    &
                                  ONE_TWELFTH=(1.D0,0.D0)/12, MINUS_ONE_HALF=(-0.5D0,0.D0),            &
                                  MINUS_ONE_QUARTER=(-0.25D0,0.D0), MINUS_ONE_TWELFTH=(-1.D0,0.D0)/12
-        real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0
+        real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0, ONE_SIXTH_R=(1.D0/6.D0),     &
+                                 ONE_36_R=(1.D0/36.D0)
 
         type(talsh_tens_t) :: one_tensor
 
@@ -267,7 +268,9 @@ module talsh_cc
          call print_date('-Start- CC Iterations')
 
          if (.not.CCD) then
-            if (CCSDT) then
+            if (CCSDTQ) then
+               call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+            else if (CCSDT) then
                call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
             else
                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
@@ -277,8 +280,8 @@ module talsh_cc
          end if
 
          if (exa_input%auto_kernels) then
-            call solve_t_equations_automatic_ccd_ccsd_ccsdt(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
-                                t_target_precision,cc_energy,CCD,CCSDT,ncycles,exa_input%print_level)
+            call solve_t_equations_automatic_ccd_ccsd_ccsdt_ccsdtq(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
+                                t_target_precision,cc_energy,CCD,CCSDT,CCSDTQ,ncycles,exa_input%print_level)
          else
             if (.not.CC2) then
                call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
@@ -3208,8 +3211,8 @@ module talsh_cc
 
 
 ! aspg
-        subroutine solve_t_equations_automatic_ccd_ccsd_ccsdt(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
-                                         t_target_precision,ccsd_energy,CCD,CCSDT,ncycles,print_level)
+        subroutine solve_t_equations_automatic_ccd_ccsd_ccsdt_ccsdtq(comm_t,int_t,nocc,nvir,eps_occ,eps_vir, &
+                                         t_target_precision,ccsd_energy,CCD,CCSDT,CCSDTQ,ncycles,print_level)
 
 !        Routine for solving the t amplitude equations
 
@@ -3231,6 +3234,7 @@ module talsh_cc
          type(talsh_tens_t) :: s1_tensor
          type(talsh_tens_t) :: s2_tensor
          type(talsh_tens_t) :: s3_tensor
+         type(talsh_tens_t) :: s4_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
          integer(INTD)      :: result_dims(1)
@@ -3247,6 +3251,7 @@ module talsh_cc
          integer(INTD), dimension(4) :: vvov_dims
          integer(INTD), dimension(4) :: vooo_dims
          integer(INTD), dimension(6) :: vvvooo_dims
+         integer(INTD), dimension(8) :: vvvvoooo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd
@@ -3256,6 +3261,7 @@ module talsh_cc
          real(8), intent(out) :: ccsd_energy
          logical, intent(in)  :: CCD
          logical, intent(in)  :: CCSDT
+         logical, intent(in)  :: CCSDTQ
          integer, intent(in)  :: print_level
          integer (INTD)       :: ierr
 
@@ -3265,7 +3271,7 @@ module talsh_cc
 !        print *,'ierr   1:',ierr
 
          print *,''
-         print *,'CCD/CCSD implementation with automatically generated residual equations'
+         print *,'CCD/CCSD/CCSDT/CCSDTQ implementation with automatically generated residual equations'
          print *,''
 
          result_dims = 1
@@ -3305,23 +3311,35 @@ module talsh_cc
          ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",vvoo_aux_tensor, int_t%oovv,one_tensor)
          ierr=talsh_tensor_contract("T(a,i,j,b)+=V(a,i,b,j)", voov_aux_tensor, int_t%vovo,one_tensor,scale=MINUS_ONE)
 
-         if (CCSDT) then
+         if (CCSDT.or.CCSDTQ) then
             vvvooo_dims = (/nvir, nvir, nvir, nocc, nocc, nocc/)
             ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
          end if
 
+         if (CCSDTQ) then
+            vvvvoooo_dims = (/nvir, nvir, nvir, nvir, nocc, nocc, nocc, nocc/)
+            ierr=talsh_tensor_construct(s4_tensor,C8,vvvvoooo_dims,init_val=ZERO)
+         end if
+
          do iccsd = 1, ncycles
 
-          if (print_level.gt.2) then
-            if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
-            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
-            if (CCSDT) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
+!         if (print_level.gt.2) then
+          if (.true.) then
+            if (.not.CCD) then 
+               write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
+               if (CCSDT.or.CCSDTQ) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
+               if (CCSDTQ) write(*,*) "t4    = ",tensor_norm2(comm_t%t4)
+            end if
+            write(*,*) "t2    = ",tensor_norm2(comm_t%t2)
           end if
 
           if (print_level.gt.2) then
-            if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
-            write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
-            if (CCSDT) write(*,*) "s3    = ",tensor_norm2(s3_tensor)
+            if (.not.CCD) then
+               write(*,*) "s1    = ",tensor_norm2(s1_tensor)
+               if (CCSDT.or.CCSDTQ) write(*,*) "s3    = ",tensor_norm2(s3_tensor)
+               if (CCSDTQ) write(*,*) "s4    = ",tensor_norm2(s4_tensor)
+            end if
+            write(*,*) "s2    = ",tensor_norm2(s2_tensor)
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -3330,11 +3348,14 @@ module talsh_cc
           end if
 
           ierr=talsh_tensor_init(result_tensor)
-          if (.not.CCD) ierr=talsh_tensor_init(s1_tensor)
+          if (.not.CCD) then
+             ierr=talsh_tensor_init(s1_tensor)
+             if (CCSDT.or.CCSDTQ) ierr=talsh_tensor_init(s3_tensor)
+             if (CCSDTQ) ierr=talsh_tensor_init(s4_tensor)
+          end if
           ierr=talsh_tensor_init(s2_tensor)
-          if (CCSDT) ierr=talsh_tensor_init(s3_tensor)
 
-          if (.not.CCD.and..not.CCSDT) then
+          if (.not.CCD.and..not.CCSDT.and..not.CCSDTQ) then
             call talsh_CCSD_codegen(nocc,nvir,          &
                                     int_t%oovv,         &   ! H24 OOVV 
                                     comm_t%t1,          &   ! S43 VO
@@ -3354,7 +3375,7 @@ module talsh_cc
                                     result_tensor,      &   ! Z48 UnitTensor
                                     s1_tensor,          &   ! Z49 VO
                                     s2_tensor)              ! Z50 VVOO
-          else if (CCD.and..not.CCSDT) then
+          else if (CCD.and..not.CCSDT.and..not.CCSDTQ) then
             call talsh_CCD_codegen_call(nocc,nvir,      &
                                         comm_t%t2,      &   ! S23 
                                         int_t%oovv,     &   ! H13   OOVV
@@ -3366,7 +3387,7 @@ module talsh_cc
                                         voov_aux_tensor,&   ! H10   VOOV
                                         result_tensor,  &   ! Z26   unit tensor
                                         s2_tensor)          ! Z27   VVOO
-          else if (CCSDT.and..not.CCD) then
+          else if (CCSDT.and..not.CCD.and..not.CCSDTQ) then
              call talsh_CCSDT_codegen_call(nocc,nvir,          &
                                            int_t%oovv,     &  !  OOVV
                                            comm_t%t1,      &  !  VO
@@ -3384,31 +3405,68 @@ module talsh_cc
                                            vooo_aux_tensor,&  !  VOOO
                                            vvov_aux_tensor, &  !  VVOV
                                            int_t%oooo,     &  !  OOOO
-                                           result_tens,    &  !  UnitTensor
+                                           result_tensor,  &  !  UnitTensor
                                            s1_tensor,      &  !  VO
                                            s2_tensor,      &  !  VVOO
                                            s3_tensor)         !  VVVOOO
+          else if (CCSDTQ.and..not.CCD.and..not.CCSDT) then
+             call talsh_CCSDTQ_codegen_call(nocc,nvir,     &
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor, &  !  VO
+                                           comm_t%fvv,     &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor,&  !  VVOO
+                                           int_t%vvvv,     &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor,&  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           comm_t%t4,      &  !  VVVVOOOO
+                                           result_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor,      &  !  VVVOOO
+                                           s4_tensor)         !  VVVVOOOO
+ 
           end if
 
-          if (print_level.gt.2) then
-            if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
-            write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
+!         if (print_level.gt.2) then
+          if (.true.) then
+            if (.not.CCD) then
+               write(*,*) "s1    = ",tensor_norm2(s1_tensor)
+               if (CCSDT.or.CCSDTQ)  write(*,*) "s3    = ",tensor_norm2(s3_tensor)
+               if (CCSDTQ)  write(*,*) "s4    = ",tensor_norm2(s4_tensor)
+            end if
+            write(*,*) "s2    = ",tensor_norm2(s2_tensor)
           end if
 
 !         prepare for next iteration
           if (.not.CCD) then
-            ierr=talsh_tensor_init(comm_t%t1)
-            ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
+             ierr=talsh_tensor_init(comm_t%t1)
+             ierr=talsh_tensor_add("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
+             if (CCSDT.or.CCSDTQ) then
+                ierr=talsh_tensor_init(comm_t%t3)
+                ierr=talsh_tensor_add("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)",comm_t%t3,s3_tensor)
+             end if
+             if (CCSDTQ) then
+                ierr=talsh_tensor_init(comm_t%t4)
+                ierr=talsh_tensor_add("T4(a,b,c,d,i,j,k,l)+=S4(a,b,c,d,i,j,k,l)",comm_t%t4,s4_tensor)
+             end if
           end if
           ierr=talsh_tensor_init(comm_t%t2)
           ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
-          if (CCSDT) then
-             ierr=talsh_tensor_init(comm_t%t3)
-             ierr=talsh_tensor_add("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)",comm_t%t3,s3_tensor)
-          end if
 
           if (.not.CCD) then
-            if (CCSDT) then
+            if (CCSDTQ) then
+               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
+              &               t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3,full_t4_tensor=comm_t%t4)
+            else if (CCSDT) then
                call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
               &               t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3)
             else
@@ -3419,7 +3477,10 @@ module talsh_cc
           end if
 
           if (.not.CCD) then
-            if (CCSDT) then
+            if (CCSDTQ) then
+               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
+                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
+            else if (CCSDT) then
                call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
                         & t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else 
@@ -3431,6 +3492,26 @@ module talsh_cc
 
 ! coming from Z26/Z48/Z52
           ccsd_energy = result_tens(1)
+          print *,'debug auto:',ccsd_energy
+
+!!aspg, checking energy calculation/printout
+          if (.true.) then
+          if (.not.CCD) then
+            ierr=talsh_tensor_init(result_tensor)
+            ierr=talsh_tensor_contract("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
+            ccsd_energy=result_tens(1)
+          else
+            ccsd_energy = 0.D0
+          end if
+
+!         Update tau
+          call get_tau(comm_t,CCD)
+
+          ierr=talsh_tensor_init(result_tensor)
+          ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
+          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
+          endif
+!!aspg, checking energy calculation/printout
 
           call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
           if (t_convergence .lt. t_target_precision) exit
@@ -3449,7 +3530,8 @@ module talsh_cc
             ierr=talsh_tensor_destruct(hvo_aux_tensor)
             ierr=talsh_tensor_destruct(vooo_aux_tensor)
             ierr=talsh_tensor_destruct(vvov_aux_tensor)
-            if (CCSDT) ierr=talsh_tensor_destruct(s3_tensor)
+            if (CCSDT.or.CCSDTQ) ierr=talsh_tensor_destruct(s3_tensor)
+            if (CCSDTQ) ierr=talsh_tensor_destruct(s4_tensor)
          end if
          ierr=talsh_tensor_destruct(vvoo_aux_tensor)
          ierr=talsh_tensor_destruct(voov_aux_tensor)

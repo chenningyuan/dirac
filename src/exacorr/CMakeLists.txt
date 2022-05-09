@@ -11,7 +11,7 @@ if(ENABLE_EXATENSOR)
    talsh_auto_ccd_spinor.F90
    talsh_auto_ccsd_spinor.F90
    talsh_auto_ccsdt_spinor.F90
-#  talsh_auto_ccsdtq_spinor.F90
+   talsh_auto_ccsdtq_spinor.F90
 #  talsh_auto_ccsdtq5_spinor.F90
    exacorr_main.F90
    exacorr_datatypes.F90
