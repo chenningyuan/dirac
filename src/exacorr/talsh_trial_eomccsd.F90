@@ -201,10 +201,10 @@ module talsh_trial_eomccsd
                                                            i1,workspace%tens2_dims(3), &
                                                            j1,workspace%tens2_dims(4))
                           if (j1.gt.i1) then
-                             trial2_h_p_tens(a1,b1,j1,i1) = ONE
+                             trial2_h_p_tens(a1,b1,j1,i1) = ONE*(2.0**(-0.5))
                         !   else if (j1.lt.i1) then
                            !   trial2_h_p_tens(a1,b1,j1,i1) = MINUS_ONE
-                             trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE !XY
+                             trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE*(2.0**(-0.5)) !XY
                         !   else
                         !    trial2_h_p_tens(a1,b1,j1,i1) =ZERO
                           end if
