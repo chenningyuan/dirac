@@ -171,20 +171,20 @@ module talsh_sigma_eomccsd
 !     term 4: S2(a,X,i,j) -= P(i,j) W(m,a,i,e) * R2(e,X,m,j) |
 !-------------------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",sigma2_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)!Used
+      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",sigma2_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)!Used
       ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,m,i)",sigma2_tensor,interm_t%w_vovo,r2_tensor)
 
-      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,i,m)",sigma2_tensor,interm_t%w_vovo,r2_tensor)!XY
+      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,i,m)",sigma2_tensor,interm_t%w_vovo,r2_tensor)!XY
 
 
       ! Test
-      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",test_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
-      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,i,m)",test_tensor,interm_t%w_vovo,r2_tensor)
+      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,i)*R(e,X,j,m)",test_tensor,interm_t%w_vovo,r2_tensor,scale=MINUS_ONE)
+      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(a,m,e,j)*R(e,X,i,m)",test_tensor,interm_t%w_vovo,r2_tensor)
 
 
       norm_s = tensor_norm2(sigma2_tensor)
       if (debug) print*, "norm contraction 7 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm7")
+      ! if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm7")
       ! if (debug) call print_tensor(interm_t%w_vovo, 1.0d-10, "w_ovov")
       norm_s_prev = norm_s
 
@@ -192,13 +192,13 @@ module talsh_sigma_eomccsd
 !     term 5: S2(a,X,i,j) += F(a,e) * R2(e,X,i,j) |
 !--------------------------------------------------
 
-      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=F(a,e)*R(e,X,i,j)",sigma2_tensor,interm_t%fbar_vv,r2_tensor)
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=F(a,e)*R(e,X,i,j)",sigma2_tensor,interm_t%fbar_vv,r2_tensor)
 
       ! Test
-      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=F(a,e)*R(e,X,i,j)",test_tensor,interm_t%fbar_vv,r2_tensor)
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=F(a,e)*R(e,X,i,j)",test_tensor,interm_t%fbar_vv,r2_tensor)
       norm_s = tensor_norm2(sigma2_tensor)
       if (debug) print*, "norm contraction 8 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      ! if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm8")
+      if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm8")
       norm_s_prev = norm_s
 
 
