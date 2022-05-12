@@ -2285,7 +2285,7 @@ C
          CALL TITLER(
      &      'ESR hyperfine coupling constants for '//NAME//':','=',1)
 C
-         WRITE (LUPRI,'(A,I5//A,F20.2,A)')
+         WRITE (LUPRI,'(A,I5//A,F20.5,A)')
      &   '  Isotope number:',NINT(RATINF(1,L)),
      &   '  Isotropic hyperfine coupling constant',AVETOTX, ' MHz'
          IF (IPRINT .GT. 0) WRITE (LUPRI,'(A,1P,D20.10,A)')
@@ -2294,7 +2294,7 @@ C
          CALL HEADER('Total hyperfine coupling matrix (MHz):',1)
          WRITE (LUPRI,'(18X,3(A,13X),/)') 'Sx', 'Sy', 'Sz'
          DO J = 1, 3
-            WRITE (LUPRI,'(2X,A6,3F15.2)')
+            WRITE (LUPRI,'(2X,A6,3F15.5)')
      &             NAMEX(J), (TMATX(I,J),I=1,3)
          END DO
 C
