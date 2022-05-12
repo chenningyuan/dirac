@@ -73,7 +73,7 @@ C
       MULTIPESR = 0
       N_CIESR   = -1
       MAX_CIESR_IT = 20
-      THR_CVEC_ESR = 1.0D-4  ! trial vector threshold
+      THR_CVEC_ESR = 1.0D-3  ! trial vector threshold
       THRPCI_ESR   = 1.0D-3  ! print of CI vector threshold
       THR_CIESR    = -1.0D0  ! default depends on g_10ppm true or false
       STATE_ESR    = 1       ! first CI root belonging to multiplet
