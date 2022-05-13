@@ -584,8 +584,8 @@ module talsh_sigma_eomccsd
       ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(m,b,j,i)*R(a,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor)
       ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(m,a,i,j)*R(b,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor)
 
-      ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(m,b,i,j)*R(a,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE)     !XY
-      ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(m,a,i,j)*R(b,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor)     !XY
+      ierr=talsh_tensor_contract("S(a,b,i,j)+=W(m,b,i,j)*R(a,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE)     !XY
+      ierr=talsh_tensor_contract("S(a,b,i,j)+=W(m,a,i,j)*R(b,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor)     !XY
 
       ! call print_tensor(sigma2_tensor, 1.0d-10, "diagm7")
 

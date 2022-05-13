@@ -839,9 +839,9 @@ integer :: ierr
 !!S(ab,ij) = S(ab,ij) - P(ab) w_iemn(mb,ij)*r1(a,m)
 !!-------------------------------------------------
 
-    !  call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
-    ! &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,righttensor=b%w_iemn, &
-    ! &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) !Used
+     call contraction_244 ((/"p1","o3"/),(/"o3","p2","o1","o2"/), &
+    &    (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,righttensor=b%w_iemn, &
+    &   LeftTensor=r1,irrep_left=state_sym,irrep_right=1) !Used
 
     if (iprnt.ge.2) &
     ! write(iw,*)'diagram 7 ', dot_product(sigma2,sigma2)
