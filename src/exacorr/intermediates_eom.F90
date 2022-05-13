@@ -854,6 +854,7 @@ module intermediates_eom_ccsd
 ! tensor dims
          integer, dimension(2) :: oo_dims, ov_dims, vv_dims, vo_dims
          integer, dimension(4) :: oooo_dims, ooov_dims, ovoo_dims, vovo_dims, vvoo_dims, oovv_dims
+         integer, dimension(4) :: vvvv_dims, vovv_dims, vvvo_dims
 !     error code
          integer :: ierr
 
@@ -868,6 +869,10 @@ module intermediates_eom_ccsd
          ovoo_dims = (/nocc,nvir,nocc,nocc/)
          vovo_dims = (/nvir,nocc,nvir,nocc/)
          vvoo_dims = (/nvir,nvir,nocc,nocc/)
+
+         vvvv_dims = (/nvir,nvir,nvir,nvir/)
+         vvvo_dims = (/nvir,nvir,nvir,nocc/)
+         vovv_dims = (/nvir,nocc,nvir,nvir/)
 
          interm_t%nocc = nocc
          interm_t%nvir = nvir
@@ -895,6 +900,10 @@ module intermediates_eom_ccsd
          ierr=talsh_tensor_construct(interm_t%w_vovo,C8,vovo_dims,init_val=ZERO)
          ierr=talsh_tensor_construct(interm_t%wbar_vovo,C8,vovo_dims,init_val=ZERO)
 
+         ierr=talsh_tensor_construct(interm_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(interm_t%w_vvvo,C8,vvvo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(interm_t%w_vovv,C8,vovv_dims,init_val=ZERO)
+
          call get_wbar_vovo(interm_t%wbar_vovo,interm_t%t2,int_t)
          if (.not.CCD) then
             call get_fbar_oo(interm_t%fbar_oo,int_t,comm_t%foo,comm_t%fov,interm_t%t2,interm_t%t1)
@@ -904,6 +913,9 @@ module intermediates_eom_ccsd
             call get_w_ooov (interm_t%w_ooov,int_t,interm_t%t1)
             call get_w_ovoo (interm_t%w_ovoo,int_t,interm_t%fbar_ov,interm_t%w_oooo,interm_t%wbar_vovo,interm_t%t2,interm_t%t1)
             call get_w_vovo (interm_t%w_vovo,int_t,interm_t%t2,interm_t%t1)
+            call get_w_vvvv (interm_t%w_vvvv,int_t,interm_t%t2,interm_t%t1)
+            call get_w_vvvo (interm_t%w_vvvo,int_t,interm_t%w_vvvv,interm_t%wbar_vovo,interm_t%fbar_ov,interm_t%t2,interm_t%t1)
+            call get_w_vovv (interm_t%w_vovv,int_t,interm_t%t1)
          else
             call get_fbar_oo(interm_t%fbar_oo,int_t,comm_t%foo,comm_t%fov,interm_t%t2)
             call get_fbar_ov(interm_t%fbar_ov,comm_t%fov,CCD,int_t%oovv)
@@ -937,9 +949,10 @@ module intermediates_eom_ccsd
          print*, "w_ovoo    tensor norm", tensor_norm2(interm_t%w_ovoo)
          print*, "w_vovo    tensor norm", tensor_norm2(interm_t%w_vovo)
          print*, "wbar_vovo tensor norm", tensor_norm2(interm_t%wbar_vovo)
-!        print*, "w_vvvo    tensor norm", tensor_norm2(interm_t%w_vvvo)
-!        print*, "w_vovv    tensor norm", tensor_norm2(interm_t%w_vovv)
-!        print*, "w_vvvv    tensor norm", tensor_norm2(interm_t%w_vvvv)
+         print*, "w_vvvv    tensor norm", tensor_norm2(interm_t%w_vvvv)
+         print*, "w_vvvo    tensor norm", tensor_norm2(interm_t%w_vvvo)
+         print*, "w_vovv    tensor norm", tensor_norm2(interm_t%w_vovv)
+         
 
          ierr=talsh_tensor_destruct(interm_t%wbar_vovo)
 

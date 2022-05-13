@@ -862,8 +862,8 @@ integer :: ierr
 !  &    (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=r1, &
 !  &    RightTensor=B%W_efam,irrep_right=1,irrep_left=state_sym) 
 
-       if (iprnt.ge.2) &
-    write(iw,*)'diagram 8 ', dot_product(sigma2,sigma2)
+    !    if (iprnt.ge.2) &
+    ! write(iw,*)'diagram 8 ', dot_product(sigma2,sigma2)
     write(iw,*) "test diagram 8 ", sigma2
 
 ! int_1b(b,f) = int_1b(b,f) + w_amef (bm,fe)*r1(e,m)
@@ -892,6 +892,7 @@ integer :: ierr
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 9 ',dot_product(sigma2,sigma2)
+    ! write(iw,*) "test diagram 9 ", sigma2
 
 ! int_1b(n,j) = int_1b(n,j) + w_mnie(nm,je)*r1(e,m)
 ! S(ab,ij) = S(ab,ij) - int_1b(n,j) * t2(ab,in)

@@ -594,12 +594,12 @@ module talsh_sigma_eomccsd
 !     term 2: S2(a,b,i,j) += P(i,j) W(a,b,e,j) * R(e,i) |
 !--------------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,b,i,j)+=W(a,b,e,j)*R(e,i)",sigma2_tensor,interm_t%w_vvvo,r1_tensor)  !Used
+      ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(a,b,e,j)*R(e,i)",sigma2_tensor,interm_t%w_vvvo,r1_tensor)  !Used
       ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(b,a,e,i)*R(e,j)",sigma2_tensor,interm_t%w_vvvo,r1_tensor)
 
-      ierr=talsh_tensor_contract("S(a,b,i,j)+=W(a,b,e,i)*R(e,j)",sigma2_tensor,interm_t%w_vvvo,r1_tensor,scale=MINUS_ONE)   !XY
-      call print_tensor(interm_t%w_vvvo, 1.0d-10, "w_vvvo")
-      call print_tensor(sigma2_tensor, 1.0d-10, "diagm8")
+      ! ierr=talsh_tensor_contract("S(a,b,i,j)+=W(a,b,e,i)*R(e,j)",sigma2_tensor,interm_t%w_vvvo,r1_tensor,scale=MINUS_ONE)   !XY
+      ! call print_tensor(interm_t%w_vvvo, 1.0d-10, "w_vvvo")
+      ! call print_tensor(sigma2_tensor, 1.0d-10, "diagm8")
 
 !-------------------------------------------------------------------------
 !     term 3: S2(a,b,i,j) += P(a,b) ( W(b,m,f,e) * R(e,m) ) * T(a,f,i,j) |
@@ -607,11 +607,14 @@ module talsh_sigma_eomccsd
 
       ierr=talsh_tensor_construct(vv_aux,C8,vv_dims,init_val=ZERO)
       ierr=talsh_tensor_contract("U(b,f)+=W(b,m,f,e)*R(e,m)",vv_aux,interm_t%w_vovv,r1_tensor)
-      ! ierr=talsh_tensor_contract("S(a,b,i,j)+=U(b,f)*T2(a,f,i,j)",sigma2_tensor,vv_aux,interm_t%t2)     !Used
+      ierr=talsh_tensor_contract("S(a,b,i,j)+=U(b,f)*T2(a,f,i,j)",sigma2_tensor,vv_aux,interm_t%t2)     !Used
       ! ierr=talsh_tensor_contract("S(a,b,i,j)+=U(a,f)*T2(f,b,i,j)",sigma2_tensor,vv_aux,interm_t%t2)
 
-      ! ierr=talsh_tensor_contract("S(a,b,i,j)+=U(a,f)*T2(b,f,i,j)",sigma2_tensor,vv_aux,interm_t%t2,scale=MINUS_ONE)      !XY
+      ierr=talsh_tensor_contract("S(a,b,i,j)+=U(a,f)*T2(b,f,i,j)",sigma2_tensor,vv_aux,interm_t%t2,scale=MINUS_ONE)      !XY
       ierr=talsh_tensor_destruct(vv_aux)
+      call print_tensor(interm_t%w_vovv, 1.0d-10, "w_vovv")
+      call print_tensor(sigma2_tensor, 1.0d-10, "diagm9")
+
 
 !-------------------------------------------------------------------------
 !     term 4: S2(a,b,i,j) -= P(i,j) ( W(n,m,j,e) * R(e,m) ) * T(a,b,i,n) |
