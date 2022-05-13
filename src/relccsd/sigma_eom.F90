@@ -884,8 +884,8 @@ integer :: ierr
 !   call contraction_424 ((/"p1","p4","o1","o2"/),(/"p2","p4"/),(/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0, &
 !  &                       nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)
 
-  !   call contraction_244 ((/"p2","p4"/),(/"p4","p1","o1","o2"/),(/"p2","p1","o1","o2"/),sigma2,-1.0d0,-1.0d0, &
-  !  &                       nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1) !Used
+    call contraction_244 ((/"p2","p4"/),(/"p4","p1","o1","o2"/),(/"p2","p1","o1","o2"/),sigma2,-1.0d0,-1.0d0, &
+   &                       nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1) !Used
 
     deallocate(int_1b)
       call dealloc_array(f)
@@ -910,8 +910,8 @@ integer :: ierr
     call contraction_422 ((/"o4","o3","o2","p3"/),(/"p3","o3"/),(/"o4","o2"/),r1,int_1b,1.0d0,1.0d0,nrep,LeftTensor=B%W_mnie, &
         irrep_left=1,irrep_right=state_sym) !Used
 
-  !   call contraction_424 ((/"p1","p2","o1","o4"/),(/"o4","o2"/), &
-  !  & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)   !Used
+    call contraction_424 ((/"p1","p2","o1","o4"/),(/"o4","o2"/), &
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)   !Used
 
     deallocate(int_1b)
 
@@ -930,8 +930,8 @@ integer :: ierr
  ! & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
 
 
-  !   call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
-  !  & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)  !Used
+    call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
+   & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)  !Used
 
 
        if (iprnt.ge.2) &
@@ -940,8 +940,8 @@ integer :: ierr
 !!S(ab,ij) = S(ab,ij) - P(ij) f_bar_mi(m,j)*r2(ab,im) 
 !!----------------------------------------------------
 
-  !   call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
-  !  & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)  !Used
+    call contraction_424 ((/"p1","p2","o1","o3"/),(/"o3","o2"/), &
+   & (/"p1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 12 ',dot_product(sigma2,sigma2)
@@ -949,8 +949,8 @@ integer :: ierr
 ! S(ab,ij) = S(ab,ij) + w_ijmn(mn,ij) * r2(ab,mn)
 !--------------------------------------------------
 
-    !   call contraction_444((/"p1","p2","o3","o4"/),(/"o3","o4","o1","o2"/), &
-    !  &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn,irrep_left=state_sym,irrep_right=1)  !Used
+      call contraction_444((/"p1","p2","o3","o4"/),(/"o3","o4","o1","o2"/), &
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 14 ',dot_product(sigma2,sigma2)
@@ -958,8 +958,8 @@ integer :: ierr
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
 
-    !   call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
-    !  &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)  !Used
+      call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 15 ',dot_product(sigma2,sigma2)
@@ -974,8 +974,8 @@ integer :: ierr
      call contraction_442 ((/"p1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"p1","p4"/),int_1b,-1.0d0,1.0d0,nrep,&
     &                     LeftTensor=r2,irrep_left=state_sym,irrep_right=1)     !Used
 
-    !  call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
-    ! & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)    !Use
+     call contraction_244 ((/"p1","p4"/),(/"p4","p2","o1","o2"/), &
+    & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2,irrep_left=state_sym,irrep_right=1)    !Use
 
     deallocate(int_1b)
 
@@ -992,8 +992,8 @@ integer :: ierr
     call contraction_442 ((/"o4","o3","p4","p3"/),(/"p4","p3","o1","o3"/),(/"o4","o1"/),int_1b,1.0d0,1.0d0,nrep,&
    &                      RightTensor=r2, irrep_left=1,irrep_right=state_sym)   !Used
 
-    ! call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
-    ! & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)  !Used
+    call contraction_424 ((/"p1","p2","o2","o4"/),(/"o4","o1"/), &
+    & (/"p1","p2","o2","o1"/),sigma2,1.0d0,-1.0d0,nrep,RightTensor=int_1b,LeftTensor=B%t2,irrep_left=1,irrep_right=state_sym)  !Used
 
     deallocate(int_1b)
 
@@ -1003,78 +1003,78 @@ integer :: ierr
 ! S(ab,ij) = S(ab,ij) + w_vvvv(ab,ef)*r2(ef,ij)
 !------------------------------------------------
 
-!       call alloc_array(f,nrep,g)
+      call alloc_array(f,nrep,g)
 
-!       call auto_symmetry_offset(f,nvvt,noot,.true.,.true.)
-!       call auto_symmetry_offset(g,nvvt,noot,.true.,.true.)
+      call auto_symmetry_offset(f,nvvt,noot,.true.,.true.)
+      call auto_symmetry_offset(g,nvvt,noot,.true.,.true.)
 
-!       allocate(sigma2_local(N2))
-!       sigma2_local = 0.0d0 
+      allocate(sigma2_local(N2))
+      sigma2_local = 0.0d0 
 
-!       do irp = 1, nrep
+      do irp = 1, nrep
 
-!          mrp = multb(irp+nrep,1+nrep,1)  
-!          nrp = multb(irp+nrep,state_sym+nrep,1)
+         mrp = multb(irp+nrep,1+nrep,1)  
+         nrp = multb(irp+nrep,state_sym+nrep,1)
 
-!          istart = 0
-!          done =.false.
-!          if ((nvvt(irp).eq.0).or.(noot(nrp).eq.0)) cycle
-!          mint = nbuf3/nvvt(irp)
-!          allocate(w_vvvv(nvvt(irp)*mint*rcw))
-!  10      kstart = istart
-!          if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
-!          ntot = idist(2,1,irp)
-!          nint = min0(mint,ntot-kstart)
-!          call getdz (irp,istart,nint,done,w_vvvv,mint)
-!          m = nvvt(mrp)
-!          n = noot(nrp)
-!          k = nint
+         istart = 0
+         done =.false.
+         if ((nvvt(irp).eq.0).or.(noot(nrp).eq.0)) cycle
+         mint = nbuf3/nvvt(irp)
+         allocate(w_vvvv(nvvt(irp)*mint*rcw))
+ 10      kstart = istart
+         if (idist(1,1,irp).gt.kstart) kstart=idist(1,1,irp)
+         ntot = idist(2,1,irp)
+         nint = min0(mint,ntot-kstart)
+         call getdz (irp,istart,nint,done,w_vvvv,mint)
+         m = nvvt(mrp)
+         n = noot(nrp)
+         k = nint
 
-!          off1 = 1 + f%twoDirac(irp,nrp)*rcw
-!          off2 = 1 + g%twoDirac(mrp,nrp)*rcw
+         off1 = 1 + f%twoDirac(irp,nrp)*rcw
+         off2 = 1 + g%twoDirac(mrp,nrp)*rcw
 
-!          call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
-!      &               a1,sigma2_local(off2),m)
-! !    &               a1,sigma2(off2),m)
-!          if (.not.done) then
-!             istart = istart + nint
-!             goto 10
-!          endif
-!          deallocate(w_vvvv)
-!       enddo
+         call xgemm ('n','n',m,n,k,a1,w_vvvv,m,r2(off1+istart*rcw),m, &
+     &               a1,sigma2_local(off2),m)
+!    &               a1,sigma2(off2),m)
+         if (.not.done) then
+            istart = istart + nint
+            goto 10
+         endif
+         deallocate(w_vvvv)
+      enddo
 
-! #if defined (VAR_MPI)
-!       if (nmproc .gt. 1) then
-!         allocate (local_buffer(N2))
-!         call xcopy (ndimr2,a0,0,local_buffer,1)
-!         ierr = 0
+#if defined (VAR_MPI)
+      if (nmproc .gt. 1) then
+        allocate (local_buffer(N2))
+        call xcopy (ndimr2,a0,0,local_buffer,1)
+        ierr = 0
 
-!       if (iprnt.ge.2) &
-!    write(*,*)'diagram 13a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13a ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
-!         call interface_mpi_allreduce(sigma2_local, &
-!              local_buffer, N2, &
-!              op_mpi_sum,global_communicator)
+        call interface_mpi_allreduce(sigma2_local, &
+             local_buffer, N2, &
+             op_mpi_sum,global_communicator)
 
-!       if (iprnt.ge.2) &
-!    write(*,*)'diagram 13b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13b ', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
-!         if(ierr.gt.0) then
-!            call quit('mpi_reduce error in collecting sigma2 !')
-!         endif
-!         call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
-!         deallocate (local_buffer)
+        if(ierr.gt.0) then
+           call quit('mpi_reduce error in collecting sigma2 !')
+        endif
+        call xcopy(ndimr2,local_buffer,1,sigma2_local,1)
+        deallocate (local_buffer)
 
-!      endif
-! #endif
-!       if (iprnt.ge.2) &
-!    write(*,*)'diagram 13c', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
+     endif
+#endif
+      if (iprnt.ge.2) &
+   write(*,*)'diagram 13c', ddot(N2,sigma2_local,1,sigma2_local,1),myproc
 
-!        call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
-!      deallocate(sigma2_local)
+       call XAXPY (ndimr2,A1,sigma2_local,1,sigma2,1)
+     deallocate(sigma2_local)
 
-!        if (iprnt.ge.2) &
-!     write(*,*)'diagram 13d', ddot(N2,sigma2,1,sigma2,1),myproc
+       if (iprnt.ge.2) &
+    write(*,*)'diagram 13d', ddot(N2,sigma2,1,sigma2,1),myproc
 
       call dealloc_array(f,g)
 
