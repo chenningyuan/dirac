@@ -50,14 +50,12 @@ module visual_cfg
    character(len = 4), public               :: visual_cfg_plot_file_formats(2) = [character(len = 4):: 'txt', 'hdf5']
 
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_customname
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_float_format
 
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_domain
    character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
                                                [character(len = 6):: '2D', '3D', 'line', 'radial']
-
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_datatype
-   character(len = 6), public               :: visual_cfg_txt_plot_file_datatypes(4) = &
-                                               [character(len = 6):: 'scalar', 'vector', 'tensor', 'flow']
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_property
 
 
    integer, public:: iq_gamma5   =  1
@@ -109,6 +107,9 @@ module visual_cfg
    integer, public:: iq_rdg      = 47
    integer, public:: iq_gradj    = 48
    
+
+   logical, public:: visual_cfg_print_data_to_common_output = .false.
+
 !                     visualization in 2d
    logical, public:: visual_cfg_2d             = .false.
    real(8), public:: visual_cfg_2d_p_origin(3) = 0.0d0
@@ -116,7 +117,8 @@ module visual_cfg
    real(8), public:: visual_cfg_2d_p_top(3)    = 0.0d0
    integer, public:: visual_cfg_2d_nr_right    = 0
    integer, public:: visual_cfg_2d_nr_top      = 0
-   character(len = 6), public:: visual_cfg_2d_data_types(4) = [character(len = 6):: 'scalar', 'vector', 'tensor', 'flow']
+   character(len = 6), public:: visual_cfg_2d_data_types(4) = &
+                       [character(len = 6):: 'scalar', 'vector', 'tensor', 'flow']
 
 !                     integration in 2d
    logical, public:: visual_cfg_2d_integration             = .false.
@@ -137,7 +139,8 @@ module visual_cfg
    character(80), public:: visual_cfg_3d_gridfil
    character(80), public:: visual_cfg_3d_grid_units
    character(80), public:: visual_cfg_3d_jbfile
-   !character(len = 10), dimension(5), public:: visual_cfg_3d_data_types = (/'scalar', 'vector', 'tensor', 'cube', 'vector_vtk'/) 
+   character(len = 10), public:: visual_cfg_3d_data_types(5) = &
+                       [character(len = 10)::'scalar', 'vector', 'tensor', 'cube', 'vector_vtk']
 
 !                     integration in 3d
    logical, public:: visual_cfg_3d_integration = .false.
@@ -147,19 +150,24 @@ module visual_cfg
    real(8), public:: visual_cfg_line_from(3)  = 0.0d0
    real(8), public:: visual_cfg_line_to(3)    = 0.0d0
    integer, public:: visual_cfg_line_nr_steps = 0
-   !character(len = 6), dimension(3), public:: visual_cfg_line_data_types = (/'scalar', 'vector', 'tensor'/)
+   character(len = 6), public:: visual_cfg_line_data_types(3) = &
+                       [character(len = 6)::'scalar', 'vector', 'tensor']
 
 !                                  densities for a list of points
    logical, public              :: visual_cfg_list              = .false.
    integer, public              :: visual_cfg_nr_points_in_list = 0
    real(8), public, allocatable:: visual_cfg_xyz_list(:, :)
+   character(len = 6), public:: visual_cfg_list_data_types(3) = &
+                       [character(len = 6)::'scalar', 'vector', 'tensor']
+
 
 !                     radial distributions
    logical, public:: visual_cfg_radial          = .false.
    real(8), public:: visual_cfg_radial_from(3)  = 0.0d0
    integer, public:: visual_cfg_radial_nr_steps = 0
    real(8), public:: visual_cfg_radial_length   = 0
-   !character(len = 6), dimension(3), public:: visual_cfg_radial_data_types = (/'scalar', 'vector', 'tensor'/)
+   character(len = 6), public:: visual_cfg_radial_data_types(3) = &
+                       [character(len = 6)::'scalar', 'vector', 'tensor']
    
    real(8),       public:: visual_cfg_scale              = 1.0d0
    real(8),       public:: visual_cfg_cartesian_power(3) = 0.0   

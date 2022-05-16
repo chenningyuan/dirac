@@ -216,6 +216,10 @@
       visual_cfg_gauge_origin(1:3) = GAGORG(1:3)  ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
+      if (kw_matches(word, '.OUTPRI')) then
+         visual_cfg_print_data_to_common_output = .true.
+      end if
+
       if (kw_matches(word, '.LIST  ')) then
          visual_cfg_list = .true.
          call kw_read(word, visual_cfg_nr_points_in_list)
@@ -601,29 +605,6 @@
          visual_cfg_add_grid_points_grad_ed_scaled = .true.
       end if
 
-!will be removed:
-      if (kw_matches(word, '.OUTFIL')) then
-         visual_cfg_out_file_custom = .true.
-!        file for scalar field
-         read(get_file_unit(), '(a)') line
-         if (len_trim(line) > 0) then
-            visual_cfg_out_scalar_file_name   = trim(line)
-            visual_cfg_out_scalar_file_custom = .true.
-         end if 
-!        file for vector field
-         read(get_file_unit(), '(a)') line
-         if (len_trim(line) > 0) then
-            visual_cfg_out_vector_file_name   = trim(line)
-            visual_cfg_out_vector_file_custom = .true.
-         end if 
-!        file for 2ndtensor field
-         read(get_file_unit(), '(a)') line
-         if (len_trim(line) > 0) then
-            visual_cfg_out_2ndtensor_file_name   = trim(line)
-            visual_cfg_out_2ndtensor_file_custom = .true.
-         end if 
-      end if
-
       if (kw_matches(word, '.NOCUBE')) then
          visual_cfg_london_skip_cube  = .true.
       end if
@@ -642,9 +623,12 @@
          allocate(word_array(nr_words))
          read(line, *) (word_array(j), j = 1, nr_words)
          visual_cfg_txt_plot_file_domain   = trim(word_array(1))
-         visual_cfg_txt_plot_file_datatype = trim(word_array(2))
-         if (nr_words == 3) then 
+         visual_cfg_txt_plot_file_property = trim(word_array(2))
+         if (nr_words > 2) then 
             visual_cfg_txt_plot_file_customname = trim(word_array(3))
+         end if
+         if (nr_words > 3) then 
+            visual_cfg_txt_plot_file_float_format = trim(word_array(3))
          end if
          deallocate(word_array)
       end if

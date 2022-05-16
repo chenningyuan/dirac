@@ -564,6 +564,7 @@ contains
       logical              :: is_open
 
       logical              :: refactoring
+      logical              :: use_legacy_files
       type(visual_plot_file), allocatable:: visual_plot_files(:)
 !     --------------------------------------------------------------------------
 
@@ -601,170 +602,46 @@ contains
       end if
 
 
-      if (refactoring) then
-         call open_plot_files(.false.,visual_plot_files)
-         !call open_plot_files(.true.,visual_plot_files)
-         call print_plot_files_info(visual_plot_files)
-      else
-      lunit_2d_scalar     = 14
-      lunit_2d_vector     = 15
-      lunit_2d_tensor     = 27
-      lunit_2d_flow       = 16
-      end if  !if (refactoring) then
-      lunit_3d_cube       = 17
-      lunit_3d_scalar     = 18
-      lunit_3d_vector     = 19
-      lunit_3d_vector_vtk = 20
-      lunit_line_scalar   = 21
-      lunit_line_vector   = 22
       lunit_3d_gridimp    = 23
-      lunit_radial_scalar = 24
-      lunit_radial_vector = 25
       lunit_3d_jbfile     = 26
-      lunit_3d_tensor     = 28
-      lunit_line_tensor   = 29
-      lunit_radial_tensor = 30
-      lunit_outfil_custom_scalar    = 31
-      lunit_outfil_custom_vector    = 32
-      lunit_outfil_custom_2ndtensor = 33
 
-      if (.not.visual_cfg_out_file_custom) then
-         if (.not. refactoring) then
-         if (visual_cfg_2d) then
-            open(lunit_2d_scalar,           &
-                 file   = 'plot.2d.scalar', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            open(lunit_2d_vector,           &
-                 file   = 'plot.2d.vector', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            open(lunit_2d_tensor,           &
-                 file   = 'plot.2d.tensor', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            open(lunit_2d_flow,             &
-                 file   = 'plot.2d.flow',   &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-         end if
-         end if  ! if (.not. refactoring) then
+
+!     prepare input data (incoming grids and grid functions)
+!     ======================================================
+
+      if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
+!        gosia: if we import grid on which we plot, then don't do*cube or*vtk files
+!        as this grid is not necessarily uniform.
+!        If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
+         visual_cfg_london_skip_cube = .true.
+         visual_cfg_london_skip_vtk  = .true.
+
+         !use_legacy_files = .true.
+         !call open_plot_files_on_import(use_legacy_files, visual_plot_files)
+      end if
          
-         if (visual_cfg_3d .or. visual_cfg_3d_fast) then
-            if (.not. visual_cfg_london_skip_cube) then
-               open(lunit_3d_cube,           &
-                    file   = 'plot.3d.cube', &
-                    status = 'new',          &
-                    access = 'sequential',   &
-                    form   = 'formatted')
+
+!     open files for outputting data on meshes
+!     ========================================
+
+      if (visual_cfg_2d .or. &
+          visual_cfg_3d .or. visual_cfg_3d_fast .or. &
+          visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb .or. &
+          visual_cfg_list .or. visual_cfg_line .or. visual_cfg_radial) then
+
+         if (visual_cfg_print_data_to_common_output) then
+            ! write data to output
+         else
+            ! write data to separate files
+            use_legacy_files = .true.
+            call open_plot_files_for_export(use_legacy_files, visual_plot_files)
+            if (allocated(visual_plot_files)) then
+               call print_plot_files_info(visual_plot_files)
             end if
-            open(lunit_3d_vector,           &
-                 file   = 'plot.3d.vector', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            if (.not. visual_cfg_london_skip_vtk) then
-               open(lunit_3d_vector_vtk,           &
-                    file   = 'plot.3d.vector.vtk', &
-                    status = 'new',                &
-                    access = 'sequential',         &
-                    form   = 'formatted')
-            end if
-            open(lunit_3d_scalar,           &
-                 file   = 'plot.3d.scalar', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            open(lunit_3d_tensor,           &
-                 file   = 'plot.3d.tensor', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
          end if
-         
-         if (visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb) then
-!           gosia: if we import grid on which we plot, then don't do*cube or*vtk files
-!           as this grid is not necessarily uniform.
-!           If it is uniform, then use the script lines_to_vtk.py or lines_to_cube.py in DIRAC's utils directory 
-            open(lunit_3d_vector,           &
-                 file   = 'plot.3d.vector', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            open(lunit_3d_scalar,           &
-                 file   = 'plot.3d.scalar', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-            open(lunit_3d_tensor,           &
-                 file   = 'plot.3d.tensor', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-         end if
-         
-         if (visual_cfg_line) then
-            open(lunit_line_scalar,           &
-                 file   = 'plot.line.scalar', &
-                 status = 'new',              &
-                 access = 'sequential',       &
-                 form   = 'formatted')
-            open(lunit_line_vector,           &
-                 file   = 'plot.line.vector', &
-                 status = 'new',              &
-                 access = 'sequential',       &
-                 form   = 'formatted')
-            open(lunit_line_tensor,           &
-                 file   = 'plot.line.tensor', &
-                 status = 'new',            &
-                 access = 'sequential',     &
-                 form   = 'formatted')
-         end if
-         
-         if (visual_cfg_radial) then
-            open(lunit_radial_scalar,           &
-                 file   = 'plot.radial.scalar', &
-                 status = 'new',                &
-                 access = 'sequential',         &
-                 form   = 'formatted')
-            open(lunit_radial_vector,           &
-                 file   = 'plot.radial.vector', &
-                 status = 'new',                &
-                 access = 'sequential',         &
-                 form   = 'formatted')
-            open(lunit_radial_tensor,           &
-                 file   = 'plot.radial.tensor', &
-                 status = 'new',                &
-                 access = 'sequential',         &
-                 form   = 'formatted')
-         end if
-      else
-         if (visual_cfg_out_scalar_file_custom) then
-            open(lunit_outfil_custom_scalar,       &
-                 file   = trim(visual_cfg_out_scalar_file_name), &
-                 status = 'new',                    &
-                 access = 'sequential',             &
-                 form   = 'formatted')
-         end if
-         if (visual_cfg_out_vector_file_custom) then
-            open(lunit_outfil_custom_vector,       &
-                 file   = trim(visual_cfg_out_vector_file_name), &
-                 status = 'new',                    &
-                 access = 'sequential',             &
-                 form   = 'formatted')
-         end if
-         if (visual_cfg_out_2ndtensor_file_custom) then
-            open(lunit_outfil_custom_2ndtensor,       &
-                 file   = trim(visual_cfg_out_2ndtensor_file_name), &
-                 status = 'new',                    &
-                 access = 'sequential',             &
-                 form   = 'formatted')
-         end if
-      end if  ! if (.not.visual_cfg_out_file_custom) then
+
+      end if
+
 
       if (visual_cfg_list) then
 
@@ -1225,6 +1102,7 @@ contains
          end if
 
          if (.not. visual_cfg_london_skip_vtk) then
+
             write(lunit_3d_vector_vtk, '(a)')      '# vtk DataFile Version 2.0'
             write(lunit_3d_vector_vtk, '(a)')      'Sample rectilinear grid'
             write(lunit_3d_vector_vtk, '(a)')      'ASCII'
@@ -1484,69 +1362,9 @@ contains
          deallocate(temp2)
       end if
 
-      is_open=.false.
-      inquire(lunit_line_scalar, opened = is_open)
-      if (is_open) close(lunit_line_scalar, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_line_vector, opened = is_open)
-      if (is_open) close(lunit_line_vector, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_line_tensor, opened = is_open)
-      if (is_open) close(lunit_line_tensor, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_radial_scalar, opened = is_open)
-      if (is_open) close(lunit_radial_scalar, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_radial_vector, opened = is_open)
-      if (is_open) close(lunit_radial_vector, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_radial_tensor, opened = is_open)
-      if (is_open) close(lunit_radial_tensor, status = 'keep')
-
-      if (refactoring) then
+      if (allocated(visual_plot_files)) then
          call close_plot_txt_files(visual_plot_files)
-      else
-         is_open=.false.
-         inquire(lunit_2d_scalar, opened = is_open)
-         if (is_open) close(lunit_2d_scalar, status = 'keep')
-         
-         is_open=.false.
-         inquire(lunit_2d_vector, opened = is_open)
-         if (is_open) close(lunit_2d_vector, status = 'keep')
-         
-         is_open=.false.
-         inquire(lunit_2d_flow, opened = is_open)
-         if (is_open) close(lunit_2d_flow, status = 'keep')
-         
-         is_open=.false.
-         inquire(lunit_2d_tensor, opened = is_open)
-         if (is_open) close(lunit_2d_tensor, status = 'keep')
-      end if  ! if (refactoring) then
-
-      is_open=.false.
-      inquire(lunit_3d_cube, opened = is_open)
-      if (is_open) close(lunit_3d_cube, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_3d_vector_vtk, opened = is_open)
-      if (is_open) close(lunit_3d_vector_vtk, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_3d_scalar, opened = is_open)
-      if (is_open) close(lunit_3d_scalar, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_3d_vector, opened = is_open)
-      if (is_open) close(lunit_3d_vector, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_3d_tensor, opened = is_open)
-      if (is_open) close(lunit_3d_tensor, status = 'keep')
+      end if
 
       is_open=.false.
       inquire(lunit_3d_gridimp, opened = is_open)
@@ -1555,19 +1373,6 @@ contains
       is_open=.false.
       inquire(lunit_3d_jbfile, opened = is_open)
       if (is_open) close(lunit_3d_jbfile, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_outfil_custom_scalar, opened = is_open)
-      if (is_open) close(lunit_outfil_custom_scalar, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_outfil_custom_vector, opened = is_open)
-      if (is_open) close(lunit_outfil_custom_vector, status = 'keep')
-
-      is_open=.false.
-      inquire(lunit_outfil_custom_2ndtensor, opened = is_open)
-      if (is_open) close(lunit_outfil_custom_2ndtensor, status = 'keep')
-
 
       deallocate(q)
       deallocate(atom_xyz)
