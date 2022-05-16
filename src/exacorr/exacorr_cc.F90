@@ -71,7 +71,7 @@ module exacorr_cc
 !        space ids and roots
          type(space_dims) :: dims
 !        CCSD control and result variables
-         real(8)            :: scf_energy, mp2_energy, cc_energy, t_energy(3) ! triples not implemented
+         real(8)            :: scf_energy, mp2_energy, cc_energy, pert_energy(3) ! triples not implemented
          real(8)            :: t1diag
          real(8)            :: t_target_precision
          integer            :: fock_mode  ! choice of Fock build options
@@ -93,11 +93,12 @@ module exacorr_cc
 
          integer :: ncycles
 
-         !CCD
          logical :: CCD, lambda
-
-         !CC2
-         logical :: CC2         !L
+         logical :: CC2
+         logical :: CCSDT, CCSDTQ, CCSDTQP
+         logical :: do_perturbative
+         integer :: iterative_level, iterative_scheme
+         integer :: perturbative_level, perturbative_scheme
 
          !methods
          type(delta_t)      :: f_delta
@@ -125,8 +126,27 @@ module exacorr_cc
          nocc = exa_input%nocc
          nvir = exa_input%nvir
          t_target_precision = exa_input%t_econv
+
+         do_perturbative = exa_input%do_perturbative
          CCD = exa_input%ccd
-         CC2= exa_input%CC2     !L
+         CC2 = exa_input%cc2
+
+         iterative_level     = exa_input%iterative_level
+         iterative_scheme    = exa_input%iterative_scheme
+         perturbative_level  = exa_input%perturbative_level
+         perturbative_scheme = exa_input%perturbative_scheme
+
+         CCSDT = .false.
+         CCSDTQ = .false.
+         CCSDTQP = .false.
+         if (iterative_level.eq.3) CCSDT =.true.
+         if (iterative_level.eq.4) CCSDTQ =.true.
+         if (iterative_level.eq.5) CCSDTQP =.true.
+
+         if (CCD.or.CC2.or.CCSDT.or.CCSDTQ.or.CCSDTQP) then
+            do_perturbative = .false.
+         end if
+
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
 
@@ -301,19 +321,20 @@ module exacorr_cc
               ! calculate T1 diagnostic
               t1diag = print_tensornorm2(comm_t%t1)
               t1diag = t1diag/sqrt(dble(nocc))
-              if (exa_input%do_perturbative .and. .not.CC2) then !  .and. .not.CCSDT .and. .not.CCSDTQ) then
-                call print_date('-Start- Triples')
-                !call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
-                call t3_energy_split(t_energy,comm_t,int_t,occ_space,denom,exa_input)
-                call print_date('-End- Triples')
-                call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
-                                    t1diag=t1diag, t_energy=t_energy)
-              else
-                call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, &
-                                    t1diag=t1diag)
-              end if
+            else 
+              t1diag = 0.0d0
+            end if
+
+            if (do_perturbative) then
+               call print_date('-Start- Triples')
+               !call t3_energy_delta(t_energy,comm_t,int_t,f_delta,denom,exa_input%mo_occ,exa_input%print_level)
+               call t3_energy_split(pert_energy,comm_t,int_t,occ_space,denom,exa_input)
+               call print_date('-End- Triples')
+               call print_exaoutput(exa_input%talsh, exa_input%iterative_scheme, exa_input%perturbative_scheme, &
+                                   scf_energy, mp2_energy, cc_energy, t1diag=t1diag, pert_energy=pert_energy) 
             else
-               call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy)
+               call print_exaoutput(exa_input%talsh, exa_input%iterative_scheme, exa_input%perturbative_scheme,&
+                                    scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
             end if
 
 !           Destroy tensors 

@@ -155,20 +155,31 @@ module exacorr_utils
 
     end subroutine print_exainput
 
-    subroutine print_exaoutput(talsh, ccd, cc2, scf_energy, mp2_energy, cc_energy, t1diag, t_energy)
+    subroutine print_exaoutput(talsh, iterative_scheme, perturbative_scheme,scf_energy, mp2_energy, cc_energy, t1diag, pert_energy)
 
-      logical, intent(in)           :: talsh, ccd, cc2
+      logical, intent(in)           :: talsh
+      integer, intent(in)           :: iterative_scheme
+      integer, intent(in)           :: perturbative_scheme
       real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
       real(8), intent(in), optional :: t1diag
-      real(8), intent(in), optional :: t_energy(3)
-      character :: label_iterative(12)
+      real(8), intent(in), optional :: pert_energy(3)
+      character(len=23) :: label_iterative
       
-      if (iterative_scheme.eq.20) write(label_iterative,'(A12)') "CCD        "
-      if (iterative_scheme.eq.21) write(label_iterative,'(A12)') "CCSD       "
-      if (iterative_scheme.eq.22) write(label_iterative,'(A12)') "CC2        "
-      if (iterative_scheme.eq.30) write(label_iterative,'(A12)') "CCSDT      "
-      if (iterative_scheme.eq.40) write(label_iterative,'(A12)') "CCSDTQ     "
-      if (iterative_scheme.eq.50) write(label_iterative,'(A12)') "CCSDTQP    "
+      write(label_iterative,'(A)') "                    "
+      if (iterative_scheme.eq.20) write(label_iterative,'(A)') "CCD energy :           "
+      if (iterative_scheme.eq.21) write(label_iterative,'(A)') "CCSD energy :          "
+      if (iterative_scheme.eq.22) write(label_iterative,'(A)') "CC2 energy :           "
+
+      if (iterative_scheme.eq.30) write(label_iterative,'(A)') "CCSDT energy :         "
+      if (iterative_scheme.eq.31) write(label_iterative,'(A)') "CCSDT-1 energy :       "
+      if (iterative_scheme.eq.32) write(label_iterative,'(A)') "CCSDT-1a energy :      "
+      if (iterative_scheme.eq.33) write(label_iterative,'(A)') "CCSDT-1b energy :      "
+      if (iterative_scheme.eq.34) write(label_iterative,'(A)') "CCSDT-2 energy :       "
+      if (iterative_scheme.eq.36) write(label_iterative,'(A)') "CCSDT-3 energy :       "
+      if (iterative_scheme.eq.37) write(label_iterative,'(A)') "CC3 energy :           "
+
+      if (iterative_scheme.eq.40) write(label_iterative,'(A)') "CCSDTQ energy :        "
+      if (iterative_scheme.eq.50) write(label_iterative,'(A)') "CCSDTQP energy :       "
 
       write(*,*) ""
       write(*,'(A)') "-----------------------------------------------"
@@ -181,47 +192,26 @@ module exacorr_utils
       end if
       write(*,*) ""
       write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
-      if (ccd) then 
-        write (*,'(A,F20.15)') "  Final  CCD energy :               ",cc_energy
-      else 
-        if (cc2) then
-          write (*,'(A,F20.15)') "  Final  CC2 energy :               ",cc_energy
-        else
-          write (*,'(A,F20.15)') "  Final CCSD energy :               ",cc_energy
-          if (present(t_energy)) then 
-            write (*,'(A,F20.15)') "  4th order triples correction :    ",t_energy(1)
-            write (*,'(A,F20.15)') "  5th order triples (T) correction :",t_energy(2)
-            write (*,'(A,F20.15)') "  5th order triples -T  correction :",t_energy(3)
-            write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",cc_energy+t_energy(1)
-            write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",cc_energy+t_energy(1)+t_energy(2)
-            write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",cc_energy+t_energy(1)+t_energy(3)
-          end if
-        end if
-        if (present(t1diag)) then
-          write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
-        end if
+      write (*,'(2A,F25.15)') "  Final ",label_iterative,cc_energy
+      if (present(pert_energy).and.(perturbative_scheme.eq.30)) then 
+            write (*,'(A,F20.15)') "  4th order triples correction :    ",pert_energy(1)
+            write (*,'(A,F20.15)') "  5th order triples (T) correction :",pert_energy(2)
+            write (*,'(A,F20.15)') "  5th order triples -T  correction :",pert_energy(3)
+            write (*,'(A,F20.15)') "  CCSD+T  correlation energy :      ",cc_energy+pert_energy(1)
+            write (*,'(A,F20.15)') "  CCSD(T) correlation energy :      ",cc_energy+pert_energy(1)+pert_energy(2)
+            write (*,'(A,F20.15)') "  CCSD-T  correlation energy :      ",cc_energy+pert_energy(1)+pert_energy(3)
+      end if
+      if (present(t1diag)) then
+         write (*,'(A,F20.15)') "  T1 diagnostic      :              ",t1diag
       end if
       write(*,*) ""
       write (*,'(A,F25.15)') "  SCF energy :                 ",scf_energy
       write (*,'(A,F25.15)') "  Total MP2 energy :           ",scf_energy+mp2_energy
-      if (ccd) then 
-        write (*,'(A,F25.15)') "  Total  CCD energy :          ",scf_energy+cc_energy
-      else 
-        if (cc2) then
-          write (*,'(A,F25.15)') "  Total  CC2 energy :          ",scf_energy+cc_energy
-        else
-          if (iterative_scheme.eq.21) write(label_iterative,'(A12)') "CCSD       "
-          if (iterative_scheme.eq.30) write(label_iterative,'(A12)') "CCSDT      "
-          if (iterative_scheme.eq.40) write(label_iterative,'(A12)') "CCSDTQ     "
-          if (iterative_scheme.eq.50) write(label_iterative,'(A12)') "CCSDTQP    "
-
-          write (*,'(A,F25.15)') "  Total "//label_iterative//" energy :  ",scf_energy+cc_energy
-          if (present(t_energy)) then 
-            write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+t_energy(1)
-            write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(2)
-            write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(3)
-          end if
-        end if
+      write (*,'(2A,F25.15)') "  Total ",label_iterative,scf_energy+cc_energy
+      if (present(pert_energy).and.(perturbative_scheme.eq.30)) then
+         write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+pert_energy(1)
+         write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+pert_energy(1)+pert_energy(2)
+         write (*,'(A,F25.15)') "  Total CCSD-T  energy :       ",scf_energy+cc_energy+pert_energy(1)+pert_energy(3)
       end if
       write(*,*) ""
       write(*,'(A)') "-----------------------------------------------"

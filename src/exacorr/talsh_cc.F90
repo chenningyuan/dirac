@@ -75,7 +75,7 @@ module talsh_cc
 !        orbital energies
          real(8), allocatable :: eps_occ(:),eps_vir(:)
 !        CCSD,CC2,... control and result variables
-         real(8) :: e_core, scf_energy, mp2_energy, cc_energy, t_energy(3)
+         real(8) :: e_core, scf_energy, mp2_energy, cc_energy, pert_energy(3)
          real(8) :: t_target_precision
          real(8) :: t1diag
          integer :: ncycles
@@ -83,6 +83,7 @@ module talsh_cc
          logical :: CCD, lambda
          logical :: CC2 
          logical :: CCSDT, CCSDTQ, CCSDTQP
+         logical :: do_perturbative
          integer :: iterative_level, iterative_scheme
          integer :: perturbative_level, perturbative_scheme
 
@@ -115,7 +116,10 @@ module talsh_cc
          mo_occ = exa_input%mo_occ
          mo_vir = exa_input%mo_vir
          t_target_precision = exa_input%t_econv
+
+         do_perturbative = exa_input%do_perturbative
          CCD = exa_input%ccd
+         CC2 = exa_input%cc2    
 
          iterative_level     = exa_input%iterative_level
          iterative_scheme    = exa_input%iterative_scheme
@@ -129,7 +133,10 @@ module talsh_cc
          if (iterative_level.eq.4) CCSDTQ =.true.
          if (iterative_level.eq.5) CCSDTQP =.true.
 
-         CC2 = exa_input%cc2     !L
+         if (CCD.or.CC2.or.CCSDT.or.CCSDTQ.or.CCSDTQP) then
+            do_perturbative = .false.
+         end if
+
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
 
@@ -302,22 +309,27 @@ module talsh_cc
             ! calculate T1 diagnostic
             t1diag = tensor_norm2(comm_t%t1)
             t1diag = t1diag/sqrt(dble(nocc))
-            if (exa_input%do_perturbative .and. .not.CC2 .and. .not.CCSDT .and. .not.CCSDTQ) then
+         else
+            t1diag = 0.0d0
+         end if
+
+         if (do_perturbative) then
+           if (perturbative_scheme.eq.30) then
               !Calculate (T) energy correction
               call print_date('-Start- Triples')
               if (exa_input%tripl_lap) then 
-                call t3_energy_laplace (t_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
+                call t3_energy_laplace (pert_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
               else
-                call t3_energy (t_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
-                              int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
+                call t3_energy (pert_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
+                           int_t%ooov,int_t%vovv,int_t%oovv,exa_input%print_level)
               end if
               call print_date('-End- Triples')
-              call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag, t_energy=t_energy)
-            else
-              call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
-            end if
+           end if
+           call print_exaoutput(exa_input%talsh, iterative_scheme, perturbative_scheme, &
+                                scf_energy, mp2_energy, cc_energy, t1diag=t1diag, pert_energy=pert_energy)
          else
-            call print_exaoutput(exa_input%talsh, CCD, CC2, scf_energy, mp2_energy, cc_energy)
+            call print_exaoutput(exa_input%talsh, iterative_scheme, perturbative_scheme,&
+                                 scf_energy, mp2_energy, cc_energy, t1diag=t1diag)
          end if
 
          !Destruct diis tensors
