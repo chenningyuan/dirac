@@ -141,7 +141,7 @@
          type(talsh_tens_t) :: goo, gvv
          type(talsh_tens_t) :: hoo, hov, hvv
          type(talsh_tens_t) :: a_int, h_int
-         type(talsh_tens_t) :: t1, t2, t3, t4, tau
+         type(talsh_tens_t) :: t1, t2, t3, t4, t5, tau
         end type talsh_comm_tens
 
         type, public :: talsh_lambda_tens

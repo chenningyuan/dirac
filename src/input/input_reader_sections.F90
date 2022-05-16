@@ -981,6 +981,11 @@
          exa_input%iterative_scheme = 22
       end if
 
+      if (kw_matches(word, '.CCSDTQP')) then 
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 50
+      end if
+
       if (kw_matches(word, '.CCSDTQ')) then 
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 40

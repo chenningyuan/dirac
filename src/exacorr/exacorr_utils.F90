@@ -161,7 +161,15 @@ module exacorr_utils
       real(8), intent(in)           :: scf_energy, mp2_energy, cc_energy
       real(8), intent(in), optional :: t1diag
       real(8), intent(in), optional :: t_energy(3)
+      character :: label_iterative(12)
       
+      if (iterative_scheme.eq.20) write(label_iterative,'(A12)') "CCD        "
+      if (iterative_scheme.eq.21) write(label_iterative,'(A12)') "CCSD       "
+      if (iterative_scheme.eq.22) write(label_iterative,'(A12)') "CC2        "
+      if (iterative_scheme.eq.30) write(label_iterative,'(A12)') "CCSDT      "
+      if (iterative_scheme.eq.40) write(label_iterative,'(A12)') "CCSDTQ     "
+      if (iterative_scheme.eq.50) write(label_iterative,'(A12)') "CCSDTQP    "
+
       write(*,*) ""
       write(*,'(A)') "-----------------------------------------------"
       write(*,'(A)') "     -     Final results from EXACORR     -    "
@@ -202,7 +210,12 @@ module exacorr_utils
         if (cc2) then
           write (*,'(A,F25.15)') "  Total  CC2 energy :          ",scf_energy+cc_energy
         else
-          write (*,'(A,F25.15)') "  Total CCSD energy :          ",scf_energy+cc_energy
+          if (iterative_scheme.eq.21) write(label_iterative,'(A12)') "CCSD       "
+          if (iterative_scheme.eq.30) write(label_iterative,'(A12)') "CCSDT      "
+          if (iterative_scheme.eq.40) write(label_iterative,'(A12)') "CCSDTQ     "
+          if (iterative_scheme.eq.50) write(label_iterative,'(A12)') "CCSDTQP    "
+
+          write (*,'(A,F25.15)') "  Total "//label_iterative//" energy :  ",scf_energy+cc_energy
           if (present(t_energy)) then 
             write (*,'(A,F25.15)') "  Total CCSD+T  energy :       ",scf_energy+cc_energy+t_energy(1)
             write (*,'(A,F25.15)') "  Total CCSD(T) energy :       ",scf_energy+cc_energy+t_energy(1)+t_energy(2)

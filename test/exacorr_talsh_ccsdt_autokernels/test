@@ -20,7 +20,12 @@ f.add(from_string = 'Eigenvalues',
       rel_tolerance   = 1.0e-5)
 
 #test.run(['ccsd-fullt_energy.inp'], ['LiH', 'h2o.xyz'], f)
-test.run(['ccsdt_x2c.inp'], ['H2O_nosym.mol'], f)
-test.run(['ccsd-fullt_energy.inp'], ['LiH'], f)
+###test.run(['ccsdt_x2c.inp'], ['H2O_nosym.mol'], f)
+###test.run(['ccsd-fullt_energy.inp'], ['LiH'], f)
+#test.run(['ccsdt_energy_large_cvalue.inp'], ['h2o.xyz'], f)
+##test.run(['ccsdt_energy_large_cvalue.inp'], ['h2o.xyz', 'LiH'], f)
+
+#test.run(['ccsdt_nonrel_contracted_energy_small.inp', 'ccsdt_x2c_energy_small.inp'], ['h2o.xyz'], f)
+test.run(['ccsdt_x2c_energy_small.inp'], ['h2o.xyz'], f)
 
 sys.exit(test.return_code)
