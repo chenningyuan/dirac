@@ -641,7 +641,7 @@
          nr_words = word_count(line)
          allocate(word_array(nr_words))
          read(line, *) (word_array(j), j = 1, nr_words)
-         visual_cfg_txt_plot_file_manifold = trim(word_array(1))
+         visual_cfg_txt_plot_file_domain   = trim(word_array(1))
          visual_cfg_txt_plot_file_datatype = trim(word_array(2))
          if (nr_words == 3) then 
             visual_cfg_txt_plot_file_customname = trim(word_array(3))

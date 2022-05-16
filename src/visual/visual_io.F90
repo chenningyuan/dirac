@@ -17,7 +17,7 @@ module visual_io
     integer:: unit = -1
     character(len=:), allocatable:: name
     character(len=:), allocatable:: format                                                               
-    character(len=:), allocatable:: manifold                                                             
+    character(len=:), allocatable:: domain                                                             
     character(len=:), allocatable:: data_type                                                            
     logical:: exists = .false.                                                                           
     logical:: is_opened = .false.                                                                        
@@ -95,7 +95,7 @@ module visual_io
       plot_files(1)%name = 'plot_file.txt'
       plot_files(1)%data_type = 'scalar'
       plot_files(1)%format    = 'txt'
-      plot_files(1)%manifold  = '2d'
+      plot_files(1)%domain  = '2d'
 
    end subroutine prepare_plot_txt_file
 
@@ -197,7 +197,7 @@ module visual_io
          ! file attributes common to all data types
          do i = 1, size(visual_cfg_2d_data_types)
             plot_files(i)%format    = 'txt'
-            plot_files(i)%manifold  = '2d'
+            plot_files(i)%domain  = '2d'
          end do   
 
       end if
@@ -215,7 +215,7 @@ module visual_io
          write(*,*) plot_files(i)%unit
          write(*,*) plot_files(i)%name
          write(*,*) plot_files(i)%format
-         write(*,*) plot_files(i)%manifold
+         write(*,*) plot_files(i)%domain
          write(*,*) plot_files(i)%data_type
          write(*,*) plot_files(i)%exists
          write(*,*) plot_files(i)%is_opened

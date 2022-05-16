@@ -51,8 +51,8 @@ module visual_cfg
 
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_customname
 
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_manifold
-   character(len = 6), public               :: visual_cfg_txt_plot_file_manifolds(4) = &
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_domain
+   character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
                                                [character(len = 6):: '2D', '3D', 'line', 'radial']
 
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_datatype
