@@ -27,12 +27,12 @@ X2C Hamiltonian. CCSDTQP energies, small test.
 6..8
 #.VIRTUAL
 #6..10
-.CCSDTQP
+.CC-P
 .AUTOKERNEL
 .PRINT
 2
 .TALSH_BUFF
-10
+40
 **MOLECULE
 *COORDINATES
 .UNITS

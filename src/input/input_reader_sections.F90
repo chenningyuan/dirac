@@ -981,34 +981,34 @@
          exa_input%iterative_scheme = 22
       end if
 
-      if (kw_matches(word, '.CCSDTQP')) then 
-         exa_input%iterative_level  = 5
-         exa_input%iterative_scheme = 50
-      end if
-
-      if (kw_matches(word, '.CCSDTQ')) then 
-         exa_input%iterative_level  = 4
-         exa_input%iterative_scheme = 40
-      end if
-
-      if (kw_matches(word, '.CCSDfullT')) then 
+      if (kw_matches(word, '.CCSDfullT   ')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 30
       end if
 
-      if (kw_matches(word, '.CCSDT1A')) then
+      if (kw_matches(word, '.CCSDT-1b    ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 33
       end if
 
-      if (kw_matches(word, '.CCSDT1A')) then
+      if (kw_matches(word, '.CCSDT-1a    ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 32
       end if
 
-      if (kw_matches(word, '.CCSDT1')) then 
+      if (kw_matches(word, '.CCSDT-1     ')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 31
+      end if
+
+      if (kw_matches(word, '.CC-Q     ')) then
+         exa_input%iterative_level  = 4
+         exa_input%iterative_scheme = 40
+      end if
+
+      if (kw_matches(word, '.CC-P     ')) then
+         exa_input%iterative_level  = 5
+         exa_input%iterative_scheme = 50
       end if
 
       if (kw_matches(word, '.TCONVERG')) then
@@ -1041,6 +1041,7 @@
 
       if (kw_matches(word, '.NOTRIPLES')) then
          exa_input%do_triples = .false.
+         exa_input%do_perturbative = .false.
       end if
 
       if (kw_matches(word, '.TRIPL_BLOCK')) then

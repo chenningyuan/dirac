@@ -23,7 +23,7 @@ NR Hamiltonian. CCSDTQP energies, small test.
 3..5
 .VIRTUAL
 6..10
-.CCSDTQP
+.CCfullP
 .AUTOKERNEL
 .PRINT
 2
