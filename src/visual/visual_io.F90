@@ -12,22 +12,55 @@ module visual_io
    public open_plot_files_for_export
    public close_plot_txt_files
    public print_plot_files_info
+   public write_plot_data
 
 !  public types
    type, public:: visual_plot_file
     integer:: unit = -1
     character(len=:), allocatable:: name
-    character(len=:), allocatable:: format                                                               
-    character(len=:), allocatable:: domain                                                             
-    character(len=:), allocatable:: data_type                                                            
+    character(len=:), allocatable:: format
+    character(len=:), allocatable:: domain
+    character(len=:), allocatable:: data_type
+    character(len=:), allocatable:: float_format
     logical:: exists = .false.                                                                           
     logical:: is_opened = .false.                                                                        
    end type visual_plot_file
+
+   interface write_plot_data 
+      module procedure write_plot_data_txt_2d
+   end interface
 
    private
 
    contains
 
+
+!  -----------------------------------------------------------------------------
+   subroutine write_plot_data_txt_2d(plot_files, grid_point, grid_function)
+!  -----------------------------------------------------------------------------
+      type(visual_plot_file), intent(inout), dimension(:):: plot_files
+      real(8), intent(in):: grid_point(*)
+      real(8), intent(in):: grid_function(*)
+      character(len=:), allocatable:: fmt
+      integer:: i
+!  -----------------------------------------------------------------------------
+
+      do i = 1, visual_cfg_nr_plot_files
+
+         if (plot_files(i)%domain .eq. '2d' .and. &
+             plot_files(i)%data_type .eq. 'scalar') then
+            fmt='(3'//plot_files(i)%float_format//')'
+            if (plot_files(i)%is_opened) then
+               write(plot_files(i)%unit, fmt)     &
+                  grid_point(1), &
+                  grid_point(2), &
+                  grid_function(1)
+            end if
+         end if
+
+      end do
+ 
+   end subroutine
 
 !  -----------------------------------------------------------------------------
    subroutine open_plot_files_on_import(use_legacy, plot_files)
@@ -37,17 +70,17 @@ module visual_io
       integer:: i
 !  -----------------------------------------------------------------------------
 
-      !if (use_legacy) then
-      !   call visual_legacy_files_for_data_import()
-      !else
-      !   call prepare_plot_txt_file(plot_files)
-      !end if
+      if (use_legacy) then
+         call visual_legacy_files_for_data_import(plot_files)
+      else
+         call prepare_plot_txt_file(plot_files)
+      end if
 
-      !if (allocated(plot_files)) then
-      !   do i = 1, size(plot_files)
-      !      call open_plot_txt_file(plot_files(i))
-      !   end do
-      !end if
+      if (allocated(plot_files)) then
+         do i = 1, size(plot_files)
+            call open_inp_txt_file(plot_files(i))
+         end do
+      end if
 
    end subroutine open_plot_files_on_import
 
@@ -67,6 +100,9 @@ module visual_io
       end if
 
       if (allocated(plot_files)) then
+         write(*, *) 'before trying to open: '
+         write(*, *) 'use_legacy, nr of plot files: ', use_legacy, size(plot_files)
+         call print_plot_files_info(plot_files)
          do i = 1, size(plot_files)
             call open_plot_txt_file(plot_files(i))
          end do
@@ -91,6 +127,33 @@ module visual_io
       plot_file%is_opened = .true.
  
    end subroutine open_plot_txt_file
+
+!  -----------------------------------------------------------------------------
+   subroutine open_inp_txt_file(plot_file)
+!  -----------------------------------------------------------------------------
+      type(visual_plot_file), intent(inout):: plot_file
+      character(len = 100):: errmsg
+      logical:: exists, is_opened
+!  -----------------------------------------------------------------------------
+
+      inquire(plot_file%unit, exist = exists, opened = is_opened)
+      if (exists) then
+         if (.not.is_opened) then
+            open(unit   = plot_file%unit, &
+                 file   = plot_file%name, &
+                 status = 'new',          &
+                 access = 'sequential',   &
+                 form   = 'formatted')
+            plot_file%is_opened = .true.
+         end if
+         plot_file%exists    = .true.
+      else
+          write (errmsg, *) 'file ', plot_file%name, ' does not exist',&
+                            ' Stopping now!'
+          call visual_quit(errmsg)
+      end if
+ 
+   end subroutine open_inp_txt_file
 
 
 !  -----------------------------------------------------------------------------
@@ -118,15 +181,69 @@ module visual_io
       allocate(plot_files(1))
 
       plot_files(1)%unit = newunit()
-      plot_files(1)%name = 'plot_file.txt'
-      plot_files(1)%data_type = 'scalar'
-      plot_files(1)%format    = 'txt'
-      plot_files(1)%domain  = '2d'
+      if (visual_cfg_txt_plot_file_name .ne. '') then
+         plot_files(1)%name = visual_cfg_txt_plot_file_name
+      else
+         plot_files(1)%name = 'plot_file.txt'
+      end if
+      plot_files(1)%format      = 'txt'
+      plot_files(1)%domain      = visual_cfg_plot_domain
+      plot_files(1)%data_type   = 'scalar'
+      plot_files(1)%float_format= 'es20.10e3'
+      !call assign_data_type(visual_cfg_plot_property, plot_files(1)%data_type)
+   
+      visual_cfg_nr_plot_files = 1
+
 
    end subroutine prepare_plot_txt_file
 
+   subroutine assign_data_type(property, dt)
+      character(len=*), intent(in):: property
+      character(len=*), intent(inout):: dt
+      if (property .eq. 'density') then
+         dt = 'scalar'
+      end if
+   end subroutine
 
 !  -----------------------------------------------------------------------------
+   subroutine visual_legacy_files_for_data_import(plot_files)
+!  -----------------------------------------------------------------------------
+      type(visual_plot_file), intent(out), allocatable:: plot_files(:)
+
+      integer:: lunit_3d_gridimp
+      integer:: lunit_3d_jbfile
+
+      integer:: i
+!  -----------------------------------------------------------------------------
+
+      lunit_3d_gridimp = 32
+      lunit_3d_jbfile  = 33
+
+      if (visual_cfg_3d_gridimp) then
+
+         allocate(plot_files(1))
+         plot_files(1)%unit = lunit_3d_gridimp
+         plot_files(1)%name = visual_cfg_3d_gridfil
+         plot_files(1)%data_type = ''
+         plot_files(1)%format = 'txt'
+         plot_files(1)%domain = '3d'
+
+      end if
+
+      if (visual_cfg_3d_readjb) then
+
+         allocate(plot_files(1))
+         plot_files(1)%unit = lunit_3d_jbfile
+         plot_files(1)%name = visual_cfg_3d_jbfile
+         plot_files(1)%data_type = 'vector'
+         plot_files(1)%format = 'txt'
+         plot_files(1)%domain = '3d'
+
+      end if
+
+   end subroutine
+
+ !  -----------------------------------------------------------------------------
    subroutine visual_legacy_files_for_data_export(plot_files)
 !  -----------------------------------------------------------------------------
       type(visual_plot_file), intent(out), allocatable:: plot_files(:)
@@ -216,7 +333,10 @@ module visual_io
          do i = 1, nfiles
             plot_files(i)%format = 'txt'
             plot_files(i)%domain = '2d'
+            plot_files(i)%float_format= 'es20.10e3'
          end do   
+
+         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
       end if
 
@@ -263,7 +383,10 @@ module visual_io
          do i = 1, nfiles
             plot_files(i)%format = 'txt'
             plot_files(i)%domain = '3d'
+            plot_files(i)%float_format= 'es20.10e3'
          end do   
+
+         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
       end if
 
@@ -294,7 +417,10 @@ module visual_io
          do i = 1, nfiles
             plot_files(i)%format = 'txt'
             plot_files(i)%domain = 'line'
+            plot_files(i)%float_format= 'es20.10e3'
          end do   
+
+         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
       end if
 
@@ -325,7 +451,10 @@ module visual_io
          do i = 1, nfiles
             plot_files(i)%format = 'txt'
             plot_files(i)%domain = 'list'
+            plot_files(i)%float_format= 'es20.10e3'
          end do   
+
+         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
       end if
 
@@ -356,7 +485,10 @@ module visual_io
          do i = 1, nfiles
             plot_files(i)%format = 'txt'
             plot_files(i)%domain = 'radial'
+            plot_files(i)%float_format= 'es20.10e3'
          end do   
+
+         visual_cfg_nr_plot_files = visual_cfg_nr_plot_files+nfiles
 
       end if
 
@@ -374,6 +506,7 @@ module visual_io
          write(*,*) plot_files(i)%unit
          write(*,*) plot_files(i)%name
          write(*,*) plot_files(i)%format
+         write(*,*) plot_files(i)%float_format
          write(*,*) plot_files(i)%domain
          write(*,*) plot_files(i)%data_type
          write(*,*) plot_files(i)%exists

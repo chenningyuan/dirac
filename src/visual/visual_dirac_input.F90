@@ -14,6 +14,30 @@ module visual_dirac_input
 
    subroutine verify_input_keywords()
 
+      if (visual_cfg_3d .and. visual_cfg_3d_gridimp) then
+          call quit('Mutually exclusive keywords found in the input: .3D and .3D_IMP, please choose one')
+      end if
+      if (visual_cfg_3d_readjb .and. visual_cfg_3d_gridimp) then
+              call quit('Select one of .READJB and .3D_IMP keywords.')
+      end if
+
+      if (visual_cfg_3d_gridimp) then
+          if (visual_cfg_3d_grid_units .eq. 'angstrom') then
+              write(LUPRI, *) 'imported grid is in Angstrom, it will be transformed to a.u.'
+          else if (visual_cfg_3d_grid_units .eq. 'au') then
+              write(LUPRI, *) 'imported grid is in atomic units'
+          else
+              call quit('unrecognized unit in 3D_IMP keyword; choose "angstrom" or "au"')
+          end if
+      end if
+
+      if (visual_cfg_plot_file_format .eq. 'hdf5') then
+      end if
+
+      if (.not. visual_cfg_txt_plot_file_use_legacy) then
+         visual_cfg_plot_file_custom = .true.
+      end if
+
       call write_visual_cfg()
 
    end subroutine verify_input_keywords
@@ -51,6 +75,17 @@ module visual_dirac_input
       if (visual_cfg_3d_readjb) then
          write(lupri, *) 'Visualization in 3d done on the grid imported from file ', visual_cfg_3d_jbfile
          write(lupri, *) 'And the magnetically-induced current density written on that file is used'
+      end if
+
+      write(lupri, *) 'Visualization data exported to files: '
+      if (visual_cfg_plot_file_format .eq. 'txt') then
+         if (visual_cfg_txt_plot_file_use_legacy) then
+            write(lupri, *) 'using legacy files'
+         else
+            write(lupri, *) 'file name: ', visual_cfg_txt_plot_file_name
+            write(lupri, *) 'domain:    ', visual_cfg_plot_domain
+            write(lupri, *) 'property:  ', visual_cfg_plot_property
+         end if
       end if
 
       write(lupri, *)    '--------------------------------------------------------------------------------------'

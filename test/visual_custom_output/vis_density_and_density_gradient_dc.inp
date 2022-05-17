@@ -15,12 +15,8 @@
  DFCOEF
 .3D
 2 2 2
-.NOCUBE
-.NOVTK
-.PLTFMT
-txt
 .PLTTXT
 3D DENSIT scalar_field.txt e15.6
-#.PLTTXT
-#3D DENGRA vector_field.txt e15.6
+.PLTTXT
+3D DENGRA vector_field.txt e15.6
 *END OF

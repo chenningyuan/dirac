@@ -217,7 +217,7 @@
       dirac_cfg_visual = .true.
 
       if (kw_matches(word, '.OUTPRI')) then
-         visual_cfg_print_data_to_common_output = .true.
+         visual_cfg_print_data_to_dirac_output = .true.
       end if
 
       if (kw_matches(word, '.LIST  ')) then
@@ -299,6 +299,7 @@
 
       if (kw_matches(word, '.3D_IMP')) then
          visual_cfg_3d_gridimp = .true.
+         visual_cfg_inp_data_files_use_legacy = .true.
          read(get_file_unit(), *) visual_cfg_3d_gridfil
          read(get_file_unit(), *) visual_cfg_3d_grid_units
       end if
@@ -509,6 +510,7 @@
 
       if (kw_matches(word, '.READJB')) then
          visual_cfg_3d_readjb = .true.
+         visual_cfg_inp_data_files_use_legacy = .true.
          read(get_file_unit(), *) visual_cfg_3d_jbfile
       end if
 
@@ -618,17 +620,21 @@
       end if
 
       if (kw_matches(word, '.PLTTXT')) then
+
+         visual_cfg_plot_file_format = 'txt'
+         visual_cfg_txt_plot_file_use_legacy = .false.
+
          read(get_file_unit(), '(a)') line
          nr_words = word_count(line)
          allocate(word_array(nr_words))
          read(line, *) (word_array(j), j = 1, nr_words)
-         visual_cfg_txt_plot_file_domain   = trim(word_array(1))
-         visual_cfg_txt_plot_file_property = trim(word_array(2))
+         visual_cfg_plot_domain   = trim(word_array(1))
+         visual_cfg_plot_property = trim(word_array(2))
          if (nr_words > 2) then 
-            visual_cfg_txt_plot_file_customname = trim(word_array(3))
+            visual_cfg_txt_plot_file_name = trim(word_array(3))
          end if
          if (nr_words > 3) then 
-            visual_cfg_txt_plot_file_float_format = trim(word_array(3))
+            visual_cfg_txt_plot_file_float_format = trim(word_array(4))
          end if
          deallocate(word_array)
       end if

@@ -13,14 +13,6 @@
  DFCOEF
 .3D
 2 2 2
-.NOCUBE
-.NOVTK
-.OUTFIL
-scalar_field.txt
-
-
-#.PLTFMT
-#txt
-#.PLTTXT
-#3D scalar scalar_field.txt
+.PLTTXT
+3D scalar scalar_field.txt e12.4
 *END OF

@@ -563,9 +563,12 @@ contains
       integer              :: nr_points_gridimp
       logical              :: is_open
 
+      integer              :: ifile
       logical              :: refactoring
-      logical              :: use_legacy_files
+      type(visual_plot_file), allocatable:: visual_inp_data_files(:)
       type(visual_plot_file), allocatable:: visual_plot_files(:)
+      real(8), allocatable:: grid_point(:)
+      real(8), allocatable:: grid_function(:)
 !     --------------------------------------------------------------------------
 
       refactoring = .true.
@@ -584,27 +587,6 @@ contains
 
       allocate(atom_xyz(4, nucdep))
 
-      if (visual_cfg_3d .and. visual_cfg_3d_gridimp) then
-          call quit('Mutually exclusive keywords found in the input: .3D and .3D_IMP, please choose one')
-      end if
-      if (visual_cfg_3d_readjb .and. visual_cfg_3d_gridimp) then
-              call quit('Select one of .READJB and .3D_IMP keywords.')
-      end if
-
-      if (visual_cfg_3d_gridimp) then
-          if (visual_cfg_3d_grid_units .eq. 'angstrom') then
-              write(LUPRI, *) 'imported grid is in Angstrom, it will be transformed to a.u.'
-          else if (visual_cfg_3d_grid_units .eq. 'au') then
-              write(LUPRI, *) 'imported grid is in atomic units'
-          else
-              call quit('unrecognized unit in 3D_IMP keyword; choose "angstrom" or "au"')
-          end if
-      end if
-
-
-      lunit_3d_gridimp    = 23
-      lunit_3d_jbfile     = 26
-
 
 !     prepare input data (incoming grids and grid functions)
 !     ======================================================
@@ -616,8 +598,8 @@ contains
          visual_cfg_london_skip_cube = .true.
          visual_cfg_london_skip_vtk  = .true.
 
-         !use_legacy_files = .true.
-         !call open_plot_files_on_import(use_legacy_files, visual_plot_files)
+         call open_plot_files_on_import(visual_cfg_inp_data_files_use_legacy, &
+                                        visual_inp_data_files)
       end if
          
 
@@ -629,12 +611,12 @@ contains
           visual_cfg_3d_gridimp .or. visual_cfg_3d_readjb .or. &
           visual_cfg_list .or. visual_cfg_line .or. visual_cfg_radial) then
 
-         if (visual_cfg_print_data_to_common_output) then
+         if (visual_cfg_print_data_to_dirac_output) then
             ! write data to output
          else
             ! write data to separate files
-            use_legacy_files = .true.
-            call open_plot_files_for_export(use_legacy_files, visual_plot_files)
+            call open_plot_files_for_export(visual_cfg_txt_plot_file_use_legacy, &
+                                            visual_plot_files)
             if (allocated(visual_plot_files)) then
                call print_plot_files_info(visual_plot_files)
             end if
@@ -845,6 +827,12 @@ contains
 
       if (visual_cfg_2d) then
 
+         if (.not.visual_cfg_plot_file_custom) then
+            inquire(file = 'plot.2d.scalar', number = lunit_2d_scalar)
+            inquire(file = 'plot.2d.vector', number = lunit_2d_vector)
+            inquire(file = 'plot.2d.flow',   number = lunit_2d_flow)
+         end if
+
          vx = (visual_cfg_2d_p_right-visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
          vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
 
@@ -877,7 +865,7 @@ contains
 !              gosia TODO add tensors
                !t(4:12) = q(4:12, 1)
 
-               if (.not.visual_cfg_out_file_custom) then
+               if (.not.visual_cfg_plot_file_custom) then
                   write(lunit_2d_scalar, '(2e18.10, ES26.16E3)')     &
                      ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2, &
                      iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,   &
@@ -894,7 +882,16 @@ contains
                      iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,    &
                      (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
                else
-!              gosia: todo
+                  allocate(grid_point(2))
+                  allocate(grid_function(1))
+                  grid_point(1) = ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2
+                  grid_point(2) = iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2
+                  grid_function = s
+                  call write_plot_data(visual_plot_files, &
+                                       grid_point, &
+                                       grid_function)
+                  deallocate(grid_point)
+                  deallocate(grid_function)
                end if  ! if (.not.visual_cfg_out_file_custom) then
 
             end do
@@ -904,11 +901,6 @@ contains
       if (visual_cfg_3d_gridimp) then
 
 !        read grid points from visual_cfg_3d_gridfil file
-         open(lunit_3d_gridimp,               &
-              file   = visual_cfg_3d_gridfil, &
-              status = 'old',                 &
-              form   = 'formatted',           &
-              access = 'sequential')
          rewind(lunit_3d_gridimp)
 
          do 
@@ -971,11 +963,6 @@ contains
       if (visual_cfg_3d_readjb) then
 
 !        read grid points and magnetically-induced current density from visual_cfg_3d_jbfile
-         open(lunit_3d_jbfile, &
-              file   = visual_cfg_3d_jbfile, &
-              status = 'old',            &
-              access = 'sequential',     &
-              form   = 'formatted')
          rewind(lunit_3d_jbfile)
 
          do 

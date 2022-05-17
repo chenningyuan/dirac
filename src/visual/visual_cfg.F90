@@ -43,20 +43,24 @@ module visual_cfg
    logical,      public            :: visual_cfg_london_skip_vtk  = .false.
 
 
-!  options for plot files
+!  options for output plot files
+!  by default, plot to txt files, use legacy file names ("plot.3d.scalar", etc.)
    logical,      public                     :: visual_cfg_plot_file_custom = .false.
-
    character(len = :), allocatable, public  :: visual_cfg_plot_file_format
-   character(len = 4), public               :: visual_cfg_plot_file_formats(2) = [character(len = 4):: 'txt', 'hdf5']
+   !character(len = :), public               :: visual_cfg_plot_file_formats(2) = (/'txt', 'hdf5'/)
+   logical,      public                     :: visual_cfg_txt_plot_file_use_legacy = .true.
 
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_customname
+   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_name
    character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_float_format
 
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_domain
-   character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
-                                               [character(len = 6):: '2D', '3D', 'line', 'radial']
-   character(len = :), allocatable, public  :: visual_cfg_txt_plot_file_property
+   character(len = :), allocatable, public  :: visual_cfg_plot_domain
+   !character(len = 6), public               :: visual_cfg_txt_plot_file_domains(4) = &
+   !                                            [character(len = 6):: '2D', '3D', 'line', 'radial']
+   character(len = :), allocatable, public  :: visual_cfg_plot_property
 
+!  option for input data files
+   logical,      public                     :: visual_cfg_inp_data_files_use_legacy= .false.
+   integer,      public                     :: visual_cfg_nr_plot_files = 0
 
    integer, public:: iq_gamma5   =  1
    integer, public:: iq_density  =  2
@@ -108,7 +112,7 @@ module visual_cfg
    integer, public:: iq_gradj    = 48
    
 
-   logical, public:: visual_cfg_print_data_to_common_output = .false.
+   logical, public:: visual_cfg_print_data_to_dirac_output = .false.
 
 !                     visualization in 2d
    logical, public:: visual_cfg_2d             = .false.

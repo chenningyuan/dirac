@@ -16,12 +16,6 @@
  Z
 .3D
 2 2 2
-.OUTFIL
-
-
-tensor_field.txt
-#.PLTFMT
-#txt
-#.PLTTXT
-#3D tensor tensor_field.txt
+.PLTTXT
+3D tensor tensor_field.txt
 *END OF
