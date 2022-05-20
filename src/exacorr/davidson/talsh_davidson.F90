@@ -950,7 +950,7 @@ contains
         complex(kind=8) :: factor1, factor2
         integer(INTD) :: r1_rank 
         integer :: ierr, i
-        logical :: debug_form_r = .false.
+        logical :: debug_form_r = .true.
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
 
@@ -1058,7 +1058,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .false.
+        logical :: debug_correction_vectors = .true.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
