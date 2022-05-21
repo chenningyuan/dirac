@@ -17,5 +17,5 @@
 .3D
 2 2 2
 .PLTTXT
-3D vector vector_field.txt
+3D J vector_field.txt
 *END OF

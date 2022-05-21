@@ -17,5 +17,5 @@
  0.0  2.0  0.0     !"top"
  20                !nr of points origin-"top"
 .PLTTXT
-2d scalar scalar_field_2d.txt e12.4
+2d density scalar_field_2d.txt e12.4
 *END OF

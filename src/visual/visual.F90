@@ -612,9 +612,9 @@ contains
           visual_cfg_list .or. visual_cfg_line .or. visual_cfg_radial) then
 
          if (visual_cfg_print_data_to_dirac_output) then
-            ! write data to output
+            ! write to DIRAC output
          else
-            ! write data to separate files
+            ! write to files
             call open_plot_files_for_export(visual_cfg_txt_plot_file_use_legacy, &
                                             visual_plot_files)
             if (allocated(visual_plot_files)) then
@@ -629,21 +629,23 @@ contains
 
          call around('Requested density at point(s)')
 
-         write(lupri, *)
-         if (visual_cfg_tensor) then
-           write(lupri, '(a200)') &
-                'in columns: r_x, r_y, r_z, '//&
-                'scalar, x-component, y-component, z-component, '//&
-                'xx-component, xy-component, xz-component, '//&
-                'yx-component, yy-component, yz-component, '//&
-                'zx-component, zy-component, zz-component'
-         else
-           write(lupri, '(a80)') &
-                'in columns: r_x, r_y, r_z, '//&
-                'scalar, x-component, y-component, z-component'
+         if (visual_cfg_print_data_to_dirac_output) then
+            write(lupri, *)
+            if (visual_cfg_tensor) then
+              write(lupri, '(a200)') &
+                   'in columns: r_x, r_y, r_z, '//&
+                   'scalar, x-component, y-component, z-component, '//&
+                   'xx-component, xy-component, xz-component, '//&
+                   'yx-component, yy-component, yz-component, '//&
+                   'zx-component, zy-component, zz-component'
+            else
+              write(lupri, '(a80)') &
+                   'in columns: r_x, r_y, r_z, '//&
+                   'scalar, x-component, y-component, z-component'
+            end if
+         
+            write(lupri, *)
          end if
-
-         write(lupri, *)
            
          do i = 1, visual_cfg_nr_points_in_list
            call get_quantity_in_point(visual_cfg_nr_dmat,        &
@@ -657,25 +659,17 @@ contains
                                       q_max_dim,                 &
                                       q)
            
-           if (visual_cfg_tensor) then
-             write(lupri, '(16ES18.8E3)') &
-                 visual_cfg_xyz_list(i, 1),        &
-                 visual_cfg_xyz_list(i, 2),        &
-                 visual_cfg_xyz_list(i, 3),        &
-                 q(0:12, 1)
-           else
-             write(lupri, '(7ES18.8E3)') &
-                visual_cfg_xyz_list(i, 1),        &
-                visual_cfg_xyz_list(i, 2),        &
-                visual_cfg_xyz_list(i, 3),        &
-                q(0:3, 1)
-           end if
+           call write_plot_data(visual_plot_files, &
+                                (/visual_cfg_xyz_list(i, 1), visual_cfg_xyz_list(i, 2), visual_cfg_xyz_list(i, 3)/), &
+                                q(0:12, 1))
          end do
            
-         write(lupri, *)
-         call prsymb(lupri, '-', 100, 0)
-         write(lupri, *)
-         write(lupri, *)
+         if (visual_cfg_print_data_to_dirac_output) then
+            write(lupri, *)
+            call prsymb(lupri, '-', 100, 0)
+            write(lupri, *)
+            write(lupri, *)
+         end if
 
       end if
 
@@ -696,49 +690,10 @@ contains
                                        buffer,             &
                                        q_max_dim,          &
                                        q)
-
-            if (.not.visual_cfg_out_file_custom) then
-               write(lunit_line_scalar, '(4ES18.8E3)')     &
-                  r(1),                                    &
-                  r(2),                                    &
-                  r(3),                                    &
-                  q(0, 1)
-               write(lunit_line_vector, '(6ES18.8E3)')     &
-                  r(1),                                    &
-                  r(2),                                    &
-                  r(3),                                    &
-                  q(1:3, 1)
-               if (visual_cfg_tensor) then
-                  write(lunit_line_tensor, '(12ES18.8E3)')     &
-                     r(1),                                     &
-                     r(2),                                     &
-                     r(3),                                     &
-                     q(4:12, 1)
-               end if
-            else
-               if (visual_cfg_out_scalar_file_custom) then
-                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     q(0, 1)
-               end if
-               if (visual_cfg_out_vector_file_custom) then
-                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     q(1:3, 1)
-               end if
-               if (visual_cfg_out_2ndtensor_file_custom) then
-                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     q(4:12, 1)
-               end if
-            end if  ! if (.not.visual_cfg_out_file_custom) then
-
+           
+            call write_plot_data(visual_plot_files, &
+                                (/r(1), r(2), r(3)/), &
+                                q(0:12, 1))
          end do
       end if
 
@@ -788,36 +743,9 @@ contains
 !           Write results
 !           =============
 
-            if (.not.visual_cfg_out_file_custom) then
-               write(lunit_radial_scalar, '(2e18.10)') &
-                  rad,                                 &
-                  q(0, 1)
-               write(lunit_radial_vector, '(4e18.10)') &
-                  rad,                                 &
-                  q(1:3, 1)
-            else
-               if (visual_cfg_out_scalar_file_custom) then
-                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     q(0, 1)
-               end if
-               if (visual_cfg_out_vector_file_custom) then
-                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     q(1:3, 1)
-               end if
-               !if (visual_cfg_out_2ndtensor_file_custom) then
-               !   write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
-               !      r(1),                                             &
-               !      r(2),                                             &
-               !      r(3),                                             &
-               !      q(4:12, 1)
-               !end if
-            end if  ! if (.not.visual_cfg_out_file_custom) then
+            call write_plot_data(visual_plot_files, &
+                                (/rad/), &
+                                q(0:12, 1))
 
 
          end do
@@ -826,12 +754,6 @@ contains
       end if
 
       if (visual_cfg_2d) then
-
-         if (.not.visual_cfg_plot_file_custom) then
-            inquire(file = 'plot.2d.scalar', number = lunit_2d_scalar)
-            inquire(file = 'plot.2d.vector', number = lunit_2d_vector)
-            inquire(file = 'plot.2d.flow',   number = lunit_2d_flow)
-         end if
 
          vx = (visual_cfg_2d_p_right-visual_cfg_2d_p_origin)/visual_cfg_2d_nr_right
          vy = (visual_cfg_2d_p_top   - visual_cfg_2d_p_origin)/visual_cfg_2d_nr_top
@@ -844,6 +766,7 @@ contains
          vy_norm = dsqrt(vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))
          vz_norm = dsqrt(vz(1)*vz(1) + vz(2)*vz(2) + vz(3)*vz(3))
 
+         allocate(grid_point(2))
          i = 0
          do ix = 0, visual_cfg_2d_nr_right
             do iy = 0, visual_cfg_2d_nr_top
@@ -865,37 +788,27 @@ contains
 !              gosia TODO add tensors
                !t(4:12) = q(4:12, 1)
 
-               if (.not.visual_cfg_plot_file_custom) then
-                  write(lunit_2d_scalar, '(2e18.10, ES26.16E3)')     &
-                     ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2, &
-                     iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,   &
-                     s
-                  
-                  write(lunit_2d_vector, '(2e18.10, 2ES26.16E3)')     &
-                     ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2,  &
-                     iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,    &
-                     (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm, &
-                     (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
-                  
-                  write(lunit_2d_flow, '(2e18.10, ES26.16E3)')        &
-                     ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2,  &
-                     iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2,    &
-                     (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
-               else
-                  allocate(grid_point(2))
-                  allocate(grid_function(1))
-                  grid_point(1) = ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2
-                  grid_point(2) = iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2
-                  grid_function = s
-                  call write_plot_data(visual_plot_files, &
-                                       grid_point, &
-                                       grid_function)
-                  deallocate(grid_point)
-                  deallocate(grid_function)
-               end if  ! if (.not.visual_cfg_out_file_custom) then
-
+               grid_point(1) = ix*vx_norm-vx_norm*visual_cfg_2d_nr_right/2
+               grid_point(2) = iy*vy_norm-vy_norm*visual_cfg_2d_nr_top/2
+               ! FIXME!
+               !if flow then
+               !   allocate(grid_function(1))
+               !   grid_function(1) = (v(1)*vz(1) + v(2)*vz(2) + v(3)*vz(3))/vz_norm
+               !else if scalar then
+               !   allocate(grid_function(1))
+               !   grid_function(1) = s
+               !else if vector then
+               !   allocate(grid_function(2))
+               !   grid_function(1) = (v(1)*vx(1) + v(2)*vx(2) + v(3)*vx(3))/vx_norm
+               !   grid_function(2) = (v(1)*vy(1) + v(2)*vy(2) + v(3)*vy(3))/vy_norm
+               !end if
+               !call write_plot_data(visual_plot_files, &
+               !                     grid_point, &
+               !                     grid_function)
+               !deallocate(grid_function)
             end do
          end do
+         deallocate(grid_point)
       end if
 
       if (visual_cfg_3d_gridimp) then
@@ -919,41 +832,9 @@ contains
                                        q_max_dim,          &
                                        w)
 
-            if (.not.visual_cfg_out_file_custom) then
-               write(lunit_3d_vector, '(6ES18.8E3)') &
-                  r(1:3),                         &
-                  w(1:3)
-               write(lunit_3d_scalar, '(4ES18.8E3)') &
-                  r(1:3),                         &
-                  w(0)
-               if (visual_cfg_tensor) then
-                 write(lunit_3d_tensor, '(12ES18.8E3)') &
-                    r(1:3),                          &
-                    w(4:12)
-               end if
-            else
-               if (visual_cfg_out_scalar_file_custom) then
-                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     w(0)
-               end if
-               if (visual_cfg_out_vector_file_custom) then
-                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     w(1:3)
-               end if
-               if (visual_cfg_out_2ndtensor_file_custom) then
-                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     w(4:12)
-               end if
-            end if  ! if (.not.visual_cfg_out_file_custom) then
+            call write_plot_data(visual_plot_files, &
+                                r(1:3), &
+                                w(0:12))
 
          end do
  98      continue
@@ -979,41 +860,9 @@ contains
                                        w, &
                                        jb_input = v)
 
-            if (.not.visual_cfg_out_file_custom) then
-               write(lunit_3d_vector, '(6ES18.8E3)') &
-                  r(1:3),                         &
-                  w(1:3)
-               write(lunit_3d_scalar, '(4ES18.8E3)') &
-                  r(1:3),                         &
-                  w(0)
-               if (visual_cfg_tensor) then
-                 write(lunit_3d_tensor, '(12ES18.8E3)') &
-                    r(1:3),                         &
-                    w(4:12)
-               end if
-            else
-               if (visual_cfg_out_scalar_file_custom) then
-                  write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     w(0)
-               end if
-               if (visual_cfg_out_vector_file_custom) then
-                  write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     w(1:3)
-               end if
-               if (visual_cfg_out_2ndtensor_file_custom) then
-                  write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
-                     r(1),                                             &
-                     r(2),                                             &
-                     r(3),                                             &
-                     w(4:12)
-               end if
-            end if  ! if (.not.visual_cfg_out_file_custom) then
+            call write_plot_data(visual_plot_files, &
+                                r(1:3), &
+                                w(0:12))
 
          end do
  99      continue
@@ -1239,41 +1088,11 @@ contains
                                                 q_max_dim,          &
                                                 q(0, kcube))
 
-                     if (.not.visual_cfg_out_file_custom) then
-                        write(lunit_3d_vector, '(6ES18.8E3)') &
-                           r(1:3),                                    &
-                           q(1:3, kcube)
-                        write(lunit_3d_scalar, '(4ES18.8E3)')  &
-                           r(1:3),                                    &
-                           q(0, kcube)
-                        if (visual_cfg_tensor) then
-                          write(lunit_3d_tensor, '(12ES18.8E3)')  &
-                             r(1:3),                                    &
-                             q(4:12, kcube)
-                        end if
-                     else
-                        if (visual_cfg_out_scalar_file_custom) then
-                           write(lunit_outfil_custom_scalar, '(4ES18.8E3)')     &
-                              r(1),                                             &
-                              r(2),                                             &
-                              r(3),                                             &
-                              q(0, kcube)
-                        end if
-                        if (visual_cfg_out_vector_file_custom) then
-                           write(lunit_outfil_custom_vector, '(6ES18.8E3)')     &
-                              r(1),                                             &
-                              r(2),                                             &
-                              r(3),                                             &
-                              q(1:3, kcube)
-                        end if
-                        if (visual_cfg_out_2ndtensor_file_custom) then
-                           write(lunit_outfil_custom_2ndtensor, '(12ES18.8E3)') &
-                              r(1),                                             &
-                              r(2),                                             &
-                              r(3),                                             &
-                              q(4:12, kcube)
-                        end if
-                     end if  ! if (.not.visual_cfg_out_file_custom) then
+                     call write_plot_data(visual_plot_files, &
+                                         r(1:3), &
+                                         q(0:12, kcube))
+
+
                      if (visual_cfg_tensor) then
                        temp2(icube, jcube, kcube, 1:12) = q(1:12, kcube)
                      else
@@ -1307,17 +1126,10 @@ contains
                                                    q_max_dim,          &
                                                    q(0, kcube))
 
-                        write(lunit_3d_vector, '(6ES18.8E3)') &
-                           r(1:3),                                    &
-                           q(1:3, kcube)
-                        write(lunit_3d_scalar, '(4ES18.8E3)')  &
-                           r(1:3),                                    &
-                           q(0, kcube)
-                        if (visual_cfg_tensor) then
-                          write(lunit_3d_tensor, '(12ES18.8E3)')  &
-                             r(1:3),                                    &
-                             q(4:12, kcube)
-                        end if
+                        call write_plot_data(visual_plot_files, &
+                                            r(1:3), &
+                                            q(0:12, kcube))
+
                      end if
 
                   end do

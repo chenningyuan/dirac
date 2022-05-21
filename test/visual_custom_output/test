@@ -14,14 +14,19 @@ f.add(from_string = '! Requested density at point(s) !',
       num_lines   = 11,
       rel_tolerance   = 1.0e-5)
 
-test.run(['dc.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
+#test.run(['dc.inp'], ['h2o.mol'], args='--get="DFCOEF PAMXVC TBMO"')
 
-test.run(['vis_dc_density_2d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_2d.txt"')
-test.run(['vis_dc_density_2d_legacy_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="plot.2d.scalar"')
-#test.run(['vis_dc_density_3d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field.txt"')
-#test.run(['vis_dc_jbz_3d_custom_txt.inp'],     ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="vector_field.txt"')
-#test.run(['vis_dc_gradjbz_3d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="tensor_field.txt"')
-#test.run(['vis_density_and_density_gradient_dc.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="*.txt"')
+test.run(['vis_list_out.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_list.txt"')
+test.run(['vis_line_out.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_line.txt"')
+test.run(['vis_radial_out.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_radial.txt"')
+test.run(['vis_2d_out.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_2d.txt"')
+test.run(['vis_3d_out.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_3d.txt"')
+#test.run(['vis_dc_density_2d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field_2d.txt"')
+#test.run(['vis_dc_density_2d_legacy_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="plot.2d.scalar"')
+##test.run(['vis_dc_density_3d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="scalar_field.txt"')
+##test.run(['vis_dc_jbz_3d_custom_txt.inp'],     ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="vector_field.txt"')
+##test.run(['vis_dc_gradjbz_3d_custom_txt.inp'], ['h2o.mol'], args='--copy="DFCOEF PAMXVC TBMO" --get="tensor_field.txt"')
+##test.run(['vis_density_and_density_gradient_dc.inp'], ['h2o.mol'], args='--copy="DFCOEF" --get="*.txt"')
 
 def compare(fname, fname_ref):
     p = Popen(["diff", fname, fname_ref], stdin=PIPE)
@@ -37,15 +42,20 @@ def compare(fname, fname_ref):
         sys.stderr.write('error %s' % p.returncode)
 
 
+compare("scalar_field_list.txt", "result/scalar_field_list.txt")
+compare("scalar_field_line.txt", "result/scalar_field_line.txt")
+compare("scalar_field_radial.txt", "result/scalar_field_radial.txt")
 compare("scalar_field_2d.txt", "result/scalar_field_2d.txt")
-compare("plot.2d.scalar", "result/plot.2d.scalar")
-#compare("scalar_field.txt", "result/scalar_field.txt")
-#compare("vector_field.txt", "result/vector_field.txt")
-#compare("tensor_field.txt", "result/tensor_field.txt")
+compare("scalar_field_3d.txt", "result/scalar_field_3d.txt")
+#compare("scalar_field_2d.txt", "result/scalar_field_2d.txt")
+#compare("plot.2d.scalar", "result/plot.2d.scalar")
+##compare("scalar_field.txt", "result/scalar_field.txt")
+##compare("vector_field.txt", "result/vector_field.txt")
+##compare("tensor_field.txt", "result/tensor_field.txt")
 
 # cleanup
-os.unlink('DFCOEF')
-os.unlink('PAMXVC')
-os.unlink('TBMO')
+#os.unlink('DFCOEF')
+#os.unlink('PAMXVC')
+#os.unlink('TBMO')
 
 sys.exit(test.return_code)

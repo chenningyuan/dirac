@@ -24,43 +24,57 @@ module visual_io
     character(len=:), allocatable:: float_format
     logical:: exists = .false.                                                                           
     logical:: is_opened = .false.                                                                        
+    !contains
+    !    procedure:: assign, get, length
+    !    generic:: assignment(=) => assign
+    !    generic:: operator(-) => get
+    !    generic:: l => length
    end type visual_plot_file
 
    interface write_plot_data 
-      module procedure write_plot_data_txt_2d
+      module procedure write_plot_data_txt_by_line
    end interface
 
    private
 
    contains
 
+   !subroutine assign(string_inp, string_out)
+   !end subroutine
+
+
 
 !  -----------------------------------------------------------------------------
-   subroutine write_plot_data_txt_2d(plot_files, grid_point, grid_function)
+   subroutine write_plot_data_txt_by_line(plot_files, grid_point, grid_function)
 !  -----------------------------------------------------------------------------
       type(visual_plot_file), intent(inout), dimension(:):: plot_files
-      real(8), intent(in):: grid_point(*)
-      real(8), intent(in):: grid_function(*)
+      real(8), intent(in):: grid_point(:)
+      real(8), intent(in):: grid_function(:)
       character(len=:), allocatable:: fmt
-      integer:: i
+      integer:: i, j
 !  -----------------------------------------------------------------------------
 
-      do i = 1, visual_cfg_nr_plot_files
-
-         if (plot_files(i)%domain .eq. '2d' .and. &
-             plot_files(i)%data_type .eq. 'scalar') then
-            fmt='(3'//plot_files(i)%float_format//')'
+      if (visual_cfg_print_data_to_dirac_output) then
+         ! write to DIRAC output
+         fmt = '(*(es18.8e3, :))'
+         write(*, fmt) (grid_point(j), j = 1, size(grid_point)), &
+                                        (grid_function(j), j = 1, size(grid_function))
+      else
+         ! write to files
+         do i = 1, visual_cfg_nr_plot_files
+         
+            fmt = '(*('//trim(plot_files(i)%float_format)//',:))'
+         
             if (plot_files(i)%is_opened) then
-               write(plot_files(i)%unit, fmt)     &
-                  grid_point(1), &
-                  grid_point(2), &
-                  grid_function(1)
+               write(plot_files(i)%unit, fmt) (grid_point(j), j = 1, size(grid_point)), &
+                                              (grid_function(j), j = 1, size(grid_function))
             end if
-         end if
-
-      end do
+         
+         end do
+      end if
  
    end subroutine
+
 
 !  -----------------------------------------------------------------------------
    subroutine open_plot_files_on_import(use_legacy, plot_files)
@@ -189,21 +203,23 @@ module visual_io
       plot_files(1)%format      = 'txt'
       plot_files(1)%domain      = visual_cfg_plot_domain
       plot_files(1)%data_type   = 'scalar'
+      !plot_files(1)%data_type   = data_type(visual_cfg_plot_property)
       plot_files(1)%float_format= 'es20.10e3'
-      !call assign_data_type(visual_cfg_plot_property, plot_files(1)%data_type)
    
       visual_cfg_nr_plot_files = 1
 
 
    end subroutine prepare_plot_txt_file
 
-   subroutine assign_data_type(property, dt)
-      character(len=*), intent(in):: property
-      character(len=*), intent(inout):: dt
-      if (property .eq. 'density') then
-         dt = 'scalar'
-      end if
-   end subroutine
+   !character(len=:) function data_type(property)
+   !   character(len = 6), intent(in):: property
+   !   write(*,*) 'buba1', property, data_type, len(data_type)
+   !   if (property .eq. 'densit') then
+   !      allocate(data_type(6))
+   !      data_type = 'scalar'
+   !   end if
+   !   write(*,*) 'buba2', property, data_type, len(data_type)
+   !end function
 
 !  -----------------------------------------------------------------------------
    subroutine visual_legacy_files_for_data_import(plot_files)

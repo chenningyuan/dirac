@@ -17,5 +17,5 @@
 .3D
 2 2 2
 .PLTTXT
-3D tensor tensor_field.txt
+3D GRADJ tensor_field.txt
 *END OF
