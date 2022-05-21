@@ -3489,8 +3489,9 @@ module talsh_cc
           ierr=talsh_tensor_init(result_tensor)
           if (.not.CCD) then
              ierr=talsh_tensor_init(s1_tensor)
-             if (CCSDT.or.CCSDTQ) ierr=talsh_tensor_init(s3_tensor)
-             if (CCSDTQ) ierr=talsh_tensor_init(s4_tensor)
+             if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=talsh_tensor_init(s3_tensor)
+             if (CCSDTQ.or.CCSDTQP) ierr=talsh_tensor_init(s4_tensor)
+             if (CCSDTQP) ierr=talsh_tensor_init(s5_tensor)
           end if
           ierr=talsh_tensor_init(s2_tensor)
 
