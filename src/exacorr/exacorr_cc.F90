@@ -85,6 +85,12 @@ module exacorr_cc
          integer(INTL),dimension(2) :: oo_root, ov_root, vo_root, vv_root
          integer(INTL),dimension(4) :: oooo_root, ooov_root, oovv_root, vovo_root, &
                                        vvoo_root, vovv_root, vvvv_root
+         integer(INTL),dimension(6) :: vvvooo_root
+         integer(INTD),dimension(6) :: vvvooo_id
+         integer(INTL),dimension(8) :: vvvvoooo_root
+         integer(INTD),dimension(8) :: vvvvoooo_id
+         integer(INTL),dimension(10):: vvvvvooooo_root
+         integer(INTD),dimension(10):: vvvvvooooo_id
          integer(INTD),dimension(2) :: oo_id, ov_id, vo_id, vv_id 
          integer(INTD),dimension(4) :: oooo_id, ooov_id, oovv_id, vovo_id, &
                                        vvoo_id, vovv_id, vvvv_id
@@ -185,6 +191,24 @@ module exacorr_cc
          vovv_root = (/vir_space_root, occ_space_root, vir_space_root, vir_space_root/)
          vvvv_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root/)
 
+         if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
+            vvvooo_id   = (/vir_space_id, vir_space_id, vir_space_id,&
+                            occ_space_id, occ_space_id, occ_space_id/)
+            vvvooo_root = (/vir_space_root, vir_space_root, vir_space_root,&
+                            occ_space_root, occ_space_root, occ_space_root/)
+         end if
+         if (CCSDTQ.or.CCSDTQP) then
+            vvvvoooo_id   = (/vir_space_id, vir_space_id, vir_space_id, vir_space_id,&
+                              occ_space_id, occ_space_id, occ_space_id, occ_space_id/)
+            vvvvoooo_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root,&
+                              occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
+         end if
+         if (CCSDTQP) then
+            vvvvvooooo_id   = (/vir_space_id, vir_space_id, vir_space_id, vir_space_id, vir_space_id,&
+                                occ_space_id, occ_space_id, occ_space_id, occ_space_id, occ_space_id/)
+            vvvvvooooo_root = (/vir_space_root, vir_space_root, vir_space_root, vir_space_root, vir_space_root,&
+                                occ_space_root, occ_space_root, occ_space_root, occ_space_root, occ_space_root/)
+         end if
 !        All preliminary work is now done on all MPI-nodes, we may proceed to start ExaTensor.
 !        After the start of ExaTensor, the driver process (the last MPI process) will be executing
 !        the commands and tell the others (that stay inside exatns_process_role) what to do.
@@ -254,6 +278,23 @@ module exacorr_cc
                ierr=exatns_tensor_init(comm_t%t1,ZERO)
                ierr=exatns_tensor_contract("T(a,i)+=V+(i,a)*K()",comm_t%t1,comm_t%fov,one_tensor)
                ierr=exatns_tensor_transform(comm_t%t1,denom)
+               
+               if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
+                  ierr=exatns_tensor_create(comm_t%t3,"t3",vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
+                  ierr=exatns_tensor_init(comm_t%t3,ZERO)
+                  ierr=exatns_tensor_transform(comm_t%t3,denom)
+               end if
+               if (CCSDTQ.or.CCSDTQP) then
+                  ierr=exatns_tensor_create(comm_t%t4,"t4",vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
+                  ierr=exatns_tensor_init(comm_t%t4,ZERO)
+                  ierr=exatns_tensor_transform(comm_t%t4,denom)
+               end if
+               if (CCSDTQP) then
+                  ierr=exatns_tensor_create(comm_t%t5,"t5",vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
+                  ierr=exatns_tensor_init(comm_t%t5,ZERO)
+                  ierr=exatns_tensor_transform(comm_t%t5,denom)
+               end if
+ 
             end if
 
 !           Initialize t2 amplitudes with the MP2 values
@@ -299,9 +340,10 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%tau,"tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             if (.not.CCD) then
-                call diis (comm_t%t2,vvoo_id,vvoo_root,comm_t%t1,vo_id,vo_root,mode=1)
+                call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                           t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
             else
-                call diis (comm_t%t2,vvoo_id,vvoo_root,mode=1)
+                call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,mode=1)
             end if
             if (ierr.eq.EXA_SUCCESS) then
                write(*,*) " ccdriver: allocated all tensors"
@@ -339,9 +381,9 @@ module exacorr_cc
 
 !           Destroy tensors 
             if (.not.CCD) then
-                call diis (comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
             else
-                call diis(comm_t%t2,mode=2)
+                call diis(t2_tensor=comm_t%t2,mode=2)
             end if
             
             if (lambda.and..not.CC2) then
@@ -958,9 +1000,11 @@ module exacorr_cc
           ierr=exatns_tensor_transform(comm_t%t2,denom)
 
           if (.not.CCD) then
-              call diis (comm_t%t2,vvoo_id,vvoo_root,comm_t%t1,vo_id,vo_root,t_convergence)
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                         t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
+                         t_convergence=t_convergence)
           else
-              call diis (comm_t%t2,vvoo_id,vvoo_root,t_convergence=t_convergence)
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,t_convergence=t_convergence)
           end if
 
           ierr=exatns_tensor_init(result_t_tensor)
@@ -1364,9 +1408,12 @@ module exacorr_cc
 
 
           if (.not.CCD) then
-              call diis (comm_t%t2,vvoo_id,vvoo_root,comm_t%t1,vo_id,vo_root,t_convergence)
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                         t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
+                         t_convergence=t_convergence)
           else
-              call diis (comm_t%t2,vvoo_id,vvoo_root,t_convergence=t_convergence)
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                         t_convergence=t_convergence)
           end if
           if (debug_local) then
              if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
@@ -1602,9 +1649,10 @@ module exacorr_cc
 !*****************************************************************
 
          if (.not.CCD) then
-           call diis (l2_tensor,oovv_id,oovv_root,l1_tensor,ov_id,ov_root,mode=1)
+           call diis (t2_tensor=l2_tensor,vvoo_id=oovv_id,vvoo_root=oovv_root,&
+                      t1_tensor=l1_tensor,vo_id=ov_id,vo_root=ov_root,mode=1)
          else
-           call diis (l2_tensor,oovv_id,oovv_root,mode=1)
+           call diis (t2_tensor=l2_tensor,vvoo_id=oovv_id,vvoo_root=oovv_root,mode=1)
          end if
 
 !*****************
@@ -1792,9 +1840,9 @@ module exacorr_cc
           ierr=exatns_tensor_transform(l2_tensor,denom)
 
           if (.not.CCD) then
-            call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
+            call diis (t2_tensor=l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
           else
-            call diis (l2_tensor,t_convergence=t_convergence)
+            call diis (t2_tensor=l2_tensor,t_convergence=t_convergence)
           end if
 
           call print_iteration(ilambda,t_convergence)
@@ -1816,9 +1864,9 @@ module exacorr_cc
 
          if (.not.CCD) then
            ierr=exatns_tensor_destroy(s1_tensor)
-           call diis(l2_tensor,t1_tensor=l1_tensor,mode=2)
+           call diis(t2_tensor=l2_tensor,t1_tensor=l1_tensor,mode=2)
          else
-           call diis(l2_tensor,mode=2)
+           call diis(t2_tensor=l2_tensor,mode=2)
          end if
          ierr=exatns_tensor_destroy(s2_tensor)
          ierr=exatns_tensor_destroy(one_tensor)
@@ -2074,9 +2122,10 @@ module exacorr_cc
 !*****************************************************************
 
          if (.not.CCD) then
-           call diis (l2_tensor,oovv_id,oovv_root,l1_tensor,ov_id,ov_root,mode=1)
+           call diis (t2_tensor=l2_tensor,vvoo_id=oovv_id,vvoo_root=oovv_root,&
+                      t1_tensor=l1_tensor,vo_id=ov_id,vo_root=ov_root,mode=1)
          else
-           call diis (l2_tensor,oovv_id,oovv_root,mode=1)
+           call diis (t2_tensor=l2_tensor,vvoo_id=oovv_id,vvoo_root=oovv_root,mode=1)
          end if
 
 !*****************
@@ -2253,9 +2302,9 @@ module exacorr_cc
           ierr=exatns_tensor_transform(l2_tensor,denom)
 
           if (.not.CCD) then
-            call diis (l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
+            call diis (t2_tensor=l2_tensor,t1_tensor=l1_tensor,t_convergence=t_convergence)
           else
-            call diis (l2_tensor,t_convergence=t_convergence)
+            call diis (t2_tensor=l2_tensor,t_convergence=t_convergence)
           end if
 
           call print_iteration(ilambda,t_convergence)
@@ -2277,9 +2326,9 @@ module exacorr_cc
 
          if (.not.CCD) then
            ierr=exatns_tensor_destroy(s1_tensor)
-           call diis(l2_tensor,t1_tensor=l1_tensor,mode=2)
+           call diis(t2_tensor=l2_tensor,t1_tensor=l1_tensor,mode=2)
          else
-           call diis(l2_tensor,mode=2)
+           call diis(t2_tensor=l2_tensor,mode=2)
          end if
          ierr=exatns_tensor_destroy(s2_tensor)
          ierr=exatns_tensor_destroy(one_tensor)
@@ -2558,7 +2607,12 @@ module exacorr_cc
 
         end subroutine get_CC_integrals
 
-        subroutine diis (t2_tensor,vvoo_id,vvoo_root,t1_tensor,vo_id,vo_root,t_convergence,mode)
+        subroutine diis (t2_tensor,vvoo_id,vvoo_root,&
+                         t5_tensor,vvvvvooooo_id,vvvvvooooo_root,&
+                         t4_tensor,vvvvoooo_id,vvvvoooo_root,    &
+                         t3_tensor,vvvooo_id,vvvooo_root,        &
+                         t1_tensor,vo_id,vo_root,&
+                         t_convergence,mode)
 
          logical, parameter             :: crop=.true. ! if switching off, also increase dimension of maxdim (used to be 5)
          integer, parameter             :: maxdim = 3 ! maximum number of tensors that will be stored
@@ -2568,21 +2622,38 @@ module exacorr_cc
 
          type(tens_rcrsv_t), intent(inout),optional :: t1_tensor
          type(tens_rcrsv_t), intent(inout)          :: t2_tensor
+         type(tens_rcrsv_t), intent(inout),optional :: t3_tensor
+         type(tens_rcrsv_t), intent(inout),optional :: t4_tensor
+         type(tens_rcrsv_t), intent(inout),optional :: t5_tensor
          integer(INTD)                              :: ierr, tens_rank
          integer                                    :: i
          integer(INTD),dimension(2),optional        :: vo_id
          integer(INTD),dimension(4),optional        :: vvoo_id
+         integer(INTD),dimension(6),optional        :: vvvooo_id
+         integer(INTD),dimension(8),optional        :: vvvvoooo_id
+         integer(INTD),dimension(10),optional       :: vvvvvooooo_id
          integer(INTL),dimension(2),optional        :: vo_root
          integer(INTL),dimension(4),optional        :: vvoo_root
+         integer(INTL),dimension(6),optional        :: vvvooo_root
+         integer(INTL),dimension(8),optional        :: vvvvoooo_root
+         integer(INTL),dimension(10),optional       :: vvvvvooooo_root
          logical                                    :: init, clean_up, CCD
+         logical                                    :: CCSDitT, CCSDitTQ, CCSDitTQP
          integer, save                              :: itens, ntens
          complex(8), save                           :: b_diis(maxdim,maxdim)
          complex(8)                                 :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
          complex(8)                                 :: scalar
          real(8)                                    :: b_max, b_scale
-         type(tens_rcrsv_t), save                   :: t1_inp_tensor, t2_inp_tensor
-         type(tens_rcrsv_t), save                   :: t1_res_tensor(maxdim), t2_res_tensor(maxdim)
-         type(tens_rcrsv_t), save                   :: t1_err_tensor(maxdim), t2_err_tensor(maxdim)
+         type(tens_rcrsv_t), save                   :: t1_inp_tensor
+         type(tens_rcrsv_t), save                   :: t2_inp_tensor
+         type(tens_rcrsv_t), save                   :: t3_inp_tensor
+         type(tens_rcrsv_t), save                   :: t4_inp_tensor
+         type(tens_rcrsv_t), save                   :: t5_inp_tensor
+         type(tens_rcrsv_t), save                   :: t1_res_tensor(maxdim), t1_err_tensor(maxdim)
+         type(tens_rcrsv_t), save                   :: t2_res_tensor(maxdim), t2_err_tensor(maxdim)
+         type(tens_rcrsv_t), save                   :: t3_res_tensor(maxdim), t3_err_tensor(maxdim)
+         type(tens_rcrsv_t), save                   :: t4_res_tensor(maxdim), t4_err_tensor(maxdim)
+         type(tens_rcrsv_t), save                   :: t5_res_tensor(maxdim), t5_err_tensor(maxdim)
          integer                                    :: ipiv(0:maxdim), info  ! needed for ZHESV solver
          real(8)                                    :: work(maxdim,maxdim)   ! needed for ZHESV solver
          type(tens_rcrsv_t), save                   :: scalar_tensor
@@ -2592,32 +2663,76 @@ module exacorr_cc
          init       = .false.
          clean_up   = .false.
          CCD        = .false.
+         CCSDitT    = .false.
+         CCSDitTQ   = .false.
+         CCSDitTQP  = .false.
 
          if (present(mode)) then
             if (mode.eq.1) init       = .true.
             if (mode.eq.2) clean_up   = .true.
          end if
 
-         if (.not.present(t1_tensor)) CCD = .true.
+         if (.not.present(t1_tensor)) CCD  = .true.
+         if (present(t3_tensor)) CCSDitT   = .true.
+         if (present(t4_tensor)) CCSDitTQ  = .true.
+         if (present(t5_tensor)) CCSDitTQP = .true.         
 
          if (init) then
 !           get dimensions of the tensors
             if (.not.CCD) then
                 tens_rank=t1_tensor%get_rank(ierr)
                 if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
+
+                if (CCSDitT) then 
+                   tens_rank=t3_tensor%get_rank(ierr)
+                   if (ierr.ne.0 .or. tens_rank.ne.6) stop 'input t3-tensor corrupted in diis'
+                end if
+
+                if (CCSDitTQ) then 
+                   tens_rank=t4_tensor%get_rank(ierr)
+                   if (ierr.ne.0 .or. tens_rank.ne.8) stop 'input t4-tensor corrupted in diis'
+                end if
+
+                if (CCSDitTQP) then 
+                   tens_rank=t5_tensor%get_rank(ierr)
+                   if (ierr.ne.0 .or. tens_rank.ne.10) stop 'input t5-tensor corrupted in diis'
+                end if
+
             end if 
             tens_rank=t2_tensor%get_rank(ierr)
             if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis'
 !           initialize DIIS matrix
             b_diis      = ZERO
 !           create storage for input, result and error tensors (in memory for the time being)
-            if (.not.CCD) ierr=exatns_tensor_create(t1_inp_tensor,"t1_inp_tensor",vo_id,vo_root,EXA_DATA_KIND_C8)
+            if (.not.CCD) then
+               ierr=exatns_tensor_create(t1_inp_tensor,"t1_inp_tensor",vo_id,vo_root,EXA_DATA_KIND_C8)
+               if (CCSDitT)   &
+               ierr=exatns_tensor_create(t3_inp_tensor,"t3_inp_tensor",vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
+               if (CCSDitTQ)  &
+               ierr=exatns_tensor_create(t4_inp_tensor,"t4_inp_tensor",vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
+               if (CCSDitTQP) &
+               ierr=exatns_tensor_create(t5_inp_tensor,"t5_inp_tensor",vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
+            end if
             ierr=exatns_tensor_create(t2_inp_tensor,"t2_inp_tensor",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
             do i = 1, maxdim
                write (vs_str, '(I1)') i
                if (.not.CCD) then
                    ierr=exatns_tensor_create(t1_res_tensor(i),"t1_res_tensor_" // vs_str,vo_id,vo_root,EXA_DATA_KIND_C8)
                    ierr=exatns_tensor_create(t1_err_tensor(i),"t1_err_tensor_" // vs_str,vo_id,vo_root,EXA_DATA_KIND_C8)
+                   if (CCSDitT) then
+                   ierr=exatns_tensor_create(t3_res_tensor(i),"t3_res_tensor_" // vs_str,vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
+                   ierr=exatns_tensor_create(t3_err_tensor(i),"t3_err_tensor_" // vs_str,vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
+                   end if
+                   if (CCSDitTQ) then
+                   ierr=exatns_tensor_create(t4_res_tensor(i),"t4_res_tensor_" // vs_str,vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
+                   ierr=exatns_tensor_create(t4_err_tensor(i),"t4_err_tensor_" // vs_str,vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
+                   end if
+                   if (CCSDitTQP) then
+                   ierr=exatns_tensor_create(t5_res_tensor(i),"t5_res_tensor_"//vs_str,&
+                   vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
+                   ierr=exatns_tensor_create(t5_err_tensor(i),"t5_err_tensor_"//vs_str,&
+                   vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
+                   end if                   
                end if
                ierr=exatns_tensor_create(t2_res_tensor(i),"t2_res_tensor_" // vs_str,vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
                ierr=exatns_tensor_create(t2_err_tensor(i),"t2_err_tensor_" // vs_str,vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
@@ -2629,6 +2744,21 @@ module exacorr_cc
             if (.not.CCD) then
                 ierr=exatns_tensor_init(t1_inp_tensor,'ZERO')
                 ierr=exatns_tensor_contract("T1O(a,i)+=T1N(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
+                if (CCSDitT) then
+                   ierr=exatns_tensor_init(t3_inp_tensor,'ZERO')
+                   ierr=exatns_tensor_contract("T3O(a,b,c,i,j,k)+=T3N(a,b,c,i,j,k)*K()",&
+                                               t3_inp_tensor,t3_tensor,one_tensor)
+                end if
+                if (CCSDitTQ) then
+                   ierr=exatns_tensor_init(t4_inp_tensor,'ZERO')
+                   ierr=exatns_tensor_contract("T4O(a,b,c,d,i,j,k,l)+=T4N(a,b,c,d,i,j,k,l)*K()",&
+                                               t4_inp_tensor,t4_tensor,one_tensor)
+                end if
+                if (CCSDitTQP) then
+                   ierr=exatns_tensor_init(t5_inp_tensor,'ZERO')
+                   ierr=exatns_tensor_contract("T5O(a,b,c,d,e,i,j,k,l,m)+=T5N(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                               t5_inp_tensor,t5_tensor,one_tensor)
+                end if
             end if
             ierr=exatns_tensor_init(t2_inp_tensor,'ZERO')
             ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2N(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
@@ -2639,12 +2769,29 @@ module exacorr_cc
 
          if (clean_up) then
 !           de-allocate tensors
-            if (.not.CCD) ierr=exatns_tensor_destroy(t1_inp_tensor)
+            if (.not.CCD) then
+               ierr=exatns_tensor_destroy(t1_inp_tensor)
+               if (CCSDitT)   ierr=exatns_tensor_destroy(t3_inp_tensor)
+               if (CCSDitTQ)  ierr=exatns_tensor_destroy(t4_inp_tensor)
+               if (CCSDitTQP) ierr=exatns_tensor_destroy(t5_inp_tensor)
+            end if 
             ierr=exatns_tensor_destroy(t2_inp_tensor)
             do i = 1, maxdim
                 if (.not.CCD) then
                     ierr=exatns_tensor_destroy(t1_res_tensor(i))
                     ierr=exatns_tensor_destroy(t1_err_tensor(i))
+                    if (CCSDitT) then
+                       ierr=exatns_tensor_destroy(t3_res_tensor(i))
+                       ierr=exatns_tensor_destroy(t3_err_tensor(i))
+                    end if
+                    if (CCSDitTQ) then
+                       ierr=exatns_tensor_destroy(t4_res_tensor(i))
+                       ierr=exatns_tensor_destroy(t4_err_tensor(i))
+                    end if
+                    if (CCSDitTQP) then
+                       ierr=exatns_tensor_destroy(t5_res_tensor(i))
+                       ierr=exatns_tensor_destroy(t5_err_tensor(i))
+                    end if
                 end if
                 ierr=exatns_tensor_destroy(t2_res_tensor(i))
                 ierr=exatns_tensor_destroy(t2_err_tensor(i))
@@ -2663,6 +2810,24 @@ module exacorr_cc
          if (.not.CCD) then
             ierr=exatns_tensor_init(t1_res_tensor(itens),'ZERO')
             ierr=exatns_tensor_contract("T1R(a,i)+=T1(a,i)*K()",t1_res_tensor(itens),t1_tensor,one_tensor)
+            if (CCSDitT) then
+               ierr=exatns_tensor_init(t3_res_tensor(itens),'ZERO')
+               ierr=exatns_tensor_contract("T3R(a,b,c,i,j,k)+=T3(a,b,c,i,j,k)*K()", &
+                                            t3_res_tensor(itens),   &
+                                            t3_tensor,one_tensor)
+            end if
+            if (CCSDitTQ) then
+               ierr=exatns_tensor_init(t4_res_tensor(itens),'ZERO')
+               ierr=exatns_tensor_contract("T4R(a,b,c,d,i,j,k,l)+=T4(a,b,c,d,i,j,k,l)*K()", &
+                                            t4_res_tensor(itens),   &
+                                            t4_tensor,one_tensor)
+            end if
+            if (CCSDitTQP) then
+               ierr=exatns_tensor_init(t5_res_tensor(itens),'ZERO')
+               ierr=exatns_tensor_contract("T5R(a,b,c,d,e,i,j,k,l,m)+=T5(a,b,c,d,e,i,j,k,l,m)*K()", &
+                                            t5_res_tensor(itens),   &
+                                            t5_tensor,one_tensor)
+            end if
          end if
          ierr=exatns_tensor_init(t2_res_tensor(itens),'ZERO')
          ierr=exatns_tensor_contract("T2R(a,b,i,j)+=T2(a,b,i,j)*K()",t2_res_tensor(itens),t2_tensor,one_tensor)
@@ -2672,6 +2837,33 @@ module exacorr_cc
             ierr=exatns_tensor_init(t1_err_tensor(itens),'ZERO')
             ierr=exatns_tensor_contract("T1E(a,i)+=T1R(a,i)*K()",t1_err_tensor(itens),t1_tensor,one_tensor)
             ierr=exatns_tensor_contract("T1E(a,i)+=T1I(a,i)*K()",t1_err_tensor(itens),t1_inp_tensor,one_tensor,prefactor=MINUS_ONE)
+            if (CCSDitT) then
+               ierr=exatns_tensor_init(t3_err_tensor(itens),'ZERO')
+               ierr=exatns_tensor_contract("T3E(a,b,c,i,j,k)+=T3R(a,b,c,i,j,k)*K()", &
+                                            t3_err_tensor(itens),&
+                                            t3_tensor,one_tensor)
+               ierr=exatns_tensor_contract("T3E(a,b,c,i,j,k)+=T3I(a,b,c,i,j,k)*K()",&
+                                            t3_err_tensor(itens),&
+                                            t3_inp_tensor,one_tensor,prefactor=MINUS_ONE)
+            end if
+            if (CCSDitTQ) then
+               ierr=exatns_tensor_init(t4_err_tensor(itens),'ZERO')
+               ierr=exatns_tensor_contract("T4E(a,b,c,d,i,j,k,l)+=T4R(a,b,c,d,i,j,k,l)*K()", &
+                                            t4_err_tensor(itens),&
+                                            t4_tensor,one_tensor)
+               ierr=exatns_tensor_contract("T4E(a,b,c,d,i,j,k,l)+=T4I(a,b,c,d,i,j,k,l)*K()",&
+                                            t4_err_tensor(itens),&
+                                            t4_inp_tensor,one_tensor,prefactor=MINUS_ONE)
+            end if
+            if (CCSDitTQP) then
+               ierr=exatns_tensor_init(t5_err_tensor(itens),'ZERO')
+               ierr=exatns_tensor_contract("T5E(a,b,c,d,e,i,j,k,l,m)+=T5R(a,b,c,d,e,i,j,k,l,m)*K()", &
+                                            t5_err_tensor(itens),&
+                                            t5_tensor,one_tensor)
+               ierr=exatns_tensor_contract("T5E(a,b,c,d,e,i,j,k,l,m)+=T5I(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                            t5_err_tensor(itens),&
+                                            t5_inp_tensor,one_tensor,prefactor=MINUS_ONE)
+            end if
          end if
          ierr=exatns_tensor_init(t2_err_tensor(itens),'ZERO')
          ierr=exatns_tensor_contract("T2E(a,b,i,j)+=T2R(a,b,i,j)*K()",t2_err_tensor(itens),t2_tensor,one_tensor)
@@ -2681,7 +2873,30 @@ module exacorr_cc
 !        update the b_diis array that holds the scalar products of the error tensors
          do i = 1, ntens
             ierr=exatns_tensor_init(scalar_tensor)
-            if (.not.CCD) ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+            if (.not.CCD) then
+                ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",&
+                                            scalar_tensor,        &
+                                            t1_err_tensor(itens), &
+                                            t1_err_tensor(i))
+                if (CCSDitT) then
+                   ierr=exatns_tensor_contract("E()+=T+(a,b,c,i,j,k)*T(a,b,c,i,j,k)",&
+                                               scalar_tensor,        &
+                                               t3_err_tensor(itens), &
+                                               t3_err_tensor(i))
+                end if
+                if (CCSDitTQ) then
+                   ierr=exatns_tensor_contract("E()+=T+(a,b,c,d,i,j,k,l)*T(a,b,c,d,i,j,k,l)",&
+                                               scalar_tensor,        &
+                                               t4_err_tensor(itens), &
+                                               t4_err_tensor(i))
+                end if
+                if (CCSDitTQP) then
+                   ierr=exatns_tensor_contract("E()+=T+(a,b,c,d,e,i,j,k,l,m)*T(a,b,c,d,e,i,j,k,l,m)",&
+                                               scalar_tensor,        &
+                                               t5_err_tensor(itens), &
+                                               t5_err_tensor(i))
+                end if
+            end if
             ierr=exatns_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
             ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
             b_diis(itens,i)=scalar
@@ -2714,49 +2929,193 @@ module exacorr_cc
          if (ntens.ge.mindim) then
            if (crop) then
               ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
-              if (.not.CCD) ierr=exatns_tensor_init(t1_tensor,'ZERO')
+              if (.not.CCD) then
+                 ierr=exatns_tensor_init(t1_tensor,'ZERO')
+                 if (CCSDitT)   ierr=exatns_tensor_init(t3_tensor,'ZERO')
+                 if (CCSDitTQ)  ierr=exatns_tensor_init(t4_tensor,'ZERO')
+                 if (CCSDitTQP) ierr=exatns_tensor_init(t5_tensor,'ZERO')
+              end if
               ierr=exatns_tensor_init(t2_tensor,'ZERO')
               do i = 1, ntens
-               if (.not.CCD) ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",t1_tensor,t1_err_tensor(i), &
-                                                                              one_tensor,prefactor=coeff(i))
+               if (.not.CCD) then
+                  ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",&
+                                               t1_tensor,             &
+                                               t1_err_tensor(i),      &
+                                               one_tensor,prefactor=coeff(i))
+                  if (CCSDitT) &
+                     ierr=exatns_tensor_contract("T3(a,b,c,i,j,k)+=T3O(a,b,c,i,j,k)*K()",&
+                                                  t3_tensor,              &
+                                                  t3_err_tensor(i),       &
+                                                  one_tensor,prefactor=coeff(i))
+                  if (CCSDitTQ) &
+                     ierr=exatns_tensor_contract("T4(a,b,c,d,i,j,k,l)+=T4O(a,b,c,d,i,j,k,l)*K()",&
+                                                  t4_tensor,              &
+                                                  t4_err_tensor(i),       &
+                                                  one_tensor,prefactor=coeff(i))
+                  if (CCSDitTQP) &
+                     ierr=exatns_tensor_contract("T5(a,b,c,d,e,i,j,k,l,m)+=T5O(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                                  t5_tensor,              &
+                                                  t5_err_tensor(i),       &
+                                                  one_tensor,prefactor=coeff(i))
+
+               end if
                ierr=exatns_tensor_contract("T2(a,b,i,j)+=T2O(a,b,i,j)*K()",t2_tensor,t2_err_tensor(i), &
                                                                               one_tensor,prefactor=coeff(i))
               end do
               ! copy into error array (via init & contract because copy does not work in exatensor)
-              if (.not.CCD) ierr=exatns_tensor_init(t1_err_tensor(itens),'ZERO')
-              if (.not.CCD) ierr=exatns_tensor_contract("T1E(a,i)=T1(a,i)*K()",t1_err_tensor(itens),t1_tensor,one_tensor)
+!aspg, are the = instead of += ok in the lines below?
+              if (.not.CCD) then
+                 ierr=exatns_tensor_init(t1_err_tensor(itens),'ZERO')
+                 ierr=exatns_tensor_contract("T1E(a,i)=T1(a,i)*K()",&
+                                              t1_err_tensor(itens),  &
+                                              t1_tensor,one_tensor)
+                 if (CCSDitT) then
+                    ierr=exatns_tensor_init(t3_err_tensor(itens),'ZERO')
+                    ierr=exatns_tensor_contract("T3E(a,b,c,i,j,k)=T3(a,b,c,i,j,k)*K()",&
+                                                 t3_err_tensor(itens),  &
+                                                 t3_tensor,one_tensor)                 
+                 end if
+                 if (CCSDitTQ) then
+                    ierr=exatns_tensor_init(t4_err_tensor(itens),'ZERO')
+                    ierr=exatns_tensor_contract("T4E(a,b,c,d,i,j,k,l)=T4(a,b,c,d,i,j,k,l)*K()",&
+                                                 t4_err_tensor(itens),  &
+                                                 t4_tensor,one_tensor)                 
+                 end if
+                 if (CCSDitTQP) then
+                    ierr=exatns_tensor_init(t5_err_tensor(itens),'ZERO')
+                    ierr=exatns_tensor_contract("T5E(a,b,c,d,e,i,j,k,l,m)=T5(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                                 t5_err_tensor(itens),  &
+                                                 t5_tensor,one_tensor)                 
+                 end if
+              end if
               ierr=exatns_tensor_init(t2_err_tensor(itens),'ZERO')
               ierr=exatns_tensor_contract("T2E(a,b,i,j)=T2(a,b,i,j)*K()",t2_err_tensor(itens),t2_tensor,one_tensor)
               ! correct the latest row of the b_diis array for the fact that we use an optimized error vector
               do i = 1, ntens
                ierr=exatns_tensor_init(scalar_tensor)
-               if (.not.CCD) ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+               if (.not.CCD) then
+                  ierr=exatns_tensor_contract("E()+=T+(a,i)*T(a,i)",&
+                                              scalar_tensor,        &
+                                              t1_err_tensor(itens), &
+                                              t1_err_tensor(i))
+                  if (CCSDitT) &
+                     ierr=exatns_tensor_contract("E()+=T+(a,b,c,i,j,k)*T(a,b,c,i,j,k)",&
+                                                 scalar_tensor,        &
+                                                 t3_err_tensor(itens), &
+                                                 t3_err_tensor(i))
+                  if (CCSDitTQ) &
+                     ierr=exatns_tensor_contract("E()+=T+(a,b,c,d,i,j,k,l)*T(a,b,c,d,i,j,k,l)",&
+                                                 scalar_tensor,        &
+                                                 t4_err_tensor(itens), &
+                                                 t4_err_tensor(i))
+                  if (CCSDitTQP) &
+                     ierr=exatns_tensor_contract("E()+=T+(a,b,c,d,e,i,j,k,l,m)*T(a,b,c,d,e,i,j,k,l,m)",&
+                                                 scalar_tensor,        &
+                                                 t5_err_tensor(itens), &
+                                                 t5_err_tensor(i))
+                                             
+                end if                              
                ierr=exatns_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
                ierr=exatns_tensor_get_scalar(scalar_tensor,scalar)
                b_diis(itens,i)=scalar
                b_diis(i,itens)=dconjg(scalar)
               end do
               ! replace latest result vector by the optimized result vector, this is also the tensor to be used in the next iteration
-              if (.not.CCD) ierr=exatns_tensor_init(t1_tensor,'ZERO')
+              if (.not.CCD) then
+                 ierr=exatns_tensor_init(t1_tensor,'ZERO')
+                 if (CCSDitT)   ierr=exatns_tensor_init(t3_tensor,'ZERO')
+                 if (CCSDitTQ)  ierr=exatns_tensor_init(t4_tensor,'ZERO')
+                 if (CCSDitTQP) ierr=exatns_tensor_init(t5_tensor,'ZERO')
+              end if
               ierr=exatns_tensor_init(t2_tensor,'ZERO')
               do i = 1, ntens
-                 if (.not.CCD) ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",t1_tensor,t1_res_tensor(i), &
-                                                                                  one_tensor,prefactor=coeff(i))
+                 if (.not.CCD) then
+                    ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",&
+                                                 t1_tensor,        &
+                                                 t1_res_tensor(i), &
+                                                 one_tensor,prefactor=coeff(i))
+                    if (CCSDitT) &
+                       ierr=exatns_tensor_contract("T3(a,b,c,i,j,k)+=T3O(a,b,c,i,j,k)*K()",&
+                                                    t3_tensor,        &
+                                                    t3_res_tensor(i), &
+                                                    one_tensor,prefactor=coeff(i))
+                    if (CCSDitTQ) &
+                       ierr=exatns_tensor_contract("T4(a,b,c,d,i,j,k,l)+=T4O(a,b,c,d,i,j,k,l)*K()",&
+                                                    t4_tensor,        &
+                                                    t4_res_tensor(i), &
+                                                    one_tensor,prefactor=coeff(i))
+                    if (CCSDitTQP) &
+                       ierr=exatns_tensor_contract("T5(a,b,c,d,e,i,j,k,l,m)+=T5O(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                                    t5_tensor,        &
+                                                    t5_res_tensor(i), &
+                                                    one_tensor,prefactor=coeff(i))
+
+                 end if
                  ierr=exatns_tensor_contract("T2(a,b,i,j)+=T2O(a,b,i,j)*K()",t2_tensor,t2_res_tensor(i), &
                                                                               one_tensor,prefactor=coeff(i))
               end do
               ! copy into result array (via init & contract because copy does not work in exatensor)
-              if (.not.CCD) ierr=exatns_tensor_init(t1_res_tensor(itens),'ZERO')
-              if (.not.CCD) ierr=exatns_tensor_contract("T1R(a,i)=T1(a,i)*K()",t1_res_tensor(itens),t1_tensor,one_tensor)
+              if (.not.CCD) then
+                 ierr=exatns_tensor_init(t1_res_tensor(itens),'ZERO')
+                 ierr=exatns_tensor_contract("T1R(a,i)=T1(a,i)*K()",&
+                                              t1_res_tensor(itens), &
+                                              t1_tensor,one_tensor)
+                 if (CCSDitT) then
+                    ierr=exatns_tensor_init(t3_res_tensor(itens),'ZERO')
+                    ierr=exatns_tensor_contract("T3R(a,b,c,i,j,k)=T3(a,b,c,i,j,k)*K()",&
+                                              t3_res_tensor(itens), &
+                                              t3_tensor,one_tensor)
+
+                 end if
+                 if (CCSDitTQ) then
+                    ierr=exatns_tensor_init(t4_res_tensor(itens),'ZERO')
+                    ierr=exatns_tensor_contract("T4R(a,b,c,d,i,j,k,l)=T4(a,b,c,d,i,j,k,l)*K()",&
+                                              t4_res_tensor(itens), &
+                                              t4_tensor,one_tensor)
+
+                 end if
+                 if (CCSDitTQP) then
+                    ierr=exatns_tensor_init(t5_res_tensor(itens),'ZERO')
+                    ierr=exatns_tensor_contract("T5R(a,b,c,d,e,i,j,k,l,m)=T5(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                              t5_res_tensor(itens), &
+                                              t5_tensor,one_tensor)
+
+                 end if
+              end if
               ierr=exatns_tensor_init(t2_res_tensor(itens),'ZERO')
               ierr=exatns_tensor_contract("T2R(a,b,i,j)=T2(a,b,i,j)*K()",t2_res_tensor(itens),t2_tensor,one_tensor)
            else
               ! make the amplitudes for the new iteration
-              if (.not.CCD) ierr=exatns_tensor_init(t1_tensor,'ZERO')
+              if (.not.CCD) then
+                 ierr=exatns_tensor_init(t1_tensor,'ZERO')
+                 if (CCSDitT)   ierr=exatns_tensor_init(t3_tensor,'ZERO')
+                 if (CCSDitTQ)  ierr=exatns_tensor_init(t4_tensor,'ZERO')
+                 if (CCSDitTQP) ierr=exatns_tensor_init(t5_tensor,'ZERO')
+              end if
               ierr=exatns_tensor_init(t2_tensor,'ZERO')
               do i = 1, ntens
-                 if (.not.CCD) ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",t1_tensor,t1_res_tensor(i), &
-                                                                                  one_tensor,prefactor=coeff(i))
+                 if (.not.CCD) then
+                    ierr=exatns_tensor_contract("T1(a,i)+=T1O(a,i)*K()",&
+                                                 t1_tensor, &
+                                                 t1_res_tensor(i), &
+                                                 one_tensor,prefactor=coeff(i))
+                    if (CCSDitT) &
+                       ierr=exatns_tensor_contract("T3(a,b,c,i,j,k)+=T3O(a,b,c,i,j,k)*K()",&
+                                                    t3_tensor, &
+                                                    t3_res_tensor(i), &
+                                                    one_tensor,prefactor=coeff(i))
+                    if (CCSDitTQ) &
+                       ierr=exatns_tensor_contract("T4(a,b,c,d,i,j,k,l)+=T4O(a,b,c,d,i,j,k,l)*K()",&
+                                                    t4_tensor, &
+                                                    t4_res_tensor(i), &
+                                                    one_tensor,prefactor=coeff(i))
+                    if (CCSDitTQP) &
+                       ierr=exatns_tensor_contract("T5(a,b,c,d,e,i,j,k,l,m)+=T5O(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                                    t5_tensor, &
+                                                    t5_res_tensor(i), &
+                                                    one_tensor,prefactor=coeff(i))
+
+                 end if
                  ierr=exatns_tensor_contract("T2(a,b,i,j)+=T2O(a,b,i,j)*K()",t2_tensor,t2_res_tensor(i), &
                                                                               one_tensor,prefactor=coeff(i))
               end do
@@ -2767,11 +3126,34 @@ module exacorr_cc
          if (.not.CCD) then
             ierr=exatns_tensor_init(t1_inp_tensor,'ZERO')
             ierr=exatns_tensor_contract("T1O(a,i)+=T1(a,i)*K()",t1_inp_tensor,t1_tensor,one_tensor)
+            if (CCSDitT) then
+               ierr=exatns_tensor_init(t3_inp_tensor,'ZERO')
+               ierr=exatns_tensor_contract("T3O(a,b,c,i,j,k)+=T3(a,b,c,i,j,k)*K()",&
+                                           t3_inp_tensor, &
+                                           t3_tensor,one_tensor)
+            end if
+            if (CCSDitTQ) then
+               ierr=exatns_tensor_init(t4_inp_tensor,'ZERO')
+               ierr=exatns_tensor_contract("T4O(a,b,c,d,i,j,k,l)+=T4(a,b,c,d,i,j,k,l)*K()",&
+                                           t4_inp_tensor, &
+                                           t4_tensor,one_tensor)
+            end if
+            if (CCSDitTQP) then
+               ierr=exatns_tensor_init(t5_inp_tensor,'ZERO')
+               ierr=exatns_tensor_contract("T5O(a,b,c,d,e,i,j,k,l,m)+=T5(a,b,c,d,e,i,j,k,l,m)*K()",&
+                                           t5_inp_tensor, &
+                                           t5_tensor,one_tensor)
+            end if
          end if
          ierr=exatns_tensor_init(t2_inp_tensor,'ZERO')
          ierr=exatns_tensor_contract("T2O(a,b,i,j)+=T2(a,b,i,j)*K()",t2_inp_tensor,t2_tensor,one_tensor)
 
         end subroutine diis
+
+
+! aspg
+! to add here the routine to solve t equations with autokern
+! aspg
 
         subroutine init_fock_exat (mode,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
                                   orb_set,exa_input,scf_energy)

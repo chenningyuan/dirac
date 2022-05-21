@@ -1649,6 +1649,12 @@ module exacorr_tensor_methods
         case (6)
           allocate (tens_id  (6))
           allocate (tens_root(6))
+        case (8)
+          allocate (tens_id  (8))
+          allocate (tens_root(8))
+        case (10)
+          allocate (tens_id  (10))
+          allocate (tens_root(10))
         case default
           call quit ('Error: wrong dimension of tensor in denom_t_apply')
         end select
@@ -1666,7 +1672,7 @@ module exacorr_tensor_methods
       integer function denominate(rank,tens_body,data_kind,tens_dims,tens_bases, &
                          eps_occ,eps_vir,lambda) result (ierr)
 
-        !Scale with denominators for 2-d or 4-d tensor for regular CC and for lambda
+        !Scale with denominators for 2/4/6/8/10-d tensor for regular CC and for lambda
         !                        and for 3-d and 6-d tensor for triples
 
         implicit none
@@ -1679,11 +1685,13 @@ module exacorr_tensor_methods
         real(8), intent(in)       :: eps_occ(:),eps_vir(:)
         logical, intent(in)       :: lambda
 
-        integer(INTL)      :: i,j,k,a,b,c
+        integer(INTL)      :: i,j,k,l,m,a,b,c,d,e
         real(8)            :: denominator
         complex(8),pointer :: t1_tens(:,:)
         complex(8),pointer :: t2_tens(:,:,:,:)
         complex(8),pointer :: t3_tens(:,:,:,:,:,:)
+        complex(8),pointer :: t4_tens(:,:,:,:,:,:,:,:)
+        complex(8),pointer :: t5_tens(:,:,:,:,:,:,:,:,:,:)
 
         ierr=0 !set error code to success
         if(data_kind /= EXA_DATA_KIND_C8) then
@@ -1773,6 +1781,114 @@ module exacorr_tensor_methods
               end do
             end do
           end if
+
+        case (8)
+          call c_f_pointer(tens_body,t4_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
+          if (.not.lambda) then
+            do l = 1, tens_dims(8)
+              do k = 1, tens_dims(7)
+                do j = 1, tens_dims(6)
+                  do i = 1, tens_dims(5)
+                    do d = 1, tens_dims(4)
+                      do c = 1, tens_dims(3)
+                        do b = 1, tens_dims(2)
+                          do a = 1, tens_dims(1)
+                            denominator = eps_occ(k+tens_bases(8)-1) + eps_occ(j+tens_bases(7)-1) &
+                                        + eps_occ(k+tens_bases(6)-1) + eps_occ(j+tens_bases(5)-1) &
+                                        - eps_occ(i+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
+                                        - eps_vir(b+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
+                            t4_tens(a,b,c,d,i,j,k,l) = t4_tens(a,b,c,d,i,j,k,l) / denominator
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          else
+            do l = 1, tens_dims(4)
+              do k = 1, tens_dims(3)
+                do j = 1, tens_dims(2)
+                  do i = 1, tens_dims(1)
+                    do d = 1, tens_dims(8)
+                      do c = 1, tens_dims(7)
+                        do b = 1, tens_dims(6)
+                          do a = 1, tens_dims(5)
+                            denominator = eps_occ(k+tens_bases(4)-1) + eps_occ(j+tens_bases(3)-1) &
+                                        + eps_occ(i+tens_bases(2)-1) + eps_vir(c+tens_bases(1)-1) &
+                                        - eps_vir(c+tens_bases(8)-1) - eps_vir(c+tens_bases(7)-1) &
+                                        - eps_vir(b+tens_bases(5)-1) - eps_vir(a+tens_bases(5)-1)
+                            t4_tens(i,j,k,l,a,b,c,d) = t4_tens(i,j,k,l,a,b,c,d) / denominator
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          end if
+
+        case (10)
+          call c_f_pointer(tens_body,t5_tens,tens_dims(1:rank)) !map C pointer to 2-dimensional array
+          if (.not.lambda) then
+            do m = 1, tens_dims(10)
+              do l = 1, tens_dims(9)
+                do k = 1, tens_dims(8)
+                  do j = 1, tens_dims(7)
+                    do i = 1, tens_dims(6)
+                      do e = 1, tens_dims(5)
+                        do d = 1, tens_dims(4)
+                          do c = 1, tens_dims(3)
+                            do b = 1, tens_dims(2)
+                              do a = 1, tens_dims(1)
+                                denominator = eps_occ(k+tens_bases(10)-1) + eps_occ(j+tens_bases(9)-1) &
+                                            + eps_occ(k+tens_bases(8)-1) + eps_occ(j+tens_bases(7)-1) &
+                                            + eps_occ(i+tens_bases(6)-1) - eps_vir(c+tens_bases(5)-1) &
+                                            - eps_occ(i+tens_bases(4)-1) - eps_vir(c+tens_bases(3)-1) &
+                                            - eps_vir(b+tens_bases(2)-1) - eps_vir(a+tens_bases(1)-1)
+                                t5_tens(a,b,c,d,e,i,j,k,l,m) = t5_tens(a,b,c,d,e,i,j,k,l,m) / denominator
+                              end do
+                            end do
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          else
+            do m = 1, tens_dims(5)
+              do l = 1, tens_dims(4)
+                do k = 1, tens_dims(3)
+                  do j = 1, tens_dims(2)
+                    do i = 1, tens_dims(1)
+                      do e = 1, tens_dims(10)
+                        do d = 1, tens_dims(9)
+                          do c = 1, tens_dims(8)
+                            do b = 1, tens_dims(7)
+                              do a = 1, tens_dims(6)
+                                denominator = eps_occ(k+tens_bases(5)-1) &
+                                            + eps_occ(k+tens_bases(4)-1) + eps_occ(j+tens_bases(3)-1) &
+                                            + eps_occ(i+tens_bases(2)-1) + eps_vir(c+tens_bases(1)-1) &
+                                            - eps_vir(c+tens_bases(10)-1) &
+                                            - eps_vir(c+tens_bases(9)-1) - eps_vir(c+tens_bases(8)-1) &
+                                            - eps_vir(b+tens_bases(7)-1) - eps_vir(a+tens_bases(6)-1)
+                                t5_tens(i,j,k,l,m,a,b,c,d,e) = t5_tens(i,j,k,l,m,a,b,c,d,e) / denominator
+                              end do
+                            end do
+                          end do
+                        end do
+                      end do
+                    end do
+                  end do
+                end do
+              end do
+            end do
+          end if
+
          case default
             call quit ('Error: wrong dimension of tensor in denominate')
          end select

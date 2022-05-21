@@ -100,7 +100,7 @@
          type(tens_rcrsv_t) :: goo, gvv
          type(tens_rcrsv_t) :: hoo, hov, hvv
          type(tens_rcrsv_t) :: a_int, h_int
-         type(tens_rcrsv_t) :: t1, t2, t3, t4, tau
+         type(tens_rcrsv_t) :: t1, t2, t3, t4, t5, tau
         end type exatns_comm_tens
 
         type, public :: exatns_lambda_tens
