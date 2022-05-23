@@ -1801,12 +1801,14 @@ contains
                   ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q,r,s)*S(p,q,r,s)",  &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
-   &                                                        workspace_t%sigma2(j))
+   &                                                        workspace_t%sigma2(j),&
+   &                                                        scale=ONE_HALF)
                else if (left.and..not.right) then
                   ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
-   &                                                        workspace_t%sigma2(j))
+   &                                                        workspace_t%sigma2(j),&
+   &                                                        scale=ONE_HALF)
                end if
             end if
 
