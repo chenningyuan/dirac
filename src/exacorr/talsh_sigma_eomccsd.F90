@@ -141,14 +141,16 @@ module talsh_sigma_eomccsd
 !     term 1: S2(a,X,i,j) -= W(m,a,i,j) * R(X,m) |
 !---------------------------------------------
 
-      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,j,i)*R(X,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE) !diagm4
+      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,j,i)*R(X,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE) !diagm4
+
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,i,j)*R(X,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE) !diagm4 XY
 
 
       ! !Test
-      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,j,i)*R(X,m)",test_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE)
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,i,j)*R(X,m)",test_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE)
       norm_s = tensor_norm2(sigma2_tensor)
       if (debug) print*, "norm contraction 4 (accumulated, this):",norm_s, (norm_s - norm_s_prev)
-      ! if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm4_test")
+      if (debug) call print_tensor(test_tensor, 1.0d-10, "diagm4_test")
       ! if (debug) call print_tensor(sigma2_tensor, 1.0d-10, "diagm4_sigma2")
       norm_s_prev = norm_s
 
