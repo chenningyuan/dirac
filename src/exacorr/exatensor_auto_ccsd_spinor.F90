@@ -83,6 +83,7 @@ subroutine exatensor_CCSD_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
 
 
 ! always define one_tensor to use in additions via calls to contraction
+    ierr=exatns_tensor_create(one_tensor,"autokern_one_tensor",EXA_DATA_KIND_C8)
     ierr=exatns_tensor_init(one_tensor,ONE)
     
     allocate(tens_id(2), tens_root(2))
@@ -1196,6 +1197,7 @@ subroutine exatensor_CCSD_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
         Z77_1,S44,H24,prefactor=(1.0d0,0.0d0))
     ierr=exatns_tensor_destroy(Z77_1)
 
+    ierr=exatns_tensor_destroy(one_tensor)
 
 end subroutine exatensor_CCSD_codegen
 

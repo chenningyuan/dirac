@@ -4723,6 +4723,7 @@ module exacorr_cc
 !        Construct intermediate tensors
          if (.not.CCD) then
             ierr=exatns_tensor_create(hvo_aux_tensor,"hvo_aux",vo_id,vo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(hvo_aux_tensor,'ZERO')
             ierr=exatns_tensor_contract("h(a,i)+=h+(i,a)*K()",hvo_aux_tensor,int_t%fov,one_tensor)
 
             ierr=exatns_tensor_create(s1_tensor,"s1",vo_id,vo_root,EXA_DATA_KIND_C8)
