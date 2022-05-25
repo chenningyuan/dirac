@@ -1264,8 +1264,8 @@ end if
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
 !------------------------------------------------------
 
-    call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
-   & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)    !diam8
+  !   call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
+  !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)    !diam8
 
    !test
   !  call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
@@ -1289,8 +1289,8 @@ end if
 
     call contraction_442 ((/"c1","p3","o4","o3"/),(/"o4","o3","p4","p3"/),(/"c1","p4"/),int_1b,-1.0d0,1.0d0,nrep,LeftTensor=r2)
 
-    ! call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
-    ! & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)   !diam9
+    call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
+    & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=int_1b,RightTensor=B%t2)   !diam9
 
     !test
     ! call contraction_244 ((/"c1","p4"/),(/"p4","p2","o1","o2"/), &
