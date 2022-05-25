@@ -1242,8 +1242,8 @@ end if
 ! S(a*b,ij) = S(a*b,ij) + P(ij) w_mbej(mb,ej)*r2(a*e,im)
 !----------------------------------------------------------
 
-      call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
-     &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)  !diam7
+    !   call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
+    !  &    (/"c1","p2","o1","o2"/),sigma2,-1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej)  !diam7
 
     ! test
      call contraction_444((/"c1","p3","o3","o1"/),(/"o3","p2","p3","o2"/), &
@@ -1264,8 +1264,8 @@ end if
 ! S(a*b,ij) = S(a*b,ij) + f_bar_ae(b,e) * r2(a*e,ij)
 !------------------------------------------------------
 
-  !   call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
-  !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)    !diam8
+    call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
+   & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2)    !diam8
 
    !test
   !  call contraction_424 ((/"c1","p3","o1","o2"/),(/"p2","p3"/), &
