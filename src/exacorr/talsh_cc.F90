@@ -3418,6 +3418,7 @@ module talsh_cc
             vo_dims = (/nvir, nocc/)
 
             ierr=talsh_tensor_construct(hvo_aux_tensor,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_add("h(a,i)+=h+(i,a)",hvo_aux_tensor,int_t%fov)
             ierr=talsh_tensor_construct(s1_tensor,C8,vo_dims,init_val=ZERO)
 
             vvov_dims = (/nvir, nvir, nocc, nvir/)
