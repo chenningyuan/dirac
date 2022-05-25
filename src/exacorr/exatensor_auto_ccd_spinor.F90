@@ -6,7 +6,7 @@
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
-subroutine exatensor_CCD_codegen_call(nocc,nvir, &
+subroutine exatensor_CCD_codegen(nocc,nvir, &
     S23, &
     H13, &
     H3, &
@@ -242,6 +242,6 @@ subroutine exatensor_CCD_codegen_call(nocc,nvir, &
     ierr=exatns_tensor_destroy(Z37_1)
 
 
-end subroutine exatensor_CCD_codegen_call
+end subroutine exatensor_CCD_codegen
 
 #endif

@@ -352,10 +352,15 @@ module exacorr_cc
                return
             end if
 
-            if (.not.CC2) then
-               call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,denom,exa_input%print_level)
-            else if (CC2) then 
-               call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,denom,ncycles,exa_input%print_level)
+            if (exa_input%auto_kernels) then
+               call solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,cc_energy,&
+                                               CCD,CCSDT,CCSDTQ,CCSDTQP,ncycles,denom,exa_input%print_level)
+            else
+               if (.not.CC2) then
+                  call solve_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,ncycles,denom,exa_input%print_level)
+               else if (CC2) then 
+                  call solve_CC2_t_equations(comm_t,int_t,dims,CCD,t_target_precision,cc_energy,denom,ncycles,exa_input%print_level)
+               end if
             end if
             call print_date('-End- CC Iterations')
 
@@ -4823,7 +4828,7 @@ module exacorr_cc
                                     s1_tensor,          &   ! Z49 VO
                                     s2_tensor)              ! Z50 VVOO
           else if (CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
-            call exatensor_CCD_codegen_call(occ_space_id,vir_space_id,&
+            call exatensor_CCD_codegen(occ_space_id,vir_space_id,&
                                         comm_t%t2,      &   ! S23 
                                         int_t%oovv,     &   ! H13   OOVV
                                         vvoo_aux_tensor,&   ! H3    VVOO
