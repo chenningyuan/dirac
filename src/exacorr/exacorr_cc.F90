@@ -885,6 +885,15 @@ module exacorr_cc
 
           ierr=exatns_tensor_init(s2_tensor,'ZERO')
 
+!         if (print_level.gt.8) then
+          if (.true.) then
+             if (.not.CCD) then
+                write(*,'(A7,F20.15)') "b s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "b T1amp = ",print_tensornorm2 (comm_t%t1)
+             end if
+             write(*,'(A7,F20.15)') "b s2    = ",print_tensornorm2 (s2_tensor)
+             write(*,'(A7,F20.15)') "b T2amp = ",print_tensornorm2 (comm_t%t2)
+          end if
 !         The vvvv contribution
           ierr=exatns_tensor_contract("S(a,b,i,j)+=V(a,b,c,d)*T(c,d,i,j)",s2_tensor,int_t%vvvv,comm_t%tau,ONE_HALF) !o(2)v(4)
 
@@ -1001,11 +1010,11 @@ module exacorr_cc
 !         if (print_level.gt.8) then
           if (.true.) then
              if (.not.CCD) then
-                write(*,'(A7,F20.15)') "s1    = ",print_tensornorm2 (s1_tensor)
-                write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+                write(*,'(A7,F20.15)') "a s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "a T1amp = ",print_tensornorm2 (comm_t%t1)
              end if
-             write(*,'(A7,F20.15)') "s2    = ",print_tensornorm2 (s2_tensor)
-             write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
+             write(*,'(A7,F20.15)') "a s2    = ",print_tensornorm2 (s2_tensor)
+             write(*,'(A7,F20.15)') "a T2amp = ",print_tensornorm2 (comm_t%t2)
           end if
 !         prepare for next iteration
           if (.not.CCD) then
@@ -4631,8 +4640,6 @@ module exacorr_cc
          type(tens_rcrsv_t) :: s3_tensor
          type(tens_rcrsv_t) :: s4_tensor
          type(tens_rcrsv_t) :: s5_tensor
-!        auxiliary tensors
-         type(tens_rcrsv_t) :: hov_aux_tensor, hoo_aux_tensor
 !        result tensor
          type(tens_rcrsv_t) :: result_t_tensor
          complex(8)         :: result_val
@@ -4715,21 +4722,29 @@ module exacorr_cc
 
 !        Construct intermediate tensors
          if (.not.CCD) then
-            ierr=exatns_tensor_create(hoo_aux_tensor,"hoo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
-            ierr=exatns_tensor_create(hov_aux_tensor,"hov_aux",ov_id,ov_root,EXA_DATA_KIND_C8)
             ierr=exatns_tensor_create(hvo_aux_tensor,"hvo_aux",vo_id,vo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_contract("h(a,i)+=h+(i,a)*K()",hvo_aux_tensor,int_t%fov,one_tensor)
+
             ierr=exatns_tensor_create(s1_tensor,"s1",vo_id,vo_root,EXA_DATA_KIND_C8)
 
             ierr=exatns_tensor_create(vvov_aux_tensor,"vvov_aux_tensor",vvov_id,vvov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(vvov_aux_tensor,'ZERO')
             ierr=exatns_tensor_contract("T(a,b,i,c)+=V+(c,i,a,b)*K()",vvov_aux_tensor,int_t%vovv,one_tensor,MINUS_ONE)
 
             ierr=exatns_tensor_create(vooo_aux_tensor,"vooo_aux_tensor",vooo_id,vooo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_init(vooo_aux_tensor,'ZERO')
             ierr=exatns_tensor_contract("T(a,k,i,j)+=V+(i,j,k,a)*K()",vooo_aux_tensor,int_t%ooov,one_tensor,MINUS_ONE)
 
          end if
          ierr=exatns_tensor_create(s2_tensor,"s2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+
          ierr=exatns_tensor_create(voov_aux_tensor,"voov_aux_tensor",voov_id,voov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(voov_aux_tensor,'ZERO')
          ierr=exatns_tensor_contract("T(a,i,j,b)+=V(a,i,b,j)*K()",voov_aux_tensor, int_t%vovo,one_tensor,MINUS_ONE)
+
+         ierr=exatns_tensor_create(vvoo_aux_tensor,"vvoo_aux_tensor",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_init(vvoo_aux_tensor,'ZERO')
+         ierr=exatns_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)*K()",vvoo_aux_tensor, int_t%oovv,one_tensor)
 
 
          if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
@@ -4809,6 +4824,15 @@ module exacorr_cc
              if (CCSDTQP)                    ierr=exatns_tensor_init(s5_tensor,'ZERO')
           end if
           ierr=exatns_tensor_init(s2_tensor,'ZERO')
+
+          if (.true.) then
+             if (.not.CCD) then
+                write(*,'(A7,F20.15)') "b s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "b T1amp = ",print_tensornorm2 (comm_t%t1)
+             end if
+             write(*,'(A7,F20.15)') "b s2    = ",print_tensornorm2 (s2_tensor)
+             write(*,'(A7,F20.15)') "b T2amp = ",print_tensornorm2 (comm_t%t2)
+          end if
 
           if (.not.CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
             call exatensor_CCSD_codegen(occ_space_id,vir_space_id,&
@@ -4922,11 +4946,11 @@ module exacorr_cc
 !         if (print_level.gt.8) then
           if (.true.) then
              if (.not.CCD) then
-                write(*,'(A7,F20.15)') "s1    = ",print_tensornorm2 (s1_tensor)
-                write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+                write(*,'(A7,F20.15)') "a s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "a T1amp = ",print_tensornorm2 (comm_t%t1)
              end if
-             write(*,'(A7,F20.15)') "s2    = ",print_tensornorm2 (s2_tensor)
-             write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
+             write(*,'(A7,F20.15)') "a s2    = ",print_tensornorm2 (s2_tensor)
+             write(*,'(A7,F20.15)') "a T2amp = ",print_tensornorm2 (comm_t%t2)
           end if
 
 !         prepare for next iteration

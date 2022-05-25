@@ -57,6 +57,7 @@ subroutine exatensor_CCD_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
 
 
 ! always define one_tensor to use in additions via calls to contraction
+    ierr=exatns_tensor_create(one_tensor,"autokern_one_tensor",EXA_DATA_KIND_C8)
     ierr=exatns_tensor_init(one_tensor,ONE)
 !   original expression: Z26(|)+=S23(d1bd2b|l1bl2b)*H13(l1bl2b|d1bd2b)
     ierr=exatns_tensor_contract("Z26()+=S23(d1,d2,l1,l2)*H13(l1,l2,d1,d2)", &
@@ -243,6 +244,7 @@ subroutine exatensor_CCD_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
         Z37_1,S23,H13,prefactor=(1.0d0,0.0d0))
     ierr=exatns_tensor_destroy(Z37_1)
 
+    ierr=exatns_tensor_destroy(one_tensor)
 
 end subroutine exatensor_CCD_codegen
 
