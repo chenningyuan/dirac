@@ -218,6 +218,7 @@ if(ENABLE_EXATENSOR)
 	#dirac_test(exacorr_exatensor_cholesky "cc;exatensor;long" "")
         dirac_test(exacorr_exatensor_mp2no "mp2no;exatensor" "")
         dirac_test(exacorr_exatensor_mp2no_restart "mp2no_re;exatensor" "")
+        dirac_test(exacorr_exatensor_lambda_autokernels "cc;exatensor;autokernel" "")
     endif()
 
 endif()

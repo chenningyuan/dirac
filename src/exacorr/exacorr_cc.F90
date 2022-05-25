@@ -4593,6 +4593,437 @@ module exacorr_cc
 
         end subroutine get_subtensor
 
+!aspg
+        subroutine solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,ccsd_energy,&
+                                               CCD,CCSDT,CCSDTQ,CCSDTQP,ncycles,denom,print_level)
+
+!        Routine for solving the t amplitude equations
+
+         use exacorr_ao_to_mo, only : print_tensornorm2
+         use exacorr_tensor_methods
+
+!        Input
+         type(exatns_comm_tens), intent(inout) :: comm_t
+         type(exatns_intg_tens), intent(inout) :: int_t
+         type(space_dims),intent(in) :: dims
+         integer(INTD) :: occ_space_id, vir_space_id
+         integer(INTL) :: occ_space_root, vir_space_root
+         real(8), intent(in)  :: t_target_precision
+         real(8), intent(out) :: ccsd_energy
+         type(denom_t)        :: denom
+!        solution tensors
+         type(tens_rcrsv_t) :: s1_tensor
+         type(tens_rcrsv_t) :: s2_tensor
+         type(tens_rcrsv_t) :: s3_tensor
+         type(tens_rcrsv_t) :: s4_tensor
+         type(tens_rcrsv_t) :: s5_tensor
+!        intermediate
+         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
+!        auxiliary tensors
+         type(tens_rcrsv_t) :: hov_aux_tensor, hoo_aux_tensor
+!        result tensor
+         type(tens_rcrsv_t) :: result_t_tensor
+         complex(8)         :: result_val
+!        Ids and roots for tensors
+         integer(INTD),dimension(2) :: oo_id,ov_id,vo_id
+         integer(INTD),dimension(4) :: ovoo_id,vvoo_id
+         integer(INTL),dimension(2) :: oo_root,ov_root,vo_root
+         integer(INTL),dimension(4) :: ovoo_root,vvoo_root
+!        temporarily using tensors with permutations required by the automatically generated code
+!        the next update to the code generator is expected to handle index permutations/conjugation 
+         type(tens_rcrsv_t) :: vvoo_aux_tensor
+         type(tens_rcrsv_t) :: hvo_aux_tensor
+
+!        for some of these temporary tensors, additional information on Ids and roots is reqired
+
+         type(tens_rcrsv_t) :: voov_aux_tensor
+         integer(INTD),dimension(4) :: voov_id
+         integer(INTL),dimension(4) :: voov_root
+
+         type(tens_rcrsv_t) :: vooo_aux_tensor
+         integer(INTD),dimension(4) :: vooo_id
+         integer(INTL),dimension(4) :: vooo_root
+
+         type(tens_rcrsv_t) :: vvov_aux_tensor
+         integer(INTD),dimension(4) :: vvov_id
+         integer(INTL),dimension(4) :: vvov_root
+
+! higher order tensors         
+         integer(INTD),dimension(6) :: vvvooo_id
+         integer(INTD),dimension(8) :: vvvvoooo_id
+         integer(INTD),dimension(10):: vvvvvooooo_id
+         integer(INTL),dimension(6) :: vvvooo_root
+         integer(INTL),dimension(8) :: vvvvoooo_root
+         integer(INTL),dimension(10):: vvvvvooooo_root
+
+         real(8) :: t_convergence
+
+         integer :: iccsd
+         integer,intent(in) :: ncycles
+         logical, intent(in)  :: CCD
+         logical, intent(in)  :: CCSDT
+         logical, intent(in)  :: CCSDTQ
+         logical, intent(in)  :: CCSDTQP
+         integer, intent(in)  :: print_level
+         integer(INTD) :: ierr
+
+         print *,''
+         print *,'ExaTensor CCD/SD/SDT/SDTQ/SDTQP implementation with automatically generated residual equations'
+         print *,''
+
+         occ_space_id=dims%occ_space_id
+         vir_space_id=dims%vir_space_id
+         occ_space_root=dims%occ_space_root
+         vir_space_root=dims%vir_space_root
+
+
+         if (.not.CCD) then
+            oo_id     = (/occ_space_id, occ_space_id/)
+            ov_id     = (/occ_space_id, vir_space_id/)
+            vo_id     = (/vir_space_id, occ_space_id/)
+            oo_root   = (/occ_space_root, occ_space_root/)
+            ov_root   = (/occ_space_root, vir_space_root/)
+            vo_root   = (/vir_space_root, occ_space_root/)
+
+            vooo_id   = (/vir_space_id, occ_space_id, occ_space_id, occ_space_id/)
+            vooo_root = (/vir_space_root, occ_space_root, occ_space_root, occ_space_root/)
+
+            vvov_id   = (/vir_space_id, vir_space_id, occ_space_id, vir_space_id/)
+            vvov_root = (/vir_space_root, vir_space_root, occ_space_root, vir_space_root/)
+         end if
+         ovoo_id   = (/occ_space_id, vir_space_id, occ_space_id, occ_space_id/)
+         vvoo_id   = (/vir_space_id, vir_space_id, occ_space_id, occ_space_id/)
+         ovoo_root = (/occ_space_root, vir_space_root, occ_space_root, occ_space_root/)
+         vvoo_root = (/vir_space_root, vir_space_root, occ_space_root, occ_space_root/)
+
+         voov_id   = (/vir_space_id, occ_space_id, occ_space_id, vir_space_id/)
+         voov_root = (/vir_space_root, occ_space_root, occ_space_root, vir_space_root/)
+
+!        Initialize scalar that are to be used as tensors in contractions
+         ierr=exatns_tensor_create(result_t_tensor,"result_t",EXA_DATA_KIND_C8)
+
+!        Construct intermediate tensors
+         if (.not.CCD) then
+            ierr=exatns_tensor_create(hoo_aux_tensor,"hoo_aux",oo_id,oo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(hov_aux_tensor,"hov_aux",ov_id,ov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(hvo_aux_tensor,"hvo_aux",vo_id,vo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_create(s1_tensor,"s1",vo_id,vo_root,EXA_DATA_KIND_C8)
+
+            ierr=exatns_tensor_create(vvov_aux_tensor,"vvov_aux_tensor",vvov_id,vvov_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_contract("T(a,b,i,c)+=V+(c,i,a,b)*K()",vvov_aux_tensor,int_t%vovv,one_tensor,MINUS_ONE)
+
+            ierr=exatns_tensor_create(vooo_aux_tensor,"vooo_aux_tensor",vooo_id,vooo_root,EXA_DATA_KIND_C8)
+            ierr=exatns_tensor_contract("T(a,k,i,j)+=V+(i,j,k,a)*K()",vooo_aux_tensor,int_t%ooov,one_tensor,MINUS_ONE)
+
+         end if
+         ierr=exatns_tensor_create(s2_tensor,"s2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
+
+         ierr=exatns_tensor_create(voov_aux_tensor,"voov_aux_tensor",voov_id,voov_root,EXA_DATA_KIND_C8)
+         ierr=exatns_tensor_contract("T(a,i,j,b)+=V(a,i,b,j)*K()",voov_aux_tensor, int_t%vovo,one_tensor,MINUS_ONE)
+
+
+         if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
+            vvvooo_id   = (/vir_space_id, &
+                            vir_space_id, &
+                            vir_space_id, &
+                            occ_space_id, &
+                            occ_space_id, &
+                            occ_space_id /)
+            vvvooo_root = (/vir_space_root, &
+                            vir_space_root, &
+                            vir_space_root, &
+                            occ_space_root, &
+                            occ_space_root, &
+                            occ_space_root /)
+            ierr=exatns_tensor_create(s3_tensor,"s3_tensor",&
+                       vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
+         end if
+
+         if (CCSDTQ.or.CCSDTQP) then
+            vvvvoooo_id   = (/vir_space_id, &
+                            vir_space_id, &
+                            vir_space_id, &
+                            vir_space_id, &
+                            occ_space_id, &
+                            occ_space_id, &
+                            occ_space_id, &
+                            occ_space_id /)
+            vvvvoooo_root = (/vir_space_root, &
+                            vir_space_root, &
+                            vir_space_root, &
+                            vir_space_root, &
+                            occ_space_root, &
+                            occ_space_root, &
+                            occ_space_root, &
+                            occ_space_root /)
+            ierr=exatns_tensor_create(s4_tensor,"s4_tensor",&
+                       vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
+         end if
+
+         if (CCSDTQP) then
+            vvvvvooooo_id   = (/vir_space_id, &
+                            vir_space_id, &
+                            vir_space_id, &
+                            vir_space_id, &
+                            vir_space_id, &
+                            occ_space_id, &
+                            occ_space_id, &
+                            occ_space_id, &
+                            occ_space_id, &
+                            occ_space_id /)
+            vvvvvooooo_root = (/vir_space_root, &
+                            vir_space_root, &
+                            vir_space_root, &
+                            vir_space_root, &
+                            vir_space_root, &
+                            occ_space_root, &
+                            occ_space_root, &
+                            occ_space_root, &
+                            occ_space_root, &
+                            occ_space_root /)
+            ierr=exatns_tensor_create(s4_tensor,"s4_tensor",&
+                       vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
+         end if
+
+
+         if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
+
+         do iccsd = 1, ncycles
+
+! add printout of tensor norms etc
+
+          if (.not.CCD) then
+             ierr=exatns_tensor_init(s1_tensor,'ZERO')
+             if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_init(s3_tensor,'ZERO')
+             if (CCSDTQ.or.CCSDTQP)          ierr=exatns_tensor_init(s4_tensor,'ZERO')
+             if (CCSDTQP)                    ierr=exatns_tensor_init(s5_tensor,'ZERO')
+          end if
+          ierr=exatns_tensor_init(s2_tensor,'ZERO')
+
+          if (.not.CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
+            call exatensor_CCSD_codegen(occ_space_id,vir_space_id,&
+                                    int_t%oovv,         &   ! H24 OOVV 
+                                    comm_t%t1,          &   ! S43 VO
+                                    comm_t%fov,         &   ! H15 OV
+                                    comm_t%t2,          &   ! S44 VVOO
+                                    hvo_aux_tensor,     &   ! H2  VO
+                                    comm_t%fvv,         &   ! H1  VV
+                                    int_t%vovv,         &   ! H17 VOVV
+                                    voov_aux_tensor,    &   ! H18 VOOV
+                                    int_t%ooov,         &   ! H25 OOOV
+                                    comm_t%foo,         &   ! H16 OO
+                                    vvoo_aux_tensor,    &   ! H5  VVOO
+                                    int_t%vvvv,         &   ! H3  VVVV
+                                    vooo_aux_tensor,    &   ! H19 VOOO
+                                    vvov_aux_tensor,    &   ! H4  VVOV
+                                    int_t%oooo,         &   ! H26 OOOO
+                                    result_t_tensor,      &   ! Z48 UnitTensor
+                                    s1_tensor,          &   ! Z49 VO
+                                    s2_tensor)              ! Z50 VVOO
+          else if (CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
+            call exatensor_CCD_codegen_call(occ_space_id,vir_space_id,&
+                                        comm_t%t2,      &   ! S23 
+                                        int_t%oovv,     &   ! H13   OOVV
+                                        vvoo_aux_tensor,&   ! H3    VVOO
+                                        int_t%vvvv,     &   ! H2    VVVV
+                                        int_t%oooo,     &   ! H14   OOOO 
+                                        comm_t%fvv,     &   ! H1    VV
+                                        comm_t%foo,     &   ! H9    OO
+                                        voov_aux_tensor,&   ! H10   VOOV
+                                        result_t_tensor,  &   ! Z26   unit tensor
+                                        s2_tensor)          ! Z27   VVOO
+!         else if (CCSDT.and..not.CCD.and..not.CCSDTQ.and..not.CCSDTQP) then
+!            call exatensor_CCSDT_codegen_call(occ_space_id,vir_space_id,&
+!                                          int_t%oovv,     &  !  OOVV
+!                                          comm_t%t1,      &  !  VO
+!                                          comm_t%fov,     &  !  OV
+!                                          comm_t%t2,      &  !  VVOO
+!                                          hvo_aux_tensor,  &  !  VO
+!                                          comm_t%fvv,      &  !  VV
+!                                          int_t%vovv,     &  !  VOVV
+!                                          voov_aux_tensor,&  !  VOOV
+!                                          int_t%ooov,     &  !  OOOV
+!                                          comm_t%foo,     &  !  OO
+!                                          comm_t%t3,      &  !  VVVOOO
+!                                          vvoo_aux_tensor, &  !  VVOO
+!                                          int_t%vvvv,      &  !  VVVV
+!                                          vooo_aux_tensor,&  !  VOOO
+!                                          vvov_aux_tensor, &  !  VVOV
+!                                          int_t%oooo,     &  !  OOOO
+!                                          result_t_tensor,  &  !  UnitTensor
+!                                          s1_tensor,      &  !  VO
+!                                          s2_tensor,      &  !  VVOO
+!                                          s3_tensor)         !  VVVOOO
+!         else if (CCSDTQ.and..not.CCD.and..not.CCSDT.and..not.CCSDTQP) then
+!            call exatensor_CCSDTQ_codegen_call(occ_space_id,vir_space_id,&
+!                                          int_t%oovv,     &  !  OOVV
+!                                          comm_t%t1,      &  !  VO
+!                                          comm_t%fov,     &  !  OV
+!                                          comm_t%t2,      &  !  VVOO
+!                                          hvo_aux_tensor, &  !  VO
+!                                          comm_t%fvv,     &  !  VV
+!                                          int_t%vovv,     &  !  VOVV
+!                                          voov_aux_tensor,&  !  VOOV
+!                                          int_t%ooov,     &  !  OOOV
+!                                          comm_t%foo,     &  !  OO
+!                                          comm_t%t3,      &  !  VVVOOO
+!                                          vvoo_aux_tensor,&  !  VVOO
+!                                          int_t%vvvv,     &  !  VVVV
+!                                          vooo_aux_tensor,&  !  VOOO
+!                                          vvov_aux_tensor,&  !  VVOV
+!                                          int_t%oooo,     &  !  OOOO
+!                                          comm_t%t4,      &  !  VVVVOOOO
+!                                          result_t_tensor,  &  !  UnitTensor
+!                                          s1_tensor,      &  !  VO
+!                                          s2_tensor,      &  !  VVOO
+!                                          s3_tensor,      &  !  VVVOOO
+!                                          s4_tensor)         !  VVVVOOOO
+!
+!         else if (CCSDTQP.and..not.CCD.and..not.CCSDT.and..not.CCSDTQ) then
+!            call exatensor_CCSDTQP_codegen_call(occ_space_id,vir_space_id,&
+!                                          int_t%oovv,     &  !  OOVV
+!                                          comm_t%t1,      &  !  VO
+!                                          comm_t%fov,     &  !  OV
+!                                          comm_t%t2,      &  !  VVOO
+!                                          hvo_aux_tensor, &  !  VO
+!                                          comm_t%fvv,     &  !  VV
+!                                          int_t%vovv,     &  !  VOVV
+!                                          voov_aux_tensor,&  !  VOOV
+!                                          int_t%ooov,     &  !  OOOV
+!                                          comm_t%foo,     &  !  OO
+!                                          comm_t%t3,      &  !  VVVOOO
+!                                          vvoo_aux_tensor,&  !  VVOO
+!                                          int_t%vvvv,     &  !  VVVV
+!                                          vooo_aux_tensor,&  !  VOOO
+!                                          vvov_aux_tensor,&  !  VVOV
+!                                          int_t%oooo,     &  !  OOOO
+!                                          comm_t%t4,      &  !  VVVVOOOO
+!                                          comm_t%t5,      &  !  VVVVVOOOOO
+!                                          result_t_tensor,  &  !  UnitTensor
+!                                          s1_tensor,      &  !  VO
+!                                          s2_tensor,      &  !  VVOO
+!                                          s3_tensor,      &  !  VVVOOO
+!                                          s4_tensor,      &  !  VVVVOOOO
+!                                          s5_tensor)         !  VVVVVOOOOO 
+          end if
+
+!         prepare for next iteration
+          if (.not.CCD) then
+              if (CCSDTQP) then
+                 ierr=exatns_tensor_init(comm_t%t5,'ZERO')
+                 ierr=exatns_tensor_contract("T5(a,b,c,d,e,i,j,k,l,m)+=S5(a,b,c,d,e,i,j,k,l,m)*K()",&
+                       comm_t%t5,s5_tensor,one_tensor)
+                 ierr=exatns_tensor_transform(comm_t%t5,denom)
+              end if
+
+              if (CCSDTQ) then
+                 ierr=exatns_tensor_init(comm_t%t4,'ZERO')
+                 ierr=exatns_tensor_contract("T4(a,b,c,d,i,j,k,l)+=S4(a,b,c,d,i,j,k,l)*K()",&
+                       comm_t%t4,s4_tensor,one_tensor)
+                 ierr=exatns_tensor_transform(comm_t%t4,denom)
+              end if
+
+              if (CCSDT) then
+                 ierr=exatns_tensor_init(comm_t%t3,'ZERO')
+                 ierr=exatns_tensor_contract("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)*K()",&
+                       comm_t%t3,s3_tensor,one_tensor)
+                 ierr=exatns_tensor_transform(comm_t%t3,denom)
+              end if
+
+              ierr=exatns_tensor_init(comm_t%t1,'ZERO')
+              ierr=exatns_tensor_contract("T1(a,i)+=S1(a,i)*K()",comm_t%t1,s1_tensor,one_tensor)
+              ierr=exatns_tensor_transform(comm_t%t1,denom)
+          end if
+
+          ierr=exatns_tensor_init(comm_t%t2,'ZERO')
+          ierr=exatns_tensor_contract("T2(a,b,i,j)+=S2(a,b,i,j)*K()",comm_t%t2,s2_tensor,one_tensor)
+          ierr=exatns_tensor_transform(comm_t%t2,denom)
+
+          if (.not.CCD) then
+             if (CCSDTQP) then
+                call diis (&
+                   t5_tensor=comm_t%t5,vvvvvooooo_id=vvvvvooooo_id,vvvvvooooo_root=vvvvvooooo_root,&
+                   t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
+                   t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
+                   t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                   t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
+                         t_convergence=t_convergence)
+             else if (CCSDTQ) then
+                call diis (&
+                   t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
+                   t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
+                   t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                   t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
+                         t_convergence=t_convergence)
+             else if (CCSDT) then
+                call diis (&
+                   t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
+                   t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                   t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
+                         t_convergence=t_convergence)
+             else
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                         t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,&
+                         t_convergence=t_convergence)
+              end if
+          else
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,t_convergence=t_convergence)
+          end if
+
+!!!!!!
+! coming from Z26/Z48/Z52
+          ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
+          print *,'debug auto:',result_val
+
+          ierr=exatns_tensor_init(result_t_tensor)
+
+
+          if (.not.CCD) then
+!             Will always be 0 contribution for now, since fov=0 (canonical orbitals)
+              ierr=exatns_tensor_contract("E()+=T(a,i)*F(i,a)",result_t_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
+              ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
+              ccsd_energy=real(result_val,8)
+              ierr=exatns_tensor_init(result_t_tensor)
+          else
+              ccsd_energy=real(ZERO,8)
+          end if
+
+!         Update tau with converged values
+          call get_tau(comm_t,CCD,one_tensor)
+
+          ierr=exatns_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_t_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
+          ierr=exatns_tensor_get_scalar(result_t_tensor,result_val)
+          ccsd_energy = ccsd_energy + real(result_val*ONE_QUARTER,8)
+
+          call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
+          if (t_convergence .lt. t_target_precision) exit
+         end do
+
+         write(*,*) "-----------------------------------------------"
+         write(*,*) ""
+
+         if (t_convergence .gt. t_target_precision) write(*,*) "WARNING: Non-converged amplitudes!"
+         write(*,*) ""
+
+
+          if (.not.CCD) then
+            ierr=exatns_tensor_destroy(s1_tensor)
+            ierr=exatns_tensor_destroy(hvo_aux_tensor)
+            ierr=exatns_tensor_destroy(vooo_aux_tensor)
+            ierr=exatns_tensor_destroy(vvov_aux_tensor)
+            if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(s3_tensor)
+            if (CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(s4_tensor)
+            if (CCSDTQP) ierr=exatns_tensor_destroy(s5_tensor)
+         end if
+         ierr=exatns_tensor_destroy(vvoo_aux_tensor)
+         ierr=exatns_tensor_destroy(voov_aux_tensor)
+         ierr=exatns_tensor_destroy(s2_tensor)
+         ierr=exatns_tensor_destroy(result_t_tensor)
+
+        end subroutine solve_t_equations_automatic
+!aspg
 
 #else
         implicit none
@@ -4609,6 +5040,7 @@ module exacorr_cc
          write(*,*) 'this functionality only works with MPI, we need to stop here'
          stop ' activate MPI'
         end subroutine exacorr_cc_driver
+
 
 #endif
 
