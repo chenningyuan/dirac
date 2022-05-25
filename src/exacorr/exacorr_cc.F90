@@ -4681,7 +4681,6 @@ module exacorr_cc
          occ_space_root=dims%occ_space_root
          vir_space_root=dims%vir_space_root
 
-
          if (.not.CCD) then
             oo_id     = (/occ_space_id, occ_space_id/)
             ov_id     = (/occ_space_id, vir_space_id/)
@@ -4809,6 +4808,7 @@ module exacorr_cc
 
           if (.not.CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
             call exatensor_CCSD_codegen(occ_space_id,vir_space_id,&
+                                    occ_space_root,vir_space_root,&
                                     int_t%oovv,         &   ! H24 OOVV 
                                     comm_t%t1,          &   ! S43 VO
                                     comm_t%fov,         &   ! H15 OV
@@ -4829,6 +4829,7 @@ module exacorr_cc
                                     s2_tensor)              ! Z50 VVOO
           else if (CCD.and..not.CCSDT.and..not.CCSDTQ.and..not.CCSDTQP) then
             call exatensor_CCD_codegen(occ_space_id,vir_space_id,&
+                                    occ_space_root,vir_space_root,&
                                         comm_t%t2,      &   ! S23 
                                         int_t%oovv,     &   ! H13   OOVV
                                         vvoo_aux_tensor,&   ! H3    VVOO

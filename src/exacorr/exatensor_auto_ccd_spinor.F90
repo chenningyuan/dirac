@@ -6,7 +6,7 @@
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
 
-subroutine exatensor_CCD_codegen(nocc,nvir, &
+subroutine exatensor_CCD_codegen(nocc_id,nvir_id,nocc_root,nvir_root, &
     S23, &
     H13, &
     H3, &
@@ -33,9 +33,11 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
 
 
     integer :: ierr
-    type(tens_rcrsv_t)  :: one_tensor
-    integer, intent(in) :: nocc
-    integer, intent(in) :: nvir
+    type(tens_rcrsv_t) :: one_tensor
+    integer(INTD), intent(in) :: nocc_id
+    integer(INTD), intent(in) :: nvir_id
+    integer(INTL), intent(in) :: nocc_root
+    integer(INTL), intent(in) :: nvir_root
     integer(INTD), allocatable :: tens_id(:)
     integer(INTL), allocatable :: tens_root(:)
     type(tens_rcrsv_t), intent(inout) :: S23    !       VVOO
@@ -67,8 +69,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
         Z27,H2,S23,prefactor=(0.5d0,0.0d0))
     
     allocate(tens_id(4), tens_root(4))
-    tens_id   = (/nocc,nocc,nocc,nocc/)
-    tens_root = (/int(nocc,8),int(nocc,8),int(nocc,8),int(nocc,8)/)
+    tens_id   = (/nocc_id,nocc_id,nocc_id,nocc_id/)
+    tens_root = (/nocc_root,nocc_root,nocc_root,nocc_root/)
     ierr=exatns_tensor_create(Z33_1,"Z33_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z33_1,'ZERO')
@@ -84,8 +86,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
         Z27,S23,H14,prefactor=(0.5d0,0.0d0))
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nvir,nvir/)
-    tens_root = (/int(nvir,8),int(nvir,8)/)
+    tens_id   = (/nvir_id,nvir_id/)
+    tens_root = (/nvir_root,nvir_root/)
     ierr=exatns_tensor_create(Z30_1,"Z30_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z30_1,'ZERO')
@@ -101,8 +103,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
     ierr=exatns_tensor_destroy(Z30_1)
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nvir,nvir/)
-    tens_root = (/int(nvir,8),int(nvir,8)/)
+    tens_id   = (/nvir_id,nvir_id/)
+    tens_root = (/nvir_root,nvir_root/)
     ierr=exatns_tensor_create(Z30_1,"Z30_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z30_1,'ZERO')
@@ -121,8 +123,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
         Z27,S23,H1,prefactor=(-1.0d0,0.0d0))
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nocc,nocc/)
-    tens_root = (/int(nocc,8),int(nocc,8)/)
+    tens_id   = (/nocc_id,nocc_id/)
+    tens_root = (/nocc_root,nocc_root/)
     ierr=exatns_tensor_create(Z32_1,"Z32_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z32_1,'ZERO')
@@ -138,8 +140,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
     ierr=exatns_tensor_destroy(Z32_1)
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nocc,nocc/)
-    tens_root = (/int(nocc,8),int(nocc,8)/)
+    tens_id   = (/nocc_id,nocc_id/)
+    tens_root = (/nocc_root,nocc_root/)
     ierr=exatns_tensor_create(Z32_1,"Z32_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z32_1,'ZERO')
@@ -158,8 +160,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
         Z27,S23,H9,prefactor=(1.0d0,0.0d0))
     
     allocate(tens_id(4), tens_root(4))
-    tens_id   = (/nvir,nocc,nocc,nvir/)
-    tens_root = (/int(nvir,8),int(nocc,8),int(nocc,8),int(nvir,8)/)
+    tens_id   = (/nvir_id,nocc_id,nocc_id,nvir_id/)
+    tens_root = (/nvir_root,nocc_root,nocc_root,nvir_root/)
     ierr=exatns_tensor_create(Z37_1,"Z37_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z37_1,'ZERO')
@@ -193,8 +195,8 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
         Z27,S23,H10,prefactor=(1.0d0,0.0d0))
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nvir,nvir/)
-    tens_root = (/int(nvir,8),int(nvir,8)/)
+    tens_id   = (/nvir_id,nvir_id/)
+    tens_root = (/nvir_root,nvir_root/)
     ierr=exatns_tensor_create(Z30_1,"Z30_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z30_1,'ZERO')
@@ -204,16 +206,16 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
     ierr=exatns_tensor_destroy(Z30_1)
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nvir,nvir/)
-    tens_root = (/int(nvir,8),int(nvir,8)/)
+    tens_id   = (/nvir_id,nvir_id/)
+    tens_root = (/nvir_root,nvir_root/)
     ierr=exatns_tensor_create(Z30_1,"Z30_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z30_1,'ZERO')
     ierr=exatns_tensor_destroy(Z30_1)
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nocc,nocc/)
-    tens_root = (/int(nocc,8),int(nocc,8)/)
+    tens_id   = (/nocc_id,nocc_id/)
+    tens_root = (/nocc_root,nocc_root/)
     ierr=exatns_tensor_create(Z32_1,"Z32_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z32_1,'ZERO')
@@ -223,16 +225,16 @@ subroutine exatensor_CCD_codegen(nocc,nvir, &
     ierr=exatns_tensor_destroy(Z32_1)
     
     allocate(tens_id(2), tens_root(2))
-    tens_id   = (/nocc,nocc/)
-    tens_root = (/int(nocc,8),int(nocc,8)/)
+    tens_id   = (/nocc_id,nocc_id/)
+    tens_root = (/nocc_root,nocc_root/)
     ierr=exatns_tensor_create(Z32_1,"Z32_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z32_1,'ZERO')
     ierr=exatns_tensor_destroy(Z32_1)
     
     allocate(tens_id(4), tens_root(4))
-    tens_id   = (/nvir,nocc,nocc,nvir/)
-    tens_root = (/int(nvir,8),int(nocc,8),int(nocc,8),int(nvir,8)/)
+    tens_id   = (/nvir_id,nocc_id,nocc_id,nvir_id/)
+    tens_root = (/nvir_root,nocc_root,nocc_root,nvir_root/)
     ierr=exatns_tensor_create(Z37_1,"Z37_1",tens_id, tens_root,EXA_DATA_KIND_C8)
     deallocate(tens_id,tens_root)
     ierr=exatns_tensor_init(Z37_1,'ZERO')
