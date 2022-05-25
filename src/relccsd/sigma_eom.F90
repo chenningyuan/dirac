@@ -1202,8 +1202,8 @@ integer :: ierr
 ! S(a*b,ij) = S(a*b,ij) - P(ij) f_bar_mi(m,j)*r2(a*b,im) 
 !-----------------------------------------------------
 
-    call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
-   & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)  !diam5
+  !   call contraction_424 ((/"c1","p2","o1","o3"/),(/"o3","o2"/), &
+  !  & (/"c1","p2","o1","o2"/),sigma2,-1.0d0,1.0d0,nrep,RightTensor=B%Fbar_mi,LeftTensor=r2)  !diam5
 
 !   call contraction_244 ((/"o3","o2"/),(/"c1","p2","o3","o1"/), &
 !  & (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=B%Fbar_mi,RightTensor=r2)
@@ -1223,8 +1223,8 @@ integer :: ierr
 ! S(a*b,ij) = S(a*b,ij) + w_ijmn(mn,ij) * r2(a*b,mn)
 !--------------------------------------------------
 
-  ! call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
-  ! &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn)  !diam6
+  call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
+  &    (/"c1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,LeftTensor=r2,RightTensor=B%W_ijmn)  !diam6
 
   !test
   ! call contraction_444((/"c1","p2","o3","o4"/), (/"o3","o4","o1","o2"/),&
