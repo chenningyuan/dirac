@@ -938,7 +938,11 @@ module exacorr_cc
           end if
 
           if (print_level.gt.8) then
-             if (.not.CCD) write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             if (.not.CCD) then
+                write(*,'(A7,F20.15)') "s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             end if
+             write(*,'(A7,F20.15)') "s2    = ",print_tensornorm2 (s2_tensor)
              write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
              write(*,'(A7,F20.15)') "Tau   = ",print_tensornorm2 (comm_t%tau)
              write(*,'(A7,F20.15)') "hoint = ",print_tensornorm2 (comm_t%hoo)
@@ -994,6 +998,15 @@ module exacorr_cc
              return
           end if
 
+!         if (print_level.gt.8) then
+          if (.true.) then
+             if (.not.CCD) then
+                write(*,'(A7,F20.15)') "s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             end if
+             write(*,'(A7,F20.15)') "s2    = ",print_tensornorm2 (s2_tensor)
+             write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
+          end if
 !         prepare for next iteration
           if (.not.CCD) then
               ierr=exatns_tensor_init(comm_t%t1,'ZERO')
@@ -3156,10 +3169,6 @@ module exacorr_cc
         end subroutine diis
 
 
-! aspg
-! to add here the routine to solve t equations with autokern
-! aspg
-
         subroutine init_fock_exat (mode,int_t,oo_id,oo_root,ov_id,ov_root,vv_id,vv_root,&
                                   orb_set,exa_input,scf_energy)
 
@@ -4622,8 +4631,6 @@ module exacorr_cc
          type(tens_rcrsv_t) :: s3_tensor
          type(tens_rcrsv_t) :: s4_tensor
          type(tens_rcrsv_t) :: s5_tensor
-!        intermediate
-         type(tens_rcrsv_t) :: tau2_tensor, cint_tensor
 !        auxiliary tensors
          type(tens_rcrsv_t) :: hov_aux_tensor, hoo_aux_tensor
 !        result tensor
@@ -4721,9 +4728,6 @@ module exacorr_cc
 
          end if
          ierr=exatns_tensor_create(s2_tensor,"s2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(tau2_tensor,"tau2",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
-         ierr=exatns_tensor_create(cint_tensor,"cint",ovoo_id,ovoo_root,EXA_DATA_KIND_C8)
-
          ierr=exatns_tensor_create(voov_aux_tensor,"voov_aux_tensor",voov_id,voov_root,EXA_DATA_KIND_C8)
          ierr=exatns_tensor_contract("T(a,i,j,b)+=V(a,i,b,j)*K()",voov_aux_tensor, int_t%vovo,one_tensor,MINUS_ONE)
 
@@ -4787,7 +4791,7 @@ module exacorr_cc
                             occ_space_root, &
                             occ_space_root, &
                             occ_space_root /)
-            ierr=exatns_tensor_create(s4_tensor,"s4_tensor",&
+            ierr=exatns_tensor_create(s5_tensor,"s5_tensor",&
                        vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
          end if
 
@@ -4913,6 +4917,16 @@ module exacorr_cc
 !                                          s3_tensor,      &  !  VVVOOO
 !                                          s4_tensor,      &  !  VVVVOOOO
 !                                          s5_tensor)         !  VVVVVOOOOO 
+          end if
+
+!         if (print_level.gt.8) then
+          if (.true.) then
+             if (.not.CCD) then
+                write(*,'(A7,F20.15)') "s1    = ",print_tensornorm2 (s1_tensor)
+                write(*,'(A7,F20.15)') "T1amp = ",print_tensornorm2 (comm_t%t1)
+             end if
+             write(*,'(A7,F20.15)') "s2    = ",print_tensornorm2 (s2_tensor)
+             write(*,'(A7,F20.15)') "T2amp = ",print_tensornorm2 (comm_t%t2)
           end if
 
 !         prepare for next iteration
