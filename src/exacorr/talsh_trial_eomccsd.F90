@@ -204,7 +204,6 @@ module talsh_trial_eomccsd
                            !   trial2_h_p_tens(a1,b1,j1,i1) = ONE*(2.0**(-0.5))
                              trial2_h_p_tens(a1,b1,j1,i1) = ONE
                         !   else if (j1.lt.i1) then
-                           !   trial2_h_p_tens(a1,b1,j1,i1) = MINUS_ONE
                            !   trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE*(2.0**(-0.5)) !XY
                              trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE
                         !   else
