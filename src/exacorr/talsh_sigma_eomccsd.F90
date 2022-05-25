@@ -121,7 +121,7 @@ module talsh_sigma_eomccsd
 !     term 3: S1(X,i) += 1/2 W(m,n,i,e) * R2(e,X,m,n) |
 !--------------------------------------------------
 
-      ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",sigma1_tensor,interm_t%w_ooov,r2_tensor,scale=ONE_HALF) !diam3
+      ! ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",sigma1_tensor,interm_t%w_ooov,r2_tensor,scale=ONE_HALF) !diam3
 
       norm_s = tensor_norm2(sigma1_tensor)
 
@@ -139,7 +139,7 @@ module talsh_sigma_eomccsd
 !     term 1: S2(a,X,i,j) -= W(m,a,i,j) * R(X,m) |
 !---------------------------------------------
 
-      ! ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,j,i)*R(X,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE) !diagm4
+      ierr=talsh_tensor_contract("S(a,X,i,j)+=W(m,a,j,i)*R(X,m)",sigma2_tensor,interm_t%w_ovoo,r1_tensor,scale=MINUS_ONE) !diagm4
 
 
       ! !Test
