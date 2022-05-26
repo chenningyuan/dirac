@@ -152,6 +152,8 @@ module exacorr_cc
          if (CCD.or.CC2.or.CCSDT.or.CCSDTQ.or.CCSDTQP) then
             do_perturbative = .false.
          end if
+         write (*,*) 'rank: ',my_MPI_rank,' iterative_level ',iterative_level
+         write (*,*) 'rank: ',my_MPI_rank,' WFs ',CCSDT,CCSDTQ,CCSDTQP
 
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
@@ -506,7 +508,12 @@ module exacorr_cc
 
             ierr=exatns_tensor_destroy(result_tensor)
             ierr=exatns_tensor_destroy(one_tensor)
-            if (.not.CCD) ierr=exatns_tensor_destroy(comm_t%t1)
+            if (.not.CCD) then
+               ierr=exatns_tensor_destroy(comm_t%t1)
+               if (CCSDT.or.CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(comm_t%t3) 
+               if (CCSDTQ.or.CCSDTQP) ierr=exatns_tensor_destroy(comm_t%t4) 
+               if (CCSDTQP) ierr=exatns_tensor_destroy(comm_t%t5) 
+            end if
             ierr=exatns_tensor_destroy(comm_t%t2)
 
             !Stop ExaTENSOR runtime
