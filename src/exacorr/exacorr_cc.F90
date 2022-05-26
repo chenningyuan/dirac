@@ -885,8 +885,8 @@ module exacorr_cc
 
           ierr=exatns_tensor_init(s2_tensor,'ZERO')
 
-!         if (print_level.gt.8) then
-          if (.true.) then
+          if (print_level.gt.8) then
+!         if (.true.) then
              if (.not.CCD) then
                 write(*,'(A7,F20.15)') "b s1    = ",print_tensornorm2 (s1_tensor)
                 write(*,'(A7,F20.15)') "b T1amp = ",print_tensornorm2 (comm_t%t1)
@@ -1007,8 +1007,8 @@ module exacorr_cc
              return
           end if
 
-!         if (print_level.gt.8) then
-          if (.true.) then
+          if (print_level.gt.8) then
+!         if (.true.) then
              if (.not.CCD) then
                 write(*,'(A7,F20.15)') "a s1    = ",print_tensornorm2 (s1_tensor)
                 write(*,'(A7,F20.15)') "a T1amp = ",print_tensornorm2 (comm_t%t1)
@@ -2169,12 +2169,12 @@ module exacorr_cc
           call get_goo_lambda(lambda_t%goo,l2_tensor,comm_t%t2)
 
 !         debug
-!         if (print_level.gt.8) then
+          if (print_level.gt.8) then
             if (.not.CCD) print*, "L1  = ", print_tensornorm2(l1_tensor)
             print*, "L2  = ", print_tensornorm2(l2_tensor)*0.25D0
             print*, "goo = ", print_tensornorm2(lambda_t%goo)
             print*, "gvv = ", print_tensornorm2(lambda_t%gvv)
-!         end if
+          end if
 
 !******************************
 !         calculate s1 tensor *
@@ -4869,83 +4869,86 @@ module exacorr_cc
                                         voov_aux_tensor,&   ! H10   VOOV
                                         result_t_tensor,  &   ! Z26   unit tensor
                                         s2_tensor)          ! Z27   VVOO
-!         else if (CCSDT.and..not.CCD.and..not.CCSDTQ.and..not.CCSDTQP) then
-!            call exatensor_CCSDT_codegen_call(occ_space_id,vir_space_id,&
-!                                          int_t%oovv,     &  !  OOVV
-!                                          comm_t%t1,      &  !  VO
-!                                          comm_t%fov,     &  !  OV
-!                                          comm_t%t2,      &  !  VVOO
-!                                          hvo_aux_tensor,  &  !  VO
-!                                          comm_t%fvv,      &  !  VV
-!                                          int_t%vovv,     &  !  VOVV
-!                                          voov_aux_tensor,&  !  VOOV
-!                                          int_t%ooov,     &  !  OOOV
-!                                          comm_t%foo,     &  !  OO
-!                                          comm_t%t3,      &  !  VVVOOO
-!                                          vvoo_aux_tensor, &  !  VVOO
-!                                          int_t%vvvv,      &  !  VVVV
-!                                          vooo_aux_tensor,&  !  VOOO
-!                                          vvov_aux_tensor, &  !  VVOV
-!                                          int_t%oooo,     &  !  OOOO
-!                                          result_t_tensor,  &  !  UnitTensor
-!                                          s1_tensor,      &  !  VO
-!                                          s2_tensor,      &  !  VVOO
-!                                          s3_tensor)         !  VVVOOO
-!         else if (CCSDTQ.and..not.CCD.and..not.CCSDT.and..not.CCSDTQP) then
-!            call exatensor_CCSDTQ_codegen_call(occ_space_id,vir_space_id,&
-!                                          int_t%oovv,     &  !  OOVV
-!                                          comm_t%t1,      &  !  VO
-!                                          comm_t%fov,     &  !  OV
-!                                          comm_t%t2,      &  !  VVOO
-!                                          hvo_aux_tensor, &  !  VO
-!                                          comm_t%fvv,     &  !  VV
-!                                          int_t%vovv,     &  !  VOVV
-!                                          voov_aux_tensor,&  !  VOOV
-!                                          int_t%ooov,     &  !  OOOV
-!                                          comm_t%foo,     &  !  OO
-!                                          comm_t%t3,      &  !  VVVOOO
-!                                          vvoo_aux_tensor,&  !  VVOO
-!                                          int_t%vvvv,     &  !  VVVV
-!                                          vooo_aux_tensor,&  !  VOOO
-!                                          vvov_aux_tensor,&  !  VVOV
-!                                          int_t%oooo,     &  !  OOOO
-!                                          comm_t%t4,      &  !  VVVVOOOO
-!                                          result_t_tensor,  &  !  UnitTensor
-!                                          s1_tensor,      &  !  VO
-!                                          s2_tensor,      &  !  VVOO
-!                                          s3_tensor,      &  !  VVVOOO
-!                                          s4_tensor)         !  VVVVOOOO
-!
-!         else if (CCSDTQP.and..not.CCD.and..not.CCSDT.and..not.CCSDTQ) then
-!            call exatensor_CCSDTQP_codegen_call(occ_space_id,vir_space_id,&
-!                                          int_t%oovv,     &  !  OOVV
-!                                          comm_t%t1,      &  !  VO
-!                                          comm_t%fov,     &  !  OV
-!                                          comm_t%t2,      &  !  VVOO
-!                                          hvo_aux_tensor, &  !  VO
-!                                          comm_t%fvv,     &  !  VV
-!                                          int_t%vovv,     &  !  VOVV
-!                                          voov_aux_tensor,&  !  VOOV
-!                                          int_t%ooov,     &  !  OOOV
-!                                          comm_t%foo,     &  !  OO
-!                                          comm_t%t3,      &  !  VVVOOO
-!                                          vvoo_aux_tensor,&  !  VVOO
-!                                          int_t%vvvv,     &  !  VVVV
-!                                          vooo_aux_tensor,&  !  VOOO
-!                                          vvov_aux_tensor,&  !  VVOV
-!                                          int_t%oooo,     &  !  OOOO
-!                                          comm_t%t4,      &  !  VVVVOOOO
-!                                          comm_t%t5,      &  !  VVVVVOOOOO
-!                                          result_t_tensor,  &  !  UnitTensor
-!                                          s1_tensor,      &  !  VO
-!                                          s2_tensor,      &  !  VVOO
-!                                          s3_tensor,      &  !  VVVOOO
-!                                          s4_tensor,      &  !  VVVVOOOO
-!                                          s5_tensor)         !  VVVVVOOOOO 
+          else if (CCSDT.and..not.CCD.and..not.CCSDTQ.and..not.CCSDTQP) then
+             call exatensor_CCSDT_codegen(occ_space_id,vir_space_id,&
+                                    occ_space_root,vir_space_root,&
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor,  &  !  VO
+                                           comm_t%fvv,      &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor, &  !  VVOO
+                                           int_t%vvvv,      &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor, &  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           result_t_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor)         !  VVVOOO
+          else if (CCSDTQ.and..not.CCD.and..not.CCSDT.and..not.CCSDTQP) then
+             call exatensor_CCSDTQ_codegen(occ_space_id,vir_space_id,&
+                                    occ_space_root,vir_space_root,&
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor, &  !  VO
+                                           comm_t%fvv,     &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor,&  !  VVOO
+                                           int_t%vvvv,     &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor,&  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           comm_t%t4,      &  !  VVVVOOOO
+                                           result_t_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor,      &  !  VVVOOO
+                                           s4_tensor)         !  VVVVOOOO
+ 
+          else if (CCSDTQP.and..not.CCD.and..not.CCSDT.and..not.CCSDTQ) then
+             call exatensor_CCSDTQP_codegen(occ_space_id,vir_space_id,&
+                                    occ_space_root,vir_space_root,&
+                                           int_t%oovv,     &  !  OOVV
+                                           comm_t%t1,      &  !  VO
+                                           comm_t%fov,     &  !  OV
+                                           comm_t%t2,      &  !  VVOO
+                                           hvo_aux_tensor, &  !  VO
+                                           comm_t%fvv,     &  !  VV
+                                           int_t%vovv,     &  !  VOVV
+                                           voov_aux_tensor,&  !  VOOV
+                                           int_t%ooov,     &  !  OOOV
+                                           comm_t%foo,     &  !  OO
+                                           comm_t%t3,      &  !  VVVOOO
+                                           vvoo_aux_tensor,&  !  VVOO
+                                           int_t%vvvv,     &  !  VVVV
+                                           vooo_aux_tensor,&  !  VOOO
+                                           vvov_aux_tensor,&  !  VVOV
+                                           int_t%oooo,     &  !  OOOO
+                                           comm_t%t4,      &  !  VVVVOOOO
+                                           comm_t%t5,      &  !  VVVVVOOOOO
+                                           result_t_tensor,  &  !  UnitTensor
+                                           s1_tensor,      &  !  VO
+                                           s2_tensor,      &  !  VVOO
+                                           s3_tensor,      &  !  VVVOOO
+                                           s4_tensor,      &  !  VVVVOOOO
+                                           s5_tensor)         !  VVVVVOOOOO 
           end if
 
-!         if (print_level.gt.8) then
-          if (.true.) then
+          if (print_level.gt.8) then
+!         if (.true.) then
              if (.not.CCD) then
                 write(*,'(A7,F20.15)') "a s1    = ",print_tensornorm2 (s1_tensor)
                 write(*,'(A7,F20.15)') "a T1amp = ",print_tensornorm2 (comm_t%t1)
