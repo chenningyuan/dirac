@@ -222,11 +222,15 @@ module exacorr_cc
             ierr=exatns_process_role(my_role) ! only EXA_DRIVER will return immediately
             if(my_role.eq.EXA_DRIVER) then
 
+            write(*,*) " ccdriver: debug A"
 !           Create and initialize scalars that are to be used as tensors in contractions
             ierr=exatns_tensor_create(result_tensor,"result_tensor",EXA_DATA_KIND_C8)
+            write(*,*) " ccdriver: debug B"
             ierr=exatns_tensor_create(one_tensor,"another_one_tensor",EXA_DATA_KIND_C8)
+            write(*,*) " ccdriver: debug C"
             ! Note:  also get_integral_tensors will define a one_tensor and call it "one_tensor", so we needed another name
             ierr=exatns_tensor_init(one_tensor,ONE)
+            write(*,*) " ccdriver: debug D"
             
 !           Get fixed two-body tensors
             call print_date('-Start- Integral Transformation')
@@ -282,17 +286,20 @@ module exacorr_cc
                if (CCSDT.or.CCSDTQ.or.CCSDTQP) then
                   ierr=exatns_tensor_create(comm_t%t3,"t3",vvvooo_id,vvvooo_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(comm_t%t3,ZERO)
-                  ierr=exatns_tensor_transform(comm_t%t3,denom)
+! uncomment this if/when adding an initialization step for this tensor, like is done for t1
+!                 ierr=exatns_tensor_transform(comm_t%t3,denom)
                end if
                if (CCSDTQ.or.CCSDTQP) then
                   ierr=exatns_tensor_create(comm_t%t4,"t4",vvvvoooo_id,vvvvoooo_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(comm_t%t4,ZERO)
-                  ierr=exatns_tensor_transform(comm_t%t4,denom)
+! uncomment this if/when adding an initialization step for this tensor, like is done for t1
+!                 ierr=exatns_tensor_transform(comm_t%t4,denom)
                end if
                if (CCSDTQP) then
                   ierr=exatns_tensor_create(comm_t%t5,"t5",vvvvvooooo_id,vvvvvooooo_root,EXA_DATA_KIND_C8)
                   ierr=exatns_tensor_init(comm_t%t5,ZERO)
-                  ierr=exatns_tensor_transform(comm_t%t5,denom)
+! uncomment this if/when adding an initialization step for this tensor, like is done for t1
+!                 ierr=exatns_tensor_transform(comm_t%t5,denom)
                end if
  
             end if
@@ -340,8 +347,28 @@ module exacorr_cc
             ierr=exatns_tensor_create(comm_t%tau,"tau",vvoo_id,vvoo_root,EXA_DATA_KIND_C8)
             if(ierr.ne.EXA_SUCCESS) call quit('exatns_tensor_create() failed!')
             if (.not.CCD) then
-                call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
-                           t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
+             if (CCSDTQP) then
+                call diis (&
+                   t5_tensor=comm_t%t5,vvvvvooooo_id=vvvvvooooo_id,vvvvvooooo_root=vvvvvooooo_root,&
+                   t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
+                   t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
+                   t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                   t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
+             else if (CCSDTQ) then
+                call diis (&
+                   t4_tensor=comm_t%t4,vvvvoooo_id=vvvvoooo_id,vvvvoooo_root=vvvvoooo_root,&
+                   t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
+                   t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                   t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
+             else if (CCSDT) then
+                call diis (&
+                   t3_tensor=comm_t%t3,vvvooo_id=vvvooo_id,vvvooo_root=vvvooo_root,&
+                   t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                   t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
+             else
+              call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,&
+                         t1_tensor=comm_t%t1,vo_id=vo_id,vo_root=vo_root,mode=1)
+              end if
             else
                 call diis (t2_tensor=comm_t%t2,vvoo_id=vvoo_id,vvoo_root=vvoo_root,mode=1)
             end if
@@ -353,6 +380,7 @@ module exacorr_cc
             end if
 
             if (exa_input%auto_kernels) then
+               write(*,*) " ccdriver: calling solve_t_equations_automatic"
                call solve_t_equations_automatic(comm_t,int_t,dims,t_target_precision,cc_energy,&
                                                CCD,CCSDT,CCSDTQ,CCSDTQP,ncycles,denom,exa_input%print_level)
             else
@@ -386,7 +414,29 @@ module exacorr_cc
 
 !           Destroy tensors 
             if (.not.CCD) then
-                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+             if (CCSDTQP) then
+                call diis (&
+                   t5_tensor=comm_t%t5,&
+                   t4_tensor=comm_t%t4,&
+                   t3_tensor=comm_t%t3,&
+                   t2_tensor=comm_t%t2,&
+                   t1_tensor=comm_t%t1,mode=2)
+             else if (CCSDTQ) then
+                call diis (&
+                   t4_tensor=comm_t%t4,&
+                   t3_tensor=comm_t%t3,&
+                   t2_tensor=comm_t%t2,&
+                   t1_tensor=comm_t%t1,mode=2)
+             else if (CCSDT) then
+                call diis (&
+                   t3_tensor=comm_t%t3,&
+                   t2_tensor=comm_t%t2,&
+                   t1_tensor=comm_t%t1,mode=2)
+             else
+                call diis (&
+                   t2_tensor=comm_t%t2,&
+                   t1_tensor=comm_t%t1,mode=2)
+             end if
             else
                 call diis(t2_tensor=comm_t%t2,mode=2)
             end if
