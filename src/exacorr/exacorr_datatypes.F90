@@ -140,9 +140,22 @@
         end type talsh_lambda_tens
 
         type, public :: talsh_dm_tens
+! one-body density matrices
          type(talsh_tens_t) :: prime_oo, symm_oo
          type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(talsh_tens_t) :: prime_vv, symm_vv
+! two-body density matrices
+         type(talsh_tens_t) :: prime_ooov, symm_ooov
+         type(talsh_tens_t) :: prime_ovov, symm_ovov
+         type(talsh_tens_t) :: prime_vvvo, symm_vvvo
+         type(talsh_tens_t) :: prime_voov, symm_voov
+         type(talsh_tens_t) :: prime_vovv, symm_vovv
+         type(talsh_tens_t) :: prime_vvvv, symm_vvvv
+         type(talsh_tens_t) :: prime_oovv, symm_oovv
+         type(talsh_tens_t) :: prime_ovoo, symm_ovoo
+         type(talsh_tens_t) :: prime_oooo, symm_oooo
+         type(talsh_tens_t) :: prime_vvoo, symm_vvoo
+         type(talsh_tens_t) :: prime_ovvo, symm_ovvo
         end type talsh_dm_tens
 
         type, public, extends(talsh_comm_tens) :: talsh_eom_fixed_tens
