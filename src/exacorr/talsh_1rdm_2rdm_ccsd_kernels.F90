@@ -296,109 +296,45 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
       logical :: debug=.true.
 
-      oo_dims(1:2)   = nocc
-      vv_dims(1:2)   = nvir
-      vo_dims(1)     = nvir
-      vo_dims(2)     = nocc
-      ov_dims(1)     = nocc
-      ov_dims(2)     = nvir
- 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
-      ooov_dims(1:4) = nocc
-      ooov_dims(4)   = nvir
-
-      ierr=talsh_tensor_construct(gamma%prime_ooov,C8,ooov_dims,init_val=ZERO)
-
-      ovov_dims(1:4) = nocc
-      ovov_dims(2)   = nvir
-      ovov_dims(4)   = nvir
-
-      ierr=talsh_tensor_construct(gamma%prime_ovov,C8,ovov_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_ooov,C8,ooov_dims,init_val=ZERO)
-
-      vvvv_dims(1:4) = nvir
       ierr=talsh_tensor_construct(Hinter_vvvv,C8,vvvv_dims,init_val=ZERO)
-
-      vvvo_dims(1:4) = nvir
-      vvvo_dims(4)   = nocc
-
-      vovv_dims(1:4) = nvir
-      vovv_dims(2)   = nocc
-
-      ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_vv,C8,vv_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_vovv,C8,vovv_dims,init_val=ZERO)
-
-      voov_dims(1:4) = nvir
-      voov_dims(2:3) = nocc
-      ierr=talsh_tensor_construct(gamma%prime_voov,C8,voov_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_voov,C8,voov_dims,init_val=ZERO)
-
-      ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-
-      oovv_dims(1:2) = nocc
-      oovv_dims(3:4) = nvir
-      ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
-     
-      ovoo_dims(1:4) = nocc
-      ovoo_dims(2)   = nvir
-      ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_ovoo,C8,ovoo_dims,init_val=ZERO)
-
-   
-      ovvo_dims(1:4) = nocc
-      ovvo_dims(2:3) = nvir
-      ierr=talsh_tensor_construct(gamma%prime_ovvo,C8,ovvo_dims,init_val=ZERO)
-
-      oooo_dims(1:4) = nocc
-      ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
-
-      vvoo_dims(1:2) = nvir
-      vvoo_dims(3:4) = nocc
-      ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_oo,C8,oo_dims,init_val=ZERO)
-
       ierr=talsh_tensor_construct(Hinter_vo,C8,vo_dims,init_val=ZERO)
-
-
-      ovvv_dims(1:4) = nvir
-      ovvv_dims(1)   = nocc 
       ierr=talsh_tensor_construct(Hinter_ovvv,C8,ovvv_dims,init_val=ZERO)
-
-!      vovv_dims(1:4) = nvir
-!      vovv_dims(2)   = nocc  
       ierr=talsh_tensor_construct(Hinter_vovv,C8,vovv_dims,init_val=ZERO)
-
       ierr=talsh_tensor_construct(Hinter_ovvo,C8,ovvo_dims,init_val=ZERO)
-
-      vvvo_dims(1:4) = nvir
-      vvvo_dims(4)   = nocc  
       ierr=talsh_tensor_construct(Hinter_vvvo,C8,vvvo_dims,init_val=ZERO)
-      vooo_dims(1:4) = nocc
-      vooo_dims(1)   = nvir 
       ierr=talsh_tensor_construct(Hinter_vooo,C8,vooo_dims,init_val=ZERO)
-
-      oooo_dims(1:4) = nocc
       ierr=talsh_tensor_construct(Hinter_oooo,C8,oooo_dims,init_val=ZERO)
-
-      vvoo_dims(1:2) = nvir
-      vvoo_dims(3:4) = nocc
       ierr=talsh_tensor_construct(Hinter_vvoo,C8,vvoo_dims,init_val=ZERO)
-
-      oovo_dims(1:4) = nocc
-      oovo_dims(3)   = nvir
       ierr=talsh_tensor_construct(Hinter_oovo,C8,oovo_dims,init_val=ZERO)
-
-      vovo_dims(1:4) = nocc
-      vovo_dims(1)   = nvir
-      vovo_dims(3)   = nvir
       ierr=talsh_tensor_construct(Hinter_vovo,C8,vovo_dims,init_val=ZERO)  
-
       ierr=talsh_tensor_construct(Hinter_ovov,C8,ovov_dims,init_val=ZERO)
-
-      vvov_dims(1:4) = nvir
-      vvov_dims(3)   = nocc
       ierr=talsh_tensor_construct(Hinter_vvov,C8,vvov_dims,init_val=ZERO)
 
       !gamma ooov
@@ -727,21 +663,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,n,j,f)*H(a,f,n,i)",gamma%prime_vvoo,Hinter_voov,Hinter_vvoo,scale=ONE_QUARTER)
       if (debug)  print*, " m24-g, ierr  ", ierr
 
-
-
-      ierr=talsh_tensor_destruct(gamma%prime_ooov)
-      ierr=talsh_tensor_destruct(gamma%prime_ovov)
-      ierr=talsh_tensor_destruct(gamma%prime_vvvo)
-      ierr=talsh_tensor_destruct(gamma%prime_voov)
-      ierr=talsh_tensor_destruct(gamma%prime_vovv)
-      ierr=talsh_tensor_destruct(gamma%prime_vvvv)
-      ierr=talsh_tensor_destruct(gamma%prime_oovv)
-      ierr=talsh_tensor_destruct(gamma%prime_ovoo)
-      ierr=talsh_tensor_destruct(gamma%prime_oooo)
-      ierr=talsh_tensor_destruct(gamma%prime_vvoo)
-      ierr=talsh_tensor_destruct(gamma%prime_ovvo)
-
-
       ierr=talsh_tensor_destruct(Hinter_ooov)
       ierr=talsh_tensor_destruct(Hinter_vovv)
       ierr=talsh_tensor_destruct(Hinter_vv)
@@ -789,13 +710,15 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
       integer                     :: i,j  
 
-      integer(INTD), dimension(2) :: oo_dims, vv_dims 
-!, vo_dims, ov_dims
-      integer(INTD), dimension(4) :: vvoo_dims, oovv_dims
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-      integer(INTD), dimension(4) :: ovov_dims
-      integer(INTD), dimension(4) :: oooo_dims, vvvv_dims
-      integer(INTD), dimension(4) :: ovvo_dims
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
 !      integer(INTD), dimension(4) :: vvoo_dims
       type(talsh_tens_t) :: aux_tensor_vvoo
@@ -822,44 +745,31 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
-      oo_dims(1:2) = nocc
-      vv_dims(1:2) = nvir
-        
-      oooo_dims(1:4) = nocc
-      vvvv_dims(1:4) = nvir
-
-      ovov_dims(1:4) = nocc
-      ovov_dims(2)   = nvir
-      ovov_dims(4)   = nvir
-
-      oovv_dims(1:2) = nocc
-      oovv_dims(3:4) = nvir
-
-      vvoo_dims(1:2) = nvir
-      vvoo_dims(3:4) = nocc
-
-      ovvo_dims(1:4) = nocc
-      ovvo_dims(2:3) = nvir
-
-      ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_oo,C8,oo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_vv,C8,vv_dims,init_val=ZERO)
-
-      ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_oooo,C8,oooo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-
       ierr=talsh_tensor_construct(Hinter_ovvo,C8,ovvo_dims,init_val=ZERO)
-
-      ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(gamma%prime_ovov,C8,ovov_dims,init_val=ZERO)
-
-
-      vvoo_dims(1:2) = nvir
-      vvoo_dims(3:4) = nocc
       ierr=talsh_tensor_construct(aux_tensor_vvoo,C8,vvoo_dims,init_val=ZERO)
 
 !      Eq1-1 Gij=-\undemi \ld jmef \td efim 
@@ -982,14 +892,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
       if (debug) print*, "result_tensor_ovov ,result_tensor_ovov ",result_tens(1)
 
 
-      ierr=talsh_tensor_destruct(gamma%prime_oo)
-      ierr=talsh_tensor_destruct(gamma%prime_vv)
-
-      ierr=talsh_tensor_destruct(gamma%prime_oooo)
-      ierr=talsh_tensor_destruct(gamma%prime_vvvv)
-      ierr=talsh_tensor_destruct(gamma%prime_ovov)
-      ierr=talsh_tensor_destruct(gamma%prime_oovv)
-      ierr=talsh_tensor_destruct(gamma%prime_vvoo)
       ierr=talsh_tensor_destruct(Hinter_oooo)
       ierr=talsh_tensor_destruct(Hinter_ovvo)
       ierr=talsh_tensor_destruct(Hinter_vv)
@@ -1030,15 +932,12 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !     tensor dimensions
           integer :: one_dims(1)=1
           integer, dimension(2) :: oo_dims, vv_dims
-          integer, dimension(4) :: vvoo_dims
           integer, dimension(2) :: ov_dims,vo_dims
+          integer, dimension(4) :: vvoo_dims, ovvo_dims, ovvv_dims, oovo_dims
           integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims !Loic_
-
-
-          integer, dimension(4) :: vvvo_dims,ooov_dims,vooo_dims,ovvv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims
-!Loic_
+          integer, dimension(4) :: vvvo_dims, ooov_dims, vooo_dims, vovv_dims
+          integer, dimension(4) :: vovo_dims, ovoo_dims, ovov_dims, voov_dims
+          integer, dimension(4) :: vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -1047,39 +946,46 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
     !*********************************
     !     construct auxiliary tensor *
     !*********************************
 
-
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
           if (.not.CCD) then
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            vv_dims = nvir
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
           end if
-
 
     !********************
     ! Intermediates     *
     !********************
 
-            ! Loic_Taille
-
-            vv_dims = nvir
             ierr=talsh_tensor_construct(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-
-
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
@@ -1294,16 +1200,16 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     !     tensor dimensions
           integer :: one_dims(1)=1
-          integer, dimension(2) :: oo_dims, vv_dims
-          integer, dimension(4) :: vvoo_dims, ovvo_dims, ovvv_dims, oovo_dims
-          integer, dimension(2) :: ov_dims,vo_dims
-          integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims !Loic_
 
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-          integer, dimension(4) :: vvvo_dims, ooov_dims, vooo_dims, vovv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims, ovoo_dims, ovov_dims, voov_dims
-!Loic_
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -1316,15 +1222,31 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !     construct auxiliary tensor *
     !*********************************
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
           if (.not.CCD) then
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            vv_dims = nvir
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
           end if
 
@@ -1332,59 +1254,21 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !********************
     ! Intermediates     *
     !********************
-            ovvo_dims = nocc
-            ovvo_dims(2:3) = nvir
             ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-            oooo_dims = nocc
             ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-
 
             ! Loic_Taille
 
-            vv_dims = nvir
             ierr=talsh_tensor_construct(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ovvv_dims = nvir
-            ovvv_dims(1) = nocc
             ierr=talsh_tensor_construct(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
-            ovov_dims = nvir
-            ovov_dims(1) = nocc
-            ovov_dims(3) = nocc
             ierr=talsh_tensor_construct(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-            voov_dims = nvir
-            voov_dims(2:3) = nocc
             ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
-
-            ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
-            ovoo_dims = nocc
-            ovoo_dims(2) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
-            vvvo_dims = nvir
-            vvvo_dims (4) = nocc
-            ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
-            oovo_dims = nocc
-            oovo_dims(3) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_oovo,C8,oovo_dims,init_val=ZERO)
-            voov_dims = nvir
-            voov_dims(2:3)=nocc
-            ierr=talsh_tensor_construct(gamma%prime_oovo,C8,voov_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
-            vvvv_dims = nvir  
-            ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-            oovv_dims = nvir 
-            oovv_dims(1:2) = nocc
-            ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
-
 
 
             !  Loic_Tenseurs_Intermediaires
@@ -2041,16 +1925,15 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     !     tensor dimensions
           integer :: one_dims(1)=1
-          integer, dimension(2) :: oo_dims, vv_dims
-          integer, dimension(4) :: vvoo_dims, oovo_dims
-          integer, dimension(2) :: ov_dims,vo_dims
-          integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims !Loic_
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-
-          integer, dimension(4) :: vvvo_dims,ooov_dims,vooo_dims,ovvv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims
-!Loic_
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -2063,32 +1946,35 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !     construct auxiliary tensor *
     !*********************************
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
           if (.not.CCD) then
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            vv_dims = nvir
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
           end if
-
-          oovo_dims = nocc
-          oovo_dims(3) = nvir
           ierr=talsh_tensor_construct(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
-
-
-          ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-          ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
-          ov_dims = nocc
-          ov_dims(2) = nvir
-          ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-          vo_dims = nocc
-          vo_dims(1) = nvir
-          ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-
 
     ! rho ij
            ! eq a3              :: - \ls iX \rs Xj   
@@ -2212,16 +2098,16 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     !     tensor dimensions
           integer :: one_dims(1)=1
-          integer, dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
-          integer, dimension(4) :: vvoo_dims, ovvo_dims, ovvv_dims, oovo_dims
           integer, dimension(2) :: vX_dims
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-          integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims, vvov_dims !Loic_
-
-          integer, dimension(4) :: vvvo_dims, ooov_dims, vooo_dims, vovv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims, ovoo_dims, ovov_dims, voov_dims
-!Loic_
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -2234,15 +2120,32 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !     construct auxiliary tensor *
     !*********************************
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
           if (.not.CCD) then
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            vv_dims = nvir
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
           end if
 
@@ -2253,64 +2156,23 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !********************
     ! Intermediates     *
     !********************
-            ovvo_dims = nocc
-            ovvo_dims(2:3) = nvir
             ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-            oooo_dims = nocc
             ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-
 
             ! Loic_Taille
 
-            vv_dims = nvir
             ierr=talsh_tensor_construct(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ovvv_dims = nvir
-            ovvv_dims(1) = nocc
             ierr=talsh_tensor_construct(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
-            ovov_dims = nvir
-            ovov_dims(1) = nocc
-            ovov_dims(3) = nocc
             ierr=talsh_tensor_construct(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-            voov_dims = nvir
-            voov_dims(2:3) = nocc
             ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-            vvov_dims = nvir
-            vvov_dims(3) = nocc
             ierr=talsh_tensor_construct(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
 
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
-
-            ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
-            ovoo_dims = nocc
-            ovoo_dims(2) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
-            vvvo_dims = nvir
-            vvvo_dims (4) = nocc
-            ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
-            oovo_dims = nocc
-            oovo_dims(3) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_oovo,C8,oovo_dims,init_val=ZERO)
-            voov_dims = nvir
-            voov_dims(2:3)=nocc
-            ierr=talsh_tensor_construct(gamma%prime_oovo,C8,voov_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
-            vvvv_dims = nvir
-            ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-            oovv_dims = nvir
-            oovv_dims(1:2) = nocc
-            ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
-            oovo_dims = nocc
-            oovo_dims(3) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovo_dims,init_val=ZERO)
 
            ierr=talsh_tensor_add("TauDown(a,b,i,j)+=T(a,b,i,j)",TauDown_tensor,t2_tensor)
            if(ierr.ne.0) write(*,*) "ierr00 =",ierr
@@ -2647,16 +2509,15 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     !     tensor dimensions
           integer :: one_dims(1)=1
-          integer, dimension(2) :: oo_dims, vv_dims
-          integer, dimension(4) :: vvoo_dims
-          integer, dimension(2) :: ov_dims,vo_dims
-          integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims !Loic_
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-
-          integer, dimension(4) :: vvvo_dims,ooov_dims,vooo_dims,ovvv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims, vovv_dims
-!Loic_
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -2894,16 +2755,16 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     !     tensor dimensions
           integer :: one_dims(1)=1
-          integer, dimension(2) :: oo_dims, vv_dims
           integer, dimension(2) :: Xo_dims, Xv_dims
-          integer, dimension(4) :: vvoo_dims, ovvo_dims, ovvv_dims, oovo_dims
-          integer, dimension(2) :: ov_dims,vo_dims
-          integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims !Loic_
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-          integer, dimension(4) :: vvvo_dims, ooov_dims, vooo_dims, vovv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims, ovoo_dims, ovov_dims, voov_dims
-!Loic_
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -2916,15 +2777,32 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !     construct auxiliary tensor *
     !*********************************
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
           if (.not.CCD) then
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            vv_dims = nvir
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
           end if
 
@@ -2932,23 +2810,14 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !********************
     ! Intermediates     *
     !********************
-            ovvo_dims = nocc
-            ovvo_dims(2:3) = nvir
             ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-            oooo_dims = nocc
             ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-            vovv_dims = nvir
-            vovv_dims(2) = nocc
             ierr=talsh_tensor_construct(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
-
-
 
             ! Loic_Taille
 
-            vv_dims = nvir
             ierr=talsh_tensor_construct(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
 
@@ -2957,51 +2826,12 @@ module talsh_1rdm_2rdm_ccsd_kernels
             Xv_dims = nvir
             ierr=talsh_tensor_construct(MATone_EA_vv_tensor,C8,Xv_dims,init_val=ZERO)
 
-            ovvv_dims = nvir
-            ovvv_dims(1) = nocc
             ierr=talsh_tensor_construct(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
-            ovov_dims = nvir
-            ovov_dims(1) = nocc
-            ovov_dims(3) = nocc
             ierr=talsh_tensor_construct(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-            voov_dims = nvir
-            voov_dims(2:3) = nocc
             ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
-
-            ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
-            ovoo_dims = nocc
-            ovoo_dims(2) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
-            vvvo_dims = nvir
-            vvvo_dims (4) = nocc
-            ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
-            oovo_dims = nocc
-            oovo_dims(3) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_oovo,C8,oovo_dims,init_val=ZERO)
-            voov_dims = nvir
-            voov_dims(2:3)=nocc
-            ierr=talsh_tensor_construct(gamma%prime_oovo,C8,voov_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
-            vvvv_dims = nvir  
-            ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-            oovv_dims = nvir 
-            oovv_dims(1:2) = nocc
-            ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
-            vovo_dims = nocc 
-            vovo_dims(1) = nvir
-            vovo_dims(3) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_vovo,C8,vovo_dims,init_val=ZERO)
-
-            ooov_dims = nocc
-            ooov_dims(4) = nvir
-            ierr=talsh_tensor_construct(gamma%prime_ooov,C8,ooov_dims,init_val=ZERO)
 
             !  Loic_Tenseurs_Intermediaires
 
@@ -3417,16 +3247,15 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     !     tensor dimensions
           integer :: one_dims(1)=1
-          integer, dimension(2) :: oo_dims, vv_dims
-          integer, dimension(4) :: vvoo_dims
-          integer, dimension(2) :: ov_dims,vo_dims
-          integer, dimension(4) :: oooo_dims,vvvv_dims,oovv_dims !Loic_
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
 
-
-          integer, dimension(4) :: vvvo_dims,ooov_dims,vooo_dims,ovvv_dims
-!Loic_
-          integer, dimension(4) :: vovo_dims
-!Loic_
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
 
     !     CCD switch
           logical :: CCD = .false.
@@ -3443,15 +3272,33 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !     construct auxiliary tensor *
     !*********************************
 
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
+
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
           if (.not.CCD) then
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            vv_dims = nvir
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
           end if
 
@@ -3474,16 +3321,10 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
             ! Loic_Taille
 
-            vv_dims = nvir
             ierr=talsh_tensor_construct(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            oo_dims = nocc
             ierr=talsh_tensor_construct(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-
-
-            vvoo_dims(1:2) = nvir
-            vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
