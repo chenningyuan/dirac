@@ -31,178 +31,23 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
   private
 
-  public talsh_dm_driver
-  public talsh_dm_form_mo_fort_from_tensors
-  public talsh_dm_form_ao_diracformat_from_dm_mo
-  public talsh_dm_initialize_dmtens
-  public talsh_dm_cleanup_dmtens
+    public talsh_calc_dm_1rdm_ccsd_GS_mo
+    public talsh_calc_dm_1rdm_ccsd_EE_mo
+    public talsh_calc_dm_1rdm_ccsd_IP_mo
+    public talsh_calc_dm_1rdm_ccsd_EA_mo
+    public talsh_calc_dm_1rdm_EE_Krylov_mo
+
+    public calc_dmSandD_CCD_mo
+
+    public talsh_calc_dm_2rdm_ccsd_GS_mo
+    public talsh_calc_dm_2rdm_ccsd_EE_mo
+    public talsh_calc_dm_2rdm_ccsd_IP_mo
+    public talsh_calc_dm_2rdm_ccsd_EA_mo
+
 
   contains
 
-    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor,int_t)
-
-        use talsh
-        use exacorr_datatypes !, only : talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
-
-!        Common tensors
-!      type(talsh_comm_tens) :: comm_t
-!        fixed 1- and 2-body tensors (fock matrix elements and two-electron
-!        integrals)
-      type(talsh_intg_tens),intent(inout),optional :: int_t
-
-!     Routine for obtaining the density matrices in the MO basis
-
-!     input variables
-      type(exacc_input), intent(in   ) :: exa_input
-      type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
-      type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
-      type(talsh_tens_t) :: Voooo
-!     density matrices type, output
-      type(talsh_dm_tens) :: gamma
-!     CCD switch
-      logical :: CCD
-!     error code
-      integer(INTD) :: ierr
-
-      CCD = exa_input%CCD
-
-!************************************
-!     construct gamma prime tensors *
-!************************************
-      call talsh_dm_initialize_dmtens(exa_input,gamma)
-
-!**************************************
-!     calculate DM blocks in MO basis *
-!**************************************
-
-      if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor)
-        print *, "LH - talsh_gradient.F90 just before call calc_dmdouble_mo "
-        call calc_dmdouble_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level)
-        print *, "LH - fin talsh_gradient.F90 just after call calc_dmdouble_mo"
-        print *,"LH - talsh_gradient.F90 just before call calc_dmSandD_CCD_mo "
-        call calc_dmSandD_CCD_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level,int_t)
-        print *,"LH - talsh_gradient.F90 just after calc_dmSandD_CCD_mo "
-        print *,"LH - talsh_gradient.F90 just before call EOM-EE dm pq  "
-        print *,"LH - Warning r1 et r2 are replaced by t1 and t2  "
-        print *," LH- Warning only ierr different to 0 are printed " 
-  !!      call talsh_calc_dm_1rdm_ccsd_EE_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,r1_tensor,r2_tensor)
-        call talsh_calc_dm_1rdm_ccsd_EE_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On attaque les doubles EE " 
-        call talsh_calc_dm_2rdm_ccsd_EE_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On termine les doubles EE "
-        print *," LH -  "
-        print *," LH - On attaque les simples IP "
-        call talsh_calc_dm_1rdm_ccsd_IP_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On termine les simples IP "
-        print *," LH -  "
-        print *," LH - On attaque les doubles IP "
-        call talsh_calc_dm_2rdm_ccsd_IP_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On termine les doubles IP "
-        print *," LH -  "
-        print *," LH - On attaque les simples EA "
-        call talsh_calc_dm_1rdm_ccsd_EA_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On termine les simple EA "
-        print *," LH -  "
-        print *," LH - On attaque les doubles EA " 
-        call talsh_calc_dm_2rdm_ccsd_EA_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On termine les doubles EA "
-        print *," LH -  "
-
-        print *," LH -  "
-        print *," LH - On attaque les simples EE - Krylov " 
-        call talsh_calc_dm_1rdm_EE_Krylov_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,t1_tensor,l1_tensor,t1_tensor,t2_tensor)
-        print *," LH - On termine les doubles EE - Krylov "
-        print *," LH -  "
-
-
-
-
-
-      else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,exa_input%print_level)
-      end if
-      call print_date("Calculated density matrices in MO basis")
-
-!***********************
-!     write DM to file *
-!***********************
-
-      call store_dm_mo(exa_input,gamma)
-
-!     cleanup
-      call talsh_dm_cleanup_dmtens(gamma,CCD)
-
-    end subroutine talsh_dm_driver
-
-    subroutine talsh_dm_cleanup_dmtens(dmat,CCD)
-      type(talsh_dm_tens), intent(inout) :: dmat
-!     CCD switch
-      logical, intent(in) :: CCD
-!     error code
-      integer(INTD) :: ierr
-
-      ierr=talsh_tensor_destruct(dmat%prime_oo)
-      if (.not.CCD) then
-        ierr=talsh_tensor_destruct(dmat%prime_ov)
-        ierr=talsh_tensor_destruct(dmat%symm_ov)
-        ierr=talsh_tensor_destruct(dmat%prime_vo)
-        ierr=talsh_tensor_destruct(dmat%symm_vo)
-      end if
-      ierr=talsh_tensor_destruct(dmat%prime_vv)
-      ierr=talsh_tensor_destruct(dmat%symm_oo)
-      ierr=talsh_tensor_destruct(dmat%symm_vv)
-
-      if (ierr.ne.TALSH_SUCCESS) then
-        print*," ccdriver: error in evaluation of density matrices, code=",ierr
-        return
-      end if
-    end subroutine
-
-    subroutine talsh_dm_initialize_dmtens(exa_input,dmat)
-!     Routine for obtaining the density matrices in the MO basis
-!     input variables
-      type(exacc_input), intent(in   ) :: exa_input
-!     density matrices type, output
-      type(talsh_dm_tens), intent(inout) :: dmat 
-!     tensor dimensions
-      integer(INTD), dimension(2) :: oo_dims,ov_dims,vo_dims,vv_dims
-!     CCD switch
-      logical :: CCD
-!     error code
-      integer(INTD) :: ierr
-
-      CCD = exa_input%CCD
-
-!************************************
-!     construct gamma prime tensors *
-!************************************
-
-      oo_dims = exa_input%nocc
-      ierr=talsh_tensor_construct(dmat%prime_oo,C8,oo_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(dmat%symm_oo,C8,oo_dims,init_val=ZERO)
-      if (.not.CCD) then
-        ov_dims(1) = exa_input%nocc
-        ov_dims(2) = exa_input%nvir
-        ierr=talsh_tensor_construct(dmat%prime_ov,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(dmat%symm_ov,C8,ov_dims,init_val=ZERO)
-        vo_dims(1) = exa_input%nvir
-        vo_dims(2) = exa_input%nocc
-        ierr=talsh_tensor_construct(dmat%prime_vo,C8,vo_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(dmat%symm_vo,C8,vo_dims,init_val=ZERO)
-      end if
-      vv_dims = exa_input%nvir
-      ierr=talsh_tensor_construct(dmat%prime_vv,C8,vv_dims,init_val=ZERO)
-      ierr=talsh_tensor_construct(dmat%symm_vv,C8,vv_dims,init_val=ZERO)
-
-      if (ierr.ne.TALSH_SUCCESS) then
-        print*," ccdriver: error in evaluation of density matrices, code=",ierr
-        return
-      end if
-
-   end subroutine
-
-    subroutine calc_dm_1rdm_ccsd_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
+    subroutine talsh_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
 !     input variables
       type(talsh_dm_tens), intent(inout) :: gamma
@@ -403,11 +248,11 @@ module talsh_1rdm_2rdm_ccsd_kernels
         ierr=talsh_tensor_destruct(oo_aux_tensor)
       end if
 
-    end subroutine calc_dm_1rdm_ccsd_mo
+    end subroutine talsh_calc_dm_1rdm_ccsd_GS_mo
 
 
 !!! WIP  - Gamma double for CCSD
-    subroutine calc_dm_2rdm_ccsd_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir,print_level)
+    subroutine talsh_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
 !       If a separated module
 !      use talsh_ao_to_mo, only       : tensor_norm2
@@ -915,7 +760,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_destruct(Hinter_vvoo)
       ierr=talsh_tensor_destruct(Hinter_ovov)
 
-    end subroutine calc_dm_2rdm_ccsd_mo
+    end subroutine talsh_calc_dm_2rdm_ccsd_GS_mo
 
 
     subroutine calc_dmSandD_CCD_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir,print_level,int_t)
@@ -951,13 +796,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
       integer(INTD), dimension(4) :: ovov_dims
       integer(INTD), dimension(4) :: oooo_dims, vvvv_dims
       integer(INTD), dimension(4) :: ovvo_dims
-
-      type(talsh_tens_t) :: gamma%prime_oo
-      type(talsh_tens_t) :: gamma%prime_vv
-
-      type(talsh_tens_t) :: gamma%prime_oooo, gamma%prime_vvvv
-      type(talsh_tens_t) :: gamma%prime_ovov
-      type(talsh_tens_t) :: gamma%prime_oovv, gamma%prime_vvoo
 
 !      integer(INTD), dimension(4) :: vvoo_dims
       type(talsh_tens_t) :: aux_tensor_vvoo
@@ -1454,14 +1292,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
           type(talsh_tens_t) :: vooo_aux_tensor, ovvv_aux_tensor,vovo_aux_tensor
           type(talsh_tens_t) :: ovvo_aux_tensor, ovov_aux_tensor,voov_aux_tensor
 
-          type(talsh_tens_t) :: gamma%prime_oo
-          type(talsh_tens_t) :: gamma%prime_vv
-
-          type(talsh_tens_t) :: gamma%prime_oooo, gamma%prime_vvvv, gamma%prime_vvvo
-          type(talsh_tens_t) :: gamma%prime_ovov, gamma%prime_ovoo, gamma%prime_oovo
-          type(talsh_tens_t) :: gamma%prime_oovv, gamma%prime_vvoo, gamma%prime_voov
-          type(talsh_tens_t) :: gamma%prime_vovv
-
     !     tensor dimensions
           integer :: one_dims(1)=1
           integer, dimension(2) :: oo_dims, vv_dims
@@ -1606,541 +1436,562 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     ! rho ijkl
            ! eq 1              :: +1/2 \ld ijef \rd efkl 
-           ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,f)*R(e,f,k,l)",gamma%prime_oooo,l2_tensor,r2_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr1 =",ierr
-           ! eq 2              :: +\Pm kl \ld ijef \rs ek \ts fl
-           ierr=talsh_tensor_contract("A(e,f,k,l)+=R(e,k)*R(f,l)",vvoo_aux_tensor,r1_tensor,r1_tensor)
-           ierr=talsh_tensor_contract("A(e,f,k,l)+=R(e,l)*R(f,k)",vvoo_aux_tensor,r1_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr2 =",ierr
-           ierr=talsh_tensor_contract("G(i,j,k,l)+=A(e,f,k,l)*L(i,j,e,f)",gamma%prime_oooo,vvoo_aux_tensor,l2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr3 =",ierr
-           ! eq 3              :: +\ro 1/2 \ld ijef \TauDown efkl 
-           ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,f)*TauDown(e,f,k,l)",gamma%prime_oooo,l2_tensor,TauDown_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr4 =",ierr
+    ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,f)*R(e,f,k,l)",gamma%prime_oooo,l2_tensor,r2_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr1 =",ierr
+    ! eq 2              :: +\Pm kl \ld ijef \rs ek \ts fl
+    ierr=talsh_tensor_contract("A(e,f,k,l)+=R(e,k)*R(f,l)",vvoo_aux_tensor,r1_tensor,r1_tensor)
+    ierr=talsh_tensor_contract("A(e,f,k,l)+=R(e,l)*R(f,k)",vvoo_aux_tensor,r1_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr2 =",ierr
+    ierr=talsh_tensor_contract("G(i,j,k,l)+=A(e,f,k,l)*L(i,j,e,f)",gamma%prime_oooo,vvoo_aux_tensor,l2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr3 =",ierr
+    ! eq 3              :: +\ro 1/2 \ld ijef \TauDown efkl 
+    ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,f)*TauDown(e,f,k,l)",gamma%prime_oooo,l2_tensor,TauDown_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr4 =",ierr
       
         !!! Pas de Kronecker
 
     ! rho iajk
-           ! eq j2 + j10        :: - (1/2) \Pm jk \MATone ij \ts ak
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,j)*T(a,k)",gamma%prime_ovoo,MATone_oo_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,k)*T(a,j)",gamma%prime_ovoo,MATone_oo_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr5 =",ierr
+    ! eq j2 + j10        :: - (1/2) \Pm jk \MATone ij \ts ak
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,j)*T(a,k)",gamma%prime_ovoo,MATone_oo_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,k)*T(a,j)",gamma%prime_ovoo,MATone_oo_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr5 =",ierr
 
-           ! eq j3 + j9         :: - (1/2) \Pm jk \rs ak \MATtwo ij
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,j)*R(a,k)",gamma%prime_ovoo,MATtwo_oo_tensor,r1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,k)*R(a,j)",gamma%prime_ovoo,MATtwo_oo_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr6 =",ierr
+    ! eq j3 + j9         :: - (1/2) \Pm jk \rs ak \MATtwo ij
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,j)*R(a,k)",gamma%prime_ovoo,MATtwo_oo_tensor,r1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,k)*R(a,j)",gamma%prime_ovoo,MATtwo_oo_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr6 =",ierr
 
-           ! eq j6 + j12        :: + (1/2) \Pm jk \ld imfe \rs ek \TauNo fajm
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,m,k,f)+=L(i,m,e,f)*R(e,k)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr7 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,n,k,f)*TauNo(f,a,j,m)",gamma%prime_ovoo,ooov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,n,j,f)*TauNo(f,a,k,m)",gamma%prime_ovoo,ooov_aux_tensor,TauNo_tensor)
-           if(ierr.ne.0) write(*,*) "ierr8 =",ierr
+    ! eq j6 + j12        :: + (1/2) \Pm jk \ld imfe \rs ek \TauNo fajm
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,m,k,f)+=L(i,m,e,f)*R(e,k)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr7 =",ierr
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,n,k,f)*TauNo(f,a,j,m)",gamma%prime_ovoo,&
+         ooov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,n,j,f)*TauNo(f,a,k,m)",gamma%prime_ovoo,ooov_aux_tensor,TauNo_tensor)
+    if(ierr.ne.0) write(*,*) "ierr8 =",ierr
 
-           ! eq j7 + j11        :: + (1/4) \ld imfe \rs am \TauDown efjk
-           ierr=talsh_tensor_init(ovvv_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,a,f,e)+=L(i,m,f,e)*R(a,m)",ovvv_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr9 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,f,e)*TauDown(e,f,j,k)",gamma%prime_ovoo,ovvv_aux_tensor,TauDown_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr10 =",ierr
+    ! eq j7 + j11        :: + (1/4) \ld imfe \rs am \TauDown efjk
+    ierr=talsh_tensor_init(ovvv_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,a,f,e)+=L(i,m,f,e)*R(a,m)",ovvv_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr9 =",ierr
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,f,e)*TauDown(e,f,j,k)",gamma%prime_ovoo,&
+         ovvv_aux_tensor,TauDown_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr10 =",ierr
 
-           ! eq j8 + j13        :: - (1/2) \ld imfe \rs em \TauDown fajk
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,f)+=L(i,m,f,e)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr11 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,f)*TauDown(f,a,j,k)",gamma%prime_ovoo,ov_aux_tensor,TauDown_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr12 =",ierr
+    ! eq j8 + j13        :: - (1/2) \ld imfe \rs em \TauDown fajk
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,f)+=L(i,m,f,e)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr11 =",ierr
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,f)*TauDown(f,a,j,k)",gamma%prime_ovoo,ov_aux_tensor,TauDown_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr12 =",ierr
 
-           ! eq j1              :: - (1/2) \ls ie \rd eajk
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,e)*R(e,a,j,k)",gamma%prime_ovoo,l1_tensor,r2_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr13 =",ierr
+    ! eq j1              :: - (1/2) \ls ie \rd eajk
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,e)*R(e,a,j,k)",gamma%prime_ovoo,l1_tensor,r2_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr13 =",ierr
 
-           ! eq j4              :: + (1/2) \Pm jk \ld imfe \rd fajm \ts ek
-           ierr=talsh_tensor_init(ovvo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,a,e,j)+=L(i,m,e,f)*R(f,a,m,j)",ovvo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr14 =",ierr
-           ierr= talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,j)*T(e,k)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,k)*T(e,j)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr15 =",ierr
+    ! eq j4              :: + (1/2) \Pm jk \ld imfe \rd fajm \ts ek
+    ierr=talsh_tensor_init(ovvo_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,a,e,j)+=L(i,m,e,f)*R(f,a,m,j)",ovvo_aux_tensor,l2_tensor,r2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr14 =",ierr
+    ierr= talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,j)*T(e,k)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,k)*T(e,j)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr15 =",ierr
 
-           ! eq j5              :: + (1/4) \ld imfe \rd fejk \ts am
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,m,j,k)+=L(i,m,f,e)*R(f,e,j,k)",oooo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr16 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,j,k)*T(a,m)",gamma%prime_ovoo,oooo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr17 =",ierr
+    ! eq j5              :: + (1/4) \ld imfe \rd fejk \ts am
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,m,j,k)+=L(i,m,f,e)*R(f,e,j,k)",oooo_aux_tensor,l2_tensor,r2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr16 =",ierr
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,j,k)*T(a,m)",gamma%prime_ovoo,oooo_aux_tensor,t1_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr17 =",ierr
 
-           ! eq j15 + j18       :: - \ro (1/2) \Pm jk \MATtwo ij \ts ak
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,j)*T(a,k)",gamma%prime_ovoo,MATtwo_oo_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr18 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,k)*T(a,j)",gamma%prime_ovoo,MATtwo_oo_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr19 =",ierr
+    ! eq j15 + j18       :: - \ro (1/2) \Pm jk \MATtwo ij \ts ak
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,j)*T(a,k)",gamma%prime_ovoo,MATtwo_oo_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr18 =",ierr
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=M(i,k)*T(a,j)",gamma%prime_ovoo,MATtwo_oo_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr19 =",ierr
 
-           ! eq j17+j19         :: + \ro (1/4) \ld imfe \ts am \TauUp fejk
-           ierr=talsh_tensor_init(ovvv_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,a,f,e)+=L(i,m,f,e)*T(a,m)",ovvv_aux_tensor,l2_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr20 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,f,e)*TauDown(e,f,j,k)",gamma%prime_ovoo,ovvv_aux_tensor,TauDown_tensor,scale=ONE_HALF) 
-           if(ierr.ne.0) write(*,*) "ierr21 =",ierr
+    ! eq j17+j19         :: + \ro (1/4) \ld imfe \ts am \TauUp fejk
+    ierr=talsh_tensor_init(ovvv_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,a,f,e)+=L(i,m,f,e)*T(a,m)",ovvv_aux_tensor,l2_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr20 =",ierr
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,f,e)*TauDown(e,f,j,k)",gamma%prime_ovoo,&
+         ovvv_aux_tensor,TauDown_tensor,scale=ONE_HALF) 
+    if(ierr.ne.0) write(*,*) "ierr21 =",ierr
 
-           ! eq j14             :: - \ro (1/2) \ls ie \td eajk
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,e)*T(e,a,j,k)",gamma%prime_ovoo,l1_tensor,t2_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr22 =",ierr
+    ! eq j14             :: - \ro (1/2) \ls ie \td eajk
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,e)*T(e,a,j,k)",gamma%prime_ovoo,l1_tensor,t2_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr22 =",ierr
 
-           ! eq j16             :: + (1/2) \Pm jk \ld imfe \td fajm \ts ek
-           ierr=talsh_tensor_init(ovvo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,a,e,j)+=L(i,m,e,f)*T(f,a,m,j)",ovvo_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr23 =",ierr
-           ierr= talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,j)*T(e,k)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,k)*T(e,j)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr24 =",ierr
+    ! eq j16             :: + (1/2) \Pm jk \ld imfe \td fajm \ts ek
+    ierr=talsh_tensor_init(ovvo_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,a,e,j)+=L(i,m,e,f)*T(f,a,m,j)",ovvo_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr23 =",ierr
+    ierr= talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,j)*T(e,k)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,a,e,k)*T(e,j)",gamma%prime_ovoo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr24 =",ierr
 
   ! rho abci
 
-           ! eq g2+g10          :: + (1/2) \Pm ab \MATone ac \ts bi
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(a,c)*T(b,i)",gamma%prime_vvvo,MATone_vv_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*T(a,i)",gamma%prime_vvvo,MATone_vv_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr26 =",ierr
+    ! eq g2+g10          :: + (1/2) \Pm ab \MATone ac \ts bi
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(a,c)*T(b,i)",gamma%prime_vvvo,MATone_vv_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*T(a,i)",gamma%prime_vvvo,MATone_vv_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr26 =",ierr
 
-           ! eq g3+g9           :: + (1/2) \Pm ab \MATtwo ac \rs bi
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(a,c)*R(b,i)",gamma%prime_vvvo,MATtwo_vv_tensor,r1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*R(a,i)",gamma%prime_vvvo,MATtwo_vv_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr27 =",ierr
+    ! eq g3+g9           :: + (1/2) \Pm ab \MATtwo ac \rs bi
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(a,c)*R(b,i)",gamma%prime_vvvo,MATtwo_vv_tensor,r1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*R(a,i)",gamma%prime_vvvo,MATtwo_vv_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr27 =",ierr
 
-           ! eq g7+g11          :: - (1/4) \ld mnec \rs ei \TauUp abmn        
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,e)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr28 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr29 =",ierr
+    ! eq g7+g11          :: - (1/4) \ld mnec \rs ei \TauUp abmn        
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,e)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr28 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr29 =",ierr
 
-           ! eq g8+g13          :: + (1/2) \ld mnec \rs em \TauUp abni  
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,c)+=L(m,n,e,c)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr30 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,c)*TauUp(a,b,n,i)",gamma%prime_vvvo,ov_aux_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr31 =",ierr
+    ! eq g8+g13          :: + (1/2) \ld mnec \rs em \TauUp abni  
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,c)+=L(m,n,e,c)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr30 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,c)*TauUp(a,b,n,i)",gamma%prime_vvvo,ov_aux_tensor,TauUp_tensor)
+    if(ierr.ne.0) write(*,*) "ierr31 =",ierr
 
-           ! eq g6+g12          :: -(1/2) \Pm ab \ld mnec \rs bm \TauNo eain
-           ierr=talsh_tensor_init(ovvv_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,b,e,c)+=L(n,m,e,c)*R(b,m)",ovvv_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr32 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,b,e,c)*TauNo(e,a,i,n)",gamma%prime_vvvo,ovvv_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,a,e,c)*TauNo(e,b,i,n)",gamma%prime_vvvo,ovvv_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr33 =",ierr
+    ! eq g6+g12          :: -(1/2) \Pm ab \ld mnec \rs bm \TauNo eain
+    ierr=talsh_tensor_init(ovvv_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,b,e,c)+=L(n,m,e,c)*R(b,m)",ovvv_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr32 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,b,e,c)*TauNo(e,a,i,n)",gamma%prime_vvvo,ovvv_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,a,e,c)*TauNo(e,b,i,n)",gamma%prime_vvvo,&
+         ovvv_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr33 =",ierr
 
-           ! eq g1              :: +(1/2) \ls mc \rd ba im
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=L(m,c)*R(b,a,i,m)",gamma%prime_vvvo,l1_tensor,r2_tensor) 
-           if(ierr.ne.0) write(*,*) "ierr34 =",ierr
+    ! eq g1              :: +(1/2) \ls mc \rd ba im
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=L(m,c)*R(b,a,i,m)",gamma%prime_vvvo,l1_tensor,r2_tensor) 
+    if(ierr.ne.0) write(*,*) "ierr34 =",ierr
 
-           ! eq g4              :: -(1/2) \Pm ab \ld mnec \rd eain \ts bm
-           ierr=talsh_tensor_init(ovvo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,c,a,i)+=L(m,n,c,e)*R(e,a,n,i)",ovvo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr35 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,c,i)*T(b,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,c,i)*T(a,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr36 =",ierr
+    ! eq g4              :: -(1/2) \Pm ab \ld mnec \rd eain \ts bm
+    ierr=talsh_tensor_init(ovvo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,c,a,i)+=L(m,n,c,e)*R(e,a,n,i)",ovvo_aux_tensor,l2_tensor,r2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr35 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,c,i)*T(b,m)",gamma%prime_vvvo,&
+        ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,c,i)*T(a,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr36 =",ierr
 
-           ! eq g5              :: -(1/4) \ld mnec \rd bamn \ts ei
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,c)+=L(m,n,e,c)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr37 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,i,c)*R(b,a,m,n)",gamma%prime_vvvo,ooov_aux_tensor,r2_tensor,scale=MINUS_ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr38 =",ierr
+    ! eq g5              :: -(1/4) \ld mnec \rd bamn \ts ei
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,c)+=L(m,n,e,c)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr37 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,i,c)*R(b,a,m,n)",gamma%prime_vvvo,&
+        ooov_aux_tensor,r2_tensor,scale=MINUS_ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr38 =",ierr
 
-           ! eq g15+g18         :: + \ro (1/2) \Pm ab \ts bi \MATtwo ac
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(a,c)*T(b,i)",gamma%prime_vvvo,MATtwo_vv_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*T(a,i)",gamma%prime_vvvo,MATtwo_vv_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr39 =",ierr
+    ! eq g15+g18         :: + \ro (1/2) \Pm ab \ts bi \MATtwo ac
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(a,c)*T(b,i)",gamma%prime_vvvo,MATtwo_vv_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*T(a,i)",gamma%prime_vvvo,&
+         MATtwo_vv_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr39 =",ierr
 
-           ! eq g17+g19         :: - \ro (1/4) \ld mnec \ts ei \TauUp bamn                      XX
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,c)+=L(m,n,e,c)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr40 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,i,c)*TauUp(b,a,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=MINUS_ONE_HALF) 
-           if(ierr.ne.0) write(*,*) "ierr41 =",ierr
+    ! eq g17+g19         :: - \ro (1/4) \ld mnec \ts ei \TauUp bamn                      XX
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,c)+=L(m,n,e,c)*T(e,i)",ooov_aux_tensor,l2_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr40 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,i,c)*TauUp(b,a,m,n)",gamma%prime_vvvo,&
+         ooov_aux_tensor,TauUp_tensor,scale=MINUS_ONE_HALF) 
+    if(ierr.ne.0) write(*,*) "ierr41 =",ierr
 
-           ! eq g14             :: + \ro (1/2) \ls mc \td baim    XX
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=L(m,c)*T(a,b,m,i)",gamma%prime_vvvo,l1_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr42 =",ierr
+    ! eq g14             :: + \ro (1/2) \ls mc \td baim    XX
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=L(m,c)*T(a,b,m,i)",gamma%prime_vvvo,l1_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr42 =",ierr
 
-           ! eq g16             :: - \ro \Pm ab \ld mnec \ts bm \td eain
-           ierr=talsh_tensor_init(ovov_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,a,i,c)+=L(m,n,e,c)*T(e,a,i,n)",ovov_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr43 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,i,c)*T(b,m)",gamma%prime_vvvo,ovov_aux_tensor,t1_tensor,scale=MINUS_ONE) 
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,i,c)*T(a,m)",gamma%prime_vvvo,ovov_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr44 =",ierr
+    ! eq g16             :: - \ro \Pm ab \ld mnec \ts bm \td eain
+    ierr=talsh_tensor_init(ovov_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,a,i,c)+=L(m,n,e,c)*T(e,a,i,n)",ovov_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr43 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,i,c)*T(b,m)",gamma%prime_vvvo,ovov_aux_tensor,t1_tensor,scale=MINUS_ONE) 
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,i,c)*T(a,m)",gamma%prime_vvvo,ovov_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr44 =",ierr
 
     ! rho ijak
-           ! eq                 :: -(1/2) \ld ijea \rs ek
-           ierr=talsh_tensor_contract("G(i,j,a,k)+=L(i,j,e,a)*R(e,k)",gamma%prime_oovo,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr45 =",ierr
-           ! eq                 :: - \ro (1/2) \ld ijea \ts ek
-           ierr=talsh_tensor_contract("G(i,j,a,k)+=L(i,j,e,a)*T(e,k)",gamma%prime_oovo,l2_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr46 =",ierr
+    ! eq                 :: -(1/2) \ld ijea \rs ek
+    ierr=talsh_tensor_contract("G(i,j,a,k)+=L(i,j,e,a)*R(e,k)",gamma%prime_oovo,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr45 =",ierr
+    ! eq                 :: - \ro (1/2) \ld ijea \ts ek
+    ierr=talsh_tensor_contract("G(i,j,a,k)+=L(i,j,e,a)*T(e,k)",gamma%prime_oovo,l2_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr46 =",ierr
 
 
     ! rho aibj XX
-           ! eq  f1             :: - 1/4 \Pm ij \Pm ab \ls ib \rs aj
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=R(a,j)*L(i,b)",gamma%prime_voov,r1_tensor,l1_tensor,scale=MINUS_ONE_QUARTER)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=R(b,j)*L(i,a)",gamma%prime_voov,r1_tensor,l1_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=R(a,i)*L(j,b)",gamma%prime_voov,r1_tensor,l1_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=R(b,i)*L(j,a)",gamma%prime_voov,r1_tensor,l1_tensor,scale=MINUS_ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr47 =",ierr
-           ! eq f2              :: - 1/4 \Pm ij \pm ab \ld imeb \rd eajm
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*R(e,a,j,m)",gamma%prime_voov,l2_tensor,r2_tensor, scale= MINUS_ONE_QUARTER)    
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*R(e,a,i,m)",gamma%prime_voov,l2_tensor,r2_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*R(e,b,j,m)",gamma%prime_voov,l2_tensor,r2_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*R(e,b,i,m)",gamma%prime_voov,l2_tensor,r2_tensor, scale= MINUS_ONE_QUARTER)    
-           if(ierr.ne.0) write(*,*) "ierr48 =",ierr
-           ! eq f3              :: -1/4 \Pm ij \Pm ab \ld iimeb \rs am \ts ej
-           ierr=talsh_tensor_init(ovvv_aux_tensor) 
-           ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,b)*R(a,m)",ovvv_aux_tensor,l2_tensor,r1_tensor)
-           ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,a)*R(b,m)",ovvv_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr49 =",ierr
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a,e,b)*T(e,j)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a,e,b)*T(e,i)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr50 =",ierr
-           ! eq f4              :: -1/4 \Pm ij \Pm ab \ld imeb \rs ej \ts am
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,m,j,b)+=L(i,m,e,b)*R(e,j)",ooov_aux_tensor,l2_tensor,r1_tensor)
-           ierr=talsh_tensor_contract("A(i,m,j,b)+=L(j,m,e,b)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr51 =",ierr
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,b)*T(a,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,a)*T(b,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr52 =",ierr
-           ! eq f5              :: - \Pm ij \Pm ab \ld imbe \rs em \ts aj
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,b)+=L(i,m,e,b)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr53 =",ierr
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,b)*,T(a,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a)*,T(b,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,b)*,T(a,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a)*,T(b,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr54 =",ierr
+    ! eq  f1             :: - 1/4 \Pm ij \Pm ab \ls ib \rs aj
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=R(a,j)*L(i,b)",gamma%prime_voov,r1_tensor,l1_tensor,scale=MINUS_ONE_QUARTER)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=R(b,j)*L(i,a)",gamma%prime_voov,r1_tensor,l1_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=R(a,i)*L(j,b)",gamma%prime_voov,r1_tensor,l1_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=R(b,i)*L(j,a)",gamma%prime_voov,r1_tensor,l1_tensor,scale=MINUS_ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr47 =",ierr
+    ! eq f2              :: - 1/4 \Pm ij \pm ab \ld imeb \rd eajm
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*R(e,a,j,m)",gamma%prime_voov,l2_tensor,r2_tensor, scale= MINUS_ONE_QUARTER)    
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*R(e,a,i,m)",gamma%prime_voov,l2_tensor,r2_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*R(e,b,j,m)",gamma%prime_voov,l2_tensor,r2_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*R(e,b,i,m)",gamma%prime_voov,l2_tensor,r2_tensor, scale= MINUS_ONE_QUARTER)    
+    if(ierr.ne.0) write(*,*) "ierr48 =",ierr
+    ! eq f3              :: -1/4 \Pm ij \Pm ab \ld iimeb \rs am \ts ej
+    ierr=talsh_tensor_init(ovvv_aux_tensor) 
+    ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,b)*R(a,m)",ovvv_aux_tensor,l2_tensor,r1_tensor)
+    ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,a)*R(b,m)",ovvv_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr49 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a,e,b)*T(e,j)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a,e,b)*T(e,i)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr50 =",ierr
+    ! eq f4              :: -1/4 \Pm ij \Pm ab \ld imeb \rs ej \ts am
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,m,j,b)+=L(i,m,e,b)*R(e,j)",ooov_aux_tensor,l2_tensor,r1_tensor)
+    ierr=talsh_tensor_contract("A(i,m,j,b)+=L(j,m,e,b)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr51 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,b)*T(a,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,a)*T(b,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr52 =",ierr
+    ! eq f5              :: - \Pm ij \Pm ab \ld imbe \rs em \ts aj
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,b)+=L(i,m,e,b)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr53 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,b)*,T(a,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a)*,T(b,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,b)*,T(a,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a)*,T(b,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr54 =",ierr
 
 
-           ! eq  f6             :: \ro \Pm ij \Pm ab \ls ib \ts aj
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=T(a,j)*L(i,b)",gamma%prime_voov,t1_tensor,l1_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=T(b,j)*L(i,a)",gamma%prime_voov,t1_tensor,l1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=T(a,i)*L(j,b)",gamma%prime_voov,t1_tensor,l1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=T(b,i)*L(j,a)",gamma%prime_voov,t1_tensor,l1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr55 =",ierr
-           ! eq f7              :: - \ro 1/4 \Pm ij \pm ab \ld imeb \td eajm
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*T(e,a,j,m)",gamma%prime_voov,l2_tensor,t2_tensor,scale= MINUS_ONE_QUARTER)    
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*T(e,a,i,m)",gamma%prime_voov,l2_tensor,t2_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*T(e,b,j,m)",gamma%prime_voov,l2_tensor,t2_tensor)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*T(e,b,i,m)",gamma%prime_voov,l2_tensor,t2_tensor,scale= MINUS_ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr56 =",ierr
-           ! eq f8              :: - \ro 1/4 \Pm ij \Pm ab \ld imeb \ts am \ts ej
-           ierr=talsh_tensor_init(ovvv_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,b)*T(a,m)",ovvv_aux_tensor,l2_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,a)*T(b,m)",ovvv_aux_tensor,l2_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr57 =",ierr
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a,e,b)*T(e,j)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a,e,b)*T(e,i)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr58 =",ierr
+    ! eq  f6             :: \ro \Pm ij \Pm ab \ls ib \ts aj
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=T(a,j)*L(i,b)",gamma%prime_voov,t1_tensor,l1_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=T(b,j)*L(i,a)",gamma%prime_voov,t1_tensor,l1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=T(a,i)*L(j,b)",gamma%prime_voov,t1_tensor,l1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=T(b,i)*L(j,a)",gamma%prime_voov,t1_tensor,l1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr55 =",ierr
+    ! eq f7              :: - \ro 1/4 \Pm ij \pm ab \ld imeb \td eajm
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*T(e,a,j,m)",gamma%prime_voov,l2_tensor,t2_tensor,scale= MINUS_ONE_QUARTER)    
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*T(e,a,i,m)",gamma%prime_voov,l2_tensor,t2_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*T(e,b,j,m)",gamma%prime_voov,l2_tensor,t2_tensor)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*T(e,b,i,m)",gamma%prime_voov,l2_tensor,t2_tensor,scale= MINUS_ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr56 =",ierr
+    ! eq f8              :: - \ro 1/4 \Pm ij \Pm ab \ld imeb \ts am \ts ej
+    ierr=talsh_tensor_init(ovvv_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,b)*T(a,m)",ovvv_aux_tensor,l2_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("A(i,a,e,b)+=L(i,m,e,a)*T(b,m)",ovvv_aux_tensor,l2_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr57 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a,e,b)*T(e,j)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a,e,b)*T(e,i)",gamma%prime_voov,ovvv_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr58 =",ierr
 
-        ! rho aibc
-           ! eq                 :: + (1/2) \ld mibc \rs am
-           ierr=talsh_tensor_contract("G(a,i,b,c)+=R(a,m)*L(m,i,b,c)",gamma%prime_vovv,r1_tensor,l2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr59 =",ierr
-           ! eq                 :: + \ro (1/2) \ld mibc \ts am
-           ierr=talsh_tensor_contract("G(a,i,b,c)+=T(a,m)*L(m,i,b,c)",gamma%prime_vovv,t1_tensor,l2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr60 =",ierr
+    ! rho aibc
+    ! eq                 :: + (1/2) \ld mibc \rs am
+    ierr=talsh_tensor_contract("G(a,i,b,c)+=R(a,m)*L(m,i,b,c)",gamma%prime_vovv,r1_tensor,l2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr59 =",ierr
+    ! eq                 :: + \ro (1/2) \ld mibc \ts am
+    ierr=talsh_tensor_contract("G(a,i,b,c)+=T(a,m)*L(m,i,b,c)",gamma%prime_vovv,t1_tensor,l2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr60 =",ierr
 
-        ! rho abcd     XX
-           ! eq i1              :: +(1/4) 1/2 \ld mncd \rd abmn 
-           ierr=talsh_tensor_contract("G(a,b,c,d)+=L(m,n,c,d)*R(a,b,m,n)",gamma%prime_vvvv,l2_tensor,r2_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr61 =",ierr
-           ! eq i2              :: +(1/4) \Pm ab \ld mncd \rs am \ts bn
-           ierr=talsh_tensor_init(ovvv_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,a,c,d)+=R(a,m)*L(m,n,c,d)",ovvv_aux_tensor,r1_tensor,l2_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr62 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,d)+=A(n,a,c,d)*T(b,n)",gamma%prime_vvvv,ovvv_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,c,d)+=A(n,b,c,d)*T(a,n)",gamma%prime_vvvv,ovvv_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr63 =",ierr
-           ! eq i3+i4           :: \ro (1/4) 1/2 \ld mncd \TauUp abmn
-           ierr=talsh_tensor_contract("G(a,b,c,d)+=L(m,n,c,d)*TauUp(a,b,m,n)",gamma%prime_vvvv,l2_tensor,TauUp_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr64 =",ierr
+    ! rho abcd     XX
+    ! eq i1              :: +(1/4) 1/2 \ld mncd \rd abmn 
+    ierr=talsh_tensor_contract("G(a,b,c,d)+=L(m,n,c,d)*R(a,b,m,n)",gamma%prime_vvvv,l2_tensor,r2_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr61 =",ierr
+    ! eq i2              :: +(1/4) \Pm ab \ld mncd \rs am \ts bn
+    ierr=talsh_tensor_init(ovvv_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,a,c,d)+=R(a,m)*L(m,n,c,d)",ovvv_aux_tensor,r1_tensor,l2_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr62 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,d)+=A(n,a,c,d)*T(b,n)",gamma%prime_vvvv,ovvv_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,c,d)+=A(n,b,c,d)*T(a,n)",gamma%prime_vvvv,ovvv_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr63 =",ierr
+    ! eq i3+i4           :: \ro (1/4) 1/2 \ld mncd \TauUp abmn
+    ierr=talsh_tensor_contract("G(a,b,c,d)+=L(m,n,c,d)*TauUp(a,b,m,n)",gamma%prime_vvvv,l2_tensor,TauUp_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr64 =",ierr
 
 
-        ! rho ijab    XX
-           ! eq 1               :: +\ro \ld ijab 
-           ierr=talsh_tensor_add("G(i,j,a,b)+=L(i,j,a,b)",gamma%prime_oovv,l2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr65 =",ierr
+    ! rho ijab    XX
+    ! eq 1               :: +\ro \ld ijab 
+    ierr=talsh_tensor_add("G(i,j,a,b)+=L(i,j,a,b)",gamma%prime_oovv,l2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr65 =",ierr
 
-        ! rho abij
-           ! eq h4+h5+h6+h7     :: - (1/4) \Pm ij  \MATone ni \TauUp abnj
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=M(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,MATone_oo_tensor,TauUp_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=M(n,j)*TauUp(a,b,n,i)",gamma%prime_vvoo,MATone_oo_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr66 =",ierr
-           ! eq h6+h7+h10+h11   :: - (1/4) \Pm ab \MATone ae \TauDown ebij
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=M(a,e)*TauDown(e,b,i,j)",gamma%prime_vvoo,MATone_vv_tensor,TauDown_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=M(b,e)*TauDown(e,a,i,j)",gamma%prime_vvoo,MATone_vv_tensor,TauDown_tensor)
-           if(ierr.ne.0) write(*,*) "ierr67 =",ierr
-           ! eq h12+h14         :: + (1/4) 1/4 \ld mnef \rd ef ij \TauUp abmn
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*R(e,f,i,j)",oooo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr68 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*TauUp(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,TauUp_tensor,scale=ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr69 =",ierr
-           ! eq j13+j15         :: + (1/4) 1/4 \ld mnef \rd abmn \TauDown efij
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*TauDown(e,f,i,j)",oooo_aux_tensor,l2_tensor,TauDown_tensor)
-           if(ierr.ne.0) write(*,*) "ierr70 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*R(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,r2_tensor,scale=ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr71 =",ierr
-           ! eq j24+j26         :: + (1/4) 1/2 \Pm ij \ld mnef \rs ei \ts fj \TauUp abmn
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,f)+=L(m,n,e,f)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr72 =",ierr
-           ierr=talsh_tensor_contract("B(m,n,i,j)+=A(m,n,i,f)*T(f,j)",oooo_aux_tensor,ooov_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("B(m,n,i,j)+=A(m,n,j,f)*T(f,i)",oooo_aux_tensor,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr73 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,n,i,j)*TauUp(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,TauUp_tensor,scale=ONE_HALF) 
-           if(ierr.ne.0) write(*,*) "ierr74 =",ierr
-           ! eq j25+j27         :: + (1/4) 1/2 \Pm ab \ld mnef \rs am \ts bn \TauDown efij
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_init(vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*TauDown(e,f,i,j)",oooo_aux_tensor,l2_tensor,TauDown_tensor)
-           if(ierr.ne.0) write(*,*) "ierr75 =",ierr
-           ierr=talsh_tensor_contract("B(a,b,m,n)+=R(a,m)*T(b,n)",vvoo_aux_tensor,r1_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("B(a,b,m,n)+=R(b,m)*T(a,n)",vvoo_aux_tensor,r1_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr76 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*B(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,vvoo_aux_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr77 =",ierr
-           ! eq j35+j36         :: - (1/4) \Pm ij \ld mnef \rs em \ts fi \TauUp abnj
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr78 =",ierr
-           ierr=talsh_tensor_contract("B(n,i)+=A(n,f)*T(f,i)",oo_aux_tensor,ov_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr79 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,j)*TauUp(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr80 =",ierr
+    ! rho abij
+    ! eq h4+h5+h6+h7     :: - (1/4) \Pm ij  \MATone ni \TauUp abnj
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=M(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,MATone_oo_tensor,TauUp_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=M(n,j)*TauUp(a,b,n,i)",gamma%prime_vvoo,MATone_oo_tensor,TauUp_tensor)
+    if(ierr.ne.0) write(*,*) "ierr66 =",ierr
+    ! eq h6+h7+h10+h11   :: - (1/4) \Pm ab \MATone ae \TauDown ebij
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=M(a,e)*TauDown(e,b,i,j)",gamma%prime_vvoo,&
+         MATone_vv_tensor,TauDown_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=M(b,e)*TauDown(e,a,i,j)",gamma%prime_vvoo,MATone_vv_tensor,TauDown_tensor)
+    if(ierr.ne.0) write(*,*) "ierr67 =",ierr
+    ! eq h12+h14         :: + (1/4) 1/4 \ld mnef \rd ef ij \TauUp abmn
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*R(e,f,i,j)",oooo_aux_tensor,l2_tensor,r2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr68 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*TauUp(a,b,m,n)",gamma%prime_vvoo,&
+        oooo_aux_tensor,TauUp_tensor,scale=ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr69 =",ierr
+    ! eq j13+j15         :: + (1/4) 1/4 \ld mnef \rd abmn \TauDown efij
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*TauDown(e,f,i,j)",oooo_aux_tensor,l2_tensor,TauDown_tensor)
+    if(ierr.ne.0) write(*,*) "ierr70 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*R(a,b,m,n)",gamma%prime_vvoo,&
+        oooo_aux_tensor,r2_tensor,scale=ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr71 =",ierr
+    ! eq j24+j26         :: + (1/4) 1/2 \Pm ij \ld mnef \rs ei \ts fj \TauUp abmn
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,f)+=L(m,n,e,f)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr72 =",ierr
+    ierr=talsh_tensor_contract("B(m,n,i,j)+=A(m,n,i,f)*T(f,j)",oooo_aux_tensor,ooov_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("B(m,n,i,j)+=A(m,n,j,f)*T(f,i)",oooo_aux_tensor,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr73 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,n,i,j)*TauUp(a,b,m,n)",gamma%prime_vvoo,&
+        oooo_aux_tensor,TauUp_tensor,scale=ONE_HALF) 
+    if(ierr.ne.0) write(*,*) "ierr74 =",ierr
+    ! eq j25+j27         :: + (1/4) 1/2 \Pm ab \ld mnef \rs am \ts bn \TauDown efij
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_init(vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*TauDown(e,f,i,j)",oooo_aux_tensor,l2_tensor,TauDown_tensor)
+    if(ierr.ne.0) write(*,*) "ierr75 =",ierr
+    ierr=talsh_tensor_contract("B(a,b,m,n)+=R(a,m)*T(b,n)",vvoo_aux_tensor,r1_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("B(a,b,m,n)+=R(b,m)*T(a,n)",vvoo_aux_tensor,r1_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr76 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*B(a,b,m,n)",gamma%prime_vvoo,&
+         oooo_aux_tensor,vvoo_aux_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr77 =",ierr
+    ! eq j35+j36         :: - (1/4) \Pm ij \ld mnef \rs em \ts fi \TauUp abnj
+    ierr=talsh_tensor_init(oo_aux_tensor)
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr78 =",ierr
+    ierr=talsh_tensor_contract("B(n,i)+=A(n,f)*T(f,i)",oo_aux_tensor,ov_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr79 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,&
+        oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,j)*TauUp(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
+    if(ierr.ne.0) write(*,*) "ierr80 =",ierr
 
-           ! eq j18+19          :: - (1/4) \Pm ij \Pm ab \ls me \rs bj \TauNo aemi
-           ierr=talsh_tensor_init(ovvo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,b,e,j)+=L(m,e)*R(b,j)",ovvo_aux_tensor,l1_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr81 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,b,e,j)*TauNo(a,e,m,i)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,a,e,j)*TauNo(b,e,m,i)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,b,e,i)*TauNo(a,e,m,j)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,a,e,i)*TauNo(b,e,m,j)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr82 =",ierr
-           ! eq j20+j21         :: - (1/4) \Pm ij \Pm ab \ld mnef \rd aeim \TauNo bfnj
-           ierr=talsh_tensor_init(voov_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,n,i,f)+=R(a,e,i,m)*L(m,n,e,f)",voov_aux_tensor,r2_tensor,l2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr83 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*TauNo(b,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*TauNo(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*TauNo(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*TauNo(a,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr84 =",ierr
-           ! eq j16+j30         :: - (1/4) \Pm ij \rd abin \MATtwo nj
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,i,n)*M(n,j)",gamma%prime_vvoo,r2_tensor,MATtwo_oo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,j,n)*M(n,i)",gamma%prime_vvoo,r2_tensor,MATtwo_oo_tensor)
-           if(ierr.ne.0) write(*,*) "ierr85 =",ierr
-           ! eq j17+j31         :: - (1/4) \Pm ab \rd afij \MATtwo bn
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,f,i,j)*M(b,f)",gamma%prime_vvoo,r2_tensor,MATtwo_vv_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(b,f,i,j)*M(a,f)",gamma%prime_vvoo,r2_tensor,MATtwo_vv_tensor)
-           if(ierr.ne.0) write(*,*) "ierr86 =",ierr
+    ! eq j18+19          :: - (1/4) \Pm ij \Pm ab \ls me \rs bj \TauNo aemi
+    ierr=talsh_tensor_init(ovvo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,b,e,j)+=L(m,e)*R(b,j)",ovvo_aux_tensor,l1_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr81 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,b,e,j)*TauNo(a,e,m,i)",gamma%prime_vvoo,&
+         ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,a,e,j)*TauNo(b,e,m,i)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,b,e,i)*TauNo(a,e,m,j)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,a,e,i)*TauNo(b,e,m,j)",gamma%prime_vvoo,&
+        ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr82 =",ierr
+    ! eq j20+j21         :: - (1/4) \Pm ij \Pm ab \ld mnef \rd aeim \TauNo bfnj
+    ierr=talsh_tensor_init(voov_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,n,i,f)+=R(a,e,i,m)*L(m,n,e,f)",voov_aux_tensor,r2_tensor,l2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr83 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*TauNo(b,f,n,j)",gamma%prime_vvoo,&
+         voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*TauNo(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*TauNo(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*TauNo(a,f,n,i)",gamma%prime_vvoo,&
+         voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr84 =",ierr
+    ! eq j16+j30         :: - (1/4) \Pm ij \rd abin \MATtwo nj
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,i,n)*M(n,j)",gamma%prime_vvoo,r2_tensor,MATtwo_oo_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,j,n)*M(n,i)",gamma%prime_vvoo,r2_tensor,MATtwo_oo_tensor)
+    if(ierr.ne.0) write(*,*) "ierr85 =",ierr
+    ! eq j17+j31         :: - (1/4) \Pm ab \rd afij \MATtwo bn
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,f,i,j)*M(b,f)",gamma%prime_vvoo,r2_tensor,MATtwo_vv_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=R(b,f,i,j)*M(a,f)",gamma%prime_vvoo,r2_tensor,MATtwo_vv_tensor)
+    if(ierr.ne.0) write(*,*) "ierr86 =",ierr
 
-           ! eq j1              :: + (1/4) \td abij
-           ierr=talsh_tensor_add("G(a,b,i,j)+=T(a,b,i,j)",gamma%prime_vvoo,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr87 =",ierr
-           ! eq j2              :: + (1/4) 1/2 \Pm ab \Pm ij \ts ai \ts bj
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,j)*T(a,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr88 =",ierr
-           ! eq j3              :: + (1/4) \ls me \rd aeim \ts bj
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,i)+=R(a,e,i,m)*L(m,e)",vo_aux_tensor,r2_tensor,l1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr89 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr90 =",ierr
-           ! eq j22             :: - (1/4) 1/2 \Pm ij \Pm ab \ld mnef \rs fi \td eamn \ts bj
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr91 =",ierr
-           ierr=talsh_tensor_contract("B(a,i)+=A(a,f)*R(f,i)",vo_aux_tensor,vv_aux_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr90 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr92 =",ierr
+    ! eq j1              :: + (1/4) \td abij
+    ierr=talsh_tensor_add("G(a,b,i,j)+=T(a,b,i,j)",gamma%prime_vvoo,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr87 =",ierr
+    ! eq j2              :: + (1/4) 1/2 \Pm ab \Pm ij \ts ai \ts bj
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,j)*T(a,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr88 =",ierr
+    ! eq j3              :: + (1/4) \ls me \rd aeim \ts bj
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,i)+=R(a,e,i,m)*L(m,e)",vo_aux_tensor,r2_tensor,l1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr89 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr90 =",ierr
+    ! eq j22             :: - (1/4) 1/2 \Pm ij \Pm ab \ld mnef \rs fi \td eamn \ts bj
+    ierr=talsh_tensor_init(vv_aux_tensor)
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr91 =",ierr
+    ierr=talsh_tensor_contract("B(a,i)+=A(a,f)*R(f,i)",vo_aux_tensor,vv_aux_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr90 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr92 =",ierr
 ! Signe XX ! eq j23             :: - (1/4) 1/2 \Pm ij \Pm ab \ld mnef \rs an \td efmi \ts bj
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,i)+=L(m,n,e,f)*T(e,f,m,i)",oo_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr93 =",ierr
-           ierr=talsh_tensor_contract("B(a,i)+=X(n,i)*R(a,n)",vo_aux_tensor,oo_aux_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr94 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr95 =",ierr
+    ierr=talsh_tensor_init(oo_aux_tensor)
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,i)+=L(m,n,e,f)*T(e,f,m,i)",oo_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr93 =",ierr
+    ierr=talsh_tensor_contract("B(a,i)+=X(n,i)*R(a,n)",vo_aux_tensor,oo_aux_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr94 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr95 =",ierr
 
-           ! eq j28             :: - (1/4)  \Pm ij \Pm ab \ld mnef \rs an \td bejm \ts fi
-           ierr=talsh_tensor_init(voov_aux_tensor)
-           ierr=talsh_tensor_init(vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("A(b,n,j,f)+=L(m,n,e,f)*T(b,e,j,m)",voov_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr96 =",ierr
-           ierr=talsh_tensor_contract("B(a,f,n,i)+=R(a,n)*T(f,i)",vvoo_aux_tensor,r1_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr97 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*B(a,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*B(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*B(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*B(b,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr98 =",ierr
+    ! eq j28             :: - (1/4)  \Pm ij \Pm ab \ld mnef \rs an \td bejm \ts fi
+    ierr=talsh_tensor_init(voov_aux_tensor)
+    ierr=talsh_tensor_init(vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("A(b,n,j,f)+=L(m,n,e,f)*T(b,e,j,m)",voov_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr96 =",ierr
+    ierr=talsh_tensor_contract("B(a,f,n,i)+=R(a,n)*T(f,i)",vvoo_aux_tensor,r1_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr97 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*B(a,f,n,i)",gamma%prime_vvoo,&
+         voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*B(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*B(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*B(b,f,n,j)",gamma%prime_vvoo,&
+         voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr98 =",ierr
 !! I keep  voov_aux - Not usefull :  ierr=talsh_tensor_contract("X(n,b,f,j)+=L(m,n,e,f)*T(b,e,j,m)",ovvo_aux_tensor,l2_tensor,t2_tensor)
-           ! eq j29              :: - (1/4) \Pm ij \Pm ab \ld mnef \rs fi \tdbejm \ts an
-           ierr=talsh_tensor_init(vvoo_aux_tensor) 
-           ierr=talsh_tensor_contract("C(a,f,n,i)+=T(a,n)*R(f,i)",vvoo_aux_tensor,t1_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr99 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=C(b,n,j,f)*B(a,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=C(a,n,j,f)*B(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=C(b,n,i,f)*B(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=C(a,n,i,f)*B(b,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr100 =",ierr
+    ! eq j29              :: - (1/4) \Pm ij \Pm ab \ld mnef \rs fi \tdbejm \ts an
+    ierr=talsh_tensor_init(vvoo_aux_tensor) 
+    ierr=talsh_tensor_contract("C(a,f,n,i)+=T(a,n)*R(f,i)",vvoo_aux_tensor,t1_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr99 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=C(b,n,j,f)*B(a,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=C(a,n,j,f)*B(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=C(b,n,i,f)*B(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=C(a,n,i,f)*B(b,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr100 =",ierr
 
  ! XX          ! eq j32             :: - (1/4) 1/2 \Pm ij \Pm ab \ld mnef \rs bj \td eamn \ts fi
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr101 =",ierr
-           ierr=talsh_tensor_contract("B(a,i)+=A(a,f)*T(f,i)",vo_aux_tensor,vv_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr102 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*R(b,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*R(b,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*R(a,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*R(a,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr103 =",ierr
+    ierr=talsh_tensor_init(vv_aux_tensor)
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr101 =",ierr
+    ierr=talsh_tensor_contract("B(a,i)+=A(a,f)*T(f,i)",vo_aux_tensor,vv_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr102 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*R(b,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*R(b,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*R(a,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*R(a,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr103 =",ierr
 
-           ! eq j33             :: + (1/4) \Pm ij \Pm ab \ld mnef \rs em \td afin \ts bj 
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr104 =",ierr
-           ierr=talsh_tensor_contract("B(a,i)+=A(n,f)*T(a,f,i,n)",vo_aux_tensor,ov_aux_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr105 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr106 =",ierr
+    ! eq j33             :: + (1/4) \Pm ij \Pm ab \ld mnef \rs em \td afin \ts bj 
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr104 =",ierr
+    ierr=talsh_tensor_contract("B(a,i)+=A(n,f)*T(a,f,i,n)",vo_aux_tensor,ov_aux_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr105 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr106 =",ierr
 
-           ! eq 34              :: - (1/4) 1/2 \Pm ij \Pm ab \ld mnef \rs bj \td efim \ts an
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,i)+=L(m,n,e,f)*T(e,f,i,m)",oo_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr107 =",ierr
-           ierr=talsh_tensor_contract("B(a,i)+=A(n,i)*T(a,n)",vo_aux_tensor,oo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr108 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*R(b,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*R(b,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*R(a,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*R(a,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr109 =",ierr
+    ! eq 34              :: - (1/4) 1/2 \Pm ij \Pm ab \ld mnef \rs bj \td efim \ts an
+    ierr=talsh_tensor_init(oo_aux_tensor)
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,i)+=L(m,n,e,f)*T(e,f,i,m)",oo_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr107 =",ierr
+    ierr=talsh_tensor_contract("B(a,i)+=A(n,i)*T(a,n)",vo_aux_tensor,oo_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr108 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*R(b,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*R(b,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*R(a,j)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*R(a,i)",gamma%prime_vvoo,vo_aux_tensor,r1_tensor,scale=MINUS_ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr109 =",ierr
 
-           ! eq 37              :: - (1/4) \Pm ab \ld mnef \rs em \td fbij \ts an
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr110 =",ierr
-           ierr=talsh_tensor_contract("B(a,f)+=A(n,f)*T(a,n)",vv_aux_tensor,ov_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr111 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr112 =",ierr
+    ! eq 37              :: - (1/4) \Pm ab \ld mnef \rs em \td fbij \ts an
+    ierr=talsh_tensor_init(vv_aux_tensor)
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,f)+=L(m,n,e,f)*R(e,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr110 =",ierr
+    ierr=talsh_tensor_contract("B(a,f)+=A(n,f)*T(a,n)",vv_aux_tensor,ov_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr111 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,f)*T(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr112 =",ierr
 
-           !!!! rho abij la partie \ro
-           ! eq j3              :: + (1/4) \ro  \Pm ij \Pm ab \ls me \td aeim \ts bj
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,i)+=L(m,e)*T(a,e,i,m)",vo_aux_tensor,l1_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr113 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr114 =",ierr
+    !!!! rho abij la partie \ro
+    ! eq j3              :: + (1/4) \ro  \Pm ij \Pm ab \ls me \td aeim \ts bj
+    ierr=talsh_tensor_init(vo_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,i)+=L(m,e)*T(a,e,i,m)",vo_aux_tensor,l1_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr113 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr114 =",ierr
 
-           ! eq h4+h5           :: - (1/4) \ro \Pm ij \ls me \ts ei \TauUp abmj
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,i)+=L(m,e)*T(e,i)",oo_aux_tensor,l1_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr115 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,i)*TauUp(a,b,m,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,j)*TauUp(a,b,m,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr116 =",ierr
+    ! eq h4+h5           :: - (1/4) \ro \Pm ij \ls me \ts ei \TauUp abmj
+    ierr=talsh_tensor_init(oo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,i)+=L(m,e)*T(e,i)",oo_aux_tensor,l1_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr115 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,i)*TauUp(a,b,m,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,j)*TauUp(a,b,m,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr116 =",ierr
 
 !XX Erreur sur \Pm ij           ! eq h6+h7           :: - (1/4) \ro 1/2 \Pm ij \Pm ab \ld mnef \td ea mn \TauNo fbij
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr117 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,f)*X(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauNo_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,f)*X(f,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauNo_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr118 =",ierr
+    ierr=talsh_tensor_init(vv_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,f)+=L(m,n,e,f)*T(e,a,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr117 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,f)*X(f,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauNo_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,f)*X(f,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauNo_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr118 =",ierr
 
 !XX Erreur sur \Pm ij           ! eq h8+h9           :: - (1/4) \ro 1/2 \Pm ij \Pm ab \ld mnef  \td feim \TauNo abnj
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,i)+=L(m,n,e,f)*T(f,e,i,m)",oo_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr119 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,i)*X(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauNo_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,j)*X(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauNo_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr120 =",ierr
+    ierr=talsh_tensor_init(oo_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,i)+=L(m,n,e,f)*T(f,e,i,m)",oo_aux_tensor,l2_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr119 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,i)*X(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauNo_tensor,scale=MINUS_ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,j)*X(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauNo_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr120 =",ierr
 
-           ! eq j11             :: - (1/4) \ro \Pm ab \s me \ts am \td ebij
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,e)+=L(m,e)*T(a,m)",vv_aux_tensor,l1_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr121 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,e)*T(e,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,e)*T(e,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr122 =",ierr
+    ! eq j11             :: - (1/4) \ro \Pm ab \s me \ts am \td ebij
+    ierr=talsh_tensor_init(vv_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,e)+=L(m,e)*T(a,m)",vv_aux_tensor,l1_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr121 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,e)*T(e,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,e)*T(e,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr122 =",ierr
 
-           ! eq h20+h21         :: - (1/4) \ro \Pm ij \Pm ab \ld mnef \td aeim \TauNo fbjn
-           ierr=talsh_tensor_init(voov_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,n,i,f)+=T(a,e,i,m)*L(m,n,e,f)",voov_aux_tensor,t2_tensor,l2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr123 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*X(f,b,j,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*X(f,a,j,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*X(f,b,i,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*X(f,a,i,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr124 =",ierr
+    ! eq h20+h21         :: - (1/4) \ro \Pm ij \Pm ab \ld mnef \td aeim \TauNo fbjn
+    ierr=talsh_tensor_init(voov_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,n,i,f)+=T(a,e,i,m)*L(m,n,e,f)",voov_aux_tensor,t2_tensor,l2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr123 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*X(f,b,j,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*X(f,a,j,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*X(f,b,i,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*X(f,a,i,n)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr124 =",ierr
 
-           ! eq h12+h14+h15+h24 :: + (1/4) \ro 1/4 \ld mnef \TauUp ab mn \TauUp efij
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*TauUp(e,f,i,j)",oooo_aux_tensor,l2_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr125 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*TauUp(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,TauUp_tensor,scale=ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr126 =",ierr
+    ! eq h12+h14+h15+h24 :: + (1/4) \ro 1/4 \ld mnef \TauUp ab mn \TauUp efij
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,i,j)+=L(m,n,e,f)*TauUp(e,f,i,j)",oooo_aux_tensor,l2_tensor,TauUp_tensor)
+    if(ierr.ne.0) write(*,*) "ierr125 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,n,i,j)*TauUp(a,b,m,n)",gamma%prime_vvoo,&
+         oooo_aux_tensor,TauUp_tensor,scale=ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr126 =",ierr
 
 
     !     debug
-            print *, "gamma%prime_ovoo  = ", tensor_norm2(gamma%prime_ovoo)
-            print *, "gamma%prime_oooo  = ", tensor_norm2(gamma%prime_oooo) 
-            print *, "gamma%prime_vvvo  = ", tensor_norm2(gamma%prime_vvvo) 
-            print *, "gamma%prime_oovo  = ", tensor_norm2(gamma%prime_oovo)  
-            print *, "gamma%prime_voov  = ", tensor_norm2(gamma%prime_voov)  
-            print *, "gamma%prime_vovv  = ", tensor_norm2(gamma%prime_vovv)  
-            print *, "gamma%prime_vvvv  = ", tensor_norm2(gamma%prime_vvvv)  
-            print *, "gamma%prime_oovv  = ", tensor_norm2(gamma%prime_oovv)  
-            print *, "gamma%prime_vvoo  = ", tensor_norm2(gamma%prime_vvoo)  
+    print *, "gamma%prime_ovoo  = ", tensor_norm2(gamma%prime_ovoo)
+    print *, "gamma%prime_oooo  = ", tensor_norm2(gamma%prime_oooo) 
+    print *, "gamma%prime_vvvo  = ", tensor_norm2(gamma%prime_vvvo) 
+    print *, "gamma%prime_oovo  = ", tensor_norm2(gamma%prime_oovo)  
+    print *, "gamma%prime_voov  = ", tensor_norm2(gamma%prime_voov)  
+    print *, "gamma%prime_vovv  = ", tensor_norm2(gamma%prime_vovv)  
+    print *, "gamma%prime_vvvv  = ", tensor_norm2(gamma%prime_vvvv)  
+    print *, "gamma%prime_oovv  = ", tensor_norm2(gamma%prime_oovv)  
+    print *, "gamma%prime_vvoo  = ", tensor_norm2(gamma%prime_vvoo)  
 
 
     !**************
@@ -2187,8 +2038,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
           type(talsh_tens_t) :: vvoo_aux_tensor, vvvo_aux_tensor,ooov_aux_tensor
           type(talsh_tens_t) :: vooo_aux_tensor, ovvv_aux_tensor,vovo_aux_tensor
           type(talsh_tens_t) :: oovo_aux_tensor
-
-          type(talsh_tens_t) :: gamma%prime_oo, gamma%prime_vv, gamma%prime_vo, gamma%prime_ov
 
     !     tensor dimensions
           integer :: one_dims(1)=1
@@ -2361,14 +2210,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
           type(talsh_tens_t) :: vX_aux_tensor
 
 
-          type(talsh_tens_t) :: gamma%prime_oo
-          type(talsh_tens_t) :: gamma%prime_vv
-
-          type(talsh_tens_t) :: gamma%prime_oooo, gamma%prime_vvvv, gamma%prime_vvvo
-          type(talsh_tens_t) :: gamma%prime_ovov, gamma%prime_ovoo, gamma%prime_oovo
-          type(talsh_tens_t) :: gamma%prime_oovv, gamma%prime_vvoo, gamma%prime_voov
-          type(talsh_tens_t) :: gamma%prime_vovv
-
     !     tensor dimensions
           integer :: one_dims(1)=1
           integer, dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
@@ -2487,290 +2328,290 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !!!!!!!!!!!!
     ! rho ijak !
     !!!!!!!!!!!!
-           ! eq                 :: -(1/2) \ld ijaX \rs Xk
-           ierr=talsh_tensor_contract("G(i,j,a,k)+=L(i,j,a,X)*R(X,k)",gamma%prime_oovo,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr1 =",ierr
+    ! eq                 :: -(1/2) \ld ijaX \rs Xk
+    ierr=talsh_tensor_contract("G(i,j,a,k)+=L(i,j,a,X)*R(X,k)",gamma%prime_oovo,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr1 =",ierr
 
     !!!!!!!!!!!!
     ! rho aibj !
     !!!!!!!!!!!!
 
 !Pourquoi pas de \Pm ij \Pm ab ?           ! eq f2              :: - 1/4  \ld mibX \rd aXmj
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*R(e,a,j,m)",gamma%prime_voov,l2_tensor,r2_tensor,scale= MINUS_ONE_QUARTER)
-!           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*R(e,a,i,m)",gamma%prime_voov,l2_tensor,r2_tensor)
-!           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*R(e,b,j,m)",gamma%prime_voov,l2_tensor,r2_tensor)
-!           ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*R(e,b,i,m)",gamma%prime_voov,l2_tensor,r2_tensor,scale= MINUS_ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr2 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*R(e,a,j,m)",gamma%prime_voov,l2_tensor,r2_tensor,scale= MINUS_ONE_QUARTER)
+!    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*R(e,a,i,m)",gamma%prime_voov,l2_tensor,r2_tensor)
+!    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*R(e,b,j,m)",gamma%prime_voov,l2_tensor,r2_tensor)
+!    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*R(e,b,i,m)",gamma%prime_voov,l2_tensor,r2_tensor,scale= MINUS_ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr2 =",ierr
 
 !Pourquoi pas de \Pm ab ?          ! eq f4              :: -1/4 \ld mibX \rs Xj \ts am
-           ierr=talsh_tensor_init(ooov_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,i,b,j)+=L(m,i,b,X)*R(X,j)",ooov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr3 =",ierr
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(m,i,b,j)*T(a,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-!          ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,a)*T(b,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=ONE_QUARTER)
-           if(ierr.ne.0) write(*,*) "ierr4 =",ierr
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,i,b,j)+=L(m,i,b,X)*R(X,j)",ooov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr3 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(m,i,b,j)*T(a,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+!   ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,a)*T(b,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=ONE_QUARTER)
+    if(ierr.ne.0) write(*,*) "ierr4 =",ierr
 
 !Pourquoi pas de \Pm ij \Pm ab ?          ! eq f5              :: - 1/4  \ld imbX \rs Xm \ts aj
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,b)+=L(i,m,b,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr5 =",ierr
-           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,b)*,T(a,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-!           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a)*,T(b,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
-!           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,b)*,T(a,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
-!           ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a)*,T(b,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr6 =",ierr
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,b)+=L(i,m,b,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr5 =",ierr
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,b)*,T(a,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
+!    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,a)*,T(b,j)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
+!    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,b)*,T(a,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor)
+!    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(j,a)*,T(b,i)",gamma%prime_voov,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr6 =",ierr
 
   !!!!!!!!!!!!
   ! rho abci !
   !!!!!!!!!!!!
 
 ! \Pm ab ? ! eq g4              ::  -  (\Pm ab) \ld mneXc \rd Xain \ts bm
-           ierr=talsh_tensor_init(ovvo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,c,a,i)+=L(m,n,X,c)*R(X,a,n,i)",ovvo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr7 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,c,i)*T(b,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-!           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,c,i)*T(a,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr8 =",ierr
-           ! eq g8+g13          :: + \ld mncX \rs Xn \TauUp abni  
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,c)+=L(m,n,c,X)*R(X,n)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr9 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,c)*TauUp(a,b,n,i)",gamma%prime_vvvo,ov_aux_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr10 =",ierr
-           ! eq g7+g11          :: - \ld mncX \rs Xi \TauUp abmn        
-           ierr=talsh_tensor_init(oovo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr11 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr12 =",ierr
+    ierr=talsh_tensor_init(ovvo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,c,a,i)+=L(m,n,X,c)*R(X,a,n,i)",ovvo_aux_tensor,l2_tensor,r2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr7 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,c,i)*T(b,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+!    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,c,i)*T(a,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr8 =",ierr
+    ! eq g8+g13          :: + \ld mncX \rs Xn \TauUp abni  
+    ierr=talsh_tensor_init(ov_aux_tensor)
+    ierr=talsh_tensor_contract("A(n,c)+=L(m,n,c,X)*R(X,n)",ov_aux_tensor,l2_tensor,r1_tensor)
+    if(ierr.ne.0) write(*,*) "ierr9 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,c)*TauUp(a,b,n,i)",gamma%prime_vvvo,ov_aux_tensor,TauUp_tensor)
+    if(ierr.ne.0) write(*,*) "ierr10 =",ierr
+    ! eq g7+g11          :: - \ld mncX \rs Xi \TauUp abmn        
+    ierr=talsh_tensor_init(oovo_aux_tensor)
+    ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr11 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=ONE_HALF)
+    if(ierr.ne.0) write(*,*) "ierr12 =",ierr
 
 
 ! \Pm ab ? ! eq g10          :: + (\Pm ab) \ld mncX \rd aXmn \ts bi
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,c)+=L(m,n,c,X)*R(a,X,m,n)",vv_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr13 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=A(a,c)*T(b,i)",gamma%prime_vvvo,vv_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*T(a,i)",gamma%prime_vvvo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr14 =",ierr
+    ierr=talsh_tensor_init(vv_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,c)+=L(m,n,c,X)*R(a,X,m,n)",vv_aux_tensor,l2_tensor,r2_tensor)
+    if(ierr.ne.0) write(*,*) "ierr13 =",ierr
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(a,c)*T(b,i)",gamma%prime_vvvo,vv_aux_tensor,t1_tensor)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=M(b,c)*T(a,i)",gamma%prime_vvvo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE)
+    if(ierr.ne.0) write(*,*) "ierr14 =",ierr
 
  !!!!!!!!!!!!
  ! rho iajk !
  !!!!!!!!!!!!
-           ! eq k1              :: - (1/4) \ls iX \rd aXkj
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,X)*R(a,X,k,j)",gamma%prime_ovoo,l1_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr15 =",ierr
-           ! eq k2              :: - (1/4) \Pm jk \ls iX \rs Xj \ts ak
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,j)+=L(i,X)*R(X,j)",oo_aux_tensor,l1_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr16 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,j)*T(a,k)",gamma%prime_ovoo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr17 =",ierr
-           ! eq k4              :: + (1/4) \Pm jk \ld mieX \rd aXmj \ts ek
-           ierr=talsh_tensor_init(vovo_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,i,e,j)+=L(m,i,e,X)*R(a,X,m,j)",vovo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr18 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(a,i,e,j)*T(e,k)",gamma%prime_ovoo,vovo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(a,i,e,k)*T(e,j)",gamma%prime_ovoo,vovo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr19 =",ierr
-           ! eq k10             :: - (1/4) \Pm \ld mieX \rd eXmj \ts ak
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,j)+=L(m,i,e,X)*R(e,X,m,j)",oo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr20 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,j)*T(a,k)",gamma%prime_ovoo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr21 =",ierr
-           
-           ! eq k13 + k8             :: - (1/4) \ld imeX \rs Xm \TauDown eajk
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,e)+=L(i,m,e,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr22 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,e)*T(e,a,j,k)",gamma%prime_ovoo,ov_aux_tensor,TauDown_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr23 =",ierr
+     ! eq k1              :: - (1/4) \ls iX \rd aXkj
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,X)*R(a,X,k,j)",gamma%prime_ovoo,l1_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr15 =",ierr
+     ! eq k2              :: - (1/4) \Pm jk \ls iX \rs Xj \ts ak
+     ierr=talsh_tensor_init(oo_aux_tensor)
+     ierr=talsh_tensor_contract("A(i,j)+=L(i,X)*R(X,j)",oo_aux_tensor,l1_tensor,r1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr16 =",ierr
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,j)*T(a,k)",gamma%prime_ovoo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr17 =",ierr
+     ! eq k4              :: + (1/4) \Pm jk \ld mieX \rd aXmj \ts ek
+     ierr=talsh_tensor_init(vovo_aux_tensor)
+     ierr=talsh_tensor_contract("A(a,i,e,j)+=L(m,i,e,X)*R(a,X,m,j)",vovo_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr18 =",ierr
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(a,i,e,j)*T(e,k)",gamma%prime_ovoo,vovo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(a,i,e,k)*T(e,j)",gamma%prime_ovoo,vovo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr19 =",ierr
+     ! eq k10             :: - (1/4) \Pm \ld mieX \rd eXmj \ts ak
+     ierr=talsh_tensor_init(oo_aux_tensor)
+     ierr=talsh_tensor_contract("A(i,j)+=L(m,i,e,X)*R(e,X,m,j)",oo_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr20 =",ierr
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,j)*T(a,k)",gamma%prime_ovoo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr21 =",ierr
+     
+     ! eq k13 + k8             :: - (1/4) \ld imeX \rs Xm \TauDown eajk
+     ierr=talsh_tensor_init(ov_aux_tensor)
+     ierr=talsh_tensor_contract("A(i,e)+=L(i,m,e,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr22 =",ierr
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,e)*T(e,a,j,k)",gamma%prime_ovoo,ov_aux_tensor,TauDown_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr23 =",ierr
 
-           ! eq k5             :: + (1/4) \ld imeX \rd eXkj \ts am
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,i,k,j)+=L(m,i,e,X)*R(e,X,k,j)",oooo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr24 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(m,i,k,j)*T(a,m)",gamma%prime_ovoo,oooo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr25 =",ierr
+     ! eq k5             :: + (1/4) \ld imeX \rd eXkj \ts am
+     ierr=talsh_tensor_init(oooo_aux_tensor)
+     ierr=talsh_tensor_contract("A(m,i,k,j)+=L(m,i,e,X)*R(e,X,k,j)",oooo_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr24 =",ierr
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(m,i,k,j)*T(a,m)",gamma%prime_ovoo,oooo_aux_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr25 =",ierr
 
-           ! eq k16+k12         :: + (1/4) \Pm kj \ld imeX \rs Xk \TauNo aemj
-           ierr=talsh_tensor_init(oovo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,m,e,k)+=L(m,i,e,X)*R(X,k)",oovo_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr26 =",ierr  
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,e,k)*T(a,e,m,j)",gamma%prime_ovoo,oovo_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,e,j)*T(a,e,m,k)",gamma%prime_ovoo,oovo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr27 =",ierr         
+     ! eq k16+k12         :: + (1/4) \Pm kj \ld imeX \rs Xk \TauNo aemj
+     ierr=talsh_tensor_init(oovo_aux_tensor)
+     ierr=talsh_tensor_contract("A(i,m,e,k)+=L(m,i,e,X)*R(X,k)",oovo_aux_tensor,l2_tensor,r1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr26 =",ierr  
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,e,k)*T(a,e,m,j)",gamma%prime_ovoo,oovo_aux_tensor,TauNo_tensor)
+     ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,e,j)*T(a,e,m,k)",gamma%prime_ovoo,oovo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr27 =",ierr         
 
         !!!!!!!!!!!!
         ! rho ijkl !
         !!!!!!!!!!!!
 
-           ! eq n1              :: + (1/4) \ld ijeX \rd eXkl
-           ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,X)*R(e,X,k,l)",gamma%prime_oooo,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr28 =",ierr
-           ! eq n2              :: + (1/4) \Pm kl \ld ijeX \rs Xl \ts ek
-           ierr=talsh_tensor_init(oovo_aux_tensor)
-           ierr=talsh_tensor_contract("A(i,m,e,l)+=L(m,i,e,X)*R(X,l)",oovo_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr29 =",ierr
-           ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,m,e,l)*T(e,k)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,m,e,k)*T(e,l)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr30 =",ierr
+     ! eq n1              :: + (1/4) \ld ijeX \rd eXkl
+     ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,X)*R(e,X,k,l)",gamma%prime_oooo,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr28 =",ierr
+     ! eq n2              :: + (1/4) \Pm kl \ld ijeX \rs Xl \ts ek
+     ierr=talsh_tensor_init(oovo_aux_tensor)
+     ierr=talsh_tensor_contract("A(i,m,e,l)+=L(m,i,e,X)*R(X,l)",oovo_aux_tensor,l2_tensor,r1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr29 =",ierr
+     ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,m,e,l)*T(e,k)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,m,e,k)*T(e,l)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr30 =",ierr
 
 
         !!!!!!!!!!!!
         ! rho abij !
         !!!!!!!!!!!!
 
-           ! eq l1+l2           :: + (1/4) \ls mX \rs Xm (\td abij + 1/2 \Pm ab \Pm ij \ts ai \ts bj)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,b,i,j)*K()",gamma%prime_vvoo,t2_tensor,one_tensor)
-           if(ierr.ne.0) write(*,*) "ierr000 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr000 =",ierr
+     ! eq l1+l2           :: + (1/4) \ls mX \rs Xm (\td abij + 1/2 \Pm ab \Pm ij \ts ai \ts bj)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,b,i,j)*K()",gamma%prime_vvoo,t2_tensor,one_tensor)
+     if(ierr.ne.0) write(*,*) "ierr000 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr000 =",ierr
 
-           ! eq l0+l00          :: + (1/4) 1/2 \ld nmeX \rd eXnm (\td abij + 1/2 \Pm  ab \Pm ij \ts ai \ts bj)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,b,i,j)*K()",gamma%prime_vvoo,t2_tensor,one_tensor)
-           if(ierr.ne.0) write(*,*) "ierr0000 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr0000 =",ierr
+     ! eq l0+l00          :: + (1/4) 1/2 \ld nmeX \rd eXnm (\td abij + 1/2 \Pm  ab \Pm ij \ts ai \ts bj)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,b,i,j)*K()",gamma%prime_vvoo,t2_tensor,one_tensor)
+     if(ierr.ne.0) write(*,*) "ierr0000 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr0000 =",ierr
 
 !!!!!!!!!
 !!!!!!!!!!!!!                            Attention les TauUP
 !!!!!!!!!
-           ! eq l4+l5           :: - (1/4) \Pm ij \ls mX \rs Xj (\ts abim + \Pm ab  \ts ai \ts bm)
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("A(m,j)+=L(m,X)*T(X,j)",oo_aux_tensor,l1_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr31 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,j)*T(a,b,i,m)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,i)*T(a,b,j,m)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr32 =",ierr
+     ! eq l4+l5           :: - (1/4) \Pm ij \ls mX \rs Xj (\ts abim + \Pm ab  \ts ai \ts bm)
+     ierr=talsh_tensor_init(oo_aux_tensor)
+     ierr=talsh_tensor_contract("A(m,j)+=L(m,X)*T(X,j)",oo_aux_tensor,l1_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr31 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,j)*T(a,b,i,m)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(m,i)*T(a,b,j,m)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
+     if(ierr.ne.0) write(*,*) "ierr32 =",ierr
 
-           ! eq l3              :: + (1/4) \Pm ij \Pm ab \ls mX \rd aXim \ts bj
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,i)+=L(m,X)*R(a,X,i,m)",vo_aux_tensor,l1_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr33 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr34 =",ierr
+     ! eq l3              :: + (1/4) \Pm ij \Pm ab \ls mX \rd aXim \ts bj
+     ierr=talsh_tensor_init(vo_aux_tensor)
+     ierr=talsh_tensor_contract("A(a,i)+=L(m,X)*R(a,X,i,m)",vo_aux_tensor,l1_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr33 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr34 =",ierr
 
-           ! eq l17             :: - (1/4) \Pm ab \ls mX \rd bXji \ts am 
-           ierr=talsh_tensor_init(vooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(b,m,j,i)+=L(m,X)*R(b,X,j,i)",vo_aux_tensor,l1_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr35 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,m,j,i)*T(a,m)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,m,j,i)*T(b,m)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr36 =",ierr
+     ! eq l17             :: - (1/4) \Pm ab \ls mX \rd bXji \ts am 
+     ierr=talsh_tensor_init(vooo_aux_tensor)
+     ierr=talsh_tensor_contract("A(b,m,j,i)+=L(m,X)*R(b,X,j,i)",vo_aux_tensor,l1_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr35 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,m,j,i)*T(a,m)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,m,j,i)*T(b,m)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr36 =",ierr
 
-           ! eq l33+l35         :: - (1/4) \Pm ij \Pm ab \ld mneX \rs Xm (\td aeni+ \ts an \ts ei ) \ts bj
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,e)+=L(m,n,e,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr37 =",ierr
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("B(a,i)+=A(n,e)*TauNo(a,e,n,i)",vo_aux_tensor,ov_aux_tensor,TauNo_tensor)
-           if(ierr.ne.0) write(*,*) "ierr38 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr39 =",ierr
+     ! eq l33+l35         :: - (1/4) \Pm ij \Pm ab \ld mneX \rs Xm (\td aeni+ \ts an \ts ei ) \ts bj
+     ierr=talsh_tensor_init(ov_aux_tensor)
+     ierr=talsh_tensor_contract("A(n,e)+=L(m,n,e,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr37 =",ierr
+     ierr=talsh_tensor_init(vo_aux_tensor)
+     ierr=talsh_tensor_contract("B(a,i)+=A(n,e)*TauNo(a,e,n,i)",vo_aux_tensor,ov_aux_tensor,TauNo_tensor)
+     if(ierr.ne.0) write(*,*) "ierr38 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr39 =",ierr
 
-           ! eq l36+l37         :: - (1/4) \ld mneX \rs Xm (\P ab \ts an \td ebij + \Pmij \ts ei \td abnj)
+     ! eq l36+l37         :: - (1/4) \ld mneX \rs Xm (\P ab \ts an \td ebij + \Pmij \ts ei \td abnj)
 !! On ne refait pas la contracttion l2_tensor*r1_tensor
 !           ierr=talsh_tensor_init(ov_aux_tensor)
 !           ierr=talsh_tensor_contract("A(n,e)+=L(m,n,e,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
 !           if(ierr.ne.0) write(*,*) "ierr37 =",ierr
-           ierr=talsh_tensor_init(vv_aux_tensor)          
-           ierr=talsh_tensor_contract("B(a,e)+=A(n,e)*T(a,n)",vv_aux_tensor,ov_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr40 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,e)*T(e,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,e)*T(e,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr41 =",ierr
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("B(n,i)+=A(n,e)*T(e,i)",oo_aux_tensor,ov_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr42 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,i)*T(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,j)*T(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr43 =",ierr
+     ierr=talsh_tensor_init(vv_aux_tensor)          
+     ierr=talsh_tensor_contract("B(a,e)+=A(n,e)*T(a,n)",vv_aux_tensor,ov_aux_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr40 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,e)*T(e,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,e)*T(e,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,t2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr41 =",ierr
+     ierr=talsh_tensor_init(oo_aux_tensor)
+     ierr=talsh_tensor_contract("B(n,i)+=A(n,e)*T(e,i)",oo_aux_tensor,ov_aux_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr42 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,i)*T(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,t2_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,j)*T(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,t2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr43 =",ierr
 
 
-           ! eq l24+l26         :: + (1/4) 1/2 \Pm ij \ld nmeX \rs Xi (\td abmn + \Pm ab \ts am \ts bn ) \ts ej
-           ierr=talsh_tensor_init(oovo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,m,e,i)+=L(m,n,e,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr44 =",ierr
-           ierr=talsh_tensor_init(vvov_aux_tensor)
-           ierr=talsh_tensor_contract("B(a,b,i,e)+=A(n,m,e,i)*TauUp(a,b,m,n)",vvov_aux_tensor,oovo_aux_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr45 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,b,i,e)*T(e,j)",gamma%prime_vvoo,vvov_aux_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,b,j,e)*T(e,i)",gamma%prime_vvoo,vvov_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr46 =",ierr
+     ! eq l24+l26         :: + (1/4) 1/2 \Pm ij \ld nmeX \rs Xi (\td abmn + \Pm ab \ts am \ts bn ) \ts ej
+     ierr=talsh_tensor_init(oovo_aux_tensor)
+     ierr=talsh_tensor_contract("A(n,m,e,i)+=L(m,n,e,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr44 =",ierr
+     ierr=talsh_tensor_init(vvov_aux_tensor)
+     ierr=talsh_tensor_contract("B(a,b,i,e)+=A(n,m,e,i)*TauUp(a,b,m,n)",vvov_aux_tensor,oovo_aux_tensor,TauUp_tensor)
+     if(ierr.ne.0) write(*,*) "ierr45 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,b,i,e)*T(e,j)",gamma%prime_vvoo,vvov_aux_tensor,t1_tensor,scale=ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,b,j,e)*T(e,i)",gamma%prime_vvoo,vvov_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr46 =",ierr
 
-           ! eq l22+l29         :: - (1/4) \Pm ab \Pm ij  \ld mneX \rs Xi ( \ts am \td bejn + 1/2 \ts bj \td eanm ) 
+     ! eq l22+l29         :: - (1/4) \Pm ab \Pm ij  \ld mneX \rs Xi ( \ts am \td bejn + 1/2 \ts bj \td eanm ) 
 !!! On ne change pas la contraction l2_tensor*r1_tensor
 !!!           ierr=talsh_tensor_init(oovo_aux_tensor)
 !!!           ierr=talsh_tensor_contract("A(n,m,e,i)+=L(m,n,e,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor)
-           ierr=talsh_tensor_contract("B(n,a,e,i)+=A(n,m,e,i)*T(a,m)",ovvo_aux_tensor,oovo_aux_tensor,t1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr47 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,a,e,i)*T(b,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,b,e,i)*T(a,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,a,e,j)*T(b,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,b,e,j)*T(a,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr48 =",ierr
-           ierr=talsh_tensor_init(vo_aux_tensor)
-           ierr=talsh_tensor_contract("B(a,i)+=A(n,m,e,i)*T(e,a,n,m)",vo_aux_tensor,oovo_aux_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr49 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr50 =",ierr
+     ierr=talsh_tensor_contract("B(n,a,e,i)+=A(n,m,e,i)*T(a,m)",ovvo_aux_tensor,oovo_aux_tensor,t1_tensor)
+     if(ierr.ne.0) write(*,*) "ierr47 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,a,e,i)*T(b,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,b,e,i)*T(a,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,a,e,j)*T(b,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,b,e,j)*T(a,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr48 =",ierr
+     ierr=talsh_tensor_init(vo_aux_tensor)
+     ierr=talsh_tensor_contract("B(a,i)+=A(n,m,e,i)*T(e,a,n,m)",vo_aux_tensor,oovo_aux_tensor,t2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr49 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr50 =",ierr
 
-           ! eq l6+l7           :: - (1/4) 1/2 \Pm ab \ld nmeX \rd aXnm (\td  ebij + \Pm ij \ts ei \ts bj )
-           ierr=talsh_tensor_init(vv_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,e)+=L(n,m,e,X)*R(a,X,n,m)",vv_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr51 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,e)*T(e,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauDown_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,e)*T(e,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauDown_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr52 =",ierr
+     ! eq l6+l7           :: - (1/4) 1/2 \Pm ab \ld nmeX \rd aXnm (\td  ebij + \Pm ij \ts ei \ts bj )
+     ierr=talsh_tensor_init(vv_aux_tensor)
+     ierr=talsh_tensor_contract("A(a,e)+=L(n,m,e,X)*R(a,X,n,m)",vv_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr51 =",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,e)*T(e,b,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauDown_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,e)*T(e,a,i,j)",gamma%prime_vvoo,vv_aux_tensor,TauDown_tensor,scale=ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr52 =",ierr
 
-           ! eq l9+l8           :: - (1/4) \Pm ij \ld nmeX \rd eXim (\td abnj + \Pm ab \ts ai \ts bj)
-           ierr=talsh_tensor_init(oo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,i)+=L(n,m,e,X)*R(e,X,i,m)",oo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr53 = ",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,i)*T(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,j)*T(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
-           if(ierr.ne.0) write(*,*) "ierr54 = ",ierr
+     ! eq l9+l8           :: - (1/4) \Pm ij \ld nmeX \rd eXim (\td abnj + \Pm ab \ts ai \ts bj)
+     ierr=talsh_tensor_init(oo_aux_tensor)
+     ierr=talsh_tensor_contract("A(n,i)+=L(n,m,e,X)*R(e,X,i,m)",oo_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr53 = ",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,i)*T(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,j)*T(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
+     if(ierr.ne.0) write(*,*) "ierr54 = ",ierr
 
-           ! eq l20, l21        :: - (1/4) \Pm ij \Pm ab \ld nmeX \rd aXim (\td bejn + \ts bj \ts en)
-           ierr=talsh_tensor_init(ovvo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,a,e,i)+=L(m,n,e,X)*R(a,X,i,m)",ovvo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr55 = ",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,a,e,i)*T(b,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,b,e,i)*T(a,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,a,e,j)*T(b,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,b,e,j)*T(a,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr56 = ",ierr
+     ! eq l20, l21        :: - (1/4) \Pm ij \Pm ab \ld nmeX \rd aXim (\td bejn + \ts bj \ts en)
+     ierr=talsh_tensor_init(ovvo_aux_tensor)
+     ierr=talsh_tensor_contract("A(n,a,e,i)+=L(m,n,e,X)*R(a,X,i,m)",ovvo_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr55 = ",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,a,e,i)*T(b,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,b,e,i)*T(a,e,j,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,a,e,j)*T(b,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,b,e,j)*T(a,e,i,n)",gamma%prime_vvoo,ovvo_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+     if(ierr.ne.0) write(*,*) "ierr56 = ",ierr
 
-           ! eq l31             :: - (1/4) 1/2 \Pm ab \ld nmeX \rd bXji \td aemn
-           ierr=talsh_tensor_init(vX_aux_tensor)
-           ierr=talsh_tensor_contract("A(a,X)+=L(n,m,e,X)*T(a,e,m,n)",vX_aux_tensor,l2_tensor,t2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr57 = ",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,X)*R(b,X,j,i)",gamma%prime_vvoo,vX_aux_tensor,r2_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,X)*R(a,X,j,i)",gamma%prime_vvoo,vX_aux_tensor,r2_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr58 = ",ierr
+     ! eq l31             :: - (1/4) 1/2 \Pm ab \ld nmeX \rd bXji \td aemn
+     ierr=talsh_tensor_init(vX_aux_tensor)
+     ierr=talsh_tensor_contract("A(a,X)+=L(n,m,e,X)*T(a,e,m,n)",vX_aux_tensor,l2_tensor,t2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr57 = ",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,X)*R(b,X,j,i)",gamma%prime_vvoo,vX_aux_tensor,r2_tensor,scale=MINUS_ONE_HALF)
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,X)*R(a,X,j,i)",gamma%prime_vvoo,vX_aux_tensor,r2_tensor,scale=ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr58 = ",ierr
 
-           ! eq l14+l12         :: + (1/4) 1/2 \ld nmeX \rd eXij (\td abmn +\Pm  ab \ts an \ts bm) 
-           ierr=talsh_tensor_init(oooo_aux_tensor)
-           ierr=talsh_tensor_contract("A(n,m,i,j)+=L(n,m,e,X)*R(e,X,i,j)",oooo_aux_tensor,l2_tensor,r2_tensor)
-           if(ierr.ne.0) write(*,*) "ierr59 = ",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,m,i,j)*T(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,TauUp_tensor,scale=ONE_HALF)
-           if(ierr.ne.0) write(*,*) "ierr60 = ",ierr
+     ! eq l14+l12         :: + (1/4) 1/2 \ld nmeX \rd eXij (\td abmn +\Pm  ab \ts an \ts bm) 
+     ierr=talsh_tensor_init(oooo_aux_tensor)
+     ierr=talsh_tensor_contract("A(n,m,i,j)+=L(n,m,e,X)*R(e,X,i,j)",oooo_aux_tensor,l2_tensor,r2_tensor)
+     if(ierr.ne.0) write(*,*) "ierr59 = ",ierr
+     ierr=talsh_tensor_contract("G(a,b,i,j)+=A(n,m,i,j)*T(a,b,m,n)",gamma%prime_vvoo,oooo_aux_tensor,TauUp_tensor,scale=ONE_HALF)
+     if(ierr.ne.0) write(*,*) "ierr60 = ",ierr
 
 
          end subroutine talsh_calc_dm_2rdm_ccsd_IP_mo
@@ -3051,14 +2892,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
           type(talsh_tens_t) :: ovvo_aux_tensor, ovov_aux_tensor,voov_aux_tensor
           type(talsh_tens_t) :: vovv_aux_tensor
 
-          type(talsh_tens_t) :: gamma%prime_oo
-          type(talsh_tens_t) :: gamma%prime_vv
-
-          type(talsh_tens_t) :: gamma%prime_oooo, gamma%prime_vvvv, gamma%prime_vvvo
-          type(talsh_tens_t) :: gamma%prime_ovov, gamma%prime_ovoo, gamma%prime_oovo
-          type(talsh_tens_t) :: gamma%prime_oovv, gamma%prime_vvoo, gamma%prime_voov
-          type(talsh_tens_t) :: gamma%prime_vovv, gamma%prime_vovo, gamma%prime_ooov
-
     !     tensor dimensions
           integer :: one_dims(1)=1
           integer, dimension(2) :: oo_dims, vv_dims
@@ -3191,7 +3024,8 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
            ierr=talsh_tensor_contract("MATtwo(a,b)+=T(a,m)*L(m,b)",MATtwo_vv_tensor,t1_tensor,l1_tensor)
            if(ierr.ne.0) write(*,*) "ierr0 =",ierr
-           ierr=talsh_tensor_contract("MATtwo(a,b)+=T(e,a,m,n)*L(m,n,e,b)",MATtwo_vv_tensor,t2_tensor,l2_tensor,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("MATtwo(a,b)+=T(e,a,m,n)*L(m,n,e,b)",MATtwo_vv_tensor,&
+              t2_tensor,l2_tensor,scale=ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr0 =",ierr
 
            ierr=talsh_tensor_contract("M(a,b)+=R(a,X)*L(X,b)",MATone_EA_vv_tensor,r1_tensor,l1_tensor)
@@ -3275,7 +3109,8 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_init(vvvv_aux_tensor)
            ierr=talsh_tensor_contract("X(b,a,e,c)+=L(X,n,e,c)*R(b,a,X,n)",vvvv_aux_tensor,l2_tensor,r2_tensor)
            if(ierr.ne.0) write(*,*) "ierr10 =",ierr 
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=X(b,a,e,c)*T(e,i)",gamma%prime_vvvo,vvvv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,c,i)+=X(b,a,e,c)*T(e,i)",gamma%prime_vvvo,&
+               vvvv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
            ierr=talsh_tensor_contract("G(a,b,c,i)+=X(b,a,e,c)*T(e,i)",gamma%prime_vvvo,vvvv_aux_tensor,t1_tensor,scale=ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr11 =",ierr 
 
@@ -3283,7 +3118,8 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_init(vovv_aux_tensor)
            ierr=talsh_tensor_contract("X(b,n,e,c)+=L(X,n,e,c)*R(b,X)",vovv_aux_tensor,l2_tensor,r1_tensor)
            if(ierr.ne.0) write(*,*) "ierr12 =",ierr  
-           ierr=talsh_tensor_contract("G(a,b,c,i)+=X(b,n,e,c)*T(e,a,i,n)",gamma%prime_vvvo,vovv_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,c,i)+=X(b,n,e,c)*T(e,a,i,n)",gamma%prime_vvvo,&
+               vovv_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,c,i)+=X(a,n,e,c)*T(e,b,i,n)",gamma%prime_vvvo,vovv_aux_tensor,TauNo_tensor)
            if(ierr.ne.0) write(*,*) "ierr13 =",ierr  
 
@@ -3369,14 +3205,16 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_contract("Y(i,a,j,e)+=X(i,a,f,e)*T(f,j)",ovov_aux_tensor,ovvv_aux_tensor,t1_tensor)
            if(ierr.ne.0) write(*,*) "ierr29 =",ierr
            ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,a,j,e)*T(e,k)",gamma%prime_ovoo,ovov_aux_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,a,k,e)*T(e,j)",gamma%prime_ovoo,ovov_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,a,k,e)*T(e,j)",gamma%prime_ovoo,&
+               ovov_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr30 =",ierr   
    
            ! eq k13             :: - \ld iXfe \rs eX \td fajk
            ierr=talsh_tensor_init(ov_aux_tensor)                                   
            ierr=talsh_tensor_contract("X(i,f)+=L(i,X,f,e)*R(e,X)",ov_aux_tensor,l2_tensor,r1_tensor)
            if(ierr.ne.0) write(*,*) "ierr31 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,a,j,e)*T(f,a,j,k)",gamma%prime_ovoo,ov_aux_tensor,t2_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,a,j,e)*T(f,a,j,k)",gamma%prime_ovoo,&
+               ov_aux_tensor,t2_tensor,scale=MINUS_ONE)
            if(ierr.ne.0) write(*,*) "ierr32 =",ierr
 
 
@@ -3387,18 +3225,21 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_init(oo_aux_tensor)
            ierr=talsh_tensor_contract("X(i,j)+=R(e,f,j,m)*L(i,m,e,f)",oo_aux_tensor,r2_tensor,l2_tensor,scale=ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr0 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=X(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=X(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,&
+               oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=X(n,j)*TauUp(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
            if(ierr.ne.0) write(*,*) "ierr66 =",ierr
 !XXX idem          ! eq h6+h7+h10+h11   :: - (1/4) \Pm ab \MATone ae \TauDown ebij
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=M(a,e)*TauDown(e,b,i,j)",gamma%prime_vvoo,MATone_EA_vv_tensor,TauDown_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=M(a,e)*TauDown(e,b,i,j)",gamma%prime_vvoo,&
+               MATone_EA_vv_tensor,TauDown_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=M(b,e)*TauDown(e,a,i,j)",gamma%prime_vvoo,MATone_EA_vv_tensor,TauDown_tensor)
            if(ierr.ne.0) write(*,*) "ierr67 =",ierr
 !ok           ! eq j13+j15         :: + (1/4) 1/4 \ld Xnef \rd abXn \TauDown efij
            ierr=talsh_tensor_init(vvvv_aux_tensor)
            ierr=talsh_tensor_contract("A(a,b,e,f)+=L(X,n,e,f)*R(a,b,X,n)",vvvv_aux_tensor,l2_tensor,r2_tensor)
            if(ierr.ne.0) write(*,*) "ierr70 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,b,e,f)*TauDawn(e,f,i,j)",gamma%prime_vvoo,vvvv_aux_tensor,TauDown_tensor,scale=ONE_QUARTER)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,b,e,f)*TauDawn(e,f,i,j)",gamma%prime_vvoo,&
+               vvvv_aux_tensor,TauDown_tensor,scale=ONE_QUARTER)
            if(ierr.ne.0) write(*,*) "ierr71 =",ierr
 !ok           ! eq j25+j27         :: + (1/4) 1/2 \Pm ab \ld Xnef \rs aX \ts bn \TauDown efij
            ierr=talsh_tensor_init(vovv_aux_tensor)
@@ -3408,7 +3249,8 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_contract("B(a,n,i,j)+=A(a,n,e,f)*TauDown(e,f,i,j)",vooo_aux_tensor,vovv_aux_tensor,TauDown_tensor)
            if(ierr.ne.0) write(*,*) "ierr76 =",ierr
            ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,n,i,j)*T(b,n)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,n,i,j)*T(a,n)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,n,i,j)*T(a,n)",gamma%prime_vvoo,&
+               vooo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr77 =",ierr
 !ok           ! eq j35+j36         :: - (1/4) \Pm ij \ld Xnef \rs eX \ts fi \TauUp abnj
            ierr=talsh_tensor_init(oo_aux_tensor)
@@ -3417,21 +3259,25 @@ module talsh_1rdm_2rdm_ccsd_kernels
            if(ierr.ne.0) write(*,*) "ierr78 =",ierr
            ierr=talsh_tensor_contract("B(n,i)+=A(n,f)*T(f,i)",oo_aux_tensor,ov_aux_tensor,t1_tensor)
            if(ierr.ne.0) write(*,*) "ierr79 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,i)*TauUp(a,b,n,j)",gamma%prime_vvoo,&
+               oo_aux_tensor,TauUp_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=B(n,j)*TauUp(a,b,n,i)",gamma%prime_vvoo,oo_aux_tensor,TauUp_tensor)
            if(ierr.ne.0) write(*,*) "ierr80 =",ierr
 !ok           ! eq j20+j21         :: - (1/4) \Pm ij \Pm ab \ld Xnef \rd aeiX \TauNo bfnj
            ierr=talsh_tensor_init(voov_aux_tensor)
            ierr=talsh_tensor_contract("A(a,n,i,f)+=R(a,e,i,X)*L(X,n,e,f)",voov_aux_tensor,r2_tensor,l2_tensor)
            if(ierr.ne.0) write(*,*) "ierr83 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*TauNo(b,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*TauNo(b,f,n,j)",gamma%prime_vvoo,&
+                voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*TauNo(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*TauNo(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*TauNo(a,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*TauNo(a,f,n,i)",gamma%prime_vvoo,&
+               voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
            if(ierr.ne.0) write(*,*) "ierr84 =",ierr
 
 !ok           ! eq j16+j30         :: - (1/4) \Pm ij \rd abin \MATtwo nj
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,i,X)*M(X,j)",gamma%prime_vvoo,r2_tensor,MATtwo_EA_oo_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,i,X)*M(X,j)",gamma%prime_vvoo,&
+               r2_tensor,MATtwo_EA_oo_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,j,X)*M(X,i)",gamma%prime_vvoo,r2_tensor,MATtwo_EA_oo_tensor)
            if(ierr.ne.0) write(*,*) "ierr85 =",ierr
 
@@ -3479,10 +3325,12 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_init(ovvo_aux_tensor)
            ierr=talsh_tensor_contract("B(m,a,e,i)+=A(m,a,e,f)*T(f,i)",ovvo_aux_tensor,ovvv_aux_tensor,t1_tensor)
            if(ierr.ne.0) write(*,*) "ierr97 =",ierr
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,a,e,i)*T(b,e,j,m)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,a,e,i)*T(b,e,j,m)",gamma%prime_vvoo,&
+               voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,b,e,i)*T(a,e,j,m)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,a,e,j)*T(b,e,i,m)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,b,e,j)*T(a,e,i,m)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,b,e,j)*T(a,e,i,m)",gamma%prime_vvoo,&
+               voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
            if(ierr.ne.0) write(*,*) "ierr98 =",ierr
 
 

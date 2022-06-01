@@ -6,9 +6,10 @@ module talsh_gradient
 
   use talsh
   use tensor_algebra
-  use talsh_common_routines, only : tensor_norm2
+  use talsh_common_routines, only : tensor_norm2, print_tensor_elements
   use exacorr_datatypes, only : talsh_dm_tens, exacc_input
   use exacorr_utils, only     : print_date
+  use talsh_1rdm_2rdm_ccsd_kernels
   use, intrinsic:: ISO_C_BINDING
 
   implicit none
@@ -21,8 +22,8 @@ module talsh_gradient
   private
 
   public talsh_dm_driver
-  public talsh_dm_form_mo_fort_from_tensors
-  public talsh_dm_form_ao_diracformat_from_dm_mo
+  public talsh_dm_1rdm_form_mo_fort_from_tensors
+  public talsh_dm_1rdm_form_ao_diracformat_from_dm_mo
   public talsh_dm_initialize_dmtens
   public talsh_dm_cleanup_dmtens
   public talsh_dm_store_mo
@@ -53,25 +54,47 @@ module talsh_gradient
 !************************************
       call talsh_dm_initialize_dmtens(exa_input,gamma)
 
-!**************************************
-!     calculate DM blocks in MO basis *
-!**************************************
+!*****************************************
+!     calculate 1-RDM blocks in MO basis *
+!*****************************************
 
-      if (.not.CCD) then
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level,t1_tensor,l1_tensor)
-      else
-        call calc_dm_mo(gamma,t2_tensor,l2_tensor,exa_input%print_level)
+      if (exa_input%do_1rdm_gs) then
+         if (.not.CCD) then
+           call talsh_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,t1_tensor,l1_tensor)
+         else
+           call talsh_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level)
+         end if
+         call print_date("Calculated 1-RDM density matrices in MO basis")
       end if
-      call print_date("Calculated density matrices in MO basis")
+
+!*****************************************
+!     calculate 2-RDM blocks in MO basis *
+!*****************************************
+      if (exa_input%do_2rdm_gs) then
+         if (.not.CCD) then
+           call talsh_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,t1_tensor,l1_tensor)
+         else
+           call talsh_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level)
+         end if
+         call print_date("Calculated 2-RDM density matrices in MO basis")
+      end if
+
+! aspg, while thinking of a solution, always store the 1rdm
+      if (exa_input%do_1rdm_gs) then
+         write (*,*) 'debug, exa_input%do_1rdm_gs',exa_input%do_1rdm_gs
 
 !***********************
 !     write DM to file *
 !***********************
-
-      call talsh_dm_store_mo(exa_input,gamma,wavefun)
-      call talsh_kudm_store_mo(exa_input,gamma,wavefun) !also storing KU format!
+         call talsh_dm_store_mo(exa_input,gamma,wavefun)
+         call talsh_kudm_store_mo(exa_input,gamma,wavefun) !also storing KU format!
 !     cleanup
-      call talsh_dm_cleanup_dmtens(gamma,CCD)
+         call talsh_dm_cleanup_dmtens(gamma,CCD)
+      end if
 
     end subroutine talsh_dm_driver
 
@@ -359,8 +382,10 @@ module talsh_gradient
 !     body pointers
       type(C_PTR)                     :: body_p2
       complex(8), pointer, contiguous :: dm_block(:,:)
-      complex(8), allocatable         :: dm_mo_fort(:,:)
-      real(8),allocatable             :: dm_diracformat(:,:,:)
+      complex(8), allocatable         :: dm_1rdm_mo_fort(:,:)
+      real(8),allocatable             :: dm_1rdm_diracformat(:,:,:)
+      complex(8), allocatable         :: dm_2rdm_mo_fort(:,:)
+      real(8),allocatable             :: dm_2rdm_diracformat(:,:,:)
 !     complete mo list
       integer, allocatable :: mo_list(:)
 !     CCD switch
@@ -386,8 +411,8 @@ module talsh_gradient
       nkr_vir = exa_input%nkr_vir
 
 ! set up storage for density matrices in MO and AO bases, in fortran storage
-      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
-      dm_mo_fort = ZERO
+      allocate (dm_1rdm_mo_fort(nocc+nvir,nocc+nvir))
+      dm_1rdm_mo_fort = ZERO
 
       norbt = nkr_occ + nkr_vir
       allocate(mo_list(norbt))
@@ -395,26 +420,26 @@ module talsh_gradient
       mo_list(1+nkr_occ:nkr_occ+nkr_vir) = exa_input%mokr_vir
 
       nesh = get_nsolutions() / 2
-      allocate (dm_diracformat(nesh,nesh,4))
-      dm_diracformat = real(ZERO)
+      allocate (dm_1rdm_diracformat(nesh,nesh,4))
+      dm_1rdm_diracformat = real(ZERO)
 
 ! form MO basis density matrix
-      call talsh_dm_form_mo_fort_from_tensors(dm_mo_fort, gamma, nocc, nvir, CCD)
+      call talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
 ! form AO basis density matrix
-      call talsh_dm_form_ao_diracformat_from_dm_mo(dm_diracformat, dm_mo_fort, mo_list, norbt)
+      call talsh_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
 ! save AOm basis density matrix to file
-      call store_cc_density (wavefun, dm_diracformat, nesh, 4)
+      call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
 
-      deallocate (dm_diracformat)
+      deallocate (dm_1rdm_diracformat)
       deallocate (mo_list)
-      deallocate (dm_mo_fort)
+      deallocate (dm_1rdm_mo_fort)
 
     end subroutine talsh_dm_store_mo
 
-    subroutine talsh_dm_form_mo_fort_from_tensors(dm_mo_fort,gamma,nocc,nvir,CCD)
+    subroutine talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort,gamma,nocc,nvir,CCD)
 !     input variables
       type(talsh_dm_tens), intent(inout)     :: gamma 
-      complex(8), allocatable, intent(inout) :: dm_mo_fort(:,:)
+      complex(8), allocatable, intent(inout) :: dm_1rdm_mo_fort(:,:)
 !     matrix dimensions
       integer, intent(in) :: nocc, nvir
       logical, intent(in) :: CCD 
@@ -442,23 +467,23 @@ module talsh_gradient
 !     oo
       ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-      dm_mo_fort(1:nocc,1:nocc) = dm_block
+      dm_1rdm_mo_fort(1:nocc,1:nocc) = dm_block
 
 !     vo + ov
       if (.not.CCD) then
         ierr=talsh_tensor_get_body_access(gamma%symm_vo,body_p2,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nvir,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-        dm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
+        dm_1rdm_mo_fort(1+nocc:nocc+nvir,1:nocc) = dm_block
 
         ierr=talsh_tensor_get_body_access(gamma%symm_ov,body_p2,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p2,dm_block,(/nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-        dm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
+        dm_1rdm_mo_fort(1:nocc,1+nocc:nocc+nvir) = dm_block
       end if
 
 !     vv
       ierr=talsh_tensor_get_body_access(gamma%symm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-      dm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
+      dm_1rdm_mo_fort(1+nocc:nocc+nvir,1+nocc:nocc+nvir) = dm_block
 
 !*****************************************************************************************************************************
 !     Determine where this should go in the full list of MOs (NB: DIRAC assumes restricted densities and uses Kramers pairs) *
@@ -468,7 +493,7 @@ module talsh_gradient
         k = 1
         do i=1,(nocc+nvir)
            do j=1,(nocc+nvir)
-              write(*,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_mo_fort(i,j),i,j
+              write(*,'(3X,I4,2x,2F28.10,2x,4I4)') k, dm_1rdm_mo_fort(i,j),i,j
               k = k + 1
            end do
          end do
@@ -477,10 +502,10 @@ module talsh_gradient
 
     end subroutine
 
-   subroutine talsh_dm_form_ao_diracformat_from_dm_mo(dm_diracformat, dm_mo_fort, mo_list, norbt)
-      complex(8), allocatable, intent(in) :: dm_mo_fort(:,:)
+   subroutine talsh_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
+      complex(8), allocatable, intent(in) :: dm_1rdm_mo_fort(:,:)
       integer, allocatable, intent(in) :: mo_list(:)
-      real(8),allocatable, intent(inout)  :: dm_diracformat(:,:,:)
+      real(8),allocatable, intent(inout)  :: dm_1rdm_diracformat(:,:,:)
       integer, intent(in) :: norbt
 !     loop variables
       integer :: i, j
@@ -500,128 +525,13 @@ module talsh_gradient
           ! it would be good to test whether the Kramers-restricted assumption holds
           ! Or even to average over the two density matrices and enforce a Kramers-restricted density
           i_unbar = 2*i-1
-          dm_diracformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i_unbar,j_unbar))
-          dm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_mo_fort(i_unbar,j_unbar))
-          dm_diracformat(mo_list(i),mo_list(j),3) = real(dm_mo_fort(i_unbar,j_bar))
-          dm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_mo_fort(i_unbar,j_bar))
+          dm_1rdm_diracformat(mo_list(i),mo_list(j),1) = real(dm_1rdm_mo_fort(i_unbar,j_unbar))
+          dm_1rdm_diracformat(mo_list(i),mo_list(j),2) = imag(dm_1rdm_mo_fort(i_unbar,j_unbar))
+          dm_1rdm_diracformat(mo_list(i),mo_list(j),3) = real(dm_1rdm_mo_fort(i_unbar,j_bar))
+          dm_1rdm_diracformat(mo_list(i),mo_list(j),4) = imag(dm_1rdm_mo_fort(i_unbar,j_bar))
         end do
       end do
    end subroutine
-
-!!!
-    subroutine print_tensor_elements(tensor, relccsd_order)
-       implicit none
-
-       type(talsh_tens_t), intent(inout)    :: tensor
-       logical, intent(in), optional :: relccsd_order
-
-       integer(INTD)  ::  rank
-       integer(INTD)  ::  dims1(1)
-       integer(INTD)  ::  dims2(1:2)
-       integer(INTD)  ::  dims3(1:3)
-       integer(INTD)  ::  dims4(1:4)
-       integer(INTD)  ::  ierr
-       integer  ::  i, j, k, l, b
-       integer, pointer :: index_i_talsh_to_relccsd(:)
-       integer, pointer :: index_j_talsh_to_relccsd(:)
-       integer :: ku, kb, num_kr_pairs_i, num_kr_pairs_j, num_spinors_i, num_spinors_j
-       type(C_PTR)         :: body
-       complex(8), pointer :: tens1(:)
-       complex(8), pointer :: tens2(:,:)
-       complex(8) :: value_to_print
-       logical :: print_in_relccsd_order
-
-       rank=talsh_tensor_rank(tensor)
-
-       if (rank.eq.1) then
-         ierr = talsh_tensor_dimensions(tensor,rank,dims1)
-         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body,tens1,dims1)
-
-         b = 0
-         do i = 1, dims1(1)
-            b = b + 1
-            value_to_print = tens1(i)
-            write(6,'(3X,2I4,2x,2E28.14)') b, value_to_print
-         end do
-
-       else if (rank.eq.2) then
-         ierr = talsh_tensor_dimensions(tensor,rank,dims2)
-         ierr=talsh_tensor_get_body_access(tensor,body,C8,int(0,C_INT),DEV_HOST)
-         call c_f_pointer(body,tens2,dims2)
-
-         if (present(relccsd_order)) then
-            print_in_relccsd_order = relccsd_order
-         else
-            print_in_relccsd_order = .false.
-         end if
-
-         if (print_in_relccsd_order) then
-            num_spinors_i = dims2(1)
-            num_spinors_j = dims2(2)
-
-            num_kr_pairs_i= num_spinors_i / 2
-            num_kr_pairs_j= num_spinors_j / 2
-
-            allocate(index_i_talsh_to_relccsd(num_spinors_i))
-            allocate(index_j_talsh_to_relccsd(num_spinors_j))
-            index_i_talsh_to_relccsd = 0
-            index_j_talsh_to_relccsd = 0
-
-            ku = 1
-            kb = 1
-            do i = 1, num_spinors_i
-               if (mod(i,2).eq.0) then
-                  index_i_talsh_to_relccsd(num_kr_pairs_i + kb) = i 
-                  kb = kb + 1
-               else
-                  index_i_talsh_to_relccsd(ku) = i
-                  ku = ku + 1
-               end if
-            end do 
-
-            ku = 1
-            kb = 1
-            do j = 1, num_spinors_j
-               if (mod(j,2).eq.0) then
-                  index_j_talsh_to_relccsd(num_kr_pairs_j + kb) = j 
-                  kb = kb + 1
-               else
-                  index_j_talsh_to_relccsd(ku) = j
-                  ku = ku + 1
-               end if
-            end do 
-            print *,'index_j_talsh_to_relccsd:',index_j_talsh_to_relccsd
-
-            b = 0
-            do j = 1, dims2(2)
-               do i = 1, dims2(1)
-                  b = b + 1
-                  value_to_print = tens2(index_i_talsh_to_relccsd(i),index_j_talsh_to_relccsd(j))
-                  write(6,'(3X,I4,2x,2F28.10,4I4)') b, value_to_print, i, j, &
-          &            index_i_talsh_to_relccsd(i), index_j_talsh_to_relccsd(j)
-               end do
-            end do
-
-            deallocate(index_i_talsh_to_relccsd)
-            deallocate(index_j_talsh_to_relccsd)
-
-          else
-            b = 0
-            do j = 1, dims2(2)
-               do i = 1, dims2(1)
-                  b = b + 1
-                  value_to_print = tens2(i,j)
-                  write(6,'(3X,I4,2x,2F28.10,2I4)') b, value_to_print, i, j
-               end do
-            end do
-          end if
-
-       else
-          call quit('unsupported tensor rank in print_tensor_elements')
-       end if
-
-    end subroutine
 
 !ROUTINES FOR STORING CCDENS IN KUFORMAT ON EXACC FILE
     subroutine talsh_kudm_store_mo (exa_input,gamma,wavefun)
@@ -637,8 +547,8 @@ module talsh_gradient
 !     body pointers
       type(C_PTR)                     :: body_p2
       complex(8), pointer, contiguous :: dm_block(:,:)
-      complex(8), allocatable         :: dm_mo_fort(:,:)
-      real(8),allocatable             :: dm_storeformat(:,:,:)
+      complex(8), allocatable         :: dm_1rdm_mo_fort(:,:)
+      real(8),allocatable             :: dm_1rdm_storeformat(:,:,:)
 !     complete mo list
       integer, allocatable :: mo_list(:)
 !     CCD switch
@@ -661,8 +571,8 @@ module talsh_gradient
       nvir    = exa_input%nvir
 
 ! set up storage for density matrices in MO and AO bases, in fortran storage
-      allocate (dm_mo_fort(nocc+nvir,nocc+nvir))
-      dm_mo_fort = ZERO
+      allocate (dm_1rdm_mo_fort(nocc+nvir,nocc+nvir))
+      dm_1rdm_mo_fort = ZERO
 
       norbt = nocc + nvir
       allocate(mo_list(norbt))
@@ -670,26 +580,26 @@ module talsh_gradient
       mo_list(nocc+1:norbt) = exa_input%mo_vir
 
       nesh = get_nsolutions()
-      allocate (dm_storeformat(nesh,nesh,2))
-      dm_storeformat = real(ZERO)
+      allocate (dm_1rdm_storeformat(nesh,nesh,2))
+      dm_1rdm_storeformat = real(ZERO)
 
 ! form MO basis density matrix
-      call talsh_dm_form_mo_fort_from_tensors(dm_mo_fort, gamma, nocc, nvir, CCD)
+      call talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
 ! form AO basis density matrix
-      call talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat, dm_mo_fort, mo_list, norbt)
+      call talsh_kudm_1rdm_form_ao_storeformat_from_dm_mo(dm_1rdm_storeformat, dm_1rdm_mo_fort, mo_list, norbt)
 ! save AOm basis density matrix to file
-      call talsh_store_kucc_density (wavefun, dm_storeformat, nesh, mo_list, nocc)
+      call talsh_store_kucc_density (wavefun, dm_1rdm_storeformat, nesh, mo_list, nocc)
 
-      deallocate (dm_storeformat)
+      deallocate (dm_1rdm_storeformat)
       deallocate (mo_list)
-      deallocate (dm_mo_fort)
+      deallocate (dm_1rdm_mo_fort)
 
     end subroutine talsh_kudm_store_mo
 
-    subroutine talsh_kudm_form_ao_storeformat_from_dm_mo(dm_storeformat,dm_mo_fort, mo_list, norbt)
-      complex(8), allocatable, intent(in) :: dm_mo_fort(:,:)
+    subroutine talsh_kudm_1rdm_form_ao_storeformat_from_dm_mo(dm_1rdm_storeformat,dm_1rdm_mo_fort, mo_list, norbt)
+      complex(8), allocatable, intent(in) :: dm_1rdm_mo_fort(:,:)
       integer, allocatable, intent(in) :: mo_list(:)
-      real(8),allocatable, intent(inout)  :: dm_storeformat(:,:,:)
+      real(8),allocatable, intent(inout)  :: dm_1rdm_storeformat(:,:,:)
       integer, intent(in) :: norbt
 !     loop variables
       integer :: i, j
@@ -702,19 +612,19 @@ module talsh_gradient
       do j = 1, norbt
         do i = 1, norbt
           ! Extracting real and imaginary parts of KU-DM
-          dm_storeformat(mo_list(i),mo_list(j),1) = real(dm_mo_fort(i,j))
-          dm_storeformat(mo_list(i),mo_list(j),2) = dimag(dm_mo_fort(i,j))
+          dm_1rdm_storeformat(mo_list(i),mo_list(j),1) = real(dm_1rdm_mo_fort(i,j))
+          dm_1rdm_storeformat(mo_list(i),mo_list(j),2) = dimag(dm_1rdm_mo_fort(i,j))
         end do
       end do
     end subroutine
 
-    subroutine talsh_store_kucc_density(wavefun, dm_storeformat, nmo, mo_list, nocc)
+    subroutine talsh_store_kucc_density(wavefun, dm_1rdm_storeformat, nmo, mo_list, nocc)
       use labeled_storage
       !use exacorr_datatypes
       implicit none
 
       character(len=4) :: wavefun
-      real(8), allocatable, intent(inout) :: dm_storeformat(:,:,:)
+      real(8), allocatable, intent(inout) :: dm_1rdm_storeformat(:,:,:)
       integer, intent(in)                 :: nmo, nocc
       integer, allocatable, intent(in) :: mo_list(:)
       type(file_info_t), save             :: exacc_file     
@@ -729,8 +639,8 @@ module talsh_gradient
       end if
 
       call lab_write (exacc_file,'nmo',nmo)
-      call lab_write (exacc_file,'CCDENS_RE',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
-      call lab_write (exacc_file,'CCDENS_IM',rdata=reshape(transpose(dm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
+      call lab_write (exacc_file,'CCDENS_RE',rdata=reshape(transpose(dm_1rdm_storeformat(1:nmo,1:nmo,1)), shape=(/nmo**2/) ) )
+      call lab_write (exacc_file,'CCDENS_IM',rdata=reshape(transpose(dm_1rdm_storeformat(1:nmo,1:nmo,2)), shape=(/nmo**2/) ) )
       
     end subroutine
 

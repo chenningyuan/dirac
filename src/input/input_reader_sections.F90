@@ -971,6 +971,15 @@
 
       if (kw_matches(word, '.LAMBDA')) then
          exa_input%lambda = .true.
+         exa_input%do_1rdm_gs = .true.
+      end if
+
+      if (kw_matches(word, '.NO1RDM')) then
+         exa_input%do_1rdm_gs = .false.
+      end if
+
+      if (kw_matches(word, '.GS2RDM')) then
+         exa_input%do_2rdm_gs = .true.
       end if
 
       if (kw_matches(word, '.DONATORB')) then

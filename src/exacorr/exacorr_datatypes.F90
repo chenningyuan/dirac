@@ -43,6 +43,8 @@
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
+            logical                 :: do_1rdm_gs=.false.
+            logical                 :: do_2rdm_gs=.false.
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -146,11 +148,14 @@
          type(talsh_tens_t) :: prime_vv, symm_vv
 ! two-body density matrices
          type(talsh_tens_t) :: prime_ooov, symm_ooov
+         type(talsh_tens_t) :: prime_oovo, symm_oovo
          type(talsh_tens_t) :: prime_ovov, symm_ovov
          type(talsh_tens_t) :: prime_vvvo, symm_vvvo
          type(talsh_tens_t) :: prime_voov, symm_voov
          type(talsh_tens_t) :: prime_vovv, symm_vovv
+         type(talsh_tens_t) :: prime_vovo, symm_vovo
          type(talsh_tens_t) :: prime_vvvv, symm_vvvv
+         type(talsh_tens_t) :: prime_vvov, symm_vvov
          type(talsh_tens_t) :: prime_oovv, symm_oovv
          type(talsh_tens_t) :: prime_ovoo, symm_ovoo
          type(talsh_tens_t) :: prime_oooo, symm_oooo

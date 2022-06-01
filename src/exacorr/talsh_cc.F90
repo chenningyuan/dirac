@@ -78,6 +78,7 @@ module talsh_cc
 
          logical :: CCD, lambda
          logical :: CC2 
+         logical :: do1rdm_gs, do2rdm_gs
 
          integer :: iff        ! loop variable to loop over field strengths
          integer :: fock_mode  ! choice of Fock build options
@@ -112,6 +113,11 @@ module talsh_cc
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          ncycles = exa_input%ncycles
+         do1rdm_gs = exa_input%do_1rdm_gs
+         do2rdm_gs = exa_input%do_2rdm_gs
+         if ((do1rdm_gs.or.do2rdm_gs).and..not.lambda) then
+            call quit("specify .LAMBDA to generate 1RDM/2RDM")
+         end if
 
          call print_date("MO occupation data to EXACC file")
          if (exacc_file%status == -1) then
