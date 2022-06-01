@@ -2039,7 +2039,7 @@ C              we only print later reads if IPRINT .ge. 5 /hjaaj apr 2001
      &                  NSYMBL,NSYMBL,-4,LUPRI)
             ENDIF
          ELSE
-            WRITE(LUPRI,'(/4A)')
+            WRITE(LUPRI,'(/3A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'
             CALL GABGEN(IJOB,ITYPE,IGTYP,MAXDIF,0,.FALSE.,

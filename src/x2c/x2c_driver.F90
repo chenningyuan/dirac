@@ -413,7 +413,7 @@ contains
 !      operator matrix is the 4c-Dirac Fock operator)
 !      ---------------------------------------------------------------------------------------------------------------
        if(x2c_is_defining_h1mat == 2)then ! X2Cmmf
-         call x2c_pctrafo_mo_coefficients_driver('DFCOEF',                  &
+         call x2c_pctrafo_mo_coefficients_driver('CHECKPOINT.h5',           &
                                                  2,                         &
                                                  nr_cmo_q,                  &
                                                  nr_ao_total_x2c,           &

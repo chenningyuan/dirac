@@ -338,9 +338,7 @@ contains
          l = l + norb_dim(i)
        end do
        allocate(original_eigen_values(l))
-       open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
        call reacmo(fh,'DFCOEF',xmat,original_eigen_values,scratch5,dummy,14)
-       close(fh,status='keep')
        offset_1 = 1
        offset_2 = 1
        do i = 1, nfsym
@@ -442,16 +440,17 @@ contains
                                           print_lvl)
 !**********************************************************************
 !
-!    purpose: renew the DFCOEF file with the new picture-change-transformed MO
+!    purpose: renew the CHECKPOINT file with the new picture-change-transformed MO
 !             coefficients including the boson / <j_z>-blocking information 
 !             and eigenvalues array.
 !
-!             note: the new DFCOEF still has references to the L+S AO-basis 
+!             note: the new CHECKPOINT still has references to the L+S AO-basis 
 !             as we have not reset the AO-basis common blocks, only the MO-basis 
 !             common blocks. 
 !
 !----------------------------------------------------------------------
      use dircmo
+     use checkpoint
      real(8), intent(inout)      :: transformation_matrix_mo2ao(*)
      real(8), intent(inout)      :: mo_coeff_2c_ao(*)
      real(8), intent(inout)      :: xmat(*)
@@ -481,9 +480,9 @@ contains
      character (len=12)          :: flabel
      character (len=50)          :: info_text
      logical                     :: fndlab12
-     integer                     :: dimension_info(12)
      integer, allocatable        :: supersymmetry(:)
      integer, allocatable        :: ibeig(:,:)
+     integer                     :: n_mo(2), n_po(2), n_basis(2)
 !----------------------------------------------------------------------
 
        allocate(supersymmetry(nesh_dim_total))
@@ -493,7 +492,9 @@ contains
 
        offset_1 = 1
        offset_2 = 1
-       dimension_info = 0 ! initialization
+       n_basis =  0 ! initialization
+       n_mo    =  0 ! initialization
+       n_po    =  0 ! initialization
        do i = 1, nfsym
 
          if(nesh_dim(i) > 0)then
@@ -525,25 +526,23 @@ contains
          offset_1            = offset_1 + nesh_dim(i)
          offset_2            = offset_2 + nesh_dim(i) * nesh_dim(i) * nz
 
-!        write dimension info for the new DFCOEF (7:9=gerade,10:12=ungerade)
-         dimension_info(4+3*i) = 0
-         dimension_info(5+3*i) = nesh_dim(i)
-         dimension_info(6+3*i) = naosh_L(i)
+!        dimension info for the 2C coefficients
+         n_po(i) = 0
+         n_mo(i) = nesh_dim(i)
+         n_basis(i) = naosh_L(i)
        end do
        close(fh,status='keep')
 !      set dimensions for the boson irreps / <j_z>-blocking information + eigenvalues arrays
        ndim_2c_bj = offset_1 - 1
        ndim_2c_ev = offset_1 - 1
 
-!      read the title line and total energy (read code -1) from the old DFCOEF
-       open(fh,file='DFCOEF',status='old',form='unformatted',access='sequential',position='rewind')
-       call reacmo(fh,'DFCOEF',mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,-1)
-       close(fh,status='keep')
+!      read the total energy
+       call checkpoint_read ('/result/wavefunctions/scf/energy',total_energy)
 !      keep 4C vectors for restart purposes
 #if defined SYS_WINDOWS
-       call system('copy DFCOEF DFCOEF.4C')
+       call system('copy CHECKPOINT.h5 CP_4C.h5')
 #else
-       call system('cp DFCOEF DFCOEF.4C')
+       call system('cp CHECKPOINT.h5 CP_4C.h5')
 #endif
 
 !      backtransform the 2c-MO coefficients from the reference MO basis to AO basis
@@ -576,22 +575,20 @@ contains
          ndim_2c_mo_ao = ndim_2c_mo_ao + naosh_L(i) * nesh_dim(i) * nz
        end do
 
-       dimension_info(1) = nz
-       dimension_info(2) = nfsym
-       dimension_info(3) = ndim_2c_mo_ao
-       dimension_info(4) = 1
-       dimension_info(5) = ndim_2c_ev
-       dimension_info(6) = 1
-!      write the new DFCOEF file
-       open(fh,file='DFCOEF',status='replace',form='unformatted',access='sequential',position='rewind')
+!      write the new information
        info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
-       close(fh,status='keep')
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=supersymmetry)
+       call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
+       !call wricmo (fh,mo_coeff_2c_ao,eigen_values,supersymmetry,total_energy,info_text,dimension_info)
 !      make additional copy of these coefficients for restart purposes
 #if defined SYS_WINDOWS
-       call system('copy DFCOEF DFCOEF.2C')
+       call system('copy CHECKPOINT.h5 CP_2C.h5')
 #else
-       call system('cp DFCOEF DFCOEF.2C')
+       call system('cp CHECKPOINT.h5 CP_2C.h5')
 #endif
 
        deallocate(supersymmetry)

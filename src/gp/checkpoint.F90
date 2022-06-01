@@ -29,12 +29,13 @@ module checkpoint
   ! Keep also the schema in the modules (private) global memory
   type(label_t), allocatable, save :: labels(:)
 
-  ! These 4 functions should provide all functionality needed to write/read data defined in the schema.
+  ! These 5 functions should provide all functionality needed to write/read data defined in the schema.
 
   public checkpoint_open
   public checkpoint_close
   public checkpoint_write
   public checkpoint_read
+  public checkpoint_query
 
   interface checkpoint_write
       module procedure checkpoint_write
@@ -48,6 +49,10 @@ module checkpoint
       module procedure read_single_int
       module procedure read_single_real
       module procedure read_string_array
+  end interface
+
+  interface checkpoint_query
+      module procedure checkpoint_query
   end interface
 
   contains
@@ -168,6 +173,33 @@ module checkpoint
       end if
 
   end subroutine checkpoint_read
+
+  subroutine checkpoint_query(label,exist,verbose_message)
+
+      character*(*),intent(in)               :: label
+      logical, intent(out)                   :: exist
+      character*(*),intent(out), optional    :: verbose_message
+
+      logical :: file_exist=.false., label_exist=.false.
+
+      ! First check whether the checkpoint file itself exists
+      inquire (file=CHECKPOINT_NAME,exist=file_exist)
+
+      if (file_exist) then
+         ! check whether the label is present
+         call lab_query(checkpoint_file,label,label_exist)
+      end if
+
+      exist = file_exist.and.label_exist
+
+      ! We're already done, but the caller may want us to be more verbose
+      if (present(verbose_message)) then
+         if (.not.label_exist) verbose_message = label//' not found'
+         if (.not.file_exist)  verbose_message = CHECKPOINT_NAME//' not found'
+         if (file_exist.and.label_exist) verbose_message = label//' found on '//CHECKPOINT_NAME
+      end if
+
+  end subroutine checkpoint_query
 
   subroutine write_single_real (label,rdata)
       ! Wrapper to allow writing of single numbers

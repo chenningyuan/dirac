@@ -460,7 +460,7 @@ C  /* Deck CDENS */
       SUBROUTINE CDENS(DMAT,QCO,NDMOQC,ICMOQC,NSPC,IPRINT)
 C*****************************************************************************
 C
-C Get the core density matrix into DMAT, from selected MO's in QCO
+C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
 #include "implicit.h"
@@ -563,13 +563,9 @@ C     fermion ircops into single arrays
          IF (I.EQ.1) THEN
             ORBE(II)  = ORBE1(J)
             IBORB(II) = IBORB1(J)
-            ! atomic supersymmetry needs to be unpacked into mj only
-            if (atomic) call ATOMIC_ID(iborb1(j),KP,JJ,iborb(ii),LL)
          ELSEIF (I.EQ.2) THEN
             ORBE(II) = ORBE2(J)
             IBORB(II) = IBORB2(J)
-            ! atomic supersymmetry needs to be unpacked into mj only
-            if (atomic) call ATOMIC_ID(iborb2(j),KP,JJ,iborb(ii),LL)
          ELSE
             CALL QUIT ('More than 2 fermion irreps not implemented') 
          ENDIF
@@ -1026,7 +1022,7 @@ C     Cinv have an infinite number of irreps and we use a finite
 C     multiplication table to store the coupling information we need 
 C     to truncate at some point. We do this at mj=15/2 in Cinfh and 
 C     mj=31/2 in Cinf so that we can keep MULTB dimensioned at 64 like 
-C     before. In fact this means that we'll be using the subgroups C8h 
+C     before. In fact this means that we will be using the subgroups C8h 
 C     and C16 respectively. This can be easily extended or decreased 
 C     using the input parameter NORDER that indicates how large MULTB 
 C     may become.
@@ -2060,16 +2056,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       if( linear .or. spinfr )then
-        call opnfil(lucoef,'DFCOEF','OLD','RIBEIG ')
         call reacmo(lucoef,'DFCOEF',dummy,dummy,ibeig,dummy,8)
-        ! atomic labels have kappa and mj packed, unpack and store just mj
-        if (atomic) then
-           do i = 1, norbt
-              call ATOMIC_ID(ibeig(i),KP,J,MJ,LL)
-              ibeig(i) = MJ
-           end do
-        end if
-        close(lucoef,STATUS='KEEP')
       end if
 
 

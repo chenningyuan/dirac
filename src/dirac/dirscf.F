@@ -5377,6 +5377,7 @@ C.....  Rotate orbitals into place
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
       use dircmo
+      use labeled_storage
 C***********************************************************************
 C
 C     Routine for atomic start
@@ -5403,6 +5404,8 @@ C.....Local variables
       CHARACTER TEXT*74
       INTEGER NNEG,NPOS,NBAS,IDIM(3),idims(12)
       real(8), allocatable :: atom_cmo(:)
+      type(file_info_t)    :: atomfile
+      integer              :: n_mo(2),n_po(2), n_basis(2)
 C
       KFRSAV=KFREE
 C.....Say hello
@@ -5431,12 +5434,23 @@ C.......Read atomic coefficients in C1 format
            CALL QUIT
      &     ('ATOMIC_START: Atomic coefficient file not found !')
         ENDIF
-        CALL OPNFIL(LUATOM,ATOMFIL(IATOM),'OLD','ATOMIC_START')
-        call reacmo_new(text=text,idims=idims,toterg=toterg)
-        nneg = idims(7)
-        npos = idims(8)
-        nbas = idims(9)
-        nsym = idims(2)
+        atomfile%name = ATOMFIL(IATOM)
+        atomfile%status = 0
+        atomfile%type = 2
+        call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(atomfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        call lab_read(atomfile,
+     &       '/result/wavefunctions/scf/mobasis/n_basis',
+     &       idata=n_basis)
+        call lab_read(atomfile,'/result/wavefunctions/scf/energy',
+     &       rdata=toterg)
+        nneg = sum(n_po)
+        npos = sum(n_mo) - nneg
+        nbas = sum(n_basis)
+        nsym = 1 ! We read the C1 coefficients
+        text = 'Coefficients read from hdf5 file'
         IF(NBAS.NE.MBAS) THEN
            WRITE(LUPRI,'(A,A,I3/A,I6/A,A6,A,I6)') 
      &     'ATOMIC_START: ',
@@ -5460,7 +5474,9 @@ C.......Read atomic coefficients in C1 format
 C.......Allocate memory for atomic density matrix and coefficients
         CALL MEMGET2('REAL','ADEN',KADE,NADEN ,WORK,KFREE,LFREE)
         allocate (atom_cmo(nacmoq))
-        CALL REACMO_new(cmo=atom_cmo)
+        call lab_read(atomfile,
+     &       '/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &              rdata=atom_cmo)
 C.......Loop over closed/open shells and construct contribution to atomic density matrix
         CALL MEMGET2('INTE','VEC ',KVEC,NAORB,WORK,KFREE,LFREE)
         NDIM=MAX(NAORB+1,NBAS)

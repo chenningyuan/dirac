@@ -2903,9 +2903,7 @@ C
           cmo_mmf     = 0
           tbuf_mmf    = 0
           !> read 2c-mos
-          call opnfil(lucoef,'DFCOEF','OLD','mmfmos')
           call reacmo_new(cmo=cmo_mmf)
-          close(lucoef,status='keep')
           !> density matrix/ces
           call denmat(tbuf_mmf,cmo_mmf,iprham)
 

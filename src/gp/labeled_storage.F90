@@ -12,6 +12,7 @@ module labeled_storage
 
   public lab_read
   public lab_write
+  public lab_query
 
 ! Define type to hold information for an active file
   type, public:: file_info_t
@@ -36,6 +37,10 @@ module labeled_storage
       module procedure write_single_int
       module procedure write_string_array
       module procedure write_dirac
+  end interface
+
+  interface lab_query
+      module procedure query_general
   end interface
 
   contains
@@ -104,6 +109,28 @@ module labeled_storage
           end if
       end select
     end subroutine write_general
+
+    subroutine query_general (file_info,label,exist)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      logical,intent(out), optional          :: exist
+
+      integer :: ierr
+
+      select case (file_info%type)
+      case (1)
+         ! We use DIRAC files (FORTRAN unformatted sequential)
+         if (present(exist)) then
+            stop "query functionality is not supported in DIRAC format"
+         end if
+      case (2)
+         ! We use HDF5 files
+         if (present(exist)) then
+            call query_hdf5(file_info,label,exist=exist)
+         end if
+      end select
+
+    end subroutine query_general
 
     subroutine write_single_real (file_info,label,rdata)
       ! Wrapper around write_general to allow writing of single numbers
@@ -382,5 +409,27 @@ module labeled_storage
       file_info%status = 0
 
     end subroutine write_hdf5
+
+    subroutine query_hdf5 (file_info,label,exist)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      logical,intent(out)                    :: exist
+
+      if (file_info%status /= 1) then
+          file_info%id = mh5_open_file_rw(file_info%name)
+          if (file_info%id < 0) then
+             ! invalid identifier, error when opening this file
+             print*,"  - Could not open file ",file_info%name
+             exist = .false.
+             return
+          end if
+          file_info%status = 1
+      end if
+
+      ! check the existence of this data set
+      exist = mh5_exists_dset(file_info%id,label)
+
+    end subroutine query_hdf5
 
 end module labeled_storage
