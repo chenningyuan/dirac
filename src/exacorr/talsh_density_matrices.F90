@@ -241,7 +241,7 @@ module talsh_gradient
       complex(8), pointer, contiguous :: dm_block(:,:)
       complex(8), allocatable         :: dm_1rdm_mo_fort(:,:)
       real(8),allocatable             :: dm_1rdm_diracformat(:,:,:)
-      complex(8), allocatable         :: dm_2rdm_mo_fort(:,:)
+      complex(8), allocatable         :: dm_2rdm_mo_fort(:,:,:,:)
       real(8),allocatable             :: dm_2rdm_diracformat(:,:,:)
 !     complete mo list
       integer, allocatable :: mo_list(:)
@@ -271,6 +271,9 @@ module talsh_gradient
       allocate (dm_1rdm_mo_fort(nocc+nvir,nocc+nvir))
       dm_1rdm_mo_fort = ZERO
 
+      allocate (dm_2rdm_mo_fort(nocc+nvir,nocc+nvir,nocc+nvir,nocc+nvir))
+      dm_2rdm_mo_fort = ZERO
+
       norbt = nkr_occ + nkr_vir
       allocate(mo_list(norbt))
       mo_list(1:nkr_occ)                 = exa_input%mokr_occ
@@ -282,6 +285,7 @@ module talsh_gradient
 
 ! form MO basis density matrix
       call talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
+      call talsh_dm_2rdm_form_mo_fort_from_tensors(dm_2rdm_mo_fort, gamma, nocc, nvir, CCD)
 ! form AO basis density matrix
       call talsh_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
 ! save AOm basis density matrix to file
@@ -378,16 +382,28 @@ module talsh_gradient
 !***************************************
 !     copy DM blocks into one large DM *
 !***************************************
-!     ----------------------------------------------------------------------------------------------------------
-!     | OOOO | OOOV | OOVO | OVOO | VOOO | OOVV | OVOV | VOOV | VOVO | VVOO | OVVV | VOVV | VVOV | VVVO | VVVV | 
-!     -----------
-!     | VO | VV |
-!     -----------
+!     -----------------------------
+!     | OOOO | OOOV | OOVO | OOVV | 
+!     | OVOO | OVOV | OVVO | OVVV |
+!     | VOOO | VOOV | VOVO | VOVV |
+!     | VVOO | VVOV | VVVO | VVVV |
+!     -----------------------------
 
-!     oo
-      ierr=talsh_tensor_get_body_access(gamma%symm_oo,body_p2,C8,int(0,C_INT),DEV_HOST)
-      call c_f_pointer(body_p2,dm_block,(/nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-      dm_1rdm_mo_fort(1:nocc,1:nocc) = dm_block
+!     oooo
+      ierr=talsh_tensor_get_body_access(gamma%symm_oooo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1:nocc) = dm_block
+
+!     ooov
+      ierr=talsh_tensor_get_body_access(gamma%symm_ooov,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nocc,nocc,nocc,nvir/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1:nvir) = dm_block
+
+!     vooo
+      ierr=talsh_tensor_get_body_access(gamma%symm_vooo,body_p2,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(body_p2,dm_block,(/nvir,nocc,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
+      dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1:nvir) = dm_block
+
 
    end subroutine
 
