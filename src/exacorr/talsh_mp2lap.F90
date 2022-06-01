@@ -9,8 +9,9 @@ module talsh_mp2lap
         use exacorr_global
         use talsh_cholesky_integrals
         use talsh_common_routines
+#ifdef HAS_LAPLACE
         use type_laplace, only : laplace_info, deallocate_laplace
-
+#endif
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -55,7 +56,9 @@ module talsh_mp2lap
         !Laplace denominator
         integer                                :: nocc, nvir, nchol, i, i1
         real(8), allocatable                   :: eps_occ(:),eps_vir(:),eps_occ_neg(:), zero_chol(:)
+#ifdef HAS_LAPLACE
         type(laplace_info)                     :: laplace
+#endif
         integer(INTD)                          :: dims4(1:4), dims2(1:2)
         type(talsh_tens_t)                     :: L1,L2
 
@@ -67,6 +70,7 @@ module talsh_mp2lap
 
         call print_date("Entering MP2_LAP Module")
 
+#ifdef HAS_LAPLACE
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
         ierr=talsh_init(buf_size,host_arg_max)
@@ -220,6 +224,10 @@ module talsh_mp2lap
         ierr=talsh_stats()
         ierr = talsh_shutdown()
 
+#else
+        call quit('Laplace routines not included, functionality not available')
+        return 
+#endif
         call print_date('Leaving MP2_LAP Module')
       end subroutine talsh_mp2lap_driver
 
@@ -245,7 +253,9 @@ module talsh_mp2lap
         !Laplace denominator
         integer                                :: nocc, nvir, nchol, i, i1
         real(8), allocatable                   :: eps_occ(:),eps_vir(:),eps_occ_neg(:), zero_chol(:)
+#ifdef HAS_LAPLACE
         type(laplace_info)                     :: laplace
+#endif
         integer(INTD)                          :: dims4(1:4), dims2(1:2), dims1(1)
         type(talsh_tens_t)                     :: L1p,L2p,L1q,L2q
 
@@ -256,7 +266,8 @@ module talsh_mp2lap
         type(talsh_tens_t)                     :: T1,R1,R2,S1,one_mp2lap
 
         call print_date("Entering MP2_LAP Module")
-
+        
+#ifdef HAS_LAPLACE
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
         ierr=talsh_init(buf_size,host_arg_max)
@@ -434,7 +445,10 @@ module talsh_mp2lap
         !shutdown TALSH
         ierr=talsh_stats()
         ierr = talsh_shutdown()
-
+#else
+        call quit('Laplace routines not included, functionality not available')
+        return 
+#endif
         call print_date('Leaving MP2_LAP Module')
       end subroutine mp2lap_get_DM
 
