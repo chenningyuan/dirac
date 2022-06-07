@@ -92,7 +92,11 @@ module talsh_trial_eomccsd
                   do X = 1, workspace%tens2_dims(2)
                      do a = 1, workspace%tens2_dims(1)
                         b = b + 1
-                        diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
+                        if (i.lt.j) then
+                           diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
+                        else 
+                           diagonal(b) = huge(diagonal)
+                        end if
                      end do
                   end do
                end do
@@ -150,7 +154,8 @@ module talsh_trial_eomccsd
 
 ! forcing full excitation manifold 
         if (enable_double_manifold) then
-              workspace%nroots = workspace%N(1) + workspace%N(2)
+            !   workspace%nroots = workspace%N(1) + workspace%N(2)
+                workspace%nroots = workspace%N(1) + (workspace%N(2)-workspace%tens2_dims(1)*workspace%tens2_dims(3))/2
         else
 ! forcing only the single part now
            if (workspace%nroots.gt.workspace%N(1)) then
@@ -201,11 +206,11 @@ module talsh_trial_eomccsd
                                                            i1,workspace%tens2_dims(3), &
                                                            j1,workspace%tens2_dims(4))
                           if (j1.gt.i1) then
-                           !   trial2_h_p_tens(a1,b1,j1,i1) = ONE*(2.0**(-0.5))
-                             trial2_h_p_tens(a1,b1,j1,i1) = ONE
+                             trial2_h_p_tens(a1,b1,j1,i1) = ONE*(2.0**(-0.5))
+                           !   trial2_h_p_tens(a1,b1,j1,i1) = ONE
                         !   else if (j1.lt.i1) then
-                           !   trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE*(2.0**(-0.5)) !XY
-                             trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE
+                             trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE*(2.0**(-0.5)) !XY
+                           !   trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE
                         !   else
                         !    trial2_h_p_tens(a1,b1,j1,i1) =ZERO
                           end if

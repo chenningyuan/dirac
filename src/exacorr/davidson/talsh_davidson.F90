@@ -977,6 +977,8 @@ contains
            if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
 
            if (r1_rank.eq.1) then
+              
+            !   call rotate_eigenvector(workspace_t%sigma1(i),workspace_t%sigma2(i),workspace_t)
               ierr=talsh_tensor_contract("r(a)+=s(a)*K()",workspace_t%delta1(k),workspace_t%sigma1(i),one_tensor,scale=factor1)
               ierr=talsh_tensor_contract("r(a)+=t(a)*K()",workspace_t%delta1(k),workspace_t%trial1(i),one_tensor,scale=factor2)
 
@@ -1548,6 +1550,7 @@ contains
 ! doubles
               workspace_t%tens2_dims = (/ nvirt, n_continuum_virt, nocc, nocc /)
               workspace_t%N(2) = nvirt*n_continuum_virt*nocc*nocc
+            !   workspace_t%N(2) = nvirt*n_continuum_virt*(nocc*(nocc-1))/2
 
            case("EA")
 ! singles
@@ -1568,6 +1571,7 @@ contains
         end select
 
         excitation_manifold_size = workspace_t%N(1) + workspace_t%N(2)
+ !       excitation_manifold_size = workspace_t%N(1) + (workspace_t%N(2)*(workspace_t%N(2)+1)/2)
 
 ! now that we know the dimensionality of the excitation manifold (=number of rows in Hbar), start allocating tensors
 ! the number of solutions (and solution vectors) depends on the user input.
@@ -1578,7 +1582,7 @@ contains
         print *, 'requested number of roots',nroots
         if (nroots.lt.0) then
            print *, 'INFO: number of roots reset to the dimension of Hbar'
-           workspace_t%nroots = excitation_manifold_size
+           workspace_t%nroots = excitation_manifold_size 
            workspace_t%Lmax   = excitation_manifold_size
         else
            if (nroots.gt.excitation_manifold_size) then
@@ -1802,13 +1806,13 @@ contains
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
    &                                                        workspace_t%sigma2(j),&
-   &                                                        scale=ONE_HALF)
+   &                                                        scale=ONE)
                else if (left.and..not.right) then
                   ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
    &                                                        workspace_t%sigma2(j),&
-   &                                                        scale=ONE_HALF)
+   &                                                        scale=ONE)
                end if
             end if
 
@@ -2035,6 +2039,69 @@ contains
 !!      if (associated(c_small_l)) deallocate(c_small_l)
 
     end subroutine
+
+
+
+
+    ! subroutine rotate_eigenvector(sigma1, sigma2, workspace_t)
+    !     type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+    !     type(talsh_tens_t) sigma1, sigma2
+
+
+    !     type(C_PTR):: body_p
+    !     integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+    !     integer(C_INT):: host_arg_max
+
+    !     integer(C_INT)              :: ierr
+    !     integer(INTD), dimension(1) :: one_dims
+
+    !     integer :: i,j,a 
+    !     integer :: N_trial1, N_trail2
+
+    !     type(talsh_tens_t)   :: result_tensor
+    !     complex(8), pointer  :: result_tens(:), sigma1_tens(:), sigma2_tens(:)
+
+
+    !     one_dims(1) = 1
+    !     N_trail1 = size(workspace_t%trial1,1)
+    !     N_trail2 = size(workspace_t%trial2,1)
+
+
+    !     ierr=talsh_tensor_construct(result_tensor,C8,one_dims,init_val=ZERO)
+
+    !     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    !     call c_f_pointer(body_p,result_tens,one_dims)
+
+
+    !     do i=1, N_trail1
+    !         ierr=talsh_tensor_contract("V1()+=B(p,q)*S(p,q)",result_tensor,workspace_t%trial1(i),sigma1) ! 
+    !         sigma1_tens(i) = result_tens(1)
+    !     end do 
+
+
+    !     do i=1, N_trail2
+    !         ierr=talsh_tensor_contract("V2()+=B(a,b,c)*S(a,b,c)",result_tensor,workspace_t%trial2(i),sigma2) ! 
+    !     end do 
+
+
+
+    !     ierr=talsh_tensor_contract("V1(a,b)+=B(a,m)*V(m,b)",eigenvec_tensor_new1,workspace_t%trial1,eigenvec_tensor_old) ! 
+    !     ierr=talsh_tensor_contract("V2(a,b)+=B(a,m)*V(m,b)",eigenvec_tensor_new2,workspace_t%trial2,eigenvec_tensor_old) ! 
+
+
+    !     ierr=talsh_tensor_get_body_access(eigenvec_tensor_new1,body_p,C8,int(0,C_INT),DEV_HOST)
+    !     call c_f_pointer(body_p,eigenvec_tens1,eigenvec_dims_s)
+
+    !     ierr=talsh_tensor_get_body_access(eigenvec_tensor_new2,body_p,C8,int(0,C_INT),DEV_HOST)
+    !     call c_f_pointer(body_p,eigenvec_tens2,eigenvec_dims_d)
+
+
+
+
+    !     ierr=talsh_tensor_destruct(eigenvec_tensor_new1)
+    !     ierr=talsh_tensor_destruct(eigenvec_tensor_new2)
+
+    ! end subroutine
 
 
     subroutine setup_overlap_sorting(c_r_old, c_l_old, nroots, solve_rhs, solve_lhs)
