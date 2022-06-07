@@ -237,7 +237,7 @@ C     Initialize PE library
 !     consistency check for fragment X2C and the proper X2C module
       if(x2cmod_fragment_x2c.and..not.x2c)then
         write(lupri,'(/a,a)')
-     &  '  *** PAMINP reports an error after readin *X2C input:',
+     &  '  *** PAMINP reports an error after reading *X2C input:',
      &  '  a fragment X2C calculation requires the X2C module'//
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
@@ -6149,8 +6149,8 @@ C     =====================================================
         IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
      &      .not.x2cmod_mmf)THEN
           CALL QUIT('**HAMILTONIAN: '//
-     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
-     &    & BSS/X2C !')
+     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP '//
+     &    '& BSS/X2C !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
           CALL QUIT('**HAMILTONIAN: '//
@@ -7776,7 +7776,6 @@ C
 C
       CALL TITLER('Input consistency checks','*',127)
 
-      is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
       IF (DOPRP) THEN
@@ -8764,7 +8763,7 @@ C         if reading input from a terminal
   910 CONTINUE
       RETURN
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no HAMIL input found')
+         CALL QUIT('Error reading input, no **HAMIL input found')
   930 CONTINUE
       READ (LUCMD,'(A7)') WORD
       CALL UPCASE(WORD)
