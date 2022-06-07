@@ -209,7 +209,7 @@ where appears the relativistic hyperfine operator
 
 .. math::
 
-   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \mathbf{B}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
+   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \hat{\mathbf{B}}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
 
 expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K` and the operator :math:`\hat{\mathbf{B}}^{el}_{K}` giving the magnetic field due to the electrons at the nuclear position, and the relativistic Zeeman operator
 
@@ -264,7 +264,7 @@ where appears the first order correction to the Born-Oppenheimer (BO) approximat
 .. math::
 
    \hat{h}^{BO}=-\boldsymbol{\boldsymbol{\omega}}\cdot\hat{\mathbf{J}}_e;
-   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\otimes\mathbf{I}^{-1},
+   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\cdot\mathbf{I}^{-1},
 
 expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the electrons :math:`\hat{\mathbf{J}}_e=\hat{\mathbf{L}}_e+\hat{\mathbf{S}}_e`, and the relativistic Zeeman operator
 
@@ -287,19 +287,19 @@ Evaluate indirect spin-spin couplings :cite:`Visscher_jcc1999` . The indirect sp
 
 .. math::
 
-   2\pi J_{KL}=\gamma_{K}\gamma_{L}K_{KL}
+   J_{KL}=\frac{\hslash^2}{h}\gamma_{K}\gamma_{L}K_{KL}
 
 where appears gyromagnetic ratios :math:`\gamma_K`. The elements of the reduced tensor :math:`K_{KL}` are expressed in terms of linear response functions as
 
 .. math::
 
-   K_{KL:\mu\nu} = \frac{\partial^{2}}{\partial m_{K;\mu}\partial m_{L;\nu}}\langle \langle \hat{h}_{K,\mathrm{rel}}^{\rm hfs}; \hat{h}_{L,\mathrm{rel}}^{\rm hfs}\rangle\rangle _{0}
+   K_{KL:\mu\nu} = \frac{\partial^{2}}{\partial m_{K;\mu}\partial m_{L;\nu}}\langle \langle \hat{h}_{K}^{hfs}; \hat{h}_{L}^{hfs}\rangle\rangle_{0}
 
 where appears the relativistic hyperfine operator
 
 .. math::
 
-   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \mathbf{B}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
+   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \hat{\mathbf{B}}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
 
 expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K` and the operator :math:`\hat{\mathbf{B}}^{el}_{K}` giving the magnetic field due to the electrons at the nuclear position.
 
@@ -402,7 +402,7 @@ where appears appears the normalized nuclear charge densities :math:`\rho^A` and
 
 given in terms of the number of protons and neutrons --- :math:`Z^A` and :math:`N^A` --  in nucleus :math:`A` and the Weinberg angle :math:`\theta_\text{W}` which describes the rotation of :math:`B^0` and :math:`W^0` bosons by spontaneous symmetry breaking to form photons and :math:`Z^0` bosons (DIRAC uses :math:`\sin^2 \theta_\text{W} = 0.2319`). 
 
-keyword(PVCNMR)
+keyword(PVCSHI)
 
 Calculate parity-violating contribution to the NMR shielding tensor, see :cite:`Bast:2006`.
 Elements of the parity-violating contribution to the shielding tensor for center :math:`K` are
@@ -410,15 +410,16 @@ given by
 
 .. math::
 
-   \sigma^{PV}_{K;\mu\nu}=\frac{\partial^2}{\partial m_{K;\mu}\partial B_{0;\nu}}\langle\langle h_\text{PV2}^K;\hat{h}^Z\rangle\rangle_0
+   \sigma^{PV}_{K;\mu\nu}=\frac{\partial^2}{\partial m_{K;\mu}\partial B_{0;\nu}}\langle\langle \hat{h}^\text{PV2}_K;\hat{h}^Z\rangle\rangle_0
 
 where appears the nuclear spin-dependent parity-violating operator
 
 .. math::
 
-   h_\text{PV2}^K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}}\sum_{i}\frac{1}{\gamma_K}\boldsymbol{\alpha}\cdot\mathbf{M}_K\rho_K(\mathbf{r}_i)
+   \hat{h}^\text{PV2}_K = -\frac{G_\text{F}(1-4\sin^2\theta_\text{W})}{\sqrt{2}\,c}\sum_{i}\frac{1}{\hslash \gamma_K}c\boldsymbol{\alpha}\cdot\mathbf{m}_K\rho_K(\mathbf{r}_i)
 
-where appears the Fermi coupling constant :math:`G_F=2.222 55\times 10^{-14}E_ha_0^3`, the gyromagnetic ratio :math:`\gamma_K`, the nuclear magnetic dipole moment :math:`\mathbf{M}_K=\gamma_K\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K`.
+where appears the Fermi coupling constant :math:`G_F=2.222516\times 10^{-14}E_ha_0^3` (this value corresponds to CODATA 2018, but it can change if you use other CODATA set),
+the gyromagnetic ratio :math:`\gamma_K`, the nuclear magnetic dipole moment :math:`\mathbf{m}_K=\gamma_K\mathbf{I}_K` and the normalized nuclear charge density :math:`\rho_K`.
 
 The relativistic Zeeman operator
 
@@ -481,20 +482,20 @@ with
 
 .. math::
 
-   M^{elec}_{K;\mu\nu} = - \hslash^2 \frac{\partial^2}{\partial I_{K;\mu}\partial L_{\nu}}\langle\langle\hat{h}^{hfs}_{K};\hat{h}^{BO}\rangle\rangle_0
+   M^{elec}_{K;\mu\nu} = - \frac{\hslash^2}{h} \frac{\partial^2}{\partial I_{K;\mu}\partial L_{\nu}}\langle\langle\hat{h}^{hfs}_{K};\hat{h}^{BO}\rangle\rangle_0
 
 where appears the relativistic hyperfine operator
 
 .. math::
 
-   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \mathbf{B}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
+   \hat{h}^{hfs}_{K}=-\sum_i\mathbf{m}_K\cdot\hat{\mathbf{B}}^{el}_{K}(i);\quad \hat{\mathbf{B}}^{el}_{K}(i)=-\frac{1}{4\pi\varepsilon_0 c^2}\frac{\mathbf{r}_{iK}\times ec\boldsymbol{\boldsymbol{\alpha}}}{r_{iK}^3},
 
-expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K=\hslash \gamma_K \mathbf{I}_K` and the operator :math:`\hat{\mathbf{B}}^{el}_{K}` giving the magnetic field due to the electrons at the nuclear position, and the first order correction to the Born-Oppenheimer (BO) approximation
+expressed in terms of the nuclear magnetic dipole :math:`\mathbf{m}_K= \gamma_K \mathbf{I}_K` and the operator :math:`\hat{\mathbf{B}}^{el}_{K}` giving the magnetic field due to the electrons at the nuclear position, and the first order correction to the Born-Oppenheimer (BO) approximation
 
 .. math::
 
    \hat{h}^{BO}=-\boldsymbol{\boldsymbol{\omega}}\cdot\hat{\mathbf{J}}_e;
-   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\otimes\mathbf{I}^{-1},
+   \quad\boldsymbol{\boldsymbol{\omega}}=\mathbf{L}\cdot\mathbf{I}^{-1},
 
 expressed in terms of the angular velocity :math:`\boldsymbol{\boldsymbol{\omega}}` associated with the total angular momentum of the electrons :math:`\hat{\mathbf{J}}_e=\hat{\mathbf{L}}_e+\hat{\mathbf{S}}_e`. Note that the origin of the orbital angular momentum is the molecular center of mass.
 

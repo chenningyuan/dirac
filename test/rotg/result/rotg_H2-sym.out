@@ -1,5 +1,5 @@
-DIRAC serial starts by allocating 100000000 words (    762.94 MB -      0.745 GB)
- of memory    out of the allowed maximum of 128000000 words (    976.56 MB -      0.954 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB)
+ of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -80,15 +80,15 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Trond Saue               Universite Toulouse III           France        *
- *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
- *    Ignacio Agustin Aucar    Northeast National University     Argentina     *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
@@ -99,34 +99,39 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
  *    Loic Halbert             Universite de Lille               France        *
- *    Erik D. Hedegaard        Lund University                   Sweden        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
  *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
  *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stanford University               USA           *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
  *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
  *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
  *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
  *    Bruno Senjean            University of Leiden              Netherlands   *
  *    Avijit Shee              University of Michigan            USA           *
  *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
  *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
@@ -149,19 +154,22 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC19 (2019), written by                                       *
- *    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast,     *
+ *    Release DIRAC21 (2021), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast, and A. S. P. Gomes      *
  *    with contributions from I. A. Aucar, V. Bakken, K. G. Dyall,             *
  *    S. Dubillard, U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer,        *
  *    T. Fleig, O. Fossgaard, L. Halbert, E. D. Hedegaard, T. Helgaker,        *
  *    J. Henriksson, M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky,         *
- *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, H. S. Nataraj,       *
- *    M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen,         *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, R. Di Remigio, K. Ruud,     *
- *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema,           *
+ *    O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List,          *
+ *    H. S. Nataraj, M. K. Nayak, P. Norman, M. Olejniczak, J. Olsen,          *
+ *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
+ *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky, K. Ruud,  *
+ *    P. Salek, B. Schimmelpfennig, B. Senjean, A. Shee, J. Sikkema, A. Sunaga,*
  *    A. J. Thorvaldsen, J. Thyssen, J. N. P. van Stralen, M. L. Vidal,        *
-  *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
+ *    S. Villaume, O. Visser, T. Winther, and S. Yamamoto,                     *
  *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
  *                                                                             *
  *******************************************************************************
 
@@ -169,10 +177,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | rotg
-Commit hash   | 418ce896c
-Commit author | Lucas
-Commit date   | Mon Oct 5 13:39:31 2020 +0000
+Branch        | SR
+Commit hash   | b722c1ce2
+Commit author | Agustin Aucar
+Commit date   | Mon Apr 5 13:46:11 2021 -0300
 
 
 Configuration and build information
@@ -184,7 +192,7 @@ Operating system         | Linux-5.4.0-40-generic
 CMake version            | 3.16.3
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2020-10-12 12:38:33.743749
+Configuration time       | 2021-04-05 16:46:27.757710
 Python version           | 3.8.5
 Fortran compiler         | /usr/bin/gfortran
 Fortran compiler version | 9.3.0
@@ -203,7 +211,13 @@ Math libraries           | /home/agustin/openblas32/lib/libopenblas.so;/home/agu
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+Compile definitions      | MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
  LAPACK integer*4/8 selftest passed
@@ -213,7 +227,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Mon Oct 12 10:56:51 2020
+     Date and time (Linux)  : Wed Apr  7 12:48:25 2021
      Host name              : agustin-laptop                          
 
 
@@ -798,11 +812,11 @@ H1     0.0000000000   0.0000000000  -0.3708000000
    is already existing under the name Spin z-momentum 
    previous operator renamed to       Z Spin ang.mom. 
 ===========================================================================
- Rotational g-tensor:
+ Molecular rotational g-tensor:
 ===========================================================================
     Reference: I. A. Aucar et al, JCP 141, 194103 (2014)
 ---------------------------------------------------------------------------
- ** A operators **
+ ** A operators for molecular rotational g-tensor **
 ---------------------------------------------------------------------------
     1  X Orb. ang. mom.     B3g     T-
 ...........................................................................
@@ -835,7 +849,7 @@ H1     0.0000000000   0.0000000000  -0.3708000000
       Labels and factors     : OVERLAP  +00+     0.5000000000000 (real)     
 ...........................................................................
 ---------------------------------------------------------------------------
- ** B operators **
+ ** B operators for molecular rotational g-tensor **
 ---------------------------------------------------------------------------
     1  X magnetic field     B3g     T-
 ...........................................................................
@@ -862,7 +876,7 @@ H1     0.0000000000   0.0000000000  -0.3708000000
 
                     All dipole components are zero by symmetry
 
-Total time used in ONEGEN (CPU)  0.00119900s and (WALL)  0.00100000s
+Total time used in ONEGEN (CPU)  0.00128000s and (WALL)  0.00200000s
 
 
                        Generating Lowdin canonical matrix:
@@ -906,104 +920,104 @@ Total no. of orbitals      (NORB):    25      25      50
 *** INFO *** No trial vectors found.
  Using sum of fitted atomic potentials as start potential.
 
- Reference: arXiv:2002.02587 (small GRASP fit)
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   1 ##########   Wed Apr  7 12:48:25 2021
 
 
 * AUTOCC( 0) : Initial occupation:
 
  * Closed shell SCF calculation with     2 electrons in
        1 orbitals in Fermion irrep 1 and    0 orbitals in Fermion irrep 2
-E_HOMO...E_LUMO, symmetry 1:    19  -0.59521   20   0.16971
-E_HOMO...E_LUMO, symmetry 2:    44  -0.03472
+E_HOMO...E_LUMO, symmetry 1:                                 19  -0.59521   20   0.16971
+E_HOMO...E_LUMO, symmetry 2:                                 44  -0.03472
 
 => Calculating sum of orbital energies
-It.    1   -0.4768568272218      0.00D+00  0.00D+00  0.00D+00               0.00793800s   Atom. scrpot   Mon Oct 12
+It.    1   -0.4768568272218      0.00D+00  0.00D+00  0.00D+00               0.00811500s   Atom. scrpot   Wed Apr  7
 
-########## START ITERATION NO.   2 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   2 ##########   Wed Apr  7 12:48:25 2021
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00117100s
-SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00393301s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.55697   20   0.41755
-E_HOMO...E_LUMO, symmetry 2:    44   0.20825
->>> Total wall time:  0.01700000s, and total CPU time :  0.01563300s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00109500s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00367700s
+E_HOMO...E_LUMO, symmetry 1:                                 19  -0.55697   20   0.41755
+E_HOMO...E_LUMO, symmetry 2:                                 44   0.20825
+>>> Total wall time:  0.01800000s, and total CPU time :  0.01542800s
 
-########## END ITERATION NO.   2 ##########   Mon Oct 12 10:56:51 2020
+########## END ITERATION NO.   2 ##########   Wed Apr  7 12:48:25 2021
 
-It.    2    -1.110510444723      6.34D-01  9.98D-01  2.32D-01               0.01700000s   LL SL          Mon Oct 12
+It.    2    -1.110510444723      6.34D-01  9.98D-01  2.32D-01               0.01800000s   LL SL          Wed Apr  7
 
-########## START ITERATION NO.   3 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   3 ##########   Wed Apr  7 12:48:25 2021
 
     3 *** Differential density matrix. DCOVLP     = 0.9105
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00121900s
-SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00393800s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.59259   20   0.41086
-E_HOMO...E_LUMO, symmetry 2:    44   0.19282
->>> Total wall time:  0.01500000s, and total CPU time :  0.01298100s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00113399s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00371400s
+E_HOMO...E_LUMO, symmetry 1:                                 19  -0.59259   20   0.41086
+E_HOMO...E_LUMO, symmetry 2:                                 44   0.19282
+>>> Total wall time:  0.01400000s, and total CPU time :  0.01281100s
 
-########## END ITERATION NO.   3 ##########   Mon Oct 12 10:56:51 2020
+########## END ITERATION NO.   3 ##########   Wed Apr  7 12:48:25 2021
 
-It.    3    -1.130487762997      2.00D-02 -9.37D-02  3.25D-02   DIIS   2    0.01500000s   LL SL          Mon Oct 12
+It.    3    -1.130487762997      2.00D-02 -9.37D-02  3.25D-02   DIIS   2    0.01400000s   LL SL          Wed Apr  7
 
-########## START ITERATION NO.   4 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   4 ##########   Wed Apr  7 12:48:25 2021
 
     4 *** Differential density matrix. DCOVLP     = 0.9828
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00112700s
-SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00384400s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.59406   20   0.40968
-E_HOMO...E_LUMO, symmetry 2:    44   0.19153
->>> Total wall time:  0.01400000s, and total CPU time :  0.01274100s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00117900s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00469800s
+E_HOMO...E_LUMO, symmetry 1:                                 19  -0.59406   20   0.40968
+E_HOMO...E_LUMO, symmetry 2:                                 44   0.19153
+>>> Total wall time:  0.01700000s, and total CPU time :  0.01420500s
 
-########## END ITERATION NO.   4 ##########   Mon Oct 12 10:56:51 2020
+########## END ITERATION NO.   4 ##########   Wed Apr  7 12:48:26 2021
 
-It.    4    -1.131058719861      5.71D-04 -1.78D-02  3.00D-03   DIIS   3    0.01400000s   LL SL          Mon Oct 12
+It.    4    -1.131058719861      5.71D-04 -1.78D-02  3.00D-03   DIIS   3    0.01700000s   LL SL          Wed Apr  7
 
-########## START ITERATION NO.   5 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   5 ##########   Wed Apr  7 12:48:26 2021
 
     5 *** Differential density matrix. DCOVLP     = 0.9976
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00118000s
-SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00383500s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.59417   20   0.40976
-E_HOMO...E_LUMO, symmetry 2:    44   0.19153
->>> Total wall time:  0.01500000s, and total CPU time :  0.01295300s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00137100s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00508700s
+E_HOMO...E_LUMO, symmetry 1:                                 19  -0.59417   20   0.40976
+E_HOMO...E_LUMO, symmetry 2:                                 44   0.19153
+>>> Total wall time:  0.01700000s, and total CPU time :  0.01527500s
 
-########## END ITERATION NO.   5 ##########   Mon Oct 12 10:56:51 2020
+########## END ITERATION NO.   5 ##########   Wed Apr  7 12:48:26 2021
 
-It.    5    -1.131062937871      4.22D-06 -1.08D-03  9.91D-05   DIIS   4    0.01500000s   LL SL          Mon Oct 12
+It.    5    -1.131062937871      4.22D-06 -1.08D-03  9.91D-05   DIIS   4    0.01700000s   LL SL          Wed Apr  7
 
-########## START ITERATION NO.   6 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   6 ##########   Wed Apr  7 12:48:26 2021
 
     6 *** Differential density matrix. DCOVLP     = 0.9999
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00110700s
-SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00385400s
-E_HOMO...E_LUMO, symmetry 1:    19  -0.59416   20   0.40976
-E_HOMO...E_LUMO, symmetry 2:    44   0.19153
->>> Total wall time:  0.01500000s, and total CPU time :  0.01295800s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00143500s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00398000s
+E_HOMO...E_LUMO, symmetry 1:                                 19  -0.59416   20   0.40976
+E_HOMO...E_LUMO, symmetry 2:                                 44   0.19153
+>>> Total wall time:  0.01500000s, and total CPU time :  0.01373200s
 
-########## END ITERATION NO.   6 ##########   Mon Oct 12 10:56:51 2020
+########## END ITERATION NO.   6 ##########   Wed Apr  7 12:48:26 2021
 
-It.    6    -1.131062941655      3.78D-09 -4.15D-05  6.66D-06   DIIS   5    0.01500000s   LL SL          Mon Oct 12
+It.    6    -1.131062941655      3.78D-09 -4.15D-05  6.66D-06   DIIS   5    0.01500000s   LL SL          Wed Apr  7
 
-########## START ITERATION NO.   7 ##########   Mon Oct 12 10:56:51 2020
+########## START ITERATION NO.   7 ##########   Wed Apr  7 12:48:26 2021
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00115401s
-SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.02%   0.00378099s
->>> Total wall time:  0.00700000s, and total CPU time :  0.00560700s
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%    0.00%   0.00113399s
+SOfock:SL  1.00D-12    0.00%    0.00%    0.00%    0.02%   0.00380701s
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00565600s
 
-########## END ITERATION NO.   7 ##########   Mon Oct 12 10:56:51 2020
+########## END ITERATION NO.   7 ##########   Wed Apr  7 12:48:26 2021
 
-It.    7    -1.131062941670      1.45D-11  2.18D-06  1.91D-08   DIIS   5    0.00700000s   LL SL          Mon Oct 12
+It.    7    -1.131062941670      1.45D-11  2.18D-06  1.92D-08   DIIS   5    0.00800000s   LL SL          Wed Apr  7
 
 
                                    SCF - CYCLE
@@ -1019,18 +1033,18 @@ It.    7    -1.131062941670      1.45D-11  2.18D-06  1.91D-08   DIIS   5    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1   -0.4768568272218      0.00D+00  0.00D+00  0.00D+00               0.00793800s   Atom. scrpot   Mon Oct 12
-It.    2    -1.110510444723      6.34D-01  9.98D-01  2.32D-01               0.01700000s   LL SL          Mon Oct 12
-It.    3    -1.130487762997      2.00D-02 -9.37D-02  3.25D-02   DIIS   2    0.01500000s   LL SL          Mon Oct 12
-It.    4    -1.131058719861      5.71D-04 -1.78D-02  3.00D-03   DIIS   3    0.01400000s   LL SL          Mon Oct 12
-It.    5    -1.131062937871      4.22D-06 -1.08D-03  9.91D-05   DIIS   4    0.01500000s   LL SL          Mon Oct 12
-It.    6    -1.131062941655      3.78D-09 -4.15D-05  6.66D-06   DIIS   5    0.01500000s   LL SL          Mon Oct 12
-It.    7    -1.131062941670      1.45D-11  2.18D-06  1.91D-08   DIIS   5    0.00700000s   LL SL          Mon Oct 12
+It.    1   -0.4768568272218      0.00D+00  0.00D+00  0.00D+00               0.00811500s   Atom. scrpot   Wed Apr  7
+It.    2    -1.110510444723      6.34D-01  9.98D-01  2.32D-01               0.01800000s   LL SL          Wed Apr  7
+It.    3    -1.130487762997      2.00D-02 -9.37D-02  3.25D-02   DIIS   2    0.01400000s   LL SL          Wed Apr  7
+It.    4    -1.131058719861      5.71D-04 -1.78D-02  3.00D-03   DIIS   3    0.01700000s   LL SL          Wed Apr  7
+It.    5    -1.131062937871      4.22D-06 -1.08D-03  9.91D-05   DIIS   4    0.01700000s   LL SL          Wed Apr  7
+It.    6    -1.131062941655      3.78D-09 -4.15D-05  6.66D-06   DIIS   5    0.01500000s   LL SL          Wed Apr  7
+It.    7    -1.131062941670      1.45D-11  2.18D-06  1.92D-08   DIIS   5    0.00800000s   LL SL          Wed Apr  7
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    7 iterations.
 * Average elapsed time per iteration: 
       No 2-ints    :    0.00800000s
-      LL SL        :    0.01383333s
+      LL SL        :    0.01483333s
 
 
                                    TOTAL ENERGY
@@ -1052,15 +1066,15 @@ It.    7    -1.131062941670      1.45D-11  2.18D-06  1.91D-08   DIIS   5    0.00
 
 * Fermion symmetry E1g
   * Closed shell, f = 1.0000
- -0.59415750799267  ( 2)
+ -0.59415750798598  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.40975574160891  ( 2)     1.88531796540588  ( 2)     2.03982963549895  ( 2)     2.03985537822155  ( 2)     3.34616474562762  ( 2)
- 21.78404066779553  ( 2)
+  0.40975574160878  ( 2)     1.88531796539794  ( 2)     2.03982963549984  ( 2)     2.03985537819972  ( 2)     3.34616474564832  ( 2)
+ 21.78404066778470  ( 2)
 
 * Fermion symmetry E1u
   * Virtual eigenvalues, f = 0.0000
-  0.19152599940952  ( 2)     0.81209440594357  ( 2)     1.29091134939076  ( 2)     1.29093483938741  ( 2)     2.85544998817037  ( 2)
-  3.54522944055705  ( 2)    22.61726938132410  ( 2)
+  0.19152599943183  ( 2)     0.81209440596142  ( 2)     1.29091134937964  ( 2)     1.29093483937630  ( 2)     2.85544998817198  ( 2)
+  3.54522944056020  ( 2)    22.61726938134505  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.19152600 au (symmetry E1u)
@@ -1078,25 +1092,28 @@ It.    7    -1.131062941670      1.45D-11  2.18D-06  1.91D-08   DIIS   5    0.00
 
    This is output from the Dirac property module:
 
-   HF & DFT first order properties
+   * HF & DFT first order properties
       Trond Saue
 
-   First-order ESR properties
+   * First-order ESR properties
       Hans Joergen Aa. Jensen et al.
 
-   MP2 first order properties:
+   * MP2 first order properties:
       J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
 
-   KR-RPA second-order properties
+   * KR-RPA second-order properties
       Hans Joergen Aa. Jensen and Trond Saue
 
-   KR-QR third order properties
+   * KR-QR third order properties
       Patrick Norman and Hans Joergen Aa. Jensen
 
-   Molecular gradient
+   * Oscillator strengths beyond the electric dipole approximation
+      N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
+
+   * Molecular gradient
       Joern Thyssen
 
-   Additional contributions from:
+   * Additional contributions from:
       Thomas Enevoldsen, Miroslav Ilias (London orbitals)
 
 
@@ -1117,8 +1134,8 @@ It.    7    -1.131062941670      1.45D-11  2.18D-06  1.91D-08   DIIS   5    0.00
     - Active orbitals    : No electrons
     - Secondary orbitals :    -18..-1,     1..     7                               
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13106294165546162
-* Heading : g-tensor                                         Mon Oct 12 10:56:51 2020
+* REACMO: Coefficients read from file DFCOEF - Total energy: -1.13106294165546029
+* Heading : g-tensor                                         Wed Apr  7 12:48:26 2021
 
 
 
@@ -1129,45 +1146,45 @@ X magnetic field - Symmetry: B3g  T-
 * GETFCK: reading old two-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK2                                                      
-* Heading : g-tensor                                         Mon Oct 12 10:56:51 2020
+* Heading : g-tensor                                         Wed Apr  7 12:48:26 2021
 
 * GETFCK: reading old one-electron Fock matrix
 
 * REAFCK: Fock matrix read from file DFFCK1                                                      
-* Heading : g-tensor                                         Mon Oct 12 10:56:51 2020
+* Heading : g-tensor                                         Wed Apr  7 12:48:25 2021
 
 * XRSP INFO * Screening threshold in direct Fock matrix construction reset to:  4.55D-10
          which is response convergence threshold divided by 10 * sqrt(N2BBAST): 2.20D+02
 * Screening threshold in LR solver scaled with norm of property vector:  1.8505D+02
   and changed to:  8.4113D-08
 
-########## START MICROITERATION NO.   1 ##########   Mon Oct 12 10:56:51 2020
+########## START MICROITERATION NO.   1 ##########   Wed Apr  7 12:48:26 2021
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  8.41D-08    0.00%    0.00%    0.00%    0.00%   0.00111599s
-SOfock:SL  8.41D-08    0.00%    0.00%    0.00%    0.00%   0.00377801s
+SOfock:LL  8.41D-08    0.00%    0.00%    0.00%    0.00%   0.00113399s
+SOfock:SL  8.41D-08    0.00%    0.00%    0.00%    0.00%   0.00363901s
 * Trial vectors in this micro iteration:  E-:  0  P-:  1
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-07  1.86E-01  1.86E-01  8.25E-04
 
-########## START MICROITERATION NO.   2 ##########   Mon Oct 12 10:56:51 2020
+########## START MICROITERATION NO.   2 ##########   Wed Apr  7 12:48:26 2021
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  8.41D-08    0.00%    0.67%    0.00%    0.00%   0.00107300s
-SOfock:SL  8.41D-08   12.36%    0.45%    0.00%    2.05%   0.00353900s
+SOfock:LL  8.41D-08    0.00%    0.67%    0.00%    0.00%   0.00107500s
+SOfock:SL  8.41D-08   12.36%    0.45%    0.00%    2.05%   0.00355999s
 * Trial vectors in this micro iteration:  E-:  1  P-:  0
 
 * Norm of residual vectors:
   Frequency      Threshold Total     E- part   P- part 
      0.00000000  1.00E-07  8.11E-04  1.41E-05  8.11E-04
 
-########## START MICROITERATION NO.   3 ##########   Mon Oct 12 10:56:51 2020
+########## START MICROITERATION NO.   3 ##########   Wed Apr  7 12:48:26 2021
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  8.41D-08    6.77%   15.86%    0.00%    0.20%   0.00097001s
-SOfock:SL  8.41D-08    0.00%    5.37%    0.00%   42.13%   0.00382300s
+SOfock:LL  8.41D-08    6.77%   15.86%    0.00%    0.20%   0.00090900s
+SOfock:SL  8.41D-08    0.00%    5.37%    0.00%   42.13%   0.00377099s
 * Trial vectors in this micro iteration:  E-:  1  P-:  1
 
 * Norm of residual vectors:
@@ -1183,15 +1200,15 @@ SOfock:SL  8.41D-08    0.00%    5.37%    0.00%   42.13%   0.00382300s
 
             Freq.(au)   Total norm    E- norm   P- norm 
 ========================================================
-* It.  1   0.01005299s  (LL SL    )     [  0]     [  1]
+* It.  1   0.01019600s  (LL SL    )     [  0]     [  1]
 --------------------------------------------------------
             0.000000 :   1.86D-01 |   1.86D-01  8.25D-04
 ========================================================
-* It.  2   0.00979899s  (LL SL    )     [  1]     [  0]
+* It.  2   0.01000799s  (LL SL    )     [  1]     [  0]
 --------------------------------------------------------
             0.000000 :   8.11D-04 |   1.41D-05  8.11D-04
 ========================================================
-* It.  3   0.01486301s  (LL SL    )     [  1]     [  1]
+* It.  3   0.01479800s  (LL SL    )     [  1]     [  1]
 --------------------------------------------------------
             0.000000 :   7.46D-06 |   7.46D-06  6.81D-08
 ========================================================
@@ -1223,9 +1240,9 @@ SOfock:SL  8.41D-08    0.00%    5.37%    0.00%   42.13%   0.00382300s
 ----------------------------------------------------------------------------
 
 
-              *****************************************************
-              **************** ROTATIONAL G-TENSOR ****************
-              *****************************************************
+         ***************************************************************
+         **************** MOLECULAR ROTATIONAL G-TENSOR ****************
+         ***************************************************************
 
              According to I. A. Aucar et al, JCP 141 (2014) p.194103
 ---------------------------------------------------------------------------------
@@ -1253,10 +1270,10 @@ SOfock:SL  8.41D-08    0.00%    5.37%    0.00%   42.13%   0.00382300s
   Calculation without London orbitals.
 
 
-                                Molecular g-tensor
-                                ------------------
+                          Molecular rotational g-tensor
+                          -----------------------------
 
-  Total molecular g-factor                     :      0.93243453
+  Total molecular rotational g-factor          :      0.93243453
 
     Nuclear contribution to g-factor (g^nuc)   :      0.99945573
     Electronic contribution to g-factor (g^LR) :     -0.06702120
@@ -1272,35 +1289,35 @@ SOfock:SL  8.41D-08    0.00%    5.37%    0.00%   42.13%   0.00382300s
 
 
  
-     Date and time (Linux)  : Mon Oct 12 10:56:51 2020
+     Date and time (Linux)  : Wed Apr  7 12:48:26 2021
      Host name              : agustin-laptop                          
 
->>>> Node 0, utime: 0, stime: 0, minflt: 1680, majflt: 0, nvcsw: 12, nivcsw: 2, maxrss: 19396
->>>> Total WALL time used in DIRAC: 0s
+>>>> Node 0, utime: 0, stime: 0, minflt: 1689, majflt: 0, nvcsw: 12, nivcsw: 1, maxrss: 19492
+>>>> Total WALL time used in DIRAC: 1s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :        83.25
+  Mean allocation size (Mb) :        79.22
   
   Largest          10  allocations
   
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
         0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
   
-  Peak memory usage:       762.96 MB
-  Peak memory usage:        0.745 GB
+  Peak memory usage:       488.30 MB
+  Peak memory usage:        0.477 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/agustin/dirac/build/test/rotg
+DIRAC pam run in /home/agustin/dirac/test/rotg
