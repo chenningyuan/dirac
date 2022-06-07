@@ -22,11 +22,11 @@ In tensorial notation, the rotational g-tensor contributions of a molecule are g
 
 .. math::
 
-   {\bf g}^{nuc} = m_p \; \left\{ \sum_{M} Z_M \left[ \left( {\bf R}_{M,GO} \cdot {\bf R}_{M,CM} \right) {\bf 1} - {\bf R}_{M,GO} {\bf R}_{M,CM} \right] \right\} \otimes {\bf I}^{-1}
+   {\bf g}^{nuc} = m_p \; \left\{ \sum_{M} Z_M \left[ \left( {\bf R}_{M,GO} \cdot {\bf R}_{M,CM} \right) {\bf 1} - {\bf R}_{M,GO} {\bf R}_{M,CM} \right] \right\} \cdot {\bf I}^{-1}
 
 .. math::
 
-   {\bf g}^{elec} = {\bf g}^{LR} = m_p \;  \langle \langle  \left ({\bf r}-{\bf R}_{GO} \times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e\rangle\rangle \; \otimes  \; {\bf I}^{-1}
+   {\bf g}^{elec} = {\bf g}^{LR} = m_p \;  \langle \langle  \left ({\bf r}-{\bf R}_{GO} \times c \, {\bf \alpha}\right) \; ; \; {\bf J}_e\rangle\rangle \; \cdot  \; {\bf I}^{-1}
 
 where :math:`{\bf R}_{M,GO}` is the position of nucleus :math:`M` with respect to the gauge origin; :math:`{\bf R}_{M,CM}` is the position of nucleus :math:`M` with respect to the molecular center of mass; :math:`{\bf R}_{GO}` is the position of the gauge origin; :math:`{\bf I}` is the inertia tensor of the molecule and :math:`{\bf J}_e = \left({\bf r} - {\bf R}_{CM} \right) \times {\bf p}+{\bf S}_e` is the electronic total angular momentum.
 

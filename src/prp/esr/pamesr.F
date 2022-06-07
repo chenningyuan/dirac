@@ -363,7 +363,7 @@ C
      &        '*ESR: ERROR in specification of CI. Error code',NERR
            WRITE(LUPRI,*) 'NGAS_CIESR    :',NGAS_CIESR(1:3)
            WRITE(LUPRI,*) 'RAS1 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
-           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,1)
+           WRITE(LUPRI,*) 'RAS3 LVL_CIESR:',LVL_CIESR(1:maxgas_esr,3)
            WRITE(LUPRI,*) 'RAS1 orbitals :',NGSH_CIESR(1,1:maxgas_esr,1)
            WRITE(LUPRI,*) 'RAS3 orbitals :',NGSH_CIESR(1,1:maxgas_esr,3)
            WRITE(LUPRI,*) 'MAXMK2 < MULTIPESR-1?',MAXMK2_ESR,MULTIPESR-1

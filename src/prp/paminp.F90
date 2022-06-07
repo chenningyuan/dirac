@@ -358,7 +358,7 @@
             CALL DEF_VERDET(WORK,LWORK)
             GO TO 100
  126     CONTINUE
-!&&&& ROTG - rotational g-tensor according to Aucar et al
+!&&&& ROTG - Molecular rotational g-tensor according to Aucar et al
             ROTG  = .TRUE.
             DOXLR = .TRUE.
             GO TO 100
@@ -399,7 +399,7 @@
             DOVDW  = .TRUE.
             GO TO 100
   134    CONTINUE 
-!&&&& SPIN-R - spin-rotation constant according to Aucar et al
+!&&&& SPIN-R - Nuclear spin-rotation tensor according to Aucar et al
             DOEXP = .TRUE.
             DOXLR = .TRUE.
             SPINRO = .TRUE.
@@ -431,7 +431,7 @@
 !&&&& EFFDE2; calculate effective electronic densities at the nuclei:old code
             DOEXP  = .TRUE.
             EFFDE2 = .TRUE. 
-         GO TO 100
+            GO TO 100
   140    CONTINUE
 #ifdef MOD_LAO_REARRANGED
 !&&&& SHIEL2, calculate shielding+london, but with rearranged terms
@@ -469,8 +469,8 @@
       END DO
 !
 !=========================================================================
-!MI   For magnetic susceptibilities, NMR shielding constants and rotational
-!MI   g-tensors, operator centers might be changed
+!MI   For magnetic susceptibilities, NMR shielding constants and
+!MI   molecular rotational g-tensors, operator centers might be changed
       WRITE(LUPRI,'(1X,A)')                                             &
      &'These initial settings of center and origins'//                  &
      &' might be changed later:'

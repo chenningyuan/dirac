@@ -2,16 +2,26 @@
 
 import os
 import sys
-
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from runtest_dirac import Filter, TestRun
 
-test = TestRun(__file__, sys.argv)
+from runtest import version_info, get_filter, cli, run
+from runtest_config import configure
 
-f = Filter()
-f.add(string    = 'Electronic energy',
-      rel_tolerance = 1.0e-7)
+assert version_info.major == 2
 
-test.run(['pp86.inp', 'pp86_ggakey.inp', 'pp86_xcfun.inp', 'pw86x.inp', 'pw86x_xcfun.inp', 'p86c.inp', 'p86c_xcfun.inp'], ['ne.mol'], f)
+f = [
+    get_filter(string='Electronic energy',
+               rel_tolerance=1.0e-5)
+]
 
-sys.exit(test.return_code)
+options = cli()
+
+ierr = 0
+for inp in ['pp86.inp', 'pp86_ggakey.inp', 'pp86_xcfun.inp', 'pw86x.inp', 'pw86x_xcfun.inp', 'p86c.inp', 'p86c_xcfun.inp' ]:
+    for mol in ['ne.mol']:
+        ierr += run(options,
+                    configure,
+                    input_files=[inp, mol],
+                    filters={'out': f})
+
+sys.exit(ierr)

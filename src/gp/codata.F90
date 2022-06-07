@@ -19,19 +19,20 @@ module codata
   public
 #include "codata.h"
 #include "pi.h"
-! -----------------------------------------------
-! -------------------  Index  -------------------
-! -----------------------------------------------
-! xtang   : a_0 (bohr radius) in angstrom
-! echarge : e in Coulomb
-! hbar    : hbar in J.s
-! xfmol   : Avogadro constant
-! umass   : m_u in kg (unified atomic mass unit)
-! pmass   : m_p in amu
-! emass   : m_e in kg
-! ccm     : c (speed of light) in m/s
-! autk    : Hartree-Kelvin relationship E_h/k
-! -----------------------------------------------
+! ------------------------------------------------------------
+! -------------------  Index  --------------------------------
+! ------------------------------------------------------------
+! xtang    : a_0 (bohr radius) in angstrom
+! echarge  : e in Coulomb
+! hbar     : hbar in J.s
+! xfmol    : Avogadro constant
+! umass    : m_u in kg (unified atomic mass unit)
+! pmass    : m_p in amu
+! emass    : m_e in kg
+! ccm      : c (speed of light) in m/s
+! autk     : Hartree-Kelvin relationship E_h/k
+! fermicc  : Fermi coupling constant G_F/(hbar.c)^3 in GeV^-2
+! ------------------------------------------------------------
 
 !  "The 1986 adjustment of the fundamental physical constants"
 !                     E. Richard Cohen and Barry N. Taylor
@@ -45,6 +46,7 @@ module codata
   real(8), parameter :: emass1986    = 9.1093897d-31
   real(8), parameter :: ccm1986      = 2.99792458d8
   real(8), parameter :: autk1986     = 3.157733d5
+!  real(8), parameter :: fermicc1986  = No values
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 1998"
 !                     Peter J. Mohr and Barry N. Taylor
@@ -58,6 +60,7 @@ module codata
   real(8), parameter :: emass1998    = 9.10938188d-31
   real(8), parameter :: ccm1998      = 2.997924580d8
   real(8), parameter :: autk1998     = 3.1577465d5
+  real(8), parameter :: fermicc1998  = 1.16639d-5
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2002"
 !                     Peter J. Mohr and Barry N. Taylor
@@ -71,6 +74,7 @@ module codata
   real(8), parameter :: emass2002    = 9.1093826d-31
   real(8), parameter :: ccm2002      = 2.99792458d8
   real(8), parameter :: autk2002     = 3.1577465d5
+  real(8), parameter :: fermicc2002  = 1.16639d-5
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2006"
 !                     Peter J. Mohr, Barry N. Taylor and David B. Newell
@@ -84,6 +88,7 @@ module codata
   real(8), parameter :: emass2006    = 9.10938215d-31
   real(8), parameter :: ccm2006      = 2.99792458d8
   real(8), parameter :: autk2006     = 3.1577465d5
+  real(8), parameter :: fermicc2006  = 1.16637d-5
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2010"
 !                     Peter J. Mohr, Barry N. Taylor and David B. Newell
@@ -97,6 +102,7 @@ module codata
   real(8), parameter :: emass2010    = 9.10938291d-31
   real(8), parameter :: ccm2010      = 2.99792458d8
   real(8), parameter :: autk2010     = 3.1577504d5
+  real(8), parameter :: fermicc2010  = 1.166364d-5
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2014"
 !                     Peter J. Mohr, David B. Newell and Barry N. Taylor
@@ -110,6 +116,7 @@ module codata
   real(8), parameter :: emass2014    = 9.10938356d-31
   real(8), parameter :: ccm2014      = 2.99792458d8
   real(8), parameter :: autk2014     = 3.1577513d5
+  real(8), parameter :: fermicc2014  = 1.1663787d-5
 
 !  "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
 !                     Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor
@@ -124,6 +131,7 @@ module codata
   real(8), parameter :: emass2018    = 9.1093837015d-31
   real(8), parameter :: ccm2018      = 2.99792458d8
   real(8), parameter :: autk2018     = 3.1577502480407d5
+  real(8), parameter :: fermicc2018  = 1.1663787d-5
 
 
   contains
@@ -143,6 +151,9 @@ module codata
     emass    = emass1986
     ccm      = ccm1986
     autk     = autk1986
+! Warning! As the oldest value for fermicc is from 1998,
+!          we use it also for the 1986 series.
+    fermicc  = fermicc1998
    elseif(CODAT.eq.'CODATA98') then
     xtang    = xtang1998
     echarge  = echarge1998
@@ -153,6 +164,7 @@ module codata
     emass    = emass1998
     ccm      = ccm1998
     autk     = autk1998
+    fermicc  = fermicc1998
    elseif(CODAT.eq.'CODATA02') then
     xtang    = xtang2002
     echarge  = echarge2002
@@ -163,6 +175,7 @@ module codata
     emass    = emass2002
     ccm      = ccm2002
     autk     = autk2002
+    fermicc  = fermicc2002
    elseif(CODAT.eq.'CODATA06') then
     xtang    = xtang2006
     echarge  = echarge2006
@@ -173,6 +186,7 @@ module codata
     emass    = emass2006
     ccm      = ccm2006
     autk     = autk2006
+    fermicc  = fermicc2006
    elseif(CODAT.eq.'CODATA10') then
     xtang    = xtang2010
     echarge  = echarge2010
@@ -183,6 +197,7 @@ module codata
     emass    = emass2010
     ccm      = ccm2010
     autk     = autk2010
+    fermicc  = fermicc2010
    elseif(CODAT.eq.'CODATA14') then
     xtang    = xtang2014
     echarge  = echarge2014
@@ -193,6 +208,7 @@ module codata
     emass    = emass2014
     ccm      = ccm2014
     autk     = autk2014
+    fermicc  = fermicc2014
    else
     xtang    = xtang2018
     echarge  = echarge2018
@@ -203,6 +219,7 @@ module codata
     emass    = emass2018
     ccm      = ccm2018
     autk     = autk2018
+    fermicc  = fermicc2018
    end if
 
 ! -------------------- common derived constants --------------------------
@@ -256,6 +273,8 @@ module codata
   cminv    = 1.0d0/xtkays     !1 centimeter-to-minus-one in au
 ! nm       = 18.897...d0
   nm       = 1.0d1/xtang      !1 nanometer in au
+! gfermi   = 2.222...d-14
+  gfermi   = (1.0d-18*hbar*ccm**3*fermicc*emass)/(echarge**2*xtangm10)
 
   end subroutine set_codata_values
 
