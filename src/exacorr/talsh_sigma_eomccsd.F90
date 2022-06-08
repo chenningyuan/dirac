@@ -123,12 +123,12 @@ module talsh_sigma_eomccsd
 
       ! ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",sigma1_tensor,interm_t%w_ooov,r2_tensor,scale=ONE_HALF) !diam3
 
-      ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",sigma1_tensor,interm_t%w_ooov,r2_tensor,scale=MINUS_ONE_HALF) !  XYdiam3
+      ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",sigma1_tensor,interm_t%w_ooov,r2_tensor,scale=MINUS_ONE) !  XYdiam3
 
       norm_s = tensor_norm2(sigma1_tensor)
 
       !Test
-      ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",test1_tensor,interm_t%w_ooov,r2_tensor,scale=MINUS_ONE_HALF)
+      ierr=talsh_tensor_contract("S(X,i)+=W(m,n,i,e)*R(e,X,m,n)",test1_tensor,interm_t%w_ooov,r2_tensor,scale=MINUS_ONE)
       if (debug) print*, "norm contraction 3 (accumulated, this):",norm_s, (norm_s - norm_s_prev) 
       call print_tensor(test1_tensor, 1.0d-10, "diagm3_sigma1")
       norm_s_prev = norm_s

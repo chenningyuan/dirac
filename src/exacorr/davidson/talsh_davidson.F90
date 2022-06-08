@@ -2203,6 +2203,14 @@ contains
 
         call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
+        print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)
+        print *, "eVectorsR(2) before zgemm", eVectorsR(:,2)
+        print *, "eVectorsR(3) before zgemm", eVectorsR(:,3)
+        print *, "eVectorsR(4) before zgemm", eVectorsR(:,4)
+        print *, "eVectorsR(5) before zgemm", eVectorsR(:,5)
+        print *, "eVectorsR(6) before zgemm", eVectorsR(:,6)
+        print *, "eVectorsR(7) before zgemm", eVectorsR(:,7)
+        print *, "eVectorsR(8) before zgemm", eVectorsR(:,8)
         if (follow_overlap_local) then
             
             if (follow_overlap_scheme_local .eq. 1) then
@@ -2240,8 +2248,16 @@ contains
         end if
 
 ! debug, print eigenvecturs and eigenvalues from subspace
+        ! print *, "eVectorsR(1) after zgemm", eVectorsR(:,1)
+        ! print *, "eVectorsR(2) after zgemm", eVectorsR(:,2)
+        ! print *, "eVectorsR(3) after zgemm", eVectorsR(:,3)
+        ! print *, "eVectorsR(4) after zgemm", eVectorsR(:,4)
+        ! print *, "eVectorsR(5) after zgemm", eVectorsR(:,5)
+        ! print *, "eVectorsR(6) after zgemm", eVectorsR(:,6)
+        ! print *, "eVectorsR(7) after zgemm", eVectorsR(:,7)
+        ! print *, "eVectorsR(8) after zgemm", eVectorsR(:,8)
         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-                                    .false.,.false., nroots=nroots_to_print)
+                                    .false.,.true., nroots=nroots_to_print)
 !                                   left_local, right_local, nroots=nroots_to_print)
 
     end subroutine
@@ -2356,7 +2372,7 @@ contains
         complex(kind=8), intent(inout) :: c_small_l(:,:)
         real(kind=8), intent(in) :: energy_shift(2)
 
-        real(kind=8), allocatable :: temp_vector(:,:)
+        complex(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8) :: temp
         integer, allocatable :: indices_sorted_array(:)
         real(kind=8), allocatable :: e_small_real(:,:)
@@ -2382,7 +2398,7 @@ contains
         end do
 
         allocate(temp_vector(vectors_L,vectors_L))
-        temp_vector = 0.0d0
+        temp_vector = cmplx(0.0d0, 0.0d0)
 
         if (right) then
             do i = 1, vectors_L
