@@ -30,14 +30,14 @@ module talsh_1rdm_2rdm_ccsd_kernels
                              ONE_EIGHT=(0.125D0,0.D0), MINUS_ONE_EIGHT=(-0.125D0,0.D0)
 
   private
-
+   
     public talsh_calc_dm_1rdm_ccsd_GS_mo
     public talsh_calc_dm_1rdm_ccsd_EE_mo
     public talsh_calc_dm_1rdm_ccsd_IP_mo
     public talsh_calc_dm_1rdm_ccsd_EA_mo
     public talsh_calc_dm_1rdm_EE_Krylov_mo
 
-    public calc_dmSandD_CCD_mo
+    public calc_dmSandD_CCD_mo_bis
 
     public talsh_calc_dm_2rdm_ccsd_GS_mo
     public talsh_calc_dm_2rdm_ccsd_EE_mo
@@ -60,12 +60,42 @@ module talsh_1rdm_2rdm_ccsd_kernels
       type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
 !     tensor dimensions
       integer(C_INT)              :: one_dims(1)=1
-      integer(INTD), dimension(2) :: oo_dims, vv_dims
-      integer(INTD), dimension(4) :: vvoo_dims
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, ov_dims, vo_dims
 !     CCD switch
       logical :: CCD = .false.
 !     error code
       integer :: ierr
+      integer(INTD), dimension(4) ::  ooov_dims,ovov_dims,vvvv_dims,vvvo_dims
+      integer(INTD), dimension(4) ::  vovv_dims,voov_dims,oovv_dims,ovoo_dims
+      integer(INTD), dimension(4) ::  ovvo_dims,oooo_dims,vvoo_dims,ovvv_dims
+      integer(INTD), dimension(4) ::  vooo_dims,oovo_dims,vovo_dims,vvov_dims
+
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
+
+      ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
 
       if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
@@ -188,6 +218,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_contract("G(j,i)+=X+(i,j)*K()",gamma%symm_oo,gamma%prime_oo,one_tensor,scale=ONE_HALF)
       if (print_level.gt.8) print *,'G(j,i) symmetrized',tensor_norm2(gamma%symm_oo)
 
+
 !     debug
       if (print_level.gt.8) then
         if (.not.CCD) then
@@ -203,34 +234,35 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
         if (print_level.gt.9) then
           if (.not.CCD) then
+            print *,'>>>>> Loic_ In my branch no  relccsd order Allowed'
             print *,'>>>>> elements, DOV not symmetrized, relccsd order'
-            call print_tensor_elements(gamma%prime_ov,relccsd_order=.true.)
+!            call print_tensor_elements(gamma%prime_ov)!,relccsd_order=.true.)
             print *,'<<<<< elements, DOV not symmetrized, relccsd order'
             print *,'>>>>> elements, DVO not symmetrized, relccsd order'
-            call print_tensor_elements(gamma%prime_vo,relccsd_order=.true.)
+!            call print_tensor_elements(gamma%prime_vo)!,relccsd_order=.true.)
             print *,'<<<<< elements, DVO not symmetrized, relccsd_order'
           end if
           print *,'>>>>> elements, DVV not symmetrized, relccsd order'
-          call print_tensor_elements(gamma%prime_vv,relccsd_order=.true.)
+!          call print_tensor_elements(gamma%prime_vv)!,relccsd_order=.true.)
           print *,'<<<<< elements, DVV not symmetrized, relccsd order'
           print *,'>>>>> elements, DOO not symmetrized, relccsd order'
-          call print_tensor_elements(gamma%prime_oo,relccsd_order=.true.)
+!          call print_tensor_elements(gamma%prime_oo)!,relccsd_order=.true.)
           print *,'<<<<< elements, DOO not symmetrized, relccsd order'
 
           if (.not.CCD) then
             print *,'>>>>> elements, DOV symmetrized'
-            call print_tensor_elements(gamma%symm_ov,relccsd_order=.true.)
+!            call print_tensor_elements(gamma%symm_ov)!,relccsd_order=.true.)
             print *,'<<<<< elements, DOV symmetrized'
           end if
           print *,'>>>>> elements, DOO symmetrized'
-          call print_tensor_elements(gamma%symm_oo,relccsd_order=.true.)
+!          call print_tensor_elements(gamma%symm_oo)!,relccsd_order=.true.)
           print *,'<<<<< elements, DOO symmetrized'
           print *,'>>>>> elements, DVV symmetrized'
-          call print_tensor_elements(gamma%symm_vv,relccsd_order=.true.)
+!          call print_tensor_elements(gamma%symm_vv)!,relccsd_order=.true.)
           print *,'<<<<< elements, DVV symmetrized'
           if (.not.CCD) then
             print *,'>>>>> elements, DVO symmetrized'
-            call print_tensor_elements(gamma%symm_vo,relccsd_order=.true.)
+!            call print_tensor_elements(gamma%symm_vo)!,relccsd_order=.true.)
             print *,'<<<<< elements, DVO symmetrized'
           end if
         end if ! extended print level, 9
@@ -316,6 +348,18 @@ module talsh_1rdm_2rdm_ccsd_kernels
       oovo_dims      = (/nocc,nocc,nvir,nocc/)
       vovo_dims      = (/nvir,nocc,nvir,nocc/)
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
+      ierr=talsh_tensor_construct(gamma%prime_ooov,C8,ooov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_ovov,C8,ovov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
+
+      ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
+
 
       ierr=talsh_tensor_construct(Hinter_ooov,C8,ooov_dims,init_val=ZERO)
       ierr=talsh_tensor_construct(Hinter_vvvv,C8,vvvv_dims,init_val=ZERO)
@@ -539,7 +583,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_init(Hinter_vv)
       ierr=talsh_tensor_contract("H(a,f)+=L(m,n,e,f)*T(e,a,m,n)",Hinter_vv,l2_tensor,t2_tensor)
       if (debug)  print*, " m6-a, ierr  ", ierr
-      ierr=talsh_tensor_init(Hinter_vo) ! Attention here I call it G 
+      ierr=talsh_tensor_init(Hinter_vo) !Loic_ Take care here I call it G 
       ierr=talsh_tensor_contract("H(a,i)+=G(a,f)*T(f,i)",Hinter_vo,Hinter_vv,t1_tensor)
       if (debug)  print*, " m6-b, ierr  ", ierr
       ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,i)*T(b,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE_HALF)
@@ -559,7 +603,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,f)*T(f,a,i,j)",gamma%prime_vvoo,Hinter_vv,t2_tensor,scale=ONE_HALF)
       if (debug)  print*, " m7-c, ierr  ", ierr
       ! m8
-      ierr=talsh_tensor_init(Hinter_oo)  !! attention 
+      ierr=talsh_tensor_init(Hinter_oo)  !Loic_ Take care
       ierr=talsh_tensor_contract("H(n,i)+=L(m,n,e,f)*T(e,f,m,i)",Hinter_oo,l2_tensor,t2_tensor)
       if (debug)  print*, " m8-a, ierr  ", ierr
       ierr=talsh_tensor_init(Hinter_vo)
@@ -574,7 +618,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,j)*T(a,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE_HALF)
       if (debug)  print*, " m8-f, ierr  ", ierr
       ! m9
-      ierr=talsh_tensor_init(Hinter_oo)  !! attention 
+      ierr=talsh_tensor_init(Hinter_oo)  !Loic_ Take care
       ierr=talsh_tensor_contract("H(n,i)+=L(m,n,e,f)*T(e,f,m,i)",Hinter_oo,l2_tensor,t2_tensor)
       if (debug)  print*, " m9-a, ierr  ", ierr
       ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,i)*T(a,b,n,j)",gamma%prime_vvoo,Hinter_oo,t2_tensor,scale=MINUS_ONE_HALF)      
@@ -684,7 +728,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
     end subroutine talsh_calc_dm_2rdm_ccsd_GS_mo
 
 
-    subroutine calc_dmSandD_CCD_mo(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir,print_level,int_t)
+    subroutine calc_dmSandD_CCD_mo_bis(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir,print_level,int_t)
 
         use talsh
         use exacorr_datatypes !, only :talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
@@ -838,7 +882,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       if (debug)  print*, " m7-c, ierr  ", ierr
 !      Eq2-5-e : Gijab = ?-\unquart? \ld mnef \td efmj \td abin
       ! m9
-      ierr=talsh_tensor_init(Hinter_oo)  !! attention 
+      ierr=talsh_tensor_init(Hinter_oo)  !Loic_ Take care 
       ierr=talsh_tensor_contract("H(n,i)+=L(m,n,e,f)*T(e,f,m,i)",Hinter_oo,l2_tensor,t2_tensor)
       if (debug)  print*, " m9-a, ierr  ", ierr
       ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,i)*T(a,b,n,j)",gamma%prime_vvoo,Hinter_oo,t2_tensor,scale=MINUS_ONE_HALF)
@@ -848,8 +892,8 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
 
       print *,"CCD Results"   
-      call print_tensor_elements(gamma%prime_oo)  
-      call print_tensor_elements(int_t%foo)
+!      call print_tensor_elements(gamma%prime_oo)  
+!      call print_tensor_elements(int_t%foo)
 
       ierr=talsh_tensor_init(result_tensor)
       ierr=talsh_tensor_contract("E()+=G(i,j)*F(j,i)",result_tensor,gamma%prime_oo,int_t%foo)
@@ -898,7 +942,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
       ierr=talsh_tensor_destruct(Hinter_oo)
       ierr=talsh_tensor_destruct(aux_tensor_vvoo)
 
-    end subroutine calc_dmSandD_CCD_mo
+    end subroutine calc_dmSandD_CCD_mo_bis
 
         subroutine talsh_calc_dm_1rdm_ccsd_EE_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,t1_tensor,l1_tensor,r1_tensor,r2_tensor)
 
@@ -970,13 +1014,16 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !*********************************
     !     construct auxiliary tensor *
     !*********************************
+          ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
-            ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
+          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
@@ -1197,6 +1244,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
           type(talsh_tens_t) :: vvoo_aux_tensor, vvvo_aux_tensor,ooov_aux_tensor
           type(talsh_tens_t) :: vooo_aux_tensor, ovvv_aux_tensor,vovo_aux_tensor
           type(talsh_tens_t) :: ovvo_aux_tensor, ovov_aux_tensor,voov_aux_tensor
+          type(talsh_tens_t) :: oovo_aux_tensor
 
     !     tensor dimensions
           integer :: one_dims(1)=1
@@ -1243,19 +1291,31 @@ module talsh_1rdm_2rdm_ccsd_kernels
       vovo_dims      = (/nvir,nocc,nvir,nocc/)
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
-          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
-            ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
+          ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_voov,C8,voov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_oovo,C8,oovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
 
+          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vo_aux_tensor,C8,vo_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
     !********************
             ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
 
             ! Loic_Taille
 
@@ -1349,9 +1409,9 @@ module talsh_1rdm_2rdm_ccsd_kernels
     ierr=talsh_tensor_init(ooov_aux_tensor)
     ierr=talsh_tensor_contract("A(i,m,k,f)+=L(i,m,e,f)*R(e,k)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr7 =",ierr
-    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,n,k,f)*TauNo(f,a,j,m)",gamma%prime_ovoo,&
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,k,f)*TauNo(f,a,j,m)",gamma%prime_ovoo,&
          ooov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,n,j,f)*TauNo(f,a,k,m)",gamma%prime_ovoo,ooov_aux_tensor,TauNo_tensor)
+    ierr=talsh_tensor_contract("G(i,a,j,k)+=A(i,m,j,f)*TauNo(f,a,k,m)",gamma%prime_ovoo,ooov_aux_tensor,TauNo_tensor)
     if(ierr.ne.0) write(*,*) "ierr8 =",ierr
 
     ! eq j7 + j11        :: + (1/4) \ld imfe \rs am \TauDown efjk
@@ -1428,9 +1488,9 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
     ! eq g7+g11          :: - (1/4) \ld mnec \rs ei \TauUp abmn        
     ierr=talsh_tensor_init(ooov_aux_tensor)
-    ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,e)*R(e,i)",ooov_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
+    ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,e)*R(e,i)",oovo_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr28 =",ierr
-    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,oovo_aux_tensor,TauUp_tensor,scale=ONE_HALF)
     if(ierr.ne.0) write(*,*) "ierr29 =",ierr
 
     ! eq g8+g13          :: + (1/2) \ld mnec \rs em \TauUp abni  
@@ -1968,14 +2028,22 @@ module talsh_1rdm_2rdm_ccsd_kernels
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
 
-          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
-            ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
-          ierr=talsh_tensor_construct(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
 
+
+          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+ 
     ! rho ij
            ! eq a3              :: - \ls iX \rs Xj   
            ierr=talsh_tensor_contract("G(i,j)+=L(i,X)*R(X,j)",gamma%prime_oo,l1_tensor,r1_tensor,scale=MINUS_ONE)
@@ -2143,11 +2211,14 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
-            ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
+          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vo_aux_tensor,C8,vo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vovo_aux_tensor,C8,vovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
 
           vX_dims = nvir
           vX_dims(2) = nvir
@@ -2169,6 +2240,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
             ierr=talsh_tensor_construct(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
 
             ierr=talsh_tensor_construct(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
@@ -2198,22 +2270,22 @@ module talsh_1rdm_2rdm_ccsd_kernels
     ! rho aibj !
     !!!!!!!!!!!!
 
-!Pourquoi pas de \Pm ij \Pm ab ?           ! eq f2              :: - 1/4  \ld mibX \rd aXmj
+!Loic_ Why no permutation \Pm ij \Pm ab ?           ! eq f2              :: - 1/4  \ld mibX \rd aXmj
     ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,b)*R(e,a,j,m)",gamma%prime_voov,l2_tensor,r2_tensor,scale= MINUS_ONE_QUARTER)
 !    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,b)*R(e,a,i,m)",gamma%prime_voov,l2_tensor,r2_tensor)
 !    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(i,m,e,a)*R(e,b,j,m)",gamma%prime_voov,l2_tensor,r2_tensor)
 !    ierr=talsh_tensor_contract("G(a,i,j,b)+=L(j,m,e,a)*R(e,b,i,m)",gamma%prime_voov,l2_tensor,r2_tensor,scale= MINUS_ONE_QUARTER)
     if(ierr.ne.0) write(*,*) "ierr2 =",ierr
 
-!Pourquoi pas de \Pm ab ?          ! eq f4              :: -1/4 \ld mibX \rs Xj \ts am
-    ierr=talsh_tensor_init(ooov_aux_tensor)
-    ierr=talsh_tensor_contract("A(m,i,b,j)+=L(m,i,b,X)*R(X,j)",ooov_aux_tensor,l2_tensor,r1_tensor)
+!Loic_ Why no permutation \Pm ab ?          ! eq f4              :: -1/4 \ld mibX \rs Xj \ts am
+    ierr=talsh_tensor_init(oovo_aux_tensor) !Loic_ 090622 Sign Problem
+    ierr=talsh_tensor_contract("A(m,i,b,j)+=L(m,i,b,X)*R(X,j)",oovo_aux_tensor,l2_tensor,r1_tensor)
     if(ierr.ne.0) write(*,*) "ierr3 =",ierr
-    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(m,i,b,j)*T(a,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
-!   ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,j,a)*T(b,m)",gamma%prime_voov,ooov_aux_tensor,t1_tensor,scale=ONE_QUARTER)
+    ierr=talsh_tensor_contract("G(a,i,j,b)+=A(m,i,b,j)*T(a,m)",gamma%prime_voov,oovo_aux_tensor,t1_tensor,scale=MINUS_ONE_QUARTER)
+!   ierr=talsh_tensor_contract("G(a,i,j,b)+=A(i,m,a,j)*T(b,m)",gamma%prime_voov,oovo_aux_tensor,t1_tensor,scale=ONE_QUARTER)
     if(ierr.ne.0) write(*,*) "ierr4 =",ierr
 
-!Pourquoi pas de \Pm ij \Pm ab ?          ! eq f5              :: - 1/4  \ld imbX \rs Xm \ts aj
+!Loic_ Why no permutation \Pm ij \Pm ab ?          ! eq f5              :: - 1/4  \ld imbX \rs Xm \ts aj
     ierr=talsh_tensor_init(ov_aux_tensor)
     ierr=talsh_tensor_contract("A(i,b)+=L(i,m,b,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
     if(ierr.ne.0) write(*,*) "ierr5 =",ierr
@@ -2234,17 +2306,17 @@ module talsh_1rdm_2rdm_ccsd_kernels
     ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,a,c,i)*T(b,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor,scale=MINUS_ONE)
 !    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,b,c,i)*T(a,m)",gamma%prime_vvvo,ovvo_aux_tensor,t1_tensor)
     if(ierr.ne.0) write(*,*) "ierr8 =",ierr
-    ! eq g8+g13          :: + \ld mncX \rs Xn \TauUp abni  
+    ! eq g8+g13          :: + \ld mncX \rs Xn \TauUp abmi  
     ierr=talsh_tensor_init(ov_aux_tensor)
-    ierr=talsh_tensor_contract("A(n,c)+=L(m,n,c,X)*R(X,n)",ov_aux_tensor,l2_tensor,r1_tensor)
+    ierr=talsh_tensor_contract("A(m,c)+=L(m,n,c,X)*R(X,n)",ov_aux_tensor,l2_tensor,r1_tensor)
     if(ierr.ne.0) write(*,*) "ierr9 =",ierr
-    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(n,c)*TauUp(a,b,n,i)",gamma%prime_vvvo,ov_aux_tensor,TauUp_tensor)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,c)*TauUp(a,b,m,i)",gamma%prime_vvvo,ov_aux_tensor,TauUp_tensor)
     if(ierr.ne.0) write(*,*) "ierr10 =",ierr
     ! eq g7+g11          :: - \ld mncX \rs Xi \TauUp abmn        
     ierr=talsh_tensor_init(oovo_aux_tensor)
     ierr=talsh_tensor_contract("A(m,n,c,i)+=L(m,n,c,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr11 =",ierr
-    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,ooov_aux_tensor,TauUp_tensor,scale=ONE_HALF)
+    ierr=talsh_tensor_contract("G(a,b,c,i)+=A(m,n,c,i)*TauUp(a,b,m,n)",gamma%prime_vvvo,oovo_aux_tensor,TauUp_tensor,scale=ONE_HALF)
     if(ierr.ne.0) write(*,*) "ierr12 =",ierr
 
 
@@ -2313,10 +2385,10 @@ module talsh_1rdm_2rdm_ccsd_kernels
      if(ierr.ne.0) write(*,*) "ierr28 =",ierr
      ! eq n2              :: + (1/4) \Pm kl \ld ijeX \rs Xl \ts ek
      ierr=talsh_tensor_init(oovo_aux_tensor)
-     ierr=talsh_tensor_contract("A(i,m,e,l)+=L(m,i,e,X)*R(X,l)",oovo_aux_tensor,l2_tensor,r1_tensor)
+     ierr=talsh_tensor_contract("A(i,j,e,l)+=L(i,j,e,X)*R(X,l)",oovo_aux_tensor,l2_tensor,r1_tensor)
      if(ierr.ne.0) write(*,*) "ierr29 =",ierr
-     ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,m,e,l)*T(e,k)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor)
-     ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,m,e,k)*T(e,l)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor,scale=MINUS_ONE)
+     ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,j,e,l)*T(e,k)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor)
+     ierr=talsh_tensor_contract("G(i,j,k,l)+=A(i,j,e,k)*T(e,l)",gamma%prime_oooo,oovo_aux_tensor,t1_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr30 =",ierr
 
 
@@ -2343,7 +2415,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
      if(ierr.ne.0) write(*,*) "ierr0000 =",ierr
 
 !!!!!!!!!
-!!!!!!!!!!!!!                            Attention les TauUP
+!!!!!!!!!!!!!                            Take Care with TauUP
 !!!!!!!!!
      ! eq l4+l5           :: - (1/4) \Pm ij \ls mX \rs Xj (\ts abim + \Pm ab  \ts ai \ts bm)
      ierr=talsh_tensor_init(oo_aux_tensor)
@@ -2365,7 +2437,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
      ! eq l17             :: - (1/4) \Pm ab \ls mX \rd bXji \ts am 
      ierr=talsh_tensor_init(vooo_aux_tensor)
-     ierr=talsh_tensor_contract("A(b,m,j,i)+=L(m,X)*R(b,X,j,i)",vo_aux_tensor,l1_tensor,r2_tensor)
+     ierr=talsh_tensor_contract("A(b,m,j,i)+=L(m,X)*R(b,X,j,i)",vooo_aux_tensor,l1_tensor,r2_tensor)
      if(ierr.ne.0) write(*,*) "ierr35 =",ierr
      ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,m,j,i)*T(a,m)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor,scale=MINUS_ONE)
      ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,m,j,i)*T(b,m)",gamma%prime_vvoo,vooo_aux_tensor,t1_tensor)
@@ -2385,7 +2457,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
      if(ierr.ne.0) write(*,*) "ierr39 =",ierr
 
      ! eq l36+l37         :: - (1/4) \ld mneX \rs Xm (\P ab \ts an \td ebij + \Pmij \ts ei \td abnj)
-!! On ne refait pas la contracttion l2_tensor*r1_tensor
+!! DO NOT CHANGE contraction l2_tensor*r1_tensor
 !           ierr=talsh_tensor_init(ov_aux_tensor)
 !           ierr=talsh_tensor_contract("A(n,e)+=L(m,n,e,X)*R(X,m)",ov_aux_tensor,l2_tensor,r1_tensor)
 !           if(ierr.ne.0) write(*,*) "ierr37 =",ierr
@@ -2415,7 +2487,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
      if(ierr.ne.0) write(*,*) "ierr46 =",ierr
 
      ! eq l22+l29         :: - (1/4) \Pm ab \Pm ij  \ld mneX \rs Xi ( \ts am \td bejn + 1/2 \ts bj \td eanm ) 
-!!! On ne change pas la contraction l2_tensor*r1_tensor
+!!! DO NOT CHANGE contraction l2_tensor*r1_tensor
 !!!           ierr=talsh_tensor_init(oovo_aux_tensor)
 !!!           ierr=talsh_tensor_contract("A(n,m,e,i)+=L(m,n,e,X)*R(X,i)",oovo_aux_tensor,l2_tensor,r1_tensor)
      ierr=talsh_tensor_contract("B(n,a,e,i)+=A(n,m,e,i)*T(a,m)",ovvo_aux_tensor,oovo_aux_tensor,t1_tensor)
@@ -2532,7 +2604,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
             vvoo_dims(1:2) = nvir
             vvoo_dims(3:4) = nocc
             ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
@@ -2540,8 +2611,10 @@ module talsh_1rdm_2rdm_ccsd_kernels
             ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
             oo_dims = nocc
             ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
-
+           
+            ov_dims    = nvir
+            ov_dims(1) = nocc
+            ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
@@ -2800,19 +2873,32 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
-            ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
-
+          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vo_aux_tensor,C8,vo_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
-    !********************
+    !******************** 
             ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
             ierr=talsh_tensor_construct(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(vvvv_aux_tensor,C8,vvvv_dims,init_val=ZERO)
+
+!          ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
+!          ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+!          ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
+!          ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vovo,C8,vovo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
+
 
             ! Loic_Taille
 
@@ -3043,7 +3129,7 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_init(ov_aux_tensor)                                   
            ierr=talsh_tensor_contract("X(i,f)+=L(i,X,f,e)*R(e,X)",ov_aux_tensor,l2_tensor,r1_tensor)
            if(ierr.ne.0) write(*,*) "ierr31 =",ierr
-           ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,a,j,e)*T(f,a,j,k)",gamma%prime_ovoo,&
+           ierr=talsh_tensor_contract("G(i,a,j,k)+=Y(i,f)*T(f,a,j,k)",gamma%prime_ovoo,&
                ov_aux_tensor,t2_tensor,scale=MINUS_ONE)
            if(ierr.ne.0) write(*,*) "ierr32 =",ierr
 
@@ -3099,8 +3185,10 @@ module talsh_1rdm_2rdm_ccsd_kernels
            if(ierr.ne.0) write(*,*) "ierr83 =",ierr
            ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,i,f)*TauNo(b,f,n,j)",gamma%prime_vvoo,&
                 voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*TauNo(a,f,n,j)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*TauNo(b,f,n,i)",gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,i,f)*TauNo(a,f,n,j)",&
+                &gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=A(a,n,j,f)*TauNo(b,f,n,i)",&
+                &gamma%prime_vvoo,voov_aux_tensor,TauNo_tensor)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=A(b,n,j,f)*TauNo(a,f,n,i)",gamma%prime_vvoo,&
                voov_aux_tensor,TauNo_tensor,scale=MINUS_ONE)
            if(ierr.ne.0) write(*,*) "ierr84 =",ierr
@@ -3108,17 +3196,22 @@ module talsh_1rdm_2rdm_ccsd_kernels
 !ok           ! eq j16+j30         :: - (1/4) \Pm ij \rd abin \MATtwo nj
            ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,i,X)*M(X,j)",gamma%prime_vvoo,&
                r2_tensor,MATtwo_EA_oo_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,j,X)*M(X,i)",gamma%prime_vvoo,r2_tensor,MATtwo_EA_oo_tensor)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=R(a,b,j,X)*M(X,i)",&
+               &gamma%prime_vvoo,r2_tensor,MATtwo_EA_oo_tensor)
            if(ierr.ne.0) write(*,*) "ierr85 =",ierr
 
 !ok           ! eq j1              :: + (1/4) \td abij
            ierr=talsh_tensor_add("G(a,b,i,j)+=T(a,b,i,j)",gamma%prime_vvoo,t2_tensor)
            if(ierr.ne.0) write(*,*) "ierr87 =",ierr
 !ok           ! eq j2              :: + (1/4) 1/2 \Pm ab \Pm ij \ts ai \ts bj
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,j)*T(a,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",&
+               &gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",&
+               &gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",&
+               &gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,j)*T(a,i)",&
+               &gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr88 =",ierr
 
 !ok           ! eq j3              :: + (1/4) \ls Xe \rd aeiX \ts bj
@@ -3141,14 +3234,18 @@ module talsh_1rdm_2rdm_ccsd_kernels
            if(ierr.ne.0) write(*,*) "ierr93 =",ierr
 
 
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,i)*T(b,j)",&
+                & gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,i)*T(a,j)",&
+                &gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(a,j)*T(b,i)",&
+                &gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(b,j)*T(a,i)",&
+                &gamma%prime_vvoo,vo_aux_tensor,t1_tensor,scale=ONE_HALF)
            if(ierr.ne.0) write(*,*) "ierr95 =",ierr
 
 !ok           ! eq j28             :: - (1/4)  \Pm ij \Pm ab \ld mXef \rs aX \td bejm \ts fi
-!!!!!!!! ON ne fiat pas l'init on garde ovvv_aux_Tensor
+!!!!!!!! Don't init ovvv_aux_Tensor, keep the same value as before
 !           ierr=talsh_tensor_init(ovvv_aux_tensor)
 !           ierr=talsh_tensor_contract("A(m,a,e,f)+=L(m,X,e,f)*R(a,X)",ovvv_aux_tensor,l2_tensor,r1_tensor)
 
@@ -3156,11 +3253,11 @@ module talsh_1rdm_2rdm_ccsd_kernels
            ierr=talsh_tensor_contract("B(m,a,e,i)+=A(m,a,e,f)*T(f,i)",ovvo_aux_tensor,ovvv_aux_tensor,t1_tensor)
            if(ierr.ne.0) write(*,*) "ierr97 =",ierr
            ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,a,e,i)*T(b,e,j,m)",gamma%prime_vvoo,&
-               voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,b,e,i)*T(a,e,j,m)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
-           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,a,e,j)*T(b,e,i,m)",gamma%prime_vvoo,voov_aux_tensor,vvoo_aux_tensor)
+               ovvo_aux_tensor,t2_tensor,scale=MINUS_ONE)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,b,e,i)*T(a,e,j,m)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor)
+           ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,a,e,j)*T(b,e,i,m)",gamma%prime_vvoo,ovvo_aux_tensor,t2_tensor)
            ierr=talsh_tensor_contract("G(a,b,i,j)+=B(m,b,e,j)*T(a,e,i,m)",gamma%prime_vvoo,&
-               voov_aux_tensor,vvoo_aux_tensor,scale=MINUS_ONE)
+               ovvo_aux_tensor,t2_tensor,scale=MINUS_ONE)
            if(ierr.ne.0) write(*,*) "ierr98 =",ierr
 
 
@@ -3293,14 +3390,17 @@ module talsh_1rdm_2rdm_ccsd_kernels
       vovo_dims      = (/nvir,nocc,nvir,nocc/)
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
-
+          ierr=talsh_tensor_construct(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
 
           ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          if (.not.CCD) then
-            ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          end if
+          ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
 
           ierr=talsh_tensor_construct(Y1,C8,ov_dims,init_val=ZERO)
           ierr=talsh_tensor_construct(rts,C8,vo_dims,init_val=ZERO)
@@ -3411,19 +3511,94 @@ module talsh_1rdm_2rdm_ccsd_kernels
     !********************
 
 
-    ! rho ij
-           ! eq a1 + a3 :: - \MATone ij   
-           ierr=talsh_tensor_add("G(i,j)+=X(i,j)",gamma%prime_oo,MATone_oo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr1 =",ierr
-           ! eq a5      :: - \ld imef \rs fm \ts ej
-           ierr=talsh_tensor_init(ov_aux_tensor)
-           ierr=talsh_tensor_contract("X(i,e)+=L(i,m,e,f)*R(f,m)",ov_aux_tensor,l2_tensor,r1_tensor)
-           if(ierr.ne.0) write(*,*) "ierr2 =",ierr
-           ierr=talsh_tensor_contract("G(i,j)+=X(i,e)*T(e,j)",gamma%prime_oo,ov_aux_tensor,t1_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr3 =",ierr
-           ! eq a2 + a4 :: - \ro \MATtwo ij
-           ierr=talsh_tensor_add("G(i,j)+=X(i,j)",gamma%prime_oo,MATtwo_oo_tensor,scale=MINUS_ONE)
-           if(ierr.ne.0) write(*,*) "ierr4 =",ierr
+    ! rho ij !!! Loic_ Check if permutations are symetric or not  :  P+ où P-
+    ! ?
+           ! eq a1 ::  = - 1/2 \Pm ij \ls ia \rtts aj    
+           ierr=talsh_tensor_contract("G(i,j)+=L(i,a)*R(a,j)",gamma%prime_oo,l1_tensor,rtts,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(i,j)+=L(j,a)*R(a,i)",gamma%prime_oo,l1_tensor,rtts,scale=ONE_HALF)
+           if(ierr.ne.0) write(*,*) "ierr a1 =",ierr
+           ! eq a2 ::  = - 1/2 \Pm ij \lts_oo ij !! Addition with permutation
+           ! not implemented january 2022
+           ierr=talsh_tensor_add("G(i,j)+=LTS(i,j)",gamma%prime_oo,lts_oo,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(i,j)+=LTS(j,i)*E()",gamma%prime_oo,lts_oo,one_tensor,scale=ONE_HALF)
+           if(ierr.ne.0) write(*,*) "ierr4 b2 = ",ierr
+           ! eq a3 :: = - 1/2 \Yun ia \ts aj
+           ierr=talsh_tensor_contract("G(i,j)+=Y(i,a)*T(a,j)",gamma%prime_oo,Y1,t1_tensor,scale=MINUS_ONE_HALF)
+           ierr=talsh_tensor_contract("G(i,j)+=Y(j,a)*T(a,i)",gamma%prime_oo,Y1,t1_tensor,scale=ONE_HALF)
+           if(ierr.ne.0) write(*,*) "ierr b3 =",ierr
+           print*, "gprime_kry_oo  = ", tensor_norm2(gamma%prime_oo)
+    ! rho ab !!! Loic_ idem Check if permutations are symetric or not  :  P+ où P-
+           ! eq b1 :: = + 1/2 \Pm ab \ls ia \rtts bi 
+           ierr=talsh_tensor_contract("G(b,a)+=L(i,a)*R(b,i)",gamma%prime_vv,l1_tensor,rtts,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(b,a)+=L(i,b)*R(a,i)",gamma%prime_vv,l1_tensor,rtts,scale=MINUS_ONE_HALF)
+           if(ierr.ne.0) write(*,*) "ierr b1 =",ierr
+           ! eq b2 ::  = + 1/2 \Pm ab \lts_vv ba !! Addition with permutation
+           ! not implemented january 2022
+           ierr=talsh_tensor_add("G(b,a)+=LTS(b,a)",gamma%prime_vv,lts_vv,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(b,a)+=LTS(a,b)",gamma%prime_vv,lts_vv,one_tensor,scale=MINUS_ONE_HALF)
+           if(ierr.ne.0) write(*,*) "ierr b2 =",ierr
+           ! eq b3 :: = + 1/2 \Yun ia \ts bi
+           ierr=talsh_tensor_contract("G(b,a)+=Y(i,a)*T(b,i)",gamma%prime_vv,Y1,t1_tensor,scale=ONE_HALF)
+           ierr=talsh_tensor_contract("G(b,a)+=Y(i,b)*T(a,i)",gamma%prime_vv,Y1,t1_tensor,scale=MINUS_ONE_HALF)
+           if(ierr.ne.0) write(*,*) "ierr b3 =",ierr
+           print*, "gprime_kry_vv  = ", tensor_norm2(gamma%prime_vv)
+
+   ! rho ia
+          ! eq c1 ::  = + 1/2 \ro \ls ia 
+          ierr=talsh_tensor_add("G(i,a)+=L(i,a)",gamma%prime_ov,l1_tensor,scale=onehalf_ro)
+          if(ierr.ne.0) write(*,*) "ierr c1 =",ierr
+          ! eq c2 ::  = +1/2 \Yun ia
+          ierr=talsh_tensor_add("G(i,a)+=Y(i,a)",gamma%prime_ov,Y1,scale=ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c1 =",ierr
+          print*, "gprime_kry_ov  = ", tensor_norm2(gamma%prime_ov)
+
+  ! rho ai
+           ! eq c10 :: = -1/2 \lts ji \ts aj
+          ierr=talsh_tensor_contract("G(a,i)+=LTS(j,i)*T(a,j)",gamma%prime_vo,lts_oo,t1_tensor,scale=MINUS_ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c10  =",ierr
+         ! eq c3 + c4 + c5 :: = + 1/2 \ls jb ( \rttd abij - \rts bi \ts aj -
+         ! \rts aj \ts bi ) 
+          ierr=talsh_tensor_init(vvoo_aux_tensor)
+          ierr=talsh_tensor_add("X(a,b,i,j)+=RTTD(a,b,i,j)",vvoo_aux_tensor,rttd)
+          if(ierr.ne.0) write(*,*) "ierr c3a =",ierr
+          ierr=talsh_tensor_contract("X(a,b,i,j)+=RTS(b,i)*T(a,j)",vvoo_aux_tensor,rts,t1_tensor,scale=MINUS_ONE)
+          if(ierr.ne.0) write(*,*) "ierr c4a =",ierr
+          ierr=talsh_tensor_contract("X(a,b,i,j)+=RTS(a,j)*T(b,i)",vvoo_aux_tensor,rts,t1_tensor,scale=MINUS_ONE)
+          if(ierr.ne.0) write(*,*) "ierr c5a =",ierr
+          ierr=talsh_tensor_contract("G(a,i)+=X(a,b,i,j)*L(j,b)",gamma%prime_vo,vvoo_aux_tensor,l1_tensor,scale=ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c3+c4+c5 =",ierr
+
+          ! eq c6 + c7 :: = + 1/2 \Yun jb (\td abij - \ts aj \ts bi) 
+          ierr=talsh_tensor_init(vvoo_aux_tensor)
+          ierr=talsh_tensor_add("X(a,b,i,j)+=T(a,b,i,j)",vvoo_aux_tensor,t2_tensor)
+          if(ierr.ne.0) write(*,*) "ierr c6a =",ierr
+          ierr=talsh_tensor_contract("X(a,b,i,j)+=T(a,j)*T(b,i)",vvoo_aux_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+          if(ierr.ne.0) write(*,*) "ierr c7a =",ierr
+          ierr=talsh_tensor_contract("G(a,i)+=X(a,b,i,j)*Y(j,b)",gamma%prime_vo,vvoo_aux_tensor,Y1,scale=ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c6+c7 =",ierr
+
+          ! eq c8 :: = -1/2 \ltts ki \rs ak
+          ierr=talsh_tensor_contract("G(a,i)+=LTTS(k,i)*R(a,k)",gamma%prime_vo,ltts_oo,r1_tensor,scale=MINUS_ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c8  =",ierr
+
+          ! eq c9 :: = -1/2 \ltts ac \rs ci
+          ierr=talsh_tensor_contract("G(a,i)+=LTTS(a,c)*R(c,i)",gamma%prime_vo,ltts_vv,r1_tensor,scale=MINUS_ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c9  =",ierr
+
+          ! eq c10 :: = -1/2 \lts ji \ts aj
+          ierr=talsh_tensor_contract("G(a,i)+=LTS(j,i)*T(a,j)",gamma%prime_vo,lts_oo,t1_tensor,scale=MINUS_ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c10  =",ierr
+
+          ! eq c11 :: = -1/2 \lts ab \ts bi
+          ierr=talsh_tensor_contract("G(a,i)+=LTS(a,b)*T(b,i)",gamma%prime_vo,lts_vv,t1_tensor,scale=MINUS_ONE_HALF)
+          if(ierr.ne.0) write(*,*) "ierr c11  =",ierr
+          print*, "gprime_kry_vo  = ", tensor_norm2(gamma%prime_vo)
+
+!          call print_tensor_elements(t1_tensor,relccsd_order=.true.)
+!          call print_tensor(t1_tensor, 1.0D-18, 't1_tensor')
+!          call print_tensor(t2_tensor, 1.0D-18, 't2_tensor')
+
+
 
         end subroutine talsh_calc_dm_1rdm_EE_Krylov_mo
 
