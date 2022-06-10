@@ -7,12 +7,12 @@
 !#include <codata.h>
       CHARACTER*8 CODSET
       REAL*8      xtang,echarge,hbar,xfmol,umass,pmass,emass,ccm,       &
-     &            fermicc,autk,planck,xtangm10,cvel,alphac,gfermi,      &
+     &            fermicc,s2thetaw,autk,planck,xtangm10,cvel,alphac,    &
      &            alpha2,xtj,xtkays,xthz,xtev,xkjmol,xkcmol,xtnm,       &
      &            xajoul,autime,xfsec,tesla,debye,xtkmml,xfamu,xfmp,    &
-     &            nmagn,nmagnau,efaumksa,cminv,nm
+     &            nmagn,nmagnau,efaumksa,cminv,nm,gfermi
       COMMON/CODVAL/CODSET,xtang,echarge,hbar,xfmol,umass,pmass,emass,  &
-     &              ccm,fermicc,autk,planck,xtangm10,cvel,gfermi,       &
+     &              ccm,fermicc,s2thetaw,autk,planck,xtangm10,cvel,     &
      &              alphac,alpha2,xtj,xtkays,xthz,xtev,xkjmol,xkcmol,   &
      &              xtnm,xajoul,autime,xfsec,tesla,debye,xtkmml,xfamu,  &
-     &              xfmp,nmagn,nmagnau,efaumksa,cminv,nm
+     &              xfmp,nmagn,nmagnau,efaumksa,cminv,nm,gfermi
