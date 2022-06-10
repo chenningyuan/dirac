@@ -1098,8 +1098,6 @@ contains
       integer                        :: icharge, imass, nproton, nneutron
       real(8), external              :: disotp
       real(8)                        :: qw
-
-      real(8), parameter             :: sthetaw2 = 0.2319d0
       real(8)                        :: dfac
 
 #include "mxcent.h"
@@ -1129,7 +1127,7 @@ contains
       imass    = nint(disotp(icharge, 1, 'MASS'))
       nproton  = icharge
       nneutron = imass - icharge
-      qw = (1.0d0 - 4.0d0*sthetaw2)*nproton - 1.0d0*nneutron
+      qw = (1.0d0 - 4.0d0*s2thetaw)*nproton - 1.0d0*nneutron
 
       print *, 'center', openrsp_cfg_pnc_center
       print *, 'E_pnc (bare integrals in a.u.)', real(epnc)
