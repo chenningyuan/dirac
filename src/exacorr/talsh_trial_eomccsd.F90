@@ -596,11 +596,12 @@ module talsh_trial_eomccsd
 !                         print *,'w:',i,' i:',i,a1,b1,i1,j1
                         !   trial2_hp_tens(a1,b1,i1,j1) = ONE
 
-                          if (j1.gt.i1.and.b1.gt.a1) then
-                              trial2_hp_tens(b1,a1,j1,i1) = ONE*(2.0**(-1.0))
-                              trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE*(2.0**(-1.0)) !XY
-                              trial2_hp_tens(a1,b1,j1,i1) = MINUS_ONE*(2.0**(-1.0))
-                              trial2_hp_tens(a1,b1,i1,j1) = ONE*(2.0**(-1.0)) !XY
+                          if (j1.ne.i1.and.b1.ne.a1) then
+                        !       trial2_hp_tens(b1,a1,j1,i1) = ONE*(2.0**(-1.0))
+                        !       trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE*(2.0**(-1.0)) !XY
+                        !       trial2_hp_tens(a1,b1,j1,i1) = MINUS_ONE*(2.0**(-1.0))
+                        !       trial2_hp_tens(a1,b1,i1,j1) = ONE*(2.0**(-1.0)) !XY
+                             trial2_hp_tens(a1,b1,i1,j1) = ONE
                           end if
 
 

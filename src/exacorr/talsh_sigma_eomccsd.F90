@@ -581,7 +581,7 @@ module talsh_sigma_eomccsd
 !-----------------------------------------------------
 
       ierr=talsh_tensor_contract("S(a,i)+=W(a,m,e,f)*R(e,f,i,m)",sigma1_tensor,interm_t%w_vovv,r2_tensor,scale=ONE_HALF)
-
+      
 !-----------------------------------------------------
 !     term 6: S1(a,i) += 1/2 W(m,n,i,e) * R(e,a,m,n) |
 !-----------------------------------------------------
@@ -716,8 +716,8 @@ module talsh_sigma_eomccsd
       ! ierr=talsh_tensor_contract("S(a,b,i,j)+=U(n,j)*T(b,a,i,n)",sigma2_tensor,oo_aux,interm_t%t2)
 
 
-      ierr=talsh_tensor_contract("S(a,b,i,j)+=U(n,i)*T(b,a,n,j)",sigma2_tensor,oo_aux,interm_t%t2)                   !XY
-      ierr=talsh_tensor_contract("S(a,b,i,j)+=U(n,j)*T(b,a,n,i)",sigma2_tensor,oo_aux,interm_t%t2,scale=MINUS_ONE)   !XY
+      ierr=talsh_tensor_contract("S(a,b,i,j)+=U(n,i)*T(b,a,j,n)",sigma2_tensor,oo_aux,interm_t%t2,scale=MINUS_ONE)  !XY
+      ierr=talsh_tensor_contract("S(a,b,i,j)+=U(n,j)*T(b,a,i,n)",sigma2_tensor,oo_aux,interm_t%t2)   !XY
       ierr=talsh_tensor_destruct(oo_aux)
 
 !----------------------------------------------------------
