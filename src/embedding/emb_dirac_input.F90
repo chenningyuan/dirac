@@ -110,6 +110,15 @@ module fde_input_dirac
                read(lucmd,*) nadd_fun
                call fde_set_nadd_kef(nadd_fun)
 
+! do not correct for double counting for subsystem energy for static potential
+!
+! by default we correct for double counting if the  static potential is used; 
+! if the potential is calculated in the scf from the density and electrostatic
+! potential of the frozen subsystem, this option has no effect, as the 
+! subsytem energy is always corrected for this double-counting 
+            CASE ('.NOEDCC')
+                itmp%im_remove_vemb_e_dcount = .false.
+
 ! flags for response read kinetic energy functional for non-additive term
             CASE ('.RSP')
                itmp%im_frozen = .true.

@@ -172,7 +172,19 @@ module fde_input
             'A.S.P. Gomes, C. R. Jacob and L. Visscher, ', &
             'PCCP 10 (2008) 5353-5362.'
             write(unit,*)
-
+            if (itmp%im_remove_vemb_e_dcount) then
+               write(unit,'(3X,3A)') &
+               'Double-counting of fixed potential will be ',  &
+               'removed from active subsystem energy, according to ',  &
+               'usual convention in FDE/subsystem DFT theory.'
+            else
+               write(unit,'(3X,4A)') &
+               'Double-counting of fixed potential will NOT be', &
+               'removed from active subsystem energy. This is not consistent ', &
+               'with FDE/subsystem DFT theory conventions, but do not affect ', &
+               'orbitals or orbital energies.' 
+            end if
+            write(unit,*)
          else
             write(unit,'(A,A60)')  ' * FDE Potential generated from frozen, active densities'
             write(unit,*)
