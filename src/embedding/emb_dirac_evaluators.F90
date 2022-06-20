@@ -922,7 +922,7 @@ module fde_evaluators_dirac
          real(8)              :: n_0_f(1), gnn_0_f(1)
          real(8)              :: n_0_t(1), gnn_0_t(1)
 
-         threshold    = 1.0e-28
+         threshold    = fde_cfg_tinydens
          max_fun_derv = 1
          bllen        = 1
          order        = 1
