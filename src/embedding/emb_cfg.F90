@@ -268,6 +268,7 @@ implicit none
          fde_im_control%im_frozen_pert_direct    = tmp%im_frozen_pert_direct
          fde_im_control%im_frozen_pert_reorth    = tmp%im_frozen_pert_reorth
          fde_im_control%im_update_vemb=tmp%im_update_vemb
+         fde_im_control%im_remove_vemb_e_dcount = tmp%im_remove_vemb_e_dcount 
       end subroutine fde_set_import_info
 
 

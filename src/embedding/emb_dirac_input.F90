@@ -51,7 +51,6 @@ module fde_input_dirac
       call fde_get_files_info(ftmp)
       call fde_get_export_info(etmp)
       call fde_get_import_info(itmp)
-      itmp%im_remove_vemb_e_dcount=.true.
       
       lunit = ftmp%logfile%unit
       
