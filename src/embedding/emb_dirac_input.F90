@@ -51,6 +51,7 @@ module fde_input_dirac
       call fde_get_files_info(ftmp)
       call fde_get_export_info(etmp)
       call fde_get_import_info(itmp)
+      itmp%im_remove_vemb_e_dcount=.true.
       
       lunit = ftmp%logfile%unit
       
@@ -117,7 +118,7 @@ module fde_input_dirac
 ! potential of the frozen subsystem, this option has no effect, as the 
 ! subsytem energy is always corrected for this double-counting 
             CASE ('.NOEDCC')
-                itmp%im_remove_vemb_e_dcount = .false.
+                itmp%im_remove_vemb_e_dcount=.false.
 
 ! flags for response read kinetic energy functional for non-additive term
             CASE ('.RSP')

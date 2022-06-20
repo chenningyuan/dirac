@@ -173,16 +173,16 @@ module fde_input
             'PCCP 10 (2008) 5353-5362.'
             write(unit,*)
             if (itmp%im_remove_vemb_e_dcount) then
-               write(unit,'(3X,3A)') &
+               write(unit,'(3X,2A,/3X,A)') &
                'Double-counting of fixed potential will be ',  &
                'removed from active subsystem energy, according to ',  &
                'usual convention in FDE/subsystem DFT theory.'
             else
-               write(unit,'(3X,4A)') &
-               'Double-counting of fixed potential will NOT be', &
-               'removed from active subsystem energy. This is not consistent ', &
-               'with FDE/subsystem DFT theory conventions, but do not affect ', &
-               'orbitals or orbital energies.' 
+               write(unit,'(3X,2A,/3X,2A)') &
+               'Double-counting of fixed potential will NOT be ', &
+               'removed from active subsystem energy. ', &
+               'This is not consistent with FDE/subsystem DFT theory conventions, ', &
+               'but do not affect orbitals or orbital energies.' 
             end if
             write(unit,*)
          else
