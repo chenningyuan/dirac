@@ -627,7 +627,7 @@ module talsh_cc
             call diis (comm_t%t2,t_convergence=t_convergence)
           end if
 
-         call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, after diis")
+         ! call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, after diis")
 
           if (.not.CCD) then
             ierr=talsh_tensor_init(result_tensor)
@@ -664,7 +664,7 @@ module talsh_cc
             ierr=talsh_tensor_destruct(hov_aux_tensor)
          end if
          ierr=talsh_tensor_destruct(result_tensor)
-         call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, leaving")
+         ! call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs, leaving")
 
         end subroutine
 

@@ -16,7 +16,7 @@ f.add(from_string = 'Eigenvalue      1',
       num_lines   = 26,
       rel_tolerance   = 1.0e-6)
 
-f.add(from_string = ' *** EXCITATIONS OF BOSON IRREP    a( 1) ***',
+f.add(from_string = ' *** EXCITATIONS OF FERMION IRREP    A( 1) ***',
       num_lines   = 10,
       rel_tolerance   = 1.0e-6)
 
