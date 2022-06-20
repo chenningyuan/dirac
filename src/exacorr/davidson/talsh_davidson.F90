@@ -950,7 +950,7 @@ contains
         complex(kind=8) :: factor1, factor2
         integer(INTD) :: r1_rank 
         integer :: ierr, i
-        logical :: debug_form_r = .true.
+        logical :: debug_form_r = .false.
         type(talsh_tens_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
 
@@ -1060,7 +1060,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .true.
+        logical :: debug_correction_vectors = .false.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1761,7 +1761,7 @@ contains
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .true.
+      logical :: debug_subspace_matrix = .false.
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -2203,14 +2203,14 @@ contains
 
         call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
-        print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)
-        print *, "eVectorsR(2) before zgemm", eVectorsR(:,2)
-        print *, "eVectorsR(3) before zgemm", eVectorsR(:,3)
-        print *, "eVectorsR(4) before zgemm", eVectorsR(:,4)
-        print *, "eVectorsR(5) before zgemm", eVectorsR(:,5)
-        print *, "eVectorsR(6) before zgemm", eVectorsR(:,6)
-        print *, "eVectorsR(7) before zgemm", eVectorsR(:,7)
-        print *, "eVectorsR(8) before zgemm", eVectorsR(:,8)
+        ! print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)
+        ! print *, "eVectorsR(2) before zgemm", eVectorsR(:,2)
+        ! print *, "eVectorsR(3) before zgemm", eVectorsR(:,3)
+        ! print *, "eVectorsR(4) before zgemm", eVectorsR(:,4)
+        ! print *, "eVectorsR(5) before zgemm", eVectorsR(:,5)
+        ! print *, "eVectorsR(6) before zgemm", eVectorsR(:,6)
+        ! print *, "eVectorsR(7) before zgemm", eVectorsR(:,7)
+        ! print *, "eVectorsR(8) before zgemm", eVectorsR(:,8)
         if (follow_overlap_local) then
             
             if (follow_overlap_scheme_local .eq. 1) then
