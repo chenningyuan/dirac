@@ -526,11 +526,11 @@ module talsh_trial_eomccsd
                     do a = 1, workspace%tens2_dims(1)
                        w = w + 1
                      !   diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
-                     !   if (i.lt.j.and.a.lt.b) then
-                     !     diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
-                     !   else 
-                     !     diagonal(w) = huge(diagonal)
-                     !   end if
+                       if (i.lt.j.and.a.lt.b) then
+                         diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                       else 
+                         diagonal(w) = huge(diagonal)
+                       end if
                     end do
                  end do
               end do
