@@ -8075,6 +8075,7 @@ C
      &                          NVEC,NVEC2,LUIN1,LUOUT,IALL_LUIN)
 C
 C     Written by  S. Knecht         - March 6 2008
+C     Revised for complex A. Nyvang - 2020
 C
 C**********************************************************************
 C
@@ -8141,6 +8142,7 @@ C
      &                      NVEC,ISVEC,LUIN1,LUOUT)
 C
 C     Written by  S. Knecht         - March 6 2008
+C     Revised for complex A. Nyvang - 2020
 C
 C**********************************************************************
 C

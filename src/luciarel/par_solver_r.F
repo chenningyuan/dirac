@@ -1760,6 +1760,7 @@ C          Call wrtmat(X(1,JVec),2*NDim,1,2*NDim,1)
 * General revision for parallel implementation - CMICDV_PAR
 *
 * June 2007, Stefan Knecht
+* Revised 2020, Andreas Nyvang, use by default 2 vectors instead of 1 for Davidson space
 *
 *
 * Input :
