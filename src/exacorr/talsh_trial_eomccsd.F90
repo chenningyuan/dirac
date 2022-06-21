@@ -92,11 +92,11 @@ module talsh_trial_eomccsd
                   do X = 1, workspace%tens2_dims(2)
                      do a = 1, workspace%tens2_dims(1)
                         b = b + 1
-                        ! if (i.lt.j) then
+                        if (i.lt.j) then
                            diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
-                        ! else 
-                           ! diagonal(b) = huge(diagonal)
-                        ! end if
+                        else 
+                           diagonal(b) = huge(diagonal)
+                        end if
                      end do
                   end do
                end do
@@ -153,16 +153,16 @@ module talsh_trial_eomccsd
         end if
 
 ! forcing full excitation manifold 
-        if (enable_double_manifold) then
-              workspace%nroots = workspace%N(1) + workspace%N(2)
-               !  workspace%nroots = workspace%N(1) + (workspace%N(2)-workspace%tens2_dims(1)*workspace%tens2_dims(3))/2
-        else
+      !   if (enable_double_manifold) then
+      !         workspace%nroots = workspace%N(1) + workspace%N(2)
+      !          !  workspace%nroots = workspace%N(1) + (workspace%N(2)-workspace%tens2_dims(1)*workspace%tens2_dims(3))/2
+      !   else
 ! forcing only the single part now
-           if (workspace%nroots.gt.workspace%N(1)) then
-              workspace%nroots = workspace%N(1)
-              write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
-           end if 
-        end if
+      !      if (workspace%nroots.gt.workspace%N(1)) then
+      !         workspace%nroots = workspace%N(1)
+      !         write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
+      !      end if 
+      !   end if
 
         write(6,*) 'roots',workspace%nroots
         j = 0
@@ -525,7 +525,12 @@ module talsh_trial_eomccsd
                  do b = 1, workspace%tens2_dims(2)
                     do a = 1, workspace%tens2_dims(1)
                        w = w + 1
-                       diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                     !   diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                     !   if (i.lt.j.and.a.lt.b) then
+                     !     diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                     !   else 
+                     !     diagonal(w) = huge(diagonal)
+                     !   end if
                     end do
                  end do
               end do
