@@ -1,22 +1,17 @@
-!Dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!dirac_copyright_start
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -644,15 +639,6 @@ C
         AOC      = AOCBUF
         NFMAT    = NFMATBUF
       ENDIF
-C
-C     Add vacuum polarisation in case of ONESYS
-C
-#ifdef MOD_UNRELEASED
-      IF(ONESYS.AND.VACPOL) THEN
-        WRITE(LUPRI,'(/A)') '=> Adding vacuum polarization potential'
-        CALL ONEVAC(CMO,EIG,IBEIG,FOCK,WORK(KFREE),LFREE)
-      ENDIF
-#endif
 CMI   ... when (DO4C2C.AND..NOT.CONT2C)=.true.,  !
       IF (DOHUCKEL.OR.BARNUC.OR.(TRIFCK.AND..NOT.DO4C2C)) THEN
         WRITE(LUPRI,'(/A)') '=> Calculating sum of orbital energies'
@@ -993,7 +979,7 @@ C        ... before extracting of EIG print the Fock matrix
 C
 C     If converged, exit SCF here
 C
-      IF (DHFEXIT) GOTO 9999      
+      IF (DHFEXIT) GOTO 9999
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -3289,12 +3275,15 @@ C
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
          IOPT=14
          IF(ATOMIC) THEN
-           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
+           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
          ELSE
            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
          ENDIF
       ENDIF
       IF(IONMVO) THEN
+        WRITE(LUPRI,'(A)') "Generating MVOs with Bauschlicher's"//
+     &  " method (J. Chem. Phys. 72, 880 (1980))."
+
 C
 C       Generate MVOs by the Bauschlicher method (ionic Fock)
 C
@@ -3398,7 +3387,8 @@ C
       IF(ATOMIC) THEN
         CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,
+     &     TITLE='MVO coefficients')
       ENDIF   
       CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -3431,6 +3421,8 @@ C
 C     Set up index arrays for coefficients contributing
 C     =================================================
 C
+      IF (IPRMVO.GE.0) WRITE(LUPRI,'(/A/,(5X,A))')
+     &   'Orbital selection for MVO density matrix:',VECMVO(1:NFSYM)
       IC   = 1
       DO I = 1,NFSYM
         NR(I)   = NESH(I)
@@ -3487,7 +3479,8 @@ C
         CALL TITLER('Output density matrix from DENMVO','*',103)
         DO 20 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I2,A,I0/)') '*** Fermion corep ',I,
+     &       '; Occupied MOs: ',NVEC(I,0)
           CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    20   CONTINUE
@@ -4233,16 +4226,6 @@ C
      &                 NTMO(I),WORK(KFREE),LFREE,IERR)
           ENDIF
 C
-#ifdef MOD_UNRELEASED
-          IF(VACPOL) THEN
-            CALL HEADER(
-     &      'DFDIAG: Eigenvalues (normal diagonalization) :',-1)
-            WRITE(LUPRI,'(3X,A,I1,A,I1/)')
-     &      '*** Fermion corep ',I,'/',NFSYM
-            WRITE(LUPRI,'(I5,F25.10)')
-     &      (J,EIG(IORB(I)+J),J=1,NTMO(I)) 
-         ENDIF
-#endif
          IF (DODBG) THEN
           IF (IPRHAM.GE.3) THEN
            CALL HEADER(
@@ -5104,7 +5087,6 @@ C
 
       RETURN
       END
-#ifdef MOD_UNRELEASED
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck onevac */
       SUBROUTINE ONEVAC(CMO,EIG,IBEIG,FOCK,WORK,LWORK)
@@ -5177,7 +5159,6 @@ C     Release memory
 C
       RETURN
       END
-#endif
       SUBROUTINE FMO_FREEZE(FMO)
 #include "implicit.h"
 #include "priunit.h"

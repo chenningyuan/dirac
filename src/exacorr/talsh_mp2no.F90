@@ -4,7 +4,7 @@ module talsh_mp2no
         use tensor_algebra
         use talsh
         use exacorr_datatypes
-        use exacorr_utils
+        !use exacorr_utils
         use talsh_common_routines
         use exacorr_mo
         use exacorr_global
@@ -24,7 +24,7 @@ module talsh_mp2no
 
         private
 
-        public talsh_mp2no_driver
+        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
@@ -34,7 +34,9 @@ module talsh_mp2no
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
 !       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
-!       Written by Xiang Yuan
+!       Written by Xiang Yuan, modified by Johann Pototschnig
+
+        use talsh_mp2lap
 
         type(exacc_input), intent(in) :: exa_input
         integer, intent(inout)        :: N_cano                  ! number of new canonical orbital
@@ -47,23 +49,29 @@ module talsh_mp2no
         real(kind=8), pointer  :: New_orbital_energy(:)   ! new orbital energy from qdia of Fock matrix in new orbital basis
         logical                :: alive
         real(kind=8)           :: threshold
-        integer                :: i
+        integer                :: i, nocc
 
         call print_date("Entering MP2_NO Module")
  
         threshold = exa_input%t_mp2no
+        !LV: the line below should be improved, will not work if a user does not give the HOMO as the last orbital
+        nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
 
         inquire(file="NOs_MO", exist=alive)
         if (alive) then
             call print_date('File NOs_MO exists')
         else
             call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
-            call talsh_generate_MP2_VNO_MObasis(exa_input)   
+            if (exa_input%mp2no<9) then
+                  call talsh_generate_MP2_VNO_MObasis(exa_input)
+            else
+                  call mp2lap_get_DM(exa_input)
+            endif   
             call get_transform_Fock(exa_input,'DM_complex')
         end if
         call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                               New_orbital_energy,'NOs_MO',N_cano)
-        call write_to_newfile(exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+        call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
 
         call print_date('Leaving MP2_NO Module')
       end subroutine talsh_mp2no_driver
@@ -82,7 +90,7 @@ module talsh_mp2no
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
 
 !        Intermediate tensors (same notation as in relccsd)
-         type(talsh_dm_tens)         :: MP2_density_tensor
+         type(talsh_tens_t)          :: MP2_vv_density
          type(talsh_tens_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims
          integer(INTD), dimension(2) :: vv_dims
@@ -136,10 +144,7 @@ module talsh_mp2no
          vv_dims(2) = nvir
 
          ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(MP2_density_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(MP2_density_tensor%prime_vv,body_p,C8,int(0,C_INT),DEV_HOST)
-!         call print_date("Getting orbital energies")
-
+         ierr=talsh_tensor_construct(MP2_vv_density,C8,vv_dims,init_val=ZERO)
 
 !        Get HF orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
@@ -177,14 +182,13 @@ module talsh_mp2no
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 
-         ierr=talsh_tensor_init(MP2_density_tensor%prime_vv)
-         ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_density_tensor%prime_vv,&
+         ierr=talsh_tensor_init(MP2_vv_density)
+         ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
 
 !        Make some noise so that we know we are proceeding 
          call print_date('finished MP2_DM_VV calculation and save it to file DM_complex')
-         call write_matrix(exa_input,MP2_density_tensor,'DM_complex')
-
+         call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
 
         end subroutine talsh_generate_MP2_VNO_MObasis
 
@@ -260,77 +264,6 @@ module talsh_mp2no
       call print_date('finished oovv integrals')
          
    end subroutine get_MP2_integrals
-        
-!------------------------------------------------------------------------------------------------------------------------------------
-      subroutine write_matrix(exa_input,gamma,file_out)
-! Routine for writing complex density matrix into the file'DM_complex'. 
-
-
-! input variables
-         type(exacc_input),   intent(in   )  :: exa_input
-         type(talsh_dm_tens), intent(inout)  :: gamma
-         character(len=*),intent(in)         :: file_out
-
-! matrix dimensions
-         integer :: nocc, nvir
-! body pointers
-         type(C_PTR)                     :: body_p2
-         complex(8), pointer, contiguous :: dm_block(:,:)
-         complex(8), allocatable         :: dm_mo_fort(:,:)
-! error code
-         integer :: ierr
-! loop variables
-         integer :: i, j, k
-         integer :: mp2dm
-! debug
-         logical :: debug=.false.
-
-         
-      !***************
-      !     set dims *
-      !***************
-            nocc    = 0
-            nvir    = exa_input%nvir
-         
-      !***************************************
-      !     copy DM blocks into one large DM *
-      !***************************************
-         
-            allocate (dm_mo_fort(nvir,nvir))
-            dm_mo_fort = ZERO
-         
-      !-----------
-      !| OO | OV |
-      !-----------
-      !| VO | VV |
-      !-----------
-                  
-      !vv
-            ierr=talsh_tensor_get_body_access(gamma%prime_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
-            dm_mo_fort(1:nvir,1:nvir) = dm_block
-         
-            call get_free_fileunit(mp2dm)
-            open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
-      ! write dimension of the matrix 
-            write(mp2dm) nocc+nvir
-      ! write matrix element 
-            write(mp2dm) dm_mo_fort
-
-            if (debug) then
-              print *,'<<<<< DM, complete, before formatting to DM_complex'
-                 do j=1,(nocc+nvir)
-                    do i=1,(nocc+nvir)
-                       write(mp2dm,'(2x,2F28.16,2x,2I4)') dm_mo_fort(i,j),i,j
-                    end do
-                  end do
-                  print *,'>>>>> DM, complete, after formatting to DM_complex'
-            end if
-
-            close(mp2dm,status='KEEP')
-
-        end subroutine write_matrix
-
 
 !------------------------------------------------------------------------------------------------------------------------------------
       subroutine get_transform_Fock (exa_input,Matrix_file)
@@ -346,6 +279,8 @@ module talsh_mp2no
                   character(len=*),intent(in)        :: Matrix_file
                   type(exacc_input), intent(in)      :: exa_input
 
+                  type(cmo)                          :: qorbital
+                  type(basis_set_info_t)             :: ao_basis
                   real(kind=8), pointer              :: N_OCCUPATION(:)         ! occupation number from qdia of DM
                   complex(kind=8), pointer           :: MP2_density_comp(:,:)   ! MP2 density matrix from DM_complex
                   real(8), pointer                   :: MP2_density_quat(:,:,:) ! quaternion MP2 density matrix 
@@ -353,9 +288,8 @@ module talsh_mp2no
                   real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
                   real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
                   integer                            :: sz,flb,sz_occ           ! size of matrix and flag for block
-                  integer                            :: i
+                  integer                            :: i, ierr, nocc, nvirt
 
-                                                        
                   call read_matrix_comp(MP2_density_comp,Matrix_file)
                   call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
 
@@ -371,10 +305,14 @@ module talsh_mp2no
                   call quater_write(NOs_MO,N_OCCUPATION,'NOs_MO')
                   call print_date('wrote all natural orbital and occupation number in file NOs_MO')
                     
-                  flb = 0                     ! we read vv block of Fock matrix
-                  sz = exa_input%nkr_vir      ! the size of the FM is the same as DM
-                  sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-                  call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
+                  ! we initialize the (diagonal) vv block of the Fock matrix with the orbital energies
+                  call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+                  call convert_mo_to_quaternion(qorbital)
+                  nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
+                  nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))
+                  allocate(Fock_HF(nvirt,nvirt,4))
+                  Fock_HF = 0.0
+                  forall (i=1:nvirt) Fock_HF(i,i,1) = qorbital%energy(nocc+i)
                   call print_date('read Fock matrix from DFCOEF')
 
                   call basis_transform_matrix(Fock_HF,NOs_MO,Fock_NO)
@@ -400,7 +338,8 @@ module talsh_mp2no
             character(len=*),intent(in)        :: file_orb
             integer,intent(inout)              :: N_reduced               ! number of reduced natural orbital 
 
-
+            type(cmo)                          :: qorbital
+            type(basis_set_info_t)             :: ao_basis
             real(kind=8)                       :: Sum_N_OCCUPATION_total
             real(kind=8)                       :: Sum_N_OCCUPATION_reduced 
             real(kind=8)                       :: Perc_OCCUPATION_reduced
@@ -409,9 +348,8 @@ module talsh_mp2no
             real(kind=8), pointer              :: Fock_NO(:,:,:)          ! v-v block of Fock matrix in natural orbital basis
             real(kind=8), pointer              :: Fock_HF(:,:,:)          ! v-v block of Fock matrix 
             real(kind=8), pointer              :: HF_AO(:,:,:)            ! Hartree-Fock orbital 
-            integer                            :: sz,flb,fl,sz_occ        ! size of matrix and flag for block
-            integer                            :: i,j,k
-            
+            integer                            :: nocc, nvirt             ! number of occupied and virtuals 
+            integer                            :: ierr,i,j,k
             
             call quater_read(NOs_MO_reduced,N_OCCUPATION_reduced,Sum_N_OCCUPATION_total,& 
                               threshold,N_reduced,file_orb)
@@ -434,16 +372,18 @@ module talsh_mp2no
             write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
             write(*,*) ""
 
-            flb = 0                       ! we only read virtual orbital 
-            sz = exa_input%nkr_vir        ! the number of virtual orbital 
-            sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-            call quater_read_from_dirac_orbital(HF_AO,sz,sz_occ,flb)
+            nvirt = exa_input%nkr_vir        ! the number of virtual orbitals
+            nocc  = exa_input%mokr_occ(size(exa_input%mokr_occ))
+            call read_from_dirac(ao_basis,qorbital,'DFCOEF',ierr)
+            call convert_mo_to_quaternion(qorbital)
+            allocate(HF_AO(qorbital%nao,nvirt,4))
+            HF_AO = qorbital%coeff_q(:,nocc+1:nocc+nvirt,:)
             call print_date('read HF orbital coefficient from DFCOEF')
             
-            flb = 0                         ! we read vv block of Fock matrix
-            sz = exa_input%nkr_vir          ! the size of the FM is the same as DM
-            sz_occ = exa_input%mokr_occ(size(exa_input%mokr_occ))
-            call quater_read_from_dirac_fock(Fock_HF,sz,sz_occ,flb)
+            ! we initialize the (diagonal) vv block of the Fock matrix with the orbital energies
+            allocate(Fock_HF(nvirt,nvirt,4))
+            Fock_HF = 0.0
+            forall (i=1:nvirt) Fock_HF(i,i,1) = qorbital%energy(nocc+i)
             call print_date('read Fock matrix from DFCOEF')
 
             call basis_transform_matrix(Fock_HF,NOs_MO_reduced,Fock_NO)
@@ -457,95 +397,6 @@ module talsh_mp2no
 
             call print_rMP2FVNO(New_orbital_energy,N_OCCUPATION_reduced)
       end subroutine
-
-
-!-----------------------------------------------------------------------------------------------------------------------------
-      subroutine write_to_newfile (exa_input,NOs_AO,N_OCCUPATION,New_orbital_energy,file_old,file_new)
-  !      write new orbital information into new file 'MP2NOs_AO', which is similar to DFCOEF 
-  !      copy the basis information from DFCOEF and use new orbital energy and coefficient to replace the old orbital.   
-  !      revise subroutine write_mos_to_dirac of exacorr_dirac.F
-  
-         implicit none
-    
-         type(exacc_input), intent(in)         :: exa_input
-         character(len=*),intent(in)           :: file_old,file_new
-         real(8),pointer,intent(in)            :: NOs_AO(:,:,:)          ! new canonical orbital in AO basis
-         real(kind=8),pointer,intent(in)       :: N_OCCUPATION(:)        ! occupation number
-         real(kind=8),pointer,intent(in)       :: New_orbital_energy(:)  ! new orbital energy 
-
-
-         type(basis_set_info_t)   :: ao_basis
-         type(qumo)               :: qorbital        ! save the new canonical orbital 
-         type(qumo)               :: qorbital_hf     ! save the original HF canonical orbital 
-
-         integer                  :: nocc            ! occupied orbital 
-         integer                  :: nao, nmo, nno   ! number of atomic orbital; molecular orbital; natural orbital
-         integer,allocatable      :: index(:)
-         integer                  :: i,j
-         integer                  :: ierr
-         integer                  :: nmo_hf
-         real(kind=8)             :: diff_1, diff_2, diff_3, diff_4
-
-
-!        read information of from DFCOEF
-         call quater_read_from_dirac_all(ao_basis,qorbital_hf,file_old,ierr)
-
-         nocc = exa_input%mokr_occ(size(exa_input%mokr_occ))
-         nao = qorbital_hf%nao
-         nno = size(NOs_AO,2)
-         nmo = nocc+nno
-         nmo_hf = qorbital_hf%nmo
-         allocate(index(nmo))
-         do i = 1, nmo
-            index(i) = i ! we set the index compatible with the fact that we store all mo's
-         end do
-
-         call alloc_mo(qorbital,nao,nmo_hf,4)
-         qorbital%restricted = qorbital_hf%restricted
-         qorbital%complex_algebra = qorbital_hf%complex_algebra
-         qorbital%total_energy = qorbital_hf%total_energy
-         qorbital%fermion_irrep = qorbital_hf%fermion_irrep
-         qorbital%boson_irrep = 0
-         qorbital%index = index
-
-         do i = 1, nocc
-            qorbital%energy(i)=qorbital_hf%energy(i)
-         end do
-
-         do i = nocc+1, nmo
-            qorbital%energy(i)=New_orbital_energy(i-nocc)
-!            qorbital%energy(i)=qorbital_hf%energy(i)
-         end do
-
-         if (nmo < nmo_hf) then
-            do i=nmo+1, nmo_hf
-               qorbital%energy(i)=qorbital_hf%energy(nmo_hf)*100
-!               print *, "removed orbital energy", qorbital%energy(i)
-            end do
-         end if 
-
-         do j = 1, nocc
-            do  i = 1, qorbital%nao
-                  qorbital%coeff(i,j,1)=qorbital_hf%coeff(i,j,1)
-                  qorbital%coeff(i,j,2)=qorbital_hf%coeff(i,j,2)
-                  qorbital%coeff(i,j,3)=qorbital_hf%coeff(i,j,3)
-                  qorbital%coeff(i,j,4)=qorbital_hf%coeff(i,j,4)
-            enddo
-         enddo
-
-         do  j = nocc+1, nmo
-            do  i = 1, qorbital%nao
-                  qorbital%coeff(i,j,1)=NOs_AO(i,j-nocc,1)
-                  qorbital%coeff(i,j,2)=NOs_AO(i,j-nocc,2)
-                  qorbital%coeff(i,j,3)=NOs_AO(i,j-nocc,3)
-                  qorbital%coeff(i,j,4)=NOs_AO(i,j-nocc,4)
-            enddo
-         enddo
-
-         call quater_write_mos_to_dirac(ao_basis,qorbital,file_new)
-         call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
-
-        end subroutine write_to_newfile
 
 end module talsh_mp2no
 

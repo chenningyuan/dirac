@@ -1,22 +1,17 @@
 !dirac_copyright_start
-!      Copyright (c) 2021 by the authors of DIRAC.
-!      All Rights Reserved.
+!      Copyright (c) by the authors of DIRAC.
 !
-!      This source code is part of the DIRAC program package.
-!      It is provided under a written license and may be used,
-!      copied, transmitted, or stored only in accordance to the
-!      conditions of that written license.
+!      This program is free software; you can redistribute it and/or
+!      modify it under the terms of the GNU Lesser General Public
+!      License version 2.1 as published by the Free Software Foundation.
 !
-!      In particular, no part of the source code or compiled modules may
-!      be distributed outside the research group of the license holder.
-!      This means also that persons (e.g. post-docs) leaving the research
-!      group of the license holder may not take any part of Dirac,
-!      including modified files, with him/her, unless that person has
-!      obtained his/her own license.
+!      This program is distributed in the hope that it will be useful,
+!      but WITHOUT ANY WARRANTY; without even the implied warranty of
+!      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+!      Lesser General Public License for more details.
 !
-!      For information on how to get a license, as well as the
-!      author list and the complete list of contributors to the
-!      DIRAC program, see: http://www.diracprogram.org
+!      If a copy of the GNU LGPL v2.1 was not distributed with this
+!      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
@@ -276,6 +271,8 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+      use luci_wrkspc
+      use memory_allocator
       use mc_energies
       use symmetry_setup_krci
       use os_utils
@@ -288,7 +285,6 @@ C***********************************************************************
 #include "dcbbos.h"
 #include "dgroup.h"
 *.Memory
-#include "../luciarel/wrkspc.inc"
 #include "../luciarel/ipoist8.inc"
 *.File numbers
 #include "../luciarel/clunit.inc"
@@ -333,18 +329,9 @@ C
       MZ_NUM = MIN(NZ,2)
       MIN_ONE = - 1
 
-C     Compute offset from WRK in parameter list
-C     to WORK in common in wrkspc.inc. WORK is used internally in LUCIAREL.
-C     This offset is added to all Ksomething addresses in WORK(Ksomething)
-C     so that WRK(1:LWRK) are the memory addresses really used.
-
-C     Note that K_OFFSET is in ipoist8.inc and is always i*8
-C     because the offset can be bigger than what can be stored in i*4.
-C     ** All Ksomething used in WORK(Ksomething) must always be i*8 and declared in ipoist8.inc **
-C     See also subroutine MEMMAR.
-
-      CALL COMPOFF(WRK,WORK,K_OFFSET)
-C     *k_offset = (long) (wrk-work+1);
+      k_offset = 1
+      call legacy_lwork_get(lwrk)
+      call allocate_wrkspc
 
       MXPWRD = LWRK
       KADD = MXPWRD
@@ -745,6 +732,7 @@ C     ^ end loop over different T operators (default=1)
 C
 C     release memory
  8888 CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
+      call delete_wrkspc
 C
 #if defined (VAR_MPI2)
 C

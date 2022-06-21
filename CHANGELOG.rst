@@ -1,25 +1,79 @@
 :orphan:
 
-22.alpha
---------------------------
+22.1.beta
+---------
 
 Performance improvements:
 
-- New improved code for selection of trial vectors, leading to considerable improvement in performance. Contributor: Andreas Nyvang.
-  New improved code for sigma vector routines in luciarel, leading to improvement in performance. Contributor: Andreas Nyvang.
+- New improved code for selection of trial vectors in lucarel, leading to considerable improvement in performance. Contributor: Andreas Nyvang.
+- New improved code for sigma vector routines in luciarel, leading to improvement in performance. Contributor: Andreas Nyvang.
   Note that KRMC and KRCI also by default uses luciarel.  (See git hash tag d5d4e3ff75 for all the changes.)
 
-21.1 - WIP for first patch
---------------------------
+Bugfix:
+
+- Default for .MVO has been corrected, so it now behaves as expected: modified virtual orbitals
+  based on the Fock potential from the doubly-occupied molecular orbitals after an open-shell SCF calculation (H. J. Aa. Jensen).
+
+
+22.0 (2022-02-08)
+-----------------
+
+New features:
+
+- New licence: GNU Lesser General Public License v2.1
+- Electronic circular dichroism (ECD) beyond lowest-order -- full light-matter interaction
+   - Contributors: Martin van Horn, Trond Saue, and Nanna Holmgaard List
+   - Reference: `M. van Horn, T. Saue, N. H. List., Probing Chirality across the
+     Electromagnetic Spectrum with the Full Semiclassical Light-Matter
+     Interaction. J. Chem. Phys. (in press) (2022) <https://doi.org/10.1063/5.0077502>`__, `ChemRxiv <https://doi.org/10.33774/chemrxiv-2021-j1hcz-v2>`__
+- MP2 frozen virtual natural orbitals via the ExaCorr module
+   - Contributors: Xiang Yuan, Lucas Visscher, André Severo Pereira Gomes.
+   - Reference: `X. Yuan, L. Visscher, A. S. P. Gomes., Assessing MP2 frozen
+     natural orbitals in relativistic correlated electronic structure calculations.
+     <https://arxiv.org/abs/2202.01146>`__
+   - Manual: `.MP2NO <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#mp2no>`__
+     and `.DONATORB <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html#donatorb>`__
+- Polarizable Embedding with Complex Polarization Propagator
+   - Contributors: Joel Creutzberg, Erik D. Hedegård
+   - Reference: `Polarizable embedding complex polarization propagator in four-
+     and two-component frameworks. <https://arxiv.org/abs/2112.07721>`__
+
+Infrastructure changes and fixes:
+
+- HDF5 checkpoint file and DIRAC data scheme, python utilities to extract data
+   - Contributor: Lucas Visscher
+   - Manual: `The CHECKPOINT.h5 file <http://www.diracprogram.org/doc/release-22/development/checkpoint.html>`__
+
+Improvements:
+
+- DIIS replaced by `CROP <https://pubs.acs.org/doi/10.1021/ct501114q>`__ algorithm in ExaCorr module.
+   - Contributors: Chima Chibueze and Lucas Visscher.
+   - Reference: `Pototschnig et al., J. Chem. Theory Comput. 17 (2021) 5509−5529. <https://doi.org/10.1021/acs.jctc.1c00260>`__
+   - Manual: `EXACC <http://www.diracprogram.org/doc/release-22/manual/wave_function/exacorr.html>`__
+
+Bugfix:
+
+- There was an error in the construction of the projection operator for
+  secondary orbitals using density matrices for the very special case of
+  4-component relatistic average-of-configuration HF calculations on systems
+  with inversion symmetry and no occupation in ungerade symmetry.
+
+
+21.1 (2021-09-16)
+-----------------
 
 Revised features:
 
-- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first.
-  Now pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. H. J. Aa. Jensen.
-
+- Enhanced pam script: now it also looks in job directory for .diracrc, and it looks there first. pam looks for .diracrc three places: 1) job directory ("local .diracrc"), 2) home directory ("global .diracrc"), 3) pam script directory ("system .diracrc). The first .diracrc found is used. (H. J. Aa. Jensen).
+  - added ENABLE_EXATENSOR to the options you can change with 'ccmake --' (H. J. Aa. Jensen).
+  - enable talsh only with unsupported mpi libraries (Andre Gomes)
+  - improved exatensor MPI identification (Johann Pototschnig)
+    
 Error corrections:
 
 - Fixed pam script so it can find dirac.x and basis set directories in an installed version (i.e. after make install or e.g. "cmake --install build --prefix <installation root dir>"). H.J.Aa.Jensen.
+- Fixed memory management in LUCIA (Lucas Visscher)
+- atomic supersymmetry now works with X2Cmmf (Ayaki Sunaga, Stefan Knecht, Trond Saue)
 
 
 21.0 (2021-05-28)

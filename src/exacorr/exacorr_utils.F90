@@ -80,6 +80,7 @@ module exacorr_utils
       print*, "                   ***                   - Andre Severo Pereira Gomes***"
       print*, "                   ***                   - Loic Halbert              ***"
       print*, "                   ***                   - Xiang Yuan                ***"
+      print*, "                   ***                   - Chima Chibueze            ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
       print*, "                   ***                   - MP2 NOs                   ***"
       print*, "                   ***                   - 1DM                       ***"

@@ -1,7 +1,7 @@
 module talsh_common_routines
 
 !This module contains subroutines both needed in solving t equations as well as Lambda equations.
-!get_orbital_energies,diis,scale_with_denominators
+!get_orbital_energies,diis,scale_with_denominators, laplace multiplications
 
     use talsh
     use tensor_algebra
@@ -18,11 +18,14 @@ module talsh_common_routines
     public get_orbital_energies
     public scale_with_denominators
     public print_tensor
+    public write_talsh_matrix
     public get_element
     public Pair_correlation_energies
     public talsh_init_R8
     public talsh_init_C8
     public tensor_norm2
+    public laplace_mult
+    public laplace_testing
 
     contains
 
@@ -334,6 +337,56 @@ module talsh_common_routines
         end if
 
       end subroutine print_tensor
+
+      !------------------------------------------------------------------------------------------------------------------------------------
+      subroutine write_talsh_matrix(nvir,dm_vv,file_out,mode)
+! Routine for writing complex density matrix into the file'DM_complex'. 
+! Written by Xiang Yuan
+! Modified by Johann Pototschnig and shifted to talsh_common_routines
+
+       use exacorr_utils
+
+! input variables
+         integer,intent(in)                  :: nvir
+         type(talsh_tens_t), intent(inout)   :: dm_vv
+         character(len=*),intent(in)         :: file_out
+         integer, intent(in), optional       :: mode ! 1:binary, 2:ascii
+
+! body pointers
+         type(C_PTR)                     :: body_p2
+         complex(8), pointer, contiguous :: dm_block(:,:)
+         complex(8), allocatable         :: dm_mo_fort(:,:)
+! error code
+         integer :: ierr
+         integer :: mp2dm
+
+         allocate (dm_mo_fort(nvir,nvir))
+         dm_mo_fort = ZERO
+         
+         ierr=talsh_tensor_get_body_access(dm_vv,body_p2,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p2,dm_block,(/nvir,nvir/)) ! to use <dm_mo_block> as a regular Fortran 2d array
+         dm_mo_fort(1:nvir,1:nvir) = dm_block
+         
+         call get_free_fileunit(mp2dm)
+         if (present(mode) .and. mode==2) then
+           open (mp2dm,file=file_out,status='REPLACE',FORM='FORMATTED',access='SEQUENTIAL')
+           ! write dimension of the matrix 
+           write(mp2dm,*) nvir
+           ! write matrix element
+           do ierr=1,nvir
+             write(mp2dm,*) dm_mo_fort(ierr,1:nvir)
+           end do
+         else 
+           open (mp2dm,file=file_out,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
+           ! write dimension of the matrix 
+           write(mp2dm) nvir
+           ! write matrix element 
+           write(mp2dm) dm_mo_fort
+         end if
+
+         close(mp2dm,status='KEEP')
+
+        end subroutine write_talsh_matrix
       
       function get_element(h_tensor, dims) result(val)
 
@@ -687,5 +740,206 @@ module talsh_common_routines
          ierr=talsh_tensor_destruct(result_tensor)
 
      end function tensor_norm2
+
+     subroutine laplace_mult (tensor,factor,orb1,orb2,orb3,orb4,orb5,orb6)
+      
+      type(talsh_tens_t), intent(inout) :: tensor
+      real(8), intent(in)               :: factor
+      real(8), intent(in)               :: orb1(:),orb2(:)
+      real(8), intent(in), optional     :: orb3(:),orb4(:),orb5(:),orb6(:)
+      
+      integer(INTD)       :: ierr, rank
+      integer(INTD)       :: dims2(1:2),dims3(1:3),dims4(1:4),dims6(1:6)
+      integer(INTD)       :: p, q, r, s, t, u
+      type(C_PTR)         :: body_p
+      complex(8), pointer :: tens2(:, :)
+      complex(8), pointer :: tens3(:, :, :)
+      complex(8), pointer :: tens4(:, :, :, :)
+      complex(8), pointer :: tens6(:, :, :, :, :, :)
+
+      rank=talsh_tensor_rank(tensor)
+
+      if (rank.eq.2) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims2)
+         if (size(orb1).ne.dims2(1)) stop 'error in laplace_mult: vector 1 wrong size'
+         if (size(orb2).ne.dims2(2)) stop 'error in laplace_mult: vector 2 wrong size'
+
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens2,dims2)
+
+         do r = 1, dims2(2)
+           do p = 1, dims2(1)
+               tens2(p,r) = tens2(p,r) * DEXP(-(orb1(p)+orb2(r))*factor)
+           end do
+         end do
+
+      else if (rank.eq.3) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims3)
+         if (size(orb1).ne.dims3(1)) stop 'error in laplace_mult: vector 1 wrong size'
+         if (size(orb2).ne.dims3(2)) stop 'error in laplace_mult: vector 2 wrong size'
+         if (size(orb3).ne.dims3(3)) stop 'error in laplace_mult: vector 3 wrong size'
+
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens3,dims3)
+
+         do r = 1, dims3(3)
+           do q = 1, dims3(2)
+             do p = 1, dims3(1)
+               tens3(p,q,r) = tens3(p,q,r) * DEXP(-(orb1(p)+orb2(q)+orb3(r))*factor)
+             end do
+           end do
+         end do
+
+      else if (rank.eq.4) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims4)
+         if (size(orb1).ne.dims4(1)) stop 'error in laplace_mult: vector 1 wrong size'
+         if (size(orb2).ne.dims4(2)) stop 'error in laplace_mult: vector 2 wrong size'
+         if (size(orb3).ne.dims4(3)) stop 'error in laplace_mult: vector 3 wrong size'
+         if (size(orb4).ne.dims4(4)) stop 'error in laplace_mult: vector 4 wrong size'
+
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens4,dims4)
+
+         do s = 1, dims4(4)
+            do r = 1, dims4(3)
+               do q = 1, dims4(2)
+                  do p = 1, dims4(1)
+                     tens4(p,q,r,s) = tens4(p,q,r,s) * DEXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s))*factor)
+                  end do
+               end do
+            end do
+         end do
+
+      else if (rank.eq.6) then
+         ierr = talsh_tensor_dimensions(tensor,rank,dims6)
+         if (size(orb1).ne.dims6(1)) stop 'error in laplace_mult: vector 1 wrong size'
+         if (size(orb2).ne.dims6(2)) stop 'error in laplace_mult: vector 2 wrong size'
+         if (size(orb3).ne.dims6(3)) stop 'error in laplace_mult: vector 3 wrong size'
+         if (size(orb4).ne.dims6(4)) stop 'error in laplace_mult: vector 4 wrong size'
+         if (size(orb5).ne.dims6(5)) stop 'error in laplace_mult: vector 5 wrong size'
+         if (size(orb6).ne.dims6(6)) stop 'error in laplace_mult: vector 6 wrong size'
+
+         ierr=talsh_tensor_get_body_access(tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens6,dims6)
+
+         do u = 1, dims6(6)
+           do t = 1, dims6(5)
+             do s = 1, dims6(4)
+               do r = 1, dims6(3)
+                 do q = 1, dims6(2)
+                   do p = 1, dims6(1)
+                     tens6(p,q,r,s,t,u) = tens6(p,q,r,s,t,u) * &
+                     DEXP(-(orb1(p)+orb2(q)+orb3(r)+orb4(s)+orb5(t)+orb6(u))*factor)
+                   end do
+                 end do
+               end do
+             end do 
+           end do
+         end do
+
+      else 
+        stop 'error in laplace_mult: tensor is not of rank 4/6'
+      end if
+
+    end subroutine laplace_mult
+
+
+    subroutine laplace_testing(test_org, eps_occ, eps_vir)
+
+      type(talsh_tens_t)  , intent(inout)  :: test_org
+      real(8), intent(in)                  :: eps_occ(:),eps_vir(:)
+
+      integer(INTD)       :: ierr, rank
+      integer(INTD)       :: dims4(1:4), dims6(1:6)
+      integer(INTD)       :: nocc, nvir, a, b, c, i, j, k
+      type(C_PTR)         :: body_p
+      complex(8), pointer :: tens4(:, :, :, :)
+      complex(8), pointer :: tens6(:, :, :, :, :, :)
+      real(8)             :: test_sum, test_diff
+
+      rank=talsh_tensor_rank(test_org)
+      if (rank.eq.4) then
+         ierr = talsh_tensor_dimensions(test_org,rank,dims4)
+         if (ierr.ne.0 .or. rank.ne.4) stop 'error: tensor corrupted'
+
+         if (dims4(1).eq.dims4(2)) then
+           nvir = dims4(1)
+         else
+           stop 'error: asymmetric tensor in laplace_testing'
+         end if
+         if (dims4(3).eq.dims4(4)) then
+           nocc = dims4(3)
+         else
+           stop 'error: asymmetric tensor in laplace_testing'
+         end if
+
+         ierr=talsh_tensor_get_body_access(test_org,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens4,dims4)
+
+
+         test_sum=0.0D0
+         test_diff=0.0D0
+         do j = 1, nocc
+           do i = 1, nocc
+             do b = 1, nvir
+               do a = 1, nvir
+                test_sum=test_sum+tens4(a,b,i,j)
+                test_diff=test_diff+tens4(a,b,i,j) - &
+                     1.0D0/(eps_vir(a)+eps_vir(b)-eps_occ(i)-eps_occ(j))
+               end do
+             end do
+           end do
+         end do
+
+         write(*,*) 'result of testing all elements:'
+         write(*,*) 'test sum   = ',test_sum
+         write(*,*) 'test error = ',test_diff
+
+      else if (rank.eq.6) then
+         ierr = talsh_tensor_dimensions(test_org,rank,dims6)
+         if (ierr.ne.0 .or. rank.ne.6) stop 'error: tensor corrupted'
+
+         if (dims6(1).eq.dims6(2) .and. dims6(1).eq.dims6(3)) then
+           nvir = dims6(1)
+         else
+           stop 'error: asymmetric tensor in laplace_testing'
+         end if
+         if (dims6(4).eq.dims6(5) .and. dims6(4).eq.dims6(6)) then
+           nocc = dims6(4)
+         else
+           stop 'error: asymmetric tensor in laplace_testing'
+         end if
+
+         ierr=talsh_tensor_get_body_access(test_org,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,tens6,dims6)
+
+         test_sum=0.0D0
+         test_diff=0.0D0
+         do c = 1, nvir
+          do b = 1, nvir
+           do a = 1, nvir
+            do k = 1, nocc
+             do j = 1, nocc
+              do i = 1, nocc
+               test_sum=test_sum+tens6(a,b,c,i,j,k)
+               test_diff=test_diff+tens6(a,b,c,i,j,k) &
+                   - 1.0D0/(eps_vir(a)+eps_vir(b)+eps_vir(c)-eps_occ(i)-eps_occ(j)-eps_occ(k))
+              end do
+             end do   
+            end do      
+           end do
+          end do
+         end do
+
+         write(*,*) 'result of testing all elements:'
+         write(*,*) 'test sum   = ',test_sum
+         write(*,*) 'test error = ',test_diff
+
+      else
+        stop 'error in laplace_testing: only rank 4 or 6'
+      end if
+
+    end subroutine laplace_testing
+
 
 end module talsh_common_routines
