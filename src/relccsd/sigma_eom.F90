@@ -845,7 +845,7 @@ integer :: ierr
 
     if (iprnt.ge.2) &
     ! write(iw,*)'diagram 7 ', dot_product(sigma2,sigma2)
-    ! write(iw,*) "test diagram 7 ", sigma2
+    write(iw,*) "test diagram 7 ", sigma2
 
 !!S(ab,ij) = S(ab,ij) + P(ij) w_efam(ab,ej)*r1(e,i)
 !!-------------------------------------------------
