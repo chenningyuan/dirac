@@ -1040,9 +1040,9 @@
          exa_input%ccd = .true.
       end if
 
-      if (kw_matches(word, '.CIS   ')) then
-         exa_input%cis = .true.
-      end if
+      ! if (kw_matches(word, '.CIS   ')) then
+      !    exa_input%cis = .true.
+      ! end if
 
       if (kw_matches(word, '.MP2NO         ')) then
          exa_input%mp2no = 1
