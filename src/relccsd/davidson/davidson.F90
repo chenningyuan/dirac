@@ -66,7 +66,7 @@ logical, save      :: davidson_save_subspaces
 logical, save      :: davidson_save_sigmas 
 logical, save      :: davidson_save_results
 logical, save      :: davidson_overlap_sorting
-logical, save      :: davidson_debug = .false.
+logical, save      :: davidson_debug = .true.
 logical, save      :: davidson_use_preconditioner = .true.
 logical, save      :: davidson_refresh_trial_vectors = .false.
 logical, save      :: davidson_print_config = .true.

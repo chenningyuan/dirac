@@ -55,7 +55,7 @@ module talsh_trial_eomccsd
         type(C_PTR):: trial1_body_p, trial2_body_p
 
         logical :: enable_double_manifold = .true.
-        logical :: debug_trial = .true.
+        logical :: debug_trial = .false.
 
         ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
         ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
@@ -92,7 +92,11 @@ module talsh_trial_eomccsd
                   do X = 1, workspace%tens2_dims(2)
                      do a = 1, workspace%tens2_dims(1)
                         b = b + 1
-                        diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
+                        if (i.lt.j) then
+                           diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
+                        else 
+                           diagonal(b) = huge(diagonal)
+                        end if
                      end do
                   end do
                end do
@@ -149,15 +153,16 @@ module talsh_trial_eomccsd
         end if
 
 ! forcing full excitation manifold 
-        if (enable_double_manifold) then
-              workspace%nroots = workspace%N(1) + workspace%N(2)
-        else
+      !   if (enable_double_manifold) then
+      !         workspace%nroots = workspace%N(1) + workspace%N(2)
+      !          !  workspace%nroots = workspace%N(1) + (workspace%N(2)-workspace%tens2_dims(1)*workspace%tens2_dims(3))/2
+      !   else
 ! forcing only the single part now
-           if (workspace%nroots.gt.workspace%N(1)) then
-              workspace%nroots = workspace%N(1)
-              write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
-           end if 
-        end if
+      !      if (workspace%nroots.gt.workspace%N(1)) then
+      !         workspace%nroots = workspace%N(1)
+      !         write(6,*) 'WARNING!! resetting number of roots to :',workspace%N(1)
+      !      end if 
+      !   end if
 
         write(6,*) 'roots',workspace%nroots
         j = 0
@@ -200,10 +205,14 @@ module talsh_trial_eomccsd
                                                            b1,workspace%tens2_dims(2),  &
                                                            i1,workspace%tens2_dims(3), &
                                                            j1,workspace%tens2_dims(4))
-                          if (j1.ge.i1) then
-                             trial2_h_p_tens(a1,b1,j1,i1) = ONE
-                          else if (j1.lt.i1) then
-                             trial2_h_p_tens(a1,b1,j1,i1) = MINUS_ONE
+                          if (j1.gt.i1) then
+                             trial2_h_p_tens(a1,b1,j1,i1) = ONE*(2.0**(-0.5))
+                           !   trial2_h_p_tens(a1,b1,j1,i1) = ONE
+                        !   else if (j1.lt.i1) then
+                             trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE*(2.0**(-0.5)) !XY
+                           !   trial2_h_p_tens(a1,b1,i1,j1) = MINUS_ONE
+                        !   else
+                        !    trial2_h_p_tens(a1,b1,j1,i1) =ZERO
                           end if
                        end if
                     else
@@ -478,7 +487,7 @@ module talsh_trial_eomccsd
         type(C_PTR):: trial1_body_p, trial2_body_p
 
         logical :: enable_double_manifold = .false.
-        logical :: debug_trial = .true.
+        logical :: debug_trial = .false.
 
         ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
         ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
@@ -516,7 +525,12 @@ module talsh_trial_eomccsd
                  do b = 1, workspace%tens2_dims(2)
                     do a = 1, workspace%tens2_dims(1)
                        w = w + 1
-                       diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                     !   diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                       if (i.lt.j.and.a.lt.b) then
+                         diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+                       else 
+                         diagonal(w) = huge(diagonal)
+                       end if
                     end do
                  end do
               end do
@@ -585,7 +599,17 @@ module talsh_trial_eomccsd
                                                            i1,workspace%tens2_dims(3), &
                                                            j1,workspace%tens2_dims(4))
 !                         print *,'w:',i,' i:',i,a1,b1,i1,j1
-                          trial2_hp_tens(a1,b1,i1,j1) = ONE
+                        !   trial2_hp_tens(a1,b1,i1,j1) = ONE
+
+                          if (j1.gt.i1.and.b1.gt.a1) then
+                              trial2_hp_tens(b1,a1,j1,i1) = ONE*(2.0**(-1.0))
+                              trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE*(2.0**(-1.0)) !XY
+                              trial2_hp_tens(a1,b1,j1,i1) = MINUS_ONE*(2.0**(-1.0))
+                              trial2_hp_tens(a1,b1,i1,j1) = ONE*(2.0**(-1.0)) !XY
+                           !   trial2_hp_tens(a1,b1,i1,j1) = ONE
+                          end if
+
+
                        end if
                     else
 !                      print *,'c'

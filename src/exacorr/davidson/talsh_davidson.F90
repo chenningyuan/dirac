@@ -855,13 +855,13 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e18.10,a,1e18.10,a)')  &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6,a,1e14.6,a)')  &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e18.10,a,1e18.10,a)')  &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e14.6)')  &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e18.10)')  &
                       "Eigenvalue ",i," : ", vr
             end if
         end do
@@ -987,6 +987,8 @@ contains
            if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
 
            if (r1_rank.eq.1) then
+              
+            !   call rotate_eigenvector(workspace_t%sigma1(i),workspace_t%sigma2(i),workspace_t)
               ierr=talsh_tensor_contract("r(a)+=s(a)*K()",workspace_t%delta1(k),workspace_t%sigma1(i),one_tensor,scale=factor1)
               ierr=talsh_tensor_contract("r(a)+=t(a)*K()",workspace_t%delta1(k),workspace_t%trial1(i),one_tensor,scale=factor2)
 
@@ -1636,6 +1638,7 @@ contains
 ! doubles
               workspace_t%tens2_dims = (/ nvirt, n_continuum_virt, nocc, nocc /)
               workspace_t%N(2) = nvirt*n_continuum_virt*nocc*nocc
+            !   workspace_t%N(2) = nvirt*n_continuum_virt*(nocc*(nocc-1))/2
 
            case("EA")
 ! singles
@@ -1656,6 +1659,7 @@ contains
         end select
 
         excitation_manifold_size = workspace_t%N(1) + workspace_t%N(2)
+ !       excitation_manifold_size = workspace_t%N(1) + (workspace_t%N(2)*(workspace_t%N(2)+1)/2)
 
 ! now that we know the dimensionality of the excitation manifold (=number of rows in Hbar), start allocating tensors
 ! the number of solutions (and solution vectors) depends on the user input.
@@ -1666,7 +1670,7 @@ contains
         print *, 'requested number of roots',nroots
         if (nroots.lt.0) then
            print *, 'INFO: number of roots reset to the dimension of Hbar'
-           workspace_t%nroots = excitation_manifold_size
+           workspace_t%nroots = excitation_manifold_size 
            workspace_t%Lmax   = excitation_manifold_size
         else
            if (nroots.gt.excitation_manifold_size) then
@@ -1937,7 +1941,7 @@ contains
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .true.
+      logical :: debug_subspace_matrix = .false.
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -1981,12 +1985,14 @@ contains
                   ierr=talsh_tensor_contract("MIJ()+=Bdag+(p,q,r,s)*S(p,q,r,s)",  &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
-   &                                                        workspace_t%sigma2(j))
+   &                                                        workspace_t%sigma2(j),&
+   &                                                        scale=ONE)
                else if (left.and..not.right) then
                   ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
-   &                                                        workspace_t%sigma2(j))
+   &                                                        workspace_t%sigma2(j),&
+   &                                                        scale=ONE)
                end if
             end if
 
@@ -2249,6 +2255,69 @@ contains
     end subroutine
 
 
+
+
+    ! subroutine rotate_eigenvector(sigma1, sigma2, workspace_t)
+    !     type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+    !     type(talsh_tens_t) sigma1, sigma2
+
+
+    !     type(C_PTR):: body_p
+    !     integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
+    !     integer(C_INT):: host_arg_max
+
+    !     integer(C_INT)              :: ierr
+    !     integer(INTD), dimension(1) :: one_dims
+
+    !     integer :: i,j,a 
+    !     integer :: N_trial1, N_trail2
+
+    !     type(talsh_tens_t)   :: result_tensor
+    !     complex(8), pointer  :: result_tens(:), sigma1_tens(:), sigma2_tens(:)
+
+
+    !     one_dims(1) = 1
+    !     N_trail1 = size(workspace_t%trial1,1)
+    !     N_trail2 = size(workspace_t%trial2,1)
+
+
+    !     ierr=talsh_tensor_construct(result_tensor,C8,one_dims,init_val=ZERO)
+
+    !     ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    !     call c_f_pointer(body_p,result_tens,one_dims)
+
+
+    !     do i=1, N_trail1
+    !         ierr=talsh_tensor_contract("V1()+=B(p,q)*S(p,q)",result_tensor,workspace_t%trial1(i),sigma1) ! 
+    !         sigma1_tens(i) = result_tens(1)
+    !     end do 
+
+
+    !     do i=1, N_trail2
+    !         ierr=talsh_tensor_contract("V2()+=B(a,b,c)*S(a,b,c)",result_tensor,workspace_t%trial2(i),sigma2) ! 
+    !     end do 
+
+
+
+    !     ierr=talsh_tensor_contract("V1(a,b)+=B(a,m)*V(m,b)",eigenvec_tensor_new1,workspace_t%trial1,eigenvec_tensor_old) ! 
+    !     ierr=talsh_tensor_contract("V2(a,b)+=B(a,m)*V(m,b)",eigenvec_tensor_new2,workspace_t%trial2,eigenvec_tensor_old) ! 
+
+
+    !     ierr=talsh_tensor_get_body_access(eigenvec_tensor_new1,body_p,C8,int(0,C_INT),DEV_HOST)
+    !     call c_f_pointer(body_p,eigenvec_tens1,eigenvec_dims_s)
+
+    !     ierr=talsh_tensor_get_body_access(eigenvec_tensor_new2,body_p,C8,int(0,C_INT),DEV_HOST)
+    !     call c_f_pointer(body_p,eigenvec_tens2,eigenvec_dims_d)
+
+
+
+
+    !     ierr=talsh_tensor_destruct(eigenvec_tensor_new1)
+    !     ierr=talsh_tensor_destruct(eigenvec_tensor_new2)
+
+    ! end subroutine
+
+
     subroutine setup_overlap_sorting(c_r_old, c_l_old, nroots, solve_rhs, solve_lhs)
         real(kind=8), intent(inout), pointer :: c_r_old(:,:) 
         real(kind=8), intent(inout), pointer :: c_l_old(:,:)  
@@ -2348,6 +2417,14 @@ contains
 
         call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
+        ! print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)
+        ! print *, "eVectorsR(2) before zgemm", eVectorsR(:,2)
+        ! print *, "eVectorsR(3) before zgemm", eVectorsR(:,3)
+        ! print *, "eVectorsR(4) before zgemm", eVectorsR(:,4)
+        ! print *, "eVectorsR(5) before zgemm", eVectorsR(:,5)
+        ! print *, "eVectorsR(6) before zgemm", eVectorsR(:,6)
+        ! print *, "eVectorsR(7) before zgemm", eVectorsR(:,7)
+        ! print *, "eVectorsR(8) before zgemm", eVectorsR(:,8)
         if (follow_overlap_local) then
             
             if (follow_overlap_scheme_local .eq. 1) then
@@ -2385,8 +2462,16 @@ contains
         end if
 
 ! debug, print eigenvecturs and eigenvalues from subspace
+        ! print *, "eVectorsR(1) after zgemm", eVectorsR(:,1)
+        ! print *, "eVectorsR(2) after zgemm", eVectorsR(:,2)
+        ! print *, "eVectorsR(3) after zgemm", eVectorsR(:,3)
+        ! print *, "eVectorsR(4) after zgemm", eVectorsR(:,4)
+        ! print *, "eVectorsR(5) after zgemm", eVectorsR(:,5)
+        ! print *, "eVectorsR(6) after zgemm", eVectorsR(:,6)
+        ! print *, "eVectorsR(7) after zgemm", eVectorsR(:,7)
+        ! print *, "eVectorsR(8) after zgemm", eVectorsR(:,8)
         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-                                    .false.,.false., nroots=nroots_to_print)
+                                    .false.,.true., nroots=nroots_to_print)
 !                                   left_local, right_local, nroots=nroots_to_print)
 
     end subroutine
@@ -2514,7 +2599,7 @@ contains
         complex(kind=8), intent(inout) :: c_small_l(:,:)
         real(kind=8), intent(in) :: energy_shift(2)
 
-        real(kind=8), allocatable :: temp_vector(:,:)
+        complex(kind=8), allocatable :: temp_vector(:,:)
         real(kind=8) :: temp
         integer, allocatable :: indices_sorted_array(:)
         real(kind=8), allocatable :: e_small_real(:,:)
@@ -2540,7 +2625,7 @@ contains
         end do
 
         allocate(temp_vector(vectors_L,vectors_L))
-        temp_vector = 0.0d0
+        temp_vector = cmplx(0.0d0, 0.0d0)
 
         if (right) then
             do i = 1, vectors_L
