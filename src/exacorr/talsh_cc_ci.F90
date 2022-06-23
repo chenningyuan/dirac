@@ -1,4 +1,7 @@
 module talsh_cc_ci
+!This module contains the routines needed to calculate CC-CI(EOM-CC) response property
+
+
     use tensor_algebra
     use talsh
     use exacorr_datatypes
@@ -27,17 +30,20 @@ module talsh_cc_ci
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
-!   Written by Xiang Yuan Janunary 2022, Lille, France
+subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+!This subroutine drives the CC-CI response property calculation 
+!it now includes linear and quadratic response
+    !   Written by Xiang Yuan Janunary 2022, Lille, France
 
     type(exacc_input), intent(in) :: exa_input
     type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
     type(talsh_tens_t), intent(inout)           :: l2_tensor
     type(talsh_tens_t), intent(inout)           :: l1_tensor
+    integer                                     :: rr ! rank of response 
     
 
-
+!   Wave-function tensor needed to construct the response function
 
     complex(kind=8)               :: omega1, omega2, omega3
     type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
@@ -45,29 +51,33 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
     type(talsh_comm_tens_t)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
     type(talsh_comm_tens_t)       :: bvec_tensor1, bvec_tensor2, bvec_tensor3
     complex(kind=8)               :: eom_qr, eom_lr
-    logical                       :: do_eom_lr
     
     omega1=(0.0,0.0)
     omega2=(0.0,0.0)
     omega3=(0.0,0.0)
 
 
-    call print_date('Enter CC-CI quadratic response')
+    call print_date('Enter CC-CI response')
     
     call form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,&
                                   int_t, l1_tensor, l2_tensor)
+
+    call print_date('Constructed intermediates needed in cc-ci response')
 
     call solve_eom_lr_right(interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
     call solve_eom_lr_right(interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
     call solve_eom_lr_right(interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
 
-    do_eom_lr = .TRUE.
-    if (do_eom_lr) then 
+    call print_date('Solved CC-CI response right equations')
+    
+    if (rr==1) then 
+        call print_date('Do linear response')
         call get_eom_lr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
                     tprop_tensor1, tprop_tensor2, & 
                     l1_tensor,l2_tensor,eom_lr)
 
     else 
+        call print_date('Do quadratic response')
         call get_left_bvec(exa_input,interm_t,interm_t_prop1,l1_tensor,l2_tensor,tprop_tensor1,bvec_tensor1)
         call get_left_bvec(exa_input,interm_t,interm_t_prop2,l1_tensor,l2_tensor,tprop_tensor2,bvec_tensor2)
         call get_left_bvec(exa_input,interm_t,interm_t_prop3,l1_tensor,l2_tensor,tprop_tensor3,bvec_tensor3)
@@ -82,7 +92,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
                     l1_tensor,l2_tensor,eom_qr)
     end if
 
-    call print_date('Leave CC-CI quadratic response')    
+    call print_date('Leave CC-CI response')    
 
 end subroutine talsh_CC_CI_driver
 

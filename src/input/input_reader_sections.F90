@@ -1106,6 +1106,14 @@
          call kw_read(word, exa_input%ncycles)
       end if
 
+      if (kw_matches(word, '.CCCILR')) then
+         exa_input% eom_lr =.true.
+      end if
+
+      ! if (kw_matches(word, '.CCCIQR')) then
+      !    exa_input% eom_qr =.true.
+      ! end if
+
       if (kw_matches(word, '.EXEOM ')) then
          exa_input%eom = .true.
          call kw_read(word, nr_eom_runs)
@@ -1128,6 +1136,7 @@
             end do
          end if
       end if
+
  
       if (kw_matches(word, '.OCC_BETA')) then
          exa_input%beta_occ = .true.

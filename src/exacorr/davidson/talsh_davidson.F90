@@ -1562,6 +1562,36 @@ contains
     end subroutine talsh_solve_Linear_systems
 ! aspg, added from (q)rsp
 
+    subroutine get_tensor_linear_systems(t_tensor,root_vect,workspace_t)
+      
+        type(talsh_comm_tens_t)              :: t_tensor
+        complex(kind=8), pointer, contiguous :: root_vect(:,:)
+        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
+        
+
+        type(talsh_tens_t)          :: one_tensor
+        integer(C_INT)              :: ierr
+        integer                     :: iroot, N
+        integer(C_INT)              :: one_dims(1)
+        complex(kind=8)             :: factor
+
+        one_dims(1) = 1
+        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+        N = size(root_vect,1)
+
+
+         do iroot=1, N
+            factor = root_vect(iroot,1)
+            ierr=talsh_tensor_contract("t(a,i)+=B1(a,i)*X()",t_tensor%t1,workspace_t%trial1(iroot),one_tensor,scale=factor)
+            ierr=talsh_tensor_contract("t(a,b,i,j)+=B2(a,b,i,j)*X()",t_tensor%t2,workspace_t%trial2(iroot),one_tensor,scale=factor)
+         end do
+
+
+    end subroutine get_tensor_linear_systems
+
+
+
     subroutine talsh_davidson_workspace_destroy(workspace_t)
         type(talsh_davidson_workspace_tens_t),  intent(inout) :: workspace_t
         integer :: ierr, i
@@ -2076,7 +2106,7 @@ contains
 !   subroutine talsh_get_values_vectors_davidson(A, workspace, projector)
 ! removed property gradient since that will be avaliable from within workspace_t
    subroutine talsh_get_values_vectors_davidson(results_t,int_t,interm_t, &
- &               workspace_t, projector_t, frequency, prop_grad1, prop_grad2)
+ &               workspace_t, projector_t, frequency, prop_grad1, prop_grad2, tprop_tensor)
       type(talsh_davidson_results_tens_t) :: results_t
       type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
       type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
@@ -2085,6 +2115,7 @@ contains
 
       complex(kind=8), intent(in), optional :: frequency  
       type(talsh_tens_t), intent(inout), optional :: prop_grad1, prop_grad2
+      type(talsh_comm_tens_t), intent(inout), optional    :: tprop_tensor
 ! bad coupling between modules, to be replaced by an abstract class that the sigma vector module extends
 ! and that will have associated get_matrix_size, create_sigma_vector and create_diagonal
 
@@ -2212,7 +2243,12 @@ contains
                end if
             end if
             if (.not.associated(delta)) then
-                write(davidson_output_file_unit,*) "All roots converged, stopping."
+                if (davidson_solve_linear_system) then 
+                    write(davidson_output_file_unit,*) "Root converged."
+                    call get_tensor_linear_systems(tprop_tensor,x_small,workspace_t)
+                else
+                    write(davidson_output_file_unit,*) "All roots converged, stopping."
+                end if
                 exit
             end if
 

@@ -73,7 +73,7 @@ module talsh_eom_rspeq_solver
             interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
 
             call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, & 
-                                    omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo)
+                                    omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
 
             call print_date("Finishing EOM-EE eigenvalue calculation")
 

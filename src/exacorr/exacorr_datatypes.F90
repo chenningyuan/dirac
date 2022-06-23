@@ -64,6 +64,7 @@
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
             logical                 :: do_no = .false.          ! if true, generate natural orbital
+            logical                 :: eom_lr = .false.
 
             integer                 :: exa_blocksize = 75
             integer                 :: talsh_buff = 50          ! (GB) total memory available for talsh
@@ -88,6 +89,7 @@
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: eom = .false.
             integer                 :: current_eom_input = -1
+        !     logical                 :: eom_lr = .false.
             logical                 :: eom_qr = .false.
 ! handle one or more *EOMCC blocks 
             type(eom_config_t), allocatable :: eom_input(:)

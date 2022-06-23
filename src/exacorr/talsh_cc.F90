@@ -87,6 +87,7 @@ module talsh_cc
          logical :: CC2 
          integer :: iff        ! loop variable to loop over field strengths
          integer :: fock_mode  ! choice of Fock build options
+         integer :: rr         ! rank of cc-ci response
          
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
@@ -118,7 +119,7 @@ module talsh_cc
          CC2 = exa_input%cc2     !L
          lambda = exa_input%lambda
          eom = exa_input%eom
-         eom_lr = .false.
+         eom_lr = exa_input%eom_lr
          eom_qr = exa_input%eom_qr
          ncycles = exa_input%ncycles
 
@@ -379,8 +380,11 @@ module talsh_cc
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances
            if (eom_qr) then
-              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor)
+              rr = 2
+              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
            else if (eom_lr) then
+              rr = 1
+              call talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 ! TODO: if we want properties etc, now we call other drivers
            else
               call talsh_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t)
