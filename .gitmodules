@@ -2,8 +2,8 @@
 	path = external/gen1int
 	url = https://gitlab.com/bingao/gen1int.git
 [submodule "external/pelib"]
-        path = external/pelib
-        url = https://gitlab.com/pe-software/pelib-public.git                
+	path = external/pelib
+	url = https://gitlab.com/pe-software/pelib-public.git
 [submodule "external/unit-tests"]
 	path = external/unit-tests
 	url = https://gitlab.com/dirac/unit-tests.git
