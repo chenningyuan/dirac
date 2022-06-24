@@ -708,7 +708,7 @@ C
                 eref = emc_ref ! initialize...
 C
 C###############################################################
-                CALL GASCI_REL(F1,F2,
+                CALL GASCI_LUCIAREL(F1,F2,
      &                         ISM,ISPC,IPRDIA,
      &                         EREF,ECORE_KRMC,CIRUN,
      &                         WORK(KPROCLIST),WORK(KGROUPLIST))

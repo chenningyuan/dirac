@@ -20,7 +20,7 @@
 *           parallelization by Stefan Knecht                          *
 *                                                                     *
 ***********************************************************************
-      SUBROUTINE GASCI_REL(F1,F2,ISM,ISPC,IPRNT,EREF,
+      SUBROUTINE GASCI_LUCIAREL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
       use luci_wrkspc
 *
@@ -728,7 +728,7 @@ C
      &                      NPRDET,pert_dummy,MXP1,MXP2,MXQ,
      &                      scratch_dav1,iscratch_dav1,scratch_dav2,
      &                      WORK(KT_CC),T_BUFF,ECORE,ICISTR,LBLK,
-     &                      IDIAG,THRES_E,NBATCH,WORK(KPCLBT),
+     &                      IDIAG,thres_G,thres_E,NBATCH,WORK(KPCLBT),
      &                      WORK(KPCLEBT),WORK(KPCIBT),INIDEG,
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,

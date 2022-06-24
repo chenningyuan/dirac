@@ -2473,12 +2473,16 @@ C     been initialized on the outside.
 CSK      IGSOCCX(I          ) = NGASSP(1,I)
 CSK      IGSOCCX(I + MXPNGAS) = NGASSP(2,I)
       END DO
-C     Energy convergence threshold
+C     Gradient and energy convergence thresholds
+      THRES_G = opt_thrgrd
       THRES_E = opt_threci
 #if defined (VAR_MPI)
-        IF( ISYNC_NODES .eq. 1 )
-     &    call interface_mpi_BCAST(thres_e,1,MASTER,
+        IF( ISYNC_NODES .eq. 1 ) THEN
+          call interface_mpi_BCAST(thres_g,1,MASTER,
      &                   global_communicator)
+          call interface_mpi_BCAST(thres_e,1,MASTER,
+     &                   global_communicator)
+         END IF
 #endif
 C     Sequence of CI calculations (here one!)
       NSEQCI(1) = 1
@@ -3143,14 +3147,16 @@ C     DIAPAR.1
       END IF
 *
 *. Number of iterations
-      WRITE(LUPRI,'(A,I2)')
+      WRITE(LUPRI,'(A,I4)')
      &   '        Allowed number of iterations    ',MAXIT
 *. Number of CI vectors in subspace
-      WRITE(LUPRI,'(A,I2)')
-     &   '        Allowed Dimension of CI subspace ',MXCIV_CI
+      WRITE(LUPRI,'(A,I4)')
+     &   '        Allowed Dimension of CI subspace',MXCIV_CI
 *
       WRITE(LUPRI,'(A,1P,E11.5/)')
-     &   '        Convergence threshold for energy ',THRES_E
+     &   '        Convergence threshold for gradient',THRES_G
+      WRITE(LUPRI,'(A,1P,E11.5/)')
+     &   '        Convergence threshold for energy  ',THRES_E
       IF(IDIAG.EQ.2) THEN
         WRITE(LUPRI,'(A,1P,E11.5)')
      &   '        Individual second order energy threshold ',E_THRE

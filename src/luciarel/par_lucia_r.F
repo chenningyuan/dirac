@@ -6346,7 +6346,7 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE P1_B_PAR_RL_1(VEC1,VEC2,SUBSPH,EIGAPR,RNRM,EIGSHF,
-     &                      EIG,TEST,E_CONV,RTCNV,CONVER,ITER,MAXIT,
+     &                      EIG,thres_G,thres_E,RTCNV,CONVER,ITER,MAXIT,
      &                      IROOT,LUIN1LIST,LUIN2LIST,LUOUTLIST,
      &                      NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
      &                      MY_IOFF_LUIN1,MY_IOFF_LUIN2,MY_IOFF_LUOUT,
@@ -6533,8 +6533,8 @@ C
 C
 C     check for convergence
 C
-      IF(RNORM.LT. TEST .OR. (ITER.GT.2.AND.
-     &  ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.E_CONV)) THEN
+      IF(RNORM.LT. thres_G .OR. (ITER.GT.2.AND.
+     &  ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.thres_E)) THEN
 !      IF( RNorm .lt. 1.00D-06) THEN
 C
         RTCNV(IROOT) = .TRUE.
@@ -6552,8 +6552,8 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE P1_B_PAR_CX_1(VEC1,VEC2,SUBSPH,SUBSPH_2,EIGAPR,RNRM,
-     &                        EIGSHF,EIG,E_Conv,
-     &                        RTCNV,CONVER,CONVLIM,ITER,NROOT,
+     &                        EIGSHF,EIG,thres_G,thres_E,
+     &                        RTCNV,CONVER,ITER,NROOT,
      &                        MAXIT,IROOT,LUIN1LIST,LUIN2LIST,LUOUTLIST,
      &                        NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
      &                        MY_IOFF_LUIN1,MY_IOFF_LUIN2,MY_IOFF_LUOUT,
@@ -6616,7 +6616,7 @@ C
       FACTOR   = 0.0D0
       FACTOR_N = 0.0D0
 
-C      write(6,*) 'E_conv in residual calculation',E_conv
+C      write(6,*) 'thres_E in residual calculation',thres_E
 
 C      write(6,*) 'Input eigenvalues'
 C      call wrtmat(eig,nroot,iter,2*maxvec,maxit)
@@ -6946,17 +6946,15 @@ C      write(6,*) 'Energy of this iteration  ',Eig(IRoot,ITer)
 C      write(6,*) 'Delta E ', Abs(Eig(IRoot,ITer)-Eig(IRoot,ITer-1))
       !September 26: Changed to checking both energy difference and
       !rnorm
-!      E_conv_tmp = 1.0d-6
-!      Convlim_tmp = 1.0d-6
 !      IF( (Iter.ge.2) .and. 
-!     &   (RNORM .lt. CONVLIM_tmp) .and.
-!     &   Abs(Eig(IRoot,ITer-1)-Eig(IRoot,ITer)).lt.E_conv_tmp) THEN
+!     &   (RNORM .lt. thres_G) .and.
+!     &   Abs(Eig(IRoot,ITer-1)-Eig(IRoot,ITer)).lt.thres_E) THEN
 !C
 !        RTCNV(IROOT) = .TRUE.
 !C
-!      Else if((RNorm .lt. Convlim_tmp) .and. (Iter.eq.1)) then
+!      Else if((RNorm .lt. thres_G) .and. (Iter.eq.1)) then
 !         RtCnv(IRoot) = .True.
-      IF( RNORM .lt. CONVLIM ) THEN
+      IF( RNORM .lt. thres_G ) THEN
 C
         RTCNV(IROOT) = .TRUE.
 C

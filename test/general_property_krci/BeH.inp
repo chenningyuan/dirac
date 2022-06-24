@@ -41,6 +41,8 @@ LUCIAREL
  50
 .RSTRCI
  0
+.THRGCI
+ 1.0D-5
 #############
 .OPERATOR
  'A2-EDM'

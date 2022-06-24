@@ -95,7 +95,7 @@ C
      &            '.CASSCF','.TRDM  ','.OMEGAQ','.THRECI','.CHECKP',
      &            '.USE PB','.GENFOC','.TRA NO','.LOWSRT','.SEL ST',
      &            '.DIPMOM','.MCANA ','.GAS SH','.SVRONO','.SVRONX',
-     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.XXXXXX',
+     &            '.EEDM  ','.MHYP  ','.ENSPS ','.NMQM  ','.THRGCI',
      &            '.XXXXXX','.TERSE '/ !MKN
       DATA SET/.FALSE./
       character (len= 4)              :: symmetry_str
@@ -186,7 +186,9 @@ C                                sufficiently well. More testing
 C                                required.
 C      DKRCI_THRECI = 0.8d-12 
       !September 25 2019: Changed to more moderate value - A. Nyvang
-      DKRCI_THRECI = 1.0d-7 
+      DKRCI_THRECI = 1.0d-10 ! CI energy change convergence threshold;
+      ! set so low that the DKRCI_THRGCI takes precedence
+      DKRCI_THRGCI = 1.0d-4 ! CI gradient convergence threshold
 C
 C     Initialize /DCOKRCI/
 C     ===================
@@ -878,6 +880,8 @@ C          : (\alpha X r)_z.(r_z) (i.e. \alpha X Electric Field Gradient)
                GO TO 100
 CMKN The nMQM is newly implemented following mHYP
    50          CONTINUE
+C&&& .THRGCI:  CI gradient convergence threshold
+               read(lucmd,*) DKRCI_THRGCI
                GO TO 100
    51          CONTINUE
                GO TO 100
@@ -1204,7 +1208,9 @@ C
       CALL PRSYMB(LUPRI,'=',75,0)
 C
       WRITE(LUPRI,'(A,1P,D10.2)')
-     &     ' * Energy convergence threshold: ', DKRCI_THRECI
+     &     ' * Gradient convergence threshold:', DKRCI_THRGCI
+      WRITE(LUPRI,'(A,1P,D10.2)')
+     &     ' * Energy convergence threshold:  ', DKRCI_THRECI
       IF (MAXCIT_KRCI .GE. 0) THEN
          WRITE(LUPRI,'(A,I3)')
      &     ' * Maximum number of CI iterations for each symmetry: ',

@@ -21,7 +21,7 @@
      &                  RNRM,EIG,FINEIG,MAXIT,NROOT,MAXVEC,NINVEC,
      &                  APROJ,AVEC,AVECO,WORK,IPRT,
      &                  NPRDIM,IPNTR,LBLK,EIGSHF,
-     &                  THRES_E,IBLOCKL,NPARBLOCK,NBLOCKS,
+     &                  thres_G,thres_E,IBLOCKL,NPARBLOCK,NBLOCKS,
      &                  LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                  LU6LIST,LU7LIST,
      &                  LUCLIST,NBATV,
@@ -188,7 +188,6 @@ C      of MAXIT
 
        KAPROJ = 1
        KFREE  = KAPROJ+ MAXVEC*(MAXVEC+1)/2
-       TEST   = 1.0D-6
        CONVER = .FALSE.
        NZERO  = 0
 
@@ -365,7 +364,7 @@ C       NVEC = NROOT
 *        calculate residues ...
 
          CALL P1_B_PAR_RL_1(VEC1,VEC2,AVEC,EIGAPR,RNRM,EIGSHF,
-     &                      EIG,TEST,THRES_E,RTCNV,CONVER,ITER,MAXIT,
+     &                      EIG,thres_G,thres_E,RTCNV,CONVER,ITER,MAXIT,
      &                      IROOT,LU2LIST,LU1LIST,LU5LIST,NBATV,LBATV,
      &                      LEBATV,I1BATV,IBATV,MY_LU2_OFF,MY_LU1_OFF,
      &                      MY_LU5_OFF,SCRRED,NVEC,ILU2,ILU1,ILU5,
@@ -387,10 +386,10 @@ C       NVEC = NROOT
            CALL H0M1TD_REL_PAR(ILU3,IDIA,ILU5,-EIGAPR,VEC1,VEC2,
      &                         LU3LIST,LU5LIST,NBATV,LBATV,LEBATV,
      &                         I1BATV,IBATV,MY_LU3_OFF,MY_DIA_OFF,
-     &                         MY_LU5_OFF,1,THRES_E)
+     &                         MY_LU5_OFF,1,thres_E)
 *               H0M1TD_REL_PAR(LUOUT,LUDIA,LUIN,SHIFT,VEC1,VEC2,LISTOUT,
 *    &                         LISTIN,NBATCH,LBATCH,LEBATCH,I1BATCH,IBATCH,
-*    &                         OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV,THRES_E)
+*    &                         OFFSET_OUT,OFFSET_DIAG,OFFSET_IN,INV,thres_E)
 
 
 *          IOLSTM hardwired to 1!
@@ -466,7 +465,7 @@ CAN        September 2019: Now always orthogonalizing twice
        if (ITERSEOUT.ne.1) then
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
      &   '                        Norm of CI residuals'//
-     &   ' (thr = ',test,')',
+     &   ' (thr = ',thres_G,')',
      &   (i,RNRM(ITER-1,i),i=1,NROOT)
        end if
       IF( CONVER ) GOTO  901
@@ -578,8 +577,8 @@ C       end of timing
 !     CALL EIGEN(WORK(KAPROJ),AVEC,NVEC,0,1)
 ! only master should diagonalize in order to avoind phase-problems
       IF ( MYPROC .EQ. MASTER) THEN
-      CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
-     &               RWORK,EVL)
+         CALL EIGEN_NEW(WORK(KAPROJ),NVEC,EIG(1,ITER),AVEC,AMATC,
+     &                  RWORK,EVL)
       ENDIF
        call interface_mpi_bcast(EIG(1,ITER),NVEC,MASTER,
      &                             global_communicator)
@@ -1000,8 +999,7 @@ C
       IF ( IPRT .GT. 0 ) THEN
         CALL REWINE(ILU1,LBLK)
         DO IROOT = 1, NROOT
-          WRITE(LUWRT,*)
-          WRITE(LUWRT,'(A,I3)')
+          WRITE(LUWRT,'(/A,I3)')
      &  ' Information about convergence for root... ' ,IROOT
           WRITE(LUWRT,*)
      &    '============================================'
@@ -1095,6 +1093,10 @@ C          FINEIG(IROOT) = EIG(ITER,IROOT)+EIGSHF
         end if
       end do
 C      IF ( IPRT .GT. 0 ) THEN
+        WRITE(LUWRT,'(/A,1P,D8.2/A,D8.2)')
+     &     ' Gradient convergence threshold ',thres_G,
+     &     ' Energy   convergence threshold ',thres_E
+
         DO 1600 IROOT = 1, NROOT
           WRITE(LUWRT,'(/A,I3/A/)')
      &  ' Information about convergence for root... ' ,IROOT,
@@ -1741,8 +1743,8 @@ C          Call wrtmat(X(1,JVec),2*NDim,1,2*NDim,1)
      &                      MAXIT,NVAR,NROOT,MAXVEC,NINVEC,T_CC,T_BUFF,
      &                      APROJI,APROJR,AVEC,AVECO,WORK,IPRT,
      &                      NPRDIM,IPNTR,LBLK,EIGSHF,
-     &                      IHAM12,
-     &                      E_conv,IBLOCKL,NPARBLOCK,NBLOCKS,
+     &                      IHAM12,thres_G,thres_E,
+     &                      IBLOCKL,NPARBLOCK,NBLOCKS,
      &                      LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,
      &                      LUCLIST,NBATV,LBATV,LEBATV,I1BATV,IBATV,
      &                      RCCTOS,SCRRED_R,SCRRED_I,IGROUPLIST,
@@ -1850,9 +1852,13 @@ C
       IPRT = MAX(NTEST,IPRT)
 C
 !     !> (re-)set convergence threshold
-      if(abs(convlim) < 1.0d-07) convlim = 1.0d-04
-!      convlim = 1.0d-04
-C      write(6,*) 'E_conv ',E_conv
+       if(abs(thres_G) < 1.0d-07) then
+          write(luwrt,'(/A,1P,E10.2,A)')
+     &    'INFO: CI gradient convergence threshold too tight,'//
+     &    ' changed from',thres_G,' to 1.0e-7'
+          thres_G = 1.0d-07
+       end if
+C      write(6,*) 'thres_e ',thres_e
 
 C     no screening 
       CSCREEN = .FALSE.
@@ -1867,7 +1873,6 @@ C     set check point parameters - approx after every 5th iteration
         ICHPARAM    = 5
       END IF
 C
-      write(6,*) 'MaxVec ',MaxVec
 C     initialize LZERO_SCRRED
       LZERO_SCRRED = 0
       LZERO_SCRRED = MAX( MAXVEC*(MAXVEC+1)/2 , MAXVEC ** 2 )
@@ -2067,10 +2072,10 @@ C        EIGAPR = EIG(IROOT,ITER-1)
 *        calculate residues ...
 *        
 
-C         write(6,*) 'E_conv ',E_conv
+C         write(6,*) 'thres_e ',thres_e
          CALL P1_B_PAR_CX_1(VEC1,VEC2,AVEC,WORK,EIGAPR,RNRM,EIGSHF,
-     &                      EIG,E_conv,    
-     &                      RTCNV,CONVER,CONVLIM,ITER,NROOT,MAXIT,
+     &                      EIG,thres_g,thres_e,
+     &                      RTCNV,CONVER,ITER,NROOT,MAXIT,
      &                      IROOT,LU1LIST,LU2LIST,LU5LIST,NBATV,LBATV,
      &                      LEBATV,I1BATV,IBATV,MY_LU1_OFF,MY_LU2_OFF,
      &                      MY_LU5_OFF,SCRRED_R,SCRRED_I,NVEC,2*NVEC,
@@ -2213,7 +2218,7 @@ C        ^ not converged...
 
        WRITE(LUWRT,'(/A,1P,D8.2,A/,(I15,D20.5))')
      &   '                        Norm of CI residuals'//
-     &   ' (thr = ',convlim,')',
+     &   ' (thr = ',thres_G,')',
      &   (i,RNRM(i,ITER),i=1,NROOT)
 CTF
       ITER        = ITER + 1

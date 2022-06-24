@@ -3,11 +3,19 @@
 22.1.beta
 ---------
 
+Revised features:
+
+- Added a CI gradient convergence threshold option '.THRGCI' to '\*KRCICALC' (could not be changed by user previously).
+  - Contributor: H. J. Aa. Jensen.
+
 Performance improvements:
 
-- New improved code for selection of trial vectors in lucarel, leading to considerable improvement in performance. Contributor: Andreas Nyvang.
-- New improved code for sigma vector routines in luciarel, leading to improvement in performance. Contributor: Andreas Nyvang.
-  Note that KRMC and KRCI also by default uses luciarel.  (See git hash tag d5d4e3ff75 for all the changes.)
+- Improved code in luciarel CI program. Note that KRMC and KRCI by default uses luciarel.
+   - Contributor: Andreas Nyvang.
+   - numerical stability has been improved in the complex parallel diagonalization routine
+   - convergence algorithm has also been changed, with considerable improvement in convergence rate.
+     In particular, the truncation of the reduced space in the Davidson iterations is now done
+     in a much better way, leading to the improvement in convergence rate. Both for real and complex parallel cases.
 
 Bugfix:
 
