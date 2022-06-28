@@ -322,8 +322,6 @@ module codata
 #include "priunit.h"
   character*8 CODAT
 
-    write(LUPRI,*)   " iaa:", fermicc
-
    if(CODAT.eq.'CODATA86') then
    write(LUPRI,*)   "  The 1986 adjustment of the fundamental physical constants              "
    write(LUPRI,*)   "               E. Richard Cohen and Barry N. Taylor                      "
