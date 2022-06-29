@@ -148,11 +148,6 @@ keyword(NOSET)
 .. warning:: documentation missing
 
 
-keyword(FAMILY)
-
-.. warning:: documentation missing
-
-
 keyword(SKIP2E)
 
 .. warning:: documentation missing

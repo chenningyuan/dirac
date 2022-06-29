@@ -382,7 +382,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','xxxxxxx',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -543,8 +543,6 @@ C&&&& IMPMOS
             READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   116    CONTINUE
-C&&&& FAMILY: Family basis (Not yet implemented)
-            FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
 C&&&& SKIP2E
@@ -5082,7 +5080,6 @@ C     Initialize /DCBGEN/
 C     ===================
 C
       TITLE    = 'DIRAC: No title specified !!!'
-      FAMILY   = .FALSE.
       INPTES   = .FALSE.
       VACUUM   = .FALSE.
       NUCVAC   = .FALSE.
