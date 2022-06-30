@@ -52,10 +52,10 @@ end interface
 
   real(kind=8), allocatable :: memory(:)
 
-  integer :: iparcal, status, length, ios, idummy, ierr
+  integer :: iparcal, ios, ierr
   integer :: WORK_memsize
   integer(kind=8) :: maxsize = -1
-  integer(kind=8) :: iscr_mem
+  integer(kind=8) :: idummy8, iscr_mem
   integer :: high_water_mark
 
 ! initialize common variables (parallel and sequential run)
@@ -182,7 +182,7 @@ end interface
   endif
 #ifdef VAR_MPI
   if ( iparcal .eq. 1 ) then
-    call sync_nodes(idummy,1)
+    call sync_nodes(idummy8,1)
   endif
 #endif
   if (mytid == 0) then

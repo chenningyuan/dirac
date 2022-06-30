@@ -100,7 +100,7 @@ C
 C     Written by J. Thyssen - Wed Mar 14 15:03:26 "MET 2001
 C     Last revision :
 C                    S. Knecht - Mon Oct 8 2007
-C                  - test for empty SZTRA array to avoid errorneous 
+C                  - test for empty SZTRA array to avoid erroneous 
 C                    4-index transformation
 C
 C***********************************************************************
