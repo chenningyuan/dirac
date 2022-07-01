@@ -150,6 +150,14 @@ keyword(ANALYZ)
 analyze the final CI wave function printing the coefficients for each determinant above a given threshold
 :math:`10^{-2}`. *default*: do not analyze the final CI wave function.
 
+keyword(THRGCI)
+
+set CI convergence threshold based on the norm of the CI gradient (aka CI residual). *default*:
+
+::
+
+    .THRGCI
+     1.0e-4
 
 keyword(MAX CI)
 

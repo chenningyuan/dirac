@@ -511,7 +511,7 @@ C     Calculation of C6 dispersion coefficient
       ALLCMB     = .FALSE.
       XLR_SKIPEP = .FALSE.
 !     if number of positronic shells is zero skip e-p rotations. hjj+sk - aug 2010
-      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj) 
+      if(x2c.or.bss.or.levyle.or.freepj.or.vextpj.or.x2cmmf)
      &  XLR_SKIPEP = .TRUE.
 #ifdef HAS_PCMSOLVER
       if(dirac_cfg_pcm) 
@@ -810,10 +810,6 @@ C&&& STERNC: Sternheimer complement
  37            CONTINUE
 C&&& DAMPING: specify a damping parameter
                READ(LUCMD,*) DMPFRLR
-#ifdef HAS_PELIB
-               !edh testing...
-               IF (PEQM) CALL QUIT('PE damped response not enabled yet')
-#endif
                GO TO 100
  38            CONTINUE
 C&&& FREQ INTERVAL: specify frequencies with start, end, step values
@@ -2079,11 +2075,9 @@ C
       KFRSAV = KFREE
       CALL HEADER('Analysis of response solution vectors',-1)
 
-#ifdef MOD_UNRELEASED
       if (dft_cfg_overlap_diagnostic) then
          call o_matrix_from_disc()
       end if
-#endif
 
 C
 C     Check if file of solution vectors is present
@@ -2226,6 +2220,7 @@ C
       WRITE(LUPRI,'(/A)') 'ANAXRS ERROR: No solution vectors found !'
       CALL QUIT('ANAXRS: Solution vectors not found !')
 C
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck anaxr1 */
@@ -2244,13 +2239,13 @@ C
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2
 C
       KFRSAV = KFREE
-      CALL MEMGET('REAL',KVEC ,NBDIM*NZ*NVEC,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KFREQ,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KNORM,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF1,NBDIM*NZ     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KBUF2,NBDIM        ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBTYP,NVEC         ,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFLAG,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BVEC' ,KVEC ,NBDIM*NZ*NVEC,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','FREQ' ,KFREQ,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RNORM',KNORM,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF1' ,KBUF1,NBDIM*NZ     ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BUF2' ,KBUF2,NBDIM        ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBTYP',KBTYP,NVEC         ,WORK,KFREE,LFREE)
+      CALL MEMGET2('LOGI','LFLAG',KFLAG,NVEC         ,WORK,KFREE,LFREE)
       NI = 0
       NV = 0
       IF(IC.EQ.1) THEN
@@ -2271,11 +2266,11 @@ C...secondary positron orbitals
         CALL QUIT('ANAXR1: Unknown IC !')
       ENDIF
       NINDX=MAX(NI,NV,NBDIM)
-      CALL MEMGET('INTE',KINDX,NINDX,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KII,NI,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIV,NV,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRI,NI,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KRV,NV,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','INDX',KINDX,NINDX,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IIBF',KII,NI,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IVBF',KIV,NV,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RIBF',KRI,NI,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','RVBF',KRV,NV,WORK,KFREE,LFREE)
       CALL ANAXR2(WORK(KVEC),WORK(KFREQ),WORK(KNORM),
      &            WORK(KBTYP),WORK(KFLAG),WORK(KBUF1),
      &            WORK(KBUF2),WORK(KINDX),JXOP,IORBCL,
@@ -2477,7 +2472,6 @@ C       Give major orbital rotations in excitations
             WRITE(LUPRI,'(3X,I6,E16.8)') J,BUF2(J)
           ENDDO
         ENDIF
-#ifdef MOD_UNRELEASED
         if (dft_cfg_overlap_diagnostic) then
            lambda_numerator   = 0.0d0
            lambda_denominator = 0.0d0
@@ -2500,7 +2494,6 @@ C       Give major orbital rotations in excitations
            write(lupri, '(a, f8.5)') '     lambda = ', 
      &        lambda_numerator/lambda_denominator
         end if
-#endif /* MOD_UNRELEASED */
       ENDIF
  20   CONTINUE
       ENDDO

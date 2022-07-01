@@ -14,5 +14,7 @@ f.add(string    = ' Final CI energies',
 
 test.run(['be.d2h.inp'], ['Be.d2h.mol'], f)
 test.run(['f.inp'], ['F.mol'], f)
+test.run(['krci.inp'], ['h2o.xyz'], f)
+test.run(['krci.inp'], ['h2o-cs.xyz'], f)
 
 sys.exit(test.return_code)

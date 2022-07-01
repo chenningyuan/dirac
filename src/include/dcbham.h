@@ -46,7 +46,6 @@
 !                  ONECAP type 3 model. One-center (SS|SS) and (LL|SS).
 !                  Correction made to two-electron Fock-matrix.
 !     ONECOFF    - internal flag for turning off ONECAP
-!     VACPOL     - semi-classical QED: vacuum polarization included
 !
 !     BSS        - flag for generating matrix elements of
 !                  Barysz-Sadlej-Snijders transformed two-component Hamiltonians
@@ -141,7 +140,7 @@
      &        ZORA4, ZORASC, PROJEC, PROOWN,         SMLV1C, ONECAP,    &
      &        ONECOFF, NOSPIN, BSS, NOPRTR, BLOCKD, YREQ1, ALLAMFA,     &
      &        DO2C4C, DO4C2C, USEDF, RESTFCK, CONT2C, START2C, GAUNT,   &
-     &        VACPOL, RDSUSLLMOD, MIXVAC, VACREF, POSVAC, CAP, CMPEIG,  &
+     &        RDSUSLLMOD, CAP, CMPEIG,                                  &
      &        DKH1, DKH2, NOAMFI, QDOTS,LSCALE_DFT_GAUNT,NOSFMU,MOLMF,  &
      &        TRMO4C2C, X2CMMF, X2C, X2C_aba, ECPCALC,MDIRAC, TRS_MIX,  &
      &        WRITE_Jz_MATRIX, WRITE_K_MATRIX, NONREL, FAKE2C,          &
@@ -152,8 +151,8 @@
      &                SPINFR2, ZORA, ZORA4, ZORASC, PROJEC, PROOWN,     &
      &                SMLV1C, ONECAP, ONECOFF, NOSPIN, BSS,             &
      &                NOPRTR, BLOCKD, YREQ1, DO2C4C, DO4C2C, USEDF,     &
-     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA, VACPOL, &
-     &                RDSUSLLMOD,MIXVAC,VACREF,POSVAC,CAP,CMPEIG,       &
+     &                RESTFCK, CONT2C, START2C, GAUNT, ALLAMFA,         &
+     &                RDSUSLLMOD,CAP,CMPEIG,                            &
      &                DKH1, DKH2, NOAMFI, QDOTS, LSCALE_DFT_GAUNT,      &
      &                NOSFMU,MOLMF, TRMO4C2C, X2CMMF, X2C, X2C_aba,     &
      &                ECPCALC,MDIRAC,TRS_MIX,WRITE_Jz_MATRIX,NONREL,    &

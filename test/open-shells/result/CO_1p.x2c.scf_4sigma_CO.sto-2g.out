@@ -1,8 +1,8 @@
-DIRAC pam run in /home/saue/Dirac/build_norecalc/test/open-shells
-DIRAC serial starts by allocating 64000000 words (488 MB) of memory
-             out of the allowed maximum of 2147483648 words (16384 MB)
+  ** interface to 32-bit integer MPI enabled **
 
-Note: maximum allocatable memory for serial run can be set by pam --aw
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
  *******************************************************************************
  *                                                                             *
@@ -81,79 +81,101 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
- *    Lucas Visscher           VU University Amsterdam           Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
  *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
  *    Sebastien Dubillard      University of Strasbourg          France        *
  *    Ulf Ekstroem             University of Oslo                Norway        *
  *    Ephraim Eliav            University of Tel Aviv            Israel        *
  *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
- *    Elke Fasshauer           UiT The Arctic University of      Norway        *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
- *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
  *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            ETH Zuerich                       Switzerland   *
- *    Stanislav Komorovsky     UiT The Arctic University of      Norway        *
+ *    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
- *    Patrick Norman           Linkoeping University             Sweden        *
- *    Malgorzata Olejniczak    CNRS/Universite de Lille          France        *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
  *    Young Choon Park         KAIST, Daejeon                    South Korea   *
  *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
  *    Markus Pernpointner      University of Heidelberg          Germany       *
- *    Roberto Di Remigio       UiT The Arctic University of      Norway        *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
- *    Jetze Sikkema            VU University Amsterdam           Netherlands   *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
  *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
  *    Joern Thyssen            University of Southern Denmark    Denmark       *
- *    Joost van Stralen        VU University Amsterdam           Netherlands   *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
  *    Sebastien Villaume       Linkoeping University             Sweden        *
  *    Olivier Visser           University of Groningen           Netherlands   *
  *    Toke Winther             University of Southern Denmark    Denmark       *
  *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
  *                                                                             *
- *    For the complete list of contributors to the DIRAC code see our          *
- *    website http://www.diracprogram.org                                      *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
  *                                                                             *
  *    This is an experimental code. The authors accept no responsibility       *
  *    for the performance of the code or for the correctness of the results.   *
  *                                                                             *
- *    The code (in whole or part) is not to be reproduced for further          *
- *    distribution without the written permission of the authors or            *
- *    their representatives.                                                   *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
  *                                                                             *
  *    If results obtained with this code are published, an                     *
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC17 (2017),                                                  *
- *    written by L. Visscher, H. J. Aa. Jensen, R. Bast, and T. Saue,          *
- *    with contributions from V. Bakken, K. G. Dyall, S. Dubillard,            *
- *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
- *    O. Fossgaard, A. S. P. Gomes, T. Helgaker, J. Henriksson, M. Ilias,      *
+ *    Release DIRAC22 (2022), written by                                       *
+ *    H. J. Aa. Jensen, R. Bast, A. S. P. Gomes, T. Saue, and L. Visscher,     *
+ *    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *
+ *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
+ *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
+ *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
  *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
- *    C. V. Larsen, Y. S. Lee, H. S. Nataraj, M. K. Nayak, P. Norman,          *
- *    G. Olejniczak, J. Olsen, Y. C. Park, J. K. Pedersen, M. Pernpointner,    *
- *    R. Di Remigio, K. Ruud, P. Salek, B. Schimmelpfennig, J. Sikkema,        *
- *    A. J. Thorvaldsen, J. Thyssen, J. van Stralen, S. Villaume, O. Visser,   *
- *    T. Winther, and S. Yamamoto (see http://www.diracprogram.org).           *
+ *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
+ *    P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos,     *
+ *    Y. C. Park, J. K. Pedersen, M. Pernpointner, J. V. Pototschnig,          *
+ *    R. Di Remigio, M. Repisky, K. Ruud, P. Salek, B. Schimmelpfennig,        *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
  *                                                                             *
  *******************************************************************************
 
@@ -161,51 +183,64 @@ Note: maximum allocatable memory for serial run can be set by pam --aw
 Version information
 -------------------
 
-Branch        | norecalc
-Commit hash   | 120e19c
-Commit author | Trond Saue
-Commit date   | Fri Mar 10 19:54:13 2017 +0100
+Branch        | hjaaj-wip-master
+Commit hash   | d41fdde48
+Commit author | Hans Jørgen Aagaard Jensen
+Commit date   | Wed Jun 29 13:45:07 2022 +0200
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | saue
-Compiled on server       | dirac
-Operating system         | Linux-4.4.0-34-generic
-CMake version            | 3.5.1
+Who compiled             | hjj
+Compiled on server       | fe-ac-02.escience.sdu.dk
+Operating system         | Linux-5.4.119.el7
+CMake version            | 3.21.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2017-03-16 20:41:26.640514
-Python version           | 2.7.1
-Fortran compiler         | /usr/bin/gfortran
-Fortran compiler version | 5.4.0
-Fortran compiler flags   |   -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS
-C compiler               | /usr/bin/gcc
-C compiler version       | 5.4.0
-C compiler flags         |   -g
-C++ compiler             | /usr/bin/g++
-C++ compiler version     | 5.4.0
-C++ compiler flags       |   -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused
+Configuration time       | 2022-06-29 13:56:02.814657
+Python version           | 2.7.5
+Fortran compiler         | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpif90
+Fortran compiler version | 11.2.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp
+C compiler               | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpicc
+C compiler version       | 11.2.0
+C compiler flags         |  -g  -fopenmp -g  -fopenmp
+C++ compiler             | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpicxx
+C++ compiler version     | 11.2.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
 Static linking           | False
 64-bit integers          | False
-MPI parallelization      | False
-MPI launcher             | unknown
-Math libraries           | /usr/lib/atlas-base/libatlas.so;/usr/lib/atlas-base/atlas/liblapack.so;/usr/lib/atlas-base/libf77blas.so;/usr/lib/atlas-base/libcblas.so;/usr/lib/atlas-base/libatlas.so
+MPI parallelization      | True
+MPI launcher             | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpiexec
+Math libraries           | /opt/sys/easybuild/software/OpenBLAS/0.3.18-GCC-11.2.0/lib/libopenblas.so;/opt/sys/easybuild/software/OpenBLAS/0.3.18-GCC-11.2.0/lib/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_ATLAS_BLAS;HAVE_ATLAS_LAPACK;MOD_UNRELEASED;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;MOD_QCORR;HAS_STIELTJES;MOD_INTEREST;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT
+Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
 
 
+ LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+
+ * openMP activated,  thread limit - # processes - # threads: *****   64    1
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Fri Mar 17 08:10:56 2017
-     Host name              : dirac                                   
+     Date and time (Linux)  : Wed Jun 29 16:08:40 2022
+     Host name              : fe-ac-02.escience.sdu.dk                
+
+ * Opening HDF5 checkpoint file 
+    - DIRAC was compiled without hdf5, checkpointing is not possible
 
 
 Contents of the input file
@@ -273,10 +308,10 @@ LARGE BASIS STO-2G
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 1998  
-                Peter J. Mohr and Barry N. Taylor                         
-   Journal of Physical and Chemical Reference Data, Vol. 28, No. 6, 1999  
- * The speed of light :        137.0359998
+   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
+             Peter J. Mohr, David B. Newell and Barry N. Taylor           
+         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
+ * The speed of light :        137.0359992
  * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -295,7 +330,7 @@ LARGE BASIS STO-2G
     *************************************************************************
 
  Default print level:        1
- Nuclear model: Gaussian charge distribution.
+ Using default nuclear model: Gaussian charge distribution.
 
  Two-electron integrals not calculated.
 
@@ -323,8 +358,8 @@ LARGE BASIS STO-2G
 
    CO molecule                                                            
    small basis for test purposes                                          
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
+  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077493126D+08
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
 
 
   Symmetry Operations
@@ -403,20 +438,9 @@ Point group: C2v
     B2   k
     A2   i
 
-  QM-QM nuclear repulsion energy :     22.325581395349
+  Nuclear repulsion energy                       :     22.325581395349 Hartree
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           C          12.000000
-                           O          15.994915
-
-                       Total mass:    27.994915 amu
-                       Natural abundance:  98.663 %
-
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.228404
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000   17.200000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -472,7 +496,7 @@ Point group: C2v
     2
 
 C      0.0000000000   0.0000000000   0.0000000000
-O      0.0000000000   0.0000000000   1.1377309978
+O      0.0000000000   0.0000000000   1.1377310034
 
 
   Symmetry Coordinates
@@ -519,7 +543,14 @@ O      0.0000000000   0.0000000000   1.1377309978
 
 
 
-   Nuclear repulsion energy :   22.325581395349 Hartree
+   Nuclear repulsion energy                          :   22.325581395349 Hartree
+
+                       * Total mass:    27.994915 amu
+                       * Natural abundance:  98.663 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   1.228404060165927
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.650043434420526
 
 
                                 GETLAB: AO-labels
@@ -573,6 +604,11 @@ O      0.0000000000   0.0000000000   1.1377309978
    *************************** Hamiltonian defined ***************************
    ***************************************************************************
 
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
  * Print level:    0
  * Exact-Two-Component (X2C) Hamiltonian
    Reference: 
@@ -590,8 +626,6 @@ O      0.0000000000   0.0000000000   1.1377309978
    - LS-integrals:     0
    - SS-integrals:     0
    - GT-integrals:     0
- * Basis set:
-   - uncontracted large component basis set
 ===========================================================================
    Set-up for AMFI/RELSCF calculations
 ===========================================================================
@@ -635,6 +669,8 @@ O      0.0000000000   0.0000000000   1.1377309978
 
    f is the fraction occupation; a and alpha open shell coupling coefficients.
 
+ * Charge of molecule : 1
+ - INFO: bare nucleus correction used independently of the system charge
  * Sum of atomic potentials used for start guess
  * General print level   :   0
 
@@ -642,8 +678,6 @@ O      0.0000000000   0.0000000000   1.1377309978
  * Trial vectors read from file DFCOEF
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
-   The final open-shell orbital energies are recalculated with 1.0 scaling,
-   such that all occupied orbital energies correspond to Koopmans' theorem ionization energies.
 
  ***** SCF CONVERGENCE CRITERIA *****
  * Convergence on norm of error vector (gradient).
@@ -709,8 +743,8 @@ O      0.0000000000   0.0000000000   1.1377309978
 
    CO molecule                                                            
    small basis for test purposes                                          
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
+  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077493126D+08
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
 
 
   Symmetry Operations
@@ -789,20 +823,9 @@ Point group: C2v
     B2   k
     A2   i
 
-  QM-QM nuclear repulsion energy :     22.325581395349
+  Nuclear repulsion energy                       :     22.325581395349 Hartree
 
-
-
-                                 Isotopic Masses
-                                 ---------------
-
-                           C          12.000000
-                           O          15.994915
-
-                       Total mass:    27.994915 amu
-                       Natural abundance:  98.663 %
-
- Center-of-mass coordinates (a.u.):    0.000000    0.000000    1.228404
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000   17.200000000000 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -860,7 +883,7 @@ Point group: C2v
     2
 
 C      0.0000000000   0.0000000000   0.0000000000
-O      0.0000000000   0.0000000000   1.1377309978
+O      0.0000000000   0.0000000000   1.1377310034
 
 
   Symmetry Coordinates
@@ -907,7 +930,14 @@ O      0.0000000000   0.0000000000   1.1377309978
 
 
 
-   Nuclear repulsion energy :   22.325581395349 Hartree
+   Nuclear repulsion energy                          :   22.325581395349 Hartree
+
+                       * Total mass:    27.994915 amu
+                       * Natural abundance:  98.663 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   1.228404060165927
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.650043434420526
 
 
                       Nuclear contribution to dipole moments
@@ -918,6 +948,8 @@ O      0.0000000000   0.0000000000   1.1377309978
                     z     17.20000000     43.71844400
 
                         1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.00304200s and (WALL)  0.00600000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1090,8 +1122,8 @@ O      0.0000000000   0.0000000000   1.1377309978
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
-  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077502929D+08
-  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631436655D+08
+  Nuclear Gaussian exponent for atom of charge   6.000 :    6.8077493126D+08
+  Nuclear Gaussian exponent for atom of charge   8.000 :    5.8631428213D+08
 
 
                       Nuclear contribution to dipole moments
@@ -1102,6 +1134,8 @@ O      0.0000000000   0.0000000000   1.1377309978
                     z     17.20000000     43.71844400
 
                         1 Debye =   2.54177000 a.u. 
+
+Total time used in ONEGEN (CPU)  0.00082700s and (WALL)  0.00100000s
 
 
                        Generating Lowdin canonical matrix:
@@ -1119,6 +1153,8 @@ O      0.0000000000   0.0000000000   1.1377309978
 No. of positive energy orbitals (NESH):    20
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    20
+ >>> CPU  time used in PAMSET is   0.12 seconds
+ >>> WALL time used in PAMSET is   0.13 seconds
 
  -> Reordering orbitals as requested
 
@@ -1128,189 +1164,189 @@ Total no. of orbitals           (NORB):    20
  *******************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   1 ##########   Wed Jun 29 16:08:40 2022
 
 
-* REACMO: Coefficients read from file DFCOEF - Total energy: -108.321367084822000
-* Heading : CO(+)                                            Fri Mar 17 08:10:56 2017
+* REACMO: Coefficients read from file DFCOEF - Total energy: -108.321367085117444
+* Heading : CO(+)                                            Wed Jun 29 16:08:40 2022
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.00751895s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9842980232
-    6 -->     5 OVERLAP:        0.9842762623
-    7 -->     6 OVERLAP:        0.9956924241
-    4 -->     7 OVERLAP:        0.9980261659
-   12 -->    11 OVERLAP:        0.9965187653
+    5 -->     4 OVERLAP:        0.9842980210
+    6 -->     5 OVERLAP:        0.9842762619
+    7 -->     6 OVERLAP:        0.9956795695
+    4 -->     7 OVERLAP:        0.9977491764
+   12 -->    11 OVERLAP:        0.9965116376
    13 -->    12 OVERLAP:        0.9974043350
-   11 -->    13 OVERLAP:        0.9805822240
-E_HOMO...E_LUMO, symmetry 1:     6  -0.83152    7  -1.41425    8  -0.15804
-It.    1    -107.6111765387      1.08D+02  0.00D+00  5.15D-01               0.00800000s   LL             Fri Mar 17
+   11 -->    13 OVERLAP:        0.9805517323
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.83152    7  -1.24012    8  -0.15804
+It.    1    -107.6111765390      1.08D+02  0.00D+00  5.15D-01               0.01908300s   LL             Wed Jun 29
 
-########## START ITERATION NO.   2 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   2 ##########   Wed Jun 29 16:08:40 2022
 
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    1.54%    0.00%    0.00%   0.00735998s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9953341170
-    6 -->     5 OVERLAP:        0.9953326697
-    7 -->     6 OVERLAP:        0.8338909003
-    4 -->     7 OVERLAP:        0.8305741426
-E_HOMO...E_LUMO, symmetry 1:     6  -0.81005    7  -1.11520    8  -0.14766
->>> Total wall time: 0.00800000s, and total CPU time : 0.00400000s
+    5 -->     4 OVERLAP:        0.9953231409
+    6 -->     5 OVERLAP:        0.9953217233
+    7 -->     6 OVERLAP:        0.8327239335
+    4 -->     7 OVERLAP:        0.8293133958
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.80964    7  -1.11557    8  -0.14752
+>>> Total wall time:  0.02700000s, and total CPU time :  0.01138300s
 
-########## END ITERATION NO.   2 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   2 ##########   Wed Jun 29 16:08:40 2022
 
-It.    2    -107.6547898226      4.36D-02  3.33D-01  3.44D-01               0.00400000s   LL             Fri Mar 17
+It.    2    -107.6548568750      4.37D-02  2.83D-01  3.45D-01               0.02700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   3 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   3 ##########   Wed Jun 29 16:08:40 2022
 
-    3 *** Differential density matrix. DCOVLP     = 0.8563
-    3 *** Differential density matrix. DVOVLP( 1) = 1.0754
+    3 *** Differential density matrix. DCOVLP     = 0.8558
+    3 *** Differential density matrix. DVOVLP( 1) = 1.0763
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.57%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    1.57%    0.00%    0.00%   0.00826699s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9978667583
-    6 -->     5 OVERLAP:        0.9978644069
-    7 -->     6 OVERLAP:        0.9217406102
-    4 -->     7 OVERLAP:        0.9214786234
-E_HOMO...E_LUMO, symmetry 1:     6  -0.86991    7  -1.04014    8  -0.14005
->>> Total wall time: 0.00600000s, and total CPU time : 0.00400000s
+    5 -->     4 OVERLAP:        0.9978692560
+    6 -->     5 OVERLAP:        0.9978669601
+    7 -->     6 OVERLAP:        0.9220117295
+    4 -->     7 OVERLAP:        0.9217346488
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.87002    7  -1.04011    8  -0.14003
+>>> Total wall time:  0.02700000s, and total CPU time :  0.01258900s
 
-########## END ITERATION NO.   3 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   3 ##########   Wed Jun 29 16:08:40 2022
 
-It.    3    -107.6652012539      1.04D-02  5.99D-02  1.45D-01   DIIS   2    0.00400000s   LL             Fri Mar 17
+It.    3    -107.6651358350      1.03D-02  6.02D-02  1.46D-01   DIIS   2    0.02700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   4 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   4 ##########   Wed Jun 29 16:08:40 2022
 
-    4 *** Differential density matrix. DCOVLP     = 0.9994
-    4 *** Differential density matrix. DVOVLP( 1) = 0.8148
+    4 *** Differential density matrix. DCOVLP     = 0.9995
+    4 *** Differential density matrix. DVOVLP( 1) = 0.8154
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.66%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    1.66%    0.00%    0.00%   0.00615400s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9977017183
-    6 -->     5 OVERLAP:        0.9976996394
-    7 -->     6 OVERLAP:        0.9981147453
-    4 -->     7 OVERLAP:        0.9983406000
-E_HOMO...E_LUMO, symmetry 1:     6  -0.84565    7  -1.09435    8  -0.13917
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+    5 -->     4 OVERLAP:        0.9976887740
+    6 -->     5 OVERLAP:        0.9976867024
+    7 -->     6 OVERLAP:        0.9981246000
+    4 -->     7 OVERLAP:        0.9983496981
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.84555    7  -1.09460    8  -0.13911
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00747900s
 
-########## END ITERATION NO.   4 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   4 ##########   Wed Jun 29 16:08:40 2022
 
-It.    4    -107.6304160997     -3.48D-02 -1.78D-01  3.66D-01   DIIS   3    0.00400000s   LL             Fri Mar 17
+It.    4    -107.6304357261     -3.47D-02 -1.78D-01  3.66D-01   DIIS   3    0.00800000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   5 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   5 ##########   Wed Jun 29 16:08:40 2022
 
-    5 *** Differential density matrix. DCOVLP     = 1.0086
-    5 *** Differential density matrix. DVOVLP( 1) = 1.0048
+    5 *** Differential density matrix. DCOVLP     = 1.0087
+    5 *** Differential density matrix. DVOVLP( 1) = 1.0046
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.82%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    1.84%    0.00%    0.00%   0.00602102s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999918577
-    6 -->     5 OVERLAP:        0.9999918467
-    7 -->     6 OVERLAP:        0.9976856346
-    4 -->     7 OVERLAP:        0.9976858544
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85126    7  -1.08801    8  -0.13859
->>> Total wall time: 0.00500000s, and total CPU time : 0.00800000s
+    5 -->     4 OVERLAP:        0.9999921525
+    6 -->     5 OVERLAP:        0.9999921428
+    7 -->     6 OVERLAP:        0.9977028968
+    4 -->     7 OVERLAP:        0.9977033684
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85121    7  -1.08816    8  -0.13857
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00717800s
 
-########## END ITERATION NO.   5 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   5 ##########   Wed Jun 29 16:08:40 2022
 
-It.    5    -107.6577855481      2.74D-02  1.04D-01  4.17D-02   DIIS   4    0.00800000s   LL             Fri Mar 17
+It.    5    -107.6577969698      2.74D-02  1.05D-01  4.08D-02   DIIS   4    0.00800000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   6 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   6 ##########   Wed Jun 29 16:08:40 2022
 
     6 *** Differential density matrix. DCOVLP     = 0.9934
-    6 *** Differential density matrix. DVOVLP( 1) = 1.0207
+    6 *** Differential density matrix. DVOVLP( 1) = 1.0208
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    1.88%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    1.88%    0.00%    0.00%   0.00591201s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999943390
-    6 -->     5 OVERLAP:        0.9999943357
-    7 -->     6 OVERLAP:        0.9998981678
-    4 -->     7 OVERLAP:        0.9999026561
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85819    7  -1.07646    8  -0.13858
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+    5 -->     4 OVERLAP:        0.9999940283
+    6 -->     5 OVERLAP:        0.9999940250
+    7 -->     6 OVERLAP:        0.9998857337
+    4 -->     7 OVERLAP:        0.9998904164
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85833    7  -1.07625    8  -0.13858
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00709300s
 
-########## END ITERATION NO.   6 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   6 ##########   Wed Jun 29 16:08:40 2022
 
-It.    6    -107.6571715045     -6.14D-04  2.23D-02  1.30D-02   DIIS   5    0.00400000s   LL             Fri Mar 17
+It.    6    -107.6571687361     -6.28D-04  2.21D-02  1.35D-02   DIIS   5    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   7 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   7 ##########   Wed Jun 29 16:08:40 2022
 
-    7 *** Differential density matrix. DCOVLP     = 0.9979
-    7 *** Differential density matrix. DVOVLP( 1) = 1.0049
+    7 *** Differential density matrix. DCOVLP     = 0.9978
+    7 *** Differential density matrix. DVOVLP( 1) = 1.0053
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.34%    0.00%    0.00%   0.00400000s
+SOfock:LL  1.00D-12    0.00%    2.32%    0.00%    0.00%   0.00595099s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999999419
-    6 -->     5 OVERLAP:        0.9999999453
-    7 -->     6 OVERLAP:        0.9999534617
-    4 -->     7 OVERLAP:        0.9999534880
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85633    7  -1.07933    8  -0.13873
->>> Total wall time: 0.00500000s, and total CPU time : 0.00400000s
+    5 -->     4 OVERLAP:        0.9999999315
+    6 -->     5 OVERLAP:        0.9999999364
+    7 -->     6 OVERLAP:        0.9999434024
+    4 -->     7 OVERLAP:        0.9999434492
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85631    7  -1.07936    8  -0.13873
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00717900s
 
-########## END ITERATION NO.   7 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   7 ##########   Wed Jun 29 16:08:40 2022
 
-It.    7    -107.6572100856      3.86D-05  2.99D-03  3.44D-03   DIIS   6    0.00400000s   LL             Fri Mar 17
+It.    7    -107.6572121661      4.34D-05  3.08D-03  3.77D-03   DIIS   6    0.00800000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   8 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   8 ##########   Wed Jun 29 16:08:40 2022
 
-    8 *** Differential density matrix. DCOVLP     = 1.0009
-    8 *** Differential density matrix. DVOVLP( 1) = 0.9968
+    8 *** Differential density matrix. DCOVLP     = 1.0010
+    8 *** Differential density matrix. DVOVLP( 1) = 0.9965
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    2.70%    0.00%    0.00%   0.00400001s
+SOfock:LL  1.00D-12    0.00%    2.63%    0.00%    0.00%   0.00586295s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999999847
-    6 -->     5 OVERLAP:        0.9999999903
-    7 -->     6 OVERLAP:        0.9999972433
-    4 -->     7 OVERLAP:        0.9999972537
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85646    7  -1.07898    8  -0.13868
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+    5 -->     4 OVERLAP:        0.9999999814
+    6 -->     5 OVERLAP:        0.9999999897
+    7 -->     6 OVERLAP:        0.9999966189
+    4 -->     7 OVERLAP:        0.9999966299
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85647    7  -1.07896    8  -0.13868
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00703100s
 
-########## END ITERATION NO.   8 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   8 ##########   Wed Jun 29 16:08:40 2022
 
-It.    8    -107.6572009419     -9.14D-06 -2.11D-03  1.21D-03   DIIS   7    0.00400000s   LL             Fri Mar 17
+It.    8    -107.6572009935     -1.12D-05 -2.33D-03  1.32D-03   DIIS   7    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.   9 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.   9 ##########   Wed Jun 29 16:08:40 2022
 
-    9 *** Differential density matrix. DCOVLP     = 0.9998
-    9 *** Differential density matrix. DVOVLP( 1) = 1.0008
+    9 *** Differential density matrix. DCOVLP     = 0.9997
+    9 *** Differential density matrix. DVOVLP( 1) = 1.0009
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    3.07%    0.00%    0.00%   0.00399999s
-DEBUG in DHFCNV: ITDIIS=  8     grad= 0.199D-07     round,noswit=  F  F
+SOfock:LL  1.00D-12    0.00%    3.07%    0.00%    0.00%   0.00584102s
+DEBUG in DHFCNV: ITDIIS=  8     grad= 0.258D-07     round,noswit=  F  F
 
 
  DIIS aborted because of the last two iterations
@@ -1320,67 +1356,67 @@ DEBUG in DHFCNV: ITDIIS=  8     grad= 0.199D-07     round,noswit=  F  F
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999999952
+    5 -->     4 OVERLAP:        0.9999999929
     6 -->     5 OVERLAP:        1.0000000000
-    7 -->     6 OVERLAP:        0.9999998031
-    4 -->     7 OVERLAP:        0.9999998020
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85640    7  -1.07908    8  -0.13869
->>> Total wall time: 0.00500000s, and total CPU time : 0.00400000s
+    7 -->     6 OVERLAP:        0.9999997455
+    4 -->     7 OVERLAP:        0.9999997437
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07908    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00725000s
 
-########## END ITERATION NO.   9 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.   9 ##########   Wed Jun 29 16:08:40 2022
 
-It.    9    -107.6572008049     -1.37D-07  6.85D-04  3.55D-04   DAMP 25%    0.00400000s   LL             Fri Mar 17
+It.    9    -107.6572008161     -1.77D-07  7.51D-04  3.93D-04   DAMP 25%    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  10 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  10 ##########   Wed Jun 29 16:08:40 2022
 
    10 *** Differential density matrix. DCOVLP     = 1.0001
    10 *** Differential density matrix. DVOVLP( 1) = 0.9998
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    3.28%    0.00%    0.00%   0.00399999s
+SOfock:LL  1.00D-12    0.00%    3.28%    0.00%    0.00%   0.00684500s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999999984
+    5 -->     4 OVERLAP:        0.9999999976
     6 -->     5 OVERLAP:        1.0000000000
-    7 -->     6 OVERLAP:        0.9999999950
-    4 -->     7 OVERLAP:        0.9999999945
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85640    7  -1.07908    8  -0.13869
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+    7 -->     6 OVERLAP:        0.9999999952
+    4 -->     7 OVERLAP:        0.9999999944
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85640    7  -1.07908    8  -0.13869
+>>> Total wall time:  0.00900000s, and total CPU time :  0.00836500s
 
-########## END ITERATION NO.  10 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  10 ##########   Wed Jun 29 16:08:40 2022
 
-It.   10    -107.6572007742     -3.07D-08 -2.26D-05  4.91D-05   DAMP 25%    0.00400000s   LL             Fri Mar 17
+It.   10    -107.6572007747     -4.14D-08 -1.93D-05  4.45D-05   DAMP 25%    0.00900000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  11 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  11 ##########   Wed Jun 29 16:08:40 2022
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
    11 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    3.77%    0.00%    0.00%   0.00400001s
+SOfock:LL  1.00D-12    0.00%    3.80%    0.00%    0.00%   0.00562900s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        1.0000000000
+    5 -->     4 OVERLAP:        0.9999999999
     6 -->     5 OVERLAP:        1.0000000000
-    7 -->     6 OVERLAP:        1.0000000000
-    4 -->     7 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85640    7  -1.07907    8  -0.13869
->>> Total wall time: 0.00500000s, and total CPU time : 0.00400000s
+    7 -->     6 OVERLAP:        0.9999999999
+    4 -->     7 OVERLAP:        0.9999999999
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85640    7  -1.07907    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00699800s
 
-########## END ITERATION NO.  11 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  11 ##########   Wed Jun 29 16:08:40 2022
 
-It.   11    -107.6572007734     -8.02D-10  2.53D-05  5.95D-05   DIIS   2    0.00400000s   LL             Fri Mar 17
+It.   11    -107.6572007736     -1.15D-09  2.78D-05  6.25D-05   DIIS   2    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  12 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  12 ##########   Wed Jun 29 16:08:40 2022
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
    12 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.54%    0.00%    0.00%   0.00399999s
+SOfock:LL  1.00D-12    0.00%    5.27%    0.00%    0.00%   0.00556600s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
@@ -1388,65 +1424,65 @@ SOfock:LL  1.00D-12    0.00%    5.54%    0.00%    0.00%   0.00399999s
 
     5 -->     4 OVERLAP:        1.0000000000
     6 -->     5 OVERLAP:        1.0000000000
-    7 -->     6 OVERLAP:        0.9999999985
-    4 -->     7 OVERLAP:        0.9999999985
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+    7 -->     6 OVERLAP:        0.9999999988
+    4 -->     7 OVERLAP:        0.9999999989
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00671100s
 
-########## END ITERATION NO.  12 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  12 ##########   Wed Jun 29 16:08:40 2022
 
-It.   12    -107.6572007738      4.05D-10 -4.86D-06  4.21D-05   DIIS   3    0.00400000s   LL             Fri Mar 17
+It.   12    -107.6572007739      3.79D-10  4.14D-06  4.68D-05   DIIS   3    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  13 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  13 ##########   Wed Jun 29 16:08:40 2022
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
    13 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.19%    0.00%    0.00%   0.00800000s
+SOfock:LL  1.00D-12    0.00%    4.22%    0.00%    0.00%   0.00555599s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999999988
+    5 -->     4 OVERLAP:        0.9999999983
     6 -->     5 OVERLAP:        1.0000000000
-    7 -->     6 OVERLAP:        0.9999999990
-    4 -->     7 OVERLAP:        0.9999999987
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00500000s, and total CPU time : 0.00800000s
+    7 -->     6 OVERLAP:        0.9999999989
+    4 -->     7 OVERLAP:        0.9999999985
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00657800s
 
-########## END ITERATION NO.  13 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  13 ##########   Wed Jun 29 16:08:40 2022
 
-It.   13    -107.6572007739      1.44D-10 -2.38D-05  3.01D-05   DIIS   4    0.00800000s   LL             Fri Mar 17
+It.   13    -107.6572007742      2.68D-10 -2.57D-05  3.28D-05   DIIS   4    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  14 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  14 ##########   Wed Jun 29 16:08:40 2022
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
    14 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    4.48%    0.00%    0.00%   0.00400001s
+SOfock:LL  1.00D-12    0.00%    4.52%    0.00%    0.00%   0.00557500s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
             ---------------------------------------------------------
 
-    5 -->     4 OVERLAP:        0.9999999992
+    5 -->     4 OVERLAP:        0.9999999991
     6 -->     5 OVERLAP:        1.0000000000
     7 -->     6 OVERLAP:        0.9999999997
-    4 -->     7 OVERLAP:        0.9999999995
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+    4 -->     7 OVERLAP:        0.9999999994
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00661100s
 
-########## END ITERATION NO.  14 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  14 ##########   Wed Jun 29 16:08:40 2022
 
-It.   14    -107.6572007742      2.10D-10  1.28D-05  5.60D-06   DIIS   5    0.00400000s   LL             Fri Mar 17
+It.   14    -107.6572007744      2.35D-10  1.30D-05  5.36D-06   DIIS   5    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  15 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  15 ##########   Wed Jun 29 16:08:40 2022
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
    15 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.62%    0.00%    0.00%   0.00399999s
+SOfock:LL  1.00D-12    0.00%    5.57%    0.00%    0.00%   0.00553495s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
@@ -1456,19 +1492,19 @@ SOfock:LL  1.00D-12    0.00%    5.62%    0.00%    0.00%   0.00399999s
     6 -->     5 OVERLAP:        1.0000000000
     7 -->     6 OVERLAP:        0.9999999999
     4 -->     7 OVERLAP:        0.9999999999
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00685400s
 
-########## END ITERATION NO.  15 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  15 ##########   Wed Jun 29 16:08:40 2022
 
-It.   15    -107.6572007741     -7.43D-11 -1.29D-06  2.95D-06   DIIS   6    0.00400000s   LL             Fri Mar 17
+It.   15    -107.6572007744     -7.78D-11  1.39D-06  3.83D-06   DIIS   6    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  16 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  16 ##########   Wed Jun 29 16:08:40 2022
 
    16 *** Differential density matrix. DCOVLP     = 1.0000
    16 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.64%    0.00%    0.00%   0.00400001s
+SOfock:LL  1.00D-12    0.00%    5.87%    0.00%    0.00%   0.00553900s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
@@ -1478,19 +1514,19 @@ SOfock:LL  1.00D-12    0.00%    5.64%    0.00%    0.00%   0.00400001s
     6 -->     5 OVERLAP:        1.0000000000
     7 -->     6 OVERLAP:        0.9999999999
     4 -->     7 OVERLAP:        0.9999999999
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00500000s, and total CPU time : 0.00400000s
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00668800s
 
-########## END ITERATION NO.  16 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  16 ##########   Wed Jun 29 16:08:40 2022
 
-It.   16    -107.6572007741     -1.31D-12 -2.54D-06  2.33D-06   DIIS   7    0.00400000s   LL             Fri Mar 17
+It.   16    -107.6572007744     -9.95D-13 -2.95D-06  2.86D-06   DIIS   7    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  17 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  17 ##########   Wed Jun 29 16:08:40 2022
 
    17 *** Differential density matrix. DCOVLP     = 1.0000
    17 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    5.48%    0.00%    0.00%   0.00399999s
+SOfock:LL  1.00D-12    0.00%    5.61%    0.00%    0.00%   0.00555396s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
@@ -1500,19 +1536,19 @@ SOfock:LL  1.00D-12    0.00%    5.48%    0.00%    0.00%   0.00399999s
     6 -->     5 OVERLAP:        1.0000000000
     7 -->     6 OVERLAP:        1.0000000000
     4 -->     7 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00700000s, and total CPU time :  0.00671200s
 
-########## END ITERATION NO.  17 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  17 ##########   Wed Jun 29 16:08:40 2022
 
-It.   17    -107.6572007741      4.52D-12  2.84D-06  3.55D-06   DIIS   7    0.00400000s   LL             Fri Mar 17
+It.   17    -107.6572007744      2.79D-12  3.26D-06  4.50D-06   DIIS   7    0.00700000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  18 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  18 ##########   Wed Jun 29 16:08:40 2022
 
    18 *** Differential density matrix. DCOVLP     = 1.0000
    18 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%    6.12%    0.00%    0.00%   0.00400001s
+SOfock:LL  1.00D-12    0.00%    6.26%    0.00%    0.00%   0.00497299s
 
 
             SMOSEL: Reordered (electronic) vectors in fermion ircop 1
@@ -1522,33 +1558,24 @@ SOfock:LL  1.00D-12    0.00%    6.12%    0.00%    0.00%   0.00400001s
     6 -->     5 OVERLAP:        1.0000000000
     7 -->     6 OVERLAP:        1.0000000000
     4 -->     7 OVERLAP:        1.0000000000
-E_HOMO...E_LUMO, symmetry 1:     6  -0.85641    7  -1.07906    8  -0.13869
->>> Total wall time: 0.00500000s, and total CPU time : 0.00400000s
+E_HOMO...E_LUMO, symmetry 1:                                  6  -0.85641    7  -1.07906    8  -0.13869
+>>> Total wall time:  0.00600000s, and total CPU time :  0.00597600s
 
-########## END ITERATION NO.  18 ##########   Fri Mar 17 08:10:56 2017
+########## END ITERATION NO.  18 ##########   Wed Jun 29 16:08:40 2022
 
-It.   18    -107.6572007741     -7.62D-12 -1.72D-06  1.19D-08   DIIS   7    0.00400000s   LL             Fri Mar 17
+It.   18    -107.6572007744     -4.49D-12 -2.00D-06  1.43D-08   DIIS   7    0.00600000s   LL             Wed Jun 29
 
-########## START ITERATION NO.  19 ##########   Fri Mar 17 08:10:56 2017
+########## START ITERATION NO.  19 ##########   Wed Jun 29 16:08:40 2022
 
    19 *** Differential density matrix. DCOVLP     = 1.0000
    19 *** Differential density matrix. DVOVLP( 1) = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   23.19%    0.00%    0.00%   0.00399999s
+SOfock:LL  1.00D-12    0.00%   22.06%    0.00%    0.00%   0.00480801s
+>>> Total wall time:  0.00600000s, and total CPU time :  0.00537900s
 
+########## END ITERATION NO.  19 ##########   Wed Jun 29 16:08:40 2022
 
-            SMOSEL: Reordered (electronic) vectors in fermion ircop 1
-            ---------------------------------------------------------
-
-    5 -->     4 OVERLAP:        1.0000000000
-    6 -->     5 OVERLAP:        1.0000000000
-    7 -->     6 OVERLAP:        1.0000000000
-    4 -->     7 OVERLAP:        1.0000000000
->>> Total wall time: 0.00400000s, and total CPU time : 0.00400000s
-
-########## END ITERATION NO.  19 ##########   Fri Mar 17 08:10:56 2017
-
-It.   19    -107.6572007741     -1.99D-13 -3.02D-09  1.90D-09   DIIS   7    0.00400000s   LL             Fri Mar 17
+It.   19    -107.6572007744     -2.27D-13 -3.75D-09  2.15D-09   DIIS   7    0.00600000s   LL             Wed Jun 29
 
 
                                    SCF - CYCLE
@@ -1564,41 +1591,43 @@ It.   19    -107.6572007741     -1.99D-13 -3.02D-09  1.90D-09   DIIS   7    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -107.6111765387      1.08D+02  0.00D+00  5.15D-01               0.00800000s   LL             Fri Mar 17
-It.    2    -107.6547898226      4.36D-02  3.33D-01  3.44D-01               0.00400000s   LL             Fri Mar 17
-It.    3    -107.6652012539      1.04D-02  5.99D-02  1.45D-01   DIIS   2    0.00400000s   LL             Fri Mar 17
-It.    4    -107.6304160997     -3.48D-02 -1.78D-01  3.66D-01   DIIS   3    0.00400000s   LL             Fri Mar 17
-It.    5    -107.6577855481      2.74D-02  1.04D-01  4.17D-02   DIIS   4    0.00800000s   LL             Fri Mar 17
-It.    6    -107.6571715045     -6.14D-04  2.23D-02  1.30D-02   DIIS   5    0.00400000s   LL             Fri Mar 17
-It.    7    -107.6572100856      3.86D-05  2.99D-03  3.44D-03   DIIS   6    0.00400000s   LL             Fri Mar 17
-It.    8    -107.6572009419     -9.14D-06 -2.11D-03  1.21D-03   DIIS   7    0.00400000s   LL             Fri Mar 17
-It.    9    -107.6572008049     -1.37D-07  6.85D-04  3.55D-04   DAMP 25%    0.00400000s   LL             Fri Mar 17
-It.   10    -107.6572007742     -3.07D-08 -2.26D-05  4.91D-05   DAMP 25%    0.00400000s   LL             Fri Mar 17
-It.   11    -107.6572007734     -8.02D-10  2.53D-05  5.95D-05   DIIS   2    0.00400000s   LL             Fri Mar 17
-It.   12    -107.6572007738      4.05D-10 -4.86D-06  4.21D-05   DIIS   3    0.00400000s   LL             Fri Mar 17
-It.   13    -107.6572007739      1.44D-10 -2.38D-05  3.01D-05   DIIS   4    0.00800000s   LL             Fri Mar 17
-It.   14    -107.6572007742      2.10D-10  1.28D-05  5.60D-06   DIIS   5    0.00400000s   LL             Fri Mar 17
-It.   15    -107.6572007741     -7.43D-11 -1.29D-06  2.95D-06   DIIS   6    0.00400000s   LL             Fri Mar 17
-It.   16    -107.6572007741     -1.31D-12 -2.54D-06  2.33D-06   DIIS   7    0.00400000s   LL             Fri Mar 17
-It.   17    -107.6572007741      4.52D-12  2.84D-06  3.55D-06   DIIS   7    0.00400000s   LL             Fri Mar 17
-It.   18    -107.6572007741     -7.62D-12 -1.72D-06  1.19D-08   DIIS   7    0.00400000s   LL             Fri Mar 17
-It.   19    -107.6572007741     -1.99D-13 -3.02D-09  1.90D-09   DIIS   7    0.00400000s   LL             Fri Mar 17
+It.    1    -107.6111765390      1.08D+02  0.00D+00  5.15D-01               0.01908300s   LL             Wed Jun 29
+It.    2    -107.6548568750      4.37D-02  2.83D-01  3.45D-01               0.02700000s   LL             Wed Jun 29
+It.    3    -107.6651358350      1.03D-02  6.02D-02  1.46D-01   DIIS   2    0.02700000s   LL             Wed Jun 29
+It.    4    -107.6304357261     -3.47D-02 -1.78D-01  3.66D-01   DIIS   3    0.00800000s   LL             Wed Jun 29
+It.    5    -107.6577969698      2.74D-02  1.05D-01  4.08D-02   DIIS   4    0.00800000s   LL             Wed Jun 29
+It.    6    -107.6571687361     -6.28D-04  2.21D-02  1.35D-02   DIIS   5    0.00700000s   LL             Wed Jun 29
+It.    7    -107.6572121661      4.34D-05  3.08D-03  3.77D-03   DIIS   6    0.00800000s   LL             Wed Jun 29
+It.    8    -107.6572009935     -1.12D-05 -2.33D-03  1.32D-03   DIIS   7    0.00700000s   LL             Wed Jun 29
+It.    9    -107.6572008161     -1.77D-07  7.51D-04  3.93D-04   DAMP 25%    0.00700000s   LL             Wed Jun 29
+It.   10    -107.6572007747     -4.14D-08 -1.93D-05  4.45D-05   DAMP 25%    0.00900000s   LL             Wed Jun 29
+It.   11    -107.6572007736     -1.15D-09  2.78D-05  6.25D-05   DIIS   2    0.00700000s   LL             Wed Jun 29
+It.   12    -107.6572007739      3.79D-10  4.14D-06  4.68D-05   DIIS   3    0.00700000s   LL             Wed Jun 29
+It.   13    -107.6572007742      2.68D-10 -2.57D-05  3.28D-05   DIIS   4    0.00700000s   LL             Wed Jun 29
+It.   14    -107.6572007744      2.35D-10  1.30D-05  5.36D-06   DIIS   5    0.00700000s   LL             Wed Jun 29
+It.   15    -107.6572007744     -7.78D-11  1.39D-06  3.83D-06   DIIS   6    0.00700000s   LL             Wed Jun 29
+It.   16    -107.6572007744     -9.95D-13 -2.95D-06  2.86D-06   DIIS   7    0.00700000s   LL             Wed Jun 29
+It.   17    -107.6572007744      2.79D-12  3.26D-06  4.50D-06   DIIS   7    0.00700000s   LL             Wed Jun 29
+It.   18    -107.6572007744     -4.49D-12 -2.00D-06  1.43D-08   DIIS   7    0.00600000s   LL             Wed Jun 29
+It.   19    -107.6572007744     -2.27D-13 -3.75D-09  2.15D-09   DIIS   7    0.00600000s   LL             Wed Jun 29
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   19 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.00494737s
+      LL           :    0.01052632s
 
 
                                    TOTAL ENERGY
                                    ------------
 
-   Electronic energy                        :    -129.98278216942208
+   Charge of molecule : 1
+
+   Electronic energy                        :    -129.98278216971312
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      22.32558139534884
 
    Sum of all contributions to the energy
-   Total energy                             :    -107.65720077407325
+   Total energy                             :    -107.65720077436428
 
 
                                    Eigenvalues
@@ -1607,14 +1636,14 @@ It.   19    -107.6572007741     -1.99D-13 -3.02D-09  1.90D-09   DIIS   7    0.00
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--20.52694128074558  ( 2)   -11.38921711937523  ( 2)    -1.95827115601401  ( 2)    -0.99926258528823  ( 2)    -0.99875737231827  ( 2)
- -0.85640687409545  ( 2)
+-20.52694128213613  ( 2)   -11.38921711879771  ( 2)    -1.95827115649503  ( 2)    -0.99926258575430  ( 2)    -0.99875737278763  ( 2)
+ -0.85640687379198  ( 2)
   * Open shell #1, f = 0.5000
- -1.07906277623274  ( 2)
+ -1.07906277698472  ( 2)
   * Virtual eigenvalues, f = 0.0000
- -0.13868938450475  ( 2)    -0.13847713105864  ( 2)     0.35791389121240  ( 2)     1.10381268257801  ( 2)     1.10407436704382  ( 2)
-  1.12431201879306  ( 2)     1.76452156140796  ( 2)     1.98499486796457  ( 2)     1.98592735056940  ( 2)     2.03296160311392  ( 2)
-  3.56917986919078  ( 2)    24.88607244368563  ( 2)    44.31210812212995  ( 2)
+ -0.13868938447380  ( 2)    -0.13847713102515  ( 2)     0.35791389122079  ( 2)     1.10381268290143  ( 2)     1.10407436737323  ( 2)
+  1.12431201897638  ( 2)     1.76452156164640  ( 2)     1.98499486730638  ( 2)     1.98592734991534  ( 2)     2.03296160236544  ( 2)
+  3.56917986846373  ( 2)    24.88607244364122  ( 2)    44.31210811882983  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :    -0.13868938 au (symmetry E1 )
@@ -1639,8 +1668,8 @@ It.   19    -107.6572007741     -1.99D-13 -3.02D-09  1.90D-09   DIIS   7    0.00
                                  ----------------
 
 
-* Electronic eigenvalue no.  1: -20.526941282117       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   1: -20.526941282136       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1649,8 +1678,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s
  alpha    1.0000  |     -0.0001        -0.0003         1.0004
  beta     0.0000  |      0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.  2: -11.389217118832       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   2: -11.389217118798       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1659,8 +1688,8 @@ Gross     Total   |    L A1 C  s      L A1 O  pz
  alpha    1.0000  |      0.9998         0.0002
  beta     0.0000  |      0.0000         0.0000
 
-* Electronic eigenvalue no.  3: -1.9582711564923       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   3: -1.9582711564950       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1669,8 +1698,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    1.0000  |      0.1275         0.0815         0.6966         0.0943
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.  4: -0.9992625857610       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   4: -0.9992625857543       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1679,8 +1708,8 @@ Gross     Total   |    L B1 C  px     L B1 O  px     L B2 C  py     L B2 O  py
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000
  beta     1.0000  |      0.1225         0.3775         0.1225         0.3775
 
-* Electronic eigenvalue no.  5: -0.9987573727985       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   5: -0.9987573727876       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1689,8 +1718,8 @@ Gross     Total   |    L B1 C  px     L B1 O  px     L B2 C  py     L B2 O  py
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000
  beta     1.0000  |      0.1227         0.3773         0.1227         0.3773
 
-* Electronic eigenvalue no.  6: -0.8564068738315       (Occupation : f = 1.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   6: -0.8564068737920       (Occupation : f = 1.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1699,8 +1728,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    1.0000  |      0.3421         0.3313         0.0222         0.3043
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.  7: -1.0790627769627       (Occupation : f = 0.5000)           
-==========================================================================================
+* Electronic eigenvalue no.   7: -1.0790627769847       (Occupation : f = 0.5000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1709,8 +1738,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    1.0000  |      0.3871         0.0259         0.2239         0.3631
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.  8: -0.1386893844815       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   8: -0.1386893844738       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1719,8 +1748,8 @@ Gross     Total   |    L B1 C  px     L B1 O  px     L B2 C  py     L B2 O  py
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000
  beta     1.0000  |      0.3795         0.1205         0.3795         0.1205
 
-* Electronic eigenvalue no.  9: -0.1384771310349       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.   9: -0.1384771310251       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1729,8 +1758,8 @@ Gross     Total   |    L B1 C  px     L B1 O  px     L B2 C  py     L B2 O  py
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000
  beta     1.0000  |      0.3793         0.1207         0.3793         0.1207
 
-* Electronic eigenvalue no. 10:  0.3579138912152       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  10:  0.3579138912208       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1739,8 +1768,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    1.0000  |      0.1793         0.7132         0.0158         0.0917
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no. 11:  1.1038126828853       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  11:  1.1038126829014       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1749,8 +1778,8 @@ Gross     Total   |    L A1 C  pz     L B1 C  px     L B1 O  px     L B2 C  py  
  alpha    0.0001  |      0.0001         0.0000         0.0000         0.0000         0.0000
  beta     0.9999  |      0.0000         0.5029        -0.0030         0.5029        -0.0030
 
-* Electronic eigenvalue no. 12:  1.1040743673543       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  12:  1.1040743673732       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1759,8 +1788,8 @@ Gross     Total   |    L B1 C  px     L B1 O  px     L B2 C  py     L B2 O  py
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000
  beta     1.0000  |      0.5030        -0.0030         0.5030        -0.0030
 
-* Electronic eigenvalue no. 13:  1.1243120189629       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  13:  1.1243120189764       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1769,8 +1798,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    0.9999  |      0.0113         0.9290        -0.0068         0.0663
  beta     0.0001  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no. 14:  1.7645215616569       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  14:  1.7645215616464       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1779,8 +1808,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    1.0000  |      0.9381        -0.0052        -0.0063         0.0734
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no. 15:  1.9849948673009       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  15:  1.9849948673064       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1789,8 +1818,8 @@ Gross     Total   |    L A1 O  pz     L B1 C  px     L B1 O  px     L B2 C  py  
  alpha    0.0001  |      0.0001         0.0000         0.0000         0.0000         0.0000
  beta     0.9999  |      0.0000        -0.0050         0.5050        -0.0050         0.5050
 
-* Electronic eigenvalue no. 16:  1.9859273499013       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  16:  1.9859273499153       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1799,8 +1828,8 @@ Gross     Total   |    L B1 C  px     L B1 O  px     L B2 C  py     L B2 O  py
  alpha    0.0000  |      0.0000         0.0000         0.0000         0.0000
  beta     1.0000  |     -0.0050         0.5050        -0.0050         0.5050
 
-* Electronic eigenvalue no. 17:  2.0329616023675       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  17:  2.0329616023654       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1809,8 +1838,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    0.9999  |      0.0389        -0.0206         0.0250         0.9566
  beta     0.0001  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no. 18:  3.5691798685020       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  18:  3.5691798684637       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1819,8 +1848,8 @@ Gross     Total   |    L A1 C  s      L A1 C  pz     L A1 O  s      L A1 O  pz
  alpha    1.0000  |     -0.0232        -0.0537         1.0273         0.0496
  beta     0.0000  |      0.0000         0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no. 19:  24.886072444205       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  19:  24.886072443641       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1829,8 +1858,8 @@ Gross     Total   |    L A1 C  s      L A1 O  s      L A1 O  pz
  alpha    1.0000  |      0.9999        -0.0001         0.0002
  beta     0.0000  |      0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no. 20:  44.312108120810       (Occupation : f = 0.0000)           
-==========================================================================================
+* Electronic eigenvalue no.  20:  44.312108118830       (Occupation : f = 0.0000)           
+============================================================================================
 
 * Gross populations greater than 0.00010
 
@@ -1850,21 +1879,24 @@ Gross  | L B2 O  py
 -----------------------
  total |   1.50962
 
+ * Closing HDF5 checkpoint file 
+    - DIRAC was compiled without hdf5, checkpointing was not possible
+
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
 *****************************************************
 
 
  
-     Date and time (Linux)  : Fri Mar 17 08:10:56 2017
-     Host name              : dirac                                   
+     Date and time (Linux)  : Wed Jun 29 16:08:40 2022
+     Host name              : fe-ac-02.escience.sdu.dk                
 
->>>> Node 0, utime: 0, stime: 0, minflt: 1266, majflt: 0, nvcsw: 3, nivcsw: 3, maxrss: 78256
+>>>> Node 0, utime: 0, stime: 0, minflt: 11671, majflt: 0, nvcsw: 1904, nivcsw: 418, maxrss: 214900
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       100.56
+  Mean allocation size (Mb) :       110.29
   
   Largest          10  allocations
   
@@ -1879,10 +1911,12 @@ Gross  | L B2 O  py
         0.04 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
         0.04 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
   
-  Peak memory usage    (Mb) :       488.00
+  Peak memory usage:       488.28 MB
+  Peak memory usage:        0.477 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:     0.00 MB
 
 *****************************************************
+DIRAC pam run in /gpfs/ess1/work/sdujk/hjj/progs/gitDirac/build_master_i4/test/open-shells

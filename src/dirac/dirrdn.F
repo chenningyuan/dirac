@@ -237,7 +237,7 @@ C     Initialize PE library
 !     consistency check for fragment X2C and the proper X2C module
       if(x2cmod_fragment_x2c.and..not.x2c)then
         write(lupri,'(/a,a)')
-     &  '  *** PAMINP reports an error after readin *X2C input:',
+     &  '  *** PAMINP reports an error after reading *X2C input:',
      &  '  a fragment X2C calculation requires the X2C module'//
      &  ' via .X2C under **HAMILTONIAN.'
         call quit('*** fragment X2C calculation not possible. ***')
@@ -382,7 +382,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','xxxxxxx',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -543,8 +543,6 @@ C&&&& IMPMOS
             READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   116    CONTINUE
-C&&&& FAMILY: Family basis (Not yet implemented)
-            FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
 C&&&& SKIP2E
@@ -2349,11 +2347,16 @@ C
         WRITE(LUPRI,'(3X,A,I2,A,3X,I3)')
      &   ('Fermion irrep ',I,':',NFRO_DHF(I),I=1,NFSYM)
       ENDIF
-      IF (NELECT_DHF+NAELEC_DHF.EQ.0.AND.(.NOT.VACPOL)) THEN
+      IF (NELECT_DHF+NAELEC_DHF.EQ.0) THEN
         WRITE(LUPRI,'(2X,A)') 'Warning: zero electrons in SCF !'
       END IF
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
+
+      CALL RMOLCHR(ICHRG)
+      KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+      WRITE(LUPRI,'(A,I0)')
+     &    ' * Charge of molecule : ',KCHARG
 C
       IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
@@ -2365,8 +2368,6 @@ C     a U(+90) calculation.
      &     ' - INFO: bare nucleus correction used independently of '//
      &  'the system charge'
         ELSE
-          CALL RMOLCHR(ICHRG)
-          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
           IF (ABS(KCHARG) .GT. 10) THEN
             BNCRON = .FALSE.
             BNCRON = .FALSE.
@@ -2951,6 +2952,7 @@ C       Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
       use dirac_cfg
+      use x2cmod_cfg, only: x2cmod_mmf
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
@@ -3351,6 +3353,12 @@ C
             END IF
          END DO
       END IF
+
+!>    stop for non-working keyword combination
+      if(x2cmod_mmf)then
+         if(DOKRMC .or. DOGASCIP .or. DOKRCI)
+     &   call quit(" X2Cmmf does not work with KRMC/KRCI/GASCIP")
+      end if
 C
 C     Process input for various program sections
 C     ==========================================
@@ -5075,7 +5083,6 @@ C     Initialize /DCBGEN/
 C     ===================
 C
       TITLE    = 'DIRAC: No title specified !!!'
-      FAMILY   = .FALSE.
       INPTES   = .FALSE.
       VACUUM   = .FALSE.
       NUCVAC   = .FALSE.
@@ -5242,11 +5249,11 @@ C
 !                   29        30        31        32
      &            '.ONESTE','.BLOCKD','.DO2C4C','.DO4C2C',
 !                   33        34        35        36
-     &            '.CONT2C','.BEG_2C','.VACPOL','.X2COLD',
+     &            '.CONT2C','.BEG_2C','.XXXXXX','.X2COLD',
 !                   37        38        39        40
-     &            '.X2C   ','.MIXVAC','.CAP   ','.NOVREF',
+     &            '.X2C   ','.XXXXXX','.CAP   ','.NOVREF',
 !                   41        42        43        44
-     &            '.POSVAC','.FDE   ','.IOTC4 ','.NONREL',
+     &            '.XXXXXX','.FDE   ','.IOTC4 ','.NONREL',
 !                   45        46        47        48
      &            '.BSS4  ','.CMPEIG','.DKH2  ','.DKH1  ',
 !                   49        50        51        52
@@ -5310,10 +5317,6 @@ C
       ONECAP  = .FALSE.
       SMLV1C  = .FALSE.
       ONECOFF = .FALSE.
-      VACPOL  = .FALSE.
-      MIXVAC  = .FALSE.
-      POSVAC  = .FALSE.
-      VACREF  = .TRUE.
       CAP     = .FALSE.
 !     ECPCALC = .FALSE. - already set in HAMSCAN
       ORIGIN(1:3) = 0.0d0
@@ -5700,11 +5703,7 @@ C&&&&  ONESTEP: Do NOT do preliminary free-particle transformation
   130     CONTINUE
 C&&& BLOCKD:   Do use block diagonalization
 CMI      ... not active yet
-#ifdef MOD_UNRELEASED
              BLOCKD = .TRUE.
-#else
-             call quit('block diagonalizing feature not in release!')
-#endif
             GO TO 100
   131     CONTINUE
 C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.mode...
@@ -5739,10 +5738,6 @@ C&&& BEG_2C: specify INI2C when DO2C4C is on
      &                ' information.')
             GO TO 100
   135     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&&& VACPOL: vacuum polarization included
-            VACPOL = .TRUE.
-#endif
             GO TO 100
   136     CONTINUE
 C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
@@ -5777,11 +5772,6 @@ C            as they need to be picture-changed transformed after the 2c-transfo
              ENDIF
              GO TO 100
   138     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&& MIXVAC: Alternative definition of vacuum polarisation
-             VACPOL = .TRUE.
-             MIXVAC = .TRUE.
-#endif
              GO TO 100
   139     CONTINUE
 C&&& Activate the CAP calculation for the complex Fock space method
@@ -5792,17 +5782,9 @@ C&&& Activate the CAP calculation for the complex Fock space method
 #endif
              GO TO 100
   140     CONTINUE
-C&&& NOVREF: Do not generate reference vacuum
-             VACREF = .FALSE.
              GO TO 100
   141     CONTINUE
-#ifdef MOD_UNRELEASED
-C&&& POSVAC: Use positronic vacuum polarisation
-             VACPOL = .TRUE.
-             POSVAC = .TRUE.
-#endif
              GO TO 100
-
 !         .FDE
 !         frozen density embedding
   142     continue
@@ -6223,8 +6205,8 @@ C     =====================================================
         IF ((SMLV1C.OR.DOLVC.OR.NOSMLV.OR.ONECAP).and.
      &      .not.x2cmod_mmf)THEN
           CALL QUIT('**HAMILTONIAN: '//
-     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP
-     &    & BSS/X2C !')
+     &    'Conflicting options SMLV1C/DOLVC/NOSMLV/ONECAP '//
+     &    '& BSS/X2C !')
         ENDIF
         IF (URKBAL.OR.SPINFR2) THEN
           CALL QUIT('**HAMILTONIAN: '//
@@ -7735,7 +7717,8 @@ C     and the density of the orbitals given by VECMVO.
         IF(NOCC(I).EQ.0) THEN
           VECMVO(I) = '1 '
         ELSEIF(NOCC(I).GT.0) THEN
-          WRITE(VECMVO(I),'(A3,I4)') '1..',NOCC(I)
+          WRITE(VECMVO(I),'(A3,I0)') '1..',NISH(I)
+          ! exclude active orbitals for default IONMVO
         ENDIF
       ENDDO
 C
@@ -7743,6 +7726,16 @@ C     Process input from CBIMVO
 C     =========================
 C
       NEWDEF = (WORD .EQ. '*MVOCAL')
+
+      IF (DOMVO .AND. .NOT.NEWDEF .AND. NASHT.EQ.0) THEN
+         DOMVO = .FALSE.
+         WRITE(LUPRI,'(/A)')
+     &   ' INFO: .MVO option ignored because .VECMVO not specified'//
+     &   ' for closed shell SCF calculation',
+     &   '       (i.e. MVO orbitals would be identical to'//
+     &   ' canonical orbitals)'
+      END IF
+
       ICHANG = 0
       IF (NEWDEF) THEN
          WORD1 = WORD
@@ -7815,8 +7808,10 @@ C&&& WEIGHT: Give weight of the VECMVO density, the rest is inactive density
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT('Illegal prompt in MVOINP.')
             END IF
-      END IF
+      END IF ! NEWDEF
   300 CONTINUE
+
+      IF (.NOT.DOMVO) GOTO 999 ! *MVOCAL input is ignored if not .MVO
 C
 C     Process section
 C
@@ -7826,7 +7821,6 @@ C
 C     Print section
 C     =============
 C
-      IF(.NOT.DOMVO) GOTO 999
       CALL PRSYMB(LUPRI,'=',75,0)
       WRITE(LUPRI,'(A)') ' MVOGEN: Modified virtual orbitals'
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -7902,22 +7896,20 @@ C
 C
       CALL TITLER('Input consistency checks','*',127)
 
-      is_2c_rel_run = .false.
       is_2c_rel_run = bss.or.x2c
 
-      IF (DOPRP.AND.TWOCOMP.AND..NOT.is_2c_rel_run) THEN
-       WRITE(LUPRI,'(1X,A/)')
-     & 'NB: Properties & TWOCOMP require non-relativistic'//
-     & ' form of operators !'
+      IF (DOPRP) THEN
+        IF(DKH1) CALL QUIT('Properties not available for DKH1')
+        IF(DKH2) CALL QUIT('Properties not available for DKH2')        
+        IF(TWOCOMP.AND..NOT.is_2c_rel_run) THEN
+          WRITE(LUPRI,'(1X,A/)')
+     &    'NB: Properties & TWOCOMP require non-relativistic'//
+     &    ' form of operators !'
+        ENDIF
       ENDIF
-
 !radovan: i think they are now rather ok tested
 !     IF (SPINFR.AND.DOPRP)WRITE (LUPRI,1000)'Spinfree properties'
 
-#ifndef MOD_UNRELEASED
-      IF (DORES .AND.dirac_cfg_dft_calculation)
-     &   CALL QUIT ('.RESOLVE does not work with DFT !')
-#endif
 
 
 C hjaaj April 2002: why not DORES .and. DOTRA ??? TODO
@@ -8891,7 +8883,7 @@ C         if reading input from a terminal
   910 CONTINUE
       RETURN
   920 CONTINUE
-         CALL QUIT('Error reading LUCMD, no HAMIL input found')
+         CALL QUIT('Error reading input, no **HAMIL input found')
   930 CONTINUE
       READ (LUCMD,'(A7)') WORD
       CALL UPCASE(WORD)

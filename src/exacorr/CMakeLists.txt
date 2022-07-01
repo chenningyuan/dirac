@@ -13,6 +13,7 @@ if(ENABLE_EXATENSOR)
    exacorr_global.F90
    exacorr_cfg.F90
    exacorr_utils.F90
+   exacorr_eri.F90
    exacorr_tensor_methods.F90
    intermediates.F90
    exacorr_ao_to_mo.F90
@@ -26,6 +27,7 @@ if(ENABLE_EXATENSOR)
    talsh_cholesky_integrals.F90
    talsh_common_routines.F90
    talsh_gradient.F90
+   talsh_triples.F90
    talsh_cc.F90
    talsh_mp2lap.F90
    talsh_mp2no.F90

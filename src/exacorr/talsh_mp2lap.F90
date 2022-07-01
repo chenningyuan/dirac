@@ -9,8 +9,9 @@ module talsh_mp2lap
         use exacorr_global
         use talsh_cholesky_integrals
         use talsh_common_routines
+#ifdef HAS_LAPLACE
         use type_laplace, only : laplace_info, deallocate_laplace
-
+#endif
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -55,7 +56,9 @@ module talsh_mp2lap
         !Laplace denominator
         integer                                :: nocc, nvir, nchol, i, i1
         real(8), allocatable                   :: eps_occ(:),eps_vir(:),eps_occ_neg(:), zero_chol(:)
+#ifdef HAS_LAPLACE
         type(laplace_info)                     :: laplace
+#endif
         integer(INTD)                          :: dims4(1:4), dims2(1:2)
         type(talsh_tens_t)                     :: L1,L2
 
@@ -67,6 +70,7 @@ module talsh_mp2lap
 
         call print_date("Entering MP2_LAP Module")
 
+#ifdef HAS_LAPLACE
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
         ierr=talsh_init(buf_size,host_arg_max)
@@ -114,12 +118,14 @@ module talsh_mp2lap
         allocate(eps_occ_neg(nocc))
         eps_occ_neg(1:nocc)=-eps_occ(1:nocc)
 !       determine Laplace quadrature parameters with the minimax algorithm
-        laplace%bounds(1) = 2.0d0*(eps_vir(1)-eps_occ(nocc))
-        laplace%bounds(2) = 2.0d0*(eps_vir(nvir)-eps_occ(1))
-        if (exa_input%print_level>10) then
+        laplace%bounds(1) = 2.0d0*(MINVAL(eps_vir)-MAXVAL(eps_occ))
+        laplace%bounds(2) = 2.0d0*(MAXVAL(eps_vir)-MINVAL(eps_occ))
+
+        if (exa_input%print_level>5) then
           write(*,*) '--- Laplace bounds :', laplace%bounds
           write(*,*) '--- occ orb. :', eps_occ
           write(*,*) '--- vir orb. :', eps_vir
+          write(*,*) '--- limits :',MINVAL(eps_vir),MAXVAL(eps_occ),MAXVAL(eps_vir),MINVAL(eps_occ)
         end if
         
 !       get laplace points
@@ -218,6 +224,10 @@ module talsh_mp2lap
         ierr=talsh_stats()
         ierr = talsh_shutdown()
 
+#else
+        call quit('Laplace routines not included, functionality not available')
+        return 
+#endif
         call print_date('Leaving MP2_LAP Module')
       end subroutine talsh_mp2lap_driver
 
@@ -243,7 +253,9 @@ module talsh_mp2lap
         !Laplace denominator
         integer                                :: nocc, nvir, nchol, i, i1
         real(8), allocatable                   :: eps_occ(:),eps_vir(:),eps_occ_neg(:), zero_chol(:)
+#ifdef HAS_LAPLACE
         type(laplace_info)                     :: laplace
+#endif
         integer(INTD)                          :: dims4(1:4), dims2(1:2), dims1(1)
         type(talsh_tens_t)                     :: L1p,L2p,L1q,L2q
 
@@ -254,7 +266,8 @@ module talsh_mp2lap
         type(talsh_tens_t)                     :: T1,R1,R2,S1,one_mp2lap
 
         call print_date("Entering MP2_LAP Module")
-
+        
+#ifdef HAS_LAPLACE
         !Initialize TALSH
         buf_size=exa_input%talsh_buff*buf_size
         ierr=talsh_init(buf_size,host_arg_max)
@@ -301,12 +314,14 @@ module talsh_mp2lap
         allocate(eps_occ_neg(nocc))
         eps_occ_neg(1:nocc)=-eps_occ(1:nocc)
 !       determine Laplace quadrature parameters with the minimax algorithm
-        laplace%bounds(1) = 2.0d0*(eps_vir(1)-eps_occ(nocc))
-        laplace%bounds(2) = 2.0d0*(eps_vir(nvir)-eps_occ(1))
-        if (exa_input%print_level>10) then
+        laplace%bounds(1) = 2.0d0*(MINVAL(eps_vir)-MAXVAL(eps_occ))
+        laplace%bounds(2) = 2.0d0*(MAXVAL(eps_vir)-MINVAL(eps_occ))
+
+        if (exa_input%print_level>5) then
           write(*,*) '--- Laplace bounds :', laplace%bounds
           write(*,*) '--- occ orb. :', eps_occ
           write(*,*) '--- vir orb. :', eps_vir
+          write(*,*) '--- limits :',MINVAL(eps_vir),MAXVAL(eps_occ),MAXVAL(eps_vir),MINVAL(eps_occ)
         end if
         
 !       get laplace points
@@ -430,7 +445,10 @@ module talsh_mp2lap
         !shutdown TALSH
         ierr=talsh_stats()
         ierr = talsh_shutdown()
-
+#else
+        call quit('Laplace routines not included, functionality not available')
+        return 
+#endif
         call print_date('Leaving MP2_LAP Module')
       end subroutine mp2lap_get_DM
 

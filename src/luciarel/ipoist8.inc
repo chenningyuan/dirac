@@ -37,6 +37,7 @@
      &KNJKAINTM,KNJKBINTM,KXSYM_BLK,KXRCCTOS,                           &
      &KNICA,KNICB,KNIAA,KNIAB,KNKA,KNKB,                                &
      &KILU1LIST,KILU2LIST,KILU3LIST,KILU4LIST,KILU5LIST,                &
+     &KILU6LIST,KILU7LIST,                                              &
      &KILUCLIST,KLVLBT,KLVLEBT,KLVI1BT,KLVIBT,KRCCTOS,                  &
      &KSCALLOC,KSCALLOC2,KSCALLOC3,KSCRRED,KSCRRED2,KMAX_DENS_BLK
 

@@ -409,6 +409,8 @@ C
 C     Called from PAMINP/dirrdn.F
 C
 C*****************************************************************************
+! connection between the scheme of moltra and relccsd       
+      use  relcc_cfg
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -468,12 +470,11 @@ Clv,   reason is that scheme 6 produces a list of integrals that is distributed 
 clv,   authors of the above-mentioned modules nor anyone else have taken the time to adjust the
 clv,   integral processing routines accordingly (if anyone is inclined to do so: this is not rocket
 clv    science, just have a look on how RELCCSD does this in ccints.F).
-      if (DOLUCT.OR.DOCIM) then
-         ISTRAT = 4
-      else
-         ISTRAT = 6
-      endif
-
+c
+cayaki_03_06_2022
+c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
+c     for the current architecture
+      ISTRAT = 4
 c
 c     activate/deactivate fine sorting of 1HT data for scheme6
 c
@@ -685,6 +686,8 @@ C&&&& SCHEME - choose method in 4-index transformation
                    CALL QUIT(
      &             'TRAINP: Error in reading **MOLTRA .SCHEME')
                   ENDIF
+! connection between ISTRAT and interface of relccsd                
+                  WRITE(relcc_integral_interface,'(A,I1)')'DIRAC',ISTRAT
                GO TO 100
    10          CONTINUE
 C&&&& THROUT - Treshold for output of integrals to MDCINT
