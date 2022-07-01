@@ -69,7 +69,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     call solve_eom_lr_right(interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
 
     call print_date('Solved CC-CI response right equations')
-    
+
     if (rr==1) then 
         call print_date('Do linear response')
         call get_eom_lr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
@@ -152,6 +152,7 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 call get_eta_ov(interm_t%eta_ov,interm_t%fbar_ov,ov_dims)
                 call get_eta_oovv(interm_t%eta_oovv,int_t%oovv,oovv_dims)
 
+                ! call print_date("get eta_oovv?")
 
                 ! get property integral in MO basis
                 i_prop=1
@@ -162,6 +163,7 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 call get_prop_integral(exa_input,orb_int_tensor3,i_prop)
 
 
+                ! call print_date("get property integral ?")
 
                 ! call form_eom_qr_prop_inter(interm_t%t1, interm_t%t2, interm_t_prop1, interm_t_prop2, interm_t_prop3, &
                 !                 l1_tensor, l2_tensor)
@@ -177,7 +179,9 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
                 call get_epsilon_prop_vo(interm_t_prop3%epsilon_prop_vo,orb_int_tensor3,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
-                                
+                
+                ! call print_date("get epsilon_prop_vo ?")
+
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
                 call get_epsilon_prop_vvoo(interm_t_prop2%epsilon_prop_vvoo,orb_int_tensor2,&
@@ -186,11 +190,14 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
 
+                ! call print_date("get epsilon_prop_vvoo ?")
+
                 ! get O_prop
                 call get_O_vo(interm_t_prop1%O_vo,orb_int_tensor1,vo_dims)
                 call get_O_vo(interm_t_prop2%O_vo,orb_int_tensor2,vo_dims)
                 call get_O_vo(interm_t_prop3%O_vo,orb_int_tensor3,vo_dims)
 
+                ! call print_date("get O_vo?")
 
                 ! get eta_prop
                 call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&

@@ -5,6 +5,7 @@ module intermediates_eom_rsp
      use tensor_algebra
      use talsh
      use exacorr_datatypes
+     use talsh_common_routines
 
      implicit none
      private
@@ -130,15 +131,21 @@ module intermediates_eom_rsp
                type(talsh_orb_prop_integ_tens_t) :: orb_int_tensor
                type(talsh_tens_t) :: t2_tensor,t1_tensor
                type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv
-               integer(INTD), dimension(2)   :: vvoo_dims
+               integer(INTD), dimension(4)   :: vvoo_dims
                integer :: ierr
 
 
+
            ierr=talsh_tensor_construct(epsilon_prop_vvoo_tensor,C8,vvoo_dims,init_val=ZERO)
+
+         !   call print_tensor(orb_int_tensor%prop_vv, 1.0d-10, "orb_int_tensor%prop_vv")
+         !   call print_tensor(t2_tensor, 1.0d-10, "t2_tensor")
+
 !LH     \Chid abij = +\Pm ab \Y bf \td afij
          !   ierr=talsh_tensor_contract('C(a,b,i,j)+=Y(b,f)*T(a,f,i,j)',epsilon_prop_vvoo_tensor,orb_int_tensor%prop_vv,t2_tensor,scale=ONE)
            ierr=talsh_tensor_contract('C(a,b,i,j)+=Y(b,f)*T(a,f,i,j)', &
                                     epsilon_prop_vvoo_tensor,orb_int_tensor%prop_vv,t2_tensor,scale=ONE)
+
            ierr=talsh_tensor_contract('C(a,b,i,j)+=Y(a,f)*T(b,f,i,j)', & 
                                     epsilon_prop_vvoo_tensor,orb_int_tensor%prop_vv,t2_tensor,scale=MINUS_ONE)
          !   if(print_level.ge.2) print *,'LH_talsh epsilon_prop_vvoo_tensor ierr ', ierr
@@ -150,6 +157,7 @@ module intermediates_eom_rsp
            ierr=talsh_tensor_contract('C(a,b,i,j)+=Y(m,i)*T(a,b,j,m)', & 
                                        epsilon_prop_vvoo_tensor,orb_int_tensor%prop_oo,t2_tensor,scale=ONE)        
          !   if(print_level.ge.2) print *,'LH_talsh epsilon_prop_vvoo_tensor ierr ', ierr
+
 
 !LH     \Chid abij += - \Pm ij \Y me \ts ei \td abmj
            ierr=talsh_tensor_init(LR_Aux_oo)
@@ -170,7 +178,6 @@ module intermediates_eom_rsp
            ierr=talsh_tensor_contract('C(a,b,i,j)+=A(b,f)*T(f,a,i,j)', &
                                     epsilon_prop_vvoo_tensor,LR_Aux_vv,t2_tensor,scale=ONE)
          !   if(print_level.ge.2) print *,'LH_talsh epsilon_prop_vvoo_tensor ierr ', ierr
-
 
          !   if(print_level.ge.2) print *,"tensor_norm2(epsilon_prop_vvoo_tensor)",tensor_norm2(epsilon_prop_vvoo_tensor)
 
@@ -294,7 +301,7 @@ module intermediates_eom_rsp
       type(talsh_tens_t) :: t1_tensor
       type(talsh_tens_t) :: l2_tensor,l1_tensor
       type(talsh_tens_t)            :: LR_Aux_oo,LR_Aux_vv
-      integer(INTD), dimension(2)   :: oovv_dims
+      integer(INTD), dimension(4)   :: oovv_dims
       integer :: ierr
 
 !LH     \Eta_2=+ \Pmm ij \Pmm ab \lambdas ia \Ys jb
@@ -410,7 +417,7 @@ module intermediates_eom_rsp
         type(talsh_tens_t) :: Q_ovoo_tensor
         type(talsh_tens_t) :: prop_bar_ov_tensor
         type(talsh_tens_t) :: t2_tensor
-        integer(INTD), dimension(2)   :: ovoo_dims
+        integer(INTD), dimension(4)   :: ovoo_dims
         integer :: ierr
 
         ierr=talsh_tensor_construct(Q_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
@@ -424,7 +431,7 @@ module intermediates_eom_rsp
         type(talsh_tens_t) :: Q_vvov_tensor
         type(talsh_tens_t) :: prop_bar_ov_tensor
         type(talsh_tens_t) :: t2_tensor
-        integer(INTD), dimension(2)   :: vvov_dims
+        integer(INTD), dimension(4)   :: vvov_dims
         integer :: ierr
 
         ierr=talsh_tensor_construct(Q_vvov_tensor,C8,vvov_dims,init_val=ZERO)
