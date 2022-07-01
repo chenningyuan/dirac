@@ -13,7 +13,7 @@ test = TestRun(__file__, sys.argv)
 
 f1 = Filter()
 f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
-      num_lines   = 21,
+      num_lines   = 17,
       rel_tolerance   = 1.0e-7)
 
 # Right now, we separate the mp2no and cc modules. The test have two parts, first round only generates truncatd MP2FNO 
