@@ -59,9 +59,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
 ! LV 2020: this set up is weird, but appears to give no problems here in contrast to
 ! polprp. If interface problems show up, look at the fixed code in polprp_driver
-!     INTFCE = 'DIRAC     '
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+!      
+! sunaga 2022: iface set to DIRAC4 as default, in line with having scheme 4 as default in moltra     
+!      INTFCE = 'DIRAC6    '
+      INTFCE = 'DIRAC     '
+      IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
 !
 !  determine condition when we have complex arithmetic !
 !
@@ -219,7 +221,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !     Controlled by inpt.inc from relccsd.
 !
 !     The INTERFACE/EQNS variable is defined in ccinpt.inc and is needed
-!     by CCSETI. The default scheme is DIRAC6. This is also hardcoded
+!     by CCSETI. The default scheme is DIRAC4. This is also hardcoded
 !     in the RELCCSD code.
 !
       CARITH = CA

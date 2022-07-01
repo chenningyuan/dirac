@@ -5,16 +5,21 @@
 !     needed to determine KR-CI runtype, convergence information 
 !     as well as some symmetry variables. 
 !
+!     THRES_G:   CI gradient convergence threshold
+!     THRES_E:   CI energy change convergence threshold
+!
 !     ISYM_T:    Hamiltonian operator symmetry
 !     MXCIV_CI:  max. dimension of CI subspace in Davidson diagonalizer
-!     E_THRE:    convergence control wrt to energy (real algebra)
-!     C_THRE:    convergence control wrt to energy (complex algebra)
 !     LBLOCK:    max. length of vector block to be allocated for
 !                Davidson diagonalizer - dynamically determined
 !     MAXIT:     max. number of Davidson iterations
 !
+!  Not used in this version:
+!     E_THRE:    individual second order selection of included csf in trial vector
+!     C_THRE:    individual first order selection of included csf in trial vector
+!
       logical KRASYM
-      COMMON/CRUNR/THRES_E,XLAMBDA,E_THRE,C_THRE,E_CONV,C_CONV,
+      COMMON/CRUNR/THRES_G,THRES_E,XLAMBDA,E_THRE,C_THRE,E_CONV,C_CONV,
      &            MAXIT,IRESTR,INTIMP,MXP1,MXP2,MXQ,INCORE,MXCIV_CI,
      &            ICISTR,IDIAG,NOINT,MXINKA,ICJKAIB,
      &            IPERT,NPERT,IIDUM,NSEQCI(10),ISEQCI(10,10),

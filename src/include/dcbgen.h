@@ -38,7 +38,7 @@
       CHARACTER*10 DIRAC_WF(100)
       COMMON /CBCPAM/ TITLE, DIRAC_WF
 
-      LOGICAL FAMILY, INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,      &
+      LOGICAL INPTES, VACUUM, NUCVAC, DOPSI, DOTRA, NOTRA,              &
      &        DOANA, DOPRP,DOHRM, DOJACO,DOPUT,DORKBIMP,                &
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
@@ -50,7 +50,7 @@
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
 
       COMMON /DCBGEN_L_PAM/                                             &
-     &                FAMILY, INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,     &
+     &                INPTES, VACUUM, DOPSI, NUCVAC, DOTRA,             &
      &                NOTRA, DOPRP, DOANA,    DOHRM, DOJACO,            &
      &                DOFCK3,DORKBIMP,DOPUT, OPTIMI, HRINPC, RDINPC,    &
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &

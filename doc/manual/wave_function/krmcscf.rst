@@ -84,13 +84,13 @@ LUCIAREL can be used efficiently. *default*:
 
 keyword(THRESH)
 
-convergence threshold in the MCSCF gradient given as double precision
-value. The present default value is quite tight and might be adapted if
-one is only interested in MCSCF energies, e.g. :math:`1.d-03`. *default*:
+convergence threshold in the MCSCF gradient.
+The present default value is quite tight and might be adapted if
+one is only interested in MCSCF energies, e.g. :math:`1.e-03`. *default*:
 
 ::
 
-    0.5d-05
+    0.5e-05
 
 keyword(SYMMETRY)
 
