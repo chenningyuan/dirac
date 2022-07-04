@@ -79,6 +79,8 @@ subroutine get_eom_lr(exa_input,interm_t,interm_t_prop1, interm_t_prop2, interm_
 
             quarsp_con=conjg(quarsp)
             eom_lr=(quarsp+quarsp_con)*0.5
+            call print_date("Finish CC-CI Linear Response Calculations")
+            print *, "CC-CI(EOM-CC) linear response:", eom_lr
 
 end subroutine get_eom_lr
 

@@ -53,7 +53,7 @@ module talsh_eom_rspeq_solver
 !     error code
             integer :: ierr
             character(len=2) :: flavor = "EE"
-            integer :: nroot = 1
+            integer :: nroot = -1                                 ! initialize the number of trail vectors
 
             call talsh_davidson_setup(unit_output=6, &
                         solve_right=.true.,&
@@ -63,11 +63,11 @@ module talsh_eom_rspeq_solver
                         use_preconditioner=.false.,&
                         complex_mode=.true.)
 
-            call print_date("Entering EOM-EE eigenvalue calculation")
+            call print_date("Entering CC-CI Right Linear Systems calculation")
 
             call talsh_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
             call talsh_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
-!     call talsh_eomccsd_ee_trial_create(workspace_t)
+            call talsh_eomccsd_ee_trial_create(workspace_t)
 
 !     set pointers to sigma vector subroutines 
             interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
@@ -75,7 +75,7 @@ module talsh_eom_rspeq_solver
             call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, & 
                                     omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
 
-            call print_date("Finishing EOM-EE eigenvalue calculation")
+            call print_date("Finishing CC-CI Right Linear Systems calculation")
 
             call talsh_davidson_workspace_destroy(workspace_t)
 

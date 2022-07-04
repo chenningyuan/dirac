@@ -1517,6 +1517,7 @@ contains
         complex(kind=8), allocatable :: WORK(:)
         real(kind=8), allocatable ::    RWORK(:)
         integer ::      INFO
+        integer :: dimen_x
 
         FACT = 'N'
         TRANS = 'N'
@@ -1546,6 +1547,8 @@ contains
                     X, LDX, RCOND, FERR, BERR,&
                     WORK, RWORK, INFO)
 
+        dimen_x = size(X,1)
+        allocate(Solution(dimen_x,NRHS))
         Solution(:,NRHS) = X(:,NRHS)
 
         deallocate(AF)
@@ -1729,6 +1732,8 @@ contains
         allocate(workspace_t%M(workspace_t%Lmax,workspace_t%Lmax))
         workspace_t%M = ZERO
 
+        allocate(workspace_t%C(workspace_t%Lmax))
+        workspace_t%C = ZERO
 ! singles
         do i = 1, workspace_t%Lmax
            ierr = talsh_tensor_construct(workspace_t%trial1(i),C8,workspace_t%tens1_dims,init_val=ZERO)
@@ -1880,7 +1885,7 @@ contains
       complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .true.
+      logical :: debug_subspace_matrix = .false.
 
       if (associated(C_small)) deallocate(C_small)
       allocate(C_small(workspace_t%L))
@@ -1892,6 +1897,7 @@ contains
       ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
       ierr=talsh_tensor_get_body_access(result_tensor,ci_body_p,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(ci_body_p,ci_result_tens,one_dims)
+      
 
 ! capital letters here are meant to be the roots
       if (debug_subspace_matrix) then
@@ -1900,6 +1906,8 @@ contains
          write (6,*) 'foobar, workspace_t%Lprev',workspace_t%Lprev
       end if
       do i = workspace_t%Lprev + 1, workspace_t%L
+        ! call print_tensor(workspace_t%trial1(i), 1.0d-10, "trial1")
+        ! call print_tensor(prop_grad1, 1.0d-10, "prop_grad1")
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
          if (workspace_t%N(1).ne.0) then
             if (right.and..not.left) then
@@ -1929,7 +1937,7 @@ contains
             end if
          end if
 
-         if (debug_subspace_matrix) write (6,*) 'i, c_i:', i,j, ci_result_tens(1)
+         if (debug_subspace_matrix) write (6,*) 'i, c_i:', i, ci_result_tens(1)
          workspace_t%C(i) = ci_result_tens(1)
          ci_result_tens(1) = ZERO
       end do
@@ -2147,11 +2155,11 @@ contains
         integer :: i, j, k
         integer :: nroots, ierr
 
-        if (davidson_solve_linear_system) then
-            nroots = 1
-        else
+        ! if (davidson_solve_linear_system) then
+        !     nroots = 1
+        ! else
             nroots = workspace_t%nroots
-        end if
+        ! end if
 
 ! aspg need to think of a consistency check for whether the property gradient has been set
 !      to replace this
@@ -2183,7 +2191,7 @@ contains
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
-        
+        print *, "davidson_max_iterations?", davidson_max_iterations
         write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
@@ -2524,6 +2532,7 @@ contains
         complex(kind=8), intent(inout), pointer :: Solution(:,:)
 
         call talsh_solve_Linear_systems(M, B, Solution)
+        print *, "call solving LS routine?"
     end subroutine calculate_Linear_systems
 ! aspg, added from (q)rsp
 
