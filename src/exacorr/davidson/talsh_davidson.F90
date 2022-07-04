@@ -1880,7 +1880,7 @@ contains
       complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .false.
+      logical :: debug_subspace_matrix = .true.
 
       if (associated(C_small)) deallocate(C_small)
       allocate(C_small(workspace_t%L))
@@ -2196,9 +2196,12 @@ contains
 
 ! aspg, added from (q)rsp
             if (davidson_solve_linear_system) then
+                print *, "Enter davidson_solve_linear_system?"
                call create_subspace_property_gradient(C_small,workspace_t, &
  &                  prop_grad1,prop_grad2,davidson_solve_rhs,davidson_solve_lhs)
+                print *, "finish create_subspace_property_gradient?"
                call calculate_Linear_systems(M_small,C_small,x_small)
+               print *, "finish solve LS"
 ! aspg, added from (q)rsp
             else
                call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
