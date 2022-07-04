@@ -2191,7 +2191,6 @@ contains
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
-        print *, "davidson_max_iterations?", davidson_max_iterations
         write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
