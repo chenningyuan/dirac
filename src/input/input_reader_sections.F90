@@ -1107,7 +1107,7 @@
       end if
 
       if (kw_matches(word, '.CCCILR')) then
-         exa_input% eom_lr =.true.
+         exa_input%eom_lr =.true.
       end if
 
       ! if (kw_matches(word, '.CCCIQR')) then

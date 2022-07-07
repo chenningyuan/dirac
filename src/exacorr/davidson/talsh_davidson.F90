@@ -981,7 +981,7 @@ contains
            factor1 =  eigenvectors_subspace(i,k)
            factor2 = -eigenvalues_subspace(k)*factor1
 ! aspg, added from (q)rsp
-           if (present(C_subspace)) factor2 = C_subspace(i)
+           if (present(C_subspace)) factor2 = -C_subspace(i)
 ! aspg, added from (q)rsp
 
            if (debug_form_r) write(6,*) 'c(',i,',',k,')',factor1,'lambda*c',factor2
@@ -1073,7 +1073,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .false.
+        logical :: debug_correction_vectors = .true.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1081,7 +1081,12 @@ contains
             correct_all_local = .false. 
         end if
 
-        nroots = workspace_t%nroots
+        if (present(C_small)) then
+            nroots = 1
+        else
+            nroots = workspace_t%nroots
+        end if
+
         allocate(correction_to_vectors(nroots))
         correction_to_vectors = .true.
 
@@ -1885,7 +1890,7 @@ contains
       complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .false.
+      logical :: debug_subspace_matrix = .true.
 
       if (associated(C_small)) deallocate(C_small)
       allocate(C_small(workspace_t%L))
@@ -1905,7 +1910,7 @@ contains
          write (6,*) 'foobar, workspace_t%L',workspace_t%L
          write (6,*) 'foobar, workspace_t%Lprev',workspace_t%Lprev
       end if
-      do i = workspace_t%Lprev + 1, workspace_t%L
+      do i = workspace_t%Lprev, workspace_t%L
         ! call print_tensor(workspace_t%trial1(i), 1.0d-10, "trial1")
         ! call print_tensor(prop_grad1, 1.0d-10, "prop_grad1")
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
@@ -2203,12 +2208,9 @@ contains
 
 ! aspg, added from (q)rsp
             if (davidson_solve_linear_system) then
-                print *, "Enter davidson_solve_linear_system?"
                call create_subspace_property_gradient(C_small,workspace_t, &
  &                  prop_grad1,prop_grad2,davidson_solve_rhs,davidson_solve_lhs)
-                print *, "finish create_subspace_property_gradient?"
                call calculate_Linear_systems(M_small,C_small,x_small)
-               print *, "finish solve LS"
 ! aspg, added from (q)rsp
             else
                call calculate_eigenvalues_and_eigenvectors(davidson_output_file_unit,    &
@@ -2531,7 +2533,6 @@ contains
         complex(kind=8), intent(inout), pointer :: Solution(:,:)
 
         call talsh_solve_Linear_systems(M, B, Solution)
-        print *, "call solving LS routine?"
     end subroutine calculate_Linear_systems
 ! aspg, added from (q)rsp
 

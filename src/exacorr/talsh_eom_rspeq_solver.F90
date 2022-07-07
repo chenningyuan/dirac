@@ -53,7 +53,7 @@ module talsh_eom_rspeq_solver
 !     error code
             integer :: ierr
             character(len=2) :: flavor = "EE"
-            integer :: nroot = -1                                 ! initialize the number of trail vectors
+            integer :: nroot = 27                                 ! initialize the number of trail vectors
 
             call talsh_davidson_setup(unit_output=6, &
                         solve_right=.true.,&
