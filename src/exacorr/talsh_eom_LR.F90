@@ -42,8 +42,8 @@ subroutine get_eom_lr(exa_input,interm_t,interm_t_prop1, interm_t_prop2, interm_
             type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
 
 
-            integer(INTD), dimension(4)   :: oovv_dims
-            integer(INTD), dimension(2)   :: ov_dims
+            integer(INTD), dimension(4)   :: vvoo_dims
+            integer(INTD), dimension(2)   :: vo_dims
             type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor21
             complex(kind=8)               :: quarsp, quarsp_con
 
@@ -54,22 +54,28 @@ subroutine get_eom_lr(exa_input,interm_t,interm_t_prop1, interm_t_prop2, interm_
 
             call print_date('Evaluate CC-CI LR')
 
-            oovv_dims(1:2) = exa_input%nocc
-            oovv_dims(3:4) = exa_input%nvir
-            ov_dims(1) = exa_input%nocc
-            ov_dims(2) = exa_input%nvir
+            vvoo_dims(3:4) = exa_input%nocc
+            vvoo_dims(1:2) = exa_input%nvir
+            vo_dims(2) = exa_input%nocc
+            vo_dims(1) = exa_input%nvir
 
 
-            ierr=talsh_tensor_construct(sigma_prop_tensor12%t1,C8,ov_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(sigma_prop_tensor12%t2,C8,oovv_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(sigma_prop_tensor12%t1,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(sigma_prop_tensor12%t2,C8,vvoo_dims,init_val=ZERO)
 
-            ierr=talsh_tensor_construct(sigma_prop_tensor21%t1,C8,ov_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(sigma_prop_tensor21%t2,C8,oovv_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(sigma_prop_tensor21%t1,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(sigma_prop_tensor21%t2,C8,vvoo_dims,init_val=ZERO)
 
+
+            call print_tensor(tprop_tensor2%t1, 1.0d-10, " tprop_tensor2%t1")
+            call print_tensor(tprop_tensor2%t2, 1.0d-10, " tprop_tensor2%t2")
 
             ! Obtain eta_(nu)^(XY)(wY)
             call sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)     ! talsh_sigma_eomccsd.F90
             call sigma_eomccsd_prop(interm_t_prop2, tprop_tensor1, sigma_prop_tensor21)
+
+        !     call print_tensor(sigma_prop_tensor21%t1, 1.0d-10, "sigma_prop_tensor21%t1")
+        !     call print_tensor(sigma_prop_tensor21%t2, 1.0d-10, "sigma_prop_tensor21%t2")
 
 
             call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,&
@@ -108,13 +114,14 @@ subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,
                     interm_t,interm_t_prop1)
             quarsp=quarsp+tem_quarsp_iter
 
+        !    print *, "tem_quarsp_iter:  ", tem_quarsp_iter
            tem_quarsp_iter=complex(0.0,0.0)
 
             call get_linrsp_driver(tem_quarsp_iter,tprop_tensor2, tprop_tensor1, &
                     sigma_prop_tensor21,l1_tensor,l2_tensor, &
                     interm_t,interm_t_prop1)
 
-            quarsp=quarsp-tem_quarsp_iter
+            quarsp=quarsp+tem_quarsp_iter
 
 
 end subroutine get_linrspf

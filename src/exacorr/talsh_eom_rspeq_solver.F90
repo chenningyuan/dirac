@@ -29,7 +29,7 @@ module talsh_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
 
-      subroutine solve_eom_lr_right(interm_t, int_t, interm_t_prop, omega, tprop_tensor)
+      subroutine solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop, omega, tprop_tensor)
             use talsh_sigma_eomccsd
 
       ! write(*,*) ""
@@ -40,6 +40,7 @@ module talsh_eom_rspeq_solver
 
 
 !     input variables
+            type(exacc_input), intent(in) :: exa_input
             type(talsh_intermediates_tens_t),  intent(inout) :: interm_t
             type(talsh_intg_tens_t), intent(inout) :: int_t
             type(talsh_rsp_interm_tens_t) :: interm_t_prop
@@ -54,6 +55,9 @@ module talsh_eom_rspeq_solver
             integer :: ierr
             character(len=2) :: flavor = "EE"
             integer :: nroot = 27                                 ! initialize the number of trail vectors
+
+            integer(INTD), dimension(2) :: vo_dims
+            integer(INTD), dimension(4) :: vvoo_dims
 
             call talsh_davidson_setup(unit_output=6, &
                         solve_right=.true.,&
@@ -71,6 +75,14 @@ module talsh_eom_rspeq_solver
 
 !     set pointers to sigma vector subroutines 
             interm_t%sigma_rhs_p => talsh_sigma_eomccsd_rhs_ee
+
+            vo_dims(1) = exa_input%nvir
+            vo_dims(2) = exa_input%nocc
+            vvoo_dims(1:2) = exa_input%nvir
+            vvoo_dims(3:4) = exa_input%nocc
+
+            ierr=talsh_tensor_construct(tprop_tensor%t1,C8,vo_dims,init_val=ZERO)
+            ierr=talsh_tensor_construct(tprop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
 
             call talsh_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, & 
                                     omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)

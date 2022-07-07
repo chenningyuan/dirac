@@ -64,14 +64,13 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     call print_date('Constructed intermediates needed in CC-CI response')
 
 
-    
-    call solve_eom_lr_right(interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
+    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
     call print_date('Sloved CC-CI right response equation for component1 of property')
 
-    call solve_eom_lr_right(interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
+    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
     call print_date('Sloved CC-CI right response equation for component2 of property')
 
-    call solve_eom_lr_right(interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
+    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
     call print_date('Sloved CC-CI right response equation for component3 of property')
 
 
@@ -79,8 +78,12 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     if (rr==1) then 
         call print_date('Do linear response')
-        call get_eom_lr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
-                    tprop_tensor1, tprop_tensor2, & 
+        ! call get_eom_lr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
+        !             tprop_tensor1, tprop_tensor2, & 
+        !             l1_tensor,l2_tensor,eom_lr)
+
+        call get_eom_lr(exa_input,interm_t, interm_t_prop3, interm_t_prop3, interm_t_prop3,& 
+                    tprop_tensor3, tprop_tensor3, & 
                     l1_tensor,l2_tensor,eom_lr)
 
     else 

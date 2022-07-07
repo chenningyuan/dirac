@@ -1073,7 +1073,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .true.
+        logical :: debug_correction_vectors = .false.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1587,6 +1587,7 @@ contains
         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
         N = size(root_vect,1)
+        print *, "N in get_tensor_linear_systems", N
 
 
          do iroot=1, N
@@ -1594,6 +1595,8 @@ contains
             ierr=talsh_tensor_contract("t(a,i)+=B1(a,i)*X()",t_tensor%t1,workspace_t%trial1(iroot),one_tensor,scale=factor)
             ierr=talsh_tensor_contract("t(a,b,i,j)+=B2(a,b,i,j)*X()",t_tensor%t2,workspace_t%trial2(iroot),one_tensor,scale=factor)
          end do
+        !  call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
+        !  call print_tensor(t_tensor%t2, 1.0d-10, "t_tensor%t2")
 
 
     end subroutine get_tensor_linear_systems
