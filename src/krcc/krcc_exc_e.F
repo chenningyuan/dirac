@@ -1188,30 +1188,6 @@ C            MATVCB(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
       RETURN
       END
 *
-      SUBROUTINE SETDIA(MATRIX,VALUE,NDIM,IPACK)
-*
-* Set diagonal elements of matrix MATRIX to VALUE
-*
-* IPACK = 0 => full quadratic matrix
-* IPACK = 1 => lower triangular matrix, row packed
-*
-#include "implicit.inc"
-      REAL*8 MATRIX(*)
-*
-      IF(IPACK .EQ. 0 ) THEN
-        DO 100 I=1,NDIM
-100     MATRIX((I-1)*NDIM+I) = VALUE
-      ELSE IF (IPACK .EQ. 1 ) THEN
-        DO 200 I = 1, NDIM
- 200    MATRIX(I*(I+1)/2) = VALUE
-      ELSE
-        WRITE(6,*) ' IPACK called with IPACK = ', IPACK
-        STOP ' SETDIA ,IPACK out of range '
-      END IF
-*
-      RETURN
-      END
-*
       SUBROUTINE GET_NONSYM_SUBMAT(LUC,LUHC,NVEC,NVECP,SUBMAT,NDIM,
      &                             VEC1,VEC2,SUBMATP)
 *
