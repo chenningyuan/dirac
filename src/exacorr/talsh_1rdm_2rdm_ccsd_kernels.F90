@@ -284,7 +284,576 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
 
 !!! WIP  - Gamma double for CCSD
+
     subroutine talsh_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
+
+
+!       If a separated module
+!      use talsh_ao_to_mo, only       : tensor_norm2
+      type(talsh_dm_tens), intent(inout) :: gamma
+
+!     input variables
+
+      type(talsh_tens_t),  intent(inout) :: t2_tensor, l2_tensor
+      type(talsh_tens_t),  intent(inout), optional :: t1_tensor, l1_tensor
+      integer,             intent(in   ) :: nocc, nvir, print_level
+!     auxiliary tensors
+      type(talsh_tens_t) :: one_tensor
+      type(talsh_tens_t) :: tau2_tensor
+      type(talsh_tens_t) :: oo_aux_tensor, vv_aux_tensor
+!     tensor dimensions
+      integer(C_INT)              :: one_dims(1)=1
+      integer(INTD), dimension(2) :: oo_dims, vv_dims, vo_dims, ov_dims
+      integer(INTD), dimension(4) :: vvoo_dims
+
+      integer(INTD), dimension(4) :: ooov_dims, ovov_dims, vvvo_dims
+      integer(INTD), dimension(4) :: vovv_dims, vvvv_dims
+      integer(INTD), dimension(4) :: voov_dims, oovv_dims
+      integer(INTD), dimension(4) :: ovoo_dims, ovvo_dims, vooo_dims
+      integer(INTD), dimension(4) :: oooo_dims, vovo_dims, ovvv_dims
+      integer(INTD), dimension(4) :: oovo_dims, vvov_dims
+
+
+      type(talsh_tens_t) :: Hinter_ooov, Hinter_vovv
+      type(talsh_tens_t) :: Hinter_vv, Hinter_vvvv
+      type(talsh_tens_t) :: Hinter_voov, Hinter_ovvo
+      type(talsh_tens_t) :: Hinter_oo , Hinter_vovo
+      type(talsh_tens_t) :: Hinter_vo , Hinter_ovvv
+      type(talsh_tens_t) :: Hinter_oovo, Hinter_vvov
+      type(talsh_tens_t) :: Hinter_vvvo, Hinter_vooo
+      type(talsh_tens_t) :: Hinter_oooo, Hinter_vvoo
+      type(talsh_tens_t) :: Hinter_ovoo, Hinter_ovov
+
+!     CCD switch
+      logical :: CCD = .false.
+!     error code
+      integer :: ierr
+
+      logical :: debug=.true.
+
+      ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+
+      oo_dims        = (/nocc,nocc/)
+      vv_dims        = (/nvir,nvir/)
+      vo_dims        = (/nvir,nocc/)
+      ov_dims        = (/nocc,nvir/)
+      ooov_dims      = (/nocc,nocc,nocc,nvir/)
+      ovov_dims      = (/nocc,nvir,nocc,nvir/)
+      vvvv_dims      = (/nvir,nvir,nvir,nvir/)
+      vvvo_dims      = (/nvir,nvir,nvir,nocc/)
+      vovv_dims      = (/nvir,nocc,nvir,nvir/)
+      voov_dims      = (/nvir,nocc,nocc,nvir/)
+      oovv_dims      = (/nocc,nocc,nvir,nvir/)
+      ovoo_dims      = (/nocc,nvir,nocc,nocc/)
+      ovvo_dims      = (/nocc,nvir,nvir,nocc/)
+      oooo_dims      = (/nocc,nocc,nocc,nocc/)
+      vvoo_dims      = (/nvir,nvir,nocc,nocc/)
+      ovvv_dims      = (/nocc,nvir,nvir,nvir/)
+      vooo_dims      = (/nvir,nocc,nocc,nocc/)
+      oovo_dims      = (/nocc,nocc,nvir,nocc/)
+      vovo_dims      = (/nvir,nocc,nvir,nocc/)
+      vvov_dims      = (/nvir,nvir,nocc,nvir/)
+
+
+      ierr=talsh_tensor_construct(gamma%prime_ooov,C8,ooov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_ovov,C8,ovov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_voov,C8,voov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_voov,C8,voov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_ovvo,C8,ovvo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
+
+      ierr=talsh_tensor_construct(gamma%symm_ooov,C8,ooov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_ovoo,C8,ovoo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_ovov,C8,ovov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_vvvo,C8,vvvo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_vovv,C8,vovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_vvvv,C8,vvvv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_oooo,C8,oooo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_oovv,C8,oovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(gamma%symm_vvoo,C8,vvoo_dims,init_val=ZERO)
+
+      ierr=talsh_tensor_construct(Hinter_vv,C8,vv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vovv,C8,vovv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_ooov,C8,ooov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_ovoo,C8,ovoo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vvvv,C8,vvvv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_oo,C8,oo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vo,C8,vo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_ovvv,C8,ovvv_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_ovvo,C8,ovvo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vvvo,C8,vvvo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vooo,C8,vooo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_oooo,C8,oooo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vvoo,C8,vvoo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_oovo,C8,oovo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vovo,C8,vovo_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_ovov,C8,ovov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_vvov,C8,vvov_dims,init_val=ZERO)
+      ierr=talsh_tensor_construct(Hinter_voov,C8,voov_dims,init_val=ZERO)
+
+      !gamma ooov
+      ! e2
+      ierr=talsh_tensor_contract("G(i,j,k,a)+=L(i,j,e,a)*T(e,k)",gamma%prime_ooov,l2_tensor,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0) then
+                print*, " e2, ierr  ", ierr
+                print *,'Gooov term : ',tensor_norm2(gamma%prime_ooov)
+      end if
+
+      ! gamma ovov
+      ! f6
+      ierr=talsh_tensor_contract("G(i,a,j,b)+=L(i,b)*T(a,j)",gamma%prime_ovov,l1_tensor,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " f6, ierr  ", ierr
+      ! f7
+      ierr=talsh_tensor_contract("G(i,a,j,b)+=L(i,m,e,b)*T(e,a,j,m)",gamma%prime_ovov,l2_tensor,t2_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " f7, ierr  ", ierr
+      ! f8
+      ierr=talsh_tensor_init(Hinter_ooov)
+      ierr=talsh_tensor_contract("H(i,m,j,b)+=L(i,m,e,b)*T(e,j)",Hinter_ooov,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " f8-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,b)+=H(i,m,j,b)*T(a,m)",gamma%prime_ovov,Hinter_ooov,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " f8-b, ierr  ", ierr
+
+      ! gamma vvvo
+      ! g14
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=L(m,c)*T(a,b,m,i)",gamma%prime_vvvo,l1_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " g14, ierr  ", ierr
+      ! g15
+      ierr=talsh_tensor_init(Hinter_vv)
+      ierr=talsh_tensor_contract("H(a,c)+=L(m,c)*T(a,m)",Hinter_vv,l1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " g15-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(a,c)*T(b,i)",gamma%prime_vvvo,Hinter_vv,t1_tensor)
+      if (ierr.ne.0)  print*, " g15-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(b,c)*T(a,i)",gamma%prime_vvvo,Hinter_vv,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " g15-b, ierr  ", ierr
+      ! g16
+      ierr=talsh_tensor_init(Hinter_vovv)
+      ierr=talsh_tensor_contract("H(b,n,e,c)+=L(m,n,e,c)*T(b,m)",Hinter_vovv,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " g16-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(b,n,e,c)*T(a,e,n,i)",gamma%prime_vvvo,Hinter_vovv,t2_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " g16-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(a,n,e,c)*T(b,e,n,i)",gamma%prime_vvvo,Hinter_vovv,t2_tensor)
+      if (ierr.ne.0)  print*, " g16-c, ierr  ", ierr
+      ! g17
+      ierr=talsh_tensor_init(Hinter_vvvv)
+      ierr=talsh_tensor_contract("H(a,b,c,e)+=L(n,m,c,e)*T(a,b,n,m)",Hinter_vvvv,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " g17-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(a,b,c,e)*T(e,i)",gamma%prime_vvvo,Hinter_vvvv,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " g17-b, ierr  ", ierr
+      ! g18
+      ierr=talsh_tensor_init(Hinter_vv)
+      ierr=talsh_tensor_contract("H(a,c)+=L(m,n,e,c)*T(e,a,m,n)",Hinter_vv,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " g18-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(a,c)*T(b,i)",gamma%prime_vvvo,Hinter_vv,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " g18-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(b,c)*T(a,i)",gamma%prime_vvvo,Hinter_vv,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " g18-c, ierr  ", ierr
+      ! g19
+      ierr=talsh_tensor_init(Hinter_ooov)
+      ierr=talsh_tensor_init(Hinter_voov)
+      ierr=talsh_tensor_contract("H(m,n,i,c)+=L(m,n,e,c)*T(e,i)",Hinter_ooov,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " g19-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("H(b,n,i,c)+=H(m,n,i,c)*T(b,m)",Hinter_voov,Hinter_ooov,t1_tensor)
+      if (ierr.ne.0)  print*, " g19-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(b,n,i,c)*T(a,n)",gamma%prime_vvvo,Hinter_voov,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " g19-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=H(a,n,i,c)*T(b,n)",gamma%prime_vvvo,Hinter_voov,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " g19-d, ierr  ", ierr
+      ! gamma vovv
+      ! h2
+      ierr=talsh_tensor_contract("G(a,i,b,c)+=L(m,i,b,c)*T(a,m)",gamma%prime_vovv,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " h2, ierr  ", ierr
+
+
+      ! gamma vvvv
+      ! i3
+      ierr=talsh_tensor_contract("G(a,b,c,d)+=L(m,n,c,d)*T(a,b,m,n)",gamma%prime_vvvv,l2_tensor,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " i3, ierr  ", ierr
+      ! i4
+      ierr=talsh_tensor_init(Hinter_vovv)
+      ierr=talsh_tensor_contract("H(a,n,c,d)+=L(m,n,c,d)*T(a,m)",Hinter_vovv,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " i4-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,d)+=H(a,n,c,d)*T(b,n)",gamma%prime_vvvv,Hinter_vovv,t1_tensor)
+      if (ierr.ne.0)  print*, " i4-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,d)+=H(b,n,c,d)*T(a,n)",gamma%prime_vvvv,Hinter_vovv,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " i4-c, ierr  ", ierr
+
+      ! gamma oovv
+      ! j1
+      ierr=talsh_tensor_add("G(i,j,a,b)+=L(i,j,a,b)",gamma%prime_oovv,l2_tensor)
+      if (ierr.ne.0)  print*, " j1, ierr  ", ierr
+
+      ! gamma ovoo
+      ! k14
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=L(i,e)*T(e,a,j,k)",gamma%prime_ovoo,l1_tensor,t2_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " k14, ierr  ", ierr
+      ! k15
+      ierr=talsh_tensor_init(Hinter_oo)
+      ierr=talsh_tensor_contract("H(i,j)+=L(i,e)*T(e,j)",Hinter_oo,l1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " k15-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,j)*T(a,k)",gamma%prime_ovoo,Hinter_oo,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " h15-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,k)*T(a,j)",gamma%prime_ovoo,Hinter_oo,t1_tensor)
+      if (ierr.ne.0)  print*, " k15-c, ierr  ", ierr
+      ! k16
+      ierr=talsh_tensor_init(Hinter_oovo)
+      ierr=talsh_tensor_contract("H(i,m,f,k)+=L(i,m,f,e)*T(e,k)",Hinter_oovo,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " k16-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,m,f,k)*T(f,a,j,m)",gamma%prime_ovoo,Hinter_oovo,t2_tensor)
+      if (ierr.ne.0)  print*, " k16-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,m,f,j)*T(f,a,k,m)",gamma%prime_ovoo,Hinter_oovo,t2_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " k16-c, ierr  ", ierr
+      ! k17
+      ierr=talsh_tensor_init(Hinter_ovvv)
+      ierr=talsh_tensor_contract("H(i,a,f,e)+=L(i,m,f,e)*T(a,m)",Hinter_ovvv,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " k17-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,a,f,e)*T(f,e,j,k)",gamma%prime_ovoo,Hinter_ovvv,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " k17-b, ierr  ", ierr
+      ! k18
+      ierr=talsh_tensor_init(Hinter_oo)
+      ierr=talsh_tensor_contract("H(i,j)+=L(i,m,f,e)*T(f,e,j,m)",Hinter_oo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " k18-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,j)*T(a,k)",gamma%prime_ovoo,Hinter_oo,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " k18-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,k)*T(a,j)",gamma%prime_ovoo,Hinter_oo,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " k18-c, ierr  ", ierr
+      ! k19
+      ierr=talsh_tensor_init(Hinter_ovvv)
+      ierr=talsh_tensor_contract("H(i,a,f,e)+=L(i,m,f,e)*T(a,m)",Hinter_ovvv,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " k19-a, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_ovov)
+      ierr=talsh_tensor_contract("H(i,a,j,e)+=H(i,a,f,e)*T(f,j)",Hinter_ovov,Hinter_ovvv,t1_tensor)
+      if (ierr.ne.0)  print*, " k19-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,a,j,e)*T(e,k)",gamma%prime_ovoo,Hinter_ovov,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " k19-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,k)+=H(i,a,k,e)*T(e,j)",gamma%prime_ovoo,Hinter_ovov,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " k19-d, ierr  ", ierr
+
+      ! gamma oooo
+      ! n3
+      ierr=talsh_tensor_contract("G(i,j,k,l)+=L(i,j,e,f)*T(e,f,k,l)",gamma%prime_oooo,l2_tensor,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " n3, ierr  ", ierr
+      ! n4
+      ierr=talsh_tensor_init(Hinter_ooov)
+      ierr=talsh_tensor_contract("H(i,j,k,f)+=L(i,j,e,f)*T(e,k)",Hinter_ooov,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " n4-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,j,k,l)+=H(i,j,k,f)*T(f,l)",gamma%prime_oooo,Hinter_ooov,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " n4-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(i,j,k,l)+=H(i,j,l,f)*T(f,k)",gamma%prime_oooo,Hinter_ooov,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " n4-c, ierr  ", ierr
+
+      ! gamma vvoo
+      ! l1
+      ierr=talsh_tensor_add("G(a,b,i,j)+=T(a,b,i,j)",gamma%prime_vvoo,t2_tensor)
+      if (ierr.ne.0)  print*, " l1-a, ierr  ", ierr
+      ! l2
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,i)*T(b,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " l2-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=T(a,j)*T(b,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " l2-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,i)*T(a,j)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " l2-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=T(b,j)*T(a,i)",gamma%prime_vvoo,t1_tensor,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " l2-d, ierr  ", ierr
+      ! m3
+      ierr=talsh_tensor_init(Hinter_vo)
+      ierr=talsh_tensor_contract("H(a,i)+=T(a,e,i,m)*L(m,e)",Hinter_vo,t2_tensor,l1_tensor)
+      if (ierr.ne.0)  print*, " m3-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,i)*T(b,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor)
+      if (ierr.ne.0)  print*, " m3-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,j)*T(b,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m3-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,i)*T(a,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m3-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,j)*T(a,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor)
+      if (ierr.ne.0)  print*, " m3-e, ierr  ", ierr
+      ! m4
+      ierr=talsh_tensor_init(Hinter_oo)
+      ierr=talsh_tensor_contract("H(m,i)+=L(m,e)*T(e,i)",Hinter_oo,l1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " m4-a, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_vo)
+      ierr=talsh_tensor_contract("H(a,i)+=H(m,i)*T(a,m)",Hinter_vo,Hinter_oo,t1_tensor)
+      if (ierr.ne.0)  print*, " m4-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,i)*T(b,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m4-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,j)*T(b,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor)
+      if (ierr.ne.0)  print*, " m4-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,i)*T(a,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor)
+      if (ierr.ne.0)  print*, " m4-e, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,j)*T(a,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m4-f, ierr  ", ierr
+      ! m5  
+      ierr=talsh_tensor_init(Hinter_oo)
+      ierr=talsh_tensor_contract("H(m,i)+=L(m,e)*T(e,i)",Hinter_oo,l1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " m5-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(m,i)*T(a,b,m,j)",gamma%prime_vvoo,Hinter_oo,t2_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m5-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(m,j)*T(a,b,m,i)",gamma%prime_vvoo,Hinter_oo,t2_tensor)
+      ! m6
+      ierr=talsh_tensor_init(Hinter_vv)
+      ierr=talsh_tensor_contract("H(a,f)+=L(n,m,e,f)*T(e,a,n,m)",Hinter_vv,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m6-a, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_vo) ! Attention here I call it G 
+      ierr=talsh_tensor_contract("H(a,i)+=G(a,f)*T(f,i)",Hinter_vo,Hinter_vv,t1_tensor)
+      if (ierr.ne.0)  print*, " m6-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,i)*T(b,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m6-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,j)*T(b,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m6-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,i)*T(a,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m6-e, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,j)*T(a,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m6-f, ierr  ", ierr
+      ! m7
+      ierr=talsh_tensor_init(Hinter_vv)
+      ierr=talsh_tensor_contract("H(a,f)+=L(m,n,e,f)*T(e,a,m,n)",Hinter_vv,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m7-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,f)*T(f,b,i,j)",gamma%prime_vvoo,Hinter_vv,t2_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m7-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,f)*T(f,a,i,j)",gamma%prime_vvoo,Hinter_vv,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m7-c, ierr  ", ierr
+Last login: Wed Jul 20 10:43:46 on ttys006
+
+The default interactive shell is now zsh.
+To update your account to use zsh, please run `chsh -s /bin/zsh`.
+For more details, please visit https://support.apple.com/kb/HT208050.
+(base) Mac1:Sauvegarde_exacorr_140722 halbert$ ll
+total 3192
+-rw-r--r--  1 halbert  staff    92K 14 jul 17:57 chol_sub.F90
+-rw-r--r--  1 halbert  staff   1,5K 14 jul 17:57 CMakeLists.txt
+-rw-r--r--  1 halbert  staff    94K 14 jul 17:57 exacorr_ao_to_mo.F90
+-rw-r--r--  1 halbert  staff   206K 14 jul 17:57 exacorr_cc.F90
+-rw-r--r--  1 halbert  staff   3,8K 14 jul 17:57 exacorr_cfg.F90
+-rw-r--r--  1 halbert  staff    16K 14 jul 17:57 exacorr_cholesky.F90
+-rw-r--r--  1 halbert  staff   9,6K 14 jul 17:57 exacorr_datatypes.F90
+-rw-r--r--  1 halbert  staff    34K 14 jul 17:57 exacorr_dirac.F
+-rw-r--r--  1 halbert  staff    33K 14 jul 17:57 exacorr_eom.F90
+-rw-r--r--  1 halbert  staff   3,5K 14 jul 17:57 exacorr_eri.F90
+-rw-r--r--  1 halbert  staff    32K 14 jul 17:57 exacorr_global.F90
+-rw-r--r--  1 halbert  staff    18K 14 jul 17:57 exacorr_gradient.F90
+-rw-r--r--  1 halbert  staff   3,7K 14 jul 17:57 exacorr_main.F90
+-rw-r--r--  1 halbert  staff    15K 14 jul 17:57 exacorr_mo.F90
+-rw-r--r--  1 halbert  staff   9,4K 14 jul 17:57 exacorr_respect.F90
+-rw-r--r--  1 halbert  staff    99K 14 jul 17:57 exacorr_tensor_methods.F90
+-rw-r--r--  1 halbert  staff    15K 14 jul 17:57 exacorr_utils.F90
+-rw-r--r--  1 halbert  staff    53K 14 jul 17:57 intermediates.F90
+-rw-r--r--  1 halbert  staff   2,1K 14 jul 17:57 README.md
+-rw-r--r--  1 halbert  staff   199K 14 jul 17:57 talsh_1rdm_2rdm_ccsd_kernels.F90
+-rw-r--r--  1 halbert  staff    48K 14 jul 17:57 talsh_ao_to_mo.F90
+-rw-r--r--  1 halbert  staff   181K 14 jul 17:57 talsh_cc.F90
+-rw-r--r--  1 halbert  staff    23K 14 jul 17:57 talsh_cholesky_integrals.F90
+-rw-r--r--  1 halbert  staff    29K 14 jul 17:57 talsh_cholesky_routines.F90
+-rw-r--r--  1 halbert  staff    25K 14 jul 17:57 talsh_common_routines.F90
+-rw-r--r--  1 halbert  staff    33K 14 jul 17:57 talsh_eom.F90
+-rw-r--r--  1 halbert  staff   264K 14 jul 17:57 talsh_gradient.F90
+(base) Mac1:Sauvegarde_exacorr_140722 halbert$ vi talsh_gradient.F90
+
+
+
+
+
+      ierr=talsh_tensor_init(Hinter_oo)  !! attention 
+      ierr=talsh_tensor_contract("H(n,i)+=L(m,n,e,f)*T(e,f,m,i)",Hinter_oo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m8-a, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_vo)
+      ierr=talsh_tensor_contract("H(a,i)+=G(n,i)*T(a,n)",Hinter_vo,Hinter_oo,t1_tensor)
+      if (ierr.ne.0)  print*, " m8-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,i)*T(b,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m8-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,j)*T(b,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m8-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,i)*T(a,j)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m8-e, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,j)*T(a,i)",gamma%prime_vvoo,Hinter_vo,t1_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m8-f, ierr  ", ierr
+      ! m9
+      ierr=talsh_tensor_init(Hinter_oo)  !! attention 
+      ierr=talsh_tensor_contract("H(n,i)+=L(m,n,e,f)*T(e,f,m,i)",Hinter_oo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m9-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,i)*T(a,b,n,j)",gamma%prime_vvoo,Hinter_oo,t2_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m9-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,j)*T(a,b,n,i)",gamma%prime_vvoo,Hinter_oo,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m9-c, ierr  ", ierr
+      ! m11
+      ierr=talsh_tensor_init(Hinter_vv)
+      ierr=talsh_tensor_contract("H(a,e)+=L(m,e)*T(a,m)",Hinter_vv,l1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " m11-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,e)*T(e,b,i,j)",gamma%prime_vvoo,Hinter_vv,t2_tensor,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m11-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,e)*T(e,a,i,j)",gamma%prime_vvoo,Hinter_vv,t2_tensor)
+      if (ierr.ne.0)  print*, " m11-c, ierr  ", ierr
+      ! m12
+      ierr=talsh_tensor_init(Hinter_oooo)
+      ierr=talsh_tensor_contract("H(m,n,i,j)+=L(m,n,e,f)*T(e,f,i,j)",Hinter_oooo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m12-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(m,n,i,j)*T(a,b,m,n)",gamma%prime_vvoo,Hinter_oooo,t2_tensor,scale=ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m12-b, ierr  ", ierr
+      ! m14  ! Check for the sign because of b with i 
+      ierr=talsh_tensor_init(Hinter_oooo) ! same intermediate as m12
+      ierr=talsh_tensor_contract("H(m,n,i,j)+=L(m,n,e,f)*T(e,f,i,j)",Hinter_oooo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m12-c, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_ovoo)
+      ierr=talsh_tensor_contract("H(m,b,i,j)+=H(m,n,i,j)*T(b,n)",Hinter_ovoo,Hinter_oooo,t1_tensor)
+      if (ierr.ne.0)  print*, " m12-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(m,b,i,j)*T(a,m)",gamma%prime_vvoo,Hinter_ovoo,t1_tensor,scale=ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m12-e, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(m,a,i,j)*T(b,m)",gamma%prime_vvoo,Hinter_ovoo,t1_tensor,scale=MINUS_ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m12-f, ierr  ", ierr
+      ! m15
+      ierr=talsh_tensor_init(Hinter_vvvv)
+      ierr=talsh_tensor_contract("H(a,b,e,f)+=L(m,n,e,f)*T(a,b,m,n)",Hinter_vvvv,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m15-a, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_vvov)
+      ierr=talsh_tensor_contract("H(a,b,i,f)+=H(a,b,e,f)*T(e,i)",Hinter_vvov,Hinter_vvvv,t1_tensor)
+      if (ierr.ne.0)  print*, " m15-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,b,i,f)*T(f,j)",gamma%prime_vvoo,Hinter_vvov,t1_tensor,scale=ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m15-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,b,j,f)*T(f,i)",gamma%prime_vvoo,Hinter_vvov,t1_tensor,scale=MINUS_ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m15-d, ierr  ", ierr
+      ! m20   !! LH Change 140722 !!
+      ierr=talsh_tensor_init(Hinter_ovvo)
+      ierr=talsh_tensor_contract("H(n,a,f,i)+=L(m,n,e,f)*T(a,e,i,m)",Hinter_ovvo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m20-a, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,a,f,i)*T(b,f,j,n)",gamma%prime_vvoo,Hinter_ovvo,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m20-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,a,f,j)*T(b,f,i,n)",gamma%prime_vvoo,Hinter_ovvo,t2_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m20-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,b,f,i)*T(a,f,j,n)",gamma%prime_vvoo,Hinter_ovvo,t2_tensor,scale=MINUS_ONE_HALF)
+      if (ierr.ne.0)  print*, " m20-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,b,f,j)*T(a,f,i,n)",gamma%prime_vvoo,Hinter_ovvo,t2_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " m20-e, ierr  ", ierr
+      ! m21
+      ierr=talsh_tensor_init(Hinter_ovvo) ! Same iintermediate as m20
+      ierr=talsh_tensor_contract("H(n,a,f,i)+=L(m,n,e,f)*T(a,e,i,m)",Hinter_ovvo,l2_tensor,t2_tensor)
+      if (ierr.ne.0)  print*, " m21-a, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_vvoo)
+      ierr=talsh_tensor_contract("A(f,b,j,n)+=T(f,j)*T(b,n)",Hinter_vvoo,t1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " m21-b, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,a,f,i)*A(f,b,j,n)",gamma%prime_vvoo,Hinter_ovvo,Hinter_vvoo,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m21-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,a,f,j)*A(f,b,i,n)",gamma%prime_vvoo,Hinter_ovvo,Hinter_vvoo)
+      if (ierr.ne.0)  print*, " m21-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,b,f,i)*A(f,a,j,n)",gamma%prime_vvoo,Hinter_ovvo,Hinter_vvoo)
+      if (ierr.ne.0)  print*, " m21-e, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(n,b,f,j)*A(f,a,i,n)",gamma%prime_vvoo,Hinter_ovvo,Hinter_vvoo,scale=MINUS_ONE)
+      if (ierr.ne.0)  print*, " m21-f, ierr  ", ierr
+      ! m24
+      ierr=talsh_Tensor_init(Hinter_ooov)
+      ierr=talsh_tensor_contract("H(m,n,i,f)+=L(m,n,e,f)*T(e,i)",Hinter_ooov,l2_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " m24-a, ierr  ", ierr
+      ierr=talsh_Tensor_init(Hinter_voov)
+      ierr=talsh_tensor_contract("H(a,n,i,f)+=H(m,n,i,f)*T(a,m)",Hinter_voov,Hinter_ooov,t1_tensor)
+      if (ierr.ne.0)  print*, " m24-b, ierr  ", ierr
+      ierr=talsh_tensor_init(Hinter_vvoo)
+      ierr=talsh_tensor_contract("A(b,f,n,j)+=T(b,n)*T(f,j)",Hinter_vvoo,t1_tensor,t1_tensor)
+      if (ierr.ne.0)  print*, " m24-c, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,n,i,f)*A(b,f,n,j)",gamma%prime_vvoo,Hinter_voov,Hinter_vvoo,scale=ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m24-d, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(a,n,j,f)*A(b,f,n,i)",gamma%prime_vvoo,Hinter_voov,Hinter_vvoo,scale=MINUS_ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m24-e, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,n,i,f)*A(a,f,n,j)",gamma%prime_vvoo,Hinter_voov,Hinter_vvoo,scale=MINUS_ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m24-f, ierr  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=H(b,n,j,f)*A(a,f,n,i)",gamma%prime_vvoo,Hinter_voov,Hinter_vvoo,scale=ONE_QUARTER)
+      if (ierr.ne.0)  print*, " m24-g, ierr  ", ierr
+
+
+      !! Start Symetrisation
+      ! gamma%symm_ooov 
+      ierr=talsh_tensor_contract("G(i,j,k,a)+=G(i,j,k,a)*K()",gamma%symm_ooov,gamma%prime_ooov,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm ooov 1-a  ", ierr
+      print*, "gprime_oo  = ", tensor_norm2(gamma%symm_ooov)
+      ierr=talsh_tensor_contract("G(i,j,k,a)+=G+(k,a,i,j)*K()",gamma%symm_ooov,gamma%prime_ovoo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm ooov 1-b  ", ierr
+      print*, "gprime_oo  = ", tensor_norm2(gamma%symm_ooov)
+
+      ! gamma%symm_ovoo 
+      ierr=talsh_tensor_contract("G(i,a,k,l)+=G(i,a,k,l)*K()",gamma%symm_ovoo,gamma%prime_ovoo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm ovoo 2-a  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,k,l)+=G+(k,l,i,a)*K()",gamma%symm_ovoo,gamma%prime_ooov,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm ovoo 2-b  ", ierr
+
+      ! gamma%symm_ovov 
+      ierr=talsh_tensor_contract("G(i,a,j,b)+=G(i,a,j,b)*K()",gamma%symm_ovov,gamma%prime_ovov,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm ovov 3-a  ", ierr
+      ierr=talsh_tensor_contract("G(i,a,j,b)+=G+(j,b,i,a)*K()",gamma%symm_ovov,gamma%prime_ovov,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm ovov 3-b  ", ierr
+
+      ! gamma%symm_vvvo 
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=G(a,b,c,i)*K()",gamma%symm_vvvo,gamma%prime_vvvo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vvvo 4-a  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,i)+=G+(c,i,a,b)*K()",gamma%symm_vvvo,gamma%prime_vovv,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vvvo 4-b  ", ierr
+
+      ! gamma%symm_vovv
+      ierr=talsh_tensor_contract("G(a,i,b,c)+=G(a,i,b,c)*K()",gamma%symm_vovv,gamma%prime_vovv,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vovv 5-a  ", ierr
+      ierr=talsh_tensor_contract("G(a,i,b,c)+=G+(b,c,a,i)*K()",gamma%symm_vovv,gamma%prime_vvvo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vovv 5-b  ", ierr
+
+      ! gamma%symm_vvvv
+      ierr=talsh_tensor_contract("G(a,b,c,d)+=G(a,b,c,d)*K()",gamma%symm_vvvv,gamma%prime_vvvv,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vvvv 6-a  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,c,d)+=G+(c,d,a,b)*K()",gamma%symm_vvvv,gamma%prime_vvvv,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vvvv 6-b  ", ierr
+
+      ! gamma%symm_oooo
+      ierr=talsh_tensor_contract("G(i,j,k,l)+=G(i,j,k,l)*K()",gamma%symm_oooo,gamma%prime_oooo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm oooo 7-a  ", ierr
+      ierr=talsh_tensor_contract("G(i,j,k,l)+=G+(k,l,i,j)*K()",gamma%symm_oooo,gamma%prime_oooo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm oooo 7-b  ", ierr
+
+
+      ! gamma%symm_oovv 
+      ierr=talsh_tensor_contract("G(i,j,a,b)+=G(i,j,a,b)*K()",gamma%symm_oovv,gamma%prime_oovv,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm oovv 8-a  ", ierr
+      ierr=talsh_tensor_contract("G(i,j,a,b)+=G+(a,b,i,j)*K()",gamma%symm_oovv,gamma%prime_vvoo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm oovv 8-b  ", ierr
+
+      ! gamma%symm_vvoo 
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=G(a,b,i,j)*K()",gamma%symm_vvoo,gamma%prime_vvoo,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vvoo 9-a  ", ierr
+      ierr=talsh_tensor_contract("G(a,b,i,j)+=G+(i,j,a,b)*K()",gamma%symm_vvoo,gamma%prime_oovv,one_tensor,scale=ONE_HALF)
+      if (ierr.ne.0)  print*, " symm vvoo 9-b  ", ierr
+
+
+
+
+
+      ierr=talsh_tensor_destruct(Hinter_ooov)
+      ierr=talsh_tensor_destruct(Hinter_vovv)
+      ierr=talsh_tensor_destruct(Hinter_vv)
+      ierr=talsh_tensor_destruct(Hinter_vvvv)
+      ierr=talsh_tensor_destruct(Hinter_voov)
+      ierr=talsh_tensor_destruct(Hinter_ovvo)
+      ierr=talsh_tensor_destruct(Hinter_oo)
+      ierr=talsh_tensor_destruct(Hinter_vovo)
+      ierr=talsh_tensor_destruct(Hinter_vo)
+      ierr=talsh_tensor_destruct(Hinter_ovvv)
+      ierr=talsh_tensor_destruct(Hinter_oovo)
+      ierr=talsh_tensor_destruct(Hinter_vvov)
+      ierr=talsh_tensor_destruct(Hinter_vvvo)
+      ierr=talsh_tensor_destruct(Hinter_vooo)
+      ierr=talsh_tensor_destruct(Hinter_oooo)
+      ierr=talsh_tensor_destruct(Hinter_vvoo)
+      ierr=talsh_tensor_destruct(Hinter_ovov)
+      ierr=talsh_tensor_destruct(Hinter_ovoo)
+
+
+    end subroutine talsh_calc_dm_2rdm_ccsd_GS_mo
+
+
+
+
+
+
+
+    subroutine talsh_calc_dm_2rdm_ccsd_GS_mo_fausse(gamma,t2_tensor,l2_tensor,nocc,nvir,print_level,t1_tensor,l1_tensor)
 
 !       If a separated module
 !      use talsh_ao_to_mo, only       : tensor_norm2
