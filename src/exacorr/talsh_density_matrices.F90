@@ -42,6 +42,7 @@ module talsh_gradient
       type(talsh_dm_tens) :: gamma
 !     CCD switch
       logical :: CCD
+      logical :: Add_energy=.true.
       character(len=4) :: wavefun
 !     error code
       integer(INTD) :: ierr
@@ -80,12 +81,84 @@ module talsh_gradient
            call talsh_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
                 exa_input%print_level)
          end if
+
+         print *, " "
+         print *, "          *****************************************"
+         print *, "          * ASP. Gomes, L. Halbert  07-2022       *"
+         print *, "          * Construction of CCSD density Matrices *"
+         print *, "          * Verification with Energy calculation  *"
+         print *, "          *****************************************"
+         print *, " "
+ 
          call print_date("Calculated 2-RDM density matrices in MO basis")
       end if
 
 ! aspg, while thinking of a solution, always store the 1rdm
       if (exa_input%do_1rdm_gs) then
          write (*,*) 'debug, exa_input%do_1rdm_gs',exa_input%do_1rdm_gs
+
+
+!  Symmetry used
+      ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,a)*F+(i,a)",result_tensor,gamma%symm_ov,int_t%fov)
+      if (exa_input%print_level.ge.2) print*, "Final ov symm : ",result_tens(1)
+
+      if (Add_Energy==.False.) ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,i)*F(i,a)",result_tensor,gamma%symm_vo,int_t%fov)
+      if (exa_input%print_level.ge.2) print*, "Final vo symm : ",result_tens(1)
+
+      if (Add_Energy==.False.) ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b)*F(b,a)",result_tensor,gamma%symm_vv,int_t%fvv)
+      if (exa_input%print_level.ge.2) print*, "Final vv symm : ",result_tens(1)
+
+      if (Add_Energy==.False.) ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j)*F(j,i)",result_tensor,gamma%symm_oo,int_t%foo)
+      if (exa_input%print_level.ge.2) print*, "Final oo symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b,i,j)*V(i,j,a,b)",result_tensor,gamma%symm_vvoo,int_t%oovv,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final vvoo symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j,a,b)*V+(i,j,a,b)",result_tensor,gamma%symm_oovv,int_t%oovv,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final oovv symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)    ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j,k,a)*V+(i,j,k,a)",result_tensor,gamma%symm_ooov,int_t%ooov,scale=ONE_HALF)
+      if (exa_input%print_level.ge.2) print*, "Final ooov symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,a,j,k)*V(j,k,i,a)",result_tensor,gamma%symm_ovoo,int_t%ooov,scale=ONE_HALF)
+      if (exa_input%print_level.ge.2) print*, "Final ovoo symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b,c,i)*V(c,i,a,b)",result_tensor,gamma%symm_vvvo,int_t%vovv,scale=ONE_HALF)
+      if (exa_input%print_level.ge.2) print*, "Final vvvo symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+!      ierr=talsh_tensor_contract("E()+=G(a,i,b,c)*V(b,c,a,i)",result_tensor,gamma%prime_vovv,int_t%vvvo,scale=ONE_QUARTER)
+      ierr=talsh_tensor_contract("E()+=G(a,i,b,c)*V+(a,i,b,c)",result_tensor,gamma%symm_vovv,int_t%vovv,scale=ONE_HALF)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,a,j,b)*V(b,j,a,i)",result_tensor,gamma%symm_ovov,int_t%vovo)
+      if (exa_input%print_level.ge.2) print*, "Final ovov symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b,c,d)*V(c,d,a,b)",result_tensor,gamma%symm_vvvv,int_t%vvvv,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final vvvv symm : ",result_tens(1)
+
+      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j,k,l)*V(k,l,i,j)",result_tensor,gamma%symm_oooo,int_t%oooo,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final oooo symm : ",result_tens(1)
+
+      print *, " "
+      print *, " "
+      if (Add_Energy==.True.) print *, " Energy by CCSD Density Matrix ", result_tens(1)
+      if (Add_Energy==.False.) print *, " Energy by CCSD Density Matrix is the sum of all the individual terms "
+      print *, " "
+      print *, " "
+
+      print *, " ************** "
 
 !***********************
 !     write DM to file *
