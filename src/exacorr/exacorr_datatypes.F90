@@ -101,9 +101,20 @@
         end type exatns_lambda_tens
 
         type, public :: exatns_dm_tens
+! one-body density matrices
          type(tens_rcrsv_t) :: prime_oo, symm_oo
          type(tens_rcrsv_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(tens_rcrsv_t) :: prime_vv, symm_vv
+! two-body density matrices
+         type(tens_rcrsv_t) :: prime_ooov, symm_ooov
+         type(tens_rcrsv_t) :: prime_ovov, symm_ovov
+         type(tens_rcrsv_t) :: prime_vvvo, symm_vvvo
+         type(tens_rcrsv_t) :: prime_vovv, symm_vovv
+         type(tens_rcrsv_t) :: prime_vvvv, symm_vvvv
+         type(tens_rcrsv_t) :: prime_oovv, symm_oovv
+         type(tens_rcrsv_t) :: prime_ovoo, symm_ovoo
+         type(tens_rcrsv_t) :: prime_oooo, symm_oooo
+         type(tens_rcrsv_t) :: prime_vvoo, symm_vvoo
         end type exatns_dm_tens
 
         type, public :: space_dims
