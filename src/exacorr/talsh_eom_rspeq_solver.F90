@@ -54,7 +54,7 @@ module talsh_eom_rspeq_solver
 !     error code
             integer :: ierr
             character(len=2) :: flavor = "EE"
-            integer :: nroot = 27                                 ! initialize the number of trail vectors
+            integer :: nroot = 114                                 ! initialize the number of trail vectors
 
             integer(INTD), dimension(2) :: vo_dims
             integer(INTD), dimension(4) :: vvoo_dims

@@ -214,7 +214,7 @@
         ! intermediates used in eom prop and cc response 
         type, public :: talsh_rsp_interm_tens_t
               type(talsh_tens_t) :: prop_bar_vv, prop_bar_oo, prop_bar_ov
-              type(talsh_tens_t) :: Q_vvov, Q_ovoo
+              type(talsh_tens_t) :: Q_vvvo, Q_ovoo
               type(talsh_tens_t) :: eta_ov, eta_oovv
               type(talsh_tens_t) :: epsilon_prop_vo, epsilon_prop_vvoo
               type(talsh_tens_t) :: eta_prop_ov, eta_prop_oovv

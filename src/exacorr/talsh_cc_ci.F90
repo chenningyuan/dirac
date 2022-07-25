@@ -64,11 +64,11 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     call print_date('Constructed intermediates needed in CC-CI response')
 
 
-    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
-    call print_date('Sloved CC-CI right response equation for component1 of property')
+    ! call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
+    ! call print_date('Sloved CC-CI right response equation for component1 of property')
 
-    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
-    call print_date('Sloved CC-CI right response equation for component2 of property')
+    ! call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
+    ! call print_date('Sloved CC-CI right response equation for component2 of property')
 
     call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
     call print_date('Sloved CC-CI right response equation for component3 of property')
@@ -82,7 +82,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         !             tprop_tensor1, tprop_tensor2, & 
         !             l1_tensor,l2_tensor,eom_lr)
 
-        call get_eom_lr(exa_input,interm_t, interm_t_prop3, interm_t_prop3, interm_t_prop3,& 
+        call get_eom_lr(exa_input,interm_t, interm_t_prop3, interm_t_prop3, & 
                     tprop_tensor3, tprop_tensor3, & 
                     l1_tensor,l2_tensor,eom_lr)
 
@@ -123,7 +123,7 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 type(talsh_tens_t), intent(inout)           :: l2_tensor
                 type(talsh_tens_t), intent(inout)           :: l1_tensor
 
-                integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvov_dims, oovv_dims
+                integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvvo_dims, oovv_dims
                 integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
 
                 type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1, orb_int_tensor2, orb_int_tensor3 
@@ -145,9 +145,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 ovoo_dims(2) = exa_input%nvir
                 ovoo_dims(3:4) = exa_input%nocc
 
-                vvov_dims(1:2) = exa_input%nvir
-                vvov_dims(3) = exa_input%nocc
-                vvov_dims(4) = exa_input%nvir
+                vvvo_dims(1:3) = exa_input%nvir
+                vvvo_dims(4) = exa_input%nocc
 
                 ov_dims(1) = exa_input%nocc
                 ov_dims(2) = exa_input%nvir
@@ -172,8 +171,6 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 i_prop=3
                 call get_prop_integral(exa_input,orb_int_tensor3,i_prop)
 
-
-                ! call print_date("get property integral ?")
 
                 ! call form_eom_qr_prop_inter(interm_t%t1, interm_t%t2, interm_t_prop1, interm_t_prop2, interm_t_prop3, &
                 !                 l1_tensor, l2_tensor)
@@ -244,9 +241,9 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 call get_Q_ovoo(interm_t_prop2%Q_ovoo,interm_t_prop2%prop_bar_ov,interm_t%t2,ovoo_dims)
                 call get_Q_ovoo(interm_t_prop3%Q_ovoo,interm_t_prop3%prop_bar_ov,interm_t%t2,ovoo_dims)
                                 
-                call get_Q_vvov(interm_t_prop1%Q_vvov,interm_t_prop1%prop_bar_ov,interm_t%t2,vvov_dims)
-                call get_Q_vvov(interm_t_prop2%Q_vvov,interm_t_prop2%prop_bar_ov,interm_t%t2,vvov_dims)
-                call get_Q_vvov(interm_t_prop3%Q_vvov,interm_t_prop3%prop_bar_ov,interm_t%t2,vvov_dims)
+                call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%t2,vvvo_dims)
+                call get_Q_vvvo(interm_t_prop2%Q_vvvo,interm_t_prop2%prop_bar_ov,interm_t%t2,vvvo_dims)
+                call get_Q_vvvo(interm_t_prop3%Q_vvvo,interm_t_prop3%prop_bar_ov,interm_t%t2,vvvo_dims)
 
                 call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
 

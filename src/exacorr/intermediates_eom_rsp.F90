@@ -52,9 +52,9 @@ module intermediates_eom_rsp
         module procedure get_Q_ovoo_talsh
      end interface get_Q_ovoo
 
-     interface get_Q_vvov
-        module procedure get_Q_vvov_talsh
-     end interface get_Q_vvov
+     interface get_Q_vvvo
+        module procedure get_Q_vvvo_talsh
+     end interface get_Q_vvvo
 
 
 !      interface form_ccsd_intermediates
@@ -69,7 +69,7 @@ module intermediates_eom_rsp
 !      public form_ccsd_intermediates
    !   public destroy_eomccsd_rsp_intermediates
      public get_epsilon_prop_vo, get_epsilon_prop_vvoo, get_O_vo, get_eta_prop_ov, get_eta_prop_oovv
-     public get_prop_bar_oo, get_prop_bar_vv, get_prop_bar_ov, get_Q_ovoo, get_Q_vvov
+     public get_prop_bar_oo, get_prop_bar_vv, get_prop_bar_ov, get_Q_ovoo, get_Q_vvvo
 
      contains
 
@@ -426,16 +426,17 @@ module intermediates_eom_rsp
      end subroutine 
 
 
-     subroutine get_Q_vvov_talsh(Q_vvov_tensor,prop_bar_ov_tensor,t2_tensor,vvov_dims)
+     subroutine get_Q_vvvo_talsh(Q_vvvo_tensor,prop_bar_ov_tensor,t2_tensor,vvvo_dims)
 
-        type(talsh_tens_t) :: Q_vvov_tensor
+        type(talsh_tens_t) :: Q_vvvo_tensor
         type(talsh_tens_t) :: prop_bar_ov_tensor
         type(talsh_tens_t) :: t2_tensor
-        integer(INTD), dimension(4)   :: vvov_dims
+        integer(INTD), dimension(4)   :: vvvo_dims
         integer :: ierr
 
-        ierr=talsh_tensor_construct(Q_vvov_tensor,C8,vvov_dims,init_val=ZERO)
-        ierr=talsh_tensor_contract("Q(a,b,j,e)=Xbar(n,e)*t2(a,b,j,n)",Q_vvov_tensor,prop_bar_ov_tensor,t2_tensor)
+        ierr=talsh_tensor_construct(Q_vvvo_tensor,C8,vvvo_dims,init_val=ZERO)
+        ierr=talsh_tensor_contract("Q(a,b,e,j)=Xbar(n,e)*t2(a,b,j,n)",Q_vvvo_tensor,prop_bar_ov_tensor,t2_tensor)
+      !   ierr=talsh_tensor_contract("Q(a,b,e,j)=Xbar(n,e)*t2(a,b,j,n)",Q_vvvo_tensor,prop_bar_ov_tensor,t2_tensor,scale=MINUS_ONE)
 
      end subroutine 
        

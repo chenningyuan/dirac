@@ -1922,7 +1922,7 @@ contains
                ierr=talsh_tensor_contract("CI()+=Bdag+(p,q)*C(p,q)",             &
    &                                                       result_tensor,        &
    &                                                       workspace_t%trial1(i),&
-   &                                                       prop_grad1)
+   &                                                       prop_grad1,scale=MINUS_ONE)
             else if (left.and..not.right) then
                ierr=talsh_tensor_contract("CI()+=C+(p,q)*B(p,q)",                &
    &                                                       result_tensor,        &
@@ -1936,7 +1936,7 @@ contains
                ierr=talsh_tensor_contract("CI()+=Bdag+(p,q,r,s)*C(p,q,r,s)",     &
    &                                                       result_tensor,        &
    &                                                       workspace_t%trial2(i),&
-   &                                                       prop_grad2)
+   &                                                       prop_grad2,scale=MINUS_ONE)
             else if (left.and..not.right) then
                ierr=talsh_tensor_contract("CI()+=C+(p,q,r,s)*B(p,q,r,s)",       &
    &                                                       result_tensor,       &
