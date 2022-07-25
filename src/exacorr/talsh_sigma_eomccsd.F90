@@ -917,8 +917,6 @@ module talsh_sigma_eomccsd
 !     term 1: Sxz(a,i) += Xbar(a,e)* tY(e,i) |
 !--------------------------------------------------------
       ierr=talsh_tensor_contract("Sxz(a,i)+=Xbar(a,e)*Tz(e,i)",sigma_prop_tensor12%t1,interm_t_prop1%prop_bar_vv,tprop_tensor2%t1)
-      call print_tensor(tprop_tensor2%t1, 1.0d-10, "tprop_tensor2%t1")
-      call print_tensor(interm_t_prop1%prop_bar_vv, 1.0d-10, "interm_t_prop1%prop_bar_vv")
 
 !--------------------------------------------------------
 !     term 2: Sxz(a,i) -= Xbar(m,i)* tY(a,m) |

@@ -361,7 +361,7 @@ module intermediates_eom_rsp
         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
         ierr=talsh_tensor_construct(O_vo_tensor,C8,vo_dims,init_val=ZERO)
-        ierr=talsh_tensor_contract("O(a,i)+=X+(i,a)",O_vo_tensor,orb_int_tensor%prop_ov,one_tensor)
+        ierr=talsh_tensor_contract("O(a,i)+=X(i,a)",O_vo_tensor,orb_int_tensor%prop_ov,one_tensor)
 
      end subroutine get_O_vo_talsh
 

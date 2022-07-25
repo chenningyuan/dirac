@@ -54,6 +54,8 @@ subroutine get_eom_lr(exa_input,interm_t,interm_t_prop1, interm_t_prop2, &
 
             call print_date('Evaluate CC-CI LR')
 
+            eom_lr = complex(0.0,0.0)
+
             vvoo_dims(3:4) = exa_input%nocc
             vvoo_dims(1:2) = exa_input%nvir
             vo_dims(2) = exa_input%nocc
@@ -117,7 +119,7 @@ subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
 
             call get_linrsp_driver(tem_quarsp_iter,tprop_tensor2, tprop_tensor1, &
                     sigma_prop_tensor21,l1_tensor,l2_tensor, &
-                    interm_t,interm_t_prop1)
+                    interm_t,interm_t_prop2)
 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -202,6 +204,8 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
     ierr=talsh_tensor_contract("E()+=Ty(a,i)*O(a,i)",result_tensor,tprop_tensor2%t1,interm_t_prop1%O_vo)
     term4=result_tens(1)
     print *, "term4:  ", term4
+    ! call print_tensor(tprop_tensor2%t1, 1.0d-10, "tprop_tensor2%t1")
+    ! call print_tensor(interm_t_prop1%O_vo, 1.0d-10, "interm_t_prop1%O_vo")
 
     tem_quarsp_iter=term1*term2+term3+term4
 
