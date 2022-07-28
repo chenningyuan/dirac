@@ -375,8 +375,8 @@ module intermediates_eom_rsp
         integer :: ierr
 
         ierr=talsh_tensor_construct(prop_bar_oo_tensor,C8,oo_dims,init_val=ZERO)
-        ierr=talsh_tensor_add("Xbar(i,m)+=X(i,m)",prop_bar_oo_tensor,orb_int_tensor%prop_oo)
-        ierr=talsh_tensor_contract("Xbar(i,m)+=X(i,e)*t1(e,m)",prop_bar_oo_tensor,orb_int_tensor%prop_ov,t1_tensor)
+        ierr=talsh_tensor_add("Xbar(m,i)+=X(m,i)",prop_bar_oo_tensor,orb_int_tensor%prop_oo)
+        ierr=talsh_tensor_contract("Xbar(m,i)+=X(m,e)*t1(e,i)",prop_bar_oo_tensor,orb_int_tensor%prop_ov,t1_tensor)
 
      end subroutine get_prop_bar_oo_talsh
 
@@ -390,8 +390,8 @@ module intermediates_eom_rsp
         integer :: ierr
 
         ierr=talsh_tensor_construct(prop_bar_vv_tensor,C8,vv_dims,init_val=ZERO)
-        ierr=talsh_tensor_add("Xbar(e,a)+=X(e,a)",prop_bar_vv_tensor,orb_int_tensor%prop_vv)
-        ierr=talsh_tensor_contract("Xbar(e,a)+=X(m,a)*t1(e,m)",prop_bar_vv_tensor,orb_int_tensor%prop_ov,t1_tensor,scale=MINUS_ONE)
+        ierr=talsh_tensor_add("Xbar(a,e)+=X(a,e)",prop_bar_vv_tensor,orb_int_tensor%prop_vv)
+        ierr=talsh_tensor_contract("Xbar(a,e)+=X(m,e)*t1(a,m)",prop_bar_vv_tensor,orb_int_tensor%prop_ov,t1_tensor,scale=MINUS_ONE)
 
      end subroutine get_prop_bar_vv_talsh
 
@@ -421,7 +421,7 @@ module intermediates_eom_rsp
         integer :: ierr
 
         ierr=talsh_tensor_construct(Q_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
-        ierr=talsh_tensor_contract("Q(m,b,i,j)=Xbar(m,f)*t2(f,b,i,j)",Q_ovoo_tensor,prop_bar_ov_tensor,t2_tensor)
+        ierr=talsh_tensor_contract("Q(m,b,i,j)=Xbar(m,f)*t2(b,f,i,j)",Q_ovoo_tensor,prop_bar_ov_tensor,t2_tensor)
 
      end subroutine 
 
