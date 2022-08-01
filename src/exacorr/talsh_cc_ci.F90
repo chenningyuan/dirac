@@ -82,15 +82,15 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         !             tprop_tensor1, tprop_tensor2, & 
         !             l1_tensor,l2_tensor,eom_lr)
 
-        call get_eom_lr(exa_input,interm_t, interm_t_prop1, interm_t_prop1, & 
+        call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop1, interm_t_prop1, & 
                     tprop_tensor1, tprop_tensor1, & 
                     l1_tensor,l2_tensor,eom_lr)
 
-        call get_eom_lr(exa_input,interm_t, interm_t_prop2, interm_t_prop2, & 
+        call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop2, interm_t_prop2, & 
                     tprop_tensor2, tprop_tensor2, & 
                     l1_tensor,l2_tensor,eom_lr)
 
-        call get_eom_lr(exa_input,interm_t, interm_t_prop3, interm_t_prop3, & 
+        call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop3, interm_t_prop3, & 
                     tprop_tensor3, tprop_tensor3, & 
                     l1_tensor,l2_tensor,eom_lr)
 
