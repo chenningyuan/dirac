@@ -178,6 +178,10 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 call get_prop_integral(exa_input,orb_int_tensor2,i_prop)
                 i_prop=3
                 call get_prop_integral(exa_input,orb_int_tensor3,i_prop)
+                print *, "nocc:", exa_input%nocc
+                print *, "nvir:", exa_input%nvir
+                print *, "mo_occ:", exa_input%mo_occ
+                print *, "mo_vir:", exa_input%mo_vir
 
 
                 ! call form_eom_qr_prop_inter(interm_t%t1, interm_t%t2, interm_t_prop1, interm_t_prop2, interm_t_prop3, &
