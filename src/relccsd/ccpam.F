@@ -66,9 +66,11 @@ C
       IW = LUPRI
 C aspg 20080903
 C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
-c     INTFCE = 'DIRAC     '
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+C ayaki 20220603
+C iface set to DIRAC4 as default, in line with having scheme 4 as default in moltra      
+      INTFCE = 'DIRAC     '
+!      INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
       MP2_DENRUN = .FALSE.
       IF( DOMP2NO )THEN
         IF( RUN_CCMOD ) MP2_DENRUN = .TRUE.
@@ -226,9 +228,11 @@ C     Add the master node
 
 C aspg 20080903
 C iface set to DIRAC6 as default, in line with having scheme 6 as default in moltra
-c     INTFCE = 'DIRAC     '
-      INTFCE = 'DIRAC6    '
-      IF( IAOMOSCHEME .eq. 4 ) INTFCE = 'DIRAC     '
+C ayaki 20220603
+C iface set to DIRAC4 as default, in line with having scheme 4 as default in moltra   
+      INTFCE = 'DIRAC     '
+!      INTFCE = 'DIRAC6    '
+      IF( IAOMOSCHEME .eq. 6 ) INTFCE = 'DIRAC6    '
       MP2_DENRUN = .FALSE.
 C
 C     Get the correct arithmetic (NZ is not initialized on slaves if you do not run HF !)

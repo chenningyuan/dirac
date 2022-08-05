@@ -382,7 +382,7 @@ C
       DATA TABLE  /'.DIRECT','.CVALUE','.NOSET ','.DOJACO',
      &             '.PRINT ','.PRJTHR','.PCMOUT','.LINDEP',
      &             '.SPHTRA','.ECP   ','.LOGMEM','.QJACO ',
-     &             '.ACMOUT','.ACMOIN','.IMPMOS','.FAMILY',
+     &             '.ACMOUT','.ACMOIN','.IMPMOS','xxxxxxx',
      &             '.SKIP2E','.LOWJAC','.RKBIMP','.CODATA',
      &             '.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
@@ -543,8 +543,6 @@ C&&&& IMPMOS
             READ(LUCMD,*) QCPACK, (FILIMP(IDEG),IDEG=1,NFILES)
             GO TO 100
   116    CONTINUE
-C&&&& FAMILY: Family basis (Not yet implemented)
-            FAMILY = .TRUE.
             GO TO 100
   117    CONTINUE
 C&&&& SKIP2E
@@ -2354,6 +2352,11 @@ C
       END IF
 
       IF(.NOT.dirac_cfg_scf_calculation) GOTO 999
+
+      CALL RMOLCHR(ICHRG)
+      KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
+      WRITE(LUPRI,'(A,I0)')
+     &    ' * Charge of molecule : ',KCHARG
 C
       IF (BNCRON.OR.BNSPON) THEN
 C     hjaaj nov 2004: bare nucleus correction is
@@ -2365,8 +2368,6 @@ C     a U(+90) calculation.
      &     ' - INFO: bare nucleus correction used independently of '//
      &  'the system charge'
         ELSE
-          CALL RMOLCHR(ICHRG)
-          KCHARG = ICHRG - NELECT_DHF - NAELEC_DHF
           IF (ABS(KCHARG) .GT. 10) THEN
             BNCRON = .FALSE.
             BNCRON = .FALSE.
@@ -5082,7 +5083,6 @@ C     Initialize /DCBGEN/
 C     ===================
 C
       TITLE    = 'DIRAC: No title specified !!!'
-      FAMILY   = .FALSE.
       INPTES   = .FALSE.
       VACUUM   = .FALSE.
       NUCVAC   = .FALSE.

@@ -2846,7 +2846,6 @@ C
 C     Gather expectation values into TEMP
 C     (only over symmetry distinct centers)
 C
-      STHETAW2 = 0.2319D0
       DFAC = GFERMI/(D2*SQRT(D2))
 C
       CALL DZERO(TEMP,NUCDEP)
@@ -2875,7 +2874,7 @@ C
           NPROTON  = ICHARGE
           NNEUTRON = IMASS - ICHARGE
           IS(NATOM) = IMASS
-          QW(NATOM) = (D1 - D4*STHETAW2) * NPROTON -
+          QW(NATOM) = (D1 - D4*S2THETAW) * NPROTON -
      &            D1 * NNEUTRON
            DTOT = DTOT + DMPV(NATOM)*QW(NATOM)*DFAC
         END DO
@@ -7544,8 +7543,6 @@ C-----------------------------------------------------------------------
 #include "dcbprl.h"
 #include "codata.h"
 C
-      PARAMETER ( STHETAW2 = 0.2319D0 )
-C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -7556,7 +7553,7 @@ C
 #include "dgroup.h"
 #include "ibtfun.h"
 C
-      FACTOR = (GFERMI*(D1-D4*STHETAW2)*1.0D6)/(CVEL*SQRT(D2))
+      FACTOR = (GFERMI*(D1-D4*S2THETAW)*1.0D6)/(CVEL*SQRT(D2))
 C
       CALL AROUND('PV NMR shielding tensor (in ppm)')
       WRITE(LUPRI,*)
@@ -7712,8 +7709,6 @@ C-----------------------------------------------------------------------
 #include "codata.h"
 #include "pi.h"
 C
-      PARAMETER ( STHETAW2 = 0.2319D0 )
-C
       LOGICAL   DOATOM(NUCDEP)
       DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
      &          ABCNV(NBFREQ,NLRBPT),
@@ -7724,7 +7719,7 @@ C
 #include "dgroup.h"
 #include "ibtfun.h"
 C
-      FACTOR = (GFERMI*(D1-D4*STHETAW2))/(CVEL*SQRT(D2))
+      FACTOR = (GFERMI*(D1-D4*S2THETAW))/(CVEL*SQRT(D2))
       FACTOR = (FACTOR*XTHZ)/(D2*PI*CVEL*CVEL)
       FACTOR = FACTOR*1.0D9
 C

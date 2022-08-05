@@ -360,7 +360,7 @@ C
 
 !
 !     The INTERFACE/EQNS variable is defined in ccinpt.inc and is needed
-!     by CCSETI. The default scheme is DIRAC6. This is also hardcoded
+!     by CCSETI. The default scheme is DIRAC4. This is also hardcoded
 !     in the RELCCSD code.
 !
       CARITH = CA

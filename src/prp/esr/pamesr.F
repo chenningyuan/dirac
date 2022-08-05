@@ -2416,20 +2416,19 @@ C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals ?
 
       INQUIRE(FILE='DFCOEF',EXIST=FILEX)
       IF(FILEX) THEN
-         CALL MEMGET2('REAL','EIG',KEIG ,NORBT   ,WORK,KFREE,LFREE)
+         WRITE(LUPRI,'(/A)')
+     &      ' (ESR)  molecular orbitals read from file DFCOEF'
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPESR')
          IF (SPINFR.OR.LEVYLE) THEN
             CALL MEMGET2('INTE','IBPRP',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,WORK(KIBRP),
-     &                  TOTERG,10)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,VDUM,WORK(KIBRP),
+     &                  TOTERG,11)
          ELSE
             KIBRP = KFREE
-            CALL REACMO(LUCOEF,'DFCOEF',CMO,WORK(KEIG),IDUM,
-     &                  TOTERG,2)
+            CALL REACMO(LUCOEF,'DFCOEF',CMO,VDUM,IDUM,
+     &                  TOTERG,3)
          END IF
          CLOSE(LUCOEF,STATUS='KEEP')
-         WRITE(LUPRI,'(/A)')
-     &      ' (ESR)  molecular orbitals read from file DFCOEF'
          GO TO 9000
       END IF
 

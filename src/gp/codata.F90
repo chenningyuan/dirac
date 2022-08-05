@@ -19,9 +19,9 @@ module codata
   public
 #include "codata.h"
 #include "pi.h"
-! ------------------------------------------------------------
-! -------------------  Index  --------------------------------
-! ------------------------------------------------------------
+! ----------------------------------------------------------------------------
+! ---------------------------  Index  ----------------------------------------
+! ----------------------------------------------------------------------------
 ! xtang    : a_0 (bohr radius) in angstrom
 ! echarge  : e in Coulomb
 ! hbar     : hbar in J.s
@@ -32,7 +32,10 @@ module codata
 ! ccm      : c (speed of light) in m/s
 ! autk     : Hartree-Kelvin relationship E_h/k
 ! fermicc  : Fermi coupling constant G_F/(hbar.c)^3 in GeV^-2
-! ------------------------------------------------------------
+! s2thetaw : Weak mixing angle [sen^2(theta_W)], based on
+!             particular variant of modified minimal subtraction (MS) scheme
+!             and commented are also the on-shell scheme values
+! ----------------------------------------------------------------------------
 
 !  "The 1986 adjustment of the fundamental physical constants"
 !                     E. Richard Cohen and Barry N. Taylor
@@ -46,7 +49,14 @@ module codata
   real(8), parameter :: emass1986    = 9.1093897d-31
   real(8), parameter :: ccm1986      = 2.99792458d8
   real(8), parameter :: autk1986     = 3.157733d5
-!  real(8), parameter :: fermicc1986  = No values
+!  real(8), parameter :: fermicc1986  = Values not reported
+!  real(8), parameter :: s2thetaw1986 = Values not reported
+
+!  "Review of Particle Properties"
+!    L. Montanet et al. (Particle Data Group)
+!    Phys. Rev. D, Vol. 50, 1173, 1994; Erratum Phys. Rev. D, Vol. 51, 3975, 1995
+  real(8), parameter :: fermicc1994  = 1.16639d-5
+  real(8), parameter :: s2thetaw1994 = 0.2319d0    ! on-shell scheme value: not reported
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 1998"
 !                     Peter J. Mohr and Barry N. Taylor
@@ -61,6 +71,7 @@ module codata
   real(8), parameter :: ccm1998      = 2.997924580d8
   real(8), parameter :: autk1998     = 3.1577465d5
   real(8), parameter :: fermicc1998  = 1.16639d-5
+  real(8), parameter :: s2thetaw1998 = 0.23124d0    ! on-shell scheme value: 0.2224d0
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2002"
 !                     Peter J. Mohr and Barry N. Taylor
@@ -75,6 +86,7 @@ module codata
   real(8), parameter :: ccm2002      = 2.99792458d8
   real(8), parameter :: autk2002     = 3.1577465d5
   real(8), parameter :: fermicc2002  = 1.16639d-5
+  real(8), parameter :: s2thetaw2002 = 0.23124d0    ! on-shell scheme value: 0.22215d0
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2006"
 !                     Peter J. Mohr, Barry N. Taylor and David B. Newell
@@ -89,6 +101,7 @@ module codata
   real(8), parameter :: ccm2006      = 2.99792458d8
   real(8), parameter :: autk2006     = 3.1577465d5
   real(8), parameter :: fermicc2006  = 1.16637d-5
+  real(8), parameter :: s2thetaw2006 = 0.23122d0    ! on-shell scheme value: 0.22255d0
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2010"
 !                     Peter J. Mohr, Barry N. Taylor and David B. Newell
@@ -103,6 +116,7 @@ module codata
   real(8), parameter :: ccm2010      = 2.99792458d8
   real(8), parameter :: autk2010     = 3.1577504d5
   real(8), parameter :: fermicc2010  = 1.166364d-5
+  real(8), parameter :: s2thetaw2010 = 0.23116d0    ! on-shell scheme value: 0.2223d0
 
 !  "CODATA Recommended Values of the Fundamental Physical Constants: 2014"
 !                     Peter J. Mohr, David B. Newell and Barry N. Taylor
@@ -117,11 +131,11 @@ module codata
   real(8), parameter :: ccm2014      = 2.99792458d8
   real(8), parameter :: autk2014     = 3.1577513d5
   real(8), parameter :: fermicc2014  = 1.1663787d-5
+  real(8), parameter :: s2thetaw2014 = 0.23126d0    ! on-shell scheme value: 0.2223d0
 
-!  "The 2018 CODATA Recommended Values of the Fundamental Physical Constants (Web Version 8.1)"
-!                     Eite Tiesinga, Peter J. Mohr, David B. Newell, and Barry N. Taylor
-!                     Database developed by J. Baker, M. Douma, and S. Kotochigova
-!  Available at http://physics.nist.gov/constants, National Institute of Standards and Technology, Gaithersburg, MD 20899
+!  "CODATA Recommended Values of the Fundamental Physical Constants: 2018"
+!      Eite Tiesinga, Peter J. Mohr, David B. Newell and Barry N. Taylor
+!  Journal of Physical and Chemical Reference Data, Vol. 50, No. 3, 2021
   real(8), parameter :: xtang2018    = 0.529177210903d0
   real(8), parameter :: echarge2018  = 1.602176634d-19
   real(8), parameter :: hbar2018     = 1.054571817d-34
@@ -132,6 +146,7 @@ module codata
   real(8), parameter :: ccm2018      = 2.99792458d8
   real(8), parameter :: autk2018     = 3.1577502480407d5
   real(8), parameter :: fermicc2018  = 1.1663787d-5
+  real(8), parameter :: s2thetaw2018 = 0.23122d0    ! on-shell scheme value: 0.22290d0
 
 
   contains
@@ -140,7 +155,20 @@ module codata
   implicit none
   character*8 CODAT
 
-!  Define which data set is used in the calculation
+!   Set default fundamental constants, from the last CODATA set
+    xtang    = xtang2018
+    echarge  = echarge2018
+    hbar     = hbar2018
+    xfmol    = xfmol2018
+    umass    = umass2018
+    pmass    = pmass2018
+    emass    = emass2018
+    ccm      = ccm2018
+    autk     = autk2018
+    fermicc  = fermicc2018
+    s2thetaw = s2thetaw2018
+
+!  Define another explicitly requested data set to be used in the calculation
    if(CODAT.eq.'CODATA86') then
     xtang    = xtang1986
     echarge  = echarge1986
@@ -151,9 +179,13 @@ module codata
     emass    = emass1986
     ccm      = ccm1986
     autk     = autk1986
-! Warning! As the oldest value for fermicc is from 1998,
-!          we use it also for the 1986 series.
-    fermicc  = fermicc1998
+! Warning! As the oldest values of fermicc and s2thetaw are from 1994,
+!          we use them also for the 1986's series.
+    fermicc  = fermicc1994
+    s2thetaw = s2thetaw1994
+   elseif(CODAT.eq.'PDG94') then
+    fermicc  = fermicc1994
+    s2thetaw = s2thetaw1994
    elseif(CODAT.eq.'CODATA98') then
     xtang    = xtang1998
     echarge  = echarge1998
@@ -165,6 +197,7 @@ module codata
     ccm      = ccm1998
     autk     = autk1998
     fermicc  = fermicc1998
+    s2thetaw = s2thetaw1998
    elseif(CODAT.eq.'CODATA02') then
     xtang    = xtang2002
     echarge  = echarge2002
@@ -176,6 +209,7 @@ module codata
     ccm      = ccm2002
     autk     = autk2002
     fermicc  = fermicc2002
+    s2thetaw = s2thetaw2002
    elseif(CODAT.eq.'CODATA06') then
     xtang    = xtang2006
     echarge  = echarge2006
@@ -187,6 +221,7 @@ module codata
     ccm      = ccm2006
     autk     = autk2006
     fermicc  = fermicc2006
+    s2thetaw = s2thetaw2006
    elseif(CODAT.eq.'CODATA10') then
     xtang    = xtang2010
     echarge  = echarge2010
@@ -198,6 +233,7 @@ module codata
     ccm      = ccm2010
     autk     = autk2010
     fermicc  = fermicc2010
+    s2thetaw = s2thetaw2010
    elseif(CODAT.eq.'CODATA14') then
     xtang    = xtang2014
     echarge  = echarge2014
@@ -209,7 +245,8 @@ module codata
     ccm      = ccm2014
     autk     = autk2014
     fermicc  = fermicc2014
-   else
+    s2thetaw = s2thetaw2014
+   elseif(CODAT.eq.'CODATA18') then
     xtang    = xtang2018
     echarge  = echarge2018
     hbar     = hbar2018
@@ -220,6 +257,7 @@ module codata
     ccm      = ccm2018
     autk     = autk2018
     fermicc  = fermicc2018
+    s2thetaw = s2thetaw2018
    end if
 
 ! -------------------- common derived constants --------------------------
@@ -289,6 +327,13 @@ module codata
    write(LUPRI,*)   "               E. Richard Cohen and Barry N. Taylor                      "
    write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 59, 1121-1148 (1987)             "
 
+   elseif(CODAT.eq.'PDG94') then
+   write(LUPRI,*)   " Only for the weak mixing angle and the Fermi coupling constant:         "
+   write(LUPRI,*)   "  Review of Particle Properties                                          "
+   write(LUPRI,*)   "               L. Montanet et al. (Particle Data Group)                  "
+   write(LUPRI,*)   "        Physical Reviews D, Vol. 50, 1173-1814 (1994)                    "
+   write(LUPRI,*)   "        Erratum: Physical Reviews D, Vol. 51, 3975-3977 (1995)           "
+
    elseif(CODAT.eq.'CODATA98') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 1998  "
    write(LUPRI,*)   "               Peter J. Mohr and Barry N. Taylor                         "
@@ -328,6 +373,12 @@ module codata
 !  If the user asks for non existing data sets, we set default values and print a WARNING
    else
    write(LUPRI,*)   " *** WARNING: CODATA set ", CODAT, " does not exist. Default is used. ***"
+   write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
+   write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
+   write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "
+   end if
+!  Constants other than s2thetaw and fermicc will be taken from the default CODATA set
+   if(CODAT.eq.'PDG94') then
    write(LUPRI,*)   "  CODATA Recommended Values of the Fundamental Physical Constants: 2018  "
    write(LUPRI,*)   "            Peter J. Mohr, David B. Newell and Barry N. Taylor           "
    write(LUPRI,*)   "        Reviews of Modern Physics, Vol. 93, 025010 (2021)                "

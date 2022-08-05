@@ -1098,17 +1098,17 @@ C              LARGE INTGRL    2    1    1  (IBSFLAG = 1)
 C              LARGE    2    1    1 (IBSFLAG = 1)
 C              LARGE EXPLICIT    2    1    1 (IBSFLAG = 1)
 
-C              LARGE MOLFBAS H.bas (IBSFLAG = 2)
+C              LARGE MOLFBAS H.bas  (IBSFLAG = 2)
 C              LARGE BASIS basisset (IBSFLAG = 3)
 C              LARGE GEOM alpha beta N 2 1 1 (IBSFLAG = 4)
-C              LARGE EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4)
-c               (alias for LARGE GEOM)
+C              LARGE EVENTEMP alpha beta N 2 1 1 (IBSFLAG = 4) (alias for LARGE GEOM)
 C              LARGE WELLTEMP alpha beta gamma delta N 2 1 1 (IBSFLAG = 4)
 C              LARGE FAMILY    N    2    1    1 (IBSFLAG = 4)
 C              LARGE DUALFAMILY    N    2    1    1 (IBSFLAG = 4)
 
 C              LARGE POINTCHARGE (IBSFLAG = 1)
 C              LARGE NOBASIS     (IBSFLAG = 1) (alias for LARGE POINTCHARGE)
+C              LARGE    0        (IBSFLAG = 1) (a third way to specify a point charge)
 C
                CALL RDLINE(LUINFO)
                READ (MLINE(NMLINE),'(A5,1X,A14)',IOSTAT=IOS) 
@@ -1139,6 +1139,7 @@ C
                   IBSFLAG = 1
                   IQM(I,1) = 0
                   IZATOM(I) = 0
+                  GNUEXP(I) = QEXP ! point nucleus unless finite nucleus was specified by user
                ELSE IF ( BSKEYWORD(1:6) .EQ. 'INTGRL' ) THEN
                   IBSFLAG = 1
                   READ (MLINE(NMLINE)(13:),*,IOSTAT=IOS)
@@ -1218,8 +1219,10 @@ C
                   READ (MLINE(NMLINE)(18:),*,ERR=9000)
      &                   NFILES,(BSFIL(K),K=1,NFILES)
                   IF ( NFILES .EQ. 0 ) THEN
-                     WRITE(*,*) 
-     &                 'PLEASE SPECIFY THE NUMBER OF BASIS SET FILES'
+                     WRITE(LUPRI,'(/A,I0,A)')
+     &                 'PLEASE SPECIFY THE NUMBER OF BASIS SET FILES'//
+     &                 ' in .mol line ',NMLINE,':'
+                     WRITE(LUPRI,*) MLINE(NMLINE)
                      GOTO 9000
                   END IF
 C
@@ -1233,6 +1236,10 @@ C                 Assume it is 'LARGE   2    1....'
                     WRITE(LUPRI,*) MLINE(NMLINE)
                     CALL QUIT('Error in basis set reading')
                   ENDIF
+                  IF (IQM(I,1) .EQ. 0) THEN ! point charge
+                     IZATOM(I) = 0
+                     GNUEXP(I) = QEXP ! point nucleus unless finite nucleus was specified by user
+                  END IF
                END IF
 
 C
@@ -2035,8 +2042,7 @@ C*****************************************************************************
 C
         CHARGE(NUCIND) = Q
         IZATOM(NUCIND) = NQ
-C       ... if point charge this is reset outside to -1234567890
-C           to tell this is a point charge /hjaaj Nov 2003
+C       ... if point charge IZATOM(NUCIND) is reset outside to 0
         GNUEXP(NUCIND) = GEXP
   100 CONTINUE   !  DO 100 N = 1,NONTVC
       RETURN
@@ -6108,8 +6114,9 @@ C
          NONT(ITYP) = 1
          CHNON(ITYP) = CHARGE(I)
  600  CONTINUE
-C     define atom number in IZATOM /hjaaj Mar 2004
-C     TODO : define multiple basis sets and point charges
+C     Define atom number in IZATOM /hjaaj Mar 2004
+C     Point charges are later reset to IZATOM(I) = 0
+C     TODO : define multiple basis sets
       DO I = 1, NUCIND
          IZATOM(I) = NINT(CHARGE(I))
       END DO
