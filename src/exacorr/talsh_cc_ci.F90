@@ -51,27 +51,45 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_comm_tens_t)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
     type(talsh_comm_tens_t)       :: bvec_tensor1, bvec_tensor2, bvec_tensor3
     complex(kind=8)               :: eom_qr, eom_lr
+    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:)
+    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:)
+    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
+    integer                       :: N_prop, i, j
+
     
     omega1=(0.0,0.0)
     omega2=(0.0,0.0)
     omega3=(0.0,0.0)
 
 
+    N_prop = 3
+    allocate(Tprop_tensors(N_prop))
+    allocate(Tprop_bar_tensors(N_prop))
+    allocate(Interm_t_tensors(N_prop))
+
     call print_date('Enter CC-CI response')
-    
-    call form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,&
+
+    do  i=1, N_prop
+        call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
                                   int_t, l1_tensor, l2_tensor)
+    end do
+
     call print_date('Constructed intermediates needed in CC-CI response')
 
+    do i=1, N_prop
+        call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
+    end do
+    call print_date('Sloved CC-CI right response equation property')
 
-    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop1, omega1, tprop_tensor1)
-    call print_date('Sloved CC-CI right response equation for component1 of property')
+    ! call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
+    ! call print_date('Sloved CC-CI right response equation for component2 of property')
 
-    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop2, omega2, tprop_tensor2)
-    call print_date('Sloved CC-CI right response equation for component2 of property')
-
-    call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
-    call print_date('Sloved CC-CI right response equation for component3 of property')
+    ! call solve_eom_lr_right(exa_input, interm_t, int_t, interm_t_prop3, omega3, tprop_tensor3)
+    ! call print_date('Sloved CC-CI right response equation for component3 of property')
+    ! allocate(Tprop_tensors(3))
+    ! Tprop_tensors(1)=tprop_tensor1
+    ! Tprop_tensors(2)=tprop_tensor2
+    ! Tprop_tensors(3)=tprop_tensor3
 
 
     ! call print_date('Solved All CC-CI response right equations')
@@ -82,32 +100,41 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         !             tprop_tensor1, tprop_tensor2, & 
         !             l1_tensor,l2_tensor,eom_lr)
 
-        call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop1, interm_t_prop1, & 
-                    tprop_tensor1, tprop_tensor1, & 
+        do i=1, N_prop
+            do j=1, N_prop
+                call get_eom_lr(exa_input,interm_t, int_t, Interm_t_tensors(i), Interm_t_tensors(j), & 
+                Tprop_tensors(i), Tprop_tensors(j), & 
                     l1_tensor,l2_tensor,eom_lr)
+            end do
+        end do
 
-        call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop2, interm_t_prop2, & 
-                    tprop_tensor2, tprop_tensor2, & 
-                    l1_tensor,l2_tensor,eom_lr)
+        ! call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop1, interm_t_prop1, & 
+        !             tprop_tensor1, tprop_tensor1, & 
+        !             l1_tensor,l2_tensor,eom_lr)
 
-        call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop3, interm_t_prop3, & 
-                    tprop_tensor3, tprop_tensor3, & 
-                    l1_tensor,l2_tensor,eom_lr)
+        ! call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop2, interm_t_prop2, & 
+        !             tprop_tensor2, tprop_tensor2, & 
+        !             l1_tensor,l2_tensor,eom_lr)
 
-    else 
-        call print_date('Do quadratic response')
-        call get_left_bvec(exa_input,interm_t,interm_t_prop1,l1_tensor,l2_tensor,tprop_tensor1,bvec_tensor1)
-        call get_left_bvec(exa_input,interm_t,interm_t_prop2,l1_tensor,l2_tensor,tprop_tensor2,bvec_tensor2)
-        call get_left_bvec(exa_input,interm_t,interm_t_prop3,l1_tensor,l2_tensor,tprop_tensor3,bvec_tensor3)
+        ! call get_eom_lr(exa_input,interm_t, int_t, interm_t_prop3, interm_t_prop3, & 
+        !             tprop_tensor3, tprop_tensor3, & 
+        !             l1_tensor,l2_tensor,eom_lr)
 
-        call solve_eom_lr_left(interm_t, int_t, interm_t_prop1, omega1, bvec_tensor1, tprop_bar_tensor1)
-        call solve_eom_lr_left(interm_t, int_t, interm_t_prop2, omega2, bvec_tensor2, tprop_bar_tensor2)
-        call solve_eom_lr_left(interm_t, int_t, interm_t_prop3, omega3, bvec_tensor3, tprop_bar_tensor3)                          
+
+    ! else 
+    !     call print_date('Do quadratic response')
+    !     call get_left_bvec(exa_input,interm_t,interm_t_prop1,l1_tensor,l2_tensor,tprop_tensor1,bvec_tensor1)
+    !     call get_left_bvec(exa_input,interm_t,interm_t_prop2,l1_tensor,l2_tensor,tprop_tensor2,bvec_tensor2)
+    !     call get_left_bvec(exa_input,interm_t,interm_t_prop3,l1_tensor,l2_tensor,tprop_tensor3,bvec_tensor3)
+
+    !     call solve_eom_lr_left(interm_t, int_t, interm_t_prop1, omega1, bvec_tensor1, tprop_bar_tensor1)
+    !     call solve_eom_lr_left(interm_t, int_t, interm_t_prop2, omega2, bvec_tensor2, tprop_bar_tensor2)
+    !     call solve_eom_lr_left(interm_t, int_t, interm_t_prop3, omega3, bvec_tensor3, tprop_bar_tensor3)                          
     
-        call get_eom_qr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
-                    tprop_tensor1, tprop_tensor2, tprop_tensor3,& 
-                    tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3,&
-                    l1_tensor,l2_tensor,eom_qr)
+    !     call get_eom_qr(exa_input,interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3,& 
+    !                 tprop_tensor1, tprop_tensor2, tprop_tensor3,& 
+    !                 tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3,&
+    !                 l1_tensor,l2_tensor,eom_qr)
     end if
 
     call print_date('Leave CC-CI response')    
@@ -118,7 +145,7 @@ end subroutine talsh_CC_CI_driver
 !------------------------------------------------------------------------------------------------------------------
 
 
-subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, interm_t_prop2, interm_t_prop3, &
+subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_prop1, &
                                    int_t, l1_tensor, l2_tensor)
             use intermediates_eom_rsp
             use intermediates_eom_ccsd
@@ -126,7 +153,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
 
                 type(exacc_input), intent(in) :: exa_input
                 type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-                type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2, interm_t_prop3  
+                integer, intent(in)                   :: i_prop 
+                type(talsh_rsp_interm_tens_t) :: interm_t_prop1
                 type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
                 type(talsh_tens_t), intent(inout)           :: l2_tensor
                 type(talsh_tens_t), intent(inout)           :: l1_tensor
@@ -134,13 +162,13 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvvo_dims, oovv_dims
                 integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
 
-                type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1, orb_int_tensor2, orb_int_tensor3 
+                type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1
                 type(talsh_tens_t)                  :: LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo
                 integer                   :: nmo1          ! the length of the mo basis
                 ! integer,allocatable       :: mo1_list(:)   ! and their indices
                 integer                   :: nmo2          ! the length of the mo basis
                 ! integer                   :: mo2_list(:)   ! and their indices
-                integer                   :: i_prop 
+                
         
                 
                 oovv_dims(1:2) = exa_input%nocc
@@ -172,12 +200,12 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
                 ! call print_date("get eta_oovv?")
 
                 ! get property integral in MO basis
-                i_prop=1
+                ! i_prop=1
                 call get_prop_integral(exa_input,orb_int_tensor1,i_prop)
-                i_prop=2
-                call get_prop_integral(exa_input,orb_int_tensor2,i_prop)
-                i_prop=3
-                call get_prop_integral(exa_input,orb_int_tensor3,i_prop)
+                ! i_prop=2
+                ! call get_prop_integral(exa_input,orb_int_tensor2,i_prop)
+                ! i_prop=3
+                ! call get_prop_integral(exa_input,orb_int_tensor3,i_prop)
                 print *, "nocc:", exa_input%nocc
                 print *, "nvir:", exa_input%nvir
                 print *, "mo_occ:", exa_input%mo_occ
@@ -194,68 +222,68 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, interm_t_prop1, in
 
                 call get_epsilon_prop_vo(interm_t_prop1%epsilon_prop_vo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
-                call get_epsilon_prop_vo(interm_t_prop2%epsilon_prop_vo,orb_int_tensor2,&
-                                        interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
-                call get_epsilon_prop_vo(interm_t_prop3%epsilon_prop_vo,orb_int_tensor3,&
-                                        interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
+                ! call get_epsilon_prop_vo(interm_t_prop2%epsilon_prop_vo,orb_int_tensor2,&
+                !                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
+                ! call get_epsilon_prop_vo(interm_t_prop3%epsilon_prop_vo,orb_int_tensor3,&
+                !                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
                 
                 ! call print_date("get epsilon_prop_vo ?")
 
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
-                call get_epsilon_prop_vvoo(interm_t_prop2%epsilon_prop_vvoo,orb_int_tensor2,&
-                                        interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
-                call get_epsilon_prop_vvoo(interm_t_prop3%epsilon_prop_vvoo,orb_int_tensor3,&
-                                        interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
+                ! call get_epsilon_prop_vvoo(interm_t_prop2%epsilon_prop_vvoo,orb_int_tensor2,&
+                !                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
+                ! call get_epsilon_prop_vvoo(interm_t_prop3%epsilon_prop_vvoo,orb_int_tensor3,&
+                !                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
 
                 ! call print_date("get epsilon_prop_vvoo ?")
 
                 ! get O_prop
                 call get_O_vo(interm_t_prop1%O_vo,orb_int_tensor1,vo_dims)
-                call get_O_vo(interm_t_prop2%O_vo,orb_int_tensor2,vo_dims)
-                call get_O_vo(interm_t_prop3%O_vo,orb_int_tensor3,vo_dims)
+                ! call get_O_vo(interm_t_prop2%O_vo,orb_int_tensor2,vo_dims)
+                ! call get_O_vo(interm_t_prop3%O_vo,orb_int_tensor3,vo_dims)
 
                 ! call print_date("get O_vo?")
 
                 ! get eta_prop
                 call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&
                                     interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
-                call get_eta_prop_ov(interm_t_prop2%eta_prop_ov,orb_int_tensor2,l1_tensor,l2_tensor,&
-                                    interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
-                call get_eta_prop_ov(interm_t_prop3%eta_prop_ov,orb_int_tensor3,l1_tensor,l2_tensor,&
-                                    interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                ! call get_eta_prop_ov(interm_t_prop2%eta_prop_ov,orb_int_tensor2,l1_tensor,l2_tensor,&
+                !                     interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                ! call get_eta_prop_ov(interm_t_prop3%eta_prop_ov,orb_int_tensor3,l1_tensor,l2_tensor,&
+                !                     interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
                                 
                 call get_eta_prop_oovv(interm_t_prop1%eta_prop_oovv,orb_int_tensor1,l1_tensor,l2_tensor,&
                                     interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
-                call get_eta_prop_oovv(interm_t_prop2%eta_prop_oovv,orb_int_tensor2,l1_tensor,l2_tensor,&
-                                    interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
-                call get_eta_prop_oovv(interm_t_prop3%eta_prop_oovv,orb_int_tensor3,l1_tensor,l2_tensor,&
-                                    interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
+                ! call get_eta_prop_oovv(interm_t_prop2%eta_prop_oovv,orb_int_tensor2,l1_tensor,l2_tensor,&
+                !                     interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
+                ! call get_eta_prop_oovv(interm_t_prop3%eta_prop_oovv,orb_int_tensor3,l1_tensor,l2_tensor,&
+                !                     interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
 
 
                 ! get prop_bar
                 call get_prop_bar_oo(interm_t_prop1%prop_bar_oo,orb_int_tensor1,interm_t%t1,oo_dims)
-                call get_prop_bar_oo(interm_t_prop2%prop_bar_oo,orb_int_tensor2,interm_t%t1,oo_dims)
-                call get_prop_bar_oo(interm_t_prop3%prop_bar_oo,orb_int_tensor3,interm_t%t1,oo_dims)
+                ! call get_prop_bar_oo(interm_t_prop2%prop_bar_oo,orb_int_tensor2,interm_t%t1,oo_dims)
+                ! call get_prop_bar_oo(interm_t_prop3%prop_bar_oo,orb_int_tensor3,interm_t%t1,oo_dims)
                                 
                 call get_prop_bar_vv(interm_t_prop1%prop_bar_vv,orb_int_tensor1,interm_t%t1,vv_dims)
-                call get_prop_bar_vv(interm_t_prop2%prop_bar_vv,orb_int_tensor2,interm_t%t1,vv_dims)
-                call get_prop_bar_vv(interm_t_prop3%prop_bar_vv,orb_int_tensor3,interm_t%t1,vv_dims)
+                ! call get_prop_bar_vv(interm_t_prop2%prop_bar_vv,orb_int_tensor2,interm_t%t1,vv_dims)
+                ! call get_prop_bar_vv(interm_t_prop3%prop_bar_vv,orb_int_tensor3,interm_t%t1,vv_dims)
                                 
                 call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1,ov_dims)
-                call get_prop_bar_ov(interm_t_prop2%prop_bar_ov,orb_int_tensor2,ov_dims)
-                call get_prop_bar_ov(interm_t_prop3%prop_bar_ov,orb_int_tensor3,ov_dims)
+                ! call get_prop_bar_ov(interm_t_prop2%prop_bar_ov,orb_int_tensor2,ov_dims)
+                ! call get_prop_bar_ov(interm_t_prop3%prop_bar_ov,orb_int_tensor3,ov_dims)
 
 
                 ! get Q
                 call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%t2,ovoo_dims)
-                call get_Q_ovoo(interm_t_prop2%Q_ovoo,interm_t_prop2%prop_bar_ov,interm_t%t2,ovoo_dims)
-                call get_Q_ovoo(interm_t_prop3%Q_ovoo,interm_t_prop3%prop_bar_ov,interm_t%t2,ovoo_dims)
+                ! call get_Q_ovoo(interm_t_prop2%Q_ovoo,interm_t_prop2%prop_bar_ov,interm_t%t2,ovoo_dims)
+                ! call get_Q_ovoo(interm_t_prop3%Q_ovoo,interm_t_prop3%prop_bar_ov,interm_t%t2,ovoo_dims)
                                 
                 call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%t2,vvvo_dims)
-                call get_Q_vvvo(interm_t_prop2%Q_vvvo,interm_t_prop2%prop_bar_ov,interm_t%t2,vvvo_dims)
-                call get_Q_vvvo(interm_t_prop3%Q_vvvo,interm_t_prop3%prop_bar_ov,interm_t%t2,vvvo_dims)
+                ! call get_Q_vvvo(interm_t_prop2%Q_vvvo,interm_t_prop2%prop_bar_ov,interm_t%t2,vvvo_dims)
+                ! call get_Q_vvvo(interm_t_prop3%Q_vvvo,interm_t_prop3%prop_bar_ov,interm_t%t2,vvvo_dims)
 
                 call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
 

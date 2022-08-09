@@ -43,7 +43,7 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
 
 
-            type(talsh_comm_tens_t)            :: B1, B2
+            type(talsh_comm_tens_t)            :: B1, B2   !Ft^x
             integer            :: nocc, nvir
             integer(INTD), dimension(4)   :: vvoo_dims
             integer(INTD), dimension(2)   :: vo_dims
@@ -76,9 +76,9 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
 
 
-            ! Obtain eta_(nu)^(XY)(wY)
-            call sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)     ! talsh_sigma_eomccsd.F90
-            call sigma_eomccsd_prop(interm_t_prop2, tprop_tensor1, sigma_prop_tensor21)
+
+            ! call sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)     ! talsh_sigma_eomccsd.F90
+            ! call sigma_eomccsd_prop(interm_t_prop2, tprop_tensor1, sigma_prop_tensor21)
 
         !     call print_tensor(sigma_prop_tensor21%t1, 1.0d-10, "sigma_prop_tensor21%t1")
         !     call print_tensor(sigma_prop_tensor21%t2, 1.0d-10, "sigma_prop_tensor21%t2")
@@ -109,7 +109,7 @@ end subroutine get_eom_lr
 subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
                 tprop_tensor1, tprop_tensor2, &
                 sigma_prop_tensor12, sigma_prop_tensor21, &
-                l1_tensor, l2_tensor, quarsp, B1,B2,CC_CC)
+                l1_tensor, l2_tensor, linrsp, B1,B2,CC_CC)
 
         type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
         type(talsh_tens_t), intent(inout)           :: l2_tensor
@@ -117,27 +117,27 @@ subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
         type(talsh_rsp_interm_tens_t) :: interm_t_prop1, interm_t_prop2
         type(talsh_comm_tens_t)            :: tprop_tensor1, tprop_tensor2
         type(talsh_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor21
-        complex(kind=8)               :: quarsp
+        complex(kind=8)               :: linrsp
         type(talsh_comm_tens_t),optional   :: B1, B2
         logical :: CC_CC
-        complex(kind=8)               :: tem_quarsp_iter
+        complex(kind=8)               :: linrsp_iter
 
 !--------------------------------------------------------------------------------------
-!       << X;Y >>ωY = P(X,Y) [term1 * term2 + term3 + term4]                          |
+!       << X;Y >>ωY = P(X,Y) [term1 * term2 + etaX*TY]                          |
 !--------------------------------------------------------------------------------------
-            call get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
+            call get_linrsp_driver(linrsp,tprop_tensor1, tprop_tensor2, &
                     sigma_prop_tensor12,l1_tensor,l2_tensor, &
                     interm_t,interm_t_prop1,B1,CC_CC)
-            quarsp=quarsp+tem_quarsp_iter
+            ! quarsp=quarsp+tem_quarsp_iter
 
         !    print *, "tem_quarsp_iter:  ", tem_quarsp_iter
-           tem_quarsp_iter=complex(0.0,0.0)
+        !    tem_quarsp_iter=complex(0.0,0.0)
 
-            call get_linrsp_driver(tem_quarsp_iter,tprop_tensor2, tprop_tensor1, &
+            call get_linrsp_driver(linrsp_iter,tprop_tensor2, tprop_tensor1, &
                     sigma_prop_tensor21,l1_tensor,l2_tensor, &
                     interm_t,interm_t_prop2,B2,CC_CC)
 
-            quarsp=quarsp+tem_quarsp_iter
+            linrsp=linrsp+linrsp_iter
 
 
 end subroutine get_linrspf
@@ -223,7 +223,7 @@ else
 end if
 
 
-if (CC_CC) then
+! if (CC_CC) then
     ierr=talsh_tensor_init(result_tensor)
     ierr=talsh_tensor_contract("E()+=nX(i,a)*Ty(a,i)",result_tensor,interm_t_prop1%eta_prop_ov,tprop_tensor2%t1)
     ierr=talsh_tensor_contract("E()+=nX(i,j,a,b)*Ty(a,b,i,j)",result_tensor,interm_t_prop1%eta_prop_oovv,tprop_tensor2%t2)
@@ -231,28 +231,28 @@ if (CC_CC) then
     print *, "term3:  ", term3
 
 
-else
-!--------------------------------------------------------------------------------------
-!       Term3 += tbar0(nu)*SigmaXY(nu)                                                |
-!--------------------------------------------------------------------------------------
-    ierr=talsh_tensor_init(result_tensor)
-    ierr=talsh_tensor_contract("E()+=Tl0(i,a)*Sigxy(a,i)",result_tensor,l1_tensor,sigma_prop_tensor12%t1)
-    ierr=talsh_tensor_contract("E()+=Tl0(i,j,a,b)*Sigxy(a,b,i,j)",result_tensor,l2_tensor,sigma_prop_tensor12%t2)
-    term3=result_tens(1)
-    print *, "term3:  ", term3
+! else
+! !--------------------------------------------------------------------------------------
+! !       Term3 += tbar0(nu)*SigmaXY(nu)                                                |
+! !--------------------------------------------------------------------------------------
+!     ierr=talsh_tensor_init(result_tensor)
+!     ierr=talsh_tensor_contract("E()+=Tl0(i,a)*Sigxy(a,i)",result_tensor,l1_tensor,sigma_prop_tensor12%t1)
+!     ierr=talsh_tensor_contract("E()+=Tl0(i,j,a,b)*Sigxy(a,b,i,j)",result_tensor,l2_tensor,sigma_prop_tensor12%t2)
+!     term3=result_tens(1)
+!     print *, "term3:  ", term3
 
 
-!--------------------------------------------------------------------------------------
-!       Term4 += tY(mu)*OX(mu)                                                       |
-!--------------------------------------------------------------------------------------
-    ierr=talsh_tensor_init(result_tensor)
-    ierr=talsh_tensor_contract("E()+=Ty(a,i)*O(a,i)",result_tensor,tprop_tensor2%t1,interm_t_prop1%O_vo)
-    term4=result_tens(1)
-    print *, "term4:  ", term4
-    ! call print_tensor(tprop_tensor2%t1, 1.0d-10, "tprop_tensor2%t1")
-    ! call print_tensor(interm_t_prop1%O_vo, 1.0d-10, "interm_t_prop1%O_vo")
+! !--------------------------------------------------------------------------------------
+! !       Term4 += tY(mu)*OX(mu)                                                       |
+! !--------------------------------------------------------------------------------------
+!     ierr=talsh_tensor_init(result_tensor)
+!     ierr=talsh_tensor_contract("E()+=Ty(a,i)*O(a,i)",result_tensor,tprop_tensor2%t1,interm_t_prop1%O_vo)
+!     term4=result_tens(1)
+!     print *, "term4:  ", term4
+!     ! call print_tensor(tprop_tensor2%t1, 1.0d-10, "tprop_tensor2%t1")
+!     ! call print_tensor(interm_t_prop1%O_vo, 1.0d-10, "interm_t_prop1%O_vo")
 
-end if
+! end if
 
     if (CC_CC) then
         tem_quarsp_iter=term1+term2+term3+term4
