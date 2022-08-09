@@ -75,8 +75,6 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             ierr=talsh_tensor_construct(sigma_prop_tensor21%t2,C8,vvoo_dims,init_val=ZERO)
 
 
-
-
             ! call sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)     ! talsh_sigma_eomccsd.F90
             ! call sigma_eomccsd_prop(interm_t_prop2, tprop_tensor1, sigma_prop_tensor21)
 
@@ -159,8 +157,6 @@ subroutine get_linrsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
     type(talsh_comm_tens_t)       :: sigma_prop_tensor12
     type(talsh_comm_tens_t),optional   :: B
     logical :: CC_CC
-
-
 
 
     !  Point connected with tensors 
@@ -543,8 +539,6 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 ! !********************BLUE******************************************************************************
 
 
-
-
     
 ! l=-1; t=1 -> h=-2 
     ! l3  = + \lambdas kc (\tYd || \Pmm cd \Pmm kl)  cdkl  \tXs ai  \W lida (oovv)
@@ -694,12 +688,6 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
     ierr=talsh_Tensor_contract("B(k,l,c,d)+=A(b,c)*W(k,l,b,d)",B2,Aux_vv,int_t%oovv,scale=MINUS_ONE_HALF)
     ierr=talsh_Tensor_contract("B(k,l,c,d)+=A(b,d)*W(k,l,b,c)",B2,Aux_vv,int_t%oovv,scale=ONE_HALF)
     if (debug_local) print*, "ierr l31", ierr
-
-
-
-
-    ! ierr=talsh_tensor_destruct(B1)
-    ! ierr=talsh_tensor_destruct(B2)
 
     ierr=talsh_tensor_destruct(Aux_oo)
     ierr=talsh_tensor_destruct(Aux_vv)
