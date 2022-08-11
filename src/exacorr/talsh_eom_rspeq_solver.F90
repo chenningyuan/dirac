@@ -54,11 +54,13 @@ module talsh_eom_rspeq_solver
 !     error code
             integer :: ierr
             character(len=2) :: flavor = "EE"
-            integer :: nroot =  65                                ! initialize the number of trail vectors
+            integer :: nroot                           ! initialize the number of trail vectors
 
             integer(INTD), dimension(2) :: vo_dims
             integer(INTD), dimension(4) :: vvoo_dims
 
+            nroot = exa_input%N_eom_trail
+            
             call talsh_davidson_setup(unit_output=6, &
                         solve_right=.true.,&
                         solve_left=.false.,&

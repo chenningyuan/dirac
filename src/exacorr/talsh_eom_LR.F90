@@ -54,6 +54,7 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
 
             complex(kind=8)               :: eom_lr
             logical :: CC_CC = .true.
+            type(talsh_tens_t)    :: total_t_t1, total_t_t2
 
 
             call print_date('Evaluate CC-CI LR')
@@ -68,11 +69,11 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             nvir = exa_input%nvir
 
 
-            ierr=talsh_tensor_construct(sigma_prop_tensor12%t1,C8,vo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(sigma_prop_tensor12%t2,C8,vvoo_dims,init_val=ZERO)
+            ! ierr=talsh_tensor_construct(sigma_prop_tensor12%t1,C8,vo_dims,init_val=ZERO)
+            ! ierr=talsh_tensor_construct(sigma_prop_tensor12%t2,C8,vvoo_dims,init_val=ZERO)
 
-            ierr=talsh_tensor_construct(sigma_prop_tensor21%t1,C8,vo_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(sigma_prop_tensor21%t2,C8,vvoo_dims,init_val=ZERO)
+            ! ierr=talsh_tensor_construct(sigma_prop_tensor21%t1,C8,vo_dims,init_val=ZERO)
+            ! ierr=talsh_tensor_construct(sigma_prop_tensor21%t2,C8,vvoo_dims,init_val=ZERO)
 
 
             ! call sigma_eomccsd_prop(interm_t_prop1, tprop_tensor2, sigma_prop_tensor12)     ! talsh_sigma_eomccsd.F90
@@ -99,6 +100,20 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             eom_lr=(quarsp+quarsp_con)*0.5
             call print_date("Finish CC-CI Linear Response Calculations")
             print *, "CC-CI(EOM-CC) linear response:", eom_lr
+
+
+!*********************           Test perturbated T tensors         *********************************
+            ! ierr=talsh_tensor_construct(total_t_t1,C8,vo_dims,init_val=ZERO)
+            ! ierr=talsh_tensor_construct(total_t_t2,C8,vvoo_dims,init_val=ZERO)
+            ! ierr=talsh_tensor_add("T(a,i)+=R(a,i)",total_t_t1,interm_t%t1,scale=ONE)
+            ! ierr=talsh_tensor_add("T(a,i)+=R(a,i)",total_t_t1,tprop_tensor1%t1,scale=ONE)
+            ! ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",total_t_t2,interm_t%t2,scale=ONE)
+            ! ierr=talsh_tensor_add("T(a,b,i,j)+=R(a,b,i,j)",total_t_t2,tprop_tensor1%t2,scale=ONE)
+            ! call print_tensor(total_t_t1, 0.0d-18, "total_t1")
+            ! call print_tensor(total_t_t2, 0.0d-18, "total_t2")
+            ! ierr=talsh_tensor_destruct(total_t_t1)
+            ! ierr=talsh_tensor_destruct(total_t_t2)
+!****************************************************************************************************
 
 end subroutine get_eom_lr
 
@@ -134,7 +149,7 @@ subroutine get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
             call get_linrsp_driver(linrsp_iter,tprop_tensor2, tprop_tensor1, &
                     sigma_prop_tensor21,l1_tensor,l2_tensor, &
                     interm_t,interm_t_prop2,B2,CC_CC)
-
+            
             linrsp=linrsp+linrsp_iter
 
 

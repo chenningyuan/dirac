@@ -85,6 +85,7 @@
             real(REALD)             :: level_shift = 0.D0       ! level shift
             real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
             real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
+            real(REALD)             :: N_eom_trail
 
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: eom = .false.
