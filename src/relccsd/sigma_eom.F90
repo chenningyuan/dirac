@@ -774,8 +774,8 @@ integer :: ierr
 !S_ai = S_ai +  F^a_e*R^e_i   
 !---------------------------
    
-    ! call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep, &
-    !    irrep_left=1,irrep_right=state_sym)
+    call contraction_222 ((/"p1","p2"/),(/"p2","o1"/),(/"p1","o1"/),B%Fbar_ae,r1,sigma1,1.0d0,1.0d0,nrep, &
+       irrep_left=1,irrep_right=state_sym)
 
     if (iprnt.ge.2) &
     write(iw,*)'diagram 1 ', dot_product(sigma1,sigma1)
@@ -795,8 +795,8 @@ integer :: ierr
  !!    call contraction_422 ((/"o2","p1","p2","o1"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
  !!                       irrep_left=1,irrep_right=state_sym)
 
-      !  call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb, &
-      !             irrep_left=1,irrep_right=state_sym)   !Used
+       call contraction_422 ((/"p1","o2","o1","p2"/),(/"p2","o2"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_ejmb, &
+                  irrep_left=1,irrep_right=state_sym)   !Used
 
 !   call contraction_242 ((/"p2","o2"/),(/"o2","p1","p2","o1"/),(/"p1","o1"/),r1,sigma1,1.0d0,1.0d0,nrep,B%W_mbej, &
 !                      irrep_left=state_sym,irrep_right=1)
@@ -930,8 +930,8 @@ integer :: ierr
  ! & (/"p1","p2","o1","o2"/),sigma2,1.0d0,1.0d0,nrep,RightTensor=B%Fbar_ae,LeftTensor=r2,irrep_left=state_sym,irrep_right=1)
 
 
-  !   call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
-  !  & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)  !Used
+    call contraction_244 ((/"p2","p3"/),(/"p1","p3","o1","o2"/), &
+   & (/"p2","p1","o1","o2"/),sigma2,1.0d0,-1.0d0,nrep,LeftTensor=B%Fbar_ae,RightTensor=r2,irrep_right=state_sym,irrep_left=1)  !Used
 
 
        if (iprnt.ge.2) &
@@ -958,8 +958,8 @@ integer :: ierr
 ! S(ab,ij) = S(ab,ij) + P(ab)P(ij) w_mbej(mb,ej)*r2(ae,im)
 !----------------------------------------------------------
 
-    !   call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
-    !  &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)  !Used
+      call contraction_444((/"p1","p3","o1","o3"/),(/"o3","p2","p3","o2"/), &
+     &    (/"p1","p2","o1","o2"/),sigma2,1.0d0,0.0d0,nrep,LeftTensor=r2,RightTensor=B%W_mbej,irrep_left=state_sym,irrep_right=1)  !Used
 
        if (iprnt.ge.2) &
     write(iw,*)'diagram 15 ',dot_product(sigma2,sigma2)

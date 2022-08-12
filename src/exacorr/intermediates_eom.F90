@@ -7,7 +7,7 @@ module intermediates_eom_ccsd
 
      complex(8), parameter :: ZERO=(0.D0,0.D0), MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0), &
                               ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                              MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0)
+                              MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0)
     real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_tau
@@ -410,7 +410,7 @@ module intermediates_eom_ccsd
           call get_tau(tau_tensor,t2_tensor)
         end if
 
-        ierr=talsh_tensor_contract("F(e,a)+=V(m,n,a,f)*T(f,e,m,n)",fbar_vv,int_t%oovv,tau_tensor,ONE_HALF)
+        ierr=talsh_tensor_contract("F(e,a)+=V(m,n,a,f)*T(f,e,m,n)",fbar_vv,int_t%oovv,tau_tensor,scale=ONE_HALF)
 
         ierr=talsh_tensor_destruct(tau_tensor)
 
@@ -635,9 +635,11 @@ module intermediates_eom_ccsd
         ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,t2_tensor)
         print*, "debug: t1 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t1_tensor)
         print*, "debug: t2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t2_tensor)
-        if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+        ! if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+        if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor)   !XY
         print*, "debug: tau2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(tau2_tensor)
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
+
 
         ierr=talsh_tensor_destruct(tau2_tensor)
         print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh_scratch)", tensor_norm2(w_vovo)
