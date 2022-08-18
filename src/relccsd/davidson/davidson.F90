@@ -853,13 +853,13 @@ contains
             if (abs(vr).lt.print_values_threshold) vr = 0.0d0
 
             if (vi .lt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e18.10,a,1e18.10,a)')  &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e20.12,a,1e20.12,a)')  &
                       "Eigenvalue ",i," : ", vr," -",abs(vi)," i"
             else if (vi .gt. 0.0d0) then
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e18.10,a,1e18.10,a)')  &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e20.12,a,1e20.12,a)')  &
                       "Eigenvalue ",i," : ", vr," +",abs(vi)," i"
             else
-                write (davidson_output_file_unit,'(4x,a,i6,a,1e18.10)')  &
+                write (davidson_output_file_unit,'(4x,a,i6,a,1e20.12)')  &
                       "Eigenvalue ",i," : ", vr
             end if
         end do
