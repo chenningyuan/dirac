@@ -162,7 +162,6 @@ endif()
 
 # add intermodule dependencies
 add_dependencies(gp interface_mpi)
-add_dependencies(gp xcint)
 add_dependencies(gp pdpack)
 
 # generates git information

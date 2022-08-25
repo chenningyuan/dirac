@@ -40,3 +40,5 @@ target_include_directories(xcint
   PRIVATE
     ${PROJECT_SOURCE_DIR}/src/include
   )
+
+add_dependencies(xcint gp)
