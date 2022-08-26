@@ -80,6 +80,7 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     
     do i=1, N_prop
         call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors(i), omega1, Tprop_tensors(i))
+        print *, "Norm^2 of t_prop_tensor",  tensor_norm2(Tprop_tensors(i)%t1) + tensor_norm2(Tprop_tensors(i)%t2)
     end do
     call print_date('Solved All CC-CI response right equations')
 
@@ -189,6 +190,12 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
+
+                call print_tensor(interm_t_prop1%epsilon_prop_vo, 1.0d-10, "Xi1")
+                call print_tensor(interm_t_prop1%epsilon_prop_vvoo, 1.0d-10, "Xi2")
+                
+                print *, "NORM^2 of episilonX",  tensor_norm2(interm_t_prop1%epsilon_prop_vo) + &
+                                                tensor_norm2(interm_t_prop1%epsilon_prop_vvoo)
 
 
                 ! get O_prop

@@ -177,6 +177,7 @@ module intermediates_eom_rsp
                                     epsilon_prop_vvoo_tensor,LR_Aux_vv,t2_tensor,scale=MINUS_ONE)
            ierr=talsh_tensor_contract('C(a,b,i,j)+=A(b,f)*T(f,a,i,j)', &
                                     epsilon_prop_vvoo_tensor,LR_Aux_vv,t2_tensor,scale=ONE)
+
          !   if(print_level.ge.2) print *,'LH_talsh epsilon_prop_vvoo_tensor ierr ', ierr
 
          !   if(print_level.ge.2) print *,"tensor_norm2(epsilon_prop_vvoo_tensor)",tensor_norm2(epsilon_prop_vvoo_tensor)
