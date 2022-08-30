@@ -286,7 +286,7 @@ contains
         if (present(max_subspace_size)) then
             davidson_max_subspace_size = max_subspace_size  
         else
-            davidson_max_subspace_size = 1024
+            davidson_max_subspace_size = 2048
         end if
 
         if (present(max_iterations)) then
@@ -1949,7 +1949,7 @@ contains
          end if
 
          if (debug_subspace_matrix) write (6,*) 'i, c_i:', i, ci_result_tens(1)
-         workspace_t%C(i) = ci_result_tens(1)
+         workspace_t%C(i) = ci_result_tens(1)*(-1)
          ci_result_tens(1) = ZERO
       end do
       C_small = workspace_t%C(1:workspace_t%L)

@@ -236,23 +236,23 @@ module intermediates_eom_rsp
          ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
 
 ! !******************************RED********************************************************************************************** 
-! !LH     \Eta_1 = + \ts fm \lambdad imae \Ys ef 
-!          ierr=talsh_tensor_init(LR_Aux_vo)
-!          ierr=talsh_tensor_contract('H(e,m)+=T(f,m)*Y(e,f)',LR_Aux_vo,t1_tensor,orb_int_tensor%prop_vv)
-!          ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)
-!          ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
+!LH     \Eta_1 = + \ts fm \lambdad imae \Ys ef 
+         ! ierr=talsh_tensor_init(LR_Aux_vo)
+         ! ierr=talsh_tensor_contract('H(e,m)+=T(f,m)*Y(e,f)',LR_Aux_vo,t1_tensor,orb_int_tensor%prop_vv)
+         ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)
+         ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
 
-! !LH      \Eta_1 = - \ts en \lambdad imae \Ys nm 
-!          ierr=talsh_tensor_init(LR_Aux_vo)
-!          ierr=talsh_tensor_contract('H(e,m)+=T(e,n)*Y(n,m)',LR_Aux_vo,t1_tensor,orb_int_tensor%prop_oo)
-!          ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=MINUS_ONE)
-!          ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
+!LH      \Eta_1 = - \ts en \lambdad imae \Ys nm 
+         ! ierr=talsh_tensor_init(LR_Aux_vo)
+         ! ierr=talsh_tensor_contract('H(e,m)+=T(e,n)*Y(n,m)',LR_Aux_vo,t1_tensor,orb_int_tensor%prop_oo)
+         ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=MINUS_ONE)
+         ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
 
          
-! !LH     \Eta_1 =+\lambdad imae \Ys em 
-!          ierr=talsh_tensor_contract('E(i,a)+=L(i,m,a,e)*A(e,m)',eta_prop_ov_tensor,l2_tensor,Transpose_vo,scale=ONE)
-!          ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
-! !******************************RED********************************************************************************************** 
+!LH     \Eta_1 =+\lambdad imae \Ys em 
+         ! ierr=talsh_tensor_contract('E(i,a)+=L(i,m,a,e)*A(e,m)',eta_prop_ov_tensor,l2_tensor,Transpose_vo,scale=ONE)
+         ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
+! !******************************************************************************************************************************* 
 
 !LH     \Eta_1= -one_half \td femn \lambdad mife \Ys na 
          ierr=talsh_tensor_init(LR_Aux_oo)
@@ -270,21 +270,21 @@ module intermediates_eom_rsp
 
 
 ! !******************************RED**********************************************************************************************                                 
-! !LH     \Eta_1=\td efmn \lambdad imae \Ys nf
-!          ierr=talsh_tensor_init(LR_Aux_vo)
-!          ierr=talsh_tensor_contract('H(e,m)+=T(e,f,m,n)*Y(n,f)',LR_Aux_vo,t2_tensor,orb_int_tensor%prop_ov)
-!          ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)    
-!          ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
+!LH     \Eta_1=\td efmn \lambdad imae \Ys nf
+         ! ierr=talsh_tensor_init(LR_Aux_vo)
+         ! ierr=talsh_tensor_contract('H(e,m)+=T(e,f,m,n)*Y(n,f)',LR_Aux_vo,t2_tensor,orb_int_tensor%prop_ov)
+         ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)    
+         ! if(print_level.ge.2) print *,'LH_talsh eta_prop_ov_tensor ierr ', ierr
 
-! !LH     \Eta_1=-\ts en \ts fm \lambdad imae \Ys nf 
+!LH     \Eta_1=-\ts en \ts fm \lambdad imae \Ys nf 
 
-!          ierr=talsh_tensor_init(LR_Aux_oo)
-!          ierr=talsh_tensor_contract('H(n,m)+=T(f,m)*Y(n,f)',LR_Aux_oo,t1_tensor,orb_int_tensor%prop_ov)
-!          ierr=talsh_tensor_init(LR_Aux_vo)
-!          ierr=talsh_tensor_contract('H(e,m)+=T(e,n)*Y(n,m)',LR_Aux_vo,t1_tensor,LR_Aux_oo)
-!          ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)
-!          ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=MINUS_ONE) !XY
-! !******************************RED**********************************************************************************************  
+         ! ierr=talsh_tensor_init(LR_Aux_oo)
+         ! ierr=talsh_tensor_contract('H(n,m)+=T(f,m)*Y(n,f)',LR_Aux_oo,t1_tensor,orb_int_tensor%prop_ov)
+         ! ierr=talsh_tensor_init(LR_Aux_vo)
+         ! ierr=talsh_tensor_contract('H(e,m)+=T(e,n)*Y(n,m)',LR_Aux_vo,t1_tensor,LR_Aux_oo)
+         ! ! ! ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=ONE)
+         ! ierr=talsh_tensor_contract('E(i,a)+=H(e,m)*L(i,m,a,e)',eta_prop_ov_tensor,LR_Aux_vo,l2_tensor,scale=MINUS_ONE) !XY
+! !*******************************************************************************************************************************  
 
 
          ! ierr=talsh_tensor_init(LR_Aux_vvoo)
