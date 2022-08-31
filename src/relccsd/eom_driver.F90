@@ -448,7 +448,7 @@
 
               do iroot = 1, nroot
                   k = minloc(diag_H)
-                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
+                  if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1)
                   i = k(1)
                   jroot = i
                   if (rcw.eq.2) jroot = 2*i - 1
@@ -686,7 +686,7 @@
 
               do iroot = 1, nroot
                   k = minloc(diag_H) 
-                  if (iprnt.ge.1) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
+                  if (iprnt.ge.3) write(iw,*)'roots',iroot,diag_H(k(1)),k(1) 
                   i = k(1)
                   diag_H(i) = huge(diag_H)
                   jroot = i
