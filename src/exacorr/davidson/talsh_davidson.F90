@@ -2675,7 +2675,8 @@ contains
         end if
 
         do i = 1, vectors_L
-            e_small(i) = cmplx(e_small_real(1,i), e_small_real(2,i))
+            ! e_small(i) = cmplx(e_small_real(1,i), e_small_real(2,i))
+            e_small(i) = complex(e_small_real(1,i), e_small_real(2,i))
         end do
 
         allocate(temp_vector(vectors_L,vectors_L))

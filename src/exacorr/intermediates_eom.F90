@@ -2,6 +2,9 @@ module intermediates_eom_ccsd
 
 !Module to make intermediates needed in CC and Lambda equations
 
+     use exacorr_utils, only: get_free_fileunit
+     use talsh_common_routines
+
      implicit none
      private
 
@@ -307,6 +310,16 @@ module intermediates_eom_ccsd
 !       error code
         integer :: ierr
 
+        integer                :: f_oo_rel
+        real(8),allocatable,dimension(:) :: Fbar_mi
+        complex(8), pointer    ::fbaroo_tens(:,:), fbaroo_tens1(:,:)
+        integer(INTD),dimension(2)   :: oo_dims
+        integer :: i,j,n,m
+        type(C_PTR) :: body_p
+        complex(8) :: q
+
+        
+
         if (.not.present(t1_tensor)) CCD = .true.
 
         ierr=talsh_tensor_init(fbar_oo)
@@ -327,6 +340,43 @@ module intermediates_eom_ccsd
         ierr=talsh_tensor_contract("F(i,m)+=V(i,n,e,f)*T(e,f,m,n)",fbar_oo,int_t%oovv,tau_tensor,ONE_HALF)
 
         ierr=talsh_tensor_destruct(tau_tensor)
+
+
+
+
+        ! oo_dims(1:2)=vvoo_dims(3:4)
+        ! m=oo_dims(1)
+        ! ! print *, "oo_dims:", oo_dims
+
+        ! ierr=talsh_tensor_get_body_access(fbar_oo,body_p,C8,int(0,C_INT),DEV_HOST)
+        ! ! print *, "ierr_get:", ierr
+        ! call c_f_pointer(body_p,fbaroo_tens,oo_dims)
+
+        ! allocate(Fbar_mi(2*m*m))
+        ! call get_free_fileunit(f_oo_rel)
+        ! open(f_oo_rel,file='Fbar_mi',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+        ! read(f_oo_rel) Fbar_mi
+        ! close(f_oo_rel)
+
+
+        ! print *, "Rel_Fbar_mi:", Fbar_mi
+        ! allocate(fbaroo_tens1(oo_dims(1),oo_dims(2)))
+        ! do i = 1, m
+        !    do j = 1, m
+        !         n = (m*(i-1)+j-1)*2+1
+        !         q = complex(Fbar_mi(n),Fbar_mi(n+1))
+        !         fbaroo_tens1(i,j) = q 
+        !    end do 
+        ! end do
+        ! ! print *, "fbaroo_tens1:", fbaroo_tens1
+        ! ! print *, "before fbaroo_tens:", fbaroo_tens
+
+        ! do i = 1, m
+        !    do j = 1, m
+        !         fbaroo_tens(i,j) = fbaroo_tens1(i,j)
+        !    end do 
+        ! end do
+        
 
        end subroutine get_fbar_oo_talsh_no_dt
 
@@ -393,6 +443,16 @@ module intermediates_eom_ccsd
 !       error code
         integer :: ierr
 
+
+        integer                :: f_vv_rel
+        real(8),allocatable,dimension(:) :: Fbar_ae
+        complex(8), pointer    ::fbarvv_tens(:,:), fbarvv_tens1(:,:)
+        integer(INTD),dimension(2)   :: vv_dims
+        integer :: i,j,n,m
+        integer :: i_remain, j_remain, i_quotient, j_quotient, i_pri, j_pri
+        type(C_PTR) :: body_p
+        complex(8) :: q
+
         if (.not.present(t1_tensor)) CCD = .true.
 
         ierr=talsh_tensor_init(fbar_vv)
@@ -413,6 +473,57 @@ module intermediates_eom_ccsd
         ierr=talsh_tensor_contract("F(e,a)+=V(m,n,a,f)*T(f,e,m,n)",fbar_vv,int_t%oovv,tau_tensor,scale=ONE_HALF)
 
         ierr=talsh_tensor_destruct(tau_tensor)
+
+
+        
+        ! vv_dims(1:2)=vvoo_dims(1:2)
+        ! m=vv_dims(1)
+
+        ! ierr=talsh_tensor_get_body_access(fbar_vv,body_p,C8,int(0,C_INT),DEV_HOST)
+        ! print *, "ierr_get:", ierr
+        ! call c_f_pointer(body_p,fbarvv_tens,vv_dims)
+
+        ! allocate(Fbar_ae(2*m*m))
+        ! print *, "vv_dims:", vv_dims
+        ! call get_free_fileunit(f_vv_rel)
+        ! open(f_vv_rel,file='Fbar_ae',status='OLD',FORM='UNFORMATTED',access='SEQUENTIAL')
+        ! read(f_vv_rel) Fbar_ae
+        ! close(f_vv_rel)
+
+        ! allocate(fbarvv_tens1(vv_dims(1),vv_dims(2)))
+        ! ! print *, "size of Fbar_ae: ", size(Fbar_ae,1)
+        ! do i = 1, m
+        !    do j = 1, m
+        !         n = (m*(i-1)+j-1)*2+1
+        !         q = complex(Fbar_ae(n),Fbar_ae(n+1))
+        !         fbarvv_tens1(i,j) = q 
+        !    end do 
+        ! end do
+
+        ! do i = 1, m
+        !    i_quotient = i/2
+        !    i_remain = mod(i,2)
+        !    if (i_remain == 0) then 
+        !         i_pri = i_quotient + m/2 
+        !    else 
+        !         i_pri = (i + 1)/2 
+        !    end if
+
+        !    do j = 1, m
+        !         j_quotient = j/2
+        !         j_remain = mod(j,2)
+        !         if (j_remain == 0) then 
+        !                 j_pri = j_quotient + m/2 
+        !         else 
+        !                 j_pri = (j + 1)/2 
+        !         end if
+
+        !         fbarvv_tens(i,j) = fbarvv_tens1(j_pri,i_pri)
+        !    end do 
+        ! end do
+
+        ! call print_tensor(fbar_vv, 0.0d-18, "fbar_vv")
+
 
        end subroutine get_fbar_vv_talsh_scratch
 
