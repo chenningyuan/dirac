@@ -377,11 +377,11 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
     if (debug_local) print*, "ierr U1", ierr
 
 ! !********************BLUE******************************************************************************
-!     ! c5 = - (\ts ck) \ts ai \lambdas kc \F ia
-    ! ierr=talsh_tensor_init(Aux_one)
-    ! ierr=talsh_tensor_contract("A()+=F(i,a)*T(a,i)",Aux_one,interm_t%Fbar_ov,tX1)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,c)*A()",B1,l1_tensor,Aux_one,scale=ONE)        
-!     if (debug_local) print*, "ierr c5", ierr
+    ! c5 = - (\ts ck) \ts ai \lambdas kc \F ia
+    ierr=talsh_tensor_init(Aux_one)
+    ierr=talsh_tensor_contract("A()+=F(i,a)*T(a,i)",Aux_one,interm_t%Fbar_ov,tX1)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,c)*A()",B1,l1_tensor,Aux_one,scale=ONE)        
+    if (debug_local) print*, "ierr c5", ierr
 ! !******************************************************************************************************
 
 
@@ -425,11 +425,11 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
 
 ! !********************BLUE******************************************************************************
-!      ! l1 =  one_quater (\ts ck) \td abij \lambdas kc \W ijab (oovv) -> V oovv
-    ! ierr=talsh_tensor_init(Aux_one)
-    ! ierr=talsh_tensor_contract("A()+=W(i,j,a,b)*T(a,b,i,j)",Aux_one,int_t%oovv,tX2)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,c)*A()",B1,l1_tensor,Aux_one,scale=ONE_QUARTER_C)  
-!     if (debug_local) print*, "ierr l1", ierr
+     ! l1 =  one_quater (\ts ck) \td abij \lambdas kc \W ijab (oovv) -> V oovv
+    ierr=talsh_tensor_init(Aux_one)
+    ierr=talsh_tensor_contract("A()+=W(i,j,a,b)*T(a,b,i,j)",Aux_one,int_t%oovv,tX2)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,c)*A()",B1,l1_tensor,Aux_one,scale=ONE_QUARTER_C)  
+    if (debug_local) print*, "ierr l1", ierr
 ! !******************************************************************************************************
 
 
@@ -457,30 +457,30 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
 
 ! !********************RED******************************************************************************
-!      ! a5 =  - \lambdad kmca \ts ai \Fim
-    ! ierr=talsh_tensor_init(Aux_vo)
-    ! ierr=talsh_tensor_contract("A(a,m)+=T(a,i)*F(i,m)",Aux_vo,tX1,interm_t%fbar_oo)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,m,c,a)*A(a,m)",B1,l2_tensor,Aux_vo,scale=MINUS_ONE)  
-!     if (debug_local) print*, "ierr l1", ierr
+     ! a5 =  - \lambdad kmca \ts ai \Fim
+    ierr=talsh_tensor_init(Aux_vo)
+    ierr=talsh_tensor_contract("A(a,m)+=T(a,i)*F(i,m)",Aux_vo,tX1,interm_t%fbar_oo)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,m,c,a)*A(a,m)",B1,l2_tensor,Aux_vo,scale=MINUS_ONE)  
+    if (debug_local) print*, "ierr a5", ierr
 ! !*****************************************************************************************************
 
 
 ! !********************RED******************************************************************************
-!     b5 =   \lambdad kice \ts ai \Fea
-    ! ierr=talsh_tensor_init(Aux_vo)
-    ! ierr=talsh_tensor_contract("A(e,i)+=T(a,i)*F(e,a)",Aux_vo,tX1,interm_t%fbar_vv)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,i,c,e)*A(e,i)",B1,l2_tensor,Aux_vo,scale=ONE)  
-!     if (debug_local) print*, "ierr l1", ierr
+    ! b5 =   \lambdad kice \ts ai \Fea
+    ierr=talsh_tensor_init(Aux_vo)
+    ierr=talsh_tensor_contract("A(e,i)+=T(a,i)*F(e,a)",Aux_vo,tX1,interm_t%fbar_vv)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,i,c,e)*A(e,i)",B1,l2_tensor,Aux_vo,scale=ONE)  
+    if (debug_local) print*, "ierr b5", ierr
 ! !*****************************************************************************************************
 
 
 
 ! !********************RED******************************************************************************
-!     f5bis =   \lambdad mkec \ts ai \Weiam
-    ! ierr=talsh_tensor_init(Aux_vo)
-    ! ierr=talsh_tensor_contract("A(e,m)+=T(a,i)*W(e,i,a,m)",Aux_vo,tX1,interm_t%w_vovo)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(m,k,e,c)*A(e,m)",B1,l2_tensor,Aux_vo,scale=ONE)  
-!     if (debug_local) print*, "ierr l1", ierr
+    ! f5bis =   \lambdad mkec \ts ai \Weiam
+    ierr=talsh_tensor_init(Aux_vo)
+    ierr=talsh_tensor_contract("A(e,m)+=T(a,i)*W(e,i,a,m)",Aux_vo,tX1,interm_t%w_vovo)
+    ierr=talsh_tensor_contract("B(k,c)+=L(m,k,e,c)*A(e,m)",B1,l2_tensor,Aux_vo,scale=ONE)  
+    if (debug_local) print*, "ierr fbis", ierr
 ! !*****************************************************************************************************
 
 
@@ -565,31 +565,31 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
 
 ! !********************BLUE******************************************************************************
-!      ! c14 =  one_quater (\ts ck) \td abij \lambdas kica \F jb (oovv) 
-    ! ierr=talsh_tensor_init(Aux_vo)
-    ! ierr=talsh_tensor_contract("A(a,i)+=T(a,b,i,j)*F(j,b)",Aux_vo,tX2,interm_t%Fbar_ov)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,i,c,a)*A(a,i)",B1,l2_tensor,Aux_vo,scale=ONE)  
-!     if (debug_local) print*, "ierr c14", ierr
+     ! c14 =  one_quater (\ts ck) \td abij \lambdas kica \F jb (oovv) 
+    ierr=talsh_tensor_init(Aux_vo)
+    ierr=talsh_tensor_contract("A(a,i)+=T(a,b,i,j)*F(j,b)",Aux_vo,tX2,interm_t%Fbar_ov)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,i,c,a)*A(a,i)",B1,l2_tensor,Aux_vo,scale=ONE)  
+    if (debug_local) print*, "ierr c14", ierr
 ! !******************************************************************************************************
 
 
 
 ! !********************BLUE******************************************************************************
-!     g13 =  \td abij  \lambdad kice \W ejab (vovv)
-    ! ierr=talsh_tensor_init(Aux_vo)
-    ! ierr=talsh_tensor_contract("A(e,i)+=T(a,b,i,j)*W(e,j,a,b)",Aux_vo,tX2,interm_t%w_vovv)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,i,c,e)*A(e,i)",B1,l2_tensor,Aux_vo,scale=ONE)
-!     if (debug_local) print*, "ierr g13", ierr
+    ! g13 =  \td abij  \lambdad kice \W ejab (vovv)
+    ierr=talsh_tensor_init(Aux_vo)
+    ierr=talsh_tensor_contract("A(e,i)+=T(a,b,i,j)*W(e,j,a,b)",Aux_vo,tX2,interm_t%w_vovv)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,i,c,e)*A(e,i)",B1,l2_tensor,Aux_vo,scale=ONE)
+    if (debug_local) print*, "ierr g13", ierr
 ! !*****************************************************************************************************
 
 
 
 ! !********************BLUE******************************************************************************
-!     k13 = -  \td abij  \lambdad kmca \W ijmb (ooov)
-    ! ierr=talsh_tensor_init(Aux_vo)
-    ! ierr=talsh_tensor_contract("A(a,m)+=T(a,b,i,j)*W(i,j,m,b)",Aux_vo,tX2,interm_t%w_ooov)
-    ! ierr=talsh_tensor_contract("B(k,c)+=L(k,m,c,a)*A(a,m)",B1,l2_tensor,Aux_vo,scale=MINUS_ONE)
-!     if (debug_local) print*, "ierr k13", ierr
+    ! k13 = -  \td abij  \lambdad kmca \W ijmb (ooov)
+    ierr=talsh_tensor_init(Aux_vo)
+    ierr=talsh_tensor_contract("A(a,m)+=T(a,b,i,j)*W(i,j,m,b)",Aux_vo,tX2,interm_t%w_ooov)
+    ierr=talsh_tensor_contract("B(k,c)+=L(k,m,c,a)*A(a,m)",B1,l2_tensor,Aux_vo,scale=MINUS_ONE)
+    if (debug_local) print*, "ierr k13", ierr
 ! !******************************************************************************************************
 
 
@@ -628,11 +628,11 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
 
 
 !********************RED******************************************************************************
-!     cX =   \lambdad klcd \ts ai \Fia
-    ! ierr=talsh_tensor_init(Aux_one)
-    ! ierr=talsh_tensor_contract("A()+=T(a,i)*F(i,a)",Aux_one,tX1,interm_t%fbar_ov)
-    ! ierr=talsh_tensor_contract("B(k,l,c,d)+=L(k,l,c,d)*A()",B2,l2_tensor,Aux_one,scale=ONE)  
-!     if (debug_local) print*, "ierr cX", ierr
+    ! cX =   \lambdad klcd \ts ai \Fia
+    ierr=talsh_tensor_init(Aux_one)
+    ierr=talsh_tensor_contract("A()+=T(a,i)*F(i,a)",Aux_one,tX1,interm_t%fbar_ov)
+    ierr=talsh_tensor_contract("B(k,l,c,d)+=L(k,l,c,d)*A()",B2,l2_tensor,Aux_one,scale=ONE)  
+    if (debug_local) print*, "ierr cX", ierr
 !*****************************************************************************************************
 
 
@@ -699,11 +699,11 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
     if (debug_local) print*, "ierr g5", ierr
     
 !********************RED******************************************************************************
-!     lX =   one_quater \lambdad klcd \td abij \Vijab
-    ! ierr=talsh_tensor_init(Aux_one)
-    ! ierr=talsh_tensor_contract("A()+=T(a,b,i,j)*V(i,j,a,b)",Aux_one,tX2,int_t%oovv)
-    ! ierr=talsh_tensor_contract("B(k,l,c,d)+=L(k,l,c,d)*A()",B2,l2_tensor,Aux_one,scale=ONE_QUARTER_C)  
-!     if (debug_local) print*, "ierr cX", ierr
+    ! lX =   one_quater \lambdad klcd \td abij \Vijab
+    ierr=talsh_tensor_init(Aux_one)
+    ierr=talsh_tensor_contract("A()+=T(a,b,i,j)*V(i,j,a,b)",Aux_one,tX2,int_t%oovv)
+    ierr=talsh_tensor_contract("B(k,l,c,d)+=L(k,l,c,d)*A()",B2,l2_tensor,Aux_one,scale=ONE_QUARTER_C)  
+    if (debug_local) print*, "ierr lX", ierr
 !******************************************************************************************************
 
 ! l=-2; t=2 -> h=-2

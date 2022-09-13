@@ -57,6 +57,12 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors(:)
     integer                       :: N_prop, i, j
 
+
+    integer            :: vvoo_dims(4)
+    type(C_PTR) :: body_p
+    complex(8), pointer    ::prop_tens(:,:,:,:)
+    integer            :: tens_rank
+    integer :: ierr
     
     omega1=(0.0,0.0)
     omega2=(0.0,0.0)
@@ -75,7 +81,34 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         call form_eomccsd_qr_intermediates(exa_input, interm_t, i, Interm_t_tensors(i),&
                                   int_t, l1_tensor, l2_tensor)
     end do
+
+    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_before")
+    ! call print_tensor(Interm_t_tensors(3)%epsilon_prop_vvoo,1.0d-10,"T2 part of epison_prop3_before")
+
+
+    ! ierr=talsh_tensor_dimensions(Interm_t_tensors(3)%epsilon_prop_vvoo,tens_rank,vvoo_dims)
+    ! ierr=talsh_tensor_get_body_access(Interm_t_tensors(3)%epsilon_prop_vvoo,body_p,C8,int(0,C_INT),DEV_HOST)
+    ! call c_f_pointer(body_p,prop_tens,vvoo_dims)
+
+    ! prop_tens(11,26,1,2) = complex(0.03765773,0.0) 
+    ! prop_tens(11,26,2,1) = complex(-0.03765773,0.0) 
+    ! prop_tens(12,25,1,2) = complex(-0.03765773,0.0) 
+    ! prop_tens(12,25,2,1) = complex(0.03765773,0.0) 
+    ! prop_tens(25,12,1,2) = complex(0.03765773,0.0) 
+    ! prop_tens(25,12,2,1) = complex(-0.03765773,0.0) 
+    ! prop_tens(26,11,1,2) = complex(-0.03765773,0.0) 
+    ! prop_tens(26,11,2,1) = complex(0.03765773,0.0) 
+
+
+    call print_tensor(Interm_t_tensors(3)%epsilon_prop_vo,1.0d-10,"vo part of epison_prop3_after")
+    call print_tensor(Interm_t_tensors(3)%epsilon_prop_vvoo,1.0d-10,"T2 part of epison_prop3_after")
+
+
+    ! call print_tensor(Interm_t_tensors(3)%eta_prop_ov,1.0d-10,"vo part of eta_prop3_after")
+    ! call print_tensor(Interm_t_tensors(3)%eta_prop_oovv,1.0d-10,"T2 part of eta_prop3_after")
+
     call print_date('Constructed intermediates needed in CC-CI response')
+
 
     
     do i=1, N_prop
@@ -83,6 +116,16 @@ subroutine talsh_CC_CI_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
         print *, "Norm^2 of t_prop_tensor",  tensor_norm2(Tprop_tensors(i)%t1) + tensor_norm2(Tprop_tensors(i)%t2)
     end do
     call print_date('Solved All CC-CI response right equations')
+
+
+
+    ! call print_tensor(Tprop_tensors(1)%t1,1.0d-10,"T1 part of T_prop1")
+    ! call print_tensor(Tprop_tensors(1)%t2,1.0d-10,"T2 part of T_prop1")
+
+
+    call print_tensor(Tprop_tensors(3)%t1,1.0d-10,"T1 part of T_prop3")
+    call print_tensor(Tprop_tensors(3)%t2,1.0d-10,"T2 part of T_prop3")
+
 
     if (rr==1) then 
         call print_date('Do linear response')
@@ -173,11 +216,6 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
 
                 ! get property integral in MO basis
                 call get_prop_integral(exa_input,orb_int_tensor1,i_prop)
-                print *, "nocc:", exa_input%nocc
-                print *, "nvir:", exa_input%nvir
-                print *, "mo_occ:", exa_input%mo_occ
-                print *, "mo_vir:", exa_input%mo_vir
-
 
                 ! call form_eom_qr_prop_inter(interm_t%t1, interm_t%t2, interm_t_prop1, interm_t_prop2, interm_t_prop3, &
                 !                 l1_tensor, l2_tensor)
@@ -191,8 +229,8 @@ subroutine form_eomccsd_qr_intermediates(exa_input, interm_t, i_prop, interm_t_p
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
-                call print_tensor(interm_t_prop1%epsilon_prop_vo, 1.0d-10, "Xi1")
-                call print_tensor(interm_t_prop1%epsilon_prop_vvoo, 1.0d-10, "Xi2")
+                ! call print_tensor(interm_t_prop1%epsilon_prop_vo, 1.0d-10, "Xi1")
+                ! call print_tensor(interm_t_prop1%epsilon_prop_vvoo, 1.0d-10, "Xi2")
                 
                 print *, "NORM^2 of episilonX",  tensor_norm2(interm_t_prop1%epsilon_prop_vo) + &
                                                 tensor_norm2(interm_t_prop1%epsilon_prop_vvoo)

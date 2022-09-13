@@ -368,8 +368,8 @@ module intermediates_eom_ccsd
         !         fbaroo_tens1(i,j) = q 
         !    end do 
         ! end do
-        ! ! print *, "fbaroo_tens1:", fbaroo_tens1
-        ! ! print *, "before fbaroo_tens:", fbaroo_tens
+        ! print *, "fbaroo_tens1:", fbaroo_tens1
+        ! print *, "before fbaroo_tens:", fbaroo_tens
 
         ! do i = 1, m
         !    do j = 1, m

@@ -225,7 +225,7 @@ module talsh_cc
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
-         call print_tensor(comm_t%t2, 1.0d-18, "t2 mp2")
+         ! call print_tensor(comm_t%t2, 1.0d-18, "t2 mp2")
 !=====================
 !        Calculate the pair correlation energy for each pair of occupied spin-orbits
          call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
@@ -628,7 +628,7 @@ module talsh_cc
           else
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
           end if
-          call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs before diis")
+         !  call print_tensor(comm_t%t2, 1.0d-18, "t2 in solve_t_eqs before diis")
 
           if (.not.CCD) then
             call diis (comm_t%t2,comm_t%t1,t_convergence=t_convergence)
@@ -2476,7 +2476,7 @@ module talsh_cc
             ierr=talsh_tensor_contract("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
             b_diis(itens,i) = scalar_tens(1)
             b_diis(i,itens) = dconjg(scalar_tens(1))
-            print *,'b_diis(',i,',',itens,'):',b_diis(i,itens)
+            ! print *,'b_diis(',i,',',itens,'):',b_diis(i,itens)
          end do
 
          if (present(t_convergence)) then

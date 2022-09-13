@@ -1501,71 +1501,77 @@ contains
         complex(kind=8), intent(inout), pointer :: B_input(:)
         complex(kind=8), intent(inout), pointer :: Solution(:,:)
 
-        character ::    FACT
-        character ::    TRANS
+        ! character ::    FACT
+        ! character ::    TRANS
         integer   ::    N
         integer   ::    NRHS
         integer   ::    LDA
-        complex(kind=8),allocatable ::  AF(:,:)
-        integer   ::    LDAF
+        ! complex(kind=8),allocatable ::  AF(:,:)
+        ! integer   ::    LDAF
         integer, allocatable   ::       IPIV(:)
-        character ::    EQUED
-        real(kind=8), allocatable ::    R(:)
-        real(kind=8), allocatable ::    C(:)
+        ! character ::    EQUED
+        ! real(kind=8), allocatable ::    R(:)
+        ! real(kind=8), allocatable ::    C(:)
         complex(kind=8),allocatable  :: B(:,:)
         integer ::      LDB
-        complex(kind=8),allocatable ::  X(:,:)
-        integer ::      LDX
+        ! complex(kind=8),allocatable ::  X(:,:)
+        ! integer ::      LDX
         real(kind=8) :: RCOND
-        real(kind=8), allocatable ::    FERR(:)
-        real(kind=8), allocatable :: BERR(:)
-        complex(kind=8), allocatable :: WORK(:)
-        real(kind=8), allocatable ::    RWORK(:)
+        ! real(kind=8), allocatable ::    FERR(:)
+        ! real(kind=8), allocatable :: BERR(:)
+        ! complex(kind=8), allocatable :: WORK(:)
+        ! real(kind=8), allocatable ::    RWORK(:)
         integer ::      INFO
         integer :: dimen_x
 
-        FACT = 'N'
-        TRANS = 'N'
+        ! FACT = 'N'
+        ! TRANS = 'N'
         N = size(A,1)
         NRHS = 1
         LDA = N
-        LDAF = N
-        LDX = N
+        ! LDAF = N
+        ! LDX = N
         LDB = N
-        EQUED = 'N'
-        allocate(AF(LDAF,N))
+        ! EQUED = 'N'
+        ! allocate(AF(LDAF,N))
         allocate(IPIV(N))
 
-        allocate(R(N))
-        allocate(C(N))
+        ! allocate(R(N))
+        ! allocate(C(N))
 
         allocate(B(LDB,NRHS))
-        allocate(X(LDX,NRHS))
-        allocate(FERR(NRHS))
-        allocate(BERR(NRHS))
-        allocate(WORK(2*N))
-        allocate(RWORK(2*N))
+        ! allocate(X(LDX,NRHS))
+        ! allocate(FERR(NRHS))
+        ! allocate(BERR(NRHS))
+        ! allocate(WORK(2*N))
+        ! allocate(RWORK(2*N))
 
         B(:,NRHS) = B_input(:)
-        call zgesvx (FACT, TRANS, N, NRHS, A, LDA, AF, &
-                    LDAF, IPIV, EQUED, R, C, B, LDB, &
-                    X, LDX, RCOND, FERR, BERR,&
-                    WORK, RWORK, INFO)
+        ! call zgesvx (FACT, TRANS, N, NRHS, A, LDA, AF, &
+        !             LDAF, IPIV, EQUED, R, C, B, LDB, &
+        !             X, LDX, RCOND, FERR, BERR,&
+        !             WORK, RWORK, INFO)
 
-        dimen_x = size(X,1)
+        call zgesv (N, NRHS, A, LDA, IPIV, B, LDB, INFO)
+
+        ! dimen_x = size(X,1)
+        ! allocate(Solution(dimen_x,NRHS))
+        ! Solution(:,NRHS) = X(:,NRHS)
+
+        dimen_x = size(B,1)
         allocate(Solution(dimen_x,NRHS))
-        Solution(:,NRHS) = X(:,NRHS)
+        Solution(:,NRHS) = B(:,NRHS)
 
-        deallocate(AF)
+        ! deallocate(AF)
         deallocate(IPIV)
-        deallocate(R)
-        deallocate(C)
+        ! deallocate(R)
+        ! deallocate(C)
         deallocate(B)
-        deallocate(X)
-        deallocate(FERR)
-        deallocate(BERR)
-        deallocate(rwork)
-        deallocate(work)
+        ! deallocate(X)
+        ! deallocate(FERR)
+        ! deallocate(BERR)
+        ! deallocate(rwork)
+        ! deallocate(work)
 
     end subroutine talsh_solve_Linear_systems
 ! aspg, added from (q)rsp
@@ -1592,7 +1598,7 @@ contains
 
         print *, "dim1", size(root_vect,1)
         print *, "dim2", size(root_vect,2)
-        print *, "roor_vect", root_vect(:,1)
+        ! print *, "roor_vect", root_vect(:,1)
          do iroot=1, N
             factor = root_vect(iroot,1)
             ierr=talsh_tensor_contract("t(a,i)+=B1(a,i)*X()",t_tensor%t1,workspace_t%trial1(iroot),one_tensor,scale=factor)
@@ -1896,7 +1902,7 @@ contains
       complex(kind=8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .true.
+      logical :: debug_subspace_matrix = .false.
 
       if (associated(C_small)) deallocate(C_small)
       allocate(C_small(workspace_t%L))
@@ -1949,7 +1955,8 @@ contains
          end if
 
          if (debug_subspace_matrix) write (6,*) 'i, c_i:', i, ci_result_tens(1)
-         workspace_t%C(i) = ci_result_tens(1)*(-1)
+        !  workspace_t%C(i) = ci_result_tens(1)*(-1)
+         workspace_t%C(i) = ci_result_tens(1)
          ci_result_tens(1) = ZERO
       end do
       C_small = workspace_t%C(1:workspace_t%L)
