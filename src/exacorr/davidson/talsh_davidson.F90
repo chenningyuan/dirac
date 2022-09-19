@@ -1955,8 +1955,8 @@ contains
          end if
 
          if (debug_subspace_matrix) write (6,*) 'i, c_i:', i, ci_result_tens(1)
-        !  workspace_t%C(i) = ci_result_tens(1)*(-1)
-         workspace_t%C(i) = ci_result_tens(1)
+         workspace_t%C(i) = ci_result_tens(1)*(-1)
+        !  workspace_t%C(i) = ci_result_tens(1)
          ci_result_tens(1) = ZERO
       end do
       C_small = workspace_t%C(1:workspace_t%L)
