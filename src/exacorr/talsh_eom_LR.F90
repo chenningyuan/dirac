@@ -89,13 +89,14 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
                 call get_tF(B2%t1,B2%t2,tprop_tensor2%t1,tprop_tensor2%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
                 call print_date("Finish CC-CC tF terms")
+
+                call print_tensor(B1%t1,1.0d-10,"T1 part of tF")
+                call print_tensor(B1%t2,1.0d-10,"T2 part of tF")
+                print *, "Norm^2 of tF%t1",  tensor_norm2(B1%t1)
+                print *, "Norm^2 of tF%t2",  tensor_norm2(B1%t2)
+
             end if 
 
-
-            call print_tensor(B1%t1,1.0d-10,"T1 part of tF")
-            call print_tensor(B1%t2,1.0d-10,"T2 part of tF")
-            print *, "Norm^2 of tF%t1",  tensor_norm2(B1%t1)
-            print *, "Norm^2 of tF%t2",  tensor_norm2(B1%t2)
 
             call get_linrspf(interm_t, interm_t_prop1, interm_t_prop2, &
                     tprop_tensor1, tprop_tensor2, &
@@ -207,6 +208,8 @@ if (CC_CC) then
 !--------------------------------------------------------------------------------------
     ierr=talsh_tensor_contract("E()+=B(i,a)*Ty(a,i)",& 
             result_tensor,B%t1,tprop_tensor2%t1,scale=ONE_HALF)
+    term1=result_tens(1)
+    print *, "single contribution of term1:  ", term1
     ierr=talsh_tensor_contract("E()+=B(i,j,a,b)*Ty(a,b,i,j)", &
             result_tensor,B%t2,tprop_tensor2%t2,scale=ONE_EIGHTH_C)
     term1=result_tens(1)
@@ -219,10 +222,13 @@ else
 !--------------------------------------------------------------------------------------
 !       Term1 -= t_bar0(nu)*tX(nu)   XY: do we need to transpose Tlx(i,a)?            |
 !--------------------------------------------------------------------------------------
-    ierr=talsh_tensor_contract("E()+=Tl0(i,a)*Tx(a,i)",& 
+    ierr=talsh_tensor_contract("E()+=Tl(i,a)*Tx(a,i)",& 
             result_tensor,l1_tensor,tprop_tensor1%t1,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("E()+=Tl0(i,j,a,b)*Tx(a,b,i,j)", &
+    ! print*, "ierr t_bar0(nu)*tX(nu) single", ierr
+    ierr=talsh_tensor_contract("E()+=Tl(i,j,a,b)*Tx(a,b,i,j)", &
             result_tensor,l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
+    ! print*, "ierr t_bar0(nu)*tX(nu) double", ierr
+
     term1=result_tens(1)
 !     call print_tensor(l1_tensor, 1.0d-10, "l1_tensor")
     print *, "term1:  ", term1
@@ -233,7 +239,10 @@ else
 !--------------------------------------------------------------------------------------
     ierr=talsh_tensor_init(result_tensor)
     ierr=talsh_tensor_contract("E()+=Ty(a,i)*n(i,a)",result_tensor,tprop_tensor2%t1,interm_t%eta_ov)
-    ierr=talsh_tensor_contract("E()+=Ty(a,b,i,j)*n(i,j,a,b)",result_tensor,tprop_tensor2%t2,interm_t%eta_oovv)
+    ! print*, "ierr tY(mu)*eta(mu)  single", ierr
+    ierr=talsh_tensor_contract("E()+=Ty(a,b,i,j)*n(i,j,a,b)", &
+                result_tensor,tprop_tensor2%t2,interm_t%eta_oovv,scale=ONE_QUARTER_C)
+    ! print*, "ierr tY(mu)*eta(mu)  double", ierr
     term2=result_tens(1)
     print *, "term2:  ", term2
 
