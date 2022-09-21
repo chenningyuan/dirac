@@ -115,6 +115,10 @@ module talsh_eom
 !
 ! and within each use the different variants : EOM-IP/EE/EA/../-CC* where CC* refers to {P-,}EOM-{CC{SD,SDT},MBPT2}, CCn,
     subroutine talsh_eom_eigval_driver (results_t,eom_config,interm_t,int_t)
+! aspg: for now, use relcc_cfg to get the infromation on the *CCDIAG variables, like whether or not to do overlap etc
+! perhaps these variables have to be moved around. this will definitely not work with a distributed version since the 
+! variables need to be broadcast, and that requires a call to relcc_sync_cw(), which is done in relccsd but obviously not in exacorr
+      use relcc_cfg
 
 !     input variables
       type(talsh_eom_results_tens_t), intent(inout)  :: results_t
@@ -133,7 +137,10 @@ module talsh_eom
                                 solve_right=.true.,&
                                 solve_left=.false.,&
                                 symmetric=.false., &
-!                               overlap_sorting=.true.,&
+                                overlap_sorting=relcc_mfd_overlap_sorting,&
+                                max_subspace_size=relcc_mfd_max_subspace_size,&
+                                max_iterations=relcc_mfd_max_iterations,&
+                                verbose=relcc_mfd_verbose,&
                                 complex_mode=.true.)
 
 !************************************

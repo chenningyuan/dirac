@@ -412,9 +412,6 @@ module talsh_trial_eomccsd
          do a = 1, nvir
             diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
             hdiag1_hp_tens(a,i) = diagonal
-!           print *,'--> a:',(a+nocc),' i:',i,' hdiag1_hp_tens(a,i):',hdiag1_hp_tens(a,i)
-!           print *,'    faa:',fae_p_tens(a,a)
-!           print *,'    fii:',fmi_p_tens(i,i)
          end do
       end do
 
@@ -423,20 +420,14 @@ module talsh_trial_eomccsd
             do b = 1, nvir
                do a = 1, nvir
                   diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
-!                 if ((a.eq.b).or.(i.eq.j)) then 
-                  if (i.lt.j.and.a.lt.b) then
+                  if ((a.ne.b).and.(i.ne.j)) then 
+!                 if (i.lt.j.and.a.lt.b) then
 ! matching indexes of virtuals and/or occupied correspond to unphysical excited determinants and thus spurious matrix elements
 ! so we just project those out by making them huge
                      hdiag2_hp_tens(a,b,i,j) = diagonal
                   else
                      hdiag2_hp_tens(a,b,i,j) = huge(diagonal)
                   end if
-!                 print *,'--> a:',(a+nocc),' b:',(b+nocc),&
-!    &                    ' i:',i,' j:',j,'  hdiag2_hp_tens(a,b,i,j)',diagonal
-!                 print *,'    faa:',fae_p_tens(a,a)
-!                 print *,'    fbb:',fae_p_tens(b,b)
-!                 print *,'    fii:',fmi_p_tens(i,i)
-!                 print *,'    fjj:',fmi_p_tens(j,j)
                end do
             end do
          end do

@@ -497,7 +497,7 @@ contains
 
         integer :: ierr, i, j
         integer(INTD) :: rank
-        logical :: debug = .false.
+        logical :: debug = .true.
 
         rank=talsh_tensor_rank(workspace_t%trial1(1))
         if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
@@ -539,13 +539,9 @@ contains
 
               ierr=talsh_tensor_init(workspace_t%trial1(j), ZERO)
               ierr=talsh_tensor_init(workspace_t%trial2(j), ZERO)
-              if (rank.eq.1) then
-                 ierr=talsh_tensor_add("t(a)+=d(a)",        workspace_t%trial1(j),workspace_t%delta1(i))
-                 ierr=talsh_tensor_add("t(a,b,c)+=d(a,b,c)",workspace_t%trial2(j),workspace_t%delta2(i))
-              else if (rank.eq.2) then
-                 ierr=talsh_tensor_add("t(a,b)+=d(a,b)",        workspace_t%trial1(j),workspace_t%delta1(i))
-                 ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace_t%trial2(j),workspace_t%delta2(i))
-              end if
+
+              ierr=talsh_tensor_add("t(a,b)+=d(a,b)",        workspace_t%trial1(j),workspace_t%delta1(i))
+              ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace_t%trial2(j),workspace_t%delta2(i))
               
               if (debug) then
                  write (6,*) 'debug >>> correction vector ',i,' added to trial vector ',j
@@ -571,7 +567,7 @@ contains
            end do
         end if
 
-        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, rank, workspace_t%trial1, workspace_t%trial2)
+        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization'
@@ -625,21 +621,13 @@ contains
        call c_f_pointer(body_p_den,result_tens_num,one_dims)
 
        rank=talsh_tensor_rank(v1)
+       if (rank.ne.2) call quit('rank not implemented in gram_schmidt_projection_tensors')
 
-       if (rank.eq.1) then
-          ierr=talsh_tensor_contract("num()+=v+(a)*v(a)",result_tensor_num,v1,u1)
-          ierr=talsh_tensor_contract("den()+=u(a)*u(a)",result_tensor_den,u1,u1)
+       ierr=talsh_tensor_contract("num()+=v+(a,b)*v(a,b)",result_tensor_num,v1,u1)
+       ierr=talsh_tensor_contract("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
 
-          ierr=talsh_tensor_contract("num()+=v+(a,b,c)*v(a,b,c)",result_tensor_num,v2,u2)
-          ierr=talsh_tensor_contract("den()+=u(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2)
-
-       else if (rank.eq.2) then
-          ierr=talsh_tensor_contract("num()+=v+(a,b)*v(a,b)",result_tensor_num,v1,u1)
-          ierr=talsh_tensor_contract("den()+=u(a,b)*u(a,b)",result_tensor_den,u1,u1)
-
-          ierr=talsh_tensor_contract("num()+=v+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,v2,u2)
-          ierr=talsh_tensor_contract("den()+=u(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2)
-       end if
+       ierr=talsh_tensor_contract("num()+=v+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,v2,u2)
+       ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2)
 
        factor = result_tens_num(1) / result_tens_den(1)
 
@@ -648,26 +636,22 @@ contains
 
     end subroutine
 
-    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,rank1,trial1,trial2)
-        integer, intent(in) :: L, Lnew, rank1
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2)
+        integer, intent(in) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
         real :: norm_r
-        integer(INTD) :: r1_rank
+        integer(INTD) :: rank
         integer :: ierr, i, j
         complex(8) :: factor
 
-        if (rank1.gt.2) call quit('rank not implemented in form_r_tensors')
+        rank=talsh_tensor_rank(trial1(1))
+        if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
 
         do j = L+1, Lnew
             do i = 1, j-1
                 call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
-                if (rank1.eq.1) then
-                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(i),trial1(j),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(i),trial2(j),scale=-factor)
-                else if (rank1.eq.2) then
-                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=-factor)
-                end if
+                ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=-factor)
+                ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=-factor)
             end do
             call renormalize_vectors(trial1(j),trial2(j))
          end do
@@ -2473,7 +2457,8 @@ contains
             nroots_to_print = M_nroots
         end if
 
-        call davidson_print_vectors(M,   label="subspace matrix before diagonal")
+!       call davidson_print_vectors(M,   label="subspace matrix before diagona ")
+
         call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
         ! print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)
