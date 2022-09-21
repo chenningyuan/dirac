@@ -2511,9 +2511,9 @@ contains
             else if (follow_overlap_scheme_local .eq. 2) then
 ! aspg, debug, testing new overlap sorting
                 if(right_local) then
-                    call sort_by_overlap_of_subspace_left_or_right(eValues, eVectorsR)
+                    call sort_by_overlap_of_subspace(eValues, eVectorsR)
                 else if (left_local) then
-                    call sort_by_overlap_of_subspace_left_or_right(eValues, eVectorsL)
+                    call sort_by_overlap_of_subspace(eValues, eVectorsL)
                 end if
             end if ! selection of overlap sorting scheme 
 
@@ -2906,102 +2906,62 @@ contains
         str = adjustl(str)
     end function str
 
-    subroutine sort_by_overlap_of_subspace_left_or_right(e_small, c_small)
+    subroutine sort_by_overlap_of_subspace(e_small, c_small, nroots)
 !
-! this routine sorts the eigenvectors with respect to the overlap between them
-! so that the diagonal of the sorted eigenvector matrix contains the largest
-! element of each row.
+! this routine sorts the eigenvectors with respect to the norm of their projection on
+! to the set of trial vectors. Sorting is from high overlap to low overlap,
+! so that the first nroots vectors can be taken to extend the space.
 !
-! this should be equivalent to sorting the eigenpairs in descending order of overlap
-! with a set of initial trial vectors V = {v_1, v_2, v_3, ...} since, following the
-! reasoning by Zuev et al, J. Comput. Chem 2014 (DIO:10.1002/jcc23800):
+! Lucas Visscher (2019), based on a routine by ASP Gomes for the initial implementation 
+! of EOM in relccsd.  
+! ASP Gomes (2022), readapted from the L Visscher code refactor to only use complex 
+! variables (and thus not use rcw toggle)
 !
-! a. considering the set of new vectors for the full problem 
-!      U = { u_1, u_2, u_3, ...} = { V c_small_1, V c_small_2, V c_small_3, ...}  
-!    
-!    the overlap of the initial and new vectors is given as:
-!      S_{1;k} = < v_1 | u_k > = < v_1 | V c_small_k >
-!      S_{2;k} = < v_2 | u_k > = < v_2 | V c_small_k >
-!      [...]
-!
-!    where c_small_k is the k-th element of c_small(=the eigenvectors for the reduced subspace)
-!
-! b. we have that the overlap matrix elements are given by
-!      S_{1;k} = < v_1 |  V c_small_k > = \sum_j < v_1 |  v_j > c_small_{j;k} = \delta_{1j} c_small_{j;k} = c_small_{1;k}
-!      S_{2;k} = < v_2 |  V c_small_k > = \sum_j < v_2 |  v_j > c_small_{j;k} = \delta_{2j} c_small_{j;k} = c_small_{2;k}
-!      [...]
-!
-!    as, due to the orthonormality of the trial vectors in V, the overlap for vectors in the full bases
-!    can be obtained from the vectors in the reduced subspace. 
-!   
-! c. now, in order to find the maximum overlap with each of the trial vectors, we have to identify
-!    the largest element of each corresponding line in the reduced vectors.
-! 
-!    therefore, in the routine below, by reshuffling the columns of c_small so the maximum elements of 
-!    each row of c_small is placed in the diagonal, we achive a mapping that places the maximum overlap for v_1 
-!    in column 1, for v_2 in column 2 and so on.
-!
-! NOTE: at this point nothing is done to ensure that no vector is placed twice, or removed from c_small altogether;
-! something that may be an issue if, for instance, the largest element on two or more lines are found for the
-! same column (so we'd end up repeating the same column a number of times) - though even in the case of using the
-! same c_small_k, one would ! still have linearly independent u vectors since 
-!    u_1 = v_1 c_small_k 
-!    u_2 = v_2 c_small_k
-!
-! that said, a possible wat forward if this becomes an issue is would be to use the next to largest elements that haven't
-! been used before.
-!
-        complex(kind=8), intent(inout) :: c_small(:,:) ! left or right-side reduced subspace eigenvectors
-        complex(kind=8), intent(inout) :: e_small(:) ! reduced subspace eigenvalues
+        integer, intent(in)         :: nroots
+        complex(kind=8), intent(inout) :: c_small(:,:) ! left or right-side reduced subspace eigenvectors (can be real or complex)
+        complex(kind=8), intent(inout) :: e_small(:)    ! reduced subspace eigenvalues (complex, as we deal with a non-hermitian eigenvalue problem)
 
-        complex(kind=8),allocatable :: temp(:), temp_vector(:,:)
-        integer, allocatable :: indices_sorted_array(:), already_sorted(:)
-        integer :: vectors_L, vectors_N, i_sorted, i, max_overlap(1), iroot, jroot
-        real(kind=8),allocatable :: norms(:)
-        double precision dnrm2, dznrm2
+        real(kind=8), allocatable :: overlap_with_subspace(:)
+        complex(kind=8), allocatable :: sorted_eigenvalues(:)
+        complex(kind=8), allocatable :: sorted_eigenvectors(:,:)
 
+        real(kind=8) :: overlap
+        integer :: subspace_dimension, iroot, itrial, i
 
-        vectors_L = size(c_small,2)
+        subspace_dimension = size(c_small,2)
 
-        allocate(indices_sorted_array(vectors_L))
-        allocate(already_sorted(vectors_L))
-        do i = 1, vectors_L 
-            indices_sorted_array(i) = i 
+        allocate(overlap_with_subspace(subspace_dimension))
+        overlap_with_subspace = 0.d0
+        do iroot = 1, subspace_dimension
+           do itrial = 1, nroots
+              ioverlap = abs(c_small(itrial,iroot))
+              overlap_with_subspace(iroot) = overlap_with_subspace(iroot) + overlap**2
+           end do
         end do
-        already_sorted = -1
 
-        allocate(norms(vectors_L))
-        allocate(temp(vectors_L))
-        allocate(temp_vector(vectors_L,vectors_L))
-
-        do iroot = 1, vectors_L
-! the loop over jroot will create a temporary array with the norm of the iroot-th roow of the eigenvectors
-          do jroot = 1, vectors_L
-              norms(jroot) = dznrm2(vectors_L, c_small(:,jroot), 1) 
-          end do
-          max_overlap = maxloc(norms)
-          i = max_overlap(1)
-          indices_sorted_array(iroot) = i
-        enddo
-
-        do i = 1, vectors_L
-            i_sorted = indices_sorted_array(i)
-            temp_vector(:,i) = c_small(:,i_sorted)
+        allocate (sorted_eigenvalues(subspace_dimension))
+        allocate (sorted_eigenvectors(subspace_dimension,subspace_dimension))
+        do iroot = 1, subspace_dimension
+           i = maxloc(overlap_with_subspace,1)
+           sorted_eigenvalues(:,iroot)  = e_small(:,i)
+           sorted_eigenvectors(:,iroot) = c_small(:,i)
+           overlap_with_subspace(i) = -max(1.d-12,overlap_with_subspace(i))
+           ! with this choice we select the next highest value for the next root without loosing the overlap information, the
+           ! max construct is there in case we have multiple vectors with zero overlap.
         end do
-        c_small = temp_vector
 
-        do i = 1, vectors_L
-            i_sorted = indices_sorted_array(i)
-            temp(i) = e_small(i_sorted)
-        end do
-        e_small = temp
+        ! copy the sorted vectors back to the original arrays
+        e_small = sorted_eigenvalues
+        c_small = sorted_eigenvectors
 
-        deallocate(norms)
-        deallocate(temp)
-        deallocate(temp_vector)
-        deallocate(indices_sorted_array)
+        deallocate (sorted_eigenvalues)
+        deallocate (sorted_eigenvectors)
+        deallocate (overlap_with_subspace)
 
-    end subroutine
+    end subroutine sort_by_overlap_of_subspace
+
+
+
 
     subroutine apply_projector(nvectors, projector_t, target1, target2) 
        integer, intent(in) :: nvectors
