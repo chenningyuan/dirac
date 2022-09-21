@@ -2209,6 +2209,10 @@ contains
            write(davidson_output_file_unit, "(4x,a)") "Number of roots requested equal to matrix order !"
         endif
 
+       if (davidson_overlap_sorting) &
+           call setup_overlap_sorting(c_small_r_old, c_small_l_old, nroots, davidson_solve_rhs, davidson_solve_lhs)
+
+
         write(davidson_output_file_unit,*) ""
         do niter = 1, davidson_max_iterations
             write(davidson_output_file_unit,*) "Iteration ", niter
@@ -2380,32 +2384,25 @@ contains
 
 
     subroutine setup_overlap_sorting(c_r_old, c_l_old, nroots, solve_rhs, solve_lhs)
-        real(kind=8), intent(inout), pointer :: c_r_old(:,:) 
-        real(kind=8), intent(inout), pointer :: c_l_old(:,:)  
+        complex(kind=8), intent(inout), pointer :: c_r_old(:,:) 
+        complex(kind=8), intent(inout), pointer :: c_l_old(:,:)  
         integer, intent(in) :: nroots
         logical, intent(in) :: solve_rhs, solve_lhs
 
         integer :: i, factor 
-!       real(kind=8), pointer :: c_small_r_old_dum(:,:)  => NULL()
-
-        if (davidson_complex_mode_with_reals) then
-            factor = 2 
-        else
-            factor = 1 
-        end if
 
         if (solve_rhs) then
-            allocate(c_r_old(factor*nroots,nroots))
+            allocate(c_r_old(nroots,nroots))
             c_r_old = 0.0d0
-            do i = 1, nroots*factor, factor
-                c_r_old(i,(i+1)/2) = 1.0d0
+            do i = 1, nroots
+                c_r_old(i,i) = (1.0d0, 0.0d0)
             enddo
         endif
         if (solve_lhs) then
-            allocate(c_l_old(factor*nroots,nroots))
+            allocate(c_l_old(nroots,nroots))
             c_l_old = 0.0d0
-            do i = 1, nroots*factor, factor
-                c_l_old(i,(i+1)/2) = 1.0d0
+            do i = 1, nroots
+                c_r_old(i,i) = (1.0d0, 0.0d0)
             enddo
         endif
     end subroutine
@@ -2441,7 +2438,7 @@ contains
         if (present(follow_overlap_scheme)) then
             follow_overlap_scheme_local = follow_overlap_scheme
         else
-            follow_overlap_scheme_local = 1 ! 1 = scheme calculating overlap matrix ; 2 = scheme not explicitly calculating overlap matrix
+            follow_overlap_scheme_local = 2 ! 1 = scheme calculating overlap matrix ; 2 = scheme not explicitly calculating overlap matrix
         end if
 
         if (present(sorting_order)) then
@@ -2476,6 +2473,7 @@ contains
             nroots_to_print = M_nroots
         end if
 
+        call davidson_print_vectors(M,   label="subspace matrix before diagonal")
         call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
         ! print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)
@@ -2511,9 +2509,9 @@ contains
             else if (follow_overlap_scheme_local .eq. 2) then
 ! aspg, debug, testing new overlap sorting
                 if(right_local) then
-                    call sort_by_overlap_of_subspace(eValues, eVectorsR)
+                    call sort_by_overlap_of_subspace(eValues, eVectorsR, nroot)
                 else if (left_local) then
-                    call sort_by_overlap_of_subspace(eValues, eVectorsL)
+                    call sort_by_overlap_of_subspace(eValues, eVectorsL, nroot)
                 end if
             end if ! selection of overlap sorting scheme 
 
@@ -2532,7 +2530,8 @@ contains
         ! print *, "eVectorsR(7) after zgemm", eVectorsR(:,7)
         ! print *, "eVectorsR(8) after zgemm", eVectorsR(:,8)
         call print_values_vectors(davidson_output_file_unit,eValues, eVectorsR, eVectorsL, &
-                                    .false.,.true., nroots=nroots_to_print)
+                                    .false.,.false., nroots=nroots_to_print)
+!                                   .false.,.true., nroots=nroots_to_print)
 !                                   left_local, right_local, nroots=nroots_to_print)
 
     end subroutine
@@ -2934,7 +2933,7 @@ contains
         overlap_with_subspace = 0.d0
         do iroot = 1, subspace_dimension
            do itrial = 1, nroots
-              ioverlap = abs(c_small(itrial,iroot))
+              overlap = abs(c_small(itrial,iroot))
               overlap_with_subspace(iroot) = overlap_with_subspace(iroot) + overlap**2
            end do
         end do
@@ -2943,7 +2942,7 @@ contains
         allocate (sorted_eigenvectors(subspace_dimension,subspace_dimension))
         do iroot = 1, subspace_dimension
            i = maxloc(overlap_with_subspace,1)
-           sorted_eigenvalues(:,iroot)  = e_small(:,i)
+           sorted_eigenvalues(iroot)  = e_small(i)
            sorted_eigenvectors(:,iroot) = c_small(:,i)
            overlap_with_subspace(i) = -max(1.d-12,overlap_with_subspace(i))
            ! with this choice we select the next highest value for the next root without loosing the overlap information, the

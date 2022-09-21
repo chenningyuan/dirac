@@ -128,10 +128,12 @@ module talsh_eom
       write(*,'(A)') "*******************************************************************************"
       write(*,*) ""
 
+! aspg : need to get from hardcoded options to getting them from input (*CCDIAG) on the calls to talsh_davidson_setup
       call talsh_davidson_setup(unit_output=6, &
                                 solve_right=.true.,&
                                 solve_left=.false.,&
                                 symmetric=.false., &
+!                               overlap_sorting=.true.,&
                                 complex_mode=.true.)
 
 !************************************
@@ -156,6 +158,7 @@ module talsh_eom
                                    solve_right=.false.,&
                                    solve_left=.true.,&
                                    symmetric=.false., &
+!                                  overlap_sorting=.true.,&
                                    complex_mode=.true.)
          select case(eom_config%flavor)
             case("IP")

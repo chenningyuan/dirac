@@ -95,7 +95,7 @@ module talsh_trial_eomccsd
                         if (i.lt.j) then
                            diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
                         else 
-                           diagonal(b) = huge(diagonal)
+                           diagonal(b) = 0.1*huge(diagonal)
                         end if
                      end do
                   end do
@@ -423,7 +423,14 @@ module talsh_trial_eomccsd
             do b = 1, nvir
                do a = 1, nvir
                   diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
-                  hdiag2_hp_tens(a,b,i,j) = diagonal
+!                 if ((a.eq.b).or.(i.eq.j)) then 
+                  if (i.lt.j.and.a.lt.b) then
+! matching indexes of virtuals and/or occupied correspond to unphysical excited determinants and thus spurious matrix elements
+! so we just project those out by making them huge
+                     hdiag2_hp_tens(a,b,i,j) = diagonal
+                  else
+                     hdiag2_hp_tens(a,b,i,j) = huge(diagonal)
+                  end if
 !                 print *,'--> a:',(a+nocc),' b:',(b+nocc),&
 !    &                    ' i:',i,' j:',j,'  hdiag2_hp_tens(a,b,i,j)',diagonal
 !                 print *,'    faa:',fae_p_tens(a,a)
@@ -435,8 +442,8 @@ module talsh_trial_eomccsd
          end do
       end do
 
-!     call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
-!     call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
+      call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
+      call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
 
     end subroutine
 
@@ -525,7 +532,11 @@ module talsh_trial_eomccsd
                  do b = 1, workspace%tens2_dims(2)
                     do a = 1, workspace%tens2_dims(1)
                        w = w + 1
-                     !   diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+! aspg, once we rethink antisymmetrization we should be able to just pick out the elements of Hdiag instead of redoing a construction
+! of the diagonal here.
+!                      diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
+! the code below works nicely for when we want to only operate on the unique (triangular) index combinations
+! and in the trial vector generation swap indices around while at the same time ensuring antisymetrization of elements of the tensor 
                        if (i.lt.j.and.a.lt.b) then
                          diagonal(w) = real(hdiag2_hp_tens(a,b,i,j))
                        else 
@@ -537,7 +548,8 @@ module talsh_trial_eomccsd
            end do
         end if
 
-        if (debug_trial) then
+!       if (debug_trial) then
+        if (.true.) then
            do i = 1, size(diagonal,1)
                write (6,*) 'H_II(',i,'):',diagonal(i)
            end do
@@ -601,6 +613,9 @@ module talsh_trial_eomccsd
 !                         print *,'w:',i,' i:',i,a1,b1,i1,j1
                         !   trial2_hp_tens(a1,b1,i1,j1) = ONE
 
+! below we mean to pick out a unique element of |abij>, where a>b and i>j and generate the
+! permutations and antisymmetrize them
+! see comments above concerning the diagonal for the trial vector generation.
                           if (j1.gt.i1.and.b1.gt.a1) then
                               trial2_hp_tens(b1,a1,j1,i1) = ONE*(2.0**(-1.0))
                               trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE*(2.0**(-1.0)) !XY
