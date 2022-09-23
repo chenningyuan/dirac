@@ -497,7 +497,7 @@ contains
 
         integer :: ierr, i, j
         integer(INTD) :: rank
-        logical :: debug = .false.
+        logical :: debug = .true.
 
         rank=talsh_tensor_rank(workspace_t%trial1(1))
         if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
@@ -579,6 +579,7 @@ contains
               write (6,*) 'debug >>> trial vector ',i
               call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
               call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
+              print *, "norm of new trial", sqrt(tensor_norm2(workspace_t%trial1(i)) + tensor_norm2(workspace_t%trial2(i))/4)
               write (6,*) ''
            end do
         end if
@@ -590,7 +591,7 @@ contains
        real :: norm_r
        complex(8) :: norm
 
-       norm_r = tensor_norm2(v1) +  tensor_norm2(v2)
+       norm_r = sqrt(tensor_norm2(v1) +  tensor_norm2(v2)/4)   !XY 4 is for EE(ab.ij) but we need to take care for IP
        norm = CMPLX(norm_r, 0.0d0)
        norm_r = 1.0d0 / norm_r
 
@@ -612,6 +613,7 @@ contains
        type(talsh_tens_t) :: result_tensor_num, result_tensor_den
        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
        type(C_PTR):: body_p_num, body_p_den
+       type(talsh_tens_t) :: one_tensor
 
        integer(C_INT)     :: one_dims(1)
        integer  :: ierr, rank
@@ -622,26 +624,48 @@ contains
        call c_f_pointer(body_p_den,result_tens_den,one_dims)
        ierr=talsh_tensor_construct(result_tensor_num,C8,one_dims(1:0),init_val=ZERO)
        ierr=talsh_tensor_get_body_access(result_tensor_num,body_p_num,C8,int(0,C_INT),DEV_HOST)
-       call c_f_pointer(body_p_den,result_tens_num,one_dims)
+       call c_f_pointer(body_p_num,result_tens_num,one_dims)
+
+       ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
        rank=talsh_tensor_rank(v1)
+       print *, "rank in projection:", rank
 
        if (rank.eq.1) then
           ierr=talsh_tensor_contract("num()+=v+(a)*v(a)",result_tensor_num,v1,u1)
-          ierr=talsh_tensor_contract("den()+=u(a)*u(a)",result_tensor_den,u1,u1)
+          ierr=talsh_tensor_contract("den()+=u+(a)*u(a)",result_tensor_den,u1,u1)
 
           ierr=talsh_tensor_contract("num()+=v+(a,b,c)*v(a,b,c)",result_tensor_num,v2,u2)
-          ierr=talsh_tensor_contract("den()+=u(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2)
+          ierr=talsh_tensor_contract("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2)
 
        else if (rank.eq.2) then
-          ierr=talsh_tensor_contract("num()+=v+(a,b)*v(a,b)",result_tensor_num,v1,u1)
-          ierr=talsh_tensor_contract("den()+=u(a,b)*u(a,b)",result_tensor_den,u1,u1)
+          ierr=talsh_tensor_contract("num()+=v+(a,b)*u(a,b)",result_tensor_num,v1,u1)
+          print *, "ierr in projection:", ierr
+          print *, "projection of v1*u1", result_tens_num(1)
+          ierr=talsh_tensor_contract("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
 
-          ierr=talsh_tensor_contract("num()+=v+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,v2,u2)
-          ierr=talsh_tensor_contract("den()+=u(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2)
+
+        !   print *, "tensor norm2 of v2", tensor_norm2(v2)
+        !   print *, "tensor norm2 of u2", tensor_norm2(u2)
+        !   call print_tensor(v2, 1.0d-18, "v2")
+        !   call print_tensor(u2, 1.0d-18, "u2")
+
+        !   print *, "projection of v1*u1", result_tens_num(1)
+        !   if (tensor_norm2(v2)==0.0.or.tensor_norm2(u2)==0.0) then
+        !     print *, "come here???"
+        !     print *, "projection of v1*u1+v2*u2", result_tens_num(1)
+        !     ! ierr=talsh_tensor_contract("num()+=v+()*u()",result_tensor_num,one_tensor,one_tensor,scale=ZERO)
+        !     result_tens_num(1)= result_tens_num(1) + 0.0
+        !   else
+            ierr=talsh_tensor_contract("num()+=v+(a,b,c,d)*u(a,b,c,d)",result_tensor_num,v2,u2,scale=ONE_QUARTER_C)
+        !   end if 
+
+          print *, "projection of v1*u1+v2*u2", result_tens_num(1)
+          ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2,scale=ONE_QUARTER_C)
        end if
 
        factor = result_tens_num(1) / result_tens_den(1)
+       print *, "factor in routine:", factor
 
        ierr=talsh_tensor_destruct(result_tensor_num)
        ierr=talsh_tensor_destruct(result_tensor_den)
@@ -660,13 +684,20 @@ contains
 
         do j = L+1, Lnew
             do i = 1, j-1
+                print *, "i in schmidt_projection:", i
+                print *, "j in schmidt_projection:", j
+                call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
+                call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
+                call print_tensor(trial1(j), 1.0d-10, "trial1(j)")
+                call print_tensor(trial2(j), 1.0d-10, "trial2(j)")
                 call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
+                print *, "factor in schmidt_projection:", factor
                 if (rank1.eq.1) then
-                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(i),trial1(j),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(i),trial2(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
                 else if (rank1.eq.2) then
-                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(i),trial1(j),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(i),trial2(j),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
+                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
                 end if
             end do
             call renormalize_vectors(trial1(j),trial2(j))
@@ -1001,8 +1032,15 @@ contains
               ierr=talsh_tensor_add("r(a,b)+=s(a,b)",workspace_t%delta1(k),workspace_t%sigma1(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor2)
 
+            !   call print_tensor(workspace_t%sigma1(i), 1.0d-10, "workspace_t%sigma1(i)")
+            !   print *, "factor1: ", factor1
+            !   print *, "factor2: ", factor2
+            !   call print_tensor(workspace_t%trial1(i), 1.0d-10, "workspace_t%trial1(i)")
+
               ierr=talsh_tensor_add("r(a,b,c,d)+=s(a,b,c,d)",workspace_t%delta2(k),workspace_t%sigma2(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor2)
+            !   call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
+            !   call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
 
            end if
 
@@ -1073,7 +1111,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .false.
+        logical :: debug_correction_vectors = .true.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1111,7 +1149,9 @@ contains
               print *,'debug, norm of delta2(',k,'):',tensor_norm2(workspace_t%delta2(k))
            end if
 
-           norm_r = tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))
+        !    call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
+        !    call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
+           norm_r = sqrt(tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))/4)
 
            if (norm_r .lt. davidson_convergence_threshold) then 
               write(output_file_unit, "(4x,a,i6,a,1e14.6,4x,a)") "Root ",k,"  ||q_k,M|| ", norm_r, " <<< converged ! "
@@ -1135,10 +1175,12 @@ contains
               if (correction_to_vectors(k)) then
                  if (debug_correction_vectors) then
                     write (6,*) 'debug >>> in correction_to_vectors, precond1 root',k,' >>>'
-                    call print_tensor_elements(workspace_t%precond1(k))
+                    ! call print_tensor_elements(workspace_t%precond1(k))
+                    call print_tensor(workspace_t%precond1(k), 1.0d-10, "workspace_t%precond1(k)")
                     write (6,*) 'debug <<< in correction_to_vectors, precond1 <<<'
                     write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
-                    call print_tensor_elements(workspace_t%delta1(k))
+                    ! call print_tensor_elements(workspace_t%delta1(k))
+                    call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
                     write (6,*) 'debug <<< in correction_to_vectors, delta1 <<<'
                  end if
 
@@ -1146,24 +1188,35 @@ contains
 
                  if (debug_correction_vectors) then
                     write (6,*) 'debug >>> in correction_to_vectors, result delta1 root',k,' >>>'
-                    call print_tensor_elements(workspace_t%delta1(k))
+                    ! call print_tensor_elements(workspace_t%delta1(k))
+                    call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
                     write (6,*) 'debug <<< in correction_to_vectors, result delta1 <<<'
 
                     write (6,*) 'debug >>> in correction_to_vectors, precond2 root',k,' >>>'
-                    call print_tensor_elements(workspace_t%precond2(k))
+                    ! call print_tensor_elements(workspace_t%precond2(k)) 
+                    call print_tensor(workspace_t%precond2(k), 1.0d-10, "workspace_t%precond2(k)")
                     write (6,*) 'debug <<< in correction_to_vectors, precond2 <<<'
                     write (6,*) 'debug >>> in correction_to_vectors, delta2 root',k,' >>>'
-                    call print_tensor_elements(workspace_t%delta2(k))
+                    ! call print_tensor_elements(workspace_t%delta2(k))
+                    call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
                     write (6,*) 'debug <<< in correction_to_vectors, delta2 <<<'
                  end if
 
+                !  call print_tensor(workspace_t%delta2(1), 1.0d-10, "delta2 before precond")
+                !  call print_tensor(workspace_t%precond2(1), 1.0d-10, "precond2 before precond")
                  call multiply_tensor_elements(workspace_t%delta2(k), workspace_t%precond2(k))
+                !  call print_tensor(workspace_t%delta2(1), 1.0d-10, "delta2 after precond")
+                !  call print_tensor(workspace_t%precond2(1), 1.0d-10, "precond2 after precond")
 
                  if (debug_correction_vectors) then
                     write (6,*) 'debug >>> in correction_to_vectors, result delta2 root',k,' >>>'
-                    call print_tensor_elements(workspace_t%delta2(k))
+                    ! call print_tensor_elements(workspace_t%delta2(k))
+                    call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
                     write (6,*) 'debug <<< in correction_to_vectors, result delta2 <<<'
                  end if
+
+                !  norm_r = tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))
+                !  print *,'debug, norm of delta+delta2():',norm_r
 
               else
                  ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
@@ -1172,10 +1225,12 @@ contains
 
               if (debug_correction_vectors) then
                  write (6,*) 'debug >>> in correction_to_vectors, delta1 root',k,' >>>'
-                 call print_tensor_elements(workspace_t%delta1(k))
+                !  call print_tensor_elements(workspace_t%delta1(k))
+                 call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
                  write (6,*) 'debug <<< in correction_to_vectors, delta1 <<<'
                  write (6,*) 'debug >>> in correction_to_vectors, delta2 root',k,' >>>'
-                 call print_tensor_elements(workspace_t%delta2(k))
+                !  call print_tensor_elements(workspace_t%delta2(k))
+                 call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
                  write (6,*) 'debug <<< in correction_to_vectors, delta2 <<<'
               end if
 
@@ -1816,7 +1871,7 @@ contains
       logical, intent(in) :: left,right
       integer :: ierr, iroot
       
-      logical :: debug_sigma = .false., debug_print_before_calculating=.false.
+      logical :: debug_sigma = .true., debug_print_before_calculating=.false.
 
       do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
 
@@ -1997,7 +2052,7 @@ contains
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .false.
+      logical :: debug_subspace_matrix = .true.
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
@@ -2019,8 +2074,10 @@ contains
          write (6,*) 'debug >>> L     ',workspace_t%L
          write (6,*) ''
       end if
-      do i = workspace_t%Lprev, workspace_t%L
-         do j = workspace_t%Lprev, workspace_t%L
+    !   do i = workspace_t%Lprev, workspace_t%L
+      do i=1, workspace_t%L
+        !  do j = workspace_t%Lprev, workspace_t%L
+        do j =1, workspace_t%L
 ! this will be a reduction to a scalar at each contractions, and we then will build the 
             if (workspace_t%N(1).ne.0) then
                if (right.and..not.left) then 
@@ -2042,13 +2099,13 @@ contains
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
    &                                                        workspace_t%sigma2(j),&
-   &                                                        scale=ONE)
+   &                                                        scale=ONE_QUARTER_C)
                else if (left.and..not.right) then
                   ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
    &                                                        workspace_t%sigma2(j),&
-   &                                                        scale=ONE)
+   &                                                        scale=ONE_QUARTER_C)
                end if
             end if
 
@@ -2473,7 +2530,7 @@ contains
             nroots_to_print = M_nroots
         end if
 
-        call davidson_print_vectors(M,   label="subspace matrix before diagonal")
+        ! call davidson_print_vectors(M,   label="subspace matrix before diagonal")
         call talsh_solve_values_vectors(M, eValues, eVectorsR, eVectorsL, left_local)
 
         ! print *, "eVectorsR(1) before zgemm", eVectorsR(:,1)

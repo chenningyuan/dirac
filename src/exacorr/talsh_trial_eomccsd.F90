@@ -423,13 +423,13 @@ module talsh_trial_eomccsd
             do b = 1, nvir
                do a = 1, nvir
                   diagonal = fae_p_tens(a,a) + fae_p_tens(b,b) - fmi_p_tens(j,j) - fmi_p_tens(i,i)
-!                 if ((a.eq.b).or.(i.eq.j)) then 
-                  if (i.lt.j.and.a.lt.b) then
+                if ((a.eq.b).or.(i.eq.j)) then 
+                  ! if (i.lt.j.and.a.lt.b) then
 ! matching indexes of virtuals and/or occupied correspond to unphysical excited determinants and thus spurious matrix elements
 ! so we just project those out by making them huge
-                     hdiag2_hp_tens(a,b,i,j) = diagonal
-                  else
                      hdiag2_hp_tens(a,b,i,j) = huge(diagonal)
+                  else
+                     hdiag2_hp_tens(a,b,i,j) = diagonal
                   end if
 !                 print *,'--> a:',(a+nocc),' b:',(b+nocc),&
 !    &                    ' i:',i,' j:',j,'  hdiag2_hp_tens(a,b,i,j)',diagonal
@@ -601,7 +601,7 @@ module talsh_trial_eomccsd
 ! aspg, come back and see how to handle this
                     if (enable_double_manifold) then ! we have to go into the 2h1p section to select trial vectors
                        if (i.le.workspace%N(1)) then 
-!                         print *,'w:',a,' a:',i,a1,i1
+                        ! print *,'w:',a,' a:',i,a1,i1
                           trial1_hp_tens(a1,i1) = ONE
                        else
 ! translate j into the spinor indexes
@@ -617,10 +617,14 @@ module talsh_trial_eomccsd
 ! permutations and antisymmetrize them
 ! see comments above concerning the diagonal for the trial vector generation.
                           if (j1.gt.i1.and.b1.gt.a1) then
-                              trial2_hp_tens(b1,a1,j1,i1) = ONE*(2.0**(-1.0))
-                              trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE*(2.0**(-1.0)) !XY
-                              trial2_hp_tens(a1,b1,j1,i1) = MINUS_ONE*(2.0**(-1.0))
-                              trial2_hp_tens(a1,b1,i1,j1) = ONE*(2.0**(-1.0)) !XY
+                              ! trial2_hp_tens(b1,a1,j1,i1) = ONE*(2.0**(-1.0))
+                              ! trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE*(2.0**(-1.0)) !XY
+                              ! trial2_hp_tens(a1,b1,j1,i1) = MINUS_ONE*(2.0**(-1.0))
+                              ! trial2_hp_tens(a1,b1,i1,j1) = ONE*(2.0**(-1.0)) !XY
+                              trial2_hp_tens(b1,a1,j1,i1) = ONE
+                              trial2_hp_tens(b1,a1,i1,j1) = MINUS_ONE
+                              trial2_hp_tens(a1,b1,j1,i1) = MINUS_ONE
+                              trial2_hp_tens(a1,b1,i1,j1) = ONE
                            !   trial2_hp_tens(a1,b1,i1,j1) = ONE
                           end if
 
@@ -629,6 +633,7 @@ module talsh_trial_eomccsd
                     else
 !                      print *,'c'
 ! aspg, for now, we only set the tens1 part of the trial vectors
+                     print *, "a:", a1, "i1:", i1
                        trial1_hp_tens(a1,i1) = ONE
                     end if
            end if
