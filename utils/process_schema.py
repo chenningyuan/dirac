@@ -24,6 +24,13 @@ def make_schema(definitions,section,rootlabel=''):
         definition['label'] = label
 
         if definition['type'] == 'composite':
+            # we need an extra layer if we have an array of composites, initialize the first element of this to 1
+            if definition['rank'] == 'array':
+               label = label + '/' + '1'
+               definitions['flat_schema'][label] = definition.copy()
+               definitions['flat_schema'][label]['rank'] = 'single'
+               definition['label'] = label
+               definition['rank'] = 'single'
             schema[variable] = make_schema(definitions,variable,label)
         else:
             # Make also a hierarchical dictionary
