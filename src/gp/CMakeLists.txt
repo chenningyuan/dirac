@@ -84,7 +84,6 @@ set(FREE_GP_FORTRAN_SOURCES
     memory_track_if.F90
     memory_tracker.F90
     moltra_labeling.F90
-    numerical_operators.F90
     num_der.F90
     orbital_rotation_indices.F90
     osutils.F90

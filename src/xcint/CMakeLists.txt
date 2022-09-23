@@ -27,6 +27,7 @@ target_sources(xcint
     xc_mpi.F90
     xc_response.F90
     xcint_main.F90
+    numerical_operators.F90
   )
 
 target_link_libraries(xcint
