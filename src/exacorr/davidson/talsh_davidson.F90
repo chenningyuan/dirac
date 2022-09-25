@@ -539,13 +539,9 @@ contains
 
               ierr=talsh_tensor_init(workspace_t%trial1(j), ZERO)
               ierr=talsh_tensor_init(workspace_t%trial2(j), ZERO)
-              if (rank.eq.1) then
-                 ierr=talsh_tensor_add("t(a)+=d(a)",        workspace_t%trial1(j),workspace_t%delta1(i))
-                 ierr=talsh_tensor_add("t(a,b,c)+=d(a,b,c)",workspace_t%trial2(j),workspace_t%delta2(i))
-              else if (rank.eq.2) then
-                 ierr=talsh_tensor_add("t(a,b)+=d(a,b)",        workspace_t%trial1(j),workspace_t%delta1(i))
-                 ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace_t%trial2(j),workspace_t%delta2(i))
-              end if
+
+              ierr=talsh_tensor_add("t(a,b)+=d(a,b)",        workspace_t%trial1(j),workspace_t%delta1(i))
+              ierr=talsh_tensor_add("t(a,b,c,d)+=d(a,b,c,d)",workspace_t%trial2(j),workspace_t%delta2(i))
               
               if (debug) then
                  write (6,*) 'debug >>> correction vector ',i,' added to trial vector ',j
@@ -571,7 +567,7 @@ contains
            end do
         end if
 
-        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, rank, workspace_t%trial1, workspace_t%trial2)
+        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization'
@@ -672,15 +668,16 @@ contains
 
     end subroutine
 
-    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,rank1,trial1,trial2)
-        integer, intent(in) :: L, Lnew, rank1
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2)
+        integer, intent(in) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
         real :: norm_r
-        integer(INTD) :: r1_rank
+        integer(INTD) :: rank
         integer :: ierr, i, j
         complex(8) :: factor
 
-        if (rank1.gt.2) call quit('rank not implemented in form_r_tensors')
+        rank=talsh_tensor_rank(trial1(1))
+        if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
 
         do j = L+1, Lnew
             do i = 1, j-1
@@ -692,10 +689,10 @@ contains
                 call print_tensor(trial2(j), 1.0d-10, "trial2(j)")
                 call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
                 print *, "factor in schmidt_projection:", factor
-                if (rank1.eq.1) then
+                if (rank.eq.1) then
                    ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
                    ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
-                else if (rank1.eq.2) then
+                else if (rank.eq.2) then
                    ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
                    ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
                 end if

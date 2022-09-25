@@ -412,9 +412,6 @@ module talsh_trial_eomccsd
          do a = 1, nvir
             diagonal = fae_p_tens(a,a) - fmi_p_tens(i,i)
             hdiag1_hp_tens(a,i) = diagonal
-!           print *,'--> a:',(a+nocc),' i:',i,' hdiag1_hp_tens(a,i):',hdiag1_hp_tens(a,i)
-!           print *,'    faa:',fae_p_tens(a,a)
-!           print *,'    fii:',fmi_p_tens(i,i)
          end do
       end do
 
@@ -431,12 +428,6 @@ module talsh_trial_eomccsd
                   else
                      hdiag2_hp_tens(a,b,i,j) = diagonal
                   end if
-!                 print *,'--> a:',(a+nocc),' b:',(b+nocc),&
-!    &                    ' i:',i,' j:',j,'  hdiag2_hp_tens(a,b,i,j)',diagonal
-!                 print *,'    faa:',fae_p_tens(a,a)
-!                 print *,'    fbb:',fae_p_tens(b,b)
-!                 print *,'    fii:',fmi_p_tens(i,i)
-!                 print *,'    fjj:',fmi_p_tens(j,j)
                end do
             end do
          end do
