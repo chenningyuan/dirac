@@ -64,7 +64,7 @@ module relcc_cfg
   logical, public :: relcc_no_recompute             = .false.
   logical, public :: relcc_low_memory               = .false.
   integer, public :: relcc_memory_in_mw             = 0
-  character(10), public :: relcc_integral_interface = 'DIRAC6    '
+  character(10), public :: relcc_integral_interface = 'DIRAC4    '
 
 ! Information relevant to restarts
   logical, public, dimension(1:6)  :: relcc_restart_skipsect     = .false. 

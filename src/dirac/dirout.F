@@ -130,13 +130,22 @@ C
         ENDIF
         ENDDO
         CALL HEADER('TOTAL ENERGY',-1)
+
+        CALL RMOLCHR(ICHRG)
+        ICHRG = ICHRG - NELECT_DHF - NAELEC_DHF
+        WRITE(LUPRI,'(3X,A,I0/)')
+     +      'Charge of molecule : ',ICHRG
+        IF (ICHRG .LT. -2 .OR. ICHRG .GT. 3) THEN
+           WRITE(LUPRI,'(A,I0,A/)')
+     +     'WARNING: did you really intend a molcular charge of
+     +     ',ICHRG,' ?'
+        END IF
+
         ERGMAX = MAX(ABS(ELERGY),ABS(DHFERG))*10
         FMT = MXFORM(ERGMAX,20)
 C       Start by writing the computed electronic energy
         if (dirac_cfg_fde) then
-           WRITE(LUPRI,'(A)') ''
-           WRITE(LUPRI,'(2X,A)') 'FDE active subsystem contributions'
-           WRITE(LUPRI,'(A)') ''
+           WRITE(LUPRI,'(/2X,A/)') 'FDE active subsystem contributions'
         endif
         WRITE(LUPRI,'(3X,A,'//FMT//')')
      +      'Electronic energy                        :   ',ELERGY

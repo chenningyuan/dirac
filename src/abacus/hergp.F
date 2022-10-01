@@ -507,6 +507,13 @@ C https://www.ncsu.edu/chemistry/msf/pdf/IsotopicMass_NaturalAbundance.pdf
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1993, 565, 1-65 
 C   G. Audi, A. H. Wapstra Nucl. Phys A. 1995, 595, 409-480.
 C
+C 14 Sep 2020 - Agustin Aucar added data for 223Ra and 225Ra.
+C     Masses and nuclear spins from
+C       Haynes, Handbook of Chemistry and Physics, 97th Edition, 2017
+C     Magnetic moments from
+C       NJ Stone, TABLE OF NUCLEAR MAGNETIC DIPOLE AND ELECTRIC QUADRUPOLE MOMENTS,
+C       IAEA  International Nuclear Data Committee, INDC(NDS)-0658, February 2014
+C
 #include "implicit.h"
 #include "codata.h"
 #include "pi.h"
@@ -1361,8 +1368,8 @@ C
 C     Ra:
 C
      &226.025403D0,100.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
-     &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
+     &223.018500D0,  0.000000D0,   1.500000D0, 0.271000D0,   0.000000D0,
+     &225.023610D0,  0.000000D0,   0.500000D0,-0.733800D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
      &  0.000000D0,  0.000000D0,   0.000000D0, 0.000000D0,   0.000000D0,
