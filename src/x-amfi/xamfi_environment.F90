@@ -172,6 +172,8 @@ contains
 
     !> FOR HDF5 we need:
     allocate(amfH5Data(j), stat=ier ); if( ier.ne.0 )stop ' aoosoc init: Error in allocation: amfH5Data(:)'
+    !> make sure we allocate the aobasis container (if not done so yet)
+    call allocate_container()
     do i = 1, j
         allocate(amfH5Data(i)%path(amfpathDim), stat=ier ); if( ier.ne.0 ) &
                                                          stop ' aoosoc init: Error in allocation: amfH5Data(:)%path'
@@ -187,6 +189,7 @@ contains
     ! element
         write(amfH5Data(i)%path(2),'(i0)') nint(atom(i)%charge)
     ! basis
+        if(aobasis_container(i) == "") aobasis_container(i) = "custom"
         amfH5Data(i)%path(3)(1:40) = trim(aobasis_container(i))
     ! nuclei model
         if(gaunuc)then
