@@ -39,7 +39,6 @@ module talsh_ao_to_mo
          use exacorr_datatypes
          use exacorr_global
          use module_interest_interface
-         use module_interest_eri
          use talsh_cholesky_routines
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          use interface_to_mpi
@@ -312,7 +311,7 @@ module talsh_ao_to_mo
 !
          use exacorr_datatypes
          use exacorr_global
-         use module_interest_eri
+         use exacorr_eri
 
          implicit none
          integer, intent(in) :: nao           ! number of basis functions
@@ -322,7 +321,7 @@ module talsh_ao_to_mo
 
          integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
          integer :: li,lj,lk,ll,ni,nj,nk,nl
-         real(8) :: ei,ej,ek,el,ci,cj,ck,cl,xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
          real(8) :: gout(21*21*21*21)
          real(8), parameter :: fijkl = 1.0
          integer            :: nshells                    ! number of AO shells
@@ -346,49 +345,41 @@ module talsh_ao_to_mo
          loff = 0
          do lsh = 1, nshells
             ll   =  gto(lsh)%orb_momentum
-            el   =  gto(lsh)%exponent(1)
             xl   =  gto(lsh)%coord(1)
             yl   =  gto(lsh)%coord(2)
             zl   =  gto(lsh)%coord(3)
-            cl   =  gto(lsh)%coefficient(1)
             nl   =  nfunctions(ll,basis_angular)
             koff = 0
             do ksh = 1, nshells
                lk   =  gto(ksh)%orb_momentum
-               ek   =  gto(ksh)%exponent(1)
                xk   =  gto(ksh)%coord(1)
                yk   =  gto(ksh)%coord(2)
                zk   =  gto(ksh)%coord(3)
-               ck   =  gto(ksh)%coefficient(1)
                nk   =  nfunctions(lk,basis_angular)
                joff = 0
                do jsh = 1, nshells
                   lj   =  gto(jsh)%orb_momentum
-                  ej   =  gto(jsh)%exponent(1)
                   xj   =  gto(jsh)%coord(1)
                   yj   =  gto(jsh)%coord(2)
                   zj   =  gto(jsh)%coord(3)
-                  cj   =  gto(jsh)%coefficient(1)
                   nj   =  nfunctions(lj,basis_angular)
                   ioff = 0
                   do ish = 1, nshells
                      li   =  gto(ish)%orb_momentum
-                     ei   =  gto(ish)%exponent(1)
                      xi   =  gto(ish)%coord(1)
                      yi   =  gto(ish)%coord(2)
                      zi   =  gto(ish)%coord(3)
-                     ci   =  gto(ish)%coefficient(1)
                      ni   =  nfunctions(li,basis_angular)
 !                    call interest and get the (LL|LL) type integrals
 !                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
 
                      ![eric]
                      !deactivatedopenmp task
-                     call interest_eri('llll',fijkl,gout,&
-                                  lk,ek,xk,yk,zk,ck,&
-                                  ll,el,xl,yl,zl,cl,&
-                                  li,ei,xi,yi,zi,ci,&
-                                  lj,ej,xj,yj,zj,cj )
+                     call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
+                                  lk,gto(ksh)%exponent,xk,yk,zk,gto(ksh)%coefficient,&
+                                  ll,gto(lsh)%exponent,xl,yl,zl,gto(lsh)%coefficient,&
+                                  li,gto(ish)%exponent,xi,yi,zi,gto(ish)%coefficient,&
+                                  lj,gto(jsh)%exponent,xj,yj,zj,gto(jsh)%coefficient )
 
                      ijkl = 0
                      ijkl2 = 1

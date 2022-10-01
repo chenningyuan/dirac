@@ -195,7 +195,7 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:krmc> ${EXTERNAL_OBJECTS})
 if(ENABLE_ESR)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp/esr)
     set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:esr> ${EXTERNAL_OBJECTS})
-    dirac_test(esr "short;gascip;ci" "")
+    dirac_test(esr "medium;gascip;ci" "")
 endif()
 message(STATUS "ESR property module: ${ENABLE_ESR}")
 
@@ -306,7 +306,7 @@ message(STATUS "OpenRSP library: ${ENABLE_OPENRSP}")
 
 #    lao_rearranged as separate library
 if(ENABLE_LAO_REARRANGED)
-    dirac_test(lao_shield_rearranged "" "")
+    dirac_test(lao_shield_rearranged "long" "")
 endif()
 message(STATUS "LAO properties without connection matrices: ${ENABLE_LAO_REARRANGED}")
 
@@ -360,10 +360,10 @@ message(STATUS "Laplace module: ${ENABLE_LAPLACE}")
 if(ENABLE_PELIB)
     add_subdirectory(${PROJECT_SOURCE_DIR}/src/pelib)
     set(EXTERNAL_LIBS pelib_interface ${EXTERNAL_LIBS})
-    dirac_test(pe_energy "short;scf;pelib" "")
+    dirac_test(pe_energy "medium;scf;pelib" "")
     dirac_test(pe_response "medium;polarizabilities;pelib" "")
-    dirac_test(pe_exc "short;pelib" "")
-    dirac_test(pe_cpp "medium;pelib" "")
+    dirac_test(pe_exc "medium;pelib" "")
+    dirac_test(pe_cpp "short;pelib" "")
 endif()
 
 #  dirac sources as separate library

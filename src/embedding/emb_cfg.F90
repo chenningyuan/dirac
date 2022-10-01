@@ -31,6 +31,7 @@ implicit none
       !logical          :: ex_gs_b
       logical          :: ex_coulomb
       logical          :: do_grid_out
+      character(len=7) :: ex_property
    end type
    
    type fde_import
@@ -189,6 +190,7 @@ implicit none
          !ec%ex_gs_b      = .false.
          ec%ex_coulomb   = .false.
          ec%do_grid_out  = .false.
+         ec%ex_property  = '       '
       end subroutine fde_initialize_export
 
 
@@ -226,6 +228,7 @@ implicit none
          fde_ex_control%ex_level     = tmp%ex_level
          fde_ex_control%ex_format    = tmp%ex_format
          fde_ex_control%ex_n         = tmp%ex_n
+         fde_ex_control%ex_property  = tmp%ex_property
          !fde_ex_control%ex_n_b_direct       = tmp%ex_n_b_direct
          !fde_ex_control%ex_n_b_reorth       = tmp%ex_n_b_reorth
          !fde_ex_control%ex_s_b_direct       = tmp%ex_s_b_direct
@@ -302,6 +305,7 @@ implicit none
          tmp%ex_level   = fde_ex_control%ex_level
          tmp%ex_format  = fde_ex_control%ex_format
          tmp%ex_n       = fde_ex_control%ex_n         
+         tmp%ex_property= fde_ex_control%ex_property  
          !tmp%ex_n_b_direct     = fde_ex_control%ex_n_b_direct       
          !tmp%ex_n_b_reorth     = fde_ex_control%ex_n_b_reorth       
          !tmp%ex_s_b_direct     = fde_ex_control%ex_s_b_direct       

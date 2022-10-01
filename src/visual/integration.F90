@@ -5,7 +5,7 @@
 !      modify it under the terms of the GNU Lesser General Public
 !      License version 2.1 as published by the Free Software Foundation.
 !
-!      This program is distributed in the hope that it will be useful,
+!      This program is distributed in the hope that it will be useful, 
 !      but WITHOUT ANY WARRANTY; without even the implied warranty of
 !      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 !      Lesser General Public License for more details.
@@ -33,29 +33,30 @@ module visual_integrate
 
 contains
 
-      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer)
+      subroutine visual_integration(nr_dmat, D, D_0, ao, buffer, QUANTITY_INTEGRAL_MAX_DIM)
 
 #include "implicit.h"
 #include "priunit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
-      integer, intent(in) :: nr_dmat
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
+      integer, intent(in):: nr_dmat
       type(matrix)        :: D(nr_dmat)
-      real(8), intent(in) :: ao(*)
-      real(8), intent(in) :: buffer(*)
+      real(8), intent(in):: ao(*)
+      real(8), intent(in):: buffer(*)
+      integer, intent(in):: QUANTITY_INTEGRAL_MAX_DIM
 
       type(matrix)        :: D_0
 
-      dimension QUANTITY_INTEGRAL(0:3), &
-                QUANTITY_INTEGRAL_LAST(0:3)
+      dimension QUANTITY_INTEGRAL(0:QUANTITY_INTEGRAL_MAX_DIM), &
+                QUANTITY_INTEGRAL_LAST(0:QUANTITY_INTEGRAL_MAX_DIM)
 
-      real(8), allocatable :: x(:)
-      real(8), allocatable :: y(:)
-      real(8), allocatable :: z(:)
-      real(8), allocatable :: w(:)
-      character(2) :: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
+      real(8), allocatable:: x(:)
+      real(8), allocatable:: y(:)
+      real(8), allocatable:: z(:)
+      real(8), allocatable:: w(:)
+      character(2):: grid_orientation(3) = (/'xy', 'xz', 'yz'/)
 
-      CALL DZERO(QUANTITY_INTEGRAL,4)
+      CALL DZERO(QUANTITY_INTEGRAL, QUANTITY_INTEGRAL_MAX_DIM+1)
       if (visual_cfg_3d_integration) then
 
         CALL AROUND('3D numerical integration')
@@ -86,6 +87,7 @@ contains
                                 ao,                &
                                 x, y, z,           &
                                 buffer,            &
+                                quantity_integral_max_dim, &
                                 quantity_integral, &
                                 w,                 &
                                 nr_points)
@@ -100,25 +102,50 @@ contains
 
         close(interface_file_unit, status = 'keep')
 
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A12,A25,2A20)') 'scalar', &
-     &                                'x-component', &
-     &                                'y-component', &
-     &                                'z-component'
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI, '(A)')
+        if (QUANTITY_INTEGRAL_MAX_DIM .eq. 12) then
+           write(lupri, '(a200)') &
+                'integrated values in columns: '//&
+                'scalar, x-component, y-component, z-component, '//&
+                'xx-component, xy-component, xz-component, '//&
+                'yx-component, yy-component, yz-component, '//&
+                'zx-component, zy-component, zz-component'
+          WRITE(LUPRI, '(A)')
+          
+          WRITE(LUPRI, '(13E20.10)') QUANTITY_INTEGRAL(0), &
+     &                              QUANTITY_INTEGRAL(1), &
+     &                              QUANTITY_INTEGRAL(2), &
+     &                              QUANTITY_INTEGRAL(3), &
+     &                              QUANTITY_INTEGRAL(4), &
+     &                              QUANTITY_INTEGRAL(5), &
+     &                              QUANTITY_INTEGRAL(6), &
+     &                              QUANTITY_INTEGRAL(7), &
+     &                              QUANTITY_INTEGRAL(8), &
+     &                              QUANTITY_INTEGRAL(9), &
+     &                              QUANTITY_INTEGRAL(10), &
+     &                              QUANTITY_INTEGRAL(11), &
+     &                              QUANTITY_INTEGRAL(12)
 
-        WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
-     &                           QUANTITY_INTEGRAL(1), &
-     &                           QUANTITY_INTEGRAL(2), &
-     &                           QUANTITY_INTEGRAL(3)
+        else if (QUANTITY_INTEGRAL_MAX_DIM .eq. 3) then
+           write(lupri, '(a80)') &
+                'integrated values in columns: '//&
+                'scalar, x-component, y-component, z-component'
+          WRITE(LUPRI, '(A)')
+          
+          WRITE(LUPRI, '(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                             QUANTITY_INTEGRAL(1), &
+     &                             QUANTITY_INTEGRAL(2), &
+     &                             QUANTITY_INTEGRAL(3)
 
-        WRITE(LUPRI,'(A)')
-        CALL PRSYMB(LUPRI,'-',100,0)
+        end if
 
-        WRITE(LUPRI,'(A)')
-        WRITE(LUPRI,'(A)')
+        WRITE(LUPRI, '(A)')
+        CALL PRSYMB(LUPRI, '-',100, 0)
 
-      ENDIF !3D
+        WRITE(LUPRI, '(A)')
+        WRITE(LUPRI, '(A)')
+
+      ENDIF  ! 3D
 
 
       if (visual_cfg_2d_integration) then
@@ -137,7 +164,9 @@ contains
          write(lupri, *)
          write(lupri, '(6x, a, i22)')     'order', visual_cfg_2d_integration_order
          write(lupri, *)
-         write(lupri, '(a12, a25, 2a20)') 'scalar', 'x-component', 'y-component', 'z-component'
+         write(lupri, '(a80)') &
+              'integrated values in columns: '//&
+              'scalar, x-component, y-component, z-component'
          write(lupri, *)
 
          lunit = 45
@@ -167,6 +196,7 @@ contains
                                  AO, &
                                  x, y, z, &
                                  buffer, &
+                                 QUANTITY_INTEGRAL_MAX_DIM, &
                                  QUANTITY_INTEGRAL, &
                                  w, &
                                  NR_POINTS)
@@ -176,18 +206,34 @@ contains
          call dealloc(z)
          call dealloc(w)
 
-         CLOSE(LUNIT,STATUS = 'DELETE')
+         CLOSE(LUNIT, STATUS = 'DELETE')
 
-         WRITE(LUPRI,'(4E20.10)') QUANTITY_INTEGRAL(0), &
-     &                            QUANTITY_INTEGRAL(1), &
-     &                            QUANTITY_INTEGRAL(2), &
-     &                            QUANTITY_INTEGRAL(3)
+         if (QUANTITY_INTEGRAL_MAX_DIM .eq. 3) then
+           WRITE(LUPRI, '(4E20.10)') QUANTITY_INTEGRAL(0), &
+     &                              QUANTITY_INTEGRAL(1), &
+     &                              QUANTITY_INTEGRAL(2), &
+     &                              QUANTITY_INTEGRAL(3)
+         else if (QUANTITY_INTEGRAL_MAX_DIM .eq. 12) then
+           WRITE(LUPRI, '(13E20.10)') QUANTITY_INTEGRAL(0), &
+     &                              QUANTITY_INTEGRAL(1), &
+     &                              QUANTITY_INTEGRAL(2), &
+     &                              QUANTITY_INTEGRAL(3), &
+     &                              QUANTITY_INTEGRAL(4), &
+     &                              QUANTITY_INTEGRAL(5), &
+     &                              QUANTITY_INTEGRAL(6), &
+     &                              QUANTITY_INTEGRAL(7), &
+     &                              QUANTITY_INTEGRAL(8), &
+     &                              QUANTITY_INTEGRAL(9), &
+     &                              QUANTITY_INTEGRAL(10), &
+     &                              QUANTITY_INTEGRAL(11), &
+     &                              QUANTITY_INTEGRAL(12)
+         end if
 
-         WRITE(LUPRI,'(A)')
-         CALL PRSYMB(LUPRI,'-',100,0)
+         WRITE(LUPRI, '(A)')
+         CALL PRSYMB(LUPRI, '-',100, 0)
 
-         WRITE(LUPRI,'(A)')
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI, '(A)')
+         WRITE(LUPRI, '(A)')
 
       end if
 
@@ -196,8 +242,9 @@ contains
       SUBROUTINE INTEGRATE_QUANTITY(nr_dmat, D, &
                                     D_0, &
                                     AO, &
-                                    PX,PY,PZ, &
+                                    PX, PY, PZ, &
                                     buffer, &
+                                    QUANTITY_INTEGRAL_MAX_DIM, &
                                     QUANTITY_INTEGRAL, &
                                     WEIGHT, &
                                     NR_POINTS)
@@ -206,9 +253,10 @@ contains
 #include "priunit.h"
 #include "dcbbas.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
 
-      integer, intent(in) :: nr_dmat
+      integer, intent(in):: nr_dmat
+      integer, intent(in):: QUANTITY_INTEGRAL_MAX_DIM
       type(matrix)        :: D(nr_dmat)
       type(matrix)        :: D_0
       dimension AO(*), &
@@ -216,12 +264,12 @@ contains
      &          PY(*), &
      &          PZ(*), &
      &          buffer(*), &
-     &          QUANTITY_INTEGRAL(0:3), &
+     &          QUANTITY_INTEGRAL(0:QUANTITY_INTEGRAL_MAX_DIM), &
      &          WEIGHT(*), &
-     &          QUANTITY(0:3)
+     &          QUANTITY(0:QUANTITY_INTEGRAL_MAX_DIM)
 
 
-      DO IPOINT = 1,NR_POINTS
+      DO IPOINT = 1, NR_POINTS
 
            call get_quantity_in_point(visual_cfg_nr_dmat, &
                                       D,                  &
@@ -231,10 +279,11 @@ contains
                                       pz(ipoint),         &
                                       ao,                 &
                                       buffer,             &
+                                      QUANTITY_INTEGRAL_MAX_DIM, &
                                       quantity)
 
-        CALL DAXPY(4,WEIGHT(IPOINT),QUANTITY,1, &
-     &                              QUANTITY_INTEGRAL,1)
+        CALL DAXPY(QUANTITY_INTEGRAL_MAX_DIM+1, WEIGHT(IPOINT), QUANTITY, 1, &
+     &                              QUANTITY_INTEGRAL, 1)
       ENDDO
 
 
@@ -242,11 +291,11 @@ contains
       END subroutine
 
 
-      SUBROUTINE LEGENDRE_POLYNOMIAL(P,N,X)
+      SUBROUTINE LEGENDRE_POLYNOMIAL(P, N, X)
 
 #include "implicit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
 
       DIMENSION P(0:NMAX)
@@ -254,7 +303,7 @@ contains
       P(0) = 1
       P(1) = X
 
-      DO I = 1,N-1
+      DO I = 1, N-1
         P(I+1) = (2*I + 1)*X*P(I) - I*P(I-1)
         P(I+1) = P(I+1)/(I+1)
       ENDDO
@@ -262,28 +311,28 @@ contains
       END subroutine
 
 
-      SUBROUTINE LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X)
+      SUBROUTINE LEGENDRE_POLYNOMIAL_DERIVATIVES(P, DP, N, X)
 
 #include "implicit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
 
       DIMENSION P(0:NMAX), &
      &          DP(NMAX)
 
-      DO I = 1,N
+      DO I = 1, N
         DP(I) = (I*X*P(I) - I*P(I-1))/(X*X - D1)
       ENDDO
 
       RETURN
       END subroutine
 
-      SUBROUTINE LOBATTO_1D_GRID(N,X,W)
+      SUBROUTINE LOBATTO_1D_GRID(N, X, W)
 
 #include "implicit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
       PARAMETER (THRESHOLD = 1.0D-12)
 
@@ -292,19 +341,19 @@ contains
      &          P(0:NMAX), &
      &          DP(NMAX)
 
-      X_OLD = -D1 + THRESHOLD
+      X_OLD = -D1+THRESHOLD
 
-      CALL LEGENDRE_POLYNOMIAL(P,N,X_OLD)
-      CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X_OLD)
+      CALL LEGENDRE_POLYNOMIAL(P, N, X_OLD)
+      CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P, DP, N, X_OLD)
 
-      DO I = 2,N-1
+      DO I = 2, N-1
         STEP  = 1.0D-4
         DO WHILE(DABS(STEP) .GT. THRESHOLD)
           Y_OLD = DP(N-1)
-          X_NEW = X_OLD + STEP
+          X_NEW = X_OLD+STEP
 
-          CALL LEGENDRE_POLYNOMIAL(P,N,X_NEW)
-          CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X_NEW)
+          CALL LEGENDRE_POLYNOMIAL(P, N, X_NEW)
+          CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P, DP, N, X_NEW)
 
           Y_NEW = DP(N-1)
 
@@ -316,7 +365,7 @@ contains
         ENDDO
         X(I) = X_NEW
 
-        W(I) = N*(N - 1)*P(N-1)*P(N-1)
+        W(I) = N*(N-1)*P(N-1)*P(N-1)
         W(I) = D2/W(I)
       ENDDO
 
@@ -325,18 +374,18 @@ contains
       X(1) = -D1
       X(N) =  D1
 
-      W(1) = D2/(N*(N - D1))
+      W(1) = D2/(N*(N-D1))
       W(N) = W(1)
 
       END subroutine
 
 
 
-      SUBROUTINE LEGENDRE_1D_GRID(N,X,W)
+      SUBROUTINE LEGENDRE_1D_GRID(N, X, W)
 
 #include "implicit.h"
 
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D4 = 4.0D0)
+      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0)
       PARAMETER (NMAX = 1000)
       PARAMETER (THRESHOLD = 1.0D-12)
 
@@ -347,15 +396,15 @@ contains
 
       X_OLD = -D1
 
-      CALL LEGENDRE_POLYNOMIAL(P,N,X_OLD)
+      CALL LEGENDRE_POLYNOMIAL(P, N, X_OLD)
 
-      DO I = 1,N
+      DO I = 1, N
         STEP  = 1.0D-4
         DO WHILE(DABS(STEP) .GT. THRESHOLD)
           Y_OLD = P(N)
-          X_NEW = X_OLD + STEP
+          X_NEW = X_OLD+STEP
 
-          CALL LEGENDRE_POLYNOMIAL(P,N,X_NEW)
+          CALL LEGENDRE_POLYNOMIAL(P, N, X_NEW)
 
           Y_NEW = P(N)
 
@@ -367,9 +416,9 @@ contains
         ENDDO
         X(I) = X_NEW
 
-        CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P,DP,N,X(I))
+        CALL LEGENDRE_POLYNOMIAL_DERIVATIVES(P, DP, N, X(I))
 
-        W(I) = (D1 - X(I)*X(I))*DP(N)*DP(N)
+        W(I) = (D1-X(I)*X(I))*DP(N)*DP(N)
         W(I) = D2/W(I)
       ENDDO
 
@@ -400,12 +449,12 @@ contains
 !     --------------------------------------------------------------------------
       integer              :: ipoint, ix, iy, i, j
       character(30)        :: file_name
-      real(8), allocatable :: rx(:), ry(:), rz(:), rw(:), x(:), w(:)
+      real(8), allocatable:: rx(:), ry(:), rz(:), rw(:), x(:), w(:)
       real(8)              :: vx(3), vy(3), p_off(3), p(3)
       real(8)              :: sx, sy
 !     --------------------------------------------------------------------------
 
-      write(file_name, '(a5,i2)') 'GRID.', u
+      write(file_name, '(a5, i2)') 'GRID.', u
       open(u,                   &
          file   = file_name,    &
          status = 'unknown',    &
@@ -413,7 +462,7 @@ contains
          form = 'formatted')
       rewind u
 
-      vx = p_right - p_origin
+      vx = p_right-p_origin
       vy = p_top   - p_origin
       sx = (vx(1)*vx(1) + vx(2)*vx(2) + vx(3)*vx(3))**0.5d0
       sy = (vy(1)*vy(1) + vy(2)*vy(2) + vy(3)*vy(3))**0.5d0
@@ -428,14 +477,14 @@ contains
       call lobatto_1d_grid(n, x, w)
 
       ipoint = 0
-      do ix = 0, nr_right - 1
-         do iy = 0, nr_top - 1
-            p_off = p_origin + ix*vx/nr_right + iy*vy/nr_top
+      do ix = 0, nr_right-1
+         do iy = 0, nr_top-1
+            p_off = p_origin+ix*vx/nr_right+iy*vy/nr_top
             do i = 1, n
                do j = 1, n
-                  ipoint = ipoint + 1
+                  ipoint = ipoint+1
 
-                  p = p_off + 0.5d0*(x(i) + 1.0d0)*vx/nr_right  &
+                  p = p_off+0.5d0*(x(i) + 1.0d0)*vx/nr_right  &
                             + 0.5d0*(x(j) + 1.0d0)*vy/nr_top
 
                   rx(ipoint) = p(1)

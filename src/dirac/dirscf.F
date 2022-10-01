@@ -1001,7 +1001,7 @@ C        ... before extracting of EIG print the Fock matrix
 C
 C     If converged, exit SCF here
 C
-      IF (DHFEXIT) GOTO 9999      
+      IF (DHFEXIT) GOTO 9999
 C
 C     Diagonalize Fock matrix
 C     =======================
@@ -3342,12 +3342,15 @@ C
          CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
          IOPT=14
          IF(ATOMIC) THEN
-           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)           
+           CALL ATOMIC_REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
          ELSE
            CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
          ENDIF
       ENDIF
       IF(IONMVO) THEN
+        WRITE(LUPRI,'(A)') "Generating MVOs with Bauschlicher's"//
+     &  " method (J. Chem. Phys. 72, 880 (1980))."
+
 C
 C       Generate MVOs by the Bauschlicher method (ionic Fock)
 C
@@ -3451,7 +3454,8 @@ C
       IF(ATOMIC) THEN
         CALL ATOMIC_WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
       ELSE
-        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
+        CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG,
+     &     TITLE='MVO coefficients')
       ENDIF   
       CLOSE(LUCOEF,STATUS='KEEP')
 C
@@ -3484,6 +3488,8 @@ C
 C     Set up index arrays for coefficients contributing
 C     =================================================
 C
+      IF (IPRMVO.GE.0) WRITE(LUPRI,'(/A/,(5X,A))')
+     &   'Orbital selection for MVO density matrix:',VECMVO(1:NFSYM)
       IC   = 1
       DO I = 1,NFSYM
         NR(I)   = NESH(I)
@@ -3540,7 +3546,8 @@ C
         CALL TITLER('Output density matrix from DENMVO','*',103)
         DO 20 I = 1,NFSYM
         IF(NVEC(I,0).EQ.0) GOTO 20
-          WRITE(LUPRI,'(/3X,A,I2/)') '*** Fermion corep ',I
+          WRITE(LUPRI,'(/3X,A,I2,A,I0/)') '*** Fermion corep ',I,
+     &       '; Occupied MOs: ',NVEC(I,0)
           CALL PRQMAT(DMAT(I2BASX(I,I)+1),NFBAS(I,0),NFBAS(I,0),
      &                NTBAS(0),NTBAS(0),NZ,IPQTOQ(1,0),LUPRI)
    20   CONTINUE
