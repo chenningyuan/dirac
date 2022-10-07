@@ -414,7 +414,7 @@ C     for PRQMAT print of complex matrices:
 C
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,NZCMPLX,*),WORK(*)
       CHARACTER WF*4, PPM_OR_PPT*3
-      LOGICAL   FILEX
+      LOGICAL   FILEX, SWITCH_XY
       REAL*8    GTENSOR(3,3),GCORR(3,3),GMATRIX(3,3),GEIG(3),GSHIFT(3),
      &          GEVEC(3,3), GCOR(3)
       INTEGER   JMS(-4:4)
@@ -533,9 +533,9 @@ C
      &             NZCONF,N_CIESR,-1,LUPRI)
        END IF
 #endif
-      CALL ESRPHASE(ESRVAL,PHASE_FAC,WORK(KCMO), WORK(KPMAT),
+      CALL ESRPHASE(ESRVAL,PHASE_FAC,SWITCH_XY,WORK(KCMO), WORK(KPMAT),
      &              WORK(KHCI),WORK(KEIGVC),WORK,KFREE,LFREE)
-C     CALL ESRPHASE(ESRVAL,PHASE_factors,CMO,PMAT,
+C     CALL ESRPHASE(ESRVAL,PHASE_factors,SWITCH_XY,CMO,PMAT,
 C    &              HCI,CIEVEC,WORK,KFREE,LFREE)
 C
 C     Memory allocation for PRPESR1
@@ -556,8 +556,8 @@ C
         ENDDO
       END IF
 C
-      CALL PRPESR1(ESRVAL,PHASE_FAC,WORK(KESRST),WORK(KCMO),WORK(KPMAT),
-     &             WORK(KEIGVC),WORK,KFREE,LFREE)
+      CALL PRPESR1(ESRVAL,PHASE_FAC,WORK(KESRST),WORK(KCMO),
+     &             WORK(KPMAT),WORK(KEIGVC),WORK,KFREE,LFREE)
 C     CALL PRPESR1(ESRVAL,PHASE_factors,LESRST,CMO,PMAT,
 C    &             CIEVEC,WORK,KFREE,LFREE)
 C
@@ -684,6 +684,17 @@ C
       ELSE
          call quit('Only doublet, triplet, and quartet implemented yet')
       END IF
+
+      IF (SWITCH_XY) THEN
+         DO I = 1,3
+            TMP = GTENSOR(1,I)
+            GTENSOR(1,I) = GTENSOR(2,I)
+            GTENSOR(2,I) = TMP
+            TMP = GCORR(1,I)
+            GCORR(1,I) = GCORR(2,I)
+            GCORR(2,I) = TMP
+         END DO
+      END IF
 C
       CALL HEADER(' ESR g shifts : ',1)
 C
@@ -807,7 +818,7 @@ C
 C     Print ESR hyperfine coupling constants from hyperfine Hamiltonian
 C
       IF (ESR_HFCC)
-     &   CALL PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
+     &   CALL PRP_ESR_HFC(ESRVAL,SWITCH_XY,WORK,KFREE,LFREE)
 C
 C     Memory deallocation
 C
@@ -821,8 +832,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ESRPHASE(ESRVAL,PHASE_factors,CMO,PMAT,HCI,CIEVEC,
-     &                    WORK,KFREE,LFREE)
+      SUBROUTINE ESRPHASE(ESRVAL,PHASE_factors,SWITCH_XY,CMO,PMAT,
+     &                    HCI,CIEVEC,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     --- 1) Find state vectors diagonalizing S_z (for a "standard" S_eff basis)
@@ -834,9 +845,9 @@ C        CMO, HCI, CIEVEC
 C
 C     Output:
 C        PHASE_factors : phase factors for each CI vector in S_eff basis, i.e. in S_z
-C                       order such that S_x and S_y are have the conventional structure
+C                        order, such that S_x and S_y have the conventional structure
 C                       (if this is not ensured, some g values and HFCC values
-C                        might have incorrect sign compared to the standard
+C                        might have incorrect sign or be off-diagonal compared to the standard
 C                        spin Hamiltonians based on relativistic perturbations to
 C                        to non-relativistic eigenfunctions with exact M_S values.
 C                        Wrong signs also affect the calculation of isotropic values.)
@@ -858,7 +869,7 @@ C     for PRQMAT print of complex matrices:
 C
       PARAMETER( THR_ZERO=1.D-12 )
 C
-      LOGICAL   REAL_PMLF
+      LOGICAL   SWITCH_XY, REAL_PMLF
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,4),
      &          PHASE_factors(MULTIPESR,2),
      &          CMO(*),PMAT(*),HCI(MULTIPESR,MULTIPESR,NZ_in_CI),
@@ -923,8 +934,8 @@ C
 
       PHASE_factors(:,1) = 1.0D0 ! no phase changes in ESRTRANS yet
       PHASE_factors(:,2) = 0.0D0
-      CALL ESRTRANS(INDXPR,ESRVAL,PHASE_factors,CMO,PMAT,CIEVEC,
-     &              WORK,KFREE,LFREE)
+      CALL ESRTRANS(INDXPR,ESRVAL,PHASE_factors,
+     &              CMO,PMAT,CIEVEC,WORK,KFREE,LFREE)
 C       <i|S_z|j> is now in ESRVAL(...,1)
 C       temp. use ESRVAL(...,2:3) for eigenvectors and eigenvalues
 C       note: using NZ_in_CI in QDIAG and not 2 because we know Sigma_z
@@ -1031,8 +1042,8 @@ C
             CALL WRIXPR(I,INDXPR)
           END IF
 C
-          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),PHASE_factors,CMO,PMAT,
-     &                  CIEVEC,WORK,KFREE,LFREE)
+          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),PHASE_factors,
+     &                  CMO,PMAT,CIEVEC,WORK,KFREE,LFREE)
       ENDDO
 C
       CLOSE(LU1INT,STATUS = 'KEEP')
@@ -1071,7 +1082,7 @@ C       Use Sigma_X and Sigma_Y to determine phase of M_S .gt. -J_eff
 C       using the requirement that Re(<J+1|S_x|J>) .gt. 0 and Im(<J+1|S_y|J>) .gt. 0
 C       (as for non-rel <2|S_x|1> = 0.5 and  <2|S_y|1> = 0.5 i)
 C
-      PHASE_J_R = 1.0D0 ! keep eigenvector for M_S = -S (J = 1) as it is
+      PHASE_J_R = 1.0D0 ! keep eigenvector for M_S = +S (J = 1) as it is
       PHASE_J_I = 0.0D0
       PHASE_factors(1,1) = PHASE_J_R
       PHASE_factors(1,2) = PHASE_J_I
@@ -1147,18 +1158,22 @@ C
            ! OK, do nothing, (a - ib)
             PHASE_JP1_R = +PHASE_R
             PHASE_JP1_I = +PHASE_I
+            SWITCH_XY   = .FALSE.
         ELSE IF (SX_R .gt. 0.0D0 .and. SY_I .gt. 0.0D0) then
            ! (a - ib) = (b + ia)*(-i)
             PHASE_JP1_R = +PHASE_I
             PHASE_JP1_I = -PHASE_R
+            SWITCH_XY   = .TRUE.
         ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .lt. 0.0D0) then
            ! (a - ib) = (-b - ia)*(i)
             PHASE_JP1_R = -PHASE_I
             PHASE_JP1_I = +PHASE_R
+            SWITCH_XY   = .TRUE.
         ELSE IF (SX_R .lt. 0.0D0 .and. SY_I .gt. 0.0D0) then
            ! (a -ib) = (-a + ib)*(-1)
             PHASE_JP1_R = -PHASE_R
             PHASE_JP1_I = -PHASE_I
+            SWITCH_XY   = .FALSE.
         ELSE
            CALL QUIT('One of Sx and Sy is zero.'//
      &        ' Probably pseudo-singlet state included.')
@@ -1195,6 +1210,14 @@ C       1) multiply from left with phase factors for J, complex conjugated:
         SX_I = SXR*PHASE_JP1_I + SXI*PHASE_JP1_R
         SY_R = SYR*PHASE_JP1_R - SYI*PHASE_JP1_I
         SY_I = SYR*PHASE_JP1_I + SYI*PHASE_JP1_R
+        IF (SWITCH_XY) THEN
+           SY_R_tmp  = SY_R
+           SY_R = SX_R
+           SX_R = SY_R_tmp
+           SY_I_tmp  = SY_I
+           SY_I = SX_I
+           SX_I = SY_I_tmp
+        END IF
 
         WRITE (LUPRI,'(/A,F4.1,A)')
      &     "  Final values after phase transformation"//
@@ -1220,6 +1243,10 @@ C       ... here PHASE is new phase of vector MJ-1
 
          CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,1), MULTIPESR) ! S_x
          CALL ESR_PHASE_TRANS(PHASE_factors, ESRVAL(1,1,1,2), MULTIPESR) ! S_y
+         IF (SWITCH_XY) THEN
+            L_ESRVAL = MULTIPESR*MULTIPESR*2
+            CALL DSWAP(L_ESRVAL,ESRVAL(1,1,1,1),1,ESRVAL(1,1,1,2),1)
+         END IF
 
          CALL HEADER('Phase updated property matrix for S_x',1)
          CALL PRQMAT(ESRVAL(1,1,1,1),MULTIPESR,MULTIPESR,
@@ -1267,7 +1294,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 C
-      LOGICAL LESRST(2,*),REAL_PMLF
+      LOGICAL   LESRST(2,*), REAL_PMLF
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
      &          PHASE_factors(MULTIPESR,2),
      &          CMO(*),PMAT(*),
@@ -1358,8 +1385,8 @@ chj       IF (IPRESR.GT.1 .OR. ITIM.GE.0) THEN
      &         ISYM,IOPSY,ITIM
           END IF
 C
-          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),PHASE_factors,CMO,PMAT,
-     &                  CIEVEC,WORK,KFREE,LFREE)
+          CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),PHASE_factors,
+     &                  CMO,PMAT,CIEVEC,WORK,KFREE,LFREE)
 C
 c
 c      print *, ' ..... test output of property matrix in MO basis ...'
@@ -1477,8 +1504,8 @@ C
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE ESRTRANS(INDXPR,ESRVAL,PHASE_factors,CMO,PMAT,CIEVEC,
-     &                    WORK,KFREE,LFREE)
+      SUBROUTINE ESRTRANS(INDXPR,ESRVAL,PHASE_factors,
+     &                    CMO,PMAT,CIEVEC,WORK,KFREE,LFREE)
 C*****************************************************************************
 C
 C     Calculate one-electron property INDXPR in CI basis (in CIEVEC)
@@ -1547,13 +1574,19 @@ C     Allocate memory for property matrix in molfdir format:
       CALL MEMGET2('REAL','MUUUU',
      &   KMUUUU ,0,WORK,KFREE,LFREE)
 
-      IF (INDEX(PRPNAM(INDXPR),'magnetic field') .gt. 0 .or.
-     &    INDEX(PRPNAM(INDXPR),'g_1 MAGFLD') .gt. 0 ) THEN
-         ACCURACY = THR_CIESR ! does not make sense to request higher accuracy than CI convergence
-         ! NB! this defines g shifts in 10 ppm if THR_CIESR = 1.D-6, ppt if THR_CIESR = 1.D-4 (default)
-      ELSE
-         ACCURACY = MAX(THR_CIESR,1.D-4) ! 3 digits enough for HFI etc. - other errors are bigger
-      END IF
+!     IF (INDEX(PRPNAM(INDXPR),'magnetic field') .gt. 0 .or.
+!    &    INDEX(PRPNAM(INDXPR),'g_1 MAGFLD') .gt. 0 ) THEN
+!        ACCURACY = THR_CIESR ! does not make sense to request higher accuracy than CI convergence
+!        ! NB! this defines g shifts in 10 ppm if THR_CIESR = 1.D-6, ppt if THR_CIESR = 1.D-4 (default)
+!     ELSE
+!        ACCURACY = MAX(THR_CIESR,1.D-4) ! 3 digits enough for HFI etc. - other errors are bigger
+!     END IF
+! 04-Oct-2022 hjaaj: an accuracy of 1.d-4 cause an HFC for I in NI to
+! change from 58.xxx to 79.xxx !!! This was unexpected for me. Therefore
+! now always THR_CIESR
+      ACCURACY = THR_CIESR * 0.1D0
+! if converged to e.g. 1.d-4 we will
+! have coefficients less than 1.d-4 which are important !!!
 C
 C     Extract symmetry information
 C     =============================
@@ -1988,8 +2021,8 @@ C
       END
 #endif /* WORK_IN_PROGRESS */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck PRP_ESR */
-      SUBROUTINE PRP_ESR(ESRVAL,WORK,KFREE,LFREE)
+C     /* Deck PRP_ESR_HFC */
+      SUBROUTINE PRP_ESR_HFC(ESRVAL,SWITCH_XY,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Output routine for ESR properties
@@ -2006,6 +2039,8 @@ C
 #include "nuclei.h"
 C
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
+      LOGICAL   SWITCH_XY
+
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
       CALL MEMGET2('REAL','TMAT',KTMAT,NCMAT,WORK,KFREE,LFREE)
@@ -2021,7 +2056,8 @@ C
       CALL MEMGET2('REAL','TMPMAT',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
 C
       CALL SETATM(WORK(KATOM),NATOM,29)
-      CALL PRP_ESR1(ESRVAL,WORK(KTMPMAT),WORK(KTMAT),WORK(KTISO),
+      CALL PRP_ESR_HFC_1(ESRVAL,SWITCH_XY,
+     &     WORK(KTMPMAT),WORK(KTMAT),WORK(KTISO),
      &     WORK(KIATM),WORK(KRATM),WORK(KIBUF),
      &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA) )
       CALL MEMREL('PRP_ESR',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2030,8 +2066,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C     /* Deck PRP_ESR1 */
-      SUBROUTINE PRP_ESR1(ESRVAL,TMPMAT,TMAT,TISO,IATINF,RATINF,
-     &                    IBUFA,DOATOM,CSTRA,SCTRA)
+      SUBROUTINE PRP_ESR_HFC_1(ESRVAL,SWITCH_XY,TMPMAT,TMAT,TISO,
+     &                    IATINF,RATINF,IBUFA,DOATOM,CSTRA,SCTRA)
 C***********************************************************************
 C
 C     Output routine for ESR properties
@@ -2052,7 +2088,7 @@ C
 #include "dcbesr.h"
 #include "dcborb.h"
 C
-      LOGICAL TEST,DOATOM(NUCIND)
+      LOGICAL   SWITCH_XY,TEST,DOATOM(NUCIND)
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
      &          TMPMAT(3,*),TMAT(3,3,NUCDEP),
      &          TISO(NUCDEP),RATINF(3,5,NUCDEP),
@@ -2164,24 +2200,34 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) =  2.0D0*ESRVAL(jphlf,jmhlf,1,KA)
-            TMPMAT(IPTAX(2,2),JA) = -2.0D0*ESRVAL(jphlf,jmhlf,2,KA)
+            IF (SWITCH_XY) THEN
+               TMPMAT(IPTAX(2,2),JA) =  2.0D0*ESRVAL(jphlf,jmhlf,1,KA)
+               TMPMAT(IPTAX(1,2),JA) = -2.0D0*ESRVAL(jphlf,jmhlf,2,KA)
+            ELSE
+               TMPMAT(IPTAX(1,2),JA) =  2.0D0*ESRVAL(jphlf,jmhlf,1,KA)
+               TMPMAT(IPTAX(2,2),JA) = -2.0D0*ESRVAL(jphlf,jmhlf,2,KA)
+            END IF
             TMPMAT(IPTAX(3,2),JA) =  2.0D0*ESRVAL(jphlf,jphlf,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 3) THEN
 C     .... triplet molecules (Seff = 1)
-         jm1 = 1
+         jm1 = 3
          j0  = 2
-         jp1 = 3
+         jp1 = 1
 C
          SQRT2 = SQRT(2.0D0)
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) = SQRT2*ESRVAL(j0 ,jm1,1,KA)
-            TMPMAT(IPTAX(2,2),JA) = SQRT2*ESRVAL(j0 ,jm1,2,KA)
-            TMPMAT(IPTAX(3,2),JA) =       ESRVAL(jp1,jp1,1,KA)
+            IF (SWITCH_XY) THEN
+               TMPMAT(IPTAX(2,2),JA) =  SQRT2*ESRVAL(j0 ,jm1,1,KA)
+               TMPMAT(IPTAX(1,2),JA) = -SQRT2*ESRVAL(j0 ,jm1,2,KA)
+            ELSE
+               TMPMAT(IPTAX(1,2),JA) =  SQRT2*ESRVAL(j0 ,jm1,1,KA)
+               TMPMAT(IPTAX(2,2),JA) = -SQRT2*ESRVAL(j0 ,jm1,2,KA)
+            END IF
+            TMPMAT(IPTAX(3,2),JA) =        ESRVAL(jp1,jp1,1,KA)
          ENDDO
 C
       ELSE IF (MULTIPESR .EQ. 4) THEN
@@ -2194,8 +2240,13 @@ C
          DO IA = 1,NA
             JA = IBUFA(IA)
             KA = IPESR(JA,1)
-            TMPMAT(IPTAX(1,2),JA) =       ESRVAL(2,3,1,KA)
-            TMPMAT(IPTAX(2,2),JA) =      -ESRVAL(2,3,2,KA)
+            IF (SWITCH_XY) THEN
+               TMPMAT(IPTAX(2,2),JA) =       ESRVAL(2,3,1,KA)
+               TMPMAT(IPTAX(1,2),JA) =      -ESRVAL(2,3,2,KA)
+            ELSE
+               TMPMAT(IPTAX(1,2),JA) =       ESRVAL(2,3,1,KA)
+               TMPMAT(IPTAX(2,2),JA) =      -ESRVAL(2,3,2,KA)
+            END IF
             TMPMAT(IPTAX(3,2),JA) = 2.0D0*ESRVAL(3,3,1,KA)
          ENDDO
       ELSE
@@ -2226,7 +2277,7 @@ C
                   IATOM = IATOM + 1
                   IF (DOATOM(I)) THEN
                      NSPEC = NSPEC + 1
-                     CALL ESRANA(TMAT(1,1,IATOM), TISO(IATOM),
+                     CALL ESR_HFC_ANA(TMAT(1,1,IATOM), TISO(IATOM),
      &                 IATINF(1,NSPEC),RATINF(1,1,NSPEC),
      &                 NAMDEP(IATOM),NAMDPX(3*(IATOM-1)+1), IPRPRP)
                   END IF
@@ -2239,8 +2290,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C     /* Deck ESRANA */
-      SUBROUTINE ESRANA(TMAT,AVETOT,IATINF,RATINF,
+C     /* Deck ESR_HFC_ANA */
+      SUBROUTINE ESR_HFC_ANA(TMAT,AVETOT,IATINF,RATINF,
      &                  NAME,NAMEX,IPRINT)
 C***********************************************************************
 C
