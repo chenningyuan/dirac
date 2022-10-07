@@ -433,8 +433,8 @@ module talsh_trial_eomccsd
          end do
       end do
 
-      call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
-      call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
+      ! call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
+      ! call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
 
     end subroutine
 
@@ -539,12 +539,11 @@ module talsh_trial_eomccsd
            end do
         end if
 
-!       if (debug_trial) then
-        if (.true.) then
+      if (debug_trial) then
            do i = 1, size(diagonal,1)
                write (6,*) 'H_II(',i,'):',diagonal(i)
            end do
-        end if
+      end if
 
 ! now set up the initial trial vectors, as unit matrices (or the equivalent for higher-dimensional tensors)
 

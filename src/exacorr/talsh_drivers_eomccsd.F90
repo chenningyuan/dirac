@@ -255,7 +255,7 @@ module talsh_eom
        type(talsh_projectors_tens_t), intent(inout) :: projector_t
        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace_t
        
-       logical :: debug = .true.
+       logical :: debug = .false.
        integer :: p, q, r, s, ierr, pmax, qmax, rmax, smax
        complex(8), pointer, contiguous:: proj1_tens(:,:), proj2_tens(:,:,:,:)
        type(C_PTR):: proj1_body_p, proj2_body_p

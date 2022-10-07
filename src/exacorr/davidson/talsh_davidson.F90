@@ -497,7 +497,7 @@ contains
 
         integer :: ierr, i, j
         integer(INTD) :: rank
-        logical :: debug = .true.
+        logical :: debug = .false.
 
         rank=talsh_tensor_rank(workspace_t%trial1(1))
         if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
@@ -588,16 +588,19 @@ contains
        complex(8) :: norm
 
        norm_r = sqrt(tensor_norm2(v1) +  tensor_norm2(v2)/4)   !XY 4 is for EE(ab.ij) but we need to take care for IP
-       norm = CMPLX(norm_r, 0.0d0)
-       norm_r = 1.0d0 / norm_r
+       norm = complex(norm_r, 0.0d0)
+    !    norm_r = 1.0d0 / norm_r
+       print *, "norm of trail tensor", norm_r
+       print *, "safe_minimum", safe_minimum
 
        if (norm_r .ge. safe_minimum ) then
+    !    if (norm_r .ge. 1.0d-13 ) then
           call divide_tensor_elements_by_value(v1, norm)
           call divide_tensor_elements_by_value(v2, norm)
        else
           call quit ('norm of tensors too small for division, quitting')
        end if
-
+       
     end subroutine
 
 
@@ -625,19 +628,19 @@ contains
        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
        rank=talsh_tensor_rank(v1)
-       print *, "rank in projection:", rank
+    !    print *, "rank in projection:", rank
 
        if (rank.eq.1) then
-          ierr=talsh_tensor_contract("num()+=v+(a)*v(a)",result_tensor_num,v1,u1)
+          ierr=talsh_tensor_contract("num()+=u+(a)*v(a)",result_tensor_num,u1,v1)
           ierr=talsh_tensor_contract("den()+=u+(a)*u(a)",result_tensor_den,u1,u1)
 
-          ierr=talsh_tensor_contract("num()+=v+(a,b,c)*v(a,b,c)",result_tensor_num,v2,u2)
+          ierr=talsh_tensor_contract("num()+=u+(a,b,c)*v(a,b,c)",result_tensor_num,u2,v2)
           ierr=talsh_tensor_contract("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2)
 
        else if (rank.eq.2) then
-          ierr=talsh_tensor_contract("num()+=v+(a,b)*u(a,b)",result_tensor_num,v1,u1)
-          print *, "ierr in projection:", ierr
-          print *, "projection of v1*u1", result_tens_num(1)
+          ierr=talsh_tensor_contract("num()+=u+(a,b)*v(a,b)",result_tensor_num,u1,v1)
+        !   print *, "ierr in projection:", ierr
+        !   print *, "projection of v1*u1", result_tens_num(1)
           ierr=talsh_tensor_contract("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
 
 
@@ -653,15 +656,14 @@ contains
         !     ! ierr=talsh_tensor_contract("num()+=v+()*u()",result_tensor_num,one_tensor,one_tensor,scale=ZERO)
         !     result_tens_num(1)= result_tens_num(1) + 0.0
         !   else
-            ierr=talsh_tensor_contract("num()+=v+(a,b,c,d)*u(a,b,c,d)",result_tensor_num,v2,u2,scale=ONE_QUARTER_C)
+            ierr=talsh_tensor_contract("num()+=u+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,u2,v2,scale=ONE_QUARTER_C)
         !   end if 
 
-          print *, "projection of v1*u1+v2*u2", result_tens_num(1)
+        !   print *, "projection of v1*u1+v2*u2", result_tens_num(1)
           ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2,scale=ONE_QUARTER_C)
        end if
 
        factor = result_tens_num(1) / result_tens_den(1)
-       print *, "factor in routine:", factor
 
        ierr=talsh_tensor_destruct(result_tensor_num)
        ierr=talsh_tensor_destruct(result_tensor_den)
@@ -680,15 +682,15 @@ contains
         if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
 
         do j = L+1, Lnew
+            print *, "j in schmidt_projection:", j
+            call print_tensor(trial1(j), 1.0d-18, "trial1(j) before ")
+            call print_tensor(trial2(j), 1.0d-18, "trial2(j) before ")
             do i = 1, j-1
                 print *, "i in schmidt_projection:", i
-                print *, "j in schmidt_projection:", j
-                call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
-                call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
-                call print_tensor(trial1(j), 1.0d-10, "trial1(j)")
-                call print_tensor(trial2(j), 1.0d-10, "trial2(j)")
+                ! call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
+                ! call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
                 call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
-                print *, "factor in schmidt_projection:", factor
+                print *, "factor in schmidt_projection before:", factor
                 if (rank.eq.1) then
                    ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
                    ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
@@ -696,8 +698,17 @@ contains
                    ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
                    ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
                 end if
+                ! call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
+                ! print *, "factor in schmidt_projection after 1round:", factor
+                ! print *, "i in schmidt_projection: after", i
+                print *, "j in schmidt_projection: after", j
+                call print_tensor(trial1(j), 1.0d-18, "trial1(j) after ")
+                call print_tensor(trial2(j), 1.0d-18, "trial2(j) after ")
             end do
             call renormalize_vectors(trial1(j),trial2(j))
+
+            ! call print_tensor(trial1(j), 1.0d-10, "trial1(j) after normalization")
+            ! call print_tensor(trial2(j), 1.0d-10, "trial2(j) after normalization")
          end do
 
     end subroutine
@@ -1108,7 +1119,7 @@ contains
         integer :: ierr, k, unconverged_roots, nroots
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
-        logical :: debug_correction_vectors = .true.
+        logical :: debug_correction_vectors = .false.
 
         if (present(correct_all)) then
             correct_all_local = correct_all
@@ -1868,7 +1879,7 @@ contains
       logical, intent(in) :: left,right
       integer :: ierr, iroot
       
-      logical :: debug_sigma = .true., debug_print_before_calculating=.false.
+      logical :: debug_sigma = .false., debug_print_before_calculating=.false.
 
       do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
 
@@ -1997,12 +2008,14 @@ contains
                ierr=talsh_tensor_contract("CI()+=Bdag+(p,q,r,s)*C(p,q,r,s)",     &
    &                                                       result_tensor,        &
    &                                                       workspace_t%trial2(i),&
-   &                                                       prop_grad2,scale=ONE)
+   &                                                       prop_grad2,           &
+                                                           scale=ONE_QUARTER_C)
             else if (left.and..not.right) then
                ierr=talsh_tensor_contract("CI()+=C+(p,q,r,s)*B(p,q,r,s)",       &
    &                                                       result_tensor,       &
    &                                                       prop_grad2,          &
-                                                           workspace_t%trial2(i))
+                                                           workspace_t%trial2(i),&
+                                                           scale=ONE_QUARTER_C)
             end if
          end if
 
@@ -2049,7 +2062,7 @@ contains
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
-      logical :: debug_subspace_matrix = .true.
+      logical :: debug_subspace_matrix = .false.
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
 !! we also need to conjugate transpose the trial vector 
