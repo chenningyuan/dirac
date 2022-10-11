@@ -322,9 +322,10 @@ module checkpoint
       ! all groups defined in the schema.
 
       use mh5
-      integer :: i
+      integer :: i,j
       logical :: composite_data
       integer(kind=8) :: group_id
+      character(len=2) :: subdir
 
       ! create the hdf5 file
       checkpoint_file%id = mh5_create_file(checkpoint_file%name)
@@ -335,6 +336,14 @@ module checkpoint
          if (index(labels(i)%type,'composite').ne.0) then
              group_id = mh5_create_group(checkpoint_file%id,labels(i)%label)
              call  mh5_close_group(group_id)
+             ! quick hack to work with multiple instances, better solution desired
+             if (index(labels(i)%rank,'array').ne.0) then
+                do j = 2, 9 ! write subdirectories for additional instances, subdir 1 will be among the labels already
+                   write(subdir,'(A,I1)') '/',j
+                   group_id = mh5_create_group(checkpoint_file%id,trim(labels(i)%label)//subdir)
+                   call  mh5_close_group(group_id)
+                end do
+             end if
          end if
       end do
 
@@ -382,17 +391,32 @@ module checkpoint
 
       character*(*), intent(in) :: mylabel, mytype
       logical :: found = .false.
-      integer :: i
+      integer :: i,i_wild
+      character(:),allocatable  :: mylabel1
+      character(len=2)          :: subdir
+
+      ! First check whether the label is a later instance of an array.
+      ! In that case we need to check the first instance
+      ! Note that for simplicity we allow only 9 instances of the same kind of data
+      mylabel1 = trim(mylabel)
+      do i = 2, 9
+         write (subdir,'(A,I1)') '/',i
+         i_wild = index(mylabel1,subdir)
+         if (i_wild > 0) then
+            mylabel1(i_wild+1:i_wild+1) = '1'
+            exit
+         endif
+      end do
 
       ! Try to find the label in the list of allowed labels
       do i = 1, size(labels)
          ! if this label is generic, only the groups need to match
          if (trim(labels(i)%use) == 'generic') then
-            found = index(group_from_label(mylabel),group_from_label(labels(i)%label)).ne.0
+            found = index(group_from_label(mylabel1),group_from_label(labels(i)%label)).ne.0
             if (found) exit
          end if
          ! normal case: a complete match is required
-         found = trim(labels(i)%label) == trim(mylabel)
+         found = trim(labels(i)%label) == mylabel1
          if (found) exit
       end do
 
