@@ -568,6 +568,7 @@ contains
         end if
 
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
+        call double_check_trail_vector(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization'
@@ -582,6 +583,55 @@ contains
     end subroutine
 
 
+    subroutine double_check_trail_vector(L,Lnew,trial1,trial2)
+        integer, intent(inout) :: L, Lnew
+        type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
+        integer :: Lnew_tem, L_tem
+        integer :: i, j, vi
+        real(8) :: norm_r
+        integer, allocatable :: valid_index(:)
+        integer :: ierr
+
+        Lnew_tem = Lnew
+        L_tem = L
+        print *, "L_tem:", L_tem
+        allocate(valid_index(Lnew_tem-L+1))
+        do i = L+1, Lnew_tem
+            norm_r = sqrt(tensor_norm2(trial1(i)) + tensor_norm2(trial2(i))/4)
+            if (norm_r.gt.1.0d-13) then 
+                L_tem = L_tem + 1
+                valid_index(L_tem-L) = i
+            end if 
+        end do
+        Lnew = L_tem
+       
+        j = 1
+        do i = L+1, Lnew
+            vi = valid_index(j)
+            print *, "vi:", vi
+            print *, "i:", i
+            call print_tensor(trial1(i),1.0d-18, "trail1 in double check before")
+            call print_tensor(trial2(i),1.0d-18, "trail2 in double check before")
+            trial1(i) = trial1(vi)
+            trial2(i) = trial2(vi)
+            j = j+1
+            call print_tensor(trial1(i),1.0d-18, "trail1 in double check after")
+            call print_tensor(trial2(i),1.0d-18, "trail2 in double check after")
+        end do
+
+        if (Lnew.lt.Lnew_tem) then 
+            do i = Lnew+1, Lnew_tem
+                ierr=talsh_tensor_destruct(trial1(i))
+                ierr=talsh_tensor_destruct(trial2(i))
+            end do 
+        end if 
+        L = L+1
+
+
+    end subroutine
+
+
+
     subroutine renormalize_vectors(v1,v2)
        type(talsh_tens_t), intent(inout) :: v1, v2
        real :: norm_r
@@ -593,14 +643,12 @@ contains
        print *, "norm of trail tensor", norm_r
        print *, "safe_minimum", safe_minimum
 
-       if (norm_r .ge. safe_minimum ) then
-    !    if (norm_r .ge. 1.0d-13 ) then
-          call divide_tensor_elements_by_value(v1, norm)
-          call divide_tensor_elements_by_value(v2, norm)
-       else
-          call quit ('norm of tensors too small for division, quitting')
-       end if
-       
+        if (norm_r .ge. safe_minimum ) then
+            call divide_tensor_elements_by_value(v1, norm)
+            call divide_tensor_elements_by_value(v2, norm)
+        else
+            call quit ('norm of tensors too small for division, quitting')
+        end if
     end subroutine
 
 
@@ -686,10 +734,15 @@ contains
             call print_tensor(trial1(j), 1.0d-18, "trial1(j) before ")
             call print_tensor(trial2(j), 1.0d-18, "trial2(j) before ")
             do i = 1, j-1
-                print *, "i in schmidt_projection:", i
+                ! print *, "i in schmidt_projection:", i
+                norm_r = sqrt(tensor_norm2(trial1(i)) +  tensor_norm2(trial2(i))/4)
                 ! call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
                 ! call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
-                call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
+                if (norm_r.gt.1.0d-13) then
+                    call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
+                else
+                    factor = complex(0.0,0.0)
+                end if
                 print *, "factor in schmidt_projection before:", factor
                 if (rank.eq.1) then
                    ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
@@ -698,17 +751,21 @@ contains
                    ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
                    ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
                 end if
-                ! call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j))
                 ! print *, "factor in schmidt_projection after 1round:", factor
                 ! print *, "i in schmidt_projection: after", i
-                print *, "j in schmidt_projection: after", j
-                call print_tensor(trial1(j), 1.0d-18, "trial1(j) after ")
-                call print_tensor(trial2(j), 1.0d-18, "trial2(j) after ")
             end do
-            call renormalize_vectors(trial1(j),trial2(j))
 
-            ! call print_tensor(trial1(j), 1.0d-10, "trial1(j) after normalization")
-            ! call print_tensor(trial2(j), 1.0d-10, "trial2(j) after normalization")
+            norm_r = sqrt(tensor_norm2(trial1(j)) +  tensor_norm2(trial2(j))/4)
+            if (norm_r.lt.1.0d-13) then ! to avoid numerical noisy 
+                ierr=talsh_tensor_init(trial1(j), ZERO)
+                ierr=talsh_tensor_init(trial2(j), ZERO)
+            else
+                call renormalize_vectors(trial1(j),trial2(j))
+            end if
+
+            print *, "j in schmidt_projection: after", j
+            call print_tensor(trial1(j), 1.0d-10, "trial1(j) after normalization")
+            call print_tensor(trial2(j), 1.0d-10, "trial2(j) after normalization")
          end do
 
     end subroutine
@@ -1879,9 +1936,10 @@ contains
       logical, intent(in) :: left,right
       integer :: ierr, iroot
       
-      logical :: debug_sigma = .false., debug_print_before_calculating=.false.
+      logical :: debug_sigma = .true., debug_print_before_calculating=.true.
 
-      do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
+    !   do iroot = (workspace_t%L - workspace_t%nroots + 1), workspace_t%L
+      do iroot = workspace_t%Lprev, workspace_t%L
 
          if (debug_sigma) then
             write (6,*) 'root ',iroot
@@ -2285,10 +2343,19 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
+            ! if (niter == 1) then 
+            !     workspace_t%Lprev = workspace_t%nroots
+            ! end if
+
+            print *, "Lpre: ", workspace_t%Lprev
+            print *, "Lnew: ", workspace_t%L
+
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
             call create_sigma(workspace_t,int_t,interm_t,davidson_solve_rhs,davidson_solve_lhs)
+            print *, "sigma finished"
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
-            call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs) 
+            call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs)
+            print *, "subspace finished" 
 
 ! aspg, added from (q)rsp
             if (davidson_solve_linear_system) then
@@ -2327,6 +2394,7 @@ contains
             end if
 ! aspg, added from (q)rsp
             call form_preconditioner(workspace_t, e_small)
+            print *, "preconditioner finished" 
 
             if (associated(delta)) deallocate(delta)
             if (davidson_solve_rhs) then
@@ -2360,6 +2428,7 @@ contains
             else
                call update_trial_vectors(delta,workspace_t)
             end if
+            print *, "update_trial_vectors finished" 
  
         end do ! davidson iterations
 
