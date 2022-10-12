@@ -5,7 +5,7 @@ result           composite single    required    # results of the calculation
 
 *input
 molecule         composite single    required    # topology of the molecular system
-aobasis          composite single    required    # atomic orbital basis set descriptions
+aobasis          composite array     required    # atomic orbital basis set descriptions
 *end
 
 *result
