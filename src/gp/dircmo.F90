@@ -83,17 +83,17 @@ module dircmo
 
       SSYM   = NSSYM == 2
 
-      REWIND IUNIT
-      CALL LAB_WRITE(IUNIT,'INFO    ')
-      WRITE(IUNIT) TEXT,NFSYM,NZ,IDIM(:,1:NFSYM),TOTERG
-      CALL LAB_WRITE(IUNIT,'COEFS   ',CMO(1:NCMOTQ))
-      CALL LAB_WRITE(IUNIT,'EVALS   ',EIG(1:NORBT))
-      CALL LAB_WRITE(IUNIT,'SUPERSYM',idata=IBEIG(1:NORBT))
-!     Add additional information about the basis set
-      CALL LAB_WRITE(IUNIT,'BASINFO ')
-!     This call introduces a dependency on common blocks, should be moved as soon as the checkpoint file is fully functional
-      call append_basisinfo_to_dfcoef (IUNIT)
-      CALL LAB_WRITE(IUNIT,'EOFLABEL')
+      !REWIND IUNIT
+      !CALL LAB_WRITE(IUNIT,'INFO    ')
+      !WRITE(IUNIT) TEXT,NFSYM,NZ,IDIM(:,1:NFSYM),TOTERG
+      !CALL LAB_WRITE(IUNIT,'COEFS   ',CMO(1:NCMOTQ))
+      !CALL LAB_WRITE(IUNIT,'EVALS   ',EIG(1:NORBT))
+      !CALL LAB_WRITE(IUNIT,'SUPERSYM',idata=IBEIG(1:NORBT))
+!     !Add additional information about the basis set
+      !CALL LAB_WRITE(IUNIT,'BASINFO ')
+!     !This call introduces a dependency on common blocks, should be moved as soon as the checkpoint file is fully functional
+      !call append_basisinfo_to_dfcoef (IUNIT)
+      !CALL LAB_WRITE(IUNIT,'EOFLABEL')
 
       ! write all data also to an hdf5 file
       ! simplify the handling of fermion symmetry by always writing the same size dimension arrays (just padding with zeroes if nfsym==1)

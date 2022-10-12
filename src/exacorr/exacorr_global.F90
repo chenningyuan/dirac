@@ -86,22 +86,22 @@ module exacorr_global
 #endif
              ! our preferred coefficent file is the MP2 NO one, if present we use it before DFCOEF 
              inquire (file='MP2NOs_AO',exist=tobe_mp2no)
-             inquire (file='DFCOEF',exist=tobe_dfcoef)
+             inquire (file='CHECKPOINT.h5',exist=tobe_dfcoef)
              inquire (file='RSD_MOS',exist=tobe_respect)
              ierr = -1
              if (tobe_mp2no) then
                scf_file = 2
                call print_date ("Found Dirac MP2 natural orbitals file. using it.")
                call read_from_dirac (ao_basis,cspinor_all,'MP2NOs_AO',ierr)
+             else if (tobe_respect) then
+                scf_file = 1
+                call print_date ("Found ReSpect SCF orbitals file. using it.")
+                call read_from_respect (ao_basis,cspinor_all,ierr)
              else if (tobe_dfcoef) then
              ! read MO coefficients and ao basis set information
                 scf_file = 0
                 call print_date ("Found Dirac SCF orbitals file. using it.")
                 call read_from_dirac (ao_basis,cspinor_all,'DFCOEF',ierr)
-             else if (tobe_respect) then
-                scf_file = 1
-                call print_date ("Found ReSpect SCF orbitals file. using it.")
-                call read_from_respect (ao_basis,cspinor_all,ierr)
              end if
 
              if (ierr == 0) then

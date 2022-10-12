@@ -341,6 +341,7 @@ C
 
        subroutine read_from_dirac (ao_basis,cspinor,file_name,ierr)
 
+       use checkpoint
        use exacorr_mo
        use exacorr_datatypes
        use exacorr_global,only: nfunctions
@@ -349,7 +350,210 @@ C
        implicit none
 
 !      read all positive energy mo coefficients present on DFCOEF file
-!      check for imcompatibiklities (use of symmetry) as well and continue
+!      check for incompatibilities (use of symmetry) as well and continue
+!      by reading also the basis set information into gtos
+
+       character(len=*),intent(in) :: file_name
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       type(cmo), intent(inout):: cspinor
+       integer, intent(out)   :: ierr 
+       integer, parameter     :: NOERROR  = 0 ! no error
+       integer, parameter     :: NOTFOUND = 1 ! file not found
+       integer, parameter     :: CORRUPT  = 2 ! file unreadable
+       integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
+       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer                :: nsym
+       real(8)                :: total_energy
+       integer                :: i, j, k, ishell, iprimstart, iprimend
+       integer                :: nao, nao_bas, nshells, iao, ibas
+       integer                :: nmo, npo, nto, npriexp, nzbuf
+       integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
+       real(8), allocatable   :: coeff(:),eig(:),coeff_q(:,:,:)
+       integer, allocatable   :: ibeig(:),index(:)
+       integer, allocatable   :: orbmom(:)
+       real(8), allocatable   :: priexp(:),priccf(:),coord(:)
+       integer, allocatable   :: ao_map(:,:)
+       character(8)           :: label(4)
+       logical                :: labeled
+       integer                :: n_mo(2),n_po(2),n_basis(2)
+       integer,allocatable    :: n_prim(:),n_cont(:)
+
+
+       ierr = NOERROR
+       text = ' Data read from the checkpoint file '
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/nz',idata=nzbuf)
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/energy',rdata=total_energy)
+
+       if (n_basis(2) == 0) then
+         nsym = 1
+       else
+         nsym = 2
+       end if
+       ! check symmetry and get dimensions of the coefficient array
+       if (nsym > 1) then
+          ierr = SYMMETRY
+          return
+       else
+          nao = n_basis(1) ! number of ao's
+          npo = n_po(1)    ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
+          nmo = n_mo(1)    ! "electronic" (= positive energy) solutions (we only need these)
+          nto = npo+nmo    ! total number of solutions on this file
+          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
+       end if
+
+       allocate(coeff(nao*nto*nzbuf))
+       allocate(coeff_q(nao,nto,nz))
+       allocate(eig(nto))
+       allocate(ibeig(nto))
+       allocate(index(nmo))
+        
+       ! read the mo coefficients and orbital eigenvalues
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coeff)
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig)
+       call checkpoint_read 
+     & ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig)
+       ! fill in index values
+       do i = 1, nmo
+          index(i) = i ! we set the index compatible with the fact that we store all mo's
+       end do
+
+       ! put in cmo in quaternion format
+       coeff_q = reshape(coeff,(/nao,nto,nzbuf/))
+       cspinor%algebra = 'q'
+       call alloc_mo (cspinor,nao,nmo)
+       cspinor%total_energy = total_energy
+       cspinor%index        = index(npo+1:nto)
+       cspinor%coeff_q      = coeff_q(:,npo+1:nto,:)
+       cspinor%energy       = eig(npo+1:nto)
+       cspinor%symmetry     = ibeig(npo+1:nto)
+
+       deallocate(coeff)
+       deallocate(eig)
+       deallocate(ibeig)
+       deallocate(index)
+!      switch to unrestricted spinor picture
+       call convert_mo_to_complex(cspinor)
+
+       ! read general AO basis information
+       call checkpoint_read 
+     & ('/input/aobasis/1/angular',idata=ao_basis%basis_angular)
+       call checkpoint_read ('/input/aobasis/1/n_ao',idata=nao_bas)
+       call checkpoint_read ('/input/aobasis/1/n_shells',idata=nshells)
+       allocate (orbmom(nshells))
+       allocate (n_prim(nshells))
+       allocate (n_cont(nshells))
+       allocate (coord(3*nshells))
+!      read information that is defined for each shell
+       call checkpoint_read ('/input/aobasis/1/orbmom',idata=orbmom)
+       call checkpoint_read ('/input/aobasis/1/n_prim',idata=n_prim)
+       call checkpoint_read ('/input/aobasis/1/n_cont',idata=n_cont)
+       call checkpoint_read ('/input/aobasis/1/center',rdata=coord)
+!      values of the exponents and coefficients for all shells (packed into a 1-d arrays)
+       npriexp = sum(n_prim)
+       allocate (priexp(npriexp))
+       allocate (priccf(npriexp))
+       call checkpoint_read ('/input/aobasis/1/exponents',rdata=priexp)
+       call checkpoint_read 
+     & ('/input/aobasis/1/contractions',rdata=priccf)
+
+       ! check for consistency with the MO first dimension
+       if (nao < nao_bas) then
+          ierr = INCONSIS
+          return
+       elseif (nao > nao_bas) then
+          print*,"WARNING: assuming Levy-Leblond Hamiltonian"
+          print*,"Reading fewer basis functions than MO-coefficients"
+          allocate (ao_map(2,nao_bas))
+          forall (i=1:nao_bas) ao_map(:,i)=i
+          call compress_mo (cspinor,ao_map)
+       end if
+
+       ! put information in gtos
+       ao_basis%nshells       = nshells
+       ao_basis%nao           = nao_bas
+       nullify(ao_basis%gtos)
+       allocate(ao_basis%gtos(nshells))
+       iPrimStart = 1
+       do ishell = 1, nshells
+          ao_basis%gtos(ishell)%orb_momentum = orbmom(ishell)
+          ao_basis%gtos(ishell)%n_primitives = n_prim(ishell)
+          nullify  (ao_basis%gtos(ishell)%exponent) 
+          allocate (ao_basis%gtos(ishell)%exponent(n_prim(ishell)))
+          nullify  (ao_basis%gtos(ishell)%coefficient)
+          allocate (ao_basis%gtos(ishell)%coefficient(n_prim(ishell)))
+          iPrimEnd   = iPrimStart+n_prim(ishell)-1
+          ao_basis%gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
+          ao_basis%gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
+!         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
+          call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+          if (ierr == 1) ierr = CONTRAC
+          iPrimStart = iPrimStart + n_prim(ishell)
+       end do
+
+       deallocate(orbmom)
+       deallocate(n_prim)
+       deallocate(n_cont)
+       deallocate(coord)
+       deallocate(priexp)
+       deallocate(priccf)
+
+       ! make array with pointers from a basis function index to its shell
+       nullify(ao_basis%shell_indices)
+       allocate(ao_basis%shell_indices(nao))
+       iao = 0
+       do ishell = 1, nshells
+          do ibas = 1,
+     &       nfunctions(
+     &       ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
+             iao = iao + 1
+             if (iao.gt.nao) then
+                ierr = INCONSIS
+                call quit ('Error in read_from_dirac')
+             endif
+             ao_basis%shell_indices(iao) = ishell
+          end do
+       end do
+       if (iao.gt.nao) then
+          ierr = INCONSIS
+          call quit ('Error in read_from_dirac')
+       endif
+
+       call print_date(trim(text))
+       return
+
+  10   ierr = CORRUPT
+       return
+
+  20   ierr = NOBASIS
+       return
+
+       end subroutine read_from_dirac
+
+       subroutine read_from_dirac_old (ao_basis,cspinor,file_name,ierr)
+
+       use exacorr_mo
+       use exacorr_datatypes
+       use exacorr_global,only: nfunctions
+       use exacorr_utils
+
+       implicit none
+
+!      read all positive energy mo coefficients present on DFCOEF file
+!      check for incompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
        character(len=*),intent(in) :: file_name
@@ -559,7 +763,7 @@ C
        return
 
 
-       end subroutine read_from_dirac
+       end subroutine read_from_dirac_old
 
        subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
 

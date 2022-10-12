@@ -163,7 +163,15 @@ module checkpoint
       integer,intent(out), optional          :: idata(:)
       character*(*),intent(out), optional    :: sdata
 
-      !TODO: implement error handling
+      character(len=100)                     :: verbose_message
+      logical                                :: exist
+
+      call  checkpoint_query(label,exist,verbose_message)
+      if (.not.exist) then
+         print*," WARNING: ",trim(label)," could not be read"
+         print*," REASON: ",trim(verbose_message)
+      end if
+
       if (present(rdata)) then
          call lab_read(checkpoint_file,label,rdata=rdata)
       elseif (present(idata)) then
