@@ -319,8 +319,10 @@ module mp2no_fileinterfaces
                enddo
             enddo
 
-            call write_mos_to_dirac(ao_basis,qorbital,file_new)
-            call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
+            call write_mos_to_checkpoint(2,qorbital,'/result/wavefunctions/mbpt/mobasis')
+            call print_date('Written MP2 natural orbitals to checkpoint')
+            !call write_mos_to_dirac(ao_basis,qorbital,file_new)
+            !call print_date('Write new orbital into MP2NOs_AO file like DFCOEF')
 
       end subroutine write_to_newfile
 

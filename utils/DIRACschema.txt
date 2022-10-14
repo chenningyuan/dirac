@@ -67,6 +67,7 @@ mo_matrices      composite single    optional    # MO representations of operato
 
 *wavefunctions
 scf              composite single    optional    # results for Hartree-Fock and KS-DFT type wave functions
+mbpt             composite single    optional    # results for Many-Body Perturbation Theory
 *end
 
 *ao_matrices
@@ -89,4 +90,11 @@ xc_functional    string    single    optional    # for DFT the XC-functional des
 energy           real      single    required    # energy of the SCF wave function
 mobasis          composite single    required    # molecular orbitals obtained in this calculation
 convergence      real      array     optional    # convergence information for this wave function (energy and coefficient convergence)
+*end
+
+*mbpt
+method           string    single    required    # Descriptive string of the method used, e.g. MP2
+e_corr           real      single    required    # correlation energy
+e_total          real      single    optional    # total MBPT energy
+mobasis          composite single    optional    # recanonized natural orbitals
 *end

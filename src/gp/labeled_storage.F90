@@ -373,8 +373,11 @@ module labeled_storage
       character*(*),intent(in), optional     :: sdata
       integer,intent(in),optional            :: slen, sdim
 
+      integer, parameter                     :: MAX_RANK=7
+      integer(kind=8)                        :: dims(MAX_RANK),newdim
       integer :: ierr
       integer(kind=8) :: file_id, dset_id, group_id
+      logical(kind=8), parameter :: dyn=.True.
 
       if (file_info%status == -1) then
          file_info%id = mh5_create_file(file_info%name)
@@ -389,16 +392,29 @@ module labeled_storage
       dset_id = mh5_exists_dset(file_id, label)
       if (dset_id /= 0) then
           dset_id = mh5_open_dset(file_id, label)
+         ! resize if size has changed
+          if (present(rdata)) then
+             newdim = size(rdata,kind=8)
+          elseif (present(idata)) then
+             newdim = size(idata,kind=8)
+          elseif (present(sdata).and.present(slen).and.present(sdim)) then
+             newdim = int8(sdim)
+              ! caution: we have no means of checking whether the string lengths have changed so this is not checked
+          elseif (present(sdata)) then
+             newdim = size(idata,kind=8)
+          end if
+          call mh5_get_dset_dims(dset_id,dims)
+          if (newdim /= dims(1)) call mh5_resize_dset(dset_id,[newdim])
       end if
 
       if (present(rdata)) then
-         if (dset_id == 0) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)])
+         if (dset_id == 0) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
          call mh5_put_dset(dset_id, rdata)
       elseif (present(idata)) then
-         if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)])
+         if (dset_id == 0) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
          call mh5_put_dset(dset_id, int8(idata))
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
-         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen))
+         if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
          call mh5_put_dset(dset_id, sdata)
       elseif (present(sdata)) then
          if (dset_id == 0) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
@@ -410,11 +426,14 @@ module labeled_storage
 
     end subroutine write_hdf5
 
-    subroutine query_hdf5 (file_info,label,exist)
+    subroutine query_hdf5 (file_info,label,exist,data_size)
       use mh5
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       logical,intent(out)                    :: exist
+      integer, parameter                     :: MAX_RANK=7
+      integer(kind=8)                        :: dset_id,dims(MAX_RANK)
+      integer,intent(out), optional          :: data_size
 
       if (file_info%status /= 1) then
           file_info%id = mh5_open_file_rw(file_info%name)
@@ -429,6 +448,17 @@ module labeled_storage
 
       ! check the existence of this data set
       exist = mh5_exists_dset(file_info%id,label)
+
+      if (present(data_size)) then
+         if (exist) then
+            dset_id = mh5_open_dset(file_info%id, label)
+            call mh5_get_dset_dims(dset_id,dims)
+            data_size = dims(1)
+            call mh5_close_dset(dset_id)
+         else
+            data_size = 0
+         end if
+      end if
 
     end subroutine query_hdf5
 

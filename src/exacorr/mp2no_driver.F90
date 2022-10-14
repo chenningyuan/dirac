@@ -214,7 +214,8 @@ module mp2no_driver
                       enddo
                    enddo
           
-                   call write_mos_to_dirac(ao_basis,qorbital,file_new)
+                   call write_mos_to_checkpoint(2,'/result/wavefunctions/mbpt/mobasis',qorbital)
+                   !call write_mos_to_dirac(ao_basis,qorbital,file_new)
                    call print_date('Write natural orbitals into DFNOSAO file like DFCOEF')
           
       end subroutine write_no_to_newfile

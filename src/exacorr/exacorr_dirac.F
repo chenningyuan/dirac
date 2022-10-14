@@ -543,7 +543,7 @@ C
 
        end subroutine read_from_dirac
 
-       subroutine read_from_dirac_old (ao_basis,cspinor,file_name,ierr)
+       subroutine read_from_dfcoef (ao_basis,cspinor,file_name,ierr)
 
        use exacorr_mo
        use exacorr_datatypes
@@ -762,10 +762,47 @@ C
        close (lucoef,status='KEEP')
        return
 
+       end subroutine read_from_dfcoef
 
-       end subroutine read_from_dirac_old
+       subroutine write_mos_to_checkpoint(mobasis_id,cspinor,group)
 
-       subroutine write_mos_to_dirac (ao_basis,cspinor,file_name)
+       use exacorr_mo
+       use checkpoint
+
+!      write mo coefficients in new dirac format
+
+       integer, intent(in)         :: mobasis_id
+       character(len=*),intent(in) :: group
+       type(cmo), intent(inout)    :: cspinor
+       type(cmo)                   :: qorbital
+       integer                     :: ncoeff
+
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+
+       call copy_mo(cspinor,qorbital)
+       call convert_mo_to_quaternion(qorbital)
+
+       call checkpoint_write 
+     & (trim(group)//'/mobasis_id',idata=mobasis_id)
+       call checkpoint_write 
+     & (trim(group)//'/eigenvalues',rdata=qorbital%energy)
+       call checkpoint_write 
+     & (trim(group)//'/nz',idata=qorbital%nz)
+       call checkpoint_write 
+     & (trim(group)//'/n_basis',idata=qorbital%nao)
+       call checkpoint_write (trim(group)//'/n_mo',idata=qorbital%nmo)
+       call checkpoint_write (trim(group)//'/n_po',idata=0)
+       call checkpoint_write 
+     & (trim(group)//'/symmetry',idata=qorbital%symmetry)
+       call checkpoint_write 
+     & (trim(group)//'/orbitals',rdata=
+     & reshape(qorbital%coeff_q,(/ncoeff/)))
+
+       call dealloc_mo(qorbital)
+
+       end subroutine  write_mos_to_checkpoint
+
+       subroutine write_mos_to_dfcoef(ao_basis,cspinor,file_name)
 
        use exacorr_mo
        use exacorr_datatypes
@@ -872,7 +909,7 @@ C
 
        return
 
-       end subroutine write_mos_to_dirac
+       end subroutine write_mos_to_dfcoef
 
        subroutine write_mos_to_dirac_formatted(cspinor,file_name)
 

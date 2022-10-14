@@ -83,6 +83,8 @@ module talsh_mp2no
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
 
+         use checkpoint
+
          type(exacc_input), intent(in)          :: exa_input
          integer                                :: nocc, nvir              ! the size of the mo basis for occupied and virtual spinors
          integer,  allocatable                  :: mo_vir(:)               ! the list index of virtual spinors
@@ -179,6 +181,8 @@ module talsh_mp2no
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
 
+         call checkpoint_write ('/result/wavefunctions/mbpt/method',sdata="MP2")
+         call checkpoint_write ('/result/wavefunctions/mbpt/e_corr',rdata=mp2_energy)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 
