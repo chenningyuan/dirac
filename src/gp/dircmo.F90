@@ -139,14 +139,23 @@ module dircmo
       real(8), allocatable :: coefficients(:), eigenvalues(:)
       integer, allocatable :: boson_irreps(:), atom_irreps(:)
       character(len=74)    :: infotext
+      character*(:), allocatable :: group
+      logical              :: natural_orbitals
 
       infotext = ' Data read from the checkpoint file '
 
-      call checkpoint_read ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
-      call checkpoint_read ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
-      call checkpoint_read ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
-      call checkpoint_read ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
-      call checkpoint_read ('/result/wavefunctions/scf/energy',rdata=energy)
+      call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',natural_orbitals)
+      if (natural_orbitals) then ! This is a hack as we currently have only two options, needs to be generalized !
+         group = '/result/wavefunctions/mbpt/'
+      else
+         group = '/result/wavefunctions/scf/'
+      endif
+
+      call checkpoint_read (group//'mobasis/nz',idata=nz)
+      call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
+      call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
+      call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+      call checkpoint_read (group//'energy',rdata=energy)
 
       neig  = sum(n_mo)
       ncoef = nz * sum(n_basis*n_mo)
@@ -178,21 +187,21 @@ module dircmo
 
       if (present(cmo)) then
          allocate (coefficients(ncoef))
-         call checkpoint_read ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coefficients)
+         call checkpoint_read (group//'mobasis/orbitals',rdata=coefficients)
          cmo(1:ncoef) = coefficients
          deallocate(coefficients)
       end if
 
       if (present(eig)) then
          allocate (eigenvalues(neig))
-         call checkpoint_read ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigenvalues)
+         call checkpoint_read (group//'mobasis/eigenvalues',rdata=eigenvalues)
          eig(1:neig) = eigenvalues
          deallocate(eigenvalues)
       end if
 
       if (present(ibeig)) then
          allocate (boson_irreps(neig))
-         call checkpoint_read ('/result/wavefunctions/scf/mobasis/symmetry',idata=boson_irreps)
+         call checkpoint_read (group//'mobasis/symmetry',idata=boson_irreps)
          ibeig(1:neig) = boson_irreps
          deallocate(boson_irreps)
       end if

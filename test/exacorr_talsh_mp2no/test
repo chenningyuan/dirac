@@ -13,17 +13,10 @@ f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
       num_lines   = 21,
       rel_tolerance   = 1.0e-7)
 
-# Right now, we separate the mp2no and cc modules. The test have two parts, first round only generates truncatd MP2FNO 
-# and second round cc would use these orbital to compute energy and property. 
-# We will revisit this problem in order to to run all compuation in one round.  
-#test.run(['hf_energy_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="CCDENS=CCDENS_all-active_hf-ccpvdz_1.0d-4 \
-#         MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
-#test.run(['hf_energy_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="CCDENS=CCDENS_all-active_hf-ccpvdz_0.0d \
-#         MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
+# The test have two parts, the first run generates MP2 natural orbitals that are stored on the CHECKPOINT.h5 file
+# The second run uses these orbitals to compute the CC nergy and property. 
 
-test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f1, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4"')
-#test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d"')
-#test.run(['hf_get_no_ccpvdz_0.0d_subv.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv"')
+test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f1, args='--outcmo')
 
 f2 = Filter()
 
@@ -34,25 +27,13 @@ f2.add(from_string = '           Total contribution to principal components',
       num_lines   = 15,
       rel_tolerance   = 1.0e-6)
 
-#test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="CCDENS_all-active_hf-ccpvdz_0.0d=CCDENS \
-#         MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
-#test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--put="CCDENS_all-active_hf-ccpvdz_1.0d-4=CCDENS \
-#         MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
+test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f2, args='--incmo')
 
-#test.run(['property_hf-ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d=DFCOEF"')
-test.run(['property_hf-ccpvdz_1.0d-4.inp'], ['hf.xyz'], f2, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4=DFCOEF"')
-#test.run(['hf_fno_ccpvdz_0.0_subv.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_subv=DFCOEF" --get="CCDENS=\
-#CCDENS_hf_ccpvdz_0.0_subv"')
-
-#f = Filter()
-#
-#f.add(from_string = 'Sum of occupation numbers (1)',
-#      num_lines   = 5,
-#      rel_tolerance   = 1.0e-6)
-#
-#test.run(['hf_fno_ccpvdz_0.0_subv_ana.inp'], ['hf.xyz'], f, args='--put="CCDENS_hf_ccpvdz_0.0_subv=CCDENS"')
-
-#LV: unclear what the idea is with all this commented out stuff, am just adding a non-relativistic contracted test as well
-test.run(['hf_nr.inp'], ['hf.xyz'], f1, args='--get="MP2NOs_AO=MP2NOs_AO_nr"')
-test.run(['property_nr.inp'], ['hf.xyz'], f2, args='--put="MP2NOs_AO_nr=DFCOEF"')
+#LV: same procedure for a non-relativistic contracted case
+f1 = Filter()
+f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
+      num_lines   = 17,
+      rel_tolerance   = 1.0e-7)
+test.run(['hf_nr.inp'], ['hf.xyz'], f1, args='--outcmo')
+test.run(['property_nr.inp'], ['hf.xyz'], f2, args='--incmo')
 sys.exit(test.return_code)

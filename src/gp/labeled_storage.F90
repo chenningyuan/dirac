@@ -352,6 +352,7 @@ module labeled_storage
          call mh5_fetch_dset(file_info%id,label,rdata)
       elseif (present(idata)) then
          allocate (i8buf(size(idata)))
+         i8buf = 0
          call mh5_fetch_dset(file_info%id,label,i8buf)
          idata = int(i8buf)
          deallocate (i8buf)

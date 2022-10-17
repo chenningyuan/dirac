@@ -84,7 +84,7 @@ module exacorr_mp2no
             if (my_MPI_rank == 0) then
                call get_new_orbital(exa_input,threshold,NOs_AO,N_OCCUPATION, &
                                     New_orbital_energy,'NOs_MO',N_cano)
-               call write_to_newfile(nocc,NOs_AO,New_orbital_energy,'DFCOEF','MP2NOs_AO')
+               call write_nos(nocc,NOs_AO,New_orbital_energy,'scf','mbpt')
                call print_date("Leave MP2_NO Module")
             end if
 

@@ -249,45 +249,6 @@ C
 
       end
 
-       subroutine Initialize_Shells (shell,ierr)
-
-!      get information from common blocks about the basis set
-!      raise an error for contracted sets that can not yet be handled by Interest
-
-!      NB: this routine is outdated, replaced by read_from_dirac. Just keeping it in case we still need it.
-
-       use exacorr_datatypes
-
-#include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
-
-       integer ishell, iPrimStart, iPrimEnd, k, ierr
-       type(basis_func_info_t) :: shell(*)
-
-       do ishell = 1, nlrgsh
-          shell(ishell)%orb_momentum = nhkt(ishell)
-          shell(ishell)%atom_number  = ncent(ishell)
-          shell(ishell)%n_primitives = nuco(ishell)
-          nullify  (shell(ishell)%exponent)
-          allocate (shell(ishell)%exponent(nuco(ishell)))
-          nullify  (shell(ishell)%coefficient)
-          allocate (shell(ishell)%coefficient(nuco(ishell)))
-          iPrimStart = jstrt(ishell) + 1
-          iPrimEnd   = jstrt(ishell) + nuco(ishell)
-          k          = numcf(ishell)
-         shell(ishell)%exponent = priexp(iPrimStart:iPrimEnd)
-         shell(ishell)%coefficient = priccf(iPrimStart:iPrimEnd,k)
-         shell(ishell)%coord = cent(ishell,1:3,1)
-!        In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-         call compress_unc_shell (shell(ishell),ierr)
-       end do
-
-       return 
-       end
-
        subroutine compress_unc_shell (shell,ierr)
 !If basis functions were grouped together in the input, they appear as quasi-contracted functions
 !with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
@@ -339,7 +300,7 @@ C
 
        end subroutine compress_unc_shell
 
-       subroutine read_from_dirac (ao_basis,cspinor,file_name,ierr)
+       subroutine read_from_dirac (ao_basis,cspinor,section,ierr)
 
        use checkpoint
        use exacorr_mo
@@ -353,7 +314,7 @@ C
 !      check for incompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
-       character(len=*),intent(in) :: file_name
+       character(len=*),intent(in) :: section
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
        integer, intent(out)   :: ierr 
@@ -366,7 +327,7 @@ C
        integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
        character              :: text*74      ! holds text read from DFCOEF, only used for printing this
        integer                :: nsym
-       real(8)                :: total_energy
+       real(8)                :: total_energy,e_corr
        integer                :: i, j, k, ishell, iprimstart, iprimend
        integer                :: nao, nao_bas, nshells, iao, ibas
        integer                :: nmo, npo, nto, npriexp, nzbuf
@@ -380,20 +341,21 @@ C
        logical                :: labeled
        integer                :: n_mo(2),n_po(2),n_basis(2)
        integer,allocatable    :: n_prim(:),n_cont(:)
+       character*(:),allocatable :: group
 
 
+       group = '/result/wavefunctions/'//trim(section)//'/'
        ierr = NOERROR
-       text = ' Data read from the checkpoint file '
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/nz',idata=nzbuf)
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/energy',rdata=total_energy)
+       text = trim(section)//' data read from the checkpoint file '
+       call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
+       call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
+       call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
+       call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+       call checkpoint_read (group//'energy',rdata=total_energy)
+       if (section .ne. 'scf') then
+          call checkpoint_read (group//'e_corr',rdata=e_corr)
+          total_energy = total_energy - e_corr
+       end if
 
        if (n_basis(2) == 0) then
          nsym = 1
@@ -419,12 +381,9 @@ C
        allocate(index(nmo))
         
        ! read the mo coefficients and orbital eigenvalues
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/orbitals',rdata=coeff)
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig)
-       call checkpoint_read 
-     & ('/result/wavefunctions/scf/mobasis/symmetry',idata=ibeig)
+       call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
+       call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+       call checkpoint_read (group//'mobasis/symmetry',idata=ibeig)
        ! fill in index values
        do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's
@@ -448,26 +407,26 @@ C
        call convert_mo_to_complex(cspinor)
 
        ! read general AO basis information
+       group = '/input/aobasis/1/'
        call checkpoint_read 
-     & ('/input/aobasis/1/angular',idata=ao_basis%basis_angular)
-       call checkpoint_read ('/input/aobasis/1/n_ao',idata=nao_bas)
-       call checkpoint_read ('/input/aobasis/1/n_shells',idata=nshells)
+     & (group//'angular',idata=ao_basis%basis_angular)
+       call checkpoint_read (group//'n_ao',idata=nao_bas)
+       call checkpoint_read (group//'n_shells',idata=nshells)
        allocate (orbmom(nshells))
        allocate (n_prim(nshells))
        allocate (n_cont(nshells))
        allocate (coord(3*nshells))
 !      read information that is defined for each shell
-       call checkpoint_read ('/input/aobasis/1/orbmom',idata=orbmom)
-       call checkpoint_read ('/input/aobasis/1/n_prim',idata=n_prim)
-       call checkpoint_read ('/input/aobasis/1/n_cont',idata=n_cont)
-       call checkpoint_read ('/input/aobasis/1/center',rdata=coord)
+       call checkpoint_read (group//'orbmom',idata=orbmom)
+       call checkpoint_read (group//'n_prim',idata=n_prim)
+       call checkpoint_read (group//'n_cont',idata=n_cont)
+       call checkpoint_read (group//'center',rdata=coord)
 !      values of the exponents and coefficients for all shells (packed into a 1-d arrays)
        npriexp = sum(n_prim)
        allocate (priexp(npriexp))
        allocate (priccf(npriexp))
-       call checkpoint_read ('/input/aobasis/1/exponents',rdata=priexp)
-       call checkpoint_read 
-     & ('/input/aobasis/1/contractions',rdata=priccf)
+       call checkpoint_read (group//'exponents',rdata=priexp)
+       call checkpoint_read (group//'contractions',rdata=priccf)
 
        ! check for consistency with the MO first dimension
        if (nao < nao_bas) then
@@ -764,7 +723,7 @@ C
 
        end subroutine read_from_dfcoef
 
-       subroutine write_mos_to_checkpoint(mobasis_id,cspinor,group)
+       subroutine write_mos_to_checkpoint(mobasis_id,cspinor,section)
 
        use exacorr_mo
        use checkpoint
@@ -772,16 +731,18 @@ C
 !      write mo coefficients in new dirac format
 
        integer, intent(in)         :: mobasis_id
-       character(len=*),intent(in) :: group
+       character(len=*),intent(in) :: section
        type(cmo), intent(inout)    :: cspinor
        type(cmo)                   :: qorbital
        integer                     :: ncoeff
+       character*(:), allocatable  :: group
 
-       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
 
        call copy_mo(cspinor,qorbital)
        call convert_mo_to_quaternion(qorbital)
 
+       ncoeff = qorbital%nao * qorbital%nmo * qorbital%nz
+       group = '/result/wavefunctions/'//trim(section)//'/mobasis'
        call checkpoint_write 
      & (trim(group)//'/mobasis_id',idata=mobasis_id)
        call checkpoint_write 
