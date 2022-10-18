@@ -13,6 +13,7 @@ module labeled_storage
   public lab_read
   public lab_write
   public lab_query
+  public group_from_label
 
 ! Define type to hold information for an active file
   type, public:: file_info_t
@@ -377,8 +378,9 @@ module labeled_storage
       integer, parameter                     :: MAX_RANK=7
       integer(kind=8)                        :: dims(MAX_RANK),newdim
       integer :: ierr
-      integer(kind=8) :: file_id, dset_id, group_id
+      integer(kind=8) :: file_id, dset_id
       logical(kind=8), parameter :: dyn=.True.
+      logical :: group_exists
 
       if (file_info%status == -1) then
          file_info%id = mh5_create_file(file_info%name)
@@ -390,7 +392,9 @@ module labeled_storage
 
       file_id = file_info%id
 
-      dset_id = mh5_exists_dset(file_id, label)
+      group_exists = create_group(file_id,group_from_label(label)) ! check whether group is present and create it if not
+      dset_id = mh5_exists_dset(file_id, label)                    ! check whether we already have data
+
       if (dset_id /= 0) then
           dset_id = mh5_open_dset(file_id, label)
          ! resize if size has changed
@@ -433,7 +437,7 @@ module labeled_storage
       character*(*),intent(in)               :: label
       logical,intent(out)                    :: exist
       integer, parameter                     :: MAX_RANK=7
-      integer(kind=8)                        :: dset_id,dims(MAX_RANK)
+      integer(kind=8)                        :: group_id,dset_id,dims(MAX_RANK)
       integer,intent(out), optional          :: data_size
 
       if (file_info%status /= 1) then
@@ -447,8 +451,11 @@ module labeled_storage
           file_info%status = 1
       end if
 
-      ! check the existence of this data set
-      exist = mh5_exists_dset(file_info%id,label)
+      ! check the existence of this data set (first check the group)
+      exist = mh5_exists_group(file_info%id,group_from_label(label))
+      if (exist) then
+         exist = mh5_exists_dset(file_info%id,label)
+      end if
 
       if (present(data_size)) then
          if (exist) then
@@ -462,5 +469,51 @@ module labeled_storage
       end if
 
     end subroutine query_hdf5
+
+    function group_from_label(label) result(group)
+
+       character(len=*)            :: label
+       character, parameter        :: delimiter='/'
+       character(:),allocatable    :: group
+       integer                     :: i
+
+       ! find rightmost delimiter
+       i = scan(label, delimiter, .true.)
+
+       ! the first part is the group
+       if (i > 1) then
+          group = label(1:i-1)
+       else
+          group = 'invalid_label'
+       end if
+
+     end function group_from_label
+
+     recursive function create_group (file_id,label) result (group_exists)
+
+     ! Check whether the group does exist and create it if it does not
+     ! All groups should be subgroups of an existing top group
+     use mh5
+     character(len=*),intent(in) :: label
+     logical                     :: group_exists,parent_exists
+     character(:),allocatable    :: parent_label
+     integer(kind=8)             :: file_id,group_id
+
+     group_exists = mh5_exists_group(file_id,label)
+     if (group_exists) return
+
+     parent_label  = group_from_label(label)
+     parent_exists = mh5_exists_group(file_id,parent_label)
+
+     if (parent_exists) then
+        group_id = mh5_create_group(file_id,label)
+        group_exists = .true.
+     else
+        group_exists = create_group (file_id,parent_label)
+        group_id = mh5_create_group(file_id,label)
+     end if
+
+     end function create_group
+
 
 end module labeled_storage

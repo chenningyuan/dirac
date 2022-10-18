@@ -16,6 +16,7 @@ module checkpoint
   ! A type to store the schema
   type :: label_t
       character(len=:),allocatable:: label,type,rank,use,description
+      integer :: parent
   end type label_t
 
   ! Constants
@@ -293,8 +294,8 @@ module checkpoint
       ! function is called at the end of a run to check the integrity of the file
       ! and can also be called at the beginning of a run to see if restart is possible
 
-      integer         :: i
-      integer(kind=8) :: group_id
+      integer         :: i, parent
+      logical         :: check
 
       checkpoint_valid = VALID
 
@@ -312,7 +313,18 @@ module checkpoint
 
       ! check the existence of all required data
       do i = 1, size(labels)
-         if (index(labels(i)%use,'required').ne.0) then
+
+         ! first find out whether this label belongs to an existing group
+         parent = labels(i)%parent
+         if (parent == 0) then
+            check = .true. ! always check for presence of the top level groups
+         else
+            ! only check in case the parent group is present
+            ! the group itself is checked as well as it is also among the labels
+            check = mh5_exists_group(checkpoint_file%id,labels(parent)%label)
+         end if
+            
+         if (check .and. index(labels(i)%use,'required').ne.0) then
              if (.not.mh5_exists_dset(checkpoint_file%id,labels(i)%label)) then
                 print*, "   - Required data set ",trim(labels(i)%label)," is missing"
                 ! dataset does not exist
@@ -326,8 +338,9 @@ module checkpoint
   subroutine create_new_checkpoint
 
       ! Part of initialization procedure, hdf5 requires that a group is created
-      ! before attempting to write data that is part of this group. Do this for
-      ! all groups defined in the schema.
+      ! before attempting to write data that is part of this group. We need to
+      ! create the top level groups at this stage, optional groups are created
+      ! when needed.
 
       use mh5
       integer :: i,j
@@ -339,19 +352,11 @@ module checkpoint
       checkpoint_file%id = mh5_create_file(checkpoint_file%name)
       checkpoint_file%status = 1
 
-      ! Composite data corresponds to groups, find these labels and initialize the file by creating (empty) groups
+      ! Top level groups have no parents, create these
       do i = 1, size(labels)
-         if (index(labels(i)%type,'composite').ne.0) then
+         if (labels(i)%parent == 0) then
              group_id = mh5_create_group(checkpoint_file%id,labels(i)%label)
              call  mh5_close_group(group_id)
-             ! quick hack to work with multiple instances, better solution desired
-             if (index(labels(i)%rank,'array').ne.0) then
-                do j = 2, 9 ! write subdirectories for additional instances, subdir 1 will be among the labels already
-                   write(subdir,'(A,I1)') '/',j
-                   group_id = mh5_create_group(checkpoint_file%id,trim(labels(i)%label)//subdir)
-                   call  mh5_close_group(group_id)
-                end do
-             end if
          end if
       end do
 
@@ -391,7 +396,29 @@ module checkpoint
       end do
       close(unit)
 
+      do i = 1, n_labels
+         call get_parent(labels(i))
+      end do
+
   end subroutine get_labels
+
+  subroutine get_parent(label)
+
+     type(label_t),intent(inout) :: label
+
+     character(:),allocatable    :: group
+     integer :: i
+
+     label%parent = 0 ! initialize in case there is no parent (for /input and /result)
+     group = group_from_label(label%label)
+     do i = 1, size(labels)
+        if (group == trim(labels(i)%label)) then
+           label%parent = i
+           exit
+        end if
+     end do
+
+  end subroutine get_parent
 
   logical function check_label(mylabel,mytype)
 
@@ -440,24 +467,5 @@ module checkpoint
       end if
 
   end function check_label
-
-  function group_from_label(mylabel) result(group)
-
-       character(len=*)            :: mylabel
-       character, parameter        :: delimiter='/'
-       character(:),allocatable    :: group
-       integer                     :: i
-
-       ! find rightmost delimiter
-       i = scan(mylabel, delimiter, .true.)
-
-       ! the first part is the group
-       if (i > 1) then
-          group = mylabel(1:i-1)
-       else
-          group = 'invalid_label'
-       end if
-
-  end function group_from_label
 
 end module

@@ -24,7 +24,7 @@ integer(kind=iwp), parameter :: wp = real64, MOLCAS_C_REAL = c_double
 private
 
 public :: mh5_create_file, mh5_open_file_rw, mh5_open_file_r, mh5_close_file, &
-          mh5_is_hdf5, mh5_open_group, mh5_create_group, mh5_close_group, &
+          mh5_is_hdf5, mh5_open_group, mh5_create_group, mh5_close_group, mh5_exists_group, &
           mh5_exists_attr, mh5_open_attr, mh5_close_attr, mh5_exists_dset, mh5_open_dset, mh5_close_dset, mh5_create_attr_int, &
           mh5_create_attr_real, mh5_create_attr_str, mh5_put_attr, mh5_get_attr, mh5_init_attr, mh5_fetch_attr, &
           mh5_create_dset_int, mh5_create_dset_real, mh5_create_dset_str, mh5_put_dset, mh5_get_dset, mh5_init_dset, &
@@ -767,6 +767,17 @@ function mh5_is_hdf5(filename) result(ishdf5)
 end function mh5_is_hdf5
 
 ! group
+
+function mh5_exists_group(lu,groupname) result(exists)
+  !LV: this function was missing, added this for convenience
+  integer(kind=iwp) :: groupid
+  integer(kind=iwp), intent(in) :: lu
+  character(len=*), intent(in) :: groupname
+  logical(kind=iwp) :: exists
+  groupid = mh5_open_group(lu,groupname)
+  exists = groupid > 0
+  if (exists) call mh5_close_group(groupid)
+end function mh5_exists_group
 
 function mh5_open_group(lu,groupname) result(groupid)
   integer(kind=iwp) :: groupid
