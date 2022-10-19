@@ -294,6 +294,8 @@ C
      &          ' (PAMTRA)  Orbitals read from DFCOEF'
          END IF
       END IF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set of MOs(CMO), eigenvalues(EIG) and boson array id(IBEIG) that we need for core transformation
 C
@@ -499,6 +501,8 @@ C
             CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          ENDIF
       END IF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set of MOs that we need for core transformation
 C
@@ -809,6 +813,8 @@ C
       CLOSE(LUCOEF,STATUS='KEEP')
       WRITE(LUPRI,'(A,F18.10,/)')
      &  'Coefficients imported. Total DHF energy:', ESCF
+
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C
 C     Select the set that we need
 C
@@ -1180,6 +1186,7 @@ C
          CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF 
+      if (atomic) call atomic_to_linear (ibeig,norbt)
 C           
 C     Select the set that we need
 C        
@@ -4049,6 +4056,7 @@ C
      &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
+      if (atomic) call atomic_to_linear (work(kibeig),norbt)
 C
 C     Select active orbitals
 C     ======================
@@ -4416,6 +4424,7 @@ C
      &               TOTERG,14)
          CLOSE(LUCOEF,STATUS='KEEP')
       ENDIF
+      if (atomic) call atomic_to_linear (work(kibeig),norbt)
 C
 C     Select active orbitals
 C     ======================
@@ -5606,3 +5615,17 @@ C     add SLIST to TLIST
 
       RETURN
       END
+
+      subroutine atomic_to_linear (ibeig,norbt)
+         implicit none
+         ! replace the atomic symmetry information by just the mj value
+         integer,intent(in) :: norbt ! dimension info needed because this may come out the old work array
+         integer,intent(inout) :: ibeig(*)
+         integer :: i,j,kappa,mj,l
+         do i = 1, norbt
+            ! unpack the mj and other quantum numbers
+            call atomic_id(ibeig(i),kappa,j,mj,l)
+            ! store just mj
+            ibeig(i) = mj
+         enddo
+      end subroutine atomic_to_linear
