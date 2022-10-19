@@ -3732,6 +3732,7 @@ C
 C***********************************************************************
 
       use memory_allocator
+      use checkpoint
       use dircmo
 #include "implicit.h"
 #include "priunit.h"
@@ -3757,20 +3758,21 @@ C
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in RKBIMP')
 
-C     Check for the presence of coefficient file
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(TOBE) THEN
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RKBIMP')
-        IF(FNDLAB('INFO    ',LUCOEF)) THEN         
-C         IDIM(1,IFRP) - number of positronic solutions
-C         IDIM(2,IFRP) - number of electronic solutions
-C         IDIM(3,IFRP) - number of AO-basis functions
-          READ (LUCOEF,END=10,ERR=20) TEXT,NSYM,NZBUF,
-     &         ((IDIM(I,J),I = 1,3),J=1,NSYM),TOTERG
-      ELSE
-         CALL QUIT('RKBIMP: Error reading info')
-      ENDIF
-        
+C     We read from checkpoint, will always be there
+      TOBE = .TRUE.
+C     This is what we need:
+C     IDIM(1,IFRP) - number of positronic solutions
+C     IDIM(2,IFRP) - number of electronic solutions
+C     IDIM(3,IFRP) - number of AO-basis functions
+C     Get it
+      call checkpoint_read('/result/wavefunctions/scf/mobasis/n_po',
+     & idata=idim(1,:))
+      call checkpoint_read('/result/wavefunctions/scf/mobasis/n_mo',
+     & idata=idim(2,:))
+      call checkpoint_read('/result/wavefunctions/scf/mobasis/n_basis',
+     & idata=idim(3,:))
+      idim(2,:) = idim(2,:) - idim(1,:) ! define as n_electronic
+
 C.......Check that the number of negative energy solutions is smaller than UKB
 C.......and calculate space needed to store UKB complement in orthonormal basis
         NBUF = 0
@@ -3784,7 +3786,6 @@ C.......and calculate space needed to store UKB complement in orthonormal basis
         IF(TOBE) THEN
 C.........Read coefficients, eigenvalues and boson irreps
           IOPT=14
-          REWIND LUCOEF
           allocate(buf(nbuf))    ! buffer for storing UKB complement in orthonormal basis
           allocate(cmo(ncmotq))
           allocate(eig(norbt))
@@ -3840,16 +3841,11 @@ C.........Backtransform UKB complement
           deallocate(tmat)
 
           CLOSE(LUTMAT,STATUS='KEEP')
-          CLOSE(LUCOEF,STATUS='KEEP')
         ELSE
-          CLOSE(LUCOEF,STATUS='KEEP')          
           WRITE(LUPRI,'(A)')
      &      '*** WARNING! RKBIMP: No need for UKB extension. Ignored.'
           RETURN
         ENDIF
-      ELSE
-        CALL QUIT('RKBIMP: Coefficient file not found !')
-      ENDIF
 C
       call dealloc(work)
       CALL QEXIT('RKBIMP')
