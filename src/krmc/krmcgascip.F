@@ -5112,18 +5112,18 @@ C        end loop 100 I and end loop 10 MK2I
 C     ------------------------------------------------
       IF (IPRINT .GT. 0) THEN
          CALL GETTIM(CPU2,WALL2)
-       IF ((WALL2-WALL1)*IPRINT .GT. 5.D0) THEN
+       IF ((WALL2-WALL1)*IPRINT .GT. 30.D0) THEN
 C        ... do not print all the small numbers
+         IF (NUMNOD .GT. 0) THEN
+            WRITE(LUPRI,'(A,I5,A,2I15)')
+     &      ' Node',MYTID,'; start and end in SVEC:',IS_START,IS_END
+         END IF
          CPUTID  = SECTID(CPU2-CPU1)
          WALLTID = SECTID(WALL2-WALL1)
          WRITE(LUPRI,'(/5A/A,I10,A,I10,A,I10)')
      &   ' CPU (Wall) time in GASCIP_CISIG_SCREEN kernel: ',CPUTID,' (',
      &   WALLTID,')',' Number of BVEC elements skipped:',NBSKIP,
      &   ' out of',NDET,'; remaining ',NDET-NBSKIP
-         IF (NUMNOD .GT. 0) THEN
-            WRITE(LUPRI,'(A,I5,A,2I15)')
-     &      ' Node',MYTID,'; start and end in SVEC:',IS_START,IS_END
-         END IF
         IF (IPRINT .GT. 2) THEN
          CALL GETNBITSCALLS(1,CNCALLS,FNCALLS)
          write(lupri,*) '#calls to cnbits and fnbits:',cncalls,fncalls
