@@ -12,6 +12,8 @@ properties. Available properties include:
 
 -  Quadratic response properties (e.g. hyperpolarizabilities).
 
+-  Quasi-degenerate CI perturbation theory for ESR parameters (g-tensor and hyperfine coupling tensors).
+
 For convenience some common properties can be specified directly in this
 section, which means that the user in principle does not need to know
 how they are calculated. Note, however, that response functions are by
@@ -326,6 +328,12 @@ Evaluate the diamagnetic contribution to nuclear magnetic shielding tensor as
 an expectation value of the non-relativistic operator.
 
 Atomic centers may be restricted with :ref:`INTEGRALS_.SELECT` under :ref:`**INTEGRALS`.
+
+keyword(ESR)
+
+Evaluate ESR parameters -- g-tensors and hyperfine coupling tensors -- using first-order quasi-degenerate perturbation theory
+based on configuration interaction.
+No default, it is required to specify the actual calculation under :ref:`*ESR`.
 
 Mixed electric and magnetic properties
 ======================================
