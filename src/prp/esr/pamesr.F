@@ -27,18 +27,21 @@ C
 C     Input section for ESR properties
 C
 C     Written by A.Noerager - Mar 2000
-C     Last revision:
+C     Last revision: hjaaj Oct 2022
 C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+C Used from .h files:
+C  dcbprp.h : ALLATM, NPATOM, IATOM(:), ...
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      PARAMETER (NTABLE = 19)
+
+      PARAMETER (NTABLE = 20)
       LOGICAL SET, NEWDEF, RESET, GORG_BY_USER, g_10ppm
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       REAL*8    WORK(LWORK)
@@ -47,7 +50,7 @@ C
       DATA TABLE /'xXXXXXX','.PRINT ','.OPERAT','.MULTIP','.SPINPO',
      &            '.SDCI  ','.MAX CI','.CI ROO','.THRCVE','.THRCI ',
      &            '.SDTCI ','.SDT*CI','.ESR CI','.MY CI ','.THRPCI',
-     &            '.KR-CON','.MAXMK2','.G10PPM','.STATE '/
+     &            '.KR-CON','.MAXMK2','.G10PPM','.STATE ','.SELECT'/
       DATA SET/.FALSE./
 C
       NEWDEF = (WORD .EQ. '*ESR   ')
@@ -112,7 +115,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
-     &                      11,12,13,14,15,16,17,18,19), I
+     &                      11,12,13,14,15,16,17,18,19,20), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -135,7 +138,6 @@ C&&&& OPERATOR: Define additional operator for results section
      &                        IPRESR)
                   CALL OP1IND('ESRINP',INDESR,LESRP,NESRP,INDXPR,
      &                        MAXESR)
-                  DOESR = .TRUE.
                   ICHANG = ICHANG + 1
                GO TO 100
 C Read multiplicity
@@ -251,6 +253,24 @@ C&&&& calculate g tensor with 10 ppm accuracy
 C&&&& first CI root belonging to multiplet
    19          CONTINUE ! .STATE
                   READ(LUCMD,*) STATE_ESR
+               GO TO 100
+C&&&& select atoms for HFC calculations
+   20          CONTINUE ! .SELECT
+                  IF (.NOT. ALLATM) THEN
+                     WRITE(LUPRI,'(//A/)') 'INPUT ERROR,'//
+     &               '.SELECT specified both under **INTEGRALS and *ESR'
+                     INPERR = INPERR + 1
+                  END IF
+                  READ (LUCMD, *) NPATOM
+                  IF (NPATOM .GT. MXCENT) THEN
+                     WRITE (LUPRI,'(/A,/A,I6,/A,I6)')
+     &             ' Too many atoms selected with .SELECT.',
+     &             ' Number of atoms selected: ',NPATOM,
+     &             ' Number of atoms allowed:  ',MXCENT
+                     CALL QUIT('Error in *ESR input')
+                  END IF
+                  READ (LUCMD, *) (IPATOM(I),I=1,NPATOM)
+                  ALLATM = .FALSE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -732,7 +752,7 @@ C
       IF (IPRESR .GE. 1) WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
      &   '  The G-matrix = g * g^T :', ((GMATRIX(I,K),K=1,3),I=1,3)
 
-      CALL RSJACO(3,3,3,GMATRIX,GEIG,1,1,0,GEVEC,WORK(KFREE),LFREE)
+      CALL RSJACO(3,3,3,GMATRIX,GEIG,1,1,0,GEVEC)
 
       DO I = 1,3
         GEIG(I) = SQRT(GEIG(I))
@@ -792,7 +812,7 @@ C
       IF (IPRESR .GE. 1) WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
      &   '  The G-matrix = g * g^T :', ((GMATRIX(I,K),K=1,3),I=1,3)
 
-      CALL RSJACO(3,3,3,GMATRIX,GEIG,1,1,0,GEVEC,WORK(KFREE),LFREE)
+      CALL RSJACO(3,3,3,GMATRIX,GEIG,1,1,0,GEVEC)
 
       DO I = 1,3
         GEIG(I) = SQRT(GEIG(I))
@@ -2040,13 +2060,13 @@ C
 C
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
       LOGICAL   SWITCH_XY
+      logical, allocatable :: DOATOM(:)
 
       KFRSAV = KFREE
       NCMAT =  NUCDEP*9
       CALL MEMGET2('REAL','TMAT',KTMAT,NCMAT,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','TISO',KTISO,NUCDEP,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','IBUF',KIBUF,3*NUCDEP,WORK,KFREE,LFREE)
-      CALL MEMGET2('LOGI','ATOM',KATOM,NUCIND,WORK,KFREE,LFREE)
       CALL MEMGET2('INTE','IATM',KIATM,NUCDEP*3 ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','RATM',KRATM,NUCDEP*15,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','CSTRA',KCSTRA,
@@ -2055,13 +2075,18 @@ C
      &   NUCDEP*NUCDEP*9,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','TMPMAT',KTMPMAT,NCMAT,WORK,KFREE,LFREE)
 C
-      CALL SETATM(WORK(KATOM),NATOM,29)
+C     SETATM code -29: accept .SELECT specification. This code is also
+C     used in DEF_SHIELD, which is also called for esr
+      allocate( DOATOM(NUCIND) )
+      CALL SETATM(DOATOM,NATOM,-29)
+
       CALL PRP_ESR_HFC_1(ESRVAL,SWITCH_XY,
      &     WORK(KTMPMAT),WORK(KTMAT),WORK(KTISO),
      &     WORK(KIATM),WORK(KRATM),WORK(KIBUF),
-     &     WORK(KATOM),WORK(KCSTRA),WORK(KSCTRA) )
+     &     DOATOM,WORK(KCSTRA),WORK(KSCTRA) )
       CALL MEMREL('PRP_ESR',WORK,1,KFRSAV,KFREE,LFREE)
 C
+      deallocate( DOATOM )
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -2251,7 +2276,7 @@ C
          ENDDO
       ELSE
          WRITE(LUPRI,'(//A/A)') '@ WARNING:'//
-     &   ' Only doublet and triplet hfcc implemented yet',
+     &   ' Only doublet, triplet, and quartet hfcc implemented yet',
      &   '@ Returning without doing anything ...'
          GO TO 9999
       END IF
@@ -2305,10 +2330,11 @@ C***********************************************************************
 #include "codata.h"
 #include "priunit.h"
 C
+      REAL*8    TMAT(3,3), AVETOT, RATINF(3,*)
+      INTEGER   IATINF(3), IPRINT
       CHARACTER NAME*6, NAMEX(3)*6
-      REAL*8    TMAT(3,3), TMATNY(3,3), RATINF(3,*), TMATX(3,3)
-      INTEGER   IATINF(3)
 #include "chrxyz.h"
+      REAL*8    TMATNY(3,3), TMATX(3,3), HFC_PVAL(3), HFC_PVEC(3,3)
 C
 C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)
       FACTOR = ALPHAC*ALPHAC/(2.0D0*XFMP)
@@ -2348,7 +2374,7 @@ C
             WRITE (LUPRI,'(2X,A6,3F15.5)')
      &             NAMEX(J), (TMATX(I,J),I=1,3)
          END DO
-C
+
          IF (IPRINT .GT. 0) THEN
             CALL HEADER('Total hyperfine coupling matrix (au):',1)
             WRITE (LUPRI,'(18X,3(A,13X),/)') 'Sx', 'Sy', 'Sz'
@@ -2357,7 +2383,24 @@ C
      &                NAMEX(J), (TMATNY(I,J),I=1,3)
             END DO
          END IF
-      ENDDO
+
+C        Calculate principal values from symmetrized A matrix (in MHz)
+
+         TMP = 0.5D0*(TMATX(1,2) + TMATX(2,1))
+         TMATX(1,2) = TMP; TMATX(2,1) = TMP
+         TMP = 0.5D0*(TMATX(1,3) + TMATX(3,1))
+         TMATX(1,3) = TMP; TMATX(3,1) = TMP
+         TMP = 0.5D0*(TMATX(2,3) + TMATX(3,2))
+         TMATX(2,3) = TMP; TMATX(3,2) = TMP
+
+         CALL RSJACO(3,3,3,TMATX,HFC_PVAL,1,1,0,HFC_PVEC)
+
+         WRITE (LUPRI,'(/A//,(F15.5,A,3F15.5))')
+     &      '  Principal values and principal axes'//
+     &         ' from symmetrized hyperfine coupling matrix:',
+     &      (HFC_PVAL(I),' MHz :',HFC_PVEC(1:3,I), I = 1,3)
+
+      END DO ! L=1,NISO
 C
 C     END IF
       RETURN
