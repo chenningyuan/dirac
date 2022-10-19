@@ -202,6 +202,14 @@ interface
 
   ! group
 
+  function mh5_c_exists_group(lu,groupname) result(groupid) &
+           bind(C,name='mh5c_exists_group')
+    import :: MOLCAS_C_INT, c_char
+    integer(kind=MOLCAS_C_INT) :: groupid
+    integer(kind=MOLCAS_C_INT), value :: lu
+    character(kind=c_char) :: groupname(*)
+  end function mh5_c_exists_group
+
   function mh5_c_open_group(lu,groupname) result(groupid) &
            bind(C,name='mh5c_open_group')
     import :: MOLCAS_C_INT, c_char
@@ -769,14 +777,15 @@ end function mh5_is_hdf5
 ! group
 
 function mh5_exists_group(lu,groupname) result(exists)
-  !LV: this function was missing, added this for convenience
+  !LV: Added this "missing" HDF5 function for convenience.
   integer(kind=iwp) :: groupid
   integer(kind=iwp), intent(in) :: lu
   character(len=*), intent(in) :: groupname
+  character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
   logical(kind=iwp) :: exists
-  groupid = mh5_open_group(lu,groupname)
+  call f2c_string(groupname,mh5_lbl)
+  groupid = mh5_c_exists_group(lu,mh5_lbl)
   exists = groupid > 0
-  if (exists) call mh5_close_group(groupid)
 end function mh5_exists_group
 
 function mh5_open_group(lu,groupname) result(groupid)
