@@ -13,7 +13,7 @@ f.add(from_string = 'SCF energy :',
       to_string   = 'Total MP2 energy :',
       rel_tolerance   = 1.0e-7)
 
-test.run(['scf.inp'], ['f2.xyz'], f, args='--get="AOMOMAT DFCOEF X2CMAT"')
+test.run(['scf.inp'], ['f2.xyz'], f, args='--get="AOMOMAT X2CMAT" --outcmo')
 
 
 f = Filter()
@@ -21,10 +21,10 @@ f.add(from_string = 'SCF energy :',
       to_string   = 'Total MP2 energy :',
       rel_tolerance   = 1.0e-7)
 
-test.run(['res.inp'], ['f2.xyz'], f, args='--put="AOMOMAT DFCOEF X2CMAT"')
+test.run(['res.inp'], ['f2.xyz'], f, args='--put="AOMOMAT X2CMAT"  --incmo')
 
 os.unlink('X2CMAT')
-os.unlink('DFCOEF')
+os.unlink('CHECKPOINT.h5')
 os.unlink('AOMOMAT')
 
 sys.exit(test.return_code)
