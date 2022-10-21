@@ -341,7 +341,8 @@ module labeled_storage
       integer,intent(out), optional          :: idata(:)
       character*(*),intent(out), optional    :: sdata
 
-      integer :: ierr
+      logical :: exist
+      integer :: ierr, data_size
       integer(kind=8), allocatable :: i8buf(:)
 
       if (file_info%status == 0) then
@@ -349,9 +350,25 @@ module labeled_storage
          file_info%status = 1
       end if
 
+      call query_hdf5 (file_info,label,exist,data_size)
+      if (.not.exist) then
+        write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
+        stop ' error detected by read_hdf5 '
+      end if
+
       if (present(rdata)) then
+         if (data_size > size(rdata)) then
+           write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
+           write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
+           stop ' error detected by read_hdf5 '
+         end if
          call mh5_fetch_dset(file_info%id,label,rdata)
       elseif (present(idata)) then
+         if (data_size > size(idata)) then
+           write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
+           write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
+           stop ' error detected by read_hdf5 '
+         end if
          allocate (i8buf(size(idata)))
          i8buf = 0
          call mh5_fetch_dset(file_info%id,label,i8buf)

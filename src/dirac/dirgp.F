@@ -1625,8 +1625,7 @@ C  /* Deck acmout */
       use checkpoint
 C*****************************************************************************
 C
-C     Read coefficients from unformatted DFCOEF, 
-C     take out symmetry and write to unformatted DFACMO 
+C     Read and convert MO coefficients to C1 symmetry 
 C
 C     There is a catch:
 C       In HERMIT the basis set is generally symmetry-adapted. 
@@ -3293,10 +3292,11 @@ C  /* Deck acmoin */
       use dircmo
 C*****************************************************************************
 C
-C     Read coefficients in C1 symmetry from unformatted DFACMO,
-C     adapt to current symmetry and write to unformatted DFCOEF
+C     Read coefficients in C1 symmetry from DFACMO
+C     adapt to current symmetry and write back to CHECKPOINT.h5
 C
 C     Written by T. Saue Mar 3 2008
+C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
 #include "implicit.h"
@@ -3331,8 +3331,8 @@ C
       INQUIRE(FILE='DFACMO',EXIST=TOBE)
       IF(.NOT.TOBE) THEN
           WRITE(LUPRI,'(A)') 
-     &      'ACMOIN: Unformatted file DFACMO not found !'
-          CALL QUIT('ACMOIN: Unformatted file DFACMO not found !')
+     &      'Checkpoint file DFACMO not found !'
+          CALL QUIT('ACMOIN: DFACMO not found !')
       ENDIF
 C     Allocate arrays
       allocate(CMO1(N2BBASX*4))
@@ -3349,6 +3349,8 @@ C
       dfacmo%type = 2
       dfacmo%name = 'DFACMO'
       dfacmo%status = 0
+      call lab_read (dfacmo,
+     & '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/mobasis/orbitals_C1',cmo2)
       call lab_read (dfacmo,

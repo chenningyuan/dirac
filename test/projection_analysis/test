@@ -20,36 +20,22 @@ f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       rel_tolerance   = 1.0e-4)
 
-test.run(['H.inp'], ['H.mol'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'AFH1XX')
+test.run(['H.inp'], ['H.mol'])
+test.run(['C.inp'], ['C.mol'])
 
-test.run(['C.inp'], ['C.mol'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'AFCXXX')
-
-test.run(['CH4.inp'], ['CH4.xyz'], f, args='--outcmo --get=DFACMO --copy="AF*"')
+test.run(['CH4.inp'], ['CH4.xyz'], f, args='--outcmo --put="H_H.h5=H.h5 C_C.h5=C.h5"')
+shutil.copy('CHECKPOINT.h5','DFACMO')
 
 f = Filter()
 f.add(from_string = '* Total gross contributions',
       num_lines   = 7,
       rel_tolerance   = 1.0e-4)
 
-test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--incmo --copy="AF*"')
-
-shutil.copy('AFH1XX', 'AFH2XX')
-shutil.copy('AFH1XX', 'AFH3XX')
-shutil.copy('AFH1XX', 'AFH4XX')
-shutil.copy('DFACMO', 'DFCOEF')
-
-test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--incmo --copy="AF*"')
-
+test.run(['CH4_repolar.inp'], ['CH4.xyz'], f, args='--incmo --put="H_H.h5=H.h5 C_C.h5=C.h5"')
+test.run(['CH4_C1.inp'], ['CH4.xyz'], f, args='--put="DFACMO H_H.h5=H.h5 C_C.h5=C.h5"')
 
 # cleanup
+os.unlink('CHECKPOINT.h5')
 os.unlink('DFACMO')
-os.unlink('DFCOEF')
-os.unlink('AFCXXX')
-os.unlink('AFH1XX')
-os.unlink('AFH2XX')
-os.unlink('AFH3XX')
-os.unlink('AFH4XX')
 
 sys.exit(test.return_code)

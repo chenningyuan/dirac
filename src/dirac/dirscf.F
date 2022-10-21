@@ -3478,6 +3478,7 @@ C     Last modification: MI, July 2005 for BSSpostDC-SCF calculation
 C
 C***********************************************************************
       use num_grid_cfg
+      use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -3555,9 +3556,9 @@ C
 C     * TRIVEC: Looking for old coefficients
 C     --------------------------------------
 C
-CMI/May05 Do not use old DFCOEF when DO4C2C=.TRUE. !
       IF(TRIVEC.AND..NOT.RESTFCK) THEN
-        INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+        call checkpoint_query
+     &  ('/result/wavefunctions/scf/mobasis/orbitals',tobe)
         IF(TOBE) THEN
           BARNUC   = .FALSE.
           DOHUCKEL = .FALSE.
