@@ -559,8 +559,7 @@ module talsh_trial_eomccsd
            end do
 
         end if
-
-        write(6,*) 'debug, number of roots',workspace%nroots
+        
         j = 0
 
         do iroot = 1, workspace%nroots
@@ -623,7 +622,7 @@ module talsh_trial_eomccsd
                     else
 !                      print *,'c'
 ! aspg, for now, we only set the tens1 part of the trial vectors
-                     print *, "a:", a1, "i1:", i1
+                     ! print *, "a:", a1, "i1:", i1
                        trial1_hp_tens(a1,i1) = ONE
                     end if
            end if

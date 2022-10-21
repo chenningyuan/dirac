@@ -494,10 +494,6 @@ contains
     subroutine update_trial_vectors(delta,workspace_t)
         type(talsh_davidson_workspace_tens_t) :: workspace_t
         logical, pointer, intent(inout) :: delta(:)
-        ! type(talsh_tens_t), intent(inout) :: tensor_proj_num, tensor_proj_den
-        ! complex(8), pointer, intent(inout) :: result_tens_num(:), result_tens_den(:)
-        ! type(talsh_tens_t),intent(inout) :: tensor_norm
-        ! complex(8), pointer,intent(inout) :: result_tens_norm(:)
 
         integer :: ierr, i, j
         integer(INTD) :: rank
@@ -571,9 +567,6 @@ contains
            end do
         end if
 
-        ! call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2, &
-        !                         tensor_proj_den,tensor_proj_num,tensor_norm,result_tens_den,result_tens_num,result_tens_norm)
-
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
 
         ! if (debug) then
@@ -587,9 +580,6 @@ contains
         !     end do
         !  end if
 
-
-        ! call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2, &
-        !                                 tensor_norm, result_tens_norm)
         call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
 
         if (debug) then
@@ -608,8 +598,6 @@ contains
     subroutine double_check_trial_vector(L,Lnew,trial1,trial2)
         integer, intent(inout) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
-        ! type(talsh_tens_t),intent(inout) :: tensor_norm
-        ! complex(8), pointer,intent(inout) :: result_tens_norm(:)
 
         integer :: Lnew_tem, L_tem
         integer :: i, j, vi
@@ -618,6 +606,7 @@ contains
         type(C_PTR) :: body_p, body_p1
         real(8) :: davidson_antisymme_threshold = 1.0d-6
         integer :: ierr
+        logical :: debug_double_check = .false.
 
         integer :: t2_dims(4), t2_rank, t1_dims(2), t1_rank
         complex(8), pointer, contiguous:: trial2_tens(:,:,:,:), trial2_tens_tem(:,:,:,:)
@@ -628,17 +617,13 @@ contains
         L_tem = L
         allocate(valid_index(Lnew_tem-L+1))
         valid_index = 0
-        ! print *, "valid_index: before", valid_index
-        do i = L+1, Lnew_tem
-            ! print *, "i:", i
-            norm_r = sqrt(tensor_norm2(trial1(i)) + tensor_norm2(trial2(i))/4)
-            ! call get_norm_indavison(trial1(i),tensor_norm,result_tens_norm)
-            ! norm_r1 = real(result_tens_norm(1),8)
-            ! call get_norm_indavison(trial2(i),tensor_norm,result_tens_norm)
-            ! norm_r2 = real(result_tens_norm(1),8)
-            ! norm_r = sqrt(norm_r1 +  norm_r2/4)   !XY 4 is for EE(ab.ij) but we need to take care for IP
 
-            ! print *, "norm_r:", norm_r
+        if (debug_double_check) then
+            print *, "valid index of vectors before checking", valid_index
+        end if 
+
+        do i = L+1, Lnew_tem
+            norm_r = sqrt(tensor_norm2(trial1(i)) + tensor_norm2(trial2(i))/4)
             if (norm_r.gt.davidson_antisymme_threshold) then 
                 L_tem = L_tem + 1
                 valid_index(L_tem-L) = i
@@ -646,23 +631,26 @@ contains
         end do
         Lnew = L_tem
        
-        ! print *, "valid_index: after", valid_index
+        if (debug_double_check) then
+            print *, "valid index of vectors after checking", valid_index
+        end if 
+
         j = 1
         ierr = talsh_tensor_dimensions(trial2(1),t2_rank,t2_dims)
         ierr = talsh_tensor_dimensions(trial1(1),t1_rank,t1_dims)
-        ! allocate(trial2_tens_tem(t2_dims(1),t2_dims(2),t2_dims(3),t2_dims(4)))
-        ! allocate(trial1_tens_tem(t1_dims(1),t1_dims(2)))
 
         do i = L+1, Lnew
             vi = valid_index(j)
-            ! print *, "vi:", vi
-            ! print *, "i:", i
 
-            ! call print_tensor(trial1(i),1.0d-18, "trail1(i) in double check before")
-            ! call print_tensor(trial2(i),1.0d-18, "trail2(i) in double check before")
+            if (debug_double_check) then
+                print *, "valid index vi:", vi
+                print *, "original index i:", i
+                call print_tensor(trial1(i),1.0d-18, "trail1(i) in double check before")
+                call print_tensor(trial2(i),1.0d-18, "trail2(i) in double check before")
 
-            ! call print_tensor(trial1(vi),1.0d-18, "trail1(vi) in double check before")
-            ! call print_tensor(trial2(vi),1.0d-18, "trail2(vi) in double check before")
+                call print_tensor(trial1(vi),1.0d-18, "trail1(vi) in double check before")
+                call print_tensor(trial2(vi),1.0d-18, "trail2(vi) in double check before")
+            end if 
 
             ierr=talsh_tensor_get_body_access(trial2(vi),body_p,C8,int(0,C_INT),DEV_HOST)
             ierr=talsh_tensor_get_body_access(trial2(i),body_p1,C8,int(0,C_INT),DEV_HOST)
@@ -672,80 +660,47 @@ contains
             call c_f_pointer(body_p1,trial2_tens_tem,t2_dims)
             trial2_tens_tem = trial2_tens
             
-
             ierr=talsh_tensor_get_body_access(trial1(vi),body_p,C8,int(0,C_INT),DEV_HOST)
             ierr=talsh_tensor_get_body_access(trial1(i),body_p1,C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p,trial1_tens,t1_dims)
             call c_f_pointer(body_p1,trial1_tens_tem,t1_dims)
             trial1_tens_tem = trial1_tens
             
-
             j = j+1
-            ! call print_tensor(trial1(i),1.0d-18, "trail1 in double check after")
-            ! call print_tensor(trial2(i),1.0d-18, "trail2 in double check after")
+
+            if (debug_double_check) then
+                call print_tensor(trial1(i),1.0d-18, "trail1(i) in double check after")
+                call print_tensor(trial2(i),1.0d-18, "trail2(i) in double check after")
+            end if 
+
         end do
         
         if (Lnew > L) then
             L = L+1
         end if
         deallocate(valid_index)
-        ! deallocate(trial2_tens,trial2_tens_tem)
-        ! trial2_tens => NULL()
 
-    end subroutine
-
-
-    subroutine get_norm_indavison(a_tensor,result_tensor,result_tens_norm)
-        type(talsh_tens_t), intent(inout) :: a_tensor
-        type(talsh_tens_t),intent(inout) :: result_tensor
-        complex(8), pointer,intent(inout) :: result_tens_norm(:)
-
-        integer(INTD) :: a_dims(1:4)
-        integer(INTD) :: ierr, a_rank
-        ! real(8) :: a_norm2
-
-        ierr=talsh_tensor_init(result_tensor)
-        print *, "initalize norm in renorm?", ierr
-        ierr = talsh_tensor_dimensions(a_tensor,a_rank,a_dims)
-        select case (a_rank)
-        case (0)
-           ierr=talsh_tensor_contract("R()+=A+()*A()",result_tensor,a_tensor,a_tensor)
-        case (1)
-           ierr=talsh_tensor_contract("R()+=A+(p)*A(p)",result_tensor,a_tensor,a_tensor)
-        case (2)
-           ierr=talsh_tensor_contract("R()+=A+(p,q)*A(p,q)",result_tensor,a_tensor,a_tensor)
-        case (3)
-           ierr=talsh_tensor_contract("R()+=A+(p,q,r)*A(p,q,r)",result_tensor,a_tensor,a_tensor)
-        case (4)
-           ierr=talsh_tensor_contract("R()+=A+(p,q,r,s)*A(p,q,r,s)",result_tensor,a_tensor,a_tensor)
-        case default
-           call quit ('wrong dimension in tensor_norm2')
-        end select
-
-        ! a_norm2 = real(result_tens(1),8)
     end subroutine
 
     subroutine renormalize_vectors(v1,v2)
-       type(talsh_tens_t), intent(inout) :: v1, v2
-    !    type(talsh_tens_t),intent(inout) :: tensor_norm
-    !    complex(8), pointer,intent(inout) :: result_tens_norm(:)
 
-       real :: norm_r, norm_r1, norm_r2
+       type(talsh_tens_t), intent(inout) :: v1, v2
+       real :: norm_r
        complex(8) :: norm
        real(8) :: davidson_antisymme_threshold = 1.0d-6
-       integer :: ierr
+       integer :: ierr, rank
+  
 
-    !    call get_norm_indavison(v1,tensor_norm,result_tens_norm)
-    !    norm_r1 = real(result_tens_norm(1),8)
-    !    call get_norm_indavison(v2,tensor_norm,result_tens_norm)
-    !    norm_r2 = real(result_tens_norm(1),8)
-    !    norm_r = sqrt(norm_r1 +  norm_r2/4)   
+       rank=talsh_tensor_rank(v1)
 
-       norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4) !XY 4 is for EE(ab.ij) but we need to take care for IP
+       if (rank.eq.1) then
+            norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/2)
+       else if (rank.eq.2) then 
+            norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4)
+       end if 
+
+    !    norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4) !XY 4 is for EE(ab.ij) but we need to take care for IP
        norm = dcmplx(norm_r, 0.0d0)
-
-    !    norm_r = 1.0d0 / norm_r
-    !    print *, "norm of trail tensor", norm_r
 
        if (norm_r.lt.davidson_antisymme_threshold) then ! to avoid numerical noisy 
             ierr=talsh_tensor_init(v1, ZERO)
@@ -766,11 +721,9 @@ contains
 
 
     subroutine gram_schmidt_projection_tensors(factor, u1, u2, v1, v2)
-    ! subroutine gram_schmidt_projection_tensors(u1, u2, v1, v2, result_tensor_num, result_tensor_den)
        complex(8), intent(inout) :: factor
        type(talsh_tens_t), intent(inout) :: u1, u2
        type(talsh_tens_t), intent(inout) :: v1, v2
-    !    type(talsh_tens_t), intent(inout) :: result_tensor_num, result_tensor_den
 
        type(talsh_tens_t) :: result_tensor_num, result_tensor_den
        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
@@ -779,67 +732,46 @@ contains
 
        integer(C_INT)     :: one_dims(1)
        integer  :: ierr, rank
+       logical :: debug_GS_proj = .false.
 
        one_dims(1) = 1
-    !    ierr=talsh_tensor_init(result_tensor_den)
-    !    print *, "ierr in initial den:", ierr
-    !    ierr=talsh_tensor_init(result_tensor_num)
-    !    print *, "ierr in initial num:", ierr
 
        ierr=talsh_tensor_construct(result_tensor_den,C8,one_dims(1:0),init_val=ZERO)
-       print *, "ierr in construct den:", ierr
        ierr=talsh_tensor_get_body_access(result_tensor_den,body_p_den,C8,int(0,C_INT),DEV_HOST)
        call c_f_pointer(body_p_den,result_tens_den,one_dims)
        ierr=talsh_tensor_construct(result_tensor_num,C8,one_dims(1:0),init_val=ZERO)
-       print *, "ierr in construct num:", ierr
        ierr=talsh_tensor_get_body_access(result_tensor_num,body_p_num,C8,int(0,C_INT),DEV_HOST)
        call c_f_pointer(body_p_num,result_tens_num,one_dims)
 
        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
        rank=talsh_tensor_rank(v1)
-    !    print *, "rank in projection:", rank
 
        if (rank.eq.1) then
           ierr=talsh_tensor_contract("num()+=u+(a)*v(a)",result_tensor_num,u1,v1)
           ierr=talsh_tensor_contract("den()+=u+(a)*u(a)",result_tensor_den,u1,u1)
 
-          ierr=talsh_tensor_contract("num()+=u+(a,b,c)*v(a,b,c)",result_tensor_num,u2,v2)
-          ierr=talsh_tensor_contract("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2)
+          ierr=talsh_tensor_contract("num()+=u+(a,b,c)*v(a,b,c)",result_tensor_num,u2,v2,scale=ONE_HALF)
+          ierr=talsh_tensor_contract("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2,scale=ONE_HALF)
 
        else if (rank.eq.2) then
-          call print_tensor(u1, 1.0d-18, "u1 tensor")
-          call print_tensor(v1, 1.0d-18, "v1 tensor")
+          if (debug_GS_proj) then
+              call print_tensor(u1, 1.0d-18, "u1 tensor")
+              call print_tensor(v1, 1.0d-18, "v1 tensor")
+          end if 
           ierr=talsh_tensor_contract("num()+=u+(a,b)*v(a,b)",result_tensor_num,u1,v1)
-           print *, "ierr in projection:", ierr
-        !   print *, "projection of v1*u1", result_tens_num(1)
           ierr=talsh_tensor_contract("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
-
-
-        !   print *, "tensor norm2 of v2", tensor_norm2(v2)
-        !   print *, "tensor norm2 of u2", tensor_norm2(u2)
-        !   call print_tensor(v2, 1.0d-18, "v2")
-        !   call print_tensor(u2, 1.0d-18, "u2")
-
-        !   print *, "projection of v1*u1", result_tens_num(1)
-        !   if (tensor_norm2(v2)==0.0.or.tensor_norm2(u2)==0.0) then
-        !     print *, "come here???"
-        !     print *, "projection of v1*u1+v2*u2", result_tens_num(1)
-        !     ! ierr=talsh_tensor_contract("num()+=v+()*u()",result_tensor_num,one_tensor,one_tensor,scale=ZERO)
-        !     result_tens_num(1)= result_tens_num(1) + 0.0
-        !   else
-            ierr=talsh_tensor_contract("num()+=u+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,u2,v2,scale=ONE_QUARTER_C)
-        !     print * , "ierr: ", ierr
-        !   end if 
-
-        !   print *, "projection of v1*u1+v2*u2", result_tens_num(1)
+          ierr=talsh_tensor_contract("num()+=u+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,u2,v2,scale=ONE_QUARTER_C)
           ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2,scale=ONE_QUARTER_C)
        end if
        
-       print *, "result_tens_den(1):", result_tens_den(1) 
-       print *, "result_tens_num(1):", result_tens_num(1)
        factor = result_tens_num(1) / result_tens_den(1)
-       print *, "factor:", factor
+
+       if (debug_GS_proj) then
+          print *, "result_tens_den():", result_tens_den(1) 
+          print *, "result_tens_num():", result_tens_num(1)
+          print *, "factor: ", factor
+       end if 
 
        ierr=talsh_tensor_destruct(result_tensor_num)
        ierr=talsh_tensor_destruct(result_tensor_den)
@@ -847,13 +779,10 @@ contains
 
     end subroutine
 
+
     subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2)
         integer, intent(in) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
-        ! type(talsh_tens_t) :: tensor_proj_num, tensor_proj_den
-        ! complex(8), pointer :: result_tens_num(:), result_tens_den(:)
-        ! type(talsh_tens_t),intent(inout) :: tensor_norm
-        ! complex(8), pointer,intent(inout) :: result_tens_norm(:)
 
         real :: norm_r
         integer(INTD) :: rank
@@ -865,43 +794,40 @@ contains
         real(8) :: davidson_antisymme_threshold_num = 1.0d-12
 
         integer(C_INT)     :: one_dims(1)
-        ! type(C_PTR):: body_p_num, body_p_den
+        logical :: debug_GS_orthg = .false.
 
 
-        one_dims(1) = 1
+
+        ! one_dims(1) = 1
         ! ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
         rank=talsh_tensor_rank(trial1(1))
         if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
 
 
         do j = L+1, Lnew
-        !     call print_tensor(trial1(j), 1.0d-18, "trial1(j) before ")
-        !     call print_tensor(trial2(j), 1.0d-18, "trial2(j) before ")
+            if (debug_GS_orthg) then
+                call print_tensor(trial1(j), 1.0d-18, "trial1(j) before ")
+                call print_tensor(trial2(j), 1.0d-18, "trial2(j) before ")
+            end if
             do i = 1, j-1
-                ! print *, "i in schmidt_projection:", i
-                print *, "I: ", i, "J: ", j
-                ! call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
-                ! call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
+                if (debug_GS_orthg) then
+                    print *, "I: ", i, "J: ", j
+                    call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
+                    call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
+                end if 
 
-                ! if (i <= L) then    !The previous L vectors should be ok.
-                !     norm_r = 1.0
-                ! else
+                if (i <= L) then    !The previous L vectors should be ok.
+                    norm_r = 1.0
+                else
                     norm_r = sqrt(tensor_norm2(trial1(i)) +  tensor_norm2(trial2(i))/4)
-                ! end if
+                end if
  
                 if (norm_r.gt.davidson_antisymme_threshold) then                       
-                    ! call gram_schmidt_projection_tensors(factor, trial1(i), trial2(i), trial1(j), trial2(j), &
-                    !                                 tensor_proj_num, tensor_proj_den)
-                    ! ierr=talsh_tensor_init(tensor_proj_den)
-                    ! print *, "initalize den?", ierr
-                    ! ierr=talsh_tensor_init(tensor_proj_num)
-                    ! print *, "initalize num?", ierr
                     call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j))
                 else
                     factor = ZERO ! complex(0.0D0,0.0D0)
                 end if
 
-                ! print *, "factor in schmidt_projection before:", factor
                 if (rank.eq.1) then
                    ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
                    ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
@@ -910,19 +836,10 @@ contains
                    ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
                 end if
 
-                ! print *, "factor in schmidt_projection after 1round:", factor
-                ! print *, "i in schmidt_projection: after", i
             end do
 
-            ! call renormalize_vectors(trial1(j),trial2(j),tensor_norm,result_tens_norm)
             call renormalize_vectors(trial1(j),trial2(j))
 
-            ! call print_tensor(trial2(L), 1.0d-18, "trial2(L) after schmit")
-            ! print *, "j in schmidt_projection: after", j
-            ! call print_tensor(trial1(j), 1.0d-18, "trial1(j) after normalization")
-            ! call print_tensor(trial2(j), 1.0d-18, "trial2(j) after normalization")
-                ! ierr=talsh_tensor_destruct(tensor_proj_num)
-                ! ierr=talsh_tensor_destruct(tensor_proj_den)
          end do
 
     end subroutine
@@ -1253,16 +1170,8 @@ contains
             else if (r1_rank.eq.2) then
               ierr=talsh_tensor_add("r(a,b)+=s(a,b)",workspace_t%delta1(k),workspace_t%sigma1(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b)+=t(a,b)",workspace_t%delta1(k),workspace_t%trial1(i),scale=factor2)
-
-            !   call print_tensor(workspace_t%sigma1(i), 1.0d-10, "workspace_t%sigma1(i)")
-            !   print *, "factor1: ", factor1
-            !   print *, "factor2: ", factor2
-            !   call print_tensor(workspace_t%trial1(i), 1.0d-10, "workspace_t%trial1(i)")
-
               ierr=talsh_tensor_add("r(a,b,c,d)+=s(a,b,c,d)",workspace_t%delta2(k),workspace_t%sigma2(i),scale=factor1)
               ierr=talsh_tensor_add("r(a,b,c,d)+=t(a,b,c,d)",workspace_t%delta2(k),workspace_t%trial2(i),scale=factor2)
-            !   call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
-            !   call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
 
            end if
 
@@ -1331,6 +1240,7 @@ contains
         logical, pointer :: correction_to_vectors(:)
 
         integer :: ierr, k, unconverged_roots, nroots
+        integer :: rank
         real(kind=8) :: norm_r = 0.0d0
         logical :: correct_all_local
         logical :: debug_correction_vectors = .false.
@@ -1351,6 +1261,7 @@ contains
         correction_to_vectors = .true.
 
         unconverged_roots = 0
+        rank = talsh_tensor_rank(workspace_t%delta1(1))
         do k = 1, nroots
            ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
            if (debug_correction_vectors) print *,'debug, init workspace_t%delta1(k) to zero, ierr',ierr
@@ -1365,15 +1276,17 @@ contains
               call form_r_tensors(k,c_small_M,e_small_M,workspace_t)
            end if
             
+           if (rank .eq.1) then
+              norm_r = sqrt(tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))/2)
+           else if (rank .eq.2) then
+              norm_r = sqrt(tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))/4)
+           end if
+
 ! get the norm of the whole intermediate r(:,k) tensor, which means to calculate it over the different excitation ranks 
            if (debug_correction_vectors) then
               print *,'debug, norm of delta1(',k,'):',tensor_norm2(workspace_t%delta1(k))
               print *,'debug, norm of delta2(',k,'):',tensor_norm2(workspace_t%delta2(k))
            end if
-
-        !    call print_tensor(workspace_t%delta1(k), 1.0d-10, "workspace_t%delta1(k)")
-        !    call print_tensor(workspace_t%delta2(k), 1.0d-10, "workspace_t%delta2(k)")
-           norm_r = sqrt(tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))/4)
 
            if (norm_r .lt. davidson_convergence_threshold) then 
               write(output_file_unit, "(4x,a,i6,a,1e14.6,4x,a)") "Root ",k,"  ||q_k,M|| ", norm_r, " <<< converged ! "
@@ -2286,7 +2199,7 @@ contains
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
       ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-      print *, "ierr construct small M:", ierr 
+    !   print *, "ierr construct small M:", ierr 
       ierr=talsh_tensor_get_body_access(result_tensor,mij_body_p,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(mij_body_p,mij_result_tens,one_dims)
 
@@ -2454,11 +2367,6 @@ contains
         integer :: i, j, k
         integer :: nroots, ierr
 
-        type(talsh_tens_t) :: tensor_proj_num, tensor_proj_den
-        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
-        type(talsh_tens_t) :: tensor_norm
-        complex(8), pointer :: result_tens_norm(:)
-
         ! if (davidson_solve_linear_system) then
         !     nroots = 1
         ! else
@@ -2504,19 +2412,10 @@ contains
             write(davidson_output_file_unit,*) "Iteration ", niter
             write(davidson_output_file_unit,*) ""
 
-
-            ! if (niter == 1) then
-            !     call construct_proj(tensor_proj_den,tensor_proj_num,result_tens_den,result_tens_num)
-            !     call construct_norm(tensor_norm,result_tens_norm)
-            ! end if
-    
-
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%trial1,  workspace_t%trial2)
             call create_sigma(workspace_t,int_t,interm_t,davidson_solve_rhs,davidson_solve_lhs)
-            ! print *, "sigma finished"
 !           call apply_projector(workspace_t%L, projector_t, workspace_t%sigma1,  workspace_t%sigma2)
             call create_subspace_matrix(M_small,workspace_t,davidson_solve_rhs,davidson_solve_lhs)
-            ! print *, "subspace finished" 
 
 ! aspg, added from (q)rsp
             if (davidson_solve_linear_system) then
@@ -2555,7 +2454,6 @@ contains
             end if
 ! aspg, added from (q)rsp
             call form_preconditioner(workspace_t, e_small)
-            ! print *, "preconditioner finished" 
 
             if (associated(delta)) deallocate(delta)
             if (davidson_solve_rhs) then
@@ -2587,11 +2485,8 @@ contains
             if (davidson_refresh_trial_vectors.and.(mod(niter,davidson_trial_vector_refresh_rate).eq.0)) then
                 print *,'debug : refreshing trial vectors not implemented in this version'
             else
-            !    call update_trial_vectors(delta,workspace_t,tensor_proj_den,tensor_proj_num,tensor_norm, &
-            !                             result_tens_den,result_tens_num,result_tens_norm)
                call update_trial_vectors(delta,workspace_t)
             end if
-            ! print *, "update_trial_vectors finished" 
  
         end do ! davidson iterations
 
@@ -2618,45 +2513,6 @@ contains
 
     end subroutine
 
-
-    subroutine construct_proj(tensor_proj_den,tensor_proj_num,result_tens_den,result_tens_num)
-
-        type(talsh_tens_t) :: tensor_proj_num, tensor_proj_den
-        integer(C_INT)     :: one_dims(1)
-        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
-        type(C_PTR):: body_p_num, body_p_den
-        integer   :: ierr
-
-        one_dims(1) = 1
-        ierr=talsh_tensor_construct(tensor_proj_den,C8,one_dims(1:0),init_val=ZERO)
-        print *, "ierr construct den:", ierr
-        ierr=talsh_tensor_construct(tensor_proj_num,C8,one_dims(1:0),init_val=ZERO)
-        print *, "ierr construct num:", ierr
-        ierr=talsh_tensor_get_body_access(tensor_proj_den,body_p_den,C8,int(0,C_INT),DEV_HOST)
-        print *, "ierr getbody den:", ierr
-        call c_f_pointer(body_p_den,result_tens_den,one_dims)
-        ierr=talsh_tensor_get_body_access(tensor_proj_num,body_p_num,C8,int(0,C_INT),DEV_HOST)
-        print *, "ierr getbody num:", ierr
-        call c_f_pointer(body_p_num,result_tens_num,one_dims)
-
-    end subroutine 
-
-
-    subroutine construct_norm(tensor_norm,result_tens_norm)
-
-        type(talsh_tens_t) :: tensor_norm
-        complex(8), pointer :: result_tens_norm(:)
-        integer(C_INT)     :: one_dims(1)
-        type(C_PTR):: body_p_norm
-        integer   :: ierr
-
-        one_dims(1) = 1
-        ierr=talsh_tensor_construct(tensor_norm,C8,one_dims(1:0),init_val=ZERO)
-        print *, "ierr construct norm:", ierr
-        ierr=talsh_tensor_get_body_access(tensor_norm,body_p_norm,C8,int(0,C_INT),DEV_HOST)
-        print *, "ierr getbody norm:", ierr
-        call c_f_pointer(body_p_norm,result_tens_norm,one_dims)
-    end subroutine 
 
 
 
