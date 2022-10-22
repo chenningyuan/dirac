@@ -5583,6 +5583,7 @@ C.......transform atomic start to actual symmetry
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
       use dircmo
+      use labeled_storage
 C***********************************************************************
 C
 C     Atomic Huckel start
@@ -5608,9 +5609,10 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+      type(file_info_t)    :: fragfile
       LOGICAL FNDLAB
       CHARACTER TEXT*74
-      DIMENSION IDIM(3),idims(12)
+      DIMENSION IDIM(3),n_mo(2),n_po(2),n_ao(2)
       DIMENSION NCATOM(0:2,MAXHOC),KCATOM(MAXHOC),NAO(MAXHOC),
      &          NATDEG(MAXHOC),CMO(*),EIG(*),IBEIG(*),WORK(*)
       KFRSAV = KFREE
@@ -5631,15 +5633,24 @@ C     INDEP runs over symmetry dependent centers
 C.......Find the total number of basis functions for this atom type
         CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
 C.......Read information from coefficient file
-        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','ADHOC')
-        CALL REACMO_new(text=text,idims=idims)
-        ncatom(1,ityp) = idims(8)
-        ncatom(2,ityp) = idims(7)
-        nao(ityp)      = idims(9)
+        fragfile%type = 2
+        fragfile%name = trim(HOCFIL(ITYP))
+        fragfile%status = 0
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        call lab_read(fragfile,
+     &       '/result/wavefunctions/scf/mobasis/n_basis',
+     &       idata=n_ao)
+        fragfile%status = 0 ! close the file
+
+        ncatom(1,ityp) = sum(n_po)
+        ncatom(2,ityp) = sum(n_mo)-sum(n_po)
+        nao(ityp)      = sum(n_ao) 
 C.............NPSH............NESH............NBAS...........TOTERG
-        CLOSE(LUHOC,STATUS='KEEP')
         IF(NAO(ITYP).NE.MBAS) THEN
-           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6)') 
+           WRITE(LUPRI,'(A/A,I6/A,A6,A,I6/A,I6)') 
      &     '* Atomic Huckel start: ',
      &     '  Wrong number of basis function for atomic type ', ITYP,
      &     '  Number read from                     ',
@@ -5682,20 +5693,26 @@ C
       ININD= 1
       DO ITYP = 1,NONTYP
 C.......Read C1 coefficients and orbitalenergies
-        CALL OPNFIL(LUHOC,HOCFIL(ITYP),'OLD','PRJAOB')        
-        CALL REACMO_new(text=text,idims=idims)
-        nneg = idims(7)
-        npos = idims(8)
-        NTOT = NNEG+NPOS
-        IDIM(1) = NNEG
-        IDIM(2) = NPOS
-        IDIM(3) = NAO(ITYP)
+        fragfile%type = 2
+        fragfile%name = trim(HOCFIL(ITYP))
+        fragfile%status = 0
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
+     &                idata=n_mo)
+        call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_po',
+     &              idata=n_po)
+        NNEG = sum(n_po)
+        NPOS = sum(n_mo)-sum(n_po)
+        NTOT = sum(n_mo)
         NQA  = NAO(ITYP)*NTOT*NZC1
         CALL MEMGET2('REAL','QA',KQA,NQA ,WORK,KFREE,LFREE)
-        CALL REACMO_new(cmo=WORK(KQA:KQA+NQA-1))
+        call lab_read(fragfile,
+     &   '/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &    rdata=WORK(KQA:KQA+NQA-1))
         CALL MEMGET2('REAL','EA',KEA,NTOT,WORK,KFREE,LFREE)
-        CALL REACMO_new(eig=WORK(KEA:KEA+NTOT-1))
-        CLOSE(LUHOC,STATUS='KEEP')
+        call lab_read(fragfile,
+     &   '/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     &    rdata=WORK(KEA:KEA+NTOT-1))
+        fragfile%status = 0 ! close the file
 C.......Make pointer array to selected reference orbitals
         NDIM = NTOT+1
         CALL MEMGET2('INTE','ITMP',KITMP,NDIM,WORK,KFREE,LFREE)

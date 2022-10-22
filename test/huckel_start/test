@@ -17,18 +17,9 @@ f.add(from_string = 'Eigenvalues',
       to_re       = 'HOMO - LUMO',
       rel_tolerance   = 1.0e-5)
 
-test.run(['H.inp'], ['H.xyz'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'AFHXXX')
+test.run(['H.inp'], ['H.xyz'])
+test.run(['B.inp'], ['B.xyz'])
 
-test.run(['B.inp'], ['B.xyz'], args='--get=DFACMO')
-shutil.copy('DFACMO', 'AFBXXX')
-
-test.run(['HF.inp'], ['BH3.xyz'], f, args='--copy="AF*"')
-
-
-# cleanup
-os.unlink('DFACMO')
-os.unlink('AFHXXX')
-os.unlink('AFBXXX')
+test.run(['HF.inp'], ['BH3.xyz'], f, args='--put="H_H.h5=H.h5 B_B.h5=B.h5"')
 
 sys.exit(test.return_code)
