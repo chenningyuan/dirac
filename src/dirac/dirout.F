@@ -1635,15 +1635,22 @@ C
      & idata=n_mo)
       call lab_read (fragfile,'/result/wavefunctions/scf/mobasis/n_po',
      & idata=n_po)
-      call lab_read (fragfile,'/result/wavefunctions/scf/energy',energy)
+      call lab_read (fragfile,'/result/wavefunctions/scf/energy',toterg)
       if (n_basis(2) == 0) then
          nsym = 1
-      else
+         idim(1,1) = n_po(1)
+         idim(2,1) = n_mo(1)-n_po(1)
+         idim(3,1) = n_basis(1)
+      elseif (nfsym==1) then
          nsym = 2
+         idim(1,1) = sum(n_po)
+         idim(2,1) = sum(n_mo)-sum(n_po)
+         idim(3,1) = sum(n_basis)
+      else
+         idim(1,:) = n_po(:)
+         idim(2,:) = n_mo(:)
+         idim(3,:) = n_basis(:)
       end if
-      idim(1,:) = n_po
-      idim(2,:) = n_mo-n_po
-      idim(3,:) = n_basis
       text = 'Fragment MO coefficient file used: '//CMOFIL
 !
 !     set local IOPT_TMP
@@ -1690,23 +1697,45 @@ C
 C     Read coefficients
 C     =================
 C    
-      IF(LBIT(IOPT_TMP,2)) call lab_read (fragfile,
+      IF(LBIT(IOPT_TMP,2)) THEN
+         if (nsym==2.and.nfsym==1) then
+           call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/orbitals_C1',
+     &      rdata=cmo(1:ncdim))
+         else
+           call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/orbitals',
      &      rdata=cmo(1:ncdim))
+         endif
+      ENDIF
 C
 C     Read eigenvalues
 C     ================
 C
-      IF(LBIT(IOPT_TMP,3)) call lab_read (fragfile,
+      IF(LBIT(IOPT_TMP,3)) THEN 
+         if (nsym==2.and.nfsym==1) then
+           call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/eigenvalues_C1',
+     &      rdata=eig(1:nedim))
+         else
+           call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/eigenvalues',
      &      rdata=eig(1:nedim))
+         endif
+      ENDIF
 C
 C     Read boson irrep info
 C     =====================
 C
-      IF(LBIT(IOPT_TMP,4)) call lab_read (fragfile,
+      IF(LBIT(IOPT_TMP,4)) THEN
+         if (nsym==2.and.nfsym==1) then
+           ibeig(1:nedim) = 0
+         else
+          call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/symmetry',
      &     idata=ibeig(1:nedim))
+         endif
+      ENDIF
 C
 C     Select and adjust format to molecular basis
 C     ===========================================
