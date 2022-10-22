@@ -39,6 +39,7 @@ n_basis          integer   single    required    # size of the basis to which th
 n_mo             integer   single    required    # dimension of the mo-basis (number of orbitals)
 n_po             integer   single    optional    # for 4-component calculation: number of "positronic" orbitals (n_po < n_mo)
 nz               integer   single    required    # algebra that is used for the coefficients (1:real, 2: complex, 4:quaternion)
+n_fsym           integer   single    required    # number of fermion irreps used to block the MO coefficients (1 for no inversion, 2 for inversion)
 orbitals         real      array     required    # mo-coefficients that define the mo's in the given basis
 eigenvalues      real      array     required    # for each molecular orbital: orbital energy
 occupations      real      array     optional    # for each molecular orbital: orbital occupation (1.0 fully occupied, 0.0 empty)

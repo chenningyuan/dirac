@@ -109,6 +109,7 @@ module dircmo
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/mobasis_id',idata=1)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eig(1:norbt))
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/nz',idata=nz)
+      call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_fsym',idata=nfsym)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
@@ -142,6 +143,9 @@ module dircmo
       character*(:), allocatable :: group
       logical              :: natural_orbitals
 
+      n_mo = 0
+      n_po = 0
+      n_basis = 0
       infotext = ' Data read from the checkpoint file '
 
       call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',natural_orbitals)
@@ -152,6 +156,7 @@ module dircmo
       endif
 
       call checkpoint_read (group//'mobasis/nz',idata=nz)
+      call checkpoint_read (group//'mobasis/n_fsym',idata=nfsym)
       call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
       call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
       call checkpoint_read (group//'mobasis/n_po',idata=n_po)
@@ -159,11 +164,6 @@ module dircmo
 
       neig  = sum(n_mo)
       ncoef = nz * sum(n_basis*n_mo)
-      if (n_basis(2) == 0) then
-         nfsym = 1
-      else
-         nfsym = 2
-      end if
       idim(1,:) = n_po
       idim(2,:) = n_mo-n_po
       idim(3,:) = n_basis
@@ -181,8 +181,8 @@ module dircmo
          idims(4) = 1         ! Used to be NKRBLK, now obsolete.
          idims(5) = neig      ! Total number of orbitals
          idims(6) = 1         ! Number of blocks with supersymmetry information (atomic symmetry unsupported, see above)
-         idims(7:9) = idim(:,1) ! npsh, nesh, nfbas for fermion irrep 1
-         if (nfsym == 2) idims(10:12) = idim(:,2) ! npsh, nssh, nfbas for fermion irrep 2
+         idims(7:9)   = idim(:,1) ! npsh, nesh, nfbas for fermion irrep 1
+         idims(10:12) = idim(:,2) ! npsh, nssh, nfbas for fermion irrep 2 (zero if nfsym is 1)
       end if
 
       if (present(cmo)) then

@@ -1061,7 +1061,6 @@ contains
 !     Modify by S. Dubillard - Apr 21 2004
 !
 !***********************************************************************
-      USE SELECT_COEFF_OWN_BAS
       IMPLICIT NONE
 
       ! Global variables
@@ -1092,6 +1091,8 @@ contains
       END TYPE PTR2ARRAY
 
       TYPE(PTR2ARRAY), ALLOCATABLE :: KVEC(:,:)
+      integer :: kvec_offset(2) 
+      ! LV, introduced to be able to call standard selown and remove code duplication
 
   !------------------------------------------------------------------------------!
       IFRP   = 1
@@ -1104,6 +1105,8 @@ contains
       VECREF(:,:) = VAR_VECREF(:,:)
       REFFIL(:)   = VAR_REFFIL(:)
 
+      kvec_offset = 1 ! offset for all coefficients of irrep 1 is 1
+      ! will not work in this form for two irreps, but the code is hardwired to 1 above 
       ALLOCATE( KVEC(2,NREFS), STAT=IER )
       IF(IER /= 0)THEN
         WRITE(LUPRI,*) "Error in allocation of KVEC array of pointers in OBLP1"
@@ -1155,10 +1158,10 @@ contains
           CALL QUIT('PRJANA: No reference coefficients !')
         ENDIF
         IF(VAR%OWNBAS)THEN
-          CALL SELOWN_DRV(2,CMO,DDUMARR,IDUMARR,               &
+          CALL SELOWN(2,CMO,DDUMARR,IDUMARR,               &
                I,1,VAR%LUCOEF,REFFIL(I),RCOEF,DDUMARR,IDUMARR, &
-               NVECS(1,1),IOFF,KVEC(IFRP,I)%P,                 &
-               NSTR(1,0,I))
+               NVECS(1,1),IOFF,kvec_offset,                 &
+               NSTR(1,0,I),KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1

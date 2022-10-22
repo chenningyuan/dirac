@@ -2610,7 +2610,7 @@ C.......Fragment orbitals in own basis
           CALL SELOWN(IOPT,CMO,EIG,IBEIG,
      &                INUC,NUCFRAG(IFRAG),LUCOEF,FRAGFIL(IFRAG),
      &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
-     &                NSTR(1,0,IFRAG),WORK,KFREE,LFREE)
+     &                NSTR(1,0,IFRAG),WORK)
 C.......Fragment orbitals in molecular basis
         ELSE
 !
