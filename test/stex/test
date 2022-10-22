@@ -19,13 +19,10 @@ f.add(from_string  = ' --------------- STEX Final Output --------------',
       mask = [1,2,3,4], # miro: compare only first four numbers, avoid comparing components
       ignore_below = 1.0e-9)
 
-test.run(['gs.inp'], ['LiH-c1.mol'], args='--get "DFCOEF=DFCOEF.GS"')
+test.run(['gs.inp'], ['LiH-c1.mol'])
 
-test.run(['ion.inp'], ['LiH-c1.mol'], args='--put "DFCOEF.GS=DFCOEF" --get "DFCOEF=DFCOEF.ION"')
+test.run(['ion.inp'], ['LiH-c1.mol'], args='--put "gs_LiH-c1.h5=CHECKPOINT.h5"')
 
-test.run(['stex.inp'], ['LiH-c1.mol'], f, args='--put "DFCOEF.GS=DFCOEF" --copy="DFCOEF.ION"')
-
-os.unlink('DFCOEF.ION')
-os.unlink('DFCOEF.GS')
+test.run(['stex.inp'], ['LiH-c1.mol'], f, args='--put "gs_LiH-c1.h5=CHECKPOINT.h5 ion_LiH-c1.h5=ION.h5"')
 
 sys.exit(test.return_code)

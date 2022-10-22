@@ -2406,6 +2406,7 @@ C
 C         read orbital symmetry values from DFCOEF
           CALL OPNFIL(LUCOEF,'DFCOEF','OLD','RSETCI')
           CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
+          if (atomic) call atomic_to_linear (orb_sym_vec,norbt)
           CLOSE(LUCOEF,STATUS='KEEP')
           if(IPROPT .ge. 2)then
             WRITE(LUPRI,'(/A)')
@@ -3268,6 +3269,7 @@ C
             call opnfil(lucoef,'DFCOEF','OLD','RMJVEC ')
             call reacmo(lucoef,'DFCOEF',dummy,dummy,work(kmjvec),
      &                  dummy,8)
+            if (atomic) call atomic_to_linear(work(kmjvec),norbt)
             close(lucoef,STATUS='KEEP')
           else
             call ireakrmc(lukrm5,'MJVEC   ',work(kmjvec),norbt)

@@ -2242,7 +2242,7 @@ C
 C
 C     Check if coefficients are on file
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
+      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
       IF(.NOT.TOBE) GOTO 1000
 
 !     memory allocation
@@ -2252,7 +2252,6 @@ C
 C
 C     Read coefficients, eigenvalues and irrep identification 
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PREORB')
       IOPT=14
       CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
 C
@@ -2268,7 +2267,6 @@ C
 C     Write new coefficients
 C
       CALL WRICMO(LUCOEF,CMO,EIG,IBEIG,TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
 
 !     Memory deallocation
       deallocate(cmo)
