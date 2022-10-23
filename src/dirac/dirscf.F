@@ -311,7 +311,6 @@ C
       CALL OPNFIL(LUCMOS,'DFCMOS','UNKNOWN','PREDHF')
       OPEN (LUFOCK, FILE='DFFOCK', FORM='UNFORMATTED',
      +      ACCESS='DIRECT',RECL=8*N2TMOTQ,STATUS='UNKNOWN')
-      CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PREDHF')
       CALL OPNFIL(LUFCK1,'DFFCK1','OLD','PREDHF')
 C
 C     *****************************************************************
@@ -1939,14 +1938,7 @@ CMI      ... print out matrixes ...
             ENDIF
          END IF
       ENDIF
-c     Check if this is the lowest energy so far, in that case
-c     save the DFCOEF file as DFCOEF.BEST
       if (dhferg.lt.besterg) then
-#if defined SYS_WINDOWS
-         call system('copy DFCOEF DFCOEF.BEST')
-#else
-         call system('cp DFCOEF DFCOEF.BEST')
-#endif
          besterg = dhferg
       endif
       CALL QEXIT('ERGCAL')
@@ -3254,16 +3246,7 @@ C     only exchange contributions
 C
 C     Get all coefficients
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF (.NOT.TOBE) THEN
-         WRITE(LUPRI,'(//A)')
-     &   'MVOGEN ERROR: MO coefficient file DFCOEF not present'
-         CALL QUIT('MVOGEN: No MO coefficients !')
-      ELSE
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','MVOGEN')
-         IOPT=14
-         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-      ENDIF
+      CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
       IF(IONMVO) THEN
         WRITE(LUPRI,'(A)') "Generating MVOs with Bauschlicher's"//
      &  " method (J. Chem. Phys. 72, 880 (1980))."
@@ -4781,7 +4764,7 @@ C     Level shift
 C
 C     Written by T. Saue July 4 2006
 C
-C  MI July 6,2006: Requires DFCOEF with written MO's
+C  MI July 6,2006: Requires CHECKPOINT with written MO's
 !
 !     April 2013
 !     sknecht: attempt to change level shift for closed-shell cases: i do not understand 
@@ -4810,12 +4793,6 @@ C
 
       CALL QENTER('LEVSHI')
 C
-      IF (IPRSCF.GE.10) THEN
-        INQUIRE(FILE='DFCOEF',EXIST=IS_HERE,OPENED=IS_OPEN)
-        write(lupri,*) 'LEVSHI: DFCOEF IS_HERE=',IS_HERE
-        write(lupri,*) 'LEVSHI: DFCOEF IS_OPEN=',IS_OPEN
-      ENDIF
-
       REWIND LUCMOS
       CALL READT(LUCMOS,N2TMOTQ,CMO)
       DO I = 1,NFSYM
@@ -5927,7 +5904,7 @@ CMI    ... prepare the starting 4c Fock MO matrix
         CALL MEMREL('FDTR4C.GO2C4C',WORK,KWORK,KWORK,KFREE,LFREE)
 
       ELSE IF (INI2C.EQ.3.OR.INI2C.EQ.4) THEN
-C       .... prepare the DFCOEF file with staring MOs
+C       .... prepare the CHECKPOINT file with starting MOs
         CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','TMAT ',K1   ,N2BBASXQ,WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),WORK,KFREE,LFREE)
@@ -5962,13 +5939,6 @@ C       .... prepare the DFCOEF file with staring MOs
         CALL SYSTEM('/bin/rm DFEVEC')
         IF (IPRSCF.GE.0) WRITE(LUPRI,*)
      &  'GO2C4C: DFEVEC file from previous SCF cycle was deleted.'
-      ENDIF
-
-      INQUIRE(FILE='DFCOEF',EXIST=EX)
-      IF (EX.AND.(INI2C.NE.3.AND.INI2C.NE.4)) THEN
-        CALL SYSTEM('/bin/rm DFCOEF')
-        IF (IPRSCF.GE.0) WRITE(LUPRI,*)
-     &  'GO2C4C: DFCOEF file from previous SCF cycle was deleted.'
       ENDIF
 
       DHFCONV(1)=.FALSE.
@@ -6066,8 +6036,6 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
         IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
         INQUIRE(FILE='DFEVEC',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFEVEC')
-        INQUIRE(FILE='DFCOEF',EXIST=EX)
-        IF (EX) CALL SYSTEM('/bin/rm DFCOEF')
 
         CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,
      &               WORK,KFREE,LFREE)

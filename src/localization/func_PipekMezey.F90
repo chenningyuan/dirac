@@ -250,14 +250,11 @@ contains
   ! -- scoef -- Electronic orbital coeffients selection !
   !-----------------------------------------------------!
   ! Check if coefficients are on file
-  keyform = 0
-  inquire(file='DFCOEF',exist=tobe)
-  if(tobe) keyform = 1
+  keyform = 1
 !  inquire(file='DFPCMO',exist=tobe)
 !  if(tobe) keyform = 2
   if(keyform == 0)then
     write(var%lupri,'(a)') 'init_func: Coefficient file not found!'
-!    write(var%lupri,'(a)') 'init_func: DFCOEF or DFPCMO file is missing!'
     call quit('init_func: Coefficients not found !')
   endif
 
@@ -1608,7 +1605,7 @@ contains
   subroutine wcmo2file
   !==============================================================================!
   !                                                                              !
-  !          Write the localised MO coefficients to the DFCOEF file              !
+  !          Write the localised MO coefficients to the CHECKPOINT               !
   !                                                                              !
   !==============================================================================!
    use dircmo
@@ -1639,8 +1636,6 @@ contains
   allocate( ibeig(var%norbt), stat=ier ); call errall(ier,'wcmo2file','ibeig')
 
   ! read EIG, IBEIG and TOTERG
-  open(var%lucoef,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
-  if(ioer /= 0) call quit('REACMO_MOD: ERROR while opening DFCOEF or DFPCMO')
   call REACMO_new(eig=eig,ibeig=ibeig,toterg=toterg)
 
   ! reorganize MO
@@ -1763,7 +1758,6 @@ contains
   ! Open file
   ! =========
   if(keyform == 1)then
-    open(iunit,file='DFCOEF',status='old',form='unformatted',access='sequential',iostat=ioer)
   elseif(keyform == 2)then
     open(iunit,file='DFPCMO',status='old',form='formatted',access='sequential',iostat=ioer)
   else
@@ -2143,10 +2137,9 @@ contains
          ALLOCATE( EIG(NORBT), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','EIG')
          ALLOCATE( IBG(NORBT), STAT=IER ); CALL ERRALL(IER,'NUMLST_MOD','IBG')
 !
-!        Get eigenvalues from DFCOEF
+!        Get eigenvalues
 !
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF(.NOT.TOBE.OR.VAR%I_DCBORB_SET.NE.1) THEN
+         IF(VAR%I_DCBORB_SET.NE.1) THEN
 
 !           DFCOEF does not (yet) exist, put IP = - 666, which makes 
 !           NUMLS2 return with an empty list
@@ -2159,9 +2152,7 @@ contains
             IP = - 666
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG)
          ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
             call reacmo_new(eig=eig)
-            CLOSE(LUCOEF,STATUS='KEEP')
             IOFF = VAR%IORB(IFRP)+VAR%NPSH(IFRP)
             CALL NUMLS2(A,ILIST,NLIST,IRNGE1,IRNGE2,IP,EIG(1+IOFF))
          ENDIF

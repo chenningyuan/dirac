@@ -47,7 +47,6 @@ C     Get the MO coefficients
 C     =======================
 C
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPTPA')
       IF(SPINFR) THEN
         CALL MEMGET('INTE',KIBRP,NTBAS(0),WORK,KFREE,LFREE)
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,WORK(KIBRP),
@@ -56,7 +55,6 @@ C
         KIBRP = KFREE
         CALL REACMO(LUCMO,'DFCOEF',WORK(KCMO),DUM,IDUM,TOTERG,3)
       ENDIF
-      CLOSE(LUCMO,STATUS='KEEP')
 C
 C     Calculate allowed excitations
 C     =============================

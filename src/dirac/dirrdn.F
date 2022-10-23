@@ -1441,7 +1441,7 @@ C&&& MOSTARt: How to obtain initial MOs [ default: 1) TRIVEC, 2) BNCORR ]
 C              TRIFCK: Start on two-electron Fock matrix read from file
                   TRIFCK = .TRUE.
                ELSE IF (INDEX(LINE,'TRIVEC').ne.0) THEN
-C              TRIVEC: Read trial vectors from DFCOEF file
+C              TRIVEC: Read trial vectors from file
                   TRIVEC = .TRUE.
                ELSE IF (INDEX(LINE,'SIRIFC').ne.0) THEN
                   SIRIFC = .TRUE.
@@ -2533,7 +2533,7 @@ C
      +     ' * Trial two-electron Fock matrix read from file DF2FCK'
       ELSE IF(TRIVEC) THEN
         WRITE(LUPRI,'(A)')
-     +   ' * Trial vectors read from file DFCOEF'
+     +   ' * Trial vectors read from CHECKPOINT.h5'
       ELSE IF(ATOMST) THEN
         WRITE(LUPRI,'(A,I5//4X,A)') ' * Atomic start:',NONTYP,
      &   'atom   cffile     occ    orbitals'
@@ -8711,7 +8711,7 @@ C
        ENDIF
       ENDIF
       WRITE(LUPRI,'(1X,A)')
-     &     '* Localised MO are written in file DFCOEF !!!'
+     &     '* Localised MO are written in file CHECKPOINT.h5 !!!'
  999  CONTINUE
       RETURN
 C

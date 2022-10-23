@@ -310,7 +310,7 @@ C
 
        implicit none
 
-!      read all positive energy mo coefficients present on DFCOEF file
+!      read all positive energy mo coefficients present on CHECKPOINT file
 !      check for incompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
@@ -322,10 +322,10 @@ C
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
        integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
-       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
        integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
-       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy,e_corr
        integer                :: i, j, k, ishell, iprimstart, iprimend
@@ -371,7 +371,7 @@ C
           npo = n_po(1)    ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = n_mo(1)    ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo    ! total number of solutions on this file
-          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
+          if (npo>0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
        end if
 
        allocate(coeff(nao*nto*nzbuf))
@@ -511,7 +511,7 @@ C
 
        implicit none
 
-!      read all positive energy mo coefficients present on DFCOEF file
+!      read all positive energy mo coefficients present on CHECKPOINT file
 !      check for incompatibilities (use of symmetry) as well and continue
 !      by reading also the basis set information into gtos
 
@@ -523,10 +523,10 @@ C
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
        integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
-       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old DFCOEF?)
+       integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
        integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
-       integer, parameter     :: INCONSIS = 6 ! DFCOEF does not contain consistent information wrt number of basis functions
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        integer                :: idim(3,2)
        real(8)                :: total_energy
@@ -580,7 +580,7 @@ C
           npo = idim(1,1) ! "positronic" (= negative energy) solutions (can be thrown away for our purposes)
           nmo = idim(2,1) ! "electronic" (= positive energy) solutions (we only need these)
           nto = npo+nmo   ! total number of solutions on this file
-          if (npo > 0) print*, "warning: reading from 4C DFCOEF file" ! this warning will go once we have the full index transform implemented
+          if (npo > 0) print*, "warning: reading 4C CHECKPOINT file" ! this warning will go once we have the full index transform implemented
        end if
 
        allocate(coeff(nao,nto,nz))
@@ -710,7 +710,7 @@ C
        endif
        close (lucoef,status='KEEP')
 
-       call print_date("read from DFCOEF:"//text)
+       call print_date("read from CHECKPOINT:"//text)
        return
 
   10   ierr = CORRUPT
@@ -778,7 +778,7 @@ C
        type(basis_set_info_t), intent(inout) :: ao_basis
        type(cmo), intent(inout):: cspinor
        type(cmo)              :: qorbital
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
@@ -884,7 +884,7 @@ C
        character(len=*),intent(in) :: file_name
        type(cmo), intent(inout):: cspinor
        type(cmo)              :: qorbital
-       character              :: text*74      ! holds text read from DFCOEF, only used for printing this
+       character              :: text*74      ! holds text read from CHECKPOINT, only used for printing this
        integer                :: nsym
        real(8)                :: total_energy
        logical                :: tobe
@@ -1054,7 +1054,7 @@ C
        integer, parameter     :: NOERROR  = 0 ! no error
        integer, parameter     :: NOTFOUND = 1 ! file not found
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
-       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from DFCOEF
+       integer, parameter     :: INCONSIS = 6 ! MRCONEE does not match information read from CHECKPOINT
 
        integer :: nsp, nkr
        logical :: breit
@@ -1082,7 +1082,7 @@ C
        int_1el%n_spinor=nsp
 !      save core energy
        int_1el%e_core=e_core
-!TODO  check consistency of e_core and nsp with the values read from DFCOEF !
+!TODO  check consistency of e_core and nsp with the values read from CHECKPOINT !
 
 !      skip symmetry information
        read (luone,ERR=10,END=10)

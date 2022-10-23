@@ -16,11 +16,7 @@ f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
       num_lines   = 20,
       rel_tolerance   = 1.0e-7)
 
-#test.run(['hf_get_no_ccpvdz_0.0d.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=MP2NOs_AO_all-active_hf-ccpvdz_0.0d_exatensor"')
-test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--get="MP2NOs_AO=\
-MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4_exatensor"')
-#test.run(['hcl_get_no_ccpvtz_0.0_subvirtual.inp'], ['hcl.xyz'], f, args='--get="MP2NOs_AO=\
-#MP2NOs_AO_all-active_hcl-ccpvtz_0.0d_subv_exatensor"')
+test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--outcmo')
 
 f = Filter()
 f.add(from_string = '    -     Final results from EXACORR     -    ',
@@ -33,17 +29,4 @@ f.add(from_string = '           Total contribution to principal components',
       num_lines   = 15,
       rel_tolerance   = 1.0e-6)
 
-#test.run(['hf_canonical_ccpvdz_0.0_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_0.0d_exatensor=\
-#DFCOEF"')
-test.run(['hf_canonical_ccpvdz_16_test.inp'], ['hf.xyz'], f, args='--put="MP2NOs_AO_all-active_hf-ccpvdz_1.0d-4_exatensor=\
-DFCOEF"')
-#test.run(['hcl_fno_ccpvtz_0.0_subvirtual.inp'], ['hcl.xyz'], f, args='--put="MP2NOs_AO_all-active_hcl-ccpvtz_0.0d_subv_exatensor=\
-#DFCOEF" --get="CCDENS=CCDENS_hcl_ccpvtz_0.0_subv_exatensor"')
-
-#f = Filter()
-#
-#f.add(from_string = 'Sum of occupation numbers (1)',
-#      num_lines   = 6,
-#      rel_tolerance   = 1.0e-6)
-#test.run(['hcl_fno_ccpvtz_0.0_subvirtual_ana.inp'], ['hcl.xyz'], f, args='--put="CCDENS_hcl_ccpvtz_0.0_subv_exatensor=CCDENS"')
-#sys.exit(test.return_code)
+test.run(['hf_canonical_ccpvdz_16_test.inp'], ['hf.xyz'], f, args='--incmo')

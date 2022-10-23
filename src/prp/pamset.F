@@ -153,9 +153,6 @@ C
 C     1. Get coefficients
 C     ===================
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','GETFC1')
       IF(SPINFR) THEN
         IOPT = 10
       ELSE
@@ -163,7 +160,6 @@ C
       ENDIF
       IF (IPRINT.GE.10) IOPT = IOPT + 1
       CALL REACMO(LUBUF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,IOPT)
-      CLOSE(LUBUF,STATUS='KEEP')
       NFMAT = 1
       IF (NASHT .GT. 0) NFMAT = 2
 C
@@ -327,7 +323,7 @@ CJTH check this
 #ifdef HAS_PELIB
 ! edh: As the solvent methods before us (see above) we need
 ! to construct the (static) PE contributions from environment
-! before starting a response calculation from DFCOEF
+! before starting a response calculation
       IF (PEQM) THEN
         call genden(fao, cmo, 1, iprint)
         call pelib_ifc_fock(fao, fmo, tot_nrg, el_nrg)

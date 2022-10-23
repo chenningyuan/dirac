@@ -113,9 +113,9 @@ C
          IF (X2CMMF) THEN
 !            we need to restart from the 4C vectors
 #if defined SYS_WINDOWS
-            call system('copy DFCOEF.4C DFCOEF')
+            call system('copy CHECKPOINT.4C CHECKPOINT.h5')
 #else
-            call system('cp DFCOEF.4C DFCOEF')
+            call system('cp CHECKPOINT.4C CHECKPOINT.h5')
 #endif
          END IF
 C

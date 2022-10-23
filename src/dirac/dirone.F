@@ -2742,9 +2742,7 @@ C
             dmat_aoosoc = 0.0d0
             cmo_aoosoc  = 0.0d0
 !           read coefficients
-            call opnfil(lucoef,'DFCOEF','OLD','aoosoc')
             call reacmo_new(cmo=cmo_aoosoc)
-            close(lucoef,status='keep')
 
 !           generate density matri(x/ces)
             call denmat(dmat_aoosoc,cmo_aoosoc,iprham)
@@ -2807,7 +2805,7 @@ C
 !         ------------------------------------------------------------------------------------
 
 !         purpose: transform the 2c-MO-coefficients from the orthonormal reference basis to AO basis
-!                  and renew the coefficient file DFCOEF
+!                  and renew the coefficients on fileF
 !                  a potential issue could be frozen orbitals - test me!
           allocate(tmat_mmf(n2bbasxq))
           allocate(tbuf_mmf(n2bbasxq))

@@ -35,7 +35,6 @@ test.run(['prj_polref.inp'], ['CH4.xyz'], f, args='--incmo --copy="AF*"')
 
 # cleanup
 os.unlink('DFACMO')
-os.unlink('DFCOEF')
 os.unlink('AFCXXX')
 os.unlink('AFHXXX')
 

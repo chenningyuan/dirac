@@ -244,13 +244,11 @@ C       ... set to zero
       ELSE
 C
 C       read HF coefficients 
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GRDOR1')
         IF(SPINFR) THEN
           CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IBEIG,TOTERG,10)
         ELSE
           CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,DUM,TOTERG,2)
         ENDIF
-        CLOSE(LUCOEF,STATUS='KEEP')
       END IF
 C
 C     Get property matrix in MO-basis and scale by factor -1

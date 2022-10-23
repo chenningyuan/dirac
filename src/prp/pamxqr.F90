@@ -488,7 +488,6 @@
 !     Get the MO coefficients
 !
       allocate(cmo(ncmotq))
-      CALL OPNFIL(LUCMO,'DFCOEF','OLD','PRPXQR')
       IF(SPINFR) THEN
         allocate(ibeig(ntbas(0)))
         CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,ibeig,TOTERG,11)
@@ -496,7 +495,6 @@
         allocate(ibeig(1))
         CALL REACMO(LUCMO,'DFCOEF',CMO,DUM,IDUM,TOTERG,3)
       ENDIF
-      CLOSE(LUCMO,STATUS='KEEP')
 !
 !     Set up the linear response equations to be solved.
 !

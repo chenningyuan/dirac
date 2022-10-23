@@ -261,14 +261,12 @@ class pam_enviroment:
             'MOLECULE.MOL',
             'MOLECULE.XYZ',
             'DIRAC.INP',
-            'DFCOEF',
             '*.cube',
             'AOPROPER',
             'AOMOMAT',
             'BSSMAT',
             'X2CMAT',
             'matexport.m',
-            'DFCOEF.BEST',
             '*.xml',
             'plot*',
             'KRMCSCF',    # KRMC restart file
@@ -282,7 +280,7 @@ class pam_enviroment:
             'POTENTIAL.INP'
             ]
 
-    # ... DFCOEF
+    # ... CHECKPOINT
         self.incmo = False
         self.outcmo = False
 
@@ -793,11 +791,11 @@ Options are also read from ~/.diracrc"""
 
         group.add_option('--incmo', action='store_true',
                          dest='dest_incmo', default=False,
-                         help='copy DFCOEF to scratch directory [default: %default]'
+                         help='copy CHECKPOINT to scratch directory [default: %default]'
                          )
         group.add_option('--outcmo', action='store_true',
                          dest='dest_outcmo', default=False,
-                         help='get DFCOEF from scratch directory [default: %default]'
+                         help='get CHECKPOINT from scratch directory [default: %default]'
                          )
         group.add_option('--inkrmc', action='store_true',
                          dest='dest_inkrmc', default=False,
@@ -1376,8 +1374,6 @@ Options are also read from ~/.diracrc"""
             file_name = 'CHECKPOINT.h5'
             if os.path.isfile(os.path.join(self.input_directory,file_name)):
                copy_single_file(file_name,file_name)
-            file_name = 'DFCOEF'
-            copy_single_file(file_name,file_name)
         if self.inkrmc:
             file_name_loc = 'KRMCSCF'
             file_name_scr = 'KRMCOLD'
@@ -1913,7 +1909,6 @@ Options are also read from ~/.diracrc"""
                         print('  Could not construct hdf5 checkpoint file, h5py is not installed')
 
         if self.outcmo:
-            save_single_file('DFCOEF')
             save_single_file('CHECKPOINT.h5')
 
         if self.outkrmc:

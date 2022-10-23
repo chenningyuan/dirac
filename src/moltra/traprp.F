@@ -127,15 +127,8 @@ C
          END IF
          CLOSE (LUKRMC)
       ELSE
-         INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-         IF (.NOT.TOBE) THEN
-            WRITE(LUPRI,'(A)') 'Coefficient file not present'
-            CALL QUIT('TRAPAM: No coefficients !')
-         ELSE
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','TRAPRP')
-            CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
-     &                  WORK(KIBEIG),TOTERG,14)
-         ENDIF
+         CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),WORK(KEIG),
+     &               WORK(KIBEIG),TOTERG,14)
       END IF
 C
 C     Get the boson symmetries of the transformed spinors

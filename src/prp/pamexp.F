@@ -133,11 +133,7 @@ C     Generate density matrix
 C     =======================
 C
       IF (WF .EQ. 'DHF' .OR. WF .EQ. 'DFT') THEN
-        INQUIRE(FILE='DFCOEF',EXIST=FILEX)
-        IF(.NOT.FILEX) GOTO 1000
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PRPEXP')
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IDUM,TOTERG,6)
-        CLOSE(LUCOEF,STATUS='KEEP')
         IF (.NOT. ORBANA) THEN
 C.........accumulate all density into one matrix
           FILEX = AOC
@@ -926,6 +922,7 @@ C     Written by T. Saue Jan 20 2005
 C
 C***********************************************************************
        use dircmo
+       use labeled_storage
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
@@ -938,6 +935,8 @@ C
       DIMENSION PAO(*),CMO(*),WORK(*)
       integer, allocatable :: IBP(:)
       real(8), allocatable :: EIG(:)
+      type(file_info_t)    :: fexpcan
+      logical              :: tobe
 C
       KFRSAV = KFREE
 C
@@ -945,7 +944,6 @@ C     Read eigenvalues and boson irrep information
 C
       allocate (eig(norbt))
       allocate (ibp(norbt))
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXPCAN')
       CALL REACMO(LUCOEF,'DFCOEF',DUM,EIG,IBP,TOTERG,12)
       DO IFRP = 1,NFSYM
 C       Memory allocation
@@ -970,15 +968,21 @@ C       Generate canonical property orbitals
 C      
         CALL MEMREL('EXPCAN.1',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       ENDDO
-C     Write new coefficients
-      IUNIT = 2
-      CALL OPNFIL(IUNIT,PRPNAM(INDXPR),'NEW','EXPCAN')  
-      CALL WRICMO(IUNIT,CMO,EIG,IBP,TOTERG)
-      CLOSE(IUNIT,STATUS='KEEP')
+C     Write new coefficients to a separate file called EXPCAN.h5
+      fexpcan%name = 'EXPCAN.h5'
+      fexpcan%type = 1
+      inquire (file=fexpcan%name,exist=tobe)
+      if (.not.tobe) then
+         fexpcan%status = -1 ! open for the first time
+      else
+         fexpcan%status = 0  ! add to existing data file
+      endif
+      call lab_write(fexpcan,trim(PRPNAM(INDXPR))//'_cmo',
+     & rdata=cmo(1:ncmotq))
+      call lab_write(fexpcan,trim(PRPNAM(INDXPR))//'_eig',rdata=eig)
+      call lab_write(fexpcan,trim(PRPNAM(INDXPR))//'_ibp',idata=ibp)
 C     Read old coefficients
-      REWIND LUCOEF
       CALL REACMO(LUCOEF,'DFCOEF',CMO,DUM,IDUM,TOTERG,2)
-      CLOSE(LUCOEF,STATUS='KEEP')
       CALL MEMREL('EXPCAN.2',WORK,KFRSAV,KFRSAV,KFREE,LFREE)
       RETURN
       END

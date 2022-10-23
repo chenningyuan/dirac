@@ -620,7 +620,7 @@ C     KRMC_FLG = 2: MP2 natural orbitals and occupancies read from
 C                   label NEWNATOB/NEWNATOC on file KRMCOLD
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
-C     KRMC_FLG = 0  Orbitals read from DFCOEF
+C     KRMC_FLG = 0  Orbitals read from CHECKPOINT.h5
 C
 C     Written by T.Saue July 24 1994
 C     Revised       : Jan 7 1998 - jth LINUX
@@ -1423,7 +1423,7 @@ C     On ouput these are replaced by the polarization contributions.
 C
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
-C     KRMC_FLG = 0  Orbitals read from DFCOEF
+C     KRMC_FLG = 0  Orbitals read from CHECKPOINT.h5
 C
 C    Written by T.Saue March 26 1999
 C
@@ -2061,11 +2061,9 @@ C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
 C
-C     No MCSCF, then check if RHF on DFCOEF :
+C     No MCSCF, then check if RHF on CHECKPOINT.h5
 C
  990  CONTINUE
-      INQUIRE (FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
 C     Memory allocation
       allocate (cmo(N2BBASXQ))
       allocate (eig(NORBT))
@@ -2073,13 +2071,11 @@ C     Memory allocation
 C
 C     Read coefficients
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       IOPT=14
       CALL REACMO_new(cmo=CMO,eig=EIG,ibeig=IBEIG,
      &                toterg=TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
 C
-      CALL HEADER('Coefficients from DFCOEF',2)
+      CALL HEADER('Coefficients from CHECKPOINT.h5',2)
       IPREIG = 1
       CALL PRCOEF(CMO,EIG,VECPRI,
      &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)
@@ -2258,13 +2254,6 @@ C
         GO TO 9999
       END IF
 C
-C     Check if coefficients are on file
-C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) THEN
-        WRITE(LUPRI,'(/A)')'GT1RHO: Coefficient file DFCOEF not found !'
-        CALL QUIT('GT1RHO: Coefficients not found !')
-      END IF
 C     Memory allocation
 CTROND: Consider open shell ! (NFMAT...)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2275,9 +2264,7 @@ CTROND: Consider open shell ! (NFMAT...)
 C
 C     Read coefficients + give info
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GT1RHO')
       CALL REACMO_new(cmo=CMO,toterg=TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
 C     Be aware: Both density matrices are normed to 1
@@ -2496,10 +2483,6 @@ C     Write header for cube file
         IF(LBIT(ILSCUB,IC)) CALL CUBHED(LUCUBE(IC),CUBE,WORK(KATOM))
       ENDDO
 C
-C     Check if coefficients are on file
-C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
 C     Memory allocation
 CTROND: Consider open shell ! (NFMAT...)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2509,9 +2492,7 @@ CTROND: Consider open shell ! (NFMAT...)
 C
 C     Read coefficients + give restart info
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO_new(cmo=CMO,toterg=TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Generate density matrix
 C     Be aware: Both density matrices are normed to 1
@@ -2579,8 +2560,6 @@ C
 C
 C     Check if coefficients are on file
 C
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF(.NOT.TOBE) GOTO 1000
 C     Memory allocation
 CTROND: Consider open shell ! (NFMAT...)
       CALL MEMGET('REAL',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
@@ -2590,9 +2569,7 @@ CTROND: Consider open shell ! (NFMAT...)
 C
 C     Read coefficients + give restart info
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PAMANA')
       CALL REACMO_new(cmo=CMO,toterg=TOTERG)
-      CLOSE(LUCOEF,STATUS='KEEP')
 
 C     Get cube parameters
       CALL CUBPAR(CUBE,WORK(KATOM))
@@ -3746,7 +3723,7 @@ C    out in C1 symmetry and so only one ircop is defined.
 C      
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
-C     KRMC_FLG = 0  Orbitals read from DFCOEF
+C     KRMC_FLG = 0  Orbitals read from CHECKPOINT.h5
 C
 C***********************************************************************
 #include "implicit.h"

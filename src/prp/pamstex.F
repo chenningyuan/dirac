@@ -339,7 +339,6 @@ C     property gradients are complex, so *2 size of double.
       IF (STEX_COFACTOR) THEN         
          ERGION = TOTERG
          CALL MEMGET('REAL',KCMOGS,NCMOTQ,WORK,KFREE,LFREE)
-         CALL OPNFIL(LUBUF,'DFCOEF','OLD','STEX  ')
          IOPT = 2+8
          CALL REACMO(LUBUF,'DFCOEF',WORK(KCMOGS),DUM,
      &        BREP,TOTERG,IOPT)

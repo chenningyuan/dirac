@@ -283,9 +283,7 @@ c        ... Calculate and add correction.
 
          allocate(cmo(n2bbasxq))
          cmo = 0.0d0
-         call opnfil(lucoef, 'DFCOEF', 'OLD', 'xc molecular gradient')
          call reacmo(lucoef, 'DFCOEF',cmo, dummy, dummy, dummy, 3)
-         close(lucoef, status='keep')
        
          allocate(dmat(n2bbasxq))
          dmat = 0.0d0
@@ -347,10 +345,8 @@ C
 C
       IF (NASHT.GT.0) THEN
 C
-         CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
          ! Needs an array as argument, old trick of passing a pointer does not work
          CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
-         CLOSE(LUCOEF,STATUS='KEEP')
 C
 C
 C        Transform QV to MO basis
@@ -401,9 +397,7 @@ C
          DO 20 I = 1,NFSYM
 C
             KCMO = KFVAO
-            CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
             CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
-            CLOSE(LUCOEF,STATUS='KEEP')
 C
             IF (NISH(I).EQ.0) GOTO 20
             CALL QTRANS('AOMO','S',D0,NFBAS(I,0),NFBAS(I,0),
@@ -440,9 +434,7 @@ C     FOCK = CCtFCCt = DFDt = CF(MO)Ct
 C
       CALL DZERO(WORK(KFCAO),N2BBASXQ)
       KCMO = KFVAO
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
       CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
-      CLOSE(LUCOEF,STATUS='KEEP')
       IF ( IPRINT .GE. 10 ) THEN
          DO I=1,NFSYM
            IF (NORB(I) .NE. 0) THEN
@@ -554,9 +546,7 @@ C
       KDCAO = KDAO
       KDVAO = KDAO + N2BBASXQ
       KCMO  = KDVAO + N2BBASXQ
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
       CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
-      CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get density matrix
 C
@@ -681,9 +671,7 @@ C
 C
 C     Contruct density matrix
 C
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','CONMAT_DHF')
       CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
-      CLOSE(LUCOEF,STATUS='KEEP')
       DO IMAT = 1,NFMAT
          IBIT = IBTSHL(1,IMAT-1)
          CALL GENDEN(WORK(KDCAO),WORK(KCMO),IBIT,IPRINT)
@@ -2604,10 +2592,8 @@ C
 C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETDSO')
 C     Needs an array as argument, old trick of passing a pointer does not work
       CALL REACMO_new(cmo=WORK(KCMO:KCMO+N2BBASXQ-1))
-      CLOSE(LUCOEF,STATUS='KEEP')
 C
 C     Get total density matrix
 C

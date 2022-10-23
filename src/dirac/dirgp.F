@@ -21,7 +21,7 @@ C  /* Deck pcmoin */
 C*****************************************************************************
 C
 C     Read coefficients from formatted DFPCMO and
-C     write to unformatted DFCOEF
+C     write to CHECKPOINT
 C
 C         IDIM(1,IFRP) - number of positronic solutions
 C         IDIM(2,IFRP) - number of electronic solutions
@@ -126,20 +126,17 @@ C         Check dimensions
  20   CONTINUE
       CLOSE(LUCOEF,STATUS='KEEP')
 C
-C     Write coefficients to either KRMCOLD or DFCOEF
+C     Write coefficients to either KRMCOLD or CHECKPOINT
 C
                                      IWRTMO = 2
       IF(DOKRMC.or.DOKRCI.or.DOKRCC) IWRTMO = 1
-      !> if SCF is requested we need a DFCOEF file, no matter what
       if(dirac_cfg_scf_calculation)  IWRTMO = 2
       IF(IWRTMO == 1)THEN
         CALL OPNFIL(LUKRMC,'KRMCOLD','UNKNOWN','PCMOIN')
         CALL WRTKRMC(LUKRMC,'NEWORB  ',CMO,NCMOTQ)
         CLOSE (LUKRMC,STATUS='KEEP')
       ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','UNKNOWN','PCMOIN')        
         CALL WRICMO(LUCOEF,CMO,EIG,reshape(IBEIG,(/2*NEIG/)),TOTERG)
-        CLOSE(LUCOEF,STATUS='KEEP')
       END IF
       deallocate(CMO)
       deallocate(EIG)
@@ -153,7 +150,7 @@ C
       ELSE IF( IWRTMO .eq. 2 )THEN
         WRITE(LUPRI,'(A)')
      &      '* PCMOIN: Coefficients read from formatted DFPCMO ',
-     &      '          and written to unformatted DFCOEF'
+     &      '          and written to CHECKPOINT'
       END IF
       CALL PRSYMB(LUPRI,'=',75,0)
 
@@ -165,7 +162,7 @@ C  /* Deck pcmout */
       SUBROUTINE PCMOUT()
 C*****************************************************************************
 C
-C     Read coefficients from unformatted DFCOEF and
+C     Read coefficients from unformatted CHECKPOINT and
 C     write to formatted DFPCMO
 C
 C     Written by T.Saue Feb 1997
@@ -195,15 +192,9 @@ C
       allocate(EIG(NEIGB))
       allocate(IBEIG(NEIGB,2))
 C
-C     Get coefficients from either KRMCSCF or DFCOEF 
+C     Get coefficients from either KRMCSCF or CHECKPOINT
 C
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='DFCOEF' ,EXIST=TOBE)
-      IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
-        WRITE(LUPRI,'(A)') 
-     &     'PCMOUT: Unformatted file DFCOEF/KRMCSCF not found !'
-        CALL QUIT('PCMOUT: Unformatted file DFCOEF/KRMCSCF not found !')
-      ENDIF
       IF(TOBEK.and.(DOKRMC.or.DOKRCI.or.DOKRCC))THEN
         CALL OPNFIL(LUKRMC,'KRMCSCF','UNKNOWN','PCMOUT')
         JRDMO = -1
@@ -230,11 +221,9 @@ C       ... set to zero
         CALL IZERO(IBEIG,NORBT)
         IREADMO = 3
       ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PCMOUT')
         IOPT=14
         IF(ATOMIC) IOPT=IOPT+16
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
-        CLOSE(LUCOEF,STATUS='KEEP')
         IREADMO = 2
       END IF
 C
@@ -252,7 +241,7 @@ C
      &      '          and written to formatted DFPCMO'
       ELSE IF( IREADMO .eq. 2)THEN
         WRITE(LUPRI,'(A)')
-     &      '* PCMOUT: Coefficients read from unformatted DFCOEF ',
+     &      '* PCMOUT: Coefficients read from CHECKPOINT ',
      &      '          and written to formatted DFPCMO'
       END IF
       CALL PRSYMB(LUPRI,'=',75,0)
@@ -400,7 +389,7 @@ C  /* Deck reacmo */
       SUBROUTINE REACMO(IUNIT,CMOFIL,CMO,EIG,IBEIG,TOTERG,IOPT)
 C***********************************************************************
 C
-C     Read SCF-coefficients and eigenvalues from unformatted file
+C     Read SCF-coefficients and eigenvalues from CHECKPOINT
 C     Read option is provided from bit-packed IOPT:
 C      00001 - give restart info
 C      00010 - read coefficients
@@ -455,20 +444,20 @@ C
          WRITE(LUPRI,*) '* REACMO: Incompatible algebra: '
          WRITE(LUPRI,*) ' Expected: ',NZ
          WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(1)
-         call quit ('DFCOEF has incompatible algebra (NZ)')
+         call quit ('CHECKPOINT has incompatible algebra (NZ)')
       endif
       if (idims_dfcoef(2) .ne. nfsym ) then
          WRITE(LUPRI,*) '* REACMO: Incompatible fermion symmetry: '
          WRITE(LUPRI,*) ' Expected: ',NFSYM
          WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(2)
-         call quit ('DFCOEF has incompatible symmetry (NFSYM)')
+         call quit ('CHECKPOINT has incompatible symmetry (NFSYM)')
       endif
       if (idims_dfcoef(9) .ne. NFBAS(1,0)) then
          WRITE(LUPRI,*)
      &     '* REACMO: Incompatible # of basis functions (1): '
          WRITE(LUPRI,*) ' Expected: ',NFBAS(1,0)
          WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(9)
-         call quit ('DFCOEF has incompatible # of basis functions(1)')
+         call quit ('CHECKPOINT has incompatible # basis functions(1)')
       endif
       if (nfsym == 2) then
          if (idims_dfcoef(12) .ne. NFBAS(2,0)) then
@@ -476,7 +465,7 @@ C
      &     '* REACMO: Incompatible # of basis functions (2): '
            WRITE(LUPRI,*) ' Expected: ',NFBAS(2,0)
            WRITE(LUPRI,*) ' Read    : ',idims_dfcoef(12)
-           call quit ('DFCOEF has incompatible # of basis functions(2)')
+           call quit ('CHECKPOINT has incompatible # bas functions(2)')
          endif
       end if
 
@@ -492,14 +481,14 @@ C
 
       if (.not. (special_psh .or. special_esh)) then
 
-         ! DFCOEF is fully compatible, read directly into cmo
+         ! CHECKPOINT is fully compatible, read directly into cmo
          if (lbit(iopt,2)) call reacmo_new (cmo=cmo)
          if (lbit(iopt,3)) call reacmo_new (eig=eig)
          if (lbit(iopt,4)) call reacmo_new (ibeig=ibeig)
 
       else
 
-         ! DFCOEF contains a different number of orbitals, read into buffer and reorganize
+         ! CHECKPOINT contains a different number of orbitals, read into buffer and reorganize
          if (lbit(iopt,2)) then
             allocate (buf_special(idims_dfcoef(3)))
             call reacmo_new (cmo=buf_special)
@@ -1381,10 +1370,8 @@ C
       CALL MEMGET('REAL',KEIG,NORBT ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIBEIG,NORBT ,WORK,KFREE,LFREE)
       LUBUF = 22
-      CALL OPNFIL(LUBUF,'DFCOEF','OLD','EIGEXT')
       CALL REACMO(LUBUF,'DFCOEF',WORK(KCMO),WORK(KEIG),WORK(KIBEIG),
      &            TOTERG,14)
-      CLOSE(LUBUF,STATUS='KEEP')
       DO I = 1,NORBT
       IF(IORBCL(1,I).EQ.ITYP) THEN
         IND      = IORBCL(2,I) 
@@ -1744,7 +1731,7 @@ C     Get correct column ordering
 C     ===========================
 C 
       NDIM = NTBAS(0)*NORBT*NZC1
-C     ... only if coefficients are read from DFCOEF
+C     ... only if coefficients are read from CHECKPOINT
       IF(IREADMO.EQ.2) THEN
 C.......if more than one fermion ircop merge orbital classes
         CALL IZERO(IBEIG,NORBT)
@@ -2220,7 +2207,7 @@ C/* Deck preorb */
       SUBROUTINE PREORB()
 C***********************************************************************
 C
-C     Manipulation of DFCOEF prior to wave function calculation
+C     Manipulation of CHECKPOINT prior to wave function calculation
 C
 C***********************************************************************
 
@@ -2284,7 +2271,7 @@ C/* Deck pstorb */
       SUBROUTINE PSTORB()
 C***********************************************************************
 C
-C     Manipulation of DFCOEF after a wave function calculation
+C     Manipulation of CHECKPOINT after a wave function calculation
 C
 C***********************************************************************
       use memory_allocator
@@ -2293,23 +2280,14 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcborb.h"
-      LOGICAL TOBE, TOBEK
+      LOGICAL TOBEK
       real(8), allocatable :: cmo(:)
       real(8), allocatable :: eig(:)
       integer, allocatable :: ibeig(:)
 C
-C     check if file KRMCSCF or DFCOEF is present
+C     check if file KRMCSCF is present
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='DFCOEF',EXIST=TOBE)
-      IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
-        WRITE(LUPRI,'(A)') 
-     &  'PSTORB: Coefficient file DFCOEF/KRMCSCF not found !'
-         CALL QUIT('PSTORB: Coefficient file not found !')
-      ENDIF
 
-!     assign mcscf file higher priority
-      if(tobek .and. tobe) tobe = .false.
-C
 C     Memory allocation
       allocate(cmo(ncmotq))
       allocate(eig(norbt))
@@ -2418,7 +2396,6 @@ C     ====================================
 !       MCSCF/CI run.
         CLOSE (LUKRMC,STATUS='DELETE')
       ELSE
-        CALL OPNFIL(LUCOEF,'DFCOEF','OLD','PSTOR1')
         IOPT=14
         CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
       END IF

@@ -448,7 +448,6 @@ C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C boson irreps identification (read with MO coeff.)
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCON')
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
@@ -657,7 +656,6 @@ C  ...array for MO coefficients
       CALL MEMGET('REAL',KCMO,NCMOTQ,WORK,KFREE,LFREE)
 C boson irreps identification (read with MO coeff.)
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','GETCON')
       IF (SPINFR) THEN
        IOPT = 10 ! read MO coeff.+boson irreps ident.
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,WORK(KBEIG),
@@ -1099,7 +1097,6 @@ C***********************************************************************
 
       KFRSAV = KFREE
 
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','ONELON')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
@@ -1112,7 +1109,6 @@ C     and the full relativistic (fermion symm.) mode
      &            TOTERG,IOPT)
 
       ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
 
 C Open file for the London one-electron contributions, dh(B)/dB_c
       OPEN(LUONELO,FILE='ONELON',FORM='UNFORMATTED',
@@ -1869,7 +1865,6 @@ C
 C 0. Allocate memory and read coefficients etc.
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE) ! MO coefficients
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
-      CALL OPNFIL(LUCOEF,'DFCOEF','OLD','EXVSUSLO')
 C ... distinguish between spin-free (boson symm.) mode
 C     and the full relativistic (fermion symm.) mode
       IF (SPINFR) THEN
@@ -1881,7 +1876,6 @@ C     and the full relativistic (fermion symm.) mode
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
      &            TOTERG,IOPT)
       ENDIF
-      CLOSE(LUCOEF,STATUS='KEEP')
 C  1. Get tensor of two-electron expectation value terms 
       CALL SUSC2EL(WORK(KCMO),WORK(KBEIG),WORK,KFREE,LFREE)
 C  2. Compute highest order reorthonormalization term {T(2),h(0)+g(0)}

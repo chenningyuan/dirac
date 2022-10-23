@@ -2027,7 +2027,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       integer, allocatable :: ibeig(:)
       integer              :: nash_x(1:nfsym)
 
-!     !> read ibeig (info array on boson irreps) from DFCOEF
+!     !> read ibeig (info array on boson irreps) from CHECKPOINT
       allocate(ibeig(norbt))
       ibeig(1:norbt)         = 0
       nash_x(1:nfsym)        = 0
