@@ -750,6 +750,8 @@ C
        call checkpoint_write 
      & (trim(group)//'/nz',idata=qorbital%nz)
        call checkpoint_write 
+     & (trim(group)//'/n_fsym',idata=1) ! we can not handle symmetry yet, so this is always 1
+       call checkpoint_write 
      & (trim(group)//'/n_basis',idata=qorbital%nao)
        call checkpoint_write (trim(group)//'/n_mo',idata=qorbital%nmo)
        call checkpoint_write (trim(group)//'/n_po',idata=0)

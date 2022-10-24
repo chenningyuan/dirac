@@ -3246,6 +3246,7 @@ C     only exchange contributions
 C
 C     Get all coefficients
 C
+      IOPT=14
       CALL REACMO(LUCOEF,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
       IF(IONMVO) THEN
         WRITE(LUPRI,'(A)') "Generating MVOs with Bauschlicher's"//
