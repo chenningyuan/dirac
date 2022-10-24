@@ -17,6 +17,7 @@ wavefunctions    composite single    optional    # results for each wave functio
 *molecule
 n_atoms          integer   single    required    # number of atoms in the systems
 geometry         real      array     required    # xyz-coordinates for each atom
+nuc_charge       real      array     required    # nuclear charges for each atom
 symbols          string    array     required    # atomic symbol for each atom
 *end
 
