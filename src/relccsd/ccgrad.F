@@ -160,7 +160,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !-------------------------------------------------------------------
        real*8, allocatable :: dvo(:),dov(:)
        real*8, allocatable :: woo_temp(:),wpp_temp(:)
-       integer :: iprnt=2, dm_type
+       integer :: iprnt=0, dm_type
 !-------------------------------------------------------------------
 
         if (iprnt.ge.2) write(*,*) 'at start of cc_density'
