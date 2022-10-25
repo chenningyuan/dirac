@@ -101,6 +101,7 @@ module exacorr_mp2no
         subroutine exacorr_generate_MP2_VNO_MObasis (exa_input)
 
          use talsh
+         use checkpoint
 
 !        This subroutine drives the mp2no DM calculation ans MP2 energy as well
 !        The implementation is based on the parallel ExaTensor library
@@ -267,6 +268,11 @@ module exacorr_mp2no
             write(*,*) ""
             write(*,*) "    MP2 energy = ", mp2_energy
             write(*,*) ""
+
+            call checkpoint_write ('/result/wavefunctions/mbpt/method',sdata="MP2")
+            call checkpoint_write ('/result/wavefunctions/mbpt/e_corr',rdata=mp2_energy)
+            call checkpoint_read ('/result/wavefunctions/scf/energy',rdata=scf_energy)
+            call checkpoint_write ('/result/wavefunctions/mbpt/energy',rdata=scf_energy+mp2_energy)
 
             ierr=exatns_tensor_transform(int_t%oovv,denom)
             ierr=exatns_tensor_init(MP2_density_tensor%prime_vv,ZERO)
