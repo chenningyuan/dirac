@@ -1715,7 +1715,6 @@ C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
                NSUBBL = NHTYP
-               write(*,*)"NSUBBL,NHTYP",NSUBBL,NHTYP
                READ(LUCMD,*,IOSTAT=IOS) NMJ
                IF (IOS.NE.0) THEN
                  WRITE(LUPRI,*) 'Error in reading NMJ for .MJSELE !'
