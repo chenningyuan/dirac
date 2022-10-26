@@ -425,7 +425,7 @@ module labeled_storage
                 newdim = int8(sdim)
                  ! caution: we have no means of checking whether the string lengths have changed so this is not checked
              elseif (present(sdata)) then
-                newdim = size(idata,kind=8)
+                newdim = size(sdata,kind=8)
              end if
              if (newdim /= dims(1)) call mh5_resize_dset(dset_id,[newdim])
           end if
