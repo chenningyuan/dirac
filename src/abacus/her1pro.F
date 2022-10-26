@@ -4287,6 +4287,7 @@ C --- end of her1pro.F ---
      &   '/result/operators/ao_matrices/aobasis_dim',idata=ntbas(0))
       else
          call checkpoint_write (
-     &   '/result/operators/ao_matrices/'//label,rdata=prop)
+     &   '/result/operators/ao_matrices/'//label(1:8)//label(13:16),
+     &    rdata=prop)
       end if
       end

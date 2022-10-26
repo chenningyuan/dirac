@@ -3366,6 +3366,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
+      use checkpoint
 C***********************************************************************
 C
 C     Read property integrals from file with the label PRPLBL
@@ -3386,6 +3387,8 @@ C***********************************************************************
       LOGICAL FNDLB3, FINDLABEL
       CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
+      character*(:), allocatable :: label
+      logical                    :: label_present
       CALL QENTER('PRPREA')
 C
 Chj   PDOINT is now '+', '-', or '0',
@@ -3406,20 +3409,23 @@ C
      & ' with COMB '//COMB//
      & ' from the file with LU1INT = ',LU1INT
       ENDIF
-      IF(FNDLB3(PRPLBL,COMB,RTNLBL,LU1INT,IPRINT)) THEN
-        CALL READT(LU1INT,NDIM,PRPINT)
+      label = '/result/operators/ao_matrices/'//
+     &        PRPLBL//COMB
+      call checkpoint_query(label,label_present)
+      if (label_present) then
+        call checkpoint_read(label,rdata=prpint(1:ndim))
         IF (IPRINT.GE.17) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &    'succesfully read from the file with LU1INT = ',LU1INT
+     &    'succesfully read from CHECKPOINT '
         ENDIF
       ELSE
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &                     ' not found on LU1INT = ',LU1INT
+     &                     ' not found on CHECKPOINT'
         WRITE(LUPRI,*) 'label RTNLBL=',RTNLBL
         CALL QUIT('PRPREA:Property '//PRPLBL//
-     &   ' of COMB '//COMB//' not found on AOPROPER file !')
+     &   ' of COMB '//COMB//' not found on CHECKPOINT')
       ENDIF
 C
       CALL FLSHFO(LUPRI)

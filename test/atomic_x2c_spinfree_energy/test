@@ -15,22 +15,22 @@ f.add(from_string = ' TOTAL ENERGY',
       rel_tolerance   = 1.0e-8)
 
 test.run(['atoms.inp'], ['atoms.xyz'],
-                 args='--replace closed_occ="4" --replace open_e="5" --replace open_orb="6" --replace myatom="F" --get="X2CMAT"')
-shutil.copy('X2CMAT', 'X2CMAT.009')
+                 args='--replace closed_occ="4" --replace open_e="5" --replace open_orb="6" --replace myatom="F" --outcmo')
+shutil.copy('CHECKPOINT.h5', 'X2CMAT_009.h5')
 
 test.run(['atoms.inp'], ['atoms.xyz'],
-                 args='--replace closed_occ="12" --replace open_e="4" --replace open_orb="6" --replace myatom="S" --get="X2CMAT"')
-shutil.copy('X2CMAT', 'X2CMAT.016')
+                 args='--replace closed_occ="12" --replace open_e="4" --replace open_orb="6" --replace myatom="S" --outcmo')
+shutil.copy('CHECKPOINT.h5', 'X2CMAT_016.h5')
 
 test.run(['large-molecular-x2c-spinfree.inp', 'large-molecular-x2c-spinfree-end.inp', 'large-molecular-x2c-spinfree-beg.inp'],
                  ['sf6.xyz'], f)
 
 test.run(['large-atomic-x2c-spinfree.inp'],
-                 ['sf6.xyz'], f, args='--put="X2CMAT.009 X2CMAT.016"')
+                 ['sf6.xyz'], f, args='--put="X2CMAT_009.h5 X2CMAT_016.h5"')
 
 # cleanup
-os.unlink('X2CMAT')
-os.unlink('X2CMAT.016')
-os.unlink('X2CMAT.009')
+os.unlink('CHECKPOINT.h5')
+os.unlink('X2CMAT_016.h5')
+os.unlink('X2CMAT_009.h5')
 
 sys.exit(test.return_code)

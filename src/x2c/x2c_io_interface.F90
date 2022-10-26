@@ -33,6 +33,7 @@ contains
 !**********************************************************************
   subroutine x2c_write(flabel,fmat,nlen,funit)
 !**********************************************************************
+     use checkpoint
      real(8),            intent(in)     :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -41,7 +42,18 @@ contains
      logical                            :: fndlab12
      character (len=800)                :: funit_name
      integer                            :: lfunit_name
+     character*(:), allocatable         :: group
 !**********************************************************************
+
+     ! Information that was formerly on the main X2CMAT file is now written to CHECKPOINT
+     inquire(unit=funit, name=funit_name) ! should pass on funit_name, but that is better done after the merge
+     if (funit_name(1:6) == 'X2CMAT') then
+       group = '/result/hamiltonian/x2c/ao_matrices/'
+       if (nlen>0) then
+          call checkpoint_write(group//flabel,fmat(1:nlen))
+       endif
+       return
+     end if
 
        if(nlen >= 0)then
          rewind funit                                                    
@@ -66,6 +78,7 @@ contains
 !**********************************************************************
   subroutine x2c_read(flabel,fmat,nlen,funit)
 !**********************************************************************
+     use checkpoint
      real(8),            intent(inout)  :: fmat(*)
      integer,            intent(in)     :: nlen
      integer,            intent(in)     :: funit
@@ -76,8 +89,19 @@ contains
      character (len=1000)               :: error_stream
      integer                            :: lfunit_name
      integer                            :: lerror_stream
+     character*(:), allocatable         :: group
 !**********************************************************************
  
+     ! Information that was formerly on the main X2CMAT file is now written to CHECKPOINT
+     inquire(unit=funit, name=funit_name) ! should pass on funit_name, but that is better done after the merge
+     if (funit_name(1:6) == 'X2CMAT') then
+       group = '/result/hamiltonian/x2c/ao_matrices/'
+       if (nlen>0) then
+          call checkpoint_read(group//flabel,fmat(1:nlen))
+       endif
+       return
+     end if
+
        rewind(funit)
        if(nlen > 0)then
          if(fndlab12(flabel,funit))then

@@ -11,7 +11,8 @@ aobasis          composite array     required    # atomic orbital basis set desc
 *result
 execution        composite single    required    # information about the run
 operators        composite single    optional    # matrix representations of operators
-wavefunctions    composite single    optional    # results for each wave functions that was optimized
+wavefunctions    composite single    optional    # results for each wave function that was optimized
+hamiltonian      composite single    optional    # results from hamiltonian transformations
 *end
 
 *molecule
@@ -72,9 +73,13 @@ scf              composite single    optional    # results for Hartree-Fock and 
 mbpt             composite single    optional    # results for Many-Body Perturbation Theory
 *end
 
+*hamiltonian
+x2c              composite single    optional    # matrices defining or resulting from the X2C transformation
+*end
+
 *ao_matrices
-aobasis_dim      integer   single    required    # dimension of the matrix representations
-operator_name    real      single    generic     # matrix representation of operator_name (operator_name is a string of length 8)
+aobasis_dim      integer   single    optional    # dimension of the matrix representations (should become required when checking routines are improved)
+operator_name    real      single    generic     # matrix representation of operator_name (operator_name is a string of arbitrary length)
 aobasis_id       integer   single    optional    # pointer to the explicit definition of the aobasis
 *end
 
@@ -99,4 +104,9 @@ method           string    single    required    # Descriptive string of the met
 energy           real      single    required    # total MBPT energy
 e_corr           real      single    required    # correlation energy
 mobasis          composite single    optional    # recanonized natural orbitals
+*end
+
+*x2c
+method           string    single    optional    # Descriptive string of the method used, e.g. molecular X2C
+ao_matrices      composite single    optional    # AO representations of operators
 *end
