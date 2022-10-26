@@ -499,8 +499,9 @@ contains
         integer(INTD) :: rank
         logical :: debug = .false.
 
-        rank=talsh_tensor_rank(workspace_t%trial1(1))
-        if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
+        ! rank=talsh_tensor_rank(workspace_t%trial1(1))
+        rank=workspace_t%tens1_dims(1)
+        ! if (rank.gt.2) call quit('rank not implemented in update_trial_vectors')
 
         if (debug) then
            write (6,*) ''
@@ -567,7 +568,7 @@ contains
            end do
         end if
 
-        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
+        call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2,rank)
 
         ! if (debug) then
         !     write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization'
@@ -580,7 +581,7 @@ contains
         !     end do
         !  end if
 
-        call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2)
+        call double_check_trial_vector(workspace_t%Lprev, workspace_t%L, workspace_t%trial1, workspace_t%trial2,rank)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
@@ -588,20 +589,25 @@ contains
               write (6,*) 'debug >>> trial vector ',i
               call print_tensor(workspace_t%trial1(i),1.0d-18, "b1")
               call print_tensor(workspace_t%trial2(i),1.0d-18, "b2")
-              print *, "norm of new trial", sqrt(tensor_norm2(workspace_t%trial1(i)) + tensor_norm2(workspace_t%trial2(i))/4)
+              if (rank.eq.1) then
+                print *, "norm of new trial", sqrt(tensor_norm2(workspace_t%trial1(i)) + tensor_norm2(workspace_t%trial2(i))/2)
+              else
+                print *, "norm of new trial", sqrt(tensor_norm2(workspace_t%trial1(i)) + tensor_norm2(workspace_t%trial2(i))/4)
+              end if
               write (6,*) ''
            end do
         end if
     end subroutine
 
 
-    subroutine double_check_trial_vector(L,Lnew,trial1,trial2)
+    subroutine double_check_trial_vector(L,Lnew,trial1,trial2,rank)
         integer, intent(inout) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
+        integer :: rank
 
         integer :: Lnew_tem, L_tem
         integer :: i, j, vi
-        real(8) :: norm_r, norm_r1, norm_r2
+        real(8) :: norm_r
         integer, allocatable :: valid_index(:)
         type(C_PTR) :: body_p, body_p1
         real(8) :: davidson_antisymme_threshold = 1.0d-6
@@ -623,7 +629,14 @@ contains
         end if 
 
         do i = L+1, Lnew_tem
-            norm_r = sqrt(tensor_norm2(trial1(i)) + tensor_norm2(trial2(i))/4)
+            if (rank==1) then
+                norm_r = sqrt(tensor_norm2(trial1(i)) + tensor_norm2(trial2(i))/2)
+            else
+                norm_r = sqrt(tensor_norm2(trial1(i)) + tensor_norm2(trial2(i))/4)
+            end if
+            if (debug_double_check) then
+                print *, "norm in double check", norm_r
+            end if 
             if (norm_r.gt.davidson_antisymme_threshold) then 
                 L_tem = L_tem + 1
                 valid_index(L_tem-L) = i
@@ -682,26 +695,28 @@ contains
 
     end subroutine
 
-    subroutine renormalize_vectors(v1,v2)
+    subroutine renormalize_vectors(v1,v2,rank)
 
        type(talsh_tens_t), intent(inout) :: v1, v2
+       integer :: rank
        real :: norm_r
        complex(8) :: norm
        real(8) :: davidson_antisymme_threshold = 1.0d-6
-       integer :: ierr, rank
+       integer :: ierr
   
 
-       rank=talsh_tensor_rank(v1)
+    !    rank=talsh_tensor_rank(v1)
 
        if (rank.eq.1) then
             norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/2)
-       else if (rank.eq.2) then 
+       else 
             norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4)
        end if 
 
     !    norm_r = sqrt(tensor_norm2(v1) + tensor_norm2(v2)/4) !XY 4 is for EE(ab.ij) but we need to take care for IP
        norm = dcmplx(norm_r, 0.0d0)
 
+    !    print *, "norm in renormalize", norm_r
        if (norm_r.lt.davidson_antisymme_threshold) then ! to avoid numerical noisy 
             ierr=talsh_tensor_init(v1, ZERO)
             ierr=talsh_tensor_init(v2, ZERO)
@@ -720,10 +735,11 @@ contains
     end subroutine
 
 
-    subroutine gram_schmidt_projection_tensors(factor, u1, u2, v1, v2)
+    subroutine gram_schmidt_projection_tensors(factor, u1, u2, v1, v2, rank)
        complex(8), intent(inout) :: factor
        type(talsh_tens_t), intent(inout) :: u1, u2
        type(talsh_tens_t), intent(inout) :: v1, v2
+       integer :: rank
 
        type(talsh_tens_t) :: result_tensor_num, result_tensor_den
        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
@@ -731,8 +747,9 @@ contains
        type(talsh_tens_t) :: one_tensor
 
        integer(C_INT)     :: one_dims(1)
-       integer  :: ierr, rank
+       integer  :: ierr
        logical :: debug_GS_proj = .false.
+       complex(8)    :: contrac_coeff
 
        one_dims(1) = 1
 
@@ -745,25 +762,34 @@ contains
 
        ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
-       rank=talsh_tensor_rank(v1)
+    !    rank=talsh_tensor_rank(v1)
+       
+       if (rank == 1) then
+        contrac_coeff = ONE_HALF
+       else
+        contrac_coeff = ONE_QUARTER_C
+       end if 
 
-       if (rank.eq.1) then
-          ierr=talsh_tensor_contract("num()+=u+(a)*v(a)",result_tensor_num,u1,v1)
-          ierr=talsh_tensor_contract("den()+=u+(a)*u(a)",result_tensor_den,u1,u1)
+    !    if (rank.eq.1) then
+    !       ierr=talsh_tensor_contract("num()+=u+(a)*v(a)",result_tensor_num,u1,v1)
+    !       ierr=talsh_tensor_contract("den()+=u+(a)*u(a)",result_tensor_den,u1,u1)
 
-          ierr=talsh_tensor_contract("num()+=u+(a,b,c)*v(a,b,c)",result_tensor_num,u2,v2,scale=ONE_HALF)
-          ierr=talsh_tensor_contract("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2,scale=ONE_HALF)
+    !       ierr=talsh_tensor_contract("num()+=u+(a,b,c)*v(a,b,c)",result_tensor_num,u2,v2,scale=ONE_HALF)
+    !       ierr=talsh_tensor_contract("den()+=u+(a,b,c)*u(a,b,c)",result_tensor_den,u2,u2,scale=ONE_HALF)
 
-       else if (rank.eq.2) then
-          if (debug_GS_proj) then
-              call print_tensor(u1, 1.0d-18, "u1 tensor")
-              call print_tensor(v1, 1.0d-18, "v1 tensor")
-          end if 
-          ierr=talsh_tensor_contract("num()+=u+(a,b)*v(a,b)",result_tensor_num,u1,v1)
-          ierr=talsh_tensor_contract("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
-          ierr=talsh_tensor_contract("num()+=u+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,u2,v2,scale=ONE_QUARTER_C)
-          ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2,scale=ONE_QUARTER_C)
-       end if
+    !    else if (rank.eq.2) then
+    !    end if
+
+       if (debug_GS_proj) then
+           call print_tensor(u1, 1.0d-18, "u1 tensor")
+           call print_tensor(v1, 1.0d-18, "v1 tensor")
+           print *, "rank in projection:", rank
+       end if 
+       ierr=talsh_tensor_contract("num()+=u+(a,b)*v(a,b)",result_tensor_num,u1,v1)
+       ierr=talsh_tensor_contract("den()+=u+(a,b)*u(a,b)",result_tensor_den,u1,u1)
+       ierr=talsh_tensor_contract("num()+=u+(a,b,c,d)*v(a,b,c,d)",result_tensor_num,u2,v2,scale=contrac_coeff)
+       ierr=talsh_tensor_contract("den()+=u+(a,b,c,d)*u(a,b,c,d)",result_tensor_den,u2,u2,scale=contrac_coeff)
+
        
        factor = result_tens_num(1) / result_tens_den(1)
 
@@ -780,18 +806,18 @@ contains
     end subroutine
 
 
-    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2)
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2,rank)
         integer, intent(in) :: L, Lnew
         type(talsh_tens_t), intent(inout) :: trial1(:), trial2(:)
+        integer(INTD) :: rank
 
         real :: norm_r
-        integer(INTD) :: rank
         integer :: ierr, i, j
         complex(8) :: factor
         ! type(talsh_tens_t) :: one_tensor
         ! integer(C_INT)     :: one_dims(1)
         real(8) :: davidson_antisymme_threshold = 1.0d-6
-        real(8) :: davidson_antisymme_threshold_num = 1.0d-12
+        ! real(8) :: davidson_antisymme_threshold_num = 1.0d-12
 
         integer(C_INT)     :: one_dims(1)
         logical :: debug_GS_orthg = .false.
@@ -800,8 +826,8 @@ contains
 
         ! one_dims(1) = 1
         ! ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-        rank=talsh_tensor_rank(trial1(1))
-        if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
+        ! rank=talsh_tensor_rank(trial1(1))
+        ! if (rank.ne.2) call quit('rank not implemented in form_r_tensors')
 
 
         do j = L+1, Lnew
@@ -816,29 +842,29 @@ contains
                     call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
                 end if 
 
-                if (i <= L) then    !The previous L vectors should be ok.
+                if (i.le.L) then    !The previous L vectors should be ok.
                     norm_r = 1.0
                 else
                     norm_r = sqrt(tensor_norm2(trial1(i)) +  tensor_norm2(trial2(i))/4)
                 end if
  
                 if (norm_r.gt.davidson_antisymme_threshold) then                       
-                    call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j))
+                    call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
                 else
                     factor = ZERO ! complex(0.0D0,0.0D0)
                 end if
 
-                if (rank.eq.1) then
-                   ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
-                else if (rank.eq.2) then
-                   ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
-                   ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
-                end if
+                ! if (rank.eq.1) then
+                !    ierr=talsh_tensor_add("t(a)+=p(a)",trial1(j),trial1(i),scale=-factor)
+                !    ierr=talsh_tensor_add("t(a,b,c)+=p(a,b,c)",trial2(j),trial2(i),scale=-factor)
+                ! else if (rank.eq.2) then
+                ierr=talsh_tensor_add("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
+                ierr=talsh_tensor_add("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
+                ! end if
 
             end do
 
-            call renormalize_vectors(trial1(j),trial2(j))
+            call renormalize_vectors(trial1(j),trial2(j),rank)
 
          end do
 
@@ -1261,7 +1287,8 @@ contains
         correction_to_vectors = .true.
 
         unconverged_roots = 0
-        rank = talsh_tensor_rank(workspace_t%delta1(1))
+        ! rank = talsh_tensor_rank(workspace_t%delta1(1))
+        rank = workspace_t%tens1_dims(1)     
         do k = 1, nroots
            ierr=talsh_tensor_init(workspace_t%delta1(k), ZERO)
            if (debug_correction_vectors) print *,'debug, init workspace_t%delta1(k) to zero, ierr',ierr
@@ -1278,7 +1305,7 @@ contains
             
            if (rank .eq.1) then
               norm_r = sqrt(tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))/2)
-           else if (rank .eq.2) then
+           else 
               norm_r = sqrt(tensor_norm2(workspace_t%delta1(k)) +  tensor_norm2(workspace_t%delta2(k))/4)
            end if
 
@@ -1903,9 +1930,7 @@ contains
 ! the number of solutions (and solution vectors) depends on the user input.
 ! as was the case with relccsd, if we give a negative number for the number of roots, the code will assume we want
 ! as many roots as the there are columns in Hbar (=size of the excitation manifold)..
-        print *, 'nocc:',nocc
-        print *, 'nvirt:',nvirt
-        print *, 'requested number of roots',nroots
+
         if (nroots.lt.0) then
            print *, 'INFO: number of roots reset to the dimension of Hbar'
            workspace_t%nroots = excitation_manifold_size 
@@ -2188,6 +2213,7 @@ contains
       complex(8), pointer, contiguous:: m_tens(:,:)
       type(C_PTR):: m_body_p
       integer :: ierr, i, j
+      complex(8) :: contrac_coeff
       logical :: debug_subspace_matrix = .false.
 
 !! we need to fish out the small matrix from workspace_t%M, which is the slice LxL of the full tensor
@@ -2212,6 +2238,13 @@ contains
          write (6,*) ''
       end if
     !   do i = workspace_t%Lprev, workspace_t%L
+      print *, "workspce_tensor:", workspace_t%tens1_dims
+      if (workspace_t%tens1_dims(1)==1) then  !To distinguish IP and EE
+        contrac_coeff = ONE_HALF   !It's IP
+      else 
+        contrac_coeff = ONE_QUARTER_C  !It's EE
+      end if
+
       do i=1, workspace_t%L
         !  do j = workspace_t%Lprev, workspace_t%L
         do j =1, workspace_t%L
@@ -2236,13 +2269,13 @@ contains
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
    &                                                        workspace_t%sigma2(j),&
-   &                                                        scale=ONE_QUARTER_C)
+   &                                                        scale=contrac_coeff)
                else if (left.and..not.right) then
                   ierr=talsh_tensor_contract("MIJ()+=S(p,q,r,s)*B(p,q,r,s)",      &
    &                                                        result_tensor,        &
    &                                                        workspace_t%trial2(i),&
    &                                                        workspace_t%sigma2(j),&
-   &                                                        scale=ONE_QUARTER_C)
+   &                                                        scale=contrac_coeff)
                end if
             end if
 
@@ -2493,8 +2526,14 @@ contains
         if (davidson_solve_rhs.and.davidson_overlap_sorting) deallocate(c_small_r_old)
         if (davidson_solve_lhs.and.davidson_overlap_sorting) deallocate(c_small_l_old)
 
-        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",workspace_t%L
 
+        write(davidson_output_file_unit, *) "Final size of reduced subspace : ",workspace_t%L
+        write(davidson_output_file_unit, *), "*****************EOM-CC Eigenvalules******************"
+        call print_values_vectors(davidson_output_file_unit,e_small, c_small_r, c_small_l, &
+        .false.,.false., nroots)
+        write(davidson_output_file_unit, *), "******************************************************"
+
+        
 !!      call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
 
 !!      if (davidson_solve_lhs) then 

@@ -53,8 +53,8 @@ module talsh_eom
 
 !     todo : store the results from each of ip/ea runs 
 !     we also need to control whether we need to do IP and EA, depending on the options. for now sticking to STEOM-EE, which needs both
-      call talsh_davidson_create_results(eomip_results_t)
-      call talsh_davidson_create_results(eomea_results_t)
+      ! call talsh_davidson_create_results(eomip_results_t)
+      ! call talsh_davidson_create_results(eomea_results_t)
 
       call print_date("Setting up RHS EOM-IP run")
       call eom_ccsd_eigenvalue_ip(eomip_results_t,eom_config%nroots,interm_t,int_t)

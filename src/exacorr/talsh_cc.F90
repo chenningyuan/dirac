@@ -133,9 +133,9 @@ module talsh_cc
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
 
-         print *,'before get_CC_integrals'
-         print *,' eps_occ:',eps_occ
-         print *,' eps_vir:',eps_vir
+         ! print *,'before get_CC_integrals'
+         ! print *,' eps_occ:',eps_occ
+         ! print *,' eps_vir:',eps_vir
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
          if (exa_input%moint_scheme.eq.41) then
@@ -371,7 +371,7 @@ module talsh_cc
                print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
                print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
             end if
-            print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
+            ! print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
 
             if (exa_input%eom_input(1)%flavor.eq."EE    " .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
                call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
@@ -2503,7 +2503,7 @@ module talsh_cc
 
 !        make the extrapolated amplitudes if the space is large enough
          if (ntens.ge.mindim) then
-           print *,'coeff:',coeff
+         !   print *,'coeff:',coeff
            if (crop) then
               ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
               if (.not.CCD) ierr=talsh_tensor_init(t1_tensor)

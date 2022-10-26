@@ -699,7 +699,7 @@ module intermediates_eom_ccsd
         vvoo_dims(3:4) = nocc
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
 
-        print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh)", tensor_norm2(w_vovo)
+        ! print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh)", tensor_norm2(w_vovo)
         ierr=talsh_tensor_add("W(b,m,e,j)+=H(b,m,e,j)",w_vovo,comm_t%h_int)
         ierr=talsh_tensor_init(tau2_tensor)
         ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,comm_t%t2)
@@ -707,7 +707,7 @@ module intermediates_eom_ccsd
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,oovv_tensor,tau2_tensor)
 
         ierr=talsh_tensor_destruct(tau2_tensor)
-        print *, "debug: w_vovo tensor norm after contractions (get_w_vovo_talsh)", tensor_norm2(w_vovo)
+        ! print *, "debug: w_vovo tensor norm after contractions (get_w_vovo_talsh)", tensor_norm2(w_vovo)
 
        end subroutine get_w_vovo_talsh
 
@@ -734,7 +734,7 @@ module intermediates_eom_ccsd
 
         if (.not.present(t1_tensor)) CCD = .true.
 
-        print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh_scratch)", tensor_norm2(w_vovo)
+        ! print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh_scratch)", tensor_norm2(w_vovo)
         ierr=talsh_tensor_add("W(b,m,e,j)+=V(b,m,e,j)",w_vovo,int_t%vovo)
         if (.not.CCD) then
           ierr=talsh_tensor_contract("W(b,m,e,j)+=V(b,m,e,f)*T(f,j)",w_vovo,int_t%vovv,t1_tensor)
@@ -744,16 +744,16 @@ module intermediates_eom_ccsd
         ierr=talsh_tensor_dimensions(t2_tensor,tens_rank,vvoo_dims)
         ierr=talsh_tensor_construct(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
         ierr=talsh_tensor_add("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,t2_tensor)
-        print*, "debug: t1 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t1_tensor)
-        print*, "debug: t2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t2_tensor)
+        ! print*, "debug: t1 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t1_tensor)
+        ! print*, "debug: t2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(t2_tensor)
         ! if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
         if (.not.CCD) ierr=talsh_tensor_contract("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor)   !XY
-        print*, "debug: tau2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(tau2_tensor)
+        ! print*, "debug: tau2 tensor norm (get_w_vovo_talsh_scratch)", tensor_norm2(tau2_tensor)
         ierr=talsh_tensor_contract("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
 
 
         ierr=talsh_tensor_destruct(tau2_tensor)
-        print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh_scratch)", tensor_norm2(w_vovo)
+        ! print*, "debug: w_vovo tensor norm before contractions (get_w_vovo_talsh_scratch)", tensor_norm2(w_vovo)
 
        end subroutine get_w_vovo_talsh_scratch
 

@@ -12,15 +12,12 @@ f = Filter()
 # f.add(from_string = 'Electronic energy',
 #       num_lines   = 8,
 #       rel_tolerance   = 1.0e-9)
-f.add(from_string = 'Eigenvalue      1',
-      num_lines   = 156,
-      rel_tolerance   = 1.0e-6)
 
-f.add(from_string = ' *** EXCITATIONS OF BOSON IRREP    a( 1) ***',
-      num_lines   = 34,
+f.add(from_string = '*****************EOM-CC Eigenvalules******************',
+      num_lines   = 5,
       rel_tolerance   = 1.0e-6)
 
 # test.run(['cc_sto_numlist_h2_relccsd.inp', 'cc_sto_numlist_h2.inp'], ['h2.xyz'], f)
-test.run(['cc_sto_numlist_h2.inp'], ['h2.xyz'], f)
+test.run(['cc_ccpvdz_numlist_energy_x2c_ee.inp'], ['h2o.xyz'], f)
 
 sys.exit(test.return_code)
