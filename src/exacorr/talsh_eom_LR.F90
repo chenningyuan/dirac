@@ -54,7 +54,7 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,interm_t_prop1, interm_t_prop2, &
             integer                       :: ierr
 
             complex(kind=8)               :: eom_lr
-            logical :: CC_CC = .true.
+            logical :: CC_CC = .false.
             type(talsh_tens_t)    :: total_t_t1, total_t_t2
 
 
