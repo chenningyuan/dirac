@@ -28,6 +28,7 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+      use checkpoint
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
@@ -66,7 +67,7 @@ C
 C     Attempt a restart unless geometry optimization
 C     ==============================================
 C
-      IF(OPTIMI) THEN
+      IF (OPTIMI) THEN
         GOFAST = .FALSE.
       ELSE
         CALL GOTEST(GOFAST,IPREAD)
@@ -78,10 +79,8 @@ C
         TWOCOMP = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
-!       IPREAD = IPREAD - 5
         CALL READIN(.FALSE.)
         CALL SETDC1(IPREAD)
-!       IPREAD = IPREAD + 5
       ENDIF
 C
 C     Generate all one-electron integrals
@@ -99,15 +98,16 @@ C     ===================
       end if
 #endif
 
-      INQUIRE(FILE='AOPROPER',EXIST=TOBE)
+      call checkpoint_query(
+     & '/result/operators/ao_matrices/aobasis_dim',tobe)
 !     radovan: don't restart if you do a geometry optimization!
 !     gosia: don't restart and don't generate integrals if visual_cfg_london
       if (tobe .and. visual_cfg_london) then
         goto 11
       endif
-      IF(TOBE .and. .not. optimi) THEN
+      IF(TOBE) THEN
         WRITE(LUPRI,'(A)')
-     &  '* WARNING: DIRAC found the AOPROPER file '//
+     &  '* WARNING: DIRAC found '//
      &  '(one-electron integrals) ...will attempt restart.'
         IF (NOSMLV) CALL NOSSNUCATT
       ELSE 
@@ -1229,19 +1229,9 @@ C
       IF (NMPOLOP .GT. 1 .AND. .NOT. DIPDONE) THEN
          CALL DEF_DIPOLE(INDDIP,IPRINT)
 C
-C        ... Open AOPROPER integral file for ONEGEN
-C            (is closed again inside ONEGEN)
-C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
          CALL ONEGEN(WORK(KFREE),LFREE)
          DIPDONE = .TRUE.
       END IF
-C
-C     ... Open AOPROPER integral file (again) for PRPREA
-C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 C
 C     ... Allocate memory for RLMMAT in AO basis
 C         (L=0: Overlap, L=1: Dipole)
@@ -1348,7 +1338,6 @@ C
          ENDIF
       END DO
       CALL MEMREL('LCQMAT',WORK,KWORK,KWORK,KFREE,LFREE)  
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
       CALL TIMER('LSQMAT',TIMSTR,TIMEND)
       CALL QEXIT('LSQMAT')

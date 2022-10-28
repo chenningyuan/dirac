@@ -284,7 +284,7 @@ C          Hermitian operator
 
               write (*,*) 'FDE Fock contributions (re)calculated'
            else if (itmp%im_vemb) then
-              write (*,*) 'FDE Fock contributions (in AOPROPER) added'
+              write (*,*) 'FDE Fock contributions (CHECKPOINT) added'
            endif
         endif
 C

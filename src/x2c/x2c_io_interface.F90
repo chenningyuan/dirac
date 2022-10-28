@@ -45,9 +45,8 @@ contains
      character*(:), allocatable         :: group
 !**********************************************************************
 
-     ! Information that was formerly on the main X2CMAT file is now written to CHECKPOINT
-     inquire(unit=funit, name=funit_name) ! should pass on funit_name, but that is better done after the merge
-     if (funit_name(1:6) == 'X2CMAT') then
+     ! write essential x2c information to CHECKPOINT
+     if (flabel(1:8)=='prpint2c'.or.flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
        group = '/result/hamiltonian/x2c/ao_matrices/'
        if (nlen>0) then
           call checkpoint_write(group//flabel,fmat(1:nlen))
@@ -92,9 +91,8 @@ contains
      character*(:), allocatable         :: group
 !**********************************************************************
  
-     ! Information that was formerly on the main X2CMAT file is now written to CHECKPOINT
-     inquire(unit=funit, name=funit_name) ! should pass on funit_name, but that is better done after the merge
-     if (funit_name(1:6) == 'X2CMAT') then
+     ! read essential x2c information from CHECKPOINT
+     if (flabel(1:8)=='prpint2c'.or.flabel(1:7)=='pctmtAO'.or.flabel(1:4)=='h12c') then
        group = '/result/hamiltonian/x2c/ao_matrices/'
        if (nlen>0) then
           call checkpoint_read(group//flabel,fmat(1:nlen))

@@ -111,12 +111,14 @@ module labeled_storage
       end select
     end subroutine write_general
 
-    subroutine query_general (file_info,label,exist)
+    subroutine query_general (file_info,label,exist,data_size)
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
       logical,intent(out), optional          :: exist
+      integer,intent(out), optional          :: data_size
 
-      integer :: ierr
+      integer :: ierr, d_size
+      logical :: tobe
 
       select case (file_info%type)
       case (1)
@@ -126,9 +128,9 @@ module labeled_storage
          end if
       case (2)
          ! We use HDF5 files
-         if (present(exist)) then
-            call query_hdf5(file_info,label,exist=exist)
-         end if
+         call query_hdf5(file_info,label,exist=tobe,data_size=d_size)
+         if (present(exist))     exist = tobe
+         if (present(data_size)) data_size = d_size
       end select
 
     end subroutine query_general
@@ -425,7 +427,7 @@ module labeled_storage
                 newdim = int8(sdim)
                  ! caution: we have no means of checking whether the string lengths have changed so this is not checked
              elseif (present(sdata)) then
-                newdim = size(sdata,kind=8)
+                newdim = len(sdata,kind=8)
              end if
              if (newdim /= dims(1)) call mh5_resize_dset(dset_id,[newdim])
           end if

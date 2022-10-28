@@ -309,8 +309,6 @@ contains
 
 
 !      test if any one-particle operator integrals have been created 
-       inquire(file="AOPROPER",exist=aoprop_avail)
-       if(.not.aoprop_avail) return
 
 !      initialize offset
        ioff_pct_mat = 1
@@ -336,9 +334,6 @@ contains
                                                        x2c_file_glb)
          ioff_pct_mat  = ioff_pct_mat + naosh_all(i) * naosh_L(i)* nz
        end do
-
-       open(int1_4c_file,file='AOPROPER',status='old',form='unformatted', &
-            action="read",position='rewind') 
 
 !      step 2: perform pct in DIRAC-sorted SA-AO basis
 !      -----------------------------------------------
@@ -469,8 +464,6 @@ contains
        deallocate(scr_mat2)
        deallocate(scr_mat1)
        deallocate(pctmat)
-
-       close(int1_4c_file,status='keep')
 
   end subroutine pctrafo_op_4cto2c_saao_bas
 

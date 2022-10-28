@@ -1100,11 +1100,6 @@ c     FIXME: symmetry
 #include "memint.h"
       CALL QENTER('FROZEN_PRPGRAD')
       CALL MEMGET('REAL',KPROP,N2ORBXQ,WORK,KFREE,LFREE)
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
       DO IPRP=1,STEX_NR_OP
          CALL WRIXPR(IPRP,STEX_OP_IND(IPRP))
          call flush(lupri)
@@ -1672,11 +1667,6 @@ C     Put the complex overlap matrix in WORK(KCOVL)
       CALL QTOC(WORK(KQOVL+NPSH(1)*(1+NORBT)),WORK(KCOVL),1,NOCCT,
      &     NOCCVIRT,NORBT,NORBT,NZ)
 C     Load the property matrices and convert them to complex form.
-      INQUIRE(FILE='AOPROPER',OPENED=LOPEN)
-      IF (.NOT. LOPEN) THEN
-         OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &        FILE='AOPROPER')
-      ENDIF
       CALL MEMGET('REAL',KCPRP, NCSIZE*STEX_NR_OP, WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KQA, N2ORBXQ, WORK,KFREE,LFREE)
 

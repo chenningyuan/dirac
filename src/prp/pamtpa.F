@@ -522,12 +522,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-C     Open the property file
-C     ======================
-C
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C     
       CALL DZERO(RESULT,3*NBSYM*MAXLQR*MAXLQR*MAXFQR)
 C
       IQRF = 0
@@ -626,11 +620,6 @@ C
          END DO
       END DO
       END DO
-C
-C     Close the property file
-C     =======================
-C
-      CLOSE(LU1INT,STATUS='KEEP')
 C
       CALL QEXIT('QRTPA')
       RETURN

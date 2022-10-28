@@ -458,9 +458,6 @@ C boson irreps identification (read with MO coeff.)
      &            TOTERG,IOPT)
       ENDIF
 
-C Open property file
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCON')
-
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KTMAT,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KTHMAT,N2ORBXQ,WORK,KFREE,LFREE)
@@ -587,10 +584,6 @@ C ... store the reorthonormalization contribution into ORTO
       ENDDO
        call dealloc(conmat)
 C
-C close property file
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')      
-
 C ... release the memmory...
       CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
 
@@ -665,9 +658,6 @@ C boson irreps identification (read with MO coeff.)
        CALL REACMO(LUCOEF,'DFCOEF',WORK(KCMO),DUM,IDUM,
      &            TOTERG,IOPT)
       ENDIF
-
-C Open property file
-      CALL OPNFIL(LU1INT,'AOPROPER','OLD','GETCON')
 
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KTMAT,N2ORBXQ,WORK,KFREE,LFREE)
@@ -804,9 +794,6 @@ C ... store the reorthonormalization contribution into ORTO
          ENDIF
       ENDDO
 C
-C close property file
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')      
 
 C ... release the memmory...
       CALL MEMREL('GETCON',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1114,9 +1101,6 @@ C Open file for the London one-electron contributions, dh(B)/dB_c
       OPEN(LUONELO,FILE='ONELON',FORM='UNFORMATTED',
      &     ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='UNKNOWN') ! Why 8* and not 3*?
 
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-
 C Allocate memory for storing components of dh(B)/dB_c
 
       CALL MEMGET('REAL',KDHB,N2ORBXQ,WORK,KFREE,LFREE)
@@ -1155,7 +1139,6 @@ C ... and write it the file:
       ENDDO
 
       CLOSE(LUONELO,STATUS='KEEP')
-      CLOSE(LU1INT,STATUS='KEEP')
 
 C     .... release the whole block used in this subroutine
       CALL MEMREL('ONELON',WORK,1,KFRSAV,KFREE,LFREE)
@@ -2354,9 +2337,6 @@ C   Get the Fock matrix in MO basis
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
 
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-
 C ... arrays for transformed F - {T(2),F(0)}_comp 
       CALL MEMGET('REAL',KTFMAT,N2ORBXQ,WORK,KFREE,LFREE)
 
@@ -2442,8 +2422,6 @@ C       ... control print-out ...
       DOPCT=DOPCTRA_SAVE
 C     .... release the whole memory block used in this subroutine
       CALL MEMREL('HORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-C     ... close the AOPROPER file
-      CLOSE(LU1INT,STATUS = 'KEEP')
       CALL QEXIT('HORDRNT')
       RETURN
       END
@@ -2531,8 +2509,6 @@ C   Get the Fock matrix in MO basis
         CALL PRQMAT(WORK(KFMAT),NORBT,NORBT,NORBT,
      &            NORBT,NZ,IPQTOQ(1,0),LUPRI)
       ENDIF
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 C  ... arrays for T(2)_comp connection matrixes in MO basis
       CALL MEMGET('REAL',KSWMAT,N2ORBXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSMAT ,N2ORBXQ,WORK,KFREE,LFREE)
@@ -2900,7 +2876,7 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 !           call genden(dmat_0, cmo, 1, iprprp)
 !           call generate_num_grid(dmat_0)
 ! 
-! !         get T(1) matrices from AOPROPER
+! !         get T(1) matrices from CHECKPOINT
 !           call alloc(tb_dmat, n2bbasxq, 3)
 !           tb_dmat = 0.0d0
 !           call alloc(tb, n2orbxq)
@@ -2975,7 +2951,7 @@ C ...  Store expect. values from resulting matrix WORK(KSWMAT)
 ! !n          call genden(dmat_0, cmo, 1, iprprp)
 ! !n          call generate_num_grid(dmat_0)
 ! !n
-! !n!         get T(1) matrices from AOPROPER
+! !n!         get T(1) matrices from CHECKPOINT
 ! !n          call alloc(tb_dmat, n2bbasxq, 3)
 ! !n          tb_dmat = 0.0d0
 ! !n          call alloc(tb, n2orbxq)
@@ -3026,7 +3002,6 @@ C Symmetrize the off-diagonal terms of SUSFSY !!
       ENDDO
 C     .... release the whole block used in this subroutine
       CALL MEMREL('LORDRNT',WORK,1,KFRSAV,KFREE,LFREE)
-      CLOSE(LU1INT,STATUS = 'KEEP')
       DOPCT=DOPCTRA_SAVE
       CALL QEXIT('LORDRNT')
       RETURN

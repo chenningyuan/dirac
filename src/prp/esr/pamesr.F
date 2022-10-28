@@ -827,9 +827,6 @@ C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
 C
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
-C
 C     Initialize
 C     ==========
 C     (using first NPSIGMA elements of ESRVAL for IPSIGMA properties,
@@ -932,8 +929,6 @@ C
           CALL ESRTRANS(INDXPR,ESRVAL(1,1,1,I),CMO,PMAT,
      &                  CIEVEC,MZ,WORK,KFREE,LFREE)
         ENDDO
-C
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C
 C     SEFF        = S_eff (one of 0.0, 0.5, 1.0, ...)
@@ -1086,10 +1081,6 @@ C
 C
       KFRSAV = KFREE
       call memchk('prpesr1 1',work,1)
-C
-
-      OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &      FILE='AOPROPER')
 C
 C     Initialize
 C     ==========
@@ -1260,7 +1251,6 @@ c       WRITE(LUPRI,'(4X,A)')
 c    &   't0 = T : Expectation value zero by time reversal symmetry.'
 C
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
       call memchk('prpesr1 4',work,1)
       RETURN
 C
@@ -1324,10 +1314,6 @@ C
       KFRSAV = KFREE
 !d    print *,'ESRTRANS 1 KFREE,LFREE',KFREE,LFREE
 !d    call memchk('esrTRANS 1',work,1)
-C
-c LU1INT must be opened before calling ESRTRANS
-c     OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-c    &      FILE='AOPROPER')
 C
 C     Initialize
 C     ==========

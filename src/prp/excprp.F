@@ -272,12 +272,6 @@ C
       KFREE = 1
       LFREE = LWRK
 C
-C     Open the property file
-C     ======================
-C
-      OPEN(LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &            FILE='AOPROPER')
-C     
       CALL DZERO(RESULT,3*NBSYM*MAXFQR*NBSYM*MAXFQR*MAXLQR)
 C
       NFC  = NBSYM/NFSYM
@@ -312,11 +306,6 @@ C
      &        VECCEE,VECAEP,VECBEP,VECCEP,CMO,
      &        IBEIG,WORK(KFREE),LFREE)
       END DO
-C
-C     Close the property file
-C     =======================
-C
-      CLOSE(LU1INT,STATUS='KEEP')
 C
       CALL QEXIT('EXCPRPCALC')
       RETURN

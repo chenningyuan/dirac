@@ -28,7 +28,6 @@ contains
 !     --------------------------------------------------------------------------
       real(8) :: dummy
       integer :: i
-      character(len=120) :: verbose_message
 !     --------------------------------------------------------------------------
 
 #include "dcbbas.h"
@@ -38,13 +37,13 @@ contains
 
       call interface_mo_clear()
 
-      call checkpoint_query ('/result/wavefunctions/scf/mobasis/eigenvalues',mo_eigenvalues_available,verbose_message)
+      call checkpoint_query ('/result/wavefunctions/scf/mobasis/eigenvalues',mo_eigenvalues_available)
       if (mo_eigenvalues_available) then
          allocate(mo_eigenvalues(norbt*2))
          call checkpoint_read  ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=mo_eigenvalues)
       end if
 
-      call checkpoint_query ('/result/wavefunctions/scf/mobasis/orbitals',mo_coef_available,verbose_message)
+      call checkpoint_query ('/result/wavefunctions/scf/mobasis/orbitals',mo_coef_available)
       if (mo_coef_available) then
          allocate(mo_coef(n2bbasxq))
          call checkpoint_read  ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coef)

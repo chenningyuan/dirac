@@ -521,10 +521,6 @@ C
 C
       call qenter('GRDORB_MPG')
 C
-      open(lu1int,status='OLD',form='UNFORMATTED',file='AOPROPER')
-C
-      close(lu1int,status='KEEP')
-C
 C     Construct gradient
 C     ==================
 C

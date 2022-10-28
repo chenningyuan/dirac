@@ -1791,10 +1791,11 @@ C
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB,NOCONT
+      LOGICAL EXTST,FNDLAB,NOCONT
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
       logical gabdone
+      integer gabsize
       character*(:), allocatable :: group
       CALL QENTER('GABGEN')
       group = '/result/operators/ao_matrices/'
@@ -1835,15 +1836,11 @@ C
 C
       CALL GETDAT(RTNLBL(1),RTNLBL(2))
 C
-C     Check if file AOPROPER is present
-C
-      OPTST = .FALSE.
-C
 C     Search for GAB-integrals; return if they are there
 C
       DO I = 1,NGAB
-         call checkpoint_query (group//gablab(i),gabdone)
-          IF (.NOT. gabdone) GOTO 10
+          call checkpoint_query (group//gablab(i),gabdone,gabsize)
+          IF(.not.gabdone.or.gabsize.ne.nsymbl**2) GOTO 10
       END DO
       GOTO 999
  10   CONTINUE
@@ -1941,9 +1938,10 @@ C***********************************************************************
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
-      LOGICAL EXTST,OPTST,FNDLAB
+      LOGICAL EXTST,FNDLAB
       CHARACTER GABLAB(3)*8
       DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)
+      integer gabsize
       logical gabdone
       character*(:), allocatable :: group
       real(8), allocatable :: gab1d(:)
@@ -1985,8 +1983,8 @@ C     Get GAB-matrix
 C     --------------
 C
       DO IGAB = 1, NGAB
-         call checkpoint_query (group//gablab(igab),gabdone)
-         IF(.not.gabdone) THEN
+         call checkpoint_query (group//gablab(igab),gabdone,gabsize)
+         IF(.not.gabdone.or.gabsize.ne.nsymbl**2) THEN
             WRITE(LUPRI,'(/3A)')
      &           '* GETGAB: label "',GABLAB(IGAB),'" not found; '//
      &           'calling GABGEN.'

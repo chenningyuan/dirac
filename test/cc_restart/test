@@ -21,8 +21,8 @@ f.add(from_string = ' Overview of calculated energies',
       to_string   = '@ MP2 correlation energy',
       rel_tolerance   = 1.0e-6)
 
-inputs = ['ccsd_integrals.inp', 'ccsd_restart.inp']
-test.run(inputs, ['H2O.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
+test.run(['ccsd_integrals.inp'], ['H2O.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
+test.run(['ccsd_restart.inp'], ['H2O.mol'], f, args='--mw=64 --aw=130 --outcmo --get=MCCRES --scratchful='+my_scratchdir)
 
 f = Filter()
 
@@ -30,11 +30,10 @@ f.add(from_string = ' Overview of calculated energies',
       to_string   = '@ Total CCSD-T  energy',
       rel_tolerance   = 1.0e-7)
 
-test.run(['ccsd_restart_othergeo.inp'], ['H2O_2.mol'], f, args='--mw=64 --aw=130 --keep_scratch --scratchful='+my_scratchdir)
+test.run(['ccsd_restart_othergeo.inp'], ['H2O_2.mol'], f, args='--mw=64 --aw=130 --put=MCCRES --incmo')
 
-files_to_delete = os.listdir(my_scratchdir)
-for f in files_to_delete:
-   os.unlink(os.path.join(my_scratchdir,f))
-os.rmdir(my_scratchdir)
+# cleanup
+os.unlink('CHECKPOINT.h5')
+os.unlink('MCCRES')
 
 sys.exit(test.return_code)

@@ -167,7 +167,7 @@ module checkpoint
       character(len=100)                     :: verbose_message
       logical                                :: exist
 
-      call  checkpoint_query(label,exist,verbose_message)
+      call  checkpoint_query(label,exist,verbose_message=verbose_message)
       if (.not.exist) then
          print*," WARNING: ",trim(label)," could not be read"
          print*," REASON: ",trim(verbose_message)
@@ -183,11 +183,13 @@ module checkpoint
 
   end subroutine checkpoint_read
 
-  subroutine checkpoint_query(label,exist,verbose_message)
+  subroutine checkpoint_query(label,exist,data_size,verbose_message)
 
       character*(*),intent(in)               :: label
       logical, intent(out)                   :: exist
+      integer,intent(out), optional          :: data_size
       character*(*),intent(out), optional    :: verbose_message
+
 
       logical :: file_exist=.false., label_exist=.false.
 
@@ -196,7 +198,11 @@ module checkpoint
 
       if (file_exist) then
          ! check whether the label is present
-         call lab_query(checkpoint_file,label,label_exist)
+         if (present(data_size)) then
+            call lab_query(checkpoint_file,label,label_exist,data_size)
+         else
+            call lab_query(checkpoint_file,label,label_exist)
+         end if
       end if
 
       exist = file_exist.and.label_exist

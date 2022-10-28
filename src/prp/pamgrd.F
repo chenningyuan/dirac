@@ -254,8 +254,6 @@ C
 C     Get property matrix in MO-basis and scale by factor -1
 C     ======================================================
 C
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
 CMI... distinguish between standard and LAO-based atomic orbitals
 CMI NOTE/27.10'04 The new IBEIG parameters for spin-free properties !
 CMI This has to be adapted also for LAO properties !
@@ -270,7 +268,6 @@ CMI This has to be adapted also for LAO properties !
      &              WORK,KFREE,LFREE,IPRINT)
       ENDIF
 
-      CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================
@@ -790,10 +787,6 @@ C     ==========================================
 C
       ISYM  = IPRPSYM(INDXPR)
       IOPSY = JBTOF(ISYM-1,1)
-      IF(ONFILE) THEN
-        OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',
-     &           FILE='AOPROPER')
-      ENDIF
       IF (PRPNAM(INDXPR)(1:3).EQ.'LAO') THEN
         IB = 7 ! 111
 !gosia: fac2lo is not set? i'm setting it to 1.0
@@ -805,8 +798,6 @@ C
      &               CMO,IBEIG,ICMOQ,NORB,
      &               WORK,KFREE,LFREE,IPRINT)
       ENDIF
-
-      IF(ONFILE) CLOSE(LU1INT,STATUS = 'KEEP')
 C
 C     Hermicity of operator
 C     =====================

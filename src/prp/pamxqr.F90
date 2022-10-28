@@ -1313,11 +1313,6 @@
       KFREE = 1
       LFREE = LWRK
 !
-!     Open the property file
-!
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
-          FILE='AOPROPER')
-!
 !     Zero the result vector
 !
       CALL DZERO(RESULT,3*MAXLQR*MAXLQR*MAXFQR)
@@ -1486,10 +1481,6 @@
       IF (.NOT.XQR_SKIPEE) CLOSE(LUQREE)
       IF (.NOT.XQR_SKIPEP) CLOSE(LUQREP)
 !
-!     Close the property file
-!
-      CLOSE(LU1INT,STATUS='KEEP')
-!
       CALL FLSHFO(LUPRI)
       CALL QEXIT('LRCALC')
 !
@@ -1537,11 +1528,6 @@
 !
       KFREE = 1
       LFREE = LWRK
-!
-!     Open the property file
-!
-      OPEN (LU1INT,STATUS='OLD',FORM='UNFORMATTED',                     &
-          FILE='AOPROPER')
 !
 !     Zero the result vector
 !
@@ -1612,10 +1598,6 @@
 !     End loop over nontrivial QR functions
 !
       END DO
-!
-!     Close the property file
-!
-      CLOSE(LU1INT,STATUS='KEEP')
 !
       CALL QEXIT('QRHYP')
 !

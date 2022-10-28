@@ -116,11 +116,6 @@ C
       INTEGER :: state 
 C
 C     Initialize
-C
-         OPEN (LU1INT,STATUS='UNKNOWN',FORM='UNFORMATTED',
-     &         FILE='AOPROPER')
-C
-C     Initialize
 C     ==========
 C
 #include "memint.h"
@@ -380,11 +375,7 @@ C...........Transform property matrix to fragment orbital basis
         CALL MEMREL('PRPEX1.prjana',WORK,1,KFRSAV,KFREE,LFREE)
       ENDIF
 C
-      CLOSE(LU1INT,STATUS = 'KEEP')
       RETURN
- 1000 CONTINUE
-      WRITE(LUPRI,'(A)') 'PRPEXP: Coefficient file not found !'
-      CALL QUIT('PRPEXP: Coefficients not found !')
 C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
