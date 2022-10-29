@@ -2069,7 +2069,7 @@ C     transformation matrix as well.
 C MI/2006
 C     For the two-component nonrelativistic
 C     calculations run the "URKBAL" branch as only
-C     Lowdin canonical matrix is needed. It's assumed that small
+C     Lowdin canonical matrix is needed. It is assumed that small
 C     components were eliminated in HERINP.
 C
 C     Called from: PSISCF (when BSS2DC or DC2BSS mode is activated)
@@ -2082,6 +2082,7 @@ C                    2006 - M.Ilias
 C
 C*****************************************************************************
       use memory_allocator
+      use checkpoint
       use dircmo
       use x2cmod_cfg
       use dirx2c
@@ -2160,6 +2161,7 @@ C   PAMIOU: LUTMAT
       logical              :: no1esystem_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
+      logical              :: x2c_AOA,x2c_Aon
 
       CALL QENTER('GMOTRA')
 
@@ -2336,7 +2338,11 @@ C         2) do picture change transformation of integrals on CHECKPOINT
             if(.not.x2cmod_fragment_x2c)then
               i2cofk =  0
 !             check for hamiltonian integrals on file X2CMAT and set i2cofk
-              if(fndlab12('h12cAOA   10',lux2c))then
+              call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOA   10',x2c_AOA)
+              call checkpoint_query(
+     &'/result/hamiltonian/x2c/ao_matrices/h12cAOn   10',x2c_AOn)
+              if(x2c_AOA)then
                 if(noamfi)then
                   write(lupri,'(a)')
      &' *** restart error: try to read h1+amfi and noamfi == .true. ***'
@@ -2346,7 +2352,7 @@ C         2) do picture change transformation of integrals on CHECKPOINT
 !               set i2cofk to |3|: since we restart, it does not matter
 !               how the AMFI part was derived.
                 i2cofk = 3
-              else if(fndlab12('h12cAOn   10',lux2c))then
+              else if(x2c_AOn)then
                 i2cofk = 1
               else
                 if(x2cmod_mmf_restart)then
@@ -2363,11 +2369,6 @@ C         2) do picture change transformation of integrals on CHECKPOINT
             end if
 
             if(.not.x2cmod_skip_op_pct)then
-!             find first property integral... and step back
-              if(fndlab12('prpint2c0001',lux2c))then
-                backspace(lux2c)
-                call x2c_write('thisisadummy',work,-1,lux2c)
-              end if
 
               call pctrafo_all_op_driver(ntbas(0),
      &                                   ntbas(1),
@@ -2740,9 +2741,6 @@ C
             deallocate(cmo_aoosoc)
 
             allocate(pctm_aoosoc(ntbas(0)**2*4))
-            open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &           access='sequential',action='readwrite',
-     &           position='rewind')
 
 !           initialize offset
             ioff_pct_mat = 1
@@ -2754,8 +2752,6 @@ C
               end if
               ioff_pct_mat = ioff_pct_mat + nfbas(i,0) * nfbas(i,1) * nz
             end do
-
-            close(lux2c,status='keep')
 
 !           no 2e-SO correction for 1e-systems
             call rmolchr(ichrg) ! sum of charge of all constituents, here only one atom
@@ -2905,15 +2901,10 @@ C
      &    call get_2e_2c_fock_matrix_x2c(tmat_mmf,tbuf_mmf,
      &         ntbas(0),ntbas(0),nz,nfmat,lfree,iprham,df)
 
-          open(lux2c,file='X2CMAT',status='old',form='unformatted',
-     &         access='sequential',action='readwrite',
-     &         position='rewind')
-
 !         2c-Fock operator, picture-change transformed from 4c-Fock operator ("++"-part)
           write(flabel,'(a7,i4,i1)') 'h12cAOn',1,0
           call x2c_read(flabel,tbuf_mmf,len_fmat,lux2c)
           call daxpy(len_fmat,-1.0d0,tmat_mmf,1,tbuf_mmf,1)
-          close(lux2c, status='keep')
 
 !         save H1_mmf_X2C_AO
           open(lux2c,file='DFFCK_mmf',status='unknown',
