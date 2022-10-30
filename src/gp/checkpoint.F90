@@ -287,7 +287,6 @@ module checkpoint
 
   logical function checkpoint_valid()
 
-         use mh5
       ! Check whether the file given as argument is a valid checkpoint file
       ! Criteria used for checking:
       ! - file should be readable (hdf5 formatted)
@@ -301,18 +300,6 @@ module checkpoint
 
       checkpoint_valid = VALID
 
-      ! open the file (if not already open)
-      if (checkpoint_file%status /= 1) then
-          checkpoint_file%id = mh5_open_file_rw(checkpoint_file%name)
-          if (checkpoint_file%id < 0) then
-             ! invalid identifier, error when opening this file
-             print*,"  - Could not open checkpoint file"
-             checkpoint_valid = .NOT. VALID
-             return
-          end if
-          checkpoint_file%status = 1
-      end if
-
       ! check the existence of all required data
       do i = 1, size(labels)
 
@@ -323,11 +310,11 @@ module checkpoint
          else
             ! only check in case the parent group is present
             ! the group itself is checked as well as it is also among the labels
-            check = mh5_exists_group(checkpoint_file%id,labels(parent)%label)
+            call lab_query(checkpoint_file,labels(parent)%label,check)
          end if
             
          if (check .and. index(labels(i)%use,'required').ne.0) then
-             label_exists = mh5_exists_dset(checkpoint_file%id,labels(i)%label)
+             call lab_query(checkpoint_file,labels(i)%label,label_exists)
              if (.not.label_exists) then
                 print*, "   - Required data set ",trim(labels(i)%label)," is missing"
                 ! dataset does not exist
@@ -398,11 +385,11 @@ module checkpoint
       read(unit,*) lengths
       do i = 1, n_labels
          read(unit,'(A)') line
-         labels(i)%label        = line(1                  :lengths(1))
-         labels(i)%type         = line(lengths(1)+1       :sum(lengths(1:2)))
-         labels(i)%rank         = line(sum(lengths(1:2))+1:sum(lengths(1:3)))
-         labels(i)%use          = line(sum(lengths(1:3))+1:sum(lengths(1:4)))
-         labels(i)%description  = line(sum(lengths(1:4))+1:sum(lengths(1:5)))
+         labels(i)%label        = trim(line(1                  :lengths(1)))
+         labels(i)%type         = trim(line(lengths(1)+1       :sum(lengths(1:2))))
+         labels(i)%rank         = trim(line(sum(lengths(1:2))+1:sum(lengths(1:3))))
+         labels(i)%use          = trim(line(sum(lengths(1:3))+1:sum(lengths(1:4))))
+         labels(i)%description  = trim(line(sum(lengths(1:4))+1:sum(lengths(1:5))))
       end do
       close(unit)
 

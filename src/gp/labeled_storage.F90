@@ -157,7 +157,7 @@ module labeled_storage
       logical,intent(out), optional          :: exist
       integer,intent(out), optional          :: data_size
 
-      integer :: ierr, d_size
+      integer :: ierr
       logical :: tobe
 
       select case (file_info%type)
@@ -168,14 +168,20 @@ module labeled_storage
          end if
       case (2)
          ! We use HDF5 files
-         call query_hdf5(file_info,label,exist=tobe,data_size=d_size)
+         if (present(data_size)) then
+            call query_hdf5(file_info,label,exist=tobe,data_size=data_size)
+         else
+            call query_hdf5(file_info,label,exist=tobe)
+         end if
          if (present(exist))     exist = tobe
-         if (present(data_size)) data_size = d_size
       case (3)
          ! We use a UNIX fallback for HDF5 files
-         call query_nohdf5(file_info,label,exist=tobe,data_size=d_size)
+         if (present(data_size)) then
+            call query_nohdf5(file_info,label,exist=tobe,data_size=data_size)
+         else
+            call query_nohdf5(file_info,label,exist=tobe)
+         end if
          if (present(exist))     exist = tobe
-         if (present(data_size)) data_size = d_size
       end select
 
     end subroutine query_general
@@ -558,6 +564,7 @@ module labeled_storage
       integer, parameter                     :: MAX_RANK=7
       integer(kind=8)                        :: group_id,dset_id,dims(MAX_RANK)
       integer,intent(out), optional          :: data_size
+      character*(:),allocatable              :: group
 
       if (file_info%status /= 1) then
           file_info%id = mh5_open_file_rw(file_info%name)
@@ -570,10 +577,16 @@ module labeled_storage
           file_info%status = 1
       end if
 
-      ! check the existence of this data set (first check the group)
-      exist = mh5_exists_group(file_info%id,group_from_label(label))
-      if (exist) then
+      group = group_from_label(label)
+
+      if (group == label) then
+         ! a top group that can be checked immediately
          exist = mh5_exists_dset(file_info%id,label)
+      else
+         ! check the existence of the group first
+         exist = mh5_exists_group(file_info%id,group)
+         ! check the existence of the data set itself
+         if (exist) exist = mh5_exists_dset(file_info%id,label)
       end if
 
       if (present(data_size)) then
