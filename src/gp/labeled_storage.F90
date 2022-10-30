@@ -1,7 +1,7 @@
 
-! Interface to read/write data with a label
-! Contains the simple label writer used for DIRACs Fortran unformatted files
-! DFCOEF and AOPROPER to allow for easy backwards compatibility
+! Interface to hdf5 functionality to read/write data with a label. 
+! Contains also the simple label writer used for DIRACs Fortran unformatted files (for backward compatibility).
+! Contains also a simple unix-files based alternative in case hdf5 is not available.
 
 ! Written by Lucas Visscher, spring 2021, one of the Covid years
 
@@ -10,6 +10,7 @@ module labeled_storage
 
   private
 
+  public lab_init
   public lab_read
   public lab_write
   public lab_query
@@ -17,12 +18,16 @@ module labeled_storage
 
 ! Define type to hold information for an active file
   type, public:: file_info_t
-     integer:: type=1                     ! Future use: which type of file type we use (hpf,kf, dirac, ..)
+     integer:: type=1                     ! which type of file type we use (old dirac(1), hdf5(2), hdf5-fallback(3), ..)
      integer:: status=-1                  ! -1: never used, 0: closed, 1: open
      integer:: unit=0                     ! unit used (for Fortran type writes)
      integer(kind=8):: id=0               ! id (for hdf5 type writes)
      character(len=:),allocatable :: name ! file name
   end type file_info_t
+
+  interface lab_init
+      module procedure init_general
+  end interface
 
   interface lab_read
       module procedure read_general
@@ -44,9 +49,26 @@ module labeled_storage
       module procedure query_general
   end interface
 
+  interface group_from_label
+      module procedure group_from_label_general
+  end interface
+
   contains
 
-!!!!!! Definition of the general read / write routines  !!!!!!!!
+!!!!!! Definition of the general init / read / write / query routines  !!!!!!!!
+
+    subroutine init_general (file_info,top_groups)
+      type(file_info_t),intent(inout)        :: file_info
+      character(len=80), intent(in)          :: top_groups(:)
+
+      select case (file_info%type)
+      case (2)
+         call init_hdf5(file_info,top_groups)
+      case (3)
+         call init_nohdf5(file_info,top_groups)
+      end select
+
+    end subroutine init_general
 
     subroutine read_general (file_info,label,rdata,idata,sdata)
       type(file_info_t),intent(inout)        :: file_info
@@ -75,6 +97,15 @@ module labeled_storage
             call read_hdf5(file_info,label,idata=idata)
          elseif (present(sdata)) then
             call read_hdf5(file_info,label,sdata=sdata)
+         end if
+      case (3)
+         ! We use a UNIX fallback for HDF5 files
+         if (present(rdata)) then
+            call read_nohdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call read_nohdf5(file_info,label,idata=idata)
+         elseif (present(sdata)) then
+            call read_nohdf5(file_info,label,sdata=sdata)
          end if
       end select
 
@@ -108,6 +139,15 @@ module labeled_storage
          elseif (present(sdata)) then
             call write_hdf5(file_info,label,sdata=sdata)
           end if
+      case (3)
+         ! We use a UNIX fallback for HDF5 files
+         if (present(rdata)) then
+            call write_nohdf5(file_info,label,rdata=rdata)
+         elseif (present(idata)) then
+            call write_nohdf5(file_info,label,idata=idata)
+         elseif (present(sdata)) then
+            call write_nohdf5(file_info,label,sdata=sdata)
+          end if
       end select
     end subroutine write_general
 
@@ -131,9 +171,37 @@ module labeled_storage
          call query_hdf5(file_info,label,exist=tobe,data_size=d_size)
          if (present(exist))     exist = tobe
          if (present(data_size)) data_size = d_size
+      case (3)
+         ! We use a UNIX fallback for HDF5 files
+         call query_nohdf5(file_info,label,exist=tobe,data_size=d_size)
+         if (present(exist))     exist = tobe
+         if (present(data_size)) data_size = d_size
       end select
 
     end subroutine query_general
+
+    function group_from_label_general(label) result(group)
+
+       character(len=*)            :: label
+       character, parameter        :: delimiter='/'
+       character(:),allocatable    :: group
+       integer                     :: i
+
+       ! find rightmost delimiter
+       i = scan(label, delimiter, .true.)
+
+       ! the first part is the group
+       if (i > 1) then
+          group = label(1:i-1)
+       elseif (i == 1) then
+          group = label ! This is one of the top groups
+       else
+          group = 'invalid_label' ! No / found, there is something wrong with this label
+       end if
+
+     end function group_from_label_general
+
+!!!!!! Wrapper for the general read and write routines  !!!!!!!!
 
     subroutine write_single_real (file_info,label,rdata)
       ! Wrapper around write_general to allow writing of single numbers
@@ -184,7 +252,7 @@ module labeled_storage
     end subroutine read_single_int
 
     subroutine write_string_array (file_info,label,sarray,slen)
-      ! Wrapper around write_hdf5 to allow writing of string arrays
+      ! Wrapper around write_general to allow writing of string arrays
       ! Fixed length strings only (variable length string arrays are non-existent in Fortran)
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
@@ -196,7 +264,7 @@ module labeled_storage
       select case (file_info%type)
       case (1)
          stop "writing strings is not supported in DIRAC format"
-      case (2)
+      case (2,3)
          ! There might be better ways to flatten an array of strings in Fortran, 
          ! but I could not find one and wasted already enough time on this.
          sdim = size(sarray)
@@ -204,7 +272,11 @@ module labeled_storage
          do i = 2, sdim
             sdata = sdata // sarray(i)
          end do
-         call write_hdf5(file_info,label,sdata=sdata,slen=slen,sdim=sdim)
+         if (file_info%type==2) then
+             call write_hdf5(file_info,label,sdata=sdata,slen=slen,sdim=sdim)
+         elseif (file_info%type==3) then 
+             call write_nohdf5(file_info,label,sdata=sdata,slen=slen,sdim=sdim)
+         end if
       end select
 
     end subroutine write_string_array
@@ -222,8 +294,12 @@ module labeled_storage
       select case (file_info%type)
       case (1)
          stop "reading strings is not supported in DIRAC format"
-      case (2)
-         call read_hdf5(file_info,label,sdata=sdata)
+      case (2,3)
+         if (file_info%type==2) then
+             call read_hdf5(file_info,label,sdata=sdata)
+         elseif (file_info%type==3) then 
+             call read_nohdf5(file_info,label,sdata=sdata)
+         end if
          sdim = len(sdata)/slen
          do i = 1, sdim
             sarray(i) = sdata((i-1)*slen+1:i*slen)
@@ -232,7 +308,7 @@ module labeled_storage
 
     end subroutine read_string_array
 
-!!!!!! Selfcontained implementation of The DIRAC format, used for backwards compatibility !!!!!!
+!!!!!! Selfcontained implementation of the old DIRAC format, used for backwards compatibility !!!!!!
 
     subroutine read_dirac (file_unit,label,rdata,idata)
       integer, intent(in)                    :: file_unit
@@ -333,7 +409,26 @@ module labeled_storage
       end do
     end function get_unit
 
-!!!!!! Wrapper around the HDF5 interface !!!!!!
+!!!!!! Wrapper around the HDF5 interface mh5 !!!!!!
+
+    subroutine init_hdf5 (file_info,top_groups)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+      character(len=80), intent(in)          :: top_groups(:)
+      integer(kind=8)                        :: group_id
+      integer                                :: i
+
+      ! create the hdf5 file
+      file_info%id = mh5_create_file(file_info%name)
+      file_info%status = 1
+
+      ! create the top level groups
+      do  i = 1, size(top_groups)
+         group_id = mh5_create_group(file_info%id,top_groups(i))
+         call  mh5_close_group(group_id)
+      end do
+
+    end subroutine init_hdf5
 
     subroutine read_hdf5 (file_info,label,rdata,idata,sdata)
       use mh5
@@ -411,8 +506,8 @@ module labeled_storage
 
       file_id = file_info%id
 
-      group_exists = create_group(file_id,group_from_label(label)) ! check whether group is present and create it if not
-      dset_id = mh5_exists_dset(file_id, label)                    ! check whether we already have data
+      group_exists = create_group_hdf5(file_id,group_from_label(label)) ! check whether group is present and create it if not
+      dset_id = mh5_exists_dset(file_id, label)                         ! check whether we already have data
 
       if (dset_id /= 0) then
           dset_id = mh5_open_dset(file_id, label)
@@ -494,26 +589,7 @@ module labeled_storage
 
     end subroutine query_hdf5
 
-    function group_from_label(label) result(group)
-
-       character(len=*)            :: label
-       character, parameter        :: delimiter='/'
-       character(:),allocatable    :: group
-       integer                     :: i
-
-       ! find rightmost delimiter
-       i = scan(label, delimiter, .true.)
-
-       ! the first part is the group
-       if (i > 1) then
-          group = label(1:i-1)
-       else
-          group = 'invalid_label'
-       end if
-
-     end function group_from_label
-
-     recursive function create_group (file_id,label) result (group_exists)
+    recursive function create_group_hdf5 (file_id,label) result (group_exists)
 
      ! Check whether the group does exist and create it if it does not
      ! All groups should be subgroups of an existing top group
@@ -533,11 +609,193 @@ module labeled_storage
         group_id = mh5_create_group(file_id,label)
         group_exists = .true.
      else
-        group_exists = create_group (file_id,parent_label)
-        group_id = mh5_create_group(file_id,label)
+        group_exists = create_group_hdf5  (file_id,parent_label)
+        group_id = mh5_create_group (file_id,label)
      end if
 
-     end function create_group
+    end function create_group_hdf5
 
+!!!!!! Fallback if HDF5 is not available !!!!!!
+
+    subroutine init_nohdf5 (file_info,top_groups)
+      type(file_info_t),intent(inout)        :: file_info
+      character(len=80), intent(in)          :: top_groups(:)
+      logical                                :: file_exists,group_exists
+      integer                                :: i
+
+      ! create the directory used to emulate hdf5
+      file_exists = create_group_nohdf5(file_info%name,'')
+      file_info%status = 1
+
+      ! create the top level groups
+      do  i = 1, size(top_groups)
+         group_exists = create_group_nohdf5(file_info%name,trim(top_groups(i)))
+      end do
+
+    end subroutine init_nohdf5
+
+    subroutine read_nohdf5 (file_info,label,rdata,idata,sdata)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(out), optional          :: rdata(:)
+      integer,intent(out), optional          :: idata(:)
+      character*(*),intent(out), optional    :: sdata
+
+      integer, parameter          :: file_unit=66623
+      logical                     :: file_exists, group_exists
+      character*(:), allocatable  :: data_file
+      integer                     :: data_size
+      integer(8)                  :: data_size8,data_len8
+      character(len=4)            :: data_type
+
+      call query_nohdf5 (file_info,label,file_exists,data_size)
+      if (.not.file_exists) then
+        write (*,*) " ERROR: trying to read non-existent data set ",trim(label)," from ",trim(file_info%name)
+        stop ' error detected by read_hdf5 '
+      end if
+
+      data_file = './'//trim(file_info%name)//'/'//label
+      open (file_unit,file=data_file,form='unformatted')
+
+      if (present(rdata)) then
+         if (data_size > size(rdata)) then
+           write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
+           write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
+           stop ' error detected by read_hdf5 '
+         end if
+         read (file_unit) data_type,data_size8
+         read (file_unit) rdata
+      elseif (present(idata)) then
+         if (data_size > size(idata)) then
+           write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
+           write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
+           stop ' error detected by read_hdf5 '
+         end if
+         read (file_unit) data_type,data_size8
+         read (file_unit) idata
+      elseif (present(sdata)) then
+         read (file_unit) data_type,data_size8,data_len8
+         read (file_unit) sdata
+      end if
+
+      close (file_unit,status='keep')
+
+    end subroutine read_nohdf5
+
+    subroutine write_nohdf5 (file_info,label,rdata,idata,sdata,slen,sdim)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      real(8),intent(in), optional           :: rdata(:)
+      integer,intent(in), optional           :: idata(:)
+      character*(*),intent(in), optional     :: sdata
+      integer,intent(in),optional            :: slen, sdim
+
+      integer, parameter          :: file_unit=66623
+      logical                     :: file_exists, group_exists
+      character*(:), allocatable  :: data_file
+
+      if (file_info%status == -1) then
+         ! the file has not yet been opened in this run, create the top directory (if needed)
+         file_exists = create_group_nohdf5(file_info%name,'')
+         file_info%status = 1
+      end if
+
+      group_exists = create_group_nohdf5(file_info%name,group_from_label(label)) ! check whether group is present and create it if not
+      data_file = './'//trim(file_info%name)//'/'//label
+      open (file_unit,file=data_file,form='unformatted')
+
+      if (present(rdata)) then
+         write (file_unit) 'real',size(rdata,kind=8)
+         write (file_unit) rdata
+      elseif (present(idata)) then
+        if (kind(idata)==4) write (file_unit) 'int4',size(idata,kind=8)
+        if (kind(idata)==8) write (file_unit) 'int8',size(idata,kind=8)
+         write (file_unit) idata
+      elseif (present(sdata).and.present(slen).and.present(sdim)) then
+         write (file_unit) 'strn',int8(sdim),int8(slen)
+         write (file_unit) sdata
+      elseif (present(sdata)) then
+         write (file_unit) 'str1',int8(1),int8(len(sdata))
+         write (file_unit) sdata
+      end if
+
+      close (file_unit,status='keep')
+      file_info%status = 0
+
+    end subroutine write_nohdf5
+
+    subroutine query_nohdf5 (file_info,label,exist,data_size)
+      type(file_info_t),intent(inout)        :: file_info
+      character*(*),intent(in)               :: label
+      logical,intent(out)                    :: exist
+      integer,intent(out), optional          :: data_size
+
+      integer, parameter          :: file_unit=66623
+      logical                     :: file_exists
+      character*(:), allocatable  :: data_file
+      integer(8)                  :: data_size8
+      character(len=4)            :: data_type
+
+      data_file = './'//trim(file_info%name)//'/'//label
+      inquire (file=data_file,exist=exist)
+
+      if (present(data_size)) then
+         if (exist) then
+            open (file_unit,file=data_file,form='unformatted')
+            read (file_unit) data_type,data_size8
+            close (file_unit,status='keep')
+            data_size = data_size8
+         else
+            data_size = 0
+         end if
+      end if
+
+    end subroutine query_nohdf5
+
+    function exists_group_nohdf5 (file_name,label) result (group_exists)
+     ! Check whether a group does exist
+     character(len=*),intent(in) :: file_name,label
+     logical                     :: group_exists
+     character*(:), allocatable  :: subdir
+     subdir = './'//trim(file_name)//'/'//label
+     inquire (file=subdir//'/.initialized',exist=group_exists)
+    end function exists_group_nohdf5
+
+    recursive function create_group_nohdf5 (file_name,label) result (group_exists)
+     ! Check whether the group does exist and create it if it does not
+     character(len=*),intent(in) :: file_name,label
+     character(:),allocatable    :: parent_label
+     logical                     :: group_exists,parent_exists
+     integer                     :: ierr
+     character*(:), allocatable  :: subdir
+
+     subdir = './'//trim(file_name)//'/'//label
+     group_exists = exists_group_nohdf5(file_name,label)
+     if (group_exists) return
+
+     parent_label  = group_from_label(label)
+     parent_exists = exists_group_nohdf5(file_name,parent_label)
+
+     if (parent_exists) then
+        call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+        if (ierr.ne.0) then
+           print*, " ERROR: could not create directory ",trim(file_name)
+           stop " error in create_group_nohdf5 "
+        end if
+        call execute_command_line ('date >'//subdir//'/.initialized')
+        group_exists = .true.
+     else
+        group_exists = create_group_nohdf5(file_name,parent_label)
+        call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+        if (ierr.ne.0) then
+           print*, " ERROR: could not create directory ",trim(file_name)
+           stop " error in create_group_nohdf5 "
+        end if
+        call execute_command_line ('date >'//subdir//'/.initialized')
+        group_exists = .true.
+     end if
+
+    end function create_group_nohdf5
 
 end module labeled_storage

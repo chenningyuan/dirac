@@ -21,7 +21,7 @@ module checkpoint
 
   ! Constants
   logical,parameter            :: VALID = .true.                   ! defined for convenience
-  character(len=13), parameter :: CHECKPOINT_NAME="CHECKPOINT.h5"  ! name of the checkpoint file
+  character(len=10), parameter :: CHECKPOINT_NAME="CHECKPOINT"     ! name of the checkpoint file
   character(len=17), parameter :: SCHEMA_NAME="schema_labels.txt"  ! pathname of the file that contains the labels (created from DIRACschema.txt by a python function)
 
   ! The file object that is stored in global memory
@@ -77,10 +77,10 @@ module checkpoint
 
       ! Proceed by initializing the file object as a hdf5 file with the correct name
       checkpoint_file%type = 2
-      checkpoint_file%name = CHECKPOINT_NAME
+      checkpoint_file%name = CHECKPOINT_NAME//'.h5'
 
       ! Inquire whether (a yet unopened) file with this name is present and attempt a restart if it is
-      inquire (file=CHECKPOINT_NAME,exist=restart)
+      inquire (file=checkpoint_file%name,exist=restart)
       if (restart) then
          print*,"   - Existing checkpoint file: check contents"
          if (checkpoint_valid()) then
@@ -88,7 +88,7 @@ module checkpoint
             return
          else 
             print*, "   - Checkpoint file is not valid, will be overwritten"
-            call unlink(CHECKPOINT_NAME)
+            call unlink(checkpoint_file%name)
             checkpoint_file%status = -1
          endif
       endif 
@@ -103,8 +103,6 @@ module checkpoint
 
   subroutine checkpoint_close
 
-      use mh5
-
       ! Close the checkpoint file after having checked that all required data is written
 
       logical           :: restart
@@ -117,7 +115,6 @@ module checkpoint
             print*, "   - Checkpoint file does not contains all required data, can not be used for restarts"
       end if
 
-      call mh5_close_file(checkpoint_file%id)
       checkpoint_file%status = 0
       print*, "   - Checkpoint file closed"
 
@@ -194,7 +191,7 @@ module checkpoint
       logical :: file_exist=.false., label_exist=.false.
 
       ! First check whether the checkpoint file itself exists
-      inquire (file=CHECKPOINT_NAME,exist=file_exist)
+      inquire (file=checkpoint_file%name,exist=file_exist)
 
       if (file_exist) then
          ! check whether the label is present
@@ -210,8 +207,8 @@ module checkpoint
       ! We're already done, but the caller may want us to be more verbose
       if (present(verbose_message)) then
          if (.not.label_exist) verbose_message = label//' not found'
-         if (.not.file_exist)  verbose_message = CHECKPOINT_NAME//' not found'
-         if (file_exist.and.label_exist) verbose_message = label//' found on '//CHECKPOINT_NAME
+         if (.not.file_exist)  verbose_message = checkpoint_file%name//' not found'
+         if (file_exist.and.label_exist) verbose_message = label//' found on '//checkpoint_file%name
       end if
 
   end subroutine checkpoint_query
@@ -290,8 +287,7 @@ module checkpoint
 
   logical function checkpoint_valid()
 
-      use mh5
-
+         use mh5
       ! Check whether the file given as argument is a valid checkpoint file
       ! Criteria used for checking:
       ! - file should be readable (hdf5 formatted)
@@ -301,7 +297,7 @@ module checkpoint
       ! and can also be called at the beginning of a run to see if restart is possible
 
       integer         :: i, parent
-      logical         :: check
+      logical         :: check,label_exists
 
       checkpoint_valid = VALID
 
@@ -331,7 +327,8 @@ module checkpoint
          end if
             
          if (check .and. index(labels(i)%use,'required').ne.0) then
-             if (.not.mh5_exists_dset(checkpoint_file%id,labels(i)%label)) then
+             label_exists = mh5_exists_dset(checkpoint_file%id,labels(i)%label)
+             if (.not.label_exists) then
                 print*, "   - Required data set ",trim(labels(i)%label)," is missing"
                 ! dataset does not exist
                 checkpoint_valid = .NOT. VALID
@@ -348,23 +345,30 @@ module checkpoint
       ! create the top level groups at this stage, optional groups are created
       ! when needed.
 
-      use mh5
-      integer :: i,j
-      logical :: composite_data
-      integer(kind=8) :: group_id
-      character(len=2) :: subdir
+      integer :: i,n_top
+      character(len=80), allocatable :: top_labels(:)
 
-      ! create the hdf5 file
-      checkpoint_file%id = mh5_create_file(checkpoint_file%name)
-      checkpoint_file%status = 1
+      ! Count the number of top groups that should be passed on to the initializer
+      n_top = 0
+      do i = 1, size(labels)
+         if (labels(i)%parent == 0) n_top = n_top + 1
+      end do
 
-      ! Top level groups have no parents, create these
+      if (n_top == 0) then
+         print*, "ERROR: no top labels defined for checkpoint"
+         stop "error in create_new_checkpoint"
+      end if
+      allocate(top_labels(n_top))
+
+      n_top = 0
       do i = 1, size(labels)
          if (labels(i)%parent == 0) then
-             group_id = mh5_create_group(checkpoint_file%id,labels(i)%label)
-             call  mh5_close_group(group_id)
+            n_top = n_top + 1
+            top_labels(n_top) = labels(i)%label
          end if
       end do
+
+      call lab_init(checkpoint_file,top_labels)
 
   end subroutine create_new_checkpoint
 
@@ -415,8 +419,12 @@ module checkpoint
      character(:),allocatable    :: group
      integer :: i
 
-     label%parent = 0 ! initialize in case there is no parent (for /input and /result)
      group = group_from_label(label%label)
+     if (label%label == group_from_label(label%label)) then
+         label%parent = 0 ! group is his own parent (top level groups like /input and /result)
+         return
+     end if
+        
      do i = 1, size(labels)
         if (group == trim(labels(i)%label)) then
            label%parent = i

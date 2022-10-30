@@ -3404,7 +3404,6 @@ C
         WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
      &                     ' not found on CHECKPOINT'
-        WRITE(LUPRI,*) 'label RTNLBL=',RTNLBL
         CALL QUIT('PRPREA:Property '//PRPLBL//
      &   ' of COMB '//COMB//' not found on CHECKPOINT')
       ENDIF
