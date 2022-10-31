@@ -93,7 +93,7 @@ module talsh_trial_eomccsd
                      do a = 1, workspace%tens2_dims(1)
                         b = b + 1
                         if (i.lt.j) then
-                           diagonal(b) = real(hdiag2_h_p_tens(a,X,j,i))
+                           diagonal(b) = real(hdiag2_h_p_tens(a,X,i,j))
                         else 
                            diagonal(b) = 0.1*huge(diagonal)
                         end if
