@@ -106,7 +106,10 @@ C     step
       ENDDO
       IMAXVSP     = JMAXVSP
 Caspg, default changed from scheme 4 to scheme 6
-      IAOMOSCHEME = 6 
+cayaki_03_06_2022
+c     default changed from scheme 6 to scheme 4, because scheme 4 is faster
+c     for the current architecture      
+      IAOMOSCHEME = 4
       
 C
 C     Process input from CBIMP2NO
@@ -1160,6 +1163,7 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+      if (istrat==6) relcc_integral_interface = 'DIRAC6    '
 C     The original NO generation treats open shells as closed, set occupation explicitly to keep this definition.
 C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
 C     / Luuk June 2016
