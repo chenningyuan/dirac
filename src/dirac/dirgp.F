@@ -430,7 +430,7 @@ C     =========
 C
       IF(LBIT(IOPT,1)) THEN
         FMT = MXFORM(TOTERG,20)
-        WRITE(LUPRI,'(/3A,'//FMT//')')
+        WRITE(LUPRI,'(/2A,'//FMT//')')
      &   '* REACMO: Coefficients read from CHECKPOINT ',
      &   ' - Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
