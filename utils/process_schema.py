@@ -249,6 +249,73 @@ def load_diracdata(path):
 
     return data
 
+def nohdf5_recursively_load_dict_contents_from_group(data,path):
+    """
+    Browse through the hdf5 emulator directory and fill the flat dictionary
+    """
+    import os
+    try:
+       from scipy.io import FortranFile
+       import numpy as np
+    except:
+       print('  scipy is not installed, HDF5 restart file can not be made')
+       return 1
+    with os.scandir(path) as it:
+      for entry in it:
+        if not entry.name.startswith('.') and entry.is_file():
+          label=os.path.join(path,entry.name).split('CHECKPOINT')[1]
+          f = FortranFile(os.path.join(path,entry.name), 'r')
+          # reading of strings written by Fortran is tricky, this appears to work
+          record = f.read_record(np.dtype('a4'),np.int64,np.int64)
+          data_type=record[0][0].decode("utf-8")
+          data_dim1=record[1][0]
+          data_dim2=record[2][0]
+          # A more general solution is needed for the case in  which a generic label is not defined explicitly in the schema
+          # For now just handle the only two exceptions that can currently occur
+          if 'ao_matrices' in label:
+             # copy the generic dictionary to the specific dictionary used to store this particular property matrix
+             data[label] = data['/result/operators/ao_matrices/operator_name'].copy()
+          if 'input/aobasis/2' in label:
+             # copy the dictionary of the first instance as dictionary for a later instance
+             data[label] = data[label.replace('input/aobasis/2','input/aobasis/1')].copy()
+          if data_type=='real':
+             data[label]['value'] = f.read_reals()
+          elif data_type=='int4':
+             data[label]['value'] = f.read_ints(dtype=np.int32)
+          elif data_type=='int8':
+             data[label]['value'] = f.read_ints(dtype=np.int64)
+          elif data_type=='str1':
+             str_format = 'a{}'.format(data_dim1)
+             data[label]['value'] = f.read_record(str_format)
+          elif data_type=='strn':
+             str_format = '{}a{}'.format(data_dim2,data_dim1)
+             data[label]['value'] = f.read_record(str_format)
+          else:
+             print('ERROR in processing restart data: unknown data type',data_type)
+             return 2
+        elif entry.is_dir():
+          nohdf5_recursively_load_dict_contents_from_group(data,os.path.join(path,entry.name))
+    return 0
+
+def nohdf5_load_data(path):
+    """ 
+    Checks for existence of CHECKPOINT fall back directory and loads the data that is inside
+    """
+    # Get schema (hierarchical dictionary) and flattened form thereof based on the definition found in the build directory
+    from os.path import dirname, join, isdir
+    valid_schema, valid_data = read_schema(join(dirname(__file__),"DIRACschema.txt"))
+
+    # Make a copy of the flattened form of the schema that is filled with data loaded from the different files
+    # Note that the load routines will fail in case data of an unknown kind is encountered. This is intentional, the data 
+    # that is written should be properly defined in the data schema file.
+    data = valid_data.copy()
+
+    if isdir(join(path,'CHECKPOINT')):
+      error = nohdf5_recursively_load_dict_contents_from_group(data,join(path,"CHECKPOINT"))
+    else:
+      error = 3
+
+    return error, data
 
 ###### Functions to read and write hdf5 files
 

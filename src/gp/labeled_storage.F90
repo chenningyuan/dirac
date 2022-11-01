@@ -633,16 +633,27 @@ module labeled_storage
     subroutine init_nohdf5 (file_info,top_groups)
       type(file_info_t),intent(inout)        :: file_info
       character(len=80), intent(in)          :: top_groups(:)
-      logical                                :: file_exists,group_exists
-      integer                                :: i
+      integer                                :: i, ierr
+      character*(:), allocatable             :: topdir,subdir
 
-      ! create the directory used to emulate hdf5
-      file_exists = create_group_nohdf5(file_info%name,'')
+      topdir = './'//trim(file_info%name)
+      call execute_command_line ('mkdir '//topdir,exitstat=ierr)
+      if (ierr.ne.0) then
+         print*, " ERROR: could not create directory ",topdir
+         stop " error in init_nohdf5 "
+      end if
+      call execute_command_line ('date >'//topdir//'/.initialized')
       file_info%status = 1
 
       ! create the top level groups
       do  i = 1, size(top_groups)
-         group_exists = create_group_nohdf5(file_info%name,trim(top_groups(i)))
+          subdir = topdir//trim(top_groups(i))
+          call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+          if (ierr.ne.0) then
+             print*, " ERROR: could not create directory ",subdir
+             stop " error in create_group_nohdf5 "
+          end if
+          call execute_command_line ('date >'//subdir//'/.initialized')
       end do
 
     end subroutine init_nohdf5
@@ -670,6 +681,8 @@ module labeled_storage
 
       data_file = './'//trim(file_info%name)//'/'//label
       open (file_unit,file=data_file,form='unformatted')
+      read (file_unit) data_type,data_size8
+      data_size = int(data_size8)
 
       if (present(rdata)) then
          if (data_size > size(rdata)) then
@@ -677,18 +690,15 @@ module labeled_storage
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(rdata) 
            stop ' error detected by read_hdf5 '
          end if
-         read (file_unit) data_type,data_size8
-         read (file_unit) rdata
+         read (file_unit) rdata(1:data_size)
       elseif (present(idata)) then
          if (data_size > size(idata)) then
            write (*,*) " ERROR: array too small for data set ",trim(label)," from ",trim(file_info%name) 
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
            stop ' error detected by read_hdf5 '
          end if
-         read (file_unit) data_type,data_size8
-         read (file_unit) idata
+         read (file_unit) idata(1:data_size)
       elseif (present(sdata)) then
-         read (file_unit) data_type,data_size8,data_len8
          read (file_unit) sdata
       end if
 
@@ -719,17 +729,17 @@ module labeled_storage
       open (file_unit,file=data_file,form='unformatted')
 
       if (present(rdata)) then
-         write (file_unit) 'real',size(rdata,kind=8)
+         write (file_unit) 'real',size(rdata,kind=8),int8(1)
          write (file_unit) rdata
       elseif (present(idata)) then
-        if (kind(idata)==4) write (file_unit) 'int4',size(idata,kind=8)
-        if (kind(idata)==8) write (file_unit) 'int8',size(idata,kind=8)
+        if (kind(idata)==4) write (file_unit) 'int4',size(idata,kind=8),int8(1)
+        if (kind(idata)==8) write (file_unit) 'int8',size(idata,kind=8),int8(1)
          write (file_unit) idata
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
-         write (file_unit) 'strn',int8(sdim),int8(slen)
+         write (file_unit) 'strn',int8(slen),int8(sdim)
          write (file_unit) sdata
       elseif (present(sdata)) then
-         write (file_unit) 'str1',int8(1),int8(len(sdata))
+         write (file_unit) 'str1',int8(len(sdata)),int8(1)
          write (file_unit) sdata
       end if
 
@@ -771,7 +781,7 @@ module labeled_storage
      character(len=*),intent(in) :: file_name,label
      logical                     :: group_exists
      character*(:), allocatable  :: subdir
-     subdir = './'//trim(file_name)//'/'//label
+     subdir = './'//trim(file_name)//label
      inquire (file=subdir//'/.initialized',exist=group_exists)
     end function exists_group_nohdf5
 
@@ -783,7 +793,7 @@ module labeled_storage
      integer                     :: ierr
      character*(:), allocatable  :: subdir
 
-     subdir = './'//trim(file_name)//'/'//label
+     subdir = './'//trim(file_name)//trim(label)
      group_exists = exists_group_nohdf5(file_name,label)
      if (group_exists) return
 
