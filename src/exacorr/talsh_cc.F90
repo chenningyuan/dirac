@@ -310,7 +310,7 @@ module talsh_cc
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
-            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t)
+            call talsh_dm_driver(exa_input,comm_t%t2,l2_tensor,comm_t%t1,l1_tensor,int_t=int_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)

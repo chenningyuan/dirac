@@ -180,15 +180,14 @@ module talsh_gradient
 ! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
 
       print *, " ************** "
-
+      end if
 !***********************
 !     write DM to file *
 !***********************
-         call talsh_dm_store_mo(exa_input,gamma,wavefun)
-         call talsh_kudm_store_mo(exa_input,gamma,wavefun) !also storing KU format!
+      call talsh_dm_store_mo(exa_input,gamma,wavefun)
+      call talsh_kudm_store_mo(exa_input,gamma,wavefun) !also storing KU format!
 !     cleanup
-         call talsh_dm_cleanup_dmtens(exa_input,gamma)
-      end if
+      call talsh_dm_cleanup_dmtens(exa_input,gamma)
 
     end subroutine talsh_dm_driver
 
@@ -388,6 +387,7 @@ module talsh_gradient
       deallocate (dm_1rdm_diracformat)
       deallocate (dm_1rdm_mo_fort)
 
+      if (exa_input%do_2rdm_gs) then
 ! set up storage for 2rdm in MO basis.
 ! TODO setup for AO basis
       allocate (dm_2rdm_mo_fort(nocc+nvir,nocc+nvir,nocc+nvir,nocc+nvir))
@@ -403,6 +403,7 @@ module talsh_gradient
 !! save AOm basis density matrix to file
 !      call store_cc_density (wavefun, dm_2rdm_diracformat, nesh, 4)
 !     call dump_2rdm_to_file_as_list(gamma, CCD)
+      end if
 
       deallocate (mo_list)
 
