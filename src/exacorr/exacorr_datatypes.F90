@@ -106,6 +106,7 @@
          type(tens_rcrsv_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(tens_rcrsv_t) :: prime_vv, symm_vv
 ! two-body density matrices
+         type(tens_rcrsv_t) :: prime_vooo, symm_vooo
          type(tens_rcrsv_t) :: prime_ooov, symm_ooov
          type(tens_rcrsv_t) :: prime_ovov, symm_ovov
          type(tens_rcrsv_t) :: prime_vvvo, symm_vvvo
@@ -158,6 +159,7 @@
          type(talsh_tens_t) :: prime_ov, prime_vo, symm_ov, symm_vo
          type(talsh_tens_t) :: prime_vv, symm_vv
 ! two-body density matrices
+         type(talsh_tens_t) :: prime_vooo, symm_vooo
          type(talsh_tens_t) :: prime_ooov, symm_ooov
          type(talsh_tens_t) :: prime_oovo, symm_oovo
          type(talsh_tens_t) :: prime_ovov, symm_ovov

@@ -30,7 +30,8 @@ module talsh_gradient
 
   contains
 
-    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor)
+    subroutine talsh_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t)
+      use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
 
@@ -38,18 +39,34 @@ module talsh_gradient
       type(exacc_input), intent(in   ) :: exa_input
       type(talsh_tens_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(talsh_tens_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
+      type(talsh_intg_tens), intent(inout), optional :: int_t
 !     density matrices type, output
       type(talsh_dm_tens) :: gamma
 !     CCD switch
       logical :: CCD
       logical :: Add_energy=.true.
       character(len=4) :: wavefun
+
+! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
+      type(C_PTR)         :: res_body_p
+      type(talsh_tens_t)  :: res_tensor
+      integer(INTD)       :: res_dims(1)
+      complex(8), pointer :: res_tens(:)
+! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
+
 !     error code
       integer(INTD) :: ierr
 
       CCD = exa_input%CCD
       wavefun = "CCSD"
 
+! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
+      res_dims(1) = 1
+      ierr=talsh_tensor_construct(res_tensor,C8,res_dims(1:0),init_val=ZERO)
+      ierr=talsh_tensor_get_body_access(res_tensor,res_body_p,C8,int(0,C_INT),DEV_HOST)
+      call c_f_pointer(res_body_p,res_tens,res_dims)
+! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
+ 
 !************************************
 !     construct gamma prime tensors *
 !************************************
@@ -94,69 +111,73 @@ module talsh_gradient
       end if
 
 ! aspg, while thinking of a solution, always store the 1rdm
-      if (exa_input%do_1rdm_gs) then
+      if (exa_input%do_2rdm_gs) then
          write (*,*) 'debug, exa_input%do_1rdm_gs',exa_input%do_1rdm_gs
 
 
 !  Symmetry used
-      ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,a)*F+(i,a)",result_tensor,gamma%symm_ov,int_t%fov)
-      if (exa_input%print_level.ge.2) print*, "Final ov symm : ",result_tens(1)
+      ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,a)*F+(i,a)",res_tensor,gamma%symm_ov,int_t%fov)
+      if (exa_input%print_level.ge.2) print*, "Final ov symm : ",res_tens(1)
 
-      if (Add_Energy==.False.) ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(a,i)*F(i,a)",result_tensor,gamma%symm_vo,int_t%fov)
-      if (exa_input%print_level.ge.2) print*, "Final vo symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.) ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,i)*F(i,a)",res_tensor,gamma%symm_vo,int_t%fov)
+      if (exa_input%print_level.ge.2) print*, "Final vo symm : ",res_tens(1)
 
-      if (Add_Energy==.False.) ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(a,b)*F(b,a)",result_tensor,gamma%symm_vv,int_t%fvv)
-      if (exa_input%print_level.ge.2) print*, "Final vv symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.) ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b)*F(b,a)",res_tensor,gamma%symm_vv,int_t%fvv)
+      if (exa_input%print_level.ge.2) print*, "Final vv symm : ",res_tens(1)
 
-      if (Add_Energy==.False.) ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,j)*F(j,i)",result_tensor,gamma%symm_oo,int_t%foo)
-      if (exa_input%print_level.ge.2) print*, "Final oo symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.) ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j)*F(j,i)",res_tensor,gamma%symm_oo,int_t%foo)
+      if (exa_input%print_level.ge.2) print*, "Final oo symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(a,b,i,j)*V(i,j,a,b)",result_tensor,gamma%symm_vvoo,int_t%oovv,scale=ONE_QUARTER)
-      if (exa_input%print_level.ge.2) print*, "Final vvoo symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b,i,j)*V(i,j,a,b)",res_tensor,gamma%symm_vvoo,int_t%oovv,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final vvoo symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,j,a,b)*V+(i,j,a,b)",result_tensor,gamma%symm_oovv,int_t%oovv,scale=ONE_QUARTER)
-      if (exa_input%print_level.ge.2) print*, "Final oovv symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j,a,b)*V+(i,j,a,b)",res_tensor,gamma%symm_oovv,int_t%oovv,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final oovv symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)    ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,j,k,a)*V+(i,j,k,a)",result_tensor,gamma%symm_ooov,int_t%ooov,scale=ONE_HALF)
-      if (exa_input%print_level.ge.2) print*, "Final ooov symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)    ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j,k,a)*V+(i,j,k,a)",res_tensor,gamma%symm_ooov,int_t%ooov,scale=ONE_HALF)
+      if (exa_input%print_level.ge.2) print*, "Final ooov symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,a,j,k)*V(j,k,i,a)",result_tensor,gamma%symm_ovoo,int_t%ooov,scale=ONE_HALF)
-      if (exa_input%print_level.ge.2) print*, "Final ovoo symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,a,j,k)*V(j,k,i,a)",res_tensor,gamma%symm_ovoo,int_t%ooov,scale=ONE_HALF)
+      if (exa_input%print_level.ge.2) print*, "Final ovoo symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(a,b,c,i)*V(c,i,a,b)",result_tensor,gamma%symm_vvvo,int_t%vovv,scale=ONE_HALF)
-      if (exa_input%print_level.ge.2) print*, "Final vvvo symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b,c,i)*V(c,i,a,b)",res_tensor,gamma%symm_vvvo,int_t%vovv,scale=ONE_HALF)
+      if (exa_input%print_level.ge.2) print*, "Final vvvo symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
 !      ierr=talsh_tensor_contract("E()+=G(a,i,b,c)*V(b,c,a,i)",result_tensor,gamma%prime_vovv,int_t%vvvo,scale=ONE_QUARTER)
-      ierr=talsh_tensor_contract("E()+=G(a,i,b,c)*V+(a,i,b,c)",result_tensor,gamma%symm_vovv,int_t%vovv,scale=ONE_HALF)
+      ierr=talsh_tensor_contract("E()+=G(a,i,b,c)*V+(a,i,b,c)",res_tensor,gamma%symm_vovv,int_t%vovv,scale=ONE_HALF)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,a,j,b)*V(b,j,a,i)",result_tensor,gamma%symm_ovov,int_t%vovo)
-      if (exa_input%print_level.ge.2) print*, "Final ovov symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,a,j,b)*V(b,j,a,i)",res_tensor,gamma%symm_ovov,int_t%vovo)
+      if (exa_input%print_level.ge.2) print*, "Final ovov symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(a,b,c,d)*V(c,d,a,b)",result_tensor,gamma%symm_vvvv,int_t%vvvv,scale=ONE_QUARTER)
-      if (exa_input%print_level.ge.2) print*, "Final vvvv symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(a,b,c,d)*V(c,d,a,b)",res_tensor,gamma%symm_vvvv,int_t%vvvv,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final vvvv symm : ",res_tens(1)
 
-      if (Add_Energy==.False.)       ierr=talsh_tensor_init(result_tensor)
-      ierr=talsh_tensor_contract("E()+=G(i,j,k,l)*V(k,l,i,j)",result_tensor,gamma%symm_oooo,int_t%oooo,scale=ONE_QUARTER)
-      if (exa_input%print_level.ge.2) print*, "Final oooo symm : ",result_tens(1)
+      if (Add_Energy .eqv. .False.)       ierr=talsh_tensor_init(res_tensor)
+      ierr=talsh_tensor_contract("E()+=G(i,j,k,l)*V(k,l,i,j)",res_tensor,gamma%symm_oooo,int_t%oooo,scale=ONE_QUARTER)
+      if (exa_input%print_level.ge.2) print*, "Final oooo symm : ",res_tens(1)
 
       print *, " "
       print *, " "
-      if (Add_Energy==.True.) print *, " Energy by CCSD Density Matrix ", result_tens(1)
-      if (Add_Energy==.False.) print *, " Energy by CCSD Density Matrix is the sum of all the individual terms "
+      if (Add_Energy .eqv. .True.) print *, " Energy by CCSD Density Matrix ", res_tens(1)
+      if (Add_Energy .eqv. .False.) print *, " Energy by CCSD Density Matrix is the sum of all the individual terms "
       print *, " "
       print *, " "
+
+! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
+      ierr=talsh_tensor_destruct(res_tensor)
+! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
 
       print *, " ************** "
 
@@ -193,6 +214,7 @@ module talsh_gradient
 
       if (exa_input%do_2rdm_gs) then
          ierr=talsh_tensor_destruct(dmat%prime_oooo)
+         ierr=talsh_tensor_destruct(dmat%prime_vooo)
          ierr=talsh_tensor_destruct(dmat%prime_ooov)
          ierr=talsh_tensor_destruct(dmat%prime_ovoo)
          ierr=talsh_tensor_destruct(dmat%prime_oovv)
@@ -205,6 +227,7 @@ module talsh_gradient
          ierr=talsh_tensor_destruct(dmat%prime_vvvv)
 
          ierr=talsh_tensor_destruct(dmat%symm_oooo)
+         ierr=talsh_tensor_destruct(dmat%symm_vooo)
          ierr=talsh_tensor_destruct(dmat%symm_ooov)
          ierr=talsh_tensor_destruct(dmat%symm_ovoo)
          ierr=talsh_tensor_destruct(dmat%symm_oovv)
@@ -267,6 +290,7 @@ module talsh_gradient
 
        if (exa_input%do_2rdm_gs) then
           ierr=talsh_tensor_construct(dmat%prime_oooo,C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%prime_vooo,C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_ovoo,C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%prime_oovv,C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
@@ -279,6 +303,7 @@ module talsh_gradient
           ierr=talsh_tensor_construct(dmat%prime_vvvv,C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
 
           ierr=talsh_tensor_construct(dmat%symm_oooo, C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=talsh_tensor_construct(dmat%symm_vooo, C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_ooov, C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_ovoo, C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
           ierr=talsh_tensor_construct(dmat%symm_oovv, C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
@@ -340,12 +365,9 @@ module talsh_gradient
       nkr_occ = exa_input%nkr_occ
       nkr_vir = exa_input%nkr_vir
 
-! set up storage for density matrices in MO and AO bases, in fortran storage
+! set up storage for 1rdm in MO and AO bases, in fortran storage
       allocate (dm_1rdm_mo_fort(nocc+nvir,nocc+nvir))
       dm_1rdm_mo_fort = ZERO
-
-      allocate (dm_2rdm_mo_fort(nocc+nvir,nocc+nvir,nocc+nvir,nocc+nvir))
-      dm_2rdm_mo_fort = ZERO
 
       norbt = nkr_occ + nkr_vir
       allocate(mo_list(norbt))
@@ -358,15 +380,31 @@ module talsh_gradient
 
 ! form MO basis density matrix
       call talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
-      call talsh_dm_2rdm_form_mo_fort_from_tensors(dm_2rdm_mo_fort, gamma, nocc, nvir, CCD)
 ! form AO basis density matrix
       call talsh_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
 ! save AOm basis density matrix to file
       call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
 
       deallocate (dm_1rdm_diracformat)
-      deallocate (mo_list)
       deallocate (dm_1rdm_mo_fort)
+
+! set up storage for 2rdm in MO basis.
+! TODO setup for AO basis
+      allocate (dm_2rdm_mo_fort(nocc+nvir,nocc+nvir,nocc+nvir,nocc+nvir))
+      dm_2rdm_mo_fort = ZERO
+
+!     allocate (dm_2rdm_diracformat(nesh,nesh,4))
+!     dm_2rdm_diracformat = real(ZERO)
+
+! form MO basis density matrix
+      call talsh_dm_2rdm_form_mo_fort_from_tensors(dm_2rdm_mo_fort, gamma, nocc, nvir, CCD)
+! form AO basis density matrix
+!      call talsh_dm_2rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
+!! save AOm basis density matrix to file
+!      call store_cc_density (wavefun, dm_2rdm_diracformat, nesh, 4)
+!     call dump_2rdm_to_file_as_list(gamma, CCD)
+
+      deallocate (mo_list)
 
     end subroutine talsh_dm_store_mo
 
@@ -475,7 +513,7 @@ module talsh_gradient
 !     vooo
       ierr=talsh_tensor_get_body_access(gamma%symm_vooo,body_p2,C8,int(0,C_INT),DEV_HOST)
       call c_f_pointer(body_p2,dm_block,(/nvir,nocc,nocc,nocc/)) ! to use <dm_mo_block> as a regular Fortran 4d array
-      dm_2rdm_mo_fort(1:nocc,1:nocc,1:nocc,1:nvir) = dm_block
+      dm_2rdm_mo_fort(1:nvir,1:nocc,1:nocc,1:nocc) = dm_block
 
 
    end subroutine
