@@ -20,6 +20,10 @@ f.add(from_string = 'Total contribution to principal components',
       to_string   = '1 a.u. =',
       abs_tolerance   = 1.0e-6)
 
+f.add(from_string = 'Final CCSD energy (from 1RDM+2RDM)',
+      num_lines   = 1,
+      abs_tolerance   = 1.0e-8)
+
 test.run(['ccsd_x2c.inp'], ['H2O_nosym.mol'], f)
 
 sys.exit(test.return_code)
