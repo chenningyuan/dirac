@@ -15,7 +15,12 @@ if(ENABLE_EXATENSOR)
    # in which case EXATENSOR_GIT_REPO_LOCATION can be set to point to a path on the hard disk
    # ./setup --cmake-options="-DEXATENSOR_GIT_REPO_LOCATION='/path/to/exatensor/'"
    set (EXATENSOR_GIT_REPO_LOCATION "https://gitlab.com/DmitryLyakh/ExaTensor.git" CACHE STRING "ExaTENSOR Git repository location")
-   set (EXATENSOR_GIT_HASH e8e6f6351fabad514be9dd07d3c0a3a9e81c3f52 CACHE STRING "ExaTENSOR Git repository hash in use")
+   #JVP old version do not know -fallow-argument-mismatch, newer need it
+   if ( (CMAKE_Fortran_COMPILER_ID MATCHES GNU) AND ("${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "10"))
+       set (EXATENSOR_GIT_HASH e36b0bac2b21a9e3e9a4cd6cbd216b9cd317ad4d CACHE STRING "ExaTENSOR Git repository hash in use")
+   else()
+       set (EXATENSOR_GIT_HASH 7a75a73bc6dbfa3ff4b107231514d8f3d26e6338 CACHE STRING "ExaTENSOR Git repository hash in use")
+   endif()
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
    # check build type
