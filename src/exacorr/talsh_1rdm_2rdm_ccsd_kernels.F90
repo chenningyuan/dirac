@@ -2,7 +2,9 @@ module talsh_1rdm_2rdm_ccsd_kernels
 
 ! This module contains routines to calculate density matrices
 ! See Shee, A.; Visscher, L.; Saue, T. J. Chem. Phys. 2016, 145, 184107.
+! and Halbert, L and Gomes, ASP, in preparation (ground-state 2RDM, to come EOMCC 1RDMs) 
 ! Written by Stan Papadopoulos, February 2019
+! Refactored by Andre Gomes and Loic Halbert summer 2022
 
 !  use talsh
 !  use tensor_algebra

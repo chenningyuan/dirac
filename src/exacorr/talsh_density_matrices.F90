@@ -379,6 +379,7 @@ module talsh_gradient
       call talsh_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
       call talsh_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
       call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
+      call dump_dm_1rdm_to_file_as_binary(4241,"CCSD1RDM",dm_1rdm_mo_fort)
 
       deallocate (dm_1rdm_diracformat)
       deallocate (dm_1rdm_mo_fort)
@@ -663,8 +664,7 @@ module talsh_gradient
         open (unit=fileno, file=filename, form="unformatted", access="direct", recl=irec)
         write(unit=fileno, rec=1) matrix
         close(unit=fileno)
-        print *,''
-        print *,' Wrote 1RDM(no+nv,no+nv) to binary file ',filename
+        print *,' Wrote 1RDM(o+v,o+v)         (MO) to binary file ',filename
         print *,''
     end subroutine
 
@@ -678,8 +678,7 @@ module talsh_gradient
         open (unit=fileno, file=filename, form="unformatted", access="direct", recl=irec)
         write(unit=fileno, rec=1) matrix
         close(unit=fileno)
-        print *,''
-        print *,' Wrote 2RDM(no+nv,no+nv,no+nv,no+nv) to binary file ',filename
+        print *,' Wrote 2RDM(o+v,o+v,o+v,o+v) (MO) to binary file ',filename
         print *,''
     end subroutine
 

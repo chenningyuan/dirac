@@ -1656,7 +1656,7 @@ C
       LOGICAL :: FNDLAB
 C---------------Executable code--------------------------------------
  
-      WRITE (LUPRI,*) "Storing the ",WF," density matrix on file"
+      WRITE (LUPRI,*) " Storing the ",WF," density matrix (AO) on file"
       LABEL = WF//'DENS'
       EOFLABEL = 'EOFLABEL'
 
