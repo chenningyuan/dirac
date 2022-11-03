@@ -749,6 +749,7 @@ C*****************************************************************************
 
       use memory_allocator
       use dircmo
+      use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -780,7 +781,8 @@ C
 C
 C        Get eigenvalues from CHECKPOINT file
 C
-         INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+         call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &        exist=TOBE)
          IF(.NOT.TOBE.OR.I_DCBORB_SET.NE.1) THEN
 C
 C           CHECKPOINT does not (yet) exist, put IP = - 666, which makes
@@ -1671,7 +1673,8 @@ C
       MCORB = .FALSE.
       MJAVA = .FALSE.
       INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
-      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+      call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &  exist=TOBE)
       IF((.NOT.TOBE).and.(.NOT.TOBEK)) THEN
         WRITE(LUPRI,'(A)') 
      &  'ACMOUT: Unformatted file CHECKPOINT/KRMCSCF not found !'
@@ -2213,6 +2216,7 @@ C***********************************************************************
 
       use memory_allocator
       use dircmo
+      use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -2229,7 +2233,8 @@ C
 C
 C     Check if coefficients are on file
 C
-      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+      call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &        exist=TOBE)
       IF(.NOT.TOBE) GOTO 1000
 
 !     memory allocation
@@ -2565,7 +2570,11 @@ C.....loop over fragments
      &       '* No coefficients selected for fragment ',FRAGFIL(IFRAG)
           GOTO 12
         ENDIF
-        INQUIRE(FILE=FRAGFIL(IFRAG),EXIST=TOBE)
+        fragfile%type = 2
+        fragfile%name = FRAGFIL(IFRAG)
+        fragfile%status = 0
+        call lab_query (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
         IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,I2,A,I2,A,A6,A)') 
      &     'Fragment coefficient file no. ',
@@ -2573,9 +2582,6 @@ C.....loop over fragments
            CALL QUIT('SELFRAG: No fragment coefficients !')
         ENDIF
 C
-        fragfile%type = 2
-        fragfile%name = FRAGFIL(IFRAG)
-        fragfile%status = 0
         IF(LBIT(IOPT,1)) THEN
           WRITE(LUPRI,'(A,A6)') 
      &       '* SELFRAG: Coefficients from file: ',FRAGFIL(IFRAG)

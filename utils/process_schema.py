@@ -102,13 +102,25 @@ def write_schema(file_name,flat_schema):
             f.write("{:<80}{:<10}{:<10}{:<10}#{:<60}\n".format(label,dataset['type'],dataset['rank'],dataset['use'],dataset['description']))
     f.close()
 
+def group_from_label(label):
+    """
+    Identify the group to which the dataset or subgroup belongs.
+    For top groups it just returns label (as these are their own parents)
+    """
+    separator_index = label.rfind('/')
+    if separator_index > 0:
+       group = label[:separator_index]
+    else:
+       group = label
+    return group
+     
 def data_validity(data):
     """
     Check whether the data read or to be written is valid.
     Should be made more rigorous, for now just check whether all required data is present.
     """
     valid = True
-    print (' Checking validity of data with respect to the DIRAC data schema....')
+    print ('  Checking validity of data with respect to the DIRAC data schema....')
     # Check whether all required data have values
     for label, dataset in data.items():
         if dataset['type'] == 'composite':
@@ -117,8 +129,20 @@ def data_validity(data):
            #todo: check whether the data has the right type
            continue
         if dataset['use'] == 'required':
-              print(' ..missing required dataset {} : {}'.format(label,dataset['description']))
-              valid = False
+              # check whether this data set without a value is required 
+              # first check whether (grand)parents are actually required
+              optional = False
+              parent = label
+              while group_from_label(parent) != parent:
+                  parent = group_from_label(parent) 
+                  if data[parent]['use'] == 'optional':
+                      optional = True
+              if optional:
+                  continue
+              # this is indeed a required data set, print a warning and invalidate the data
+              else:
+                  print(' ..missing required dataset {} : {}'.format(label,dataset['description']))
+                  valid = False
     return valid
 
 ###### Function to read plaintext xyz file
@@ -350,7 +374,10 @@ def write_hdf5(file_name,data):
     cp = h5py.File(file_name, 'w')
     for label, dataset in data.items():
         if 'value' in dataset: 
-           cp.create_dataset(label, data=dataset['value'])
+           if (len(dataset['value']) == 1):
+               cp.create_dataset(label, data=dataset['value'])
+           else:
+               cp.create_dataset(label, data=dataset['value'], maxshape=(h5py.h5s.UNLIMITED))
     cp.close()
 
 # Simple use of these functions:

@@ -65,7 +65,7 @@ module checkpoint
       ! Open a new or existing file and initialize or check data sets defined in the schema
       ! After this step individual data sets can be written (or read in case of restart)
 
-      logical           :: restart
+      logical           :: restart,restart_nohdf5
 
       ! Read the schema to define all allowed labels
       call get_labels
@@ -75,14 +75,14 @@ module checkpoint
           stop " Error in checkpoint_open: file is already in use"
       end if
 
-      ! Proceed by initializing the file object as a hdf5 file with the correct name
-      checkpoint_file%type = 2
-      checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+      ! Inquire whether (a yet unopened) checkpoint file is present and attempt a restart if it is
+      inquire (file=CHECKPOINT_NAME//'.h5',exist=restart)
+      inquire (file=CHECKPOINT_NAME//'/.initialized',exist=restart_nohdf5)
 
-      ! Inquire whether (a yet unopened) file with this name is present and attempt a restart if it is
-      inquire (file=checkpoint_file%name,exist=restart)
       if (restart) then
-         print*,"   - Existing checkpoint file: check contents"
+         checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+         checkpoint_file%type = 2
+         print*,"   - Existing hdf5 checkpoint file: check contents"
          if (checkpoint_valid()) then
             print*, "   - Checkpoint file is valid, will be used for restart"
             return
@@ -91,9 +91,23 @@ module checkpoint
             call unlink(checkpoint_file%name)
             checkpoint_file%status = -1
          endif
+      elseif (restart_nohdf5) then
+         checkpoint_file%name = CHECKPOINT_NAME
+         checkpoint_file%type = 3
+         print*,"   - Existing checkpoint directory: check contents"
+         if (checkpoint_valid()) then
+            print*, "   - Checkpoint directory is valid, will be used for restart"
+            return
+         else 
+            print*, "   - Checkpoint directory is not valid, will be overwritten"
+            call execute_command_line('rm -r '//CHECKPOINT_NAME)
+            checkpoint_file%status = -1
+         endif
       endif 
 
-      ! If we come this far we are dealing with a pristine directory and need to create and init the hdf5 file
+      ! If we come this far we are dealing with a pristine directory and need to create and init a checkpoint file
+      checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+      checkpoint_file%type = 2
       call create_new_checkpoint
       print*, "   - New checkpoint file created"
 

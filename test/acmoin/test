@@ -14,22 +14,22 @@ f.add(string = '* Electronic eigenvalue',
       rel_tolerance = 1.0e-7)
 
 # run calculation for hydrogen in linear symmetry
-test.run(['H.inp'], ['H.mol'], f, '--get=CHECKPOINT.h5 ')
+test.run(['H.inp'], ['H.mol'], f, '--outcmo')
 
 shutil.copy('CHECKPOINT.h5', 'DFACMO')
 # export coefficients to cs symmetry
-test.run(['H_Cs.inp'], ['H_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
+test.run(['H_Cs.inp'], ['H_Cs.mol'], f, '--outcmo --put=DFACMO')
 shutil.copy('CHECKPOINT.h5', 'DFHAT1')
 shutil.copy('CHECKPOINT.h5', 'DFHAT2')
 shutil.copy('CHECKPOINT.h5', 'DFHAT3')
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N.inp'], ['N.mol'], f, '--get="CHECKPOINT.h5"')
+test.run(['N.inp'], ['N.mol'], f, '--outcmo')
 shutil.copy('N_N.h5', 'DFACMO')
 shutil.copy('CHECKPOINT.h5', 'DFCAT')
 
 # export coefficients to cs symmetry
-test.run(['N_Cs.inp'], ['N_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
+test.run(['N_Cs.inp'], ['N_Cs.mol'], f, '--outcmo --put=DFACMO')
 shutil.copy('CHECKPOINT.h5', 'DFNNNN')
 
 # run calculation for ammonia; note that it is flat ...
@@ -47,22 +47,22 @@ os.unlink('DFHAT3')
 ### run spinfree version of the test ###
 
 # run calculation for hydrogen in linear symmetry
-test.run(['H_sf.inp'], ['H.mol'], f, '--get=CHECKPOINT.h5')
+test.run(['H_sf.inp'], ['H.mol'], f, '--outcmo')
 shutil.copy('CHECKPOINT.h5', 'DFACMO')
 
 # export coefficients to cs symmetry
-test.run(['H_Cs_sf.inp'], ['H_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
+test.run(['H_Cs_sf.inp'], ['H_Cs.mol'], f, '--outcmo --put=DFACMO')
 shutil.copy('CHECKPOINT.h5', 'DFHAT1')
 shutil.copy('CHECKPOINT.h5', 'DFHAT2')
 shutil.copy('CHECKPOINT.h5', 'DFHAT3')
 
 # run calculation for nitrogen in linear symmetry
-test.run(['N_sf.inp'], ['N.mol'], f, '--get="CHECKPOINT.h5"')
+test.run(['N_sf.inp'], ['N.mol'], f, '--outcmo')
 shutil.copy('N_sf_N.h5', 'DFACMO')
 shutil.copy('CHECKPOINT.h5', 'DFCAT')
 
 # export coefficients to cs symmetry
-test.run(['N_Cs_sf.inp'], ['N_Cs.mol'], f, '--get=CHECKPOINT.h5 --put=DFACMO')
+test.run(['N_Cs_sf.inp'], ['N_Cs.mol'], f, '--outcmo --put=DFACMO')
 shutil.copy('CHECKPOINT.h5', 'DFNNNN')
 
 # run calculation for ammonia; note that it is flat ...
