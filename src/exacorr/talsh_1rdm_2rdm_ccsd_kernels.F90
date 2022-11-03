@@ -21,8 +21,6 @@ module talsh_1rdm_2rdm_ccsd_kernels
   use talsh_common_routines
 
   use exacorr_global
-!  use talsh_gradient
-
 
   implicit none
 

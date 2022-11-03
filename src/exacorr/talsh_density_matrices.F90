@@ -4,7 +4,7 @@ module talsh_gradient
 ! See Shee, A.; Visscher, L.; Saue, T. J. Chem. Phys. 2016, 145, 184107 (ground-state 1RDM)
 ! and Halbert, L and Gomes, ASP, in preparation (ground-state 2RDM, to come EOMCC 1RDMs) 
 ! Written by Stan Papadopoulos, February 2019
-! Refactored by Andre Gomes and Loic Halbert summer 2022, to move tensor operations elsewhere so that this file contains common/general manipulation operations,
+! Refactored by Andre Gomes and Loic Halbert summer 2022.
 
   use talsh
   use tensor_algebra
@@ -115,28 +115,15 @@ module talsh_gradient
       logical :: CCD
       character(len=4) :: wavefun
 
-! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
-      type(C_PTR)         :: res_body_p
-!      type(talsh_tens_t)  :: res_tensor
-!      integer(INTD)       :: res_dims(1)
-      complex(8), pointer :: res_tens(:)
       complex(8) :: recalculated_energy
-! aspg: temporary solution for handling result_tensor (need to move the double-check on the energies outside this routine)
 
 !     error code
       integer(INTD) :: ierr
 
       CCD = exa_input%CCD
+! aspg TODO get rid of this hardcoded connection to CCSD, everything in this module should be independent from 
+!      the level of theory; one possibility is to replace the routines below by callbacks 
       wavefun = "CCSD"
-
-!      if (exa_input%do_2rdm_gs) then
-!!     setup for calculate the wavefun ground-state energy from the 1RDM and 2RDM
-!!     this calculations will always be done as a cross-check, if the generation of the ground-state 2RDM is requested
-!         res_dims(1) = 1
-!         ierr=talsh_tensor_construct(res_tensor,C8,res_dims(1:0),init_val=ZERO)
-!         ierr=talsh_tensor_get_body_access(res_tensor,res_body_p,C8,int(0,C_INT),DEV_HOST)
-!         call c_f_pointer(res_body_p,res_tens,res_dims)
-!      end if
  
 !************************************
 !     construct gamma prime tensors *
