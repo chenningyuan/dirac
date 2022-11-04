@@ -2551,6 +2551,7 @@ C
      &          EIG(*),IBEIG(*),NSTR(2,0:2,NFRAG),NUCFRAG(NFRAG),WORK(*)
       DIMENSION IOFF(2)
       REAL*8 CMCSCF_MAGIC
+      integer              :: len_fragname
       type(file_info_t)    :: fragfile
 !
 !     flag for MCSCF coefficents present on fragment/molecular
@@ -2572,9 +2573,15 @@ C.....loop over fragments
         ENDIF
         fragfile%type = 2
         fragfile%name = FRAGFIL(IFRAG)
-        fragfile%status = 0
+        fragfile%status = -1
         call lab_query (fragfile,
      &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
+        IF (.NOT.TOBE) THEN
+           ! Could be that we need the fallback option
+           call toggle_fallback(fragfile)
+           call lab_query (fragfile,
+     &     '/result/wavefunctions/scf/mobasis/nz',exist=tobe)
+        ENDIF
         IF (.NOT.TOBE) THEN
            WRITE(LUPRI,'(A,I2,A,I2,A,A6,A)') 
      &     'Fragment coefficient file no. ',
@@ -3329,7 +3336,7 @@ C     ===============================================
 C
       dfacmo%type = 2
       dfacmo%name = 'DFACMO'
-      dfacmo%status = 0
+      dfacmo%status = -1
       call lab_read (dfacmo,
      & '/result/wavefunctions/scf/energy',toterg)
       call lab_read (dfacmo,

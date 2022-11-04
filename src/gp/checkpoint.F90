@@ -92,7 +92,7 @@ module checkpoint
             checkpoint_file%status = -1
          endif
       elseif (restart_noh5) then
-         checkpoint_file%name = CHECKPOINT_NAME
+         checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
          checkpoint_file%type = 3
          print*,"   - Existing checkpoint directory: check contents"
          if (checkpoint_valid()) then
@@ -100,7 +100,7 @@ module checkpoint
             return
          else 
             print*, "   - Checkpoint directory is not valid, will be overwritten"
-            call execute_command_line('rm -r '//CHECKPOINT_NAME)
+            call execute_command_line('rm -r '//CHECKPOINT_NAME//'.noh5')
             checkpoint_file%status = -1
          endif
       endif 
@@ -108,6 +108,9 @@ module checkpoint
       ! If we come this far we are dealing with a pristine directory and need to create and init a checkpoint file
       checkpoint_file%name = CHECKPOINT_NAME//'.h5'
       checkpoint_file%type = 2
+      !temporary: activate the next two lines to test the fallback option
+      !checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
+      !checkpoint_file%type = 3
       call create_new_checkpoint
       print*, "   - New checkpoint file created"
 

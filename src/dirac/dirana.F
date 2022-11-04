@@ -1302,7 +1302,7 @@ C
       DO I = 1,NREFS
         fragfile%type = 2
         fragfile%name = REFFIL(I)
-        fragfile%status = 0
+        fragfile%status = -1
         call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_mo',
      &                idata=n_mo)
         call lab_read(fragfile,'/result/wavefunctions/scf/mobasis/n_po',
@@ -4305,7 +4305,7 @@ C.........Find the total number of basis functions for this atom type
           CALL LABCOUNT(MBAS,WORK(KINF),NTBAS(0),1,-1,ININD,1,-1)
           fragfile%type = 2
           fragfile%name = trim(REFFIL(IREFS))
-          fragfile%status = 0
+          fragfile%status = -1
        ! stupid 72 column rule of ancient fortran...
        call lab_read (fragfile,
      & '/result/wavefunctions/scf/mobasis/n_basis',
@@ -4393,7 +4393,7 @@ C     ==========================
 C.........Read C1 coefficients and orbitalenergies
           fragfile%type = 2
           fragfile%name = trim(REFFIL(IREFS))
-          fragfile%status = 0
+          fragfile%status = -1
           call lab_read (fragfile,
      &     '/result/wavefunctions/scf/mobasis/orbitals_C1',
      &      rdata=WORK(KQA:KQA+NQA-1))

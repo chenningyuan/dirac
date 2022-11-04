@@ -24,17 +24,16 @@ f.add(from_string = ' Eigenvalues',
       num_lines = 10,  # the different tests have different number of lines, this should be OK for all
       abs_tolerance   = 1.0e-5)
 
-test.run(['H.inp'], ['H.mol'], args='--get=CHECKPOINT.h5')
+test.run(['H.inp'], ['H.mol'], args='--outcmo')
 shutil.copy('CHECKPOINT.h5', 'DFHXXX')
 
-test.run(['O.inp'], ['O.mol'], args='--get=CHECKPOINT.h5')
+test.run(['O.inp'], ['O.mol'], args='--outcmo')
 shutil.copy('CHECKPOINT.h5', 'DFOXXX')
 
 test.run(['O_atom.inp'], ['O.mol'], f, '--copy=DFOXXX')
 test.run(['H2O.inp'], ['H2O.mol'], f, '--copy="DFHXXX DFOXXX"')
 
 # cleanup
-os.unlink('CHECKPOINT.h5')
 os.unlink('DFHXXX')
 os.unlink('DFOXXX')
 

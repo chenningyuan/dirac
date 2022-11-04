@@ -15,6 +15,7 @@ module labeled_storage
   public lab_write
   public lab_query
   public group_from_label
+  public toggle_fallback
 
 ! Define type to hold information for an active file
   type, public:: file_info_t
@@ -566,6 +567,12 @@ module labeled_storage
       integer,intent(out), optional          :: data_size
       character*(:),allocatable              :: group
 
+      if (file_info%status == -1) then
+         ! unknown file, check whether it exists and do not open (and create) if it does not
+          inquire(file=file_info%name,exist=exist)
+         if (.not.exist) return
+      end if
+
       if (file_info%status /= 1) then
           file_info%id = mh5_open_file_rw(file_info%name)
           if (file_info%id < 0) then
@@ -820,5 +827,21 @@ module labeled_storage
      end if
 
     end function create_group_nohdf5
+
+    subroutine toggle_fallback(targetfile)
+         type(file_info_t), intent(inout)    :: targetfile
+         integer                             :: len_name
+
+         len_name = len_trim(targetfile%name)
+         if (targetfile%type == 2) then       
+           targetfile%name = targetfile%name(1:len_name-2)//'noh5'
+           targetfile%type = 3
+         elseif  (targetfile%type == 3) then 
+           targetfile%name = targetfile%name(1:len_name-4)//'h5'
+           targetfile%type = 2
+         endif
+
+    end subroutine toggle_fallback
+
 
 end module labeled_storage
