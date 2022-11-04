@@ -65,7 +65,7 @@ module checkpoint
       ! Open a new or existing file and initialize or check data sets defined in the schema
       ! After this step individual data sets can be written (or read in case of restart)
 
-      logical           :: restart,restart_nohdf5
+      logical           :: restart,restart_noh5
 
       ! Read the schema to define all allowed labels
       call get_labels
@@ -77,7 +77,7 @@ module checkpoint
 
       ! Inquire whether (a yet unopened) checkpoint file is present and attempt a restart if it is
       inquire (file=CHECKPOINT_NAME//'.h5',exist=restart)
-      inquire (file=CHECKPOINT_NAME//'/.initialized',exist=restart_nohdf5)
+      inquire (file=CHECKPOINT_NAME//'.noh5/.initialized',exist=restart_noh5)
 
       if (restart) then
          checkpoint_file%name = CHECKPOINT_NAME//'.h5'
@@ -91,7 +91,7 @@ module checkpoint
             call unlink(checkpoint_file%name)
             checkpoint_file%status = -1
          endif
-      elseif (restart_nohdf5) then
+      elseif (restart_noh5) then
          checkpoint_file%name = CHECKPOINT_NAME
          checkpoint_file%type = 3
          print*,"   - Existing checkpoint directory: check contents"

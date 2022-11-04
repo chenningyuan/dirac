@@ -287,7 +287,7 @@ def nohdf5_recursively_load_dict_contents_from_group(data,path):
     with os.scandir(path) as it:
       for entry in it:
         if not entry.name.startswith('.') and entry.is_file():
-          label=os.path.join(path,entry.name).split('CHECKPOINT')[1]
+          label=os.path.join(path,entry.name).split('CHECKPOINT.noh5')[1]
           f = FortranFile(os.path.join(path,entry.name), 'r')
           # reading of strings written by Fortran is tricky, this appears to work
           record = f.read_record(np.dtype('a4'),np.int64,np.int64)
@@ -323,7 +323,7 @@ def nohdf5_recursively_load_dict_contents_from_group(data,path):
 
 def nohdf5_load_data(path):
     """ 
-    Checks for existence of CHECKPOINT fall back directory and loads the data that is inside
+    Checks for existence of CHECKPOINT.noh5 fall back directory and loads the data that is inside
     """
     # Get schema (hierarchical dictionary) and flattened form thereof based on the definition found in the build directory
     from os.path import dirname, join, isdir
@@ -334,8 +334,8 @@ def nohdf5_load_data(path):
     # that is written should be properly defined in the data schema file.
     data = valid_data.copy()
 
-    if isdir(join(path,'CHECKPOINT')):
-      error = nohdf5_recursively_load_dict_contents_from_group(data,join(path,"CHECKPOINT"))
+    if isdir(join(path,'CHECKPOINT.noh5')):
+      error = nohdf5_recursively_load_dict_contents_from_group(data,join(path,"CHECKPOINT.noh5"))
     else:
       error = 3
 

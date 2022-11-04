@@ -241,6 +241,7 @@ C     Last revision: April 27 1996 - tsaue
 C
 C***********************************************************************
       use dircmo
+      use checkpoint
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -320,7 +321,9 @@ C
       ELSE
          INQUIRE(FILE='KRMCSCF',EXIST=TOBEK)
       END IF
-      INQUIRE(FILE='CHECKPOINT.h5',EXIST=TOBE)
+      ! Check whether we have SCF orbitals
+      call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',
+     &        exist=TOBE)
       IF ((.NOT.TOBE).AND.(.NOT.TOBEK)) GOTO 1000
 C     Memory allocation
       allocate (cmo(N2BBASXQ))
@@ -620,7 +623,7 @@ C     KRMC_FLG = 2: MP2 natural orbitals and occupancies read from
 C                   label NEWNATOB/NEWNATOC on file KRMCOLD
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
-C     KRMC_FLG = 0  Orbitals read from CHECKPOINT.h5
+C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C     Written by T.Saue July 24 1994
 C     Revised       : Jan 7 1998 - jth LINUX
@@ -1423,7 +1426,7 @@ C     On ouput these are replaced by the polarization contributions.
 C
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
-C     KRMC_FLG = 0  Orbitals read from CHECKPOINT.h5
+C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C    Written by T.Saue March 26 1999
 C
@@ -2061,7 +2064,7 @@ C     Memory deallocation
       CALL MEMREL('ANAVEC',WORK,KWORK,KWORK,KFREE,LFREE)
       RETURN
 C
-C     No MCSCF, then check if RHF on CHECKPOINT.h5
+C     No MCSCF, then check if RHF on CHECKPOINT
 C
  990  CONTINUE
 C     Memory allocation
@@ -2075,7 +2078,7 @@ C
       CALL REACMO_new(cmo=CMO,eig=EIG,ibeig=IBEIG,
      &                toterg=TOTERG)
 C
-      CALL HEADER('Coefficients from CHECKPOINT.h5',2)
+      CALL HEADER('Coefficients from CHECKPOINT',2)
       IPREIG = 1
       CALL PRCOEF(CMO,EIG,VECPRI,
      &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)
@@ -3723,7 +3726,7 @@ C    out in C1 symmetry and so only one ircop is defined.
 C      
 C     KRMC_FLG = 1: Orbitals read from
 C                   label NEWORB on file KRMCSCF
-C     KRMC_FLG = 0  Orbitals read from CHECKPOINT.h5
+C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C***********************************************************************
 #include "implicit.h"

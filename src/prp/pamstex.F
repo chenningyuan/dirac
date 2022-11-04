@@ -201,7 +201,7 @@ C     .SCREEN
       SUBROUTINE STEX(WORK,LWORK)
       use labeled_storage
 C
-C     At this point we expect a converged groundstate CHECKPOINT.h5 in
+C     At this point we expect a converged groundstate CHECKPOINT in
 C     the working directory, plus an optional ION.h5 for the
 C     core-relaxed determinant.
 C

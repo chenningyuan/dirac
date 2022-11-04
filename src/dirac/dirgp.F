@@ -3274,7 +3274,7 @@ C  /* Deck acmoin */
 C*****************************************************************************
 C
 C     Read coefficients in C1 symmetry from DFACMO
-C     adapt to current symmetry and write back to CHECKPOINT.h5
+C     adapt to current symmetry and write back to CHECKPOINT
 C
 C     Written by T. Saue Mar 3 2008
 C     Adaptation to checkpoint by L. Visscher 2022

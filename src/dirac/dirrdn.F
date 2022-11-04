@@ -2533,7 +2533,7 @@ C
      +     ' * Trial two-electron Fock matrix read from file DF2FCK'
       ELSE IF(TRIVEC) THEN
         WRITE(LUPRI,'(A)')
-     +   ' * Trial vectors read from CHECKPOINT.h5'
+     +   ' * Trial vectors read from CHECKPOINT'
       ELSE IF(ATOMST) THEN
         WRITE(LUPRI,'(A,I5//4X,A)') ' * Atomic start:',NONTYP,
      &   'atom   cffile     occ    orbitals'
@@ -8711,7 +8711,7 @@ C
        ENDIF
       ENDIF
       WRITE(LUPRI,'(1X,A)')
-     &     '* Localised MO are written in file CHECKPOINT.h5 !!!'
+     &     '* Localised MO are written to CHECKPOINT !!!'
  999  CONTINUE
       RETURN
 C
