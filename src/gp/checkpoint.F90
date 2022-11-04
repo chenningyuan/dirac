@@ -62,6 +62,8 @@ module checkpoint
 
   subroutine checkpoint_open
 
+      use mh5, only : mh5_is_available
+
       ! Open a new or existing file and initialize or check data sets defined in the schema
       ! After this step individual data sets can be written (or read in case of restart)
 
@@ -77,6 +79,12 @@ module checkpoint
 
       ! Inquire whether (a yet unopened) checkpoint file is present and attempt a restart if it is
       inquire (file=CHECKPOINT_NAME//'.h5',exist=restart)
+      if (restart.and..not.mh5_is_available()) then
+         ! a hdf5 restart file is available, but we are not able to use it
+         ! will be deleted to not create confusion when postprocessing the fallback file
+         restart = .false. 
+         call unlink(CHECKPOINT_NAME//'.h5')
+      end if
       inquire (file=CHECKPOINT_NAME//'.noh5/.initialized',exist=restart_noh5)
 
       if (restart) then
@@ -106,11 +114,13 @@ module checkpoint
       endif 
 
       ! If we come this far we are dealing with a pristine directory and need to create and init a checkpoint file
-      checkpoint_file%name = CHECKPOINT_NAME//'.h5'
-      checkpoint_file%type = 2
-      !temporary: activate the next two lines to test the fallback option
-      !checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
-      !checkpoint_file%type = 3
+      if (mh5_is_available()) then
+         checkpoint_file%name = CHECKPOINT_NAME//'.h5'
+         checkpoint_file%type = 2
+      else
+         checkpoint_file%name = CHECKPOINT_NAME//'.noh5'
+         checkpoint_file%type = 3
+      end if
       call create_new_checkpoint
       print*, "   - New checkpoint file created"
 

@@ -54,6 +54,7 @@ set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
 
 set(FREE_GP_FORTRAN_SOURCES
     basis_datatypes.F90
+    checkpoint.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
@@ -142,7 +143,6 @@ if(ENABLE_HDF5)
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}
-    checkpoint.F90
     hdf5_util/mh5.F90
     hdf5_util/mh5_capi.c
 )
@@ -154,7 +154,6 @@ else()
     ${FIXED_GP_FORTRAN_SOURCES_noruntimecheck}
     ${FREE_GP_FORTRAN_SOURCES}
     ${GP_C_SOURCES}
-    checkpoint_nohdf5.F90
     hdf5_util/mh5_nohdf5.F90
 )
 endif()

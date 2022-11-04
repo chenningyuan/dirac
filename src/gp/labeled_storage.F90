@@ -425,6 +425,14 @@ module labeled_storage
       integer(kind=8)                        :: group_id
       integer                                :: i
 
+      !  check first whether we can actually use mh5
+      if (.not.mh5_is_available()) then
+         print*," HDF5 interface is not available, using fallback Unix implementation"
+         call toggle_fallback(file_info)
+         call init_nohdf5(file_info,top_groups)
+         return
+      end if
+
       ! create the hdf5 file
       file_info%id = mh5_create_file(file_info%name)
       file_info%status = 1

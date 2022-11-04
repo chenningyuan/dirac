@@ -312,7 +312,10 @@ def nohdf5_recursively_load_dict_contents_from_group(data,path):
              str_format = 'a{}'.format(data_dim1)
              data[label]['value'] = f.read_record(str_format)
           elif data_type=='strn':
-             str_format = '{}a{}'.format(data_dim2,data_dim1)
+             if (data_dim2==1):
+                str_format = 'a{}'.format(data_dim1)
+             else:
+                str_format = '{}a{}'.format(data_dim2,data_dim1)
              data[label]['value'] = f.read_record(str_format)
           else:
              print('ERROR in processing restart data: unknown data type',data_type)
