@@ -1163,6 +1163,7 @@ C
       relcc_do_mp2gradient = .true.
       relcc_do_naturalorbitals = .true.
       relcc_no_recompute = .true.
+      if (istrat==6) relcc_integral_interface = 'DIRAC6    '
 C     The original NO generation treats open shells as closed, set occupation explicitly to keep this definition.
 C     These lines are necessary because the default for information written to MRCONEE has changed to closed shells only.
 C     / Luuk June 2016
