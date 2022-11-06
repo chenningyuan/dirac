@@ -58,4 +58,14 @@ elseif ( MKL_FLAG AND (CMAKE_Fortran_COMPILER_ID MATCHES Intel ) )
     message(STATUS "-mkl=... flag for MKL libraries kept because Intel Fortran compiler is present")
 endif()
 
+#JVP workaround for lto wrapper
+if ( ( CMAKE_Fortran_COMPILER_ID MATCHES GNU )  AND  ( ${CMAKE_Fortran_COMPILER_VERSION} VERSION_GREATER "10.9.9" ) )
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -fno-lto")
+endif()
+if ( ( CMAKE_C_COMPILER_ID MATCHES GNU )  AND  ( ${CMAKE_C_COMPILER_VERSION} VERSION_GREATER "10.9.9" ) )
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-lto")
+endif()
+if ( ( CMAKE_CXX_COMPILER_ID MATCHES GNU )  AND  ( ${CMAKE_CXX_COMPILER_VERSION} VERSION_GREATER "10.9.9" ) )
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-lto")
+endif()
 
