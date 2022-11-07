@@ -455,12 +455,10 @@ module talsh_cc
          !type(talsh_tens_t) :: hoo_int_tensor, hvv_int_tensor
          type(talsh_tens_t) :: tau2_tensor
          type(talsh_tens_t) :: cint_tensor
-         type(talsh_tens_t) :: dint_tensor
 !        auxilliary tensors for t1 equation
          type(talsh_tens_t) :: hov_aux_tensor, hoo_aux_tensor
 !        solution tensors
-         type(talsh_tens_t) :: s1_tensor, s2_tensor, s3_tensor, s4_tensor
-         type(talsh_tens_t) :: vvvooo_aux_tensor
+         type(talsh_tens_t) :: s1_tensor, s2_tensor
          type(talsh_tens_t) :: vvvo_aux_tensor
 !        scalars (need to be defined as tensor types)
          type(talsh_tens_t) :: result_tensor
@@ -468,8 +466,6 @@ module talsh_cc
          !Tensor dimensions
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims
          integer(INTD), dimension(4) :: vvoo_dims, ovoo_dims, vvvo_dims
-         integer(INTD), dimension(6) :: vvvooo_dims
-         integer(INTD), dimension(8) :: vvvvoooo_dims
          !Orbital energies for scaling
          real(8), intent(in)   :: eps_occ(:), eps_vir(:)
          integer :: iccsd
@@ -507,28 +503,6 @@ module talsh_cc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
          ierr=talsh_tensor_construct(cint_tensor,C8,ovoo_dims,init_val=ZERO)
-         if (iterative_level.ge.3) then
-            vvvooo_dims(1:3) = nvir
-            vvvooo_dims(4:6) = nocc
-            ierr=talsh_tensor_construct(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
-            print *,' ierr construct s3',ierr
-            ierr=talsh_tensor_construct(vvvooo_aux_tensor,C8,vvvooo_dims,init_val=ZERO)
-            print *,' ierr construct vvvooo_aux_tensor',ierr
-! this is not needed for ccsdt-1
-            ierr=talsh_tensor_construct(dint_tensor,C8,vvoo_dims,init_val=ZERO)
-            print *,' ierr construct dint_tensor',ierr
-            vvvo_dims(1:3) = nvir
-            vvvo_dims(4) = nocc
-            ierr=talsh_tensor_construct(vvvo_aux_tensor,C8,vvvo_dims,init_val=ZERO)
-            print *,' ierr construct vvvo_aux_tensor',ierr
-!
-            if (iterative_level.eq.4) then
-               vvvvoooo_dims(1:4) = nvir
-               vvvvoooo_dims(5:8) = nocc
-               ierr=talsh_tensor_construct(s4_tensor,C8,vvvvoooo_dims,init_val=ZERO)
-               print *,' ierr construct s4',ierr
-            end if
-         end if
 
          do iccsd = 1, ncycles
 
@@ -539,8 +513,6 @@ module talsh_cc
             if (.not.CCD) write(*,*) "t1    = ",tensor_norm2(comm_t%t1)
             write(*,*) "t2    = ",tensor_norm2(comm_t%t2)*ONE_QUARTER_R
             write(*,*) "Tau   = ",tensor_norm2(comm_t%tau)*ONE_QUARTER_R
-            if (iterative_level.eq.3) write(*,*) "t3    = ",tensor_norm2(comm_t%t3)
-            if (iterative_level.eq.4) write(*,*) "t4    = ",tensor_norm2(comm_t%t4)
           end if
 
           if (print_level.gt.2) then
@@ -552,9 +524,6 @@ module talsh_cc
              write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
-
-!aspg: for the moment, will add the contributions to t3, t4 at the end of the list of contractions. a reorganization will be in order
-!      once the correctness of results is established
 
 !NOTE: contractions marked with "validated" gave numerically significant contributions and could be validated by comparison
 !to the reference implementation, the ones marked "moretests" were too small to decide whether it was correct or not.
@@ -666,507 +635,9 @@ module talsh_cc
             ierr=talsh_tensor_contract("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
           end if
 
-!         calculate s3 tensor, adding new terms to t1 and t2 equations
-
-          if (iterative_level.ge.3) then
-             ! note on the variants: 
-             ! scheme 30: full CCSDT
-             ! scheme 31: adding D10a + D10b + D10c + T1a + T1b to CCSD yields CCSDT-1
-             ! scheme 32: adding S7 + T2a + T2b to CCSDT-1 yields CCSDT-1a
-             ! scheme 33: adding  D11a + D11b + D11c to CCSDT-1a  yields CCSDT-1b 
-
-
-            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
-             ! additional diagrams to singles equation
-             ! <ai|H_NT_3|0>_C term: Diagram S7 from Shavitt and Bartlett
-             ! S7: 1/4 <mn||ef> t^{aef}_{imn} 
-             ierr=talsh_tensor_contract("S(a,i)+=V(m,n,e,f)*T(a,e,f,i,m,n)",s1_tensor,int_t%oovv,comm_t%t3,scale=ONE_QUARTER)
-             print *,'s7',ierr
-           end if
-
-           if (iterative_scheme.eq.30 .or. iterative_scheme.eq.31 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
-             ! additional diagrams to doubles equation 
-             ! <abij|H_NT_3|0>_C term: diagrams D10a-D10c from Shavitt and Bartlett
-             ! D10a: f^{e}_{m} t^{abe}_{ijm} 
-             ierr=talsh_tensor_contract("S(a,b,i,j)+=F(m,e)*T(a,b,e,i,j,m)",s2_tensor,comm_t%fov,comm_t%t3)
-             print *,'d10a',ierr
-
-             ! D10b: 1/2 P(ab) <bm||ef> t^{aef}_{ijm}
-             ierr=talsh_tensor_init(dint_tensor)
-             print *,'d10b 1',ierr
-             ierr=talsh_tensor_contract("D(a,b,i,j)+=V(b,m,e,f)*T(a,e,f,i,j,m)",dint_tensor,int_t%vovv,comm_t%t3,scale=ONE_HALF)
-             print *,'d10b 2',ierr
-             ierr=talsh_tensor_contract("S(a,b,i,j)+=D(b,a,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'d10b 3',ierr
-
-             ! D10c: -1/2 P(ij) <mn||je> t^{abe}_{imn}
-             ierr=talsh_tensor_init(dint_tensor)
-             print *,'d10c 1',ierr
-             ierr=talsh_tensor_contract("D(a,b,i,j)+=V(m,n,j,e)*T(a,b,e,i,m,n)",dint_tensor,int_t%ooov,comm_t%t3,scale=ONE_HALF)
-             print *,'d10c 2',ierr
-             ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,j,i)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'d10c 3',ierr
-            end if
-
-             ! these diagrams define CCSDT (scheme 30) and CCSDT-1b (scheme 33)
-            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.33) then
-             ! <abij|H_NT_1T_3|0>_C term: diagrams D11a-D11c from Shavitt and Bartlett
-             ! with the difference that we need the scaling factor in front of these since we are not using restricted indexes i>j, and a>b
-             ! D11a:        <mn||ef> t^{e}_{m} t^{fab}_{nij}
-                ierr=talsh_tensor_init(hoo_aux_tensor)
-             print *,'d11a 1',ierr
-                ierr=talsh_tensor_contract("M(n,f)+=V(m,n,e,f)*T(e,m)",hov_aux_tensor,int_t%oovv,comm_t%t1)
-             print *,'d11a 2',ierr
-                ierr=talsh_tensor_contract("S(a,b,i,j)+=M(n,f)*T(f,a,b,n,i,j)",s2_tensor,hov_aux_tensor,&
-                                          & comm_t%t3,scale=ONE_QUARTER)
-             print *,'d11a 3',ierr
-
-             ! D11b: -P(ab) <mn||ef> t^{a}_{m} t^{efb}_{inj}
-             ! to recall, cint is ovoo
-                ierr=talsh_tensor_init(cint_tensor)
-             print *,'d11b 1',ierr
-                ierr=talsh_tensor_init(dint_tensor)
-             print *,'d11b 2',ierr
-                ierr=talsh_tensor_contract("C(m,b,i,j)+=V(m,n,e,f)*T(e,f,b,i,n,j)",cint_tensor,int_t%oovv,comm_t%t3)
-             print *,'d11b 3',ierr
-                ierr=talsh_tensor_contract("D(a,b,i,j)+=C(m,b,i,j)*T(a,m)",dint_tensor,cint_tensor,comm_t%t1)
-             print *,'d11b 4',ierr
-                ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE_QUARTER)
-             print *,'d11b 5',ierr
-                ierr=talsh_tensor_contract("S(b,a,i,j)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=ONE_QUARTER)
-             print *,'d11b 6',ierr
-             ! D11c: -P(ij) <mn||ef> t^{e}_{i} t^{afb}_{mnj}
-                ierr=talsh_tensor_init(cint_tensor)
-             print *,'d11c 1',ierr
-                ierr=talsh_tensor_init(dint_tensor)
-             print *,'d11c 2',ierr
-                ierr=talsh_tensor_contract("C(i,f,m,n)+=V(m,n,e,f)*T(e,i)",cint_tensor,int_t%oovv,comm_t%t1)
-             print *,'d11c 3',ierr
-                ierr=talsh_tensor_contract("D(a,b,i,j)+=C+(i,f,m,n)*T(a,b,f,m,n,j)",dint_tensor,cint_tensor,comm_t%t3)
-             print *,'d11c 4',ierr
-                ierr=talsh_tensor_contract("S(a,b,i,j)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=MINUS_ONE_QUARTER)
-             print *,'d11c 5',ierr
-                ierr=talsh_tensor_contract("S(a,b,j,i)+=D(a,b,i,j)*K()",s2_tensor,dint_tensor,one_tensor,scale=ONE_QUARTER)
-             print *,'d11c 6',ierr
-            end if ! (iterative_scheme.eq.30 .or. iterative_scheme.eq.33)
-
-             ! now for the s3 tensor
-             ierr=talsh_tensor_init(s3_tensor)
-             print *,'s3',ierr
- 
-             ! notation for the permutations: 
-             ! P(ijk)                    => ijk + jik + jki + ikj + kij + kji 
-             ! P( a/bc ) = 1 - Pab - Pac => abc - bac - cba
-             ! P( k/ij ) = 1 - Pik - Pjk => ijk - kji - ikj
-             ! P( k/ij | a/bc ) = 
-             !    P( a/bc )P( k/ij ) = 1 - (Pab + Pac + Pik + Pjk) + (Pab*Pik + Pab*Pjk + Pac*Pik + Pac*Pjk)
-             !                           => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
-
-             ! diagrams
-             ! note on the variants: 
-             ! scheme 30: full CCSDT
-             ! scheme 31: adding D10a + D10b + D10c + T1a + T1b to CCSD yields CCSDT-1
-             ! scheme 32: adding S7 + T2a + T2b to CCSDT-1 yields CCSDT-1a
-             ! scheme 33: adding  D11a + D11b + D11c to CCSDT-1a  yields CCSDT-1b 
-
-            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.31 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
-             ! T1a:      P( k/ij | a/bc ) < bc || dk > t^{ad}_{ij}  
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t1a 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V+(d,k,b,c)*T(a,d,i,j)",vvvooo_aux_tensor,int_t%vovv,comm_t%t2)
-             print *,'t1a 2',ierr
-
-             ! P( k/ij | a/bc ) => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1a 3',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1a 4',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1a 5',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,i,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1a 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1a 7',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1a 8',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1a 9',ierr
-             ierr=talsh_tensor_contract("S(c,a,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1a 10',ierr
-             ierr=talsh_tensor_contract("S(c,a,b,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1a 11',ierr
-
-             ! T1b:    - P( i/jk | c/ab ) < lc || jk > t^{ab}_{il}
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t1b 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V+(j,k,l,c)*T(a,b,i,l)",vvvooo_aux_tensor,int_t%ooov,comm_t%t2)
-             print *,'t1b 2',ierr
-
-             ! - P( i/jk | c/ab ) => - abcijk + cbaijk + acbijk + abcjik + abckji - cbajik - acbjik - cbakji - acbkji
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1b 3',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1b 4',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1b 5',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1b 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t1b 7',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1b 8',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1b 9',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1b 10',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t1b 11',ierr
-            end if 
-
-            if (iterative_scheme.eq.30 .or. iterative_scheme.eq.32 .or. iterative_scheme.eq.33) then
-             ! T2a:      P( c/ab ) f_{cd} t^{abd}_{ijk}
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t2a 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=F(c,d)*T(a,b,d,i,j,k)",vvvooo_aux_tensor,comm_t%fvv,comm_t%t3)
-             print *,'t2a 2',ierr
-
-             ! P( c/ab ) => abc - cba - acb 
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2a 3',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2a 4',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2a 5',ierr
-
-             ! T2b:    - P( k/ij ) f_{lk} t^{abc}_{ijl} 
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t2b 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=F(l,k)*T(a,b,c,i,j,l)",vvvooo_aux_tensor,comm_t%foo,comm_t%t3)
-             print *,'t2b 2',ierr
-
-             ! - P( k/ij ) => - ijk + kji + ikj
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2b 3',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2b 4',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2b 5',ierr
-            end if
-
-             if (iterative_scheme.eq.30) then
-             ! T2c:  1/2 P( c/ab ) < ab || de > t^{dec}_{ijk}   
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t2c 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V(a,b,d,e)*T(d,e,c,i,j,k)",vvvooo_aux_tensor,int_t%vvvv,&
-                                         comm_t%t3,scale=ONE_HALF)
-             print *,'t2c 2',ierr
-             ! P( c/ab ) => abc - cba - acb 
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2c 3',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2c 4',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2c 5',ierr
-
-             ! T2d:  1/2 P( k/ij ) < lm || ij > t^{abc}_{lmk} 
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t2d 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V(l,m,i,j)*T(a,b,c,l,m,k)",vvvooo_aux_tensor,int_t%oooo, &
-                                         comm_t%t3,scale=ONE_HALF)
-             print *,'t2d 2',ierr
-             ! P( k/ij ) => ijk - kji - ikj 
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2c 3',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,&
-                                        one_tensor,scale=MINUS_ONE)
-             print *,'t2c 4',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2c 5',ierr
-
-             ! T2e:      P( i/jk | a/bc ) < al || id > t^{dbc}_{ljk} 
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t2e 1',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=V(a,l,d,i)*T(d,b,c,l,j,k)",vvvooo_aux_tensor,int_t%vovo,& 
-                                        comm_t%t3,scale=MINUS_ONE)
-             print *,'t2e 2',ierr
-             ! P( i/jk | a/bc ) => abcijk - bacijk - cbaijk - abcjik - abckji + bacjik + backji + cbajik + cbakji
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2e 3',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2e 4',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2e 5',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2e 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t2e 7',ierr
-
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2e 8',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2e 9',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2e 10',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t2e 11',ierr
-
-
-             ! T3a:    - P( k/ij | a/bc ) f_{ld} t^{ad}_{ij} t^{bc}_{lk} 
-             ierr=talsh_tensor_init(cint_tensor)
-             print *,'t3a 0',ierr
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t3a 1',ierr
-             ierr=talsh_tensor_contract("R(l,a,i,j)+=F(l,d)*T(a,d,i,j)",cint_tensor,comm_t%fov,comm_t%t2)
-             print *,'t3a 2',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=R(l,a,i,j)*T(b,c,l,k)",vvvooo_aux_tensor,cint_tensor,&
-                                        comm_t%t2,scale=MINUS_ONE)
-             print *,'t3a 3',ierr
-             ! P( k/ij | a/bc ) => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3a 4',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3a 5',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3a 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,i,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3a 7',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3a 8',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3a 9',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3a 10',ierr
-             ierr=talsh_tensor_contract("S(c,a,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3a 11',ierr
-             ierr=talsh_tensor_contract("S(c,a,b,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3a 12',ierr
-
-             ! T3b:      P( i/jk | abc  ) < lb || de > t^{ad}_{il} t^{ec}_{jk} 
-             ierr=talsh_tensor_init(vvvo_aux_tensor)
-             print *,'t3b 0',ierr
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t3b 1',ierr
-             ierr=talsh_tensor_contract("R(a,b,e,i)+=V+(l,b,d,e)*T(a,d,i,l)",vvvo_aux_tensor,int_t%vovv,comm_t%t2)
-             print *,'t3b 2',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=R(a,b,e,i)*T(e,c,j,k)",vvvooo_aux_tensor,vvvo_aux_tensor,&
-                                        comm_t%t2)
-             print *,'t3b 3',ierr
-             ! P( i/jk | abc  ) = P ( i/jk )*P(abc) = (ijk - jik - kji)*(abc + bac + bca + acb + cab + cba)
-             !   =>   abcijk + bacijk + bcaijk + acbijk + cabjik + cbaijk 
-             !      - abcjik - bacjik - bcajik - acbjik - cabjik - cbajik
-             !      - abckji - backji - bcakji - acbkji - cabkji - cbakji 
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3b 4',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3b 5',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,c,a,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3b 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,c,b,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3b 7',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,a,b,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3b 8',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3b 9',ierr
-
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 10',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 11',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,c,a,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 12',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,c,b,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 13',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,a,b,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 14',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 15',ierr
-
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 16',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 17',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,c,a,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 18',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,c,b,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 19',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,a,b,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 20',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 21',ierr
-
-             ! T3c:    - P( ijk  | a/bc ) < lm || dj > t^{ad}_{il} t^{bc}_{mk} 
-             ierr=talsh_tensor_init(cint_tensor)
-             print *,'t3c 0',ierr
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t3c 1',ierr
-             ierr=talsh_tensor_contract("R(m,a,i,j)+=V(l,m,j,d)*T(a,d,i,l)",cint_tensor,int_t%ooov,comm_t%t2,scale=MINUS_ONE)
-             print *,'t3c 2',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=R(m,a,i,j)*T(b,c,m,k)",vvvooo_aux_tensor,cint_tensor,&
-                                        comm_t%t2,scale=MINUS_ONE)
-             ! P( ijk | a/bc  ) = P ( ijk )*P(a/bc) = (abc - bac - cba)*(ijk + jik + jki + ikj + kij + kji) 
-             !   =>   abcijk + abcjik + abcjki + abcikj + abckij + abckji 
-             !      - bacijk - bacjik - bacjki - bacikj - backij - backji 
-             !      - cbaijk - cbajik - cbajki - cbaikj - cbakij - cbakji 
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3c 4',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3c 5',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,j,k,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3c 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,k,j)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3c 7',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,k,i,j)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3c 8',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3c 9',ierr
-
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 10',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 11',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,j,k,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 12',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,i,k,j)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 13',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,k,i,j)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 14',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(b,a,c,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 15',ierr
-
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 16',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,j,i,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 17',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,j,k,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 18',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,i,k,j)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 19',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,k,i,j)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 20',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(c,b,a,k,j,i)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3b 21',ierr
-
-             ! T3d: -1/2 P( i/jk | c/ab ) < lc || de > t^{ab}_{il} t^{de}_{jk}
-             ierr=talsh_tensor_init(cint_tensor)
-             print *,'t3d 0',ierr
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t3d 1',ierr
-             ierr=talsh_tensor_contract("R(l,c,j,k)+=V(c,l,d,e)*T(a,e,j,k)",cint_tensor,int_t%vovv,comm_t%t2,scale=MINUS_ONE)
-             print *,'t3d 2',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=R(l,c,j,k)*T(a,b,i,l)",vvvooo_aux_tensor,cint_tensor,&
-                                        comm_t%t2,scale=ONE_HALF)
-             print *,'t3d 3a',ierr
-             ! - P( i/jk | c/ab ) => - abcijk + cbaijk + acbijk + abcjik + abckji - cbajik - acbjik - cbakji - acbkji
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3d 3',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3d 4',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3d 5',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3d 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3d 7',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3d 8',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,j,i,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3d 9',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3d 10',ierr
-             ierr=talsh_tensor_contract("S(a,c,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3d 11',ierr
-
-             ! T3e:  1/2 P( k/ij | a/bc ) < lm || dk > t^{ad}_{ij} t^{bc}_{lm}
-             ierr=talsh_tensor_init(dint_tensor)
-             print *,'t3e 0',ierr
-             ierr=talsh_tensor_init(vvvooo_aux_tensor)
-             print *,'t3e 1',ierr
-             ierr=talsh_tensor_contract("R(b,c,d,k)+=V(l,m,k,d)*T(b,c,l,m)",dint_tensor,int_t%ooov,comm_t%t2,scale=MINUS_ONE)
-             print *,'t3e 2',ierr
-             ierr=talsh_tensor_contract("E(a,b,c,i,j,k)+=R(b,c,d,k)*T(a,d,i,j)",vvvooo_aux_tensor,dint_tensor,&
-                                        comm_t%t2,scale=ONE_HALF)
-             print *,'t3e 3a',ierr
-             ! P( k/ij | a/bc ) => abcijk - bacijk - cbaijk - abckji - abcikj + backji + bacikj + cbakji + cbaikj
-             ierr=talsh_tensor_contract("S(a,b,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3e 4',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3e 5',ierr
-             ierr=talsh_tensor_contract("S(c,b,a,i,j,k)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3e 6',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,k,i,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3e 7',ierr
-             ierr=talsh_tensor_contract("S(a,b,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor,scale=MINUS_ONE)
-             print *,'t3e 8',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3e 9',ierr
-             ierr=talsh_tensor_contract("S(b,a,c,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3e 10',ierr
-             ierr=talsh_tensor_contract("S(c,a,b,k,j,i)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3e 11',ierr
-             ierr=talsh_tensor_contract("S(c,a,b,i,k,j)+=E(a,b,c,i,j,k)*K()",s3_tensor,vvvooo_aux_tensor,one_tensor)
-             print *,'t3e 12',ierr
-
-             ! T4a:      P( i/jk | c/ab ) < ab || de > t^{d}_{i} t^{ec}_{jk} 
-             ! T4b:      P( k/ij | a/bc ) < lm || ij > t^{a}_{l} t^{bc}_{mk} 
-             ! T4c:    - P( ijk  | a/bc ) < al || id > t^{d}_{j} t^{bc}_{lk}  
-             ! T4d:    - P( i/jk | abc  ) < al || id > t^{b}_{l} t^{dc}_{jk}
-
-             ! T5a:      P( i/jk | a/bc ) < lm || de > t^{ad}_{il} t^{ebc}_{mjk} 
-             ! T5b: -1/2 P( i/jk ) < lm || de > t^{de}_{li} t^{abc}_{mjk}
-             ! T5c: -1/2 P( a/bc ) < lm || de > t^{da}_{lm} t^{ebc}_{ijk}
-             ! T5d: -1/2 P( k/ij | a/bc ) < lm || de > t^{ad}_{ij} t^{bec}_{lmk}
-             ! T5e: -1/2 P( i/jk | c/ab ) < lm || de > t^{ab}_{il} t^{dec}_{jmk}
-             ! T5f:  1/4 P( k/ij ) < lm || de > t^{de}_{ij} t^{abc}_{lmk}
-             ! T5g:  1/4 P( c/ab ) < lm || de > t^{ab}_{lm} t^{dec}_{ijk}
-
-             ! T6a:    - P( i/jk ) f_{ld} t^{d}_{i} t^{abc}_{ljk} 
-             ! T6b:    - P( a/bc ) f_{ld} t^{a}_{l} t^{dbc}_{ijk}
-             ! T6c:      P( i/jk | a/bc ) < al || de > t^{d}_{i} t^{ebc}_{ljk} 
-             ! T6d:    - P( i/jk | a/bc ) < lm || id > t^{a}_{l} t^{dbc}_{mjk}   
-             ! T6e:      P( a/bc ) < la || de > t^{d}_{l} t^{ebc}_{ijk} 
-             ! T6f:    - P( i/jk ) < lm || di > t^{d}_{l} t^{abc}_{mjk}  
-             ! T6g: -1/2 P( abc ) < lb || de > t^{a}_{l} t^{dec}_{ijk}  
-             ! T6h:  1/2 P( ijk ) < lm || dj > t^{d}_{i} t^{abc}_{lmk}
-
-             ! T7a:    - P( i/jk | abc ) < lb || de > t^{d}_{i} t^{a}_{l} t^{ec}_{jk} 
-             ! T7b:      P( ijk | a/bc ) < lm || dj > t^{d}_{i} t^{a}_{l} t^{bc}_{mk}
-             ! T7c:      P( k/ij | a/bc ) < al || de > t^{d}_{i} t^{e}_{j} t^{bc}_{lk}
-             ! T7d:      P( i/jk | c/ab ) < lm || id > t^{a}_{l} t^{b}_{m} t^{dc}_{jk}
-
-             ! T8a:    - P( i/jk | c/ab ) < lm || de > t^{d}_{l} t^{ab}_{im} t^{ec}_{jk}   
-             ! T8b:    - P( ijk | a/bc ) < lm || de > t^{ad}_{il} t^{e}_{j} t^{bc}_{mk}
-             ! T8c:    - P( i/jk | abc ) < lm || de > t^{ad}_{il} t^{b}_{m} t^{ec}_{jk} 
-             ! T8d:  1/2 P( i/jk | c/ab ) < lm || de > t^{a}_{l} t^{db}_{im} t^{ec}_{jk}   
-             ! T8e:  1/2 P( k/ij | a/bc ) < lm || de > t^{a}_{l} t^{de}_{ij} t^{bc}_{mk}
-
-             ! T9a:    - P( i/jk ) < lm || de > t^{d}_{l} t^{e}_{i} t^{abc}_{mjk}
-             ! T9b:    - P( a/bc ) < lm || de > t^{d}_{l} t^{a}_{m} t^{ebc}_{ijk}
-             ! T9c:  1/2 P( j/ik ) < lm || de > t^{d}_{i} t^{abc}_{ljm} t^{e}_{k}
-             ! T9d:  1/2 P( b/ac ) < lm || de > t^{a}_{l} t^{dbe}_{ijk} t^{c}_{m}
-             ! T9e:    - P( i/jk | a/bc ) < lm || de > t^{d}_{i} t^{a}_{l} t^{ebc}_{mjk} 
-             
-             ! T10a:     P( k/ij | a/bc ) < lm || de > t^{d}_{i} t^{a}_{l} t^{e}_{j} t^{bc}_{mk}
-             ! T10b:     P( i/jk | c/ab ) < lm || de > t^{d}_{i} t^{a}_{l} t^{b}_{m} t^{ec}_{jk}
-             end if
-
-             ! after these, we have to rescale s3 since the expressions above assume i > j > k, a > b > c
-
-          end if ! CCSDT contributions
-
-          if (iterative_level.eq.4) then
-
-             ! now for the s4 tensor
-             ierr=talsh_tensor_init(s4_tensor)
-             print *,'s4 1',ierr
-             ! after these, we have to rescale s4 since the expressions above assume i > j > k > l, a > b > c > d
-
-          end if ! CCSDTQ contributions
-
           if (print_level.gt.6) then
             if (.not.CCD) write(*,*) "s1    = ",tensor_norm2(s1_tensor)
             write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
-            if (iterative_level.ge.3) write(*,*) "s3    = ",tensor_norm2(s3_tensor)
-            if (iterative_level.ge.4) write(*,*) "s4    = ",tensor_norm2(s4_tensor)
           end if
 
           if (ierr.ne.TALSH_SUCCESS) then
@@ -1187,39 +658,14 @@ module talsh_cc
           ierr=talsh_tensor_init(comm_t%t2)
           ierr=talsh_tensor_add("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
 
-          if (iterative_level.ge.3) then        
-             ierr=talsh_tensor_init(comm_t%t3)
-             ierr=talsh_tensor_add("T3(a,b,c,i,j,k)+=S3(a,b,c,i,j,k)",comm_t%t3,s3_tensor)
-             if (iterative_level.eq.4) then
-                ierr=talsh_tensor_init(comm_t%t4)
-                ierr=talsh_tensor_add("T4(a,b,c,d,i,j,k,l)+=S4(a,b,c,d,i,j,k,l)",comm_t%t4,s4_tensor)
-             end if
-          end if
-
           if (.not.CCD) then
-            if (iterative_level.eq.4) then
-               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
-              &              t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3,full_t4_tensor=comm_t%t4)
-            else if (iterative_level.eq.3) then
-               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,&
-              &               t2_tensor=comm_t%t2,full_t3_tensor=comm_t%t3)
-            else
-               call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,t2_tensor=comm_t%t2)
-            end if
+            call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,t2_tensor=comm_t%t2)
           else
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
           end if
 
           if (.not.CCD) then
-            if (iterative_level.eq.4) then
-               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
-                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
-            else if (iterative_level.eq.3) then
-               call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
-                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
-            else
-               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
-            end if
+            call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
           else
             call diis (t2_tensor=comm_t%t2,t_convergence=t_convergence)
           end if
@@ -1252,14 +698,6 @@ module talsh_cc
 
          if (.not.CCD) then
             ierr=talsh_tensor_destruct(s1_tensor)
-            if (iterative_level.eq.3) then
-               ierr=talsh_tensor_destruct(s3_tensor)
-               ierr=talsh_tensor_destruct(dint_tensor)
-               ierr=talsh_tensor_destruct(vvvooo_aux_tensor)
-            end if
-            if (iterative_level.eq.4) then
-               ierr=talsh_tensor_destruct(s4_tensor)
-            end if
          end if
          ierr=talsh_tensor_destruct(s2_tensor)
          ierr=talsh_tensor_destruct(tau2_tensor)

@@ -27,13 +27,13 @@ X2C Hamiltonian. CCSDT energies, small test.
 6..8
 #.VIRTUAL
 #6..10
-.CCSDfullT
+.CC-iT
 .AUTOKERNEL
 .EXATENSOR
 .PRINT
 2
-.TALSH_BUFF
-10
+#.TALSH_BUFF
+#10
 **MOLECULE
 *COORDINATES
 .UNITS

@@ -3,11 +3,11 @@
 !
 **DIRAC
 .TITLE
-X2C Hamiltonian. CC2 energies.
+X2C Hamiltonian, with large speed of light (NR limit). CCSD energies.
 .WAVE F
 **GENERAL
 .CVALUE
-1.0e8
+1.0d8
 **INTEGRALS
 .NUCMOD
  1
@@ -25,15 +25,15 @@ X2C Hamiltonian. CC2 energies.
 30
 **EXACC
 .OCCUPIED
-energy -100.0 0.0 0.001
+energy -10000.0 0.0 0.001
 .VIRTUAL
-energy -1.0 100000. 0.001
-#.CCSDfullT
-.CCSDT1
+energy -1.0 100. 0.001
+.CC-iT
+.AUTOKERNEL
 .PRINT
 2
 .TALSH_BUFF
-400
+65
 **MOLECULE
 *COORDINATES
 .UNITS
@@ -42,5 +42,5 @@ AU
 .NOSYM
 *BASIS
 .DEFAULT
-STO-3G
+cc-pVDZ
 *END OF

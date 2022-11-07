@@ -981,32 +981,17 @@
          exa_input%iterative_scheme = 22
       end if
 
-      if (kw_matches(word, '.CCSDfullT   ')) then 
+      if (kw_matches(word, '.CC-iT       ')) then 
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 30
       end if
 
-      if (kw_matches(word, '.CCSDT-1b    ')) then
-         exa_input%iterative_level  = 3
-         exa_input%iterative_scheme = 33
-      end if
-
-      if (kw_matches(word, '.CCSDT-1a    ')) then
-         exa_input%iterative_level  = 3
-         exa_input%iterative_scheme = 32
-      end if
-
-      if (kw_matches(word, '.CCSDT-1     ')) then 
-         exa_input%iterative_level  = 3
-         exa_input%iterative_scheme = 31
-      end if
-
-      if (kw_matches(word, '.CC-Q     ')) then
+      if (kw_matches(word, '.CC-iQ    ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 40
       end if
 
-      if (kw_matches(word, '.CC-P     ')) then
+      if (kw_matches(word, '.CC-iP    ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 50
       end if

@@ -22,8 +22,8 @@ Water molecule. X2C Hamiltonian. CC energies.
 .AUTOKERNELS
 .EXATENSOR
 .LAMBDA
-.TALSH_BUFF
-1
+#.TALSH_BUFF
+#1
 **PROPERTIES
 .DIPOLE
 .EFG

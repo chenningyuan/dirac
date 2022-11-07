@@ -28,13 +28,13 @@ X2C Hamiltonian, with large speed of light (NR limit). CCSD energies.
 energy -10000.0 0.0 0.001
 .VIRTUAL
 energy -1.0 100. 0.001
-.CCSDfullT
+.CC-iT
 .AUTOKERNEL
 .EXATENSOR
 .PRINT
 2
-.TALSH_BUFF
-65
+#.TALSH_BUFF
+#65
 **MOLECULE
 *COORDINATES
 .UNITS

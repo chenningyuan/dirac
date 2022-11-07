@@ -23,13 +23,13 @@ NR Hamiltonian. CCSDTQ energies, small test.
 3..5
 .VIRTUAL
 6..10
-.CCfullQ
+.CC-iQ
 .AUTOKERNEL
 .EXATENSOR
 .PRINT
 2
-.TALSH_BUFF
-10
+#.TALSH_BUFF
+#10
 **MOLECULE
 *COORDINATES
 .UNITS
